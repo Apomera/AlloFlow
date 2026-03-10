@@ -18,27 +18,27 @@
     // ─── Constants ──────────────────────────────────────────────────────
     const ABC_CATEGORIES = {
         antecedent: [
-            'Demand/task presented', 'Transition', 'Denied access', 'Unstructured time',
-            'Peer interaction', 'Left alone', 'Change in routine', 'Sensory input', 'Other'
+            t('behavior_lens.abc_ant_demand_task_presented') || 'Demand/task presented', t('behavior_lens.abc_ant_transition') || 'Transition', t('behavior_lens.abc_ant_denied_access') || 'Denied access', t('behavior_lens.abc_ant_unstructured_time') || 'Unstructured time',
+            t('behavior_lens.abc_ant_peer_interaction') || 'Peer interaction', t('behavior_lens.abc_ant_left_alone') || 'Left alone', t('behavior_lens.abc_ant_change_in_routine') || 'Change in routine', t('behavior_lens.abc_ant_sensory_input') || 'Sensory input', 'Other'
         ],
         behavior: [
-            'Physical contact toward others', 'Vocal/verbal outburst', 'Elopement', 'Difficulty following directions',
-            'Self-directed physical behavior', 'Damage to materials/property', 'Withdrawal', 'Emotional escalation', 'Other'
+            t('behavior_lens.abc_beh_physical_contact_toward_others') || 'Physical contact toward others', t('behavior_lens.abc_beh_vocal_verbal_outburst') || 'Vocal/verbal outburst', t('behavior_lens.abc_beh_elopement') || 'Elopement', t('behavior_lens.abc_beh_difficulty_following_directions') || 'Difficulty following directions',
+            t('behavior_lens.abc_beh_self_directed_physical_behavior') || 'Self-directed physical behavior', t('behavior_lens.abc_beh_damage_to_materials_property') || 'Damage to materials/property', t('behavior_lens.abc_beh_withdrawal') || 'Withdrawal', t('behavior_lens.abc_beh_emotional_escalation') || 'Emotional escalation', 'Other'
         ],
         consequence: [
-            'Verbal redirect', 'Given break', 'Relocated to calm space', 'Peer attention',
-            'Adult attention', 'Task removed', 'Planned ignoring (extinction)', 'Reinforcement given', 'Other'
+            t('behavior_lens.abc_con_verbal_redirect') || 'Verbal redirect', t('behavior_lens.abc_con_given_break') || 'Given break', t('behavior_lens.abc_con_relocated_to_calm_space') || 'Relocated to calm space', t('behavior_lens.abc_con_peer_attention') || 'Peer attention',
+            t('behavior_lens.abc_con_adult_attention') || 'Adult attention', t('behavior_lens.abc_con_task_removed') || 'Task removed', t('behavior_lens.abc_con_planned_ignoring_extinction_') || 'Planned ignoring (extinction)', t('behavior_lens.abc_con_reinforcement_given') || 'Reinforcement given', 'Other'
         ]
     };
 
     const FUNCTION_COLORS = {
-        'Attention': { bg: '#dbeafe', border: '#3b82f6', text: '#1e40af', emoji: '👀' },
-        'Escape': { bg: '#fef3c7', border: '#f59e0b', text: '#92400e', emoji: '🏃' },
-        'Tangible': { bg: '#d1fae5', border: '#10b981', text: '#065f46', emoji: '🎁' },
-        'Sensory': { bg: '#ede9fe', border: '#8b5cf6', text: '#5b21b6', emoji: '🌀' },
+        [t('behavior_lens.func_attention') || 'Attention']: { bg: '#dbeafe', border: '#3b82f6', text: '#1e40af', emoji: '👀' },
+        [t('behavior_lens.func_escape') || 'Escape']: { bg: '#fef3c7', border: '#f59e0b', text: '#92400e', emoji: '🏃' },
+        [t('behavior_lens.func_tangible') || 'Tangible']: { bg: '#d1fae5', border: '#10b981', text: '#065f46', emoji: '🎁' },
+        [t('behavior_lens.func_sensory') || 'Sensory']: { bg: '#ede9fe', border: '#8b5cf6', text: '#5b21b6', emoji: '🌀' },
     };
 
-    const OBSERVATION_METHODS = ['frequency', 'duration', 'interval', 'latency'];
+    const OBSERVATION_METHODS = [t('behavior_lens.obs_method_frequency') || 'frequency', t('behavior_lens.obs_method_duration') || 'duration', t('behavior_lens.obs_method_interval') || 'interval', t('behavior_lens.obs_method_latency') || 'latency'];
 
     const RESTORATIVE_PREAMBLE = `IMPORTANT — Language Guidelines: Use person-first, strengths-based language throughout your response. Frame challenges as unmet needs or lagging skills, not deficits. Say "the student demonstrates difficulty with..." rather than "the student refuses to..." or "is non-compliant." Avoid punitive framing; focus on teaching replacement skills and building supportive environments.`;
 
@@ -175,13 +175,13 @@ Return ONLY valid JSON:
                 // Quick-Fill AI
                 callGemini && h('div', { className: 'px-6 pt-4 pb-0' },
                     h('div', { className: 'bg-purple-50 rounded-xl border border-purple-200 p-3' },
-                        h('label', { className: 'text-[10px] font-bold text-purple-600 uppercase block mb-1.5' }, '🧠 Quick-Fill — Describe what happened'),
+                        h('label', { className: 'text-[10px] font-bold text-purple-600 uppercase block mb-1.5' }, t('behavior_lens.quick_fill_label') || '🧠 Quick-Fill — Describe what happened'),
                         h('div', { className: 'flex gap-2' },
                             h('input', {
                                 type: 'text',
                                 value: quickFillText,
                                 onChange: (e) => setQuickFillText(e.target.value),
-                                placeholder: 'e.g. "Student threw paper during math when asked to show work, teacher redirected calmly"',
+                                placeholder: t('behavior_lens.quick_fill_placeholder') || 'e.g. "Student threw paper during math when asked to show work, teacher redirected calmly"',
                                 className: 'flex-1 text-xs border border-purple-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-400 outline-none',
                                 onKeyDown: (e) => { if (e.key === 'Enter' && quickFillText.trim()) { e.preventDefault(); handleQuickFill(); } }
                             }),
@@ -189,9 +189,9 @@ Return ONLY valid JSON:
                                 onClick: handleQuickFill,
                                 disabled: quickFillLoading || !quickFillText.trim(),
                                 className: 'px-4 py-2 bg-purple-500 text-white rounded-lg text-xs font-bold hover:bg-purple-600 disabled:opacity-40 transition-all whitespace-nowrap'
-                            }, quickFillLoading ? '⏳' : '🧠 Fill')
+                            }, quickFillLoading ? '⏳' : t('behavior_lens.quick_fill_btn') || '🧠 Fill')
                         ),
-                        h('p', { className: 'text-[10px] text-purple-400 mt-1' }, 'AI will parse your description into the fields below. You can then edit manually.')
+                        h('p', { className: 'text-[10px] text-purple-400 mt-1' }, t('behavior_lens.quick_fill_hint') || 'AI will parse your description into the fields below. You can then edit manually.')
                     )
                 ),
                 // Body
@@ -511,7 +511,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         h('input', {
                             value: searchText,
                             onChange: e => setSearchText(e.target.value),
-                            placeholder: 'Search antecedent, behavior, consequence, notes, setting...',
+                            placeholder: t('behavior_lens.search_placeholder') || 'Search antecedent, behavior, consequence, notes, setting...',
                             className: 'w-full text-xs pl-8 pr-3 py-2 border border-slate-200 rounded-lg focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 outline-none transition-all'
                         }),
                         h('span', { className: 'absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs' }, '🔍')
@@ -592,11 +592,11 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 : sorted.length === 0
                     ? h('div', { className: 'text-center py-10 bg-white rounded-xl border border-slate-200' },
                         h('div', { className: 'text-2xl mb-2' }, '🔍'),
-                        h('p', { className: 'text-sm font-bold text-slate-500' }, 'No entries match your filters'),
+                        h('p', { className: 'text-sm font-bold text-slate-500' }, t('behavior_lens.no_entries_match') || 'No entries match your filters'),
                         h('button', {
                             onClick: () => { setSearchText(''); setDateRange('all'); setFilterBehavior('all'); },
                             className: 'mt-2 text-xs text-indigo-600 font-bold hover:underline'
-                        }, 'Clear all filters')
+                        }, t('behavior_lens.clear_all_filters') || 'Clear all filters')
                     )
                     : h('div', { className: 'bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm' },
                         h('div', { className: 'overflow-x-auto' },
@@ -707,11 +707,11 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                 h('td', { colSpan: 8, className: 'px-6 py-3' },
                                                     h('div', { className: 'flex gap-6' },
                                                         entry.setting && h('div', null,
-                                                            h('span', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, '📍 Setting'),
+                                                            h('span', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, t('behavior_lens.setting_label') || '📍 Setting'),
                                                             h('p', { className: 'text-xs text-slate-700 mt-0.5' }, entry.setting)
                                                         ),
                                                         entry.notes && h('div', { className: 'flex-1' },
-                                                            h('span', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, '📝 Notes'),
+                                                            h('span', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, t('behavior_lens.notes_label_inline') || '📝 Notes'),
                                                             h('p', { className: 'text-xs text-slate-700 mt-0.5 leading-relaxed' }, entry.notes)
                                                         )
                                                     )
@@ -727,7 +727,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                             value: nlEditInput,
                                                             onChange: e => setNlEditInput(e.target.value),
                                                             onKeyDown: e => e.key === 'Enter' && handleNlEdit(entry),
-                                                            placeholder: 'e.g. "change consequence to teacher redirected"',
+                                                            placeholder: t('behavior_lens.nl_edit_placeholder') || 'e.g. "change consequence to teacher redirected"',
                                                             className: 'flex-1 text-xs px-3 py-2 border border-amber-200 rounded-lg focus:border-amber-400 outline-none',
                                                             autoFocus: true
                                                         }),
@@ -749,11 +749,11 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                 h('td', { colSpan: 8, className: 'px-6 py-4' },
                                                     h('div', { className: 'space-y-2' },
                                                         h('div', { className: 'flex justify-between items-center' },
-                                                            h('h4', { className: 'text-xs font-black text-purple-700 uppercase flex items-center gap-1.5' }, '💬 Restorative Conversation Starters'),
-                                                            h('button', { onClick: () => setRestorativeId(null), className: 'text-purple-400 hover:text-purple-600 text-xs' }, '✕ Close')
+                                                            h('h4', { className: 'text-xs font-black text-purple-700 uppercase flex items-center gap-1.5' }, t('behavior_lens.restorative_title') || '💬 Restorative Conversation Starters'),
+                                                            h('button', { onClick: () => setRestorativeId(null), className: 'text-purple-400 hover:text-purple-600 text-xs' }, t('behavior_lens.close') || '✕ Close')
                                                         ),
                                                         restorativeLoading
-                                                            ? h('div', { className: 'text-xs text-purple-500 animate-pulse' }, '⏳ Generating context-specific questions...')
+                                                            ? h('div', { className: 'text-xs text-purple-500 animate-pulse' }, t('behavior_lens.generating_questions') || '⏳ Generating context-specific questions...')
                                                             : h('div', { className: 'text-xs text-purple-800 whitespace-pre-wrap leading-relaxed' }, restorativeText)
                                                     )
                                                 )
@@ -778,7 +778,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
     // ─── LiveObsOverlay ─────────────────────────────────────────────────
     // Fullscreen observation mode with timer and frequency counter
     const LiveObsOverlay = ({ onClose, studentName, onSaveSession, t, addToast }) => {
-        const [method, setMethod] = useState('frequency');
+        const [method, setMethod] = useState(t('behavior_lens.obs_method_frequency') || 'frequency');
         const [timer, setTimer] = useState(0);
         const [isRunning, setIsRunning] = useState(false);
         const [frequency, setFrequency] = useState(0);
@@ -806,14 +806,14 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     setTimer(Math.floor((Date.now() - start) / 1000));
                 }, 100);
                 // Start interval recording if applicable
-                if (method === 'interval') {
+                if (method === t('behavior_lens.obs_method_interval') || 'interval') {
                     setCurrentInterval({ start: Date.now(), occurred: false });
                     intervalTimerRef.current = setInterval(() => {
                         setIntervals(prev => [...prev, { ...currentInterval, end: Date.now() }]);
                         setCurrentInterval({ start: Date.now(), occurred: false });
                     }, intervalLength * 1000);
                 }
-                if (method === 'latency' && !latencyStart) {
+                if (method === t('behavior_lens.obs_method_latency') || 'latency' && !latencyStart) {
                     setLatencyStart(Date.now());
                 }
             }
@@ -836,10 +836,10 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 notes,
                 data: {}
             };
-            if (method === 'frequency') sessionData.data = { count: frequency, rate: timer > 0 ? (frequency / (timer / 60)).toFixed(2) : 0 };
-            if (method === 'duration') sessionData.data = { durations, totalDuration: durations.reduce((s, d) => s + d, 0) };
-            if (method === 'interval') sessionData.data = { intervals, totalIntervals: intervals.length, occurredCount: intervals.filter(i => i.occurred).length };
-            if (method === 'latency') sessionData.data = { latencyMs: latencyEnd && latencyStart ? latencyEnd - latencyStart : null };
+            if (method === t('behavior_lens.obs_method_frequency') || 'frequency') sessionData.data = { count: frequency, rate: timer > 0 ? (frequency / (timer / 60)).toFixed(2) : 0 };
+            if (method === t('behavior_lens.obs_method_duration') || 'duration') sessionData.data = { durations, totalDuration: durations.reduce((s, d) => s + d, 0) };
+            if (method === t('behavior_lens.obs_method_interval') || 'interval') sessionData.data = { intervals, totalIntervals: intervals.length, occurredCount: intervals.filter(i => i.occurred).length };
+            if (method === t('behavior_lens.obs_method_latency') || 'latency') sessionData.data = { latencyMs: latencyEnd && latencyStart ? latencyEnd - latencyStart : null };
             onSaveSession(sessionData);
             if (addToast) addToast(t('behavior_lens.obs.saved') || 'Observation session saved ✅', 'success');
             onClose();
@@ -879,7 +879,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                             : 'bg-white/10 text-slate-300 hover:bg-white/20 disabled:opacity-50'
                             }`
                     },
-                        m === 'frequency' ? '🔢 ' : m === 'duration' ? '⏱️ ' : m === 'interval' ? '📍 ' : '⏳ ',
+                        m === t('behavior_lens.obs_method_frequency') || 'frequency' ? '🔢 ' : m === t('behavior_lens.obs_method_duration') || 'duration' ? '⏱️ ' : m === t('behavior_lens.obs_method_interval') || 'interval' ? '📍 ' : '⏳ ',
                         t(`behavior_lens.obs.method_${m}`) || m.charAt(0).toUpperCase() + m.slice(1)
                     )
                 )
@@ -904,7 +904,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         }`
                 }, isRunning ? '⏸' : '▶'),
                 // Method-specific controls
-                method === 'frequency' && h('div', { className: 'flex flex-col items-center gap-4' },
+                method === t('behavior_lens.obs_method_frequency') || 'frequency' && h('div', { className: 'flex flex-col items-center gap-4' },
                     h('div', { className: 'text-5xl font-black text-indigo-400 tabular-nums' }, frequency),
                     h('div', { className: 'text-xs text-slate-400' },
                         t('behavior_lens.obs.occurrences') || 'Occurrences',
@@ -923,7 +923,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         }, '-1')
                     )
                 ),
-                method === 'duration' && h('div', { className: 'flex flex-col items-center gap-4' },
+                method === t('behavior_lens.obs_method_duration') || 'duration' && h('div', { className: 'flex flex-col items-center gap-4' },
                     h('div', { className: 'text-sm text-slate-400' },
                         durationStart
                             ? (t('behavior_lens.obs.behavior_occurring') || '🔴 Behavior occurring...')
@@ -947,7 +947,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         `${durations.length} episodes — Total: ${fmtDuration(durations.reduce((s, d) => s + d, 0))}`
                     )
                 ),
-                method === 'interval' && h('div', { className: 'flex flex-col items-center gap-4' },
+                method === t('behavior_lens.obs_method_interval') || 'interval' && h('div', { className: 'flex flex-col items-center gap-4' },
                     !isRunning && h('div', { className: 'flex items-center gap-2' },
                         h('span', { className: 'text-xs text-slate-400' }, t('behavior_lens.obs.interval_length') || 'Interval:'),
                         h('select', {
@@ -967,7 +967,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         `${intervals.filter(i => i.occurred).length}/${intervals.length} intervals — ${Math.round((intervals.filter(i => i.occurred).length / intervals.length) * 100)}%`
                     )
                 ),
-                method === 'latency' && h('div', { className: 'flex flex-col items-center gap-4' },
+                method === t('behavior_lens.obs_method_latency') || 'latency' && h('div', { className: 'flex flex-col items-center gap-4' },
                     h('div', { className: 'text-sm text-slate-400' },
                         latencyEnd
                             ? (t('behavior_lens.obs.latency_recorded') || 'Latency recorded!')
@@ -1171,12 +1171,12 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     // Count comparison
                     h('div', { className: 'flex items-center gap-3 p-3 rounded-lg bg-slate-50' },
                         h('div', { className: 'text-center' },
-                            h('div', { className: 'text-[10px] text-slate-400 uppercase font-bold' }, 'Last Week'),
+                            h('div', { className: 'text-[10px] text-slate-400 uppercase font-bold' }, t('behavior_lens.last_week') || 'Last Week'),
                             h('div', { className: 'text-xl font-black text-slate-500' }, stats.lastWeek.length)
                         ),
                         h('div', { className: 'text-lg font-black text-slate-300' }, '→'),
                         h('div', { className: 'text-center' },
-                            h('div', { className: 'text-[10px] text-slate-400 uppercase font-bold' }, 'This Week'),
+                            h('div', { className: 'text-[10px] text-slate-400 uppercase font-bold' }, t('behavior_lens.this_week') || 'This Week'),
                             h('div', { className: 'text-xl font-black text-slate-700' }, stats.thisWeek.length)
                         ),
                         h('div', { className: `text-center px-2.5 py-1 rounded-full text-xs font-black ${stats.wowCountChange <= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}` },
@@ -1188,12 +1188,12 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     // Intensity comparison
                     h('div', { className: 'flex items-center gap-3 p-3 rounded-lg bg-slate-50' },
                         h('div', { className: 'text-center' },
-                            h('div', { className: 'text-[10px] text-slate-400 uppercase font-bold' }, 'Avg Intensity'),
+                            h('div', { className: 'text-[10px] text-slate-400 uppercase font-bold' }, t('behavior_lens.avg_intensity') || 'Avg Intensity'),
                             h('div', { className: 'text-xl font-black text-slate-500' }, stats.lastWeekAvgI.toFixed(1))
                         ),
                         h('div', { className: 'text-lg font-black text-slate-300' }, '→'),
                         h('div', { className: 'text-center' },
-                            h('div', { className: 'text-[10px] text-slate-400 uppercase font-bold' }, 'Now'),
+                            h('div', { className: 'text-[10px] text-slate-400 uppercase font-bold' }, t('behavior_lens.now') || 'Now'),
                             h('div', { className: 'text-xl font-black text-slate-700' }, stats.thisWeekAvgI.toFixed(1))
                         ),
                         stats.wowIntensityChange !== 0 && h('div', { className: `text-center px-2.5 py-1 rounded-full text-xs font-black ${stats.wowIntensityChange <= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}` },
@@ -1230,19 +1230,19 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 h('div', { className: 'flex items-center gap-3 mt-3 justify-center' },
                     h('div', { className: 'flex items-center gap-1' },
                         h('div', { className: 'w-3 h-3 rounded-sm', style: { background: '#86efac' } }),
-                        h('span', { className: 'text-[9px] text-slate-400' }, 'Low')
+                        h('span', { className: 'text-[9px] text-slate-400' }, t('behavior_lens.low') || 'Low')
                     ),
                     h('div', { className: 'flex items-center gap-1' },
                         h('div', { className: 'w-3 h-3 rounded-sm', style: { background: '#fde047' } }),
-                        h('span', { className: 'text-[9px] text-slate-400' }, 'Med')
+                        h('span', { className: 'text-[9px] text-slate-400' }, t('behavior_lens.med') || 'Med')
                     ),
                     h('div', { className: 'flex items-center gap-1' },
                         h('div', { className: 'w-3 h-3 rounded-sm', style: { background: '#fb923c' } }),
-                        h('span', { className: 'text-[9px] text-slate-400' }, 'High')
+                        h('span', { className: 'text-[9px] text-slate-400' }, t('behavior_lens.high') || 'High')
                     ),
                     h('div', { className: 'flex items-center gap-1' },
                         h('div', { className: 'w-3 h-3 rounded-sm', style: { background: '#f87171' } }),
-                        h('span', { className: 'text-[9px] text-slate-400' }, 'High intensity')
+                        h('span', { className: 'text-[9px] text-slate-400' }, t('behavior_lens.high_intensity_label') || 'High intensity')
                     )
                 )
             ),
@@ -1442,7 +1442,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             if (totalCount === 0) return;
             onSaveSession({
                 id: uid(),
-                method: 'frequency',
+                method: t('behavior_lens.obs_method_frequency') || 'frequency',
                 timestamp: new Date().toISOString(),
                 duration: elapsed,
                 data: {
@@ -1609,7 +1609,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         const handleSave = () => {
             onSaveSession({
                 id: uid(),
-                method: 'interval',
+                method: t('behavior_lens.obs_method_interval') || 'interval',
                 timestamp: new Date().toISOString(),
                 duration: elapsed,
                 data: { mode, intervalSec, totalIntervals, grid: [...grid], occurredCount, completedCount, percentage: parseFloat(pct) }
@@ -1651,7 +1651,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 h('p', { className: 'text-xs text-slate-400 text-center' }, modeLabels[mode].desc),
                 h('div', { className: 'flex gap-4 items-center justify-center' },
                     h('div', null,
-                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, 'Interval (sec)'),
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, t('behavior_lens.interval_sec') || 'Interval (sec)'),
                         h('select', {
                             value: intervalSec,
                             onChange: (e) => setIntervalSec(Number(e.target.value)),
@@ -1659,7 +1659,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         }, [10, 15, 20, 30, 60].map(v => h('option', { key: v, value: v }, `${v}s`)))
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, 'Total Intervals'),
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, t('behavior_lens.total_intervals') || 'Total Intervals'),
                         h('select', {
                             value: totalIntervals,
                             onChange: (e) => setTotalIntervals(Number(e.target.value)),
@@ -2001,11 +2001,11 @@ Return ONLY valid JSON:
                 showThinning && h('div', { className: 'mt-2 p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-800 space-y-1' },
                     h('p', { className: 'font-bold' }, '📈 Schedule Thinning Steps:'),
                     h('ol', { className: 'list-decimal pl-4 space-y-0.5' },
-                        h('li', null, 'Start with dense reinforcement (e.g., FR-1 or FR-2)'),
-                        h('li', null, 'Once behavior is consistent (~80%), increase ratio by 1-2'),
-                        h('li', null, 'Move to variable schedule (VR) for more natural maintenance'),
-                        h('li', null, 'Gradually increase VR value (VR-3 → VR-5 → VR-8)'),
-                        h('li', null, 'Transition to intermittent/natural reinforcement')
+                        h('li', null, t('behavior_lens.reinforce_step_1') || 'Start with dense reinforcement (e.g., FR-1 or FR-2)'),
+                        h('li', null, t('behavior_lens.reinforce_step_2') || 'Once behavior is consistent (~80%), increase ratio by 1-2'),
+                        h('li', null, t('behavior_lens.reinforce_step_3') || 'Move to variable schedule (VR) for more natural maintenance'),
+                        h('li', null, t('behavior_lens.reinforce_step_4') || 'Gradually increase VR value (VR-3 → VR-5 → VR-8)'),
+                        h('li', null, t('behavior_lens.reinforce_step_5') || 'Transition to intermittent/natural reinforcement')
                     ),
                     h('p', { className: 'italic mt-1' }, '⚠️ If behavior breaks down, return to previous schedule density')
                 )
@@ -2068,7 +2068,7 @@ Return ONLY valid JSON:
             ),
             // Response counter + Reinforce button (for ratio/interval schedules)
             scheduleType !== 'token' && h('div', { className: `rounded-xl border-2 p-5 text-center transition-all ${reinforceNow ? 'border-amber-400 bg-amber-50 animate-pulse shadow-lg shadow-amber-200/50' : 'border-slate-200 bg-white'}` },
-                h('div', { className: 'text-xs font-bold text-slate-500 uppercase mb-1' }, 'Responses Recorded'),
+                h('div', { className: 'text-xs font-bold text-slate-500 uppercase mb-1' }, t('behavior_lens.responses_recorded') || 'Responses Recorded'),
                 h('div', { className: 'text-4xl font-black text-slate-800 mb-3' }, responseCount),
                 reinforceNow && h('div', { className: 'text-xl font-black text-amber-600 mb-3 animate-bounce' }, '🎉 REINFORCE NOW!'),
                 (scheduleType === 'FR' || scheduleType === 'VR') && nextReinforceAt && !reinforceNow &&
@@ -2289,7 +2289,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 h('h4', { className: 'text-sm font-black text-orange-800 mb-2' }, '🧠 Hotspot Analysis'),
                 h('p', { className: 'text-sm text-orange-700 mb-3' }, analysis.summary),
                 analysis.peakRoutines && analysis.peakRoutines.length > 0 && h('div', { className: 'mb-3' },
-                    h('div', { className: 'text-xs font-bold text-orange-600 uppercase mb-1' }, 'Peak Routines'),
+                    h('div', { className: 'text-xs font-bold text-orange-600 uppercase mb-1' }, t('behavior_lens.peak_routines') || 'Peak Routines'),
                     h('div', { className: 'flex flex-wrap gap-1' },
                         analysis.peakRoutines.map((r, i) => h('span', { key: i, className: 'px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-bold' }, r))
                     )
@@ -2369,9 +2369,9 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 if (filteredObs.length > 0) {
                     content += '\n\n' + ['Session Timestamp', 'Method', 'Duration (s)', 'Count/Rate', 'Notes'].join(',');
                     filteredObs.forEach(s => {
-                        const detail = s.method === 'frequency' ? `${s.data?.count || 0} (${s.data?.rate || 0}/min)` :
-                            s.method === 'interval' ? `${s.data?.occurredCount || 0}/${s.data?.totalIntervals || 0}` :
-                                s.method === 'duration' ? `${s.data?.totalDuration || 0}s total` : '';
+                        const detail = s.method === t('behavior_lens.obs_method_frequency') || 'frequency' ? `${s.data?.count || 0} (${s.data?.rate || 0}/min)` :
+                            s.method === t('behavior_lens.obs_method_interval') || 'interval' ? `${s.data?.occurredCount || 0}/${s.data?.totalIntervals || 0}` :
+                                s.method === t('behavior_lens.obs_method_duration') || 'duration' ? `${s.data?.totalDuration || 0}s total` : '';
                         content += '\n' + [
                             csvEscape(s.timestamp),
                             csvEscape(s.method),
@@ -2400,8 +2400,8 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 text += `\n\nOBSERVATION SESSIONS (${filteredObs.length})\n` + '─'.repeat(30) + '\n';
                 filteredObs.forEach((s, i) => {
                     text += `\n#${i + 1} — ${fmtDate(s.timestamp)} | ${s.method} | ${fmtDuration(s.duration)}\n`;
-                    if (s.method === 'frequency') text += `  Count: ${s.data?.count || 0} (${s.data?.rate || '?'}/min)\n`;
-                    if (s.method === 'interval') text += `  ${s.data?.occurredCount || 0}/${s.data?.totalIntervals || 0} intervals (${s.data?.percentage || 0}%)\n`;
+                    if (s.method === t('behavior_lens.obs_method_frequency') || 'frequency') text += `  Count: ${s.data?.count || 0} (${s.data?.rate || '?'}/min)\n`;
+                    if (s.method === t('behavior_lens.obs_method_interval') || 'interval') text += `  ${s.data?.occurredCount || 0}/${s.data?.totalIntervals || 0} intervals (${s.data?.percentage || 0}%)\n`;
                 });
                 if (aiAnalysis) {
                     text += '\n\nAI ANALYSIS\n' + '─'.repeat(30) + '\n';
@@ -2424,7 +2424,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 h('h3', { className: 'text-sm font-black text-slate-800' }, '📥 ' + (t('behavior_lens.export.title') || 'Export Data')),
                 // Format selector
                 h('div', null,
-                    h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, 'Format'),
+                    h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, t('behavior_lens.format') || 'Format'),
                     h('div', { className: 'flex gap-2' },
                         [['json', '📦 JSON'], ['csv', '📊 CSV'], ['text', '📝 Text']].map(([key, label]) =>
                             h('button', {
@@ -2444,7 +2444,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 ),
                 // Date range
                 h('div', null,
-                    h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, 'Date Range'),
+                    h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, t('behavior_lens.date_range') || 'Date Range'),
                     h('div', { className: 'flex gap-2' },
                         [['all', 'All Time'], ['month', 'Last 30 Days'], ['week', 'Last 7 Days']].map(([key, label]) =>
                             h('button', {
@@ -2931,7 +2931,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
                         progressGoalId === g.id && g.status === 'active' && h('div', { className: 'mt-3 p-3 bg-emerald-50/50 rounded-xl border border-emerald-200 space-y-2' },
                             h('div', { className: 'text-xs font-bold text-emerald-700 uppercase' }, '📊 Log Progress Point'),
                             h('div', { className: 'flex items-center gap-3' },
-                                h('label', { className: 'text-[10px] text-slate-500 font-bold' }, 'Score (1–5):'),
+                                h('label', { className: 'text-[10px] text-slate-500 font-bold' }, t('behavior_lens.score_1_5') || 'Score (1–5):'),
                                 h('div', { className: 'flex gap-1' },
                                     [1, 2, 3, 4, 5].map(s =>
                                         h('button', {
@@ -2945,7 +2945,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
                             h('input', {
                                 value: progressNotes,
                                 onChange: e => setProgressNotes(e.target.value),
-                                placeholder: 'Optional notes...',
+                                placeholder: t('behavior_lens.optional_notes') || 'Optional notes...',
                                 className: 'w-full text-xs p-2 border border-emerald-200 rounded-lg focus:border-emerald-400 outline-none'
                             }),
                             h('button', {
@@ -3096,7 +3096,7 @@ Generate a behavior contract and return ONLY valid JSON:
             ),
             // Status badge bar
             h('div', { className: 'flex items-center gap-2' },
-                h('span', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Status:'),
+                h('span', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, t('behavior_lens.status') || 'Status:'),
                 ['active', 'expired', 'renewed'].map(s => h('button', {
                     key: s, onClick: () => setStatus(s),
                     style: { fontSize: '10px', padding: '3px 10px', borderRadius: 20, fontWeight: 700, textTransform: 'uppercase', border: `1.5px solid ${statusColors[s].border}`, background: status === s ? statusColors[s].bg : 'transparent', color: status === s ? statusColors[s].text : '#94a3b8', cursor: 'pointer', transition: 'all .15s' }
@@ -3162,13 +3162,13 @@ Generate a behavior contract and return ONLY valid JSON:
     const EscalationCycle = ({ abcEntries, aiAnalysis, studentName, callGemini, t, addToast }) => {
         const lsKey = `bl_escalation_${studentName || '_'}`;
         const defaultPhases = [
-            { name: 'Calm', icon: '😌', color: '#22c55e', bg: '#f0fdf4', signs: 'Cooperative, on-task, following routines', response: 'Reinforce positive behavior, build rapport' },
-            { name: 'Triggers', icon: '⚡', color: '#eab308', bg: '#fefce8', signs: 'Subtle changes in body language, withdrawal', response: 'Remove/reduce trigger, redirect calmly' },
-            { name: 'Agitation', icon: '😤', color: '#f97316', bg: '#fff7ed', signs: 'Off-task, fidgeting, non-compliance begins', response: 'Offer choices, use proximity, check in privately' },
-            { name: 'Acceleration', icon: '🔥', color: '#ef4444', bg: '#fef2f2', signs: 'Increasing intensity, arguing, difficulty de-escalating', response: 'Avoid power struggles, state expectations calmly, clear the area if needed' },
-            { name: 'Peak', icon: '💥', color: '#dc2626', bg: '#fee2e2', signs: 'Highest intensity behavior, student is overwhelmed', response: 'Focus on safety, use crisis protocols, document' },
-            { name: 'De-escalation', icon: '🌊', color: '#3b82f6', bg: '#eff6ff', signs: 'Confusion, withdrawal, reduced intensity', response: 'Allow space, avoid debriefing too soon, quiet environment' },
-            { name: 'Recovery', icon: '🌱', color: '#06b6d4', bg: '#ecfeff', signs: 'Returning to baseline, may be subdued', response: 'Rebuild relationship, gentle re-engagement, debrief when ready' },
+            { name: t('behavior_lens.cycle_calm') || 'Calm', icon: '😌', color: '#22c55e', bg: '#f0fdf4', signs: 'Cooperative, on-task, following routines', response: 'Reinforce positive behavior, build rapport' },
+            { name: t('behavior_lens.cycle_triggers') || 'Triggers', icon: '⚡', color: '#eab308', bg: '#fefce8', signs: 'Subtle changes in body language, withdrawal', response: 'Remove/reduce trigger, redirect calmly' },
+            { name: t('behavior_lens.cycle_agitation') || 'Agitation', icon: '😤', color: '#f97316', bg: '#fff7ed', signs: 'Off-task, fidgeting, non-compliance begins', response: 'Offer choices, use proximity, check in privately' },
+            { name: t('behavior_lens.cycle_acceleration') || 'Acceleration', icon: '🔥', color: '#ef4444', bg: '#fef2f2', signs: 'Increasing intensity, arguing, difficulty de-escalating', response: 'Avoid power struggles, state expectations calmly, clear the area if needed' },
+            { name: t('behavior_lens.cycle_peak') || 'Peak', icon: '💥', color: '#dc2626', bg: '#fee2e2', signs: 'Highest intensity behavior, student is overwhelmed', response: 'Focus on safety, use crisis protocols, document' },
+            { name: t('behavior_lens.cycle_de_escalation') || 'De-escalation', icon: '🌊', color: '#3b82f6', bg: '#eff6ff', signs: 'Confusion, withdrawal, reduced intensity', response: 'Allow space, avoid debriefing too soon, quiet environment' },
+            { name: t('behavior_lens.cycle_recovery') || 'Recovery', icon: '🌱', color: '#06b6d4', bg: '#ecfeff', signs: 'Returning to baseline, may be subdued', response: 'Rebuild relationship, gentle re-engagement, debrief when ready' },
         ];
         const [selected, setSelected] = useState(null);
         const [personalizing, setPersonalizing] = useState(false);
@@ -3304,10 +3304,10 @@ Personalize each phase of the cycle and return ONLY valid JSON:
     // Phase 8: localStorage persistence, date-stamped snapshots, top-3 summary strip
     const ReinforcerAssessment = ({ studentName, aiAnalysis, callGemini, t, addToast }) => {
         const categories = {
-            social: { label: 'Social', icon: '👥', items: ['Verbal praise', 'High-five/fist bump', 'Lunch with teacher', 'Phone call home', 'Peer recognition', 'Leadership role'] },
-            activity: { label: 'Activity', icon: '🎮', items: ['Extra recess', 'Free choice time', 'Computer time', 'Read aloud to class', 'Helper role', 'Drawing time'] },
-            tangible: { label: 'Tangible', icon: '🎁', items: ['Stickers', 'Pencils/erasers', 'Bookmarks', 'Certificates', 'Class store credits', 'Special seating'] },
-            sensory: { label: 'Sensory', icon: '🌀', items: ['Fidget tool', 'Noise-canceling headphones', 'Movement break', 'Quiet corner', 'Weighted lap pad', 'Music listening'] },
+            social: { label: 'Social', icon: '👥', items: [t('behavior_lens.reinf_verbal_praise') || 'Verbal praise', 'High-five/fist bump', t('behavior_lens.reinf_lunch_with_teacher') || 'Lunch with teacher', 'Phone call home', 'Peer recognition', 'Leadership role'] },
+            activity: { label: 'Activity', icon: '🎮', items: [t('behavior_lens.reinf_extra_recess') || 'Extra recess', 'Free choice time', 'Computer time', 'Read aloud to class', 'Helper role', 'Drawing time'] },
+            tangible: { label: 'Tangible', icon: '🎁', items: [t('behavior_lens.reinf_stickers') || 'Stickers', 'Pencils/erasers', 'Bookmarks', 'Certificates', 'Class store credits', 'Special seating'] },
+            sensory: { label: 'Sensory', icon: '🌀', items: ['Fidget tool', t('behavior_lens.reinf_noise_canceling_headphones') || 'Noise-canceling headphones', 'Movement break', 'Quiet corner', t('behavior_lens.reinf_weighted_lap_pad') || 'Weighted lap pad', 'Music listening'] },
             edible: { label: 'Food/Drink', icon: '🍎', items: ['Healthy snack', 'Water bottle refill', 'Special lunch item', 'Gum/mints'] }
         };
 
@@ -3627,8 +3627,8 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                         h('button', { onClick: () => setMode('choice'), className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '🔲 Choices'),
                         h('button', { onClick: () => setEditing(true), className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '✏️ Edit')
                     ),
-                    h('span', { className: 'text-white/60 text-xs font-bold' }, 'First → Then'),
-                    h('button', { onClick: onClose, className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '✕ Close')
+                    h('span', { className: 'text-white/60 text-xs font-bold' }, t('behavior_lens.first_then') || 'First → Then'),
+                    h('button', { onClick: onClose, className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, t('behavior_lens.close') || '✕ Close')
                 ),
                 h('div', { className: 'flex-1 grid grid-cols-2 gap-6 p-6' },
                     // FIRST panel
@@ -3639,7 +3639,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                             : 'bg-gradient-to-br from-blue-400 to-indigo-600 hover:scale-[1.02] active:scale-95'
                             } `
                     },
-                        h('div', { className: 'text-xs font-black text-white/60 uppercase tracking-widest mb-2' }, 'FIRST'),
+                        h('div', { className: 'text-xs font-black text-white/60 uppercase tracking-widest mb-2' }, t('behavior_lens.first_label') || 'FIRST'),
                         h('span', { className: 'text-6xl md:text-8xl mb-4 drop-shadow-lg' }, firstItem.emoji),
                         h('span', { className: 'text-xl md:text-2xl font-black text-white drop-shadow-md text-center px-4' }, firstItem.label),
                         firstDone && h('div', { className: 'mt-4 text-white text-4xl animate-bounce' }, '✅')
@@ -3651,7 +3651,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                             : 'bg-gradient-to-br from-slate-600 to-slate-800 opacity-50 grayscale'
                             } `
                     },
-                        h('div', { className: 'text-xs font-black text-white/60 uppercase tracking-widest mb-2' }, 'THEN'),
+                        h('div', { className: 'text-xs font-black text-white/60 uppercase tracking-widest mb-2' }, t('behavior_lens.then_label') || 'THEN'),
                         h('span', { className: 'text-6xl md:text-8xl mb-4 drop-shadow-lg' }, thenItem.emoji),
                         h('span', { className: 'text-xl md:text-2xl font-black text-white drop-shadow-md text-center px-4' }, thenItem.label),
                         !firstDone && h('div', { className: 'mt-4 text-white/30 text-sm font-bold' }, '🔒 Complete "First" to unlock')
@@ -3675,7 +3675,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                     h('button', { onClick: () => setEditing(true), className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '✏️ Edit')
                 ),
                 h('span', { className: 'text-white/60 text-xs font-bold' }, studentName ? `For: ${studentName} ` : 'Choice Board'),
-                h('button', { onClick: onClose, className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '✕ Close')
+                h('button', { onClick: onClose, className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, t('behavior_lens.close') || '✕ Close')
             ),
             // Choices grid
             h('div', { className: `flex - 1 grid gap - 4 p - 6 ${choices.length <= 2 ? 'grid-cols-1' : choices.length <= 4 ? 'grid-cols-2' : 'grid-cols-3'} ` },
@@ -3780,7 +3780,7 @@ Provide improvement recommendations and return ONLY valid JSON:
             Object.keys(ratings).length > 0 && h('div', { className: 'rounded-xl border-2 p-5', style: { background: grade.bg, borderColor: grade.color } },
                 h('div', { className: 'flex items-center justify-between' },
                     h('div', null,
-                        h('div', { className: 'text-xs font-bold uppercase', style: { color: grade.color } }, 'Overall Score'),
+                        h('div', { className: 'text-xs font-bold uppercase', style: { color: grade.color } }, t('behavior_lens.overall_score') || 'Overall Score'),
                         h('div', { className: 'text-3xl font-black', style: { color: grade.color } }, `${total}/${maxScore}`)
                     ),
                     h('div', { className: 'text-right' },
@@ -3989,19 +3989,19 @@ Provide a brief impact interpretation and return ONLY valid JSON:
                 h('h3', { className: 'text-sm font-black text-slate-800' }, '⏱️ ' + (t('behavior_lens.impact.title') || 'Impact Analysis Calculator')),
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                     h('div', null,
-                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Incidents per day'),
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, t('behavior_lens.incidents_per_day') || 'Incidents per day'),
                         h('input', { type: 'number', value: frequency, onChange: (e) => setFrequency(e.target.value), placeholder: '3', className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm mt-0.5' })
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Avg duration (min)'),
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, t('behavior_lens.avg_duration_min') || 'Avg duration (min)'),
                         h('input', { type: 'number', value: avgDuration, onChange: (e) => setAvgDuration(e.target.value), placeholder: '5', className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm mt-0.5' })
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'School days/week'),
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, t('behavior_lens.school_days_week') || 'School days/week'),
                         h('input', { type: 'number', value: schoolDays, onChange: (e) => setSchoolDays(e.target.value), className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm mt-0.5' })
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Cost per pupil ($/yr)'),
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, t('behavior_lens.cost_per_pupil') || 'Cost per pupil ($/yr)'),
                         h('input', { type: 'number', value: costPerPupil, onChange: (e) => setCostPerPupil(e.target.value), className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm mt-0.5' })
                     )
                 )
@@ -4021,7 +4021,7 @@ Provide a brief impact interpretation and return ONLY valid JSON:
                     )
                 ),
                 h('div', { className: 'mt-4 p-3 bg-red-50 rounded-lg border border-red-200 text-center' },
-                    h('div', { className: 'text-[10px] font-bold text-red-600 uppercase' }, 'Estimated Annual Cost'),
+                    h('div', { className: 'text-[10px] font-bold text-red-600 uppercase' }, t('behavior_lens.estimated_annual_cost') || 'Estimated Annual Cost'),
                     h('div', { className: 'text-2xl font-black text-red-700' }, `$${annualCost.toFixed(2)}`)
                 )
             ),
@@ -4046,7 +4046,7 @@ Provide a brief impact interpretation and return ONLY valid JSON:
         const lsKey = `bl_crisis_${studentName || '_'}`;
         const tiers = [
             { key: 'prevention', label: 'Prevention', icon: '🛡️', color: '#22c55e', bg: '#f0fdf4' },
-            { key: 'deescalation', label: 'De-escalation', icon: '🌊', color: '#3b82f6', bg: '#eff6ff' },
+            { key: 'deescalation', label: t('behavior_lens.cycle_de_escalation') || 'De-escalation', icon: '🌊', color: '#3b82f6', bg: '#eff6ff' },
             { key: 'emergency', label: 'Emergency', icon: '🚨', color: '#ef4444', bg: '#fef2f2' },
         ];
         const emptyPlan = { prevention: { triggers: '', staffActions: '', communication: '' }, deescalation: { triggers: '', staffActions: '', communication: '' }, emergency: { triggers: '', staffActions: '', communication: '' } };
@@ -4300,7 +4300,7 @@ Create student-friendly language and return ONLY valid JSON:
     // ─── DataSheetGenerator ─────────────────────────────────────────────
     // Printable data collection sheets for frequency, duration, ABC, latency
     const DataSheetGenerator = ({ studentName, t, addToast, callGemini }) => {
-        const [method, setMethod] = useState('frequency');
+        const [method, setMethod] = useState(t('behavior_lens.obs_method_frequency') || 'frequency');
         const [intervals, setIntervals] = useState('6');
         const [dateRange, setDateRange] = useState('5');
         const [behaviorLabel, setBehaviorLabel] = useState('');
@@ -4328,7 +4328,7 @@ Return ONLY valid JSON:
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
                 catch { const m = result.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]); else throw new Error('Parse failed'); }
-                if (parsed.method && ['frequency', 'duration', 'abc', 'latency'].includes(parsed.method)) setMethod(parsed.method);
+                if (parsed.method && [t('behavior_lens.obs_method_frequency') || 'frequency', t('behavior_lens.obs_method_duration') || 'duration', 'abc', t('behavior_lens.obs_method_latency') || 'latency'].includes(parsed.method)) setMethod(parsed.method);
                 if (parsed.behaviorLabel) setBehaviorLabel(parsed.behaviorLabel);
                 if (parsed.intervals) setIntervals(String(Math.min(12, Math.max(2, parseInt(parsed.intervals) || 6))));
                 if (parsed.dateRange) setDateRange(String(Math.min(20, Math.max(1, parseInt(parsed.dateRange) || 5))));
@@ -4340,25 +4340,25 @@ Return ONLY valid JSON:
         };
 
         const methods = [
-            { id: 'frequency', label: 'Frequency Count', icon: '🔢' },
-            { id: 'duration', label: 'Duration Log', icon: '⏱️' },
+            { id: t('behavior_lens.obs_method_frequency') || 'frequency', label: 'Frequency Count', icon: '🔢' },
+            { id: t('behavior_lens.obs_method_duration') || 'duration', label: 'Duration Log', icon: '⏱️' },
             { id: 'abc', label: 'ABC Narrative', icon: '📋' },
-            { id: 'latency', label: 'Latency Recording', icon: '⏳' },
+            { id: t('behavior_lens.obs_method_latency') || 'latency', label: 'Latency Recording', icon: '⏳' },
         ];
 
         const numIntervals = parseInt(intervals) || 6;
         const numDays = parseInt(dateRange) || 5;
 
         const renderSheet = () => {
-            if (method === 'frequency') {
+            if (method === t('behavior_lens.obs_method_frequency') || 'frequency') {
                 return h('table', { className: 'w-full text-xs border-collapse print:text-[9px]' },
                     h('thead', null,
                         h('tr', { className: 'bg-slate-100' },
-                            h('th', { className: 'border border-slate-300 px-2 py-1.5 text-left' }, 'Date'),
+                            h('th', { className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
                             ...Array.from({ length: numIntervals }, (_, i) =>
                                 h('th', { key: i, className: 'border border-slate-300 px-2 py-1.5' }, `Period ${i + 1}`)
                             ),
-                            h('th', { className: 'border border-slate-300 px-2 py-1.5' }, 'Total')
+                            h('th', { className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.total') || 'Total')
                         )
                     ),
                     h('tbody', null,
@@ -4374,15 +4374,15 @@ Return ONLY valid JSON:
                     )
                 );
             }
-            if (method === 'duration') {
+            if (method === t('behavior_lens.obs_method_duration') || 'duration') {
                 return h('table', { className: 'w-full text-xs border-collapse print:text-[9px]' },
                     h('thead', null,
                         h('tr', { className: 'bg-slate-100' },
-                            h('th', { className: 'border border-slate-300 px-2 py-1.5 text-left' }, 'Date'),
-                            h('th', { className: 'border border-slate-300 px-2 py-1.5' }, 'Start Time'),
-                            h('th', { className: 'border border-slate-300 px-2 py-1.5' }, 'End Time'),
-                            h('th', { className: 'border border-slate-300 px-2 py-1.5' }, 'Duration'),
-                            h('th', { className: 'border border-slate-300 px-2 py-1.5 text-left' }, 'Notes')
+                            h('th', { className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
+                            h('th', { className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.start_time') || 'Start Time'),
+                            h('th', { className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.end_time') || 'End Time'),
+                            h('th', { className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.duration') || 'Duration'),
+                            h('th', { className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.notes') || 'Notes')
                         )
                     ),
                     h('tbody', null,
@@ -4403,9 +4403,9 @@ Return ONLY valid JSON:
                     Array.from({ length: numDays }, (_, d) =>
                         h('div', { key: d, className: 'border border-slate-300 rounded-lg p-3 print:break-inside-avoid' },
                             h('div', { className: 'flex gap-4 text-xs mb-2' },
-                                h('span', null, 'Date: ____________'),
-                                h('span', null, 'Time: ____________'),
-                                h('span', null, 'Observer: ____________')
+                                h('span', null, t('behavior_lens.date_blank') || 'Date: ____________'),
+                                h('span', null, t('behavior_lens.time_blank') || 'Time: ____________'),
+                                h('span', null, t('behavior_lens.observer_blank') || 'Observer: ____________')
                             ),
                             h('div', { className: 'grid grid-cols-3 gap-2' },
                                 ['Antecedent', 'Behavior', 'Consequence'].map(label =>
@@ -4423,11 +4423,11 @@ Return ONLY valid JSON:
             return h('table', { className: 'w-full text-xs border-collapse print:text-[9px]' },
                 h('thead', null,
                     h('tr', { className: 'bg-slate-100' },
-                        h('th', { className: 'border border-slate-300 px-2 py-1.5 text-left' }, 'Date'),
-                        h('th', { className: 'border border-slate-300 px-2 py-1.5' }, 'Cue Given'),
-                        h('th', { className: 'border border-slate-300 px-2 py-1.5' }, 'Response Start'),
-                        h('th', { className: 'border border-slate-300 px-2 py-1.5' }, 'Latency (sec)'),
-                        h('th', { className: 'border border-slate-300 px-2 py-1.5 text-left' }, 'Notes')
+                        h('th', { className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
+                        h('th', { className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.cue_given') || 'Cue Given'),
+                        h('th', { className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.response_start') || 'Response Start'),
+                        h('th', { className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.latency_sec') || 'Latency (sec)'),
+                        h('th', { className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.notes') || 'Notes')
                     )
                 ),
                 h('tbody', null,
@@ -4450,21 +4450,21 @@ Return ONLY valid JSON:
                 h('h3', { className: 'text-sm font-black text-slate-800' }, '📋 ' + (t('behavior_lens.datasheet.title') || 'Data Sheet Generator')),
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                     h('div', null,
-                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Collection Method'),
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, t('behavior_lens.collection_method') || 'Collection Method'),
                         h('select', { value: method, onChange: (e) => setMethod(e.target.value), className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm mt-0.5' },
                             methods.map(m => h('option', { key: m.id, value: m.id }, `${m.icon} ${m.label}`))
                         )
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Behavior Label'),
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, t('behavior_lens.behavior_label') || 'Behavior Label'),
                         h('input', { value: behaviorLabel, onChange: (e) => setBehaviorLabel(e.target.value), placeholder: 'e.g., Off-task behavior', className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm mt-0.5' })
                     ),
-                    method === 'frequency' && h('div', null,
-                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Periods per day'),
+                    method === t('behavior_lens.obs_method_frequency') || 'frequency' && h('div', null,
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, t('behavior_lens.periods_per_day') || 'Periods per day'),
                         h('input', { type: 'number', value: intervals, onChange: (e) => setIntervals(e.target.value), min: 2, max: 12, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm mt-0.5' })
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Rows / days'),
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, t('behavior_lens.rows_days') || 'Rows / days'),
                         h('input', { type: 'number', value: dateRange, onChange: (e) => setDateRange(e.target.value), min: 1, max: 20, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm mt-0.5' })
                     )
                 )
@@ -4774,7 +4774,7 @@ Generate a daily fidelity checklist (5-8 items) and return ONLY valid JSON:
                 ) : h('p', { className: 'text-xs text-slate-400 text-center py-6' }, 'Click "AI Generate Checklist" to create items based on the BIP'),
                 // Score
                 items.length > 0 && h('div', { className: 'mt-4 p-3 rounded-lg border text-center', style: { background: scoreBg(pct), borderColor: scoreBorder(pct) } },
-                    h('div', { className: 'text-xs font-bold uppercase', style: { color: scoreColor(pct) } }, 'Fidelity Score'),
+                    h('div', { className: 'text-xs font-bold uppercase', style: { color: scoreColor(pct) } }, t('behavior_lens.fidelity_score') || 'Fidelity Score'),
                     h('div', { className: 'text-2xl font-black', style: { color: scoreColor(pct) } }, `${checkedCount}/${totalItems} (${pct}%)`)
                 )
             )
@@ -4863,7 +4863,7 @@ Provide recommendations to improve feasibility. Return ONLY valid JSON:
             ),
             // Score
             Object.keys(ratings).length > 0 && h('div', { className: 'rounded-xl border-2 p-4 text-center', style: { background: verdict.bg, borderColor: verdict.color } },
-                h('div', { className: 'text-xs font-bold uppercase', style: { color: verdict.color } }, 'Contextual Fit'),
+                h('div', { className: 'text-xs font-bold uppercase', style: { color: verdict.color } }, t('behavior_lens.contextual_fit') || 'Contextual Fit'),
                 h('div', { className: 'text-3xl font-black', style: { color: verdict.color } }, `${total}/${maxScore}`),
                 h('div', { className: 'text-xs font-bold px-2 py-0.5 rounded-full text-white inline-block mt-1', style: { background: verdict.color } }, verdict.label)
             ),
@@ -4956,13 +4956,13 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                     h('p', { className: 'text-[10px] text-slate-500' }, `Student: ${studentName || '___'}`)
                 ),
                 goalText && h('div', { className: 'mb-3 p-2 bg-blue-50 rounded-lg' },
-                    h('div', { className: 'text-[10px] font-bold text-blue-600 uppercase' }, 'Goal'),
+                    h('div', { className: 'text-[10px] font-bold text-blue-600 uppercase' }, t('behavior_lens.goal') || 'Goal'),
                     h('p', { className: 'text-sm text-blue-700' }, goalText)
                 ),
                 h('table', { className: 'w-full text-xs border-collapse' },
                     h('thead', null,
                         h('tr', null,
-                            h('th', { className: 'border border-slate-300 px-3 py-2 text-left w-16' }, 'Score'),
+                            h('th', { className: 'border border-slate-300 px-3 py-2 text-left w-16' }, t('behavior_lens.score') || 'Score'),
                             h('th', { className: 'border border-slate-300 px-3 py-2 text-left w-40' }, 'Level'),
                             h('th', { className: 'border border-slate-300 px-3 py-2 text-left' }, 'Descriptor')
                         )
@@ -5187,13 +5187,13 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
         const homeContexts = [
             'Morning routine', 'Getting ready for school', 'Mealtime', 'Homework time',
             'Screen time transition', 'Playtime with siblings', 'Bedtime routine',
-            'Public outing', 'In the car', 'After school', 'Other'
+            t('behavior_lens.home_public_outing') || 'Public outing', t('behavior_lens.home_in_car') || 'In the car', t('behavior_lens.home_after_school') || 'After school', 'Other'
         ];
 
         const homeResponses = [
-            'Redirected calmly', 'Gave a break', 'Used a timer', 'Offered choices',
-            'Used first-then language', 'Ignored the behavior', 'Praised alternative behavior',
-            'Removed the item/activity', 'Used a visual schedule', 'Other'
+            t('behavior_lens.parent_redirected') || 'Redirected calmly', t('behavior_lens.parent_gave_break') || 'Gave a break', t('behavior_lens.parent_used_timer') || 'Used a timer', 'Offered choices',
+            t('behavior_lens.parent_first_then') || 'Used first-then language', t('behavior_lens.parent_ignored') || 'Ignored the behavior', 'Praised alternative behavior',
+            t('behavior_lens.parent_removed_item') || 'Removed the item/activity', t('behavior_lens.parent_visual_schedule') || 'Used a visual schedule', 'Other'
         ];
 
         const homeMoods = [
@@ -5323,7 +5323,7 @@ Provide a brief analysis (3-5 bullet points) covering:
             aiPatternResult && h('div', { className: 'bg-purple-50 rounded-xl border border-purple-200 p-4' },
                 h('div', { className: 'flex justify-between items-start mb-2' },
                     h('h4', { className: 'text-xs font-black text-purple-700 uppercase' }, '🧠 AI Pattern Analysis'),
-                    h('button', { onClick: () => setAiPatternResult(''), className: 'text-purple-400 hover:text-purple-600 text-xs' }, '✕ Close')
+                    h('button', { onClick: () => setAiPatternResult(''), className: 'text-purple-400 hover:text-purple-600 text-xs' }, t('behavior_lens.close') || '✕ Close')
                 ),
                 h('div', { className: 'text-xs text-purple-800 whitespace-pre-wrap leading-relaxed' }, aiPatternResult)
             ),
@@ -5709,9 +5709,9 @@ Respond only with the student's words:`;
                         h('label', { className: 'block text-xs font-bold text-slate-600 uppercase mb-2' }, '🌟 Self-Assessment: How effective was my counseling?'),
                         h('input', { type: 'range', min: 1, max: 5, value: selfRating, onChange: (e) => setSelfRating(parseInt(e.target.value)), className: 'w-full accent-teal-600' }),
                         h('div', { className: 'flex justify-between text-[10px] text-slate-400 mt-0.5' },
-                            h('span', null, 'Needs practice'),
-                            h('span', null, 'Getting there'),
-                            h('span', null, 'Feeling confident')
+                            h('span', null, t('behavior_lens.needs_practice') || 'Needs practice'),
+                            h('span', null, t('behavior_lens.getting_there') || 'Getting there'),
+                            h('span', null, t('behavior_lens.feeling_confident') || 'Feeling confident')
                         )
                     ),
                     h('div', null,
@@ -5811,7 +5811,7 @@ Respond only with the student's words:`;
                     h('button', {
                         onClick: handleEndSession,
                         className: 'text-[10px] text-red-400 hover:text-red-600 font-bold transition-all'
-                    }, 'End Session →')
+                    }, t('behavior_lens.end_session') || 'End Session →')
                 )
             )
         );
@@ -5945,7 +5945,7 @@ Keep language warm and age-appropriate.`;
             aiReflectionResult && h('div', { className: 'bg-violet-50 rounded-xl border border-violet-200 p-4' },
                 h('div', { className: 'flex justify-between items-start mb-2' },
                     h('h4', { className: 'text-xs font-black text-violet-700 uppercase' }, '🌟 My Reflection Patterns'),
-                    h('button', { onClick: () => setAiReflectionResult(''), className: 'text-violet-400 hover:text-violet-600 text-xs' }, '✕ Close')
+                    h('button', { onClick: () => setAiReflectionResult(''), className: 'text-violet-400 hover:text-violet-600 text-xs' }, t('behavior_lens.close') || '✕ Close')
                 ),
                 h('div', { className: 'text-xs text-violet-800 whitespace-pre-wrap leading-relaxed' }, aiReflectionResult)
             ),
@@ -6869,13 +6869,13 @@ Use professional, objective language. Do NOT use the student codename — use "t
                     { id: 'p5', timestamp: new Date(Date.now() - 8 * 86400000).toISOString(), behavior: 'Engaged cooperatively with math manipulatives', antecedent: 'Math lesson transitioned to hands-on activity', consequence: 'Teacher praised effort', setting: 'Math class, group work', intensity: 1, duration: '25 min', notes: 'Positive engagement' },
                     { id: 'p6', timestamp: new Date(Date.now() - 7 * 86400000).toISOString(), behavior: 'Threw pencil across room', antecedent: 'Asked to redo incorrect problems on worksheet', consequence: 'Removed from class for 5 minutes', setting: 'Math class', intensity: 5, duration: '3 min', notes: 'Escalation after redirect' },
                     { id: 'p7', timestamp: new Date(Date.now() - 5 * 86400000).toISOString(), behavior: 'Asked to work with partner instead of alone', antecedent: 'Independent reading assignment', consequence: 'Teacher allowed partner work', setting: 'ELA class', intensity: 1, duration: '2 min', notes: 'Appropriate request' },
-                    { id: 'p8', timestamp: new Date(Date.now() - 3 * 86400000).toISOString(), behavior: 'Shut down completely, would not respond to staff', antecedent: 'Substitute teacher gave unfamiliar assignment', consequence: 'Left alone, eventually rejoined after 15 min', setting: 'Science class', intensity: 4, duration: '15 min', notes: 'Change in routine' },
+                    { id: 'p8', timestamp: new Date(Date.now() - 3 * 86400000).toISOString(), behavior: 'Shut down completely, would not respond to staff', antecedent: 'Substitute teacher gave unfamiliar assignment', consequence: 'Left alone, eventually rejoined after 15 min', setting: 'Science class', intensity: 4, duration: '15 min', notes: t('behavior_lens.abc_ant_change_in_routine') || 'Change in routine' },
                     { id: 'p9', timestamp: new Date(Date.now() - 2 * 86400000).toISOString(), behavior: 'Completed modified worksheet with minimal prompting', antecedent: 'Teacher provided choice of 2 assignments', consequence: 'Earned 5 min free time', setting: 'Math class', intensity: 1, duration: '20 min', notes: 'Choice helped' },
                     { id: 'p10', timestamp: new Date(Date.now() - 1 * 86400000).toISOString(), behavior: 'Argued with teacher about assignment length', antecedent: 'Long reading passage assigned', consequence: 'Teacher broke into smaller chunks', setting: 'ELA class', intensity: 3, duration: '8 min', notes: '' },
                 ],
                 observations: [
-                    { method: 'frequency', timer: 1800, frequency: 6, notes: 'Math class independent work — 6 off-task behaviors in 30 min' },
-                    { method: 'interval', timer: 1200, frequency: 0, intervals: '++--+-+---+-', notes: 'Partial interval: on-task in 5/12 intervals during ELA' },
+                    { method: t('behavior_lens.obs_method_frequency') || 'frequency', timer: 1800, frequency: 6, notes: 'Math class independent work — 6 off-task behaviors in 30 min' },
+                    { method: t('behavior_lens.obs_method_interval') || 'interval', timer: 1200, frequency: 0, intervals: '++--+-+---+-', notes: 'Partial interval: on-task in 5/12 intervals during ELA' },
                 ]
             },
             {
@@ -6895,8 +6895,8 @@ Use professional, objective language. Do NOT use the student codename — use "t
                     { id: 'a9', timestamp: new Date(Date.now() - 1 * 86400000).toISOString(), behavior: 'Threw eraser at another student', antecedent: 'Peer ignored student\'s question', consequence: 'Sent to office, discussed with counselor', setting: 'Art class', intensity: 4, duration: '1 min', notes: 'Escalation' },
                 ],
                 observations: [
-                    { method: 'frequency', timer: 2400, frequency: 9, notes: 'Whole morning — 9 attention-seeking behaviors across 3 classes' },
-                    { method: 'frequency', timer: 1800, frequency: 2, notes: 'Afternoon with leadership role — only 2 minor incidents' },
+                    { method: t('behavior_lens.obs_method_frequency') || 'frequency', timer: 2400, frequency: 9, notes: 'Whole morning — 9 attention-seeking behaviors across 3 classes' },
+                    { method: t('behavior_lens.obs_method_frequency') || 'frequency', timer: 1800, frequency: 2, notes: 'Afternoon with leadership role — only 2 minor incidents' },
                 ]
             },
             {
@@ -6915,8 +6915,8 @@ Use professional, objective language. Do NOT use the student codename — use "t
                     { id: 's8', timestamp: new Date(Date.now() - 1 * 86400000).toISOString(), behavior: 'Hand-flapping increased significantly, knocked materials off desk', antecedent: 'Unexpected fire drill', consequence: 'Taken to calm corner with noise-canceling headphones', setting: 'Classroom after drill', intensity: 5, duration: '8 min', notes: 'Sensory overload from alarm' },
                 ],
                 observations: [
-                    { method: 'interval', timer: 1800, frequency: 0, intervals: '+-++-+++--+-', notes: '7/12 intervals with sensory behaviors during unstructured time' },
-                    { method: 'interval', timer: 1800, frequency: 0, intervals: '---+----+---', notes: '2/12 intervals with sensory behaviors AFTER movement break' },
+                    { method: t('behavior_lens.obs_method_interval') || 'interval', timer: 1800, frequency: 0, intervals: '+-++-+++--+-', notes: '7/12 intervals with sensory behaviors during unstructured time' },
+                    { method: t('behavior_lens.obs_method_interval') || 'interval', timer: 1800, frequency: 0, intervals: '---+----+---', notes: '2/12 intervals with sensory behaviors AFTER movement break' },
                 ]
             },
             {
@@ -6936,8 +6936,8 @@ Use professional, objective language. Do NOT use the student codename — use "t
                     { id: 't9', timestamp: new Date(Date.now() - 1 * 86400000).toISOString(), behavior: 'Took food from another student\'s tray', antecedent: 'Saw preferred snack on peer\'s tray', consequence: 'Restorative conversation, practiced asking', setting: 'Cafeteria', intensity: 3, duration: '1 min', notes: 'Impulsive — not aggressive' },
                 ],
                 observations: [
-                    { method: 'frequency', timer: 7200, frequency: 4, notes: 'Full morning — 4 tangible-access incidents (2 physical, 2 verbal)' },
-                    { method: 'frequency', timer: 7200, frequency: 1, notes: 'Full morning WITH token system — 1 minor incident' },
+                    { method: t('behavior_lens.obs_method_frequency') || 'frequency', timer: 7200, frequency: 4, notes: 'Full morning — 4 tangible-access incidents (2 physical, 2 verbal)' },
+                    { method: t('behavior_lens.obs_method_frequency') || 'frequency', timer: 7200, frequency: 1, notes: 'Full morning WITH token system — 1 minor incident' },
                 ]
             }
         ], []);
@@ -7421,7 +7421,7 @@ Keep it concise and encouraging. Use plain language.`;
             return grid;
         }, [abcEntries]);
         const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const timeLabels = ['Early AM', 'Morning', 'Afternoon', 'Late PM'];
+        const timeLabels = [t('behavior_lens.early_am') || 'Early AM', t('behavior_lens.morning_label') || 'Morning', t('behavior_lens.afternoon_label') || 'Afternoon', t('behavior_lens.late_pm') || 'Late PM'];
 
         const views = [
             { id: 'intensity', label: '📈 Intensity Trend' },
@@ -7432,7 +7432,7 @@ Keep it concise and encouraging. Use plain language.`;
         if (abcEntries.length === 0) {
             return h('div', { className: 'max-w-2xl mx-auto text-center py-12' },
                 h('div', { className: 'text-4xl mb-3' }, '📊'),
-                h('h2', { className: 'text-lg font-black text-slate-800 mb-2' }, 'Behavior Trend Dashboard'),
+                h('h2', { className: 'text-lg font-black text-slate-800 mb-2' }, t('behavior_lens.trend_dashboard') || 'Behavior Trend Dashboard'),
                 h('p', { className: 'text-sm text-slate-500' }, 'Add ABC entries to see visual trend data.')
             );
         }
@@ -7440,7 +7440,7 @@ Keep it concise and encouraging. Use plain language.`;
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '📊'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, 'Behavior Trend Dashboard'),
+                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.trend_dashboard') || 'Behavior Trend Dashboard'),
                 h('p', { className: 'text-xs text-slate-500 mt-1' }, `${abcEntries.length} entries visualized`)
             ),
             // View tabs
@@ -8952,10 +8952,10 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
         ];
 
         const sensoryStrategies = [
-            { category: '👀 Visual', items: ['Look out window', 'Count ceiling tiles', 'Watch a glitter jar', 'Draw/doodle freely', 'Find 3 calming colors'] },
-            { category: '👂 Auditory', items: ['Listen to calming music', 'Count sounds you hear', 'Hum a favorite tune', 'Whisper a mantra', 'Use noise-canceling headphones'] },
-            { category: '🤲 Tactile', items: ['Squeeze a stress ball', 'Hold something cold', 'Touch 5 different textures', 'Press palms together (10 sec)', 'Fidget tool'] },
-            { category: '🏃 Movement', items: ['Wall push-ups (10)', 'Chair stretches', 'Walk to water fountain', 'Tense and release muscles', 'Desk yoga pose'] },
+            { category: t('behavior_lens.coping_visual') || '👀 Visual', items: [t('behavior_lens.coping_look_out_window') || 'Look out window', t('behavior_lens.coping_count_ceiling_tiles') || 'Count ceiling tiles', t('behavior_lens.coping_watch_a_glitter_jar') || 'Watch a glitter jar', 'Draw/doodle freely', 'Find 3 calming colors'] },
+            { category: t('behavior_lens.coping_auditory') || '👂 Auditory', items: [t('behavior_lens.coping_listen_to_calming_music') || 'Listen to calming music', t('behavior_lens.coping_count_sounds_you_hear') || 'Count sounds you hear', 'Hum a favorite tune', 'Whisper a mantra', 'Use noise-canceling headphones'] },
+            { category: t('behavior_lens.coping_tactile') || '🤲 Tactile', items: [t('behavior_lens.coping_squeeze_a_stress_ball') || 'Squeeze a stress ball', t('behavior_lens.coping_hold_something_cold') || 'Hold something cold', 'Touch 5 different textures', 'Press palms together (10 sec)', 'Fidget tool'] },
+            { category: t('behavior_lens.coping_movement') || '🏃 Movement', items: [t('behavior_lens.coping_wall_push_ups_10_') || 'Wall push-ups (10)', t('behavior_lens.coping_chair_stretches') || 'Chair stretches', t('behavior_lens.coping_walk_to_water_fountain') || 'Walk to water fountain', 'Tense and release muscles', 'Desk yoga pose'] },
         ];
 
         const groundingSteps = [
@@ -9122,7 +9122,7 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
             { id: 'escape', label: '🚪 Escape/Avoidance', desc: 'Student wants to get away from something' },
             { id: 'attention', label: '👋 Attention', desc: 'Student wants attention from adults or peers' },
             { id: 'tangible', label: '🎁 Tangible/Access', desc: 'Student wants access to an item or activity' },
-            { id: 'sensory', label: '🌀 Sensory', desc: 'Behavior provides automatic sensory stimulation' },
+            { id: 'sensory', label: t('behavior_lens.reinforcer_sensory') || '🌀 Sensory', desc: 'Behavior provides automatic sensory stimulation' },
         ];
 
         const handleAdd = () => {
@@ -9274,27 +9274,27 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
         const categories = [
             {
                 id: 'social', icon: '👋', label: 'Social', color: 'blue',
-                items: ['Verbal praise', 'High five/fist bump', 'Positive note home', 'Lunch with teacher', 'Helper role', 'Peer recognition', 'Choice of seating buddy']
+                items: [t('behavior_lens.reinf_verbal_praise') || 'Verbal praise', t('behavior_lens.reinf_high_five_fist_bump') || 'High five/fist bump', t('behavior_lens.reinf_positive_note_home') || 'Positive note home', t('behavior_lens.reinf_lunch_with_teacher') || 'Lunch with teacher', 'Helper role', 'Peer recognition', 'Choice of seating buddy']
             },
             {
                 id: 'activity', icon: '🎮', label: 'Activity', color: 'green',
-                items: ['Extra recess', 'Free drawing time', 'Computer/tablet time', 'Choose class activity', 'Read aloud to class', 'Lead a game', 'Show and tell']
+                items: [t('behavior_lens.reinf_extra_recess') || 'Extra recess', t('behavior_lens.reinf_free_drawing_time') || 'Free drawing time', t('behavior_lens.reinf_computer_tablet_time') || 'Computer/tablet time', 'Choose class activity', 'Read aloud to class', 'Lead a game', 'Show and tell']
             },
             {
                 id: 'tangible', icon: '🎁', label: 'Tangible', color: 'purple',
-                items: ['Stickers', 'Treasure box pick', 'Special pencil/eraser', 'Bookmarks', 'Class currency/points', 'Certificate/award', 'Choose a book']
+                items: [t('behavior_lens.reinf_stickers') || 'Stickers', t('behavior_lens.reinf_treasure_box_pick') || 'Treasure box pick', 'Special pencil/eraser', 'Bookmarks', 'Class currency/points', 'Certificate/award', 'Choose a book']
             },
             {
                 id: 'sensory', icon: '🌀', label: 'Sensory', color: 'teal',
-                items: ['Fidget tools', 'Standing desk time', 'Noise-canceling headphones', 'Weighted lap pad', 'Movement break', 'Music during work', 'Dim lighting option']
+                items: [t('behavior_lens.reinf_fidget_tools') || 'Fidget tools', t('behavior_lens.reinf_standing_desk_time') || 'Standing desk time', t('behavior_lens.reinf_noise_canceling_headphones') || 'Noise-canceling headphones', t('behavior_lens.reinf_weighted_lap_pad') || 'Weighted lap pad', 'Movement break', 'Music during work', 'Dim lighting option']
             },
             {
                 id: 'escape', icon: '🚪', label: 'Breaks/Escape', color: 'amber',
-                items: ['Break pass', 'Quiet corner time', 'Walk in hallway', 'Skip one problem', 'Reduced assignment', 'Cool-down space', 'End task early']
+                items: [t('behavior_lens.reinf_break_pass') || 'Break pass', t('behavior_lens.reinf_quiet_corner_time') || 'Quiet corner time', t('behavior_lens.reinf_walk_in_hallway') || 'Walk in hallway', 'Skip one problem', 'Reduced assignment', 'Cool-down space', 'End task early']
             },
             {
                 id: 'academic', icon: '📚', label: 'Academic', color: 'indigo',
-                items: ['Choose topic to study', 'Teach a mini-lesson', 'Use whiteboards', 'Partner work', 'Presentation to class', 'Research project choice', 'Read favorite genre']
+                items: [t('behavior_lens.reinf_choose_topic_to_study') || 'Choose topic to study', t('behavior_lens.reinf_teach_a_mini_lesson') || 'Teach a mini-lesson', t('behavior_lens.reinf_use_whiteboards') || 'Use whiteboards', t('behavior_lens.reinf_partner_work') || 'Partner work', 'Presentation to class', 'Research project choice', 'Read favorite genre']
             }
         ];
 
@@ -9701,7 +9701,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
             // Header
             h('div', { className: 'flex items-center justify-between' },
                 h('h3', { className: 'text-lg font-black text-slate-800 flex items-center gap-2' },
-                    '📝 ', 'Session Notes',
+                    '📝 ', t('behavior_lens.session_notes') || 'Session Notes',
                     (notes || []).length > 0 && h('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200' },
                         `${(notes || []).length} notes`
                     )
@@ -9994,7 +9994,7 @@ Respond helpfully and concisely as AlloBot:`;
                     { title: 'What is a BIP?', content: 'A Behavior Intervention Plan (BIP) is the action plan built from FBA findings. It includes prevention strategies, replacement behaviors, teaching strategies, and how the team will respond to both appropriate and inappropriate behaviors.' },
                     { title: 'How BehaviorLens Helps', content: 'BehaviorLens provides 40+ interconnected tools that guide you through the entire FBA-BIP process: collecting data, analyzing patterns, building plans, and monitoring progress — all with AI-powered assistance.' },
                 ],
-                quiz: { q: 'What is the primary purpose of an FBA?', options: ['To punish students', 'To identify WHY a behavior occurs', 'To diagnose disabilities', 'To rank student performance'], answer: 1 }
+                quiz: { q: t('behavior_lens.quiz_fba_purpose') || 'What is the primary purpose of an FBA?', options: [t('behavior_lens.quiz_opt_punish') || 'To punish students', t('behavior_lens.quiz_opt_identify_why') || 'To identify WHY a behavior occurs', 'To diagnose disabilities', 'To rank student performance'], answer: 1 }
             },
             abc101: {
                 sections: [
@@ -10312,7 +10312,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
             ),
             viewMode === 'dashboard' && h('div', { className: 'space-y-3' },
                 h('div', { className: 'grid grid-cols-3 gap-3' },
-                    [['📋', 'ABC Entries', dataStats.totalABC], ['🔍', 'Observations', dataStats.totalObs], ['📅', 'Date Range', dataStats.dateRange ? `${dataStats.dateRange.first?.slice(0, 10) || '?'} → ${dataStats.dateRange.last?.slice(0, 10) || '?'}` : 'N/A']].map(([icon, label, val]) =>
+                    [['📋', 'ABC Entries', dataStats.totalABC], ['🔍', 'Observations', dataStats.totalObs], ['📅', t('behavior_lens.date_range') || 'Date Range', dataStats.dateRange ? `${dataStats.dateRange.first?.slice(0, 10) || '?'} → ${dataStats.dateRange.last?.slice(0, 10) || '?'}` : 'N/A']].map(([icon, label, val]) =>
                         h('div', { key: label, className: 'bg-white rounded-xl border border-slate-200 p-3 text-center shadow-sm' },
                             h('span', { className: 'text-lg' }, icon),
                             h('div', { className: 'text-lg font-black text-slate-800' }, val),
@@ -10370,7 +10370,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
         const QUESTIONS = [
             { q: 'What does the "B" in ABC data stand for?', opts: ['Baseline', 'Behavior', 'Bias', 'Boundary'], answer: 1 },
             { q: 'Which is NOT one of the 4 functions of behavior?', opts: ['Escape', 'Attention', 'Defiance', 'Sensory'], answer: 2 },
-            { q: 'What is a replacement behavior?', opts: ['Any behavior that stops the problem', 'A socially appropriate behavior serving the SAME function', 'Ignoring the student', 'A consequence for misbehavior'], answer: 1 },
+            { q: t('behavior_lens.quiz_replacement') || 'What is a replacement behavior?', opts: [t('behavior_lens.quiz_opt_any_stops') || 'Any behavior that stops the problem', 'A socially appropriate behavior serving the SAME function', 'Ignoring the student', 'A consequence for misbehavior'], answer: 1 },
             { q: 'What is an extinction burst?', opts: ['When the behavior disappears immediately', 'A temporary INCREASE in behavior when reinforcement is withheld', 'A type of punishment', 'When the student gives up'], answer: 1 },
             { q: 'In a DRO schedule, reinforcement is delivered when:', opts: ['Every 5th response', 'The target behavior has NOT occurred for a set time', 'The student asks for it', 'A random interval passes'], answer: 1 },
             { q: 'What does FBA stand for?', opts: ['Functional Behavior Assessment', 'First Behavior Attempt', 'Future Behavior Analysis', 'Fixed Behavior Approach'], answer: 0 },
@@ -10446,7 +10446,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
     // ─── SessionDataTracker ─────────────────────────────────────────────
     // Standalone session-based behavioral data collection
     const SessionDataTracker = ({ abcEntries, t, addToast, onSaveSession }) => {
-        const [targets, setTargets] = useState([{ id: 'b1', name: '', type: 'frequency', count: 0, durations: [] }]);
+        const [targets, setTargets] = useState([{ id: 'b1', name: '', type: t('behavior_lens.obs_method_frequency') || 'frequency', count: 0, durations: [] }]);
         const [sessionActive, setSessionActive] = useState(false);
         const [sessionStart, setSessionStart] = useState(null);
         const [elapsed, setElapsed] = useState(0);
@@ -10455,11 +10455,11 @@ Format as a professional report with clear sections. Keep under 300 words.`);
         const [durationTimers, setDurationTimers] = useState({});
 
         const DATA_TYPES = [
-            { id: 'frequency', label: 'Frequency Count', icon: '🔢', unit: 'count' },
+            { id: t('behavior_lens.obs_method_frequency') || 'frequency', label: 'Frequency Count', icon: '🔢', unit: 'count' },
             { id: 'rate', label: 'Rate (per min)', icon: '⚡', unit: '/min' },
-            { id: 'duration', label: 'Duration (sec)', icon: '⏱️', unit: 'sec' },
+            { id: t('behavior_lens.obs_method_duration') || 'duration', label: 'Duration (sec)', icon: '⏱️', unit: 'sec' },
             { id: 'percentage', label: 'Percentage', icon: '📊', unit: '%' },
-            { id: 'interval', label: 'Interval (Y/N)', icon: '📋', unit: 'intervals' },
+            { id: t('behavior_lens.obs_method_interval') || 'interval', label: 'Interval (Y/N)', icon: '📋', unit: 'intervals' },
         ];
 
         // Elapsed timer
@@ -10481,7 +10481,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
 
         const addTarget = () => {
             if (targets.length >= 5) { if (addToast) addToast('Max 5 target behaviors', 'warning'); return; }
-            setTargets(prev => [...prev, { id: 'b' + (prev.length + 1), name: '', type: 'frequency', count: 0, durations: [], intervals: [] }]);
+            setTargets(prev => [...prev, { id: 'b' + (prev.length + 1), name: '', type: t('behavior_lens.obs_method_frequency') || 'frequency', count: 0, durations: [], intervals: [] }]);
         };
 
         const removeTarget = (id) => setTargets(prev => prev.filter(t => t.id !== id));
@@ -10555,7 +10555,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                                 h('div', { key: i, className: 'flex items-center justify-between text-xs bg-slate-50 rounded-lg px-3 py-1.5' },
                                     h('span', { className: 'font-medium text-slate-700' }, t.name || 'Unnamed'),
                                     h('div', { className: 'flex gap-3' },
-                                        h('span', { className: 'text-indigo-600 font-bold' }, `${t.count} ${t.type === 'frequency' ? 'ct' : t.type === 'duration' ? 'ep' : ''}`),
+                                        h('span', { className: 'text-indigo-600 font-bold' }, `${t.count} ${t.type === t('behavior_lens.obs_method_frequency') || 'frequency' ? 'ct' : t.type === t('behavior_lens.obs_method_duration') || 'duration' ? 'ep' : ''}`),
                                         t.rate > 0 && h('span', { className: 'text-purple-600 font-bold' }, `${t.rate}/min`),
                                         t.durations?.length > 0 && h('span', { className: 'text-emerald-600 font-bold' }, `avg ${Math.round(t.durations.reduce((a, b) => a + b, 0) / t.durations.length)}s`),
                                         t.intervals?.length > 0 && h('span', { className: 'text-amber-600 font-bold' }, `${Math.round(t.intervals.filter(Boolean).length / t.intervals.length * 100)}%`)
@@ -10590,7 +10590,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                                 onClick: () => {
                                     const empty = targets.find(t => !t.name.trim());
                                     if (empty) updateTarget(empty.id, 'name', b);
-                                    else if (targets.length < 5) setTargets(prev => [...prev, { id: 'b' + (prev.length + 1), name: b, type: 'frequency', count: 0, durations: [], intervals: [] }]);
+                                    else if (targets.length < 5) setTargets(prev => [...prev, { id: 'b' + (prev.length + 1), name: b, type: t('behavior_lens.obs_method_frequency') || 'frequency', count: 0, durations: [], intervals: [] }]);
                                 },
                                 className: 'text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200 font-medium hover:bg-emerald-100'
                             }, b)
@@ -10631,14 +10631,14 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                                 h('h4', { className: 'text-sm font-bold text-slate-800' }, tgt.name),
                                 h('span', { className: 'text-xs text-slate-400 font-medium' }, DATA_TYPES.find(d => d.id === tgt.type)?.label)
                             ),
-                            tgt.type === 'frequency' || tgt.type === 'rate' ? h('div', { className: 'flex items-center gap-4' },
+                            tgt.type === t('behavior_lens.obs_method_frequency') || 'frequency' || tgt.type === 'rate' ? h('div', { className: 'flex items-center gap-4' },
                                 h('button', { onClick: () => recordCount(tgt.id), className: 'w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-3xl font-black shadow-lg hover:scale-105 active:scale-95 transition-transform' }, tgt.count),
                                 h('div', null,
                                     h('p', { className: 'text-xs text-slate-500' }, `Count: ${tgt.count}`),
                                     elapsed > 0 && h('p', { className: 'text-xs text-purple-600 font-bold' }, `Rate: ${(tgt.count / (elapsed / 60)).toFixed(1)}/min`)
                                 )
                             ) :
-                                tgt.type === 'duration' ? h('div', { className: 'flex items-center gap-4' },
+                                tgt.type === t('behavior_lens.obs_method_duration') || 'duration' ? h('div', { className: 'flex items-center gap-4' },
                                     h('button', {
                                         onClick: () => toggleDuration(tgt.id),
                                         className: `w-20 h-20 rounded-2xl text-white text-lg font-black shadow-lg hover:scale-105 active:scale-95 transition-transform ${isDurationActive ? 'bg-gradient-to-br from-red-500 to-orange-600 animate-pulse' : 'bg-gradient-to-br from-amber-500 to-orange-600'}`
@@ -10649,7 +10649,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                                         isDurationActive && h('p', { className: 'text-xs text-red-600 font-bold animate-pulse' }, 'Recording...')
                                     )
                                 ) :
-                                    tgt.type === 'interval' ? h('div', { className: 'space-y-2' },
+                                    tgt.type === t('behavior_lens.obs_method_interval') || 'interval' ? h('div', { className: 'space-y-2' },
                                         h('div', { className: 'flex gap-2' },
                                             h('button', { onClick: () => recordInterval(tgt.id, true), className: 'flex-1 py-3 bg-green-100 text-green-700 rounded-xl font-bold text-sm hover:bg-green-200' }, '✓ Occurred'),
                                             h('button', { onClick: () => recordInterval(tgt.id, false), className: 'flex-1 py-3 bg-red-100 text-red-700 rounded-xl font-bold text-sm hover:bg-red-200' }, '✗ Did Not'),
@@ -10701,7 +10701,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                 return {
                     session: i + 1,
                     date: s.date,
-                    value: target ? (target.type === 'rate' ? target.rate : target.type === 'duration' && target.durations?.length ? target.durations.reduce((a, b) => a + b, 0) / target.durations.length : target.type === 'interval' && target.intervals?.length ? Math.round(target.intervals.filter(Boolean).length / target.intervals.length * 100) : target.count) : null,
+                    value: target ? (target.type === 'rate' ? target.rate : target.type === t('behavior_lens.obs_method_duration') || 'duration' && target.durations?.length ? target.durations.reduce((a, b) => a + b, 0) / target.durations.length : target.type === t('behavior_lens.obs_method_interval') || 'interval' && target.intervals?.length ? Math.round(target.intervals.filter(Boolean).length / target.intervals.length * 100) : target.count) : null,
                 };
             }).filter(d => d.value !== null);
         }, [sessionHistory, behaviorNames, selectedBehavior]);
@@ -11348,7 +11348,7 @@ Keep under 250 words. Use clear sections.`);
         const METHODS = [
             { id: 'pointbypoint', name: 'Point-by-Point', desc: 'Compare each data point between observers', formula: 'Agreements / (Agreements + Disagreements) × 100' },
             { id: 'totalcount', name: 'Total Count', desc: 'Compare total counts between observers', formula: 'Smaller Count / Larger Count × 100' },
-            { id: 'interval', name: 'Interval-by-Interval', desc: 'Compare each interval (occurrence/non-occurrence)', formula: 'Intervals Agreed / Total Intervals × 100' },
+            { id: t('behavior_lens.obs_method_interval') || 'interval', name: 'Interval-by-Interval', desc: 'Compare each interval (occurrence/non-occurrence)', formula: 'Intervals Agreed / Total Intervals × 100' },
             { id: 'scored', name: 'Scored Interval', desc: 'Only intervals where at least one observer scored occurrence', formula: 'Both Scored / (Both + Only One Scored) × 100' },
             { id: 'unscored', name: 'Unscored Interval', desc: 'Only intervals where at least one observer scored non-occurrence', formula: 'Both Unscored / (Both + Only One Unscored) × 100' },
             { id: 'exact', name: 'Exact Count per Interval', desc: 'Compare exact counts within each interval', formula: 'Smaller / Larger per interval, averaged' },
@@ -11381,7 +11381,7 @@ Keep under 250 words. Use clear sections.`);
                 }
                 ioa = len === 0 ? 0 : (agreements / len) * 100;
                 details = `${agreements} agreements, ${disagreements} disagreements out of ${len} points`;
-            } else if (method === 'interval') {
+            } else if (method === t('behavior_lens.obs_method_interval') || 'interval') {
                 for (let i = 0; i < numIntervals; i++) {
                     if (intervals1[i] === intervals2[i]) agreements++; else disagreements++;
                 }
@@ -11418,7 +11418,7 @@ Keep under 250 words. Use clear sections.`);
             setHistory(prev => [r, ...prev].slice(0, 20));
         };
 
-        const isIntervalMethod = ['interval', 'scored', 'unscored'].includes(method);
+        const isIntervalMethod = [t('behavior_lens.obs_method_interval') || 'interval', 'scored', 'unscored'].includes(method);
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
@@ -11480,10 +11480,10 @@ Keep under 250 words. Use clear sections.`);
                 !result.acceptable && h('div', { className: 'mt-3 bg-red-100 rounded-lg p-3 border border-red-200' },
                     h('h4', { className: 'text-[10px] font-bold text-red-800 mb-1' }, '📋 Recommended Actions'),
                     h('ul', { className: 'text-[10px] text-red-700 space-y-0.5 list-disc pl-4' },
-                        h('li', null, 'Review operational definitions with both observers'),
-                        h('li', null, 'Conduct practice sessions with feedback'),
-                        h('li', null, 'Use video examples for calibration'),
-                        h('li', null, 'Re-collect IOA data before using session data')
+                        h('li', null, t('behavior_lens.ioa_tip_1') || 'Review operational definitions with both observers'),
+                        h('li', null, t('behavior_lens.ioa_tip_2') || 'Conduct practice sessions with feedback'),
+                        h('li', null, t('behavior_lens.ioa_tip_3') || 'Use video examples for calibration'),
+                        h('li', null, t('behavior_lens.ioa_tip_4') || 'Re-collect IOA data before using session data')
                     )
                 )
             ),
@@ -12663,10 +12663,10 @@ Keep under 250 words. Use clear sections.`);
                 avgIntegrity < 80 && h('div', { className: 'mt-3 bg-amber-50 rounded-lg p-3 border border-amber-200' },
                     h('p', { className: 'text-[10px] font-bold text-amber-800 mb-1' }, '⚠️ Below 80% Threshold'),
                     h('ul', { className: 'text-[10px] text-amber-700 space-y-0.5 list-disc pl-4' },
-                        h('li', null, 'Review implementation procedures with staff'),
-                        h('li', null, 'Provide additional BST (Behavioral Skills Training)'),
-                        h('li', null, 'Simplify procedures if too complex'),
-                        h('li', null, 'Consider environmental barriers to implementation')
+                        h('li', null, t('behavior_lens.fidelity_tip_1') || 'Review implementation procedures with staff'),
+                        h('li', null, t('behavior_lens.fidelity_tip_2') || 'Provide additional BST (Behavioral Skills Training)'),
+                        h('li', null, t('behavior_lens.fidelity_tip_3') || 'Simplify procedures if too complex'),
+                        h('li', null, t('behavior_lens.fidelity_tip_4') || 'Consider environmental barriers to implementation')
                     )
                 )
             )
@@ -12864,13 +12864,13 @@ Keep under 250 words. Use clear sections.`);
 
                 h('ul', { className: 'text-xs text-amber-600 space-y-1 list-disc list-inside' },
 
-                    h('li', null, 'Include what happened before, during, and after the behavior'),
+                    h('li', null, t('behavior_lens.record_tip_1') || 'Include what happened before, during, and after the behavior'),
 
-                    h('li', null, 'Mention the setting/location when possible'),
+                    h('li', null, t('behavior_lens.record_tip_2') || 'Mention the setting/location when possible'),
 
-                    h('li', null, 'You can paste multiple incidents'),
+                    h('li', null, t('behavior_lens.record_tip_3') || 'You can paste multiple incidents'),
 
-                    h('li', null, 'Use specific, observable descriptions')
+                    h('li', null, t('behavior_lens.record_tip_4') || 'Use specific, observable descriptions')
 
                 )
 
@@ -14114,14 +14114,14 @@ Analyze this data and return ONLY valid JSON:
                     badge: (abcEntries.length + observationSessions.length) > 0 ? `${abcEntries.length + observationSessions.length} records` : null,
                 },
                 {
-                    id: 'frequency',
+                    id: t('behavior_lens.obs_method_frequency') || 'frequency',
                     icon: '🔢',
                     title: t('behavior_lens.hub.freq_title') || 'Frequency Counter',
                     desc: t('behavior_lens.hub.freq_desc') || 'Quick-click tap counter for rapid in-class behavior tallying',
                     color: 'amber',
                 },
                 {
-                    id: 'interval',
+                    id: t('behavior_lens.obs_method_interval') || 'interval',
                     icon: '⏱️',
                     title: t('behavior_lens.hub.interval_title') || 'Interval Recording',
                     desc: t('behavior_lens.hub.interval_desc') || 'Visual grid with partial, whole, and momentary recording modes',
@@ -14593,7 +14593,7 @@ Analyze this data and return ONLY valid JSON:
                     color: 'orange',
                 },
                 {
-                    id: 'latency',
+                    id: t('behavior_lens.obs_method_latency') || 'latency',
                     icon: '⏱️',
                     title: 'Latency Recorder',
                     desc: 'Stimulus-to-response time measurement with mean, median, and range statistics',
@@ -14882,8 +14882,8 @@ Analyze this data and return ONLY valid JSON:
                     const handleToolOpen = (toolId) => {
                         if (toolId === 'observation') setShowLiveObs(true);
                         else if (toolId === 'analysis') handleAiAnalyze();
-                        else if (toolId === 'frequency') setShowFreqCounter(true);
-                        else if (toolId === 'interval') setShowIntervalGrid(true);
+                        else if (toolId === t('behavior_lens.obs_method_frequency') || 'frequency') setShowFreqCounter(true);
+                        else if (toolId === t('behavior_lens.obs_method_interval') || 'interval') setShowIntervalGrid(true);
                         else if (toolId === 'choice') setShowChoiceBoard(true);
                         else openPanel(toolId);
                     };
@@ -15141,9 +15141,9 @@ Analyze this data and return ONLY valid JSON:
                                     h('span', { className: 'text-slate-400 ml-2' }, session.method)
                                 ),
                                 h('div', { className: 'text-slate-500' },
-                                    session.method === 'frequency' ? `${session.data?.count || 0} occurrences` :
-                                        session.method === 'duration' ? `${session.data?.durations?.length || 0} episodes` :
-                                            session.method === 'interval' ? `${session.data?.occurredCount || 0}/${session.data?.totalIntervals || 0} intervals` :
+                                    session.method === t('behavior_lens.obs_method_frequency') || 'frequency' ? `${session.data?.count || 0} occurrences` :
+                                        session.method === t('behavior_lens.obs_method_duration') || 'duration' ? `${session.data?.durations?.length || 0} episodes` :
+                                            session.method === t('behavior_lens.obs_method_interval') || 'interval' ? `${session.data?.occurredCount || 0}/${session.data?.totalIntervals || 0} intervals` :
                                                 session.data?.latencyMs ? `${(session.data.latencyMs / 1000).toFixed(1)}s latency` : '',
                                     ` — ${fmtDuration(session.duration)}`
                                 )
@@ -15688,7 +15688,7 @@ Analyze this data and return ONLY valid JSON:
                 activePanel === 'dtt' && h(DTTDataSheet, { studentName: selectedStudent, t, addToast }),
                 activePanel === 'prefassess' && h(PreferenceAssessment, { studentName: selectedStudent, t, addToast }),
                 activePanel === 'scatterplot' && h(ScatterplotAnalysis, { abcEntries, t, addToast }),
-                activePanel === 'latency' && h(LatencyRecorder, { t, addToast }),
+                activePanel === t('behavior_lens.obs_method_latency') || 'latency' && h(LatencyRecorder, { t, addToast }),
                 activePanel === 'socialvalidity' && h(SocialValidityMeasures, { studentName: selectedStudent, callGemini: callGeminiWithContext, t, addToast }),
                 activePanel === 'maintenance' && h(MaintenanceTracker, { studentName: selectedStudent, t, addToast }),
                 activePanel === 'cumrecord' && h(CumulativeRecord, { sessionHistory, t, addToast }),
