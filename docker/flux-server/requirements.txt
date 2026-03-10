@@ -1,0 +1,10 @@
+torch
+diffusers>=0.30.0
+transformers
+accelerate
+safetensors
+sentencepiece
+protobuf
+fastapi
+uvicorn[standard]
+Pillow

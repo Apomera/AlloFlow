@@ -1,0 +1,100 @@
+# ══════════════════════════════════════════════════════════════════
+#  AlloFlow Local AI Stack — Docker Compose
+#  
+#  The complete "School Box" AI backend:
+#    Ollama (LLM)       → port 11434  (text generation)
+#    Flux (Image Gen)   → port 7860   (text-to-image + image editing)
+#    Piper (TTS)        → port 5500   (text-to-speech, offline)
+#    SearXNG (Search)   → port 8888   (web search for grounding)
+#
+#  Usage:
+#    docker compose up -d          # Start all services
+#    docker compose up flux        # Start just Flux
+#    docker compose logs -f flux   # Watch Flux logs
+#
+#  GPU Support:
+#    Flux requires NVIDIA GPU with ≥8GB VRAM for schnell model.
+#    Set FLUX_MODEL to a smaller model if VRAM is limited.
+# ══════════════════════════════════════════════════════════════════
+
+version: "3.8"
+
+services:
+  # ── LLM Backend ─────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: alloflow-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  # ── Image Generation (Flux.1-schnell) ──────────────────────
+  flux:
+    build:
+      context: ./flux-server
+      dockerfile: Dockerfile
+    container_name: alloflow-flux
+    ports:
+      - "7860:7860"
+    environment:
+      - FLUX_MODEL=black-forest-labs/FLUX.1-schnell
+      - PORT=7860
+      - MAX_IMAGE_SIZE=1024
+      - HF_HOME=/models
+    volumes:
+      - flux_models:/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 120s
+      retries: 3
+
+  # ── Text-to-Speech (Piper — offline, 40+ languages) ────────
+  piper:
+    image: rhasspy/wyoming-piper:latest
+    container_name: alloflow-piper
+    ports:
+      - "10200:10200"
+    volumes:
+      - piper_data:/data
+    command: >
+      --voice en_US-amy-medium
+      --data-dir /data
+      --download-dir /data
+    restart: unless-stopped
+
+  # ── Web Search (SearXNG — privacy-first) ───────────────────
+  searxng:
+    image: searxng/searxng:latest
+    container_name: alloflow-searxng
+    ports:
+      - "8888:8080"
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8888
+    volumes:
+      - searxng_data:/etc/searxng
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
+  flux_models:
+  piper_data:
+  searxng_data:
