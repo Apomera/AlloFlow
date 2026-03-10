@@ -61,6 +61,18 @@ git add AlloFlowANTI.txt; git commit -m "Deploy: update CDN hash"; git push orig
 ```
 Working directory: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
 
+8. **Verify the push succeeded** — confirm local HEAD matches origin/main:
+```
+git log --oneline -1 HEAD; git log --oneline -1 origin/main
+```
+Working directory: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
+
+> Both hashes should match. If they don't, `git push origin main` was skipped or failed.
+
+> **⚠️ CDN STALENESS WARNING:** If modules are NOT pushed to GitHub, jsDelivr will serve stale files.
+> This caused a real incident on 2026-03-09 where BehaviorLens was outdated on the CDN.
+> **Always verify step 8** — matching hashes = CDN will serve fresh content.
+
 > **Note:** No CDN cache purge is needed with hash-based URLs. Each new commit hash is a unique, never-cached URL.
 > The fallback mechanism in `loadModule` will try `raw.githubusercontent.com` if the jsDelivr CDN fails.
 
