@@ -3164,7 +3164,7 @@ Generate a behavior contract and return ONLY valid JSON:
         const defaultPhases = [
             { name: t('behavior_lens.cycle_calm') || 'Calm', icon: '😌', color: '#22c55e', bg: '#f0fdf4', signs: 'Cooperative, on-task, following routines', response: 'Reinforce positive behavior, build rapport' },
             { name: t('behavior_lens.cycle_triggers') || 'Triggers', icon: '⚡', color: '#eab308', bg: '#fefce8', signs: 'Subtle changes in body language, withdrawal', response: 'Remove/reduce trigger, redirect calmly' },
-            { name: t('behavior_lens.cycle_agitation') || 'Agitation', icon: '😤', color: '#f97316', bg: '#fff7ed', signs: 'Off-task, fidgeting, non-compliance begins', response: 'Offer choices, use proximity, check in privately' },
+            { name: t('behavior_lens.cycle_agitation') || 'Agitation', icon: '😤', color: '#f97316', bg: '#fff7ed', signs: 'Off-task, fidgeting, difficulty following directions begins', response: 'Offer choices, use proximity, check in privately' },
             { name: t('behavior_lens.cycle_acceleration') || 'Acceleration', icon: '🔥', color: '#ef4444', bg: '#fef2f2', signs: 'Increasing intensity, arguing, difficulty de-escalating', response: 'Avoid power struggles, state expectations calmly, clear the area if needed' },
             { name: t('behavior_lens.cycle_peak') || 'Peak', icon: '💥', color: '#dc2626', bg: '#fee2e2', signs: 'Highest intensity behavior, student is overwhelmed', response: 'Focus on safety, use crisis protocols, document' },
             { name: t('behavior_lens.cycle_de_escalation') || 'De-escalation', icon: '🌊', color: '#3b82f6', bg: '#eff6ff', signs: 'Confusion, withdrawal, reduced intensity', response: 'Allow space, avoid debriefing too soon, quiet environment' },
@@ -5507,7 +5507,7 @@ Create a concise pocket BIP. Return ONLY valid JSON:
     const CounselingSimulation = ({ studentName, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
         const SCENARIOS = [
             { id: 'escape', label: 'Escape-Maintained', icon: '🏃', desc: 'Student avoids difficult tasks or overwhelming situations', persona: 'You are a student who becomes avoidant and shuts down when work feels too hard. You might put your head down, leave your seat, or say "I can\'t do this." You generally respond well to breaks and scaffolded support.' },
-            { id: 'attention', label: 'Attention-Seeking', icon: '👀', desc: 'Student seeks connection through disruptive or attention-getting behavior', persona: 'You are a student who craves adult and peer connection. You might call out, make jokes, or act silly to get reactions. Deep down you want to feel noticed and valued. You respond well to praise and quality time.' },
+            { id: 'attention', label: 'Connection-Seeking', icon: '👀', desc: 'Student seeks connection through behaviors that communicate a need for interaction', persona: 'You are a student who craves adult and peer connection. You might call out, make jokes, or act silly to get reactions. Deep down you want to feel noticed and valued. You respond well to praise and quality time.' },
             { id: 'tangible', label: 'Tangible-Motivated', icon: '🎁', desc: 'Student has difficulty when preferred items or activities are unavailable', persona: 'You are a student who becomes frustrated when you can\'t have a preferred item or activity. You might negotiate, refuse to work, or become upset. You respond well to first/then agreements and visual schedules.' },
             { id: 'sensory', label: 'Sensory-Related', icon: '🌀', desc: 'Student is overwhelmed or under-stimulated by sensory input', persona: 'You are a student who is very sensitive to sensory input — noise, lights, textures. You might cover your ears, rock, or leave the area. You respond well to sensory breaks and modified environments.' },
             { id: 'custom', label: 'Custom Scenario', icon: '✏️', desc: 'Define your own student persona and behavioral context', persona: '' },
@@ -6843,7 +6843,7 @@ Use professional, objective language. Do NOT use the student codename — use "t
 
         const functions = [
             { id: 'escape', label: '🚪 Escape/Avoidance' },
-            { id: 'attention', label: '👋 Attention-Seeking' },
+            { id: 'attention', label: '👋 Connection-Seeking' },
             { id: 'sensory', label: '🌀 Sensory/Automatic' },
             { id: 'tangible', label: '🎯 Tangible Access' }
         ];
@@ -6880,9 +6880,9 @@ Use professional, objective language. Do NOT use the student codename — use "t
             },
             {
                 id: 'attention_disruption',
-                title: '👋 Attention-Seeking Disruption',
-                desc: 'A 5th grader who makes noises and disrupts class to get peer and teacher attention.',
-                backstory: 'This student is socially motivated and seeks connection through disruptive behavior. They have limited positive peer relationships and thrive when given leadership roles or one-on-one attention.',
+                title: '👋 Connection-Seeking Behaviors',
+                desc: 'A 5th grader who uses behaviors to seek peer and adult connection.',
+                backstory: 'This student is socially motivated and seeks connection through attention-communicating behavior. They have limited positive peer relationships and thrive when given leadership roles or one-on-one attention.',
                 entries: [
                     { id: 'a1', timestamp: new Date(Date.now() - 12 * 86400000).toISOString(), behavior: 'Made loud animal sounds during silent reading', antecedent: 'Class was working quietly', consequence: 'Peers laughed, teacher gave verbal warning', setting: 'ELA class, silent reading', intensity: 3, duration: '4 min', notes: 'Peers reinforced' },
                     { id: 'a2', timestamp: new Date(Date.now() - 11 * 86400000).toISOString(), behavior: 'Fell out of chair intentionally', antecedent: 'Teacher was helping another student', consequence: 'Teacher came over to check on student', setting: 'Math class', intensity: 3, duration: '2 min', notes: '' },
@@ -6895,13 +6895,13 @@ Use professional, objective language. Do NOT use the student codename — use "t
                     { id: 'a9', timestamp: new Date(Date.now() - 1 * 86400000).toISOString(), behavior: 'Threw eraser at another student', antecedent: 'Peer ignored student\'s question', consequence: 'Sent to office, discussed with counselor', setting: 'Art class', intensity: 4, duration: '1 min', notes: 'Escalation' },
                 ],
                 observations: [
-                    { method: 'frequency', timer: 2400, frequency: 9, notes: 'Whole morning — 9 attention-seeking behaviors across 3 classes' },
+                    { method: 'frequency', timer: 2400, frequency: 9, notes: 'Whole morning — 9 connection-seeking behaviors across 3 classes' },
                     { method: 'frequency', timer: 1800, frequency: 2, notes: 'Afternoon with leadership role — only 2 minor incidents' },
                 ]
             },
             {
                 id: 'sensory_stimulation',
-                title: '🌀 Sensory-Seeking Self-Stimulation',
+                title: '🌀 Sensory Self-Regulation',
                 desc: 'A 1st grader with repetitive motor behaviors during unstructured and low-stimulation times.',
                 backstory: 'This student engages in hand-flapping, spinning objects, and rocking. Behaviors increase during transitions and low-structure time but decrease significantly with sensory input (fidgets, movement breaks).',
                 entries: [
@@ -6921,8 +6921,8 @@ Use professional, objective language. Do NOT use the student codename — use "t
             },
             {
                 id: 'tangible_aggression',
-                title: '🎯 Tangible Access Aggression',
-                desc: 'A 7th grader who uses physical intimidation to obtain desired items or activities.',
+                title: '🎯 Tangible Access Challenges',
+                desc: 'A 7th grader who uses physical behavior to obtain desired items or activities.',
                 backstory: 'This student struggles with delayed gratification and perspective-taking. Has a history of getting their way through physical behavior. Responds well to clear token systems and when given scheduled access to preferred activities.',
                 entries: [
                     { id: 't1', timestamp: new Date(Date.now() - 13 * 86400000).toISOString(), behavior: 'Grabbed phone from peer\'s hand', antecedent: 'Saw peer watching video during break', consequence: 'Phone confiscated from both, student sent to office', setting: 'Lunch break', intensity: 4, duration: '1 min', notes: '' },
@@ -8081,7 +8081,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
             { id: 'normative', icon: '🌍', question: 'Could this behavior be culturally normative or expected within the student\'s home culture?', hint: 'Consider different cultural communication styles, eye contact norms, personal space, volume levels, and emotional expression.' },
             { id: 'consulted', icon: '👪', question: 'Have you consulted with the family about their perspective on this behavior?', hint: 'Family expertise is essential — they know their child best and can provide cultural context.' },
             { id: 'expectation', icon: '🔍', question: 'Is the behavioral expectation itself culturally unbiased?', hint: 'E.g., "sit still and make eye contact" may conflict with some cultural norms. Are your expectations universal or culturally specific?' },
-            { id: 'language', icon: '💬', question: 'Could a language difference be contributing to this behavior?', hint: 'Multilingual students may seem noncompliant when they are processing language. Consider comprehension vs. defiance.' },
+            { id: 'language', icon: '💬', question: 'Could a language difference be contributing to this behavior?', hint: 'Multilingual students may appear to not follow directions when they are processing language. Consider comprehension vs. communication needs.' },
             { id: 'trauma', icon: '💛', question: 'Have you considered historical/collective trauma that may influence behavior?', hint: 'Students from marginalized communities may carry intergenerational stress impacting their school experience.' },
             { id: 'strengths', icon: '✨', question: 'What strengths does this student bring from their cultural background?', hint: 'Bilingualism, collectivist problem-solving, storytelling traditions, resilience from lived experiences.' },
             { id: 'observer', icon: '🪞', question: 'How might your own cultural lens be influencing your interpretation of this behavior?', hint: 'We all have implicit biases. Reflection is not about guilt — it\'s about accuracy and fairness.' },
@@ -9798,6 +9798,464 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
         );
     };
 
+    // ─── CaseStudyEngine ────────────────────────────────────────────────
+    // LLM-powered narrative-based ABA training tool with multi-phase progression
+    const CASE_STUDY_DIFFICULTY = [
+        { id: 'guided', label: '🟢 Guided', desc: 'LLM provides scaffolding, hints, and step-by-step feedback. Best for learners new to ABA.' },
+        { id: 'independent', label: '🟡 Independent', desc: 'Work alone, LLM evaluates your responses at each phase. For intermediate learners.' },
+        { id: 'expert', label: '🔴 Expert', desc: 'Ambiguous cases with multiple valid approaches. Minimal guidance, comprehensive evaluation at end.' },
+    ];
+
+    const CASE_STUDY_PHASES = [
+        { id: 'identify', label: '1. Identify Target Behaviors', icon: '🔍', instruction: 'Read the case study and identify: (a) the target behavior(s) needing intervention, (b) provide an operational definition for each, and (c) note the measurement strategy you would use (frequency, duration, interval, etc.).' },
+        { id: 'fba', label: '2. Functional Behavior Assessment', icon: '🧠', instruction: 'Based on the ABC data provided, (a) identify the most likely function(s) of the behavior (escape, attention, tangible, sensory), (b) describe the evidence supporting your hypothesis, and (c) propose a hypothesis statement following the format: "When [antecedent], [student] engages in [behavior] to [function]."' },
+        { id: 'graph', label: '3. Graph & Analyze Data', icon: '📈', instruction: 'Using the hypothetical session data provided, (a) describe what type of graph you would create, (b) identify the baseline trend, (c) note if the data shows stability or variability, and (d) determine if there are enough data points to move to intervention.' },
+        { id: 'bip', label: '4. Behavior Intervention Plan', icon: '📋', instruction: 'Write a behavior intervention plan that includes: (a) prevention strategies (antecedent modifications), (b) replacement behavior(s) that serve the same function, (c) reinforcement schedule for the replacement behavior, (d) response strategies when the target behavior occurs, and (e) a data-collection plan for monitoring progress.' },
+    ];
+
+    const CASE_TEMPLATES = [
+        { id: 'escape', label: 'Escape-Maintained Behavior', icon: '🏃', scenario: 'A student who avoids academic demands through disruptive behavior', grade: '3rd grade', setting: 'general education classroom' },
+        { id: 'attention', label: 'Attention-Seeking Behavior', icon: '👋', scenario: 'A student who engages in off-task behavior to gain peer/adult attention', grade: '5th grade', setting: 'inclusion classroom' },
+        { id: 'sensory', label: 'Sensory/Automatic Function', icon: '🌀', scenario: 'A student with repetitive motor movements that interfere with learning', grade: '1st grade', setting: 'special education classroom' },
+        { id: 'tangible', label: 'Tangible Access', icon: '🎯', scenario: 'A student who has aggressive episodes to gain access to preferred items or activities', grade: '2nd grade', setting: 'resource room' },
+        { id: 'complex', label: 'Multi-Function (Complex)', icon: '🧩', scenario: 'A student whose behavior appears to serve multiple functions depending on context', grade: '7th grade', setting: 'middle school, multiple teachers' },
+        { id: 'custom', label: 'Custom Scenario', icon: '✏️', scenario: 'Define your own case study parameters', grade: '', setting: '' },
+    ];
+
+    const CaseStudyEngine = ({ callGemini, t, addToast }) => {
+        const [difficulty, setDifficulty] = useState(null);
+        const [selectedTemplate, setSelectedTemplate] = useState(null);
+        const [customPrompt, setCustomPrompt] = useState('');
+        const [narrative, setNarrative] = useState('');
+        const [abcData, setAbcData] = useState('');
+        const [sessionData, setSessionData] = useState('');
+        const [currentPhase, setCurrentPhase] = useState(0);
+        const [userResponses, setUserResponses] = useState({});
+        const [evaluations, setEvaluations] = useState({});
+        const [loading, setLoading] = useState(false);
+        const [caseActive, setCaseActive] = useState(false);
+        const [showResults, setShowResults] = useState(false);
+        const [overallScore, setOverallScore] = useState(null);
+
+        // Generate case narrative from template
+        const generateCase = async () => {
+            if (!callGemini) { if (addToast) addToast('AI not available', 'error'); return; }
+            setLoading(true);
+            try {
+                const template = selectedTemplate;
+                const isCustom = template.id === 'custom';
+                const diffLabel = difficulty?.id || 'guided';
+
+                const prompt = `You are an ABA (Applied Behavior Analysis) professor creating a realistic case study for graduate students. Generate a comprehensive case study narrative.
+
+${isCustom ? `User's custom scenario: ${customPrompt}` : `Scenario type: ${template.scenario}
+Grade level: ${template.grade}
+Setting: ${template.setting}`}
+
+Difficulty level: ${diffLabel}
+${diffLabel === 'guided' ? 'Include clear indicators and straightforward patterns. The function should be relatively apparent from the data.' : ''}
+${diffLabel === 'independent' ? 'Include some ambiguity but enough data to support a clear hypothesis. Mix in some red herrings.' : ''}
+${diffLabel === 'expert' ? 'Include genuinely ambiguous patterns where multiple functions could be supported. Include confounding variables, setting events, and cultural considerations.' : ''}
+
+IMPORTANT: Use a fictional student name (never real names). Use person-first, strengths-based language throughout.
+
+Generate the following sections clearly separated:
+
+=== CASE NARRATIVE ===
+A 3-4 paragraph narrative describing:
+- Student background (age, grade, strengths, interests, cultural context)
+- Presenting concerns (described behaviorally, not with labels)
+- Environmental context (classroom setup, teacher style, peer dynamics)
+- Any relevant history or setting events
+
+=== ABC DATA ===
+Provide exactly 8 structured ABC entries in this format:
+Date | Setting | Antecedent | Behavior | Consequence | Duration/Intensity
+(Make them realistic and include patterns pointing to the target function, with some noise)
+
+=== SESSION DATA ===
+Provide 10 hypothetical baseline sessions with frequency counts:
+Session 1: [count]
+Session 2: [count]
+...
+(Include realistic variability — NOT a perfect trend)
+
+Respond ONLY with the three sections above. No preamble.`;
+
+                const result = await callGemini(prompt, true);
+                if (!result) throw new Error('Empty response');
+
+                // Parse sections
+                const narrativeMatch = result.match(/===\s*CASE NARRATIVE\s*===\s*([\s\S]*?)(?====\s*ABC DATA)/i);
+                const abcMatch = result.match(/===\s*ABC DATA\s*===\s*([\s\S]*?)(?====\s*SESSION DATA)/i);
+                const sessionMatch = result.match(/===\s*SESSION DATA\s*===\s*([\s\S]*?)$/i);
+
+                setNarrative(narrativeMatch ? narrativeMatch[1].trim() : result);
+                setAbcData(abcMatch ? abcMatch[1].trim() : 'ABC data not generated. Ask AI to elaborate.');
+                setSessionData(sessionMatch ? sessionMatch[1].trim() : 'Session data not generated.');
+                setCaseActive(true);
+                setCurrentPhase(0);
+                setUserResponses({});
+                setEvaluations({});
+                setShowResults(false);
+                setOverallScore(null);
+                if (addToast) addToast('Case study generated! Begin Phase 1.', 'success');
+            } catch (err) {
+                warnLog('CaseStudyEngine error:', err);
+                if (addToast) addToast('Failed to generate case study. Try again.', 'error');
+            }
+            setLoading(false);
+        };
+
+        // Evaluate user response for current phase
+        const evaluatePhase = async (phaseIdx) => {
+            const phase = CASE_STUDY_PHASES[phaseIdx];
+            const userResp = userResponses[phase.id] || '';
+            if (!userResp.trim()) { if (addToast) addToast('Please write your response before submitting.', 'warning'); return; }
+            if (!callGemini) return;
+            setLoading(true);
+            try {
+                const diffLabel = difficulty?.id || 'guided';
+                const prompt = `You are an ABA professor evaluating a graduate student's response to a case study exercise.
+
+=== CASE NARRATIVE ===
+${narrative}
+
+=== ABC DATA ===
+${abcData}
+
+=== SESSION DATA ===
+${sessionData}
+
+=== PHASE: ${phase.label} ===
+Instructions given to the student:
+${phase.instruction}
+
+=== STUDENT'S RESPONSE ===
+${userResp}
+
+Difficulty level: ${diffLabel}
+
+Evaluate the student's response on these criteria (score each 1-5):
+1. **Accuracy** — Are the behavioral concepts correctly applied?
+2. **Completeness** — Did the student address all parts of the instructions?
+3. **Evidence-Based** — Does the response reference specific data from the case?
+4. **Professional Language** — Is person-first, strengths-based language used?
+5. **Clinical Reasoning** — Does the response show sound analytical thinking?
+
+${diffLabel === 'guided' ? 'Provide detailed corrective feedback and hints for improvement. Be encouraging and specific about what they did well.' : ''}
+${diffLabel === 'independent' ? 'Provide balanced feedback — note strengths and areas for improvement. Be specific but don\'t give away the "right" answer.' : ''}
+${diffLabel === 'expert' ? 'Provide a peer-review style evaluation. Acknowledge valid alternative interpretations. Challenge the student to consider additional perspectives.' : ''}
+
+Format your response as:
+SCORES: [accuracy]/5, [completeness]/5, [evidence]/5, [language]/5, [reasoning]/5
+OVERALL: [total]/25
+
+FEEDBACK:
+[Your detailed feedback here]
+
+${diffLabel === 'guided' ? '\nHINT FOR NEXT PHASE:\n[A helpful hint for what to focus on next]' : ''}`;
+
+                const result = await callGemini(prompt, true);
+                const scoreMatch = result.match(/OVERALL:\s*(\d+)\s*\/\s*25/i);
+                const score = scoreMatch ? parseInt(scoreMatch[1]) : null;
+
+                setEvaluations(prev => ({ ...prev, [phase.id]: { text: result, score } }));
+                if (addToast) addToast(`Phase ${phaseIdx + 1} evaluated! ${score ? score + '/25' : ''}`, 'success');
+            } catch (err) {
+                warnLog('CaseStudy evaluation error:', err);
+                if (addToast) addToast('Evaluation failed. Try again.', 'error');
+            }
+            setLoading(false);
+        };
+
+        // Final reflection/debrief
+        const generateDebrief = async () => {
+            if (!callGemini) return;
+            setLoading(true);
+            try {
+                const allResponses = CASE_STUDY_PHASES.map(p => `### ${p.label}\n${userResponses[p.id] || '(not completed)'}\n\n### Evaluation\n${evaluations[p.id]?.text || '(not evaluated)'}`).join('\n\n---\n\n');
+                const totalScore = CASE_STUDY_PHASES.reduce((sum, p) => sum + (evaluations[p.id]?.score || 0), 0);
+
+                const prompt = `You are an ABA professor providing an end-of-case reflection and debrief for a graduate student who just completed a 4-phase case study exercise.
+
+${allResponses}
+
+Total Score: ${totalScore}/100
+
+Provide a comprehensive but encouraging debrief that includes:
+1. **Strengths Demonstrated** — What did the student do particularly well across all phases?
+2. **Growth Areas** — Where should the student focus their studies? Be specific and constructive.
+3. **Clinical Takeaway** — One key clinical insight from this case that the student should remember.
+4. **Recommended Resources** — 2-3 specific topics or ABA concepts to review further.
+5. **Competency Assessment** — ${totalScore >= 80 ? 'The student has demonstrated competency.' : totalScore >= 60 ? 'The student shows developing competency with some areas needing attention.' : 'The student would benefit from additional practice before working with real cases.'}
+
+Keep it encouraging and professional. Under 300 words.`;
+
+                const result = await callGemini(prompt, true);
+                setOverallScore({ total: totalScore, debrief: result });
+                setShowResults(true);
+                if (addToast) addToast('Case study complete! Review your debrief.', 'success');
+            } catch (err) {
+                warnLog('Debrief error:', err);
+            }
+            setLoading(false);
+        };
+
+        const resetCase = () => {
+            setCaseActive(false);
+            setNarrative('');
+            setAbcData('');
+            setSessionData('');
+            setCurrentPhase(0);
+            setUserResponses({});
+            setEvaluations({});
+            setShowResults(false);
+            setOverallScore(null);
+            setSelectedTemplate(null);
+            setDifficulty(null);
+        };
+
+        // ── Results view ──
+        if (showResults && overallScore) {
+            const pct = Math.round((overallScore.total / 100) * 100);
+            const passed = pct >= 70;
+            return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
+                h('div', { className: `text-center py-8 rounded-2xl border-2 ${passed ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300' : 'bg-gradient-to-br from-amber-50 to-orange-50 border-amber-300'}` },
+                    h('div', { className: 'text-6xl mb-3' }, passed ? '🏆' : '📚'),
+                    h('h2', { className: `text-2xl font-black ${passed ? 'text-green-800' : 'text-amber-800'}` }, passed ? 'Case Study Mastery!' : 'Keep Practicing!'),
+                    h('p', { className: 'text-lg font-bold mt-2' }, `${overallScore.total}/100 (${pct}%)`),
+                    h('div', { className: 'flex justify-center gap-3 mt-3' },
+                        CASE_STUDY_PHASES.map((p, i) => {
+                            const s = evaluations[p.id]?.score || 0;
+                            return h('div', { key: p.id, className: 'text-center' },
+                                h('div', { className: `w-12 h-12 rounded-full flex items-center justify-center text-sm font-black mx-auto ${s >= 20 ? 'bg-green-100 text-green-700' : s >= 15 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}` }, s),
+                                h('p', { className: 'text-[9px] text-slate-500 mt-1' }, `Phase ${i + 1}`)
+                            );
+                        })
+                    )
+                ),
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-5 shadow-sm' },
+                    h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '📝 Instructor Debrief'),
+                    h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, overallScore.debrief)
+                ),
+                // Phase-by-phase review
+                h('details', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-4' },
+                    h('summary', { className: 'text-sm font-bold text-slate-700 cursor-pointer' }, '📋 Review All Phases'),
+                    h('div', { className: 'space-y-3 mt-3' },
+                        CASE_STUDY_PHASES.map((p, i) =>
+                            h('div', { key: p.id, className: 'bg-white rounded-lg p-3 border border-slate-200' },
+                                h('h4', { className: 'text-xs font-bold text-indigo-700 mb-1' }, `${p.icon} ${p.label}`),
+                                h('div', { className: 'text-[10px] text-slate-600 mb-2' },
+                                    h('strong', null, 'Your Response: '),
+                                    userResponses[p.id] || '(not completed)'
+                                ),
+                                evaluations[p.id] && h('div', { className: 'text-[10px] text-purple-700 bg-purple-50 rounded-lg p-2 whitespace-pre-wrap' }, evaluations[p.id].text)
+                            )
+                        )
+                    )
+                ),
+                h('div', { className: 'flex gap-2' },
+                    h('button', { onClick: resetCase, className: 'flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700' }, '🔄 New Case Study'),
+                    h('button', { onClick: () => setShowResults(false), className: 'px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200' }, '← Back')
+                )
+            );
+        }
+
+        // ── Active case view ──
+        if (caseActive) {
+            const phase = CASE_STUDY_PHASES[currentPhase];
+            const hasEval = !!evaluations[phase.id];
+            const allEvaluated = CASE_STUDY_PHASES.every(p => evaluations[p.id]);
+
+            return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
+                // Header
+                h('div', { className: 'flex items-center justify-between' },
+                    h('button', { onClick: resetCase, className: 'text-xs text-indigo-600 font-bold hover:underline' }, '← Exit Case Study'),
+                    h('div', { className: 'flex gap-1' },
+                        CASE_STUDY_PHASES.map((p, i) =>
+                            h('button', {
+                                key: p.id,
+                                onClick: () => setCurrentPhase(i),
+                                className: `w-8 h-8 rounded-full text-[10px] font-black flex items-center justify-center transition-all ${
+                                    i === currentPhase ? 'bg-indigo-600 text-white shadow-md scale-110'
+                                    : evaluations[p.id] ? 'bg-green-100 text-green-700 border-2 border-green-300'
+                                    : 'bg-slate-100 text-slate-400 border border-slate-200'
+                                }`
+                            }, i + 1)
+                        )
+                    ),
+                    h('span', { className: `text-[10px] font-bold px-2 py-1 rounded-full ${
+                        difficulty?.id === 'guided' ? 'bg-green-100 text-green-700'
+                        : difficulty?.id === 'independent' ? 'bg-amber-100 text-amber-700'
+                        : 'bg-red-100 text-red-700'
+                    }` }, difficulty?.label || '')
+                ),
+
+                // Phase title
+                h('div', { className: 'text-center py-2' },
+                    h('span', { className: 'text-3xl' }, phase.icon),
+                    h('h2', { className: 'text-lg font-black text-slate-800 mt-1' }, phase.label)
+                ),
+
+                // Case narrative (always visible, collapsible after first phase)
+                h('details', { open: currentPhase === 0, className: 'bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-4' },
+                    h('summary', { className: 'text-sm font-bold text-indigo-800 cursor-pointer' }, '📖 Case Narrative' + (currentPhase > 0 ? ' (click to review)' : '')),
+                    h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed mt-2' }, narrative)
+                ),
+
+                // ABC data (visible in phases 1-2)
+                (currentPhase <= 1) && h('details', { open: currentPhase === 1, className: 'bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-4' },
+                    h('summary', { className: 'text-sm font-bold text-emerald-800 cursor-pointer' }, '📋 ABC Data Records'),
+                    h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed mt-2 font-mono' }, abcData)
+                ),
+
+                // Session data (visible in phase 2-3)
+                (currentPhase >= 2) && h('details', { open: currentPhase === 2, className: 'bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-4' },
+                    h('summary', { className: 'text-sm font-bold text-amber-800 cursor-pointer' }, '📊 Session Data (Baseline)'),
+                    h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed mt-2 font-mono' }, sessionData)
+                ),
+
+                // Instructions
+                h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 p-4' },
+                    h('h3', { className: 'text-xs font-black text-indigo-700 mb-2' }, '📝 Your Task'),
+                    h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, phase.instruction)
+                ),
+
+                // User response area
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                    h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-2 block' }, 'Your Response'),
+                    h('textarea', {
+                        value: userResponses[phase.id] || '',
+                        onChange: (e) => setUserResponses(prev => ({ ...prev, [phase.id]: e.target.value })),
+                        placeholder: 'Type your response here. Be thorough and use professional language...',
+                        rows: 8,
+                        className: 'w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-y leading-relaxed'
+                    }),
+                    h('div', { className: 'flex justify-between items-center mt-2' },
+                        h('span', { className: 'text-[10px] text-slate-400' }, `${(userResponses[phase.id] || '').length} characters`),
+                        h('button', {
+                            onClick: () => evaluatePhase(currentPhase),
+                            disabled: loading || !(userResponses[phase.id] || '').trim(),
+                            className: 'px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 transition-all shadow-sm'
+                        }, loading ? '⏳ Evaluating...' : hasEval ? '🔄 Re-evaluate' : '📤 Submit for Evaluation')
+                    )
+                ),
+
+                // Evaluation result
+                hasEval && h('div', { className: 'bg-gradient-to-br from-purple-50 to-fuchsia-50 rounded-xl border border-purple-200 p-4' },
+                    h('div', { className: 'flex items-center justify-between mb-2' },
+                        h('h3', { className: 'text-sm font-bold text-purple-800' }, '🎓 Instructor Feedback'),
+                        evaluations[phase.id].score && h('span', { className: `text-sm font-black px-3 py-1 rounded-full ${
+                            evaluations[phase.id].score >= 20 ? 'bg-green-100 text-green-700'
+                            : evaluations[phase.id].score >= 15 ? 'bg-amber-100 text-amber-700'
+                            : 'bg-red-100 text-red-700'
+                        }` }, `${evaluations[phase.id].score}/25`)
+                    ),
+                    h('div', { className: 'text-xs text-purple-700 whitespace-pre-wrap leading-relaxed' }, evaluations[phase.id].text)
+                ),
+
+                // Navigation
+                h('div', { className: 'flex gap-2' },
+                    currentPhase > 0 && h('button', {
+                        onClick: () => setCurrentPhase(currentPhase - 1),
+                        className: 'px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-200'
+                    }, '← Previous Phase'),
+                    currentPhase < CASE_STUDY_PHASES.length - 1 && h('button', {
+                        onClick: () => setCurrentPhase(currentPhase + 1),
+                        className: 'flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700'
+                    }, `Next Phase: ${CASE_STUDY_PHASES[currentPhase + 1]?.label} →`),
+                    currentPhase === CASE_STUDY_PHASES.length - 1 && allEvaluated && h('button', {
+                        onClick: generateDebrief,
+                        disabled: loading,
+                        className: 'flex-1 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-xs font-bold hover:from-green-600 hover:to-emerald-700 shadow-lg'
+                    }, loading ? '⏳ Generating Debrief...' : '🏁 Complete Case Study & Get Debrief')
+                )
+            );
+        }
+
+        // ── Setup view (difficulty + template selection) ──
+        return h('div', { className: 'max-w-3xl mx-auto space-y-5' },
+            // Header
+            h('div', { className: 'text-center py-4' },
+                h('div', { className: 'text-5xl mb-3' }, '🎓'),
+                h('h2', { className: 'text-xl font-black text-slate-800' }, 'ABA Case Study Training'),
+                h('p', { className: 'text-sm text-slate-500 mt-1' }, 'Practice clinical reasoning with AI-generated case studies. Get expert-level feedback on your responses.')
+            ),
+
+            // How it works
+            h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-4' },
+                h('h3', { className: 'text-xs font-bold text-indigo-800 mb-2' }, '📋 How It Works'),
+                h('div', { className: 'grid grid-cols-4 gap-2' },
+                    CASE_STUDY_PHASES.map((p, i) =>
+                        h('div', { key: p.id, className: 'text-center' },
+                            h('div', { className: 'text-2xl mb-1' }, p.icon),
+                            h('p', { className: 'text-[9px] font-bold text-indigo-700 leading-tight' }, p.label)
+                        )
+                    )
+                ),
+                h('p', { className: 'text-[10px] text-indigo-600 mt-2 text-center' }, 'At each phase you\'ll write your analysis, then receive AI evaluation with scoring and feedback.')
+            ),
+
+            // Step 1: Difficulty
+            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                h('h3', { className: 'text-sm font-bold text-slate-700 mb-3' }, '🎚️ Step 1: Select Difficulty'),
+                h('div', { className: 'grid grid-cols-3 gap-3' },
+                    CASE_STUDY_DIFFICULTY.map(d =>
+                        h('button', {
+                            key: d.id,
+                            onClick: () => setDifficulty(d),
+                            className: `text-left p-3 rounded-xl border-2 transition-all ${
+                                difficulty?.id === d.id ? 'border-indigo-400 bg-indigo-50 shadow-md' : 'border-slate-200 hover:border-indigo-200 bg-white'
+                            }`
+                        },
+                            h('p', { className: 'text-sm font-bold' }, d.label),
+                            h('p', { className: 'text-[10px] text-slate-500 mt-1 leading-relaxed' }, d.desc)
+                        )
+                    )
+                )
+            ),
+
+            // Step 2: Scenario
+            difficulty && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                h('h3', { className: 'text-sm font-bold text-slate-700 mb-3' }, '📄 Step 2: Choose Case Scenario'),
+                h('div', { className: 'grid grid-cols-2 gap-3' },
+                    CASE_TEMPLATES.map(tmpl =>
+                        h('button', {
+                            key: tmpl.id,
+                            onClick: () => setSelectedTemplate(tmpl),
+                            className: `text-left p-3 rounded-xl border-2 transition-all ${
+                                selectedTemplate?.id === tmpl.id ? 'border-indigo-400 bg-indigo-50 shadow-md' : 'border-slate-200 hover:border-indigo-200 bg-white'
+                            }`
+                        },
+                            h('div', { className: 'flex items-center gap-2 mb-1' },
+                                h('span', { className: 'text-xl' }, tmpl.icon),
+                                h('span', { className: 'text-xs font-bold text-slate-800' }, tmpl.label)
+                            ),
+                            h('p', { className: 'text-[10px] text-slate-500 leading-relaxed' }, tmpl.scenario),
+                            tmpl.grade && h('p', { className: 'text-[9px] text-slate-400 mt-1' }, `${tmpl.grade} • ${tmpl.setting}`)
+                        )
+                    )
+                ),
+                selectedTemplate?.id === 'custom' && h('textarea', {
+                    value: customPrompt,
+                    onChange: (e) => setCustomPrompt(e.target.value),
+                    placeholder: 'Describe the scenario you want to practice with...',
+                    rows: 3,
+                    className: 'w-full text-xs border border-slate-200 rounded-lg px-3 py-2 mt-3 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-300'
+                })
+            ),
+
+            // Generate button
+            difficulty && selectedTemplate && (selectedTemplate.id !== 'custom' || customPrompt.trim()) && h('button', {
+                onClick: generateCase,
+                disabled: loading,
+                className: 'w-full py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 text-white rounded-xl font-black text-sm hover:from-indigo-700 hover:via-purple-700 hover:to-fuchsia-700 shadow-lg transition-all disabled:opacity-50'
+            }, loading ? '⏳ Generating Case Study...' : '🚀 Generate Case Study & Begin Training')
+        );
+    };
+
+
     // ─── AlloBotChat ────────────────────────────────────────────────────
     // Conversational AI chat panel for behavioral analysis questions
     const AlloBotChat = ({ callGemini, studentName, studentProfile, sessionNotes, abcEntries, aiAnalysis, buildStudentContext, t, addToast }) => {
@@ -10685,6 +11143,15 @@ Format as a professional report with clear sections. Keep under 300 words.`);
         const [yAxisLabel, setYAxisLabel] = useState('Frequency');
         const [xAxisLabel, setXAxisLabel] = useState('Sessions');
 
+        // ── Manual Data Entry State ──
+        const [dataMode, setDataMode] = useState('auto'); // 'auto' | 'manual'
+        const [manualData, setManualData] = useState([]);
+        const [editingPoint, setEditingPoint] = useState(null); // index being edited on SVG
+        const [editValue, setEditValue] = useState('');
+        const [csvText, setCsvText] = useState('');
+        const [showCsvImport, setShowCsvImport] = useState(false);
+        const [newPointValue, setNewPointValue] = useState('');
+
         // Collect all unique behavior names from sessions
         const behaviorNames = useMemo(() => {
             const names = new Set();
@@ -10692,8 +11159,8 @@ Format as a professional report with clear sections. Keep under 300 words.`);
             return Array.from(names);
         }, [sessionHistory]);
 
-        // Build data series for selected behavior
-        const dataSeries = useMemo(() => {
+        // Build data series for selected behavior (auto mode)
+        const autoDataSeries = useMemo(() => {
             if (!behaviorNames[selectedBehavior]) return [];
             const bName = behaviorNames[selectedBehavior];
             return (sessionHistory || []).map((s, i) => {
@@ -10706,10 +11173,71 @@ Format as a professional report with clear sections. Keep under 300 words.`);
             }).filter(d => d.value !== null);
         }, [sessionHistory, behaviorNames, selectedBehavior]);
 
+        // Active data series: auto or manual
+        const dataSeries = dataMode === 'manual' ? manualData : autoDataSeries;
+
+        // ── Manual Data Helpers ──
+        const addManualPoint = () => {
+            const val = parseFloat(newPointValue);
+            if (isNaN(val) || val < 0) { if (addToast) addToast('Enter a valid number', 'warning'); return; }
+            setManualData(prev => [...prev, { session: prev.length + 1, value: val, date: new Date().toISOString().slice(0, 10) }]);
+            setNewPointValue('');
+        };
+
+        const updateManualPoint = (idx, newVal) => {
+            const val = parseFloat(newVal);
+            if (isNaN(val) || val < 0) return;
+            setManualData(prev => prev.map((d, i) => i === idx ? { ...d, value: val } : d));
+        };
+
+        const deleteManualPoint = (idx) => {
+            setManualData(prev => prev.filter((_, i) => i !== idx).map((d, i) => ({ ...d, session: i + 1 })));
+        };
+
+        const handleCsvImport = () => {
+            const lines = csvText.trim().split('\n').map(l => l.trim()).filter(Boolean);
+            const parsed = [];
+            for (const line of lines) {
+                // Support formats: "5", "Session 1: 5", "1,5", "1\t5"
+                const match = line.match(/(?:session\s*\d*\s*[:=]\s*)?(\d+(?:\.\d+)?)/i);
+                if (match) parsed.push(parseFloat(match[1]));
+            }
+            if (parsed.length === 0) { if (addToast) addToast('No valid data found in CSV', 'warning'); return; }
+            setManualData(parsed.map((v, i) => ({ session: i + 1, value: v, date: new Date().toISOString().slice(0, 10) })));
+            setShowCsvImport(false);
+            setCsvText('');
+            if (addToast) addToast(`Imported ${parsed.length} data points!`, 'success');
+        };
+
+        const handleSvgPointClick = (idx) => {
+            if (dataMode !== 'manual') return;
+            setEditingPoint(idx);
+            setEditValue(String(manualData[idx]?.value || ''));
+        };
+
+        const confirmSvgEdit = () => {
+            if (editingPoint === null) return;
+            updateManualPoint(editingPoint, editValue);
+            setEditingPoint(null);
+            setEditValue('');
+        };
+
         // Calculate level (mean) and trend (split-middle) per phase
         const phaseAnalysis = useMemo(() => {
             if (!phases || phases.length === 0 || dataSeries.length === 0) {
-                return [{ label: 'All Data', startIdx: 0, endIdx: dataSeries.length - 1, data: dataSeries }];
+                const values = dataSeries.map(d => d.value);
+                const mean = values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+                let trendSlope = 0, trendIntercept = mean;
+                if (values.length >= 3) {
+                    const half = Math.floor(values.length / 2);
+                    const firstHalf = values.slice(0, half);
+                    const secondHalf = values.slice(values.length - half);
+                    const m1 = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+                    const m2 = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+                    trendSlope = (m2 - m1) / (values.length - 1);
+                    trendIntercept = m1 - trendSlope * (half / 2);
+                }
+                return [{ label: 'All Data', startIdx: 0, endIdx: dataSeries.length - 1, data: dataSeries, mean, trendSlope, trendIntercept }];
             }
             return phases.map((p, pi) => {
                 const phaseData = dataSeries.filter(d => d.session >= p.startSession && d.session <= (phases[pi + 1]?.startSession - 1 || Infinity));
@@ -10765,23 +11293,131 @@ Format as a professional report with clear sections. Keep under 300 words.`);
             printWin.print();
         };
 
-        if (dataSeries.length === 0) {
-            return h('div', { className: 'max-w-3xl mx-auto text-center py-12' },
-                h('div', { className: 'text-5xl mb-3' }, '📈'),
-                h('h2', { className: 'text-lg font-black text-slate-800 mb-2' }, 'ABA Graph Engine'),
-                h('p', { className: 'text-sm text-slate-500' }, 'Record sessions using the Session Data Tracker to generate convention-following ABA graphs.'),
-                h('p', { className: 'text-xs text-slate-400 mt-2' }, 'Supports phase change lines, condition labels, trend lines, level lines, and print-ready output.')
-            );
-        }
-
+        // ── Render: Header + Data Source Toggle ──
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '📈'),
                 h('h2', { className: 'text-lg font-black text-slate-800' }, 'ABA Graph Engine'),
                 h('p', { className: 'text-xs text-slate-500 mt-1' }, 'Publication-standard single-case design graphs')
             ),
-            // Graph config
-            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+
+            // ── Data Source Toggle ──
+            h('div', { className: 'flex gap-2 justify-center' },
+                h('button', {
+                    onClick: () => setDataMode('auto'),
+                    className: `px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataMode === 'auto' ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`
+                }, `📊 Session Data${autoDataSeries.length > 0 ? ` (${autoDataSeries.length})` : ''}`),
+                h('button', {
+                    onClick: () => setDataMode('manual'),
+                    className: `px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataMode === 'manual' ? 'bg-fuchsia-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`
+                }, `✏️ Manual Entry${manualData.length > 0 ? ` (${manualData.length})` : ''}`)
+            ),
+
+            // ── Manual Data Entry Panel ──
+            dataMode === 'manual' && h('div', { className: 'bg-gradient-to-br from-fuchsia-50 to-purple-50 rounded-xl border border-fuchsia-200 p-4 space-y-3' },
+                h('div', { className: 'flex items-center justify-between' },
+                    h('h3', { className: 'text-sm font-bold text-fuchsia-800' }, '✏️ Manual Data Entry'),
+                    h('div', { className: 'flex gap-2' },
+                        h('button', {
+                            onClick: () => setShowCsvImport(!showCsvImport),
+                            className: 'px-3 py-1 bg-white border border-fuchsia-200 rounded-lg text-[10px] font-bold text-fuchsia-600 hover:bg-fuchsia-50'
+                        }, showCsvImport ? '← Back' : '📋 Paste CSV'),
+                        manualData.length > 0 && h('button', {
+                            onClick: () => { setManualData([]); if (addToast) addToast('Data cleared', 'info'); },
+                            className: 'px-3 py-1 bg-white border border-red-200 rounded-lg text-[10px] font-bold text-red-500 hover:bg-red-50'
+                        }, '🗑️ Clear')
+                    )
+                ),
+
+                // CSV Import
+                showCsvImport && h('div', { className: 'bg-white rounded-lg border border-fuchsia-200 p-3 space-y-2' },
+                    h('p', { className: 'text-[10px] text-fuchsia-600' }, 'Paste one value per line. Supports formats: "5", "Session 1: 5", or "1,5"'),
+                    h('textarea', {
+                        value: csvText,
+                        onChange: (e) => setCsvText(e.target.value),
+                        placeholder: 'Session 1: 3\nSession 2: 7\nSession 3: 5\n...',
+                        rows: 5,
+                        className: 'w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 font-mono focus:outline-none focus:ring-2 focus:ring-fuchsia-300'
+                    }),
+                    h('button', {
+                        onClick: handleCsvImport,
+                        disabled: !csvText.trim(),
+                        className: 'w-full py-2 bg-fuchsia-600 text-white rounded-lg text-xs font-bold hover:bg-fuchsia-700 disabled:opacity-50'
+                    }, '📥 Import Data')
+                ),
+
+                // Quick add row
+                !showCsvImport && h('div', { className: 'flex gap-2 items-end' },
+                    h('div', { className: 'flex-1' },
+                        h('label', { className: 'text-[10px] font-bold text-fuchsia-600 uppercase' }, `Session ${manualData.length + 1} Value`),
+                        h('input', {
+                            type: 'number',
+                            value: newPointValue,
+                            onChange: (e) => setNewPointValue(e.target.value),
+                            onKeyDown: (e) => { if (e.key === 'Enter') addManualPoint(); },
+                            placeholder: 'e.g. 5',
+                            min: 0,
+                            step: 'any',
+                            className: 'w-full text-xs border border-fuchsia-200 rounded-lg px-3 py-1.5 mt-1 bg-white focus:outline-none focus:ring-2 focus:ring-fuchsia-300'
+                        })
+                    ),
+                    h('button', {
+                        onClick: addManualPoint,
+                        disabled: !newPointValue,
+                        className: 'px-4 py-1.5 bg-fuchsia-600 text-white rounded-lg text-xs font-bold hover:bg-fuchsia-700 disabled:opacity-50'
+                    }, '+ Add')
+                ),
+
+                // Data table
+                !showCsvImport && manualData.length > 0 && h('div', { className: 'bg-white rounded-lg border border-fuchsia-100 overflow-hidden' },
+                    h('table', { className: 'w-full text-[10px]' },
+                        h('thead', null,
+                            h('tr', { className: 'bg-fuchsia-50' },
+                                h('th', { className: 'px-3 py-1.5 text-left font-bold text-fuchsia-700' }, 'Session'),
+                                h('th', { className: 'px-3 py-1.5 text-left font-bold text-fuchsia-700' }, 'Value'),
+                                h('th', { className: 'px-3 py-1.5 text-right font-bold text-fuchsia-700' }, 'Actions')
+                            )
+                        ),
+                        h('tbody', null,
+                            manualData.map((d, i) =>
+                                h('tr', { key: i, className: `border-t border-fuchsia-50 ${editingPoint === i ? 'bg-yellow-50' : 'hover:bg-fuchsia-50/50'}` },
+                                    h('td', { className: 'px-3 py-1 text-slate-600 font-mono' }, d.session),
+                                    h('td', { className: 'px-3 py-1' },
+                                        h('input', {
+                                            type: 'number',
+                                            value: d.value,
+                                            onChange: (e) => updateManualPoint(i, e.target.value),
+                                            min: 0,
+                                            step: 'any',
+                                            className: 'w-20 text-xs border border-slate-200 rounded px-2 py-0.5 bg-white focus:outline-none focus:ring-1 focus:ring-fuchsia-300 font-mono'
+                                        })
+                                    ),
+                                    h('td', { className: 'px-3 py-1 text-right' },
+                                        h('button', {
+                                            onClick: () => deleteManualPoint(i),
+                                            className: 'text-red-400 hover:text-red-600 font-bold'
+                                        }, '✕')
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
+                !showCsvImport && manualData.length === 0 && h('p', { className: 'text-xs text-fuchsia-400 text-center py-3' }, 'Add data points above or paste CSV data to get started.')
+            ),
+
+            // ── No data message (auto mode only) ──
+            dataMode === 'auto' && dataSeries.length === 0 && h('div', { className: 'text-center py-8 bg-slate-50 rounded-xl border border-slate-200' },
+                h('p', { className: 'text-sm text-slate-500' }, 'No session data recorded yet.'),
+                h('p', { className: 'text-xs text-slate-400 mt-1' }, 'Record sessions with the Session Data Tracker, or switch to Manual Entry mode.'),
+                h('button', {
+                    onClick: () => setDataMode('manual'),
+                    className: 'mt-3 px-4 py-2 bg-fuchsia-600 text-white rounded-lg text-xs font-bold hover:bg-fuchsia-700'
+                }, '✏️ Switch to Manual Entry')
+            ),
+
+            // ── Graph Config (only show when we have data) ──
+            dataSeries.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
                 h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
                     h('div', null,
                         h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Graph Title'),
@@ -10796,7 +11432,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                         h('input', { value: xAxisLabel, onChange: e => setXAxisLabel(e.target.value), className: 'w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 mt-1' })
                     ),
                 ),
-                behaviorNames.length > 1 && h('div', { className: 'flex gap-2 mt-2' },
+                dataMode === 'auto' && behaviorNames.length > 1 && h('div', { className: 'flex gap-2 mt-2' },
                     h('span', { className: 'text-[10px] font-bold text-slate-500' }, 'Behavior:'),
                     behaviorNames.map((bn, i) =>
                         h('button', { key: bn, onClick: () => setSelectedBehavior(i), className: `px-2 py-1 rounded-lg text-[10px] font-bold border ${i === selectedBehavior ? 'bg-indigo-100 border-indigo-400 text-indigo-700' : 'bg-white border-slate-200 text-slate-400'}` }, bn)
@@ -10810,8 +11446,25 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                     )
                 )
             ),
-            // SVG Graph
-            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm overflow-x-auto' },
+
+            // ── SVG Graph ──
+            dataSeries.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm overflow-x-auto' },
+                // Inline edit tooltip for clicked point
+                editingPoint !== null && h('div', { className: 'flex items-center gap-2 mb-2 bg-yellow-50 border border-yellow-300 rounded-lg px-3 py-2' },
+                    h('span', { className: 'text-[10px] font-bold text-yellow-700' }, `Editing Session ${editingPoint + 1}:`),
+                    h('input', {
+                        type: 'number',
+                        value: editValue,
+                        onChange: (e) => setEditValue(e.target.value),
+                        onKeyDown: (e) => { if (e.key === 'Enter') confirmSvgEdit(); if (e.key === 'Escape') setEditingPoint(null); },
+                        autoFocus: true,
+                        min: 0,
+                        step: 'any',
+                        className: 'w-20 text-xs border border-yellow-300 rounded px-2 py-0.5 bg-white font-mono focus:outline-none focus:ring-1 focus:ring-yellow-400'
+                    }),
+                    h('button', { onClick: confirmSvgEdit, className: 'px-2 py-0.5 bg-yellow-500 text-white rounded text-[10px] font-bold hover:bg-yellow-600' }, '✓ Save'),
+                    h('button', { onClick: () => setEditingPoint(null), className: 'px-2 py-0.5 bg-slate-200 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-300' }, '✕ Cancel')
+                ),
                 h('svg', { id: 'aba-graph-svg', viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { minWidth: '500px', maxHeight: '350px', fontFamily: 'Arial, sans-serif' } },
                     // White background for print
                     h('rect', { x: 0, y: 0, width: W, height: H, fill: 'white' }),
@@ -10858,9 +11511,20 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                         const pathD = pa.data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${toX(d.session)} ${toY(d.value)}`).join(' ');
                         return h('path', { key: 'line' + pi, d: pathD, fill: 'none', stroke: ABA_GRAPH_COLORS[0], strokeWidth: 2, strokeLinejoin: 'round' });
                     }),
-                    // Data points
-                    ...dataSeries.map(d =>
-                        h('circle', { key: 'pt' + d.session, cx: toX(d.session), cy: toY(d.value), r: 4, fill: 'white', stroke: ABA_GRAPH_COLORS[0], strokeWidth: 2 })
+                    // Data points (clickable in manual mode)
+                    ...dataSeries.map((d, i) =>
+                        h('g', { key: 'pt' + d.session, style: dataMode === 'manual' ? { cursor: 'pointer' } : undefined, onClick: () => handleSvgPointClick(i) },
+                            // Invisible larger hit area for easier clicking
+                            dataMode === 'manual' && h('circle', { cx: toX(d.session), cy: toY(d.value), r: 12, fill: 'transparent' }),
+                            h('circle', {
+                                cx: toX(d.session), cy: toY(d.value), r: editingPoint === i ? 6 : 4,
+                                fill: editingPoint === i ? '#facc15' : 'white',
+                                stroke: editingPoint === i ? '#ca8a04' : ABA_GRAPH_COLORS[0],
+                                strokeWidth: editingPoint === i ? 3 : 2,
+                            }),
+                            // Value label on hover area
+                            dataMode === 'manual' && h('title', null, `Session ${d.session}: ${d.value} (click to edit)`)
+                        )
                     ),
                     // Level lines (mean per phase)
                     showLevel && phaseAnalysis.map((pa, pi) => {
@@ -10894,7 +11558,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                 )
             ),
             // Visual analysis summary
-            phaseAnalysis.length >= 2 && h('div', { className: 'bg-indigo-50 rounded-xl border border-indigo-200 p-4' },
+            dataSeries.length > 0 && phaseAnalysis.length >= 2 && h('div', { className: 'bg-indigo-50 rounded-xl border border-indigo-200 p-4' },
                 h('h3', { className: 'text-xs font-bold text-indigo-800 mb-2' }, '📊 Visual Analysis Summary'),
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                     phaseAnalysis.map((pa, i) =>
@@ -10929,7 +11593,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                 })()
             ),
             // Print / Export
-            h('div', { className: 'flex gap-2' },
+            dataSeries.length > 0 && h('div', { className: 'flex gap-2' },
                 h('button', { onClick: handlePrint, className: 'flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200' }, '🖨️ Print Graph'),
                 h('button', {
                     onClick: () => {
@@ -12896,7 +13560,7 @@ Keep under 250 words. Use clear sections.`);
 
         const goalTypes = [
 
-            { id: 'behavior_reduction', label: '📉 Behavior Reduction', desc: 'Decrease challenging behaviors' },
+            { id: 'behavior_reduction', label: '📉 Support for Behavioral Change', desc: 'Build alternatives to behaviors of concern' },
 
             { id: 'skill_acquisition', label: '📈 Skill Building', desc: 'Increase replacement/adaptive behaviors' },
 
@@ -14456,7 +15120,7 @@ Analyze this data and return ONLY valid JSON:
                     id: 'replacebehavior',
                     icon: '🔄',
                     title: t('behavior_lens.hub.replacebehavior_title') || 'Replacement Behavior Planner',
-                    desc: t('behavior_lens.hub.replacebehavior_desc') || 'Map target behaviors to functionally equivalent replacements with teaching strategies',
+                    desc: t('behavior_lens.hub.replacebehavior_desc') || 'Map behaviors of concern to functionally equivalent replacements with teaching strategies',
                     color: 'rose',
                 },
                 {
@@ -14504,6 +15168,13 @@ Analyze this data and return ONLY valid JSON:
                     title: t('behavior_lens.hub.abaquiz_title') || 'ABA Knowledge Quiz',
                     desc: t('behavior_lens.hub.abaquiz_desc') || 'Test your ABA knowledge — earn a competency badge at 80%+',
                     color: 'purple',
+                },
+                {
+                    id: 'casestudy',
+                    icon: '🎓',
+                    title: t('behavior_lens.hub.casestudy_title') || 'ABA Case Study Training',
+                    desc: t('behavior_lens.hub.casestudy_desc') || 'AI-generated case studies with 4-phase clinical reasoning and scoring',
+                    color: 'fuchsia',
                 },
                 {
                     id: 'bcbahandoff',
@@ -14560,128 +15231,128 @@ Analyze this data and return ONLY valid JSON:
                 {
                     id: 'ioacalc',
                     icon: '🤝',
-                    title: 'IOA Calculator',
-                    desc: 'Inter-Observer Agreement with 6 methods — point-by-point, interval, scored/unscored, exact count',
+                    title: t('behavior_lens.hub.ioacalc_title') || 'IOA Calculator',
+                    desc: t('behavior_lens.hub.ioacalc_desc') || 'Inter-Observer Agreement with 6 methods — point-by-point, interval, scored/unscored, exact count',
                     color: 'indigo',
                 },
                 {
                     id: 'taskanalysis',
                     icon: '📝',
-                    title: 'Task Analysis',
-                    desc: 'Break skills into teachable steps with forward, backward, or total-task chaining and prompt tracking',
+                    title: t('behavior_lens.hub.taskanalysis_title') || 'Task Analysis',
+                    desc: t('behavior_lens.hub.taskanalysis_desc') || 'Break skills into teachable steps with forward, backward, or total-task chaining and prompt tracking',
                     color: 'emerald',
                 },
                 {
                     id: 'dtt',
                     icon: '🎯',
-                    title: 'DTT Data Sheet',
-                    desc: 'Discrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance',
+                    title: t('behavior_lens.hub.dtt_title') || 'DTT Data Sheet',
+                    desc: t('behavior_lens.hub.dtt_desc') || 'Discrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance',
                     color: 'purple',
                 },
                 {
                     id: 'prefassess',
                     icon: '⭐',
-                    title: 'Preference Assessment',
-                    desc: 'Systematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols',
+                    title: t('behavior_lens.hub.prefassess_title') || 'Preference Assessment',
+                    desc: t('behavior_lens.hub.prefassess_desc') || 'Systematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols',
                     color: 'amber',
                 },
                 {
                     id: 'scatterplot',
                     icon: '📅',
-                    title: 'Scatterplot Analysis',
-                    desc: 'Time-of-day × behavior grid to identify temporal patterns — auto-populates from ABC data',
+                    title: t('behavior_lens.hub.scatterplot_title') || 'Scatterplot Analysis',
+                    desc: t('behavior_lens.hub.scatterplot_desc') || 'Time-of-day × behavior grid to identify temporal patterns — auto-populates from ABC data',
                     color: 'orange',
                 },
                 {
                     id: 'latency',
                     icon: '⏱️',
-                    title: 'Latency Recorder',
-                    desc: 'Stimulus-to-response time measurement with mean, median, and range statistics',
+                    title: t('behavior_lens.hub.latency_title') || 'Latency Recorder',
+                    desc: t('behavior_lens.hub.latency_desc') || 'Stimulus-to-response time measurement with mean, median, and range statistics',
                     color: 'teal',
                 },
                 {
                     id: 'socialvalidity',
                     icon: '📋',
-                    title: 'Social Validity',
-                    desc: 'TARF and IRP-15 scales for measuring treatment acceptability — required for publication',
+                    title: t('behavior_lens.hub.socialvalidity_title') || 'Social Validity',
+                    desc: t('behavior_lens.hub.socialvalidity_desc') || 'TARF and IRP-15 scales for measuring treatment acceptability — required for publication',
                     color: 'sky',
                 },
                 {
                     id: 'maintenance',
                     icon: '🔄',
-                    title: 'Maintenance & Generalization',
-                    desc: 'Track skill retention post-mastery and generalization across settings, people, and materials',
+                    title: t('behavior_lens.hub.maintenance_title') || 'Maintenance & Generalization',
+                    desc: t('behavior_lens.hub.maintenance_desc') || 'Track skill retention post-mastery and generalization across settings, people, and materials',
                     color: 'lime',
                 },
                 {
                     id: 'cumrecord',
                     icon: '📈',
-                    title: 'Cumulative Record',
-                    desc: 'Classic Skinner-style cumulative frequency graph — the heritage of ABA data display',
+                    title: t('behavior_lens.hub.cumrecord_title') || 'Cumulative Record',
+                    desc: t('behavior_lens.hub.cumrecord_desc') || 'Classic Skinner-style cumulative frequency graph — the heritage of ABA data display',
                     color: 'violet',
                 },
                 {
                     id: 'condprob',
                     icon: '📐',
-                    title: 'Conditional Probability',
-                    desc: 'Foreground vs background probability analysis to validate ABC hypotheses with data',
+                    title: t('behavior_lens.hub.condprob_title') || 'Conditional Probability',
+                    desc: t('behavior_lens.hub.condprob_desc') || 'Foreground vs background probability analysis to validate ABC hypotheses with data',
                     color: 'rose',
                 },
                 {
                     id: 'treatintegrity',
                     icon: '✅',
-                    title: 'Treatment Integrity',
-                    desc: 'Document whether interventions are implemented as designed — component-level fidelity tracking',
+                    title: t('behavior_lens.hub.treatintegrity_title') || 'Treatment Integrity',
+                    desc: t('behavior_lens.hub.treatintegrity_desc') || 'Document whether interventions are implemented as designed — component-level fidelity tracking',
                     color: 'cyan',
                 },
                 {
                     id: 'nlabc',
                     icon: '✏️',
-                    title: 'Natural Language ABC',
-                    desc: 'Type or paste observation notes in everyday English — AI structures them into ABC entries automatically',
+                    title: t('behavior_lens.hub.nlabc_title') || 'Natural Language ABC',
+                    desc: t('behavior_lens.hub.nlabc_desc') || 'Type or paste observation notes in everyday English — AI structures them into ABC entries automatically',
                     color: 'violet',
                 },
                 {
                     id: 'iepgoals',
                     icon: '📄',
-                    title: 'IEP Goal Generator',
-                    desc: 'AI-generated present levels, SMART goals, objectives, accommodations, and progress monitoring plans',
+                    title: t('behavior_lens.hub.iepgoals_title') || 'IEP Goal Generator',
+                    desc: t('behavior_lens.hub.iepgoals_desc') || 'AI-generated present levels, SMART goals, objectives, accommodations, and progress monitoring plans',
                     color: 'sky',
                     disabled: abcEntries.length < 1,
                 },
                 {
                     id: 'caseload',
                     icon: '👥',
-                    title: 'Caseload Dashboard',
-                    desc: 'Bird\'s-eye overview of all students — status indicators, trends, safety alerts, and AI caseload summary',
+                    title: t('behavior_lens.hub.caseload_title') || 'Caseload Dashboard',
+                    desc: t('behavior_lens.hub.caseload_desc') || 'Bird\'s-eye overview of all students — status indicators, trends, safety alerts, and AI caseload summary',
                     color: 'teal',
                 },
                 {
                     id: 'mtss',
                     icon: '🏗️',
-                    title: 'MTSS/RTI Tiers',
-                    desc: 'Visual 3-tier pyramid for managing multi-tiered supports with AI-powered tier placement recommendations',
+                    title: t('behavior_lens.hub.mtss_title') || 'MTSS/RTI Tiers',
+                    desc: t('behavior_lens.hub.mtss_desc') || 'Visual 3-tier pyramid for managing multi-tiered supports with AI-powered tier placement recommendations',
                     color: 'orange',
                 },
                 {
                     id: 'progressreport',
                     icon: '📊',
-                    title: 'Progress Reports',
-                    desc: 'AI-generated progress reports with data summaries, trend analysis, goal progress, and parent-friendly language option',
+                    title: t('behavior_lens.hub.progressreport_title') || 'Progress Reports',
+                    desc: t('behavior_lens.hub.progressreport_desc') || 'AI-generated progress reports with data summaries, trend analysis, goal progress, and parent-friendly language option',
                     color: 'emerald',
                 },
                 {
                     id: 'effectsize',
                     icon: '📐',
-                    title: 'Effect Size Calculator',
-                    desc: 'Calculate Tau-U, NAP, and PND to quantify intervention effectiveness with visual phase comparison',
+                    title: t('behavior_lens.hub.effectsize_title') || 'Effect Size Calculator',
+                    desc: t('behavior_lens.hub.effectsize_desc') || 'Calculate Tau-U, NAP, and PND to quantify intervention effectiveness with visual phase comparison',
                     color: 'indigo',
                 },
                 {
                     id: 'obscoach',
                     icon: '🎓',
-                    title: 'AI Observation Coach',
-                    desc: 'Real-time coaching on your data collection quality — identifies gaps, suggests improvements, and rates your data',
+                    title: t('behavior_lens.hub.obscoach_title') || 'AI Observation Coach',
+                    desc: t('behavior_lens.hub.obscoach_desc') || 'Real-time coaching on your data collection quality — identifies gaps, suggests improvements, and rates your data',
                     color: 'amber',
                 },
             ].filter(tool => !isParentMode || parentTools.includes(tool.id));
@@ -14864,7 +15535,7 @@ Analyze this data and return ONLY valid JSON:
                         audit: 'equity', cultural: 'equity', reframe: 'equity', biascheck: 'equity', restorative: 'equity',
                         homenote: 'family', homelog: 'family', familyvoice: 'family', commlog: 'family', snapshot: 'family', consent: 'family',
                         hotspot: 'environment', antecedentmod: 'environment', crisis: 'environment', relmap: 'environment',
-                        export: 'utilities', record: 'utilities', abaguide: 'utilities', sandbox: 'utilities', glossary: 'utilities', fbaworkflow: 'utilities', counseling: 'utilities', teamnotes: 'utilities', pdpath: 'utilities', abaquiz: 'utilities', bcbahandoff: 'analysis', riskscreen: 'planning', sessiontracker: 'collection', abagraph: 'analysis', scdmanager: 'analysis', drstrategy: 'planning', fcttemplate: 'planning',
+                        export: 'utilities', record: 'utilities', abaguide: 'utilities', sandbox: 'utilities', glossary: 'utilities', fbaworkflow: 'utilities', counseling: 'utilities', teamnotes: 'utilities', pdpath: 'utilities', abaquiz: 'utilities', casestudy: 'utilities', bcbahandoff: 'analysis', riskscreen: 'planning', sessiontracker: 'collection', abagraph: 'analysis', scdmanager: 'analysis', drstrategy: 'planning', fcttemplate: 'planning',
                         nlabc: 'data', iepgoals: 'planning', caseload: 'analysis', mtss: 'planning', progressreport: 'planning', effectsize: 'analysis', obscoach: 'utilities',
                         ioacalc: 'data', taskanalysis: 'data', dtt: 'data', prefassess: 'data', scatterplot: 'analysis', latency: 'data', socialvalidity: 'analysis', maintenance: 'planning', cumrecord: 'analysis', condprob: 'analysis', treatintegrity: 'planning',
                     };
@@ -14951,6 +15622,31 @@ Analyze this data and return ONLY valid JSON:
                                 onClick: () => setSearchQuery(''),
                                 className: 'absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600'
                             }, '✕')
+                        ),
+
+                        // ── Quick Launch Bar (BCBA-priority tools) ──
+                        h('div', { className: 'bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600 rounded-xl p-4 shadow-lg' },
+                            h('div', { className: 'flex items-center justify-between mb-3' },
+                                h('div', { className: 'flex items-center gap-2' },
+                                    h('span', { className: 'text-white text-lg' }, '⚡'),
+                                    h('span', { className: 'text-white text-xs font-black uppercase tracking-wider' }, t('behavior_lens.hub.quick_launch') || 'Quick Launch')
+                                ),
+                                h('span', { className: 'text-indigo-200 text-[10px] font-medium' }, t('behavior_lens.hub.quick_launch_hint') || 'Core clinical tools — one tap access')
+                            ),
+                            h('div', { className: 'flex flex-wrap gap-2' },
+                                [
+                                    { id: 'abc', icon: '📝', label: t('behavior_lens.hub.abc_title') || 'ABC Data Collection', shortLabel: 'ABC Data' },
+                                    { id: 'abagraph', icon: '📊', label: t('behavior_lens.hub.abagraph_title') || 'ABA Graph Engine', shortLabel: 'JABA Graphs' },
+                                    { id: 'scdmanager', icon: '🔬', label: t('behavior_lens.hub.scdmanager_title') || 'SCD Manager', shortLabel: 'SCD Manager' },
+                                    { id: 'effectsize', icon: '📐', label: t('behavior_lens.hub.effectsize_title') || 'Effect Size Calculator', shortLabel: 'Effect Size' },
+                                    { id: 'hypothesis', icon: '🔗', label: t('behavior_lens.hub.hypothesis_title') || 'Hypothesis Diagram', shortLabel: 'Hypothesis' },
+                                ].map(q => h('button', {
+                                    key: 'ql-' + q.id,
+                                    onClick: () => handleToolOpen(q.id),
+                                    disabled: !selectedStudent && !['abagraph', 'scdmanager', 'effectsize'].includes(q.id),
+                                    className: `flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 ${!selectedStudent && !['abagraph', 'scdmanager', 'effectsize'].includes(q.id) ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`
+                                }, h('span', { className: 'text-base' }, q.icon), q.shortLabel))
+                            )
                         ),
 
                         // ── Workspace Save/Load (Top) ──
@@ -15603,6 +16299,11 @@ Analyze this data and return ONLY valid JSON:
                     onOpenTool: (toolId) => { setActivePanel(toolId); }
                 }),
                 activePanel === 'abaquiz' && h(ABAQuiz, {
+                    t,
+                    addToast
+                }),
+                activePanel === 'casestudy' && h(CaseStudyEngine, {
+                    callGemini: callGeminiWithContext,
                     t,
                     addToast
                 }),
