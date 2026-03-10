@@ -26433,6 +26433,57 @@
             return PLANT_SPECIES[tankId] || PLANT_SPECIES['freshwater'] || [];
           };
 
+          // ═══ BREEDING DATA CATALOG ═══
+          // Per-species reproductive strategies and parameters
+          var BREEDING_DATA = {
+            // Livebearers — give birth to free-swimming fry, no egg stage
+            guppy:    { type: 'livebearer',   gestationTicks: 20, fryCount: [3, 7],  breedChance: 0.12, minPop: 2, desc: 'Males display vibrant color patterns to attract females. Females store sperm and can produce multiple broods.' },
+            platy:    { type: 'livebearer',   gestationTicks: 18, fryCount: [2, 5],  breedChance: 0.10, minPop: 2, desc: 'Prolific livebearers that give birth to free-swimming fry every 4-6 weeks.' },
+            molly:    { type: 'livebearer',   gestationTicks: 22, fryCount: [3, 8],  breedChance: 0.08, minPop: 2, desc: 'Mollies prefer slightly brackish conditions for breeding. Fry are large and independent at birth.' },
+            // Egg-layers — lay eggs on surfaces, parents may guard
+            angel:    { type: 'egg_layer',    gestationTicks: 30, fryCount: [1, 3],  breedChance: 0.05, minPop: 2, desc: 'Angelfish carefully clean a flat surface before laying hundreds of eggs. Both parents fan and guard the clutch.' },
+            clown:    { type: 'egg_layer',    gestationTicks: 35, fryCount: [1, 2],  breedChance: 0.04, minPop: 2, hermaphrodite: true, desc: 'All clownfish are born male. The dominant fish becomes female — if she dies, the next male transitions.' },
+            cory:     { type: 'egg_layer',    gestationTicks: 25, fryCount: [2, 4],  breedChance: 0.06, minPop: 2, desc: 'Corydoras perform a unique "T-position" mating dance. Females carry eggs in their pelvic fins before depositing them on glass or leaves.' },
+            // Bubble nest builders — male builds floating bubble nest
+            betta:    { type: 'bubble_nest',  gestationTicks: 25, fryCount: [1, 2],  breedChance: 0.04, minPop: 1, desc: 'Males blow mucus-coated bubbles to build a floating nest. After spawning, the male guards eggs and returns fallen fry to the nest.' },
+            // Colony breeders — rapid reproduction, females carry eggs
+            shrimp:   { type: 'colony',       gestationTicks: 12, fryCount: [4, 10], breedChance: 0.15, minPop: 2, desc: 'Females carry fertilized eggs under their abdomen ("berried"). Shrimplets are miniature adults at birth.' },
+            // Schooling egg-scatterers — eggs scattered among plants, no parental care
+            neon:     { type: 'egg_scatter',  gestationTicks: 28, fryCount: [1, 3],  breedChance: 0.03, minPop: 4, desc: 'Scatter tiny adhesive eggs among fine-leaved plants at dawn. Eggs are light-sensitive and hatch in 24 hours.' },
+            cardinal: { type: 'egg_scatter',  gestationTicks: 28, fryCount: [1, 3],  breedChance: 0.03, minPop: 4, desc: 'Prefer very soft, acidic water for spawning. Eggs and fry are extremely small and fragile.' },
+            rummy:    { type: 'egg_scatter',  gestationTicks: 28, fryCount: [1, 2],  breedChance: 0.03, minPop: 4, desc: 'Spawn in tight schools at first light. Red nose coloration intensifies during courtship.' }
+          };
+
+          // Breeding event messages by reproductive type
+          var BREEDING_MESSAGES = {
+            livebearer: {
+              court: function (n) { return '\uD83D\uDC95 Your ' + n + ' are courting! Males displaying vibrant colors...'; },
+              birth: function (n, c) { return '\uD83D\uDC23 A ' + n + ' has given birth to ' + c + ' free-swimming fry!'; },
+              abort: function (n) { return '\u26A0\uFE0F ' + n + ' breeding interrupted \u2014 poor water conditions caused stress.'; }
+            },
+            egg_layer: {
+              court: function (n) { return '\uD83D\uDC95 Your ' + n + ' are cleaning a surface for egg-laying...'; },
+              eggs:  function (n) { return '\uD83E\uDD5A ' + n + ' have laid eggs! Parents are guarding the nest.'; },
+              birth: function (n, c) { return '\uD83D\uDC23 ' + c + ' ' + n + ' fry have hatched from the eggs!'; },
+              abort: function (n) { return '\u26A0\uFE0F ' + n + ' eggs failed to develop \u2014 water quality too poor.'; }
+            },
+            bubble_nest: {
+              court: function (n) { return '\uD83D\uDC95 Your ' + n + ' is building a bubble nest at the surface...'; },
+              birth: function (n, c) { return '\uD83D\uDC23 ' + c + ' ' + n + ' fry emerging from the bubble nest!'; },
+              abort: function (n) { return '\u26A0\uFE0F ' + n + ' bubble nest destroyed by surface turbulence.'; }
+            },
+            colony: {
+              court: function (n) { return '\uD83D\uDC95 Your ' + n + ' colony is thriving \u2014 females are berried (carrying eggs)!'; },
+              birth: function (n, c) { return '\uD83D\uDC23 ' + c + ' tiny shrimplets have appeared in the colony!'; },
+              abort: function (n) { return '\u26A0\uFE0F ' + n + ' dropped their eggs \u2014 too much stress.'; }
+            },
+            egg_scatter: {
+              court: function (n) { return '\uD83D\uDC95 Your ' + n + ' are scattering eggs among the plants...'; },
+              birth: function (n, c) { return '\uD83D\uDC23 ' + c + ' ' + n + ' fry have survived the egg stage!'; },
+              abort: function (n) { return '\u26A0\uFE0F ' + n + ' eggs were eaten \u2014 not enough plant cover.'; }
+            }
+          };
+
           // ── Current state ──
           var selectedTank = d.selectedTank || null;
           var tankFish = d.tankFish || [];
@@ -26461,6 +26512,11 @@
           var plantHealth = d.plantHealth || {}; // { plantId: 0-100 }
           var plantBiomass = d.plantBiomass || {}; // { plantId: currentSize (0 to maxSize) }
           var plantCatalog = getPlantsForTank(selectedTank); // available plants for current tank type
+
+          // ── Breeding ecosystem state ──
+          var breedingState = d.breedingState || {}; // { speciesId: { stage: 'gestating'|'hatching', startTick: N, fryCount: N } }
+          var breedingCooldowns = d.breedingCooldowns || {}; // { speciesId: lastBreedCompleteTick }
+          var totalFryBorn = d.totalFryBorn || 0; // lifetime fry counter for achievements
 
           // ── Species animation behaviors ──
           var SPECIES_ANIM = {
@@ -26879,7 +26935,8 @@
               tankFish: [],
               waterChem: { pH: tank.pH, temp: tank.temp, ammonia: 0, nitrite: 0, nitrate: 5, salinity: tank.salinity, dissolvedO2: 7.0, co2: 3.0 },
               simTick: 0, simRunning: false, fishHealth: {}, eventLog: [{ tick: 0, msg: '🐠 ' + tank.name + ' tank initialized!' }],
-              tankPlants: [], plantHealth: {}, plantBiomass: {}
+              tankPlants: [], plantHealth: {}, plantBiomass: {},
+              breedingState: {}, breedingCooldowns: {}, totalFryBorn: 0
             });
           };
 
@@ -27125,6 +27182,11 @@
               var _dissolvedO2 = _waterChem.dissolvedO2 !== undefined ? _waterChem.dissolvedO2 : 7.0;
               var _co2 = _waterChem.co2 !== undefined ? _waterChem.co2 : 3.0;
               var plantCatalog = getPlantsForTank(_selectedTank);
+              // ── Breeding state ──
+              var _breedingState = Object.assign({}, aq.breedingState || {});
+              var _breedingCooldowns = Object.assign({}, aq.breedingCooldowns || {});
+              var _totalFryBorn = aq.totalFryBorn || 0;
+              var breedingChanged = false;
               var bioload = _tankFish.reduce(function (sum, f) {
                 var sp = (SPECIES_BY_TANK[_selectedTank] || []).find(function (s) { return s.id === f; });
                 return sum + (sp ? sp.load : 0);
@@ -27355,6 +27417,139 @@
                   plantChanged = true;
                 }
               });
+              // ── Breeding ──
+              // Count population of each species in the current tank
+              var _speciesPopCounts = {};
+              finalTankFish.forEach(function (fId) { _speciesPopCounts[fId] = (_speciesPopCounts[fId] || 0) + 1; });
+              var speciesList = SPECIES_BY_TANK[_selectedTank] || [];
+              var tank = TANK_TYPES.find(function (t) { return t.id === _selectedTank; });
+              var _maxLoad = tank ? Math.floor(tank.size / 2) : 10;
+              var _currentLoad = finalTankFish.reduce(function (s, f) { var sp = speciesList.find(function (x) { return x.id === f; }); return s + (sp ? sp.load : 0); }, 0);
+              var _totalPlantBiomass = _tankPlants.reduce(function (s, pId) { return s + (_plantBiomass[pId] || 0); }, 0);
+              var fryToAdd = [];
+
+              // Process each species that has breeding data
+              Object.keys(_speciesPopCounts).forEach(function (sId) {
+                var bData = BREEDING_DATA[sId];
+                if (!bData) return; // species doesn't breed in simulation
+                var sp = speciesList.find(function (x) { return x.id === sId; });
+                if (!sp) return;
+                var popCount = _speciesPopCounts[sId];
+                var msgs = BREEDING_MESSAGES[bData.type];
+
+                // ── Active gestation check ──
+                if (_breedingState[sId]) {
+                  var bs = _breedingState[sId];
+                  var elapsed = newTick - bs.startTick;
+
+                  // Abort check: if conditions deteriorated during gestation
+                  var abortChance = 0;
+                  if (newChem.ammonia > 1.0) abortChance += 0.08;
+                  if (newChem.nitrite > 0.8) abortChance += 0.06;
+                  if ((newStress[sId] || 0) > 70) abortChance += 0.05;
+                  if (newO2 < 3) abortChance += 0.04;
+                  if (abortChance > 0 && Math.random() < abortChance) {
+                    // Gestation aborted
+                    if (msgs && msgs.abort) newLog.push({ tick: newTick, msg: msgs.abort(sp.name) });
+                    delete _breedingState[sId];
+                    breedingChanged = true;
+                    return;
+                  }
+
+                  // Egg-layer mid-point event (eggs laid message)
+                  if (bData.type === 'egg_layer' && bs.stage === 'gestating' && elapsed >= Math.floor(bData.gestationTicks * 0.5) && !bs.eggsLogged) {
+                    if (msgs && msgs.eggs) newLog.push({ tick: newTick, msg: msgs.eggs(sp.name) });
+                    _breedingState[sId] = Object.assign({}, bs, { eggsLogged: true });
+                    breedingChanged = true;
+                  }
+
+                  // Gestation complete — birth!
+                  if (elapsed >= bData.gestationTicks) {
+                    var fryCount = bs.fryCount;
+                    // Fry survival risk: predators reduce survival, plants increase it
+                    var hasPredators = false;
+                    finalTankFish.forEach(function (fId2) {
+                      if (fId2 === sId) return;
+                      var otherSp = speciesList.find(function (x) { return x.id === fId2; });
+                      if (otherSp && otherSp.diet && /carnivore|piscivore|predator/i.test(otherSp.diet)) hasPredators = true;
+                    });
+                    var survivalRate = 1.0;
+                    if (hasPredators) survivalRate -= 0.4; // predators eat fry
+                    if (_totalPlantBiomass > 3) survivalRate += 0.15; // plants provide hiding spots
+                    if (_totalPlantBiomass > 6) survivalRate += 0.1;
+                    if (newChem.ammonia > 0.5) survivalRate -= 0.2;
+                    survivalRate = Math.max(0.1, Math.min(1.0, survivalRate));
+
+                    // Apply survival to each fry individually
+                    var survivingFry = 0;
+                    for (var fi = 0; fi < fryCount; fi++) {
+                      if (Math.random() < survivalRate) survivingFry++;
+                    }
+
+                    // Bioload cap: only add fry if there's room
+                    var fryLoad = sp.load || 1;
+                    var roomForFry = Math.floor((_maxLoad - _currentLoad) / fryLoad);
+                    survivingFry = Math.min(survivingFry, Math.max(0, roomForFry));
+
+                    if (survivingFry > 0) {
+                      for (var fj = 0; fj < survivingFry; fj++) {
+                        fryToAdd.push(sId);
+                      }
+                      _totalFryBorn += survivingFry;
+                      if (msgs && msgs.birth) newLog.push({ tick: newTick, msg: msgs.birth(sp.name, survivingFry) });
+                      awardStemXP('aquarium', 5, 'Successful breeding: ' + sp.name);
+                    } else {
+                      newLog.push({ tick: newTick, msg: '\u2620\uFE0F ' + sp.name + ' fry did not survive — too many predators or poor conditions.' });
+                    }
+
+                    // Set cooldown and clear gestation
+                    _breedingCooldowns[sId] = newTick;
+                    delete _breedingState[sId];
+                    breedingChanged = true;
+                  }
+                  return; // already gestating, skip initiation check
+                }
+
+                // ── Breeding initiation check ──
+                // Condition 1: enough population
+                if (popCount < bData.minPop) return;
+                // Condition 2: water quality acceptable
+                if (newChem.ammonia > 0.5 || newChem.nitrite > 0.5) return;
+                // Condition 3: low stress
+                if ((newStress[sId] || 0) > 50) return;
+                // Condition 4: well-fed
+                if ((newHunger[sId] || 50) > 70) return;
+                // Condition 5: bioload has room for at least 1 fry
+                if (_currentLoad + (sp.load || 1) > _maxLoad) return;
+                // Condition 6: cooldown elapsed (1.5x gestation ticks)
+                var cooldownNeeded = Math.floor(bData.gestationTicks * 1.5);
+                if (_breedingCooldowns[sId] && (newTick - _breedingCooldowns[sId]) < cooldownNeeded) return;
+                // Condition 7: adequate O2
+                if (newO2 < 3) return;
+                // Condition 8: random chance
+                if (Math.random() > bData.breedChance) return;
+
+                // Egg-scatterers need plant cover
+                if (bData.type === 'egg_scatter' && _totalPlantBiomass < 1) return;
+
+                // All conditions met — initiate breeding!
+                var fryMin = bData.fryCount[0];
+                var fryMax = bData.fryCount[1];
+                var plannedFry = fryMin + Math.floor(Math.random() * (fryMax - fryMin + 1));
+                _breedingState[sId] = { stage: 'gestating', startTick: newTick, fryCount: plannedFry };
+                breedingChanged = true;
+                if (msgs && msgs.court) newLog.push({ tick: newTick, msg: msgs.court(sp.name) });
+              });
+
+              // Apply fry additions to tank
+              if (fryToAdd.length > 0) {
+                finalTankFish = finalTankFish.concat(fryToAdd);
+                // Initialize hunger for new fry
+                fryToAdd.forEach(function (fId) {
+                  if (newHunger[fId] === undefined) newHunger[fId] = 40;
+                });
+              }
+
               // Build final update
               var tickUpdate = {
                 waterChem: newChem, simTick: newTick, simDay: newDay, simHour: newHour,
@@ -27362,10 +27557,15 @@
                 algaeLevel: Math.round(newAlgae * 10) / 10, fishStress: newStress
               };
               if (sickChanged) tickUpdate.fishSickness = newSickness;
-              if (fishToRemove.length > 0) tickUpdate.tankFish = finalTankFish;
+              if (fishToRemove.length > 0 || fryToAdd.length > 0) tickUpdate.tankFish = finalTankFish;
               if (plantChanged) {
                 tickUpdate.plantHealth = _plantHealth;
                 tickUpdate.plantBiomass = _plantBiomass;
+              }
+              if (breedingChanged || fryToAdd.length > 0) {
+                tickUpdate.breedingState = _breedingState;
+                tickUpdate.breedingCooldowns = _breedingCooldowns;
+                tickUpdate.totalFryBorn = _totalFryBorn;
               }
               aq = Object.assign(aq, tickUpdate);
               return Object.assign({}, prev, { _aquarium: aq });
@@ -27956,6 +28156,79 @@
                 ),
 
 
+
+                // ── Breeding Status Panel ──
+                (function () {
+                  var breedableSpecies = [];
+                  var seenSpecies = {};
+                  tankFish.forEach(function (fId) {
+                    if (!seenSpecies[fId] && BREEDING_DATA[fId]) {
+                      seenSpecies[fId] = true;
+                      breedableSpecies.push(fId);
+                    }
+                  });
+                  if (breedableSpecies.length === 0) return null;
+                  var speciesList = SPECIES_BY_TANK[selectedTank] || [];
+                  var speciesPopCounts = {};
+                  tankFish.forEach(function (fId) { speciesPopCounts[fId] = (speciesPopCounts[fId] || 0) + 1; });
+                  var stratIcons = { livebearer: '\uD83E\uDD30', egg_layer: '\uD83E\uDD5A', egg_scatter: '\uD83C\uDF3F\uD83E\uDD5A', mouthbrooder: '\uD83D\uDC41\uFE0F', hermaphrodite: '\u2695\uFE0F' };
+                  var stratLabels = { livebearer: 'Livebearer', egg_layer: 'Egg Layer', egg_scatter: 'Egg Scatter', mouthbrooder: 'Mouthbrooder', hermaphrodite: 'Hermaphrodite' };
+                  return React.createElement("div", { className: "bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50 rounded-2xl p-4 border border-pink-200/60 shadow-sm" },
+                    React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                      React.createElement("h4", { className: "text-xs font-bold text-pink-700" }, "\uD83D\uDC9E Breeding Status"),
+                      React.createElement("span", { className: "text-[9px] text-pink-500 bg-pink-100/60 rounded-full px-2 py-0.5" }, "\uD83D\uDC23 " + totalFryBorn + " fry born")
+                    ),
+                    React.createElement("div", { className: "space-y-2" },
+                      breedableSpecies.map(function (sId) {
+                        var bData = BREEDING_DATA[sId];
+                        var sp = speciesList.find(function (x) { return x.id === sId; });
+                        if (!sp) return null;
+                        var pop = speciesPopCounts[sId] || 0;
+                        var bs = breedingState[sId];
+                        var isGestating = !!bs;
+                        var gestPct = isGestating ? Math.min(100, Math.round(((simTick - bs.startTick) / bData.gestationTicks) * 100)) : 0;
+                        var cooldownLeft = 0;
+                        if (!isGestating && breedingCooldowns[sId]) {
+                          var cooldownNeeded = Math.floor(bData.gestationTicks * 1.5);
+                          cooldownLeft = Math.max(0, cooldownNeeded - (simTick - breedingCooldowns[sId]));
+                        }
+                        var popOk = pop >= bData.minPop;
+                        var stressOk = (fishStress[sId] || 0) <= 50;
+                        var hungerOk = (hungerLevels[sId] || 50) <= 70;
+                        return React.createElement("div", { key: sId, className: "bg-white/80 rounded-xl p-2.5 border " + (isGestating ? "border-pink-300 shadow-pink-100 shadow-sm" : "border-pink-100") },
+                          React.createElement("div", { className: "flex items-center gap-2 mb-1" },
+                            React.createElement("span", { className: "text-base" }, stratIcons[bData.type] || '\uD83D\uDC1F'),
+                            React.createElement("div", { className: "flex-1 min-w-0" },
+                              React.createElement("div", { className: "text-[11px] font-bold text-pink-800 truncate" }, sp.name),
+                              React.createElement("div", { className: "text-[9px] text-pink-400" }, stratLabels[bData.type] + " \u2022 Pop: " + pop + "/" + bData.minPop + " min")
+                            ),
+                            isGestating && React.createElement("span", { className: "text-[9px] font-mono text-pink-600 bg-pink-100 rounded-full px-1.5 py-0.5 animate-pulse" }, gestPct + "%")
+                          ),
+                          isGestating && React.createElement("div", { className: "mt-1" },
+                            React.createElement("div", { className: "h-2 bg-pink-100 rounded-full overflow-hidden" },
+                              React.createElement("div", { style: { width: gestPct + '%', transition: 'width 0.5s' }, className: "h-full rounded-full bg-gradient-to-r from-pink-400 to-rose-500" })
+                            ),
+                            React.createElement("div", { className: "flex justify-between mt-0.5" },
+                              React.createElement("span", { className: "text-[8px] text-pink-400" }, bs.stage === 'gestating' && bData.type === 'egg_layer' && bs.eggsLogged ? '\uD83E\uDD5A Eggs developing...' : '\u2764\uFE0F Gestating...'),
+                              React.createElement("span", { className: "text-[8px] text-pink-400" }, "Expected: " + bs.fryCount + " fry")
+                            )
+                          ),
+                          !isGestating && cooldownLeft > 0 && React.createElement("div", { className: "mt-1 text-[9px] text-slate-400 italic" }, "\u23F3 Cooldown: " + cooldownLeft + " ticks remaining"),
+                          !isGestating && cooldownLeft === 0 && React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap" },
+                            React.createElement("span", { className: "text-[8px] rounded px-1 " + (popOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, popOk ? "\u2714 Pop" : "\u2718 Pop"),
+                            React.createElement("span", { className: "text-[8px] rounded px-1 " + (stressOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, stressOk ? "\u2714 Calm" : "\u2718 Stress"),
+                            React.createElement("span", { className: "text-[8px] rounded px-1 " + (hungerOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, hungerOk ? "\u2714 Fed" : "\u2718 Hungry")
+                          )
+                        );
+                      })
+                    ),
+                    React.createElement("div", { className: "mt-2 text-[9px] text-pink-600/80 bg-pink-100/40 rounded-lg p-2 leading-relaxed" },
+                      "\uD83D\uDCA1 ",
+                      React.createElement("strong", null, "Breeding Tip: "),
+                      "Keep water clean, stress low, and fish well-fed. Plants provide hiding spots for fry, boosting survival. Predators in the tank will eat vulnerable fry!"
+                    )
+                  );
+                })(),
 
                 // Bioload Meter
                 React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
