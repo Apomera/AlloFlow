@@ -7188,79 +7188,408 @@ Generate 10 entries and 2 observations. Include a mix of challenging behaviors A
         );
     };
 
-    // ─── GuidedFBAWorkflow ──────────────────────────────────────────────
-    // Step-by-step FBA process wizard with tool links
-    const GuidedFBAWorkflow = ({ activePanel, setActivePanel, abcEntries, aiAnalysis, t }) => {
-        const [completedSteps, setCompletedSteps] = useState(new Set());
+    // ─── GuidedWorkflowHub ──────────────────────────────────────────────
+    // Multi-track guided workflow system with sub-steps, auto-completion, and AI recommendations
+    const GuidedWorkflowHub = ({ setActivePanel, abcEntries, observationSessions, aiAnalysis, callGemini, alloBotRef, workflowTrack, setWorkflowTrack, workflowSubSteps, setWorkflowSubSteps, t, addToast }) => {
+        const [expandedStep, setExpandedStep] = useState(null);
+        const [aiRec, setAiRec] = useState('');
+        const [aiRecLoading, setAiRecLoading] = useState(false);
 
-        const steps = [
-            { id: 1, title: 'Define Target Behavior', icon: '🎯', tool: 'abc', toolName: 'ABC Data Panel', desc: 'Identify and operationally define the behavior of concern. A good definition is observable (can be seen) and measurable (can be counted).', tip: 'Ask: "Could two people independently agree on whether this behavior occurred?" If yes, your definition is specific enough.', check: abcEntries.length > 0 ? '✅ You have ABC entries defined' : '❌ No ABC data yet — start by logging some entries' },
-            { id: 2, title: 'Collect Baseline Data', icon: '📊', tool: 'observation', toolName: 'Live Observation', desc: 'Gather data on how often, how long, and how intense the behavior is BEFORE any intervention. This gives you a comparison point.', tip: 'Collect at least 3-5 observation sessions across different days and settings for reliable baseline data.', check: null },
-            { id: 3, title: 'Identify Patterns', icon: '🔍', tool: 'analysis', toolName: 'AI Analysis', desc: 'Look for patterns in your ABC data. What antecedents consistently trigger the behavior? What consequences are maintaining it? When and where does it happen most?', tip: 'Use the AI Analysis tool to automatically detect patterns you might miss.', check: aiAnalysis ? '✅ AI Analysis completed' : '❌ Run AI Analysis after collecting enough data' },
-            { id: 4, title: 'Hypothesize Function', icon: '🧩', tool: 'hypothesis', toolName: 'Hypothesis Diagram', desc: 'Based on your data patterns, hypothesize WHY the behavior is occurring. What is the student getting or avoiding? The four functions are: Escape, Attention, Sensory/Automatic, and Tangible Access.', tip: 'A behavior can serve multiple functions. Consider whether the function changes across settings.', check: aiAnalysis?.hypothesizedFunction ? `✅ Hypothesized: ${aiAnalysis.hypothesizedFunction}` : '❌ Complete analysis first' },
-            { id: 5, title: 'Design Intervention', icon: '📋', tool: 'intervention', toolName: 'Intervention Plan', desc: 'Create a Behavior Intervention Plan (BIP) that addresses the function. Include: prevention strategies, replacement behavior teaching, reinforcement for appropriate behavior, and how to respond to problem behavior.', tip: 'The replacement behavior must serve the SAME function as the problem behavior and be EASIER for the student to perform.', check: null },
-            { id: 6, title: 'Monitor & Adjust', icon: '📈', tool: 'progress', toolName: 'Progress Narrative', desc: 'Continue collecting data to evaluate whether the intervention is working. Compare to baseline. Make data-based decisions about adjusting the plan.', tip: 'Give an intervention at least 2-3 weeks before making major changes, unless safety is a concern.', check: null },
-        ];
+        // ── Track definitions ──
+        const TRACKS = {
+            fba: {
+                id: 'fba', icon: '🗺️', title: 'Full FBA',
+                subtitle: '6 steps · Complete Functional Behavior Assessment',
+                gradient: 'from-blue-500 to-indigo-600',
+                steps: [
+                    { id: 'fba_1', num: 1, title: 'Define Target Behavior', icon: '🎯', tool: 'abc', toolName: 'ABC Data',
+                      desc: 'Operationally define the behavior so it is observable and measurable.',
+                      tip: 'Ask: "Could two people independently agree on whether this behavior occurred?"',
+                      autoCheck: () => abcEntries.length > 0 ? `✅ ${abcEntries.length} ABC entries logged` : null,
+                      subs: [
+                          { id: 'fba_1a', label: 'Write an observable, measurable behavior definition' },
+                          { id: 'fba_1b', label: 'Confirm two observers could agree on occurrence' },
+                          { id: 'fba_1c', label: 'Select the primary setting(s) for data collection' },
+                      ] },
+                    { id: 'fba_2', num: 2, title: 'Collect Baseline Data', icon: '📊', tool: 'observation', toolName: 'Live Observation',
+                      desc: 'Gather data on frequency, duration, and intensity BEFORE intervention.',
+                      tip: 'Collect 3–5 sessions across different days and settings for reliable baseline.',
+                      autoCheck: () => observationSessions.length >= 3 ? `✅ ${observationSessions.length} sessions recorded` : observationSessions.length > 0 ? `🔄 ${observationSessions.length}/3 sessions (need more)` : null,
+                      subs: [
+                          { id: 'fba_2a', label: 'Complete at least 3 observation sessions' },
+                          { id: 'fba_2b', label: 'Observe across multiple settings (classroom, recess, etc.)' },
+                          { id: 'fba_2c', label: 'Record duration and intensity for each incident' },
+                      ] },
+                    { id: 'fba_3', num: 3, title: 'Identify Patterns', icon: '🔍', tool: 'analysis', toolName: 'AI Analysis',
+                      desc: 'Analyze ABC data to discover antecedent triggers and maintaining consequences.',
+                      tip: 'Use AI Analysis after 3+ entries to automatically detect patterns.',
+                      autoCheck: () => aiAnalysis ? '✅ AI Analysis completed' : abcEntries.length >= 3 ? '🔄 Ready for analysis — run AI Analysis' : null,
+                      subs: [
+                          { id: 'fba_3a', label: 'Run AI Analysis on collected data' },
+                          { id: 'fba_3b', label: 'Review the most common antecedent triggers' },
+                          { id: 'fba_3c', label: 'Review the most common consequence patterns' },
+                      ] },
+                    { id: 'fba_4', num: 4, title: 'Hypothesize Function', icon: '🧩', tool: 'hypothesis', toolName: 'Hypothesis Diagram',
+                      desc: 'Determine WHY the behavior occurs — Escape, Attention, Sensory, or Tangible.',
+                      tip: 'A behavior can serve multiple functions. Consider whether function changes across settings.',
+                      autoCheck: () => aiAnalysis?.hypothesizedFunction ? `✅ Hypothesized: ${aiAnalysis.hypothesizedFunction}` : null,
+                      subs: [
+                          { id: 'fba_4a', label: 'Map antecedent → behavior → consequence pathways' },
+                          { id: 'fba_4b', label: 'Confirm hypothesis with the team or a colleague' },
+                          { id: 'fba_4c', label: 'Document the hypothesis in session notes' },
+                      ] },
+                    { id: 'fba_5', num: 5, title: 'Design Intervention', icon: '📋', tool: 'intervention', toolName: 'Intervention Plan',
+                      desc: 'Build a BIP addressing the function with replacement behaviors and reinforcement.',
+                      tip: 'Replacement behaviors must serve the SAME function and be EASIER to perform.',
+                      autoCheck: () => null,
+                      subs: [
+                          { id: 'fba_5a', label: 'Identify 1–2 functionally equivalent replacement behaviors' },
+                          { id: 'fba_5b', label: 'Plan a reinforcement schedule for replacement behaviors' },
+                          { id: 'fba_5c', label: 'Set intervention duration (e.g., 4–6 weeks)' },
+                      ] },
+                    { id: 'fba_6', num: 6, title: 'Monitor & Adjust', icon: '📈', tool: 'progress', toolName: 'Progress Narrative',
+                      desc: 'Compare ongoing data to baseline. Make data-driven decisions to adjust.',
+                      tip: 'Allow 2–3 weeks before major changes, unless safety is a concern.',
+                      autoCheck: () => null,
+                      subs: [
+                          { id: 'fba_6a', label: 'Compare current data to baseline levels' },
+                          { id: 'fba_6b', label: 'Share progress with the team and family' },
+                          { id: 'fba_6c', label: 'Adjust the plan based on data trends' },
+                      ] },
+                ],
+            },
+            bip: {
+                id: 'bip', icon: '⚡', title: 'Quick BIP',
+                subtitle: '4 steps · When the function is already known',
+                gradient: 'from-amber-500 to-orange-600',
+                steps: [
+                    { id: 'bip_1', num: 1, title: 'Confirm Function', icon: '🧩', tool: 'hypothesis', toolName: 'Hypothesis Diagram',
+                      desc: 'Verify the hypothesized function of the behavior with your team.',
+                      tip: 'Even if the function seems obvious, document it with at least some data.',
+                      autoCheck: () => aiAnalysis?.hypothesizedFunction ? `✅ Hypothesized: ${aiAnalysis.hypothesizedFunction}` : null,
+                      subs: [
+                          { id: 'bip_1a', label: 'Review existing data supporting the hypothesis' },
+                          { id: 'bip_1b', label: 'Confirm function with team consensus' },
+                          { id: 'bip_1c', label: 'Document the confirmed function' },
+                      ] },
+                    { id: 'bip_2', num: 2, title: 'Plan Replacement Behaviors', icon: '🔄', tool: 'replacebehavior', toolName: 'Replacement Behavior Planner',
+                      desc: 'Map each target behavior to a functionally equivalent replacement.',
+                      tip: 'Replacements must be easier, more efficient, and serve the same function.',
+                      autoCheck: () => null,
+                      subs: [
+                          { id: 'bip_2a', label: 'Map each target behavior to a replacement' },
+                          { id: 'bip_2b', label: 'Select a teaching strategy for each replacement' },
+                          { id: 'bip_2c', label: 'Plan reinforcement for replacement behaviors' },
+                      ] },
+                    { id: 'bip_3', num: 3, title: 'Build Intervention Plan', icon: '📋', tool: 'intervention', toolName: 'Intervention Plan',
+                      desc: 'Generate a structured multi-week intervention plan with AI assistance.',
+                      tip: 'Include prevention strategies, response protocols, and team roles.',
+                      autoCheck: () => null,
+                      subs: [
+                          { id: 'bip_3a', label: 'Select evidence-based intervention strategies' },
+                          { id: 'bip_3b', label: 'Set timeline and milestones (e.g., 4 weeks)' },
+                          { id: 'bip_3c', label: 'Assign team roles and responsibilities' },
+                      ] },
+                    { id: 'bip_4', num: 4, title: 'Plan Fidelity Monitoring', icon: '✓', tool: 'fidelity', toolName: 'Fidelity Checklist',
+                      desc: 'Ensure the intervention is implemented as designed with structured checks.',
+                      tip: 'Schedule IOA sessions and review dates upfront.',
+                      autoCheck: () => null,
+                      subs: [
+                          { id: 'bip_4a', label: 'Set review dates and check-in schedule' },
+                          { id: 'bip_4b', label: 'Plan data collection methods and frequency' },
+                          { id: 'bip_4c', label: 'Assign an IOA partner for reliability checks' },
+                      ] },
+                ],
+            },
+            rti: {
+                id: 'rti', icon: '🔄', title: 'RTI Behavior Tier',
+                subtitle: '5 steps · Tiered intervention progression',
+                gradient: 'from-emerald-500 to-teal-600',
+                steps: [
+                    { id: 'rti_1', num: 1, title: 'Tier 1: Universal Screening', icon: '🏫', tool: 'abc', toolName: 'ABC Data',
+                      desc: 'Conduct a classroom-wide scan to identify students needing additional support.',
+                      tip: 'Use simple frequency counts to identify students 1.5× above the class average.',
+                      autoCheck: () => abcEntries.length > 0 ? `✅ ${abcEntries.length} entries collected` : null,
+                      subs: [
+                          { id: 'rti_1a', label: 'Complete a classroom-wide behavior scan' },
+                          { id: 'rti_1b', label: 'Identify students exceeding the universal threshold' },
+                          { id: 'rti_1c', label: 'Document baseline frequency for flagged students' },
+                      ] },
+                    { id: 'rti_2', num: 2, title: 'Tier 2: Targeted Intervention', icon: '👥', tool: 'intervention', toolName: 'Intervention Plan',
+                      desc: 'Implement a small-group or targeted strategy for 6 weeks with progress monitoring.',
+                      tip: 'Standard Tier 2 interventions include Check-In Check-Out (CICO) and social skills groups.',
+                      autoCheck: () => null,
+                      subs: [
+                          { id: 'rti_2a', label: 'Select a Tier 2 group strategy (e.g., CICO, social skills)' },
+                          { id: 'rti_2b', label: 'Set a 6-week intervention cycle' },
+                          { id: 'rti_2c', label: 'Plan weekly progress monitoring data collection' },
+                      ] },
+                    { id: 'rti_3', num: 3, title: 'Data Decision Point', icon: '📊', tool: 'trends', toolName: 'Trend Dashboard',
+                      desc: 'Review progress data and compare to peers. Decide whether to continue, fade, or intensify.',
+                      tip: 'Use the Trend Dashboard and AI Analysis together for a comprehensive picture.',
+                      autoCheck: () => aiAnalysis ? '✅ Analysis data available for review' : null,
+                      subs: [
+                          { id: 'rti_3a', label: 'Review progress monitoring data vs. baseline' },
+                          { id: 'rti_3b', label: 'Compare student performance to peer norms' },
+                          { id: 'rti_3c', label: 'Make tier movement decision (stay / fade / intensify)' },
+                      ] },
+                    { id: 'rti_4', num: 4, title: 'Tier 3: Intensive Support', icon: '🎯', tool: 'hypothesis', toolName: 'Hypothesis Diagram',
+                      desc: 'For non-responders: conduct a full FBA and develop an individualized BIP.',
+                      tip: 'Tier 3 typically involves a full FBA. Use the Full FBA workflow track for guidance.',
+                      autoCheck: () => null,
+                      subs: [
+                          { id: 'rti_4a', label: 'Conduct a full Functional Behavior Assessment' },
+                          { id: 'rti_4b', label: 'Develop an individualized Behavior Intervention Plan' },
+                          { id: 'rti_4c', label: 'Set up weekly progress monitoring' },
+                      ] },
+                    { id: 'rti_5', num: 5, title: 'Outcome Evaluation', icon: '📈', tool: 'progress', toolName: 'Progress Narrative',
+                      desc: 'Measure overall effectiveness, calculate effect size, and prepare for IEP if needed.',
+                      tip: 'Use Effect Size and IEP Prep tools to quantify and document outcomes.',
+                      autoCheck: () => null,
+                      subs: [
+                          { id: 'rti_5a', label: 'Measure effect size of interventions' },
+                          { id: 'rti_5b', label: 'Prepare documentation for IEP team (if applicable)' },
+                          { id: 'rti_5c', label: 'Document outcomes and lessons learned' },
+                      ] },
+                ],
+            },
+        };
 
-        const toggleStep = (id) => {
-            setCompletedSteps(prev => {
-                const next = new Set(prev);
-                if (next.has(id)) next.delete(id); else next.add(id);
+        const track = workflowTrack ? TRACKS[workflowTrack] : null;
+
+        // ── Sub-step helpers ──
+        const isSubDone = (subId) => !!(workflowSubSteps || {})[subId];
+        const toggleSub = (subId) => {
+            setWorkflowSubSteps(prev => {
+                const next = { ...(prev || {}) };
+                next[subId] = !next[subId];
                 return next;
             });
         };
+        const stepSubCount = (step) => {
+            const done = step.subs.filter(s => isSubDone(s.id)).length;
+            return { done, total: step.subs.length };
+        };
+        const isStepComplete = (step) => {
+            const { done, total } = stepSubCount(step);
+            return done === total;
+        };
+
+        // ── Overall progress ──
+        const overallProgress = track ? (() => {
+            const totalSubs = track.steps.reduce((sum, s) => sum + s.subs.length, 0);
+            const doneSubs = track.steps.reduce((sum, s) => sum + s.subs.filter(sub => isSubDone(sub.id)).length, 0);
+            return { done: doneSubs, total: totalSubs, pct: totalSubs > 0 ? Math.round((doneSubs / totalSubs) * 100) : 0 };
+        })() : { done: 0, total: 0, pct: 0 };
+
+        // ── Allobot coaching on track start ──
+        const trackStartFired = useRef({});
+        useEffect(() => {
+            if (workflowTrack && alloBotRef?.current?.speak && !trackStartFired.current[workflowTrack]) {
+                trackStartFired.current[workflowTrack] = true;
+                const msgs = {
+                    fba: "Starting a Full FBA — I'll guide you through all 6 steps!",
+                    bip: "Quick BIP mode — let's jump straight to intervention planning!",
+                    rti: "RTI Behavior Tier — we'll progress from universal to intensive support.",
+                };
+                setTimeout(() => {
+                    try { alloBotRef.current.speak(msgs[workflowTrack] || 'Starting guided workflow!'); } catch (_) {}
+                }, 500);
+            }
+        }, [workflowTrack, alloBotRef]);
+
+        // ── AI "What's Next?" ──
+        const handleWhatsNext = async () => {
+            if (!callGemini || !track) return;
+            setAiRecLoading(true);
+            try {
+                const stepsStatus = track.steps.map(s => {
+                    const { done, total } = stepSubCount(s);
+                    const auto = s.autoCheck?.() || '';
+                    return `Step ${s.num} "${s.title}": ${done}/${total} sub-steps done. ${auto}`;
+                }).join('\n');
+                const prompt = `You are AlloBot, an AI clinical workflow coach for educators conducting behavioral assessments.
+
+Current workflow: ${track.title}
+Student data: ${abcEntries.length} ABC entries, ${observationSessions.length} observation sessions.
+${aiAnalysis ? 'AI Analysis: completed' : 'AI Analysis: not yet run'}
+${aiAnalysis?.hypothesizedFunction ? `Hypothesized function: ${aiAnalysis.hypothesizedFunction}` : ''}
+
+Step progress:
+${stepsStatus}
+
+Based on this progress, recommend the ONE most important next action. Be specific and actionable. Keep to 2-3 sentences. Start with the step number and name.`;
+                const result = await callGemini(prompt, true);
+                setAiRec(result || 'Keep going — you\'re making great progress!');
+                if (alloBotRef?.current?.speak) {
+                    try { alloBotRef.current.speak((result || '').slice(0, 180)); } catch (_) {}
+                }
+            } catch (err) {
+                warnLog('Workflow AI rec failed:', err);
+                setAiRec('Sorry, I couldn\'t generate a recommendation right now. Try again!');
+            } finally { setAiRecLoading(false); }
+        };
+
+        // ── Track selector view ──
+        if (!track) {
+            return h('div', { className: 'max-w-2xl mx-auto space-y-5' },
+                h('div', { className: 'text-center py-4' },
+                    h('div', { className: 'text-5xl mb-3' }, '🧭'),
+                    h('h2', { className: 'text-xl font-black text-slate-800' }, t('behavior_lens.workflow.title') || 'Guided Workflows'),
+                    h('p', { className: 'text-sm text-slate-500 mt-1 max-w-md mx-auto' }, t('behavior_lens.workflow.subtitle') || 'Choose a step-by-step guide for your clinical process')
+                ),
+                h('div', { className: 'space-y-3' },
+                    Object.values(TRACKS).map(tr => {
+                        const subsDone = tr.steps.reduce((s, st) => s + st.subs.filter(sub => isSubDone(sub.id)).length, 0);
+                        const subsTotal = tr.steps.reduce((s, st) => s + st.subs.length, 0);
+                        const hasProg = subsDone > 0;
+                        return h('button', {
+                            key: tr.id,
+                            onClick: () => setWorkflowTrack(tr.id),
+                            className: 'w-full text-left group'
+                        },
+                            h('div', { className: `bg-white rounded-2xl border-2 border-slate-100 p-5 shadow-sm hover:shadow-lg hover:border-slate-200 transition-all duration-200 group-hover:scale-[1.01]` },
+                                h('div', { className: 'flex items-center gap-4' },
+                                    h('div', { className: `w-14 h-14 rounded-2xl bg-gradient-to-br ${tr.gradient} flex items-center justify-center text-2xl text-white shadow-lg shrink-0` }, tr.icon),
+                                    h('div', { className: 'flex-1 min-w-0' },
+                                        h('h3', { className: 'text-base font-black text-slate-800' }, tr.title),
+                                        h('p', { className: 'text-xs text-slate-500 mt-0.5' }, tr.subtitle),
+                                        hasProg && h('div', { className: 'mt-2' },
+                                            h('div', { className: 'flex items-center gap-2' },
+                                                h('div', { className: 'flex-1 bg-slate-100 rounded-full h-1.5' },
+                                                    h('div', { className: `bg-gradient-to-r ${tr.gradient} h-1.5 rounded-full transition-all`, style: { width: `${(subsDone / subsTotal) * 100}%` } })
+                                                ),
+                                                h('span', { className: 'text-[10px] font-bold text-slate-400' }, `${subsDone}/${subsTotal}`)
+                                            )
+                                        )
+                                    ),
+                                    h('span', { className: 'text-slate-300 group-hover:text-slate-500 text-xl transition-colors' }, '→')
+                                )
+                            )
+                        );
+                    })
+                )
+            );
+        }
+
+        // ── Active workflow view ──
+        const stepsCompleted = track.steps.filter(s => isStepComplete(s)).length;
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
-            h('div', { className: 'text-center py-3' },
-                h('div', { className: 'text-4xl mb-2' }, '🗺️'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, 'Guided FBA Workflow'),
-                h('p', { className: 'text-xs text-slate-500 mt-1' }, 'Follow these 6 steps to conduct a Functional Behavior Assessment')
+            // Header with back button
+            h('div', { className: 'flex items-center gap-3' },
+                h('button', {
+                    onClick: () => { setWorkflowTrack(null); setExpandedStep(null); setAiRec(''); },
+                    className: 'w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors shrink-0'
+                }, '←'),
+                h('div', { className: `w-10 h-10 rounded-xl bg-gradient-to-br ${track.gradient} flex items-center justify-center text-lg text-white shadow shrink-0` }, track.icon),
+                h('div', { className: 'flex-1 min-w-0' },
+                    h('h2', { className: 'text-base font-black text-slate-800 truncate' }, track.title),
+                    h('p', { className: 'text-[10px] text-slate-500' }, track.subtitle)
+                )
             ),
             // Progress bar
             h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
                 h('div', { className: 'flex items-center justify-between mb-2' },
-                    h('span', { className: 'text-xs font-bold text-slate-600' }, `${completedSteps.size} of ${steps.length} steps completed`),
-                    h('span', { className: 'text-xs font-bold text-blue-600' }, `${Math.round((completedSteps.size / steps.length) * 100)}%`)
+                    h('span', { className: 'text-xs font-bold text-slate-600' }, `${stepsCompleted} of ${track.steps.length} steps · ${overallProgress.done}/${overallProgress.total} sub-tasks`),
+                    h('span', { className: `text-xs font-black ${overallProgress.pct === 100 ? 'text-green-600' : 'text-blue-600'}` }, `${overallProgress.pct}%`)
                 ),
                 h('div', { className: 'w-full bg-slate-100 rounded-full h-2.5' },
-                    h('div', { className: 'bg-gradient-to-r from-blue-500 to-indigo-500 h-2.5 rounded-full transition-all duration-500', style: { width: `${(completedSteps.size / steps.length) * 100}%` } })
+                    h('div', { className: `bg-gradient-to-r ${track.gradient} h-2.5 rounded-full transition-all duration-500`, style: { width: `${overallProgress.pct}%` } })
+                ),
+                overallProgress.pct === 100 && h('div', { className: 'mt-3 text-center bg-green-50 rounded-lg py-2 border border-green-200' },
+                    h('span', { className: 'text-xs font-black text-green-700' }, '🎉 All steps completed! Great work!')
                 )
             ),
             // Steps
             h('div', { className: 'space-y-3' },
-                steps.map((step, i) => {
-                    const done = completedSteps.has(step.id);
+                track.steps.map(step => {
+                    const { done: subsDone, total: subsTotal } = stepSubCount(step);
+                    const complete = subsDone === subsTotal;
+                    const isExpanded = expandedStep === step.id;
+                    const autoMsg = step.autoCheck?.();
+
                     return h('div', {
                         key: step.id,
-                        className: `bg-white rounded-xl border-2 transition-all ${done ? 'border-green-300 bg-green-50/20' : 'border-slate-100'} p-5`
+                        className: `bg-white rounded-xl border-2 transition-all duration-200 ${complete ? 'border-green-300 bg-green-50/30' : isExpanded ? 'border-blue-300 shadow-md' : 'border-slate-100 hover:border-slate-200'}`
                     },
-                        h('div', { className: 'flex items-start gap-4' },
-                            h('button', {
-                                onClick: () => toggleStep(step.id),
-                                className: `w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm transition-all shrink-0 ${done ? 'bg-green-500 border-green-500 text-white' : 'border-slate-300 text-slate-400 hover:border-blue-400'}`
-                            }, done ? '✓' : step.id),
-                            h('div', { className: 'flex-1' },
-                                h('div', { className: 'flex items-center gap-2 mb-1' },
-                                    h('span', { className: 'text-lg' }, step.icon),
-                                    h('h3', { className: `text-sm font-black ${done ? 'text-green-700' : 'text-slate-800'}` }, `Step ${step.id}: ${step.title}`)
+                        // Step header (always visible)
+                        h('button', {
+                            onClick: () => setExpandedStep(isExpanded ? null : step.id),
+                            className: 'w-full flex items-center gap-3 p-4 text-left'
+                        },
+                            // Step number circle
+                            h('div', {
+                                className: `w-9 h-9 rounded-full flex items-center justify-center text-sm font-black shrink-0 transition-all ${complete ? 'bg-green-500 text-white' : subsDone > 0 ? 'bg-blue-100 text-blue-600 border-2 border-blue-300' : 'bg-slate-100 text-slate-400'}`
+                            }, complete ? '✓' : step.num),
+                            // Step info
+                            h('div', { className: 'flex-1 min-w-0' },
+                                h('div', { className: 'flex items-center gap-2' },
+                                    h('span', { className: 'text-base' }, step.icon),
+                                    h('h3', { className: `text-sm font-black truncate ${complete ? 'text-green-700' : 'text-slate-800'}` }, step.title)
                                 ),
-                                h('p', { className: 'text-xs text-slate-600 leading-relaxed mb-2' }, step.desc),
-                                h('div', { className: 'bg-amber-50 rounded-lg p-2.5 border border-amber-100 mb-2' },
-                                    h('p', { className: 'text-[10px] text-amber-700' }, '💡 ' + step.tip)
-                                ),
-                                step.check && h('p', { className: 'text-[10px] font-bold text-slate-500 mb-2' }, step.check),
-                                h('button', {
-                                    onClick: () => {
-                                        if (step.tool === 'observation') { /* handled by parent */ }
-                                        else if (step.tool === 'analysis') { /* handled by parent */ }
-                                        else { setActivePanel(step.tool); }
+                                h('div', { className: 'flex items-center gap-2 mt-1' },
+                                    // Mini progress dots
+                                    h('div', { className: 'flex gap-0.5' },
+                                        step.subs.map(sub =>
+                                            h('div', { key: sub.id, className: `w-2 h-2 rounded-full ${isSubDone(sub.id) ? 'bg-green-400' : 'bg-slate-200'}` })
+                                        )
+                                    ),
+                                    h('span', { className: 'text-[10px] text-slate-400 font-bold' }, `${subsDone}/${subsTotal}`)
+                                )
+                            ),
+                            // Expand chevron
+                            h('span', { className: `text-slate-300 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}` }, '▾')
+                        ),
+                        // Expanded content
+                        isExpanded && h('div', { className: 'px-4 pb-4 space-y-3' },
+                            // Description
+                            h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, step.desc),
+                            // Tip
+                            h('div', { className: 'bg-amber-50 rounded-lg p-2.5 border border-amber-100' },
+                                h('p', { className: 'text-[10px] text-amber-700 font-medium' }, '💡 ' + step.tip)
+                            ),
+                            // Auto-check indicator
+                            autoMsg && h('div', { className: `rounded-lg px-3 py-2 text-[10px] font-bold ${autoMsg.startsWith('✅') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-blue-50 text-blue-700 border border-blue-200'}` }, autoMsg),
+                            // Sub-step checklist
+                            h('div', { className: 'space-y-1.5' },
+                                step.subs.map(sub => {
+                                    const checked = isSubDone(sub.id);
+                                    return h('button', {
+                                        key: sub.id,
+                                        onClick: (e) => { e.stopPropagation(); toggleSub(sub.id); },
+                                        className: `w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-all ${checked ? 'bg-green-50 border border-green-200' : 'bg-slate-50 border border-slate-100 hover:border-slate-200'}`
                                     },
-                                    className: 'px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-[10px] font-bold hover:bg-blue-100 transition-all'
-                                }, `→ Open ${step.toolName}`)
-                            )
+                                        h('div', { className: `w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all ${checked ? 'bg-green-500 border-green-500 text-white' : 'border-slate-300'}` },
+                                            checked && h('span', { className: 'text-[10px]' }, '✓')
+                                        ),
+                                        h('span', { className: `text-xs ${checked ? 'text-green-700 line-through' : 'text-slate-700'}` }, sub.label)
+                                    );
+                                })
+                            ),
+                            // Open tool button
+                            h('button', {
+                                onClick: () => setActivePanel(step.tool),
+                                className: `w-full py-2.5 bg-gradient-to-r ${track.gradient} text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all shadow-sm active:scale-[0.98]`
+                            }, `→ Open ${step.toolName}`)
                         )
                     );
                 })
+            ),
+            // "What's Next?" AI button
+            callGemini && h('div', { className: 'space-y-3' },
+                h('button', {
+                    onClick: handleWhatsNext,
+                    disabled: aiRecLoading,
+                    className: 'w-full py-3 bg-gradient-to-r from-purple-500 to-fuchsia-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-50 transition-all active:scale-[0.98]'
+                }, aiRecLoading ? '⏳ Thinking...' : '🧠 What Should I Do Next?'),
+                aiRec && h('div', { className: 'bg-white rounded-xl border-2 border-purple-200 p-4 shadow-sm' },
+                    h('div', { className: 'flex items-center gap-2 mb-2' },
+                        h('span', { className: 'text-sm' }, '🤖'),
+                        h('span', { className: 'text-xs font-black text-purple-700' }, 'AlloBot Recommendation')
+                    ),
+                    h('p', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-wrap' }, aiRec)
+                )
             )
         );
     };
@@ -14378,6 +14707,8 @@ Keep under 250 words. Use clear sections.`);
         const [sessionHistory, setSessionHistory] = useState([]);
         const [designPhases, setDesignPhases] = useState([]);
         const [activeDesign, setActiveDesign] = useState(null);
+        const [workflowTrack, setWorkflowTrack] = useState(null);
+        const [workflowSubSteps, setWorkflowSubSteps] = useState({});
         const [fullSummary, setFullSummary] = useState('');
         const [summaryLoading, setSummaryLoading] = useState(false);
         const [dismissedAlerts, setDismissedAlerts] = useState(new Set());
@@ -14511,6 +14842,8 @@ Keep under 250 words. Use clear sections.`);
                 sessionHistory,
                 designPhases,
                 activeDesign,
+                workflowTrack,
+                workflowSubSteps,
             };
             const json = JSON.stringify(workspace, null, 2);
             const blob = new Blob([json], { type: 'application/json' });
@@ -14543,6 +14876,8 @@ Keep under 250 words. Use clear sections.`);
                     if (data.sessionHistory) setSessionHistory(data.sessionHistory);
                     if (data.designPhases) setDesignPhases(data.designPhases);
                     if (data.activeDesign) setActiveDesign(data.activeDesign);
+                    if (data.workflowTrack) setWorkflowTrack(data.workflowTrack);
+                    if (data.workflowSubSteps) setWorkflowSubSteps(data.workflowSubSteps);
                     setAiAnalysis(null);
                     if (addToast) addToast(`Workspace loaded (${(data.abcEntries || []).length} entries, ${(data.sessionNotes || []).length} notes) 📂`, 'success');
                 } catch (err) {
@@ -15098,9 +15433,9 @@ Analyze this data and return ONLY valid JSON:
                 },
                 {
                     id: 'fbaworkflow',
-                    icon: '🗺️',
-                    title: t('behavior_lens.hub.fbaworkflow_title') || 'FBA Workflow Guide',
-                    desc: t('behavior_lens.hub.fbaworkflow_desc') || '6-step guided workflow for conducting a Functional Behavior Assessment from start to finish',
+                    icon: '🧭',
+                    title: t('behavior_lens.hub.fbaworkflow_title') || 'Guided Workflows',
+                    desc: t('behavior_lens.hub.fbaworkflow_desc') || 'Step-by-step guided workflows for FBA, BIP, and RTI behavior tiers with AI coaching',
                     color: 'lime',
                 },
                 {
@@ -16266,12 +16601,19 @@ Analyze this data and return ONLY valid JSON:
                     addToast
                 }),
                 activePanel === 'glossary' && h(ABAGlossary, { t }),
-                activePanel === 'fbaworkflow' && h(GuidedFBAWorkflow, {
-                    activePanel,
+                activePanel === 'fbaworkflow' && h(GuidedWorkflowHub, {
                     setActivePanel,
                     abcEntries,
+                    observationSessions,
                     aiAnalysis,
-                    t
+                    callGemini: callGeminiWithContext,
+                    alloBotRef: null,
+                    workflowTrack,
+                    setWorkflowTrack,
+                    workflowSubSteps,
+                    setWorkflowSubSteps,
+                    t,
+                    addToast
                 }),
                 activePanel === 'qualitycheck' && h(DataQualityChecker, {
                     abcEntries,
