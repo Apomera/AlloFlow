@@ -778,7 +778,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
     // ─── LiveObsOverlay ─────────────────────────────────────────────────
     // Fullscreen observation mode with timer and frequency counter
     const LiveObsOverlay = ({ onClose, studentName, onSaveSession, t, addToast }) => {
-        const [method, setMethod] = useState(t('behavior_lens.obs_method_frequency') || 'frequency');
+        const [method, setMethod] = useState('frequency');
         const [timer, setTimer] = useState(0);
         const [isRunning, setIsRunning] = useState(false);
         const [frequency, setFrequency] = useState(0);
@@ -806,14 +806,14 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     setTimer(Math.floor((Date.now() - start) / 1000));
                 }, 100);
                 // Start interval recording if applicable
-                if (method === t('behavior_lens.obs_method_interval') || 'interval') {
+                if (method === 'interval') {
                     setCurrentInterval({ start: Date.now(), occurred: false });
                     intervalTimerRef.current = setInterval(() => {
                         setIntervals(prev => [...prev, { ...currentInterval, end: Date.now() }]);
                         setCurrentInterval({ start: Date.now(), occurred: false });
                     }, intervalLength * 1000);
                 }
-                if (method === t('behavior_lens.obs_method_latency') || 'latency' && !latencyStart) {
+                if (method === 'latency' && !latencyStart) {
                     setLatencyStart(Date.now());
                 }
             }
@@ -836,10 +836,10 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 notes,
                 data: {}
             };
-            if (method === t('behavior_lens.obs_method_frequency') || 'frequency') sessionData.data = { count: frequency, rate: timer > 0 ? (frequency / (timer / 60)).toFixed(2) : 0 };
-            if (method === t('behavior_lens.obs_method_duration') || 'duration') sessionData.data = { durations, totalDuration: durations.reduce((s, d) => s + d, 0) };
-            if (method === t('behavior_lens.obs_method_interval') || 'interval') sessionData.data = { intervals, totalIntervals: intervals.length, occurredCount: intervals.filter(i => i.occurred).length };
-            if (method === t('behavior_lens.obs_method_latency') || 'latency') sessionData.data = { latencyMs: latencyEnd && latencyStart ? latencyEnd - latencyStart : null };
+            if (method === 'frequency') sessionData.data = { count: frequency, rate: timer > 0 ? (frequency / (timer / 60)).toFixed(2) : 0 };
+            if (method === 'duration') sessionData.data = { durations, totalDuration: durations.reduce((s, d) => s + d, 0) };
+            if (method === 'interval') sessionData.data = { intervals, totalIntervals: intervals.length, occurredCount: intervals.filter(i => i.occurred).length };
+            if (method === 'latency') sessionData.data = { latencyMs: latencyEnd && latencyStart ? latencyEnd - latencyStart : null };
             onSaveSession(sessionData);
             if (addToast) addToast(t('behavior_lens.obs.saved') || 'Observation session saved ✅', 'success');
             onClose();
@@ -879,7 +879,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                             : 'bg-white/10 text-slate-300 hover:bg-white/20 disabled:opacity-50'
                             }`
                     },
-                        m === t('behavior_lens.obs_method_frequency') || 'frequency' ? '🔢 ' : m === t('behavior_lens.obs_method_duration') || 'duration' ? '⏱️ ' : m === t('behavior_lens.obs_method_interval') || 'interval' ? '📍 ' : '⏳ ',
+                        m === 'frequency' ? '🔢 ' : m === 'duration' ? '⏱️ ' : m === 'interval' ? '📍 ' : '⏳ ',
                         t(`behavior_lens.obs.method_${m}`) || m.charAt(0).toUpperCase() + m.slice(1)
                     )
                 )
@@ -904,7 +904,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         }`
                 }, isRunning ? '⏸' : '▶'),
                 // Method-specific controls
-                method === t('behavior_lens.obs_method_frequency') || 'frequency' && h('div', { className: 'flex flex-col items-center gap-4' },
+                method === 'frequency' && h('div', { className: 'flex flex-col items-center gap-4' },
                     h('div', { className: 'text-5xl font-black text-indigo-400 tabular-nums' }, frequency),
                     h('div', { className: 'text-xs text-slate-400' },
                         t('behavior_lens.obs.occurrences') || 'Occurrences',
@@ -923,7 +923,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         }, '-1')
                     )
                 ),
-                method === t('behavior_lens.obs_method_duration') || 'duration' && h('div', { className: 'flex flex-col items-center gap-4' },
+                method === 'duration' && h('div', { className: 'flex flex-col items-center gap-4' },
                     h('div', { className: 'text-sm text-slate-400' },
                         durationStart
                             ? (t('behavior_lens.obs.behavior_occurring') || '🔴 Behavior occurring...')
@@ -947,7 +947,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         `${durations.length} episodes — Total: ${fmtDuration(durations.reduce((s, d) => s + d, 0))}`
                     )
                 ),
-                method === t('behavior_lens.obs_method_interval') || 'interval' && h('div', { className: 'flex flex-col items-center gap-4' },
+                method === 'interval' && h('div', { className: 'flex flex-col items-center gap-4' },
                     !isRunning && h('div', { className: 'flex items-center gap-2' },
                         h('span', { className: 'text-xs text-slate-400' }, t('behavior_lens.obs.interval_length') || 'Interval:'),
                         h('select', {
@@ -967,7 +967,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         `${intervals.filter(i => i.occurred).length}/${intervals.length} intervals — ${Math.round((intervals.filter(i => i.occurred).length / intervals.length) * 100)}%`
                     )
                 ),
-                method === t('behavior_lens.obs_method_latency') || 'latency' && h('div', { className: 'flex flex-col items-center gap-4' },
+                method === 'latency' && h('div', { className: 'flex flex-col items-center gap-4' },
                     h('div', { className: 'text-sm text-slate-400' },
                         latencyEnd
                             ? (t('behavior_lens.obs.latency_recorded') || 'Latency recorded!')
@@ -1442,7 +1442,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             if (totalCount === 0) return;
             onSaveSession({
                 id: uid(),
-                method: t('behavior_lens.obs_method_frequency') || 'frequency',
+                method: 'frequency',
                 timestamp: new Date().toISOString(),
                 duration: elapsed,
                 data: {
@@ -1609,7 +1609,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         const handleSave = () => {
             onSaveSession({
                 id: uid(),
-                method: t('behavior_lens.obs_method_interval') || 'interval',
+                method: 'interval',
                 timestamp: new Date().toISOString(),
                 duration: elapsed,
                 data: { mode, intervalSec, totalIntervals, grid: [...grid], occurredCount, completedCount, percentage: parseFloat(pct) }
@@ -2369,9 +2369,9 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 if (filteredObs.length > 0) {
                     content += '\n\n' + ['Session Timestamp', 'Method', 'Duration (s)', 'Count/Rate', 'Notes'].join(',');
                     filteredObs.forEach(s => {
-                        const detail = s.method === t('behavior_lens.obs_method_frequency') || 'frequency' ? `${s.data?.count || 0} (${s.data?.rate || 0}/min)` :
-                            s.method === t('behavior_lens.obs_method_interval') || 'interval' ? `${s.data?.occurredCount || 0}/${s.data?.totalIntervals || 0}` :
-                                s.method === t('behavior_lens.obs_method_duration') || 'duration' ? `${s.data?.totalDuration || 0}s total` : '';
+                        const detail = s.method === 'frequency' ? `${s.data?.count || 0} (${s.data?.rate || 0}/min)` :
+                            s.method === 'interval' ? `${s.data?.occurredCount || 0}/${s.data?.totalIntervals || 0}` :
+                                s.method === 'duration' ? `${s.data?.totalDuration || 0}s total` : '';
                         content += '\n' + [
                             csvEscape(s.timestamp),
                             csvEscape(s.method),
@@ -2400,8 +2400,8 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 text += `\n\nOBSERVATION SESSIONS (${filteredObs.length})\n` + '─'.repeat(30) + '\n';
                 filteredObs.forEach((s, i) => {
                     text += `\n#${i + 1} — ${fmtDate(s.timestamp)} | ${s.method} | ${fmtDuration(s.duration)}\n`;
-                    if (s.method === t('behavior_lens.obs_method_frequency') || 'frequency') text += `  Count: ${s.data?.count || 0} (${s.data?.rate || '?'}/min)\n`;
-                    if (s.method === t('behavior_lens.obs_method_interval') || 'interval') text += `  ${s.data?.occurredCount || 0}/${s.data?.totalIntervals || 0} intervals (${s.data?.percentage || 0}%)\n`;
+                    if (s.method === 'frequency') text += `  Count: ${s.data?.count || 0} (${s.data?.rate || '?'}/min)\n`;
+                    if (s.method === 'interval') text += `  ${s.data?.occurredCount || 0}/${s.data?.totalIntervals || 0} intervals (${s.data?.percentage || 0}%)\n`;
                 });
                 if (aiAnalysis) {
                     text += '\n\nAI ANALYSIS\n' + '─'.repeat(30) + '\n';
@@ -4300,7 +4300,7 @@ Create student-friendly language and return ONLY valid JSON:
     // ─── DataSheetGenerator ─────────────────────────────────────────────
     // Printable data collection sheets for frequency, duration, ABC, latency
     const DataSheetGenerator = ({ studentName, t, addToast, callGemini }) => {
-        const [method, setMethod] = useState(t('behavior_lens.obs_method_frequency') || 'frequency');
+        const [method, setMethod] = useState('frequency');
         const [intervals, setIntervals] = useState('6');
         const [dateRange, setDateRange] = useState('5');
         const [behaviorLabel, setBehaviorLabel] = useState('');
@@ -4328,7 +4328,7 @@ Return ONLY valid JSON:
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
                 catch { const m = result.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]); else throw new Error('Parse failed'); }
-                if (parsed.method && [t('behavior_lens.obs_method_frequency') || 'frequency', t('behavior_lens.obs_method_duration') || 'duration', 'abc', t('behavior_lens.obs_method_latency') || 'latency'].includes(parsed.method)) setMethod(parsed.method);
+                if (parsed.method && ['frequency', 'duration', 'abc', 'latency'].includes(parsed.method)) setMethod(parsed.method);
                 if (parsed.behaviorLabel) setBehaviorLabel(parsed.behaviorLabel);
                 if (parsed.intervals) setIntervals(String(Math.min(12, Math.max(2, parseInt(parsed.intervals) || 6))));
                 if (parsed.dateRange) setDateRange(String(Math.min(20, Math.max(1, parseInt(parsed.dateRange) || 5))));
@@ -4340,17 +4340,17 @@ Return ONLY valid JSON:
         };
 
         const methods = [
-            { id: t('behavior_lens.obs_method_frequency') || 'frequency', label: 'Frequency Count', icon: '🔢' },
-            { id: t('behavior_lens.obs_method_duration') || 'duration', label: 'Duration Log', icon: '⏱️' },
+            { id: 'frequency', label: 'Frequency Count', icon: '🔢' },
+            { id: 'duration', label: 'Duration Log', icon: '⏱️' },
             { id: 'abc', label: 'ABC Narrative', icon: '📋' },
-            { id: t('behavior_lens.obs_method_latency') || 'latency', label: 'Latency Recording', icon: '⏳' },
+            { id: 'latency', label: 'Latency Recording', icon: '⏳' },
         ];
 
         const numIntervals = parseInt(intervals) || 6;
         const numDays = parseInt(dateRange) || 5;
 
         const renderSheet = () => {
-            if (method === t('behavior_lens.obs_method_frequency') || 'frequency') {
+            if (method === 'frequency') {
                 return h('table', { className: 'w-full text-xs border-collapse print:text-[9px]' },
                     h('thead', null,
                         h('tr', { className: 'bg-slate-100' },
@@ -4374,7 +4374,7 @@ Return ONLY valid JSON:
                     )
                 );
             }
-            if (method === t('behavior_lens.obs_method_duration') || 'duration') {
+            if (method === 'duration') {
                 return h('table', { className: 'w-full text-xs border-collapse print:text-[9px]' },
                     h('thead', null,
                         h('tr', { className: 'bg-slate-100' },
@@ -4459,7 +4459,7 @@ Return ONLY valid JSON:
                         h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, t('behavior_lens.behavior_label') || 'Behavior Label'),
                         h('input', { value: behaviorLabel, onChange: (e) => setBehaviorLabel(e.target.value), placeholder: 'e.g., Off-task behavior', className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm mt-0.5' })
                     ),
-                    method === t('behavior_lens.obs_method_frequency') || 'frequency' && h('div', null,
+                    method === 'frequency' && h('div', null,
                         h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, t('behavior_lens.periods_per_day') || 'Periods per day'),
                         h('input', { type: 'number', value: intervals, onChange: (e) => setIntervals(e.target.value), min: 2, max: 12, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm mt-0.5' })
                     ),
@@ -6874,8 +6874,8 @@ Use professional, objective language. Do NOT use the student codename — use "t
                     { id: 'p10', timestamp: new Date(Date.now() - 1 * 86400000).toISOString(), behavior: 'Argued with teacher about assignment length', antecedent: 'Long reading passage assigned', consequence: 'Teacher broke into smaller chunks', setting: 'ELA class', intensity: 3, duration: '8 min', notes: '' },
                 ],
                 observations: [
-                    { method: t('behavior_lens.obs_method_frequency') || 'frequency', timer: 1800, frequency: 6, notes: 'Math class independent work — 6 off-task behaviors in 30 min' },
-                    { method: t('behavior_lens.obs_method_interval') || 'interval', timer: 1200, frequency: 0, intervals: '++--+-+---+-', notes: 'Partial interval: on-task in 5/12 intervals during ELA' },
+                    { method: 'frequency', timer: 1800, frequency: 6, notes: 'Math class independent work — 6 off-task behaviors in 30 min' },
+                    { method: 'interval', timer: 1200, frequency: 0, intervals: '++--+-+---+-', notes: 'Partial interval: on-task in 5/12 intervals during ELA' },
                 ]
             },
             {
@@ -6895,8 +6895,8 @@ Use professional, objective language. Do NOT use the student codename — use "t
                     { id: 'a9', timestamp: new Date(Date.now() - 1 * 86400000).toISOString(), behavior: 'Threw eraser at another student', antecedent: 'Peer ignored student\'s question', consequence: 'Sent to office, discussed with counselor', setting: 'Art class', intensity: 4, duration: '1 min', notes: 'Escalation' },
                 ],
                 observations: [
-                    { method: t('behavior_lens.obs_method_frequency') || 'frequency', timer: 2400, frequency: 9, notes: 'Whole morning — 9 attention-seeking behaviors across 3 classes' },
-                    { method: t('behavior_lens.obs_method_frequency') || 'frequency', timer: 1800, frequency: 2, notes: 'Afternoon with leadership role — only 2 minor incidents' },
+                    { method: 'frequency', timer: 2400, frequency: 9, notes: 'Whole morning — 9 attention-seeking behaviors across 3 classes' },
+                    { method: 'frequency', timer: 1800, frequency: 2, notes: 'Afternoon with leadership role — only 2 minor incidents' },
                 ]
             },
             {
@@ -6915,8 +6915,8 @@ Use professional, objective language. Do NOT use the student codename — use "t
                     { id: 's8', timestamp: new Date(Date.now() - 1 * 86400000).toISOString(), behavior: 'Hand-flapping increased significantly, knocked materials off desk', antecedent: 'Unexpected fire drill', consequence: 'Taken to calm corner with noise-canceling headphones', setting: 'Classroom after drill', intensity: 5, duration: '8 min', notes: 'Sensory overload from alarm' },
                 ],
                 observations: [
-                    { method: t('behavior_lens.obs_method_interval') || 'interval', timer: 1800, frequency: 0, intervals: '+-++-+++--+-', notes: '7/12 intervals with sensory behaviors during unstructured time' },
-                    { method: t('behavior_lens.obs_method_interval') || 'interval', timer: 1800, frequency: 0, intervals: '---+----+---', notes: '2/12 intervals with sensory behaviors AFTER movement break' },
+                    { method: 'interval', timer: 1800, frequency: 0, intervals: '+-++-+++--+-', notes: '7/12 intervals with sensory behaviors during unstructured time' },
+                    { method: 'interval', timer: 1800, frequency: 0, intervals: '---+----+---', notes: '2/12 intervals with sensory behaviors AFTER movement break' },
                 ]
             },
             {
@@ -6936,8 +6936,8 @@ Use professional, objective language. Do NOT use the student codename — use "t
                     { id: 't9', timestamp: new Date(Date.now() - 1 * 86400000).toISOString(), behavior: 'Took food from another student\'s tray', antecedent: 'Saw preferred snack on peer\'s tray', consequence: 'Restorative conversation, practiced asking', setting: 'Cafeteria', intensity: 3, duration: '1 min', notes: 'Impulsive — not aggressive' },
                 ],
                 observations: [
-                    { method: t('behavior_lens.obs_method_frequency') || 'frequency', timer: 7200, frequency: 4, notes: 'Full morning — 4 tangible-access incidents (2 physical, 2 verbal)' },
-                    { method: t('behavior_lens.obs_method_frequency') || 'frequency', timer: 7200, frequency: 1, notes: 'Full morning WITH token system — 1 minor incident' },
+                    { method: 'frequency', timer: 7200, frequency: 4, notes: 'Full morning — 4 tangible-access incidents (2 physical, 2 verbal)' },
+                    { method: 'frequency', timer: 7200, frequency: 1, notes: 'Full morning WITH token system — 1 minor incident' },
                 ]
             }
         ], []);
@@ -10446,7 +10446,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
     // ─── SessionDataTracker ─────────────────────────────────────────────
     // Standalone session-based behavioral data collection
     const SessionDataTracker = ({ abcEntries, t, addToast, onSaveSession }) => {
-        const [targets, setTargets] = useState([{ id: 'b1', name: '', type: t('behavior_lens.obs_method_frequency') || 'frequency', count: 0, durations: [] }]);
+        const [targets, setTargets] = useState([{ id: 'b1', name: '', type: 'frequency', count: 0, durations: [] }]);
         const [sessionActive, setSessionActive] = useState(false);
         const [sessionStart, setSessionStart] = useState(null);
         const [elapsed, setElapsed] = useState(0);
@@ -10455,11 +10455,11 @@ Format as a professional report with clear sections. Keep under 300 words.`);
         const [durationTimers, setDurationTimers] = useState({});
 
         const DATA_TYPES = [
-            { id: t('behavior_lens.obs_method_frequency') || 'frequency', label: 'Frequency Count', icon: '🔢', unit: 'count' },
+            { id: 'frequency', label: 'Frequency Count', icon: '🔢', unit: 'count' },
             { id: 'rate', label: 'Rate (per min)', icon: '⚡', unit: '/min' },
-            { id: t('behavior_lens.obs_method_duration') || 'duration', label: 'Duration (sec)', icon: '⏱️', unit: 'sec' },
+            { id: 'duration', label: 'Duration (sec)', icon: '⏱️', unit: 'sec' },
             { id: 'percentage', label: 'Percentage', icon: '📊', unit: '%' },
-            { id: t('behavior_lens.obs_method_interval') || 'interval', label: 'Interval (Y/N)', icon: '📋', unit: 'intervals' },
+            { id: 'interval', label: 'Interval (Y/N)', icon: '📋', unit: 'intervals' },
         ];
 
         // Elapsed timer
@@ -10481,7 +10481,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
 
         const addTarget = () => {
             if (targets.length >= 5) { if (addToast) addToast('Max 5 target behaviors', 'warning'); return; }
-            setTargets(prev => [...prev, { id: 'b' + (prev.length + 1), name: '', type: t('behavior_lens.obs_method_frequency') || 'frequency', count: 0, durations: [], intervals: [] }]);
+            setTargets(prev => [...prev, { id: 'b' + (prev.length + 1), name: '', type: 'frequency', count: 0, durations: [], intervals: [] }]);
         };
 
         const removeTarget = (id) => setTargets(prev => prev.filter(t => t.id !== id));
@@ -10555,7 +10555,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                                 h('div', { key: i, className: 'flex items-center justify-between text-xs bg-slate-50 rounded-lg px-3 py-1.5' },
                                     h('span', { className: 'font-medium text-slate-700' }, t.name || 'Unnamed'),
                                     h('div', { className: 'flex gap-3' },
-                                        h('span', { className: 'text-indigo-600 font-bold' }, `${t.count} ${t.type === t('behavior_lens.obs_method_frequency') || 'frequency' ? 'ct' : t.type === t('behavior_lens.obs_method_duration') || 'duration' ? 'ep' : ''}`),
+                                        h('span', { className: 'text-indigo-600 font-bold' }, `${t.count} ${t.type === 'frequency' ? 'ct' : t.type === 'duration' ? 'ep' : ''}`),
                                         t.rate > 0 && h('span', { className: 'text-purple-600 font-bold' }, `${t.rate}/min`),
                                         t.durations?.length > 0 && h('span', { className: 'text-emerald-600 font-bold' }, `avg ${Math.round(t.durations.reduce((a, b) => a + b, 0) / t.durations.length)}s`),
                                         t.intervals?.length > 0 && h('span', { className: 'text-amber-600 font-bold' }, `${Math.round(t.intervals.filter(Boolean).length / t.intervals.length * 100)}%`)
@@ -10590,7 +10590,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                                 onClick: () => {
                                     const empty = targets.find(t => !t.name.trim());
                                     if (empty) updateTarget(empty.id, 'name', b);
-                                    else if (targets.length < 5) setTargets(prev => [...prev, { id: 'b' + (prev.length + 1), name: b, type: t('behavior_lens.obs_method_frequency') || 'frequency', count: 0, durations: [], intervals: [] }]);
+                                    else if (targets.length < 5) setTargets(prev => [...prev, { id: 'b' + (prev.length + 1), name: b, type: 'frequency', count: 0, durations: [], intervals: [] }]);
                                 },
                                 className: 'text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200 font-medium hover:bg-emerald-100'
                             }, b)
@@ -10631,14 +10631,14 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                                 h('h4', { className: 'text-sm font-bold text-slate-800' }, tgt.name),
                                 h('span', { className: 'text-xs text-slate-400 font-medium' }, DATA_TYPES.find(d => d.id === tgt.type)?.label)
                             ),
-                            tgt.type === t('behavior_lens.obs_method_frequency') || 'frequency' || tgt.type === 'rate' ? h('div', { className: 'flex items-center gap-4' },
+                            tgt.type === 'frequency' || tgt.type === 'rate' ? h('div', { className: 'flex items-center gap-4' },
                                 h('button', { onClick: () => recordCount(tgt.id), className: 'w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-3xl font-black shadow-lg hover:scale-105 active:scale-95 transition-transform' }, tgt.count),
                                 h('div', null,
                                     h('p', { className: 'text-xs text-slate-500' }, `Count: ${tgt.count}`),
                                     elapsed > 0 && h('p', { className: 'text-xs text-purple-600 font-bold' }, `Rate: ${(tgt.count / (elapsed / 60)).toFixed(1)}/min`)
                                 )
                             ) :
-                                tgt.type === t('behavior_lens.obs_method_duration') || 'duration' ? h('div', { className: 'flex items-center gap-4' },
+                                tgt.type === 'duration' ? h('div', { className: 'flex items-center gap-4' },
                                     h('button', {
                                         onClick: () => toggleDuration(tgt.id),
                                         className: `w-20 h-20 rounded-2xl text-white text-lg font-black shadow-lg hover:scale-105 active:scale-95 transition-transform ${isDurationActive ? 'bg-gradient-to-br from-red-500 to-orange-600 animate-pulse' : 'bg-gradient-to-br from-amber-500 to-orange-600'}`
@@ -10649,7 +10649,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                                         isDurationActive && h('p', { className: 'text-xs text-red-600 font-bold animate-pulse' }, 'Recording...')
                                     )
                                 ) :
-                                    tgt.type === t('behavior_lens.obs_method_interval') || 'interval' ? h('div', { className: 'space-y-2' },
+                                    tgt.type === 'interval' ? h('div', { className: 'space-y-2' },
                                         h('div', { className: 'flex gap-2' },
                                             h('button', { onClick: () => recordInterval(tgt.id, true), className: 'flex-1 py-3 bg-green-100 text-green-700 rounded-xl font-bold text-sm hover:bg-green-200' }, '✓ Occurred'),
                                             h('button', { onClick: () => recordInterval(tgt.id, false), className: 'flex-1 py-3 bg-red-100 text-red-700 rounded-xl font-bold text-sm hover:bg-red-200' }, '✗ Did Not'),
@@ -10701,7 +10701,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                 return {
                     session: i + 1,
                     date: s.date,
-                    value: target ? (target.type === 'rate' ? target.rate : target.type === t('behavior_lens.obs_method_duration') || 'duration' && target.durations?.length ? target.durations.reduce((a, b) => a + b, 0) / target.durations.length : target.type === t('behavior_lens.obs_method_interval') || 'interval' && target.intervals?.length ? Math.round(target.intervals.filter(Boolean).length / target.intervals.length * 100) : target.count) : null,
+                    value: target ? (target.type === 'rate' ? target.rate : target.type === 'duration' && target.durations?.length ? target.durations.reduce((a, b) => a + b, 0) / target.durations.length : target.type === 'interval' && target.intervals?.length ? Math.round(target.intervals.filter(Boolean).length / target.intervals.length * 100) : target.count) : null,
                 };
             }).filter(d => d.value !== null);
         }, [sessionHistory, behaviorNames, selectedBehavior]);
@@ -11348,7 +11348,7 @@ Keep under 250 words. Use clear sections.`);
         const METHODS = [
             { id: 'pointbypoint', name: 'Point-by-Point', desc: 'Compare each data point between observers', formula: 'Agreements / (Agreements + Disagreements) × 100' },
             { id: 'totalcount', name: 'Total Count', desc: 'Compare total counts between observers', formula: 'Smaller Count / Larger Count × 100' },
-            { id: t('behavior_lens.obs_method_interval') || 'interval', name: 'Interval-by-Interval', desc: 'Compare each interval (occurrence/non-occurrence)', formula: 'Intervals Agreed / Total Intervals × 100' },
+            { id: 'interval', name: 'Interval-by-Interval', desc: 'Compare each interval (occurrence/non-occurrence)', formula: 'Intervals Agreed / Total Intervals × 100' },
             { id: 'scored', name: 'Scored Interval', desc: 'Only intervals where at least one observer scored occurrence', formula: 'Both Scored / (Both + Only One Scored) × 100' },
             { id: 'unscored', name: 'Unscored Interval', desc: 'Only intervals where at least one observer scored non-occurrence', formula: 'Both Unscored / (Both + Only One Unscored) × 100' },
             { id: 'exact', name: 'Exact Count per Interval', desc: 'Compare exact counts within each interval', formula: 'Smaller / Larger per interval, averaged' },
@@ -11381,7 +11381,7 @@ Keep under 250 words. Use clear sections.`);
                 }
                 ioa = len === 0 ? 0 : (agreements / len) * 100;
                 details = `${agreements} agreements, ${disagreements} disagreements out of ${len} points`;
-            } else if (method === t('behavior_lens.obs_method_interval') || 'interval') {
+            } else if (method === 'interval') {
                 for (let i = 0; i < numIntervals; i++) {
                     if (intervals1[i] === intervals2[i]) agreements++; else disagreements++;
                 }
@@ -11418,7 +11418,7 @@ Keep under 250 words. Use clear sections.`);
             setHistory(prev => [r, ...prev].slice(0, 20));
         };
 
-        const isIntervalMethod = [t('behavior_lens.obs_method_interval') || 'interval', 'scored', 'unscored'].includes(method);
+        const isIntervalMethod = ['interval', 'scored', 'unscored'].includes(method);
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
@@ -14114,14 +14114,14 @@ Analyze this data and return ONLY valid JSON:
                     badge: (abcEntries.length + observationSessions.length) > 0 ? `${abcEntries.length + observationSessions.length} records` : null,
                 },
                 {
-                    id: t('behavior_lens.obs_method_frequency') || 'frequency',
+                    id: 'frequency',
                     icon: '🔢',
                     title: t('behavior_lens.hub.freq_title') || 'Frequency Counter',
                     desc: t('behavior_lens.hub.freq_desc') || 'Quick-click tap counter for rapid in-class behavior tallying',
                     color: 'amber',
                 },
                 {
-                    id: t('behavior_lens.obs_method_interval') || 'interval',
+                    id: 'interval',
                     icon: '⏱️',
                     title: t('behavior_lens.hub.interval_title') || 'Interval Recording',
                     desc: t('behavior_lens.hub.interval_desc') || 'Visual grid with partial, whole, and momentary recording modes',
@@ -14593,7 +14593,7 @@ Analyze this data and return ONLY valid JSON:
                     color: 'orange',
                 },
                 {
-                    id: t('behavior_lens.obs_method_latency') || 'latency',
+                    id: 'latency',
                     icon: '⏱️',
                     title: 'Latency Recorder',
                     desc: 'Stimulus-to-response time measurement with mean, median, and range statistics',
@@ -14882,8 +14882,8 @@ Analyze this data and return ONLY valid JSON:
                     const handleToolOpen = (toolId) => {
                         if (toolId === 'observation') setShowLiveObs(true);
                         else if (toolId === 'analysis') handleAiAnalyze();
-                        else if (toolId === t('behavior_lens.obs_method_frequency') || 'frequency') setShowFreqCounter(true);
-                        else if (toolId === t('behavior_lens.obs_method_interval') || 'interval') setShowIntervalGrid(true);
+                        else if (toolId === 'frequency') setShowFreqCounter(true);
+                        else if (toolId === 'interval') setShowIntervalGrid(true);
                         else if (toolId === 'choice') setShowChoiceBoard(true);
                         else openPanel(toolId);
                     };
@@ -15141,9 +15141,9 @@ Analyze this data and return ONLY valid JSON:
                                     h('span', { className: 'text-slate-400 ml-2' }, session.method)
                                 ),
                                 h('div', { className: 'text-slate-500' },
-                                    session.method === t('behavior_lens.obs_method_frequency') || 'frequency' ? `${session.data?.count || 0} occurrences` :
-                                        session.method === t('behavior_lens.obs_method_duration') || 'duration' ? `${session.data?.durations?.length || 0} episodes` :
-                                            session.method === t('behavior_lens.obs_method_interval') || 'interval' ? `${session.data?.occurredCount || 0}/${session.data?.totalIntervals || 0} intervals` :
+                                    session.method === 'frequency' ? `${session.data?.count || 0} occurrences` :
+                                        session.method === 'duration' ? `${session.data?.durations?.length || 0} episodes` :
+                                            session.method === 'interval' ? `${session.data?.occurredCount || 0}/${session.data?.totalIntervals || 0} intervals` :
                                                 session.data?.latencyMs ? `${(session.data.latencyMs / 1000).toFixed(1)}s latency` : '',
                                     ` — ${fmtDuration(session.duration)}`
                                 )
@@ -15688,7 +15688,7 @@ Analyze this data and return ONLY valid JSON:
                 activePanel === 'dtt' && h(DTTDataSheet, { studentName: selectedStudent, t, addToast }),
                 activePanel === 'prefassess' && h(PreferenceAssessment, { studentName: selectedStudent, t, addToast }),
                 activePanel === 'scatterplot' && h(ScatterplotAnalysis, { abcEntries, t, addToast }),
-                activePanel === t('behavior_lens.obs_method_latency') || 'latency' && h(LatencyRecorder, { t, addToast }),
+                activePanel === 'latency' && h(LatencyRecorder, { t, addToast }),
                 activePanel === 'socialvalidity' && h(SocialValidityMeasures, { studentName: selectedStudent, callGemini: callGeminiWithContext, t, addToast }),
                 activePanel === 'maintenance' && h(MaintenanceTracker, { studentName: selectedStudent, t, addToast }),
                 activePanel === 'cumrecord' && h(CumulativeRecord, { sessionHistory, t, addToast }),
