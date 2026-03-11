@@ -14763,133 +14763,6 @@ Keep under 250 words. Use clear sections.`);
 
 
 
-    // ─── ProgressReportGenerator ────────────────────────────────
-
-    const ProgressReportGenerator = ({ abcEntries, observationSessions, sessionHistory, studentName, studentProfile, callGemini, t, addToast }) => {
-
-        const [period, setPeriod] = useState('monthly');
-
-        const [report, setReport] = useState(null);
-
-        const [generating, setGenerating] = useState(false);
-
-        const [parentFriendly, setParentFriendly] = useState(false);
-
-        const periodConfig = { weekly: { label: '📅 Weekly', days: 7 }, monthly: { label: '📆 Monthly', days: 30 }, quarterly: { label: '📊 Quarterly', days: 90 } };
-
-        const handleGenerate = async () => {
-
-            if (!callGemini) return;
-
-            setGenerating(true);
-
-            try {
-
-                const days = periodConfig[period]?.days || 30;
-
-                const cutoff = Date.now() - days * 86400000;
-
-                const periodAbc = abcEntries.filter(e => new Date(e.timestamp).getTime() >= cutoff);
-
-                const funcs = {};
-
-                periodAbc.forEach(e => { const f = e.function || 'unknown'; funcs[f] = (funcs[f] || 0) + 1; });
-
-                const avgInt = periodAbc.length > 0 ? (periodAbc.reduce((s, e) => s + (e.intensity || 3), 0) / periodAbc.length).toFixed(1) : 'N/A';
-
-                const abcSummary = periodAbc.slice(0, 20).map((e, i) => `${i + 1}. A:${e.antecedent} B:${e.behavior} C:${e.consequence} Int:${e.intensity}/5`).join('\n');
-
-                const prompt = `You are a BCBA writing a ${parentFriendly ? 'parent-friendly' : 'professional'} progress report.\nSTUDENT: ${studentName || 'Student'}\nPERIOD: Last ${days} days\nDATA: ${periodAbc.length} ABC entries, Functions: ${JSON.stringify(funcs)}, Avg intensity: ${avgInt}/5\nSAMPLE:\n${abcSummary || 'No data'}\n\nReturn ONLY valid JSON:\n{"title":"...","period":"...","dataSummary":{"totalEntries":0,"avgIntensity":"","topFunction":"","sessionsRecorded":0},"narrative":"...","trends":["..."],"strengths":["..."],"concerns":["..."],"goalProgress":"...","recommendations":["..."]}`;
-
-                const result = await callGemini(prompt);
-
-                const jsonMatch = result.match(/\{[\s\S]*\}/);
-
-                if (jsonMatch) { setReport(JSON.parse(jsonMatch[0])); if (addToast) addToast('Report generated!', 'success'); }
-
-            } catch (e) { if (addToast) addToast('Report generation failed', 'error'); }
-
-            setGenerating(false);
-
-        };
-
-        const copyReport = () => {
-
-            if (!report) return;
-
-            let text = (report.title || 'Progress Report') + '\n' + (report.period || '') + '\n\n' + (report.narrative || '');
-
-            text += '\n\nStrengths: ' + (report.strengths || []).join('; ');
-
-            text += '\nConcerns: ' + (report.concerns || []).join('; ');
-
-            text += '\nRecommendations: ' + (report.recommendations || []).join('; ');
-
-            navigator.clipboard.writeText(text);
-
-            if (addToast) addToast('Report copied!', 'success');
-
-        };
-
-        return h('div', { className: 'space-y-4' },
-
-            h('div', { className: 'bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-200' },
-
-                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '📊'), h('h3', { className: 'text-lg font-black text-emerald-800' }, 'Automated Progress Reports')),
-
-                h('p', { className: 'text-xs text-emerald-600' }, 'AI-generated progress reports with data summaries, trend analysis, and recommendations.')
-
-            ),
-
-            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 space-y-3' },
-
-                h('div', { className: 'flex gap-2 flex-wrap' }, Object.entries(periodConfig).map(([key, cfg]) => h('button', { key, onClick: () => setPeriod(key), className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (period === key ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, cfg.label))),
-
-                h('div', { className: 'flex items-center justify-between' },
-
-                    h('label', { className: 'flex items-center gap-2 text-xs text-slate-600 cursor-pointer' }, h('input', { type: 'checkbox', checked: parentFriendly, onChange: () => setParentFriendly(!parentFriendly), className: 'rounded' }), '👪 Parent-friendly language'),
-
-                    h('button', { onClick: handleGenerate, disabled: generating, className: 'px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-bold rounded-lg text-sm hover:from-emerald-700 hover:to-green-700 disabled:opacity-40' }, generating ? '⏳ Generating...' : '📊 Generate Report')
-
-                )
-
-            ),
-
-            report && h('div', { className: 'space-y-3' },
-
-                h('div', { className: 'flex gap-2 justify-end' }, h('button', { onClick: copyReport, className: 'px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200' }, '📋 Copy'), h('button', { onClick: () => window.print(), className: 'px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200' }, '🖨️ Print')),
-
-                h('div', { className: 'bg-white rounded-xl border border-emerald-200 p-5' },
-
-                    h('h3', { className: 'text-lg font-black text-slate-800 mb-1' }, report.title || 'Progress Report'),
-
-                    h('p', { className: 'text-xs text-slate-500 mb-4' }, report.period),
-
-                    report.dataSummary && h('div', { className: 'grid grid-cols-4 gap-2 mb-4' }, [['📋', 'Entries', report.dataSummary.totalEntries], ['⚡', 'Avg Int.', report.dataSummary.avgIntensity], ['🎯', 'Top Func', report.dataSummary.topFunction], ['📊', 'Sessions', report.dataSummary.sessionsRecorded]].map(([icon, label, val]) => h('div', { key: label, className: 'bg-slate-50 rounded-lg p-2 text-center' }, h('div', { className: 'text-sm' }, icon), h('div', { className: 'text-xs font-bold text-slate-800' }, val), h('div', { className: 'text-[10px] text-slate-400' }, label)))),
-
-                    h('p', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-wrap mb-4' }, report.narrative),
-
-                    h('div', { className: 'grid grid-cols-2 gap-3 mb-4' },
-
-                        h('div', { className: 'bg-emerald-50 rounded-lg p-3' }, h('h5', { className: 'text-[10px] font-bold text-emerald-700 uppercase mb-1' }, '💪 Strengths'), (report.strengths || []).map((s, i) => h('p', { key: i, className: 'text-xs text-slate-700' }, '• ' + s))),
-
-                        h('div', { className: 'bg-red-50 rounded-lg p-3' }, h('h5', { className: 'text-[10px] font-bold text-red-700 uppercase mb-1' }, '⚠️ Concerns'), (report.concerns || []).map((c, i) => h('p', { key: i, className: 'text-xs text-slate-700' }, '• ' + c)))
-
-                    ),
-
-                    report.goalProgress && h('div', { className: 'bg-blue-50 rounded-lg p-3 mb-3' }, h('h5', { className: 'text-[10px] font-bold text-blue-700 uppercase mb-1' }, '🎯 Goal Progress'), h('p', { className: 'text-xs text-slate-700' }, report.goalProgress)),
-
-                    h('div', { className: 'bg-purple-50 rounded-lg p-3' }, h('h5', { className: 'text-[10px] font-bold text-purple-700 uppercase mb-1' }, '📋 Recommendations'), (report.recommendations || []).map((r, i) => h('p', { key: i, className: 'text-xs text-slate-700' }, (i + 1) + '. ' + r)))
-
-                )
-
-            )
-
-        );
-
-    };
-
-
 
     // ─── EffectSizeCalculator ───────────────────────────────────
 
@@ -15176,7 +15049,18 @@ Keep under 250 words. Use clear sections.`);
 
 
     // ─── ComparisonDashboard ──────────────────────────────────────
-    const ComparisonDashboard = ({ comparisonWorkspaces, setComparisonWorkspaces, compareFileInputRef, handleLoadComparisonFiles, callGemini, t, addToast }) => {
+    const ComparisonDashboard = ({ comparisonWorkspaces, setComparisonWorkspaces, compareFileInputRef, handleLoadComparisonFiles, callGemini, t, addToast, switchToStudent }) => {
+        // Sparkline: renders a tiny inline SVG from session counts
+        const Sparkline = ({ sessions }) => {
+            if (!sessions || sessions.length < 2) return h('span', { className: 'text-[9px] text-slate-300' }, '—');
+            const vals = sessions.slice(-10).map(s => (s.abcCount || s.count || 0));
+            const max = Math.max(...vals, 1);
+            const w = 60, ht = 18, pad = 1;
+            const points = vals.map((v, i) => `${pad + i * ((w - 2 * pad) / (vals.length - 1))},${ht - pad - (v / max) * (ht - 2 * pad)}`).join(' ');
+            return h('svg', { width: w, height: ht, viewBox: `0 0 ${w} ${ht}`, className: 'inline-block' },
+                h('polyline', { points, fill: 'none', stroke: '#8b5cf6', strokeWidth: 1.5, strokeLinejoin: 'round', strokeLinecap: 'round' })
+            );
+        };
         const [compareAnalysis, setCompareAnalysis] = useState('');
         const [compareLoading, setCompareLoading] = useState(false);
         const [sortKey, setSortKey] = useState('abcCount');
@@ -15275,6 +15159,7 @@ Keep under 250 words. Use clear sections.`);
                     h('div', { className: 'w-16 text-center cursor-pointer hover:text-slate-700', onClick: () => toggleSort('abcCount') }, 'ABCs', sortKey === 'abcCount' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''),
                     h('div', { className: 'w-16 text-center cursor-pointer hover:text-slate-700', onClick: () => toggleSort('sessionCount') }, 'Sessions', sortKey === 'sessionCount' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''),
                     h('div', { className: 'w-20 text-center cursor-pointer hover:text-slate-700', onClick: () => toggleSort('avgIntensity') }, 'Avg Intensity', sortKey === 'avgIntensity' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''),
+                    h('div', { className: 'w-16 text-center' }, 'Trend'),
                     h('div', { className: 'w-32 text-center' }, 'Top Behavior'),
                     h('div', { className: 'w-24 text-center' }, 'Last Entry'),
                     h('div', { className: 'w-8' })
@@ -15289,8 +15174,14 @@ Keep under 250 words. Use clear sections.`);
                     h('div', { className: 'w-20 text-center' },
                         h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-white text-[10px] font-bold', style: { backgroundColor: intensityColor(w.avgIntensity) } }, w.avgIntensity)
                     ),
+                    h('div', { className: 'w-16 text-center' }, h(Sparkline, { sessions: w.sessionHistory })),
                     h('div', { className: 'w-32 text-center text-[10px] text-slate-500 truncate' }, (w.topBehaviors || [])[0]?.[0] || '—'),
                     h('div', { className: 'w-24 text-center text-[10px] text-slate-400' }, w.lastEntry ? new Date(w.lastEntry).toLocaleDateString() : '—'),
+                    switchToStudent && h('button', {
+                        onClick: () => switchToStudent(w.student),
+                        className: 'px-2 py-1 bg-violet-100 text-violet-700 rounded-lg text-[10px] font-bold hover:bg-violet-200 transition-all',
+                        title: 'Switch workspace to this student'
+                    }, '⇄ Switch'),
                     h('button', { onClick: () => removeStudent(w.student), className: 'w-8 text-center text-red-300 hover:text-red-500 text-sm' }, '✕')
                 ))
             ),
@@ -15350,6 +15241,1099 @@ Keep under 250 words. Use clear sections.`);
     };
 
 
+    // ─── BatchImportPanel ──────────────────────────────────────────────
+    const BatchImportPanel = ({ abcEntries, setAbcEntries, studentRoster, setStudentRoster, setSelectedStudent, addToast, t }) => {
+        const [importMode, setImportMode] = useState('abc'); // 'abc' | 'students'
+        const [parsedRows, setParsedRows] = useState([]);
+        const [errors, setErrors] = useState([]);
+        const [imported, setImported] = useState(false);
+        const fileRef = useRef(null);
+
+        const abcHeaders = ['timestamp', 'antecedent', 'behavior', 'consequence', 'intensity', 'setting', 'notes'];
+        const studentHeaders = ['name', 'grade', 'diagnosis', 'accommodations', 'notes'];
+
+        const parseCSV = (text) => {
+            const lines = text.split(/\r?\n/).filter(l => l.trim());
+            if (lines.length < 2) return { rows: [], errs: ['File must have a header row and at least one data row.'] };
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z_]/g, ''));
+            const expectedHeaders = importMode === 'abc' ? abcHeaders : studentHeaders;
+            const missingHeaders = expectedHeaders.filter(h => h !== 'notes' && h !== 'setting' && !headers.includes(h));
+            if (missingHeaders.length > 0) return { rows: [], errs: [`Missing required columns: ${missingHeaders.join(', ')}`] };
+            const rows = []; const errs = [];
+            for (let i = 1; i < lines.length; i++) {
+                const vals = []; let inQuote = false; let cur = '';
+                for (const ch of lines[i]) {
+                    if (ch === '"') { inQuote = !inQuote; }
+                    else if (ch === ',' && !inQuote) { vals.push(cur.trim()); cur = ''; }
+                    else { cur += ch; }
+                }
+                vals.push(cur.trim());
+                const row = {};
+                headers.forEach((h, idx) => { row[h] = vals[idx] || ''; });
+                if (importMode === 'abc') {
+                    if (!row.antecedent || !row.behavior || !row.consequence) { errs.push(`Row ${i}: missing A, B, or C`); row._error = true; }
+                    row.intensity = Math.min(5, Math.max(1, parseInt(row.intensity) || 3));
+                    row.timestamp = row.timestamp || new Date().toISOString();
+                    row.id = 'imp_' + Date.now() + '_' + i;
+                } else {
+                    if (!row.name) { errs.push(`Row ${i}: missing student name`); row._error = true; }
+                }
+                rows.push(row);
+            }
+            return { rows, errs };
+        };
+
+        const handleFile = (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const { rows, errs } = parseCSV(ev.target.result);
+                setParsedRows(rows);
+                setErrors(errs);
+                setImported(false);
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        };
+
+        const handleImport = () => {
+            const validRows = parsedRows.filter(r => !r._error);
+            if (validRows.length === 0) return;
+            if (importMode === 'abc') {
+                const newEntries = validRows.map(r => ({ id: r.id, timestamp: r.timestamp, antecedent: r.antecedent, behavior: r.behavior, consequence: r.consequence, intensity: r.intensity, duration: r.duration ? parseInt(r.duration) : null, notes: r.notes || '', setting: r.setting || '' }));
+                setAbcEntries(prev => [...prev, ...newEntries]);
+            } else {
+                validRows.forEach(r => {
+                    setStudentRoster(prev => {
+                        if (prev.find(s => s.name === r.name)) return prev;
+                        return [...prev, { name: r.name, lastAccessed: new Date().toISOString(), grade: r.grade, diagnosis: r.diagnosis, accommodations: r.accommodations, notes: r.notes }];
+                    });
+                });
+                if (validRows[0]) setSelectedStudent(validRows[0].name);
+            }
+            setImported(true);
+            if (addToast) addToast(`Imported ${validRows.length} ${importMode === 'abc' ? 'ABC entries' : 'students'}!`, 'success');
+        };
+
+        const downloadTemplate = () => {
+            const headers = importMode === 'abc' ? abcHeaders : studentHeaders;
+            const sample = importMode === 'abc'
+                ? `${headers.join(',')}\n${new Date().toISOString()},Teacher gave instruction,Called out,Verbal redirect,3,Classroom,Math period`
+                : `${headers.join(',')}\nAlex,3rd,ADHD,Preferential seating,Responds well to visual cues`;
+            const blob = new Blob([sample], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `behaviorlens_${importMode}_template.csv`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        };
+
+        return h('div', { className: 'space-y-4' },
+            h('div', { className: 'bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl p-4 border border-cyan-200' },
+                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '📂'), h('h3', { className: 'text-lg font-black text-cyan-800' }, 'Batch Import')),
+                h('p', { className: 'text-xs text-cyan-600' }, 'Import student profiles or historical ABC data from CSV files. Onboard 10-15 students at once.')
+            ),
+            // Mode toggle
+            h('div', { className: 'flex gap-2' },
+                ['abc', 'students'].map(m => h('button', { key: m, onClick: () => { setImportMode(m); setParsedRows([]); setErrors([]); setImported(false); },
+                    className: `px-4 py-2 rounded-xl text-xs font-bold transition-all ${importMode === m ? 'bg-cyan-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`
+                }, m === 'abc' ? '📋 ABC Data' : '👤 Student Profiles'))
+            ),
+            // Actions
+            h('div', { className: 'flex items-center gap-3' },
+                h('button', { onClick: () => fileRef.current?.click(), className: 'flex items-center gap-1.5 px-4 py-2 bg-cyan-600 text-white font-bold rounded-xl text-xs hover:bg-cyan-700 transition-all shadow-sm' }, '📁 Choose CSV File'),
+                h('input', { ref: fileRef, type: 'file', accept: '.csv,.txt', onChange: handleFile, className: 'hidden' }),
+                h('button', { onClick: downloadTemplate, className: 'flex items-center gap-1.5 px-3 py-2 bg-white border border-cyan-200 text-cyan-700 font-bold rounded-xl text-xs hover:bg-cyan-50 transition-all' }, '📥 Download Template')
+            ),
+            // Errors
+            errors.length > 0 && h('div', { className: 'bg-red-50 border border-red-200 rounded-xl p-3' },
+                h('p', { className: 'text-xs font-bold text-red-700 mb-1' }, '⚠️ Validation Issues:'),
+                errors.map((e, i) => h('p', { key: i, className: 'text-[10px] text-red-600' }, e))
+            ),
+            // Preview table
+            parsedRows.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-200 overflow-hidden' },
+                h('div', { className: 'bg-slate-50 px-4 py-2 border-b border-slate-200 flex items-center justify-between' },
+                    h('span', { className: 'text-xs font-bold text-slate-700' }, `📋 Preview: ${parsedRows.length} rows (${parsedRows.filter(r => r._error).length} errors)`),
+                    !imported && h('button', { onClick: handleImport, disabled: parsedRows.filter(r => !r._error).length === 0,
+                        className: 'px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-bold rounded-lg text-xs hover:from-emerald-700 hover:to-green-700 disabled:opacity-40 transition-all'
+                    }, `✅ Import ${parsedRows.filter(r => !r._error).length} Valid Rows`)
+                ),
+                h('div', { className: 'overflow-x-auto max-h-80 overflow-y-auto' },
+                    h('table', { className: 'w-full text-xs' },
+                        h('thead', null, h('tr', { className: 'bg-slate-50' },
+                            (importMode === 'abc' ? abcHeaders : studentHeaders).map(hdr =>
+                                h('th', { key: hdr, className: 'px-3 py-2 text-left text-[10px] font-bold text-slate-500 uppercase' }, hdr)
+                            )
+                        )),
+                        h('tbody', null, parsedRows.slice(0, 50).map((row, i) =>
+                            h('tr', { key: i, className: row._error ? 'bg-red-50' : i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50' },
+                                (importMode === 'abc' ? abcHeaders : studentHeaders).map(hdr =>
+                                    h('td', { key: hdr, className: 'px-3 py-1.5 text-slate-700 border-t border-slate-100 max-w-[150px] truncate' }, String(row[hdr] || ''))
+                                )
+                            )
+                        ))
+                    )
+                )
+            ),
+            // Success message
+            imported && h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center' },
+                h('span', { className: 'text-2xl' }, '✅'),
+                h('p', { className: 'text-sm font-bold text-emerald-800 mt-1' }, 'Import Complete!'),
+                h('p', { className: 'text-xs text-emerald-600' }, `${parsedRows.filter(r => !r._error).length} ${importMode === 'abc' ? 'ABC entries added to current dataset' : 'students added to roster'}.`)
+            )
+        );
+    };
+
+
+    // ─── ProgressMonitorDashboard ──────────────────────────────────────
+    const ProgressMonitorDashboard = ({ abcEntries, observationSessions, sessionHistory, t, addToast }) => {
+        const [targetBehavior, setTargetBehavior] = useState('');
+        const [goalCount, setGoalCount] = useState(0);
+        const [goalDate, setGoalDate] = useState('');
+        const [phases, setPhases] = useState([{ label: 'Baseline', startDate: '', color: '#6366f1' }]);
+        const [showPhaseEditor, setShowPhaseEditor] = useState(false);
+
+        // Extract unique behaviors from ABC entries
+        const allBehaviors = useMemo(() => {
+            const set = new Set();
+            abcEntries.forEach(e => { if (e.behavior) set.add(e.behavior); });
+            return Array.from(set);
+        }, [abcEntries]);
+
+        // Daily frequency data
+        const dailyData = useMemo(() => {
+            const filtered = targetBehavior ? abcEntries.filter(e => e.behavior === targetBehavior) : abcEntries;
+            const byDay = {};
+            filtered.forEach(e => {
+                const d = new Date(e.timestamp).toISOString().split('T')[0];
+                byDay[d] = (byDay[d] || 0) + 1;
+            });
+            return Object.entries(byDay).sort(([a], [b]) => a.localeCompare(b)).map(([date, count]) => ({ date, count }));
+        }, [abcEntries, targetBehavior]);
+
+        // Linear regression for trend line
+        const trendLine = useMemo(() => {
+            if (dailyData.length < 2) return null;
+            const n = dailyData.length;
+            const xs = dailyData.map((_, i) => i);
+            const ys = dailyData.map(d => d.count);
+            const sumX = xs.reduce((a, b) => a + b, 0);
+            const sumY = ys.reduce((a, b) => a + b, 0);
+            const sumXY = xs.reduce((a, x, i) => a + x * ys[i], 0);
+            const sumX2 = xs.reduce((a, x) => a + x * x, 0);
+            const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+            return { slope, intercept, startY: intercept, endY: slope * (n - 1) + intercept };
+        }, [dailyData]);
+
+        // SVG chart dimensions
+        const W = 700, H = 300, PAD = 50;
+
+        const renderChart = () => {
+            if (dailyData.length === 0) return h('div', { className: 'bg-slate-50 rounded-xl border border-dashed border-slate-300 p-10 text-center' },
+                h('div', { className: 'text-3xl mb-2' }, '📊'),
+                h('p', { className: 'text-sm text-slate-500 font-bold' }, 'No data yet'),
+                h('p', { className: 'text-xs text-slate-400' }, 'Add ABC entries to see progress over time')
+            );
+            const maxCount = Math.max(...dailyData.map(d => d.count), goalCount || 1, 1);
+            const chartW = W - PAD * 2, chartH = H - PAD * 2;
+            const xScale = (i) => PAD + (i / Math.max(dailyData.length - 1, 1)) * chartW;
+            const yScale = (v) => PAD + chartH - (v / maxCount) * chartH;
+
+            // Data points polyline
+            const dataPoints = dailyData.map((d, i) => `${xScale(i)},${yScale(d.count)}`).join(' ');
+
+            return h('svg', { viewBox: `0 0 ${W} ${H}`, className: 'w-full bg-white rounded-xl border border-slate-200', style: { maxHeight: '350px' } },
+                // Grid lines
+                ...[0, 0.25, 0.5, 0.75, 1].map(pct => h('line', { key: 'g' + pct, x1: PAD, x2: W - PAD, y1: yScale(pct * maxCount), y2: yScale(pct * maxCount), stroke: '#e2e8f0', strokeWidth: 1 })),
+                // Y-axis labels
+                ...[0, 0.25, 0.5, 0.75, 1].map(pct => h('text', { key: 'yl' + pct, x: PAD - 8, y: yScale(pct * maxCount) + 4, textAnchor: 'end', fill: '#94a3b8', fontSize: 10 }, Math.round(pct * maxCount))),
+                // X-axis labels (first, middle, last)
+                ...[0, Math.floor(dailyData.length / 2), dailyData.length - 1].filter((v, i, a) => a.indexOf(v) === i).map(i => h('text', { key: 'xl' + i, x: xScale(i), y: H - 10, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, dailyData[i]?.date?.slice(5) || '')),
+                // Phase change lines
+                ...phases.filter(p => p.startDate).map((p, i) => {
+                    const idx = dailyData.findIndex(d => d.date >= p.startDate);
+                    if (idx < 0) return null;
+                    return h('g', { key: 'ph' + i },
+                        h('line', { x1: xScale(idx), x2: xScale(idx), y1: PAD, y2: H - PAD, stroke: p.color || '#6366f1', strokeWidth: 2, strokeDasharray: '6,3' }),
+                        h('text', { x: xScale(idx) + 4, y: PAD + 12, fill: p.color || '#6366f1', fontSize: 10, fontWeight: 'bold' }, p.label)
+                    );
+                }).filter(Boolean),
+                // Aim line (dashed)
+                goalCount > 0 && dailyData.length > 0 && h('line', { x1: xScale(0), y1: yScale(dailyData[0].count), x2: xScale(dailyData.length - 1), y2: yScale(goalCount), stroke: '#22c55e', strokeWidth: 2, strokeDasharray: '8,4' }),
+                goalCount > 0 && h('text', { x: W - PAD + 4, y: yScale(goalCount) + 4, fill: '#22c55e', fontSize: 10, fontWeight: 'bold' }, '🎯 Goal'),
+                // Trend line
+                trendLine && h('line', { x1: xScale(0), y1: yScale(trendLine.startY), x2: xScale(dailyData.length - 1), y2: yScale(trendLine.endY), stroke: '#f59e0b', strokeWidth: 2, strokeDasharray: '4,4' }),
+                // Data line
+                h('polyline', { points: dataPoints, fill: 'none', stroke: '#6366f1', strokeWidth: 2.5, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+                // Data points
+                ...dailyData.map((d, i) => h('circle', { key: 'dp' + i, cx: xScale(i), cy: yScale(d.count), r: 4, fill: '#6366f1', stroke: '#fff', strokeWidth: 2 })),
+                // Axis labels
+                h('text', { x: W / 2, y: H - 2, textAnchor: 'middle', fill: '#64748b', fontSize: 11, fontWeight: 'bold' }, 'Date'),
+                h('text', { x: 12, y: H / 2, textAnchor: 'middle', fill: '#64748b', fontSize: 11, fontWeight: 'bold', transform: `rotate(-90, 12, ${H / 2})` }, 'Frequency')
+            );
+        };
+
+        // Trend description
+        const trendDesc = trendLine ? (trendLine.slope > 0.1 ? '📈 Increasing trend' : trendLine.slope < -0.1 ? '📉 Decreasing trend' : '➡️ Stable') : '';
+
+        return h('div', { className: 'space-y-4' },
+            h('div', { className: 'bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl p-4 border border-indigo-200' },
+                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '📈'), h('h3', { className: 'text-lg font-black text-indigo-800' }, 'Progress Monitoring Dashboard')),
+                h('p', { className: 'text-xs text-indigo-600' }, 'Track behavior frequency over time with aim lines, phase changes, and trend analysis.')
+            ),
+            // Controls
+            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 space-y-3' },
+                h('div', { className: 'grid grid-cols-3 gap-3' },
+                    h('div', null,
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, 'Target Behavior'),
+                        h('select', { value: targetBehavior, onChange: e => setTargetBehavior(e.target.value), className: 'w-full px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white' },
+                            h('option', { value: '' }, 'All Behaviors'),
+                            allBehaviors.map(b => h('option', { key: b, value: b }, b))
+                        )
+                    ),
+                    h('div', null,
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, '🎯 Goal (count/day)'),
+                        h('input', { type: 'number', min: 0, value: goalCount, onChange: e => setGoalCount(parseInt(e.target.value) || 0), className: 'w-full px-3 py-2 border border-slate-200 rounded-lg text-xs' })
+                    ),
+                    h('div', null,
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, '📅 Goal Date'),
+                        h('input', { type: 'date', value: goalDate, onChange: e => setGoalDate(e.target.value), className: 'w-full px-3 py-2 border border-slate-200 rounded-lg text-xs' })
+                    )
+                ),
+                // Phase editor toggle
+                h('div', { className: 'flex items-center gap-2' },
+                    h('button', { onClick: () => setShowPhaseEditor(!showPhaseEditor), className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200 transition-all' }, showPhaseEditor ? '▴ Hide Phases' : '📐 Edit Phase Lines'),
+                    trendDesc && h('span', { className: 'text-xs font-bold text-slate-600 ml-auto' }, trendDesc)
+                ),
+                showPhaseEditor && h('div', { className: 'space-y-2 bg-slate-50 rounded-lg p-3' },
+                    phases.map((p, i) => h('div', { key: i, className: 'flex items-center gap-2' },
+                        h('input', { type: 'text', value: p.label, placeholder: 'Phase label', onChange: e => setPhases(prev => prev.map((pp, j) => j === i ? { ...pp, label: e.target.value } : pp)), className: 'px-2 py-1.5 border border-slate-200 rounded text-xs flex-1' }),
+                        h('input', { type: 'date', value: p.startDate, onChange: e => setPhases(prev => prev.map((pp, j) => j === i ? { ...pp, startDate: e.target.value } : pp)), className: 'px-2 py-1.5 border border-slate-200 rounded text-xs' }),
+                        h('input', { type: 'color', value: p.color, onChange: e => setPhases(prev => prev.map((pp, j) => j === i ? { ...pp, color: e.target.value } : pp)), className: 'w-8 h-8 border-0 rounded cursor-pointer' }),
+                        h('button', { onClick: () => setPhases(prev => prev.filter((_, j) => j !== i)), className: 'text-red-400 hover:text-red-600 text-sm' }, '✕')
+                    )),
+                    h('button', { onClick: () => setPhases(prev => [...prev, { label: `Phase ${prev.length + 1}`, startDate: '', color: '#ec4899' }]), className: 'px-3 py-1 bg-indigo-500 text-white rounded text-[10px] font-bold hover:bg-indigo-600' }, '+ Add Phase')
+                )
+            ),
+            // Chart
+            renderChart(),
+            // Legend
+            h('div', { className: 'flex flex-wrap gap-4 text-[10px] text-slate-500 justify-center' },
+                h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-0.5 bg-indigo-500 inline-block' }), ' Data'),
+                goalCount > 0 && h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-0.5 bg-green-500 inline-block', style: { borderTop: '2px dashed #22c55e' } }), ' Aim Line'),
+                trendLine && h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-0.5 bg-amber-500 inline-block', style: { borderTop: '2px dashed #f59e0b' } }), ' Trend'),
+                ...phases.map((p, i) => h('span', { key: i, className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-0.5 inline-block', style: { borderTop: `2px dashed ${p.color}` } }), ` ${p.label}`))
+            ),
+            // Summary stats
+            dailyData.length > 0 && h('div', { className: 'grid grid-cols-4 gap-3' },
+                [['📋', 'Days', dailyData.length], ['📊', 'Total', dailyData.reduce((s, d) => s + d.count, 0)], ['📈', 'Avg/Day', (dailyData.reduce((s, d) => s + d.count, 0) / dailyData.length).toFixed(1)], ['🔺', 'Peak', Math.max(...dailyData.map(d => d.count))]].map(([icon, label, val]) =>
+                    h('div', { key: label, className: 'bg-white rounded-xl border border-slate-200 p-3 text-center' },
+                        h('div', { className: 'text-lg' }, icon),
+                        h('div', { className: 'text-lg font-black text-slate-800' }, val),
+                        h('div', { className: 'text-[10px] text-slate-400' }, label)
+                    )
+                )
+            )
+        );
+    };
+
+
+    // ─── VoiceToABC ──────────────────────────────────────────────────────
+    const VoiceToABC = ({ abcEntries, setAbcEntries, studentName, callGemini, addToast, t }) => {
+        const [isRecording, setIsRecording] = useState(false);
+        const [transcript, setTranscript] = useState('');
+        const [interimText, setInterimText] = useState('');
+        const [parsedEntries, setParsedEntries] = useState([]);
+        const [parsing, setParsing] = useState(false);
+        const recognitionRef = useRef(null);
+        const [supported] = useState(() => !!(window.SpeechRecognition || window.webkitSpeechRecognition));
+
+        const startRecording = () => {
+            if (!supported) return;
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SR();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+            recognition.onresult = (event) => {
+                let interim = '';
+                let final = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) { final += event.results[i][0].transcript + ' '; }
+                    else { interim = event.results[i][0].transcript; }
+                }
+                if (final) setTranscript(prev => prev + final);
+                setInterimText(interim);
+            };
+            recognition.onerror = (e) => { if (addToast) addToast('Speech recognition error: ' + e.error, 'error'); setIsRecording(false); };
+            recognition.onend = () => { setIsRecording(false); setInterimText(''); };
+            recognition.start();
+            recognitionRef.current = recognition;
+            setIsRecording(true);
+        };
+
+        const stopRecording = () => {
+            if (recognitionRef.current) { recognitionRef.current.stop(); recognitionRef.current = null; }
+            setIsRecording(false);
+        };
+
+        const parseTranscript = async () => {
+            if (!transcript.trim() || !callGemini) return;
+            setParsing(true);
+            try {
+                const prompt = `You are a school BCBA. Extract ABC (Antecedent-Behavior-Consequence) entries from this observation transcript. For each distinct behavioral incident, identify the antecedent, behavior, consequence, and intensity (1-5 scale).\n\nTRANSCRIPT:\n${transcript}\n\nSTUDENT: ${studentName || 'Student'}\n\nReturn ONLY valid JSON array:\n[{"antecedent":"...","behavior":"...","consequence":"...","intensity":3,"notes":"..."}]`;
+                const result = await callGemini(prompt);
+                const match = result.match(/\[[\s\S]*\]/);
+                if (match) {
+                    const entries = JSON.parse(match[0]);
+                    setParsedEntries(entries.map((e, i) => ({ ...e, id: 'voice_' + Date.now() + '_' + i, timestamp: new Date().toISOString(), _selected: true })));
+                    if (addToast) addToast(`Parsed ${entries.length} ABC entries from transcript!`, 'success');
+                }
+            } catch (e) { if (addToast) addToast('Failed to parse transcript', 'error'); }
+            setParsing(false);
+        };
+
+        const addSelectedEntries = () => {
+            const selected = parsedEntries.filter(e => e._selected);
+            if (selected.length === 0) return;
+            const clean = selected.map(e => ({ id: e.id, timestamp: e.timestamp, antecedent: e.antecedent, behavior: e.behavior, consequence: e.consequence, intensity: e.intensity || 3, notes: e.notes || '' }));
+            setAbcEntries(prev => [...prev, ...clean]);
+            if (addToast) addToast(`Added ${clean.length} entries to ABC data!`, 'success');
+            setParsedEntries([]);
+        };
+
+        return h('div', { className: 'space-y-4' },
+            h('div', { className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200' },
+                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '🎙️'), h('h3', { className: 'text-lg font-black text-rose-800' }, 'Voice-to-ABC')),
+                h('p', { className: 'text-xs text-rose-600' }, 'Speak your observations naturally. AI will extract structured ABC entries from your transcript.')
+            ),
+            // Not supported fallback
+            !supported && h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-4 text-center' },
+                h('p', { className: 'text-sm font-bold text-amber-800' }, '⚠️ Speech Recognition Not Supported'),
+                h('p', { className: 'text-xs text-amber-600 mt-1' }, 'Please use Chrome, Edge, or Safari for voice input.')
+            ),
+            // Record controls
+            supported && h('div', { className: 'flex items-center gap-3' },
+                h('button', {
+                    onClick: isRecording ? stopRecording : startRecording,
+                    className: `flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-md ${isRecording ? 'bg-red-500 text-white hover:bg-red-600 animate-pulse' : 'bg-rose-600 text-white hover:bg-rose-700'}`
+                }, isRecording ? '⏹️ Stop Recording' : '🎙️ Start Recording'),
+                isRecording && h('div', { className: 'flex items-center gap-2' },
+                    h('div', { className: 'w-3 h-3 bg-red-500 rounded-full animate-pulse' }),
+                    h('span', { className: 'text-xs text-red-600 font-bold' }, 'Recording...')
+                )
+            ),
+            // Transcript
+            (transcript || interimText) && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
+                h('div', { className: 'flex items-center justify-between mb-2' },
+                    h('h4', { className: 'text-xs font-bold text-slate-700 uppercase' }, '📝 Transcript'),
+                    transcript && h('button', { onClick: () => { setTranscript(''); setParsedEntries([]); }, className: 'text-[10px] text-red-400 hover:text-red-600' }, '✕ Clear')
+                ),
+                h('div', { className: 'text-sm text-slate-700 leading-relaxed whitespace-pre-wrap min-h-[60px]' },
+                    transcript,
+                    interimText && h('span', { className: 'text-slate-400 italic' }, interimText)
+                )
+            ),
+            // Parse button
+            transcript && !parsing && parsedEntries.length === 0 && h('button', {
+                onClick: parseTranscript, disabled: !callGemini,
+                className: 'px-4 py-2 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold rounded-xl text-xs hover:from-rose-700 hover:to-pink-700 disabled:opacity-40 transition-all shadow-sm'
+            }, '🤖 Parse ABC Entries from Transcript'),
+            parsing && h('div', { className: 'text-center py-4' },
+                h('div', { className: 'text-lg animate-spin inline-block' }, '⏳'),
+                h('p', { className: 'text-xs text-slate-500 mt-1' }, 'AI is analyzing your transcript...')
+            ),
+            // Parsed entries for review
+            parsedEntries.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-200 overflow-hidden' },
+                h('div', { className: 'bg-slate-50 px-4 py-2 border-b border-slate-200 flex items-center justify-between' },
+                    h('span', { className: 'text-xs font-bold text-slate-700' }, `🔍 Review ${parsedEntries.length} Parsed Entries`),
+                    h('button', { onClick: addSelectedEntries, className: 'px-3 py-1.5 bg-emerald-600 text-white font-bold rounded-lg text-xs hover:bg-emerald-700 transition-all' }, `✅ Add ${parsedEntries.filter(e => e._selected).length} Selected`)
+                ),
+                parsedEntries.map((e, i) => h('div', { key: i, className: `flex items-start gap-3 px-4 py-3 border-b border-slate-100 ${e._selected ? 'bg-emerald-50/30' : 'bg-slate-50/30 opacity-60'}` },
+                    h('input', { type: 'checkbox', checked: e._selected, onChange: () => setParsedEntries(prev => prev.map((p, j) => j === i ? { ...p, _selected: !p._selected } : p)), className: 'mt-1 rounded' }),
+                    h('div', { className: 'flex-1 space-y-1' },
+                        h('div', { className: 'flex gap-2 text-[10px]' },
+                            h('span', { className: 'px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-bold' }, 'A: ' + e.antecedent),
+                            h('span', { className: 'px-2 py-0.5 bg-red-100 text-red-700 rounded-full font-bold' }, 'B: ' + e.behavior),
+                            h('span', { className: 'px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-bold' }, 'C: ' + e.consequence)
+                        ),
+                        h('div', { className: 'text-[10px] text-slate-400' }, `Intensity: ${e.intensity}/5 ${e.notes ? ' • ' + e.notes : ''}`)
+                    )
+                ))
+            )
+        );
+    };
+
+
+    // ─── WorkspaceSharing ─────────────────────────────────────────────────
+    const WorkspaceSharing = ({ abcEntries, observationSessions, sessionHistory, aiAnalysis, studentProfile, selectedStudent, studentRoster, cloudSync, addToast, t }) => {
+        const [shareRole, setShareRole] = useState('bcba');
+        const [shareCode, setShareCode] = useState('');
+        const [importCode, setImportCode] = useState('');
+        const [importedData, setImportedData] = useState(null);
+        const [showImport, setShowImport] = useState(false);
+
+        const roles = [
+            { key: 'bcba', label: '🔬 BCBA (Full)', desc: 'All data, analysis, raw ABC entries' },
+            { key: 'teacher', label: '🏫 Teacher', desc: 'Summary, recommendations, behavior strategies' },
+            { key: 'parent', label: '👪 Parent', desc: 'Strengths, progress, home strategies' },
+        ];
+
+        const generateSnapshot = () => {
+            const base = { student: selectedStudent, profile: studentProfile, generatedAt: new Date().toISOString(), role: shareRole };
+            if (shareRole === 'bcba') {
+                base.abcEntries = abcEntries;
+                base.observationSessions = observationSessions;
+                base.sessionHistory = sessionHistory;
+                base.aiAnalysis = aiAnalysis;
+            } else if (shareRole === 'teacher') {
+                base.summary = { totalEntries: abcEntries.length, sessions: observationSessions.length };
+                base.topBehaviors = Object.entries(abcEntries.reduce((acc, e) => { acc[e.behavior] = (acc[e.behavior] || 0) + 1; return acc; }, {})).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                const avgInt = abcEntries.length > 0 ? (abcEntries.reduce((s, e) => s + (e.intensity || 3), 0) / abcEntries.length).toFixed(1) : 'N/A';
+                base.avgIntensity = avgInt;
+                base.aiAnalysis = aiAnalysis;
+            } else {
+                base.strengths = aiAnalysis?.strengths || [];
+                base.progress = aiAnalysis?.progress || aiAnalysis?.summary || 'No analysis available yet.';
+                base.strategies = aiAnalysis?.recommendations?.slice(0, 3) || [];
+                base.totalEntries = abcEntries.length;
+            }
+            return base;
+        };
+
+        const handleShare = () => {
+            const snapshot = generateSnapshot();
+            try {
+                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(snapshot))));
+                const code = encoded.length > 5000 ? encoded.substring(0, 5000) : encoded;
+                setShareCode(code);
+                navigator.clipboard.writeText(code);
+                if (addToast) addToast('Share code copied to clipboard!', 'success');
+            } catch (e) { if (addToast) addToast('Failed to generate share code', 'error'); }
+        };
+
+        const handleDownloadShare = () => {
+            const snapshot = generateSnapshot();
+            const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `behaviorlens_share_${selectedStudent || 'student'}_${shareRole}_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+            if (addToast) addToast('Share file downloaded!', 'success');
+        };
+
+        const handleImportCode = () => {
+            try {
+                const decoded = JSON.parse(decodeURIComponent(escape(atob(importCode.trim()))));
+                setImportedData(decoded);
+            } catch {
+                if (addToast) addToast('Invalid share code', 'error');
+            }
+        };
+
+        const handleImportFile = (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    setImportedData(JSON.parse(ev.target.result));
+                } catch { if (addToast) addToast('Invalid share file', 'error'); }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        };
+
+        const importFileRef = useRef(null);
+
+        return h('div', { className: 'space-y-4' },
+            h('div', { className: 'bg-gradient-to-r from-blue-50 to-sky-50 rounded-xl p-4 border border-blue-200' },
+                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '🤝'), h('h3', { className: 'text-lg font-black text-blue-800' }, 'Workspace Sharing')),
+                h('p', { className: 'text-xs text-blue-600' }, 'Share workspace data with team members. Role-based views filter data appropriately for BCBAs, teachers, and parents.')
+            ),
+            // Share section
+            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 space-y-3' },
+                h('h4', { className: 'text-xs font-bold text-slate-700 uppercase tracking-wider' }, '📤 Share Workspace'),
+                // Role selector
+                h('div', { className: 'grid grid-cols-3 gap-2' },
+                    roles.map(r => h('button', { key: r.key, onClick: () => setShareRole(r.key),
+                        className: `p-3 rounded-xl border-2 text-left transition-all ${shareRole === r.key ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-200'}`
+                    },
+                        h('div', { className: 'text-sm font-bold text-slate-800' }, r.label),
+                        h('div', { className: 'text-[10px] text-slate-500 mt-0.5' }, r.desc)
+                    ))
+                ),
+                // Share buttons
+                h('div', { className: 'flex gap-2' },
+                    h('button', { onClick: handleShare, className: 'px-4 py-2 bg-blue-600 text-white font-bold rounded-xl text-xs hover:bg-blue-700 transition-all shadow-sm' }, '📋 Copy Share Code'),
+                    h('button', { onClick: handleDownloadShare, className: 'px-4 py-2 bg-white border border-blue-200 text-blue-700 font-bold rounded-xl text-xs hover:bg-blue-50 transition-all' }, '📁 Download Share File')
+                ),
+                shareCode && h('div', { className: 'bg-slate-50 rounded-lg p-3' },
+                    h('p', { className: 'text-[10px] text-slate-500 mb-1' }, '✅ Share code copied! Send this to your team member:'),
+                    h('div', { className: 'text-[10px] text-slate-400 font-mono break-all max-h-20 overflow-y-auto bg-white p-2 rounded border border-slate-200' }, shareCode.substring(0, 200) + (shareCode.length > 200 ? '...' : ''))
+                )
+            ),
+            // Import section
+            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 space-y-3' },
+                h('h4', { className: 'text-xs font-bold text-slate-700 uppercase tracking-wider' }, '📥 Import Shared Workspace'),
+                h('div', { className: 'flex gap-2' },
+                    h('input', { type: 'text', value: importCode, onChange: e => setImportCode(e.target.value), placeholder: 'Paste share code here...', className: 'flex-1 px-3 py-2 border border-slate-200 rounded-lg text-xs' }),
+                    h('button', { onClick: handleImportCode, disabled: !importCode.trim(), className: 'px-3 py-2 bg-emerald-600 text-white font-bold rounded-lg text-xs hover:bg-emerald-700 disabled:opacity-40 transition-all' }, '📋 Load'),
+                    h('button', { onClick: () => importFileRef.current?.click(), className: 'px-3 py-2 bg-white border border-slate-200 text-slate-600 font-bold rounded-lg text-xs hover:bg-slate-50 transition-all' }, '📁 File'),
+                    h('input', { ref: importFileRef, type: 'file', accept: '.json', onChange: handleImportFile, className: 'hidden' })
+                )
+            ),
+            // Imported data preview
+            importedData && h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-4 space-y-2' },
+                h('h4', { className: 'text-xs font-bold text-emerald-800 uppercase' }, '✅ Imported Workspace Preview'),
+                h('div', { className: 'grid grid-cols-2 gap-2 text-xs' },
+                    h('div', null, h('span', { className: 'text-slate-500' }, 'Student: '), h('span', { className: 'font-bold text-slate-800' }, importedData.student || 'Unknown')),
+                    h('div', null, h('span', { className: 'text-slate-500' }, 'Role: '), h('span', { className: 'font-bold text-slate-800' }, importedData.role || 'N/A')),
+                    h('div', null, h('span', { className: 'text-slate-500' }, 'Generated: '), h('span', { className: 'font-bold text-slate-800' }, importedData.generatedAt ? new Date(importedData.generatedAt).toLocaleDateString() : 'N/A')),
+                    importedData.abcEntries && h('div', null, h('span', { className: 'text-slate-500' }, 'ABC Entries: '), h('span', { className: 'font-bold text-slate-800' }, importedData.abcEntries.length)),
+                    importedData.totalEntries && h('div', null, h('span', { className: 'text-slate-500' }, 'Total entries: '), h('span', { className: 'font-bold text-slate-800' }, importedData.totalEntries)),
+                    importedData.summary && h('div', { className: 'col-span-2' }, h('span', { className: 'text-slate-500' }, 'Summary: '), h('span', { className: 'font-bold text-slate-800' }, `${importedData.summary.totalEntries} entries, ${importedData.summary.sessions} sessions`))
+                ),
+                importedData.aiAnalysis && h('div', { className: 'bg-white rounded-lg p-3 mt-2' },
+                    h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-1' }, '🧠 Analysis'),
+                    h('p', { className: 'text-xs text-slate-700 whitespace-pre-wrap' }, typeof importedData.aiAnalysis === 'string' ? importedData.aiAnalysis : importedData.aiAnalysis.summary || JSON.stringify(importedData.aiAnalysis).substring(0, 500))
+                ),
+                importedData.strengths && importedData.strengths.length > 0 && h('div', { className: 'bg-white rounded-lg p-3' },
+                    h('p', { className: 'text-[10px] font-bold text-emerald-600 uppercase mb-1' }, '💪 Strengths'),
+                    importedData.strengths.map((s, i) => h('p', { key: i, className: 'text-xs text-slate-700' }, '• ' + s))
+                ),
+                importedData.strategies && importedData.strategies.length > 0 && h('div', { className: 'bg-white rounded-lg p-3' },
+                    h('p', { className: 'text-[10px] font-bold text-blue-600 uppercase mb-1' }, '📋 Strategies'),
+                    importedData.strategies.map((s, i) => h('p', { key: i, className: 'text-xs text-slate-700' }, '• ' + (typeof s === 'string' ? s : s.text || JSON.stringify(s))))
+                )
+            )
+        );
+    };
+
+
+    // ─── ProgressReportGenerator ──────────────────────────────────────────
+    const ProgressReportGenerator = ({ abcEntries, observationSessions, sessionHistory, aiAnalysis, studentProfile, selectedStudent, callGemini, addToast, t }) => {
+        const [audience, setAudience] = useState('parent'); // parent | iep | clinical
+        const [dateRange, setDateRange] = useState('all');
+        const [customFrom, setCustomFrom] = useState('');
+        const [customTo, setCustomTo] = useState('');
+        const [bcbaName, setBcbaName] = useState('');
+        const [generating, setGenerating] = useState(false);
+        const [aiRecs, setAiRecs] = useState('');
+        const [recsLoading, setRecsLoading] = useState(false);
+        const [sections, setSections] = useState({
+            cover: true, profile: true, abcSummary: true, chart: true,
+            observations: true, aiAnalysis: true, recommendations: true
+        });
+        const toggleSection = (key) => setSections(prev => ({ ...prev, [key]: !prev[key] }));
+
+        // ─── Filtered data ──────────────────────────────────────────────
+        const filtered = useMemo(() => {
+            let entries = abcEntries || [];
+            let sessions = observationSessions || [];
+            if (dateRange === 'week') {
+                const cutoff = new Date(Date.now() - 7 * 86400000);
+                entries = entries.filter(e => new Date(e.timestamp) >= cutoff);
+                sessions = sessions.filter(s => new Date(s.timestamp) >= cutoff);
+            } else if (dateRange === 'month') {
+                const cutoff = new Date(Date.now() - 30 * 86400000);
+                entries = entries.filter(e => new Date(e.timestamp) >= cutoff);
+                sessions = sessions.filter(s => new Date(s.timestamp) >= cutoff);
+            } else if (dateRange === 'custom' && customFrom) {
+                const from = new Date(customFrom);
+                const to = customTo ? new Date(customTo + 'T23:59:59') : new Date();
+                entries = entries.filter(e => { const d = new Date(e.timestamp); return d >= from && d <= to; });
+                sessions = sessions.filter(s => { const d = new Date(s.timestamp); return d >= from && d <= to; });
+            }
+            return { entries, sessions };
+        }, [abcEntries, observationSessions, dateRange, customFrom, customTo]);
+
+        // ─── Analytics derived from filtered data ───────────────────────
+        const analytics = useMemo(() => {
+            const entries = filtered.entries;
+            const behaviorCounts = {};
+            const settingCounts = {};
+            const antecedentCounts = {};
+            const consequenceCounts = {};
+            let totalIntensity = 0;
+            entries.forEach(e => {
+                const b = (e.behavior || '').trim();
+                if (b) behaviorCounts[b] = (behaviorCounts[b] || 0) + 1;
+                const s = (e.setting || '').trim();
+                if (s) settingCounts[s] = (settingCounts[s] || 0) + 1;
+                const a = (e.antecedent || '').trim();
+                if (a) antecedentCounts[a] = (antecedentCounts[a] || 0) + 1;
+                const c = (e.consequence || '').trim();
+                if (c) consequenceCounts[c] = (consequenceCounts[c] || 0) + 1;
+                totalIntensity += (e.intensity || 3);
+            });
+            const topBehaviors = Object.entries(behaviorCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+            const topSettings = Object.entries(settingCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            const topAntecedents = Object.entries(antecedentCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            const topConsequences = Object.entries(consequenceCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            const avgIntensity = entries.length > 0 ? (totalIntensity / entries.length).toFixed(1) : '—';
+
+            // Daily frequency for chart
+            const byDay = {};
+            entries.forEach(e => {
+                const d = new Date(e.timestamp).toISOString().split('T')[0];
+                byDay[d] = (byDay[d] || 0) + 1;
+            });
+            const dailyData = Object.entries(byDay).sort(([a], [b]) => a.localeCompare(b)).map(([date, count]) => ({ date, count }));
+
+            // Linear regression
+            let trend = null;
+            if (dailyData.length >= 2) {
+                const n = dailyData.length;
+                const xs = dailyData.map((_, i) => i);
+                const ys = dailyData.map(d => d.count);
+                const sumX = xs.reduce((a, b) => a + b, 0);
+                const sumY = ys.reduce((a, b) => a + b, 0);
+                const sumXY = xs.reduce((a, x, i) => a + x * ys[i], 0);
+                const sumX2 = xs.reduce((a, x) => a + x * x, 0);
+                const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+                const intercept = (sumY - slope * sumX) / n;
+                trend = { slope, intercept, startY: intercept, endY: slope * (n - 1) + intercept };
+            }
+
+            // Observation session stats
+            const freqSessions = filtered.sessions.filter(s => s.method === 'frequency');
+            const intervalSessions = filtered.sessions.filter(s => s.method === 'interval');
+            const durationSessions = filtered.sessions.filter(s => s.method === 'duration');
+
+            return {
+                totalEntries: entries.length, totalSessions: filtered.sessions.length,
+                topBehaviors, topSettings, topAntecedents, topConsequences,
+                avgIntensity, dailyData, trend,
+                freqSessions, intervalSessions, durationSessions
+            };
+        }, [filtered]);
+
+        // ─── Generate AI Recommendations ────────────────────────────────
+        const generateRecs = async () => {
+            if (!callGemini || analytics.totalEntries === 0) return;
+            setRecsLoading(true);
+            try {
+                const prompt = `You are an experienced BCBA writing recommendations for ${audience === 'parent' ? 'a parent-friendly progress report' : audience === 'iep' ? 'an IEP team meeting' : 'a clinical behavior analysis report'}.
+
+Student: ${selectedStudent || 'Student'}
+Total ABC entries: ${analytics.totalEntries}
+Top behaviors: ${analytics.topBehaviors.map(([b, c]) => `${b} (${c}x)`).join(', ')}
+Average intensity: ${analytics.avgIntensity}/5
+Trend: ${analytics.trend ? (analytics.trend.slope > 0.1 ? 'increasing' : analytics.trend.slope < -0.1 ? 'decreasing' : 'stable') : 'insufficient data'}
+${aiAnalysis ? `Hypothesized function: ${aiAnalysis.hypothesizedFunction} (${aiAnalysis.confidence}% confidence)` : ''}
+${studentProfile?.goals ? `Current goals: ${studentProfile.goals}` : ''}
+
+Write 4-6 ${audience === 'parent' ? 'practical, encouraging recommendations using simple language' : audience === 'iep' ? 'specific, measurable recommendations aligned with IEP goals' : 'evidence-based clinical recommendations with ABA terminology'}.
+Format as a numbered list. Be concise but specific.`;
+                const result = await callGemini(prompt);
+                setAiRecs(result || 'Unable to generate recommendations.');
+            } catch { setAiRecs('Unable to generate recommendations at this time.'); }
+            setRecsLoading(false);
+        };
+
+        // ─── Build SVG chart as HTML string ─────────────────────────────
+        const buildChartSVG = () => {
+            const data = analytics.dailyData;
+            if (data.length === 0) return '<p style="color:#94a3b8;text-align:center;padding:40px;">No data available for chart</p>';
+            const W = 680, H = 280, PAD = 50;
+            const maxCount = Math.max(...data.map(d => d.count), 1);
+            const chartW = W - PAD * 2, chartH = H - PAD * 2;
+            const xS = (i) => PAD + (i / Math.max(data.length - 1, 1)) * chartW;
+            const yS = (v) => PAD + chartH - (v / maxCount) * chartH;
+
+            let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-height:300px;background:#fafbfc;border:1px solid #e2e8f0;border-radius:8px;">`;
+            // Grid
+            [0, 0.25, 0.5, 0.75, 1].forEach(pct => {
+                const y = yS(pct * maxCount);
+                svg += `<line x1="${PAD}" x2="${W - PAD}" y1="${y}" y2="${y}" stroke="#e2e8f0" stroke-width="1"/>`;
+                svg += `<text x="${PAD - 8}" y="${y + 4}" text-anchor="end" fill="#94a3b8" font-size="10">${Math.round(pct * maxCount)}</text>`;
+            });
+            // X labels
+            const xIdxs = data.length <= 10 ? data.map((_, i) => i) : [0, Math.floor(data.length * 0.25), Math.floor(data.length * 0.5), Math.floor(data.length * 0.75), data.length - 1];
+            xIdxs.forEach(i => {
+                if (data[i]) svg += `<text x="${xS(i)}" y="${H - 8}" text-anchor="middle" fill="#94a3b8" font-size="9">${data[i].date.slice(5)}</text>`;
+            });
+            // Trend line
+            if (analytics.trend) {
+                svg += `<line x1="${xS(0)}" y1="${yS(analytics.trend.startY)}" x2="${xS(data.length - 1)}" y2="${yS(analytics.trend.endY)}" stroke="#f59e0b" stroke-width="2" stroke-dasharray="5,3"/>`;
+            }
+            // Data line
+            const pts = data.map((d, i) => `${xS(i)},${yS(d.count)}`).join(' ');
+            svg += `<polyline points="${pts}" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+            // Data points
+            data.forEach((d, i) => {
+                svg += `<circle cx="${xS(i)}" cy="${yS(d.count)}" r="3.5" fill="#6366f1" stroke="#fff" stroke-width="1.5"/>`;
+            });
+            // Axis labels
+            svg += `<text x="${W / 2}" y="${H - 0}" text-anchor="middle" fill="#64748b" font-size="11" font-weight="bold">Date</text>`;
+            svg += `<text x="12" y="${H / 2}" text-anchor="middle" fill="#64748b" font-size="11" font-weight="bold" transform="rotate(-90, 12, ${H / 2})">Frequency</text>`;
+            // Legend
+            svg += `<circle cx="${PAD + 10}" cy="${PAD - 12}" r="4" fill="#6366f1"/><text x="${PAD + 18}" y="${PAD - 8}" fill="#64748b" font-size="9">Daily Count</text>`;
+            if (analytics.trend) {
+                svg += `<line x1="${PAD + 110}" y1="${PAD - 12}" x2="${PAD + 130}" y2="${PAD - 12}" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,2"/>`;
+                const dir = analytics.trend.slope > 0.1 ? '↑ Increasing' : analytics.trend.slope < -0.1 ? '↓ Decreasing' : '→ Stable';
+                svg += `<text x="${PAD + 134}" y="${PAD - 8}" fill="#64748b" font-size="9">Trend (${dir})</text>`;
+            }
+            svg += '</svg>';
+            return svg;
+        };
+
+        // ─── Build frequency table rows ─────────────────────────────────
+        const buildFreqTable = (items, label) => {
+            if (items.length === 0) return '';
+            let html = `<table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:12px;">`;
+            html += `<tr style="background:#f1f5f9;"><th style="text-align:left;padding:6px 10px;border-bottom:2px solid #e2e8f0;">${label}</th><th style="text-align:right;padding:6px 10px;border-bottom:2px solid #e2e8f0;">Count</th><th style="text-align:right;padding:6px 10px;border-bottom:2px solid #e2e8f0;">%</th></tr>`;
+            const total = items.reduce((s, [, c]) => s + c, 0);
+            items.forEach(([name, count]) => {
+                const pct = ((count / total) * 100).toFixed(1);
+                const barW = Math.round((count / items[0][1]) * 100);
+                html += `<tr><td style="padding:5px 10px;border-bottom:1px solid #f1f5f9;"><div style="background:linear-gradient(90deg,#e0e7ff ${barW}%,transparent ${barW}%);padding:2px 6px;border-radius:4px;">${name}</td><td style="text-align:right;padding:5px 10px;border-bottom:1px solid #f1f5f9;font-weight:600;">${count}</td><td style="text-align:right;padding:5px 10px;border-bottom:1px solid #f1f5f9;color:#64748b;">${pct}%</td></tr>`;
+            });
+            html += '</table>';
+            return html;
+        };
+
+        // ─── Generate Full HTML Report ──────────────────────────────────
+        const generateReport = () => {
+            setGenerating(true);
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            const student = selectedStudent || 'Student';
+            const audienceLabel = audience === 'parent' ? 'Parent Progress Report' : audience === 'iep' ? 'IEP Team Progress Report' : 'Clinical Behavior Analysis Report';
+            const rangeLabel = dateRange === 'all' ? 'All Available Data' : dateRange === 'week' ? 'Last 7 Days' : dateRange === 'month' ? 'Last 30 Days' : `${customFrom || '?'} to ${customTo || 'present'}`;
+            const trendLabel = analytics.trend ? (analytics.trend.slope > 0.1 ? 'Increasing' : analytics.trend.slope < -0.1 ? 'Decreasing' : 'Stable') : 'Insufficient data';
+
+            let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${audienceLabel} — ${student}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1e293b; line-height: 1.6; padding: 0; }
+.page { max-width: 780px; margin: 0 auto; padding: 40px 48px; }
+h1 { font-size: 26px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+h2 { font-size: 16px; font-weight: 700; color: #334155; margin: 28px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0; }
+h3 { font-size: 13px; font-weight: 700; color: #475569; margin: 16px 0 6px; }
+p { font-size: 12px; color: #475569; margin-bottom: 6px; }
+.badge { display: inline-block; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 600; color: #64748b; margin-right: 4px; }
+.cover-header { text-align: center; padding: 40px 20px 30px; border-bottom: 3px solid #6366f1; margin-bottom: 30px; }
+.cover-header h1 { font-size: 30px; color: #6366f1; }
+.cover-header .subtitle { font-size: 14px; color: #64748b; margin-top: 4px; }
+.cover-meta { display: flex; justify-content: center; gap: 24px; margin-top: 16px; font-size: 12px; color: #64748b; }
+.cover-meta span { display: flex; align-items: center; gap: 4px; }
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0; }
+.stat-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; text-align: center; }
+.stat-card .val { font-size: 22px; font-weight: 800; color: #0f172a; }
+.stat-card .lbl { font-size: 10px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+.profile-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; }
+.profile-item .label { font-size: 10px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+.profile-item .value { font-size: 12px; color: #334155; }
+.rec-list { list-style: none; counter-reset: rec; padding: 0; }
+.rec-list li { counter-increment: rec; padding: 8px 10px 8px 36px; margin-bottom: 6px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 12px; color: #166534; position: relative; }
+.rec-list li::before { content: counter(rec); position: absolute; left: 10px; top: 8px; width: 20px; height: 20px; background: #22c55e; color: white; border-radius: 50%; text-align: center; line-height: 20px; font-size: 10px; font-weight: 700; }
+.footer { margin-top: 40px; padding-top: 16px; border-top: 2px solid #e2e8f0; text-align: center; font-size: 10px; color: #94a3b8; }
+.confidential { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 6px 12px; border-radius: 6px; font-size: 10px; font-weight: 600; text-align: center; margin: 16px 0; }
+@media print {
+    body { padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { padding: 20px 30px; max-width: 100%; }
+    .no-print { display: none !important; }
+    h2 { page-break-after: avoid; }
+    .stat-grid, .profile-grid { page-break-inside: avoid; }
+    svg { page-break-inside: avoid; }
+}
+</style></head><body><div class="page">`;
+
+            // ── Print button (hidden in print) ──
+            html += `<div class="no-print" style="text-align:right;margin-bottom:16px;">
+                <button onclick="window.print()" style="padding:10px 24px;background:#6366f1;color:white;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">🖨️ Print / Save as PDF</button>
+                <button onclick="(() => { const b=new Blob([document.documentElement.outerHTML],{type:'text/html'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='progress_report_${(student || 'student').replace(/\s/g, '_')}.html'; a.click(); })()" style="padding:10px 24px;background:#f1f5f9;color:#334155;border:1px solid #e2e8f0;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;margin-left:8px;">💾 Save HTML</button>
+            </div>`;
+
+            // ── Cover Page ──
+            if (sections.cover) {
+                html += `<div class="cover-header">
+                    <div style="font-size:28px;margin-bottom:8px;">📊</div>
+                    <h1>${audienceLabel}</h1>
+                    <div class="subtitle">BehaviorLens Progress Documentation</div>
+                    <div class="cover-meta">
+                        <span>👤 <strong>${student}</strong></span>
+                        <span>📅 ${dateStr}</span>
+                        <span>📋 ${rangeLabel}</span>
+                        ${bcbaName ? `<span>🎓 ${bcbaName}</span>` : ''}
+                    </div>
+                </div>`;
+                if (audience === 'clinical') {
+                    html += `<div class="confidential">⚠️ CONFIDENTIAL — This document contains protected health information. Handle in accordance with HIPAA and FERPA guidelines.</div>`;
+                }
+            }
+
+            // ── Student Profile ──
+            if (sections.profile && studentProfile) {
+                const profileItems = [
+                    ['Strengths', studentProfile.strengths],
+                    ['Interests', studentProfile.interests],
+                    ['Known Triggers', studentProfile.triggers],
+                    ['Current Goals', studentProfile.goals],
+                    ['Accommodations', studentProfile.accommodations],
+                    ['Additional Notes', studentProfile.notes]
+                ].filter(([, v]) => v && v.trim());
+                if (profileItems.length > 0) {
+                    html += `<h2>👤 Student Profile</h2><div class="profile-grid">`;
+                    profileItems.forEach(([label, value]) => {
+                        html += `<div class="profile-item"><div class="label">${label}</div><div class="value">${value}</div></div>`;
+                    });
+                    html += `</div>`;
+                }
+            }
+
+            // ── ABC Summary ──
+            if (sections.abcSummary) {
+                html += `<h2>📋 Behavioral Data Summary</h2>`;
+                html += `<div class="stat-grid">
+                    <div class="stat-card"><div class="val">${analytics.totalEntries}</div><div class="lbl">ABC Entries</div></div>
+                    <div class="stat-card"><div class="val">${analytics.avgIntensity}</div><div class="lbl">Avg Intensity</div></div>
+                    <div class="stat-card"><div class="val">${analytics.dailyData.length}</div><div class="lbl">Days Observed</div></div>
+                    <div class="stat-card"><div class="val">${trendLabel}</div><div class="lbl">Overall Trend</div></div>
+                </div>`;
+                if (analytics.topBehaviors.length > 0) {
+                    html += `<h3>Target Behaviors by Frequency</h3>`;
+                    html += buildFreqTable(analytics.topBehaviors, 'Behavior');
+                }
+                if (audience !== 'parent' && analytics.topAntecedents.length > 0) {
+                    html += `<h3>Common Antecedents</h3>`;
+                    html += buildFreqTable(analytics.topAntecedents, 'Antecedent');
+                }
+                if (audience !== 'parent' && analytics.topConsequences.length > 0) {
+                    html += `<h3>Common Consequences</h3>`;
+                    html += buildFreqTable(analytics.topConsequences, 'Consequence');
+                }
+                if (analytics.topSettings.length > 0) {
+                    html += `<h3>Settings</h3>`;
+                    html += buildFreqTable(analytics.topSettings, 'Setting');
+                }
+            }
+
+            // ── Frequency Chart ──
+            if (sections.chart) {
+                html += `<h2>📈 Behavior Frequency Over Time</h2>`;
+                html += buildChartSVG();
+                if (analytics.trend) {
+                    const dir = analytics.trend.slope > 0.1 ? 'an increasing' : analytics.trend.slope < -0.1 ? 'a decreasing' : 'a stable';
+                    html += `<p style="margin-top:8px;font-style:italic;">The data shows ${dir} trend over the reporting period (slope: ${analytics.trend.slope.toFixed(2)} per day).</p>`;
+                }
+            }
+
+            // ── Observation Sessions ──
+            if (sections.observations && analytics.totalSessions > 0) {
+                html += `<h2>🔬 Observation Sessions</h2>`;
+                html += `<div class="stat-grid">
+                    <div class="stat-card"><div class="val">${analytics.totalSessions}</div><div class="lbl">Total Sessions</div></div>
+                    <div class="stat-card"><div class="val">${analytics.freqSessions.length}</div><div class="lbl">Frequency</div></div>
+                    <div class="stat-card"><div class="val">${analytics.intervalSessions.length}</div><div class="lbl">Interval</div></div>
+                    <div class="stat-card"><div class="val">${analytics.durationSessions.length}</div><div class="lbl">Duration</div></div>
+                </div>`;
+                if (analytics.freqSessions.length > 0) {
+                    const avgRate = (analytics.freqSessions.reduce((s, ses) => s + (ses.data?.rate || 0), 0) / analytics.freqSessions.length).toFixed(1);
+                    html += `<p><strong>Frequency recordings:</strong> Average rate of ${avgRate}/min across ${analytics.freqSessions.length} sessions.</p>`;
+                }
+                if (analytics.intervalSessions.length > 0) {
+                    const avgPct = (analytics.intervalSessions.reduce((s, ses) => s + (ses.data?.percentage || 0), 0) / analytics.intervalSessions.length).toFixed(1);
+                    html += `<p><strong>Interval recordings:</strong> Average occurrence at ${avgPct}% of intervals across ${analytics.intervalSessions.length} sessions.</p>`;
+                }
+            }
+
+            // ── AI Analysis ──
+            if (sections.aiAnalysis && aiAnalysis) {
+                html += `<h2>🧠 Functional Behavior Analysis</h2>`;
+                html += `<div class="stat-grid" style="grid-template-columns:1fr 1fr;">
+                    <div class="stat-card"><div class="val">${aiAnalysis.hypothesizedFunction || '—'}</div><div class="lbl">Hypothesized Function</div></div>
+                    <div class="stat-card"><div class="val">${aiAnalysis.confidence || '—'}%</div><div class="lbl">Confidence Level</div></div>
+                </div>`;
+                if (aiAnalysis.summary) {
+                    html += `<p style="margin-top:8px;">${aiAnalysis.summary}</p>`;
+                }
+                if (audience === 'clinical' && aiAnalysis.patterns) {
+                    html += `<h3>Identified Patterns</h3><ul style="font-size:12px;padding-left:20px;">`;
+                    (Array.isArray(aiAnalysis.patterns) ? aiAnalysis.patterns : [aiAnalysis.patterns]).forEach(p => {
+                        html += `<li style="margin-bottom:4px;">${typeof p === 'string' ? p : JSON.stringify(p)}</li>`;
+                    });
+                    html += `</ul>`;
+                }
+            }
+
+            // ── Recommendations ──
+            if (sections.recommendations && aiRecs) {
+                html += `<h2>✅ Recommendations</h2>`;
+                const lines = aiRecs.split('\n').filter(l => l.trim());
+                html += `<ol class="rec-list">`;
+                lines.forEach(line => {
+                    const cleaned = line.replace(/^\d+[\.\)]\s*/, '').trim();
+                    if (cleaned) html += `<li>${cleaned}</li>`;
+                });
+                html += `</ol>`;
+            }
+
+            // ── Footer ──
+            html += `<div class="footer">
+                <p>Generated by <strong>BehaviorLens</strong> on ${dateStr}${bcbaName ? ` | Prepared by ${bcbaName}` : ''}</p>
+                <p>Data range: ${rangeLabel} | ${analytics.totalEntries} entries | ${analytics.totalSessions} sessions</p>
+            </div>`;
+
+            html += `</div></body></html>`;
+
+            // Open in new tab
+            const win = window.open('', '_blank');
+            if (win) {
+                win.document.write(html);
+                win.document.close();
+                if (addToast) addToast('Report generated — use Print/Save as PDF in the new tab!', 'success');
+            } else {
+                // Fallback: download as HTML
+                const blob = new Blob([html], { type: 'text/html' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `progress_report_${(student || 'student').replace(/\s/g, '_')}.html`;
+                a.click();
+                URL.revokeObjectURL(a.href);
+                if (addToast) addToast('Pop-ups blocked — downloaded as HTML file instead.', 'info');
+            }
+            setGenerating(false);
+        };
+
+        // ─── Section config item ────────────────────────────────────────
+        const sectionItem = (key, icon, label) =>
+            h('label', { className: `flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all ${sections[key] ? 'bg-indigo-50 border border-indigo-200' : 'bg-white border border-slate-200 opacity-60'}` },
+                h('input', { type: 'checkbox', checked: sections[key], onChange: () => toggleSection(key), className: 'rounded' }),
+                h('span', { className: 'text-base' }, icon),
+                h('span', { className: 'text-xs font-bold text-slate-700' }, label)
+            );
+
+        // ─── Render ─────────────────────────────────────────────────────
+        return h('div', { className: 'space-y-4' },
+            // Header
+            h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border border-emerald-200' },
+                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '📄'), h('h3', { className: 'text-lg font-black text-emerald-800' }, 'Progress Report Generator')),
+                h('p', { className: 'text-xs text-emerald-600' }, 'Generate a professional, print-ready progress report with inline charts, data summaries, and AI recommendations. One-click PDF export via browser print.')
+            ),
+
+            // Audience selector
+            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 space-y-3' },
+                h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block' }, '🎯 Report Audience'),
+                h('div', { className: 'flex gap-2' },
+                    [['parent', '👨‍👩‍👧 Parent Report', 'Simple, encouraging language'], ['iep', '📋 IEP Team', 'Goal-aligned, measurable language'], ['clinical', '🔬 Clinical', 'Full ABA terminology and detail']].map(([key, label, desc]) =>
+                        h('button', {
+                            key, onClick: () => setAudience(key),
+                            className: `flex-1 py-3 rounded-xl text-left px-4 transition-all border-2 ${audience === key ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-white hover:bg-slate-50'}`
+                        },
+                            h('div', { className: 'text-xs font-bold text-slate-800' }, label),
+                            h('div', { className: 'text-[10px] text-slate-500 mt-0.5' }, desc)
+                        )
+                    )
+                )
+            ),
+
+            // Date range + BCBA name
+            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 space-y-3' },
+                h('div', { className: 'grid grid-cols-2 gap-4' },
+                    h('div', null,
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, '📅 Date Range'),
+                        h('select', { value: dateRange, onChange: e => setDateRange(e.target.value), className: 'w-full px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white' },
+                            h('option', { value: 'all' }, 'All Available Data'),
+                            h('option', { value: 'week' }, 'Last 7 Days'),
+                            h('option', { value: 'month' }, 'Last 30 Days'),
+                            h('option', { value: 'custom' }, 'Custom Range')
+                        )
+                    ),
+                    h('div', null,
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, '🎓 BCBA / Preparer Name'),
+                        h('input', { type: 'text', value: bcbaName, onChange: e => setBcbaName(e.target.value), placeholder: 'Optional', className: 'w-full px-3 py-2 border border-slate-200 rounded-lg text-xs' })
+                    )
+                ),
+                dateRange === 'custom' && h('div', { className: 'grid grid-cols-2 gap-4 mt-2' },
+                    h('div', null,
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, 'From'),
+                        h('input', { type: 'date', value: customFrom, onChange: e => setCustomFrom(e.target.value), className: 'w-full px-3 py-2 border border-slate-200 rounded-lg text-xs' })
+                    ),
+                    h('div', null,
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, 'To'),
+                        h('input', { type: 'date', value: customTo, onChange: e => setCustomTo(e.target.value), className: 'w-full px-3 py-2 border border-slate-200 rounded-lg text-xs' })
+                    )
+                )
+            ),
+
+            // Section toggles
+            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 space-y-2' },
+                h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-2' }, '📑 Report Sections'),
+                h('div', { className: 'grid grid-cols-2 gap-2' },
+                    sectionItem('cover', '📊', 'Cover Page'),
+                    sectionItem('profile', '👤', 'Student Profile'),
+                    sectionItem('abcSummary', '📋', 'ABC Data Summary'),
+                    sectionItem('chart', '📈', 'Frequency Chart'),
+                    sectionItem('observations', '🔬', 'Observations'),
+                    sectionItem('aiAnalysis', '🧠', 'AI Analysis'),
+                    sectionItem('recommendations', '✅', 'Recommendations')
+                )
+            ),
+
+            // AI Recommendations generator
+            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 space-y-3' },
+                h('div', { className: 'flex items-center justify-between' },
+                    h('div', null,
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block' }, '🤖 AI-Generated Recommendations'),
+                        h('p', { className: 'text-[10px] text-slate-400 mt-0.5' }, 'Generate tailored recommendations based on the behavioral data and selected audience.')
+                    ),
+                    h('button', {
+                        onClick: generateRecs, disabled: recsLoading || !callGemini || analytics.totalEntries === 0,
+                        className: 'px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-bold rounded-xl text-xs hover:from-violet-700 hover:to-fuchsia-700 transition-all shadow-sm disabled:opacity-40'
+                    }, recsLoading ? '⏳ Generating...' : '🤖 Generate')
+                ),
+                aiRecs && h('div', { className: 'bg-violet-50 border border-violet-200 rounded-xl p-4' },
+                    h('p', { className: 'text-xs text-violet-800 leading-relaxed whitespace-pre-wrap' }, aiRecs)
+                )
+            ),
+
+            // Preview stats
+            h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-4' },
+                h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-2' }, '📊 Report Preview'),
+                h('div', { className: 'grid grid-cols-4 gap-3' },
+                    [['📋', analytics.totalEntries, 'ABC Entries'], ['🔬', analytics.totalSessions, 'Sessions'], ['📅', analytics.dailyData.length, 'Days'], ['📈', analytics.trend ? (analytics.trend.slope > 0.1 ? '↑' : analytics.trend.slope < -0.1 ? '↓' : '→') : '—', 'Trend']].map(([icon, val, label]) =>
+                        h('div', { key: label, className: 'bg-white rounded-lg border border-slate-200 p-3 text-center' },
+                            h('div', { className: 'text-base' }, icon),
+                            h('div', { className: 'text-lg font-black text-slate-800' }, val),
+                            h('div', { className: 'text-[10px] text-slate-400' }, label)
+                        )
+                    )
+                )
+            ),
+
+            // Generate button
+            h('div', { className: 'flex gap-3' },
+                h('button', {
+                    onClick: generateReport, disabled: generating || analytics.totalEntries === 0,
+                    className: 'flex-1 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg disabled:opacity-40'
+                }, generating ? '⏳ Generating Report...' : '📄 Generate Progress Report'),
+                h('button', {
+                    onClick: () => {
+                        const allKeys = Object.keys(sections);
+                        const allOn = allKeys.every(k => sections[k]);
+                        setSections(prev => { const next = {}; allKeys.forEach(k => next[k] = !allOn); return next; });
+                    },
+                    className: 'px-4 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-50 transition-all'
+                }, Object.values(sections).every(v => v) ? '☐ Deselect All' : '☑ Select All')
+            ),
+
+            // No data warning
+            analytics.totalEntries === 0 && h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-4 text-center' },
+                h('span', { className: 'text-2xl' }, '⚠️'),
+                h('p', { className: 'text-sm font-bold text-amber-800 mt-1' }, 'No behavioral data recorded'),
+                h('p', { className: 'text-xs text-amber-600' }, 'Add ABC entries before generating a report.')
+            )
+        );
+    };
+
 
     // ─── BehaviorTab (Hub) ──────────────────────────────────────────────
     // The main hub component that renders inside a fullscreen overlay
@@ -15362,8 +16346,110 @@ Keep under 250 words. Use clear sections.`);
         studentNickname,
         dashboardData,
         isTeacherMode,
-        alloBotRef
+        alloBotRef,
+        firestore,
+        firebaseAuth,
+        isCanvasEnv
     }) => {
+
+        // ─── useCloudSync — Firebase cloud persistence hook ──────────────
+        // Firebase v9 modular SDK: standalone functions are exposed via window.__alloFirebase
+        // The `fs` param = Firestore instance (db), `fbAuth` param = Auth instance (auth)
+        const _fb = window.__alloFirebase || {};
+        const useCloudSync = (fs, fbAuth, canvasEnv) => {
+            const [syncStatus, setSyncStatus] = useState(canvasEnv ? 'disabled' : 'idle');
+            const [userId, setUserId] = useState(null);
+            const authAttempted = useRef(false);
+
+            // Attempt anonymous sign-in on mount
+            useEffect(() => {
+                if (canvasEnv || !fs || !fbAuth || authAttempted.current) return;
+                if (!_fb.onAuthStateChanged || !_fb.signInAnonymously) {
+                    warnLog('CloudSync: Firebase helpers not available on window.__alloFirebase');
+                    setSyncStatus('offline');
+                    return;
+                }
+                authAttempted.current = true;
+                // Firebase v9: onAuthStateChanged(auth, callback) returns unsubscribe fn
+                const unsub = _fb.onAuthStateChanged(fbAuth, user => {
+                    if (user) {
+                        setUserId(user.uid);
+                        setSyncStatus('idle');
+                        debugLog('CloudSync: authenticated as', user.uid);
+                    } else {
+                        // Firebase v9: signInAnonymously(auth)
+                        _fb.signInAnonymously(fbAuth).then(cred => {
+                            setUserId(cred.user.uid);
+                            setSyncStatus('idle');
+                            debugLog('CloudSync: anonymous sign-in', cred.user.uid);
+                        }).catch(err => {
+                            warnLog('CloudSync: auth failed', err);
+                            setSyncStatus('offline');
+                        });
+                    }
+                });
+                return () => unsub();
+            }, [fs, fbAuth, canvasEnv]);
+
+            // Build a Firestore doc path for a student workspace
+            const docPath = useCallback((studentName) => {
+                if (!userId || !studentName) return null;
+                const safeName = studentName.replace(/[\/.#$\[\]]/g, '_');
+                return `apps/prismflow/behaviorLens/users/${userId}/workspaces/${safeName}`;
+            }, [userId]);
+
+            // Save data to Firestore
+            const saveToCloud = useCallback(async (studentName, data) => {
+                if (canvasEnv || !fs || !userId || !studentName) return false;
+                if (!_fb.doc || !_fb.setDoc) return false;
+                const path = docPath(studentName);
+                if (!path) return false;
+                try {
+                    setSyncStatus('syncing');
+                    // Firebase v9: doc(firestore, path...) then setDoc(docRef, data)
+                    const pathParts = path.split('/');
+                    const docRef = _fb.doc(fs, ...pathParts);
+                    await _fb.setDoc(docRef, {
+                        ...data,
+                        updatedAt: new Date().toISOString(),
+                        _uid: userId
+                    }, { merge: true });
+                    setSyncStatus('synced');
+                    debugLog('CloudSync: saved', studentName);
+                    return true;
+                } catch (err) {
+                    warnLog('CloudSync: save failed', err);
+                    setSyncStatus('offline');
+                    return false;
+                }
+            }, [fs, userId, canvasEnv, docPath]);
+
+            // Load data from Firestore
+            const loadFromCloud = useCallback(async (studentName) => {
+                if (canvasEnv || !fs || !userId || !studentName) return null;
+                if (!_fb.doc || !_fb.getDoc) return null;
+                const path = docPath(studentName);
+                if (!path) return null;
+                try {
+                    setSyncStatus('syncing');
+                    // Firebase v9: doc(firestore, path...) then getDoc(docRef)
+                    const pathParts = path.split('/');
+                    const docRef = _fb.doc(fs, ...pathParts);
+                    const snap = await _fb.getDoc(docRef);
+                    setSyncStatus(snap.exists() ? 'synced' : 'idle');
+                    return snap.exists() ? snap.data() : null;
+                } catch (err) {
+                    warnLog('CloudSync: load failed', err);
+                    setSyncStatus('offline');
+                    return null;
+                }
+            }, [fs, userId, canvasEnv, docPath]);
+
+            return { saveToCloud, loadFromCloud, syncStatus, setSyncStatus, userId };
+        };
+
+        // Initialize cloud sync
+        const cloudSync = useCloudSync(firestore, firebaseAuth, isCanvasEnv);
         const [activePanel, setActivePanel] = useState('hub');
         const [selectedStudent, setSelectedStudent] = useState(studentNickname || '');
         const [abcEntries, setAbcEntries] = useState([]);
@@ -15405,6 +16491,130 @@ Keep under 250 words. Use clear sections.`);
             interests: '', strengths: '', triggers: '',
             goals: '', accommodations: '', notes: ''
         });
+
+        // ─── Student Roster for multi-student quick-switch ───────────────
+        const [studentRoster, setStudentRoster] = useState(() => {
+            try { return JSON.parse(localStorage.getItem('bl_student_roster') || '[]'); } catch { return []; }
+        });
+        const [showRosterDropdown, setShowRosterDropdown] = useState(false);
+
+        // Persist roster to localStorage + cloud write-through
+        useEffect(() => {
+            try { localStorage.setItem('bl_student_roster', JSON.stringify(studentRoster.slice(0, 20))); } catch {}
+            // Cloud write-through for roster
+            if (cloudSync.userId && !isCanvasEnv) {
+                cloudSync.saveToCloud('__roster__', { roster: studentRoster.slice(0, 20) }).catch(() => {});
+            }
+        }, [studentRoster]);
+
+        // Auto-add current student to roster when selectedStudent changes
+        useEffect(() => {
+            if (!selectedStudent) return;
+            setStudentRoster(prev => {
+                const existing = prev.find(r => r.name === selectedStudent);
+                if (existing) {
+                    return prev.map(r => r.name === selectedStudent ? { ...r, lastAccessed: new Date().toISOString() } : r);
+                }
+                return [{ name: selectedStudent, lastAccessed: new Date().toISOString() }, ...prev].slice(0, 20);
+            });
+        }, [selectedStudent]);
+
+        // Build a summary object from full workspace data (for comparisonWorkspaces entries)
+        const buildWorkspaceSummary = useCallback((data) => {
+            const entries = data.abcEntries || [];
+            const sessions = data.sessionHistory || [];
+            const behaviorCounts = {};
+            entries.forEach(e => { const b = (e.behavior || '').trim(); if (b) behaviorCounts[b] = (behaviorCounts[b] || 0) + 1; });
+            const avgIntensity = entries.length > 0 ? entries.reduce((s, e) => s + (e.intensity || 3), 0) / entries.length : 0;
+            const lastEntry = entries.length > 0 ? entries[entries.length - 1].timestamp : null;
+            const topBehaviors = Object.entries(behaviorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            return {
+                student: data.student || data.selectedStudent || 'Unknown',
+                abcCount: entries.length,
+                sessionCount: sessions.length,
+                avgIntensity: parseFloat(avgIntensity.toFixed(1)),
+                topBehaviors,
+                lastEntry,
+                savedAt: data.savedAt || new Date().toISOString(),
+                profile: data.studentProfile || {},
+                sessionHistory: sessions.slice(0, 20),
+                designPhases: data.designPhases || [],
+                effectSizeResults: data.effectSizeResults,
+            };
+        }, []);
+
+        // Auto-save current student's data into comparisonWorkspaces (preserves unsaved work before switching)
+        const saveCurrentToRoster = useCallback(() => {
+            if (!selectedStudent) return;
+            const currentData = {
+                version: 2, savedAt: new Date().toISOString(), student: selectedStudent,
+                abcEntries, observationSessions, favorites, sessionNotes, studentProfile,
+                userRole, activityRegistry, sessionHistory, designPhases, activeDesign,
+                workflowTrack, workflowSubSteps, graphExport, effectSizeResults,
+                aiAnalysis: aiAnalysis || null,
+                dismissedAlerts: Array.from(dismissedAlerts),
+                visitedPanels: Array.from(visitedPanels),
+            };
+            setComparisonWorkspaces(prev => {
+                const summary = buildWorkspaceSummary(currentData);
+                summary._fullData = currentData;
+                const idx = prev.findIndex(w => w.student === selectedStudent);
+                if (idx >= 0) { const copy = [...prev]; copy[idx] = summary; return copy; }
+                return [...prev, summary];
+            });
+        }, [selectedStudent, abcEntries, observationSessions, favorites, sessionNotes,
+            studentProfile, userRole, activityRegistry, sessionHistory, designPhases,
+            activeDesign, workflowTrack, workflowSubSteps, graphExport, effectSizeResults,
+            aiAnalysis, dismissedAlerts, visitedPanels, buildWorkspaceSummary]);
+
+        // Switch to a different student from the comparison workspaces
+        const switchToStudent = useCallback((studentName) => {
+            // 1. Save current student first
+            saveCurrentToRoster();
+            // 2. Find the target workspace
+            const target = comparisonWorkspaces.find(w => w.student === studentName);
+            if (!target) {
+                // Student is in roster but has no loaded workspace — just switch the name
+                setSelectedStudent(studentName);
+                setAbcEntries([]);
+                setObservationSessions([]);
+                setSessionNotes([]);
+                setStudentProfile({ interests: '', strengths: '', triggers: '', goals: '', accommodations: '', notes: '' });
+                setSessionHistory([]);
+                setAiAnalysis(null);
+                if (addToast) addToast(`Switched to ${studentName} (no data loaded)`, 'info');
+                return;
+            }
+            // 3. Load data from _fullData if available, otherwise use summary
+            const data = target._fullData || target;
+            if (data.abcEntries) setAbcEntries(data.abcEntries);
+            else setAbcEntries([]);
+            if (data.observationSessions) setObservationSessions(data.observationSessions);
+            else setObservationSessions([]);
+            if (data.favorites) setFavorites(data.favorites);
+            if (data.sessionNotes) setSessionNotes(data.sessionNotes);
+            else setSessionNotes([]);
+            if (data.studentProfile) setStudentProfile(data.studentProfile);
+            else setStudentProfile({ interests: '', strengths: '', triggers: '', goals: '', accommodations: '', notes: '' });
+            setSelectedStudent(data.student || studentName);
+            if (data.userRole) setUserRole(data.userRole);
+            if (data.activityRegistry) setActivityRegistry(data.activityRegistry);
+            if (data.sessionHistory) setSessionHistory(data.sessionHistory);
+            else setSessionHistory([]);
+            if (data.designPhases) setDesignPhases(data.designPhases);
+            if (data.activeDesign) setActiveDesign(data.activeDesign);
+            if (data.workflowTrack) setWorkflowTrack(data.workflowTrack);
+            if (data.workflowSubSteps) setWorkflowSubSteps(data.workflowSubSteps);
+            if (data.graphExport) setGraphExport(data.graphExport);
+            if (data.effectSizeResults) setEffectSizeResults(data.effectSizeResults);
+            if (data.aiAnalysis) setAiAnalysis(data.aiAnalysis); else setAiAnalysis(null);
+            if (data.dismissedAlerts) setDismissedAlerts(new Set(data.dismissedAlerts));
+            if (data.visitedPanels) setVisitedPanels(new Set(data.visitedPanels));
+            setLastSavedAt(data.savedAt || null);
+            setDataChangedSinceSave(false);
+            setShowRosterDropdown(false);
+            if (addToast) addToast(`Switched to ${studentName} ✅`, 'success');
+        }, [saveCurrentToRoster, comparisonWorkspaces, addToast]);
 
         // ─── useBotCoach — context-aware Allobot tips ─────────────────────
         const botCoachFired = useRef({});
@@ -15542,6 +16752,12 @@ Keep under 250 words. Use clear sections.`);
             URL.revokeObjectURL(url);
             setLastSavedAt(now);
             setDataChangedSinceSave(false);
+            // Cloud write-through on manual save
+            if (cloudSync.userId && !isCanvasEnv && selectedStudent) {
+                cloudSync.saveToCloud(selectedStudent, workspace).then(ok => {
+                    if (ok && addToast) addToast('☁️ Also synced to cloud!', 'success');
+                }).catch(() => {});
+            }
             if (addToast) addToast(t('behavior_lens.toast_workspace_saved') || 'Workspace saved to file 💾', 'success');
         };
 
@@ -15617,6 +16833,7 @@ Keep under 250 words. Use clear sections.`);
                             sessionHistory: sessions.slice(0, 20),
                             designPhases: data.designPhases || [],
                             effectSizeResults: data.effectSizeResults,
+                            _fullData: data,
                         });
                     } catch (err) { warnLog('Failed to parse comparison file:', file.name, err); }
                     processed++;
@@ -15805,29 +17022,55 @@ Use professional language. Refer to "the student" (not the codename).`;
             }
         }, [adjectives, animals]);
 
-        // Load data — localStorage is legacy fallback only; workspace JSON is primary
+        // Load data — cloud first (if available), then localStorage fallback
+        const cloudLoadAttempted = useRef({});
         useEffect(() => {
             if (!selectedStudent) return;
-            try {
-                const key = `behaviorLens_abc_${selectedStudent}`;
-                const saved = localStorage.getItem(key);
-                if (saved && abcEntries.length === 0) {
-                    setAbcEntries(JSON.parse(saved));
-                    debugLog('BehaviorLens: loaded legacy ABC data from localStorage');
+            const loadData = async () => {
+                // Try cloud first (once per student)
+                if (cloudSync.userId && !isCanvasEnv && !cloudLoadAttempted.current[selectedStudent]) {
+                    cloudLoadAttempted.current[selectedStudent] = true;
+                    try {
+                        const cloudData = await cloudSync.loadFromCloud(selectedStudent);
+                        if (cloudData && cloudData.abcEntries && cloudData.abcEntries.length > 0) {
+                            setAbcEntries(cloudData.abcEntries);
+                            if (cloudData.observationSessions) setObservationSessions(cloudData.observationSessions);
+                            if (cloudData.sessionNotes) setSessionNotes(cloudData.sessionNotes);
+                            if (cloudData.studentProfile) setStudentProfile(cloudData.studentProfile);
+                            if (cloudData.sessionHistory) setSessionHistory(cloudData.sessionHistory);
+                            if (cloudData.designPhases) setDesignPhases(cloudData.designPhases);
+                            if (cloudData.favorites) setFavorites(cloudData.favorites);
+                            debugLog('BehaviorLens: loaded data from cloud for', selectedStudent);
+                            if (addToast) addToast('☁️ Data loaded from cloud', 'success');
+                            return; // Cloud data loaded, skip localStorage
+                        }
+                    } catch (e) {
+                        debugLog('CloudSync: cloud load failed, falling back to localStorage');
+                    }
                 }
-                const obsKey = `behaviorLens_obs_${selectedStudent}`;
-                const savedObs = localStorage.getItem(obsKey);
-                if (savedObs && observationSessions.length === 0) {
-                    setObservationSessions(JSON.parse(savedObs));
-                    debugLog('BehaviorLens: loaded legacy obs data from localStorage');
+                // localStorage fallback
+                try {
+                    const key = `behaviorLens_abc_${selectedStudent}`;
+                    const saved = localStorage.getItem(key);
+                    if (saved && abcEntries.length === 0) {
+                        setAbcEntries(JSON.parse(saved));
+                        debugLog('BehaviorLens: loaded legacy ABC data from localStorage');
+                    }
+                    const obsKey = `behaviorLens_obs_${selectedStudent}`;
+                    const savedObs = localStorage.getItem(obsKey);
+                    if (savedObs && observationSessions.length === 0) {
+                        setObservationSessions(JSON.parse(savedObs));
+                        debugLog('BehaviorLens: loaded legacy obs data from localStorage');
+                    }
+                } catch (e) {
+                    debugLog('localStorage unavailable — use workspace JSON save/load instead');
                 }
-            } catch (e) {
-                // localStorage may be unavailable in Canvas — workspace JSON is primary
-                debugLog('localStorage unavailable — use workspace JSON save/load instead');
-            }
-        }, [selectedStudent]);
+            };
+            loadData();
+        }, [selectedStudent, cloudSync.userId]);
 
-        // Auto-save ABC entries (localStorage is best-effort fallback; workspace JSON is primary)
+        // Auto-save ABC entries (localStorage + cloud write-through)
+        const cloudSaveTimer = useRef(null);
         useEffect(() => {
             if (!selectedStudent || abcEntries.length === 0) return;
             try {
@@ -15835,15 +17078,50 @@ Use professional language. Refer to "the student" (not the codename).`;
             } catch (e) {
                 // Silently fail — Canvas/iframe may block localStorage
             }
+            // Debounced cloud write-through (2s debounce to avoid excessive writes)
+            if (cloudSync.userId && !isCanvasEnv) {
+                if (cloudSaveTimer.current) clearTimeout(cloudSaveTimer.current);
+                cloudSaveTimer.current = setTimeout(() => {
+                    cloudSync.saveToCloud(selectedStudent, {
+                        abcEntries,
+                        observationSessions,
+                        sessionNotes,
+                        studentProfile,
+                        sessionHistory,
+                        designPhases,
+                        favorites,
+                        userRole,
+                        savedAt: new Date().toISOString()
+                    }).catch(() => {});
+                }, 2000);
+            }
+            return () => { if (cloudSaveTimer.current) clearTimeout(cloudSaveTimer.current); };
         }, [abcEntries, selectedStudent]);
 
-        // Auto-save observation sessions (localStorage is best-effort fallback; workspace JSON is primary)
+        // Auto-save observation sessions (localStorage + cloud write-through)
         useEffect(() => {
             if (!selectedStudent || observationSessions.length === 0) return;
             try {
                 localStorage.setItem(`behaviorLens_obs_${selectedStudent}`, JSON.stringify(observationSessions));
             } catch (e) {
                 // Silently fail — Canvas/iframe may block localStorage
+            }
+            // Cloud write-through (piggybacks on the debounced ABC save)
+            if (cloudSync.userId && !isCanvasEnv) {
+                if (cloudSaveTimer.current) clearTimeout(cloudSaveTimer.current);
+                cloudSaveTimer.current = setTimeout(() => {
+                    cloudSync.saveToCloud(selectedStudent, {
+                        abcEntries,
+                        observationSessions,
+                        sessionNotes,
+                        studentProfile,
+                        sessionHistory,
+                        designPhases,
+                        favorites,
+                        userRole,
+                        savedAt: new Date().toISOString()
+                    }).catch(() => {});
+                }, 2000);
             }
         }, [observationSessions, selectedStudent]);
 
@@ -16673,6 +17951,42 @@ Analyze this data and return ONLY valid JSON:
                     desc: t('behavior_lens.hub.obscoach_desc') || 'Real-time coaching on your data collection quality — identifies gaps, suggests improvements, and rates your data',
                     color: 'amber',
                 },
+                {
+                    id: 'batchimport',
+                    icon: '📥',
+                    title: 'Batch Import',
+                    desc: 'Import historical ABC data or student profiles from CSV files — validates, previews, and merges with existing data',
+                    color: 'teal',
+                },
+                {
+                    id: 'progressmonitor',
+                    icon: '📈',
+                    title: 'Progress Monitor',
+                    desc: 'Track behavior frequency over time with aim lines, phase change markers, trend analysis, and daily summary stats',
+                    color: 'indigo',
+                    badge: abcEntries.length > 0 ? `📊 ${abcEntries.length} entries` : null,
+                },
+                {
+                    id: 'voiceabc',
+                    icon: '🎙️',
+                    title: 'Voice-to-ABC',
+                    desc: 'Speak your observations naturally — AI extracts structured ABC entries from your real-time voice transcript',
+                    color: 'rose',
+                },
+                {
+                    id: 'sharing',
+                    icon: '🤝',
+                    title: 'Workspace Sharing',
+                    desc: 'Share workspace data with team members using role-based views — BCBA, teacher, or parent-friendly exports',
+                    color: 'blue',
+                },
+                {
+                    id: 'progressreport',
+                    icon: '📄',
+                    title: 'Progress Report',
+                    desc: 'Generate a professional, print-ready progress report with inline charts, AI recommendations, and audience-specific language',
+                    color: 'teal',
+                },
             ].filter(tool => !isParentMode || parentTools.includes(tool.id));
 
             const colorClasses = {
@@ -16774,6 +18088,36 @@ Analyze this data and return ONLY valid JSON:
                                 }, '🎲')
                             )
                         )
+                ),
+                // ── Student Roster Quick-Switch ──────────────────────
+                studentRoster.length > 1 && h('div', { className: 'mb-4 bg-white/80 backdrop-blur rounded-xl border border-slate-200 p-3 shadow-sm' },
+                    h('div', { className: 'flex items-center justify-between mb-2' },
+                        h('div', { className: 'flex items-center gap-1.5' },
+                            h('span', { className: 'text-sm' }, '⇄'),
+                            h('span', { className: 'text-[10px] font-black text-slate-500 uppercase tracking-wider' }, 'Quick Switch')
+                        ),
+                        h('button', {
+                            onClick: () => { setStudentRoster([]); if (addToast) addToast('Roster cleared', 'info'); },
+                            className: 'text-[9px] text-slate-300 hover:text-red-400 transition-colors'
+                        }, 'Clear')
+                    ),
+                    h('div', { className: 'flex flex-wrap gap-1.5' },
+                        studentRoster.filter(r => r.name !== selectedStudent).slice(0, 6).map(r =>
+                            h('button', {
+                                key: r.name,
+                                onClick: () => switchToStudent(r.name),
+                                className: 'group flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all border ' +
+                                    'bg-gradient-to-r from-violet-50 to-indigo-50 border-violet-200 text-violet-700 hover:border-violet-400 hover:shadow-sm hover:shadow-violet-100'
+                            },
+                                h('span', { className: 'w-4 h-4 rounded-full bg-violet-500 text-white flex items-center justify-center text-[8px] font-black shrink-0' }, (r.name || '?')[0].toUpperCase()),
+                                h('span', { className: 'truncate max-w-[80px]' }, r.name),
+                                h('span', {
+                                    onClick: (e) => { e.stopPropagation(); setStudentRoster(prev => prev.filter(x => x.name !== r.name)); },
+                                    className: 'ml-0.5 text-violet-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity text-[9px]'
+                                }, '✕')
+                            )
+                        )
+                    )
                 ),
                 // Smart Alerts
                 smartAlerts.length > 0 && h('div', { className: 'space-y-2' },
@@ -17257,6 +18601,28 @@ Analyze this data and return ONLY valid JSON:
                         )
                     ),
                     h('div', { className: 'flex items-center gap-2' },
+                        // Cloud Sync Status Badge
+                        !isCanvasEnv && h('div', {
+                            className: `flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all ${
+                                cloudSync.syncStatus === 'synced' ? 'bg-sky-50 border-sky-200 text-sky-700' :
+                                cloudSync.syncStatus === 'syncing' ? 'bg-amber-50 border-amber-200 text-amber-700 animate-pulse' :
+                                cloudSync.syncStatus === 'offline' ? 'bg-red-50 border-red-200 text-red-600' :
+                                'bg-slate-50 border-slate-200 text-slate-500'
+                            }`,
+                            title: cloudSync.syncStatus === 'synced' ? 'Data synced to cloud' :
+                                   cloudSync.syncStatus === 'syncing' ? 'Syncing...' :
+                                   cloudSync.syncStatus === 'offline' ? 'Cloud offline — using local storage' :
+                                   cloudSync.syncStatus === 'disabled' ? 'Cloud sync disabled' : 'Cloud sync idle'
+                        },
+                            cloudSync.syncStatus === 'synced' ? '☁️ Synced' :
+                            cloudSync.syncStatus === 'syncing' ? '⏳ Syncing' :
+                            cloudSync.syncStatus === 'offline' ? '⚡ Offline' :
+                            '💾 Local'
+                        ),
+                        isCanvasEnv && h('div', {
+                            className: 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border bg-slate-50 border-slate-200 text-slate-500',
+                            title: 'Canvas environment — local storage only'
+                        }, '💾 Local only'),
                         // Parent Mode toggle
                         activePanel === 'hub' && h('button', {
                             onClick: () => setIsParentMode(p => !p),
@@ -17740,7 +19106,8 @@ Analyze this data and return ONLY valid JSON:
                 activePanel === 'compare' && h(ComparisonDashboard, {
                     comparisonWorkspaces, setComparisonWorkspaces,
                     compareFileInputRef, handleLoadComparisonFiles,
-                    callGemini: callGeminiWithContext, t, addToast
+                    callGemini: callGeminiWithContext, t, addToast,
+                    switchToStudent
                 }),
                 activePanel === 'mtss' && h(MTSSTierManager, {
                     dashboardData, abcEntries, callGemini: callGeminiWithContext,
@@ -17765,6 +19132,26 @@ Analyze this data and return ONLY valid JSON:
                 activePanel === 'cumrecord' && h(CumulativeRecord, { sessionHistory, t, addToast }),
                 activePanel === 'condprob' && h(ConditionalProbability, { abcEntries, t, addToast }),
                 activePanel === 'treatintegrity' && h(TreatmentIntegrityTracker, { t, addToast }),
+                activePanel === 'batchimport' && h(BatchImportPanel, {
+                    abcEntries, setAbcEntries, addToast, t
+                }),
+                activePanel === 'progressmonitor' && h(ProgressMonitorDashboard, {
+                    abcEntries, observationSessions, sessionHistory, t, addToast
+                }),
+                activePanel === 'voiceabc' && h(VoiceToABC, {
+                    abcEntries, setAbcEntries, studentName: selectedStudent,
+                    callGemini: callGeminiWithContext, addToast, t
+                }),
+                activePanel === 'sharing' && h(WorkspaceSharing, {
+                    abcEntries, observationSessions, sessionHistory,
+                    aiAnalysis, studentProfile, selectedStudent,
+                    studentRoster, cloudSync, addToast, t
+                }),
+                activePanel === 'progressreport' && h(ProgressReportGenerator, {
+                    abcEntries, observationSessions, sessionHistory,
+                    aiAnalysis, studentProfile, selectedStudent,
+                    callGemini: callGeminiWithContext, addToast, t
+                }),
                 // ── Related Tools Footer ──────────────────────────────
                 (() => {
                     if (activePanel === 'hub') return null;
