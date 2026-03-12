@@ -5,7 +5,8 @@
 #    PocketBase (DB)    → port 8090   (local-first database, replaces Firebase)
 #    Ollama (LLM)       → port 11434  (text generation)
 #    Flux (Image Gen)   → port 7860   (text-to-image + image editing)
-#    Piper (TTS)        → port 5500   (text-to-speech, offline)
+#    Edge TTS (Speech)  → port 5001   (neural text-to-speech, 28 voices, 20 langs)
+#    Piper (TTS)        → port 5500   (text-to-speech, offline fallback)
 #    SearXNG (Search)   → port 8888   (web search for grounding)
 #
 #  Usage:
@@ -98,6 +99,22 @@ services:
       --data-dir /data
       --download-dir /data
     restart: unless-stopped
+
+  # ── Neural TTS (Edge TTS — 28 voices, 20 languages) ────────
+  edge-tts:
+    build:
+      context: ./edge-tts-server
+      dockerfile: Dockerfile
+    container_name: alloflow-edge-tts
+    ports:
+      - "5001:5001"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
 
   # ── Web Search (SearXNG — privacy-first) ───────────────────
   searxng:
