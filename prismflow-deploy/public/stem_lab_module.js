@@ -20907,6 +20907,156 @@
                   });
                   ctx.globalAlpha = 1;
                 }
+              
+                // ── Frog layer-specific internal anatomy ──
+                // Muscle layer: draw fiber striations
+                if (activeLayer === 'muscle') {
+                  ctx.globalAlpha = 0.25;
+                  ctx.strokeStyle = '#991b1b';
+                  ctx.lineWidth = 0.6;
+                  // Abdominal muscle fibers
+                  for (var mf = 0; mf < 12; mf++) {
+                    var mfy = cy - H*0.15 + mf * H*0.035;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - W*0.10, mfy);
+                    ctx.quadraticCurveTo(cx, mfy + (mf%2?2:-2), cx + W*0.10, mfy);
+                    ctx.stroke();
+                  }
+                  // Leg muscle detail
+                  [-1, 1].forEach(function(side) {
+                    for (var lm = 0; lm < 5; lm++) {
+                      ctx.beginPath();
+                      ctx.moveTo(cx + side*W*0.12, cy + H*0.24 + lm*H*0.03);
+                      ctx.quadraticCurveTo(cx + side*W*0.18, cy + H*0.28 + lm*H*0.02, cx + side*W*0.20, cy + H*0.32 + lm*H*0.01);
+                      ctx.stroke();
+                    }
+                  });
+                  ctx.globalAlpha = 1;
+                }
+                // Organs layer: draw simplified organ shapes inside body
+                if (activeLayer === 'organs') {
+                  ctx.globalAlpha = 0.55;
+                  // Heart (anterior)
+                  ctx.beginPath(); ctx.arc(cx, cy - H*0.08, W*0.03, 0, Math.PI*2);
+                  ctx.fillStyle = '#dc2626'; ctx.fill();
+                  ctx.strokeStyle = '#991b1b'; ctx.lineWidth = 0.8; ctx.stroke();
+                  // Aorta line from heart
+                  ctx.beginPath(); ctx.moveTo(cx, cy-H*0.11);
+                  ctx.lineTo(cx, cy-H*0.18);
+                  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5; ctx.stroke();
+                  // Lungs (paired)
+                  [-1, 1].forEach(function(s) {
+                    ctx.beginPath(); ctx.ellipse(cx + s*W*0.06, cy - H*0.06, W*0.03, H*0.04, 0, 0, Math.PI*2);
+                    ctx.fillStyle = '#fca5a5'; ctx.fill();
+                    ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.5; ctx.stroke();
+                  });
+                  // Liver (3 lobes)
+                  ctx.beginPath(); ctx.ellipse(cx, cy + H*0.02, W*0.10, H*0.04, 0, 0, Math.PI*2);
+                  ctx.fillStyle = '#92400e'; ctx.fill();
+                  ctx.strokeStyle = '#78350f'; ctx.lineWidth = 0.6; ctx.stroke();
+                  // Gallbladder
+                  ctx.beginPath(); ctx.ellipse(cx + W*0.04, cy + H*0.03, W*0.015, H*0.02, 0.3, 0, Math.PI*2);
+                  ctx.fillStyle = '#22c55e'; ctx.fill(); ctx.strokeStyle = '#15803d'; ctx.lineWidth = 0.5; ctx.stroke();
+                  // Stomach
+                  ctx.beginPath(); ctx.ellipse(cx - W*0.03, cy + H*0.08, W*0.04, H*0.025, -0.3, 0, Math.PI*2);
+                  ctx.fillStyle = '#fde68a'; ctx.fill(); ctx.strokeStyle = '#d97706'; ctx.lineWidth = 0.5; ctx.stroke();
+                  // Small intestine (coiled)
+                  ctx.beginPath();
+                  ctx.strokeStyle = '#f97316'; ctx.lineWidth = 2;
+                  ctx.moveTo(cx - W*0.01, cy + H*0.10);
+                  for (var gi = 0; gi < 6; gi++) {
+                    ctx.quadraticCurveTo(cx + (gi%2?1:-1)*W*0.06, cy + H*0.11 + gi*H*0.015, cx + (gi%2?-1:1)*W*0.02, cy + H*0.12 + gi*H*0.015);
+                  }
+                  ctx.stroke();
+                  // Fat bodies (yellow fingers)
+                  [-1, 1].forEach(function(s) {
+                    ctx.beginPath(); ctx.ellipse(cx + s*W*0.05, cy - H*0.10, W*0.008, H*0.03, s*0.3, 0, Math.PI*2);
+                    ctx.fillStyle = '#fbbf24'; ctx.fill();
+                  });
+                  ctx.globalAlpha = 1;
+                }
+                // Skeleton layer: draw bone outlines
+                if (activeLayer === 'skeleton') {
+                  ctx.globalAlpha = 0.6;
+                  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2;
+                  // Skull
+                  ctx.beginPath(); ctx.ellipse(cx, cy-H*0.25, W*0.09, H*0.055, 0, 0, Math.PI*2);
+                  ctx.stroke();
+                  // Orbits
+                  [-1, 1].forEach(function(s) {
+                    ctx.beginPath(); ctx.arc(cx + s*W*0.05, cy-H*0.26, W*0.025, 0, Math.PI*2);
+                    ctx.stroke();
+                  });
+                  // Vertebral column (9 vertebrae)
+                  for (var vi = 0; vi < 9; vi++) {
+                    var vy = cy - H*0.18 + vi * (H*0.36/9);
+                    ctx.beginPath(); ctx.ellipse(cx, vy, W*0.015, H*0.01, 0, 0, Math.PI*2);
+                    ctx.fillStyle = 'rgba(226,232,240,0.4)'; ctx.fill();
+                    ctx.stroke();
+                  }
+                  // Urostyle
+                  ctx.beginPath(); ctx.moveTo(cx, cy+H*0.15);
+                  ctx.lineTo(cx, cy+H*0.24);
+                  ctx.lineWidth = 3; ctx.stroke();
+                  // Pelvic girdle
+                  ctx.beginPath(); ctx.ellipse(cx, cy+H*0.16, W*0.08, H*0.025, 0, 0, Math.PI*2);
+                  ctx.lineWidth = 1.5; ctx.stroke();
+                  // Pectoral girdle
+                  ctx.beginPath(); ctx.ellipse(cx, cy-H*0.16, W*0.10, H*0.02, 0, 0, Math.PI*2);
+                  ctx.stroke();
+                  // Femur + tibiofibula outlines
+                  [-1, 1].forEach(function(s) {
+                    ctx.beginPath();
+                    ctx.moveTo(cx+s*W*0.08, cy+H*0.18);
+                    ctx.lineTo(cx+s*W*0.16, cy+H*0.26);
+                    ctx.lineTo(cx+s*W*0.18, cy+H*0.36);
+                    ctx.lineWidth = 2.5; ctx.stroke();
+                    // Humerus + radioulna
+                    ctx.beginPath();
+                    ctx.moveTo(cx+s*W*0.10, cy-H*0.14);
+                    ctx.lineTo(cx+s*W*0.18, cy-H*0.08);
+                    ctx.lineTo(cx+s*W*0.20, cy-H*0.02);
+                    ctx.lineWidth = 2; ctx.stroke();
+                  });
+                  ctx.globalAlpha = 1;
+                }
+                // Nervous layer: draw nerve pathways
+                if (activeLayer === 'nervous') {
+                  ctx.globalAlpha = 0.6;
+                  // Brain
+                  ctx.beginPath(); ctx.ellipse(cx, cy-H*0.25, W*0.05, H*0.03, 0, 0, Math.PI*2);
+                  ctx.fillStyle = 'rgba(167,139,250,0.4)'; ctx.fill();
+                  ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 1.5; ctx.stroke();
+                  // Optic lobes
+                  ctx.beginPath(); ctx.ellipse(cx, cy-H*0.28, W*0.03, H*0.015, 0, 0, Math.PI*2);
+                  ctx.fillStyle = 'rgba(196,181,253,0.4)'; ctx.fill(); ctx.stroke();
+                  // Spinal cord
+                  ctx.beginPath(); ctx.moveTo(cx, cy-H*0.22); ctx.lineTo(cx, cy+H*0.18);
+                  ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2.5; ctx.setLineDash([4,2]); ctx.stroke(); ctx.setLineDash([]);
+                  // Spinal nerves (10 pairs)
+                  for (var sn = 0; sn < 10; sn++) {
+                    var sny = cy - H*0.18 + sn * (H*0.36/10);
+                    [-1, 1].forEach(function(s) {
+                      ctx.beginPath(); ctx.moveTo(cx, sny);
+                      ctx.lineTo(cx + s*W*0.08, sny + H*0.01);
+                      ctx.strokeStyle = 'rgba(167,139,250,0.3)'; ctx.lineWidth = 0.8; ctx.stroke();
+                    });
+                  }
+                  // Sciatic nerves
+                  [-1, 1].forEach(function(s) {
+                    ctx.beginPath(); ctx.moveTo(cx + s*W*0.04, cy+H*0.15);
+                    ctx.quadraticCurveTo(cx + s*W*0.10, cy+H*0.25, cx + s*W*0.16, cy+H*0.38);
+                    ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2; ctx.setLineDash([3,2]); ctx.stroke(); ctx.setLineDash([]);
+                  });
+                  // Optic nerves to eyes
+                  [-1, 1].forEach(function(s) {
+                    ctx.beginPath(); ctx.moveTo(cx + s*W*0.03, cy-H*0.26);
+                    ctx.lineTo(cx + s*W*0.07, cy-H*0.28);
+                    ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 1; ctx.stroke();
+                  });
+                  ctx.globalAlpha = 1;
+                }
+
               } else if (spec.bodyShape === 'worm') {
                 // Earthworm — segmented tube
                 ctx.beginPath();
@@ -20949,6 +21099,76 @@
                 tubeGrad.addColorStop(1, 'rgba(0,0,0,0.15)');
                 ctx.fillStyle = tubeGrad;
                 ctx.fillRect(cx-W*0.048, H*0.08, W*0.096, H*0.84);
+                // ── Worm layer overlays ──
+                if (activeLayer === 'organs') {
+                  ctx.globalAlpha = 0.5;
+                  // Pharynx
+                  ctx.beginPath(); ctx.ellipse(cx, H*0.10, W*0.025, H*0.02, 0, 0, Math.PI*2);
+                  ctx.fillStyle = '#f87171'; ctx.fill();
+                  // Aortic arches (5 hearts)
+                  for (var aa = 0; aa < 5; aa++) {
+                    ctx.beginPath(); ctx.ellipse(cx, H*0.18+aa*H*0.015, W*0.02, H*0.005, 0, 0, Math.PI*2);
+                    ctx.fillStyle = '#dc2626'; ctx.fill();
+                  }
+                  // Crop
+                  ctx.beginPath(); ctx.ellipse(cx, H*0.28, W*0.03, H*0.02, 0, 0, Math.PI*2);
+                  ctx.fillStyle = '#fde68a'; ctx.fill();
+                  // Gizzard
+                  ctx.beginPath(); ctx.ellipse(cx, H*0.33, W*0.025, H*0.015, 0, 0, Math.PI*2);
+                  ctx.fillStyle = '#94a3b8'; ctx.fill(); ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1; ctx.stroke();
+                  // Intestine (long tube)
+                  ctx.beginPath(); ctx.moveTo(cx, H*0.36); ctx.lineTo(cx, H*0.88);
+                  ctx.strokeStyle = '#f97316'; ctx.lineWidth = 3; ctx.stroke();
+                  // Typhlosole (fold inside intestine)
+                  ctx.beginPath(); ctx.moveTo(cx, H*0.38); ctx.lineTo(cx, H*0.86);
+                  ctx.strokeStyle = '#fb923c'; ctx.lineWidth = 1; ctx.setLineDash([2,3]); ctx.stroke(); ctx.setLineDash([]);
+                  // Nephridia marks (paired dots along body)
+                  for (var np = 0; np < 10; np++) {
+                    var npy = H*0.36 + np*H*0.05;
+                    [-1, 1].forEach(function(s) {
+                      ctx.beginPath(); ctx.arc(cx + s*W*0.025, npy, 1.5, 0, Math.PI*2);
+                      ctx.fillStyle = '#a78bfa'; ctx.fill();
+                    });
+                  }
+                  ctx.globalAlpha = 1;
+                }
+                if (activeLayer === 'nervous') {
+                  ctx.globalAlpha = 0.5;
+                  // Brain
+                  ctx.beginPath(); ctx.ellipse(cx, H*0.065, W*0.02, H*0.01, 0, 0, Math.PI*2);
+                  ctx.fillStyle = 'rgba(167,139,250,0.5)'; ctx.fill(); ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 1; ctx.stroke();
+                  // Ventral nerve cord
+                  ctx.beginPath(); ctx.moveTo(cx, H*0.08); ctx.lineTo(cx, H*0.92);
+                  ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2; ctx.setLineDash([4,2]); ctx.stroke(); ctx.setLineDash([]);
+                  // Segmental ganglia
+                  for (var wg = 0; wg < 25; wg++) {
+                    ctx.beginPath(); ctx.arc(cx, H*0.10 + wg*H*0.032, 2, 0, Math.PI*2);
+                    ctx.fillStyle = '#c084fc'; ctx.fill();
+                  }
+                  // Giant nerve fibers (fast escape)
+                  ctx.beginPath(); ctx.moveTo(cx - W*0.01, H*0.08); ctx.lineTo(cx - W*0.01, H*0.90);
+                  ctx.strokeStyle = 'rgba(196,181,253,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(cx + W*0.01, H*0.08); ctx.lineTo(cx + W*0.01, H*0.90);
+                  ctx.stroke();
+                  ctx.globalAlpha = 1;
+                }
+                if (activeLayer === 'muscle') {
+                  // Circular muscle rings
+                  ctx.globalAlpha = 0.2; ctx.strokeStyle = '#dc2626';
+                  for (var cm = 0; cm < 28; cm++) {
+                    var cmy = H*0.09 + cm*H*0.029;
+                    ctx.beginPath(); ctx.ellipse(cx, cmy, W*0.044, H*0.005, 0, 0, Math.PI*2);
+                    ctx.lineWidth = 0.8; ctx.stroke();
+                  }
+                  // Longitudinal muscle lines
+                  ctx.strokeStyle = '#b91c1c'; ctx.lineWidth = 0.4;
+                  [-W*0.03, -W*0.01, W*0.01, W*0.03].forEach(function(off) {
+                    ctx.beginPath(); ctx.moveTo(cx+off, H*0.08); ctx.lineTo(cx+off, H*0.90);
+                    ctx.stroke();
+                  });
+                  ctx.globalAlpha = 1;
+                }
+
               } else if (spec.bodyShape === 'pig') {
                 // Fetal pig — simplied quadruped
                 ctx.beginPath(); ctx.ellipse(cx, cy, W*0.22, H*0.16, 0, 0, Math.PI*2);
@@ -20982,6 +21202,62 @@
                 ctx.beginPath(); ctx.moveTo(cx+W*0.22, cy-H*0.02);
                 ctx.quadraticCurveTo(cx+W*0.28, cy-H*0.10, cx+W*0.26, cy-H*0.14);
                 ctx.strokeStyle = layerStroke; ctx.lineWidth = 2; ctx.stroke();
+              
+                // ── Pig layer overlays ──
+                if (activeLayer === 'organs') {
+                  ctx.globalAlpha = 0.5;
+                  // Heart
+                  ctx.beginPath(); ctx.arc(cx-W*0.04, cy-H*0.06, W*0.025, 0, Math.PI*2);
+                  ctx.fillStyle = '#dc2626'; ctx.fill();
+                  // Lungs
+                  [-1, 1].forEach(function(s) {
+                    ctx.beginPath(); ctx.ellipse(cx + s*W*0.08 - W*0.04, cy-H*0.04, W*0.04, H*0.06, 0, 0, Math.PI*2);
+                    ctx.fillStyle = '#fca5a5'; ctx.fill(); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.5; ctx.stroke();
+                  });
+                  // Liver
+                  ctx.beginPath(); ctx.ellipse(cx-W*0.02, cy+H*0.02, W*0.10, H*0.04, 0, 0, Math.PI*2);
+                  ctx.fillStyle = '#92400e'; ctx.fill();
+                  // Stomach
+                  ctx.beginPath(); ctx.ellipse(cx, cy+H*0.06, W*0.06, H*0.03, 0.2, 0, Math.PI*2);
+                  ctx.fillStyle = '#fde68a'; ctx.fill(); ctx.strokeStyle = '#d97706'; ctx.lineWidth = 0.5; ctx.stroke();
+                  // Intestines (coiled)
+                  ctx.beginPath(); ctx.strokeStyle = '#f97316'; ctx.lineWidth = 1.5;
+                  ctx.moveTo(cx-W*0.05, cy+H*0.08);
+                  for (var pi = 0; pi < 5; pi++) {
+                    ctx.quadraticCurveTo(cx+(pi%2?1:-1)*W*0.08, cy+H*0.09+pi*H*0.012, cx+(pi%2?-1:1)*W*0.03, cy+H*0.10+pi*H*0.012);
+                  }
+                  ctx.stroke();
+                  // Umbilical cord
+                  ctx.beginPath(); ctx.moveTo(cx, cy+H*0.14);
+                  ctx.quadraticCurveTo(cx+W*0.05, cy+H*0.20, cx+W*0.02, cy+H*0.26);
+                  ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 3; ctx.stroke();
+                  ctx.globalAlpha = 1;
+                }
+                if (activeLayer === 'skeleton') {
+                  ctx.globalAlpha = 0.5; ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1.5;
+                  // Skull
+                  ctx.beginPath(); ctx.ellipse(cx-W*0.22, cy-H*0.02, W*0.08, H*0.07, -0.2, 0, Math.PI*2);
+                  ctx.stroke();
+                  // Spine
+                  ctx.beginPath(); ctx.moveTo(cx-W*0.14, cy-H*0.02);
+                  ctx.lineTo(cx+W*0.18, cy-H*0.02);
+                  ctx.lineWidth = 2.5; ctx.stroke();
+                  // Vertebrae marks
+                  for (var pv = 0; pv < 15; pv++) {
+                    var pvx = cx-W*0.12 + pv*(W*0.30/15);
+                    ctx.beginPath(); ctx.moveTo(pvx, cy-H*0.04); ctx.lineTo(pvx, cy);
+                    ctx.lineWidth = 0.8; ctx.stroke();
+                  }
+                  // Ribs
+                  for (var pr = 0; pr < 7; pr++) {
+                    var prx = cx-W*0.10+pr*(W*0.14/7);
+                    ctx.beginPath(); ctx.moveTo(prx, cy-H*0.04);
+                    ctx.quadraticCurveTo(prx, cy+H*0.06, prx+W*0.01, cy+H*0.10);
+                    ctx.lineWidth = 0.8; ctx.stroke();
+                  }
+                  ctx.globalAlpha = 1;
+                }
+
               } else if (spec.bodyShape === 'fish') {
                 // Fish — elongated with fins
                 ctx.beginPath();
@@ -21025,6 +21301,65 @@
                 // Pectoral fin
                 ctx.beginPath(); ctx.ellipse(cx-W*0.15, cy+H*0.06, W*0.05, H*0.03, 0.3, 0, Math.PI*2);
                 ctx.fillStyle = layerColor; ctx.globalAlpha = 0.5; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
+              
+                // ── Fish layer overlays ──
+                if (activeLayer === 'organs') {
+                  ctx.globalAlpha = 0.5;
+                  // Swim bladder
+                  ctx.beginPath(); ctx.ellipse(cx, cy-H*0.04, W*0.10, H*0.035, 0, 0, Math.PI*2);
+                  ctx.fillStyle = 'rgba(219,234,254,0.6)'; ctx.fill();
+                  ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 0.8; ctx.stroke();
+                  // Heart (anterior)
+                  ctx.beginPath(); ctx.arc(cx-W*0.20, cy+H*0.04, W*0.015, 0, Math.PI*2);
+                  ctx.fillStyle = '#dc2626'; ctx.fill();
+                  // Liver
+                  ctx.beginPath(); ctx.ellipse(cx-W*0.10, cy+H*0.02, W*0.05, H*0.03, 0.2, 0, Math.PI*2);
+                  ctx.fillStyle = '#92400e'; ctx.fill();
+                  // Stomach
+                  ctx.beginPath(); ctx.ellipse(cx-W*0.03, cy+H*0.04, W*0.04, H*0.02, -0.1, 0, Math.PI*2);
+                  ctx.fillStyle = '#fde68a'; ctx.fill();
+                  // Intestine
+                  ctx.beginPath(); ctx.moveTo(cx+W*0.01, cy+H*0.04);
+                  ctx.quadraticCurveTo(cx+W*0.08, cy+H*0.06, cx+W*0.12, cy+H*0.04);
+                  ctx.strokeStyle = '#f97316'; ctx.lineWidth = 2; ctx.stroke();
+                  // Gills (red filaments)
+                  for (var gf = 0; gf < 4; gf++) {
+                    ctx.beginPath(); ctx.moveTo(cx-W*0.22, cy-H*0.04+gf*H*0.025);
+                    ctx.lineTo(cx-W*0.26, cy-H*0.04+gf*H*0.025);
+                    ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5; ctx.stroke();
+                  }
+                  // Kidney (dorsal)
+                  ctx.beginPath(); ctx.ellipse(cx, cy-H*0.08, W*0.12, H*0.01, 0, 0, Math.PI*2);
+                  ctx.fillStyle = '#78350f'; ctx.fill();
+                  ctx.globalAlpha = 1;
+                }
+                if (activeLayer === 'skeleton') {
+                  ctx.globalAlpha = 0.5; ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1.5;
+                  // Spine
+                  ctx.beginPath(); ctx.moveTo(cx-W*0.22, cy-H*0.02);
+                  ctx.lineTo(cx+W*0.22, cy-H*0.02);
+                  ctx.lineWidth = 2; ctx.stroke();
+                  // Vertebrae
+                  for (var fv = 0; fv < 20; fv++) {
+                    var fvx = cx-W*0.20 + fv*(W*0.40/20);
+                    ctx.beginPath(); ctx.moveTo(fvx, cy-H*0.04); ctx.lineTo(fvx, cy);
+                    ctx.lineWidth = 0.5; ctx.stroke();
+                  }
+                  // Skull
+                  ctx.beginPath(); ctx.ellipse(cx-W*0.25, cy-H*0.01, W*0.06, H*0.05, 0, 0, Math.PI*2);
+                  ctx.stroke();
+                  // Jaw
+                  ctx.beginPath(); ctx.moveTo(cx-W*0.28, cy); ctx.lineTo(cx-W*0.30, cy+H*0.03); ctx.lineTo(cx-W*0.24, cy+H*0.02);
+                  ctx.stroke();
+                  // Fin ray outlines
+                  for (var fr = 0; fr < 5; fr++) {
+                    ctx.beginPath(); ctx.moveTo(cx-W*0.05+fr*W*0.03, cy-H*0.12);
+                    ctx.lineTo(cx-W*0.04+fr*W*0.03, cy-H*0.19);
+                    ctx.lineWidth = 0.6; ctx.stroke();
+                  }
+                  ctx.globalAlpha = 1;
+                }
+
               } else if (spec.bodyShape === 'crayfish') {
                 // Crayfish — crustacean
                 // Carapace (cephalothorax)
@@ -21057,7 +21392,64 @@
                 ctx.beginPath(); ctx.moveTo(cx-W*0.22, cy-H*0.12);
                 ctx.quadraticCurveTo(cx-W*0.35, cy-H*0.20, cx-W*0.40, cy-H*0.16);
                 ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-              } else if (spec.bodyShape === 'eye') {
+              }
+                // Walking legs (4 pairs)
+                for (var wl = 0; wl < 4; wl++) {
+                  var wlx = cx - W*0.08 + wl*W*0.06;
+                  [-1, 1].forEach(function(s) {
+                    ctx.beginPath(); ctx.moveTo(wlx, cy + s*H*0.10);
+                    ctx.lineTo(wlx - W*0.02, cy + s*H*0.16);
+                    ctx.lineTo(wlx - W*0.04, cy + s*H*0.18);
+                    ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.stroke();
+                  });
+                }
+                // Swimmerets on abdomen
+                for (var sw = 0; sw < 5; sw++) {
+                  var swx = cx + W*(0.14 + sw*0.05);
+                  ctx.beginPath(); ctx.moveTo(swx, cy + H*0.06);
+                  ctx.lineTo(swx - W*0.01, cy + H*0.10);
+                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.6; ctx.globalAlpha = 0.4; ctx.stroke();
+                  ctx.globalAlpha = 1;
+                }
+                // ── Crayfish layer overlays ──
+                if (activeLayer === 'organs') {
+                  ctx.globalAlpha = 0.5;
+                  // Heart
+                  ctx.beginPath(); ctx.arc(cx - W*0.02, cy - H*0.04, W*0.015, 0, Math.PI*2);
+                  ctx.fillStyle = '#dc2626'; ctx.fill();
+                  // Hepatopancreas
+                  ctx.beginPath(); ctx.ellipse(cx - W*0.06, cy, W*0.06, H*0.05, 0, 0, Math.PI*2);
+                  ctx.fillStyle = '#d97706'; ctx.fill(); ctx.strokeStyle = '#92400e'; ctx.lineWidth = 0.5; ctx.stroke();
+                  // Gastric mill teeth
+                  for (var gt = 0; gt < 3; gt++) {
+                    ctx.beginPath(); ctx.arc(cx-W*0.14+gt*W*0.02, cy-H*0.01, 2, 0, Math.PI*2);
+                    ctx.fillStyle = '#e2e8f0'; ctx.fill();
+                  }
+                  // Gills (feathery)
+                  for (var cg = 0; cg < 3; cg++) {
+                    ctx.beginPath(); ctx.moveTo(cx-W*0.10, cy+H*0.06+cg*H*0.02);
+                    ctx.lineTo(cx-W*0.16, cy+H*0.08+cg*H*0.02);
+                    ctx.strokeStyle = '#fca5a5'; ctx.lineWidth = 1.5; ctx.stroke();
+                  }
+                  ctx.globalAlpha = 1;
+                }
+                if (activeLayer === 'nervous') {
+                  ctx.globalAlpha = 0.5;
+                  // Brain
+                  ctx.beginPath(); ctx.arc(cx-W*0.18, cy, W*0.015, 0, Math.PI*2);
+                  ctx.fillStyle = 'rgba(167,139,250,0.5)'; ctx.fill(); ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 1; ctx.stroke();
+                  // Ventral nerve cord
+                  ctx.beginPath(); ctx.moveTo(cx-W*0.16, cy);
+                  ctx.lineTo(cx+W*0.35, cy+H*0.02);
+                  ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1.5; ctx.setLineDash([3,2]); ctx.stroke(); ctx.setLineDash([]);
+                  // Segmental ganglia
+                  for (var sg = 0; sg < 8; sg++) {
+                    ctx.beginPath(); ctx.arc(cx-W*0.12+sg*W*0.065, cy+H*0.01, 2, 0, Math.PI*2);
+                    ctx.fillStyle = '#a78bfa'; ctx.fill();
+                  }
+                  ctx.globalAlpha = 1;
+                }
+ else if (spec.bodyShape === 'eye') {
                 // Sheep eye — cross-section
                 ctx.beginPath(); ctx.arc(cx, cy, W*0.30, 0, Math.PI*2);
                 ctx.fillStyle = '#f1f5f9'; ctx.fill(); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 3; ctx.stroke();
