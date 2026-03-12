@@ -678,7 +678,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
 
         const dateRangeOpts = [
             { key: 'all', label: 'All' },
-            { key: 'today', label: 'Today' },
+            { key: 'today', label: (t('behavior_lens.raw.today') || 'Today') },
             { key: '7', label: '7d' },
             { key: '30', label: '30d' }
         ];
@@ -2630,7 +2630,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4' },
-                h('h3', { className: 'text-sm font-black text-slate-800' }, '📥 ' + (t('behavior_lens.export.title') || 'Export Data')),
+                h('h3', { className: 'text-sm font-black text-slate-800' }, '📥 ' + (t('behavior_lens.export.title') || 'Export Reports')),
                 // Format selector
                 h('div', null,
                     h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, t('behavior_lens.format') || 'Format'),
@@ -2880,11 +2880,11 @@ Create a hypothesis diagram and return ONLY valid JSON:
 
         const fc = aiAnalysis?.hypothesizedFunction ? (FUNCTION_COLORS[aiAnalysis.hypothesizedFunction] || FUNCTION_COLORS['Attention']) : FUNCTION_COLORS['Attention'];
         const diagramSteps = [
-            { key: 'setting', label: 'Setting Event', icon: '🏫', color: '#e0f2fe', border: '#38bdf8' },
-            { key: 'antecedent', label: 'Antecedent', icon: '🔺', color: '#fef3c7', border: '#f59e0b' },
-            { key: 'behavior', label: 'Behavior', icon: '⚡', color: '#fee2e2', border: '#ef4444' },
-            { key: 'consequence', label: 'Consequence', icon: '🔻', color: '#e0e7ff', border: '#6366f1' },
-            { key: 'function', label: 'Function', icon: fc.emoji, color: fc.bg, border: fc.border },
+            { key: 'setting', label: (t('behavior_lens.raw.setting_event') || 'Setting Event'), icon: '🏫', color: '#e0f2fe', border: '#38bdf8' },
+            { key: 'antecedent', label: (t('behavior_lens.raw.antecedent') || 'Antecedent'), icon: '🔺', color: '#fef3c7', border: '#f59e0b' },
+            { key: 'behavior', label: (t('behavior_lens.raw.behavior') || 'Behavior'), icon: '⚡', color: '#fee2e2', border: '#ef4444' },
+            { key: 'consequence', label: (t('behavior_lens.raw.consequence') || 'Consequence'), icon: '🔻', color: '#e0e7ff', border: '#6366f1' },
+            { key: 'function', label: (t('behavior_lens.raw.function') || 'Function'), icon: fc.emoji, color: fc.bg, border: fc.border },
         ];
 
         return h('div', { className: 'max-w-4xl mx-auto space-y-4' },
@@ -3187,7 +3187,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
                             h('button', {
                                 onClick: () => setGoalStatus(g.id, 'discontinued'),
                                 className: 'text-[10px] px-3 py-1.5 bg-slate-50 text-slate-400 border border-slate-200 rounded-lg font-bold hover:bg-slate-100 transition-all'
-                            }, 'Discontinue')
+                            }, (t('behavior_lens.raw.discontinue') || 'Discontinue'))
                         ),
                         // Reactivate for non-active goals
                         g.status !== 'active' && h('div', { className: 'mt-2 pt-2 border-t border-slate-100' },
@@ -3360,7 +3360,7 @@ Generate a behavior contract and return ONLY valid JSON:
                         h('div', { className: 'text-[10px] text-slate-400 mt-0.5' }, `${fmtDate(c.savedAt)} • ${c.duration || '—'} • ${c.status || 'active'}`)
                     ),
                     h('span', { style: { fontSize: '8px', padding: '2px 6px', borderRadius: 8, background: (statusColors[c.status] || statusColors.active).bg, color: (statusColors[c.status] || statusColors.active).text, border: `1px solid ${(statusColors[c.status] || statusColors.active).border}`, fontWeight: 700, textTransform: 'uppercase' } }, c.status || 'active'),
-                    h('button', { onClick: () => deleteHistoryItem(c.id), className: 'ml-2 text-slate-300 hover:text-red-500 text-sm transition-colors', title: 'Delete' }, '✕')
+                    h('button', { onClick: () => deleteHistoryItem(c.id), className: 'ml-2 text-slate-300 hover:text-red-500 text-sm transition-colors', title: (t('behavior_lens.raw.delete') || 'Delete') }, '✕')
                 ))
             ),
             // Status badge bar
@@ -3577,7 +3577,7 @@ Personalize each phase of the cycle and return ONLY valid JSON:
             activity: { label: 'Activity', icon: '🎮', items: [t('behavior_lens.reinf_extra_recess') || 'Extra recess', 'Free choice time', 'Computer time', 'Read aloud to class', 'Helper role', 'Drawing time'] },
             tangible: { label: 'Tangible', icon: '🎁', items: [t('behavior_lens.reinf_stickers') || 'Stickers', 'Pencils/erasers', 'Bookmarks', 'Certificates', 'Class store credits', 'Special seating'] },
             sensory: { label: 'Sensory', icon: '🌀', items: ['Fidget tool', t('behavior_lens.reinf_noise_canceling_headphones') || 'Noise-canceling headphones', 'Movement break', 'Quiet corner', t('behavior_lens.reinf_weighted_lap_pad') || 'Weighted lap pad', 'Music listening'] },
-            edible: { label: 'Food/Drink', icon: '🍎', items: ['Healthy snack', 'Water bottle refill', 'Special lunch item', 'Gum/mints'] }
+            edible: { label: (t('behavior_lens.raw.fooddrink') || 'Food/Drink'), icon: '🍎', items: ['Healthy snack', 'Water bottle refill', 'Special lunch item', 'Gum/mints'] }
         };
 
         const lsKey = `bl_reinforcer_${studentName || '_'}`;
@@ -3777,17 +3777,17 @@ Recommend reinforcers and return ONLY valid JSON:
     // Fullscreen student-facing visual choice overlay
     const ChoiceBoard = ({ onClose, studentName, t, addToast, callGemini }) => {
         const [choices, setChoices] = useState([
-            { label: 'Take a break', emoji: '🧘' },
-            { label: 'Ask for help', emoji: '🙋' },
-            { label: 'Use a tool', emoji: '🔧' },
-            { label: 'Keep working', emoji: '💪' },
+            { label: (t('behavior_lens.raw.take_a_break') || 'Take a break'), emoji: '🧘' },
+            { label: (t('behavior_lens.raw.ask_for_help') || 'Ask for help'), emoji: '🙋' },
+            { label: (t('behavior_lens.raw.use_a_tool') || 'Use a tool'), emoji: '🔧' },
+            { label: (t('behavior_lens.raw.keep_working') || 'Keep working'), emoji: '💪' },
         ]);
         const [editing, setEditing] = useState(false);
         const [selected, setSelected] = useState(null);
         const [log, setLog] = useState([]);
         const [mode, setMode] = useState('choice'); // 'choice' or 'firstThen'
-        const [firstItem, setFirstItem] = useState({ label: 'Finish math worksheet', emoji: '📝' });
-        const [thenItem, setThenItem] = useState({ label: 'Free time on iPad', emoji: '🎮' });
+        const [firstItem, setFirstItem] = useState({ label: (t('behavior_lens.raw.finish_math_worksheet') || 'Finish math worksheet'), emoji: '📝' });
+        const [thenItem, setThenItem] = useState({ label: (t('behavior_lens.raw.free_time_on_ipad') || 'Free time on iPad'), emoji: '🎮' });
         const [firstDone, setFirstDone] = useState(false);
         const [aiChoiceLoading, setAiChoiceLoading] = useState(false);
 
@@ -3860,7 +3860,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                     ),
                     h('div', { className: 'flex gap-2 flex-wrap' },
                         choices.length < 6 && h('button', {
-                            onClick: () => setChoices(prev => [...prev, { label: 'New choice', emoji: '✨' }]),
+                            onClick: () => setChoices(prev => [...prev, { label: (t('behavior_lens.raw.new_choice') || 'New choice'), emoji: '✨' }]),
                             className: 'px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-sm font-bold'
                         }, '+ Add Choice'),
                         callGemini && h('button', {
@@ -3967,14 +3967,14 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
     // 8-item classroom environment checklist with scoring
     const EnvironmentAudit = ({ studentName, callGemini, t, addToast }) => {
         const items = [
-            { id: 'structure', label: 'Classroom Structure', desc: 'Clear physical layout, defined areas, organized spaces' },
-            { id: 'schedule', label: 'Visual Schedule', desc: 'Daily schedule posted and referenced regularly' },
-            { id: 'rules', label: 'Rules & Expectations', desc: 'Positively stated rules visibly posted' },
-            { id: 'noise', label: 'Noise Level', desc: 'Appropriate volume management and signal systems' },
-            { id: 'seating', label: 'Seating Arrangement', desc: 'Strategic seating that minimizes triggers' },
-            { id: 'materials', label: 'Materials Access', desc: 'Students can access needed materials independently' },
+            { id: 'structure', label: (t('behavior_lens.raw.classroom_structure') || 'Classroom Structure'), desc: 'Clear physical layout, defined areas, organized spaces' },
+            { id: 'schedule', label: (t('behavior_lens.raw.visual_schedule') || 'Visual Schedule'), desc: 'Daily schedule posted and referenced regularly' },
+            { id: 'rules', label: (t('behavior_lens.raw.rules_expectations') || 'Rules & Expectations'), desc: 'Positively stated rules visibly posted' },
+            { id: 'noise', label: (t('behavior_lens.raw.noise_level') || 'Noise Level'), desc: 'Appropriate volume management and signal systems' },
+            { id: 'seating', label: (t('behavior_lens.raw.seating_arrangement') || 'Seating Arrangement'), desc: 'Strategic seating that minimizes triggers' },
+            { id: 'materials', label: (t('behavior_lens.raw.materials_access') || 'Materials Access'), desc: 'Students can access needed materials independently' },
             { id: 'transitions', label: 'Transition Cues', desc: 'Clear signals and routines for activity transitions' },
-            { id: 'ratio', label: 'Positive:Corrective Ratio', desc: 'Aim for 4:1 positive to corrective interactions' },
+            { id: 'ratio', label: (t('behavior_lens.raw.positivecorrective_ratio') || 'Positive:Corrective Ratio'), desc: 'Aim for 4:1 positive to corrective interactions' },
         ];
         const [ratings, setRatings] = useState({});
         const [aiRecs, setAiRecs] = useState(null);
@@ -3983,9 +3983,9 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
         const total = useMemo(() => Object.values(ratings).reduce((s, v) => s + v, 0), [ratings]);
         const maxScore = items.length * 5;
         const pct = maxScore > 0 ? Math.round((total / maxScore) * 100) : 0;
-        const grade = pct >= 80 ? { label: 'Strong', color: '#22c55e', bg: '#f0fdf4' } :
-            pct >= 50 ? { label: 'Developing', color: '#f59e0b', bg: '#fefce8' } :
-                { label: 'Needs Improvement', color: '#ef4444', bg: '#fef2f2' };
+        const grade = pct >= 80 ? { label: (t('behavior_lens.raw.strong') || 'Strong'), color: '#22c55e', bg: '#f0fdf4' } :
+            pct >= 50 ? { label: (t('behavior_lens.raw.developing') || 'Developing'), color: '#f59e0b', bg: '#fefce8' } :
+                { label: (t('behavior_lens.raw.needs_improvement') || 'Needs Improvement'), color: '#ef4444', bg: '#fef2f2' };
 
         const handleRecommend = async () => {
             if (!callGemini) return;
@@ -4089,9 +4089,9 @@ Provide improvement recommendations and return ONLY valid JSON:
         const [loading, setLoading] = useState(false);
 
         const sources = [
-            { key: 'abc', label: 'ABC Data', icon: '📋', count: abcEntries.length, color: '#6366f1' },
-            { key: 'obs', label: 'Observations', icon: '🔍', count: observationSessions.length, color: '#10b981' },
-            { key: 'ai', label: 'AI Analysis', icon: '🧠', count: aiAnalysis ? 1 : 0, color: '#8b5cf6' },
+            { key: 'abc', label: (t('behavior_lens.raw.abc_data') || 'ABC Data'), icon: '📋', count: abcEntries.length, color: '#6366f1' },
+            { key: 'obs', label: (t('behavior_lens.raw.observations') || 'Observations'), icon: '🔍', count: observationSessions.length, color: '#10b981' },
+            { key: 'ai', label: (t('behavior_lens.raw.ai_analysis') || 'AI Analysis'), icon: '🧠', count: aiAnalysis ? 1 : 0, color: '#8b5cf6' },
         ];
         const totalSources = sources.filter(s => s.count > 0).length;
 
@@ -4246,10 +4246,10 @@ Provide a brief impact interpretation and return ONLY valid JSON:
         };
 
         const bars = [
-            { label: 'Per Day', value: lostPerDay, max: 60, unit: 'min' },
-            { label: 'Per Week', value: lostPerWeek, max: 300, unit: 'min' },
-            { label: 'Per Month', value: lostPerMonth, max: 1200, unit: 'min' },
-            { label: 'Per Year', value: lostPerYear, max: 10000, unit: 'min' },
+            { label: (t('behavior_lens.raw.per_day') || 'Per Day'), value: lostPerDay, max: 60, unit: 'min' },
+            { label: (t('behavior_lens.raw.per_week') || 'Per Week'), value: lostPerWeek, max: 300, unit: 'min' },
+            { label: (t('behavior_lens.raw.per_month') || 'Per Month'), value: lostPerMonth, max: 1200, unit: 'min' },
+            { label: (t('behavior_lens.raw.per_year') || 'Per Year'), value: lostPerYear, max: 10000, unit: 'min' },
         ];
 
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
@@ -4314,9 +4314,9 @@ Provide a brief impact interpretation and return ONLY valid JSON:
     const CrisisIntervention = ({ studentName, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
         const lsKey = `bl_crisis_${studentName || '_'}`;
         const tiers = [
-            { key: 'prevention', label: 'Prevention', icon: '🛡️', color: '#22c55e', bg: '#f0fdf4' },
+            { key: 'prevention', label: (t('behavior_lens.raw.prevention') || 'Prevention'), icon: '🛡️', color: '#22c55e', bg: '#f0fdf4' },
             { key: 'deescalation', label: t('behavior_lens.cycle_de_escalation') || 'De-escalation', icon: '🌊', color: '#3b82f6', bg: '#eff6ff' },
-            { key: 'emergency', label: 'Emergency', icon: '🚨', color: '#ef4444', bg: '#fef2f2' },
+            { key: 'emergency', label: (t('behavior_lens.raw.emergency') || 'Emergency'), icon: '🚨', color: '#ef4444', bg: '#fef2f2' },
         ];
         const emptyPlan = { prevention: { triggers: '', staffActions: '', communication: '' }, deescalation: { triggers: '', staffActions: '', communication: '' }, emergency: { triggers: '', staffActions: '', communication: '' } };
         const [plan, setPlan] = useState(emptyPlan);
@@ -4452,10 +4452,10 @@ Generate a 3-tier crisis intervention plan and return ONLY valid JSON:
                     h('div', { className: 'space-y-2' },
                         contacts.map((c, i) =>
                             h('div', { key: i, className: 'flex gap-2 items-center' },
-                                h('input', { type: 'text', value: c.name || '', onChange: (e) => updateContact(i, 'name', e.target.value), placeholder: 'Name', maxLength: 80, className: 'flex-1 bg-white/70 rounded-lg px-3 py-1.5 text-sm border border-red-100 outline-none' }),
-                                h('input', { type: 'text', value: c.role || '', onChange: (e) => updateContact(i, 'role', e.target.value), placeholder: 'Role', maxLength: 60, className: 'w-28 bg-white/70 rounded-lg px-3 py-1.5 text-sm border border-red-100 outline-none' }),
-                                h('input', { type: 'text', value: c.phone || '', onChange: (e) => updateContact(i, 'phone', e.target.value), placeholder: 'Phone', maxLength: 20, className: 'w-28 bg-white/70 rounded-lg px-3 py-1.5 text-sm border border-red-100 outline-none' }),
-                                contacts.length > 1 && h('button', { onClick: () => removeContact(i), className: 'text-red-300 hover:text-red-500 text-sm', title: 'Remove' }, '✕')
+                                h('input', { type: 'text', value: c.name || '', onChange: (e) => updateContact(i, 'name', e.target.value), placeholder: (t('behavior_lens.raw.name') || 'Name'), maxLength: 80, className: 'flex-1 bg-white/70 rounded-lg px-3 py-1.5 text-sm border border-red-100 outline-none' }),
+                                h('input', { type: 'text', value: c.role || '', onChange: (e) => updateContact(i, 'role', e.target.value), placeholder: (t('behavior_lens.raw.role') || 'Role'), maxLength: 60, className: 'w-28 bg-white/70 rounded-lg px-3 py-1.5 text-sm border border-red-100 outline-none' }),
+                                h('input', { type: 'text', value: c.phone || '', onChange: (e) => updateContact(i, 'phone', e.target.value), placeholder: (t('behavior_lens.raw.phone') || 'Phone'), maxLength: 20, className: 'w-28 bg-white/70 rounded-lg px-3 py-1.5 text-sm border border-red-100 outline-none' }),
+                                contacts.length > 1 && h('button', { onClick: () => removeContact(i), className: 'text-red-300 hover:text-red-500 text-sm', title: (t('behavior_lens.raw.remove') || 'Remove') }, '✕')
                             )
                         )
                     )
@@ -4473,9 +4473,9 @@ Generate a 3-tier crisis intervention plan and return ONLY valid JSON:
     // Student-facing red/yellow/green behavior zone poster
     const TrafficLightVisual = ({ studentName, aiAnalysis, callGemini, t, addToast }) => {
         const [zones, setZones] = useState({
-            green: { title: 'Ready to Learn', items: 'Sitting in seat; Eyes on teacher; Raising hand; Following directions' },
-            yellow: { title: 'Slow Down', items: 'Feeling frustrated; Getting distracted; Talking out of turn; Need a break' },
-            red: { title: 'Stop & Get Help', items: 'Feeling very upset; Wanting to leave; Cannot focus; Need adult support' },
+            green: { title: (t('behavior_lens.raw.ready_to_learn') || 'Ready to Learn'), items: 'Sitting in seat; Eyes on teacher; Raising hand; Following directions' },
+            yellow: { title: (t('behavior_lens.raw.slow_down') || 'Slow Down'), items: 'Feeling frustrated; Getting distracted; Talking out of turn; Need a break' },
+            red: { title: (t('behavior_lens.raw.stop_get_help') || 'Stop & Get Help'), items: 'Feeling very upset; Wanting to leave; Cannot focus; Need adult support' },
         });
         const [generating, setGenerating] = useState(false);
 
@@ -4609,10 +4609,10 @@ Return ONLY valid JSON:
         };
 
         const methods = [
-            { id: 'frequency', label: 'Frequency Count', icon: '🔢' },
-            { id: 'duration', label: 'Duration Log', icon: '⏱️' },
-            { id: 'abc', label: 'ABC Narrative', icon: '📋' },
-            { id: 'latency', label: 'Latency Recording', icon: '⏳' },
+            { id: 'frequency', label: (t('behavior_lens.raw.frequency_count') || 'Frequency Count'), icon: '🔢' },
+            { id: 'duration', label: (t('behavior_lens.raw.duration_log') || 'Duration Log'), icon: '⏱️' },
+            { id: 'abc', label: (t('behavior_lens.raw.abc_narrative') || 'ABC Narrative'), icon: '📋' },
+            { id: 'latency', label: (t('behavior_lens.raw.latency_recording') || 'Latency Recording'), icon: '⏳' },
         ];
 
         const numIntervals = parseInt(intervals) || 6;
@@ -5055,7 +5055,7 @@ Generate a daily fidelity checklist (5-8 items) and return ONLY valid JSON:
                 h('button', {
                     onClick: handleQuickFill,
                     className: 'px-4 py-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all',
-                    title: 'Instantly fill function-matched fidelity items (no AI needed)'
+                    title: (t('behavior_lens.raw.instantly_fill_functionmatched_fidelity_items_no_ai_needed') || 'Instantly fill function-matched fidelity items (no AI needed)')
                 }, '⚡ Quick Fill'),
                 items.length > 0 && h('button', { onClick: saveToday, className: 'px-4 py-3 bg-emerald-500 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-600 transition-all' }, '💾 Save Today'),
                 items.length > 0 && h('button', { onClick: clearChecks, className: 'px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all' }, '🔄 Clear')
@@ -5114,11 +5114,11 @@ Generate a daily fidelity checklist (5-8 items) and return ONLY valid JSON:
     // 5-question contextual fit assessment (Horner et al.)
     const FeasibilityCheck = ({ studentName, callGemini, t, addToast }) => {
         const questions = [
-            { id: 'skill', label: 'Staff Skill', desc: 'Do staff have the skills to implement this plan consistently?' },
-            { id: 'resources', label: 'Resource Availability', desc: 'Are the needed materials, space, and time available?' },
-            { id: 'values', label: 'Value Alignment', desc: 'Does the plan align with the school\'s values and culture?' },
-            { id: 'time', label: 'Time Commitment', desc: 'Is the required time investment realistic given current demands?' },
-            { id: 'admin', label: 'Administrative Support', desc: 'Is there leadership buy-in and administrative support?' },
+            { id: 'skill', label: (t('behavior_lens.raw.staff_skill') || 'Staff Skill'), desc: 'Do staff have the skills to implement this plan consistently?' },
+            { id: 'resources', label: (t('behavior_lens.raw.resource_availability') || 'Resource Availability'), desc: 'Are the needed materials, space, and time available?' },
+            { id: 'values', label: (t('behavior_lens.raw.value_alignment') || 'Value Alignment'), desc: 'Does the plan align with the school\'s values and culture?' },
+            { id: 'time', label: (t('behavior_lens.raw.time_commitment') || 'Time Commitment'), desc: 'Is the required time investment realistic given current demands?' },
+            { id: 'admin', label: (t('behavior_lens.raw.administrative_support') || 'Administrative Support'), desc: 'Is there leadership buy-in and administrative support?' },
         ];
         const [ratings, setRatings] = useState({});
         const [aiRecs, setAiRecs] = useState(null);
@@ -5127,9 +5127,9 @@ Generate a daily fidelity checklist (5-8 items) and return ONLY valid JSON:
         const total = useMemo(() => Object.values(ratings).reduce((s, v) => s + v, 0), [ratings]);
         const maxScore = questions.length * 5;
         const pct = maxScore > 0 ? Math.round((total / maxScore) * 100) : 0;
-        const verdict = pct >= 80 ? { label: 'Feasible', color: '#22c55e', bg: '#f0fdf4' } :
-            pct >= 50 ? { label: 'Needs Modification', color: '#f59e0b', bg: '#fefce8' } :
-                { label: 'Not Feasible', color: '#ef4444', bg: '#fef2f2' };
+        const verdict = pct >= 80 ? { label: (t('behavior_lens.raw.feasible') || 'Feasible'), color: '#22c55e', bg: '#f0fdf4' } :
+            pct >= 50 ? { label: (t('behavior_lens.raw.needs_modification') || 'Needs Modification'), color: '#f59e0b', bg: '#fefce8' } :
+                { label: (t('behavior_lens.raw.not_feasible') || 'Not Feasible'), color: '#ef4444', bg: '#fef2f2' };
 
         const handleRecommend = async () => {
             if (!callGemini) return;
@@ -5219,11 +5219,11 @@ Provide recommendations to improve feasibility. Return ONLY valid JSON:
     // Goal Attainment Scaling: 5-level rubric (-2 to +2)
     const GasRubric = ({ studentName, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
         const levels = [
-            { score: -2, label: 'Much less than expected', color: '#ef4444' },
-            { score: -1, label: 'Less than expected', color: '#f59e0b' },
-            { score: 0, label: 'Expected level', color: '#3b82f6' },
-            { score: 1, label: 'More than expected', color: '#22c55e' },
-            { score: 2, label: 'Much more than expected', color: '#10b981' },
+            { score: -2, label: (t('behavior_lens.raw.much_less_than_expected') || 'Much less than expected'), color: '#ef4444' },
+            { score: -1, label: (t('behavior_lens.raw.less_than_expected') || 'Less than expected'), color: '#f59e0b' },
+            { score: 0, label: (t('behavior_lens.raw.expected_level') || 'Expected level'), color: '#3b82f6' },
+            { score: 1, label: (t('behavior_lens.raw.more_than_expected') || 'More than expected'), color: '#22c55e' },
+            { score: 2, label: (t('behavior_lens.raw.much_more_than_expected') || 'Much more than expected'), color: '#10b981' },
         ];
         const [goalText, setGoalText] = useState('');
         const [descriptors, setDescriptors] = useState({});
@@ -5292,8 +5292,8 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                     h('thead', null,
                         h('tr', null,
                             h('th', { className: 'border border-slate-300 px-3 py-2 text-left w-16' }, t('behavior_lens.score') || 'Score'),
-                            h('th', { className: 'border border-slate-300 px-3 py-2 text-left w-40' }, 'Level'),
-                            h('th', { className: 'border border-slate-300 px-3 py-2 text-left' }, 'Descriptor')
+                            h('th', { className: 'border border-slate-300 px-3 py-2 text-left w-40' }, (t('behavior_lens.raw.level') || 'Level')),
+                            h('th', { className: 'border border-slate-300 px-3 py-2 text-left' }, (t('behavior_lens.raw.descriptor') || 'Descriptor'))
                         )
                     ),
                     h('tbody', null,
@@ -5531,9 +5531,9 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
         ];
 
         const homeMoods = [
-            { emoji: '😊', label: 'Good day' },
-            { emoji: '😐', label: 'Okay' },
-            { emoji: '😟', label: 'Challenging' }
+            { emoji: '😊', label: (t('behavior_lens.raw.good_day') || 'Good day') },
+            { emoji: '😐', label: (t('behavior_lens.raw.okay') || 'Okay') },
+            { emoji: '😟', label: (t('behavior_lens.raw.challenging') || 'Challenging') }
         ];
 
         // Load from localStorage
@@ -5867,11 +5867,11 @@ Create a concise pocket BIP. Return ONLY valid JSON:
     // AI-powered counseling role-play simulation for professional development
     const CounselingSimulation = ({ studentName, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
         const SCENARIOS = [
-            { id: 'escape', label: 'Escape-Maintained', icon: '🏃', desc: 'Student avoids difficult tasks or overwhelming situations', persona: 'You are a student who becomes avoidant and shuts down when work feels too hard. You might put your head down, leave your seat, or say "I can\'t do this." You generally respond well to breaks and scaffolded support.' },
-            { id: 'attention', label: 'Connection-Seeking', icon: '👀', desc: 'Student seeks connection through behaviors that communicate a need for interaction', persona: 'You are a student who craves adult and peer connection. You might call out, make jokes, or act silly to get reactions. Deep down you want to feel noticed and valued. You respond well to praise and quality time.' },
-            { id: 'tangible', label: 'Tangible-Motivated', icon: '🎁', desc: 'Student has difficulty when preferred items or activities are unavailable', persona: 'You are a student who becomes frustrated when you can\'t have a preferred item or activity. You might negotiate, refuse to work, or become upset. You respond well to first/then agreements and visual schedules.' },
-            { id: 'sensory', label: 'Sensory-Related', icon: '🌀', desc: 'Student is overwhelmed or under-stimulated by sensory input', persona: 'You are a student who is very sensitive to sensory input — noise, lights, textures. You might cover your ears, rock, or leave the area. You respond well to sensory breaks and modified environments.' },
-            { id: 'custom', label: 'Custom Scenario', icon: '✏️', desc: 'Define your own student persona and behavioral context', persona: '' },
+            { id: 'escape', label: (t('behavior_lens.raw.escapemaintained') || 'Escape-Maintained'), icon: '🏃', desc: 'Student avoids difficult tasks or overwhelming situations', persona: 'You are a student who becomes avoidant and shuts down when work feels too hard. You might put your head down, leave your seat, or say "I can\'t do this." You generally respond well to breaks and scaffolded support.' },
+            { id: 'attention', label: (t('behavior_lens.raw.connectionseeking') || 'Connection-Seeking'), icon: '👀', desc: 'Student seeks connection through behaviors that communicate a need for interaction', persona: 'You are a student who craves adult and peer connection. You might call out, make jokes, or act silly to get reactions. Deep down you want to feel noticed and valued. You respond well to praise and quality time.' },
+            { id: 'tangible', label: (t('behavior_lens.raw.tangiblemotivated') || 'Tangible-Motivated'), icon: '🎁', desc: 'Student has difficulty when preferred items or activities are unavailable', persona: 'You are a student who becomes frustrated when you can\'t have a preferred item or activity. You might negotiate, refuse to work, or become upset. You respond well to first/then agreements and visual schedules.' },
+            { id: 'sensory', label: (t('behavior_lens.raw.sensoryrelated') || 'Sensory-Related'), icon: '🌀', desc: 'Student is overwhelmed or under-stimulated by sensory input', persona: 'You are a student who is very sensitive to sensory input — noise, lights, textures. You might cover your ears, rock, or leave the area. You respond well to sensory breaks and modified environments.' },
+            { id: 'custom', label: (t('behavior_lens.raw.custom_scenario') || 'Custom Scenario'), icon: '✏️', desc: 'Define your own student persona and behavioral context', persona: '' },
         ];
 
         const [scenario, setScenario] = useState(null);
@@ -6182,10 +6182,10 @@ Respond only with the student's words:`;
     // Student-facing reflection tool: captures the student's own perspective
     const StudentSelfCheck = ({ studentName, t, addToast, callGemini }) => {
         const MOODS = [
-            { emoji: '😊', label: 'Good', color: 'emerald' },
-            { emoji: '😐', label: 'Okay', color: 'amber' },
-            { emoji: '😟', label: 'Worried', color: 'blue' },
-            { emoji: '😡', label: 'Frustrated', color: 'red' },
+            { emoji: '😊', label: (t('behavior_lens.raw.good') || 'Good'), color: 'emerald' },
+            { emoji: '😐', label: (t('behavior_lens.raw.okay') || 'Okay'), color: 'amber' },
+            { emoji: '😟', label: (t('behavior_lens.raw.worried') || 'Worried'), color: 'blue' },
+            { emoji: '😡', label: (t('behavior_lens.raw.frustrated') || 'Frustrated'), color: 'red' },
             { emoji: '😢', label: 'Sad', color: 'violet' }
         ];
 
@@ -6662,7 +6662,7 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
                         h('button', {
                             onClick: () => setImportPreview(null),
                             className: 'flex-1 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all'
-                        }, 'Cancel'),
+                        }, (t('behavior_lens.raw.cancel') || 'Cancel')),
                         h('button', {
                             onClick: handleMerge,
                             disabled: importPreview.newAbc.length === 0 && importPreview.newObs.length === 0,
@@ -6702,37 +6702,37 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
         const DEFAULT_SECTIONS = [
             {
                 id: 'purpose',
-                title: 'Purpose of Data Exchange',
+                title: (t('behavior_lens.raw.purpose_of_data_exchange') || 'Purpose of Data Exchange'),
                 content: 'This consent authorizes the exchange of behavioral observation data between your child\'s educational team and your family using AlloFlow\'s Student Snapshot Exchange system. The goal is to build a shared, holistic understanding of your child across home and school settings to better support their growth.\n\nData is exchanged via JSON files — simple data files transferred directly between parties (email, USB, etc.) — with no third-party cloud storage involved.',
                 required: true,
             },
             {
                 id: 'data_types',
-                title: 'Types of Data Collected & Shared',
+                title: (t('behavior_lens.raw.types_of_data_collected_shared') || 'Types of Data Collected & Shared'),
                 content: '• ABC Observations — Antecedent-Behavior-Consequence records of behavioral patterns\n• Observation Sessions — Timed frequency counts and interval data\n• AI-Generated Analysis — Summaries and pattern recognition generated by Google Gemini (when enabled)\n• Home Behavior Logs — Parent-reported observations from the home environment\n• Self-Regulation Plans — Visual supports created for your child\n\nAll data uses a student codename (e.g., "Brave Otter") rather than your child\'s real name to add an additional layer of privacy protection.',
                 required: true,
             },
             {
                 id: 'ai_disclosure',
-                title: 'Artificial Intelligence (AI) Usage Disclosure',
+                title: (t('behavior_lens.raw.artificial_intelligence_ai_usage_disclosure') || 'Artificial Intelligence (AI) Usage Disclosure'),
                 content: 'AlloFlow uses Google Gemini AI to analyze behavioral patterns and generate supportive recommendations. When used through a school-managed Google Workspace account, AI processing is covered by the school district\'s Data Processing Agreement (DPA) with Google, which includes FERPA protections.\n\nIf you choose to use AI features on a personal (non-school) Google account, those interactions fall under Google\'s standard consumer Terms of Service rather than the school\'s educational agreement. AI-powered features in Family Mode are optional and can be disabled.',
                 required: true,
             },
             {
                 id: 'storage',
-                title: 'Data Storage & Security',
+                title: (t('behavior_lens.raw.data_storage_security') || 'Data Storage & Security'),
                 content: 'All behavioral data is stored locally on the device where it was created (browser localStorage). No student data is stored on AlloFlow servers. Data only moves between parties when a human explicitly exports a snapshot file and shares it.\n\nThe Student Snapshot Exchange system uses a "sneakernet" model — data travels as a file you physically or digitally hand to the other party, not through a shared database or cloud sync.',
                 required: true,
             },
             {
                 id: 'rights',
-                title: 'Your Rights Under FERPA',
+                title: (t('behavior_lens.raw.your_rights_under_ferpa') || 'Your Rights Under FERPA'),
                 content: 'Under the Family Educational Rights and Privacy Act (FERPA), you have the right to:\n\n• Inspect and review your child\'s education records\n• Request corrections to records you believe are inaccurate\n• Consent to or refuse the disclosure of personally identifiable information\n• File a complaint with the U.S. Department of Education\n\nYou may withdraw this consent at any time by notifying your child\'s teacher or school administrator in writing.',
                 required: true,
             },
             {
                 id: 'optional_notes',
-                title: 'Additional School/District Notes',
+                title: (t('behavior_lens.raw.additional_schooldistrict_notes') || 'Additional School/District Notes'),
                 content: '[Your school or district may add policy-specific language here. For example: specific data retention periods, names of authorized personnel, or references to district technology use policies.]',
                 required: false,
             },
@@ -7209,7 +7209,7 @@ Use professional, objective language. Do NOT use the student codename — use "t
             { id: 'tangible', label: '🎯 Tangible Access' }
         ];
         const grades = [
-            { id: 'K-2', label: 'K-2 (ages 5-8)' },
+            { id: 'K-2', label: (t('behavior_lens.raw.k2_ages_58') || 'K-2 (ages 5-8)') },
             { id: '3-5', label: '3-5 (ages 8-11)' },
             { id: '6-8', label: '6-8 (ages 11-14)' },
             { id: '9-12', label: '9-12 (ages 14-18)' }
@@ -7564,158 +7564,158 @@ Generate 10 entries and 2 observations. Include a mix of challenging behaviors A
         // ── Track definitions ──
         const TRACKS = {
             fba: {
-                id: 'fba', icon: '🗺️', title: 'Full FBA',
+                id: 'fba', icon: '🗺️', title: (t('behavior_lens.raw.full_fba') || 'Full FBA'),
                 subtitle: '6 steps · Complete Functional Behavior Assessment',
                 gradient: 'from-blue-500 to-indigo-600',
                 steps: [
-                    { id: 'fba_1', num: 1, title: 'Define Target Behavior', icon: '🎯', tool: 'abc', toolName: 'ABC Data',
+                    { id: 'fba_1', num: 1, title: (t('behavior_lens.raw.define_target_behavior') || 'Define Target Behavior'), icon: '🎯', tool: 'abc', toolName: 'ABC Data',
                       desc: 'Operationally define the behavior so it is observable and measurable.',
                       tip: 'Ask: "Could two people independently agree on whether this behavior occurred?"',
                       autoCheck: () => abcEntries.length > 0 ? `✅ ${abcEntries.length} ABC entries logged` : null,
                       subs: [
-                          { id: 'fba_1a', label: 'Write an observable, measurable behavior definition' },
-                          { id: 'fba_1b', label: 'Confirm two observers could agree on occurrence' },
-                          { id: 'fba_1c', label: 'Select the primary setting(s) for data collection' },
+                          { id: 'fba_1a', label: (t('behavior_lens.raw.write_an_observable_measurable_behavior_definition') || 'Write an observable, measurable behavior definition') },
+                          { id: 'fba_1b', label: (t('behavior_lens.raw.confirm_two_observers_could_agree_on_occurrence') || 'Confirm two observers could agree on occurrence') },
+                          { id: 'fba_1c', label: (t('behavior_lens.raw.select_the_primary_settings_for_data_collection') || 'Select the primary setting(s) for data collection') },
                       ] },
-                    { id: 'fba_2', num: 2, title: 'Collect Baseline Data', icon: '📊', tool: 'observation', toolName: 'Live Observation',
+                    { id: 'fba_2', num: 2, title: (t('behavior_lens.raw.collect_baseline_data') || 'Collect Baseline Data'), icon: '📊', tool: 'observation', toolName: 'Live Observation',
                       desc: 'Gather data on frequency, duration, and intensity BEFORE intervention.',
                       tip: 'Collect 3–5 sessions across different days and settings for reliable baseline.',
                       autoCheck: () => observationSessions.length >= 3 ? `✅ ${observationSessions.length} sessions recorded` : observationSessions.length > 0 ? `🔄 ${observationSessions.length}/3 sessions (need more)` : null,
                       subs: [
-                          { id: 'fba_2a', label: 'Complete at least 3 observation sessions' },
-                          { id: 'fba_2b', label: 'Observe across multiple settings (classroom, recess, etc.)' },
-                          { id: 'fba_2c', label: 'Record duration and intensity for each incident' },
+                          { id: 'fba_2a', label: (t('behavior_lens.raw.complete_at_least_3_observation_sessions') || 'Complete at least 3 observation sessions') },
+                          { id: 'fba_2b', label: (t('behavior_lens.raw.observe_across_multiple_settings_classroom_recess_etc') || 'Observe across multiple settings (classroom, recess, etc.)') },
+                          { id: 'fba_2c', label: (t('behavior_lens.raw.record_duration_and_intensity_for_each_incident') || 'Record duration and intensity for each incident') },
                       ] },
-                    { id: 'fba_3', num: 3, title: 'Identify Patterns', icon: '🔍', tool: 'analysis', toolName: 'AI Analysis',
+                    { id: 'fba_3', num: 3, title: (t('behavior_lens.raw.identify_patterns') || 'Identify Patterns'), icon: '🔍', tool: 'analysis', toolName: 'AI Analysis',
                       desc: 'Analyze ABC data to discover antecedent triggers and maintaining consequences.',
                       tip: 'Use AI Analysis after 3+ entries to automatically detect patterns.',
                       autoCheck: () => aiAnalysis ? '✅ AI Analysis completed' : abcEntries.length >= 3 ? '🔄 Ready for analysis — run AI Analysis' : null,
                       subs: [
-                          { id: 'fba_3a', label: 'Run AI Analysis on collected data' },
-                          { id: 'fba_3b', label: 'Review the most common antecedent triggers' },
-                          { id: 'fba_3c', label: 'Review the most common consequence patterns' },
+                          { id: 'fba_3a', label: (t('behavior_lens.raw.run_ai_analysis_on_collected_data') || 'Run AI Analysis on collected data') },
+                          { id: 'fba_3b', label: (t('behavior_lens.raw.review_the_most_common_antecedent_triggers') || 'Review the most common antecedent triggers') },
+                          { id: 'fba_3c', label: (t('behavior_lens.raw.review_the_most_common_consequence_patterns') || 'Review the most common consequence patterns') },
                       ] },
-                    { id: 'fba_4', num: 4, title: 'Hypothesize Function', icon: '🧩', tool: 'hypothesis', toolName: 'Hypothesis Diagram',
+                    { id: 'fba_4', num: 4, title: (t('behavior_lens.raw.hypothesize_function') || 'Hypothesize Function'), icon: '🧩', tool: 'hypothesis', toolName: 'Hypothesis Diagram',
                       desc: 'Determine WHY the behavior occurs — Escape, Attention, Sensory, or Tangible.',
                       tip: 'A behavior can serve multiple functions. Consider whether function changes across settings.',
                       autoCheck: () => aiAnalysis?.hypothesizedFunction ? `✅ Hypothesized: ${aiAnalysis.hypothesizedFunction}` : null,
                       subs: [
-                          { id: 'fba_4a', label: 'Map antecedent → behavior → consequence pathways' },
-                          { id: 'fba_4b', label: 'Confirm hypothesis with the team or a colleague' },
-                          { id: 'fba_4c', label: 'Document the hypothesis in session notes' },
+                          { id: 'fba_4a', label: (t('behavior_lens.raw.map_antecedent_behavior_consequence_pathways') || 'Map antecedent → behavior → consequence pathways') },
+                          { id: 'fba_4b', label: (t('behavior_lens.raw.confirm_hypothesis_with_the_team_or_a_colleague') || 'Confirm hypothesis with the team or a colleague') },
+                          { id: 'fba_4c', label: (t('behavior_lens.raw.document_the_hypothesis_in_session_notes') || 'Document the hypothesis in session notes') },
                       ] },
-                    { id: 'fba_5', num: 5, title: 'Design Intervention', icon: '📋', tool: 'intervention', toolName: 'Intervention Plan',
+                    { id: 'fba_5', num: 5, title: (t('behavior_lens.raw.design_intervention') || 'Design Intervention'), icon: '📋', tool: 'intervention', toolName: 'Intervention Plan',
                       desc: 'Build a BIP addressing the function with replacement behaviors and reinforcement.',
                       tip: 'Replacement behaviors must serve the SAME function and be EASIER to perform.',
                       autoCheck: () => null,
                       subs: [
-                          { id: 'fba_5a', label: 'Identify 1–2 functionally equivalent replacement behaviors' },
-                          { id: 'fba_5b', label: 'Plan a reinforcement schedule for replacement behaviors' },
-                          { id: 'fba_5c', label: 'Set intervention duration (e.g., 4–6 weeks)' },
+                          { id: 'fba_5a', label: (t('behavior_lens.raw.identify_12_functionally_equivalent_replacement_behaviors') || 'Identify 1–2 functionally equivalent replacement behaviors') },
+                          { id: 'fba_5b', label: (t('behavior_lens.raw.plan_a_reinforcement_schedule_for_replacement_behaviors') || 'Plan a reinforcement schedule for replacement behaviors') },
+                          { id: 'fba_5c', label: (t('behavior_lens.raw.set_intervention_duration_eg_46_weeks') || 'Set intervention duration (e.g., 4–6 weeks)') },
                       ] },
-                    { id: 'fba_6', num: 6, title: 'Monitor & Adjust', icon: '📈', tool: 'progress', toolName: 'Progress Narrative',
+                    { id: 'fba_6', num: 6, title: (t('behavior_lens.raw.monitor_adjust') || 'Monitor & Adjust'), icon: '📈', tool: 'progress', toolName: 'Progress Narrative',
                       desc: 'Compare ongoing data to baseline. Make data-driven decisions to adjust.',
                       tip: 'Allow 2–3 weeks before major changes, unless safety is a concern.',
                       autoCheck: () => null,
                       subs: [
-                          { id: 'fba_6a', label: 'Compare current data to baseline levels' },
-                          { id: 'fba_6b', label: 'Share progress with the team and family' },
-                          { id: 'fba_6c', label: 'Adjust the plan based on data trends' },
+                          { id: 'fba_6a', label: (t('behavior_lens.raw.compare_current_data_to_baseline_levels') || 'Compare current data to baseline levels') },
+                          { id: 'fba_6b', label: (t('behavior_lens.raw.share_progress_with_the_team_and_family') || 'Share progress with the team and family') },
+                          { id: 'fba_6c', label: (t('behavior_lens.raw.adjust_the_plan_based_on_data_trends') || 'Adjust the plan based on data trends') },
                       ] },
                 ],
             },
             bip: {
-                id: 'bip', icon: '⚡', title: 'Quick BIP',
+                id: 'bip', icon: '⚡', title: (t('behavior_lens.raw.quick_bip') || 'Quick BIP'),
                 subtitle: '4 steps · When the function is already known',
                 gradient: 'from-amber-500 to-orange-600',
                 steps: [
-                    { id: 'bip_1', num: 1, title: 'Confirm Function', icon: '🧩', tool: 'hypothesis', toolName: 'Hypothesis Diagram',
+                    { id: 'bip_1', num: 1, title: (t('behavior_lens.raw.confirm_function') || 'Confirm Function'), icon: '🧩', tool: 'hypothesis', toolName: 'Hypothesis Diagram',
                       desc: 'Verify the hypothesized function of the behavior with your team.',
                       tip: 'Even if the function seems obvious, document it with at least some data.',
                       autoCheck: () => aiAnalysis?.hypothesizedFunction ? `✅ Hypothesized: ${aiAnalysis.hypothesizedFunction}` : null,
                       subs: [
-                          { id: 'bip_1a', label: 'Review existing data supporting the hypothesis' },
-                          { id: 'bip_1b', label: 'Confirm function with team consensus' },
-                          { id: 'bip_1c', label: 'Document the confirmed function' },
+                          { id: 'bip_1a', label: (t('behavior_lens.raw.review_existing_data_supporting_the_hypothesis') || 'Review existing data supporting the hypothesis') },
+                          { id: 'bip_1b', label: (t('behavior_lens.raw.confirm_function_with_team_consensus') || 'Confirm function with team consensus') },
+                          { id: 'bip_1c', label: (t('behavior_lens.raw.document_the_confirmed_function') || 'Document the confirmed function') },
                       ] },
-                    { id: 'bip_2', num: 2, title: 'Plan Replacement Behaviors', icon: '🔄', tool: 'replacebehavior', toolName: 'Replacement Behavior Planner',
+                    { id: 'bip_2', num: 2, title: (t('behavior_lens.raw.plan_replacement_behaviors') || 'Plan Replacement Behaviors'), icon: '🔄', tool: 'replacebehavior', toolName: 'Replacement Behavior Planner',
                       desc: 'Map each target behavior to a functionally equivalent replacement.',
                       tip: 'Replacements must be easier, more efficient, and serve the same function.',
                       autoCheck: () => null,
                       subs: [
-                          { id: 'bip_2a', label: 'Map each target behavior to a replacement' },
-                          { id: 'bip_2b', label: 'Select a teaching strategy for each replacement' },
-                          { id: 'bip_2c', label: 'Plan reinforcement for replacement behaviors' },
+                          { id: 'bip_2a', label: (t('behavior_lens.raw.map_each_target_behavior_to_a_replacement') || 'Map each target behavior to a replacement') },
+                          { id: 'bip_2b', label: (t('behavior_lens.raw.select_a_teaching_strategy_for_each_replacement') || 'Select a teaching strategy for each replacement') },
+                          { id: 'bip_2c', label: (t('behavior_lens.raw.plan_reinforcement_for_replacement_behaviors') || 'Plan reinforcement for replacement behaviors') },
                       ] },
-                    { id: 'bip_3', num: 3, title: 'Build Intervention Plan', icon: '📋', tool: 'intervention', toolName: 'Intervention Plan',
+                    { id: 'bip_3', num: 3, title: (t('behavior_lens.raw.build_intervention_plan') || 'Build Intervention Plan'), icon: '📋', tool: 'intervention', toolName: 'Intervention Plan',
                       desc: 'Generate a structured multi-week intervention plan with AI assistance.',
                       tip: 'Include prevention strategies, response protocols, and team roles.',
                       autoCheck: () => null,
                       subs: [
-                          { id: 'bip_3a', label: 'Select evidence-based intervention strategies' },
-                          { id: 'bip_3b', label: 'Set timeline and milestones (e.g., 4 weeks)' },
-                          { id: 'bip_3c', label: 'Assign team roles and responsibilities' },
+                          { id: 'bip_3a', label: (t('behavior_lens.raw.select_evidencebased_intervention_strategies') || 'Select evidence-based intervention strategies') },
+                          { id: 'bip_3b', label: (t('behavior_lens.raw.set_timeline_and_milestones_eg_4_weeks') || 'Set timeline and milestones (e.g., 4 weeks)') },
+                          { id: 'bip_3c', label: (t('behavior_lens.raw.assign_team_roles_and_responsibilities') || 'Assign team roles and responsibilities') },
                       ] },
-                    { id: 'bip_4', num: 4, title: 'Plan Fidelity Monitoring', icon: '✓', tool: 'fidelity', toolName: 'Fidelity Checklist',
+                    { id: 'bip_4', num: 4, title: (t('behavior_lens.raw.plan_fidelity_monitoring') || 'Plan Fidelity Monitoring'), icon: '✓', tool: 'fidelity', toolName: 'Fidelity Checklist',
                       desc: 'Ensure the intervention is implemented as designed with structured checks.',
                       tip: 'Schedule IOA sessions and review dates upfront.',
                       autoCheck: () => null,
                       subs: [
-                          { id: 'bip_4a', label: 'Set review dates and check-in schedule' },
-                          { id: 'bip_4b', label: 'Plan data collection methods and frequency' },
-                          { id: 'bip_4c', label: 'Assign an IOA partner for reliability checks' },
+                          { id: 'bip_4a', label: (t('behavior_lens.raw.set_review_dates_and_checkin_schedule') || 'Set review dates and check-in schedule') },
+                          { id: 'bip_4b', label: (t('behavior_lens.raw.plan_data_collection_methods_and_frequency') || 'Plan data collection methods and frequency') },
+                          { id: 'bip_4c', label: (t('behavior_lens.raw.assign_an_ioa_partner_for_reliability_checks') || 'Assign an IOA partner for reliability checks') },
                       ] },
                 ],
             },
             rti: {
-                id: 'rti', icon: '🔄', title: 'RTI Behavior Tier',
+                id: 'rti', icon: '🔄', title: (t('behavior_lens.raw.rti_behavior_tier') || 'RTI Behavior Tier'),
                 subtitle: '5 steps · Tiered intervention progression',
                 gradient: 'from-emerald-500 to-teal-600',
                 steps: [
-                    { id: 'rti_1', num: 1, title: 'Tier 1: Universal Screening', icon: '🏫', tool: 'abc', toolName: 'ABC Data',
+                    { id: 'rti_1', num: 1, title: (t('behavior_lens.raw.tier_1_universal_screening') || 'Tier 1: Universal Screening'), icon: '🏫', tool: 'abc', toolName: 'ABC Data',
                       desc: 'Conduct a classroom-wide scan to identify students needing additional support.',
                       tip: 'Use simple frequency counts to identify students 1.5× above the class average.',
                       autoCheck: () => abcEntries.length > 0 ? `✅ ${abcEntries.length} entries collected` : null,
                       subs: [
-                          { id: 'rti_1a', label: 'Complete a classroom-wide behavior scan' },
-                          { id: 'rti_1b', label: 'Identify students exceeding the universal threshold' },
-                          { id: 'rti_1c', label: 'Document baseline frequency for flagged students' },
+                          { id: 'rti_1a', label: (t('behavior_lens.raw.complete_a_classroomwide_behavior_scan') || 'Complete a classroom-wide behavior scan') },
+                          { id: 'rti_1b', label: (t('behavior_lens.raw.identify_students_exceeding_the_universal_threshold') || 'Identify students exceeding the universal threshold') },
+                          { id: 'rti_1c', label: (t('behavior_lens.raw.document_baseline_frequency_for_flagged_students') || 'Document baseline frequency for flagged students') },
                       ] },
-                    { id: 'rti_2', num: 2, title: 'Tier 2: Targeted Intervention', icon: '👥', tool: 'intervention', toolName: 'Intervention Plan',
+                    { id: 'rti_2', num: 2, title: (t('behavior_lens.raw.tier_2_targeted_intervention') || 'Tier 2: Targeted Intervention'), icon: '👥', tool: 'intervention', toolName: 'Intervention Plan',
                       desc: 'Implement a small-group or targeted strategy for 6 weeks with progress monitoring.',
                       tip: 'Standard Tier 2 interventions include Check-In Check-Out (CICO) and social skills groups.',
                       autoCheck: () => null,
                       subs: [
-                          { id: 'rti_2a', label: 'Select a Tier 2 group strategy (e.g., CICO, social skills)' },
-                          { id: 'rti_2b', label: 'Set a 6-week intervention cycle' },
-                          { id: 'rti_2c', label: 'Plan weekly progress monitoring data collection' },
+                          { id: 'rti_2a', label: (t('behavior_lens.raw.select_a_tier_2_group_strategy_eg_cico_social_skills') || 'Select a Tier 2 group strategy (e.g., CICO, social skills)') },
+                          { id: 'rti_2b', label: (t('behavior_lens.raw.set_a_6week_intervention_cycle') || 'Set a 6-week intervention cycle') },
+                          { id: 'rti_2c', label: (t('behavior_lens.raw.plan_weekly_progress_monitoring_data_collection') || 'Plan weekly progress monitoring data collection') },
                       ] },
-                    { id: 'rti_3', num: 3, title: 'Data Decision Point', icon: '📊', tool: 'trends', toolName: 'Trend Dashboard',
+                    { id: 'rti_3', num: 3, title: (t('behavior_lens.raw.data_decision_point') || 'Data Decision Point'), icon: '📊', tool: 'trends', toolName: 'Trend Dashboard',
                       desc: 'Review progress data and compare to peers. Decide whether to continue, fade, or intensify.',
                       tip: 'Use the Trend Dashboard and AI Analysis together for a comprehensive picture.',
                       autoCheck: () => aiAnalysis ? '✅ Analysis data available for review' : null,
                       subs: [
-                          { id: 'rti_3a', label: 'Review progress monitoring data vs. baseline' },
-                          { id: 'rti_3b', label: 'Compare student performance to peer norms' },
-                          { id: 'rti_3c', label: 'Make tier movement decision (stay / fade / intensify)' },
+                          { id: 'rti_3a', label: (t('behavior_lens.raw.review_progress_monitoring_data_vs_baseline') || 'Review progress monitoring data vs. baseline') },
+                          { id: 'rti_3b', label: (t('behavior_lens.raw.compare_student_performance_to_peer_norms') || 'Compare student performance to peer norms') },
+                          { id: 'rti_3c', label: (t('behavior_lens.raw.make_tier_movement_decision_stay_fade_intensify') || 'Make tier movement decision (stay / fade / intensify)') },
                       ] },
-                    { id: 'rti_4', num: 4, title: 'Tier 3: Intensive Support', icon: '🎯', tool: 'hypothesis', toolName: 'Hypothesis Diagram',
+                    { id: 'rti_4', num: 4, title: (t('behavior_lens.raw.tier_3_intensive_support') || 'Tier 3: Intensive Support'), icon: '🎯', tool: 'hypothesis', toolName: 'Hypothesis Diagram',
                       desc: 'For non-responders: conduct a full FBA and develop an individualized BIP.',
                       tip: 'Tier 3 typically involves a full FBA. Use the Full FBA workflow track for guidance.',
                       autoCheck: () => null,
                       subs: [
-                          { id: 'rti_4a', label: 'Conduct a full Functional Behavior Assessment' },
-                          { id: 'rti_4b', label: 'Develop an individualized Behavior Intervention Plan' },
-                          { id: 'rti_4c', label: 'Set up weekly progress monitoring' },
+                          { id: 'rti_4a', label: (t('behavior_lens.raw.conduct_a_full_functional_behavior_assessment') || 'Conduct a full Functional Behavior Assessment') },
+                          { id: 'rti_4b', label: (t('behavior_lens.raw.develop_an_individualized_behavior_intervention_plan') || 'Develop an individualized Behavior Intervention Plan') },
+                          { id: 'rti_4c', label: (t('behavior_lens.raw.set_up_weekly_progress_monitoring') || 'Set up weekly progress monitoring') },
                       ] },
-                    { id: 'rti_5', num: 5, title: 'Outcome Evaluation', icon: '📈', tool: 'progress', toolName: 'Progress Narrative',
+                    { id: 'rti_5', num: 5, title: (t('behavior_lens.raw.outcome_evaluation') || 'Outcome Evaluation'), icon: '📈', tool: 'progress', toolName: 'Progress Narrative',
                       desc: 'Measure overall effectiveness, calculate effect size, and prepare for IEP if needed.',
                       tip: 'Use Effect Size and IEP Prep tools to quantify and document outcomes.',
                       autoCheck: () => null,
                       subs: [
-                          { id: 'rti_5a', label: 'Measure effect size of interventions' },
-                          { id: 'rti_5b', label: 'Prepare documentation for IEP team (if applicable)' },
-                          { id: 'rti_5c', label: 'Document outcomes and lessons learned' },
+                          { id: 'rti_5a', label: (t('behavior_lens.raw.measure_effect_size_of_interventions') || 'Measure effect size of interventions') },
+                          { id: 'rti_5b', label: (t('behavior_lens.raw.prepare_documentation_for_iep_team_if_applicable') || 'Prepare documentation for IEP team (if applicable)') },
+                          { id: 'rti_5c', label: (t('behavior_lens.raw.document_outcomes_and_lessons_learned') || 'Document outcomes and lessons learned') },
                       ] },
                 ],
             },
@@ -8654,11 +8654,11 @@ Be specific with percentages where possible. Keep language strengths-based and a
         const [reflection, setReflection] = useState('');
 
         const moods = [
-            { id: 'great', emoji: '🌟', label: 'Great!', color: 'green' },
-            { id: 'good', emoji: '😊', label: 'Good', color: 'blue' },
-            { id: 'okay', emoji: '😐', label: 'Okay', color: 'amber' },
-            { id: 'tough', emoji: '😔', label: 'Tough', color: 'orange' },
-            { id: 'hard', emoji: '😢', label: 'Really Hard', color: 'red' },
+            { id: 'great', emoji: '🌟', label: (t('behavior_lens.raw.great') || 'Great!'), color: 'green' },
+            { id: 'good', emoji: '😊', label: (t('behavior_lens.raw.good') || 'Good'), color: 'blue' },
+            { id: 'okay', emoji: '😐', label: (t('behavior_lens.raw.okay') || 'Okay'), color: 'amber' },
+            { id: 'tough', emoji: '😔', label: (t('behavior_lens.raw.tough') || 'Tough'), color: 'orange' },
+            { id: 'hard', emoji: '😢', label: (t('behavior_lens.raw.really_hard') || 'Really Hard'), color: 'red' },
         ];
 
         // Computed stats
@@ -8679,16 +8679,16 @@ Be specific with percentages where possible. Keep language strengths-based and a
 
         const badges = useMemo(() => {
             const earned = [];
-            if (checkins.length >= 1) earned.push({ id: 'first', icon: '🏁', title: 'First Check-In', desc: 'Completed your first mood check-in!' });
-            if (checkins.length >= 5) earned.push({ id: 'five', icon: '⭐', title: 'High Five', desc: '5 check-ins completed!' });
-            if (checkins.length >= 10) earned.push({ id: 'ten', icon: '🌟', title: 'Star Tracker', desc: '10 check-ins completed!' });
-            if (checkins.length >= 25) earned.push({ id: 'twentyfive', icon: '🏆', title: 'Champion', desc: '25 check-ins!' });
+            if (checkins.length >= 1) earned.push({ id: 'first', icon: '🏁', title: (t('behavior_lens.raw.first_checkin') || 'First Check-In'), desc: 'Completed your first mood check-in!' });
+            if (checkins.length >= 5) earned.push({ id: 'five', icon: '⭐', title: (t('behavior_lens.raw.high_five') || 'High Five'), desc: '5 check-ins completed!' });
+            if (checkins.length >= 10) earned.push({ id: 'ten', icon: '🌟', title: (t('behavior_lens.raw.star_tracker') || 'Star Tracker'), desc: '10 check-ins completed!' });
+            if (checkins.length >= 25) earned.push({ id: 'twentyfive', icon: '🏆', title: (t('behavior_lens.raw.champion') || 'Champion'), desc: '25 check-ins!' });
             if (streak >= 3) earned.push({ id: 'streak3', icon: '🔥', title: '3-Day Streak', desc: 'Checked in 3 days in a row!' });
-            if (streak >= 7) earned.push({ id: 'streak7', icon: '💎', title: 'Week Warrior', desc: '7-day streak!' });
+            if (streak >= 7) earned.push({ id: 'streak7', icon: '💎', title: (t('behavior_lens.raw.week_warrior') || 'Week Warrior'), desc: '7-day streak!' });
             const hasReflection = checkins.some(c => c.reflection && c.reflection.length > 10);
-            if (hasReflection) earned.push({ id: 'reflector', icon: '🪞', title: 'Self-Reflector', desc: 'Wrote a thoughtful reflection!' });
+            if (hasReflection) earned.push({ id: 'reflector', icon: '🪞', title: (t('behavior_lens.raw.selfreflector') || 'Self-Reflector'), desc: 'Wrote a thoughtful reflection!' });
             const positiveCount = checkins.filter(c => c.mood === 'great' || c.mood === 'good').length;
-            if (positiveCount >= 5) earned.push({ id: 'positive5', icon: '☀️', title: 'Sunshine Collector', desc: '5 positive check-ins!' });
+            if (positiveCount >= 5) earned.push({ id: 'positive5', icon: '☀️', title: (t('behavior_lens.raw.sunshine_collector') || 'Sunshine Collector'), desc: '5 positive check-ins!' });
             return earned;
         }, [checkins, streak]);
 
@@ -9128,7 +9128,7 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
 
         const guides = [
             {
-                id: 'repair', icon: '💛', title: 'Harm Repair Conversation', color: 'amber',
+                id: 'repair', icon: '💛', title: (t('behavior_lens.raw.harm_repair_conversation') || 'Harm Repair Conversation'), color: 'amber',
                 desc: 'When a student has caused harm and needs to repair the relationship',
                 steps: [
                     { q: 'What happened?', tip: 'Listen without judgment. Use "Tell me about..." not "Why did you..."', who: 'Ask the student' },
@@ -9140,7 +9140,7 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
                 ]
             },
             {
-                id: 'circle', icon: '🔵', title: 'Community Circle', color: 'blue',
+                id: 'circle', icon: '🔵', title: (t('behavior_lens.raw.community_circle') || 'Community Circle'), color: 'blue',
                 desc: 'For building relationships and addressing class-wide concerns',
                 steps: [
                     { q: 'Opening Ceremony', tip: 'Start with a mindful moment, breathing exercise, or positive affirmation. This signals "circle time is different."', who: 'Facilitator' },
@@ -9152,7 +9152,7 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
                 ]
             },
             {
-                id: 'reintegration', icon: '🟢', title: 'Reintegration Conference', color: 'green',
+                id: 'reintegration', icon: '🟢', title: (t('behavior_lens.raw.reintegration_conference') || 'Reintegration Conference'), color: 'green',
                 desc: 'When a student returns from suspension, exclusion, or extended absence',
                 steps: [
                     { q: 'Welcome back', tip: '"We\'re glad you\'re here. Our community isn\'t complete without you." Lead with belonging, not shame.', who: 'Facilitator' },
@@ -9245,9 +9245,9 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
             { id: 'challenge', label: '🧡 Challenging Relationship', color: 'orange' },
         ];
         const strengths = [
-            { id: 'strong', label: 'Strong', color: 'green' },
-            { id: 'developing', label: 'Developing', color: 'amber' },
-            { id: 'strained', label: 'Strained', color: 'red' },
+            { id: 'strong', label: (t('behavior_lens.raw.strong') || 'Strong'), color: 'green' },
+            { id: 'developing', label: (t('behavior_lens.raw.developing') || 'Developing'), color: 'amber' },
+            { id: 'strained', label: (t('behavior_lens.raw.strained') || 'Strained'), color: 'red' },
         ];
 
         const handleAdd = () => {
@@ -9379,11 +9379,11 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
         const [translating, setTranslating] = useState(false);
 
         const categories = [
-            { id: 'strength', icon: '⭐', label: 'Strength/Celebration', color: 'green' },
-            { id: 'concern', icon: '💬', label: 'Concern', color: 'amber' },
-            { id: 'context', icon: '🏠', label: 'Home Context', color: 'blue' },
-            { id: 'culture', icon: '🌍', label: 'Cultural Insight', color: 'purple' },
-            { id: 'suggestion', icon: '💡', label: 'Suggestion', color: 'teal' },
+            { id: 'strength', icon: '⭐', label: (t('behavior_lens.raw.strengthcelebration') || 'Strength/Celebration'), color: 'green' },
+            { id: 'concern', icon: '💬', label: (t('behavior_lens.raw.concern') || 'Concern'), color: 'amber' },
+            { id: 'context', icon: '🏠', label: (t('behavior_lens.raw.home_context') || 'Home Context'), color: 'blue' },
+            { id: 'culture', icon: '🌍', label: (t('behavior_lens.raw.cultural_insight') || 'Cultural Insight'), color: 'purple' },
+            { id: 'suggestion', icon: '💡', label: (t('behavior_lens.raw.suggestion') || 'Suggestion'), color: 'teal' },
         ];
 
         const catColors = { green: 'bg-green-100 text-green-700 border-green-200', amber: 'bg-amber-100 text-amber-700 border-amber-200', blue: 'bg-blue-100 text-blue-700 border-blue-200', purple: 'bg-purple-100 text-purple-700 border-purple-200', teal: 'bg-teal-100 text-teal-700 border-teal-200' };
@@ -9504,12 +9504,12 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
         const [form, setForm] = useState({ who: '', method: 'phone', topic: '', outcome: '', followUp: '' });
 
         const methods = [
-            { id: 'phone', icon: '📞', label: 'Phone Call' },
-            { id: 'email', icon: '📧', label: 'Email' },
-            { id: 'inperson', icon: '🤝', label: 'In-Person' },
-            { id: 'note', icon: '📝', label: 'Written Note' },
-            { id: 'app', icon: '📱', label: 'App/Text' },
-            { id: 'video', icon: '💻', label: 'Video Call' },
+            { id: 'phone', icon: '📞', label: (t('behavior_lens.raw.phone_call') || 'Phone Call') },
+            { id: 'email', icon: '📧', label: (t('behavior_lens.raw.email') || 'Email') },
+            { id: 'inperson', icon: '🤝', label: (t('behavior_lens.raw.inperson') || 'In-Person') },
+            { id: 'note', icon: '📝', label: (t('behavior_lens.raw.written_note') || 'Written Note') },
+            { id: 'app', icon: '📱', label: (t('behavior_lens.raw.apptext') || 'App/Text') },
+            { id: 'video', icon: '💻', label: (t('behavior_lens.raw.video_call') || 'Video Call') },
         ];
 
         const handleAdd = () => {
@@ -9687,9 +9687,9 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
         }, [breathPhase]);
 
         const tools = [
-            { id: 'breathe', icon: '🌊', title: 'Breathing Exercise', desc: '4-4-6 box breathing with visual animation', color: 'blue' },
-            { id: 'timer', icon: '⏱️', title: 'Visual Break Timer', desc: 'Countdown timer for calm-down breaks', color: 'green' },
-            { id: 'sensory', icon: '🎧', title: 'Sensory Break Menu', desc: 'Quick sensory strategies organized by type', color: 'purple' },
+            { id: 'breathe', icon: '🌊', title: (t('behavior_lens.raw.breathing_exercise') || 'Breathing Exercise'), desc: '4-4-6 box breathing with visual animation', color: 'blue' },
+            { id: 'timer', icon: '⏱️', title: (t('behavior_lens.raw.visual_break_timer') || 'Visual Break Timer'), desc: 'Countdown timer for calm-down breaks', color: 'green' },
+            { id: 'sensory', icon: '🎧', title: (t('behavior_lens.raw.sensory_break_menu') || 'Sensory Break Menu'), desc: 'Quick sensory strategies organized by type', color: 'purple' },
             { id: 'grounding', icon: '🌿', title: '5-4-3-2-1 Grounding', desc: 'Guided grounding exercise for anxiety', color: 'teal' },
         ];
 
@@ -9885,11 +9885,11 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
         };
 
         const progressOptions = [
-            { id: 'not_started', label: 'Not Started', color: 'bg-slate-200 text-slate-600' },
-            { id: 'teaching', label: 'Teaching', color: 'bg-blue-200 text-blue-700' },
-            { id: 'prompting', label: 'Needs Prompts', color: 'bg-amber-200 text-amber-700' },
-            { id: 'emerging', label: 'Emerging', color: 'bg-green-200 text-green-700' },
-            { id: 'mastered', label: 'Mastered', color: 'bg-green-500 text-white' },
+            { id: 'not_started', label: (t('behavior_lens.raw.not_started') || 'Not Started'), color: 'bg-slate-200 text-slate-600' },
+            { id: 'teaching', label: (t('behavior_lens.raw.teaching') || 'Teaching'), color: 'bg-blue-200 text-blue-700' },
+            { id: 'prompting', label: (t('behavior_lens.raw.needs_prompts') || 'Needs Prompts'), color: 'bg-amber-200 text-amber-700' },
+            { id: 'emerging', label: (t('behavior_lens.raw.emerging') || 'Emerging'), color: 'bg-green-200 text-green-700' },
+            { id: 'mastered', label: (t('behavior_lens.raw.mastered') || 'Mastered'), color: 'bg-green-500 text-white' },
         ];
 
         // Auto-suggest from ABC data
@@ -10048,27 +10048,27 @@ JSON only, no markdown.`;
 
         const categories = [
             {
-                id: 'social', icon: '👋', label: 'Social', color: 'blue',
+                id: 'social', icon: '👋', label: (t('behavior_lens.raw.social') || 'Social'), color: 'blue',
                 items: [t('behavior_lens.reinf_verbal_praise') || 'Verbal praise', t('behavior_lens.reinf_high_five_fist_bump') || 'High five/fist bump', t('behavior_lens.reinf_positive_note_home') || 'Positive note home', t('behavior_lens.reinf_lunch_with_teacher') || 'Lunch with teacher', 'Helper role', 'Peer recognition', 'Choice of seating buddy']
             },
             {
-                id: 'activity', icon: '🎮', label: 'Activity', color: 'green',
+                id: 'activity', icon: '🎮', label: (t('behavior_lens.raw.activity') || 'Activity'), color: 'green',
                 items: [t('behavior_lens.reinf_extra_recess') || 'Extra recess', t('behavior_lens.reinf_free_drawing_time') || 'Free drawing time', t('behavior_lens.reinf_computer_tablet_time') || 'Computer/tablet time', 'Choose class activity', 'Read aloud to class', 'Lead a game', 'Show and tell']
             },
             {
-                id: 'tangible', icon: '🎁', label: 'Tangible', color: 'purple',
+                id: 'tangible', icon: '🎁', label: (t('behavior_lens.raw.tangible') || 'Tangible'), color: 'purple',
                 items: [t('behavior_lens.reinf_stickers') || 'Stickers', t('behavior_lens.reinf_treasure_box_pick') || 'Treasure box pick', 'Special pencil/eraser', 'Bookmarks', 'Class currency/points', 'Certificate/award', 'Choose a book']
             },
             {
-                id: 'sensory', icon: '🌀', label: 'Sensory', color: 'teal',
+                id: 'sensory', icon: '🌀', label: (t('behavior_lens.raw.sensory') || 'Sensory'), color: 'teal',
                 items: [t('behavior_lens.reinf_fidget_tools') || 'Fidget tools', t('behavior_lens.reinf_standing_desk_time') || 'Standing desk time', t('behavior_lens.reinf_noise_canceling_headphones') || 'Noise-canceling headphones', t('behavior_lens.reinf_weighted_lap_pad') || 'Weighted lap pad', 'Movement break', 'Music during work', 'Dim lighting option']
             },
             {
-                id: 'escape', icon: '🚪', label: 'Breaks/Escape', color: 'amber',
+                id: 'escape', icon: '🚪', label: (t('behavior_lens.raw.breaksescape') || 'Breaks/Escape'), color: 'amber',
                 items: [t('behavior_lens.reinf_break_pass') || 'Break pass', t('behavior_lens.reinf_quiet_corner_time') || 'Quiet corner time', t('behavior_lens.reinf_walk_in_hallway') || 'Walk in hallway', 'Skip one problem', 'Reduced assignment', 'Cool-down space', 'End task early']
             },
             {
-                id: 'academic', icon: '📚', label: 'Academic', color: 'indigo',
+                id: 'academic', icon: '📚', label: (t('behavior_lens.raw.academic') || 'Academic'), color: 'indigo',
                 items: [t('behavior_lens.reinf_choose_topic_to_study') || 'Choose topic to study', t('behavior_lens.reinf_teach_a_mini_lesson') || 'Teach a mini-lesson', t('behavior_lens.reinf_use_whiteboards') || 'Use whiteboards', t('behavior_lens.reinf_partner_work') || 'Partner work', 'Presentation to class', 'Research project choice', 'Read favorite genre']
             }
         ];
@@ -10553,12 +10553,12 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                                             h('button', {
                                                 onClick: () => { setEditingId(note.id); setEditText(note.text); },
                                                 className: 'p-1 hover:bg-slate-100 rounded text-xs',
-                                                title: 'Edit'
+                                                title: (t('behavior_lens.raw.edit') || 'Edit')
                                             }, '✏️'),
                                             h('button', {
                                                 onClick: () => handleDelete(note.id),
                                                 className: 'p-1 hover:bg-red-50 rounded text-xs',
-                                                title: 'Delete'
+                                                title: (t('behavior_lens.raw.delete') || 'Delete')
                                             }, '🗑️')
                                         )
                                     ),
@@ -10589,12 +10589,12 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
     ];
 
     const CASE_TEMPLATES = [
-        { id: 'escape', label: 'Escape-Maintained Behavior', icon: '🏃', scenario: 'A student who avoids academic demands through disruptive behavior', grade: '3rd grade', setting: 'general education classroom' },
-        { id: 'attention', label: 'Attention-Seeking Behavior', icon: '👋', scenario: 'A student who engages in off-task behavior to gain peer/adult attention', grade: '5th grade', setting: 'inclusion classroom' },
-        { id: 'sensory', label: 'Sensory/Automatic Function', icon: '🌀', scenario: 'A student with repetitive motor movements that interfere with learning', grade: '1st grade', setting: 'special education classroom' },
-        { id: 'tangible', label: 'Tangible Access', icon: '🎯', scenario: 'A student who has aggressive episodes to gain access to preferred items or activities', grade: '2nd grade', setting: 'resource room' },
-        { id: 'complex', label: 'Multi-Function (Complex)', icon: '🧩', scenario: 'A student whose behavior appears to serve multiple functions depending on context', grade: '7th grade', setting: 'middle school, multiple teachers' },
-        { id: 'custom', label: 'Custom Scenario', icon: '✏️', scenario: 'Define your own case study parameters', grade: '', setting: '' },
+        { id: 'escape', label: (t('behavior_lens.raw.escapemaintained_behavior') || 'Escape-Maintained Behavior'), icon: '🏃', scenario: 'A student who avoids academic demands through disruptive behavior', grade: '3rd grade', setting: 'general education classroom' },
+        { id: 'attention', label: (t('behavior_lens.raw.attentionseeking_behavior') || 'Attention-Seeking Behavior'), icon: '👋', scenario: 'A student who engages in off-task behavior to gain peer/adult attention', grade: '5th grade', setting: 'inclusion classroom' },
+        { id: 'sensory', label: (t('behavior_lens.raw.sensoryautomatic_function') || 'Sensory/Automatic Function'), icon: '🌀', scenario: 'A student with repetitive motor movements that interfere with learning', grade: '1st grade', setting: 'special education classroom' },
+        { id: 'tangible', label: (t('behavior_lens.raw.tangible_access') || 'Tangible Access'), icon: '🎯', scenario: 'A student who has aggressive episodes to gain access to preferred items or activities', grade: '2nd grade', setting: 'resource room' },
+        { id: 'complex', label: (t('behavior_lens.raw.multifunction_complex') || 'Multi-Function (Complex)'), icon: '🧩', scenario: 'A student whose behavior appears to serve multiple functions depending on context', grade: '7th grade', setting: 'middle school, multiple teachers' },
+        { id: 'custom', label: (t('behavior_lens.raw.custom_scenario') || 'Custom Scenario'), icon: '✏️', scenario: 'Define your own case study parameters', grade: '', setting: '' },
     ];
 
     const CaseStudyEngine = ({ callGemini, t, addToast }) => {
@@ -10822,7 +10822,7 @@ Keep it encouraging and professional. Under 300 words.`;
                             h('div', { key: p.id, className: 'bg-white rounded-lg p-3 border border-slate-200' },
                                 h('h4', { className: 'text-xs font-bold text-indigo-700 mb-1' }, `${p.icon} ${p.label}`),
                                 h('div', { className: 'text-[10px] text-slate-600 mb-2' },
-                                    h('strong', null, 'Your Response: '),
+                                    h('strong', null, (t('behavior_lens.raw.your_response') || 'Your Response: ')),
                                     userResponses[p.id] || '(not completed)'
                                 ),
                                 evaluations[p.id] && h('div', { className: 'text-[10px] text-purple-700 bg-purple-50 rounded-lg p-2 whitespace-pre-wrap' }, evaluations[p.id].text)
@@ -11116,7 +11116,7 @@ Respond helpfully and concisely as AlloBot:`;
                 messages.length > 0 && h('button', {
                     onClick: clearChat,
                     className: 'text-xs px-3 py-1.5 border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition-colors font-medium',
-                    title: 'Clear chat history'
+                    title: (t('behavior_lens.raw.clear_chat_history') || 'Clear chat history')
                 }, '🗑️ Clear')
             ),
             // Chat messages
@@ -11236,14 +11236,14 @@ Respond helpfully and concisely as AlloBot:`;
     // ─── PDLearningPath ─────────────────────────────────────────────────
     // Guided onboarding with progress tracking for new users
     const PD_MODULES = [
-        { id: 'intro', title: 'What is BehaviorLens?', icon: '👋', desc: 'Overview of FBA-BIP process and how this tool helps', duration: '3 min' },
-        { id: 'abc101', title: 'ABC Data Collection 101', icon: '📋', desc: 'Learn to record antecedents, behaviors, and consequences', duration: '5 min', linkedTool: 'abc' },
-        { id: 'observation', title: 'Observation Methods', icon: '🔍', desc: 'Frequency, duration, interval, and latency recording', duration: '5 min', linkedTool: 'observation' },
-        { id: 'function', title: 'Identifying Function', icon: '🧠', desc: 'The 4 functions of behavior: Escape, Attention, Tangible, Sensory', duration: '4 min', linkedTool: 'hypothesis' },
-        { id: 'reinforcement', title: 'Reinforcement Schedules', icon: '⭐', desc: 'FR, VR, FI, VI, DRO — when and how to use each', duration: '5 min', linkedTool: 'token' },
-        { id: 'replacement', title: 'Replacement Behaviors', icon: '🔄', desc: 'Choosing functionally equivalent alternatives', duration: '4 min', linkedTool: 'replacebehavior' },
-        { id: 'collaboration', title: 'Team Collaboration', icon: '🤝', desc: 'When to consult BCBAs, share data, and build team plans', duration: '4 min', linkedTool: 'teamnotes' },
-        { id: 'ethics', title: 'Ethics & Cultural Humility', icon: '🌍', desc: 'Bias awareness, cultural context, and restorative practices', duration: '5 min', linkedTool: 'cultural' },
+        { id: 'intro', title: (t('behavior_lens.raw.what_is_behaviorlens') || 'What is BehaviorLens?'), icon: '👋', desc: 'Overview of FBA-BIP process and how this tool helps', duration: '3 min' },
+        { id: 'abc101', title: (t('behavior_lens.raw.abc_data_collection_101') || 'ABC Data Collection 101'), icon: '📋', desc: 'Learn to record antecedents, behaviors, and consequences', duration: '5 min', linkedTool: 'abc' },
+        { id: 'observation', title: (t('behavior_lens.raw.observation_methods') || 'Observation Methods'), icon: '🔍', desc: 'Frequency, duration, interval, and latency recording', duration: '5 min', linkedTool: 'observation' },
+        { id: 'function', title: (t('behavior_lens.raw.identifying_function') || 'Identifying Function'), icon: '🧠', desc: 'The 4 functions of behavior: Escape, Attention, Tangible, Sensory', duration: '4 min', linkedTool: 'hypothesis' },
+        { id: 'reinforcement', title: (t('behavior_lens.raw.reinforcement_schedules') || 'Reinforcement Schedules'), icon: '⭐', desc: 'FR, VR, FI, VI, DRO — when and how to use each', duration: '5 min', linkedTool: 'token' },
+        { id: 'replacement', title: (t('behavior_lens.raw.replacement_behaviors') || 'Replacement Behaviors'), icon: '🔄', desc: 'Choosing functionally equivalent alternatives', duration: '4 min', linkedTool: 'replacebehavior' },
+        { id: 'collaboration', title: (t('behavior_lens.raw.team_collaboration') || 'Team Collaboration'), icon: '🤝', desc: 'When to consult BCBAs, share data, and build team plans', duration: '4 min', linkedTool: 'teamnotes' },
+        { id: 'ethics', title: (t('behavior_lens.raw.ethics_cultural_humility') || 'Ethics & Cultural Humility'), icon: '🌍', desc: 'Bias awareness, cultural context, and restorative practices', duration: '5 min', linkedTool: 'cultural' },
     ];
 
     const PDLearningPath = ({ t, addToast, onOpenTool }) => {
@@ -11254,24 +11254,24 @@ Respond helpfully and concisely as AlloBot:`;
         const MODULE_CONTENT = {
             intro: {
                 sections: [
-                    { title: 'What is an FBA?', content: 'A Functional Behavior Assessment (FBA) is a systematic process for identifying WHY a behavior occurs. It looks at the relationship between the environment and behavior to determine what purpose (function) the behavior serves for the student.' },
-                    { title: 'What is a BIP?', content: 'A Behavior Intervention Plan (BIP) is the action plan built from FBA findings. It includes prevention strategies, replacement behaviors, teaching strategies, and how the team will respond to both appropriate and inappropriate behaviors.' },
-                    { title: 'How BehaviorLens Helps', content: 'BehaviorLens provides 40+ interconnected tools that guide you through the entire FBA-BIP process: collecting data, analyzing patterns, building plans, and monitoring progress — all with AI-powered assistance.' },
+                    { title: (t('behavior_lens.raw.what_is_an_fba') || 'What is an FBA?'), content: 'A Functional Behavior Assessment (FBA) is a systematic process for identifying WHY a behavior occurs. It looks at the relationship between the environment and behavior to determine what purpose (function) the behavior serves for the student.' },
+                    { title: (t('behavior_lens.raw.what_is_a_bip') || 'What is a BIP?'), content: 'A Behavior Intervention Plan (BIP) is the action plan built from FBA findings. It includes prevention strategies, replacement behaviors, teaching strategies, and how the team will respond to both appropriate and inappropriate behaviors.' },
+                    { title: (t('behavior_lens.raw.how_behaviorlens_helps') || 'How BehaviorLens Helps'), content: 'BehaviorLens provides 40+ interconnected tools that guide you through the entire FBA-BIP process: collecting data, analyzing patterns, building plans, and monitoring progress — all with AI-powered assistance.' },
                 ],
                 quiz: { q: t('behavior_lens.quiz_fba_purpose') || 'What is the primary purpose of an FBA?', options: [t('behavior_lens.quiz_opt_punish') || 'To punish students', t('behavior_lens.quiz_opt_identify_why') || 'To identify WHY a behavior occurs', 'To diagnose disabilities', 'To rank student performance'], answer: 1 }
             },
             abc101: {
                 sections: [
-                    { title: 'The ABC Model', content: 'Every behavioral incident has three parts: the Antecedent (what happened before), the Behavior (what the student did), and the Consequence (what happened after). Recording all three helps reveal patterns.' },
-                    { title: 'Writing Observable Behaviors', content: 'Good: "Student threw pencil across room." Bad: "Student got angry." Behaviors must be observable and measurable — something anyone could see and count.' },
-                    { title: 'Tips for Quality Data', content: 'Record as soon as possible after the incident. Include the time, setting, and any adults present. Be specific and objective. Avoid interpretations like "defiant" — describe what you actually saw.' },
+                    { title: (t('behavior_lens.raw.the_abc_model') || 'The ABC Model'), content: 'Every behavioral incident has three parts: the Antecedent (what happened before), the Behavior (what the student did), and the Consequence (what happened after). Recording all three helps reveal patterns.' },
+                    { title: (t('behavior_lens.raw.writing_observable_behaviors') || 'Writing Observable Behaviors'), content: 'Good: "Student threw pencil across room." Bad: "Student got angry." Behaviors must be observable and measurable — something anyone could see and count.' },
+                    { title: (t('behavior_lens.raw.tips_for_quality_data') || 'Tips for Quality Data'), content: 'Record as soon as possible after the incident. Include the time, setting, and any adults present. Be specific and objective. Avoid interpretations like "defiant" — describe what you actually saw.' },
                 ],
                 quiz: { q: 'Which is an observable behavior description?', options: ['"Was disrespectful"', '"Left seat 3 times during math"', '"Had a bad attitude"', '"Was non-compliant"'], answer: 1 }
             },
             function: {
                 sections: [
-                    { title: 'The 4 Functions', content: 'ALL behavior serves one or more functions: (1) Escape/Avoidance — get away from something aversive, (2) Attention — get noticed by adults or peers, (3) Tangible Access — get a desired item or activity, (4) Sensory/Automatic — the behavior itself feels good.' },
-                    { title: 'Why Function Matters', content: 'The same behavior (hitting) can serve different functions for different students. Without knowing the function, interventions are likely to fail or make things worse.' },
+                    { title: (t('behavior_lens.raw.the_4_functions') || 'The 4 Functions'), content: 'ALL behavior serves one or more functions: (1) Escape/Avoidance — get away from something aversive, (2) Attention — get noticed by adults or peers, (3) Tangible Access — get a desired item or activity, (4) Sensory/Automatic — the behavior itself feels good.' },
+                    { title: (t('behavior_lens.raw.why_function_matters') || 'Why Function Matters'), content: 'The same behavior (hitting) can serve different functions for different students. Without knowing the function, interventions are likely to fail or make things worse.' },
                 ],
                 quiz: { q: 'A student screams when asked to do math. Work is then removed. What is the likely function?', options: ['Attention', 'Sensory', 'Escape', 'Tangible'], answer: 2 }
             },
@@ -11410,7 +11410,7 @@ Respond helpfully and concisely as AlloBot:`;
 
         const RESPONSE_OPTIONS = [
             { value: 'no', label: 'No', color: 'bg-green-100 border-green-300 text-green-800' },
-            { value: 'unsure', label: 'Unsure', color: 'bg-amber-100 border-amber-300 text-amber-800' },
+            { value: 'unsure', label: (t('behavior_lens.raw.unsure') || 'Unsure'), color: 'bg-amber-100 border-amber-300 text-amber-800' },
             { value: 'yes', label: 'Yes', color: 'bg-red-100 border-red-300 text-red-800' },
         ];
 
@@ -11719,11 +11719,11 @@ Format as a professional report with clear sections. Keep under 300 words.`);
         const [durationTimers, setDurationTimers] = useState({});
 
         const DATA_TYPES = [
-            { id: 'frequency', label: 'Frequency Count', icon: '🔢', unit: 'count' },
-            { id: 'rate', label: 'Rate (per min)', icon: '⚡', unit: '/min' },
-            { id: 'duration', label: 'Duration (sec)', icon: '⏱️', unit: 'sec' },
-            { id: 'percentage', label: 'Percentage', icon: '📊', unit: '%' },
-            { id: 'interval', label: 'Interval (Y/N)', icon: '📋', unit: 'intervals' },
+            { id: 'frequency', label: (t('behavior_lens.raw.frequency_count') || 'Frequency Count'), icon: '🔢', unit: 'count' },
+            { id: 'rate', label: (t('behavior_lens.raw.rate_per_min') || 'Rate (per min)'), icon: '⚡', unit: '/min' },
+            { id: 'duration', label: (t('behavior_lens.raw.duration_sec') || 'Duration (sec)'), icon: '⏱️', unit: 'sec' },
+            { id: 'percentage', label: (t('behavior_lens.raw.percentage') || 'Percentage'), icon: '📊', unit: '%' },
+            { id: 'interval', label: (t('behavior_lens.raw.interval_yn') || 'Interval (Y/N)'), icon: '📋', unit: 'intervals' },
         ];
 
         // Elapsed timer
@@ -12043,7 +12043,7 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                     trendSlope = (m2 - m1) / (values.length - 1);
                     trendIntercept = m1 - trendSlope * (half / 2);
                 }
-                return [{ label: 'All Data', startIdx: 0, endIdx: dataSeries.length - 1, data: dataSeries, mean, trendSlope, trendIntercept }];
+                return [{ label: (t('behavior_lens.raw.all_data') || 'All Data'), startIdx: 0, endIdx: dataSeries.length - 1, data: dataSeries, mean, trendSlope, trendIntercept }];
             }
             return phases.map((p, pi) => {
                 const phaseData = dataSeries.filter(d => d.session >= p.startSession && d.session <= (phases[pi + 1]?.startSession - 1 || Infinity));
@@ -12192,9 +12192,9 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                     h('table', { className: 'w-full text-[10px]' },
                         h('thead', null,
                             h('tr', { className: 'bg-fuchsia-50' },
-                                h('th', { className: 'px-3 py-1.5 text-left font-bold text-fuchsia-700' }, 'Session'),
-                                h('th', { className: 'px-3 py-1.5 text-left font-bold text-fuchsia-700' }, 'Value'),
-                                h('th', { className: 'px-3 py-1.5 text-right font-bold text-fuchsia-700' }, 'Actions')
+                                h('th', { className: 'px-3 py-1.5 text-left font-bold text-fuchsia-700' }, (t('behavior_lens.raw.session') || 'Session')),
+                                h('th', { className: 'px-3 py-1.5 text-left font-bold text-fuchsia-700' }, (t('behavior_lens.raw.value') || 'Value')),
+                                h('th', { className: 'px-3 py-1.5 text-right font-bold text-fuchsia-700' }, (t('behavior_lens.raw.actions') || 'Actions'))
                             )
                         ),
                         h('tbody', null,
@@ -12364,10 +12364,10 @@ Format as a professional report with clear sections. Keep under 300 words.`);
                     // Legend
                     h('g', { transform: `translate(${padL + plotW - 120}, ${padT + 5})` },
                         h('circle', { cx: 5, cy: 5, r: 3, fill: ABA_GRAPH_COLORS[0] }),
-                        h('text', { x: 12, y: 9, fontSize: 8, fill: '#475569' }, 'Data Points'),
+                        h('text', { x: 12, y: 9, fontSize: 8, fill: '#475569' }, (t('behavior_lens.raw.data_points') || 'Data Points')),
                         showLevel && h('g', null,
                             h('line', { x1: 0, y1: 18, x2: 10, y2: 18, stroke: '#f59e0b', strokeWidth: 1.5, strokeDasharray: '4,3' }),
-                            h('text', { x: 12, y: 21, fontSize: 8, fill: '#475569' }, 'Level (Mean)')
+                            h('text', { x: 12, y: 21, fontSize: 8, fill: '#475569' }, (t('behavior_lens.raw.level_mean') || 'Level (Mean)'))
                         ),
                         showTrend && h('g', null,
                             h('line', { x1: 0, y1: 30, x2: 10, y2: 30, stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '8,4' }),
@@ -12626,12 +12626,12 @@ Keep under 200 words. Use bullet points.`);
                 h('p', { className: 'text-[10px] text-emerald-600 mb-3' }, t('behavior_lens.ui.use_these_criteria_when_examining_your_graph') || 'Use these criteria when examining your graph:'),
                 h('div', { className: 'grid grid-cols-2 gap-2' },
                     [
-                        { label: 'Level', desc: 'Mean performance within a phase', icon: '━' },
-                        { label: 'Trend', desc: 'Slope/direction of data path within a phase', icon: '↗' },
-                        { label: 'Variability', desc: 'Range/consistency of data within a phase', icon: '〰️' },
-                        { label: 'Immediacy', desc: 'How quickly behavior changes between phases', icon: '⚡' },
-                        { label: 'Overlap', desc: 'How much data between phases overlaps', icon: '🔗' },
-                        { label: 'Consistency', desc: 'Similar patterns across attempts to replicate', icon: '🔄' },
+                        { label: (t('behavior_lens.raw.level') || 'Level'), desc: 'Mean performance within a phase', icon: '━' },
+                        { label: (t('behavior_lens.raw.trend') || 'Trend'), desc: 'Slope/direction of data path within a phase', icon: '↗' },
+                        { label: (t('behavior_lens.raw.variability') || 'Variability'), desc: 'Range/consistency of data within a phase', icon: '〰️' },
+                        { label: (t('behavior_lens.raw.immediacy') || 'Immediacy'), desc: 'How quickly behavior changes between phases', icon: '⚡' },
+                        { label: (t('behavior_lens.raw.overlap') || 'Overlap'), desc: 'How much data between phases overlaps', icon: '🔗' },
+                        { label: (t('behavior_lens.raw.consistency') || 'Consistency'), desc: 'Similar patterns across attempts to replicate', icon: '🔄' },
                     ].map(c =>
                         h('div', { key: c.label, className: 'bg-white rounded-lg p-2 border border-emerald-100' },
                             h('div', { className: 'flex items-center gap-1 mb-0.5' },
@@ -12713,19 +12713,19 @@ Keep under 200 words. Use bullet points.`);
         const [loading, setLoading] = useState(false);
 
         const FUNCTIONS = [
-            { id: 'escape', label: 'Escape/Avoidance', icon: '🚪', desc: 'Student wants to get away from something', phrase: 'I need a break' },
-            { id: 'attention', label: 'Attention', icon: '👋', desc: 'Student wants social interaction', phrase: 'Can I talk to you?' },
-            { id: 'tangible', label: 'Tangible/Access', icon: '🎁', desc: 'Student wants an item or activity', phrase: 'Can I have ___?' },
-            { id: 'sensory', label: 'Sensory/Automatic', icon: '🌀', desc: 'Student seeks sensory input', phrase: 'I need my fidget' },
+            { id: 'escape', label: (t('behavior_lens.raw.escapeavoidance') || 'Escape/Avoidance'), icon: '🚪', desc: 'Student wants to get away from something', phrase: 'I need a break' },
+            { id: 'attention', label: (t('behavior_lens.raw.attention') || 'Attention'), icon: '👋', desc: 'Student wants social interaction', phrase: 'Can I talk to you?' },
+            { id: 'tangible', label: (t('behavior_lens.raw.tangibleaccess') || 'Tangible/Access'), icon: '🎁', desc: 'Student wants an item or activity', phrase: 'Can I have ___?' },
+            { id: 'sensory', label: (t('behavior_lens.raw.sensoryautomatic') || 'Sensory/Automatic'), icon: '🌀', desc: 'Student seeks sensory input', phrase: 'I need my fidget' },
         ];
 
         const MODALITIES = [
-            { id: 'verbal', label: 'Verbal', icon: '🗣️', desc: 'Spoken words or phrases' },
-            { id: 'sign', label: 'Sign Language', icon: '🤟', desc: 'Manual signs (ASL or simplified)' },
-            { id: 'pecs', label: 'PECS/Picture Card', icon: '🖼️', desc: 'Picture Exchange Communication System' },
-            { id: 'aac', label: 'AAC Device', icon: '📱', desc: 'Augmentative and Alternative Communication device' },
-            { id: 'gesture', label: 'Gesture', icon: '☝️', desc: 'Pointing, head nod, raising hand' },
-            { id: 'written', label: 'Written', icon: '✏️', desc: 'Written notes or typing' },
+            { id: 'verbal', label: (t('behavior_lens.raw.verbal') || 'Verbal'), icon: '🗣️', desc: 'Spoken words or phrases' },
+            { id: 'sign', label: (t('behavior_lens.raw.sign_language') || 'Sign Language'), icon: '🤟', desc: 'Manual signs (ASL or simplified)' },
+            { id: 'pecs', label: (t('behavior_lens.raw.pecspicture_card') || 'PECS/Picture Card'), icon: '🖼️', desc: 'Picture Exchange Communication System' },
+            { id: 'aac', label: (t('behavior_lens.raw.aac_device') || 'AAC Device'), icon: '📱', desc: 'Augmentative and Alternative Communication device' },
+            { id: 'gesture', label: (t('behavior_lens.raw.gesture') || 'Gesture'), icon: '☝️', desc: 'Pointing, head nod, raising hand' },
+            { id: 'written', label: (t('behavior_lens.raw.written') || 'Written'), icon: '✏️', desc: 'Written notes or typing' },
         ];
 
         const handleGenerate = async () => {
@@ -13005,12 +13005,12 @@ Keep under 250 words. Use clear sections.`);
         const [showHistory, setShowHistory] = useState(false);
 
         const PROMPT_LEVELS = [
-            { id: 'I', label: 'Independent', color: 'green', icon: '🟢' },
-            { id: 'G', label: 'Gestural', color: 'teal', icon: '🟡' },
-            { id: 'V', label: 'Verbal', color: 'blue', icon: '🔵' },
-            { id: 'M', label: 'Model', color: 'purple', icon: '🟣' },
-            { id: 'PP', label: 'Partial Physical', color: 'amber', icon: '🟠' },
-            { id: 'FP', label: 'Full Physical', color: 'red', icon: '🔴' },
+            { id: 'I', label: (t('behavior_lens.raw.independent') || 'Independent'), color: 'green', icon: '🟢' },
+            { id: 'G', label: (t('behavior_lens.raw.gestural') || 'Gestural'), color: 'teal', icon: '🟡' },
+            { id: 'V', label: (t('behavior_lens.raw.verbal') || 'Verbal'), color: 'blue', icon: '🔵' },
+            { id: 'M', label: (t('behavior_lens.raw.model') || 'Model'), color: 'purple', icon: '🟣' },
+            { id: 'PP', label: (t('behavior_lens.raw.partial_physical') || 'Partial Physical'), color: 'amber', icon: '🟠' },
+            { id: 'FP', label: (t('behavior_lens.raw.full_physical') || 'Full Physical'), color: 'red', icon: '🔴' },
         ];
 
         const CHAINING = [
@@ -13145,10 +13145,10 @@ Keep under 250 words. Use clear sections.`);
         const [sessionActive, setSessionActive] = useState(false);
 
         const RESPONSES = [
-            { id: '+', label: 'Correct', color: 'green', icon: '✓' },
-            { id: '-', label: 'Incorrect', color: 'red', icon: '✗' },
-            { id: 'P', label: 'Prompted', color: 'amber', icon: 'P' },
-            { id: 'NR', label: 'No Response', color: 'slate', icon: '—' },
+            { id: '+', label: (t('behavior_lens.raw.correct') || 'Correct'), color: 'green', icon: '✓' },
+            { id: '-', label: (t('behavior_lens.raw.incorrect') || 'Incorrect'), color: 'red', icon: '✗' },
+            { id: 'P', label: (t('behavior_lens.raw.prompted') || 'Prompted'), color: 'amber', icon: 'P' },
+            { id: 'NR', label: (t('behavior_lens.raw.no_response') || 'No Response'), color: 'slate', icon: '—' },
         ];
 
         const program = programs.find(p => p.id === activeProgram);
@@ -13572,7 +13572,7 @@ Keep under 250 words. Use clear sections.`);
                     h('table', { className: 'w-full border-collapse' },
                         h('thead', null,
                             h('tr', null,
-                                h('th', { className: 'text-[9px] text-slate-500 font-bold p-1 text-left' }, 'Time'),
+                                h('th', { className: 'text-[9px] text-slate-500 font-bold p-1 text-left' }, (t('behavior_lens.raw.time') || 'Time')),
                                 ...DAY_LABELS.slice(0, days).map(d => h('th', { key: d, className: 'text-[9px] text-slate-500 font-bold p-1 text-center' }, d))
                             )
                         ),
@@ -13990,9 +13990,9 @@ Keep under 250 words. Use clear sections.`);
                 ),
                 dataPoints.length > 0 ? h('svg', { viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { maxHeight: '280px', fontFamily: 'Arial, sans-serif' } },
                     h('rect', { x: 0, y: 0, width: W, height: H, fill: 'white' }),
-                    h('text', { x: W / 2, y: 16, textAnchor: 'middle', fontSize: 12, fontWeight: 'bold', fill: '#1e293b' }, 'Cumulative Record'),
-                    h('text', { x: 12, y: H / 2, textAnchor: 'middle', fontSize: 10, fill: '#64748b', transform: `rotate(-90, 12, ${H / 2})` }, 'Cumulative Responses'),
-                    h('text', { x: W / 2, y: H - 5, textAnchor: 'middle', fontSize: 10, fill: '#64748b' }, 'Sessions'),
+                    h('text', { x: W / 2, y: 16, textAnchor: 'middle', fontSize: 12, fontWeight: 'bold', fill: '#1e293b' }, (t('behavior_lens.raw.cumulative_record') || 'Cumulative Record')),
+                    h('text', { x: 12, y: H / 2, textAnchor: 'middle', fontSize: 10, fill: '#64748b', transform: `rotate(-90, 12, ${H / 2})` }, (t('behavior_lens.raw.cumulative_responses') || 'Cumulative Responses')),
+                    h('text', { x: W / 2, y: H - 5, textAnchor: 'middle', fontSize: 10, fill: '#64748b' }, (t('behavior_lens.raw.sessions') || 'Sessions')),
                     h('line', { x1: padL, y1: padT, x2: padL, y2: padT + plotH, stroke: '#1e293b', strokeWidth: 1.5 }),
                     h('line', { x1: padL, y1: padT + plotH, x2: padL + plotW, y2: padT + plotH, stroke: '#1e293b', strokeWidth: 1.5 }),
                     // Filled area
@@ -14290,7 +14290,7 @@ Keep under 250 words. Use clear sections.`);
 
                 h('label', { className: 'text-xs font-bold text-slate-500 uppercase tracking-wider' }, '📝 Your Observation Notes'),
 
-                h('textarea', { value: rawText, onChange: (e) => setRawText(e.target.value), placeholder: 'Example: During math class, when asked to complete worksheet problems, Johnny pushed his papers off the desk...', className: 'w-full h-40 p-3 border border-slate-300 rounded-lg text-sm resize-y focus:ring-2 focus:ring-violet-400 focus:border-violet-400', rows: 6 }),
+                h('textarea', { value: rawText, onChange: (e) => setRawText(e.target.value), placeholder: (t('behavior_lens.raw.example_during_math_class_when_asked_to_complete_worksheet_p') || 'Example: During math class, when asked to complete worksheet problems, Johnny pushed his papers off the desk...'), className: 'w-full h-40 p-3 border border-slate-300 rounded-lg text-sm resize-y focus:ring-2 focus:ring-violet-400 focus:border-violet-400', rows: 6 }),
 
                 h('div', { className: 'flex items-center justify-between' },
 
@@ -14352,7 +14352,7 @@ Keep under 250 words. Use clear sections.`);
 
                                 h('select', { value: entry.function || 'unknown', onChange: (e) => updateParsed(idx, 'function', e.target.value), className: 'px-2 py-1 border border-slate-200 rounded text-xs' }, ['escape', 'attention', 'tangible', 'sensory', 'unknown'].map(f => h('option', { key: f, value: f }, f.charAt(0).toUpperCase() + f.slice(1)))),
 
-                                h('select', { value: entry.intensity || 3, onChange: (e) => updateParsed(idx, 'intensity', parseInt(e.target.value)), className: 'px-2 py-1 border border-slate-200 rounded text-xs' }, [1, 2, 3, 4, 5].map(v => h('option', { key: v, value: v }, 'Intensity ' + v)))
+                                h('select', { value: entry.intensity || 3, onChange: (e) => updateParsed(idx, 'intensity', parseInt(e.target.value)), className: 'px-2 py-1 border border-slate-200 rounded text-xs' }, [1, 2, 3, 4, 5].map(v => h('option', { key: v, value: v }, (t('behavior_lens.raw.intensity') || 'Intensity ') + v)))
 
                             )
 
@@ -14482,7 +14482,7 @@ Keep under 250 words. Use clear sections.`);
 
                 h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' }, goalTypes.map(gt => h('button', { key: gt.id, onClick: () => setGoalType(gt.id), className: 'p-3 rounded-lg border-2 text-left transition-all ' + (goalType === gt.id ? 'border-blue-400 bg-blue-50' : 'border-slate-200 hover:border-slate-300') }, h('div', { className: 'text-sm font-bold' }, gt.label), h('div', { className: 'text-[10px] text-slate-500' }, gt.desc)))),
 
-                h('textarea', { value: customContext, onChange: (e) => setCustomContext(e.target.value), placeholder: 'Additional context...', className: 'w-full p-2 border border-slate-200 rounded-lg text-xs resize-none', rows: 3 }),
+                h('textarea', { value: customContext, onChange: (e) => setCustomContext(e.target.value), placeholder: (t('behavior_lens.raw.additional_context') || 'Additional context...'), className: 'w-full p-2 border border-slate-200 rounded-lg text-xs resize-none', rows: 3 }),
 
                 h('div', { className: 'flex items-center justify-between bg-slate-50 rounded-lg p-3' },
 
@@ -14600,7 +14600,7 @@ Keep under 250 words. Use clear sections.`);
 
         }, [dashboardData, abcEntries]);
 
-        const statusConfig = { urgent: { emoji: '🔴', label: 'Urgent', bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-700' }, needs_attention: { emoji: '🟡', label: 'Needs Attention', bg: 'bg-amber-50', border: 'border-amber-300', text: 'text-amber-700' }, on_track: { emoji: '🟢', label: 'On Track', bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-700' } };
+        const statusConfig = { urgent: { emoji: '🔴', label: (t('behavior_lens.raw.urgent') || 'Urgent'), bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-700' }, needs_attention: { emoji: '🟡', label: (t('behavior_lens.raw.needs_attention') || 'Needs Attention'), bg: 'bg-amber-50', border: 'border-amber-300', text: 'text-amber-700' }, on_track: { emoji: '🟢', label: (t('behavior_lens.raw.on_track') || 'On Track'), bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-700' } };
 
         const filtered = filterStatus === 'all' ? studentCaseData : studentCaseData.filter(s => s.status === filterStatus);
 
@@ -14732,7 +14732,7 @@ Keep under 250 words. Use clear sections.`);
 
         const setTier = (name, tier) => setTiers(prev => ({ ...prev, [name]: tier }));
 
-        const tierConfig = { 1: { label: 'Tier 1 — Universal', color: 'emerald', emoji: '🟢', pct: '80%' }, 2: { label: 'Tier 2 — Targeted', color: 'amber', emoji: '🟡', pct: '15%' }, 3: { label: 'Tier 3 — Intensive', color: 'red', emoji: '🔴', pct: '5%' } };
+        const tierConfig = { 1: { label: (t('behavior_lens.raw.tier_1_universal') || 'Tier 1 — Universal'), color: 'emerald', emoji: '🟢', pct: '80%' }, 2: { label: (t('behavior_lens.raw.tier_2_targeted') || 'Tier 2 — Targeted'), color: 'amber', emoji: '🟡', pct: '15%' }, 3: { label: (t('behavior_lens.raw.tier_3_intensive') || 'Tier 3 — Intensive'), color: 'red', emoji: '🔴', pct: '5%' } };
 
         const handleAiRecommendations = async () => {
 
@@ -15245,7 +15245,7 @@ Keep under 250 words. Use clear sections.`);
                     switchToStudent && h('button', {
                         onClick: () => switchToStudent(w.student),
                         className: 'px-2 py-1 bg-violet-100 text-violet-700 rounded-lg text-[10px] font-bold hover:bg-violet-200 transition-all',
-                        title: 'Switch workspace to this student'
+                        title: (t('behavior_lens.raw.switch_workspace_to_this_student') || 'Switch workspace to this student')
                     }, '⇄ Switch'),
                     h('button', { onClick: () => removeStudent(w.student), className: 'w-8 text-center text-red-300 hover:text-red-500 text-sm' }, '✕')
                 ))
@@ -15456,7 +15456,7 @@ Keep under 250 words. Use clear sections.`);
         const [targetBehavior, setTargetBehavior] = useState('');
         const [goalCount, setGoalCount] = useState(0);
         const [goalDate, setGoalDate] = useState('');
-        const [phases, setPhases] = useState([{ label: 'Baseline', startDate: '', color: '#6366f1' }]);
+        const [phases, setPhases] = useState([{ label: (t('behavior_lens.raw.baseline') || 'Baseline'), startDate: '', color: '#6366f1' }]);
         const [showPhaseEditor, setShowPhaseEditor] = useState(false);
 
         // Extract unique behaviors from ABC entries
@@ -15535,8 +15535,8 @@ Keep under 250 words. Use clear sections.`);
                 // Data points
                 ...dailyData.map((d, i) => h('circle', { key: 'dp' + i, cx: xScale(i), cy: yScale(d.count), r: 4, fill: '#6366f1', stroke: '#fff', strokeWidth: 2 })),
                 // Axis labels
-                h('text', { x: W / 2, y: H - 2, textAnchor: 'middle', fill: '#64748b', fontSize: 11, fontWeight: 'bold' }, 'Date'),
-                h('text', { x: 12, y: H / 2, textAnchor: 'middle', fill: '#64748b', fontSize: 11, fontWeight: 'bold', transform: `rotate(-90, 12, ${H / 2})` }, 'Frequency')
+                h('text', { x: W / 2, y: H - 2, textAnchor: 'middle', fill: '#64748b', fontSize: 11, fontWeight: 'bold' }, (t('behavior_lens.raw.date') || 'Date')),
+                h('text', { x: 12, y: H / 2, textAnchor: 'middle', fill: '#64748b', fontSize: 11, fontWeight: 'bold', transform: `rotate(-90, 12, ${H / 2})` }, (t('behavior_lens.raw.frequency') || 'Frequency'))
             );
         };
 
@@ -15554,7 +15554,7 @@ Keep under 250 words. Use clear sections.`);
                     h('div', null,
                         h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, t('behavior_lens.ui.target_behavior') || 'Target Behavior'),
                         h('select', { value: targetBehavior, onChange: e => setTargetBehavior(e.target.value), className: 'w-full px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white' },
-                            h('option', { value: '' }, 'All Behaviors'),
+                            h('option', { value: '' }, (t('behavior_lens.raw.all_behaviors') || 'All Behaviors')),
                             allBehaviors.map(b => h('option', { key: b, value: b }, b))
                         )
                     ),
@@ -16306,10 +16306,10 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
                     h('div', null,
                         h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase block mb-1' }, '📅 Date Range'),
                         h('select', { value: dateRange, onChange: e => setDateRange(e.target.value), className: 'w-full px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white' },
-                            h('option', { value: 'all' }, 'All Available Data'),
-                            h('option', { value: 'week' }, 'Last 7 Days'),
-                            h('option', { value: 'month' }, 'Last 30 Days'),
-                            h('option', { value: 'custom' }, 'Custom Range')
+                            h('option', { value: 'all' }, (t('behavior_lens.raw.all_available_data') || 'All Available Data')),
+                            h('option', { value: 'week' }, (t('behavior_lens.raw.last_7_days') || 'Last 7 Days')),
+                            h('option', { value: 'month' }, (t('behavior_lens.raw.last_30_days') || 'Last 30 Days')),
+                            h('option', { value: 'custom' }, (t('behavior_lens.raw.custom_range') || 'Custom Range'))
                         )
                     ),
                     h('div', null,
@@ -17481,8 +17481,8 @@ Analyze this data and return ONLY valid JSON:
                 {
                     id: 'export',
                     icon: '📥',
-                    title: t('behavior_lens.hub.export_title') || 'Export Data',
-                    desc: t('behavior_lens.hub.export_desc') || 'Download behavioral data as JSON or formatted text reports',
+                    title: t('behavior_lens.hub.export_title') || 'Export Reports',
+                    desc: t('behavior_lens.hub.export_desc') || 'Download data as JSON, CSV, text reports, or printable PDF portfolio',
                     color: 'slate',
                     badge: (abcEntries.length + observationSessions.length) > 0 ? `${abcEntries.length + observationSessions.length} records` : null,
                 },
@@ -18021,7 +18021,7 @@ Analyze this data and return ONLY valid JSON:
                 {
                     id: 'compare',
                     icon: '📊',
-                    title: 'Cross-Student Comparison',
+                    title: (t('behavior_lens.raw.crossstudent_comparison') || 'Cross-Student Comparison'),
                     desc: 'Load multiple student workspaces to compare behavior patterns, intensity levels, and trends side-by-side with AI analysis',
                     color: 'violet',
                     badge: comparisonWorkspaces.length > 0 ? `👤 ${comparisonWorkspaces.length} loaded` : null,
@@ -18059,14 +18059,14 @@ Analyze this data and return ONLY valid JSON:
                 {
                     id: 'batchimport',
                     icon: '📥',
-                    title: 'Batch Import',
+                    title: (t('behavior_lens.raw.batch_import') || 'Batch Import'),
                     desc: 'Import historical ABC data or student profiles from CSV files — validates, previews, and merges with existing data',
                     color: 'teal',
                 },
                 {
                     id: 'progressmonitor',
                     icon: '📈',
-                    title: 'Progress Monitor',
+                    title: (t('behavior_lens.raw.progress_monitor') || 'Progress Monitor'),
                     desc: 'Track behavior frequency over time with aim lines, phase change markers, trend analysis, and daily summary stats',
                     color: 'indigo',
                     badge: abcEntries.length > 0 ? `📊 ${abcEntries.length} entries` : null,
@@ -18074,21 +18074,21 @@ Analyze this data and return ONLY valid JSON:
                 {
                     id: 'voiceabc',
                     icon: '🎙️',
-                    title: 'Voice-to-ABC',
+                    title: (t('behavior_lens.raw.voicetoabc') || 'Voice-to-ABC'),
                     desc: 'Speak your observations naturally — AI extracts structured ABC entries from your real-time voice transcript',
                     color: 'rose',
                 },
                 {
                     id: 'sharing',
                     icon: '🤝',
-                    title: 'Workspace Sharing',
+                    title: (t('behavior_lens.raw.workspace_sharing') || 'Workspace Sharing'),
                     desc: 'Share workspace data with team members using role-based views — BCBA, teacher, or parent-friendly exports',
                     color: 'blue',
                 },
                 {
                     id: 'progressreport',
                     icon: '📄',
-                    title: 'Progress Report',
+                    title: (t('behavior_lens.raw.progress_report') || 'Progress Report'),
                     desc: 'Generate a professional, print-ready progress report with inline charts, AI recommendations, and audience-specific language',
                     color: 'teal',
                 },
@@ -18204,7 +18204,7 @@ Analyze this data and return ONLY valid JSON:
                         h('button', {
                             onClick: () => { setStudentRoster([]); if (addToast) addToast(t('behavior_lens.toast.roster_cleared') || 'Roster cleared', 'info'); },
                             className: 'text-[9px] text-slate-300 hover:text-red-400 transition-colors'
-                        }, 'Clear')
+                        }, (t('behavior_lens.raw.clear') || 'Clear'))
                     ),
                     h('div', { className: 'flex flex-wrap gap-1.5' },
                         studentRoster.filter(r => r.name !== selectedStudent).slice(0, 6).map(r =>
@@ -18341,21 +18341,21 @@ Analyze this data and return ONLY valid JSON:
                     // Smart recommendations
                     const recs = [];
                     if (abcEntries.length >= 3 && !visitedPanels.has('analysis'))
-                        recs.push({ icon: '🧠', label: 'You have enough data for AI analysis', target: 'analysis' });
+                        recs.push({ icon: '🧠', label: (t('behavior_lens.raw.you_have_enough_data_for_ai_analysis') || 'You have enough data for AI analysis'), target: 'analysis' });
                     if (abcEntries.length >= 5 && !visitedPanels.has('hypothesis'))
-                        recs.push({ icon: '🔗', label: 'Ready to generate hypothesis diagram', target: 'hypothesis' });
+                        recs.push({ icon: '🔗', label: (t('behavior_lens.raw.ready_to_generate_hypothesis_diagram') || 'Ready to generate hypothesis diagram'), target: 'hypothesis' });
                     if (abcEntries.length >= 3 && !visitedPanels.has('trends'))
-                        recs.push({ icon: '📊', label: 'View trend dashboard with your data', target: 'trends' });
+                        recs.push({ icon: '📊', label: (t('behavior_lens.raw.view_trend_dashboard_with_your_data') || 'View trend dashboard with your data'), target: 'trends' });
                     if (visitedPanels.has('analysis') && !visitedPanels.has('goals'))
-                        recs.push({ icon: '🎯', label: 'Build SMART goals from analysis', target: 'goals' });
+                        recs.push({ icon: '🎯', label: (t('behavior_lens.raw.build_smart_goals_from_analysis') || 'Build SMART goals from analysis'), target: 'goals' });
                     if (visitedPanels.has('goals') && !visitedPanels.has('contract'))
-                        recs.push({ icon: '📜', label: 'Create a behavior contract', target: 'contract' });
+                        recs.push({ icon: '📜', label: (t('behavior_lens.raw.create_a_behavior_contract') || 'Create a behavior contract'), target: 'contract' });
                     if (visitedPanels.has('goals') && !visitedPanels.has('intervention'))
-                        recs.push({ icon: '📋', label: 'Generate an intervention plan', target: 'intervention' });
+                        recs.push({ icon: '📋', label: (t('behavior_lens.raw.generate_an_intervention_plan') || 'Generate an intervention plan'), target: 'intervention' });
                     if (observationSessions.length >= 2 && !visitedPanels.has('triangulation'))
-                        recs.push({ icon: '🔺', label: 'Triangulate with observation data', target: 'triangulation' });
+                        recs.push({ icon: '🔺', label: (t('behavior_lens.raw.triangulate_with_observation_data') || 'Triangulate with observation data'), target: 'triangulation' });
                     if (abcEntries.length >= 2 && !visitedPanels.has('progress'))
-                        recs.push({ icon: '📈', label: 'Draft progress narrative', target: 'progress' });
+                        recs.push({ icon: '📈', label: (t('behavior_lens.raw.draft_progress_narrative') || 'Draft progress narrative'), target: 'progress' });
 
                     const renderCard = (tool) => {
                         const cc = colorClasses[tool.color];
@@ -18391,7 +18391,7 @@ Analyze this data and return ONLY valid JSON:
                             h('button', {
                                 onClick: dismissWelcome,
                                 className: 'absolute top-3 right-3 text-white/60 hover:text-white transition-colors text-lg',
-                                title: 'Dismiss'
+                                title: (t('behavior_lens.raw.dismiss') || 'Dismiss')
                             }, '✕'),
                             // Content
                             h('div', { className: 'relative' },
@@ -18715,7 +18715,7 @@ Analyze this data and return ONLY valid JSON:
                                     overview: t('behavior_lens.overview.title') || 'Behavior Overview',
                                     token: DualLabel(t('behavior_lens.token.title') || 'Token Board'),
                                     hotspot: t('behavior_lens.hotspot.title') || 'Routine Hotspot Matrix',
-                                    export: t('behavior_lens.export.title') || 'Export Data',
+                                    export: t('behavior_lens.export.title') || 'Export Reports',
                                     record: t('behavior_lens.record.title') || 'Record Review',
                                     hypothesis: t('behavior_lens.hypothesis.title') || 'Hypothesis Diagram',
                                     goals: t('behavior_lens.goals.title') || 'SMART Goal Builder',
@@ -18788,7 +18788,7 @@ Analyze this data and return ONLY valid JSON:
                         ),
                         isCanvasEnv && h('div', {
                             className: 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border bg-slate-50 border-slate-200 text-slate-500',
-                            title: 'Canvas environment — local storage only'
+                            title: (t('behavior_lens.raw.canvas_environment_local_storage_only') || 'Canvas environment — local storage only')
                         }, '💾 Local only'),
                         // Parent Mode toggle
                         activePanel === 'hub' && h('button', {
@@ -18802,7 +18802,7 @@ Analyze this data and return ONLY valid JSON:
                             h('button', {
                                 onClick: () => setShowExportMenu(v => !v),
                                 className: 'p-2 rounded-full text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 transition-colors',
-                                title: 'Export this tool\'s data'
+                                title: (t('behavior_lens.raw.export_this_tool') || 'Export this tool\')s data'
                             }, '📤'),
                             showExportMenu && h('div', {
                                 className: 'absolute right-0 top-10 z-50 bg-white border border-slate-200 rounded-xl shadow-xl py-1 min-w-[180px] animate-in fade-in',
@@ -19324,188 +19324,188 @@ Analyze this data and return ONLY valid JSON:
                     if (activePanel === 'hub') return null;
                     const relatedToolsMap = {
                         abc: [
-                            { id: 'hypothesis', icon: '🔗', label: 'Hypothesis Diagram' },
-                            { id: 'condprob', icon: '📐', label: 'Conditional Probability' },
-                            { id: 'nlabc', icon: '✏️', label: 'Natural Language ABC' },
-                            { id: 'analysis', icon: '🧠', label: 'AI Analysis' },
-                            { id: 'trends', icon: '📊', label: 'Trend Dashboard' },
-                            { id: 'scatterplot', icon: '📅', label: 'Scatterplot' },
+                            { id: 'hypothesis', icon: '🔗', label: (t('behavior_lens.raw.hypothesis_diagram') || 'Hypothesis Diagram') },
+                            { id: 'condprob', icon: '📐', label: (t('behavior_lens.raw.conditional_probability') || 'Conditional Probability') },
+                            { id: 'nlabc', icon: '✏️', label: (t('behavior_lens.raw.natural_language_abc') || 'Natural Language ABC') },
+                            { id: 'analysis', icon: '🧠', label: (t('behavior_lens.raw.ai_analysis') || 'AI Analysis') },
+                            { id: 'trends', icon: '📊', label: (t('behavior_lens.raw.trend_dashboard') || 'Trend Dashboard') },
+                            { id: 'scatterplot', icon: '📅', label: (t('behavior_lens.raw.scatterplot') || 'Scatterplot') },
                         ],
                         analysis: [
-                            { id: 'abc', icon: '📋', label: 'ABC Data' },
-                            { id: 'hypothesis', icon: '🔗', label: 'Hypothesis Diagram' },
-                            { id: 'iepgoals', icon: '📄', label: 'IEP Goals' },
-                            { id: 'intervention', icon: '📋', label: 'Intervention Plan' },
+                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
+                            { id: 'hypothesis', icon: '🔗', label: (t('behavior_lens.raw.hypothesis_diagram') || 'Hypothesis Diagram') },
+                            { id: 'iepgoals', icon: '📄', label: (t('behavior_lens.raw.iep_goals') || 'IEP Goals') },
+                            { id: 'intervention', icon: '📋', label: (t('behavior_lens.raw.intervention_plan') || 'Intervention Plan') },
                         ],
                         hypothesis: [
-                            { id: 'abc', icon: '📋', label: 'ABC Data' },
-                            { id: 'condprob', icon: '📐', label: 'Conditional Probability' },
-                            { id: 'analysis', icon: '🧠', label: 'AI Analysis' },
-                            { id: 'replacebehavior', icon: '🔄', label: 'Replacement Behavior' },
+                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
+                            { id: 'condprob', icon: '📐', label: (t('behavior_lens.raw.conditional_probability') || 'Conditional Probability') },
+                            { id: 'analysis', icon: '🧠', label: (t('behavior_lens.raw.ai_analysis') || 'AI Analysis') },
+                            { id: 'replacebehavior', icon: '🔄', label: (t('behavior_lens.raw.replacement_behavior') || 'Replacement Behavior') },
                         ],
                         sessiontracker: [
-                            { id: 'abagraph', icon: '📈', label: 'ABA Graph Engine' },
-                            { id: 'cumrecord', icon: '📈', label: 'Cumulative Record' },
-                            { id: 'trends', icon: '📊', label: 'Trend Dashboard' },
-                            { id: 'effectsize', icon: '📐', label: 'Effect Size' },
+                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
+                            { id: 'cumrecord', icon: '📈', label: (t('behavior_lens.raw.cumulative_record') || 'Cumulative Record') },
+                            { id: 'trends', icon: '📊', label: (t('behavior_lens.raw.trend_dashboard') || 'Trend Dashboard') },
+                            { id: 'effectsize', icon: '📐', label: (t('behavior_lens.raw.effect_size') || 'Effect Size') },
                         ],
                         abagraph: [
-                            { id: 'sessiontracker', icon: '📋', label: 'Session Tracker' },
-                            { id: 'effectsize', icon: '📐', label: 'Effect Size' },
-                            { id: 'scdmanager', icon: '🔬', label: 'SCD Manager' },
-                            { id: 'iepprep', icon: '📄', label: 'IEP Prep' },
-                            { id: 'progressreport', icon: '📊', label: 'Progress Reports' },
+                            { id: 'sessiontracker', icon: '📋', label: (t('behavior_lens.raw.session_tracker') || 'Session Tracker') },
+                            { id: 'effectsize', icon: '📐', label: (t('behavior_lens.raw.effect_size') || 'Effect Size') },
+                            { id: 'scdmanager', icon: '🔬', label: (t('behavior_lens.raw.scd_manager') || 'SCD Manager') },
+                            { id: 'iepprep', icon: '📄', label: (t('behavior_lens.raw.iep_prep') || 'IEP Prep') },
+                            { id: 'progressreport', icon: '📊', label: (t('behavior_lens.raw.progress_reports') || 'Progress Reports') },
                         ],
                         scdmanager: [
-                            { id: 'abagraph', icon: '📈', label: 'ABA Graph Engine' },
-                            { id: 'effectsize', icon: '📐', label: 'Effect Size' },
-                            { id: 'sessiontracker', icon: '📋', label: 'Session Tracker' },
+                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
+                            { id: 'effectsize', icon: '📐', label: (t('behavior_lens.raw.effect_size') || 'Effect Size') },
+                            { id: 'sessiontracker', icon: '📋', label: (t('behavior_lens.raw.session_tracker') || 'Session Tracker') },
                         ],
                         effectsize: [
-                            { id: 'abagraph', icon: '📈', label: 'ABA Graph Engine' },
-                            { id: 'scdmanager', icon: '🔬', label: 'SCD Manager' },
-                            { id: 'progressreport', icon: '📊', label: 'Progress Reports' },
+                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
+                            { id: 'scdmanager', icon: '🔬', label: (t('behavior_lens.raw.scd_manager') || 'SCD Manager') },
+                            { id: 'progressreport', icon: '📊', label: (t('behavior_lens.raw.progress_reports') || 'Progress Reports') },
                         ],
                         condprob: [
-                            { id: 'abc', icon: '📋', label: 'ABC Data' },
-                            { id: 'hypothesis', icon: '🔗', label: 'Hypothesis Diagram' },
-                            { id: 'scatterplot', icon: '📅', label: 'Scatterplot' },
+                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
+                            { id: 'hypothesis', icon: '🔗', label: (t('behavior_lens.raw.hypothesis_diagram') || 'Hypothesis Diagram') },
+                            { id: 'scatterplot', icon: '📅', label: (t('behavior_lens.raw.scatterplot') || 'Scatterplot') },
                         ],
                         scatterplot: [
-                            { id: 'abc', icon: '📋', label: 'ABC Data' },
-                            { id: 'condprob', icon: '📐', label: 'Conditional Probability' },
-                            { id: 'hotspot', icon: '🗓️', label: 'Hotspot Matrix' },
+                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
+                            { id: 'condprob', icon: '📐', label: (t('behavior_lens.raw.conditional_probability') || 'Conditional Probability') },
+                            { id: 'hotspot', icon: '🗓️', label: (t('behavior_lens.raw.hotspot_matrix') || 'Hotspot Matrix') },
                         ],
                         trends: [
-                            { id: 'abc', icon: '📋', label: 'ABC Data' },
-                            { id: 'abagraph', icon: '📈', label: 'ABA Graph Engine' },
-                            { id: 'predict', icon: '🔮', label: 'Predictive Insights' },
+                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
+                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
+                            { id: 'predict', icon: '🔮', label: (t('behavior_lens.raw.predictive_insights') || 'Predictive Insights') },
                         ],
                         latency: [
-                            { id: 'sessiontracker', icon: '📋', label: 'Session Tracker' },
-                            { id: 'abagraph', icon: '📈', label: 'ABA Graph Engine' },
+                            { id: 'sessiontracker', icon: '📋', label: (t('behavior_lens.raw.session_tracker') || 'Session Tracker') },
+                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
                         ],
                         iepgoals: [
-                            { id: 'goals', icon: '🎯', label: 'SMART Goals' },
-                            { id: 'progressreport', icon: '📊', label: 'Progress Reports' },
-                            { id: 'iepprep', icon: '📄', label: 'IEP Prep' },
+                            { id: 'goals', icon: '🎯', label: (t('behavior_lens.raw.smart_goals') || 'SMART Goals') },
+                            { id: 'progressreport', icon: '📊', label: (t('behavior_lens.raw.progress_reports') || 'Progress Reports') },
+                            { id: 'iepprep', icon: '📄', label: (t('behavior_lens.raw.iep_prep') || 'IEP Prep') },
                         ],
                         goals: [
-                            { id: 'iepgoals', icon: '📄', label: 'IEP Goal Generator' },
-                            { id: 'contract', icon: '📜', label: 'Behavior Contract' },
-                            { id: 'intervention', icon: '📋', label: 'Intervention Plan' },
-                            { id: 'gas', icon: '📐', label: 'GAS Rubric' },
+                            { id: 'iepgoals', icon: '📄', label: (t('behavior_lens.raw.iep_goal_generator') || 'IEP Goal Generator') },
+                            { id: 'contract', icon: '📜', label: (t('behavior_lens.raw.behavior_contract') || 'Behavior Contract') },
+                            { id: 'intervention', icon: '📋', label: (t('behavior_lens.raw.intervention_plan') || 'Intervention Plan') },
+                            { id: 'gas', icon: '📐', label: (t('behavior_lens.raw.gas_rubric') || 'GAS Rubric') },
                         ],
                         iepprep: [
-                            { id: 'abagraph', icon: '📈', label: 'ABA Graph Engine' },
-                            { id: 'iepgoals', icon: '📄', label: 'IEP Goals' },
-                            { id: 'progress', icon: '📈', label: 'Progress Narrative' },
-                            { id: 'bcbahandoff', icon: '📊', label: 'BCBA Consultation' },
+                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
+                            { id: 'iepgoals', icon: '📄', label: (t('behavior_lens.raw.iep_goals') || 'IEP Goals') },
+                            { id: 'progress', icon: '📈', label: (t('behavior_lens.raw.progress_narrative') || 'Progress Narrative') },
+                            { id: 'bcbahandoff', icon: '📊', label: (t('behavior_lens.raw.bcba_consultation') || 'BCBA Consultation') },
                         ],
                         progressreport: [
-                            { id: 'abagraph', icon: '📈', label: 'ABA Graph Engine' },
-                            { id: 'iepgoals', icon: '📄', label: 'IEP Goals' },
-                            { id: 'treatintegrity', icon: '✅', label: 'Treatment Integrity' },
+                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
+                            { id: 'iepgoals', icon: '📄', label: (t('behavior_lens.raw.iep_goals') || 'IEP Goals') },
+                            { id: 'treatintegrity', icon: '✅', label: (t('behavior_lens.raw.treatment_integrity') || 'Treatment Integrity') },
                         ],
                         treatintegrity: [
-                            { id: 'progressreport', icon: '📊', label: 'Progress Reports' },
-                            { id: 'bcbahandoff', icon: '📊', label: 'BCBA Consultation' },
-                            { id: 'fidelity', icon: '✅', label: 'Fidelity Checklist' },
+                            { id: 'progressreport', icon: '📊', label: (t('behavior_lens.raw.progress_reports') || 'Progress Reports') },
+                            { id: 'bcbahandoff', icon: '📊', label: (t('behavior_lens.raw.bcba_consultation') || 'BCBA Consultation') },
+                            { id: 'fidelity', icon: '✅', label: (t('behavior_lens.raw.fidelity_checklist') || 'Fidelity Checklist') },
                         ],
                         ioacalc: [
-                            { id: 'qualitycheck', icon: '✅', label: 'Data Quality Check' },
-                            { id: 'socialvalidity', icon: '📋', label: 'Social Validity' },
+                            { id: 'qualitycheck', icon: '✅', label: (t('behavior_lens.raw.data_quality_check') || 'Data Quality Check') },
+                            { id: 'socialvalidity', icon: '📋', label: (t('behavior_lens.raw.social_validity') || 'Social Validity') },
                         ],
                         prefassess: [
-                            { id: 'reinforcement', icon: '⭐', label: 'Reinforcement Inventory' },
-                            { id: 'reinforcer', icon: '🏆', label: 'Reinforcer Assessment' },
+                            { id: 'reinforcement', icon: '⭐', label: (t('behavior_lens.raw.reinforcement_inventory') || 'Reinforcement Inventory') },
+                            { id: 'reinforcer', icon: '🏆', label: (t('behavior_lens.raw.reinforcer_assessment') || 'Reinforcer Assessment') },
                         ],
                         taskanalysis: [
-                            { id: 'dtt', icon: '🎯', label: 'DTT Data Sheet' },
-                            { id: 'maintenance', icon: '🔄', label: 'Maintenance Tracker' },
+                            { id: 'dtt', icon: '🎯', label: (t('behavior_lens.raw.dtt_data_sheet') || 'DTT Data Sheet') },
+                            { id: 'maintenance', icon: '🔄', label: (t('behavior_lens.raw.maintenance_tracker') || 'Maintenance Tracker') },
                         ],
                         dtt: [
-                            { id: 'taskanalysis', icon: '📝', label: 'Task Analysis' },
-                            { id: 'maintenance', icon: '🔄', label: 'Maintenance Tracker' },
+                            { id: 'taskanalysis', icon: '📝', label: (t('behavior_lens.raw.task_analysis') || 'Task Analysis') },
+                            { id: 'maintenance', icon: '🔄', label: (t('behavior_lens.raw.maintenance_tracker') || 'Maintenance Tracker') },
                         ],
                         predict: [
-                            { id: 'abc', icon: '📋', label: 'ABC Data' },
-                            { id: 'trends', icon: '📊', label: 'Trend Dashboard' },
-                            { id: 'antecedentmod', icon: '🛠️', label: 'Antecedent Modification' },
+                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
+                            { id: 'trends', icon: '📊', label: (t('behavior_lens.raw.trend_dashboard') || 'Trend Dashboard') },
+                            { id: 'antecedentmod', icon: '🛠️', label: (t('behavior_lens.raw.antecedent_modification') || 'Antecedent Modification') },
                         ],
                         hotspot: [
-                            { id: 'abc', icon: '📋', label: 'ABC Data' },
-                            { id: 'scatterplot', icon: '📅', label: 'Scatterplot' },
-                            { id: 'antecedentmod', icon: '🛠️', label: 'Antecedent Modification' },
+                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
+                            { id: 'scatterplot', icon: '📅', label: (t('behavior_lens.raw.scatterplot') || 'Scatterplot') },
+                            { id: 'antecedentmod', icon: '🛠️', label: (t('behavior_lens.raw.antecedent_modification') || 'Antecedent Modification') },
                         ],
                         cumrecord: [
-                            { id: 'sessiontracker', icon: '📋', label: 'Session Tracker' },
-                            { id: 'abagraph', icon: '📈', label: 'ABA Graph Engine' },
+                            { id: 'sessiontracker', icon: '📋', label: (t('behavior_lens.raw.session_tracker') || 'Session Tracker') },
+                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
                         ],
                         bcbahandoff: [
-                            { id: 'abc', icon: '📋', label: 'ABC Data' },
-                            { id: 'abagraph', icon: '📈', label: 'ABA Graph Engine' },
-                            { id: 'treatintegrity', icon: '✅', label: 'Treatment Integrity' },
-                            { id: 'iepprep', icon: '📄', label: 'IEP Prep' },
+                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
+                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
+                            { id: 'treatintegrity', icon: '✅', label: (t('behavior_lens.raw.treatment_integrity') || 'Treatment Integrity') },
+                            { id: 'iepprep', icon: '📄', label: (t('behavior_lens.raw.iep_prep') || 'IEP Prep') },
                         ],
                         nlabc: [
-                            { id: 'abc', icon: '📋', label: 'ABC Data' },
-                            { id: 'analysis', icon: '🧠', label: 'AI Analysis' },
+                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
+                            { id: 'analysis', icon: '🧠', label: (t('behavior_lens.raw.ai_analysis') || 'AI Analysis') },
                         ],
                         maintenance: [
-                            { id: 'abagraph', icon: '📈', label: 'ABA Graph Engine' },
-                            { id: 'taskanalysis', icon: '📝', label: 'Task Analysis' },
+                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
+                            { id: 'taskanalysis', icon: '📝', label: (t('behavior_lens.raw.task_analysis') || 'Task Analysis') },
                         ],
                         overview: [
-                            { id: 'abc', icon: '📋', label: 'ABC Data' },
-                            { id: 'trends', icon: '📊', label: 'Trend Dashboard' },
-                            { id: 'analysis', icon: '🧠', label: 'AI Analysis' },
+                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
+                            { id: 'trends', icon: '📊', label: (t('behavior_lens.raw.trend_dashboard') || 'Trend Dashboard') },
+                            { id: 'analysis', icon: '🧠', label: (t('behavior_lens.raw.ai_analysis') || 'AI Analysis') },
                         ],
                         compare: [
-                            { id: 'caseload', icon: '👥', label: 'Caseload Dashboard' },
-                            { id: 'trends', icon: '📊', label: 'Trend Dashboard' },
-                            { id: 'progressreport', icon: '📊', label: 'Progress Reports' },
+                            { id: 'caseload', icon: '👥', label: (t('behavior_lens.raw.caseload_dashboard') || 'Caseload Dashboard') },
+                            { id: 'trends', icon: '📊', label: (t('behavior_lens.raw.trend_dashboard') || 'Trend Dashboard') },
+                            { id: 'progressreport', icon: '📊', label: (t('behavior_lens.raw.progress_reports') || 'Progress Reports') },
                         ],
                         caseload: [
-                            { id: 'compare', icon: '⚖️', label: 'Student Comparison' },
-                            { id: 'mtss', icon: '🏗️', label: 'MTSS Tiers' },
-                            { id: 'abc', icon: '📋', label: 'ABC Data' },
+                            { id: 'compare', icon: '⚖️', label: (t('behavior_lens.raw.student_comparison') || 'Student Comparison') },
+                            { id: 'mtss', icon: '🏗️', label: (t('behavior_lens.raw.mtss_tiers') || 'MTSS Tiers') },
+                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
                         ],
                         mtss: [
-                            { id: 'caseload', icon: '👥', label: 'Caseload Dashboard' },
-                            { id: 'abc', icon: '📋', label: 'ABC Data' },
-                            { id: 'iepgoals', icon: '📄', label: 'IEP Goals' },
+                            { id: 'caseload', icon: '👥', label: (t('behavior_lens.raw.caseload_dashboard') || 'Caseload Dashboard') },
+                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
+                            { id: 'iepgoals', icon: '📄', label: (t('behavior_lens.raw.iep_goals') || 'IEP Goals') },
                         ],
                         replacebehavior: [
-                            { id: 'abc', icon: '📋', label: 'ABC Data' },
-                            { id: 'hypothesis', icon: '🔗', label: 'Hypothesis Diagram' },
-                            { id: 'reinforcement', icon: '⭐', label: 'Reinforcement Inventory' },
-                            { id: 'antecedentmod', icon: '🛠️', label: 'Antecedent Modification' },
+                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
+                            { id: 'hypothesis', icon: '🔗', label: (t('behavior_lens.raw.hypothesis_diagram') || 'Hypothesis Diagram') },
+                            { id: 'reinforcement', icon: '⭐', label: (t('behavior_lens.raw.reinforcement_inventory') || 'Reinforcement Inventory') },
+                            { id: 'antecedentmod', icon: '🛠️', label: (t('behavior_lens.raw.antecedent_modification') || 'Antecedent Modification') },
                         ],
                         drstrategy: [
-                            { id: 'replacebehavior', icon: '🔄', label: 'Replacement Behavior' },
-                            { id: 'reinforcement', icon: '⭐', label: 'Reinforcement Inventory' },
-                            { id: 'sessiontracker', icon: '📋', label: 'Session Tracker' },
+                            { id: 'replacebehavior', icon: '🔄', label: (t('behavior_lens.raw.replacement_behavior') || 'Replacement Behavior') },
+                            { id: 'reinforcement', icon: '⭐', label: (t('behavior_lens.raw.reinforcement_inventory') || 'Reinforcement Inventory') },
+                            { id: 'sessiontracker', icon: '📋', label: (t('behavior_lens.raw.session_tracker') || 'Session Tracker') },
                         ],
                         fcttemplate: [
-                            { id: 'replacebehavior', icon: '🔄', label: 'Replacement Behavior' },
-                            { id: 'drstrategy', icon: '📐', label: 'DR Strategy' },
-                            { id: 'reinforcement', icon: '⭐', label: 'Reinforcement Inventory' },
-                            { id: 'socialvalidity', icon: '📋', label: 'Social Validity' },
+                            { id: 'replacebehavior', icon: '🔄', label: (t('behavior_lens.raw.replacement_behavior') || 'Replacement Behavior') },
+                            { id: 'drstrategy', icon: '📐', label: (t('behavior_lens.raw.dr_strategy') || 'DR Strategy') },
+                            { id: 'reinforcement', icon: '⭐', label: (t('behavior_lens.raw.reinforcement_inventory') || 'Reinforcement Inventory') },
+                            { id: 'socialvalidity', icon: '📋', label: (t('behavior_lens.raw.social_validity') || 'Social Validity') },
                         ],
                         intervention: [
-                            { id: 'abc', icon: '📋', label: 'ABC Data' },
-                            { id: 'hypothesis', icon: '🔗', label: 'Hypothesis Diagram' },
-                            { id: 'fidelity', icon: '✅', label: 'Fidelity Checklist' },
-                            { id: 'progressreport', icon: '📊', label: 'Progress Reports' },
+                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
+                            { id: 'hypothesis', icon: '🔗', label: (t('behavior_lens.raw.hypothesis_diagram') || 'Hypothesis Diagram') },
+                            { id: 'fidelity', icon: '✅', label: (t('behavior_lens.raw.fidelity_checklist') || 'Fidelity Checklist') },
+                            { id: 'progressreport', icon: '📊', label: (t('behavior_lens.raw.progress_reports') || 'Progress Reports') },
                         ],
                     };
                     const related = relatedToolsMap[activePanel];
                     // ── Intervention Workflow Chain ───────────────────
                     const interventionChain = [
-                        { id: 'analysis', icon: '🧠', label: 'Analyze' },
-                        { id: 'replacebehavior', icon: '🔄', label: 'Replace' },
-                        { id: 'drstrategy', icon: '📐', label: 'DR Schedule' },
+                        { id: 'analysis', icon: '🧠', label: (t('behavior_lens.raw.analyze') || 'Analyze') },
+                        { id: 'replacebehavior', icon: '🔄', label: (t('behavior_lens.raw.replace') || 'Replace') },
+                        { id: 'drstrategy', icon: '📐', label: (t('behavior_lens.raw.dr_schedule') || 'DR Schedule') },
                         { id: 'fcttemplate', icon: '🗣️', label: 'FCT' },
                         { id: 'intervention', icon: '📋', label: 'BIP' },
                     ];

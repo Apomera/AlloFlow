@@ -34,6 +34,8 @@ class AIProvider {
      */
     constructor(config = {}) {
         this.backend = config.backend || 'gemini';
+        this._ttsProvider = (config.ttsProvider && config.ttsProvider !== 'auto') ? config.ttsProvider : null;
+        this._imageProvider = (config.imageProvider && config.imageProvider !== 'auto') ? config.imageProvider : null;
         this.apiKey = config.apiKey ?? '';
         this.baseUrl = config.baseUrl || this._defaultBaseUrl();
         this.isCanvasEnv = config.isCanvasEnv || false;
@@ -281,6 +283,13 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     async generateImage(prompt, { width = 300, quality = 0.7 } = {}) {
         this._debugLog(`[AIProvider] generateImage: ${prompt?.substring(0, 50)}`);
 
+        // Check imageProvider override from AI Backend Settings
+        const _imgOvr = this._imageProvider || null;
+        if (_imgOvr === 'off') throw new Error('Image generation is disabled in AI Backend Settings');
+        if (_imgOvr === 'imagen') return this._geminiGenerateImage(prompt, width, quality);
+        if (_imgOvr === 'flux') return this._openaiGenerateImage(prompt, width, quality);
+
+        // Default: route by backend
         switch (this.backend) {
             case 'gemini':
                 return this._geminiGenerateImage(prompt, width, quality);
@@ -597,6 +606,14 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         this._debugLog(`[AIProvider] textToSpeech: "${text?.substring(0, 30)}..." voice=${voice}`);
 
+        // Check ttsProvider override from AI Backend Settings
+        const _ttsOvr = this._ttsProvider || null;
+        if (_ttsOvr === 'off') return null;
+        if (_ttsOvr === 'browser') return this._browserSpeechSynthesis(text, speed);
+        if (_ttsOvr === 'gemini') return this._geminiTTS(text, voice, speed);
+        if (_ttsOvr === 'local') return this._openaiTTS(text, voice, speed);
+
+        // Default: route by backend
         switch (this.backend) {
             case 'gemini':
                 return this._geminiTTS(text, voice, speed);
@@ -697,32 +714,54 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _openaiTTS(text, voice, speed) {
-        const url = `${this.baseUrl}/v1/audio/speech`;
-        const headers = { 'Content-Type': 'application/json' };
-        if (this.apiKey) headers['Authorization'] = `Bearer ${this.apiKey}`;
+        // TTS tiering: Kokoro (high quality) → Piper (wide language) → browser fallback
+        const ttsEndpoints = [
+            'http://localhost:8880/v1/audio/speech',  // Kokoro (high quality, 8 langs)
+            'http://localhost:5500/v1/audio/speech',  // Piper (40+ langs, OpenAI-compat)
+        ];
 
-        const payload = {
-            model: this.models.tts,
-            input: text,
-            voice: voice?.toLowerCase() || 'alloy',
-            speed: speed || 1,
-            response_format: 'wav',
-        };
-
-        try {
-            const response = await this._fetchWithRetry(url, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(payload),
-            });
-
-            const blob = await response.blob();
-            const audioUrl = URL.createObjectURL(blob);
-            return audioUrl;
-        } catch (err) {
-            this._warnLog('[AIProvider TTS] OpenAI-compat TTS failed, trying browser fallback:', err.message);
-            return this._browserSpeechSynthesis(text, speed);
+        // Cache check
+        const cacheKey = `${(text || '').toLowerCase().trim()}__${voice}__${speed}`;
+        if (this._ttsCache.has(cacheKey)) {
+            this._debugLog('⚡ TTS cache HIT:', text?.substring(0, 30));
+            return this._ttsCache.get(cacheKey);
         }
+
+        for (const url of ttsEndpoints) {
+            try {
+                const payload = {
+                    model: this.models.tts,
+                    input: text,
+                    voice: voice?.toLowerCase() || 'alloy',
+                    speed: speed || 1,
+                    response_format: 'wav',
+                };
+
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 5000);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    signal: controller.signal,
+                });
+                clearTimeout(timeout);
+
+                if (!response.ok) throw new Error(`TTS returned ${response.status}`);
+                const blob = await response.blob();
+                const audioUrl = URL.createObjectURL(blob);
+                this._ttsCache.set(cacheKey, audioUrl);
+                this._debugLog(`[AIProvider TTS] ✅ Success from ${url}`);
+                return audioUrl;
+            } catch (err) {
+                this._debugLog(`[AIProvider TTS] ${url} failed: ${err.message}, trying next...`);
+            }
+        }
+
+        // All TTS servers failed — use browser speech as final fallback
+        this._warnLog('[AIProvider TTS] All TTS servers unavailable, using browser speech');
+        return this._browserSpeechSynthesis(text, speed);
     }
 
     // ─── SAFETY ───────────────────────────────────────────────────────
