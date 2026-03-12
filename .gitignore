@@ -28,3 +28,30 @@ word_audio_bank_part*.json
 audio_bank.json
 Sample audiobank.txt
 profile-image.jpg
+
+# Stale copies (source of truth is AlloFlowANTI.txt)
+Firebase version/
+svg/AlloFlowANTI.txt
+src/App.jsx
+
+# Prototype apps (kept locally, not in git)
+3d game scaffold.txt
+ConflictResolutionapp.txt
+Migdas-2 app.txt
+FBA-BIP Prototype.txt
+
+# Personal & reference docs (kept locally)
+Aaron Pomeranz Resume.txt
+reflective_journal.md
+Report Writer prompts.txt
+*.pptx
+GEIS protocol*/
+
+# One-off scripts & scratch (kept in git history)
+scripts/*.py
+scripts/*.txt
+scripts/*.js
+scripts/archive/
+stem_test*.js
+search_results.txt
+tour.txt
