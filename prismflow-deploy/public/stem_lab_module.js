@@ -20828,18 +20828,34 @@
               var layerStroke = curLayer.accent || '#64748b';
               var cx = W * 0.5, cy = H * 0.45;
 
+              // Create body gradient for 3D depth effect
+              var bodyGrad = ctx.createRadialGradient(cx - W*0.05, cy - H*0.05, 10, cx, cy, W*0.30);
+              bodyGrad.addColorStop(0, layerColor);
+              bodyGrad.addColorStop(0.7, layerColor);
+              bodyGrad.addColorStop(1, layerStroke);
+              // Breathing animation for organic feel
+              var breathScale = 1 + Math.sin(dissTick * 0.02) * 0.005;
+
               ctx.save();
               ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 12;
 
               // ── Draw specimen body based on bodyShape ──
               if (spec.bodyShape === 'frog') {
                 // Frog body
-                ctx.beginPath(); ctx.ellipse(cx, cy, W*0.18, H*0.28, 0, 0, Math.PI*2);
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.beginPath(); ctx.ellipse(cx, cy, W*0.18*breathScale, H*0.28*breathScale, 0, 0, Math.PI*2);
+                ctx.fillStyle = bodyGrad; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
                 ctx.shadowBlur = 0;
+                // Inner body shading
+                ctx.beginPath(); ctx.ellipse(cx - W*0.02, cy - H*0.03, W*0.12, H*0.18, 0, 0, Math.PI*2);
+                ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fill();
                 // Head
+                var headGrad = ctx.createRadialGradient(cx-W*0.02, cy-H*0.27, 4, cx, cy-H*0.25, W*0.12);
+                headGrad.addColorStop(0, layerColor); headGrad.addColorStop(1, layerStroke);
                 ctx.beginPath(); ctx.ellipse(cx, cy-H*0.25, W*0.12, H*0.08, 0, 0, Math.PI*2);
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke();
+                ctx.fillStyle = headGrad; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke();
+                // Nostrils
+                ctx.beginPath(); ctx.arc(cx - W*0.03, cy-H*0.30, 1.5, 0, Math.PI*2); ctx.fillStyle = layerStroke; ctx.fill();
+                ctx.beginPath(); ctx.arc(cx + W*0.03, cy-H*0.30, 1.5, 0, Math.PI*2); ctx.fillStyle = layerStroke; ctx.fill();
                 // Eyes
                 [cx-W*0.08, cx+W*0.08].forEach(function(ex) {
                   ctx.beginPath(); ctx.arc(ex, cy-H*0.28, 6, 0, Math.PI*2);
@@ -20863,11 +20879,32 @@
                 });
                 // Skin spots when on skin layer
                 if (activeLayer === 'skin' && !revealedLayers['skin']) {
-                  ctx.globalAlpha = 0.4;
-                  for (var si = 0; si < 18; si++) {
-                    ctx.beginPath(); ctx.arc(cx+(Math.sin(si*2.3))*W*0.14, cy+(Math.cos(si*1.7))*H*0.20, 2+Math.abs(Math.sin(si))*3, 0, Math.PI*2);
-                    ctx.fillStyle = si%2?'#166534':'#14532d'; ctx.fill();
+                  // Dorsal pigmentation pattern
+                  ctx.globalAlpha = 0.35;
+                  for (var si = 0; si < 25; si++) {
+                    var spotX = cx + Math.sin(si * 2.3 + 0.5) * W * 0.14;
+                    var spotY = cy + Math.cos(si * 1.7 + 0.3) * H * 0.22;
+                    var spotR = 2 + Math.abs(Math.sin(si * 1.1)) * 4;
+                    var spotGrad = ctx.createRadialGradient(spotX, spotY, 0, spotX, spotY, spotR);
+                    spotGrad.addColorStop(0, si % 3 === 0 ? '#14532d' : si % 3 === 1 ? '#166534' : '#15803d');
+                    spotGrad.addColorStop(1, 'transparent');
+                    ctx.beginPath(); ctx.arc(spotX, spotY, spotR, 0, Math.PI * 2);
+                    ctx.fillStyle = spotGrad; ctx.fill();
                   }
+                  // Subtle dorsal stripe
+                  ctx.beginPath(); ctx.moveTo(cx, cy - H*0.22); ctx.lineTo(cx, cy + H*0.18);
+                  ctx.strokeStyle = 'rgba(21,128,61,0.25)'; ctx.lineWidth = 3; ctx.stroke();
+                  ctx.globalAlpha = 1;
+                  // Webbing detail on feet
+                  ctx.globalAlpha = 0.2;
+                  [[-1, 1], [1, 1]].forEach(function(dir) {
+                    for (var ww = 0; ww < 4; ww++) {
+                      ctx.beginPath();
+                      ctx.moveTo(cx + dir[0]*W*0.20, cy + H*0.38);
+                      ctx.lineTo(cx + dir[0]*(W*0.22 + ww*W*0.015), cy + H*0.42);
+                      ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.5; ctx.stroke();
+                    }
+                  });
                   ctx.globalAlpha = 1;
                 }
               } else if (spec.bodyShape === 'worm') {
@@ -20891,11 +20928,27 @@
                   ctx.lineWidth = 0.5; ctx.stroke();
                 }
                 ctx.globalAlpha = 1;
-                // Clitellum band
+                // Clitellum band with gradient
                 if (activeLayer === 'skin') {
-                  ctx.fillStyle = 'rgba(200,150,100,0.4)';
+                  var clitGrad = ctx.createLinearGradient(cx-W*0.05, H*0.22, cx+W*0.05, H*0.22);
+                  clitGrad.addColorStop(0, 'rgba(200,150,100,0.2)');
+                  clitGrad.addColorStop(0.5, 'rgba(200,150,100,0.5)');
+                  clitGrad.addColorStop(1, 'rgba(200,150,100,0.2)');
+                  ctx.fillStyle = clitGrad;
                   ctx.fillRect(cx-W*0.05, H*0.22, W*0.10, H*0.06);
+                  // Prostomium detail
+                  ctx.beginPath(); ctx.ellipse(cx, H*0.06, W*0.035, H*0.015, 0, 0, Math.PI*2);
+                  ctx.fillStyle = 'rgba(180,120,80,0.4)'; ctx.fill();
                 }
+                // Body gradient for 3D tube effect
+                var tubeGrad = ctx.createLinearGradient(cx-W*0.05, 0, cx+W*0.05, 0);
+                tubeGrad.addColorStop(0, 'rgba(0,0,0,0.15)');
+                tubeGrad.addColorStop(0.3, 'rgba(255,255,255,0.08)');
+                tubeGrad.addColorStop(0.5, 'rgba(255,255,255,0.12)');
+                tubeGrad.addColorStop(0.7, 'rgba(255,255,255,0.08)');
+                tubeGrad.addColorStop(1, 'rgba(0,0,0,0.15)');
+                ctx.fillStyle = tubeGrad;
+                ctx.fillRect(cx-W*0.048, H*0.08, W*0.096, H*0.84);
               } else if (spec.bodyShape === 'pig') {
                 // Fetal pig — simplied quadruped
                 ctx.beginPath(); ctx.ellipse(cx, cy, W*0.22, H*0.16, 0, 0, Math.PI*2);
@@ -20907,8 +20960,12 @@
                 // Snout
                 ctx.beginPath(); ctx.ellipse(cx-W*0.32, cy, W*0.04, H*0.05, 0, 0, Math.PI*2);
                 ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke();
-                // Eye
-                ctx.beginPath(); ctx.arc(cx-W*0.24, cy-H*0.06, 3, 0, Math.PI*2); ctx.fillStyle = '#1a1a1a'; ctx.fill();
+                // Eye with highlight
+                ctx.beginPath(); ctx.arc(cx-W*0.24, cy-H*0.06, 4, 0, Math.PI*2); ctx.fillStyle = '#1a1a1a'; ctx.fill();
+                ctx.beginPath(); ctx.arc(cx-W*0.235, cy-H*0.065, 1.5, 0, Math.PI*2); ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fill();
+                // Snout nostrils
+                ctx.beginPath(); ctx.arc(cx-W*0.34, cy-H*0.015, 1.5, 0, Math.PI*2); ctx.fillStyle = layerStroke; ctx.fill();
+                ctx.beginPath(); ctx.arc(cx-W*0.34, cy+H*0.015, 1.5, 0, Math.PI*2); ctx.fillStyle = layerStroke; ctx.fill();
                 // Ear
                 ctx.beginPath(); ctx.ellipse(cx-W*0.18, cy-H*0.12, W*0.04, H*0.05, -0.5, 0, Math.PI*2);
                 ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke();
@@ -20947,9 +21004,24 @@
                 ctx.lineTo(cx, cy-H*0.22); ctx.lineTo(cx+W*0.10, cy-H*0.12);
                 ctx.fillStyle = layerColor; ctx.globalAlpha = 0.6; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke();
                 ctx.globalAlpha = 1;
-                // Lateral line
+                // Scale pattern
+                ctx.globalAlpha = 0.15;
+                for (var sc = 0; sc < 8; sc++) {
+                  for (var sr = 0; sr < 3; sr++) {
+                    var scx = cx - W*0.15 + sc * W*0.05;
+                    var scy = cy - H*0.06 + sr * H*0.05;
+                    ctx.beginPath(); ctx.arc(scx, scy, W*0.015, 0, Math.PI, true);
+                    ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.5; ctx.stroke();
+                  }
+                }
+                ctx.globalAlpha = 1;
+                // Lateral line with pores
                 ctx.beginPath(); ctx.moveTo(cx-W*0.22, cy); ctx.lineTo(cx+W*0.22, cy);
-                ctx.strokeStyle = layerStroke; ctx.setLineDash([3,2]); ctx.lineWidth = 0.8; ctx.stroke(); ctx.setLineDash([]);
+                ctx.strokeStyle = layerStroke; ctx.setLineDash([3,2]); ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+                for (var lp = 0; lp < 8; lp++) {
+                  ctx.beginPath(); ctx.arc(cx - W*0.20 + lp*W*0.055, cy, 1.2, 0, Math.PI*2);
+                  ctx.fillStyle = layerStroke; ctx.fill();
+                }
                 // Pectoral fin
                 ctx.beginPath(); ctx.ellipse(cx-W*0.15, cy+H*0.06, W*0.05, H*0.03, 0.3, 0, Math.PI*2);
                 ctx.fillStyle = layerColor; ctx.globalAlpha = 0.5; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
@@ -21010,10 +21082,20 @@
                 ctx.fillStyle = '#7c3aed'; ctx.globalAlpha = 0.6; ctx.fill(); ctx.globalAlpha = 1;
                 ctx.beginPath(); ctx.arc(cx-W*0.16, cy, H*0.03, 0, Math.PI*2);
                 ctx.fillStyle = '#0f172a'; ctx.fill(); // pupil
-                // Optic nerve
+                // Optic nerve with myelin sheath
                 ctx.beginPath(); ctx.moveTo(cx+W*0.30, cy);
                 ctx.lineTo(cx+W*0.38, cy+H*0.05);
-                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 4; ctx.stroke();
+                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 6; ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx+W*0.30, cy);
+                ctx.lineTo(cx+W*0.38, cy+H*0.05);
+                ctx.strokeStyle = '#fde68a'; ctx.lineWidth = 3; ctx.stroke();
+                // Blood vessels on retina
+                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 0.8; ctx.globalAlpha = 0.4;
+                ctx.beginPath(); ctx.moveTo(cx+W*0.10, cy);
+                ctx.quadraticCurveTo(cx+W*0.05, cy-H*0.10, cx-W*0.05, cy-H*0.12); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx+W*0.10, cy);
+                ctx.quadraticCurveTo(cx+W*0.05, cy+H*0.08, cx-W*0.05, cy+H*0.10); ctx.stroke();
+                ctx.globalAlpha = 1;
                 // Tapetum reflection
                 ctx.beginPath(); ctx.arc(cx+W*0.10, cy, W*0.08, -0.5, 0.5);
                 ctx.strokeStyle = 'rgba(34,211,238,0.3)'; ctx.lineWidth = 8; ctx.stroke();
@@ -21039,10 +21121,25 @@
                 ctx.beginPath(); ctx.moveTo(cx+W*0.08, cy-H*0.25); ctx.lineTo(cx+W*0.10, cy-H*0.35);
                 ctx.lineTo(cx+W*0.04, cy-H*0.35); ctx.closePath();
                 ctx.fillStyle = '#3b82f6'; ctx.fill(); // pulm trunk stub
-                // Coronary artery
+                // Left coronary artery (LAD)
                 ctx.beginPath(); ctx.moveTo(cx-W*0.06, cy-H*0.18);
                 ctx.quadraticCurveTo(cx-W*0.15, cy, cx-W*0.10, cy+H*0.15);
-                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.6; ctx.stroke(); ctx.globalAlpha = 1;
+                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; ctx.globalAlpha = 0.7; ctx.stroke();
+                // Right coronary artery
+                ctx.beginPath(); ctx.moveTo(cx+W*0.06, cy-H*0.18);
+                ctx.quadraticCurveTo(cx+W*0.18, cy-H*0.05, cx+W*0.12, cy+H*0.10);
+                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.globalAlpha = 1;
+                // Chamber shading (left side thicker wall)
+                ctx.beginPath();
+                ctx.moveTo(cx-W*0.04, cy-H*0.15);
+                ctx.quadraticCurveTo(cx-W*0.20, cy, cx-W*0.10, cy+H*0.20);
+                ctx.strokeStyle = 'rgba(239,68,68,0.15)'; ctx.lineWidth = 12; ctx.stroke();
+                // Right side (thinner wall)
+                ctx.beginPath();
+                ctx.moveTo(cx+W*0.04, cy-H*0.15);
+                ctx.quadraticCurveTo(cx+W*0.18, cy, cx+W*0.10, cy+H*0.18);
+                ctx.strokeStyle = 'rgba(59,130,246,0.12)'; ctx.lineWidth = 8; ctx.stroke();
               }
 
               ctx.restore();
@@ -21052,10 +21149,23 @@
                 var px = org.x * W, py = org.y * H;
                 var isSel = d.selectedOrgan === org.id;
                 var pulse = isSel ? 1 + Math.sin(dissTick * 0.06) * 0.3 : 1;
+                // Outer glow
+                if (isSel) {
+                  ctx.beginPath(); ctx.arc(px, py, 18 * pulse, 0, Math.PI * 2);
+                  var glowGrad = ctx.createRadialGradient(px, py, 4, px, py, 18 * pulse);
+                  glowGrad.addColorStop(0, 'rgba(251,191,36,0.4)');
+                  glowGrad.addColorStop(1, 'rgba(251,191,36,0)');
+                  ctx.fillStyle = glowGrad; ctx.fill();
+                }
+                // Pin dot with gradient
                 ctx.beginPath(); ctx.arc(px, py, 5 * pulse, 0, Math.PI * 2);
-                ctx.fillStyle = isSel ? '#fbbf24' : 'rgba(255,255,255,0.9)'; ctx.fill();
-                ctx.strokeStyle = isSel ? '#f59e0b' : 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
-                if (isSel) { ctx.beginPath(); ctx.arc(px, py, 12 * pulse, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(251,191,36,0.6)'; ctx.lineWidth = 2; ctx.stroke(); }
+                var pinGrad = ctx.createRadialGradient(px-1, py-1, 1, px, py, 5 * pulse);
+                pinGrad.addColorStop(0, isSel ? '#fef08a' : '#ffffff');
+                pinGrad.addColorStop(1, isSel ? '#f59e0b' : '#94a3b8');
+                ctx.fillStyle = pinGrad; ctx.fill();
+                ctx.strokeStyle = isSel ? '#f59e0b' : 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1.5; ctx.stroke();
+                // Selection ring
+                if (isSel) { ctx.beginPath(); ctx.arc(px, py, 12 * pulse, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(251,191,36,0.7)'; ctx.lineWidth = 2; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]); }
                 ctx.font = '10px Inter, system-ui, sans-serif';
                 var tw = ctx.measureText(org.name).width + 10;
                 var lx = px + 12, ly = py - 8;
