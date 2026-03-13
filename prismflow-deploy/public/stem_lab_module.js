@@ -32046,7 +32046,7 @@
           // ══════════════════════════════════════════════════
           // KEPLER COLONY — Educational Space Colonization
           // ══════════════════════════════════════════════════
-          selectedTool && selectedTool.id === 'spaceColony' && (function() {
+          stemLabTool && stemLabTool.id === 'spaceColony' && (function() {
             var d = labToolData || {};
             var upd = function(k, v) { setLabToolData(function(n) { var o = Object.assign({}, n); o[k] = v; return o; }); };
             var colony = d.colony || null;

@@ -11236,14 +11236,14 @@ Respond helpfully and concisely as AlloBot:`;
     // ─── PDLearningPath ─────────────────────────────────────────────────
     // Guided onboarding with progress tracking for new users
     const PD_MODULES = [
-        { id: 'intro', title: (t('behavior_lens.raw.what_is_behaviorlens') || 'What is BehaviorLens?'), icon: '👋', desc: 'Overview of FBA-BIP process and how this tool helps', duration: '3 min' },
-        { id: 'abc101', title: (t('behavior_lens.raw.abc_data_collection_101') || 'ABC Data Collection 101'), icon: '📋', desc: 'Learn to record antecedents, behaviors, and consequences', duration: '5 min', linkedTool: 'abc' },
-        { id: 'observation', title: (t('behavior_lens.raw.observation_methods') || 'Observation Methods'), icon: '🔍', desc: 'Frequency, duration, interval, and latency recording', duration: '5 min', linkedTool: 'observation' },
-        { id: 'function', title: (t('behavior_lens.raw.identifying_function') || 'Identifying Function'), icon: '🧠', desc: 'The 4 functions of behavior: Escape, Attention, Tangible, Sensory', duration: '4 min', linkedTool: 'hypothesis' },
-        { id: 'reinforcement', title: (t('behavior_lens.raw.reinforcement_schedules') || 'Reinforcement Schedules'), icon: '⭐', desc: 'FR, VR, FI, VI, DRO — when and how to use each', duration: '5 min', linkedTool: 'token' },
-        { id: 'replacement', title: (t('behavior_lens.raw.replacement_behaviors') || 'Replacement Behaviors'), icon: '🔄', desc: 'Choosing functionally equivalent alternatives', duration: '4 min', linkedTool: 'replacebehavior' },
-        { id: 'collaboration', title: (t('behavior_lens.raw.team_collaboration') || 'Team Collaboration'), icon: '🤝', desc: 'When to consult BCBAs, share data, and build team plans', duration: '4 min', linkedTool: 'teamnotes' },
-        { id: 'ethics', title: (t('behavior_lens.raw.ethics_cultural_humility') || 'Ethics & Cultural Humility'), icon: '🌍', desc: 'Bias awareness, cultural context, and restorative practices', duration: '5 min', linkedTool: 'cultural' },
+        { id: 'intro', title: 'What is BehaviorLens?', tKey: 'behavior_lens.raw.what_is_behaviorlens', icon: '👋', desc: 'Overview of FBA-BIP process and how this tool helps', duration: '3 min' },
+        { id: 'abc101', title: 'ABC Data Collection 101', tKey: 'behavior_lens.raw.abc_data_collection_101', icon: '📋', desc: 'Learn to record antecedents, behaviors, and consequences', duration: '5 min', linkedTool: 'abc' },
+        { id: 'observation', title: 'Observation Methods', tKey: 'behavior_lens.raw.observation_methods', icon: '🔍', desc: 'Frequency, duration, interval, and latency recording', duration: '5 min', linkedTool: 'observation' },
+        { id: 'function', title: 'Identifying Function', tKey: 'behavior_lens.raw.identifying_function', icon: '🧠', desc: 'The 4 functions of behavior: Escape, Attention, Tangible, Sensory', duration: '4 min', linkedTool: 'hypothesis' },
+        { id: 'reinforcement', title: 'Reinforcement Schedules', tKey: 'behavior_lens.raw.reinforcement_schedules', icon: '⭐', desc: 'FR, VR, FI, VI, DRO — when and how to use each', duration: '5 min', linkedTool: 'token' },
+        { id: 'replacement', title: 'Replacement Behaviors', tKey: 'behavior_lens.raw.replacement_behaviors', icon: '🔄', desc: 'Choosing functionally equivalent alternatives', duration: '4 min', linkedTool: 'replacebehavior' },
+        { id: 'collaboration', title: 'Team Collaboration', tKey: 'behavior_lens.raw.team_collaboration', icon: '🤝', desc: 'When to consult BCBAs, share data, and build team plans', duration: '4 min', linkedTool: 'teamnotes' },
+        { id: 'ethics', title: 'Ethics & Cultural Humility', tKey: 'behavior_lens.raw.ethics_cultural_humility', icon: '🌍', desc: 'Bias awareness, cultural context, and restorative practices', duration: '5 min', linkedTool: 'cultural' },
     ];
 
     const PDLearningPath = ({ t, addToast, onOpenTool }) => {

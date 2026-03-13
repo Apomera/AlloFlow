@@ -1499,12 +1499,22 @@
               }
             } catch (e) {
               ttsInflight.current.delete(text);
-              warnLog("TTS Failed", e);
+              warnLog("TTS attempt 1 failed for word:", text, e?.message);
+              // Retry once after a delay instead of falling back to browser TTS
+              try {
+                await new Promise((r) => setTimeout(r, 1500));
+                const retryUrl = await callTTS(text, selectedVoice);
+                if (retryUrl) {
+                  saveAudioToStorage(text, retryUrl);
+                  return loadAndPlay(retryUrl);
+                }
+              } catch (retryErr) {
+                warnLog("TTS retry also failed for:", text, retryErr?.message);
+              }
             }
           }
           if (!isPhoneme && playImmediately) {
-            warnLog("Falling back to Browser TTS for word:", text);
-            await speakWord(text, wordSoundsLanguage || "en-US", ttsSpeed);
+            warnLog("⚠️ All Gemini TTS attempts exhausted for word:", text, "- skipping audio (no browser TTS fallback)");
           }
           setIsPlayingAudio(false);
         },
