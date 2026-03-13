@@ -32094,6 +32094,28 @@
             var colonyPhase = d.colonyPhase || 'setup';
             var terraform = d.colonyTerraform || 0;
             var weather = d.colonyWeather || null;
+            var gameMode = d.colonyMode || 'mcq'; // 'mcq' or 'freeResponse'
+            var buildingEff = d.buildingEff || {}; // { buildingId: 100, ... } effectiveness %
+            var lastMaintTurn = d.lastMaintTurn || 0;
+            var maintChallenge = d.maintChallenge || null;
+
+            // TTS helper
+            function colonySpeak(text2, voice) {
+              if (!window.speechSynthesis) return;
+              window.speechSynthesis.cancel();
+              var utter = new SpeechSynthesisUtterance(text2);
+              utter.rate = 0.95; utter.pitch = voice === 'narrator' ? 0.8 : voice === 'female' ? 1.2 : 1.0;
+              utter.volume = 0.8;
+              var voices = window.speechSynthesis.getVoices();
+              if (voice === 'narrator') {
+                var deep = voices.find(function(v) { return v.name.indexOf('Male') >= 0 || v.name.indexOf('David') >= 0 || v.name.indexOf('Daniel') >= 0; });
+                if (deep) utter.voice = deep;
+              } else if (voice === 'female') {
+                var fem = voices.find(function(v) { return v.name.indexOf('Female') >= 0 || v.name.indexOf('Zira') >= 0 || v.name.indexOf('Samantha') >= 0; });
+                if (fem) utter.voice = fem;
+              }
+              window.speechSynthesis.speak(utter);
+            }
 
             var terrainTypes = [
               { type: 'plains', color: '#4ade80', name: 'Fertile Plains', icon: '\uD83C\uDF3F', res: 'food' },
@@ -32277,6 +32299,41 @@
                     );
                   })
                 ),
+                // Difficulty Settings
+                React.createElement('div', { className: 'bg-slate-800/80 rounded-xl p-4 border border-slate-700 max-w-md mx-auto mb-6' },
+                  React.createElement('h4', { className: 'text-[11px] font-bold text-white mb-3 text-center' }, '\u2699\uFE0F Game Settings'),
+                  React.createElement('div', { className: 'grid grid-cols-2 gap-3' },
+                    React.createElement('div', null,
+                      React.createElement('div', { className: 'text-[9px] text-slate-400 mb-1' }, 'Science Challenge Mode'),
+                      React.createElement('div', { className: 'flex gap-1' },
+                        React.createElement('button', {
+                          onClick: function() { upd('colonyMode', 'mcq'); },
+                          className: 'flex-1 px-2 py-2 rounded-lg text-[9px] font-bold border-2 transition-all ' +
+                            ((d.colonyMode || 'mcq') === 'mcq' ? 'border-indigo-400 bg-indigo-900 text-indigo-200' : 'border-slate-600 bg-slate-900 text-slate-400')
+                        }, '\uD83D\uDCCB MCQ'),
+                        React.createElement('button', {
+                          onClick: function() { upd('colonyMode', 'freeResponse'); },
+                          className: 'flex-1 px-2 py-2 rounded-lg text-[9px] font-bold border-2 transition-all ' +
+                            ((d.colonyMode || 'mcq') === 'freeResponse' ? 'border-purple-400 bg-purple-900 text-purple-200' : 'border-slate-600 bg-slate-900 text-slate-400')
+                        }, '\u270D\uFE0F Free Response')
+                      ),
+                      React.createElement('div', { className: 'text-[8px] text-slate-500 mt-1' },
+                        (d.colonyMode || 'mcq') === 'mcq' ? 'Multiple choice \u2014 4 options, scaffolded learning' : 'Type your answer \u2014 harder but deeper understanding'
+                      )
+                    ),
+                    React.createElement('div', null,
+                      React.createElement('div', { className: 'text-[9px] text-slate-400 mb-1' }, 'Audio Narration'),
+                      React.createElement('div', { className: 'flex gap-1' },
+                        React.createElement('button', {
+                          onClick: function() { upd('colonyTTS', !(d.colonyTTS)); },
+                          className: 'flex-1 px-2 py-2 rounded-lg text-[9px] font-bold border-2 transition-all ' +
+                            (d.colonyTTS ? 'border-green-400 bg-green-900 text-green-200' : 'border-slate-600 bg-slate-900 text-slate-400')
+                        }, d.colonyTTS ? '\uD83D\uDD0A ON' : '\uD83D\uDD07 OFF')
+                      ),
+                      React.createElement('div', { className: 'text-[8px] text-slate-500 mt-1' }, 'Characters speak with TTS voices')
+                    )
+                  )
+                ),
                 React.createElement('button', {
                   onClick: function() {
                     upd('colonyMap', generateMap()); upd('colonyPhase', 'playing'); upd('colonyTurn', 1);
@@ -32284,6 +32341,8 @@
                     upd('colonyBuildings', []); upd('colonySettlers', JSON.parse(JSON.stringify(defaultSettlers)));
                     upd('colonyLog', ['Turn 1: Colony established on Kepler-442b. 6 settlers ready.']);
                     upd('colony', { name: 'Kepler-442b' });
+                    upd('buildingEff', {}); upd('lastMaintTurn', 0); upd('maintChallenge', null);
+                    if (d.colonyTTS) colonySpeak('Mission log. Colony established on Kepler 442 b. Six settlers are ready to begin construction. Good luck, Commander.', 'narrator');
                     if (addToast) addToast('\uD83D\uDE80 Colony established!', 'success');
                     if (typeof addXP === 'function') addXP(10, 'Kepler Colony: Mission launched');
                   },
@@ -32321,6 +32380,7 @@
                             nm2.tiles[selectedTile.y * mapSize + selectedTile.x].hasAnomaly = false;
                             upd('colonyMap', nm2);
                             var nl5 = gameLog.slice(); nl5.push('\u2728 Anomaly: ' + parsed.title); upd('colonyLog', nl5);
+                            if (d.colonyTTS) colonySpeak('Anomaly investigated. ' + parsed.title + '. ' + parsed.description, 'narrator');
                             if (typeof addXP === 'function') addXP(25, 'Kepler Colony: Anomaly explored');
                           } catch(err) { upd('anomalyLoading', false); }
                         }).catch(function() { upd('anomalyLoading', false); });
@@ -32364,7 +32424,13 @@
                   React.createElement('button', {
                     onClick: function() {
                       var nt = turn + 1; var nr2 = Object.assign({}, resources);
-                      buildings.forEach(function(b) { var def = buildingDefs.find(function(bd) { return bd.id === b; }); if (def) Object.keys(def.production).forEach(function(k) { nr2[k] = (nr2[k]||0) + def.production[k]; }); });
+                      buildings.forEach(function(b) {
+                        var def = buildingDefs.find(function(bd) { return bd.id === b; });
+                        if (def) {
+                          var eff = (buildingEff[b] !== undefined ? buildingEff[b] : 100) / 100;
+                          Object.keys(def.production).forEach(function(k) { nr2[k] = (nr2[k]||0) + Math.round(def.production[k] * eff); });
+                        }
+                      });
                       nr2.food = Math.max(0, nr2.food - settlers.length);
                       // Terraforming progress
                       var tfGain = buildings.indexOf('atmo') >= 0 ? 5 : 0;
@@ -32386,12 +32452,36 @@
                       var wx = weatherTypes[wIdx];
                       upd('colonyWeather', wx);
                       if (wx) { nr2[wx.res] = Math.max(0, nr2[wx.res] + wx.penalty); }
+                      // Maintenance challenge every 8 turns (if buildings exist)
+                      if (buildings.length > 0 && (nt - (d.lastMaintTurn || 0)) >= 8) {
+                        upd('lastMaintTurn', nt);
+                        // Pick a random built building for maintenance
+                        var maintBuild = buildings[Math.floor(Math.random() * buildings.length)];
+                        var maintDef = buildingDefs.find(function(bd3) { return bd3.id === maintBuild; });
+                        if (maintDef) {
+                          upd('maintChallengeLoading', true);
+                          var modeStr = (d.colonyMode || 'mcq') === 'mcq' ? 'Return ONLY valid JSON: {"question":"<science question about ' + maintDef.gate + '>","options":["<correct answer>","<wrong 1>","<wrong 2>","<wrong 3>"],"correctIndex":0,"explanation":"<why the answer is correct, 2-3 sentences with real science>"}. Shuffle the correct answer position randomly (0-3).' : 'Return ONLY valid JSON: {"question":"<science question about ' + maintDef.gate + '>","answer":"<correct answer, 1-3 words>","explanation":"<why the answer is correct, 2-3 sentences with real science>"}';
+                          callGemini('Generate a ' + maintDef.gate + ' science question for maintaining the ' + maintDef.name + ' in a space colony on an alien planet. The question should test understanding of the science behind this building. Difficulty: medium. ' + modeStr, true).then(function(result) {
+                            try {
+                              var cl2 = result.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+                              var s3 = cl2.indexOf('{'); if (s3 > 0) cl2 = cl2.substring(s3);
+                              var e3 = cl2.lastIndexOf('}'); if (e3 > 0) cl2 = cl2.substring(0, e3 + 1);
+                              var mq = JSON.parse(cl2);
+                              mq.building = maintBuild; mq.buildingName = maintDef.name; mq.buildingIcon = maintDef.icon;
+                              upd('maintChallenge', mq); upd('maintChallengeLoading', false);
+                              if (d.colonyTTS) colonySpeak('Maintenance alert. Your ' + maintDef.name + ' requires a systems check. Answer the science challenge to maintain full output.', 'narrator');
+                              var nl7 = gameLog.slice(); nl7.push('\uD83D\uDD27 Turn ' + nt + ': ' + maintDef.icon + ' ' + maintDef.name + ' needs maintenance!'); upd('colonyLog', nl7);
+                            } catch(err) { upd('maintChallengeLoading', false); }
+                          }).catch(function() { upd('maintChallengeLoading', false); });
+                        }
+                      }
                       nr2.water = Math.max(0, nr2.water - Math.ceil(settlers.length * 0.5));
                       upd('colonyRes', nr2); upd('colonyTurn', nt); upd('colonyEventLoading', true);
                       var ctx2 = 'Colony on Kepler-442b, turn ' + nt + '. Resources: food=' + nr2.food + ' energy=' + nr2.energy + ' water=' + nr2.water + ' materials=' + nr2.materials + ' science=' + nr2.science + '. Buildings: ' + (buildings.length > 0 ? buildings.join(', ') : 'none') + '. ' + settlers.length + ' settlers. Terraforming: ' + newTf + '%. ' + (wx ? 'Current weather: ' + wx.name + '. ' : 'Weather: calm. ') + 'Tech tier reached: ' + (buildings.indexOf('biodome') >= 0 ? 4 : buildings.indexOf('atmo') >= 0 || buildings.indexOf('fusion') >= 0 ? 3 : buildings.indexOf('lab') >= 0 || buildings.indexOf('medbay') >= 0 ? 2 : buildings.length > 0 ? 1 : 0) + '.';
                       callGemini('You are the AI game master for an educational space colony on an alien planet. ' + ctx2 + '\n\nGenerate a planet event. Include a REAL science concept. Return ONLY valid JSON:\n{"emoji":"<emoji>","title":"<event>","description":"<2-3 sentences>","lesson":"<real science concept, 2-3 sentences>","choices":[{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"},{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"}]}\n\nEvents: alien microbes, geologic discoveries, meteor showers, equipment failures, resource finds, atmospheric anomalies, alien ruins. Effects: -5 to +10 resources, -15 to +15 morale. One choice should reward scientific knowledge.', true).then(function(result) {
                         try { var cl = result.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim(); var s2=cl.indexOf('{'); if(s2>0) cl=cl.substring(s2); var e2=cl.lastIndexOf('}'); if(e2>0) cl=cl.substring(0,e2+1);
                           var parsed = JSON.parse(cl); upd('colonyEvent', parsed); upd('colonyEventLoading', false);
+                          if (d.colonyTTS) colonySpeak(parsed.title + '. ' + parsed.description, 'narrator');
                           var nl2 = gameLog.slice(); nl2.push('Turn ' + nt + ': ' + (parsed.emoji||'') + ' ' + parsed.title); upd('colonyLog', nl2);
                         } catch(err) { upd('colonyEventLoading', false); if (addToast) addToast('Event failed to generate', 'error'); }
                       }).catch(function() { upd('colonyEventLoading', false); });
@@ -32423,6 +32513,88 @@
                     );
                   }))
                 ),
+                // Maintenance Challenge
+                maintChallenge && React.createElement('div', { className: 'bg-gradient-to-r from-amber-900 to-orange-900 rounded-xl p-4 border-2 border-amber-500 mb-3' },
+                  React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
+                    React.createElement('span', { className: 'text-lg' }, maintChallenge.buildingIcon),
+                    React.createElement('div', null,
+                      React.createElement('h4', { className: 'text-sm font-bold text-amber-200' }, '\uD83D\uDD27 Maintenance Check: ' + maintChallenge.buildingName),
+                      React.createElement('span', { className: 'text-[9px] text-amber-400' }, 'Answer correctly to maintain 100% effectiveness!')
+                    )
+                  ),
+                  React.createElement('p', { className: 'text-xs text-amber-100 mb-3' }, maintChallenge.question),
+                  // MCQ Mode
+                  maintChallenge.options && React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+                    maintChallenge.options.map(function(opt, oi) {
+                      return React.createElement('button', {
+                        key: oi,
+                        onClick: function() {
+                          var correct = oi === maintChallenge.correctIndex;
+                          var newEff = Object.assign({}, buildingEff);
+                          if (correct) {
+                            newEff[maintChallenge.building] = 100;
+                            if (addToast) addToast('\u2705 Correct! ' + maintChallenge.buildingName + ' running at 100%!', 'success');
+                            if (d.colonyTTS) colonySpeak('Excellent! Maintenance check passed. ' + maintChallenge.buildingName + ' operating at full capacity.', 'narrator');
+                            if (typeof addXP === 'function') addXP(20, 'Maintenance: ' + maintChallenge.buildingName);
+                          } else {
+                            var curEff = newEff[maintChallenge.building] !== undefined ? newEff[maintChallenge.building] : 100;
+                            newEff[maintChallenge.building] = Math.max(25, curEff - 25);
+                            if (addToast) addToast('\u274C Wrong! ' + maintChallenge.buildingName + ' reduced to ' + newEff[maintChallenge.building] + '% output.', 'warning');
+                            if (d.colonyTTS) colonySpeak('Incorrect. The ' + maintChallenge.buildingName + ' is now operating at reduced capacity. Study the science and try the next maintenance cycle.', 'narrator');
+                          }
+                          upd('buildingEff', newEff);
+                          upd('maintExplanation', { text: maintChallenge.explanation, correct: correct, answer: maintChallenge.options[maintChallenge.correctIndex] });
+                          upd('maintChallenge', null);
+                        },
+                        className: 'p-2 rounded-xl border-2 border-amber-700 bg-amber-950 text-amber-100 text-xs hover:border-amber-400 transition-all text-left'
+                      }, String.fromCharCode(65 + oi) + '. ' + opt);
+                    })
+                  ),
+                  // Free Response Mode
+                  !maintChallenge.options && React.createElement('div', { className: 'flex gap-2' },
+                    React.createElement('input', {
+                      type: 'text', value: d.maintInput || '',
+                      onChange: function(e) { upd('maintInput', e.target.value); },
+                      onKeyDown: function(e) { if (e.key === 'Enter') document.getElementById('kepler-maint-btn').click(); },
+                      placeholder: 'Type your answer...',
+                      className: 'flex-1 px-3 py-2 bg-amber-950 border-2 border-amber-600 rounded-xl text-xs text-white outline-none focus:border-amber-400'
+                    }),
+                    React.createElement('button', {
+                      id: 'kepler-maint-btn',
+                      onClick: function() {
+                        var inp2 = (d.maintInput || '').trim().toLowerCase();
+                        var correct2 = inp2.indexOf((maintChallenge.answer || '').toLowerCase()) >= 0;
+                        var newEff2 = Object.assign({}, buildingEff);
+                        if (correct2) {
+                          newEff2[maintChallenge.building] = 100;
+                          if (addToast) addToast('\u2705 Correct! ' + maintChallenge.buildingName + ' at 100%!', 'success');
+                          if (d.colonyTTS) colonySpeak('Excellent! Maintenance passed. Full capacity restored.', 'narrator');
+                          if (typeof addXP === 'function') addXP(25, 'Maintenance: ' + maintChallenge.buildingName);
+                        } else {
+                          var curEff2 = newEff2[maintChallenge.building] !== undefined ? newEff2[maintChallenge.building] : 100;
+                          newEff2[maintChallenge.building] = Math.max(25, curEff2 - 25);
+                          if (addToast) addToast('\u274C ' + maintChallenge.buildingName + ' reduced to ' + newEff2[maintChallenge.building] + '%', 'warning');
+                          if (d.colonyTTS) colonySpeak('Incorrect. Reduced capacity. The correct answer was ' + (maintChallenge.answer || '') + '.', 'narrator');
+                        }
+                        upd('buildingEff', newEff2);
+                        upd('maintExplanation', { text: maintChallenge.explanation, correct: correct2, answer: maintChallenge.answer });
+                        upd('maintChallenge', null); upd('maintInput', '');
+                      },
+                      className: 'px-4 py-2 bg-amber-500 text-slate-900 rounded-xl text-xs font-bold'
+                    }, '\u2705 Submit')
+                  )
+                ),
+                // Maintenance explanation (after answering)
+                d.maintExplanation && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border mb-3 ' + (d.maintExplanation.correct ? 'border-green-600' : 'border-red-600') },
+                  React.createElement('div', { className: 'flex justify-between items-center mb-1' },
+                    React.createElement('span', { className: 'text-[10px] font-bold ' + (d.maintExplanation.correct ? 'text-green-400' : 'text-red-400') },
+                      d.maintExplanation.correct ? '\u2705 Correct!' : '\u274C Incorrect \u2014 Answer: ' + d.maintExplanation.answer
+                    ),
+                    React.createElement('button', { onClick: function() { upd('maintExplanation', null); }, className: 'text-slate-500 text-xs' }, '\u2715')
+                  ),
+                  React.createElement('p', { className: 'text-[10px] text-slate-300 leading-relaxed' }, '\uD83D\uDCDA ' + d.maintExplanation.text)
+                ),
+                d.maintChallengeLoading && React.createElement('div', { className: 'bg-amber-900/50 rounded-xl p-3 border border-amber-700 mb-3 text-center text-amber-300 text-xs' }, '\u23F3 Generating maintenance challenge...'),
                 // Build panel
                 d.showBuild && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-slate-700 mb-3' },
                   React.createElement('h4', { className: 'text-sm font-bold text-amber-400 mb-2' }, '\uD83C\uDFD7 Buildings'),
@@ -32432,8 +32604,36 @@
                     var canAff = !isBuilt && hasPrereqs && Object.keys(bd.cost).every(function(k) { return resources[k] >= bd.cost[k]; });
                     return React.createElement('div', { key: bd.id, className: 'p-2 rounded-xl border-2 ' + (isBuilt ? 'border-green-600 bg-green-900/30' : canAff ? 'border-slate-600 bg-slate-900' : 'border-slate-700 bg-slate-900/50 opacity-50') },
                       React.createElement('div', { className: 'flex items-center justify-between' },
-                        React.createElement('span', null, React.createElement('span', { className: 'text-base' }, bd.icon), React.createElement('span', { className: 'text-[10px] font-bold text-white ml-1' }, bd.name), isBuilt && React.createElement('span', { className: 'text-green-400 ml-1 text-[9px]' }, '\u2705')),
-                        canAff && React.createElement('button', { onClick: function() { upd('scienceGate', { building: bd.id, question: bd.gateQ, answer: bd.gateA, domain: bd.gate }); upd('scienceGateInput', ''); }, className: 'px-2 py-1 bg-amber-500 text-slate-900 rounded-lg text-[9px] font-bold' }, '\uD83D\uDD13 Build')
+                        React.createElement('span', null, React.createElement('span', { className: 'text-base' }, bd.icon), React.createElement('span', { className: 'text-[10px] font-bold text-white ml-1' }, bd.name), isBuilt && React.createElement('span', { className: 'ml-1 text-[9px] ' + ((buildingEff[bd.id] !== undefined ? buildingEff[bd.id] : 100) >= 75 ? 'text-green-400' : 'text-amber-400') },
+                          '\u2705 ' + (buildingEff[bd.id] !== undefined ? buildingEff[bd.id] : 100) + '%')),
+                        canAff && React.createElement('button', { onClick: function() {
+                              if ((d.colonyMode || 'mcq') === 'mcq') {
+                                // Generate AI MCQ for the gate
+                                upd('scienceGateLoading', true);
+                                callGemini('Generate a ' + bd.gate + ' science question for building a ' + bd.name + ' in a space colony. Return ONLY valid JSON: {"question":"<question>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>"],"correctIndex":0,"explanation":"<real science explanation 2-3 sentences>"}. Shuffle the correct answer randomly (position 0-3). Make sure correctIndex matches.', true).then(function(gateResult) {
+                                  try {
+                                    var gcl = gateResult.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+                                    var gs = gcl.indexOf('{'); if (gs > 0) gcl = gcl.substring(gs);
+                                    var ge = gcl.lastIndexOf('}'); if (ge > 0) gcl = gcl.substring(0, ge + 1);
+                                    var gp = JSON.parse(gcl);
+                                    gp.building = bd.id; gp.domain = bd.gate; gp.mode = 'mcq';
+                                    upd('scienceGate', gp); upd('scienceGateLoading', false);
+                                    if (d.colonyTTS) colonySpeak('Science challenge. ' + gp.question, 'narrator');
+                                  } catch(err) {
+                                    // Fallback to static question
+                                    upd('scienceGate', { building: bd.id, question: bd.gateQ, answer: bd.gateA, domain: bd.gate, mode: 'freeResponse' });
+                                    upd('scienceGateLoading', false);
+                                  }
+                                }).catch(function() {
+                                  upd('scienceGate', { building: bd.id, question: bd.gateQ, answer: bd.gateA, domain: bd.gate, mode: 'freeResponse' });
+                                  upd('scienceGateLoading', false);
+                                });
+                              } else {
+                                // Free response: use static question
+                                upd('scienceGate', { building: bd.id, question: bd.gateQ, answer: bd.gateA, domain: bd.gate, mode: 'freeResponse' });
+                              }
+                              upd('scienceGateInput', '');
+                            }, className: 'px-2 py-1 bg-amber-500 text-slate-900 rounded-lg text-[9px] font-bold' }, '\uD83D\uDD13 Build')
                       ),
                       React.createElement('div', { className: 'text-[8px] text-slate-400 mt-1' }, bd.desc),
                       React.createElement('div', { className: 'flex gap-1 mt-1 text-[8px] flex-wrap' },
@@ -32447,10 +32647,40 @@
                   }))
                 ),
                 // Science gate
+                d.scienceGateLoading && React.createElement('div', { className: 'bg-purple-900/50 rounded-xl p-3 border border-purple-700 mb-3 text-center text-purple-300 text-xs' }, '\u23F3 Generating science challenge...'),
                 scienceGate && React.createElement('div', { className: 'bg-gradient-to-r from-purple-900 to-indigo-900 rounded-xl p-4 border-2 border-purple-500 mb-3' },
                   React.createElement('h4', { className: 'text-sm font-bold text-purple-200 mb-2' }, '\uD83D\uDD2C Science Challenge: ' + scienceGate.domain.toUpperCase()),
+                  React.createElement('div', { className: 'text-[8px] text-purple-400 mb-1' }, scienceGate.mode === 'mcq' ? '\uD83D\uDCCB Multiple Choice \u2014 select the correct answer' : '\u270D\uFE0F Free Response \u2014 type your answer'),
                   React.createElement('p', { className: 'text-xs text-purple-100 mb-3' }, scienceGate.question),
-                  React.createElement('div', { className: 'flex gap-2' },
+                  // MCQ Mode
+                  scienceGate.options && React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+                    scienceGate.options.map(function(opt2, oi2) {
+                      return React.createElement('button', {
+                        key: oi2,
+                        onClick: function() {
+                          var correct3 = oi2 === scienceGate.correctIndex;
+                          if (correct3) {
+                            var bdef3 = buildingDefs.find(function(bd4) { return bd4.id === scienceGate.building; });
+                            var nr7 = Object.assign({}, resources); Object.keys(bdef3.cost).forEach(function(k) { nr7[k] -= bdef3.cost[k]; }); upd('colonyRes', nr7);
+                            var nb2 = buildings.slice(); nb2.push(scienceGate.building); upd('colonyBuildings', nb2);
+                            var newEff3 = Object.assign({}, buildingEff); newEff3[scienceGate.building] = 100; upd('buildingEff', newEff3);
+                            var nl8 = gameLog.slice(); nl8.push('Built ' + bdef3.icon + ' ' + bdef3.name + '!'); upd('colonyLog', nl8);
+                            if (addToast) addToast('\u2705 ' + bdef3.name + ' built! Science verified!', 'success');
+                            if (d.colonyTTS) colonySpeak('Construction complete. ' + bdef3.name + ' is now operational.', 'narrator');
+                            if (typeof addXP === 'function') addXP(30, 'Built ' + bdef3.name);
+                          } else {
+                            if (addToast) addToast('\u274C Wrong! The correct answer was: ' + scienceGate.options[scienceGate.correctIndex], 'error');
+                            if (d.colonyTTS) colonySpeak('Incorrect. The answer was ' + scienceGate.options[scienceGate.correctIndex] + '. Try again next time.', 'narrator');
+                          }
+                          upd('gateExplanation', { text: scienceGate.explanation, correct: correct3, answer: scienceGate.options[scienceGate.correctIndex] });
+                          upd('scienceGate', null);
+                        },
+                        className: 'p-3 rounded-xl border-2 border-purple-700 bg-purple-950 text-purple-100 text-xs hover:border-purple-400 transition-all text-left'
+                      }, String.fromCharCode(65 + oi2) + '. ' + opt2);
+                    })
+                  ),
+                  // Free Response Mode
+                  !scienceGate.options && React.createElement('div', { className: 'flex gap-2' },
                     React.createElement('input', { type: 'text', value: d.scienceGateInput || '', onChange: function(e) { upd('scienceGateInput', e.target.value); },
                       onKeyDown: function(e) { if (e.key === 'Enter') document.getElementById('kepler-gate-btn').click(); },
                       placeholder: 'Type your answer...', className: 'flex-1 px-3 py-2 bg-purple-950 border-2 border-purple-600 rounded-xl text-xs text-white outline-none focus:border-purple-400' }),
@@ -32460,13 +32690,21 @@
                       if (correct) {
                         var bdef2 = buildingDefs.find(function(bd2) { return bd2.id === scienceGate.building; });
                         var nr4 = Object.assign({}, resources); Object.keys(bdef2.cost).forEach(function(k) { nr4[k] -= bdef2.cost[k]; }); upd('colonyRes', nr4);
-                        var nb = buildings.slice(); nb.push(scienceGate.building); upd('colonyBuildings', nb); upd('scienceGate', null);
+                        var nb = buildings.slice(); nb.push(scienceGate.building); upd('colonyBuildings', nb);
+                        var newEff4 = Object.assign({}, buildingEff); newEff4[scienceGate.building] = 100; upd('buildingEff', newEff4);
                         var nl4 = gameLog.slice(); nl4.push('Built ' + bdef2.icon + ' ' + bdef2.name + '!'); upd('colonyLog', nl4);
-                        if (addToast) addToast('\u2705 ' + bdef2.name + ' built! Science mastery verified!', 'success');
+                        if (addToast) addToast('\u2705 ' + bdef2.name + ' built!', 'success');
+                        if (d.colonyTTS) colonySpeak('Construction complete. ' + bdef2.name + ' operational.', 'narrator');
                         if (typeof addXP === 'function') addXP(30, 'Built ' + bdef2.name);
                       } else { if (addToast) addToast('\u274C Incorrect! Study and try again.', 'error'); upd('scienceGateInput', ''); }
+                      upd('scienceGate', null);
                     }, className: 'px-4 py-2 bg-purple-500 text-white rounded-xl text-xs font-bold' }, '\u2705 Submit'),
                     React.createElement('button', { onClick: function() { upd('scienceGate', null); }, className: 'px-3 py-2 bg-slate-700 text-slate-300 rounded-xl text-xs' }, '\u2715')
+                  ),
+                  // Gate explanation
+                  d.gateExplanation && React.createElement('div', { className: 'mt-2 bg-purple-950 rounded-lg px-3 py-2 text-[10px] border ' + (d.gateExplanation.correct ? 'text-green-300 border-green-800' : 'text-red-300 border-red-800') },
+                    React.createElement('span', { className: 'font-bold' }, d.gateExplanation.correct ? '\u2705 Correct! ' : '\u274C Answer: ' + d.gateExplanation.answer + '. '),
+                    d.gateExplanation.text
                   ),
                   React.createElement('div', { className: 'text-[9px] text-purple-300 mt-2' }, '\uD83D\uDCA1 This is real science! Research online if unsure.')
                 ),
@@ -32487,6 +32725,7 @@
                             upd('settlerChatLoading', true);
                             callGemini('You are ' + st.name + ', a ' + st.role + ' (specialty: ' + st.specialty + ') on the Kepler-442b space colony. Morale: ' + st.morale + '%, Health: ' + st.health + '%. Colony has ' + buildings.length + ' buildings, turn ' + turn + '. Resources: food=' + resources.food + ' energy=' + resources.energy + '. Give a brief in-character update (2-3 sentences) about your work, mood, and a science fact related to your specialty. Be personable and educational.', true).then(function(result) {
                               upd('settlerChat', result); upd('settlerChatLoading', false);
+                              if (d.colonyTTS) colonySpeak(result, st.role === 'Medic' || st.role === 'Botanist' || st.role === 'Chemist' ? 'female' : 'narrator');
                               if (typeof addXP === 'function') addXP(5, 'Talked to ' + st.name);
                             }).catch(function() { upd('settlerChatLoading', false); });
                           },
