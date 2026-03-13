@@ -32078,6 +32078,15 @@
           var enWeather = d.enWeather || 'sunny';
           var enHistory = d.enHistory || [];
 
+          // ── National Economy (Macro) State ──
+          var macroGDP = d.macroGDP || 2.1;
+          var macroInflation = d.macroInflation || 3.2;
+          var macroInterest = d.macroInterest || 5.25;
+          var macroUnemployment = d.macroUnemployment || 3.8;
+          var macroTrade = d.macroTrade || -0.5;
+          var macroYear = d.macroYear || 2025;
+          var macroHistory = d.macroHistory || [];
+
           // ── Canvas Rendering ──
           React.useEffect(function() {
             var canvas = canvasRef.current;
@@ -32349,6 +32358,78 @@
               }
             }
 
+            else if (econTab === 'macro') {
+              // ── National Economy Dashboard ──
+              ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+              ctx.font = 'bold 18px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+              ctx.fillText('\uD83C\uDFDB\uFE0F National Economy — Year ' + macroYear, 30, 35);
+              // Indicator gauges
+              var indicators = [
+                { label: 'GDP Growth', val: macroGDP, unit: '%', good: macroGDP > 0, color: macroGDP > 2 ? '#22c55e' : macroGDP > 0 ? '#fbbf24' : '#ef4444' },
+                { label: 'Inflation', val: macroInflation, unit: '%', good: macroInflation < 3, color: macroInflation > 5 ? '#ef4444' : macroInflation > 3 ? '#fbbf24' : '#22c55e' },
+                { label: 'Interest Rate', val: macroInterest, unit: '%', good: macroInterest < 5, color: macroInterest > 7 ? '#ef4444' : macroInterest > 4 ? '#fbbf24' : '#22c55e' },
+                { label: 'Unemployment', val: macroUnemployment, unit: '%', good: macroUnemployment < 5, color: macroUnemployment > 7 ? '#ef4444' : macroUnemployment > 4 ? '#fbbf24' : '#22c55e' },
+                { label: 'Trade Balance', val: macroTrade, unit: '%', good: macroTrade > 0, color: macroTrade > 0 ? '#22c55e' : macroTrade > -2 ? '#fbbf24' : '#ef4444' }
+              ];
+              var gaugeW = (W - 80) / 5;
+              indicators.forEach(function(ind, ii) {
+                var gx2 = 40 + ii * gaugeW;
+                // Background bar
+                ctx.fillStyle = '#1e293b'; ctx.fillRect(gx2, 60, gaugeW - 10, 50);
+                // Value bar
+                var pct = Math.min(1, Math.abs(ind.val) / 10);
+                ctx.fillStyle = ind.color;
+                ctx.fillRect(gx2, 60, (gaugeW - 10) * pct, 50);
+                ctx.globalAlpha = 0.3; ctx.fillRect(gx2, 60, (gaugeW - 10) * pct, 50); ctx.globalAlpha = 1;
+                // Labels
+                ctx.font = 'bold 11px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+                ctx.fillText(ind.label, gx2 + 5, 80);
+                ctx.font = 'bold 16px Inter, system-ui'; ctx.fillStyle = ind.color;
+                ctx.fillText((ind.val >= 0 ? '+' : '') + ind.val.toFixed(1) + ind.unit, gx2 + 5, 100);
+              });
+              // History chart
+              if (macroHistory.length > 1) {
+                var mhX = 40, mhY = 140, mhW = W - 80, mhH = H - 200;
+                ctx.fillStyle = '#1e293b'; ctx.fillRect(mhX, mhY, mhW, mhH);
+                // Plot GDP line
+                var gdpVals = macroHistory.map(function(h) { return h.gdp; });
+                var gdpMin = Math.min.apply(null, gdpVals) - 1;
+                var gdpMax = Math.max.apply(null, gdpVals) + 1;
+                var gdpRange = gdpMax - gdpMin || 1;
+                ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 2; ctx.beginPath();
+                gdpVals.forEach(function(v, vi) {
+                  var x = mhX + (vi / Math.max(1, gdpVals.length - 1)) * mhW;
+                  var y = mhY + mhH - ((v - gdpMin) / gdpRange) * mhH;
+                  vi === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+                // Plot inflation line
+                var infVals = macroHistory.map(function(h) { return h.inflation; });
+                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; ctx.setLineDash([5,3]); ctx.beginPath();
+                infVals.forEach(function(v, vi) {
+                  var infRange = (Math.max.apply(null, infVals) + 1) - (Math.min.apply(null, infVals) - 1) || 1;
+                  var infMin = Math.min.apply(null, infVals) - 1;
+                  var x = mhX + (vi / Math.max(1, infVals.length - 1)) * mhW;
+                  var y = mhY + mhH - ((v - infMin) / infRange) * mhH;
+                  vi === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                });
+                ctx.stroke(); ctx.setLineDash([]);
+                // Legend
+                ctx.font = '10px Inter, system-ui';
+                ctx.fillStyle = '#22c55e'; ctx.fillText('\u2014 GDP Growth', mhX + 10, mhY + 15);
+                ctx.fillStyle = '#ef4444'; ctx.fillText('--- Inflation', mhX + 110, mhY + 15);
+                ctx.fillStyle = '#64748b';
+                ctx.fillText('Year ' + (macroHistory[0].year || 2025), mhX, mhY + mhH + 15);
+                ctx.fillText('Year ' + (macroHistory[macroHistory.length-1].year || macroYear), mhX + mhW - 60, mhY + mhH + 15);
+              } else {
+                ctx.font = '14px Inter, system-ui'; ctx.fillStyle = '#64748b'; ctx.textAlign = 'center';
+                ctx.fillText('Click "Next Year" to simulate national economic policy changes', W/2, H/2);
+                ctx.font = '11px Inter, system-ui'; ctx.fillStyle = '#475569';
+                ctx.fillText('AI will generate policy events that cascade to all other simulators', W/2, H/2 + 25);
+                ctx.textAlign = 'left';
+              }
+            }
+
             else if (econTab === 'entrepreneur') {
               // ── Lemonade Stand ──
               ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
@@ -32417,7 +32498,8 @@
           }, [econTab, sdDemandShift, sdSupplyShift, sdPriceFloor, sdPriceCeiling, sdTax,
               d.pfAge, d.pfCash, d.pfDebt, d.pfSalary, d.pfHappiness, d.pfHistory,
               smCompanies, smSelected, smCash, smPortfolio, smNews,
-              enDay, enCash, enPrice, enCups, enAdBudget, enWeather, enHistory]);
+              enDay, enCash, enPrice, enCups, enAdBudget, enWeather, enHistory,
+              macroGDP, macroInflation, macroInterest, macroUnemployment, macroTrade, macroYear, macroHistory]);
 
           return React.createElement('div', { className: 'max-w-4xl mx-auto' },
             // Header
@@ -32435,7 +32517,8 @@
                 { id: 'supplyDemand', label: '\uD83D\uDCC9 Supply & Demand' },
                 { id: 'personalFinance', label: '\uD83C\uDFE6 Personal Finance' },
                 { id: 'stockMarket', label: '\uD83D\uDCC8 Stock Market' },
-                { id: 'entrepreneur', label: '\uD83C\uDFEA Lemonade Stand' }
+                { id: 'entrepreneur', label: '\uD83C\uDFEA Business Sim' },
+                { id: 'macro', label: '\uD83C\uDFDB\uFE0F National Economy' }
               ].map(function(tab) {
                 return React.createElement('button', {
                   key: tab.id,
@@ -32444,6 +32527,15 @@
                     (econTab === tab.id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700')
                 }, tab.label);
               })
+            ),
+            // Macro indicators banner (always visible)
+            (d.macroHistory || []).length > 0 && React.createElement('div', { className: 'flex gap-2 mb-2 bg-slate-800 rounded-lg px-3 py-1.5 text-[9px] font-mono text-slate-300 overflow-x-auto' },
+              React.createElement('span', { className: 'text-slate-500' }, '\uD83C\uDFDB\uFE0F MACRO |'),
+              React.createElement('span', { className: macroGDP >= 0 ? 'text-green-400' : 'text-red-400' }, 'GDP ' + (macroGDP >= 0 ? '+' : '') + macroGDP.toFixed(1) + '%'),
+              React.createElement('span', { className: macroInflation > 4 ? 'text-red-400' : macroInflation > 2 ? 'text-amber-400' : 'text-green-400' }, 'INF ' + macroInflation.toFixed(1) + '%'),
+              React.createElement('span', { className: macroInterest > 6 ? 'text-red-400' : 'text-amber-400' }, 'INT ' + macroInterest.toFixed(2) + '%'),
+              React.createElement('span', { className: macroUnemployment > 5 ? 'text-red-400' : 'text-green-400' }, 'UNEMP ' + macroUnemployment.toFixed(1) + '%'),
+              React.createElement('span', { className: macroTrade >= 0 ? 'text-green-400' : 'text-amber-400' }, 'TRADE ' + (macroTrade >= 0 ? '+' : '') + macroTrade.toFixed(1) + '%')
             ),
             // Canvas
             React.createElement('canvas', {
