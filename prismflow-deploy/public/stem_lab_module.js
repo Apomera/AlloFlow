@@ -32801,10 +32801,10 @@
                           upd('colonyGreatSci', updGS);
                           // Apply bonus permanently
                           if (gs2.bonus && nr2[gs2.bonus] !== undefined) nr2[gs2.bonus] += gs2.amount;
-                          var nl15 = gameLog.slice(); nl15.push('\uD83C\uDFC6 Great Scientist: ' + gs2.name + ' (+' + gs2.amount + ' ' + gs2.bonus + '/turn)'); upd('colonyLog', nl15);
-                          if (addToast) addToast('\uD83C\uDFC6 ' + gs2.icon + ' ' + gs2.name + ' joins! ' + gs2.fact, 'success');
-                          if (d.colonyTTS) colonySpeak('Great scientist arrived! ' + gs2.name + '. ' + gs2.fact, 'narrator');
-                          if (typeof addXP === 'function') addXP(30, 'Great Scientist: ' + gs2.name);
+                          var nl15 = gameLog.slice(); nl15.push('\uD83E\uDD16 Mentor: ' + gs2.name + ' AI activated (+' + gs2.amount + ' ' + gs2.bonus + '/turn)'); upd('colonyLog', nl15);
+                          if (addToast) addToast('\uD83E\uDD16 ' + gs2.icon + ' ' + gs2.name + ' AI activated! ' + gs2.fact, 'success');
+                          if (d.colonyTTS) colonySpeak('Digital Mentor activated. The AI reconstruction of ' + gs2.name + ' is now online. ' + gs2.fact, 'narrator');
+                          if (typeof addXP === 'function') addXP(30, 'Mentor: ' + gs2.name);
                         }
                       }
 
@@ -32907,7 +32907,7 @@
                   React.createElement('button', { onClick: function() { upd('showSettlers', !d.showSettlers); }, className: 'py-3 rounded-xl text-xs font-bold bg-teal-600 text-white' }, '\uD83D\uDC65 ' + settlers.length),
                   React.createElement('button', { onClick: function() { upd('showPolicy', !d.showPolicy); }, className: 'py-3 rounded-xl text-xs font-bold ' + (activePolicy ? 'bg-emerald-700' : 'bg-slate-700') + ' text-white' }, '\uD83C\uDFDB\uFE0F Gov'),
                   React.createElement('button', { onClick: function() { upd('showResearch', !d.showResearch); }, className: 'py-3 rounded-xl text-xs font-bold bg-violet-700 text-white' }, '\uD83E\uDDEC ' + researchQueue.length),
-                  React.createElement('button', { onClick: function() { upd('showGreatSci', !d.showGreatSci); }, className: 'py-3 rounded-xl text-xs font-bold bg-yellow-700 text-white' }, '\uD83C\uDFC6 ' + greatScientists.length + '/' + greatSciDefs.length)
+                  React.createElement('button', { onClick: function() { upd('showGreatSci', !d.showGreatSci); }, className: 'py-3 rounded-xl text-xs font-bold bg-yellow-700 text-white' }, '\uD83E\uDD16 ' + greatScientists.length + '/' + greatSciDefs.length)
                 ),
                 React.createElement('div', { className: 'grid grid-cols-4 gap-1 mb-3' },
                   React.createElement('button', { onClick: function() { upd('showWonders', !d.showWonders); }, className: 'py-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-amber-800 to-amber-700 text-amber-200' }, '\uD83C\uDFDB\uFE0F Wonders'),
@@ -33350,21 +33350,39 @@
                 ),
                 // Great Scientists Panel
                 d.showGreatSci && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-yellow-700 mb-3' },
-                  React.createElement('h4', { className: 'text-sm font-bold text-yellow-400 mb-2' }, '\uD83C\uDFC6 Great Scientists'),
-                  React.createElement('p', { className: 'text-[9px] text-slate-400 mb-2' }, 'Arrive every 15 turns when science is high. Each provides permanent bonuses + a real historical science fact.'),
+                  React.createElement('h4', { className: 'text-sm font-bold text-yellow-400 mb-2' }, '\uD83E\uDD16 Digital Mentors \u2014 Earth Archive AI'),
+                  React.createElement('p', { className: 'text-[9px] text-slate-400 mb-2' }, 'AI reconstructions of history\u2019s greatest minds, stored in the colony ship\u2019s quantum memory. Activated as your computing power grows. Click a mentor to consult them!'),
                   greatScientists.length === 0 && React.createElement('div', { className: 'text-center text-slate-500 text-[10px] py-4' }, 'No Great Scientists yet. Maintain high science reserves!'),
                   React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
                     greatScientists.map(function(gs4, gi) {
                       return React.createElement('div', { key: gi, className: 'bg-yellow-900/30 rounded-xl p-2 border border-yellow-800 text-center' },
                         React.createElement('div', { className: 'text-xl' }, gs4.icon),
                         React.createElement('div', { className: 'text-[9px] font-bold text-yellow-200 mt-1' }, gs4.name),
+                        React.createElement('div', { className: 'text-[7px] text-cyan-400' }, '\uD83E\uDD16 AI Simulation'),
                         React.createElement('div', { className: 'text-[8px] text-yellow-400' }, '+' + gs4.amount + ' ' + gs4.bonus + '/turn'),
-                        React.createElement('div', { className: 'text-[7px] text-slate-400 mt-1 italic' }, gs4.fact)
+                        React.createElement('div', { className: 'text-[7px] text-slate-400 mt-1 italic' }, gs4.fact),
+                        React.createElement('button', {
+                          onClick: function() {
+                            upd('mentorChatLoading', gs4.name);
+                            callGemini('You are an AI reconstruction of ' + gs4.name + ', a famous scientist, running on the quantum computers of a space colony on planet Kepler-442b in the far future. A colonist is consulting you for advice. Stay in character as ' + gs4.name + '. Respond warmly but share real scientific knowledge from your field (' + gs4.specialty + '). Reference your real historical achievements. Give practical advice that would help the colony. Keep response to 3-4 sentences. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Current colony situation: Turn ' + turn + ', ' + settlers.length + ' settlers, ' + buildings.length + ' buildings, ' + terraform + '% terraformed.', true).then(function(mentorResult) {
+                              upd('mentorChat', { name: gs4.name, icon: gs4.icon, text: mentorResult }); upd('mentorChatLoading', null);
+                              if (d.colonyTTS) colonySpeak(mentorResult, gs4.specialty === 'biology' || gs4.name === 'Mae Jemison' || gs4.name === 'Rachel Carson' || gs4.name === 'Rosalind Franklin' || gs4.name === 'Ada Lovelace' ? 'female' : 'narrator');
+                            }).catch(function() { upd('mentorChatLoading', null); });
+                          },
+                          className: 'mt-1 w-full py-1 rounded-lg bg-yellow-800 text-yellow-200 text-[8px] font-bold hover:bg-yellow-700'
+                        }, d.mentorChatLoading === gs4.name ? '\u23F3...' : '\uD83D\uDCAC Consult')
                       );
                     })
                   ),
+                  d.mentorChat && React.createElement('div', { className: 'mt-2 bg-yellow-900/30 rounded-xl p-3 border border-yellow-700' },
+                    React.createElement('div', { className: 'flex justify-between items-center mb-1' },
+                      React.createElement('span', { className: 'text-[10px] font-bold text-yellow-300' }, d.mentorChat.icon + ' ' + d.mentorChat.name + ' (AI)'),
+                      React.createElement('button', { onClick: function() { upd('mentorChat', null); }, className: 'text-yellow-500 text-xs' }, '\u2715')
+                    ),
+                    React.createElement('p', { className: 'text-[9px] text-yellow-100 leading-relaxed italic' }, '\u201C' + d.mentorChat.text + '\u201D')
+                  ),
                   greatScientists.length < greatSciDefs.length && React.createElement('div', { className: 'mt-2 text-[8px] text-slate-500 text-center' },
-                    '\u23F3 Next arrival in ~' + (15 - (turn % 15)) + ' turns (need \uD83D\uDD2C 10+)'
+                    '\u23F3 Next activation in ~' + (15 - (turn % 15)) + ' turns (need \uD83D\uDD2C 10+)'
                   )
                 ),
                 // Settler Chat
