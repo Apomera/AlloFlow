@@ -2309,9 +2309,15 @@
                 color: 'rose', ready: true
               },
 
-            ,
-              { id: '_cat_Strategy', name: '\u2694\uFE0F Strategy Games', color: 'indigo', isCategory: true },
-              { id: 'spaceColony', name: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true }
+
+              { id: '_cat_BehavioralScience', icon: '', label: '\uD83E\uDDE0 Behavioral Science', desc: '', color: 'slate', category: true },
+              {
+                id: 'behaviorLab', icon: '\uD83D\uDC2D', label: 'Behavior Shaping Lab',
+                desc: 'Train a virtual mouse using operant conditioning! Learn ABA fundamentals: reinforcement, shaping, extinction, and schedules of reinforcement.',
+                color: 'amber', ready: true
+              },
+              { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
+              { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true }
             ];
             // ── Tool search filter ──
             var _searchLower = _stemToolSearch.toLowerCase().trim();
@@ -22612,49 +22618,52 @@
             drawDissectionFrame();
           };
 
-          // Auto-save progress to localStorage
-          React.useEffect(function () {
-            var saveKey = 'dissection_progress_' + (spec ? spec.id : '');
-            var saveData = {
-              exploredOrgans: d.exploredOrgans || {},
-              quizScore: d.quizScore || 0,
-              completedObjectives: d.completedObjectives || {},
-              currentLayerIdx: d.currentDissLayer || 0,
-              timeSpent: d.timeSpent || 0
-            };
-            try { localStorage.setItem(saveKey, JSON.stringify(saveData)); } catch(e) {}
-          }, [d.exploredOrgans, d.quizScore, d.completedObjectives, d.currentDissLayer, d.timeSpent]);
-          // Load progress on mount
-          React.useEffect(function () {
-            var saveKey = 'dissection_progress_' + (spec ? spec.id : '');
-            try {
-              var saved = localStorage.getItem(saveKey);
-              if (saved) {
-                var data = JSON.parse(saved);
-                if (data.exploredOrgans) upd('exploredOrgans', data.exploredOrgans);
-                if (data.quizScore) upd('quizScore', data.quizScore);
-                if (data.completedObjectives) upd('completedObjectives', data.completedObjectives);
-              }
-            } catch(e) {}
-          }, [spec ? spec.id : '']);
-          // Keyboard shortcuts
-          React.useEffect(function () {
-            function handleKey(e) {
-              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-                var oi = organs.findIndex(function(o) { return o.id === d.selectedOrgan; });
-                if (oi < organs.length - 1) upd('selectedOrgan', organs[oi + 1].id);
-              } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-                var oi2 = organs.findIndex(function(o) { return o.id === d.selectedOrgan; });
-                if (oi2 > 0) upd('selectedOrgan', organs[oi2 - 1].id);
-              } else if (e.key === 'Escape') {
-                upd('selectedOrgan', null);
-              } else if (e.key === 'r' || e.key === 'R') {
-                upd('dissZoom', 1); upd('dissPanX', 0); upd('dissPanY', 0);
-              }
-            }
-            window.addEventListener('keydown', handleKey);
-            return function () { window.removeEventListener('keydown', handleKey); };
-          }, [d.selectedOrgan, organs]);
+          // Auto-save progress to localStorage (non-hook: inline during render)
+           try {
+             var saveKey = 'dissection_progress_' + (spec ? spec.id : '');
+             var saveData = {
+               exploredOrgans: d.exploredOrgans || {},
+               quizScore: d.quizScore || 0,
+               completedObjectives: d.completedObjectives || {},
+               currentLayerIdx: d.currentDissLayer || 0,
+               timeSpent: d.timeSpent || 0
+             };
+             localStorage.setItem(saveKey, JSON.stringify(saveData));
+           } catch(e) {}
+           // Load progress (non-hook: deferred to avoid setState-during-render)
+           if (!d._dissLoadedSpec || d._dissLoadedSpec !== (spec ? spec.id : '')) {
+             setTimeout(function () {
+               var saveKey2 = 'dissection_progress_' + (spec ? spec.id : '');
+               try {
+                 var saved = localStorage.getItem(saveKey2);
+                 if (saved) {
+                   var data = JSON.parse(saved);
+                   if (data.exploredOrgans) upd('exploredOrgans', data.exploredOrgans);
+                   if (data.quizScore) upd('quizScore', data.quizScore);
+                   if (data.completedObjectives) upd('completedObjectives', data.completedObjectives);
+                 }
+               } catch(e) {}
+               upd('_dissLoadedSpec', spec ? spec.id : '');
+             }, 0);
+           }
+           // Keyboard shortcuts (non-hook: window global ref for cleanup)
+           window._dissectionKeyHandler = function (e) {
+             if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+               var oi = organs.findIndex(function(o) { return o.id === d.selectedOrgan; });
+               if (oi < organs.length - 1) upd('selectedOrgan', organs[oi + 1].id);
+             } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+               var oi2 = organs.findIndex(function(o) { return o.id === d.selectedOrgan; });
+               if (oi2 > 0) upd('selectedOrgan', organs[oi2 - 1].id);
+             } else if (e.key === 'Escape') {
+               upd('selectedOrgan', null);
+             } else if (e.key === 'r' || e.key === 'R') {
+               upd('dissZoom', 1); upd('dissPanX', 0); upd('dissPanY', 0);
+             }
+           };
+           if (!window._dissectionKeyBound) {
+             window._dissectionKeyBound = true;
+             window.addEventListener('keydown', function (e) { if (window._dissectionKeyHandler) window._dissectionKeyHandler(e); });
+           }
 
           // Simple sound effects via Web Audio API
           var audioCtx = null;
@@ -32046,7 +32055,7 @@
           // ══════════════════════════════════════════════════
           // KEPLER COLONY — Educational Space Colonization
           // ══════════════════════════════════════════════════
-          stemLabTool && stemLabTool.id === 'spaceColony' && (function() {
+          stemLabTab === 'explore' && stemLabTool === 'spaceColony' && (function() {
             var d = labToolData || {};
             var upd = function(k, v) { setLabToolData(function(n) { var o = Object.assign({}, n); o[k] = v; return o; }); };
             var colony = d.colony || null;
@@ -32309,9 +32318,10 @@
               { id: 'spaceport', name: 'Spaceport', icon: '\uD83D\uDE80', tier: 4, requires: ['comms', 'fusion', 'shield'], cost: { materials: 60, energy: 40, science: 35 }, production: { materials: 5, science: 3 }, gate: 'physics', gateQ: 'What is escape velocity from Earth in km/s (approximately)?', gateA: ['11', '11.2'], desc: 'Launches supply missions. Attracts settlers from other colonies.' }
             ];
 
-            // Canvas Map Rendering
-            var canvasRef = React.useRef(null);
-            React.useEffect(function() {
+            // Canvas Map Rendering (non-hook: using global ref to avoid conditional hook)
+            if (!window._spaceColonyCanvasRef) window._spaceColonyCanvasRef = { current: null };
+            var canvasRef = window._spaceColonyCanvasRef;
+            setTimeout(function() {
               if (!canvasRef.current || !mapData) return;
               var canvas = canvasRef.current;
               var ctx = canvas.getContext('2d');
@@ -32570,7 +32580,7 @@
               ctx.fillText('\uD83C\uDF0D ' + terraform + '%', offsetX, rbY + 28);
               ctx.fillText('\u2696\uFE0F ' + equity + '%', offsetX + 50, rbY + 28);
               ctx.fillText('\uD83D\uDE42 ' + colonyHappiness + '%', offsetX + 100, rbY + 28);
-            }, [mapData, selectedTile, turn, resources, buildings, colonyPhase, d.colonyWeather, d.activeExpedition, d.colonySeason]);
+            }, 0);
 
             function handleMapClick(e) {
               if (!mapData || !canvasRef.current) return;
@@ -33979,7 +33989,8 @@
           var d = labToolData || {};
           var upd = function(k,v) { setLabToolData(function(p) { var n = Object.assign({}, p); n[k]=v; return n; }); };
           var econTab = d.econTab || 'supplyDemand';
-          var canvasRef = React.useRef(null);
+          if (!window._econCanvasRef) window._econCanvasRef = { current: null };
+          var canvasRef = window._econCanvasRef;
 
           // ── Supply & Demand State ──
           var sdDemandShift = d.sdDemandShift || 0;
@@ -34055,8 +34066,8 @@
           if (conceptsLearned >= 15) econAchievements.push({ icon: '\uD83C\uDF93', title: 'Economics Major', desc: '15+ concepts learned' });
           if (conceptsLearned >= 30) econAchievements.push({ icon: '\uD83E\uDDD1\u200D\uD83C\uDF93', title: 'PhD Economist', desc: '30+ concepts learned' });
 
-          // ── Canvas Rendering ──
-          React.useEffect(function() {
+          // ── Canvas Rendering ── (non-hook: setTimeout to avoid conditional hook)
+          setTimeout(function() {
             var canvas = canvasRef.current;
             if (!canvas) return;
             var ctx = canvas.getContext('2d');
@@ -34482,11 +34493,7 @@
                 });
               }
             }
-          }, [econTab, sdDemandShift, sdSupplyShift, sdPriceFloor, sdPriceCeiling, sdTax,
-              d.pfAge, d.pfCash, d.pfDebt, d.pfSalary, d.pfHappiness, d.pfHistory,
-              smCompanies, smSelected, smCash, smPortfolio, smNews,
-              enDay, enCash, enPrice, enCups, enAdBudget, enWeather, enHistory,
-              macroGDP, macroInflation, macroInterest, macroUnemployment, macroTrade, macroYear, macroHistory]);
+          }, 0);
 
           return React.createElement('div', { className: 'max-w-4xl mx-auto' },
             // Header
@@ -36468,6 +36475,1529 @@
             )
           );
         })(),
+
+        // ═══════════════════════════════════════════════════════════════
+        // ██  BEHAVIOR SHAPING LAB — ABA Operant Conditioning Sim  ██
+        // ═══════════════════════════════════════════════════════════════
+        stemLabTab === 'explore' && stemLabTool === 'behaviorLab' && (() => {
+          var d = labToolData || {};
+          var upd = function(k,v) { setLabToolData(function(p) { var n = Object.assign({}, p); n[k]=v; return n; }); };
+
+          // ── Level definitions ──
+          var LEVELS = [
+            { id: 1, title: 'First Food', concept: 'Positive Reinforcement', target: 'pressLever', goal: 10,
+              intro: 'In positive reinforcement, a consequence is ADDED after a behavior to INCREASE the likelihood of that behavior occurring again. Your job: click "Deliver Food" immediately after the mouse presses the lever. Reinforce 10 lever presses!',
+              termDef: 'Positive Reinforcement (SR+): Adding a stimulus after a behavior that increases the future probability of that behavior.',
+              funFact: '🧪 B.F. Skinner discovered that pigeons could be trained to guide missiles during WWII using operant conditioning — the project was called "Project Pigeon"!',
+              vocab: ['SR+ (Positive Reinforcement)', 'Operant Behavior', 'Consequence'],
+              contingency: { a: 'Chamber present', b: 'Presses lever', c: '🍕 Food delivered (+SR)' } },
+            { id: 2, title: 'Shape Up!', concept: 'Shaping', target: 'spin', goal: 5,
+              intro: 'Shaping uses successive approximations — reinforcing behaviors that are progressively closer to the target. The mouse won\'t spin on its own at first! Reinforce turning, then half-turns, then full spins. Shape 5 complete spins!',
+              termDef: 'Shaping: Differentially reinforcing successive approximations toward a terminal (target) behavior.',
+              funFact: '🐬 Dolphin trainers at SeaWorld use shaping to teach dolphins to do backflips — they start by reinforcing any upward movement!',
+              vocab: ['Successive Approximations', 'Terminal Behavior', 'Differential Reinforcement'],
+              contingency: { a: 'Trainer present', b: 'Closer to spin', c: '🍕 Food (reinforce!)' } },
+            { id: 3, title: 'The Burst', concept: 'Extinction', target: 'pressLever', goal: 0,
+              intro: 'When reinforcement is suddenly withheld, the organism often shows an extinction burst — a temporary INCREASE in the behavior before it decreases. First, reinforce 5 lever presses, then STOP reinforcing and watch what happens!',
+              termDef: 'Extinction Burst: A temporary increase in frequency/intensity of a previously reinforced behavior when reinforcement is discontinued.',
+              funFact: '🛗 Ever push an elevator button multiple times when it doesn\'t light up? That\'s YOUR extinction burst!',
+              vocab: ['Extinction', 'Extinction Burst', 'Spontaneous Recovery'],
+              contingency: { a: 'Chamber present', b: 'Presses lever', c: '❌ No food (extinction)' } },
+            { id: 4, title: 'On Schedule', concept: 'Schedules of Reinforcement', target: 'pressLever', goal: 20,
+              intro: 'Not every response needs reinforcement! A Fixed Ratio (FR) schedule reinforces after a set number of responses. Try FR-3: reinforce every 3rd lever press. Watch how the mouse responds differently than continuous reinforcement!',
+              termDef: 'Fixed Ratio (FR): A schedule where reinforcement is delivered after a fixed number of responses.',
+              funFact: '🎰 Slot machines use Variable Ratio (VR) schedules — the most resistant to extinction — which is why they\'re so addictive!',
+              vocab: ['Fixed Ratio (FR)', 'Continuous Reinforcement (CRF)', 'Intermittent Reinforcement'],
+              contingency: { a: 'Chamber present', b: 'Every 3rd press', c: '🍕 Food (FR-3)' } },
+            { id: 5, title: 'Green Means Go', concept: 'Stimulus Discrimination', target: 'pressLever', goal: 10,
+              intro: 'A discriminative stimulus (SD) signals that reinforcement is available. The green light = SD (reinforce lever presses). Red light = S-delta (do NOT reinforce). Teach the mouse to press only when the green light is on!',
+              termDef: 'SD (Discriminative Stimulus): A stimulus that signals reinforcement is available for a specific behavior.',
+              funFact: '🚦 Traffic lights work as discriminative stimuli for drivers — green (SD) signals "go" and red (S-delta) signals "stop"!',
+              vocab: ['SD (Discriminative Stimulus)', 'S-delta (S∆)', 'Stimulus Control'],
+              contingency: { a: '🟢 Green light (SD)', b: 'Presses lever', c: '🍕 Food delivered' } },
+            { id: 6, title: 'Free Lab', concept: 'Sandbox Mode', target: null, goal: 0,
+              intro: 'Welcome to the Free Lab! All tools are unlocked. Design your own experiment. Try shaping a new behavior, testing different schedules, or building a behavior chain. Happy experimenting!',
+              termDef: 'Applied Behavior Analysis (ABA): The science of applying behavioral principles to improve socially significant behavior.',
+              funFact: '🌍 ABA principles are used everywhere — from teaching children with autism to training service dogs, to designing better apps!',
+              vocab: ['Behavior Chain', 'Generalization', 'Maintenance'],
+              contingency: { a: 'Your choice!', b: 'Pick a behavior', c: 'Design the consequence' } },
+            { id: 7, title: 'Chain Reaction', concept: 'Behavior Chaining', target: 'pressLever', goal: 3,
+              intro: 'A behavior chain links multiple behaviors in a specific sequence. The completion of one step becomes the signal (SD) for the next. Teach the mouse this chain: Sniff ➜ Rear Up ➜ Press Lever. Reinforce ONLY when the full 3-step chain is completed!',
+              termDef: 'Behavior Chain: A sequence of responses where each response produces the discriminative stimulus (SD) for the next response, and the last response is followed by a reinforcer.',
+              funFact: '🐕 Service dogs learn behavior chains of 20+ steps — like opening the fridge, grabbing a drink, closing the fridge, and bringing it to their handler!',
+              vocab: ['Behavior Chain', 'Forward Chaining', 'Task Analysis', 'Terminal Reinforcer'],
+              contingency: { a: 'Chain cue', b: 'Sniff→Rear→Lever', c: '🍕 Food (chain complete!)' } },
+            { id: 8, title: 'Not That!', concept: 'DRO — Differential Reinforcement', target: null, goal: 5,
+              intro: 'DRO (Differential Reinforcement of Other behavior) means reinforcing the ABSENCE of a specific behavior for a set time interval. A countdown timer runs — if the mouse does NOT press the lever before the timer finishes, deliver food! If the mouse presses the lever, the timer resets. Deliver 5 successful DRO intervals!',
+              termDef: 'DRO (Differential Reinforcement of Other Behavior): Reinforcement is delivered when a specified behavior does NOT occur for a predetermined interval of time.',
+              funFact: '🏫 Teachers use DRO all the time — "If no one calls out for 5 minutes, the class earns a point!" It reduces unwanted behavior without punishment.',
+              vocab: ['DRO', 'Differential Reinforcement', 'Interval', 'Target Behavior Reduction'],
+              contingency: { a: 'Timer running', b: 'Any behavior EXCEPT lever', c: '🍕 Food (DRO interval met!)' } }
+          ];
+
+          // ── Knowledge Quiz Questions ──
+          var QUIZ_BANK = {
+            1: { q: 'In positive reinforcement, what happens to the behavior?', opts: ['It decreases', 'It increases', 'It stays the same', 'It disappears'], correct: 1, explain: 'Positive reinforcement ADDS a stimulus that INCREASES the future probability of a behavior.' },
+            2: { q: 'What is shaping?', opts: ['Punishing wrong behaviors', 'Reinforcing successive approximations', 'Ignoring all behaviors', 'Only reinforcing the final behavior'], correct: 1, explain: 'Shaping involves differentially reinforcing successive approximations toward the target behavior.' },
+            3: { q: 'What is an extinction burst?', opts: ['A permanent increase in behavior', 'A temporary increase before behavior decreases', 'When a new behavior appears', 'When reinforcement increases'], correct: 1, explain: 'An extinction burst is a temporary INCREASE in the frequency or intensity of a behavior when reinforcement is suddenly discontinued.' },
+            4: { q: 'In an FR-3 schedule, when is reinforcement delivered?', opts: ['After every response', 'After every 3rd response', 'After random responses', 'After 3 minutes'], correct: 1, explain: 'Fixed Ratio (FR-3) delivers reinforcement after every 3rd response — a fixed number of responses.' },
+            5: { q: 'What does SD (discriminative stimulus) signal?', opts: ['Punishment is coming', 'Reinforcement is available', 'Extinction has started', 'The session is over'], correct: 1, explain: 'An SD signals that reinforcement is available for a specific behavior. It "sets the occasion" for that behavior.' },
+            7: { q: 'In a behavior chain, what serves as the SD for the next step?', opts: ['The reinforcer', 'The completion of the previous step', 'A timer', 'The first behavior'], correct: 1, explain: 'In a behavior chain, completing each step produces the discriminative stimulus (SD) for the next step in the sequence.' },
+            8: { q: 'What does DRO reinforce?', opts: ['The target behavior', 'The absence of a specific behavior', 'Only aggressive behaviors', 'Random behaviors'], correct: 1, explain: 'DRO (Differential Reinforcement of Other behavior) delivers reinforcement when a specified behavior does NOT occur for a set interval.' }
+          };
+
+          // ── Chain sequence for Level 7 ──
+          var CHAIN_SEQ = ['sniff', 'rearUp', 'pressLever'];
+
+          // ── State initialization ──
+          var blLevel = d.blLevel || 1;
+          var blPhase = d.blPhase || 'intro';
+          var blTick = d.blTick || 0;
+          var blPaused = d.blPaused || false;
+          var blHistory = d.blHistory || [];
+          var blCumRecord = d.blCumRecord || [];
+          var blReinforcements = d.blReinforcements || 0;
+          var blTarget = d.blTarget || 'pressLever';
+          var blLightOn = d.blLightOn === undefined ? true : d.blLightOn;
+          var blLightColor = d.blLightColor || 'green';
+          var blMouseAction = d.blMouseAction || 'explore';
+          var blMouseX = d.blMouseX || 200;
+          var blMouseY = d.blMouseY || 180;
+          var blMouseDir = d.blMouseDir || 0;
+          var blFoodVisible = d.blFoodVisible || false;
+          var blLevelScore = d.blLevelScore || 0;
+          var blCompletedLevels = d.blCompletedLevels || [];
+          var blExtinctionPhase = d.blExtinctionPhase || false;
+          var blExtinctionStart = d.blExtinctionStart || 0;
+          var blScheduleCount = d.blScheduleCount || 0;
+          var blAbcLog = d.blAbcLog || [];
+          var blLastAction = d.blLastAction || null;
+          var blActionAge = d.blActionAge || 0;
+          var blMouseAngle = d.blMouseAngle || 0;
+          var blSpeed = d.blSpeed || 1;
+          var blShowHints = d.blShowHints === undefined ? true : d.blShowHints;
+          var blFoodTime = d.blFoodTime || 0;
+          var blSoundOn = d.blSoundOn === undefined ? true : d.blSoundOn;
+          var blSandboxTarget = d.blSandboxTarget || 'pressLever';
+          var blParticles = d.blParticles || [];
+          var blDustMotes = d.blDustMotes || [];
+          var blTotalTicks = d.blTotalTicks || 0;
+          var blCorrectReinforcements = d.blCorrectReinforcements || 0;
+          var blBreathPhase = (Date.now() / 1000) % (Math.PI * 2);
+          // Iteration 3 state
+          var blQuizAnswered = d.blQuizAnswered || false;
+          var blQuizCorrect = d.blQuizCorrect || false;
+          var blQuizSelected = d.blQuizSelected === undefined ? -1 : d.blQuizSelected;
+          var blLatencies = d.blLatencies || [];
+          var blLastTargetTick = d.blLastTargetTick || 0;
+          var blChainStep = d.blChainStep || 0;
+          var blChainHistory = d.blChainHistory || [];
+          var blMoodEmoji = d.blMoodEmoji || '😐';
+          var blMoodTimer = d.blMoodTimer || 0;
+          // Iteration 5 state
+          var blDroTimer = d.blDroTimer || 0;
+          var blDroInterval = d.blDroInterval || 6;
+          var blDroSuccesses = d.blDroSuccesses || 0;
+          var blEarTwitchSeed = d.blEarTwitchSeed || Math.random() * 1000;
+          var blSpinAngle = d.blSpinAngle || 0;
+          var blRecentActions = d.blRecentActions || [];
+
+          // ── Sound effects (Web Audio API) ──
+          var _blAudioCtx = null;
+          function blBeep(freq, dur, vol) {
+            if (!blSoundOn) return;
+            try {
+              if (!_blAudioCtx) _blAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+              var osc = _blAudioCtx.createOscillator();
+              var gain = _blAudioCtx.createGain();
+              osc.connect(gain); gain.connect(_blAudioCtx.destination);
+              osc.frequency.value = freq; osc.type = 'sine';
+              gain.gain.value = vol || 0.15;
+              gain.gain.exponentialRampToValueAtTime(0.001, _blAudioCtx.currentTime + (dur || 0.15));
+              osc.start(); osc.stop(_blAudioCtx.currentTime + (dur || 0.15));
+            } catch(e) {}
+          }
+
+          // Default probability weights
+          var defaultWeights = { explore: 30, groom: 15, sniff: 15, pressLever: 5, turnLeft: 10, turnRight: 10, rearUp: 5, freeze: 5, spin: 2, touchWall: 3 };
+          var blWeights = d.blWeights || Object.assign({}, defaultWeights);
+
+          // ── Contextual Hints ──
+          var blHint = '';
+          if (blShowHints && blPhase === 'running') {
+            if (blLevel === 1 && blLevelScore === 0 && blTick > 3) blHint = '\uD83D\uDCA1 Wait for the mouse to press the lever, then click Deliver Food!';
+            else if (blLevel === 1 && blLevelScore > 0 && blLevelScore < 3) blHint = '\uD83D\uDC4D Great! Keep reinforcing lever presses. Watch the probability bar grow!';
+            else if (blLevel === 2 && blLevelScore === 0 && blTick > 5) blHint = '\uD83D\uDCA1 Start by reinforcing turnRight, then wait for spin!';
+            else if (blLevel === 3 && !blExtinctionPhase && blLevelScore >= 5) blHint = '\uD83D\uDCA1 You\'ve reinforced 5 times! Click "Start Extinction" to stop reinforcing.';
+            else if (blLevel === 4 && blTick > 3) blHint = '\uD83D\uDCA1 FR-3: Only reinforce every 3rd lever press (count them!)';
+            else if (blLevel === 5 && blTick > 3) blHint = '\uD83D\uDCA1 Only reinforce when the GREEN light (SD) is on!';
+          }
+
+          var currentLevel = LEVELS.find(function(l) { return l.id === blLevel; }) || LEVELS[0];
+
+          // ── Action labels for display ──
+          var ACTION_LABELS = {
+            explore: '🔍 Exploring', groom: '🧹 Grooming', sniff: '👃 Sniffing',
+            pressLever: '⚡ Pressing Lever!', turnLeft: '↩️ Turning Left', turnRight: '↪️ Turning Right',
+            rearUp: '🐭 Rearing Up', freeze: '🧊 Frozen', spin: '🌀 Spinning!', touchWall: '🧱 Touching Wall'
+          };
+
+          var ACTION_COLORS = {
+            explore: '#60a5fa', groom: '#a78bfa', sniff: '#34d399',
+            pressLever: '#f59e0b', turnLeft: '#f472b6', turnRight: '#f472b6',
+            rearUp: '#fb923c', freeze: '#94a3b8', spin: '#c084fc', touchWall: '#6b7280'
+          };
+
+          // ── Level accent colors ──
+          var LEVEL_COLORS = { 1: '#f59e0b', 2: '#8b5cf6', 3: '#ef4444', 4: '#3b82f6', 5: '#22c55e', 6: '#ec4899', 7: '#a855f7', 8: '#06b6d4' };
+          var lvlAccent = LEVEL_COLORS[blLevel] || '#f59e0b';
+
+          // ── Behavior Engine: Select next action based on weights ──
+          function selectAction() {
+            var total = 0;
+            var keys = Object.keys(blWeights);
+            for (var i = 0; i < keys.length; i++) total += blWeights[keys[i]];
+            var roll = Math.random() * total;
+            var cumulative = 0;
+            for (var j = 0; j < keys.length; j++) {
+              cumulative += blWeights[keys[j]];
+              if (roll <= cumulative) return keys[j];
+            }
+            return 'explore';
+          }
+
+          // ── Reinforce: increase weight of the last action ──
+          function reinforceAction() {
+            if (!blLastAction) return;
+            var actionToReinforce = blLastAction;
+            var newWeights = Object.assign({}, blWeights);
+            newWeights[actionToReinforce] = Math.min((newWeights[actionToReinforce] || 5) + 8, 80);
+
+            // For level 5 (stimulus discrimination), only count if light is correct color
+            if (blLevel === 5 && blLightColor !== 'green') {
+              var newLog = blAbcLog.slice();
+              newLog.unshift({ tick: blTick, a: blLightColor + ' light (S\u0394)', b: ACTION_LABELS[actionToReinforce] || actionToReinforce, c: '\u274C Food (incorrect SD)', t: Date.now() });
+              upd('blAbcLog', newLog.slice(0, 50));
+              if (addToast) addToast('\u274C Only reinforce when the GREEN light (SD) is on!', 'error');
+              return;
+            }
+
+            // Level 7: behavior chain check — only allow reinforce on completed chain
+            if (blLevel === 7) {
+              if (blChainStep < CHAIN_SEQ.length || actionToReinforce !== 'pressLever') {
+                if (addToast) addToast('\u26A0\uFE0F Wait for the full chain: Sniff ➜ Rear Up ➜ Lever!', 'warning');
+                return;
+              }
+            }
+
+            upd('blWeights', newWeights);
+            upd('blReinforcements', blReinforcements + 1);
+            upd('blFoodVisible', true);
+            upd('blFoodTime', Date.now());
+            blBeep(880, 0.12, 0.2);
+            setTimeout(function() { upd('blFoodVisible', false); }, 1200);
+
+            // Mood update — happy!
+            upd('blMoodEmoji', '😊');
+            upd('blMoodTimer', Date.now());
+
+            // Response latency tracking
+            if (blLastTargetTick > 0) {
+              var latencyTicks = blTick - blLastTargetTick;
+              var newLatencies = blLatencies.concat([latencyTicks]);
+              if (newLatencies.length > 50) newLatencies = newLatencies.slice(-50);
+              upd('blLatencies', newLatencies);
+            }
+
+            // Update score
+            var isTargetAction = actionToReinforce === (currentLevel.target || 'pressLever');
+            if (isTargetAction) {
+              upd('blLevelScore', blLevelScore + 1);
+            }
+
+            // Level 7 chain: reset chain step after reinforcement
+            if (blLevel === 7) {
+              upd('blChainStep', 0);
+              upd('blChainHistory', blChainHistory.concat([blTick]));
+            }
+
+            // ABC log
+            var antecedent = blLevel === 5 ? (blLightColor + ' light') : (blLevel === 7 ? 'Chain complete' : 'Chamber');
+            var newLog2 = blAbcLog.slice();
+            newLog2.unshift({ tick: blTick, a: antecedent, b: ACTION_LABELS[actionToReinforce] || actionToReinforce, c: '\uD83C\uDF55 Food pellet (+SR)', t: Date.now() });
+            upd('blAbcLog', newLog2.slice(0, 50));
+
+            // XP
+            if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 2, 'Reinforced ' + actionToReinforce);
+
+            // Level 4: schedule tracking
+            if (blLevel === 4) {
+              upd('blScheduleCount', blScheduleCount + 1);
+            }
+          }
+
+          // ── Advance simulation by one tick ──
+          function advanceTick() {
+            if (blPaused || blPhase !== 'running') return;
+
+            var newTick = blTick + 1;
+            var action = selectAction();
+
+            // Update mouse position based on action
+            var newX = blMouseX;
+            var newY = blMouseY;
+            var newDir = blMouseDir;
+            var newAngle = blMouseAngle;
+
+            switch (action) {
+              case 'explore':
+                newX = Math.max(40, Math.min(360, blMouseX + (Math.random() - 0.5) * 60));
+                newY = Math.max(80, Math.min(230, blMouseY + (Math.random() - 0.5) * 40));
+                newDir = Math.random() > 0.5 ? 1 : -1;
+                break;
+              case 'pressLever':
+                newX = 340; newY = 210;
+                break;
+              case 'turnLeft':
+                newDir = -1;
+                newAngle = blMouseAngle - 90;
+                break;
+              case 'turnRight':
+                newDir = 1;
+                newAngle = blMouseAngle + 90;
+                break;
+              case 'spin':
+                newAngle = blMouseAngle + 360;
+                break;
+              case 'rearUp':
+                newY = Math.max(80, blMouseY - 20);
+                break;
+              case 'touchWall':
+                newX = Math.random() > 0.5 ? 35 : 365;
+                newY = blMouseY;
+                break;
+              case 'sniff':
+                newX = blMouseX + (Math.random() - 0.5) * 20;
+                newY = blMouseY + (Math.random() - 0.5) * 15;
+                break;
+              case 'groom':
+              case 'freeze':
+                // Stay in place
+                break;
+            }
+
+            // Update cumulative record for target behavior
+            var targetAction = currentLevel.target || 'pressLever';
+            var cumCount = blCumRecord.length > 0 ? blCumRecord[blCumRecord.length - 1].cum : 0;
+            if (action === targetAction) {
+              cumCount++;
+              upd('blLastTargetTick', newTick);
+            }
+            // Mark extinction burst on cumulative record
+            var isBurstTick = blLevel === 3 && blExtinctionPhase && (newTick - blExtinctionStart) < 8;
+            var newCumRecord = blCumRecord.concat([{ tick: newTick, cum: cumCount, burst: isBurstTick }]);
+            if (newCumRecord.length > 200) newCumRecord = newCumRecord.slice(-200);
+
+            // Level 7: chain step tracking
+            if (blLevel === 7) {
+              var curChainStep = blChainStep;
+              if (action === CHAIN_SEQ[curChainStep]) {
+                curChainStep++;
+                if (curChainStep <= CHAIN_SEQ.length) {
+                  upd('blChainStep', curChainStep);
+                  if (curChainStep < CHAIN_SEQ.length) {
+                    blBeep(600 + curChainStep * 200, 0.08, 0.12);
+                  } else {
+                    blBeep(1400, 0.2, 0.2);
+                  }
+                }
+              } else if (CHAIN_SEQ.indexOf(action) >= 0 && action !== CHAIN_SEQ[curChainStep]) {
+                // Wrong order — reset chain
+                upd('blChainStep', 0);
+              }
+            }
+
+            // Mood decay
+            if (blMoodTimer > 0 && (Date.now() - blMoodTimer) > 5000) {
+              upd('blMoodEmoji', blReinforcements > 3 ? '🤔' : '😐');
+              upd('blMoodTimer', 0);
+            }
+
+            // History
+            var newHistory = blHistory.concat([{ tick: newTick, action: action }]);
+            if (newHistory.length > 100) newHistory = newHistory.slice(-100);
+
+            // Natural extinction drift (unreinforced actions slowly return to baseline)
+            var newWeights = Object.assign({}, blWeights);
+            var wKeys = Object.keys(newWeights);
+            for (var wi = 0; wi < wKeys.length; wi++) {
+              var wk = wKeys[wi];
+              if (newWeights[wk] > defaultWeights[wk] + 2) {
+                newWeights[wk] = Math.max(defaultWeights[wk], newWeights[wk] - 0.3);
+              }
+            }
+
+            // Level 3: extinction burst simulation
+            if (blLevel === 3 && blExtinctionPhase) {
+              var ticksSinceExtinction = newTick - blExtinctionStart;
+              if (ticksSinceExtinction < 8) {
+                // Extinction burst: INCREASE lever pressing temporarily
+                newWeights.pressLever = Math.min(60, (newWeights.pressLever || 5) + 5);
+              } else if (ticksSinceExtinction < 25) {
+                // Gradual decrease
+                newWeights.pressLever = Math.max(2, (newWeights.pressLever || 5) - 2);
+              }
+            }
+
+            // Level 5: cycle light colors + audio SD cues
+            if (blLevel === 5 && newTick % 8 === 0) {
+              var nextColor = blLightColor === 'green' ? 'red' : 'green';
+              upd('blLightColor', nextColor);
+              if (nextColor === 'green') blBeep(1200, 0.15, 0.18);
+              else blBeep(200, 0.25, 0.12);
+            }
+
+            // Level 8: DRO timer mechanic
+            if (blLevel === 8 && blPhase === 'running') {
+              if (action === 'pressLever') {
+                // Target behavior occurred — reset DRO timer
+                upd('blDroTimer', 0);
+                var droResetLog = blAbcLog.slice();
+                droResetLog.unshift({ tick: newTick, a: 'DRO timer running', b: '⚡ Pressing Lever!', c: '🔄 Timer reset (target occurred)', t: Date.now() });
+                upd('blAbcLog', droResetLog.slice(0, 50));
+                blBeep(200, 0.15, 0.1);
+              } else {
+                var newDroTimer = blDroTimer + 1;
+                if (newDroTimer >= blDroInterval) {
+                  // DRO interval met! Auto-deliver food
+                  upd('blDroTimer', 0);
+                  upd('blDroSuccesses', blDroSuccesses + 1);
+                  upd('blFoodVisible', true);
+                  upd('blFoodTime', Date.now());
+                  upd('blReinforcements', blReinforcements + 1);
+                  upd('blLevelScore', blLevelScore + 1);
+                  upd('blMoodEmoji', '😊');
+                  upd('blMoodTimer', Date.now());
+                  blBeep(880, 0.12, 0.2);
+                  setTimeout(function() { upd('blFoodVisible', false); }, 1200);
+                  var droSuccessLog = blAbcLog.slice();
+                  droSuccessLog.unshift({ tick: newTick, a: 'DRO interval complete', b: 'No lever press for ' + blDroInterval + ' ticks', c: '🍕 Food delivered (DRO success!)', t: Date.now() });
+                  upd('blAbcLog', droSuccessLog.slice(0, 50));
+                  if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 2, 'DRO interval success');
+                  if (addToast) addToast('🍕 DRO interval met! Food delivered.', 'success');
+                } else {
+                  upd('blDroTimer', newDroTimer);
+                }
+              }
+            }
+
+            // Check level completion
+            var justCompleted = false;
+            if (currentLevel.goal > 0 && blLevelScore >= currentLevel.goal && blPhase === 'running') {
+              justCompleted = true;
+              upd('blPhase', 'complete');
+              if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 15, 'Completed Level ' + blLevel + ': ' + currentLevel.title);
+              if (addToast) addToast('\uD83C\uDF89 Level ' + blLevel + ' Complete! ' + currentLevel.concept + ' mastered!', 'success');
+              var newCompleted = blCompletedLevels.indexOf(blLevel) < 0 ? blCompletedLevels.concat([blLevel]) : blCompletedLevels;
+              upd('blCompletedLevels', newCompleted);
+            }
+
+            // Level 3 special: completion is observing the burst
+            if (blLevel === 3 && blExtinctionPhase) {
+              var ticksSince = newTick - blExtinctionStart;
+              if (ticksSince >= 25 && blPhase === 'running') {
+                justCompleted = true;
+                upd('blPhase', 'complete');
+                if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 15, 'Completed Level 3: Observed extinction burst');
+                if (addToast) addToast('\uD83C\uDF89 Level 3 Complete! You observed the extinction burst!', 'success');
+                var newCompleted3 = blCompletedLevels.indexOf(3) < 0 ? blCompletedLevels.concat([3]) : blCompletedLevels;
+                upd('blCompletedLevels', newCompleted3);
+              }
+            }
+
+            // Batch update state
+            upd('blTick', newTick);
+            upd('blMouseAction', action);
+            upd('blMouseX', newX);
+            upd('blMouseY', newY);
+            upd('blMouseDir', newDir);
+            upd('blMouseAngle', newAngle);
+            upd('blHistory', newHistory);
+            upd('blCumRecord', newCumRecord);
+            upd('blWeights', newWeights);
+            upd('blLastAction', action);
+            upd('blActionAge', 0);
+            // Track recent actions for heatmap strip
+            var newRecentActions = blRecentActions.concat([action]);
+            if (newRecentActions.length > 20) newRecentActions = newRecentActions.slice(-20);
+            upd('blRecentActions', newRecentActions);
+          }
+
+          // ── Auto-advance timer (speed-adjusted) ──
+          var tickDelay = blSpeed === 3 ? 500 : blSpeed === 2 ? 900 : 1500;
+          if (blPhase === 'running' && !blPaused) {
+            setTimeout(function() { advanceTick(); }, tickDelay);
+          }
+
+          // ── Canvas Drawing ──
+          function drawChamber(canvas) {
+            if (!canvas) return;
+            var ctx = canvas.getContext('2d');
+            var W = canvas.width = canvas.offsetWidth || 420;
+            var H = canvas.height = 280;
+
+            // Chamber background
+            var chamberGrad = ctx.createLinearGradient(0, 0, 0, H);
+            chamberGrad.addColorStop(0, '#1e1b2e');
+            chamberGrad.addColorStop(1, '#2d2641');
+            ctx.fillStyle = chamberGrad;
+            ctx.fillRect(0, 0, W, H);
+
+            // Chamber walls
+            ctx.strokeStyle = '#6366f1';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(20, 50, W - 40, H - 70);
+
+            // Wall texture lines (subtle horizontal stripes)
+            ctx.strokeStyle = 'rgba(99, 102, 241, 0.06)';
+            ctx.lineWidth = 0.5;
+            for (var wly = 65; wly < H - 30; wly += 15) {
+              ctx.beginPath(); ctx.moveTo(22, wly); ctx.lineTo(W - 22, wly); ctx.stroke();
+            }
+            // Vertical wall texture accents
+            ctx.strokeStyle = 'rgba(99, 102, 241, 0.04)';
+            for (var wlx = 50; wlx < W - 30; wlx += 40) {
+              ctx.beginPath(); ctx.moveTo(wlx, 52); ctx.lineTo(wlx, H - 22); ctx.stroke();
+            }
+
+            // Chamber floor
+            ctx.fillStyle = '#3b3555';
+            ctx.fillRect(20, H - 25, W - 40, 5);
+
+            // Grid lines on floor
+            ctx.strokeStyle = 'rgba(99, 102, 241, 0.15)';
+            ctx.lineWidth = 0.5;
+            for (var gx = 40; gx < W - 20; gx += 20) {
+              ctx.beginPath(); ctx.moveTo(gx, H - 25); ctx.lineTo(gx, H - 20); ctx.stroke();
+            }
+
+            // ─ Light indicator (top-left) ─
+            if (blLevel === 5 || blLevel === 6) {
+              ctx.beginPath();
+              ctx.arc(50, 35, 12, 0, Math.PI * 2);
+              ctx.fillStyle = blLightColor === 'green' ? '#22c55e' : (blLightColor === 'red' ? '#ef4444' : '#6b7280');
+              ctx.fill();
+              ctx.strokeStyle = '#fff';
+              ctx.lineWidth = 1.5;
+              ctx.stroke();
+              ctx.fillStyle = '#e2e8f0';
+              ctx.font = '9px sans-serif';
+              ctx.textAlign = 'center';
+              ctx.fillText(blLightColor === 'green' ? 'SD' : 'S\u0394', 50, 38);
+            }
+
+            // ─ Lever (right side) with depression animation ─
+            var leverX = W - 70;
+            var leverY = H - 55;
+            var leverPressed = blMouseAction === 'pressLever';
+            var leverDepth = leverPressed ? 5 : 0;
+            // Lever shadow when pressed
+            if (leverPressed) {
+              ctx.fillStyle = 'rgba(0,0,0,0.2)';
+              ctx.fillRect(leverX - 1, leverY + leverDepth + 2, 10, 28);
+            }
+            ctx.fillStyle = leverPressed ? '#f59e0b' : '#94a3b8';
+            ctx.fillRect(leverX, leverY + leverDepth, 8, 30 - leverDepth);
+            // Lever base
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(leverX - 4, leverY + 25, 16, 8);
+            // Lever press glow
+            if (leverPressed) {
+              ctx.beginPath();
+              ctx.arc(leverX + 4, leverY + leverDepth + 10, 18, 0, Math.PI * 2);
+              ctx.fillStyle = 'rgba(245,158,11,0.25)';
+              ctx.fill();
+              // Lever spring coil
+              ctx.strokeStyle = '#d97706';
+              ctx.lineWidth = 1;
+              for (var si = 0; si < 3; si++) {
+                ctx.beginPath();
+                ctx.moveTo(leverX + 1, leverY + leverDepth + 2 + si * 3);
+                ctx.lineTo(leverX + 7, leverY + leverDepth + 2 + si * 3);
+                ctx.stroke();
+              }
+            }
+            // Lever label
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '8px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('LEVER', leverX + 4, leverY + 42);
+
+            // ─ Food tray (bottom-left) ─
+            var trayX = 55;
+            var trayY = H - 40;
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(trayX - 15, trayY, 30, 12);
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(trayX - 15, trayY, 30, 12);
+            // Food pellet
+            if (blFoodVisible) {
+              ctx.beginPath();
+              ctx.arc(trayX, trayY + 4, 5, 0, Math.PI * 2);
+              var foodGrad = ctx.createRadialGradient(trayX - 1, trayY + 2, 1, trayX, trayY + 4, 5);
+              foodGrad.addColorStop(0, '#fbbf24');
+              foodGrad.addColorStop(1, '#f59e0b');
+              ctx.fillStyle = foodGrad;
+              ctx.fill();
+              // Food glow (enhanced)
+              ctx.beginPath();
+              ctx.arc(trayX, trayY + 4, 20, 0, Math.PI * 2);
+              ctx.fillStyle = 'rgba(251,191,36,' + (0.12 + Math.sin(Date.now() / 200) * 0.08) + ')';
+              ctx.fill();
+              ctx.beginPath();
+              ctx.arc(trayX, trayY + 4, 30, 0, Math.PI * 2);
+              ctx.fillStyle = 'rgba(245,158,11,' + (0.04 + Math.sin(Date.now() / 400) * 0.03) + ')';
+              ctx.fill();
+              // Particle burst on food delivery
+              var pAge = (Date.now() - (blFoodTime || Date.now())) / 1000;
+              if (pAge < 1.2) {
+                for (var pi = 0; pi < 8; pi++) {
+                  var pAngle = (pi / 8) * Math.PI * 2;
+                  var pDist = pAge * 40 + 5;
+                  var pAlpha = Math.max(0, 1 - pAge / 1.2);
+                  var ppx = trayX + Math.cos(pAngle) * pDist;
+                  var ppy = trayY + 4 + Math.sin(pAngle) * pDist * 0.7;
+                  ctx.beginPath();
+                  ctx.arc(ppx, ppy, 2.5 * (1 - pAge / 1.5), 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(251,191,36,' + (pAlpha * 0.7) + ')';
+                  ctx.fill();
+                }
+              }
+            }
+            // Food dispenser chute
+            ctx.fillStyle = '#374151';
+            ctx.fillRect(trayX - 8, 50, 16, trayY - 50);
+            ctx.strokeStyle = '#4b5563';
+            ctx.lineWidth = 0.5;
+            ctx.strokeRect(trayX - 8, 50, 16, trayY - 50);
+            // Inner chute detail lines
+            ctx.strokeStyle = 'rgba(75,85,99,0.4)';
+            ctx.lineWidth = 0.3;
+            for (var chl = 60; chl < trayY - 10; chl += 12) {
+              ctx.beginPath(); ctx.moveTo(trayX - 6, chl); ctx.lineTo(trayX + 6, chl); ctx.stroke();
+            }
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '7px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('FOOD', trayX, 45);
+            // Food pellet dropping animation through chute
+            if (blFoodVisible) {
+              var dropAge = (Date.now() - (blFoodTime || Date.now())) / 1000;
+              if (dropAge < 0.5) {
+                var dropProgress = Math.min(1, dropAge / 0.4);
+                var chuteLength = trayY - 55;
+                var dropY = 55 + chuteLength * dropProgress;
+                ctx.beginPath();
+                ctx.arc(trayX, dropY, 3.5, 0, Math.PI * 2);
+                var dropGrad = ctx.createRadialGradient(trayX - 0.5, dropY - 1, 0.5, trayX, dropY, 3.5);
+                dropGrad.addColorStop(0, '#fde68a');
+                dropGrad.addColorStop(1, '#f59e0b');
+                ctx.fillStyle = dropGrad;
+                ctx.fill();
+                // Motion trail
+                if (dropProgress < 0.8) {
+                  ctx.beginPath();
+                  ctx.moveTo(trayX, dropY - 4);
+                  ctx.lineTo(trayX - 2, dropY - 12);
+                  ctx.lineTo(trayX + 2, dropY - 12);
+                  ctx.closePath();
+                  ctx.fillStyle = 'rgba(251,191,36,' + (0.3 * (1 - dropProgress)) + ')';
+                  ctx.fill();
+                }
+              }
+            }
+
+            // ─ Dust motes (ambient particles) ─
+            for (var dm = 0; dm < 6; dm++) {
+              var dmSeed = dm * 137.5;
+              var dmX = 30 + ((dmSeed + Date.now() * 0.008) % (W - 60));
+              var dmY = 60 + Math.sin(Date.now() / 2000 + dm) * 30 + (dm * 30);
+              if (dmY < H - 30) {
+                ctx.beginPath();
+                ctx.arc(dmX, dmY, 0.8, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(148, 163, 184, ' + (0.15 + Math.sin(Date.now() / 1500 + dm * 2) * 0.1) + ')';
+                ctx.fill();
+              }
+            }
+
+            // ─ Mouse sprite ─
+            var mx = blMouseX;
+            var my = blMouseY;
+            var dir = blMouseDir || 1;
+
+            // Action-specific animation
+            var actionBounce = 0;
+            var actionGlow = null;
+            var walkCycle = Math.sin(Date.now() / 120) * 3;
+            var isMoving = blMouseAction === 'explore' || blMouseAction === 'turnLeft' || blMouseAction === 'turnRight' || blMouseAction === 'touchWall';
+            switch (blMouseAction) {
+              case 'pressLever': actionGlow = '#f59e0b'; break;
+              case 'spin': actionGlow = '#c084fc'; actionBounce = -3; break;
+              case 'rearUp': actionBounce = -12; break;
+              case 'groom': actionBounce = Math.sin(Date.now() / 200) * 2; break;
+              case 'freeze': actionGlow = '#94a3b8'; break;
+              case 'sniff': actionBounce = Math.sin(Date.now() / 150) * 1.5; break;
+              case 'explore': actionBounce = Math.abs(walkCycle) * 0.3; break;
+              default: break;
+            }
+
+            // Breathing animation
+            var breathScale = 1 + Math.sin(Date.now() / 800) * 0.02;
+
+            ctx.save();
+            ctx.translate(mx, my);
+            // Spin rotation: rotate entire mouse during spin action
+            if (blMouseAction === 'spin') {
+              var spinProgress = ((Date.now() % (tickDelay || 1500)) / (tickDelay || 1500));
+              ctx.rotate(spinProgress * Math.PI * 2);
+            }
+            ctx.scale(breathScale, breathScale);
+
+            // Action glow
+            if (actionGlow) {
+              ctx.beginPath();
+              ctx.ellipse(0, actionBounce - 2, 28, 18, 0, 0, Math.PI * 2);
+              ctx.fillStyle = actionGlow + '33';
+              ctx.fill();
+            }
+
+
+            // Mouse body
+            ctx.beginPath();
+            ctx.ellipse(0, actionBounce, 20, 11, 0, 0, Math.PI * 2);
+            var bodyGrad = ctx.createRadialGradient(0, actionBounce - 4, 2, 0, actionBounce, 20);
+            var breathTint = Math.sin(Date.now() / 800) * 8;
+            var bR = Math.min(255, Math.round(212 + breathTint));
+            var bG = Math.min(255, Math.round(212 + breathTint));
+            var bB = Math.min(255, Math.round(216 + breathTint));
+            bodyGrad.addColorStop(0, 'rgb(' + bR + ',' + bG + ',' + bB + ')');
+            bodyGrad.addColorStop(1, '#9ca3af');
+            ctx.fillStyle = bodyGrad;
+            ctx.fill();
+            ctx.strokeStyle = '#6b7280';
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+
+            // Mouse head (tracks toward lever/food)
+            var headTilt = dir * 0.2;
+            var headOffX = dir * 18;
+            var headOffY = actionBounce - 4;
+            if (blMouseAction === 'pressLever') {
+              // Tilt head toward lever (right side)
+              headTilt = dir * 0.35;
+              headOffX = dir * 20;
+            } else if (blFoodVisible) {
+              // Look toward food tray (left side)
+              headTilt = -dir * 0.15;
+              headOffX = dir * 15;
+              headOffY = actionBounce - 2;
+            } else if (blMouseAction === 'sniff') {
+              // Nose-down sniffing tilt
+              headTilt = dir * 0.1;
+              headOffY = actionBounce - 1;
+            }
+            ctx.beginPath();
+            ctx.ellipse(headOffX, headOffY, 10, 8, headTilt, 0, Math.PI * 2);
+            ctx.fillStyle = '#d4d4d8';
+            ctx.fill();
+            ctx.strokeStyle = '#6b7280';
+            ctx.lineWidth = 0.6;
+            ctx.stroke();
+
+            // Ears (with subtle random twitch)
+            var earTwitch1 = Math.sin(Date.now() / 700 + blEarTwitchSeed) * 0.15;
+            var earTwitch2 = Math.sin(Date.now() / 1100 + blEarTwitchSeed * 2.3) * 0.12;
+            var earScale1 = 1 + Math.sin(Date.now() / 900 + blEarTwitchSeed) * 0.08;
+            var earScale2 = 1 + Math.sin(Date.now() / 1300 + blEarTwitchSeed * 1.7) * 0.06;
+            ctx.beginPath();
+            ctx.ellipse(dir * 14, actionBounce - 14, 6 * earScale1, 5 * earScale1, earTwitch1, 0, Math.PI * 2);
+            ctx.fillStyle = '#fca5a5';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(dir * 22, actionBounce - 12, 5 * earScale2, 4 * earScale2, earTwitch2, 0, Math.PI * 2);
+            ctx.fillStyle = '#fca5a5';
+            ctx.fill();
+
+            // Eye
+            ctx.beginPath();
+            ctx.arc(dir * 24, actionBounce - 5, 2, 0, Math.PI * 2);
+            ctx.fillStyle = '#1e1b2e';
+            ctx.fill();
+            // Eye shine
+            ctx.beginPath();
+            ctx.arc(dir * 24.5, actionBounce - 6, 0.7, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+
+            // Nose
+            ctx.beginPath();
+            ctx.arc(dir * 27, actionBounce - 3, 1.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#f472b6';
+            ctx.fill();
+
+            // Tail (enhanced speed-reactive wobble, stronger after food)
+            var tailSpeedMult = blSpeed === 3 ? 1.4 : blSpeed === 2 ? 1.15 : 1;
+            var tailBaseFreq = 180 / tailSpeedMult;
+            var tailWag = Math.sin(Date.now() / tailBaseFreq) * 6;
+            var isHappy = blMoodEmoji === '😊';
+            var recentFood = blFoodVisible || (blFoodTime && (Date.now() - blFoodTime) < 2000);
+            if (isHappy || recentFood) {
+              tailWag = Math.sin(Date.now() / (60 / tailSpeedMult)) * 14;
+            }
+            if (isMoving) tailWag *= 1.3;
+            ctx.beginPath();
+            ctx.moveTo(-dir * 18, actionBounce);
+            ctx.bezierCurveTo(
+              -dir * 26, actionBounce - 10 + tailWag * 0.7,
+              -dir * 33, actionBounce - 18 + tailWag,
+              -dir * 40, actionBounce - 10 - tailWag * 0.5
+            );
+            ctx.strokeStyle = '#fca5a5';
+            ctx.lineWidth = recentFood ? 2 : 1.5;
+            ctx.stroke();
+
+            // Whiskers
+            for (var wi = -1; wi <= 1; wi++) {
+              ctx.beginPath();
+              ctx.moveTo(dir * 25, actionBounce - 3 + wi * 3);
+              ctx.lineTo(dir * 36, actionBounce - 5 + wi * 5);
+              ctx.strokeStyle = '#9ca3af';
+              ctx.lineWidth = 0.4;
+              ctx.stroke();
+            }
+
+            // Feet (small ovals) with walking animation
+            if (blMouseAction !== 'rearUp') {
+              var footOffset = isMoving ? walkCycle : 0;
+              ctx.beginPath();
+              ctx.ellipse(-8 + footOffset * 0.5, actionBounce + 10, 4, 2, 0, 0, Math.PI * 2);
+              ctx.fillStyle = '#fca5a5';
+              ctx.fill();
+              ctx.beginPath();
+              ctx.ellipse(8 - footOffset * 0.5, actionBounce + 10, 4, 2, 0, 0, Math.PI * 2);
+              ctx.fillStyle = '#fca5a5';
+              ctx.fill();
+              // Back feet (walking offset)
+              if (isMoving) {
+                ctx.beginPath();
+                ctx.ellipse(-5 - footOffset * 0.4, actionBounce + 11, 3, 1.5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#f9a8a8';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(5 + footOffset * 0.4, actionBounce + 11, 3, 1.5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#f9a8a8';
+                ctx.fill();
+              }
+            }
+
+            ctx.restore();
+
+            // ─ Mood emoji indicator ─
+            ctx.font = '16px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(blMoodEmoji, mx, my - 30);
+
+            // ─ Action label ─
+            var actionLabel = ACTION_LABELS[blMouseAction] || blMouseAction;
+            ctx.fillStyle = ACTION_COLORS[blMouseAction] || '#94a3b8';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(actionLabel, mx, 48);
+
+            // ─ Tick counter ─
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText('Tick: ' + blTick, W - 25, 20);
+            ctx.textAlign = 'left';
+            ctx.fillText('Score: ' + blLevelScore + (currentLevel.goal > 0 ? '/' + currentLevel.goal : ''), 25, 20);
+
+            // ─ PAUSED overlay ─
+            if (blPaused) {
+              ctx.fillStyle = 'rgba(0,0,0,0.5)';
+              ctx.fillRect(0, 0, W, H);
+              ctx.fillStyle = '#f59e0b';
+              ctx.font = 'bold 28px sans-serif';
+              ctx.textAlign = 'center';
+              ctx.fillText('\u23F8 PAUSED', W / 2, H / 2);
+            }
+          }
+
+          // ── Cumulative Record Drawing ──
+          function drawCumRecord(canvas) {
+            if (!canvas) return;
+            var ctx = canvas.getContext('2d');
+            var W = canvas.width = canvas.offsetWidth || 420;
+            var H = canvas.height = 130;
+            var data = blCumRecord;
+
+            // Background
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, W, H);
+
+            // Title
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('CUMULATIVE RECORD', 10, 14);
+
+            // Axes
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(35, 5);
+            ctx.lineTo(35, H - 20);
+            ctx.lineTo(W - 10, H - 20);
+            ctx.stroke();
+
+            // Y-axis label
+            ctx.save();
+            ctx.translate(10, H / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillStyle = '#64748b';
+            ctx.font = '8px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Responses', 0, 0);
+            ctx.restore();
+
+            // X-axis label
+            ctx.fillStyle = '#64748b';
+            ctx.font = '8px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Time (ticks)', W / 2, H - 4);
+
+            if (data.length < 2) {
+              ctx.fillStyle = '#475569';
+              ctx.font = '11px sans-serif';
+              ctx.textAlign = 'center';
+              ctx.fillText('Waiting for data...', W / 2, H / 2);
+              return;
+            }
+
+            // Draw line
+            var maxCum = Math.max(data[data.length - 1].cum, 5);
+            var plotW = W - 50;
+            var plotH = H - 35;
+            var startTick = data[0].tick;
+            var endTick = data[data.length - 1].tick;
+            var tickRange = Math.max(endTick - startTick, 1);
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 2;
+            for (var i = 0; i < data.length; i++) {
+              var px = 40 + ((data[i].tick - startTick) / tickRange) * plotW;
+              var py = (H - 25) - (data[i].cum / maxCum) * plotH;
+              if (i === 0) ctx.moveTo(px, py);
+              else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+
+            // Extinction burst markers (red zone on graph)
+            if (blLevel === 3 && blExtinctionPhase) {
+              for (var bi = 0; bi < data.length; bi++) {
+                if (data[bi].burst) {
+                  var bpx = 40 + ((data[bi].tick - startTick) / tickRange) * plotW;
+                  ctx.beginPath();
+                  ctx.moveTo(bpx, 20); ctx.lineTo(bpx, H - 20);
+                  ctx.strokeStyle = 'rgba(239,68,68,0.15)';
+                  ctx.lineWidth = 4;
+                  ctx.stroke();
+                }
+              }
+              // Burst label
+              ctx.fillStyle = '#ef4444';
+              ctx.font = 'bold 8px sans-serif';
+              ctx.textAlign = 'center';
+              var burstLabelX = W * 0.7;
+              ctx.fillText('EXTINCTION BURST ↑', burstLabelX, 28);
+            }
+
+            // Data point dots
+            ctx.fillStyle = '#fbbf24';
+            for (var j = Math.max(0, data.length - 30); j < data.length; j++) {
+              var dpx = 40 + ((data[j].tick - startTick) / tickRange) * plotW;
+              var dpy = (H - 25) - (data[j].cum / maxCum) * plotH;
+              ctx.beginPath();
+              ctx.arc(dpx, dpy, 2, 0, Math.PI * 2);
+              ctx.fill();
+            }
+
+            // Response rate
+            if (data.length > 5) {
+              var recentData = data.slice(-10);
+              var recentResponses = recentData[recentData.length - 1].cum - recentData[0].cum;
+              var recentTicks = recentData[recentData.length - 1].tick - recentData[0].tick;
+              var rate = recentTicks > 0 ? (recentResponses / recentTicks * 60 / 1.5).toFixed(1) : '0.0';
+              ctx.fillStyle = '#fbbf24';
+              ctx.font = 'bold 9px sans-serif';
+              ctx.textAlign = 'right';
+              ctx.fillText('Rate: ' + rate + ' resp/min', W - 15, 14);
+            }
+          }
+
+          // ── Render canvases via setTimeout (no hooks in conditional IIFE) ──
+          setTimeout(function() {
+            var chamberCv = document.getElementById('bl-chamber-canvas');
+            var cumCv = document.getElementById('bl-cumrecord-canvas');
+            drawChamber(chamberCv);
+            drawCumRecord(cumCv);
+          }, 0);
+
+          // ── Weight bar chart data ──
+          var sortedWeights = Object.keys(blWeights).map(function(k) {
+            return { action: k, weight: blWeights[k], isTarget: k === (currentLevel.target || 'pressLever') };
+          }).sort(function(a, b) { return b.weight - a.weight; });
+
+          var maxWeight = Math.max.apply(null, sortedWeights.map(function(w) { return w.weight; }));
+
+          // ═══════════ RENDER ═══════════
+          // Intro Phase
+          if (blPhase === 'intro') {
+            return React.createElement("div", { className: "p-6 space-y-4", style: { maxWidth: 700, margin: '0 auto' } },
+              // Header
+              React.createElement("div", { className: "flex items-center gap-3 mb-2" },
+                React.createElement("button", {
+                  onClick: function() { setStemLabTool(null); },
+                  className: "text-2xl hover:scale-110 transition-transform", 'aria-label': 'Back to tools'
+                }, "\u2B05"),
+                React.createElement("div", null,
+                  React.createElement("h2", { className: "text-lg font-extrabold text-white" }, "\uD83D\uDC2D Behavior Shaping Lab"),
+                  React.createElement("p", { className: "text-xs text-indigo-300" }, "Level " + blLevel + ": " + currentLevel.title + " \u2014 " + currentLevel.concept)
+                )
+              ),
+              // Level select
+              React.createElement("div", { className: "flex gap-2 flex-wrap mb-3" },
+                LEVELS.map(function(lvl) {
+                  var unlocked = lvl.id === 1 || blCompletedLevels.indexOf(lvl.id - 1) >= 0 || lvl.id === 6;
+                  var isCurrent = lvl.id === blLevel;
+                  var isComplete = blCompletedLevels.indexOf(lvl.id) >= 0;
+                  return React.createElement("button", {
+                    key: lvl.id,
+                    disabled: !unlocked,
+                    onClick: function() {
+                      upd('blLevel', lvl.id);
+                      upd('blPhase', 'intro');
+                      upd('blLevelScore', 0);
+                      upd('blTick', 0);
+                      upd('blHistory', []);
+                      upd('blCumRecord', []);
+                      upd('blAbcLog', []);
+                      upd('blWeights', Object.assign({}, defaultWeights));
+                      upd('blExtinctionPhase', false);
+                      upd('blScheduleCount', 0);
+                      upd('blLightColor', 'green');
+                    },
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
+                      (isCurrent ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30' :
+                       isComplete ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/50' :
+                       unlocked ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' :
+                       'bg-slate-800 text-slate-600 cursor-not-allowed')
+                  }, (isComplete ? '\u2705 ' : '') + lvl.id + '. ' + lvl.title);
+                })
+              ),
+              // Intro card
+              React.createElement("div", { className: "bg-gradient-to-br from-amber-900/40 to-orange-900/30 border border-amber-500/30 rounded-2xl p-6 space-y-3" },
+                React.createElement("h3", { className: "text-base font-extrabold text-amber-300" }, "\uD83C\uDFAF " + currentLevel.concept),
+                React.createElement("p", { className: "text-sm text-slate-300 leading-relaxed" }, currentLevel.intro),
+                React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-slate-600/40" },
+                  React.createElement("p", { className: "text-xs text-amber-200 font-bold mb-1" }, "\uD83D\uDCD6 Key Term:"),
+                  React.createElement("p", { className: "text-xs text-slate-300 italic" }, currentLevel.termDef)
+                ),
+                currentLevel.goal > 0 && React.createElement("p", { className: "text-xs text-amber-400 font-bold" },
+                  "\uD83C\uDFAF Goal: " + (blLevel === 3 ? "Reinforce 5 lever presses, then stop and observe!" : "Get " + currentLevel.goal + " " + (currentLevel.target || 'target') + " responses!")
+                )
+              ),
+              // Start button
+              React.createElement("button", {
+                onClick: function() {
+                  upd('blPhase', 'running');
+                  upd('blTick', 0);
+                  upd('blHistory', []);
+                  upd('blCumRecord', []);
+                  upd('blAbcLog', []);
+                  upd('blLevelScore', 0);
+                  upd('blWeights', Object.assign({}, defaultWeights));
+                  upd('blFoodVisible', false);
+                  upd('blMouseX', 200);
+                  upd('blMouseY', 180);
+                  upd('blExtinctionPhase', false);
+                  upd('blScheduleCount', 0);
+                  upd('blLightColor', 'green');
+                },
+                className: "w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold text-base shadow-lg shadow-amber-500/30 hover:from-amber-600 hover:to-orange-600 transition-all hover:scale-[1.02]"
+              }, "\uD83D\uDE80 Start Experiment")
+            );
+          }
+
+          // ── Pulsing helper: is the current action the target? ──
+          var isTargetActive = blPhase === 'running' && blLastAction === (blLevel === 6 ? blSandboxTarget : (currentLevel.target || 'pressLever'));
+          var pulseStyle = isTargetActive ? { animation: 'bl-pulse 1s ease-in-out infinite', boxShadow: '0 0 18px rgba(245,158,11,0.55)' } : {};
+
+          // ── FR counter for Level 4 ──
+          var frRatio = 3;
+          var frCurrent = blLevel === 4 ? (blScheduleCount % frRatio) : 0;
+
+          // ── Glass style shorthand ──
+          var glass = { backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)' };
+
+          // Running Phase & Complete Phase
+          return React.createElement("div", { className: "p-4 space-y-3", style: { maxWidth: 720, margin: '0 auto' } },
+            // ── Inject keyframe animation for pulse ──
+            React.createElement("style", null,
+              '@keyframes bl-pulse{0%,100%{box-shadow:0 0 6px rgba(245,158,11,0.3)}50%{box-shadow:0 0 22px rgba(245,158,11,0.7)}}' +
+              '@keyframes bl-progress-glow{0%,100%{opacity:0.7}50%{opacity:1}}'
+            ),
+
+            // ── Header row ──
+            React.createElement("div", { className: "flex items-center gap-3 flex-wrap",
+              style: Object.assign({ background: 'rgba(30,27,46,0.7)', borderRadius: 16, padding: '10px 14px', border: '1px solid rgba(99,102,241,0.2)' }, glass) },
+              React.createElement("button", {
+                onClick: function() { upd('blPhase', 'intro'); },
+                className: "text-xl hover:scale-110 transition-transform", 'aria-label': 'Back to level select'
+              }, "\u2B05"),
+              React.createElement("div", { className: "flex-1 min-w-0" },
+                React.createElement("h2", { className: "text-sm font-extrabold text-white truncate" }, "Level " + blLevel + ": " + currentLevel.title),
+                React.createElement("p", { className: "text-xs text-amber-300" }, currentLevel.concept)
+              ),
+              // ── Speed segmented control ──
+              React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-slate-600/50", style: { fontSize: 11 } },
+                [1, 2, 3].map(function(sp) {
+                  return React.createElement("button", {
+                    key: sp,
+                    onClick: function() { upd('blSpeed', sp); },
+                    className: "px-2.5 py-1 font-bold transition-all " +
+                      (blSpeed === sp ? 'bg-amber-500 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700')
+                  }, sp + '\u00D7');
+                })
+              ),
+              // ── Sound toggle ──
+              React.createElement("button", {
+                onClick: function() { upd('blSoundOn', !blSoundOn); },
+                className: "px-2 py-1 rounded-lg text-sm transition-all " +
+                  (blSoundOn ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'),
+                'aria-label': blSoundOn ? 'Mute' : 'Unmute', title: blSoundOn ? 'Sound On' : 'Sound Off'
+              }, blSoundOn ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
+              // ── Pause button ──
+              React.createElement("button", {
+                onClick: function() { upd('blPaused', !blPaused); },
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (blPaused ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+              }, blPaused ? '\u25B6 Resume' : '\u23F8 Pause')
+            ),
+
+            // ── Level progress bar ──
+            currentLevel.goal > 0 && React.createElement("div", { className: "relative", style: { height: 10, borderRadius: 6, overflow: 'hidden', background: 'rgba(30,41,59,0.8)', border: '1px solid rgba(99,102,241,0.15)' } },
+              React.createElement("div", {
+                style: {
+                  width: Math.min(100, Math.round((blLevelScore / currentLevel.goal) * 100)) + '%',
+                  height: '100%', borderRadius: 6,
+                  background: 'linear-gradient(90deg, ' + lvlAccent + ', #fbbf24)',
+                  transition: 'width 0.5s ease',
+                  animation: 'bl-progress-glow 2s ease-in-out infinite'
+                }
+              }),
+              React.createElement("span", {
+                style: { position: 'absolute', right: 6, top: -1, fontSize: 8, fontWeight: 700, color: '#e2e8f0', lineHeight: '12px' }
+              }, blLevelScore + '/' + currentLevel.goal)
+            ),
+
+            // ── Contextual hint banner ──
+            blHint && React.createElement("div", {
+              style: Object.assign({ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 12, padding: '8px 14px' }, glass)
+            },
+              React.createElement("p", { className: "text-xs text-indigo-200 font-medium", style: { margin: 0 } }, blHint)
+            ),
+
+            // ── Completion results card ──
+            blPhase === 'complete' && React.createElement("div", {
+              style: Object.assign({ background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(20,184,166,0.15))', border: '1px solid rgba(52,211,153,0.35)', borderRadius: 18, padding: '20px 22px' }, glass)
+            },
+              // Star rating (efficiency-based)
+              (function() {
+                var efficiency = blTick > 0 ? blReinforcements / blTick : 0;
+                var stars = efficiency > 0.6 ? 3 : efficiency > 0.3 ? 2 : 1;
+                return React.createElement("p", { className: "text-2xl text-center mb-1", style: { letterSpacing: 4, textShadow: '0 0 12px rgba(251,191,36,0.5)' } },
+                  '⭐'.repeat(stars) + '☆'.repeat(3 - stars)
+                );
+              })(),
+              React.createElement("p", { className: "text-lg font-extrabold text-emerald-300 text-center mb-3" }, "\uD83C\uDF89 Level " + blLevel + " Complete!"),
+              React.createElement("p", { className: "text-sm text-emerald-200 text-center mb-4" }, "You demonstrated " + currentLevel.concept + "!"),
+              // Results grid
+              React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-4" },
+                React.createElement("div", { className: "bg-slate-900/50 rounded-xl p-3 text-center border border-slate-700/40" },
+                  React.createElement("p", { className: "text-lg font-extrabold text-amber-400" }, '' + blReinforcements),
+                  React.createElement("p", { className: "text-[10px] text-slate-400" }, "Reinforcements")
+                ),
+                React.createElement("div", { className: "bg-slate-900/50 rounded-xl p-3 text-center border border-slate-700/40" },
+                  React.createElement("p", { className: "text-lg font-extrabold text-indigo-400" }, '' + blTick),
+                  React.createElement("p", { className: "text-[10px] text-slate-400" }, "Ticks to Complete")
+                ),
+                React.createElement("div", { className: "bg-slate-900/50 rounded-xl p-3 text-center border border-slate-700/40" },
+                  React.createElement("p", { className: "text-lg font-extrabold text-emerald-400" },
+                    blTick > 0 ? (blLevelScore / blTick * 60).toFixed(1) : '0.0'),
+                  React.createElement("p", { className: "text-[10px] text-slate-400" }, "Resp Rate / min")
+                ),
+                blLatencies.length > 0 && React.createElement("div", { className: "bg-slate-900/50 rounded-xl p-3 text-center border border-slate-700/40" },
+                  React.createElement("p", { className: "text-lg font-extrabold text-purple-400" },
+                    (blLatencies.reduce(function(a,b){return a+b;},0) / blLatencies.length).toFixed(1)),
+                  React.createElement("p", { className: "text-[10px] text-slate-400" }, "Avg Latency (ticks)")
+                )
+              ),
+              // Vocab list
+              React.createElement("div", { className: "bg-slate-900/40 rounded-xl p-3 border border-slate-700/30 mb-3" },
+                React.createElement("p", { className: "text-xs font-bold text-amber-300 mb-1" }, "\uD83D\uDCD6 Key Vocabulary:"),
+                React.createElement("ul", { className: "space-y-0.5" },
+                  (currentLevel.vocab || []).map(function(v, vi) {
+                    return React.createElement("li", { key: vi, className: "text-xs text-slate-300" }, '\u2022 ' + v);
+                  })
+                )
+              ),
+              // ── Knowledge Quiz ──
+              QUIZ_BANK[blLevel] && React.createElement("div", { className: "bg-gradient-to-br from-indigo-900/40 to-purple-900/30 rounded-xl p-4 border border-indigo-500/30" },
+                React.createElement("p", { className: "text-xs font-bold text-indigo-300 mb-2" }, "🧠 Knowledge Check"),
+                React.createElement("p", { className: "text-sm text-slate-200 font-semibold mb-3" }, QUIZ_BANK[blLevel].q),
+                React.createElement("div", { className: "space-y-1.5" },
+                  QUIZ_BANK[blLevel].opts.map(function(opt, oi) {
+                    var isSelected = blQuizSelected === oi;
+                    var isCorrect = oi === QUIZ_BANK[blLevel].correct;
+                    var showResult = blQuizAnswered;
+                    var btnClass = 'w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-all border ';
+                    if (showResult && isCorrect) btnClass += 'bg-emerald-600/40 text-emerald-200 border-emerald-500/50';
+                    else if (showResult && isSelected && !isCorrect) btnClass += 'bg-red-600/40 text-red-200 border-red-500/50';
+                    else if (isSelected) btnClass += 'bg-indigo-600/40 text-indigo-200 border-indigo-400/50';
+                    else btnClass += 'bg-slate-800/60 text-slate-300 border-slate-600/30 hover:bg-slate-700/60';
+                    return React.createElement("button", {
+                      key: oi,
+                      disabled: blQuizAnswered,
+                      onClick: function() {
+                        upd('blQuizSelected', oi);
+                        upd('blQuizAnswered', true);
+                        var correct = oi === QUIZ_BANK[blLevel].correct;
+                        upd('blQuizCorrect', correct);
+                        if (correct) {
+                          if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 5, 'Quiz correct: Level ' + blLevel);
+                          if (addToast) addToast('✅ Correct! +5 XP bonus!', 'success');
+                        } else {
+                          if (addToast) addToast('❌ Not quite — read the explanation below.', 'error');
+                        }
+                      },
+                      className: btnClass
+                    }, String.fromCharCode(65 + oi) + '. ' + opt);
+                  })
+                ),
+                blQuizAnswered && React.createElement("div", {
+                  className: "mt-3 p-3 rounded-lg text-xs " + (blQuizCorrect ? 'bg-emerald-900/30 text-emerald-200 border border-emerald-700/30' : 'bg-red-900/30 text-red-200 border border-red-700/30')
+                },
+                  React.createElement("p", { className: "font-bold mb-1" }, blQuizCorrect ? '✅ Correct!' : '❌ Incorrect'),
+                  React.createElement("p", null, QUIZ_BANK[blLevel].explain)
+                )
+              ),
+              // Fun fact
+              React.createElement("div", { className: "bg-slate-900/40 rounded-xl p-3 border border-indigo-700/30" },
+                React.createElement("p", { className: "text-xs text-indigo-200 italic" }, currentLevel.funFact)
+              ),
+              // Next level button
+              React.createElement("button", {
+                onClick: function() {
+                  var nextLevel = Math.min(blLevel + 1, LEVELS.length);
+                  upd('blLevel', nextLevel);
+                  upd('blPhase', 'intro');
+                  upd('blLevelScore', 0);
+                  upd('blTick', 0);
+                  upd('blHistory', []);
+                  upd('blCumRecord', []);
+                  upd('blAbcLog', []);
+                  upd('blWeights', Object.assign({}, defaultWeights));
+                  upd('blExtinctionPhase', false);
+                  // Reset quiz state for next level
+                  upd('blQuizAnswered', false);
+                  upd('blQuizCorrect', false);
+                  upd('blQuizSelected', -1);
+                  // Reset chain state
+                  upd('blChainStep', 0);
+                  upd('blChainHistory', []);
+                  // Reset latency
+                  upd('blLatencies', []);
+                  upd('blLastTargetTick', 0);
+                },
+                className: "w-full mt-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-extrabold text-sm shadow-lg shadow-emerald-500/25 hover:from-emerald-600 hover:to-teal-600 transition-all hover:scale-[1.02]"
+              }, "\u27A1\uFE0F Next Level")
+            ),
+
+            // ── Chamber Canvas ──
+            React.createElement("div", {
+              style: Object.assign({ borderRadius: 18, overflow: 'hidden', border: '2px solid rgba(99,102,241,0.25)', boxShadow: '0 8px 32px rgba(99,102,241,0.12)' }, glass)
+            },
+              React.createElement("canvas", {
+                id: "bl-chamber-canvas",
+                style: { width: '100%', height: 280, display: 'block', cursor: 'crosshair' }
+              })
+            ),
+
+            // ── Behavior frequency heatmap strip ──
+            blRecentActions.length > 0 && React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 12, padding: '8px 12px', border: '1px solid rgba(71,85,105,0.25)' }, glass)
+            },
+              React.createElement("p", { className: "text-[9px] text-slate-500 font-bold mb-1.5 uppercase tracking-wider" }, "\uD83D\uDD25 Recent Behaviors"),
+              React.createElement("div", { className: "flex gap-1 items-center flex-wrap" },
+                blRecentActions.map(function(act, ai) {
+                  return React.createElement("div", {
+                    key: ai,
+                    title: ACTION_LABELS[act] || act,
+                    style: {
+                      width: 14, height: 14, borderRadius: '50%',
+                      backgroundColor: ACTION_COLORS[act] || '#475569',
+                      opacity: 0.5 + (ai / blRecentActions.length) * 0.5,
+                      transition: 'all 0.3s ease',
+                      cursor: 'pointer',
+                      border: act === (currentLevel.target || 'pressLever') ? '2px solid #fbbf24' : '1px solid rgba(255,255,255,0.1)'
+                    }
+                  });
+                })
+              )
+            ),
+
+            // ── Controls row ──
+            React.createElement("div", { className: "flex gap-2 flex-wrap items-center" },
+              // Deliver Food button (pulsing when target active)
+              // Level 8: disable manual food (DRO is automatic)
+              blLevel === 8 ? React.createElement("div", {
+                className: "flex-1 py-2.5 rounded-xl text-center text-cyan-300 font-bold text-xs",
+                style: { background: 'rgba(8,145,178,0.2)', border: '1px solid rgba(6,182,212,0.3)', borderRadius: 12 }
+              }, "\u23F1 Automatic (DRO) — food delivered when timer completes") :
+              React.createElement("button", {
+                onClick: function() {
+                  if (blLevel === 3 && blExtinctionPhase) {
+                    if (addToast) addToast('\u26A0\uFE0F Extinction phase: do NOT reinforce!', 'warning');
+                    return;
+                  }
+                  reinforceAction();
+                },
+                disabled: !blLastAction || blPhase !== 'running',
+                className: "flex-1 py-2.5 rounded-xl font-bold text-sm transition-all " +
+                  (blLastAction && blPhase === 'running'
+                    ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md hover:from-amber-600 hover:to-yellow-600 hover:scale-[1.02]"
+                    : "bg-slate-700 text-slate-500 cursor-not-allowed"),
+                style: pulseStyle
+              }, "\uD83C\uDF55 Deliver Food" + (blLevel === 4 ? '  (' + frCurrent + '/' + frRatio + ')' : '')),
+              // Level 3: extinction trigger
+              blLevel === 3 && !blExtinctionPhase && blLevelScore >= 5 && React.createElement("button", {
+                onClick: function() {
+                  upd('blExtinctionPhase', true);
+                  upd('blExtinctionStart', blTick);
+                  if (addToast) addToast('\uD83D\uDEAB Extinction phase started! Do NOT deliver food.', 'info');
+                },
+                className: "flex-1 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition-colors shadow-md"
+              }, "\uD83D\uDEAB Start Extinction"),
+              blLevel === 3 && blExtinctionPhase && React.createElement("div", {
+                className: "flex-1 py-2.5 rounded-xl text-center text-red-300 font-bold text-xs",
+                style: { background: 'rgba(127,29,29,0.35)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 12 }
+              }, "\u23F3 Extinction in progress... watch the burst!"),
+              // Level 6: sandbox target selector
+              blLevel === 6 && React.createElement("select", {
+                value: blSandboxTarget,
+                onChange: function(e) { upd('blSandboxTarget', e.target.value); },
+                'aria-label': 'Target behavior selector',
+                className: "px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 text-indigo-300 border border-indigo-500/30 cursor-pointer",
+                style: Object.assign({}, glass)
+              },
+                Object.keys(ACTION_LABELS).map(function(ak) {
+                  return React.createElement("option", { key: ak, value: ak }, ACTION_LABELS[ak]);
+                })
+              )
+            ),
+
+            // ── Level 7: Chain Progress Tracker ──
+            blLevel === 7 && blPhase === 'running' && React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '12px 14px', border: '1px solid rgba(139,92,246,0.3)' }, glass)
+            },
+              React.createElement("p", { className: "text-[10px] text-purple-400 font-bold mb-2 uppercase tracking-wider" }, "\uD83D\uDD17 Chain Progress"),
+              React.createElement("div", { className: "flex items-center justify-center gap-2" },
+                CHAIN_SEQ.map(function(step, si) {
+                  var isDone = si < blChainStep;
+                  var isCurrent = si === blChainStep;
+                  var stepLabel = step === 'sniff' ? '👃 Sniff' : step === 'rearUp' ? '🐭 Rear Up' : '⚡ Press Lever';
+                  return React.createElement(React.Fragment, { key: si },
+                    si > 0 && React.createElement("span", {
+                      className: "text-sm font-bold " + (isDone ? 'text-emerald-400' : 'text-slate-600')
+                    }, "➜"),
+                    React.createElement("div", {
+                      className: "px-3 py-2 rounded-xl text-xs font-bold text-center transition-all " +
+                        (isDone ? 'bg-emerald-600/40 text-emerald-200 border border-emerald-500/40 shadow-md shadow-emerald-500/10' :
+                         isCurrent ? 'bg-amber-600/40 text-amber-200 border border-amber-500/40 ring-2 ring-amber-400/50 animate-pulse' :
+                         'bg-slate-800/60 text-slate-500 border border-slate-700/40')
+                    }, (isDone ? '✅ ' : isCurrent ? '⏳ ' : '') + stepLabel)
+                  );
+                }),
+                blChainStep >= CHAIN_SEQ.length && React.createElement("span", {
+                  className: "ml-2 px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-500 text-white animate-pulse shadow-lg shadow-amber-500/30"
+                }, "🍕 REINFORCE NOW!")
+              ),
+              React.createElement("p", { className: "text-[10px] text-slate-500 text-center mt-2" },
+                "Completed chains: " + blChainHistory.length + (currentLevel.goal > 0 ? '/' + currentLevel.goal : ''))
+            ),
+
+            // ── Level 8: DRO Timer Panel ──
+            blLevel === 8 && blPhase === 'running' && React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '12px 14px', border: '1px solid rgba(6,182,212,0.3)' }, glass)
+            },
+              React.createElement("p", { className: "text-[10px] text-cyan-400 font-bold mb-2 uppercase tracking-wider" }, "\u23F1 DRO Timer"),
+              // Timer bar
+              React.createElement("div", { className: "relative mb-2",
+                style: { height: 16, borderRadius: 8, overflow: 'hidden', background: 'rgba(30,41,59,0.8)', border: '1px solid rgba(6,182,212,0.2)' }
+              },
+                React.createElement("div", {
+                  style: {
+                    width: Math.round((blDroTimer / blDroInterval) * 100) + '%',
+                    height: '100%', borderRadius: 8,
+                    background: 'linear-gradient(90deg, #06b6d4, #22d3ee)',
+                    transition: 'width 0.4s ease'
+                  }
+                }),
+                React.createElement("span", {
+                  style: { position: 'absolute', left: '50%', top: 1, transform: 'translateX(-50%)', fontSize: 9, fontWeight: 700, color: '#e2e8f0' }
+                }, blDroTimer + ' / ' + blDroInterval + ' ticks')
+              ),
+              React.createElement("div", { className: "flex items-center justify-between" },
+                React.createElement("p", { className: "text-xs text-slate-400" },
+                  '\u2705 DRO Successes: ' + blDroSuccesses + (currentLevel.goal > 0 ? '/' + currentLevel.goal : '')),
+                React.createElement("p", { className: "text-[10px] text-cyan-300/60 italic" },
+                  blDroTimer === 0 ? 'Timer started — no lever presses needed!' : 'Keep waiting...')
+              )
+            ),
+
+            // ── Current action + stats ──
+            React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+              // Last action
+              React.createElement("div", {
+                style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '12px 14px', border: '1px solid rgba(71,85,105,0.3)' }, glass)
+              },
+                React.createElement("p", { className: "text-[10px] text-slate-500 font-bold mb-0.5 uppercase tracking-wider" }, "Last Behavior"),
+                React.createElement("p", { className: "text-sm font-extrabold", style: { color: ACTION_COLORS[blMouseAction] || '#94a3b8' } },
+                  ACTION_LABELS[blMouseAction] || 'Waiting...')
+              ),
+              // Stats
+              React.createElement("div", {
+                style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '12px 14px', border: '1px solid rgba(71,85,105,0.3)' }, glass)
+              },
+                React.createElement("p", { className: "text-[10px] text-slate-500 font-bold mb-0.5 uppercase tracking-wider" }, "Session Stats"),
+                React.createElement("p", { className: "text-xs text-amber-300" }, "\uD83C\uDF55 Reinforcements: " + blReinforcements),
+                React.createElement("p", { className: "text-xs text-emerald-300" }, "\uD83C\uDFAF Target hits: " + blLevelScore + (currentLevel.goal > 0 ? '/' + currentLevel.goal : '')),
+                blLatencies.length > 0 && React.createElement("p", { className: "text-xs text-purple-300" }, "\u23F1 Avg Latency: " + (blLatencies.reduce(function(a,b){return a+b;},0) / blLatencies.length).toFixed(1) + " ticks"),
+                blLevel === 4 && React.createElement("p", { className: "text-xs text-blue-300 mt-0.5" }, "\uD83D\uDD22 FR-3 count: " + frCurrent + " / " + frRatio)
+              )
+            ),
+
+            // ── Probability Weights bar chart ──
+            React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(71,85,105,0.3)' }, glass)
+            },
+              React.createElement("p", { className: "text-[10px] text-slate-500 font-bold mb-2 uppercase tracking-wider" }, "\uD83D\uDCCA Behavior Probability Weights"),
+              React.createElement("div", { className: "space-y-1" },
+                sortedWeights.map(function(w) {
+                  var pct = maxWeight > 0 ? Math.round((w.weight / maxWeight) * 100) : 0;
+                  var isSandboxTarget = blLevel === 6 && w.action === blSandboxTarget;
+                  var highlight = w.isTarget || isSandboxTarget;
+                  return React.createElement("div", { key: w.action, className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-[11px] w-20 truncate " + (highlight ? 'text-amber-300 font-bold' : 'text-slate-400') },
+                      (highlight ? '\uD83C\uDFAF ' : '') + w.action),
+                    React.createElement("div", { className: "flex-1 h-3.5 rounded-full overflow-hidden", style: { background: 'rgba(30,41,59,0.6)' } },
+                      React.createElement("div", {
+                        className: "h-full rounded-full transition-all duration-500",
+                        style: {
+                          width: pct + '%',
+                          background: highlight ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : (ACTION_COLORS[w.action] || '#475569')
+                        }
+                      })
+                    ),
+                    React.createElement("span", { className: "text-[11px] text-slate-500 w-8 text-right font-mono" }, Math.round(w.weight))
+                  );
+                })
+              )
+            ),
+
+            // ── Cumulative Record ──
+            React.createElement("div", {
+              style: Object.assign({ borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(245,158,11,0.2)' }, glass)
+            },
+              React.createElement("canvas", {
+                id: "bl-cumrecord-canvas",
+                style: { width: '100%', height: 130, display: 'block' }
+              })
+            ),
+
+            // ── ABC Log with CSV export ──
+            blAbcLog.length > 0 && React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(71,85,105,0.3)' }, glass)
+            },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("p", { className: "text-[10px] text-slate-500 font-bold uppercase tracking-wider" }, "\uD83D\uDCCB ABC Data Log"),
+                // CSV Export button
+                React.createElement("button", {
+                  onClick: function() {
+                    var csvRows = ['Tick,Antecedent,Behavior,Consequence,Timestamp'];
+                    blAbcLog.forEach(function(e) {
+                      csvRows.push([e.tick, '"' + (e.a || '') + '"', '"' + (e.b || '') + '"', '"' + (e.c || '') + '"', e.t || ''].join(','));
+                    });
+                    var blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url; a.download = 'abc_log_level' + blLevel + '.csv';
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    if (addToast) addToast('\uD83D\uDCE5 ABC log exported as CSV!', 'success');
+                  },
+                  className: "px-3 py-1 rounded-lg text-[10px] font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all border border-slate-600/40"
+                }, "\uD83D\uDCE5 Export CSV")
+              ),
+              React.createElement("div", { className: "space-y-0.5 max-h-40 overflow-y-auto" },
+                blAbcLog.slice(0, 15).map(function(entry, idx) {
+                  return React.createElement("div", { key: idx, className: "flex gap-2 text-xs py-1 border-b border-slate-700/30" },
+                    React.createElement("span", { className: "text-slate-500 w-8 font-mono" }, '#' + entry.tick),
+                    React.createElement("span", { className: "text-blue-300 w-24 truncate", title: 'Antecedent: ' + entry.a }, "A: " + entry.a),
+                    React.createElement("span", { className: "text-amber-300 flex-1 truncate", title: 'Behavior: ' + entry.b }, "B: " + entry.b),
+                    React.createElement("span", { className: "text-emerald-300 w-36 truncate", title: 'Consequence: ' + entry.c }, "C: " + entry.c)
+                  );
+                })
+              )
+            ),
+
+            // ── Contingency diagram ──
+            React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(139,92,246,0.2)' }, glass)
+            },
+              React.createElement("p", { className: "text-[10px] text-slate-500 font-bold mb-2 uppercase tracking-wider" }, "\uD83D\uDD17 Three-Term Contingency"),
+              React.createElement("div", { className: "flex items-center gap-2 justify-center flex-wrap" },
+                React.createElement("div", { className: "bg-blue-900/40 rounded-lg px-3 py-2 text-center border border-blue-700/30 min-w-[80px]" },
+                  React.createElement("p", { className: "text-[9px] text-blue-400 font-bold" }, "ANTECEDENT"),
+                  React.createElement("p", { className: "text-xs text-blue-200 font-medium" }, currentLevel.contingency.a)
+                ),
+                React.createElement("span", { className: "text-indigo-400 text-lg font-bold" }, "\u2192"),
+                React.createElement("div", { className: "bg-amber-900/40 rounded-lg px-3 py-2 text-center border border-amber-700/30 min-w-[80px]" },
+                  React.createElement("p", { className: "text-[9px] text-amber-400 font-bold" }, "BEHAVIOR"),
+                  React.createElement("p", { className: "text-xs text-amber-200 font-medium" }, currentLevel.contingency.b)
+                ),
+                React.createElement("span", { className: "text-indigo-400 text-lg font-bold" }, "\u2192"),
+                React.createElement("div", { className: "bg-emerald-900/40 rounded-lg px-3 py-2 text-center border border-emerald-700/30 min-w-[80px]" },
+                  React.createElement("p", { className: "text-[9px] text-emerald-400 font-bold" }, "CONSEQUENCE"),
+                  React.createElement("p", { className: "text-xs text-emerald-200 font-medium" }, currentLevel.contingency.c)
+                )
+              )
+            )
+          );
+        })(),
+
 
 
 
