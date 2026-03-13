@@ -32087,6 +32087,30 @@
           var macroYear = d.macroYear || 2025;
           var macroHistory = d.macroHistory || [];
 
+          // ── Achievement Tracking ──
+          var econAchievements = [];
+          if ((d.pfCash || 0) >= 100000) econAchievements.push({ icon: '\uD83D\uDCB0', title: 'Six Figures', desc: 'Saved $100K+' });
+          if ((d.pfCash || 0) >= 1000000) econAchievements.push({ icon: '\uD83D\uDC8E', title: 'Millionaire', desc: 'Net worth $1M+' });
+          if ((d.pfAge || 22) >= 65 && (d.pfCash || 0) > 500000) econAchievements.push({ icon: '\uD83C\uDFD6\uFE0F', title: 'Comfortable Retirement', desc: 'Retired with $500K+' });
+          if ((d.pfCredit || 650) >= 800) econAchievements.push({ icon: '\u2B50', title: 'Excellent Credit', desc: 'Credit score 800+' });
+          if ((d.pfHappiness || 70) >= 95) econAchievements.push({ icon: '\uD83C\uDF1F', title: 'Living the Dream', desc: '95%+ happiness' });
+          if ((d.pfDebt || 0) === 0 && (d.pfAge || 22) > 25) econAchievements.push({ icon: '\u2705', title: 'Debt Free', desc: 'Eliminated all debt' });
+          var smTotalVal = (d.smCash || 10000) + (d.smCompanies || []).reduce(function(s,c) { return s + ((d.smPortfolio || {})[c.ticker] || 0) * c.price; }, 0);
+          if (smTotalVal >= 15000) econAchievements.push({ icon: '\uD83D\uDCC8', title: 'Market Gains', desc: 'Portfolio grew 50%+' });
+          if (smTotalVal >= 25000) econAchievements.push({ icon: '\uD83D\uDE80', title: 'Wall Street Wolf', desc: 'Portfolio hit $25K' });
+          if ((d.smDay || 0) >= 30) econAchievements.push({ icon: '\uD83D\uDCC5', title: 'Seasoned Trader', desc: '30+ trading days' });
+          if ((d.enBizDay || 0) >= 20) econAchievements.push({ icon: '\uD83C\uDFC6', title: 'Business Survivor', desc: '20+ days in business' });
+          if ((d.enBizCash || 0) >= 50000) econAchievements.push({ icon: '\uD83D\uDCBC', title: 'Tycoon', desc: 'Business cash $50K+' });
+          if ((d.enBizRep || 0) >= 90) econAchievements.push({ icon: '\uD83C\uDF1F', title: '5-Star Business', desc: 'Reputation 90+' });
+          if ((d.enBizEmployees || 0) >= 5) econAchievements.push({ icon: '\uD83D\uDC65', title: 'Job Creator', desc: 'Hired 5+ employees' });
+          if ((d.macroHistory || []).length >= 10) econAchievements.push({ icon: '\uD83C\uDFDB\uFE0F', title: 'Policy Veteran', desc: '10+ years of policy' });
+          if (macroGDP >= 5) econAchievements.push({ icon: '\uD83D\uDCC8', title: 'Economic Boom', desc: 'GDP growth 5%+' });
+          if (macroUnemployment <= 2) econAchievements.push({ icon: '\uD83D\uDCAA', title: 'Full Employment', desc: 'Unemployment <2%' });
+          var conceptsLearned = (d.econGlossary || []).length;
+          if (conceptsLearned >= 5) econAchievements.push({ icon: '\uD83D\uDCDA', title: 'Student', desc: '5+ concepts learned' });
+          if (conceptsLearned >= 15) econAchievements.push({ icon: '\uD83C\uDF93', title: 'Economics Major', desc: '15+ concepts learned' });
+          if (conceptsLearned >= 30) econAchievements.push({ icon: '\uD83E\uDDD1\u200D\uD83C\uDF93', title: 'PhD Economist', desc: '30+ concepts learned' });
+
           // ── Canvas Rendering ──
           React.useEffect(function() {
             var canvas = canvasRef.current;
@@ -32510,7 +32534,19 @@
               }, '\u2190'),
               React.createElement('h2', { className: 'text-xl font-bold text-slate-800' }, '\uD83D\uDCB0 Economics Lab'),
               React.createElement('span', { className: 'text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full' }, '5 simulators'),
-              React.createElement('span', { className: 'text-[9px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' }, '\uD83D\uDCDA AI-Powered Learning')
+              React.createElement('span', { className: 'text-[9px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' }, '\uD83D\uDCDA AI-Powered Learning'),
+              econAchievements.length > 0 && React.createElement('span', {
+                className: 'text-[9px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 cursor-pointer',
+                onClick: function() { upd('showAchievements', !(d.showAchievements)); }
+              }, '\uD83C\uDFC6 ' + econAchievements.length + ' achievements'),
+              React.createElement('span', {
+                className: 'text-[9px] text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200 cursor-pointer',
+                onClick: function() { upd('showGlossary', !(d.showGlossary)); }
+              }, '\uD83D\uDCD6 Glossary (' + (d.econGlossary || []).length + ')'),
+              React.createElement('button', {
+                onClick: function() { upd('showQuiz', !(d.showQuiz)); },
+                className: 'text-[9px] text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 cursor-pointer font-bold'
+              }, '\u270D\uFE0F Quiz Me')
             ),
             // Tab bar
             React.createElement('div', { className: 'flex gap-1 mb-4 bg-slate-100 rounded-xl p-1' },
@@ -32528,6 +32564,104 @@
                     (econTab === tab.id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700')
                 }, tab.label);
               })
+            ),
+            // Achievement panel
+            d.showAchievements && React.createElement('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200 mb-4' },
+              React.createElement('div', { className: 'flex justify-between items-center mb-3' },
+                React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC6 Achievements (' + econAchievements.length + '/20)'),
+                React.createElement('button', { onClick: function() { upd('showAchievements', false); }, className: 'text-amber-400 hover:text-amber-600 text-xs' }, '\u2715')
+              ),
+              React.createElement('div', { className: 'grid grid-cols-4 gap-2' },
+                econAchievements.map(function(a, ai) {
+                  return React.createElement('div', { key: ai, className: 'bg-white rounded-lg p-2 text-center border border-amber-100 shadow-sm' },
+                    React.createElement('div', { className: 'text-xl' }, a.icon),
+                    React.createElement('div', { className: 'text-[9px] font-bold text-amber-800 mt-1' }, a.title),
+                    React.createElement('div', { className: 'text-[8px] text-amber-600' }, a.desc)
+                  );
+                })
+              )
+            ),
+            // Glossary panel
+            d.showGlossary && React.createElement('div', { className: 'bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-4 border border-violet-200 mb-4 max-h-60 overflow-y-auto' },
+              React.createElement('div', { className: 'flex justify-between items-center mb-3' },
+                React.createElement('h4', { className: 'text-sm font-bold text-violet-800' }, '\uD83D\uDCD6 Economics Glossary (' + (d.econGlossary || []).length + ' concepts learned)'),
+                React.createElement('button', { onClick: function() { upd('showGlossary', false); }, className: 'text-violet-400 hover:text-violet-600 text-xs' }, '\u2715')
+              ),
+              (d.econGlossary || []).length === 0 ? React.createElement('p', { className: 'text-xs text-violet-500 text-center py-4' }, 'Play the simulations to discover economics concepts! Each event teaches a new concept that gets added here.') :
+              React.createElement('div', { className: 'space-y-2' },
+                (d.econGlossary || []).map(function(g, gi) {
+                  return React.createElement('div', { key: gi, className: 'bg-white rounded-lg p-2 border border-violet-100' },
+                    React.createElement('div', { className: 'flex items-center gap-2' },
+                      React.createElement('span', { className: 'text-[9px] px-1.5 py-0.5 rounded bg-violet-100 text-violet-700 font-bold' }, g.tab),
+                      React.createElement('span', { className: 'text-[10px] font-bold text-slate-700' }, g.concept)
+                    ),
+                    React.createElement('p', { className: 'text-[9px] text-slate-500 mt-1' }, g.explanation)
+                  );
+                })
+              )
+            ),
+            // Quiz mode
+            d.showQuiz && React.createElement('div', { className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200 mb-4' },
+              React.createElement('div', { className: 'flex justify-between items-center mb-3' },
+                React.createElement('h4', { className: 'text-sm font-bold text-rose-800' }, '\u270D\uFE0F Economics Quiz'),
+                React.createElement('button', { onClick: function() { upd('showQuiz', false); upd('quizQuestion', null); }, className: 'text-rose-400 hover:text-rose-600 text-xs' }, '\u2715')
+              ),
+              d.quizQuestion ? React.createElement('div', null,
+                React.createElement('p', { className: 'text-xs text-slate-700 font-bold mb-3' }, d.quizQuestion.question),
+                React.createElement('div', { className: 'grid gap-2' },
+                  (d.quizQuestion.options || []).map(function(opt, oi) {
+                    var isAnswered = d.quizAnswer !== undefined && d.quizAnswer !== null;
+                    var isCorrect = oi === d.quizQuestion.correctIndex;
+                    var isSelected = d.quizAnswer === oi;
+                    return React.createElement('button', {
+                      key: oi,
+                      onClick: function() {
+                        if (isAnswered) return;
+                        upd('quizAnswer', oi);
+                        upd('quizScore', (d.quizScore || 0) + (oi === d.quizQuestion.correctIndex ? 1 : 0));
+                        upd('quizTotal', (d.quizTotal || 0) + 1);
+                      },
+                      className: 'w-full text-left p-3 rounded-xl border-2 text-xs transition-all ' +
+                        (isAnswered && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
+                         isAnswered && isSelected && !isCorrect ? 'border-red-400 bg-red-50 text-red-800' :
+                         isAnswered ? 'border-slate-200 bg-white text-slate-400' :
+                         'border-rose-100 bg-white hover:border-rose-400 text-slate-700')
+                    }, (isAnswered && isCorrect ? '\u2705 ' : isAnswered && isSelected ? '\u274C ' : '') + opt);
+                  })
+                ),
+                d.quizAnswer !== undefined && d.quizAnswer !== null && React.createElement('div', { className: 'mt-3 bg-white rounded-lg p-3 border border-rose-100' },
+                  React.createElement('p', { className: 'text-xs text-slate-600' },
+                    React.createElement('span', { className: 'font-bold text-rose-700' }, '\uD83D\uDCDA Explanation: '),
+                    d.quizQuestion.explanation
+                  )
+                ),
+                d.quizAnswer !== undefined && d.quizAnswer !== null && React.createElement('button', {
+                  onClick: function() { upd('quizQuestion', null); upd('quizAnswer', null); },
+                  className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-rose-100 text-rose-700 border border-rose-200'
+                }, '\u27A1\uFE0F Next Question')
+              ) :
+              React.createElement('div', { className: 'text-center' },
+                React.createElement('div', { className: 'text-xs text-slate-500 mb-2' }, 'Score: ' + (d.quizScore || 0) + '/' + (d.quizTotal || 0) + (d.quizTotal > 0 ? ' (' + Math.round((d.quizScore || 0)/(d.quizTotal || 1)*100) + '%)' : '')),
+                React.createElement('button', {
+                  onClick: function() {
+                    upd('quizLoading', true);
+                    var topics = (d.econGlossary || []).map(function(g) { return g.concept; }).join(', ') || 'supply and demand, inflation, GDP, interest rates, opportunity cost';
+                    var prompt = 'You are an economics teacher creating a quiz. The student has studied these topics: ' + topics + '.\n\nGenerate 1 multiple-choice question. Return ONLY valid JSON:\n{"question":"<question text>","options":["<option A>","<option B>","<option C>","<option D>"],"correctIndex":<0-3>,"explanation":"<2-3 sentence explanation of the correct answer and the underlying economic concept>"}\n\nMake questions that test UNDERSTANDING, not just definitions. Include real-world application questions, cause-and-effect reasoning, and scenario-based problems. Vary difficulty.';
+                    callGemini(prompt, true).then(function(result) {
+                      try {
+                        var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+                        var s = cleaned.indexOf('{'); if (s > 0) cleaned = cleaned.substring(s);
+                        var e = cleaned.lastIndexOf('}'); if (e > 0) cleaned = cleaned.substring(0, e + 1);
+                        upd('quizQuestion', JSON.parse(cleaned));
+                        upd('quizAnswer', null);
+                        upd('quizLoading', false);
+                      } catch(err) { upd('quizLoading', false); if (addToast) addToast('Quiz generation failed', 'error'); }
+                    }).catch(function() { upd('quizLoading', false); });
+                  },
+                  disabled: d.quizLoading,
+                  className: 'py-3 px-8 rounded-xl text-sm font-bold transition-all ' + (d.quizLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-rose-500 to-pink-500 text-white hover:shadow-lg')
+                }, d.quizLoading ? '\u23F3 Generating...' : '\uD83C\uDFB2 Generate Quiz Question')
+              )
             ),
             // Macro indicators banner (always visible)
             (d.macroHistory || []).length > 0 && React.createElement('div', { className: 'flex gap-2 mb-2 bg-slate-800 rounded-lg px-3 py-1.5 text-[9px] font-mono text-slate-300 overflow-x-auto' },
@@ -32633,6 +32767,11 @@
                       upd('sdPriceCeiling', d.sdScenario.priceCeiling || 0);
                       upd('sdTax', d.sdScenario.tax || 0);
                       if (addToast) addToast('\u2705 Scenario applied to graph!', 'success');
+                      if (d.sdScenario && d.sdScenario.lesson) {
+                        var gl5 = (d.econGlossary || []).slice();
+                        var exists5 = gl5.some(function(g) { return g.concept === d.sdScenario.title; });
+                        if (!exists5) { gl5.push({ tab: 'S&D', concept: d.sdScenario.title, explanation: d.sdScenario.lesson }); upd('econGlossary', gl5); }
+                      }
                     },
                     className: 'w-full py-2 rounded-lg text-xs font-bold bg-violet-500 text-white mb-1'
                   }, '\u2705 Apply Scenario to Graph'),
@@ -32692,6 +32831,12 @@
                         upd('lifeEvent', null);
                         upd('pfLoading', false);
                         if (addToast) addToast((eff.cash >= 0 ? '\uD83D\uDCB0 +$' : '\uD83D\uDCC9 -$') + Math.abs(eff.cash || 0).toLocaleString() + ' | ' + choice.label, eff.cash >= 0 ? 'success' : 'warning');
+                        // Auto-add lesson to glossary
+                        if (d.lifeEvent && d.lifeEvent.lesson) {
+                          var gl = (d.econGlossary || []).slice();
+                          var exists = gl.some(function(g) { return g.concept === d.lifeEvent.title; });
+                          if (!exists) { gl.push({ tab: 'Life Sim', concept: d.lifeEvent.title, explanation: d.lifeEvent.lesson }); upd('econGlossary', gl); }
+                        }
                       },
                       className: 'w-full text-left p-3 rounded-xl border-2 border-indigo-100 hover:border-indigo-400 bg-white hover:bg-indigo-50 transition-all text-xs group'
                     },
@@ -32885,6 +33030,11 @@
                         upd('smCompanies', newCos);
                         upd('smDay', smDay + 1);
                         upd('smNewsEvent', { headline: parsed.headline, analysis: parsed.analysis, impact: maxImpact, lesson: parsed.lesson });
+                        if (parsed.lesson) {
+                          var gl2 = (d.econGlossary || []).slice();
+                          var exists2 = gl2.some(function(g) { return g.concept === parsed.headline; });
+                          if (!exists2) { gl2.push({ tab: 'Stock Market', concept: parsed.headline, explanation: parsed.lesson }); upd('econGlossary', gl2); }
+                        }
                         upd('smLoading', false);
                       } catch(e) {
                         console.error('[StockSim] Parse error:', e);
@@ -33038,6 +33188,11 @@
                         h2.push({ day: d.enBizDay || 1, revenue: dayResult.revenue, costs: dayResult.costs, profit: dailyProfit, customers: dayResult.customersToday });
                         upd('enBizHistory', h2);
                         upd('enBizEvent', dayResult);
+                        if (dayResult.lesson) {
+                          var gl3 = (d.econGlossary || []).slice();
+                          var exists3 = gl3.some(function(g) { return g.concept === dayResult.title; });
+                          if (!exists3) { gl3.push({ tab: 'Business', concept: dayResult.title, explanation: dayResult.lesson }); upd('econGlossary', gl3); }
+                        }
                         upd('enBizLoading', false);
                       } catch(e4) { upd('enBizLoading', false); if (addToast) addToast('Day sim failed. Try again!', 'error'); console.error('[BizSim]', e4); }
                     }).catch(function(e5) { upd('enBizLoading', false); if (addToast) addToast('AI error', 'error'); });
