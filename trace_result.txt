@@ -1,0 +1,50 @@
+L33590 P=1 dp=1 B=0 db=0 | scienceGate && React.createElement('div', { className: 'bg-gradient-to
+L33595 P=2 dp=1 B=0 db=0 | scienceGate.options && React.createElement('div', { className: 'grid g
+L33596 P=3 dp=1 B=1 db=1 | scienceGate.options.map(function(opt2, oi2) {
+L33597 P=4 dp=1 B=2 db=1 | return React.createElement('button', {
+L33599 P=4 dp=0 B=3 db=1 | onClick: function() {
+L33601 P=4 dp=0 B=4 db=1 | if (correct3) {
+L33609 P=4 dp=0 B=5 db=1 | if (scienceGate._wonderId) {
+L33613 P=4 dp=0 B=6 db=1 | if (wProg >= scienceGate._wonderChallenges) {
+L33625 P=4 dp=0 B=5 db=-1 | }
+L33630 P=4 dp=0 B=4 db=-1 | }
+L33632 P=4 dp=0 B=5 db=1 | if (scienceGate._researchId) {
+L33642 P=4 dp=0 B=4 db=-1 | }
+L33645 P=5 dp=1 B=5 db=1 | callGemini('You are narrating a space colony game. The colony just bui
+L33650 P=4 dp=-1 B=4 db=-1 | });
+L33655 P=4 dp=0 B=3 db=-1 | }
+L33656 P=4 dp=0 B=4 db=1 | if (scienceGate.explanation) {
+L33660 P=4 dp=0 B=3 db=-1 | }
+L33663 P=4 dp=0 B=2 db=-1 | },
+L33665 P=3 dp=-1 B=1 db=-1 | }, String.fromCharCode(65 + oi2) + '. ' + opt2);
+L33666 P=2 dp=-1 B=0 db=-1 | })
+L33667 P=1 dp=-1 B=0 db=0 | ),
+L33669 P=2 dp=1 B=0 db=0 | !scienceGate.options && React.createElement('div', { className: 'flex 
+L33670 P=3 dp=1 B=1 db=1 | React.createElement('input', { type: 'text', value: d.scienceGateInput
+L33672 P=2 dp=-1 B=0 db=-1 | placeholder: 'Type your answer...', className: 'flex-1 px-3 py-2 bg-pu
+L33673 P=3 dp=1 B=2 db=2 | React.createElement('button', { id: 'kepler-gate-btn', onClick: functi
+L33676 P=3 dp=0 B=3 db=1 | if (correct) {
+L33685 P=3 dp=0 B=2 db=-1 | } else { if (addToast) addToast('\u274C Incorrect! Study and try again
+L33687 P=2 dp=-1 B=0 db=-2 | }, className: 'px-4 py-2 bg-purple-500 text-white rounded-xl text-xs f
+L33689 P=1 dp=-1 B=0 db=0 | ),
+L33691 P=2 dp=1 B=0 db=0 | d.buildNarration && React.createElement('div', { className: 'bg-green-
+L33692 P=3 dp=1 B=0 db=0 | React.createElement('div', { className: 'flex justify-between items-ce
+L33695 P=2 dp=-1 B=0 db=0 | ),
+L33697 P=1 dp=-1 B=0 db=0 | ),
+L33699 P=2 dp=1 B=0 db=0 | d.gateExplanation && React.createElement('div', { className: 'mt-2 bg-
+L33702 P=1 dp=-1 B=0 db=0 | ),
+L33704 P=0 dp=-1 B=0 db=0 | ),
+L33706 P=1 dp=1 B=0 db=0 | d.showSettlers && React.createElement('div', { className: 'bg-slate-80
+L33708 P=3 dp=2 B=1 db=1 | React.createElement('div', { className: 'grid grid-cols-3 gap-2' }, se
+L33709 P=4 dp=1 B=1 db=0 | return React.createElement('div', { key: si2, className: 'bg-slate-900
+L33713 P=5 dp=1 B=1 db=0 | React.createElement('div', { className: 'mt-1 grid grid-cols-2 gap-1 t
+L33716 P=6 dp=1 B=2 db=1 | React.createElement('button', {
+L33717 P=6 dp=0 B=3 db=1 | onClick: function() {
+L33720 P=7 dp=1 B=4 db=1 | callGemini('You are ' + st.name + ', a ' + st.role + ' (specialty: ' +
+L33724 P=6 dp=-1 B=3 db=-1 | }).catch(function() { upd('settlerChatLoading', false); });
+L33725 P=6 dp=0 B=2 db=-1 | },
+L33727 P=4 dp=-2 B=1 db=-1 | }, '\uD83D\uDCAC Talk'))
+L33728 P=3 dp=-1 B=1 db=0 | )
+L33729 P=2 dp=-1 B=1 db=0 | );
+L33730 P=0 dp=-2 B=0 db=-1 | }))
+L33731 P=-1 dp=-1 B=0 db=0 | ),

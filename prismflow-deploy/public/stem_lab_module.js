@@ -23418,7 +23418,6 @@
                     onClick: function () { upd('showGlossary', d.showGlossary === false ? true : (d.showGlossary === undefined ? false : !d.showGlossary)); }
                   }, '\uD83D\uDCDA Key Terms ' + (d.showGlossary === false ? '\u25BC' : '\u25B2')),
                   (d.showGlossary !== false) && React.createElement("div", { className: "space-y-1 max-h-40 overflow-y-auto" },
-                  React.createElement("div", { className: "space-y-1 max-h-40 overflow-y-auto" },
                     [
                       { term: 'Dorsal', def: 'Back/upper surface of the organism' },
                       { term: 'Ventral', def: 'Belly/lower surface of the organism' },
@@ -29775,68 +29774,7 @@
             }
             // Award XP
             if (choice.xp && typeof awardStemXP === 'function') awardStemXP('aquarium', choice.xp, 'AI Event: ' + aiEvent.title);
-            // Terraforming Progress
-                React.createElement('div', { className: 'bg-gradient-to-r from-emerald-900/50 to-teal-900/50 rounded-xl p-3 border border-emerald-700 mb-3' },
-                  React.createElement('div', { className: 'flex justify-between items-center mb-1' },
-                    React.createElement('h4', { className: 'text-[10px] font-bold text-emerald-400' }, '\uD83C\uDF0D Victory Progress'),
-                    React.createElement('span', { className: 'text-xs font-bold ' + (terraform >= 100 ? 'text-green-400' : 'text-emerald-300') }, terraform + '%')
-                  ),
-                  React.createElement('div', { className: 'w-full bg-slate-700 rounded-full h-3 overflow-hidden' },
-                    React.createElement('div', { className: 'h-3 rounded-full transition-all bg-gradient-to-r ' + (terraform >= 100 ? 'from-green-400 to-emerald-400' : terraform >= 50 ? 'from-emerald-500 to-teal-500' : 'from-indigo-500 to-emerald-600'), style: { width: terraform + '%' } })
-                  ),
-                  React.createElement('div', { className: 'text-[8px] text-slate-400 mt-1' },
-                    terraform >= 100 ? '\uD83C\uDF89 VICTORY! The planet is habitable! Your colony is self-sustaining!' :
-                    terraform >= 75 ? 'Atmosphere thickening, water cycles forming. Almost habitable!' :
-                    terraform >= 50 ? 'Microorganisms detected in soil. Oxygen levels rising.' :
-                    terraform >= 25 ? 'Ice caps melting. First clouds forming in the sky.' :
-                    'Raw alien world. Build Atmospheric Processor (+5%/turn) and Biodome (+10%/turn) to terraform.'
-                  ),
-                  // Victory Paths
-                  React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-[8px]' },
-                    React.createElement('div', { className: 'p-1 rounded text-center ' + (terraform >= 100 ? 'bg-emerald-900/50 text-emerald-400' : 'text-slate-500') },
-                      '\uD83C\uDF0D Terraform: ' + terraform + '/100%'
-                    ),
-                    React.createElement('div', { className: 'p-1 rounded text-center ' + (settlers.length >= 50 ? 'bg-teal-900/50 text-teal-400' : 'text-slate-500') },
-                      '\uD83D\uDC65 Population: ' + settlers.length + '/50'
-                    ),
-                    React.createElement('div', { className: 'p-1 rounded text-center ' + (researchQueue.length >= 10 ? 'bg-violet-900/50 text-violet-400' : 'text-slate-500') },
-                      '\uD83E\uDDEC Research: ' + researchQueue.length + '/10'
-                    )
-                  ),
-                  terraform >= 100 && React.createElement('div', { className: 'mt-2 text-center' },
-                    React.createElement('div', { className: 'text-3xl mb-1' }, '\uD83C\uDF89\uD83C\uDF0D\uD83D\uDE80'),
-                    React.createElement('div', { className: 'text-sm font-bold text-green-400' }, 'COLONY VICTORY!'),
-                    React.createElement('div', { className: 'text-[10px] text-green-300' }, 'Turn ' + turn + ' | ' + buildings.length + ' buildings | All ' + settlers.length + ' settlers survived')
-                  )
-                ),
-                // Colony Stats Dashboard
-                React.createElement('div', { className: 'bg-slate-800/80 rounded-xl p-2 border border-slate-700 mb-3' },
-                  React.createElement('div', { className: 'flex gap-3 justify-center text-[9px]' },
-                    React.createElement('span', { className: 'text-[9px] px-1 rounded', style: { color: currentEra.color } }, currentEra.icon + ' ' + currentEra.name),
-                    React.createElement('span', { className: 'text-slate-400' }, '\uD83C\uDF93 ' + gradeLevel),
-                    React.createElement('span', { className: 'text-teal-400' }, '\uD83D\uDC65 Pop: ' + settlers.length + (popGrowthAccum > 0 ? ' (+' + Math.round(popGrowthAccum * 100) + '%)' : '')),
-                    React.createElement('span', { className: 'text-indigo-400' }, '\u2753 ' + stats.questionsAnswered + ' questions'),
-                    React.createElement('span', { className: stats.questionsAnswered > 0 && stats.correct / stats.questionsAnswered >= 0.7 ? 'text-green-400' : 'text-amber-400' },
-                      '\uD83C\uDFAF ' + (stats.questionsAnswered > 0 ? Math.round(stats.correct / stats.questionsAnswered * 100) : 0) + '% accuracy'),
-                    React.createElement('span', { className: 'text-cyan-400' }, '\uD83C\uDFD7 ' + stats.buildingsConstructed + ' built'),
-                    React.createElement('span', { className: 'text-purple-400' }, '\u2728 ' + stats.anomaliesExplored + ' anom'),
-                    React.createElement('span', { className: colonyHappiness > 60 ? 'text-green-400' : colonyHappiness > 30 ? 'text-amber-400' : 'text-red-400' },
-                      (colonyHappiness > 80 ? '\uD83D\uDE04' : colonyHappiness > 60 ? '\uD83D\uDE42' : colonyHappiness > 30 ? '\uD83D\uDE10' : '\uD83D\uDE21') + ' ' + colonyHappiness + '%'),
-                    alienContact && React.createElement('span', { className: alienRelations > 20 ? 'text-green-400' : alienRelations < -20 ? 'text-red-400' : 'text-amber-400' }, '\uD83D\uDC7E ' + (alienRelations > 0 ? '+' : '') + alienRelations),
-                    React.createElement('span', { className: 'text-amber-400' }, gameMode === 'mcq' ? '\uD83D\uDCCB MCQ' : '\u270D\uFE0F FR'),
-                    React.createElement('span', { className: equity > 60 ? 'text-green-400' : equity > 35 ? 'text-amber-400' : 'text-red-400' },
-                      '\u2696\uFE0F ' + equity + '%')
-                  )
-                ),
-                // Weather indicator
-                weather && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-2 border border-amber-700 mb-3 flex items-center gap-2' },
-                  React.createElement('span', { className: 'text-lg' }, weather.icon),
-                  React.createElement('div', null,
-                    React.createElement('span', { className: 'text-[10px] font-bold text-amber-400' }, '\u26A0\uFE0F ' + weather.name),
-                    React.createElement('span', { className: 'text-[9px] text-slate-400 ml-2' }, weather.effect + ' (' + weather.penalty + ' ' + weather.res + ')')
-                  )
-                ),
-                // Log the resolved event
+            // Log the resolved event
             var historyEntry = { title: aiEvent.title, icon: aiEvent.icon, choice: choice.label, outcome: choice.outcome, day: simDay, xp: choice.xp || 0 };
             updates.aiEventHistory = aiEventHistory.concat([historyEntry]).slice(-20);
             // Mark event as resolved (show outcome)
@@ -33298,6 +33236,67 @@
                     className: 'py-2 rounded-xl text-[10px] font-bold ' + (selectedTile && !tileImprovements[selectedTile.x + ',' + selectedTile.y] && resources.materials >= 8 ? 'bg-orange-700 text-orange-200' : 'bg-slate-700 text-slate-500')
                   }, '\uD83C\uDFD5\uFE0F Outpost (-8\uD83E\uDEA8)')
                 ),
+                // Terraforming Progress
+                React.createElement('div', { className: 'bg-gradient-to-r from-emerald-900/50 to-teal-900/50 rounded-xl p-3 border border-emerald-700 mb-3' },
+                  React.createElement('div', { className: 'flex justify-between items-center mb-1' },
+                    React.createElement('h4', { className: 'text-[10px] font-bold text-emerald-400' }, '\uD83C\uDF0D Victory Progress'),
+                    React.createElement('span', { className: 'text-xs font-bold ' + (terraform >= 100 ? 'text-green-400' : 'text-emerald-300') }, terraform + '%')
+                  ),
+                  React.createElement('div', { className: 'w-full bg-slate-700 rounded-full h-3 overflow-hidden' },
+                    React.createElement('div', { className: 'h-3 rounded-full transition-all bg-gradient-to-r ' + (terraform >= 100 ? 'from-green-400 to-emerald-400' : terraform >= 50 ? 'from-emerald-500 to-teal-500' : 'from-indigo-500 to-emerald-600'), style: { width: terraform + '%' } })
+                  ),
+                  React.createElement('div', { className: 'text-[8px] text-slate-400 mt-1' },
+                    terraform >= 100 ? '\uD83C\uDF89 VICTORY! The planet is habitable! Your colony is self-sustaining!' :
+                    terraform >= 75 ? 'Atmosphere thickening, water cycles forming. Almost habitable!' :
+                    terraform >= 50 ? 'Microorganisms detected in soil. Oxygen levels rising.' :
+                    terraform >= 25 ? 'Ice caps melting. First clouds forming in the sky.' :
+                    'Raw alien world. Build Atmospheric Processor (+5%/turn) and Biodome (+10%/turn) to terraform.'
+                  ),
+                  // Victory Paths
+                  React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-[8px]' },
+                    React.createElement('div', { className: 'p-1 rounded text-center ' + (terraform >= 100 ? 'bg-emerald-900/50 text-emerald-400' : 'text-slate-500') },
+                      '\uD83C\uDF0D Terraform: ' + terraform + '/100%'
+                    ),
+                    React.createElement('div', { className: 'p-1 rounded text-center ' + (settlers.length >= 50 ? 'bg-teal-900/50 text-teal-400' : 'text-slate-500') },
+                      '\uD83D\uDC65 Population: ' + settlers.length + '/50'
+                    ),
+                    React.createElement('div', { className: 'p-1 rounded text-center ' + (researchQueue.length >= 10 ? 'bg-violet-900/50 text-violet-400' : 'text-slate-500') },
+                      '\uD83E\uDDEC Research: ' + researchQueue.length + '/10'
+                    )
+                  ),
+                  terraform >= 100 && React.createElement('div', { className: 'mt-2 text-center' },
+                    React.createElement('div', { className: 'text-3xl mb-1' }, '\uD83C\uDF89\uD83C\uDF0D\uD83D\uDE80'),
+                    React.createElement('div', { className: 'text-sm font-bold text-green-400' }, 'COLONY VICTORY!'),
+                    React.createElement('div', { className: 'text-[10px] text-green-300' }, 'Turn ' + turn + ' | ' + buildings.length + ' buildings | All ' + settlers.length + ' settlers survived')
+                  )
+                ),
+                // Colony Stats Dashboard
+                React.createElement('div', { className: 'bg-slate-800/80 rounded-xl p-2 border border-slate-700 mb-3' },
+                  React.createElement('div', { className: 'flex gap-3 justify-center text-[9px]' },
+                    React.createElement('span', { className: 'text-[9px] px-1 rounded', style: { color: currentEra.color } }, currentEra.icon + ' ' + currentEra.name),
+                    React.createElement('span', { className: 'text-slate-400' }, '\uD83C\uDF93 ' + gradeLevel),
+                    React.createElement('span', { className: 'text-teal-400' }, '\uD83D\uDC65 Pop: ' + settlers.length + (popGrowthAccum > 0 ? ' (+' + Math.round(popGrowthAccum * 100) + '%)' : '')),
+                    React.createElement('span', { className: 'text-indigo-400' }, '\u2753 ' + stats.questionsAnswered + ' questions'),
+                    React.createElement('span', { className: stats.questionsAnswered > 0 && stats.correct / stats.questionsAnswered >= 0.7 ? 'text-green-400' : 'text-amber-400' },
+                      '\uD83C\uDFAF ' + (stats.questionsAnswered > 0 ? Math.round(stats.correct / stats.questionsAnswered * 100) : 0) + '% accuracy'),
+                    React.createElement('span', { className: 'text-cyan-400' }, '\uD83C\uDFD7 ' + stats.buildingsConstructed + ' built'),
+                    React.createElement('span', { className: 'text-purple-400' }, '\u2728 ' + stats.anomaliesExplored + ' anom'),
+                    React.createElement('span', { className: colonyHappiness > 60 ? 'text-green-400' : colonyHappiness > 30 ? 'text-amber-400' : 'text-red-400' },
+                      (colonyHappiness > 80 ? '\uD83D\uDE04' : colonyHappiness > 60 ? '\uD83D\uDE42' : colonyHappiness > 30 ? '\uD83D\uDE10' : '\uD83D\uDE21') + ' ' + colonyHappiness + '%'),
+                    alienContact && React.createElement('span', { className: alienRelations > 20 ? 'text-green-400' : alienRelations < -20 ? 'text-red-400' : 'text-amber-400' }, '\uD83D\uDC7E ' + (alienRelations > 0 ? '+' : '') + alienRelations),
+                    React.createElement('span', { className: 'text-amber-400' }, gameMode === 'mcq' ? '\uD83D\uDCCB MCQ' : '\u270D\uFE0F FR'),
+                    React.createElement('span', { className: equity > 60 ? 'text-green-400' : equity > 35 ? 'text-amber-400' : 'text-red-400' },
+                      '\u2696\uFE0F ' + equity + '%')
+                  )
+                ),
+                // Weather indicator
+                weather && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-2 border border-amber-700 mb-3 flex items-center gap-2' },
+                  React.createElement('span', { className: 'text-lg' }, weather.icon),
+                  React.createElement('div', null,
+                    React.createElement('span', { className: 'text-[10px] font-bold text-amber-400' }, '\u26A0\uFE0F ' + weather.name),
+                    React.createElement('span', { className: 'text-[9px] text-slate-400 ml-2' }, weather.effect + ' (' + weather.penalty + ' ' + weather.res + ')')
+                  )
+                ),
                 // Event
                 colonyEvent && React.createElement('div', { className: 'bg-gradient-to-r from-slate-800 to-indigo-900 rounded-xl p-4 border border-indigo-700 mb-3' },
                   React.createElement('h3', { className: 'text-sm font-bold text-white mb-1' }, (colonyEvent.emoji||'') + ' ' + colonyEvent.title),
@@ -33725,7 +33724,7 @@
                             }).catch(function() { upd('settlerChatLoading', false); });
                           },
                           className: 'mt-1 col-span-2 px-2 py-0.5 rounded bg-indigo-800 text-indigo-300 text-[7px] hover:bg-indigo-700'
-                        }, '\uD83D\uDCAC Talk'))
+                        }, '\uD83D\uDCAC Talk')
                       )
                     );
                   }))
@@ -35454,7 +35453,7 @@
                   className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200'
                 }, '\u267B Close Business & Start New')
               )
-            ));
+            );
         })(), stemLabTab === 'explore' && stemLabTool === 'codingPlayground' && (() => {
           // ── State from labToolData ──
           var d = (labToolData && labToolData._codingPlayground) || {};

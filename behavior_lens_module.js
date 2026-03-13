@@ -18802,7 +18802,7 @@ Analyze this data and return ONLY valid JSON:
                             h('button', {
                                 onClick: () => setShowExportMenu(v => !v),
                                 className: 'p-2 rounded-full text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 transition-colors',
-                                title: (t('behavior_lens.raw.export_this_tool') || 'Export this tool\')s data'
+                                title: (t('behavior_lens.raw.export_this_tool') || "Export this tool's data")
                             }, '📤'),
                             showExportMenu && h('div', {
                                 className: 'absolute right-0 top-10 z-50 bg-white border border-slate-200 rounded-xl shadow-xl py-1 min-w-[180px] animate-in fade-in',
