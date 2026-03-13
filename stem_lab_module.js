@@ -29778,7 +29778,7 @@
             // Terraforming Progress
                 React.createElement('div', { className: 'bg-gradient-to-r from-emerald-900/50 to-teal-900/50 rounded-xl p-3 border border-emerald-700 mb-3' },
                   React.createElement('div', { className: 'flex justify-between items-center mb-1' },
-                    React.createElement('h4', { className: 'text-[10px] font-bold text-emerald-400' }, '\uD83C\uDF0D Terraforming Progress'),
+                    React.createElement('h4', { className: 'text-[10px] font-bold text-emerald-400' }, '\uD83C\uDF0D Victory Progress'),
                     React.createElement('span', { className: 'text-xs font-bold ' + (terraform >= 100 ? 'text-green-400' : 'text-emerald-300') }, terraform + '%')
                   ),
                   React.createElement('div', { className: 'w-full bg-slate-700 rounded-full h-3 overflow-hidden' },
@@ -29791,6 +29791,18 @@
                     terraform >= 25 ? 'Ice caps melting. First clouds forming in the sky.' :
                     'Raw alien world. Build Atmospheric Processor (+5%/turn) and Biodome (+10%/turn) to terraform.'
                   ),
+                  // Victory Paths
+                  React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-[8px]' },
+                    React.createElement('div', { className: 'p-1 rounded text-center ' + (terraform >= 100 ? 'bg-emerald-900/50 text-emerald-400' : 'text-slate-500') },
+                      '\uD83C\uDF0D Terraform: ' + terraform + '/100%'
+                    ),
+                    React.createElement('div', { className: 'p-1 rounded text-center ' + (settlers.length >= 12 ? 'bg-teal-900/50 text-teal-400' : 'text-slate-500') },
+                      '\uD83D\uDC65 Population: ' + settlers.length + '/12'
+                    ),
+                    React.createElement('div', { className: 'p-1 rounded text-center ' + (researchQueue.length >= 5 ? 'bg-violet-900/50 text-violet-400' : 'text-slate-500') },
+                      '\uD83E\uDDEC Research: ' + researchQueue.length + '/5'
+                    )
+                  ),
                   terraform >= 100 && React.createElement('div', { className: 'mt-2 text-center' },
                     React.createElement('div', { className: 'text-3xl mb-1' }, '\uD83C\uDF89\uD83C\uDF0D\uD83D\uDE80'),
                     React.createElement('div', { className: 'text-sm font-bold text-green-400' }, 'COLONY VICTORY!'),
@@ -29800,7 +29812,9 @@
                 // Colony Stats Dashboard
                 React.createElement('div', { className: 'bg-slate-800/80 rounded-xl p-2 border border-slate-700 mb-3' },
                   React.createElement('div', { className: 'flex gap-3 justify-center text-[9px]' },
+                    React.createElement('span', { className: 'text-[9px] px-1 rounded', style: { color: currentEra.color } }, currentEra.icon + ' ' + currentEra.name),
                     React.createElement('span', { className: 'text-slate-400' }, '\uD83C\uDF93 ' + gradeLevel),
+                    React.createElement('span', { className: 'text-teal-400' }, '\uD83D\uDC65 Pop: ' + settlers.length + (popGrowthAccum > 0 ? ' (+' + Math.round(popGrowthAccum * 100) + '%)' : '')),
                     React.createElement('span', { className: 'text-indigo-400' }, '\u2753 ' + stats.questionsAnswered + ' questions'),
                     React.createElement('span', { className: stats.questionsAnswered > 0 && stats.correct / stats.questionsAnswered >= 0.7 ? 'text-green-400' : 'text-amber-400' },
                       '\uD83C\uDFAF ' + (stats.questionsAnswered > 0 ? Math.round(stats.correct / stats.questionsAnswered * 100) : 0) + '% accuracy'),
@@ -32110,6 +32124,45 @@
             var gradeLevel = d.colonyGrade || '6-8';
             var gradeDifficultyMap = { 'K-2': 'very easy, age 5-7, use simple words', '3-5': 'easy, age 8-10, elementary level', '6-8': 'medium, age 11-13, middle school level', '9-12': 'challenging, age 14-17, high school level', 'College': 'advanced, undergraduate university level' };
             var stats = d.colonyStats || { questionsAnswered: 0, correct: 0, buildingsConstructed: 0, anomaliesExplored: 0, turnsPlayed: 0 };
+
+            // Civilization Mechanics
+            var era = d.colonyEra || 'survival';
+            var eraData = {
+              survival: { name: 'Survival', icon: '\u26A0\uFE0F', next: 'expansion', req: 'Build 3 buildings', color: '#ef4444' },
+              expansion: { name: 'Expansion', icon: '\uD83C\uDF10', next: 'prosperity', req: 'Build 6 buildings + 50% terraform', color: '#f59e0b' },
+              prosperity: { name: 'Prosperity', icon: '\uD83C\uDF1F', next: 'transcendence', req: 'All 10 buildings + 75% terraform', color: '#22c55e' },
+              transcendence: { name: 'Transcendence', icon: '\uD83D\uDE80', next: null, req: 'Victory!', color: '#8b5cf6' }
+            };
+            var currentEra = eraData[era] || eraData.survival;
+
+            var activePolicy = d.colonyPolicy || null;
+            var policyDefs = [
+              { id: 'militarist', name: 'Frontier Expansion', icon: '\uD83D\uDEE1\uFE0F', desc: 'Exploration costs 0 energy. +1 materials/turn.', effect: { exploreFreeCost: true, materialBonus: 1 } },
+              { id: 'scientific', name: 'Knowledge First', icon: '\uD83E\uDDEC', desc: '+50% science production. +5 XP per question.', effect: { scienceMultiplier: 1.5, xpBonus: 5 } },
+              { id: 'agrarian', name: 'Colony Welfare', icon: '\uD83C\uDF3E', desc: '+2 food/turn. New settlers arrive 50% faster.', effect: { foodBonus: 2, popGrowthBonus: 0.5 } },
+              { id: 'industrial', name: 'Heavy Industry', icon: '\u2699\uFE0F', desc: 'Buildings cost 20% fewer materials. +2 energy/turn.', effect: { buildDiscount: 0.2, energyBonus: 2 } }
+            ];
+
+            var researchQueue = d.colonyResearch || [];
+            var researchDefs = [
+              { id: 'xenobiology', name: 'Xenobiology', icon: '\uD83E\uDDA0', cost: 15, desc: 'Study alien life. +3 food & water/turn.', bonus: { food: 3, water: 3 }, era: 'expansion', domain: 'biology' },
+              { id: 'gravimetrics', name: 'Gravimetrics', icon: '\uD83C\uDF0C', cost: 20, desc: 'Map gravity wells. All exploration reveals +1 tile radius.', bonus: { exploreRadius: 2 }, era: 'expansion', domain: 'physics' },
+              { id: 'nanotech', name: 'Nanotechnology', icon: '\uD83E\uDDF2', cost: 25, desc: 'Self-repairing buildings. Effectiveness never drops below 75%.', bonus: { minEfficiency: 75 }, era: 'prosperity', domain: 'chemistry' },
+              { id: 'terraAI', name: 'Terraform AI', icon: '\uD83E\uDD16', cost: 30, desc: 'AI-guided terraforming. +3% terraform/turn base.', bonus: { terraformBonus: 3 }, era: 'prosperity', domain: 'math' },
+              { id: 'warpComms', name: 'Subspace Comms', icon: '\uD83D\uDCE1', cost: 40, desc: 'FTL communication with Earth. +10 science/turn.', bonus: { science: 10 }, era: 'transcendence', domain: 'physics' }
+            ];
+
+            var greatScientists = d.colonyGreatSci || [];
+            var greatSciDefs = [
+              { name: 'Marie Curie', icon: '\u2622\uFE0F', specialty: 'physics', bonus: 'energy', amount: 5, fact: 'Discovered radioactivity and won 2 Nobel Prizes in different sciences.' },
+              { name: 'Charles Darwin', icon: '\uD83E\uDD86', specialty: 'biology', bonus: 'science', amount: 5, fact: 'Theory of evolution by natural selection revolutionized biology.' },
+              { name: 'Nikola Tesla', icon: '\u26A1', specialty: 'physics', bonus: 'energy', amount: 8, fact: 'Pioneered alternating current (AC) electricity used worldwide today.' },
+              { name: 'Rosalind Franklin', icon: '\uD83E\uDDEC', specialty: 'chemistry', bonus: 'science', amount: 5, fact: 'Her X-ray crystallography was key to discovering DNA\'s structure.' },
+              { name: 'Ada Lovelace', icon: '\uD83D\uDCBB', specialty: 'math', bonus: 'science', amount: 8, fact: 'Wrote the world\'s first computer program in the 1840s.' },
+              { name: 'Galileo Galilei', icon: '\uD83D\uDD2D', specialty: 'physics', bonus: 'science', amount: 5, fact: 'Father of modern observational astronomy. Proved heliocentrism.' }
+            ];
+
+            var popGrowthAccum = d.colonyPopGrowth || 0;
             var buildingEff = d.buildingEff || {}; // { buildingId: 100, ... } effectiveness %
             var lastMaintTurn = d.lastMaintTurn || 0;
             var maintChallenge = d.maintChallenge || null;
@@ -32295,7 +32348,8 @@
                   React.createElement('span', { className: 'text-cyan-400' }, '\uD83D\uDCA7 ' + resources.water),
                   React.createElement('span', { className: 'text-slate-300' }, '\uD83E\uDEA8 ' + resources.materials),
                   React.createElement('span', { className: 'text-purple-400' }, '\uD83D\uDD2C ' + resources.science),
-                  React.createElement('span', { className: 'text-amber-300 font-bold' }, 'Turn ' + turn)
+                  React.createElement('span', { className: 'text-amber-300 font-bold' }, 'Turn ' + turn),
+                  React.createElement('span', { className: 'text-[9px] px-1.5 py-0.5 rounded-full', style: { backgroundColor: currentEra.color + '33', color: currentEra.color } }, currentEra.icon + ' ' + currentEra.name)
                 )
               ),
               // SETUP
@@ -32427,7 +32481,9 @@
                           if (ni2 >= 0 && ni2 < nm.tiles.length) nm.tiles[ni2].explored = true;
                         }
                         upd('colonyMap', nm);
-                        var nr = Object.assign({}, resources); nr.energy = Math.max(0, nr.energy - 2); upd('colonyRes', nr);
+                        var nr = Object.assign({}, resources);
+                        var exploreCost = (activePolicy === 'militarist') ? 0 : 2;
+                        nr.energy = Math.max(0, nr.energy - exploreCost); upd('colonyRes', nr);
                         // Terrain resource bonus
                         var terrainBonus = { plains: 'food', mountain: 'materials', volcanic: 'energy', ice: 'water', desert: 'materials', ocean: 'water', radiation: 'science' };
                         var bonusRes = terrainBonus[selectedTile.tile.type];
@@ -32456,7 +32512,7 @@
                   )
                 ),
                 // Actions
-                React.createElement('div', { className: 'grid grid-cols-3 gap-2 mb-3' },
+                React.createElement('div', { className: 'grid grid-cols-6 gap-1 mb-3' },
                   React.createElement('button', {
                     onClick: function() {
                       var nt = turn + 1; var nr2 = Object.assign({}, resources);
@@ -32464,6 +32520,8 @@
                         var def = buildingDefs.find(function(bd) { return bd.id === b; });
                         if (def) {
                           var eff = (buildingEff[b] !== undefined ? buildingEff[b] : 100) / 100;
+                          // Nanotech research: min 75% efficiency
+                          if (researchQueue.indexOf('nanotech') >= 0 && eff < 0.75) eff = 0.75;
                           Object.keys(def.production).forEach(function(k) { nr2[k] = (nr2[k]||0) + Math.round(def.production[k] * eff); });
                         }
                       });
@@ -32546,6 +32604,89 @@
                       }).catch(function() { upd('colonyEventLoading', false); });
                       var ns5 = Object.assign({}, stats); ns5.turnsPlayed++; upd('colonyStats', ns5);
                       if (typeof addXP === 'function') addXP(5, 'Kepler Colony: Turn ' + nt);
+                      // Population growth — food surplus attracts new settlers (Civ-inspired)
+                      var foodSurplus = nr2.food - settlers.length * 2; // need 2x population in food
+                      var growthRate = 0.15 + (activePolicy && activePolicy === 'agrarian' ? 0.075 : 0);
+                      if (foodSurplus > 0) {
+                        var newPG = (d.colonyPopGrowth || 0) + growthRate;
+                        if (newPG >= 1.0 && settlers.length < 12) {
+                          // New settler arrives!
+                          var newRoles = [
+                            { name: 'Lt. Alex Rivera', role: 'Pilot', icon: '\u2708\uFE0F', specialty: 'physics' },
+                            { name: 'Dr. Sarah Kim', role: 'Xenobiologist', icon: '\uD83E\uDDA0', specialty: 'biology' },
+                            { name: 'Prof. Dimitri Volkov', role: 'Mathematician', icon: '\uD83D\uDCCA', specialty: 'math' },
+                            { name: 'Eng. Fatima Hassan', role: 'Architect', icon: '\uD83C\uDFD7\uFE0F', specialty: 'geology' },
+                            { name: 'Dr. Li Wei', role: 'Astronomer', icon: '\uD83D\uDD2D', specialty: 'physics' },
+                            { name: 'Dr. Amara Osei', role: 'Biochemist', icon: '\uD83E\uDDEA', specialty: 'chemistry' }
+                          ];
+                          var available = newRoles.filter(function(nr7) { return !settlers.some(function(s5) { return s5.name === nr7.name; }); });
+                          if (available.length > 0) {
+                            var newSettler = Object.assign({}, available[Math.floor(Math.random() * available.length)], { morale: 85, health: 100 });
+                            var updSettlers = settlers.slice(); updSettlers.push(newSettler);
+                            upd('colonySettlers', updSettlers);
+                            var nl13 = gameLog.slice(); nl13.push('\uD83D\uDC64 ' + newSettler.name + ' (' + newSettler.role + ') joined the colony!'); upd('colonyLog', nl13);
+                            if (addToast) addToast('\uD83D\uDC64 New settler: ' + newSettler.name + ' (' + newSettler.role + ')!', 'success');
+                            if (d.colonyTTS) colonySpeak('New colonist arrived. ' + newSettler.name + ', a ' + newSettler.role + ', has joined the team.', 'narrator');
+                          }
+                          newPG -= 1.0;
+                        }
+                        upd('colonyPopGrowth', newPG);
+                      }
+
+                      // Era progression
+                      var newEra = era;
+                      if (era === 'survival' && buildings.length >= 3) newEra = 'expansion';
+                      else if (era === 'expansion' && buildings.length >= 6 && newTf >= 50) newEra = 'prosperity';
+                      else if (era === 'prosperity' && buildings.length >= 10 && newTf >= 75) newEra = 'transcendence';
+                      if (newEra !== era) {
+                        upd('colonyEra', newEra);
+                        var eraInfo = eraData[newEra];
+                        if (addToast) addToast(eraInfo.icon + ' ERA: ' + eraInfo.name + '!', 'success');
+                        if (d.colonyTTS) colonySpeak('New era reached! The colony has entered the ' + eraInfo.name + ' era.', 'narrator');
+                        var nl14 = gameLog.slice(); nl14.push('\uD83C\uDF1F ERA: ' + eraInfo.name + '!'); upd('colonyLog', nl14);
+                        if (typeof addXP === 'function') addXP(40, 'Era: ' + eraInfo.name);
+                      }
+
+                      // Great Scientist arrival (every 15 turns + high science)
+                      if (nt % 15 === 0 && nr2.science >= 10 && greatScientists.length < greatSciDefs.length) {
+                        var availGS = greatSciDefs.filter(function(gs) { return !greatScientists.some(function(g) { return g.name === gs.name; }); });
+                        if (availGS.length > 0) {
+                          var gs2 = availGS[Math.floor(Math.random() * availGS.length)];
+                          var updGS = greatScientists.slice(); updGS.push(gs2);
+                          upd('colonyGreatSci', updGS);
+                          // Apply bonus permanently
+                          if (gs2.bonus && nr2[gs2.bonus] !== undefined) nr2[gs2.bonus] += gs2.amount;
+                          var nl15 = gameLog.slice(); nl15.push('\uD83C\uDFC6 Great Scientist: ' + gs2.name + ' (+' + gs2.amount + ' ' + gs2.bonus + '/turn)'); upd('colonyLog', nl15);
+                          if (addToast) addToast('\uD83C\uDFC6 ' + gs2.icon + ' ' + gs2.name + ' joins! ' + gs2.fact, 'success');
+                          if (d.colonyTTS) colonySpeak('Great scientist arrived! ' + gs2.name + '. ' + gs2.fact, 'narrator');
+                          if (typeof addXP === 'function') addXP(30, 'Great Scientist: ' + gs2.name);
+                        }
+                      }
+
+                      // Apply policy bonuses to resources
+                      if (activePolicy) {
+                        var pol = policyDefs.find(function(p) { return p.id === activePolicy; });
+                        if (pol && pol.effect) {
+                          if (pol.effect.materialBonus) nr2.materials += pol.effect.materialBonus;
+                          if (pol.effect.foodBonus) nr2.food += pol.effect.foodBonus;
+                          if (pol.effect.energyBonus) nr2.energy += pol.effect.energyBonus;
+                        }
+                      }
+
+                      // Apply research bonuses
+                      researchQueue.forEach(function(rid) {
+                        var rdef = researchDefs.find(function(rd) { return rd.id === rid; });
+                        if (rdef && rdef.bonus) {
+                          if (rdef.bonus.food) nr2.food += rdef.bonus.food;
+                          if (rdef.bonus.water) nr2.water += rdef.bonus.water;
+                          if (rdef.bonus.science) nr2.science += rdef.bonus.science;
+                          if (rdef.bonus.terraformBonus) { var tfb = Math.min(100, newTf + rdef.bonus.terraformBonus); upd('colonyTerraform', tfb); }
+                        }
+                      });
+
+                      // Great Scientists permanent bonus
+                      greatScientists.forEach(function(gs3) { if (gs3.bonus && nr2[gs3.bonus] !== undefined) nr2[gs3.bonus] += gs3.amount; });
+
                       // Emergency events for critical resources
                       if (nr2.food <= 3 && buildings.length > 0) {
                         var nl10 = gameLog.slice(); nl10.push('\uD83D\uDEA8 EMERGENCY: Food critically low! Build Hydroponics or explore for food!'); upd('colonyLog', nl10);
@@ -32562,7 +32703,10 @@
                     disabled: d.colonyEventLoading, className: 'py-3 rounded-xl text-xs font-bold ' + (d.colonyEventLoading ? 'bg-slate-700 text-slate-500' : 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white')
                   }, d.colonyEventLoading ? '\u23F3 Processing...' : '\u27A1\uFE0F Next Turn'),
                   React.createElement('button', { onClick: function() { upd('showBuild', !d.showBuild); }, className: 'py-3 rounded-xl text-xs font-bold bg-amber-600 text-white' }, '\uD83C\uDFD7 Build (' + buildings.length + '/' + buildingDefs.length + ')'),
-                  React.createElement('button', { onClick: function() { upd('showSettlers', !d.showSettlers); }, className: 'py-3 rounded-xl text-xs font-bold bg-teal-600 text-white' }, '\uD83D\uDC65 Crew (' + settlers.length + ')')
+                  React.createElement('button', { onClick: function() { upd('showSettlers', !d.showSettlers); }, className: 'py-3 rounded-xl text-xs font-bold bg-teal-600 text-white' }, '\uD83D\uDC65 ' + settlers.length),
+                  React.createElement('button', { onClick: function() { upd('showPolicy', !d.showPolicy); }, className: 'py-3 rounded-xl text-xs font-bold ' + (activePolicy ? 'bg-emerald-700' : 'bg-slate-700') + ' text-white' }, '\uD83C\uDFDB\uFE0F Gov'),
+                  React.createElement('button', { onClick: function() { upd('showResearch', !d.showResearch); }, className: 'py-3 rounded-xl text-xs font-bold bg-violet-700 text-white' }, '\uD83E\uDDEC ' + researchQueue.length),
+                  React.createElement('button', { onClick: function() { upd('showGreatSci', !d.showGreatSci); }, className: 'py-3 rounded-xl text-xs font-bold bg-yellow-700 text-white' }, '\uD83C\uDFC6 ' + greatScientists.length)
                 ),
                 // Event
                 colonyEvent && React.createElement('div', { className: 'bg-gradient-to-r from-slate-800 to-indigo-900 rounded-xl p-4 border border-indigo-700 mb-3' },
@@ -32739,7 +32883,20 @@
                             var nb2 = buildings.slice(); nb2.push(scienceGate.building); upd('colonyBuildings', nb2);
                             var newEff3 = Object.assign({}, buildingEff); newEff3[scienceGate.building] = 100; upd('buildingEff', newEff3);
                             var nl8 = gameLog.slice(); nl8.push('Built ' + bdef3.icon + ' ' + bdef3.name + '!'); upd('colonyLog', nl8);
-                            var ns3 = Object.assign({}, stats); ns3.questionsAnswered++; ns3.correct++; ns3.buildingsConstructed++; upd('colonyStats', ns3);
+                            var ns3 = Object.assign({}, stats); ns3.questionsAnswered++; ns3.correct++;
+                            // Handle research completion
+                            if (scienceGate._researchId) {
+                              var rq2 = researchQueue.slice(); rq2.push(scienceGate._researchId); upd('colonyResearch', rq2);
+                              var nr8 = Object.assign({}, resources); nr8.science -= scienceGate._researchCost; upd('colonyRes', nr8);
+                              var rdef2 = researchDefs.find(function(rd3) { return rd3.id === scienceGate._researchId; });
+                              var nl17 = gameLog.slice(); nl17.push('\uD83E\uDDEC Research: ' + (rdef2 ? rdef2.name : scienceGate._researchId) + ' complete!'); upd('colonyLog', nl17);
+                              if (addToast) addToast('\uD83E\uDDEC ' + (rdef2 ? rdef2.name : '') + ' researched!', 'success');
+                              if (d.colonyTTS) colonySpeak('Research complete. ' + (rdef2 ? rdef2.name + '. ' + rdef2.desc : ''), 'narrator');
+                              upd('colonyStats', ns3);
+                              upd('scienceGate', null);
+                              return;
+                            }
+                            ns3.buildingsConstructed++; upd('colonyStats', ns3);
                             if (addToast) addToast('\u2705 ' + bdef3.name + ' built! Science verified!', 'success');
                             if (d.colonyTTS) colonySpeak('Construction complete. ' + bdef3.name + ' is now operational.', 'narrator');
                             if (typeof addXP === 'function') addXP(30, 'Built ' + bdef3.name);
@@ -32809,6 +32966,104 @@
                       )
                     );
                   }))
+                ),
+                // Policy Panel (Civ-inspired social policies)
+                d.showPolicy && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-emerald-700 mb-3' },
+                  React.createElement('h4', { className: 'text-sm font-bold text-emerald-400 mb-2' }, '\uD83C\uDFDB\uFE0F Colony Governance'),
+                  React.createElement('p', { className: 'text-[9px] text-slate-400 mb-2' }, 'Choose a governing policy. Each provides unique bonuses. You may change policy once every 10 turns.'),
+                  React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+                    policyDefs.map(function(pol2) {
+                      var isActive = activePolicy === pol2.id;
+                      return React.createElement('button', {
+                        key: pol2.id,
+                        onClick: function() {
+                          if (!isActive) {
+                            upd('colonyPolicy', pol2.id);
+                            if (addToast) addToast(pol2.icon + ' Policy: ' + pol2.name + ' adopted!', 'success');
+                            if (d.colonyTTS) colonySpeak('Colony policy changed to ' + pol2.name + '. ' + pol2.desc, 'narrator');
+                            var nl16 = gameLog.slice(); nl16.push('\uD83C\uDFDB\uFE0F Policy: ' + pol2.name); upd('colonyLog', nl16);
+                          }
+                        },
+                        className: 'p-3 rounded-xl border-2 text-left transition-all ' +
+                          (isActive ? 'border-emerald-400 bg-emerald-900/50' : 'border-slate-600 bg-slate-900 hover:border-emerald-500')
+                      },
+                        React.createElement('div', { className: 'flex items-center gap-1 mb-1' },
+                          React.createElement('span', { className: 'text-lg' }, pol2.icon),
+                          React.createElement('span', { className: 'text-[10px] font-bold text-white' }, pol2.name),
+                          isActive && React.createElement('span', { className: 'text-[8px] text-emerald-400 ml-auto' }, '\u2705 ACTIVE')
+                        ),
+                        React.createElement('div', { className: 'text-[8px] text-slate-400' }, pol2.desc)
+                      );
+                    })
+                  )
+                ),
+                // Research Panel
+                d.showResearch && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-violet-700 mb-3' },
+                  React.createElement('h4', { className: 'text-sm font-bold text-violet-400 mb-2' }, '\uD83E\uDDEC Research Tree'),
+                  React.createElement('p', { className: 'text-[9px] text-slate-400 mb-2' }, 'Spend science points to unlock permanent bonuses. Each unlocks via a science challenge.'),
+                  React.createElement('div', { className: 'grid grid-cols-1 gap-2' },
+                    researchDefs.map(function(rd2) {
+                      var isResearched = researchQueue.indexOf(rd2.id) >= 0;
+                      var canResearch = !isResearched && resources.science >= rd2.cost;
+                      var eraReady = rd2.era === 'expansion' ? (era !== 'survival') : rd2.era === 'prosperity' ? (era === 'prosperity' || era === 'transcendence') : rd2.era === 'transcendence' ? era === 'transcendence' : true;
+                      return React.createElement('div', { key: rd2.id, className: 'p-2 rounded-xl border flex items-center justify-between ' +
+                        (isResearched ? 'border-violet-500 bg-violet-900/30' : eraReady && canResearch ? 'border-slate-600 bg-slate-900' : 'border-slate-700 bg-slate-900/50 opacity-50')
+                      },
+                        React.createElement('div', { className: 'flex items-center gap-2' },
+                          React.createElement('span', { className: 'text-lg' }, rd2.icon),
+                          React.createElement('div', null,
+                            React.createElement('span', { className: 'text-[10px] font-bold text-white' }, rd2.name),
+                            isResearched && React.createElement('span', { className: 'text-violet-400 ml-1 text-[8px]' }, '\u2705'),
+                            React.createElement('div', { className: 'text-[8px] text-slate-400' }, rd2.desc),
+                            !eraReady && React.createElement('div', { className: 'text-[8px] text-red-400' }, '\u26D4 Requires ' + rd2.era + ' era')
+                          )
+                        ),
+                        !isResearched && eraReady && React.createElement('button', {
+                          onClick: function() {
+                            if (resources.science >= rd2.cost) {
+                              // Science challenge gate for research
+                              upd('scienceGateLoading', true);
+                              var modeR = (d.colonyMode || 'mcq') === 'mcq' ?
+                                'Return ONLY valid JSON: {"question":"<question>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"explanation":"<2-3 sentences>"}. 6 options, shuffle correct (0-5).' :
+                                'Return ONLY valid JSON: {"question":"<question>","answer":"<1-3 words>","explanation":"<2-3 sentences>"}';
+                              callGemini('Generate a ' + rd2.domain + ' science question about ' + rd2.name + ' for a space colony research project. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. ' + modeR, true).then(function(result) {
+                                try {
+                                  var cl3 = result.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+                                  var s4 = cl3.indexOf('{'); if (s4 > 0) cl3 = cl3.substring(s4);
+                                  var e4 = cl3.lastIndexOf('}'); if (e4 > 0) cl3 = cl3.substring(0, e4 + 1);
+                                  var rq = JSON.parse(cl3);
+                                  rq.building = '_research_' + rd2.id; rq.domain = rd2.domain; rq.mode = rq.options ? 'mcq' : 'freeResponse';
+                                  rq._researchId = rd2.id; rq._researchCost = rd2.cost;
+                                  upd('scienceGate', rq); upd('scienceGateLoading', false);
+                                } catch(err) { upd('scienceGateLoading', false); }
+                              }).catch(function() { upd('scienceGateLoading', false); });
+                            }
+                          },
+                          disabled: !canResearch,
+                          className: 'px-2 py-1 rounded-lg text-[9px] font-bold ' + (canResearch ? 'bg-violet-500 text-white' : 'bg-slate-700 text-slate-500')
+                        }, '\uD83D\uDD2C ' + rd2.cost + ' sci')
+                      );
+                    })
+                  )
+                ),
+                // Great Scientists Panel
+                d.showGreatSci && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-yellow-700 mb-3' },
+                  React.createElement('h4', { className: 'text-sm font-bold text-yellow-400 mb-2' }, '\uD83C\uDFC6 Great Scientists'),
+                  React.createElement('p', { className: 'text-[9px] text-slate-400 mb-2' }, 'Arrive every 15 turns when science is high. Each provides permanent bonuses + a real historical science fact.'),
+                  greatScientists.length === 0 && React.createElement('div', { className: 'text-center text-slate-500 text-[10px] py-4' }, 'No Great Scientists yet. Maintain high science reserves!'),
+                  React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
+                    greatScientists.map(function(gs4, gi) {
+                      return React.createElement('div', { key: gi, className: 'bg-yellow-900/30 rounded-xl p-2 border border-yellow-800 text-center' },
+                        React.createElement('div', { className: 'text-xl' }, gs4.icon),
+                        React.createElement('div', { className: 'text-[9px] font-bold text-yellow-200 mt-1' }, gs4.name),
+                        React.createElement('div', { className: 'text-[8px] text-yellow-400' }, '+' + gs4.amount + ' ' + gs4.bonus + '/turn'),
+                        React.createElement('div', { className: 'text-[7px] text-slate-400 mt-1 italic' }, gs4.fact)
+                      );
+                    })
+                  ),
+                  greatScientists.length < greatSciDefs.length && React.createElement('div', { className: 'mt-2 text-[8px] text-slate-500 text-center' },
+                    '\u23F3 Next arrival in ~' + (15 - (turn % 15)) + ' turns (need \uD83D\uDD2C 10+)'
+                  )
                 ),
                 // Settler Chat
                 d.settlerChat && d.talkSettler !== undefined && React.createElement('div', { className: 'bg-indigo-900/50 rounded-xl p-3 border border-indigo-700 mb-3' },
