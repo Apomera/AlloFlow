@@ -29797,6 +29797,18 @@
                     React.createElement('div', { className: 'text-[10px] text-green-300' }, 'Turn ' + turn + ' | ' + buildings.length + ' buildings | All ' + settlers.length + ' settlers survived')
                   )
                 ),
+                // Colony Stats Dashboard
+                React.createElement('div', { className: 'bg-slate-800/80 rounded-xl p-2 border border-slate-700 mb-3' },
+                  React.createElement('div', { className: 'flex gap-3 justify-center text-[9px]' },
+                    React.createElement('span', { className: 'text-slate-400' }, '\uD83C\uDF93 ' + gradeLevel),
+                    React.createElement('span', { className: 'text-indigo-400' }, '\u2753 ' + stats.questionsAnswered + ' questions'),
+                    React.createElement('span', { className: stats.questionsAnswered > 0 && stats.correct / stats.questionsAnswered >= 0.7 ? 'text-green-400' : 'text-amber-400' },
+                      '\uD83C\uDFAF ' + (stats.questionsAnswered > 0 ? Math.round(stats.correct / stats.questionsAnswered * 100) : 0) + '% accuracy'),
+                    React.createElement('span', { className: 'text-cyan-400' }, '\uD83C\uDFD7 ' + stats.buildingsConstructed + ' built'),
+                    React.createElement('span', { className: 'text-purple-400' }, '\u2728 ' + stats.anomaliesExplored + ' anomalies'),
+                    React.createElement('span', { className: 'text-amber-400' }, gameMode === 'mcq' ? '\uD83D\uDCCB MCQ' : '\u270D\uFE0F FR')
+                  )
+                ),
                 // Weather indicator
                 weather && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-2 border border-amber-700 mb-3 flex items-center gap-2' },
                   React.createElement('span', { className: 'text-lg' }, weather.icon),
@@ -32095,6 +32107,9 @@
             var terraform = d.colonyTerraform || 0;
             var weather = d.colonyWeather || null;
             var gameMode = d.colonyMode || 'mcq'; // 'mcq' or 'freeResponse'
+            var gradeLevel = d.colonyGrade || '6-8';
+            var gradeDifficultyMap = { 'K-2': 'very easy, age 5-7, use simple words', '3-5': 'easy, age 8-10, elementary level', '6-8': 'medium, age 11-13, middle school level', '9-12': 'challenging, age 14-17, high school level', 'College': 'advanced, undergraduate university level' };
+            var stats = d.colonyStats || { questionsAnswered: 0, correct: 0, buildingsConstructed: 0, anomaliesExplored: 0, turnsPlayed: 0 };
             var buildingEff = d.buildingEff || {}; // { buildingId: 100, ... } effectiveness %
             var lastMaintTurn = d.lastMaintTurn || 0;
             var maintChallenge = d.maintChallenge || null;
@@ -32302,7 +32317,22 @@
                 // Difficulty Settings
                 React.createElement('div', { className: 'bg-slate-800/80 rounded-xl p-4 border border-slate-700 max-w-md mx-auto mb-6' },
                   React.createElement('h4', { className: 'text-[11px] font-bold text-white mb-3 text-center' }, '\u2699\uFE0F Game Settings'),
-                  React.createElement('div', { className: 'grid grid-cols-2 gap-3' },
+                  React.createElement('div', { className: 'grid grid-cols-3 gap-3' },
+                    // Grade Level
+                    React.createElement('div', null,
+                      React.createElement('div', { className: 'text-[9px] text-slate-400 mb-1' }, '\uD83C\uDF93 Grade Level'),
+                      React.createElement('div', { className: 'flex flex-col gap-1' },
+                        ['K-2', '3-5', '6-8', '9-12', 'College'].map(function(gl) {
+                          return React.createElement('button', {
+                            key: gl,
+                            onClick: function() { upd('colonyGrade', gl); },
+                            className: 'px-2 py-1 rounded-lg text-[8px] font-bold border transition-all ' +
+                              ((d.colonyGrade || '6-8') === gl ? 'border-green-400 bg-green-900 text-green-200' : 'border-slate-700 bg-slate-900 text-slate-500 hover:border-slate-500')
+                          }, gl);
+                        })
+                      ),
+                      React.createElement('div', { className: 'text-[8px] text-slate-500 mt-1' }, 'Adjusts question difficulty')
+                    ),
                     React.createElement('div', null,
                       React.createElement('div', { className: 'text-[9px] text-slate-400 mb-1' }, 'Science Challenge Mode'),
                       React.createElement('div', { className: 'flex gap-1' },
@@ -32342,6 +32372,7 @@
                     upd('colonyLog', ['Turn 1: Colony established on Kepler-442b. 6 settlers ready.']);
                     upd('colony', { name: 'Kepler-442b' });
                     upd('buildingEff', {}); upd('lastMaintTurn', 0); upd('maintChallenge', null);
+                    upd('colonyStats', { questionsAnswered: 0, correct: 0, buildingsConstructed: 0, anomaliesExplored: 0, turnsPlayed: 0 });
                     if (d.colonyTTS) colonySpeak('Mission log. Colony established on Kepler 442 b. Six settlers are ready to begin construction. Good luck, Commander.', 'narrator');
                     if (addToast) addToast('\uD83D\uDE80 Colony established!', 'success');
                     if (typeof addXP === 'function') addXP(10, 'Kepler Colony: Mission launched');
@@ -32381,6 +32412,7 @@
                             upd('colonyMap', nm2);
                             var nl5 = gameLog.slice(); nl5.push('\u2728 Anomaly: ' + parsed.title); upd('colonyLog', nl5);
                             if (d.colonyTTS) colonySpeak('Anomaly investigated. ' + parsed.title + '. ' + parsed.description, 'narrator');
+                            var ns6 = Object.assign({}, stats); ns6.anomaliesExplored++; upd('colonyStats', ns6);
                             if (typeof addXP === 'function') addXP(25, 'Kepler Colony: Anomaly explored');
                           } catch(err) { upd('anomalyLoading', false); }
                         }).catch(function() { upd('anomalyLoading', false); });
@@ -32396,7 +32428,11 @@
                         }
                         upd('colonyMap', nm);
                         var nr = Object.assign({}, resources); nr.energy = Math.max(0, nr.energy - 2); upd('colonyRes', nr);
-                        if (addToast) addToast('Explored ' + selectedTile.tile.name + '!', 'info');
+                        // Terrain resource bonus
+                        var terrainBonus = { plains: 'food', mountain: 'materials', volcanic: 'energy', ice: 'water', desert: 'materials', ocean: 'water', radiation: 'science' };
+                        var bonusRes = terrainBonus[selectedTile.tile.type];
+                        if (bonusRes && nr[bonusRes] !== undefined) { nr[bonusRes] += 2; }
+                        if (addToast) addToast('Explored ' + selectedTile.tile.name + '!' + (bonusRes ? ' +2 ' + bonusRes : ''), 'info');
                       },
                       className: 'px-3 py-1 bg-indigo-600 text-white rounded-lg text-[10px] font-bold'
                     }, '\uD83D\uDDFA Explore (-2\u26A1)')
@@ -32452,6 +32488,29 @@
                       var wx = weatherTypes[wIdx];
                       upd('colonyWeather', wx);
                       if (wx) { nr2[wx.res] = Math.max(0, nr2[wx.res] + wx.penalty); }
+                      // Colony milestones
+                      var milestones = [
+                        { id: 'first_build', check: buildings.length >= 1, text: '\uD83C\uDFD7 First Construction!', xp: 15 },
+                        { id: 'tier2', check: buildings.indexOf('lab') >= 0 || buildings.indexOf('medbay') >= 0, text: '\uD83D\uDD2C Tier 2 Unlocked!', xp: 25 },
+                        { id: 'tier3', check: buildings.indexOf('atmo') >= 0 || buildings.indexOf('fusion') >= 0, text: '\u2622\uFE0F Advanced Tech!', xp: 40 },
+                        { id: 'self_sustain', check: nr2.food >= 30 && nr2.energy >= 30 && nr2.water >= 30, text: '\uD83C\uDF3E Self-Sustaining!', xp: 30 },
+                        { id: 'full_colony', check: buildings.length >= 8, text: '\uD83C\uDFD9\uFE0F Full Colony!', xp: 50 },
+                        { id: 'terraform25', check: newTf >= 25, text: '\uD83C\uDF27\uFE0F First Clouds!', xp: 20 },
+                        { id: 'terraform50', check: newTf >= 50, text: '\uD83C\uDF31 Microorganisms!', xp: 30 },
+                        { id: 'terraform75', check: newTf >= 75, text: '\uD83C\uDF24\uFE0F Atmosphere Forming!', xp: 40 },
+                        { id: 'master', check: stats.questionsAnswered >= 10 && stats.correct / Math.max(1, stats.questionsAnswered) >= 0.8, text: '\uD83C\uDFAF Science Master!', xp: 50 }
+                      ];
+                      var achieved = d.colonyMilestones || {};
+                      milestones.forEach(function(ms) {
+                        if (ms.check && !achieved[ms.id]) {
+                          achieved[ms.id] = true;
+                          if (addToast) addToast(ms.text, 'success');
+                          if (d.colonyTTS) colonySpeak('Milestone achieved. ' + ms.text.replace(/[^a-zA-Z0-9 ]/g, ''), 'narrator');
+                          if (typeof addXP === 'function') addXP(ms.xp, ms.text);
+                          var nl9 = gameLog.slice(); nl9.push('\uD83C\uDFC6 ' + ms.text); upd('colonyLog', nl9);
+                        }
+                      });
+                      upd('colonyMilestones', achieved);
                       // Maintenance challenge every 8 turns (if buildings exist)
                       if (buildings.length > 0 && (nt - (d.lastMaintTurn || 0)) >= 8) {
                         upd('lastMaintTurn', nt);
@@ -32460,8 +32519,8 @@
                         var maintDef = buildingDefs.find(function(bd3) { return bd3.id === maintBuild; });
                         if (maintDef) {
                           upd('maintChallengeLoading', true);
-                          var modeStr = (d.colonyMode || 'mcq') === 'mcq' ? 'Return ONLY valid JSON: {"question":"<science question about ' + maintDef.gate + '>","options":["<correct answer>","<wrong 1>","<wrong 2>","<wrong 3>"],"correctIndex":0,"explanation":"<why the answer is correct, 2-3 sentences with real science>"}. Shuffle the correct answer position randomly (0-3).' : 'Return ONLY valid JSON: {"question":"<science question about ' + maintDef.gate + '>","answer":"<correct answer, 1-3 words>","explanation":"<why the answer is correct, 2-3 sentences with real science>"}';
-                          callGemini('Generate a ' + maintDef.gate + ' science question for maintaining the ' + maintDef.name + ' in a space colony on an alien planet. The question should test understanding of the science behind this building. Difficulty: medium. ' + modeStr, true).then(function(result) {
+                          var modeStr = (d.colonyMode || 'mcq') === 'mcq' ? 'Return ONLY valid JSON: {"question":"<science question about ' + maintDef.gate + '>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"explanation":"<why correct, 2-3 sentences with real science>"}. Generate exactly 6 options. Shuffle correct answer randomly (position 0-5). correctIndex must match.' : 'Return ONLY valid JSON: {"question":"<science question about ' + maintDef.gate + '>","answer":"<correct answer, 1-3 words>","explanation":"<why correct, 2-3 sentences with real science>"}';
+                          callGemini('Generate a ' + maintDef.gate + ' science question for maintaining the ' + maintDef.name + ' in a space colony on an alien planet. The question should test understanding of the science behind this building. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. ' + modeStr, true).then(function(result) {
                             try {
                               var cl2 = result.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
                               var s3 = cl2.indexOf('{'); if (s3 > 0) cl2 = cl2.substring(s3);
@@ -32478,14 +32537,27 @@
                       nr2.water = Math.max(0, nr2.water - Math.ceil(settlers.length * 0.5));
                       upd('colonyRes', nr2); upd('colonyTurn', nt); upd('colonyEventLoading', true);
                       var ctx2 = 'Colony on Kepler-442b, turn ' + nt + '. Resources: food=' + nr2.food + ' energy=' + nr2.energy + ' water=' + nr2.water + ' materials=' + nr2.materials + ' science=' + nr2.science + '. Buildings: ' + (buildings.length > 0 ? buildings.join(', ') : 'none') + '. ' + settlers.length + ' settlers. Terraforming: ' + newTf + '%. ' + (wx ? 'Current weather: ' + wx.name + '. ' : 'Weather: calm. ') + 'Tech tier reached: ' + (buildings.indexOf('biodome') >= 0 ? 4 : buildings.indexOf('atmo') >= 0 || buildings.indexOf('fusion') >= 0 ? 3 : buildings.indexOf('lab') >= 0 || buildings.indexOf('medbay') >= 0 ? 2 : buildings.length > 0 ? 1 : 0) + '.';
-                      callGemini('You are the AI game master for an educational space colony on an alien planet. ' + ctx2 + '\n\nGenerate a planet event. Include a REAL science concept. Return ONLY valid JSON:\n{"emoji":"<emoji>","title":"<event>","description":"<2-3 sentences>","lesson":"<real science concept, 2-3 sentences>","choices":[{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"},{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"}]}\n\nEvents: alien microbes, geologic discoveries, meteor showers, equipment failures, resource finds, atmospheric anomalies, alien ruins. Effects: -5 to +10 resources, -15 to +15 morale. One choice should reward scientific knowledge.', true).then(function(result) {
+                      callGemini('You are the AI game master for an educational space colony on an alien planet. Target audience: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. ' + ctx2 + '\n\nGenerate a planet event. Include a REAL science concept. Return ONLY valid JSON:\n{"emoji":"<emoji>","title":"<event>","description":"<2-3 sentences>","lesson":"<real science concept, 2-3 sentences>","choices":[{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"},{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"}]}\n\nEvents: alien microbes, geologic discoveries, meteor showers, equipment failures, resource finds, atmospheric anomalies, alien ruins. Effects: -5 to +10 resources, -15 to +15 morale. One choice should reward scientific knowledge.', true).then(function(result) {
                         try { var cl = result.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim(); var s2=cl.indexOf('{'); if(s2>0) cl=cl.substring(s2); var e2=cl.lastIndexOf('}'); if(e2>0) cl=cl.substring(0,e2+1);
                           var parsed = JSON.parse(cl); upd('colonyEvent', parsed); upd('colonyEventLoading', false);
                           if (d.colonyTTS) colonySpeak(parsed.title + '. ' + parsed.description, 'narrator');
                           var nl2 = gameLog.slice(); nl2.push('Turn ' + nt + ': ' + (parsed.emoji||'') + ' ' + parsed.title); upd('colonyLog', nl2);
                         } catch(err) { upd('colonyEventLoading', false); if (addToast) addToast('Event failed to generate', 'error'); }
                       }).catch(function() { upd('colonyEventLoading', false); });
+                      var ns5 = Object.assign({}, stats); ns5.turnsPlayed++; upd('colonyStats', ns5);
                       if (typeof addXP === 'function') addXP(5, 'Kepler Colony: Turn ' + nt);
+                      // Emergency events for critical resources
+                      if (nr2.food <= 3 && buildings.length > 0) {
+                        var nl10 = gameLog.slice(); nl10.push('\uD83D\uDEA8 EMERGENCY: Food critically low! Build Hydroponics or explore for food!'); upd('colonyLog', nl10);
+                        if (d.colonyTTS) colonySpeak('Emergency! Food reserves critically low. Settlers are at risk of starvation. Prioritize food production immediately.', 'narrator');
+                      }
+                      if (nr2.energy <= 2 && buildings.length > 0) {
+                        var nl11 = gameLog.slice(); nl11.push('\uD83D\uDEA8 EMERGENCY: Energy critical! Buildings may shut down!'); upd('colonyLog', nl11);
+                        if (d.colonyTTS) colonySpeak('Warning! Energy levels critical. Colony systems are at risk of shutdown.', 'narrator');
+                      }
+                      if (nr2.water <= 2 && buildings.length > 0) {
+                        var nl12 = gameLog.slice(); nl12.push('\uD83D\uDEA8 EMERGENCY: Water reserves depleted!'); upd('colonyLog', nl12);
+                      }
                     },
                     disabled: d.colonyEventLoading, className: 'py-3 rounded-xl text-xs font-bold ' + (d.colonyEventLoading ? 'bg-slate-700 text-slate-500' : 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white')
                   }, d.colonyEventLoading ? '\u23F3 Processing...' : '\u27A1\uFE0F Next Turn'),
@@ -32524,7 +32596,7 @@
                   ),
                   React.createElement('p', { className: 'text-xs text-amber-100 mb-3' }, maintChallenge.question),
                   // MCQ Mode
-                  maintChallenge.options && React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+                  maintChallenge.options && React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
                     maintChallenge.options.map(function(opt, oi) {
                       return React.createElement('button', {
                         key: oi,
@@ -32533,12 +32605,14 @@
                           var newEff = Object.assign({}, buildingEff);
                           if (correct) {
                             newEff[maintChallenge.building] = 100;
+                            var ns = Object.assign({}, stats); ns.questionsAnswered++; ns.correct++; upd('colonyStats', ns);
                             if (addToast) addToast('\u2705 Correct! ' + maintChallenge.buildingName + ' running at 100%!', 'success');
                             if (d.colonyTTS) colonySpeak('Excellent! Maintenance check passed. ' + maintChallenge.buildingName + ' operating at full capacity.', 'narrator');
                             if (typeof addXP === 'function') addXP(20, 'Maintenance: ' + maintChallenge.buildingName);
                           } else {
                             var curEff = newEff[maintChallenge.building] !== undefined ? newEff[maintChallenge.building] : 100;
                             newEff[maintChallenge.building] = Math.max(25, curEff - 25);
+                            var ns2 = Object.assign({}, stats); ns2.questionsAnswered++; upd('colonyStats', ns2);
                             if (addToast) addToast('\u274C Wrong! ' + maintChallenge.buildingName + ' reduced to ' + newEff[maintChallenge.building] + '% output.', 'warning');
                             if (d.colonyTTS) colonySpeak('Incorrect. The ' + maintChallenge.buildingName + ' is now operating at reduced capacity. Study the science and try the next maintenance cycle.', 'narrator');
                           }
@@ -32610,7 +32684,7 @@
                               if ((d.colonyMode || 'mcq') === 'mcq') {
                                 // Generate AI MCQ for the gate
                                 upd('scienceGateLoading', true);
-                                callGemini('Generate a ' + bd.gate + ' science question for building a ' + bd.name + ' in a space colony. Return ONLY valid JSON: {"question":"<question>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>"],"correctIndex":0,"explanation":"<real science explanation 2-3 sentences>"}. Shuffle the correct answer randomly (position 0-3). Make sure correctIndex matches.', true).then(function(gateResult) {
+                                callGemini('Generate a ' + bd.gate + ' science question for building a ' + bd.name + ' in a space colony. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Return ONLY valid JSON: {"question":"<question>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"explanation":"<real science explanation 2-3 sentences>"}. Generate exactly 6 answer options. Shuffle the correct answer randomly (position 0-5). Make sure correctIndex matches the position of the correct answer.', true).then(function(gateResult) {
                                   try {
                                     var gcl = gateResult.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
                                     var gs = gcl.indexOf('{'); if (gs > 0) gcl = gcl.substring(gs);
@@ -32653,7 +32727,7 @@
                   React.createElement('div', { className: 'text-[8px] text-purple-400 mb-1' }, scienceGate.mode === 'mcq' ? '\uD83D\uDCCB Multiple Choice \u2014 select the correct answer' : '\u270D\uFE0F Free Response \u2014 type your answer'),
                   React.createElement('p', { className: 'text-xs text-purple-100 mb-3' }, scienceGate.question),
                   // MCQ Mode
-                  scienceGate.options && React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+                  scienceGate.options && React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
                     scienceGate.options.map(function(opt2, oi2) {
                       return React.createElement('button', {
                         key: oi2,
@@ -32665,6 +32739,7 @@
                             var nb2 = buildings.slice(); nb2.push(scienceGate.building); upd('colonyBuildings', nb2);
                             var newEff3 = Object.assign({}, buildingEff); newEff3[scienceGate.building] = 100; upd('buildingEff', newEff3);
                             var nl8 = gameLog.slice(); nl8.push('Built ' + bdef3.icon + ' ' + bdef3.name + '!'); upd('colonyLog', nl8);
+                            var ns3 = Object.assign({}, stats); ns3.questionsAnswered++; ns3.correct++; ns3.buildingsConstructed++; upd('colonyStats', ns3);
                             if (addToast) addToast('\u2705 ' + bdef3.name + ' built! Science verified!', 'success');
                             if (d.colonyTTS) colonySpeak('Construction complete. ' + bdef3.name + ' is now operational.', 'narrator');
                             if (typeof addXP === 'function') addXP(30, 'Built ' + bdef3.name);
