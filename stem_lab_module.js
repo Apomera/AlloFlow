@@ -32041,7 +32041,638 @@
         // ═══════════════════════════════════════════════════════════════
         // ██  CODING PLAYGROUND — Visual Block / Text Turtle Graphics  ██
         // ═══════════════════════════════════════════════════════════════
-        stemLabTab === 'explore' && stemLabTool === 'codingPlayground' && (() => {
+        stemLabTab === 'explore' && stemLabTool === 'economicsLab' && (() => {
+          var d = labToolData || {};
+          var upd = function(k,v) { setLabToolData(function(p) { var n = Object.assign({}, p); n[k]=v; return n; }); };
+          var econTab = d.econTab || 'supplyDemand';
+          var canvasRef = React.useRef(null);
+
+          // ── Supply & Demand State ──
+          var sdDemandShift = d.sdDemandShift || 0;
+          var sdSupplyShift = d.sdSupplyShift || 0;
+          var sdPriceFloor = d.sdPriceFloor || 0;
+          var sdPriceCeiling = d.sdPriceCeiling || 0;
+          var sdTax = d.sdTax || 0;
+
+          // ── Personal Finance State ──
+          var pfIncome = d.pfIncome || 3000;
+          var pfRent = d.pfRent || 900;
+          var pfFood = d.pfFood || 400;
+          var pfTransport = d.pfTransport || 200;
+          var pfEntertain = d.pfEntertain || 150;
+          var pfSavings = d.pfSavings || 300;
+          var pfPrincipal = d.pfPrincipal || 1000;
+          var pfRate = d.pfRate || 7;
+          var pfYears = d.pfYears || 20;
+
+          // ── Stock Market State ──
+          var smCash = d.smCash !== undefined ? d.smCash : 10000;
+          var smPortfolio = d.smPortfolio || {};
+          var smDay = d.smDay || 0;
+          var smCompanies = d.smCompanies || [
+            { name: 'TechNova', ticker: 'TNVA', price: 45, history: [42,43,44,45], sector: 'Tech', color: '#3b82f6' },
+            { name: 'GreenLeaf Energy', ticker: 'GLEF', price: 28, history: [25,26,27,28], sector: 'Energy', color: '#22c55e' },
+            { name: 'MediCore Health', ticker: 'MDCH', price: 62, history: [60,61,63,62], sector: 'Health', color: '#ef4444' },
+            { name: 'UrbanBite Foods', ticker: 'UBTF', price: 18, history: [17,18,17,18], sector: 'Food', color: '#f59e0b' },
+            { name: 'CloudPeak AI', ticker: 'CPAI', price: 95, history: [88,90,92,95], sector: 'Tech', color: '#8b5cf6' }
+          ];
+          var smSelected = d.smSelected || 0;
+          var smNews = d.smNews || null;
+
+          // ── Entrepreneur State ──
+          var enDay = d.enDay || 1;
+          var enCash = d.enCash !== undefined ? d.enCash : 20;
+          var enPrice = d.enPrice || 1.00;
+          var enCups = d.enCups || 30;
+          var enAdBudget = d.enAdBudget || 0;
+          var enWeather = d.enWeather || 'sunny';
+          var enHistory = d.enHistory || [];
+
+          // ── Canvas Rendering ──
+          React.useEffect(function() {
+            var canvas = canvasRef.current;
+            if (!canvas) return;
+            var ctx = canvas.getContext('2d');
+            var W = canvas.width = canvas.offsetWidth * 2;
+            var H = canvas.height = 500;
+            ctx.scale(1, 1);
+            ctx.clearRect(0, 0, W, H);
+
+            if (econTab === 'supplyDemand') {
+              // ── Supply & Demand Graph ──
+              var gx = 60, gy = 30, gw = W - 120, gh = H - 80;
+              // Background
+              ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+              // Grid
+              ctx.strokeStyle = 'rgba(148,163,184,0.1)'; ctx.lineWidth = 1;
+              for (var gi = 0; gi <= 10; gi++) {
+                ctx.beginPath(); ctx.moveTo(gx + gi*gw/10, gy); ctx.lineTo(gx + gi*gw/10, gy+gh); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(gx, gy + gi*gh/10); ctx.lineTo(gx+gw, gy + gi*gh/10); ctx.stroke();
+              }
+              // Axes
+              ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2;
+              ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, gy+gh); ctx.lineTo(gx+gw, gy+gh); ctx.stroke();
+              ctx.font = 'bold 14px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+              ctx.fillText('Price ($)', gx - 50, gy + gh/2);
+              ctx.fillText('Quantity', gx + gw/2 - 25, gy + gh + 35);
+              // Labels
+              ctx.font = '11px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+              for (var li = 0; li <= 10; li++) {
+                ctx.fillText((100 - li*10).toString(), gx - 30, gy + li*gh/10 + 4);
+                ctx.fillText((li*10).toString(), gx + li*gw/10 - 5, gy + gh + 18);
+              }
+
+              // Demand curve (downward sloping, shifted)
+              ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3; ctx.beginPath();
+              for (var dx = 0; dx <= 100; dx++) {
+                var dp = 90 - dx * 0.8 + sdDemandShift * 5;
+                var px = gx + dx/100 * gw;
+                var py = gy + (100 - dp)/100 * gh;
+                dx === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+              }
+              ctx.stroke();
+              ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 13px Inter, system-ui';
+              ctx.fillText('D' + (sdDemandShift !== 0 ? '\'' : ''), gx + gw - 30, gy + 30 - sdDemandShift*25);
+
+              // Supply curve (upward sloping, shifted)
+              ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.beginPath();
+              for (var sx = 0; sx <= 100; sx++) {
+                var sp = 10 + sx * 0.8 + sdSupplyShift * 5;
+                var spx = gx + sx/100 * gw;
+                var spy = gy + (100 - sp)/100 * gh;
+                sx === 0 ? ctx.moveTo(spx, spy) : ctx.lineTo(spx, spy);
+              }
+              ctx.stroke();
+              ctx.fillStyle = '#ef4444';
+              ctx.fillText('S' + (sdSupplyShift !== 0 ? '\'' : ''), gx + gw - 30, gy + gh - 30 - sdSupplyShift*25);
+
+              // Equilibrium point
+              var eqQ = (80 - sdSupplyShift*5 + sdDemandShift*5) / 1.6;
+              var eqP = 10 + eqQ * 0.8 + sdSupplyShift * 5;
+              var eqPx = gx + eqQ/100 * gw;
+              var eqPy = gy + (100 - eqP)/100 * gh;
+              // Dashed lines to axes
+              ctx.setLineDash([5, 5]); ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5;
+              ctx.beginPath(); ctx.moveTo(eqPx, eqPy); ctx.lineTo(gx, eqPy); ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(eqPx, eqPy); ctx.lineTo(eqPx, gy+gh); ctx.stroke();
+              ctx.setLineDash([]);
+              // Equilibrium dot
+              ctx.beginPath(); ctx.arc(eqPx, eqPy, 8, 0, Math.PI*2);
+              ctx.fillStyle = '#fbbf24'; ctx.fill();
+              ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2; ctx.stroke();
+              ctx.font = 'bold 12px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+              ctx.fillText('E', eqPx + 12, eqPy - 8);
+              ctx.font = '11px Inter, system-ui';
+              ctx.fillText('P* = $' + eqP.toFixed(0), gx + 5, eqPy - 5);
+              ctx.fillText('Q* = ' + eqQ.toFixed(0), eqPx - 10, gy + gh + 30);
+
+              // Price floor
+              if (sdPriceFloor > 0) {
+                var pfY = gy + (100 - sdPriceFloor)/100 * gh;
+                ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 2; ctx.setLineDash([8, 4]);
+                ctx.beginPath(); ctx.moveTo(gx, pfY); ctx.lineTo(gx+gw, pfY); ctx.stroke();
+                ctx.setLineDash([]); ctx.fillStyle = '#22c55e'; ctx.font = 'bold 11px Inter, system-ui';
+                ctx.fillText('Price Floor $' + sdPriceFloor, gx + gw - 120, pfY - 8);
+                if (sdPriceFloor > eqP) {
+                  ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+                  ctx.fillText('\u26A0 SURPLUS (above equilibrium)', gx + 10, pfY - 20);
+                }
+              }
+              // Price ceiling
+              if (sdPriceCeiling > 0) {
+                var pcY = gy + (100 - sdPriceCeiling)/100 * gh;
+                ctx.strokeStyle = '#f97316'; ctx.lineWidth = 2; ctx.setLineDash([8, 4]);
+                ctx.beginPath(); ctx.moveTo(gx, pcY); ctx.lineTo(gx+gw, pcY); ctx.stroke();
+                ctx.setLineDash([]); ctx.fillStyle = '#f97316'; ctx.font = 'bold 11px Inter, system-ui';
+                ctx.fillText('Price Ceiling $' + sdPriceCeiling, gx + gw - 130, pcY + 18);
+                if (sdPriceCeiling < eqP) {
+                  ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+                  ctx.fillText('\u26A0 SHORTAGE (below equilibrium)', gx + 10, pcY + 30);
+                }
+              }
+              // Tax wedge
+              if (sdTax > 0) {
+                ctx.fillStyle = 'rgba(168,85,247,0.15)';
+                ctx.fillRect(eqPx - 20, eqPy - sdTax/100*gh/2, 40, sdTax/100*gh);
+                ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#a855f7';
+                ctx.fillText('Tax: $' + sdTax, eqPx + 25, eqPy);
+              }
+            }
+
+            else if (econTab === 'personalFinance') {
+              // ── Budget Pie Chart ──
+              ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+              var pieX = W * 0.25, pieY = H * 0.45, pieR = Math.min(W*0.2, H*0.35);
+              var expenses = [
+                { name: 'Rent/Housing', val: pfRent, color: '#ef4444' },
+                { name: 'Food', val: pfFood, color: '#f59e0b' },
+                { name: 'Transport', val: pfTransport, color: '#3b82f6' },
+                { name: 'Entertainment', val: pfEntertain, color: '#8b5cf6' },
+                { name: 'Savings', val: pfSavings, color: '#22c55e' }
+              ];
+              var totalExp = expenses.reduce(function(s,e) { return s + e.val; }, 0);
+              var remaining = Math.max(0, pfIncome - totalExp);
+              if (remaining > 0) expenses.push({ name: 'Remaining', val: remaining, color: '#64748b' });
+              var total = expenses.reduce(function(s,e) { return s + e.val; }, 0);
+              var angle = -Math.PI/2;
+              expenses.forEach(function(e) {
+                var sliceAngle = (e.val / total) * Math.PI * 2;
+                ctx.beginPath(); ctx.moveTo(pieX, pieY);
+                ctx.arc(pieX, pieY, pieR, angle, angle + sliceAngle);
+                ctx.closePath(); ctx.fillStyle = e.color; ctx.fill();
+                ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2; ctx.stroke();
+                // Label
+                var midAngle = angle + sliceAngle / 2;
+                var lx = pieX + Math.cos(midAngle) * (pieR * 0.65);
+                var ly = pieY + Math.sin(midAngle) * (pieR * 0.65);
+                if (e.val / total > 0.05) {
+                  ctx.font = 'bold 11px Inter, system-ui'; ctx.fillStyle = '#fff';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(Math.round(e.val/total*100) + '%', lx, ly);
+                  ctx.fillText(e.name, lx, ly + 14);
+                }
+                angle += sliceAngle;
+              });
+              ctx.textAlign = 'left';
+              // Income display
+              ctx.font = 'bold 16px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+              ctx.fillText('Monthly Income: $' + pfIncome.toLocaleString(), W*0.55, 40);
+              ctx.font = '13px Inter, system-ui'; ctx.fillStyle = totalExp > pfIncome ? '#ef4444' : '#22c55e';
+              ctx.fillText('Total Expenses: $' + totalExp.toLocaleString() + (totalExp > pfIncome ? ' \u26A0 OVER BUDGET' : ' \u2713 Within Budget'), W*0.55, 65);
+              ctx.fillStyle = '#94a3b8';
+              ctx.fillText('Savings Rate: ' + (pfSavings/pfIncome*100).toFixed(1) + '%', W*0.55, 85);
+
+              // Compound Interest Chart (right side)
+              ctx.font = 'bold 14px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+              ctx.fillText('\uD83D\uDCC8 Compound Interest Growth', W*0.55, 130);
+              var ciX = W*0.55, ciY = 150, ciW = W*0.4, ciH = H - 200;
+              ctx.strokeStyle = '#334155'; ctx.lineWidth = 1;
+              ctx.strokeRect(ciX, ciY, ciW, ciH);
+              // Growth curve
+              var maxVal = pfPrincipal * Math.pow(1 + pfRate/100, pfYears);
+              ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 2.5; ctx.beginPath();
+              for (var yr = 0; yr <= pfYears; yr++) {
+                var val = pfPrincipal * Math.pow(1 + pfRate/100, yr);
+                var cx2 = ciX + (yr/pfYears) * ciW;
+                var cy2 = ciY + ciH - (val/maxVal) * ciH;
+                yr === 0 ? ctx.moveTo(cx2, cy2) : ctx.lineTo(cx2, cy2);
+              }
+              ctx.stroke();
+              // Fill under curve
+              ctx.lineTo(ciX + ciW, ciY + ciH); ctx.lineTo(ciX, ciY + ciH); ctx.closePath();
+              ctx.fillStyle = 'rgba(34,197,94,0.1)'; ctx.fill();
+              // End value label
+              ctx.font = 'bold 13px Inter, system-ui'; ctx.fillStyle = '#22c55e';
+              ctx.fillText('$' + Math.round(maxVal).toLocaleString(), ciX + ciW - 80, ciY + 20);
+              ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+              ctx.fillText('Year 0', ciX, ciY + ciH + 15);
+              ctx.fillText('Year ' + pfYears, ciX + ciW - 40, ciY + ciH + 15);
+              ctx.fillText('$' + pfPrincipal.toLocaleString() + ' @ ' + pfRate + '% for ' + pfYears + ' years', ciX, ciY + ciH + 30);
+            }
+
+            else if (econTab === 'stockMarket') {
+              // ── Stock Market Chart ──
+              ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+              var co = smCompanies[smSelected];
+              if (!co) return;
+              // Price chart area
+              var chX = 60, chY = 50, chW = W - 120, chH = H * 0.55;
+              // Chart background
+              ctx.fillStyle = '#1e293b'; ctx.fillRect(chX, chY, chW, chH);
+              // Grid
+              ctx.strokeStyle = 'rgba(148,163,184,0.08)'; ctx.lineWidth = 1;
+              for (var cgi = 0; cgi <= 5; cgi++) {
+                var cgy = chY + cgi*chH/5;
+                ctx.beginPath(); ctx.moveTo(chX, cgy); ctx.lineTo(chX+chW, cgy); ctx.stroke();
+              }
+              // Price history line
+              var hist = co.history;
+              if (hist.length > 1) {
+                var minP = Math.min.apply(null, hist) * 0.9;
+                var maxP = Math.max.apply(null, hist) * 1.1;
+                var priceRange = maxP - minP || 1;
+                // Area fill
+                ctx.beginPath();
+                for (var hi = 0; hi < hist.length; hi++) {
+                  var hx = chX + (hi/(hist.length-1)) * chW;
+                  var hy = chY + chH - ((hist[hi]-minP)/priceRange) * chH;
+                  hi === 0 ? ctx.moveTo(hx, hy) : ctx.lineTo(hx, hy);
+                }
+                ctx.lineTo(chX + chW, chY + chH); ctx.lineTo(chX, chY + chH); ctx.closePath();
+                ctx.fillStyle = co.color.replace(')', ',0.1)').replace('rgb', 'rgba');
+                if (!ctx.fillStyle.startsWith('rgba')) ctx.fillStyle = 'rgba(59,130,246,0.1)';
+                ctx.fill();
+                // Line
+                ctx.beginPath();
+                for (var hi2 = 0; hi2 < hist.length; hi2++) {
+                  var hx2 = chX + (hi2/(hist.length-1)) * chW;
+                  var hy2 = chY + chH - ((hist[hi2]-minP)/priceRange) * chH;
+                  hi2 === 0 ? ctx.moveTo(hx2, hy2) : ctx.lineTo(hx2, hy2);
+                }
+                ctx.strokeStyle = co.color; ctx.lineWidth = 2.5; ctx.stroke();
+                // Current price dot
+                var lastX = chX + chW;
+                var lastY = chY + chH - ((hist[hist.length-1]-minP)/priceRange) * chH;
+                ctx.beginPath(); ctx.arc(lastX, lastY, 5, 0, Math.PI*2);
+                ctx.fillStyle = co.color; ctx.fill();
+                // Price labels
+                ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+                ctx.fillText('$' + maxP.toFixed(0), chX - 35, chY + 12);
+                ctx.fillText('$' + minP.toFixed(0), chX - 35, chY + chH);
+              }
+              // Company header
+              ctx.font = 'bold 18px Inter, system-ui'; ctx.fillStyle = co.color;
+              ctx.fillText(co.ticker, chX, 30);
+              ctx.font = '13px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+              ctx.fillText(co.name + ' | ' + co.sector, chX + 80, 30);
+              ctx.font = 'bold 16px Inter, system-ui';
+              var priceChange = hist.length > 1 ? hist[hist.length-1] - hist[hist.length-2] : 0;
+              ctx.fillStyle = priceChange >= 0 ? '#22c55e' : '#ef4444';
+              ctx.fillText('$' + co.price.toFixed(2) + ' ' + (priceChange >= 0 ? '\u25B2' : '\u25BC') + Math.abs(priceChange).toFixed(2), chX + chW - 150, 30);
+
+              // Portfolio summary at bottom
+              var portY = chY + chH + 30;
+              ctx.font = 'bold 14px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+              ctx.fillText('\uD83D\uDCBC Portfolio', chX, portY);
+              ctx.font = '12px Inter, system-ui'; ctx.fillStyle = '#22c55e';
+              ctx.fillText('Cash: $' + smCash.toFixed(2), chX + 120, portY);
+              // Holdings
+              var portVal = 0;
+              var holdX = chX;
+              smCompanies.forEach(function(c, ci) {
+                var shares = (smPortfolio[c.ticker] || 0);
+                if (shares > 0) {
+                  portVal += shares * c.price;
+                  ctx.fillStyle = c.color; ctx.font = '11px Inter, system-ui';
+                  ctx.fillText(c.ticker + ': ' + shares + ' ($' + (shares*c.price).toFixed(0) + ')', holdX, portY + 25);
+                  holdX += 140;
+                }
+              });
+              ctx.font = 'bold 12px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+              ctx.fillText('Total Value: $' + (smCash + portVal).toFixed(2), chX + chW - 180, portY);
+              // News banner
+              if (smNews) {
+                ctx.fillStyle = 'rgba(251,191,36,0.15)';
+                ctx.fillRect(chX, portY + 45, chW, 30);
+                ctx.font = 'bold 11px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+                ctx.fillText('\uD83D\uDCF0 ' + smNews, chX + 10, portY + 65);
+              }
+            }
+
+            else if (econTab === 'entrepreneur') {
+              // ── Lemonade Stand ──
+              ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+              // Weather display
+              var weatherEmoji = enWeather === 'sunny' ? '\u2600\uFE0F' : enWeather === 'cloudy' ? '\u2601\uFE0F' : enWeather === 'rainy' ? '\uD83C\uDF27\uFE0F' : '\uD83C\uDF24\uFE0F';
+              ctx.font = 'bold 40px Inter, system-ui'; ctx.fillText(weatherEmoji, W/2 - 25, 60);
+              ctx.font = 'bold 16px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+              ctx.fillText('Day ' + enDay + ' | ' + enWeather.charAt(0).toUpperCase() + enWeather.slice(1), W/2 - 60, 90);
+
+              // Lemonade stand illustration
+              ctx.fillStyle = '#fbbf24';
+              ctx.fillRect(W/2 - 60, 110, 120, 80);
+              ctx.fillStyle = '#f59e0b';
+              ctx.beginPath(); ctx.moveTo(W/2 - 80, 110); ctx.lineTo(W/2, 85); ctx.lineTo(W/2 + 80, 110); ctx.closePath(); ctx.fill();
+              ctx.font = 'bold 12px Inter, system-ui'; ctx.fillStyle = '#7c2d12';
+              ctx.fillText('LEMONADE', W/2 - 35, 155);
+              ctx.fillText('$' + enPrice.toFixed(2), W/2 - 15, 175);
+
+              // Cash register
+              ctx.font = 'bold 20px Inter, system-ui'; ctx.fillStyle = '#22c55e';
+              ctx.fillText('\uD83D\uDCB5 $' + enCash.toFixed(2), W/2 - 50, 230);
+
+              // Daily stats
+              ctx.font = '13px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+              ctx.fillText('Price per cup: $' + enPrice.toFixed(2), 40, 270);
+              ctx.fillText('Cups prepared: ' + enCups, 40, 290);
+              ctx.fillText('Ad budget: $' + enAdBudget.toFixed(2), 40, 310);
+              // Cost breakdown
+              var cupCost = 0.25; var lemonCost = 0.15; var sugarCost = 0.05;
+              var totalCostPerCup = cupCost + lemonCost + sugarCost;
+              var dailyFixedCost = enCups * totalCostPerCup + enAdBudget;
+              ctx.fillStyle = '#ef4444';
+              ctx.fillText('Cost/cup: $' + totalCostPerCup.toFixed(2) + ' (cup $0.25 + lemon $0.15 + sugar $0.05)', 40, 340);
+              ctx.fillText('Daily costs: $' + dailyFixedCost.toFixed(2), 40, 360);
+              // Break-even
+              var breakEven = dailyFixedCost / Math.max(0.01, enPrice - totalCostPerCup);
+              ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 12px Inter, system-ui';
+              ctx.fillText('Break-even: ' + Math.ceil(breakEven) + ' cups', 40, 390);
+
+              // Profit history chart
+              if (enHistory.length > 0) {
+                var phX = W*0.55, phY = 260, phW = W*0.4, phH = 170;
+                ctx.fillStyle = '#1e293b'; ctx.fillRect(phX, phY, phW, phH);
+                ctx.font = 'bold 12px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+                ctx.fillText('Profit History', phX, phY - 8);
+                var maxProfit = Math.max.apply(null, enHistory.map(function(h){return Math.abs(h.profit);})) || 1;
+                var zeroY = phY + phH/2;
+                ctx.strokeStyle = '#475569'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(phX, zeroY); ctx.lineTo(phX+phW, zeroY); ctx.stroke();
+                ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 2; ctx.beginPath();
+                enHistory.forEach(function(h, hi) {
+                  var hx3 = phX + (hi/(Math.max(1,enHistory.length-1))) * phW;
+                  var hy3 = zeroY - (h.profit/maxProfit) * phH/2;
+                  hi === 0 ? ctx.moveTo(hx3, hy3) : ctx.lineTo(hx3, hy3);
+                });
+                ctx.stroke();
+                // Dots
+                enHistory.forEach(function(h, hi) {
+                  var hx4 = phX + (hi/(Math.max(1,enHistory.length-1))) * phW;
+                  var hy4 = zeroY - (h.profit/maxProfit) * phH/2;
+                  ctx.beginPath(); ctx.arc(hx4, hy4, 3, 0, Math.PI*2);
+                  ctx.fillStyle = h.profit >= 0 ? '#22c55e' : '#ef4444'; ctx.fill();
+                });
+              }
+            }
+          }, [econTab, sdDemandShift, sdSupplyShift, sdPriceFloor, sdPriceCeiling, sdTax,
+              pfIncome, pfRent, pfFood, pfTransport, pfEntertain, pfSavings, pfPrincipal, pfRate, pfYears,
+              smCompanies, smSelected, smCash, smPortfolio, smNews,
+              enDay, enCash, enPrice, enCups, enAdBudget, enWeather, enHistory]);
+
+          return React.createElement('div', { className: 'max-w-4xl mx-auto' },
+            // Header
+            React.createElement('div', { className: 'flex items-center gap-3 mb-4' },
+              React.createElement('button', {
+                onClick: function() { setStemLabTool(null); },
+                className: 'text-slate-400 hover:text-white transition-colors text-lg'
+              }, '\u2190'),
+              React.createElement('h2', { className: 'text-xl font-bold text-slate-800' }, '\uD83D\uDCB0 Economics Lab'),
+              React.createElement('span', { className: 'text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full' }, '4 simulators')
+            ),
+            // Tab bar
+            React.createElement('div', { className: 'flex gap-1 mb-4 bg-slate-100 rounded-xl p-1' },
+              [
+                { id: 'supplyDemand', label: '\uD83D\uDCC9 Supply & Demand' },
+                { id: 'personalFinance', label: '\uD83C\uDFE6 Personal Finance' },
+                { id: 'stockMarket', label: '\uD83D\uDCC8 Stock Market' },
+                { id: 'entrepreneur', label: '\uD83C\uDFEA Lemonade Stand' }
+              ].map(function(tab) {
+                return React.createElement('button', {
+                  key: tab.id,
+                  onClick: function() { upd('econTab', tab.id); },
+                  className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ' +
+                    (econTab === tab.id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700')
+                }, tab.label);
+              })
+            ),
+            // Canvas
+            React.createElement('canvas', {
+              ref: canvasRef,
+              className: 'w-full rounded-xl border border-slate-200',
+              style: { height: '250px', background: '#0f172a' }
+            }),
+            // Controls (below canvas, based on active tab)
+            econTab === 'supplyDemand' && React.createElement('div', { className: 'mt-4 grid grid-cols-2 gap-4' },
+              React.createElement('div', { className: 'space-y-3 bg-blue-50 rounded-xl p-4 border border-blue-200' },
+                React.createElement('h4', { className: 'text-sm font-bold text-blue-700' }, '\uD83D\uDCC9 Curve Shifts'),
+                React.createElement('label', { className: 'block text-xs text-blue-600' }, 'Demand Shift: ' + sdDemandShift),
+                React.createElement('input', { type: 'range', min: -5, max: 5, value: sdDemandShift,
+                  onChange: function(e) { upd('sdDemandShift', parseInt(e.target.value)); },
+                  className: 'w-full accent-blue-500' }),
+                React.createElement('label', { className: 'block text-xs text-red-600' }, 'Supply Shift: ' + sdSupplyShift),
+                React.createElement('input', { type: 'range', min: -5, max: 5, value: sdSupplyShift,
+                  onChange: function(e) { upd('sdSupplyShift', parseInt(e.target.value)); },
+                  className: 'w-full accent-red-500' })
+              ),
+              React.createElement('div', { className: 'space-y-3 bg-emerald-50 rounded-xl p-4 border border-emerald-200' },
+                React.createElement('h4', { className: 'text-sm font-bold text-emerald-700' }, '\u2696\uFE0F Government Controls'),
+                React.createElement('label', { className: 'block text-xs text-emerald-600' }, 'Price Floor: $' + sdPriceFloor),
+                React.createElement('input', { type: 'range', min: 0, max: 90, value: sdPriceFloor,
+                  onChange: function(e) { upd('sdPriceFloor', parseInt(e.target.value)); },
+                  className: 'w-full accent-emerald-500' }),
+                React.createElement('label', { className: 'block text-xs text-orange-600' }, 'Price Ceiling: $' + sdPriceCeiling),
+                React.createElement('input', { type: 'range', min: 0, max: 90, value: sdPriceCeiling,
+                  onChange: function(e) { upd('sdPriceCeiling', parseInt(e.target.value)); },
+                  className: 'w-full accent-orange-500' }),
+                React.createElement('label', { className: 'block text-xs text-purple-600' }, 'Tax: $' + sdTax),
+                React.createElement('input', { type: 'range', min: 0, max: 30, value: sdTax,
+                  onChange: function(e) { upd('sdTax', parseInt(e.target.value)); },
+                  className: 'w-full accent-purple-500' })
+              )
+            ),
+
+            econTab === 'personalFinance' && React.createElement('div', { className: 'mt-4 grid grid-cols-2 gap-4' },
+              React.createElement('div', { className: 'space-y-2 bg-blue-50 rounded-xl p-4 border border-blue-200' },
+                React.createElement('h4', { className: 'text-sm font-bold text-blue-700' }, '\uD83D\uDCB5 Monthly Budget'),
+                React.createElement('label', { className: 'block text-xs text-slate-600' }, 'Income: $' + pfIncome),
+                React.createElement('input', { type: 'range', min: 1000, max: 10000, step: 100, value: pfIncome,
+                  onChange: function(e) { upd('pfIncome', parseInt(e.target.value)); }, className: 'w-full' }),
+                ['pfRent', 'pfFood', 'pfTransport', 'pfEntertain', 'pfSavings'].map(function(key, ki) {
+                  var labels = ['Rent/Housing', 'Food', 'Transport', 'Entertainment', 'Savings'];
+                  var colors = ['text-red-600', 'text-amber-600', 'text-blue-600', 'text-purple-600', 'text-green-600'];
+                  var val = d[key] || 0;
+                  return React.createElement('div', { key: key },
+                    React.createElement('label', { className: 'block text-xs ' + colors[ki] }, labels[ki] + ': $' + val),
+                    React.createElement('input', { type: 'range', min: 0, max: 3000, step: 50, value: val,
+                      onChange: function(e) { upd(key, parseInt(e.target.value)); }, className: 'w-full' })
+                  );
+                })
+              ),
+              React.createElement('div', { className: 'space-y-2 bg-green-50 rounded-xl p-4 border border-green-200' },
+                React.createElement('h4', { className: 'text-sm font-bold text-green-700' }, '\uD83D\uDCC8 Compound Interest'),
+                React.createElement('label', { className: 'block text-xs text-slate-600' }, 'Principal: $' + pfPrincipal),
+                React.createElement('input', { type: 'range', min: 100, max: 50000, step: 100, value: pfPrincipal,
+                  onChange: function(e) { upd('pfPrincipal', parseInt(e.target.value)); }, className: 'w-full' }),
+                React.createElement('label', { className: 'block text-xs text-slate-600' }, 'Rate: ' + pfRate + '%'),
+                React.createElement('input', { type: 'range', min: 1, max: 15, step: 0.5, value: pfRate,
+                  onChange: function(e) { upd('pfRate', parseFloat(e.target.value)); }, className: 'w-full' }),
+                React.createElement('label', { className: 'block text-xs text-slate-600' }, 'Years: ' + pfYears),
+                React.createElement('input', { type: 'range', min: 1, max: 40, value: pfYears,
+                  onChange: function(e) { upd('pfYears', parseInt(e.target.value)); }, className: 'w-full' }),
+                React.createElement('div', { className: 'mt-2 p-2 bg-white rounded-lg text-center' },
+                  React.createElement('div', { className: 'text-lg font-bold text-green-600' },
+                    '$' + Math.round(pfPrincipal * Math.pow(1 + pfRate/100, pfYears)).toLocaleString()
+                  ),
+                  React.createElement('div', { className: 'text-[10px] text-slate-400' }, 'Future value after ' + pfYears + ' years')
+                )
+              )
+            ),
+
+            econTab === 'stockMarket' && React.createElement('div', { className: 'mt-4' },
+              // Company selector
+              React.createElement('div', { className: 'flex gap-2 mb-3' },
+                smCompanies.map(function(c, ci) {
+                  return React.createElement('button', {
+                    key: ci,
+                    onClick: function() { upd('smSelected', ci); },
+                    className: 'flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all border-2 ' +
+                      (smSelected === ci ? 'text-white shadow-md' : 'bg-slate-50 text-slate-600 border-slate-200'),
+                    style: smSelected === ci ? { background: c.color, borderColor: c.color } : {}
+                  }, c.ticker);
+                })
+              ),
+              // Buy/Sell controls
+              React.createElement('div', { className: 'flex gap-3' },
+                React.createElement('button', {
+                  onClick: function() {
+                    var co2 = smCompanies[smSelected];
+                    if (smCash >= co2.price) {
+                      upd('smCash', smCash - co2.price);
+                      var newPort = Object.assign({}, smPortfolio);
+                      newPort[co2.ticker] = (newPort[co2.ticker] || 0) + 1;
+                      upd('smPortfolio', newPort);
+                      if (addToast) addToast('Bought 1 ' + co2.ticker + ' @ $' + co2.price.toFixed(2), 'success');
+                    } else {
+                      if (addToast) addToast('Not enough cash!', 'error');
+                    }
+                  },
+                  className: 'flex-1 py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+                }, '\u25B2 Buy 1 Share ($' + (smCompanies[smSelected] ? smCompanies[smSelected].price.toFixed(2) : '0') + ')'),
+                React.createElement('button', {
+                  onClick: function() {
+                    var co3 = smCompanies[smSelected];
+                    if ((smPortfolio[co3.ticker] || 0) > 0) {
+                      upd('smCash', smCash + co3.price);
+                      var newPort2 = Object.assign({}, smPortfolio);
+                      newPort2[co3.ticker] = newPort2[co3.ticker] - 1;
+                      if (newPort2[co3.ticker] <= 0) delete newPort2[co3.ticker];
+                      upd('smPortfolio', newPort2);
+                      if (addToast) addToast('Sold 1 ' + co3.ticker + ' @ $' + co3.price.toFixed(2), 'info');
+                    } else {
+                      if (addToast) addToast('No shares to sell!', 'error');
+                    }
+                  },
+                  className: 'flex-1 py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-red-500 to-rose-500 text-white'
+                }, '\u25BC Sell 1 Share'),
+                React.createElement('button', {
+                  onClick: function() {
+                    // Advance day: random price changes + news
+                    var newsOptions = [
+                      { text: 'TechNova announces breakthrough AI product', ticker: 'TNVA', effect: 0.08 },
+                      { text: 'GreenLeaf wins government contract', ticker: 'GLEF', effect: 0.12 },
+                      { text: 'MediCore drug trial disappoints', ticker: 'MDCH', effect: -0.10 },
+                      { text: 'UrbanBite expands to 3 new cities', ticker: 'UBTF', effect: 0.06 },
+                      { text: 'CloudPeak faces regulatory scrutiny', ticker: 'CPAI', effect: -0.07 },
+                      { text: 'Market rallies on strong jobs report', ticker: 'ALL', effect: 0.04 },
+                      { text: 'Interest rates raised by Fed', ticker: 'ALL', effect: -0.03 }
+                    ];
+                    var news = newsOptions[Math.floor(Math.random() * newsOptions.length)];
+                    var newCos = smCompanies.map(function(c) {
+                      var change = (Math.random() - 0.48) * 0.06;
+                      if (news.ticker === c.ticker || news.ticker === 'ALL') change += news.effect;
+                      var newPrice = Math.max(1, c.price * (1 + change));
+                      var newHist = c.history.slice(-29);
+                      newHist.push(Math.round(newPrice * 100) / 100);
+                      return Object.assign({}, c, { price: Math.round(newPrice * 100) / 100, history: newHist });
+                    });
+                    upd('smCompanies', newCos);
+                    upd('smDay', smDay + 1);
+                    upd('smNews', news.text);
+                  },
+                  className: 'py-3 px-6 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-yellow-500 text-white'
+                }, '\u23ED Next Day')
+              )
+            ),
+
+            econTab === 'entrepreneur' && React.createElement('div', { className: 'mt-4 grid grid-cols-2 gap-4' },
+              React.createElement('div', { className: 'space-y-3 bg-amber-50 rounded-xl p-4 border border-amber-200' },
+                React.createElement('h4', { className: 'text-sm font-bold text-amber-700' }, '\uD83C\uDF4B Set Up Your Day'),
+                React.createElement('label', { className: 'block text-xs text-slate-600' }, 'Price per cup: $' + enPrice.toFixed(2)),
+                React.createElement('input', { type: 'range', min: 0.25, max: 5.00, step: 0.25, value: enPrice,
+                  onChange: function(e) { upd('enPrice', parseFloat(e.target.value)); }, className: 'w-full accent-amber-500' }),
+                React.createElement('label', { className: 'block text-xs text-slate-600' }, 'Cups to prepare: ' + enCups),
+                React.createElement('input', { type: 'range', min: 5, max: 100, step: 5, value: enCups,
+                  onChange: function(e) { upd('enCups', parseInt(e.target.value)); }, className: 'w-full accent-amber-500' }),
+                React.createElement('label', { className: 'block text-xs text-slate-600' }, 'Advertising: $' + enAdBudget.toFixed(2)),
+                React.createElement('input', { type: 'range', min: 0, max: 10, step: 0.50, value: enAdBudget,
+                  onChange: function(e) { upd('enAdBudget', parseFloat(e.target.value)); }, className: 'w-full accent-amber-500' })
+              ),
+              React.createElement('div', { className: 'space-y-3' },
+                React.createElement('button', {
+                  onClick: function() {
+                    // Simulate a day
+                    var weathers = ['sunny', 'sunny', 'sunny', 'partly_cloudy', 'cloudy', 'rainy'];
+                    var newWeather = weathers[Math.floor(Math.random() * weathers.length)];
+                    var weatherMult = newWeather === 'sunny' ? 1.3 : newWeather === 'partly_cloudy' ? 1.0 : newWeather === 'cloudy' ? 0.7 : 0.3;
+                    var priceSensitivity = Math.max(0, 1 - (enPrice - 1.0) * 0.4);
+                    var adBoost = 1 + enAdBudget * 0.1;
+                    var baseDemand = 25;
+                    var demand = Math.round(baseDemand * weatherMult * priceSensitivity * adBoost);
+                    var sold = Math.min(demand, enCups);
+                    var revenue = sold * enPrice;
+                    var costPerCup = 0.45;
+                    var costs = enCups * costPerCup + enAdBudget;
+                    var profit = revenue - costs;
+                    var newCash = enCash + profit;
+                    var newHistory = (enHistory || []).slice(-19);
+                    newHistory.push({ day: enDay, sold: sold, revenue: revenue, costs: costs, profit: profit, weather: newWeather });
+                    upd('enDay', enDay + 1);
+                    upd('enCash', Math.round(newCash * 100) / 100);
+                    upd('enWeather', newWeather);
+                    upd('enHistory', newHistory);
+                    if (addToast) addToast(
+                      (profit >= 0 ? '\uD83D\uDCB0' : '\uD83D\uDCC9') +
+                      ' Sold ' + sold + '/' + enCups + ' cups | Revenue $' + revenue.toFixed(2) +
+                      ' | Costs $' + costs.toFixed(2) + ' | Profit: ' + (profit >= 0 ? '+' : '') + '$' + profit.toFixed(2),
+                      profit >= 0 ? 'success' : 'warning'
+                    );
+                  },
+                  className: 'w-full py-4 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg'
+                }, '\u2600\uFE0F Open for Business! (Day ' + enDay + ')'),
+                React.createElement('button', {
+                  onClick: function() {
+                    upd('enDay', 1); upd('enCash', 20); upd('enHistory', []);
+                    upd('enPrice', 1.00); upd('enCups', 30); upd('enAdBudget', 0);
+                    upd('enWeather', 'sunny');
+                    if (addToast) addToast('\u267B Starting fresh with $20!', 'info');
+                  },
+                  className: 'w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200'
+                }, '\u267B Reset Business'),
+                enHistory.length > 0 && React.createElement('div', { className: 'bg-white rounded-xl border border-slate-200 p-3' },
+                  React.createElement('h4', { className: 'text-xs font-bold text-slate-700 mb-2' }, 'Recent Days'),
+                  enHistory.slice(-5).reverse().map(function(h, hi) {
+                    return React.createElement('div', { key: hi, className: 'flex justify-between text-[10px] py-0.5 border-b border-slate-50' },
+                      React.createElement('span', { className: 'text-slate-500' }, 'Day ' + h.day + ' ' + (h.weather === 'sunny' ? '\u2600' : h.weather === 'rainy' ? '\uD83C\uDF27' : '\u2601')),
+                      React.createElement('span', { className: 'text-slate-600' }, h.sold + ' sold'),
+                      React.createElement('span', { className: h.profit >= 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold' },
+                        (h.profit >= 0 ? '+' : '') + '$' + h.profit.toFixed(2))
+                    );
+                  })
+                )
+              )
+            )
+          );
+        })(), stemLabTab === 'explore' && stemLabTool === 'codingPlayground' && (() => {
           // ── State from labToolData ──
           var d = (labToolData && labToolData._codingPlayground) || {};
           var upd = function (key, val) {
