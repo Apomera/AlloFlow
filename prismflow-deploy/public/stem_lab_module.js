@@ -29823,7 +29823,9 @@
                     React.createElement('span', { className: colonyHappiness > 60 ? 'text-green-400' : colonyHappiness > 30 ? 'text-amber-400' : 'text-red-400' },
                       (colonyHappiness > 80 ? '\uD83D\uDE04' : colonyHappiness > 60 ? '\uD83D\uDE42' : colonyHappiness > 30 ? '\uD83D\uDE10' : '\uD83D\uDE21') + ' ' + colonyHappiness + '%'),
                     alienContact && React.createElement('span', { className: alienRelations > 20 ? 'text-green-400' : alienRelations < -20 ? 'text-red-400' : 'text-amber-400' }, '\uD83D\uDC7E ' + (alienRelations > 0 ? '+' : '') + alienRelations),
-                    React.createElement('span', { className: 'text-amber-400' }, gameMode === 'mcq' ? '\uD83D\uDCCB MCQ' : '\u270D\uFE0F FR')
+                    React.createElement('span', { className: 'text-amber-400' }, gameMode === 'mcq' ? '\uD83D\uDCCB MCQ' : '\u270D\uFE0F FR'),
+                    React.createElement('span', { className: equity > 60 ? 'text-green-400' : equity > 35 ? 'text-amber-400' : 'text-red-400' },
+                      '\u2696\uFE0F ' + equity + '%')
                   )
                 ),
                 // Weather indicator
@@ -32171,7 +32173,11 @@
               { name: 'Rachel Carson', icon: '\uD83C\uDF3F', specialty: 'biology', bonus: 'water', amount: 5, fact: 'Silent Spring launched the modern environmental movement in 1962.' },
               { name: 'Albert Einstein', icon: '\uD83C\uDF0C', specialty: 'physics', bonus: 'energy', amount: 10, fact: 'E=mc\u00B2 showed mass and energy are interchangeable. Revolutionized physics forever.' },
               { name: 'Mae Jemison', icon: '\uD83D\uDE80', specialty: 'biology', bonus: 'science', amount: 8, fact: 'First African-American woman in space (1992). Also a physician and engineer.' },
-              { name: 'Dmitri Mendeleev', icon: '\uD83E\uDDEA', specialty: 'chemistry', bonus: 'materials', amount: 8, fact: 'Created the Periodic Table, predicting undiscovered elements by their properties.' }
+              { name: 'Dmitri Mendeleev', icon: '\uD83E\uDDEA', specialty: 'chemistry', bonus: 'materials', amount: 8, fact: 'Created the Periodic Table, predicting undiscovered elements by their properties.' },
+              { name: 'Wangari Maathai', icon: '\uD83C\uDF33', specialty: 'biology', bonus: 'food', amount: 6, fact: 'Kenyan environmentalist who planted 51 million trees via the Green Belt Movement. First African woman to win the Nobel Peace Prize.' },
+              { name: 'Jagadish Chandra Bose', icon: '\uD83D\uDCE1', specialty: 'physics', bonus: 'science', amount: 8, fact: 'Indian polymath who proved plants have feelings, pioneered radio science, and invented the crescograph to measure plant growth.' },
+              { name: 'Maryam Mirzakhani', icon: '\uD83C\uDF00', specialty: 'math', bonus: 'science', amount: 10, fact: 'First woman and first Iranian to win the Fields Medal \u2014 the Nobel Prize of mathematics \u2014 for work on curved surfaces.' },
+              { name: 'Srinivasa Ramanujan', icon: '\u221E', specialty: 'math', bonus: 'science', amount: 8, fact: 'Self-taught Indian genius who discovered over 3,900 mathematical identities. His notebooks still yield new theorems today.' }
             ];
 
             var popGrowthAccum = d.colonyPopGrowth || 0;
@@ -32214,6 +32220,32 @@
 
             // Tile improvements
             var tileImprovements = d.tileImprovements || {};
+
+            // Equity & Culture Systems
+            var equity = d.colonyEquity || 75; // 0-100, higher = more equitable
+            var colonyValues = d.colonyValues || { collectivism: 50, innovation: 50, ecology: 50, tradition: 50, openness: 50 };
+            var dilemmaLog = d.dilemmaLog || [];
+
+            // Cultural Knowledge Traditions
+            var traditions = d.colonyTraditions || [];
+            var traditionDefs = [
+              { id: 'ubuntu', name: 'Ubuntu Philosophy', origin: 'Southern African', icon: '\uD83E\uDD1D', desc: '"I am because we are." Community-centered decision making. +10 equity, +5 happiness.',
+                bonus: { equity: 10, happiness: 5 }, value: 'collectivism', fact: 'Ubuntu is a Nguni Bantu concept meaning shared humanity. Archbishop Desmond Tutu described it as knowing you belong in a greater whole.' },
+              { id: 'kintsugi', name: 'Kintsugi Resilience', origin: 'Japanese', icon: '\uD83C\uDFFA', desc: 'Golden repair \u2014 finding strength in imperfection. Buildings regain 10% effectiveness each turn.',
+                bonus: { repair: 10 }, value: 'tradition', fact: 'Kintsugi is the Japanese art of repairing broken pottery with gold. It embraces flaws as part of history rather than something to hide.' },
+              { id: 'milpa', name: 'Three Sisters Agriculture', origin: 'Mesoamerican / Indigenous', icon: '\uD83C\uDF3D', desc: 'Corn, beans, squash companion planting. +6 food/turn, +2% terraform.',
+                bonus: { food: 6, terraform: 2 }, value: 'ecology', fact: 'The Three Sisters (corn, beans, squash) is an Indigenous agricultural system where each plant benefits the others \u2014 corn provides structure, beans fix nitrogen, squash shades soil.' },
+              { id: 'sankofa', name: 'Sankofa Wisdom', origin: 'Akan / West African', icon: '\uD83D\uDD4A\uFE0F', desc: '"Go back and get it." Learning from the past to build the future. +8 science/turn.',
+                bonus: { science: 8 }, value: 'tradition', fact: 'Sankofa is an Adinkra symbol meaning "it is not taboo to go back for what you forgot." It teaches that wisdom from the past is essential for progress.' },
+              { id: 'ayni', name: 'Ayni Reciprocity', origin: 'Andean / Quechua', icon: '\uD83C\uDFD4\uFE0F', desc: 'Sacred reciprocity with the land. +5 water, +5 materials, +3% terraform.',
+                bonus: { water: 5, materials: 5, terraform: 3 }, value: 'ecology', fact: 'Ayni is the Andean principle of reciprocity \u2014 every exchange with nature or community must be balanced. The Inca built their entire economy on this concept.' },
+              { id: 'griot', name: 'Griot Oral Tradition', origin: 'West African', icon: '\uD83C\uDFB6', desc: 'Storytelling preserves knowledge across generations. +10 science, +5 happiness.',
+                bonus: { science: 10, happiness: 5 }, value: 'openness', fact: 'Griots are West African historians, storytellers, and musicians who preserve knowledge orally. Some griot lineages stretch back over 800 years.' },
+              { id: 'whakapapa', name: 'Whakapapa Genealogy', origin: 'M\u0101ori / Polynesian', icon: '\uD83C\uDF0A', desc: 'Ancestral connection to land and sea. +5 water, +8 food, stronger settler bonds.',
+                bonus: { water: 5, food: 8 }, value: 'collectivism', fact: 'Whakapapa is the M\u0101ori concept of genealogical connection \u2014 linking people to ancestors, the land, and even the stars. It underpins Polynesian navigation.' },
+              { id: 'dreamtime', name: 'Songlines Navigation', origin: 'Aboriginal Australian', icon: '\u2B50', desc: 'Ancient wayfinding through story and song. Expeditions complete 1 turn faster.',
+                bonus: { expeditionSpeed: 1 }, value: 'tradition', fact: 'Aboriginal Songlines are navigational paths across Australia encoded in songs, stories, and art. Some Songlines are over 10,000 years old \u2014 among the oldest knowledge systems on Earth.' }
+            ];
             var buildingEff = d.buildingEff || {}; // { buildingId: 100, ... } effectiveness %
             var lastMaintTurn = d.lastMaintTurn || 0;
             var maintChallenge = d.maintChallenge || null;
@@ -32673,7 +32705,7 @@
                       nr2.water = Math.max(0, nr2.water - Math.ceil(settlers.length * 0.5));
                       upd('colonyRes', nr2); upd('colonyTurn', nt); upd('colonyEventLoading', true);
                       var ctx2 = 'Colony on Kepler-442b, turn ' + nt + '. Resources: food=' + nr2.food + ' energy=' + nr2.energy + ' water=' + nr2.water + ' materials=' + nr2.materials + ' science=' + nr2.science + '. Buildings: ' + (buildings.length > 0 ? buildings.join(', ') : 'none') + '. ' + settlers.length + ' settlers. Terraforming: ' + newTf + '%. ' + (wx ? 'Current weather: ' + wx.name + '. ' : 'Weather: calm. ') + 'Tech tier reached: ' + (buildings.indexOf('biodome') >= 0 ? 4 : buildings.indexOf('atmo') >= 0 || buildings.indexOf('fusion') >= 0 ? 3 : buildings.indexOf('lab') >= 0 || buildings.indexOf('medbay') >= 0 ? 2 : buildings.length > 0 ? 1 : 0) + '.';
-                      callGemini('You are the AI game master for an educational space colony on an alien planet. Target audience: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. ' + ctx2 + '\n\nGenerate a planet event. Include a REAL science concept. Return ONLY valid JSON:\n{"emoji":"<emoji>","title":"<event>","description":"<2-3 sentences>","lesson":"<real science concept, 2-3 sentences>","choices":[{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"},{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"}]}\n\nEvents: alien microbes, geologic discoveries, meteor showers, equipment failures, resource finds, atmospheric anomalies, alien ruins. Effects: -5 to +10 resources, -15 to +15 morale. One choice should reward scientific knowledge.', true).then(function(result) {
+                      callGemini('You are the AI game master for an educational space colony on an alien planet. Target audience: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Colony values: collectivism=' + colonyValues.collectivism + ', innovation=' + colonyValues.innovation + ', ecology=' + colonyValues.ecology + ', tradition=' + colonyValues.tradition + ', openness=' + colonyValues.openness + '. Equity: ' + equity + '/100. Sometimes let colony values influence event themes (high ecology = nature events, high tradition = cultural discovery events, low equity = social tension events). ' + ctx2 + '\n\nGenerate a planet event. Include a REAL science concept. Return ONLY valid JSON:\n{"emoji":"<emoji>","title":"<event>","description":"<2-3 sentences>","lesson":"<real science concept, 2-3 sentences>","choices":[{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"},{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"}]}\n\nEvents: alien microbes, geologic discoveries, meteor showers, equipment failures, resource finds, atmospheric anomalies, alien ruins. Effects: -5 to +10 resources, -15 to +15 morale. One choice should reward scientific knowledge.', true).then(function(result) {
                         try { var cl = result.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim(); var s2=cl.indexOf('{'); if(s2>0) cl=cl.substring(s2); var e2=cl.lastIndexOf('}'); if(e2>0) cl=cl.substring(0,e2+1);
                           var parsed = JSON.parse(cl); upd('colonyEvent', parsed); upd('colonyEventLoading', false);
                           if (d.colonyTTS) colonySpeak(parsed.title + '. ' + parsed.description, 'narrator');
@@ -32754,6 +32786,23 @@
                         if (typeof addXP === 'function') addXP(50, 'First Contact!');
                       }
 
+                      // Governance Dilemma (NationStates-style — every 5 turns)
+                      if (nt > 2 && nt % 5 === 0 && !d.activeDilemma) {
+                        var valStr = Object.keys(colonyValues).map(function(k2) { return k2 + ':' + colonyValues[k2]; }).join(', ');
+                        upd('dilemmaLoading', true);
+                        callGemini('You are creating a governance dilemma for a space colony on alien planet Kepler-442b. Colony values: ' + valStr + '. Equity: ' + equity + '/100. Population: ' + settlers.length + '. This colony values diverse knowledge traditions. Create a nuanced moral/political/cultural dilemma with NO clear right answer (like NationStates). The dilemma should involve balancing competing goods (e.g. innovation vs tradition, individual freedom vs collective welfare, rapid growth vs sustainability, scientific progress vs cultural preservation). Sometimes draw on wisdom from real-world cultural traditions (African, Indigenous, Asian, etc.) as viable solutions. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Return ONLY valid JSON: {"emoji":"<emoji>","title":"<dilemma>","description":"<3-4 sentence scenario>","choices":[{"text":"<choice A>","values":{"collectivism":<-10 to 10>,"innovation":<-10 to 10>,"ecology":<-10 to 10>,"tradition":<-10 to 10>,"openness":<-10 to 10>},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<1-2 sentence result>"},{"text":"<choice B>","values":{same},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<result>"},{"text":"<choice C>","values":{same},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<result>"}],"lesson":"<real social science or cultural insight, 2-3 sentences>"}', true).then(function(result) {
+                          try {
+                            var cl7 = result.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+                            var s8 = cl7.indexOf('{'); if (s8 > 0) cl7 = cl7.substring(s8);
+                            var e8 = cl7.lastIndexOf('}'); if (e8 > 0) cl7 = cl7.substring(0, e8 + 1);
+                            var dil = JSON.parse(cl7);
+                            upd('activeDilemma', dil); upd('dilemmaLoading', false);
+                            if (d.colonyTTS) colonySpeak('Colony council convenes. ' + dil.title + '. ' + dil.description, 'narrator');
+                            var nl25 = gameLog.slice(); nl25.push('\uD83C\uDFDB\uFE0F Dilemma: ' + dil.title); upd('colonyLog', nl25);
+                          } catch(err) { upd('dilemmaLoading', false); }
+                        }).catch(function() { upd('dilemmaLoading', false); });
+                      }
+
                       // Major disaster (rare — every ~20 turns)
                       if (nt > 1 && nt % 20 === 0 && Math.random() < 0.5) {
                         upd('disasterLoading', true);
@@ -32827,7 +32876,8 @@
                       // Expedition progress
                       if (activeExpedition) {
                         var exp = Object.assign({}, activeExpedition);
-                        exp.turnsLeft = (exp.turnsLeft || 0) - 1;
+                        var expSpeed = traditions.indexOf('dreamtime') >= 0 ? 2 : 1;
+                        exp.turnsLeft = (exp.turnsLeft || 0) - expSpeed;
                         if (exp.turnsLeft <= 0) {
                           // Expedition complete — generate reward
                           upd('activeExpedition', null);
@@ -32863,6 +32913,33 @@
                         } else {
                           upd('activeExpedition', exp);
                         }
+                      }
+
+                      // Cultural Tradition bonuses
+                      traditions.forEach(function(tid) {
+                        var tdef = traditionDefs.find(function(td2) { return td2.id === tid; });
+                        if (tdef && tdef.bonus) {
+                          if (tdef.bonus.food) nr2.food += tdef.bonus.food;
+                          if (tdef.bonus.water) nr2.water += tdef.bonus.water;
+                          if (tdef.bonus.materials) nr2.materials += tdef.bonus.materials;
+                          if (tdef.bonus.science) nr2.science += tdef.bonus.science;
+                          if (tdef.bonus.terraform) { var tfC = Math.min(100, (d.colonyTerraform || 0) + tdef.bonus.terraform); upd('colonyTerraform', tfC); }
+                          if (tdef.bonus.repair) {
+                            // Kintsugi: repair 10% effectiveness on all buildings
+                            var repEff = Object.assign({}, buildingEff);
+                            buildings.forEach(function(b2) { if (repEff[b2] !== undefined && repEff[b2] < 100) repEff[b2] = Math.min(100, repEff[b2] + 10); });
+                            upd('buildingEff', repEff);
+                          }
+                        }
+                      });
+
+                      // Equity effects
+                      if (equity < 25) {
+                        newHappy = Math.max(0, newHappy - 5);
+                        if (nt % 5 === 0) { var nl26 = gameLog.slice(); nl26.push('\u26A0\uFE0F Inequality crisis! Settlers dissatisfied with resource distribution.'); upd('colonyLog', nl26); }
+                      } else if (equity > 75) {
+                        newHappy = Math.min(100, newHappy + 2);
+                        nr2.science += 2; // equitable societies innovate better
                       }
 
                       // Wonder bonuses
@@ -32955,6 +33032,67 @@
                     );
                   }))
                 ),
+                // Governance Dilemma (NationStates-style)
+                d.activeDilemma && React.createElement('div', { className: 'bg-gradient-to-r from-indigo-900 to-slate-800 rounded-xl p-4 border-2 border-indigo-500 mb-3' },
+                  React.createElement('h3', { className: 'text-sm font-bold text-indigo-200 mb-1' }, (d.activeDilemma.emoji || '\uD83C\uDFDB\uFE0F') + ' Colony Dilemma: ' + d.activeDilemma.title),
+                  React.createElement('p', { className: 'text-xs text-indigo-100 mb-3' }, d.activeDilemma.description),
+                  React.createElement('div', { className: 'grid gap-2' },
+                    (d.activeDilemma.choices || []).map(function(ch2, ci2) {
+                      return React.createElement('button', {
+                        key: ci2,
+                        onClick: function() {
+                          // Apply value shifts
+                          var newVals = Object.assign({}, colonyValues);
+                          Object.keys(ch2.values || {}).forEach(function(vk) {
+                            newVals[vk] = Math.max(0, Math.min(100, (newVals[vk] || 50) + ch2.values[vk]));
+                          });
+                          upd('colonyValues', newVals);
+                          // Apply equity + happiness
+                          var newEq = Math.max(0, Math.min(100, equity + (ch2.equity || 0)));
+                          upd('colonyEquity', newEq);
+                          var newH2 = Math.max(0, Math.min(100, colonyHappiness + (ch2.happiness || 0)));
+                          upd('colonyHappiness', newH2);
+                          // Log
+                          var dl = dilemmaLog.slice();
+                          dl.push({ turn: turn, title: d.activeDilemma.title, choice: ch2.text, values: ch2.values, equity: ch2.equity });
+                          upd('dilemmaLog', dl);
+                          if (d.activeDilemma.lesson) {
+                            var nj6 = scienceJournal.slice();
+                            nj6.push({ turn: turn, source: 'Dilemma: ' + d.activeDilemma.title, fact: d.activeDilemma.lesson });
+                            upd('scienceJournal', nj6);
+                          }
+                          upd('dilemmaResult', { outcome: ch2.outcome, lesson: d.activeDilemma.lesson, equity: ch2.equity, values: ch2.values });
+                          upd('activeDilemma', null);
+                          if (addToast) addToast(ch2.outcome, ch2.equity >= 0 ? 'info' : 'warning');
+                          if (d.colonyTTS) colonySpeak(ch2.outcome, 'narrator');
+                          var nl27 = gameLog.slice(); nl27.push('\uD83C\uDFDB\uFE0F Decision: ' + ch2.text.substring(0, 50)); upd('colonyLog', nl27);
+                          if (typeof addXP === 'function') addXP(15, 'Governance: ' + d.activeDilemma.title);
+                        },
+                        className: 'p-3 rounded-xl border-2 border-indigo-700 bg-indigo-950 text-indigo-100 text-xs hover:border-indigo-400 transition-all text-left'
+                      },
+                        React.createElement('div', { className: 'font-bold text-[10px] text-indigo-200 mb-1' }, String.fromCharCode(65 + ci2) + '. ' + ch2.text),
+                        React.createElement('div', { className: 'flex gap-2 text-[8px] flex-wrap' },
+                          Object.keys(ch2.values || {}).filter(function(vk2) { return ch2.values[vk2] !== 0; }).map(function(vk2) {
+                            return React.createElement('span', { key: vk2, className: ch2.values[vk2] > 0 ? 'text-green-400' : 'text-red-400' },
+                              vk2 + (ch2.values[vk2] > 0 ? '+' : '') + ch2.values[vk2]);
+                          }),
+                          ch2.equity !== 0 && React.createElement('span', { className: ch2.equity > 0 ? 'text-cyan-400' : 'text-red-400' },
+                            '\u2696\uFE0F' + (ch2.equity > 0 ? '+' : '') + ch2.equity)
+                        )
+                      );
+                    })
+                  ),
+                  React.createElement('div', { className: 'text-[8px] text-indigo-400 mt-2' }, '\uD83D\uDCA1 No wrong answers \u2014 your choices shape your colony\u2019s identity.')
+                ),
+                d.dilemmaResult && React.createElement('div', { className: 'bg-indigo-950 rounded-xl p-3 border border-indigo-700 mb-3' },
+                  React.createElement('div', { className: 'flex justify-between items-center mb-1' },
+                    React.createElement('span', { className: 'text-[10px] font-bold text-indigo-300' }, '\uD83C\uDFDB\uFE0F Decision Made'),
+                    React.createElement('button', { onClick: function() { upd('dilemmaResult', null); }, className: 'text-indigo-500 text-xs' }, '\u2715')
+                  ),
+                  React.createElement('p', { className: 'text-[9px] text-indigo-200' }, d.dilemmaResult.outcome),
+                  d.dilemmaResult.lesson && React.createElement('div', { className: 'mt-1 text-[9px] text-indigo-300 bg-indigo-900/50 rounded-lg px-2 py-1' }, '\uD83D\uDCDA ' + d.dilemmaResult.lesson)
+                ),
+                d.dilemmaLoading && React.createElement('div', { className: 'bg-indigo-900/50 rounded-xl p-3 border border-indigo-700 mb-3 text-center text-indigo-300 text-xs' }, '\uD83C\uDFDB\uFE0F Colony council deliberating...'),
                 // Disaster Event
                 d.activeDisaster && React.createElement('div', { className: 'bg-gradient-to-r from-red-900 to-orange-900 rounded-xl p-4 border-2 border-red-500 mb-3' },
                   React.createElement('h3', { className: 'text-sm font-bold text-red-200 mb-1' }, (d.activeDisaster.emoji || '\uD83D\uDCA5') + ' DISASTER: ' + d.activeDisaster.title),
@@ -33297,6 +33435,79 @@
                         React.createElement('div', { className: 'text-[8px] text-slate-400' }, pol2.desc)
                       );
                     })
+                  )
+                ),
+                // Cultural Traditions Panel
+                d.showPolicy && React.createElement('div', { className: 'bg-gradient-to-r from-amber-950/50 to-slate-800 rounded-xl p-3 border border-amber-700 mb-3' },
+                  React.createElement('h4', { className: 'text-sm font-bold text-amber-300 mb-2' }, '\uD83C\uDF0D Cultural Knowledge Traditions'),
+                  React.createElement('p', { className: 'text-[9px] text-slate-400 mb-2' }, 'Ancient wisdom from diverse civilizations. Each tradition provides permanent bonuses and a real cultural lesson.'),
+                  React.createElement('div', { className: 'grid gap-2' },
+                    traditionDefs.map(function(td3) {
+                      var isAdopted = traditions.indexOf(td3.id) >= 0;
+                      var canAdopt = !isAdopted && resources.science >= 10;
+                      return React.createElement('div', { key: td3.id, className: 'p-2 rounded-xl border flex items-center justify-between ' +
+                        (isAdopted ? 'border-amber-500 bg-amber-900/30' : canAdopt ? 'border-slate-600 bg-slate-900' : 'border-slate-700 bg-slate-900/50 opacity-60')
+                      },
+                        React.createElement('div', { className: 'flex items-center gap-2 flex-1' },
+                          React.createElement('span', { className: 'text-xl' }, td3.icon),
+                          React.createElement('div', { className: 'flex-1' },
+                            React.createElement('div', { className: 'flex items-center gap-1' },
+                              React.createElement('span', { className: 'text-[10px] font-bold text-amber-200' }, td3.name),
+                              React.createElement('span', { className: 'text-[8px] text-slate-500' }, '(' + td3.origin + ')'),
+                              isAdopted && React.createElement('span', { className: 'text-amber-400 text-[8px]' }, '\u2705')
+                            ),
+                            React.createElement('div', { className: 'text-[8px] text-slate-400' }, td3.desc),
+                            isAdopted && React.createElement('div', { className: 'text-[7px] text-amber-300 mt-0.5 italic' }, '\uD83D\uDCDA ' + td3.fact)
+                          )
+                        ),
+                        !isAdopted && React.createElement('button', {
+                          onClick: function() {
+                            if (canAdopt) {
+                              var nr15 = Object.assign({}, resources); nr15.science -= 10; upd('colonyRes', nr15);
+                              var newTrad = traditions.slice(); newTrad.push(td3.id); upd('colonyTraditions', newTrad);
+                              // Update values
+                              var nv2 = Object.assign({}, colonyValues);
+                              if (td3.value) nv2[td3.value] = Math.min(100, (nv2[td3.value] || 50) + 10);
+                              upd('colonyValues', nv2);
+                              if (td3.bonus.equity) upd('colonyEquity', Math.min(100, equity + td3.bonus.equity));
+                              if (td3.bonus.happiness) upd('colonyHappiness', Math.min(100, colonyHappiness + td3.bonus.happiness));
+                              var nj7 = scienceJournal.slice();
+                              nj7.push({ turn: turn, source: 'Tradition: ' + td3.name + ' (' + td3.origin + ')', fact: td3.fact });
+                              upd('scienceJournal', nj7);
+                              if (addToast) addToast(td3.icon + ' ' + td3.name + ' adopted!', 'success');
+                              if (d.colonyTTS) colonySpeak('Cultural tradition adopted. ' + td3.name + ' from ' + td3.origin + ' tradition. ' + td3.fact, 'narrator');
+                              var nl28 = gameLog.slice(); nl28.push(td3.icon + ' Tradition: ' + td3.name); upd('colonyLog', nl28);
+                              if (typeof addXP === 'function') addXP(20, 'Tradition: ' + td3.name);
+                            }
+                          },
+                          disabled: !canAdopt,
+                          className: 'px-2 py-1 rounded-lg text-[9px] font-bold ml-2 ' + (canAdopt ? 'bg-amber-600 text-white' : 'bg-slate-700 text-slate-500')
+                        }, '\uD83D\uDD2C 10 sci')
+                      );
+                    })
+                  )
+                ),
+                // Colony Values radar
+                d.showPolicy && React.createElement('div', { className: 'bg-slate-800/80 rounded-xl p-3 border border-slate-700 mb-3' },
+                  React.createElement('h4', { className: 'text-[10px] font-bold text-slate-300 mb-2' }, '\uD83C\uDFAD Colony Identity'),
+                  React.createElement('div', { className: 'grid grid-cols-5 gap-1 text-center' },
+                    Object.keys(colonyValues).map(function(vk3) {
+                      var val = colonyValues[vk3];
+                      var icons = { collectivism: '\uD83E\uDD1D', innovation: '\uD83D\uDCA1', ecology: '\uD83C\uDF3F', tradition: '\uD83C\uDFDB\uFE0F', openness: '\uD83C\uDF10' };
+                      return React.createElement('div', { key: vk3 },
+                        React.createElement('div', { className: 'text-lg' }, icons[vk3] || '\u2022'),
+                        React.createElement('div', { className: 'text-[8px] text-slate-400 capitalize' }, vk3),
+                        React.createElement('div', { className: 'w-full bg-slate-700 rounded-full h-1.5 mt-1' },
+                          React.createElement('div', { className: 'h-1.5 rounded-full transition-all ' + (val > 60 ? 'bg-green-500' : val > 40 ? 'bg-amber-500' : 'bg-red-500'),
+                            style: { width: val + '%' } })
+                        ),
+                        React.createElement('div', { className: 'text-[7px] text-slate-500 mt-0.5' }, val)
+                      );
+                    })
+                  ),
+                  React.createElement('div', { className: 'mt-2 text-center' },
+                    React.createElement('div', { className: 'text-[9px] ' + (equity > 60 ? 'text-green-400' : equity > 35 ? 'text-amber-400' : 'text-red-400') },
+                      '\u2696\uFE0F Resource Equity: ' + equity + '%' + (equity > 75 ? ' \u2014 Fair & thriving' : equity > 50 ? ' \u2014 Moderate inequality' : equity > 25 ? ' \u2014 Growing inequality' : ' \u2014 Crisis! Settlers restless'))
                   )
                 ),
                 // Research Panel
