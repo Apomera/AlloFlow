@@ -32107,6 +32107,16 @@
           if (macroGDP >= 5) econAchievements.push({ icon: '\uD83D\uDCC8', title: 'Economic Boom', desc: 'GDP growth 5%+' });
           if (macroUnemployment <= 2) econAchievements.push({ icon: '\uD83D\uDCAA', title: 'Full Employment', desc: 'Unemployment <2%' });
           var conceptsLearned = (d.econGlossary || []).length;
+          // Economic Literacy Score (0-100)
+          var econLiteracyScore = Math.min(100, Math.round(
+            conceptsLearned * 2 +
+            Math.min(20, (d.pfHistory || []).length * 1.5) +
+            Math.min(15, (d.smDay || 0) * 0.5) +
+            Math.min(15, (d.enBizDay || 0) * 0.75) +
+            Math.min(15, (d.macroHistory || []).length * 1.5) +
+            Math.min(10, (d.quizScore || 0) * 2) +
+            (econAchievements.length * 0.5)
+          ));
           if (conceptsLearned >= 5) econAchievements.push({ icon: '\uD83D\uDCDA', title: 'Student', desc: '5+ concepts learned' });
           if (conceptsLearned >= 15) econAchievements.push({ icon: '\uD83C\uDF93', title: 'Economics Major', desc: '15+ concepts learned' });
           if (conceptsLearned >= 30) econAchievements.push({ icon: '\uD83E\uDDD1\u200D\uD83C\uDF93', title: 'PhD Economist', desc: '30+ concepts learned' });
@@ -32188,6 +32198,12 @@
               ctx.font = '11px Inter, system-ui';
               ctx.fillText('P* = $' + eqP.toFixed(0), gx + 5, eqPy - 5);
               ctx.fillText('Q* = ' + eqQ.toFixed(0), eqPx - 10, gy + gh + 30);
+              // Concept summary
+              ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+              var csY = gy + gh + 50;
+              ctx.fillText('\u2022 Consumer Surplus = area ABOVE equilibrium price, BELOW demand curve', gx, csY);
+              ctx.fillText('\u2022 Producer Surplus = area BELOW equilibrium price, ABOVE supply curve', gx, csY + 14);
+              ctx.fillText('\u2022 Total Surplus = Consumer + Producer surplus (maximized at equilibrium)', gx, csY + 28);
 
               // Price floor
               if (sdPriceFloor > 0) {
@@ -32333,6 +32349,19 @@
                   hi2 === 0 ? ctx.moveTo(hx2, hy2) : ctx.lineTo(hx2, hy2);
                 }
                 ctx.strokeStyle = co.color; ctx.lineWidth = 2.5; ctx.stroke();
+                // Moving average line (5-period)
+                if (hist.length >= 5) {
+                  ctx.strokeStyle = 'rgba(251,191,36,0.6)'; ctx.lineWidth = 1.5; ctx.setLineDash([3,3]); ctx.beginPath();
+                  for (var mai = 4; mai < hist.length; mai++) {
+                    var maVal = (hist[mai] + hist[mai-1] + hist[mai-2] + hist[mai-3] + hist[mai-4]) / 5;
+                    var maxr = chX + (mai/(hist.length-1)) * chW;
+                    var mayr = chY + chH - ((maVal-minP)/priceRange) * chH;
+                    mai === 4 ? ctx.moveTo(maxr, mayr) : ctx.lineTo(maxr, mayr);
+                  }
+                  ctx.stroke(); ctx.setLineDash([]);
+                  ctx.font = '9px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+                  ctx.fillText('MA(5)', chX + chW - 40, chY + 15);
+                }
                 // Current price dot
                 var lastX = chX + chW;
                 var lastY = chY + chH - ((hist[hist.length-1]-minP)/priceRange) * chH;
@@ -32534,6 +32563,13 @@
               }, '\u2190'),
               React.createElement('h2', { className: 'text-xl font-bold text-slate-800' }, '\uD83D\uDCB0 Economics Lab'),
               React.createElement('span', { className: 'text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full' }, '5 simulators'),
+              React.createElement('span', {
+                className: 'text-[9px] font-bold px-2 py-0.5 rounded-full border ' +
+                  (econLiteracyScore >= 80 ? 'text-green-700 bg-green-50 border-green-200' :
+                   econLiteracyScore >= 50 ? 'text-blue-700 bg-blue-50 border-blue-200' :
+                   econLiteracyScore >= 25 ? 'text-amber-700 bg-amber-50 border-amber-200' :
+                   'text-slate-500 bg-slate-50 border-slate-200')
+              }, '\uD83C\uDF93 Literacy: ' + econLiteracyScore + '%'),
               React.createElement('span', { className: 'text-[9px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' }, '\uD83D\uDCDA AI-Powered Learning'),
               econAchievements.length > 0 && React.createElement('span', {
                 className: 'text-[9px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 cursor-pointer',
@@ -32839,6 +32875,14 @@
                         var h = (d.pfHistory || []).slice(-29);
                         h.push({ age: d.pfAge || 22, cash: (d.pfCash || 2000) + (eff.cash || 0), debt: Math.max(0, (d.pfDebt || 0) + (eff.debt || 0)), event: d.lifeEvent.title, choice: choice.label });
                         upd('pfHistory', h);
+                        // Apply investment returns
+                        if ((d.pfInvestPct || 0) > 0 && d.pfInvestType) {
+                          var investAmt = (d.pfSalary || 35000) * (d.pfInvestPct || 0) / 100;
+                          var returns = { Conservative: 0.04, Balanced: 0.07, Aggressive: 0.10, Speculative: (Math.random() - 0.3) * 0.5 };
+                          var returnRate = returns[d.pfInvestType] || 0;
+                          var gain = Math.round(investAmt * returnRate);
+                          upd('pfCash', (d.pfCash || 2000) + (eff.cash || 0) + gain - investAmt);
+                        }
                         upd('pfAge', (d.pfAge || 22) + 1);
                         upd('lifeEvent', null);
                         upd('pfLoading', false);
@@ -32907,6 +32951,36 @@
                 disabled: d.pfLoading,
                 className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg transition-all ' + (d.pfLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 hover:shadow-xl hover:scale-[1.02]')
               }, d.pfLoading ? '\u23F3 Generating life event...' : '\u2728 Next Year (Age ' + ((d.pfAge || 22) + 1) + ')'),
+              // Investment allocation
+              React.createElement('div', { className: 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-3 border border-green-200 mt-3 mb-3' },
+                React.createElement('h4', { className: 'text-[10px] font-bold text-green-700 mb-2' }, '\uD83D\uDCCA Investment Allocation (% of annual salary invested)'),
+                React.createElement('div', { className: 'flex items-center gap-3' },
+                  React.createElement('input', {
+                    type: 'range', min: 0, max: 50, value: d.pfInvestPct || 0,
+                    onChange: function(e) { upd('pfInvestPct', parseInt(e.target.value)); },
+                    className: 'flex-1 accent-green-500'
+                  }),
+                  React.createElement('span', { className: 'text-xs font-bold text-green-700 w-12 text-right' }, (d.pfInvestPct || 0) + '%'),
+                  React.createElement('span', { className: 'text-[10px] text-slate-500' }, '$' + Math.round((d.pfSalary || 35000) * (d.pfInvestPct || 0) / 100).toLocaleString() + '/yr')
+                ),
+                React.createElement('div', { className: 'flex gap-1 mt-2' },
+                  ['Conservative (Bonds)', 'Balanced (60/40)', 'Aggressive (Stocks)', 'Speculative (Crypto)'].map(function(type) {
+                    var short = type.split(' ')[0];
+                    return React.createElement('button', {
+                      key: type,
+                      onClick: function() { upd('pfInvestType', short); },
+                      className: 'flex-1 py-1.5 rounded-lg text-[9px] font-bold transition-all ' +
+                        ((d.pfInvestType || '') === short ? 'bg-green-500 text-white shadow-sm' : 'bg-white text-slate-500 border border-green-200 hover:border-green-400')
+                    }, type);
+                  })
+                ),
+                (d.pfInvestPct || 0) > 0 && (d.pfInvestType) && React.createElement('div', { className: 'mt-2 text-[9px] text-green-600 bg-white rounded-lg p-2 border border-green-100' },
+                  d.pfInvestType === 'Conservative' && '\uD83D\uDCDA Bonds are low-risk, low-return (~3-5% annual). Best for capital preservation and stable income. Less volatile but won\'t beat inflation long-term.',
+                  d.pfInvestType === 'Balanced' && '\uD83D\uDCDA A 60/40 stock/bond portfolio balances growth with stability (~7-8% avg). This is the classic "set and forget" strategy recommended by most financial advisors.',
+                  d.pfInvestType === 'Aggressive' && '\uD83D\uDCDA All-stock portfolios historically return ~10%/yr but with HIGH volatility. You could lose 30%+ in a bad year. Best when you\'re young and have time to recover.',
+                  d.pfInvestType === 'Speculative' && '\uD83D\uDCDA Crypto/speculative assets can return 100%+ OR lose 80%+. Extremely volatile. Most advisors recommend <5% of portfolio. High risk, high potential reward.'
+                )
+              ),
               // History log
               (d.pfHistory || []).length > 0 && React.createElement('div', { className: 'mt-4 bg-white rounded-xl border border-slate-200 p-3 max-h-40 overflow-y-auto' },
                 React.createElement('h4', { className: 'text-xs font-bold text-slate-500 mb-2' }, '\uD83D\uDCDC Life History'),
@@ -32976,7 +33050,7 @@
                     className: 'flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all border-2 ' +
                       (smSelected === ci ? 'text-white shadow-md' : 'bg-slate-50 text-slate-600 border-slate-200'),
                     style: smSelected === ci ? { background: c.color, borderColor: c.color } : {}
-                  }, c.ticker + ' $' + c.price.toFixed(0));
+                  }, c.ticker + ' $' + c.price.toFixed(0) + (c.history && c.history.length > 1 ? ' ' + (c.price >= c.history[c.history.length-2] ? '\u25B2' : '\u25BC') : ''));
                 })
               ),
               // AI News Event display
@@ -33265,7 +33339,7 @@
                   onClick: function() {
                     upd('enBizLoading', true);
                     var biz = d.enBusiness;
-                    var prompt = 'You are a business simulation game engine (difficulty: ' + (d.econDifficulty || 'medium') + '). The player runs "' + biz.businessName + '" (a ' + (d.enInput || 'business') + '). Day ' + (d.enBizDay || 1) + ', cash: $' + (d.enBizCash || 0) + ', reputation: ' + (d.enBizRep || 50) + '/100. They sell ' + biz.unitName + ' at $' + (d.enBizPrice || biz.suggestedPrice) + ' each. Daily fixed costs: $' + biz.dailyFixedCosts + ', unit cost: $' + biz.unitCost + '. They have ' + (d.enBizEmployees || 0) + ' employees (each costs $80/day but increases max customers by 20%).\n\nSimulate today and generate an event. Return ONLY valid JSON:\n{"customersToday":<number>,"revenue":<number>,"costs":<number>,"emoji":"<emoji>","title":"<event title>","description":"<what happened today + the event>","choices":[{"label":"<option>","effect":{"cash":<number>,"reputation":<number>,"employees":<number or 0>}}]}\n\nMake daily customers based on reputation (higher rep = more customers, max ' + biz.maxDailyCustomers + '). Include a realistic challenge with 2-3 choices.\n\nIMPORTANT: Include a "lesson" field with a 1-2 sentence business/entrepreneurship concept (e.g., break-even analysis, profit margins, customer acquisition cost, cash flow management, competitive advantage, economies of scale, marketing ROI, supply chain, pivot strategy, unit economics, customer retention vs acquisition).';
+                    var prompt = 'You are a business simulation game engine (difficulty: ' + (d.econDifficulty || 'medium') + '). The player runs "' + biz.businessName + '" (a ' + (d.enInput || 'business') + '). Day ' + (d.enBizDay || 1) + ', cash: $' + (d.enBizCash || 0) + ', reputation: ' + (d.enBizRep || 50) + '/100. They sell ' + biz.unitName + ' at $' + (d.enBizPrice || biz.suggestedPrice) + ' each. Daily fixed costs: $' + biz.dailyFixedCosts + ', unit cost: $' + biz.unitCost + '. They have ' + (d.enBizLocations || 1) + ' location(s) and ' + (d.enBizEmployees || 0) + ' employees (each costs $80/day but increases max customers by 20%).\n\nSimulate today and generate an event. Return ONLY valid JSON:\n{"customersToday":<number>,"revenue":<number>,"costs":<number>,"emoji":"<emoji>","title":"<event title>","description":"<what happened today + the event>","choices":[{"label":"<option>","effect":{"cash":<number>,"reputation":<number>,"employees":<number or 0>}}]}\n\nMake daily customers based on reputation (higher rep = more customers, max ' + biz.maxDailyCustomers + '). Include a realistic challenge with 2-3 choices.\n\nIMPORTANT: Include a "lesson" field with a 1-2 sentence business/entrepreneurship concept (e.g., break-even analysis, profit margins, customer acquisition cost, cash flow management, competitive advantage, economies of scale, marketing ROI, supply chain, pivot strategy, unit economics, customer retention vs acquisition).';
                     callGemini(prompt, true).then(function(result) {
                       try {
                         var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
