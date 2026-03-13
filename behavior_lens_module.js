@@ -10589,12 +10589,12 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
     ];
 
     const CASE_TEMPLATES = [
-        { id: 'escape', label: (t('behavior_lens.raw.escapemaintained_behavior') || 'Escape-Maintained Behavior'), icon: '🏃', scenario: 'A student who avoids academic demands through disruptive behavior', grade: '3rd grade', setting: 'general education classroom' },
-        { id: 'attention', label: (t('behavior_lens.raw.attentionseeking_behavior') || 'Attention-Seeking Behavior'), icon: '👋', scenario: 'A student who engages in off-task behavior to gain peer/adult attention', grade: '5th grade', setting: 'inclusion classroom' },
-        { id: 'sensory', label: (t('behavior_lens.raw.sensoryautomatic_function') || 'Sensory/Automatic Function'), icon: '🌀', scenario: 'A student with repetitive motor movements that interfere with learning', grade: '1st grade', setting: 'special education classroom' },
-        { id: 'tangible', label: (t('behavior_lens.raw.tangible_access') || 'Tangible Access'), icon: '🎯', scenario: 'A student who has aggressive episodes to gain access to preferred items or activities', grade: '2nd grade', setting: 'resource room' },
-        { id: 'complex', label: (t('behavior_lens.raw.multifunction_complex') || 'Multi-Function (Complex)'), icon: '🧩', scenario: 'A student whose behavior appears to serve multiple functions depending on context', grade: '7th grade', setting: 'middle school, multiple teachers' },
-        { id: 'custom', label: (t('behavior_lens.raw.custom_scenario') || 'Custom Scenario'), icon: '✏️', scenario: 'Define your own case study parameters', grade: '', setting: '' },
+        { id: 'escape', label: 'Escape-Maintained Behavior', tKey: 'behavior_lens.raw.escapemaintained_behavior', icon: '🏃', scenario: 'A student who avoids academic demands through disruptive behavior', grade: '3rd grade', setting: 'general education classroom' },
+        { id: 'attention', label: 'Attention-Seeking Behavior', tKey: 'behavior_lens.raw.attentionseeking_behavior', icon: '👋', scenario: 'A student who engages in off-task behavior to gain peer/adult attention', grade: '5th grade', setting: 'inclusion classroom' },
+        { id: 'sensory', label: 'Sensory/Automatic Function', tKey: 'behavior_lens.raw.sensoryautomatic_function', icon: '🌀', scenario: 'A student with repetitive motor movements that interfere with learning', grade: '1st grade', setting: 'special education classroom' },
+        { id: 'tangible', label: 'Tangible Access', tKey: 'behavior_lens.raw.tangible_access', icon: '🎯', scenario: 'A student who has aggressive episodes to gain access to preferred items or activities', grade: '2nd grade', setting: 'resource room' },
+        { id: 'complex', label: 'Multi-Function (Complex)', tKey: 'behavior_lens.raw.multifunction_complex', icon: '🧩', scenario: 'A student whose behavior appears to serve multiple functions depending on context', grade: '7th grade', setting: 'middle school, multiple teachers' },
+        { id: 'custom', label: 'Custom Scenario', tKey: 'behavior_lens.raw.custom_scenario', icon: '✏️', scenario: 'Define your own case study parameters', grade: '', setting: '' },
     ];
 
     const CaseStudyEngine = ({ callGemini, t, addToast }) => {
