@@ -9285,6 +9285,223 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
         );
     };
 
+    // ─── RestitutionPlanner ─────────────────────────────────────────────
+    // AI-assisted restitution consequence planner for restorative harm repair
+    const RestitutionPlanner = ({ studentName, callGemini, t, addToast }) => {
+        const [incident, setIncident] = useState('');
+        const [whoAffected, setWhoAffected] = useState('');
+        const [whatDamaged, setWhatDamaged] = useState('');
+        const [suggestions, setSuggestions] = useState(null);
+        const [generating, setGenerating] = useState(false);
+        const [selectedPlan, setSelectedPlan] = useState(null);
+        const [studentVoice, setStudentVoice] = useState('');
+        const [completionSteps, setCompletionSteps] = useState([]);
+        const [savedPlans, setSavedPlans] = useState([]);
+
+        const categories = [
+            { id: 'direct_repair', emoji: '🔧', label: 'Direct Repair', desc: 'Fix or restore what was damaged or disrupted', color: 'blue' },
+            { id: 'service', emoji: '🤝', label: 'Service to Affected', desc: 'Do something beneficial for the harmed person or community', color: 'green' },
+            { id: 'learning', emoji: '📚', label: 'Related Learning', desc: 'Understand why the action was harmful and grow from it', color: 'purple' },
+        ];
+
+        const catColors = {
+            blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', badge: 'bg-blue-100 text-blue-700', accent: '#3b82f6' },
+            green: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', badge: 'bg-green-100 text-green-700', accent: '#22c55e' },
+            purple: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700', badge: 'bg-purple-100 text-purple-700', accent: '#8b5cf6' },
+        };
+
+        const handleGenerate = async () => {
+            if (!callGemini || !incident.trim()) { if (addToast) addToast('Describe the incident first', 'error'); return; }
+            setGenerating(true);
+            try {
+                const prompt = `You are a restorative practices specialist helping a teacher plan restitution — a consequence that is LOGICALLY CONNECTED to the harm caused.
+${RESTORATIVE_PREAMBLE}
+
+INCIDENT: ${incident}
+WHO WAS AFFECTED: ${whoAffected || 'not specified'}
+WHAT WAS DAMAGED/DISRUPTED: ${whatDamaged || 'not specified'}
+
+For each of the 3 categories, suggest a specific, age-appropriate restitution action. Return ONLY valid JSON:
+{
+  "direct_repair": { "action": "specific restitution action to directly fix the harm", "timeEstimate": "e.g., 15 minutes", "developmentalNote": "why this is appropriate and how it connects to the harm" },
+  "service": { "action": "specific service action to benefit the affected person or community", "timeEstimate": "e.g., 20 minutes", "developmentalNote": "why this builds empathy and repairs the relationship" },
+  "learning": { "action": "specific learning activity to understand why the action was harmful", "timeEstimate": "e.g., 10 minutes", "developmentalNote": "why this promotes understanding and prevents recurrence" }
+}`;
+                const result = await callGemini(prompt, true);
+                const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                let parsed;
+                try { parsed = JSON.parse(cleaned); }
+                catch { const m = result.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]); else throw new Error('Parse failed'); }
+                setSuggestions(parsed);
+                setSelectedPlan(null);
+                setCompletionSteps([]);
+                if (addToast) addToast('Restitution options generated ✨', 'success');
+            } catch (err) {
+                warnLog('Restitution generation failed:', err);
+                if (addToast) addToast('Generation failed — try again', 'error');
+            } finally { setGenerating(false); }
+        };
+
+        const selectPlan = (catId) => {
+            if (!suggestions || !suggestions[catId]) return;
+            const plan = suggestions[catId];
+            setSelectedPlan({ categoryId: catId, ...plan });
+            setCompletionSteps([
+                { id: 1, label: 'Student understands what happened and who was affected', done: false },
+                { id: 2, label: 'Student agrees to the restitution plan', done: false },
+                { id: 3, label: 'Restitution action is completed', done: false },
+                { id: 4, label: 'Follow-up check-in with student', done: false },
+            ]);
+        };
+
+        const toggleStep = (stepId) => {
+            setCompletionSteps(prev => prev.map(s => s.id === stepId ? { ...s, done: !s.done } : s));
+        };
+
+        const savePlan = () => {
+            if (!selectedPlan) return;
+            const entry = {
+                id: Date.now(), savedAt: new Date().toISOString(), incident, whoAffected, whatDamaged,
+                plan: selectedPlan, studentVoice, completionSteps, studentName: studentName || 'Student',
+            };
+            setSavedPlans(prev => [entry, ...prev].slice(0, 20));
+            if (addToast) addToast('Restitution plan saved ✅', 'success');
+        };
+
+        const exportPlan = () => {
+            if (!selectedPlan) return;
+            const cat = categories.find(c => c.id === selectedPlan.categoryId);
+            const lines = [
+                'RESTITUTION PLAN', `Student: ${studentName || '___'}`, `Date: ${new Date().toLocaleDateString()}`, '',
+                'INCIDENT:', `  ${incident}`, '',
+                `RESTITUTION TYPE: ${cat ? cat.label : selectedPlan.categoryId}`,
+                `ACTION: ${selectedPlan.action}`,
+                `ESTIMATED TIME: ${selectedPlan.timeEstimate}`,
+                `RATIONALE: ${selectedPlan.developmentalNote}`, '',
+                studentVoice ? `STUDENT VOICE: ${studentVoice}` : '',
+                '', 'COMPLETION STEPS:',
+                ...completionSteps.map(s => `  [${s.done ? 'x' : ' '}] ${s.label}`),
+            ].filter(Boolean);
+            navigator.clipboard.writeText(lines.join('\n')).then(() => {
+                if (addToast) addToast('Plan copied to clipboard ✅', 'success');
+            });
+        };
+
+        const completedCount = completionSteps.filter(s => s.done).length;
+
+        return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
+            h('div', { className: 'text-center py-3' },
+                h('div', { className: 'text-4xl mb-2' }, '🔧'),
+                h('h2', { className: 'text-lg font-black text-slate-800' }, 'Restitution Planner'),
+                h('p', { className: 'text-xs text-slate-500 mt-1' }, 'Plan consequences that are logically connected to the harm — helping students repair, not just comply'),
+                studentName && h('p', { className: 'text-[10px] text-slate-400 mt-0.5' }, `For: ${studentName}`)
+            ),
+            // Incident description
+            !selectedPlan && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-3' },
+                h('h3', { className: 'text-xs font-bold text-slate-600 uppercase' }, '📋 Describe the Incident'),
+                h('textarea', { value: incident, onChange: e => setIncident(e.target.value), placeholder: 'What happened? (e.g., "Student tore another student\'s art project during class")', rows: 2, maxLength: 500, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none outline-none focus:ring-2 focus:ring-amber-300' }),
+                h('div', { className: 'grid grid-cols-2 gap-3' },
+                    h('div', null,
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1' }, '👥 Who Was Affected?'),
+                        h('input', { value: whoAffected, onChange: e => setWhoAffected(e.target.value), placeholder: 'Classmate, teacher, community...', className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-amber-300' })
+                    ),
+                    h('div', null,
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1' }, '💔 What Was Damaged/Disrupted?'),
+                        h('input', { value: whatDamaged, onChange: e => setWhatDamaged(e.target.value), placeholder: 'Property, feeling of safety, learning...', className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-amber-300' })
+                    )
+                ),
+                callGemini && h('button', { onClick: handleGenerate, disabled: generating || !incident.trim(), className: 'w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all' }, generating ? '⏳ Generating restitution options...' : '🧠 AI Suggest Restitution Options')
+            ),
+            // Suggestions cards
+            suggestions && !selectedPlan && h('div', { className: 'space-y-3' },
+                h('h3', { className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, '🔀 Choose a Restitution Path'),
+                categories.map(cat => {
+                    const s = suggestions[cat.id];
+                    if (!s) return null;
+                    const c = catColors[cat.color];
+                    return h('button', { key: cat.id, onClick: () => selectPlan(cat.id), className: `w-full text-left p-5 rounded-xl border-2 ${c.bg} ${c.border} shadow-sm hover:shadow-md transition-all` },
+                        h('div', { className: 'flex items-center gap-2 mb-2' },
+                            h('span', { className: 'text-2xl' }, cat.emoji),
+                            h('div', null,
+                                h('h4', { className: `text-sm font-black ${c.text}` }, cat.label),
+                                h('p', { className: 'text-[9px] text-slate-500' }, cat.desc)
+                            )
+                        ),
+                        h('div', { className: 'bg-white/70 rounded-lg p-3 mb-2' },
+                            h('p', { className: 'text-xs text-slate-700 font-bold' }, s.action)
+                        ),
+                        h('div', { className: 'flex items-center gap-3 text-[9px]' },
+                            h('span', { className: `${c.badge} px-2 py-0.5 rounded-full font-bold` }, `⏱️ ${s.timeEstimate}`),
+                            h('span', { className: 'text-slate-500 italic' }, s.developmentalNote?.slice(0, 80) + (s.developmentalNote?.length > 80 ? '...' : ''))
+                        )
+                    );
+                })
+            ),
+            // Selected plan detail
+            selectedPlan && (() => {
+                const cat = categories.find(c => c.id === selectedPlan.categoryId);
+                const c = catColors[cat?.color || 'blue'];
+                return h('div', { className: 'space-y-3' },
+                    h('button', { onClick: () => { setSelectedPlan(null); setCompletionSteps([]); }, className: 'text-xs text-slate-500 hover:text-slate-700 font-bold' }, '← Back to all options'),
+                    h('div', { className: `${c.bg} ${c.border} rounded-xl border-2 p-5` },
+                        h('div', { className: 'flex items-center gap-2 mb-3' },
+                            h('span', { className: 'text-2xl' }, cat?.emoji || '🔧'),
+                            h('div', null,
+                                h('h3', { className: `text-sm font-black ${c.text}` }, cat?.label || 'Restitution Plan'),
+                                h('span', { className: `text-[9px] ${c.badge} px-2 py-0.5 rounded-full font-bold` }, `⏱️ ${selectedPlan.timeEstimate}`)
+                            )
+                        ),
+                        h('div', { className: 'bg-white/70 rounded-lg p-4 mb-3' },
+                            h('p', { className: 'text-sm font-bold text-slate-800 mb-1' }, '📌 Action Plan'),
+                            h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, selectedPlan.action)
+                        ),
+                        h('div', { className: 'bg-white/70 rounded-lg p-4' },
+                            h('p', { className: 'text-sm font-bold text-slate-800 mb-1' }, '💡 Why This Connects'),
+                            h('p', { className: 'text-xs text-slate-600 leading-relaxed italic' }, selectedPlan.developmentalNote)
+                        )
+                    ),
+                    // Student voice
+                    h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                        h('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, '🗣️ Student\'s Voice'),
+                        h('textarea', { value: studentVoice, onChange: e => setStudentVoice(e.target.value), placeholder: 'Record what the student said about the plan, their ideas for making it right, or their reflection...', rows: 2, maxLength: 500, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-xs resize-none outline-none' })
+                    ),
+                    // Completion tracker
+                    h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                        h('div', { className: 'flex items-center justify-between mb-3' },
+                            h('h4', { className: 'text-xs font-bold text-slate-600' }, '✅ Completion Tracker'),
+                            h('span', { className: `text-[10px] font-bold px-2 py-0.5 rounded-full ${completedCount === completionSteps.length ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}` }, `${completedCount}/${completionSteps.length}`)
+                        ),
+                        h('div', { className: 'space-y-2' },
+                            completionSteps.map(step => h('button', { key: step.id, onClick: () => toggleStep(step.id), className: `w-full text-left flex items-center gap-3 p-3 rounded-lg border transition-all ${step.done ? 'bg-green-50 border-green-200' : 'bg-white border-slate-100 hover:border-slate-200'}` },
+                                h('div', { className: `w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] transition-all ${step.done ? 'bg-green-500 border-green-500 text-white' : 'border-slate-300'}` }, step.done ? '✓' : ''),
+                                h('span', { className: `text-xs ${step.done ? 'text-green-700 line-through' : 'text-slate-700'}` }, step.label)
+                            ))
+                        ),
+                        completedCount === completionSteps.length && completionSteps.length > 0 && h('div', { className: 'mt-3 p-3 bg-green-50 rounded-xl border border-green-200 text-center' },
+                            h('p', { className: 'text-sm font-black text-green-700' }, '🌟 Restitution complete! Incredible growth.')
+                        )
+                    ),
+                    // Actions
+                    h('div', { className: 'flex gap-2' },
+                        h('button', { onClick: savePlan, className: 'flex-1 py-2.5 bg-emerald-500 text-white rounded-xl font-bold text-sm hover:bg-emerald-600 transition-all' }, '💾 Save Plan'),
+                        h('button', { onClick: exportPlan, className: 'px-4 py-2.5 bg-white text-slate-600 border border-slate-200 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all' }, '📋 Copy'),
+                        h('button', { onClick: () => window.print(), className: 'px-4 py-2.5 bg-white text-slate-600 border border-slate-200 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all' }, '🖨️ Print')
+                    )
+                );
+            })(),
+            // Saved plans
+            savedPlans.length > 0 && !selectedPlan && h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-4' },
+                h('h4', { className: 'text-xs font-black text-slate-600 uppercase mb-2' }, `📂 Saved Plans (${savedPlans.length})`),
+                h('div', { className: 'space-y-2' },
+                    savedPlans.map(p => h('div', { key: p.id, className: 'bg-white rounded-lg border border-slate-100 p-3' },
+                        h('div', { className: 'text-sm font-semibold text-slate-700' }, p.incident?.slice(0, 60) + (p.incident?.length > 60 ? '…' : '')),
+                        h('div', { className: 'text-[10px] text-slate-400 mt-0.5' }, `${fmtDate(p.savedAt)} • ${categories.find(c => c.id === p.plan?.categoryId)?.label || '—'}`)
+                    ))
+                )
+            )
+        );
+    };
+
     // ─── RelationshipMap ────────────────────────────────────────────────
     // Visual diagram of student's trusted adults and peer connections
     const RelationshipMap = ({ studentName, t, addToast }) => {
@@ -9709,6 +9926,206 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
         );
     };
 
+
+    // ─── SelfRegulationToolkit ──────────────────────────────────────────
+    // Personalized self-regulation toolkit builder (student-facing)
+    const SelfRegulationToolkit = ({ studentName, callGemini, t, addToast }) => {
+        const [selectedQuadrant, setSelectedQuadrant] = useState(null);
+        const [toolkit, setToolkit] = useState({ high_unpleasant: [], high_pleasant: [], low_unpleasant: [], low_pleasant: [] });
+        const [customStrategy, setCustomStrategy] = useState('');
+        const [aiLoading, setAiLoading] = useState(false);
+        const [showPrint, setShowPrint] = useState(false);
+
+        // Energy-level quadrants (our own framework, not trademarked)
+        const quadrants = [
+            { id: 'high_unpleasant', emoji: '🌋', label: 'High Energy — Upset', desc: 'Angry, frustrated, anxious, overwhelmed', color: 'red', examples: 'Yelling, hitting, crying, shutting down' },
+            { id: 'high_pleasant', emoji: '🎉', label: 'High Energy — Excited', desc: 'Silly, hyper, restless, unfocused', color: 'yellow', examples: 'Talking too fast, can\'t sit still, being silly' },
+            { id: 'low_unpleasant', emoji: '🌧️', label: 'Low Energy — Down', desc: 'Sad, tired, bored, disconnected', color: 'blue', examples: 'Head down, not participating, withdrawn' },
+            { id: 'low_pleasant', emoji: '🌿', label: 'Low Energy — Calm', desc: 'Relaxed, focused, ready to learn', color: 'green', examples: 'Listening, working, engaging with peers' },
+        ];
+
+        // Strategy categories with options
+        const strategyBank = {
+            '🏃 Body': ['Wall push-ups (10)', 'Chair stretches', 'Squeeze fists and release', 'Jump in place (10x)', 'Tense-and-release muscles', 'Walk to water fountain', 'Desk yoga pose', 'Cross-body arm stretches'],
+            '🎧 Sensory': ['Stress ball / fidget', 'Noise-canceling headphones', 'Hold something cold', 'Chew gum / crunchy snack', 'Weighted lap pad', 'Putty / clay', 'Smell calming scent', 'Watch glitter jar'],
+            '🗣️ Social': ['Talk to trusted adult', 'Ask for help', 'Use "I need a break" card', 'Signal buddy', 'Write a note to teacher', 'Partner check-in', 'Say "I\'m frustrated" out loud'],
+            '🧠 Cognitive': ['Count backwards from 10', 'Name 5 things I see', 'Positive self-talk', 'Think "I can handle this"', 'Draw how I feel', 'Write in journal', 'Rate my feeling 1-10', 'Reframe the thought'],
+            '🏠 Environmental': ['Move to quiet corner', 'Go to calm-down space', 'Change seating', 'Dim/adjust lighting', 'Step into hallway (with pass)', 'Face away from distraction', 'Use privacy screen'],
+        };
+
+        const quadrantColors = {
+            red: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', badge: 'bg-red-100 text-red-700', accent: '#ef4444' },
+            yellow: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', badge: 'bg-amber-100 text-amber-700', accent: '#f59e0b' },
+            blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', badge: 'bg-blue-100 text-blue-700', accent: '#3b82f6' },
+            green: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', badge: 'bg-green-100 text-green-700', accent: '#22c55e' },
+        };
+
+        const addStrategy = (quadrantId, strategy) => {
+            setToolkit(prev => {
+                const current = prev[quadrantId] || [];
+                if (current.includes(strategy)) return prev;
+                return { ...prev, [quadrantId]: [...current, strategy] };
+            });
+        };
+
+        const removeStrategy = (quadrantId, strategy) => {
+            setToolkit(prev => ({ ...prev, [quadrantId]: (prev[quadrantId] || []).filter(s => s !== strategy) }));
+        };
+
+        const addCustom = (quadrantId) => {
+            if (!customStrategy.trim()) return;
+            addStrategy(quadrantId, customStrategy.trim());
+            setCustomStrategy('');
+        };
+
+        const handleAISuggest = async (quadrantId) => {
+            if (!callGemini) return;
+            setAiLoading(true);
+            try {
+                const q = quadrants.find(x => x.id === quadrantId);
+                const existing = (toolkit[quadrantId] || []).join(', ');
+                const prompt = `You are a school counselor helping a student build their personal self-regulation toolkit.
+${RESTORATIVE_PREAMBLE}
+
+The student is in the "${q.label}" state: ${q.desc}
+Examples of what this looks like: ${q.examples}
+They already have these strategies: ${existing || 'none yet'}
+
+Suggest 4 NEW, age-appropriate, school-friendly strategies they could try. Return ONLY a JSON array of strings, no explanation.
+Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
+                const result = await callGemini(prompt, true);
+                const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                const parsed = JSON.parse(cleaned);
+                if (Array.isArray(parsed)) {
+                    parsed.forEach(s => addStrategy(quadrantId, s));
+                    if (addToast) addToast('AI strategies added ✨', 'success');
+                }
+            } catch { if (addToast) addToast('AI suggestion failed', 'error'); }
+            setAiLoading(false);
+        };
+
+        const totalStrategies = Object.values(toolkit).reduce((sum, arr) => sum + arr.length, 0);
+
+        const exportToolkit = () => {
+            const lines = ['MY SELF-REGULATION TOOLKIT', `Student: ${studentName || '___'}`, `Date: ${new Date().toLocaleDateString()}`, ''];
+            quadrants.forEach(q => {
+                const strats = toolkit[q.id] || [];
+                if (strats.length > 0) {
+                    lines.push(`${q.emoji} ${q.label}`, ...strats.map(s => `  • ${s}`), '');
+                }
+            });
+            navigator.clipboard.writeText(lines.join('\n')).then(() => {
+                if (addToast) addToast('Toolkit copied to clipboard ✅', 'success');
+            });
+        };
+
+        // Print-ready card view
+        if (showPrint) {
+            return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
+                h('button', { onClick: () => setShowPrint(false), className: 'text-xs text-slate-500 hover:text-slate-700 font-bold print:hidden' }, '← Back to Editor'),
+                h('div', { id: 'toolkit-printable', className: 'bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-lg print:shadow-none' },
+                    h('div', { className: 'text-center mb-4 pb-3 border-b border-slate-200' },
+                        h('h1', { className: 'text-xl font-black text-slate-800' }, '🎨 My Self-Regulation Toolkit'),
+                        studentName && h('p', { className: 'text-sm text-slate-500 mt-1' }, `For: ${studentName}`)
+                    ),
+                    h('div', { className: 'grid grid-cols-2 gap-3' },
+                        quadrants.map(q => {
+                            const strats = toolkit[q.id] || [];
+                            const c = quadrantColors[q.color];
+                            return h('div', { key: q.id, className: `${c.bg} ${c.border} rounded-xl border-2 p-3` },
+                                h('div', { className: `text-xs font-black ${c.text} mb-2 flex items-center gap-1` }, q.emoji, ' ', q.label),
+                                strats.length > 0
+                                    ? h('ul', { className: 'space-y-1' }, strats.map((s, i) => h('li', { key: i, className: 'text-[10px] text-slate-700 flex items-center gap-1' }, h('span', null, '•'), s)))
+                                    : h('p', { className: 'text-[10px] text-slate-400 italic' }, 'No strategies selected')
+                            );
+                        })
+                    )
+                ),
+                h('div', { className: 'flex gap-2 print:hidden' },
+                    h('button', { onClick: () => window.print(), className: 'flex-1 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all' }, '🖨️ Print Toolkit Card'),
+                    h('button', { onClick: exportToolkit, className: 'px-4 py-2.5 bg-white text-slate-600 border border-slate-200 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all' }, '📋 Copy Text')
+                )
+            );
+        }
+
+        // Quadrant detail view
+        if (selectedQuadrant) {
+            const q = quadrants.find(x => x.id === selectedQuadrant);
+            const c = quadrantColors[q.color];
+            const myStrats = toolkit[q.id] || [];
+            return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
+                h('button', { onClick: () => setSelectedQuadrant(null), className: 'text-xs text-slate-500 hover:text-slate-700 font-bold' }, '← Back to all feelings'),
+                h('div', { className: `${c.bg} ${c.border} rounded-xl border-2 p-5` },
+                    h('div', { className: 'flex items-center gap-2 mb-1' },
+                        h('span', { className: 'text-2xl' }, q.emoji),
+                        h('h2', { className: `text-sm font-black ${c.text}` }, q.label)
+                    ),
+                    h('p', { className: 'text-[10px] text-slate-500 mb-3' }, q.desc)
+                ),
+                // My strategies for this quadrant
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                    h('h3', { className: 'text-xs font-bold text-slate-700 mb-2' }, `My Strategies (${myStrats.length})`),
+                    myStrats.length === 0
+                        ? h('p', { className: 'text-[10px] text-slate-400 italic' }, 'Tap strategies below to add them to your toolkit!')
+                        : h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
+                            myStrats.map(s => h('span', { key: s, onClick: () => removeStrategy(q.id, s), className: `px-2.5 py-1 ${c.badge} rounded-lg text-[10px] font-bold cursor-pointer hover:opacity-70 transition-all`, title: 'Click to remove' }, `${s} ✕`))
+                        )
+                ),
+                // Strategy bank by category
+                ...Object.entries(strategyBank).map(([category, strategies]) =>
+                    h('div', { key: category, className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                        h('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, category),
+                        h('div', { className: 'flex flex-wrap gap-1.5' },
+                            strategies.map(s => {
+                                const isSelected = myStrats.includes(s);
+                                return h('button', { key: s, onClick: () => isSelected ? removeStrategy(q.id, s) : addStrategy(q.id, s), className: `px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${isSelected ? `${c.badge} ${c.border}` : 'bg-slate-50 text-slate-600 border-slate-100 hover:bg-slate-100'}` }, isSelected ? `✔ ${s}` : s);
+                            })
+                        )
+                    )
+                ),
+                // Custom + AI
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                    h('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, '✏️ Add Your Own'),
+                    h('div', { className: 'flex gap-2' },
+                        h('input', { value: customStrategy, onChange: e => setCustomStrategy(e.target.value), onKeyDown: e => { if (e.key === 'Enter') addCustom(q.id); }, placeholder: 'Type your own strategy...', className: 'flex-1 border border-slate-200 rounded-lg px-3 py-2 text-xs outline-none' }),
+                        h('button', { onClick: () => addCustom(q.id), disabled: !customStrategy.trim(), className: 'px-3 py-2 bg-slate-800 text-white rounded-lg text-xs font-bold disabled:opacity-40' }, '+')
+                    ),
+                    callGemini && h('button', { onClick: () => handleAISuggest(q.id), disabled: aiLoading, className: 'w-full mt-2 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold text-xs hover:from-purple-700 hover:to-indigo-700 transition-all disabled:opacity-50' }, aiLoading ? '⏳ Thinking...' : '🧠 AI Suggest Strategies for Me')
+                )
+            );
+        }
+
+        // Main view — quadrant selector
+        return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
+            h('div', { className: 'text-center py-3' },
+                h('div', { className: 'text-4xl mb-2' }, '🎨'),
+                h('h2', { className: 'text-lg font-black text-slate-800' }, 'My Self-Regulation Toolkit'),
+                h('p', { className: 'text-xs text-slate-500 mt-1' }, 'Build your personal toolkit — choose what helps YOU feel ready to learn'),
+                studentName && h('p', { className: 'text-[10px] text-slate-400 mt-0.5' }, `For: ${studentName}`)
+            ),
+            h('p', { className: 'text-center text-xs text-slate-500 font-bold' }, 'How are you feeling? Tap to pick strategies:'),
+            h('div', { className: 'grid grid-cols-2 gap-3' },
+                quadrants.map(q => {
+                    const c = quadrantColors[q.color];
+                    const count = (toolkit[q.id] || []).length;
+                    return h('button', { key: q.id, onClick: () => setSelectedQuadrant(q.id), className: `text-left p-4 rounded-xl border-2 ${c.bg} ${c.border} shadow-sm hover:shadow-md transition-all` },
+                        h('div', { className: 'text-3xl mb-1' }, q.emoji),
+                        h('h3', { className: `text-xs font-black ${c.text}` }, q.label),
+                        h('p', { className: 'text-[9px] text-slate-500 mt-0.5 mb-2' }, q.desc),
+                        count > 0
+                            ? h('span', { className: `text-[9px] font-bold px-2 py-0.5 rounded-full ${c.badge}` }, `${count} strategies`)
+                            : h('span', { className: 'text-[9px] text-slate-400' }, 'Tap to add')
+                    );
+                })
+            ),
+            totalStrategies > 0 && h('div', { className: 'flex gap-2' },
+                h('button', { onClick: () => setShowPrint(true), className: 'flex-1 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all' }, `📇 View My Toolkit Card (${totalStrategies} strategies)`),
+                h('button', { onClick: exportToolkit, className: 'px-4 py-2.5 bg-white text-slate-600 border border-slate-200 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all' }, '📋')
+            )
+        );
+    };
+
+
     // ─── DeEscalationToolkit ────────────────────────────────────────────
     // Real-time calming tools: breathing, timers, sensory breaks, grounding
     const DeEscalationToolkit = ({ t }) => {
@@ -10092,6 +10509,214 @@ JSON only, no markdown.`;
                         );
                     })
                 )
+        );
+    };
+
+    // ─── BehaviorMomentumPlanner ─────────────────────────────────────────
+    // High-p request sequencing for building behavioral momentum
+    const BehaviorMomentumPlanner = ({ studentName, abcEntries, callGemini, t, addToast }) => {
+        const [lowPRequest, setLowPRequest] = useState('');
+        const [highPBank, setHighPBank] = useState([]);
+        const [newHighP, setNewHighP] = useState('');
+        const [sequences, setSequences] = useState([]);
+        const [attempts, setAttempts] = useState([]);
+        const [aiLoading, setAiLoading] = useState(false);
+        const [activeView, setActiveView] = useState('setup'); // setup | sequence | log
+
+        const addHighP = () => {
+            if (!newHighP.trim()) return;
+            setHighPBank(prev => [...prev, { id: Date.now(), request: newHighP.trim(), successRate: 100 }]);
+            setNewHighP('');
+        };
+
+        const removeHighP = (id) => setHighPBank(prev => prev.filter(h => h.id !== id));
+
+        const handleAISuggest = async () => {
+            if (!callGemini) return;
+            setAiLoading(true);
+            try {
+                const abcContext = abcEntries?.length > 0 ? `ABC Data (${abcEntries.length} entries): ${abcEntries.slice(0, 5).map(e => `A: ${e.antecedent || '?'}, B: ${e.behavior || '?'}`).join('; ')}` : 'No ABC data available';
+                const existing = highPBank.map(h => h.request).join(', ');
+                const prompt = `You are a BCBA planning a behavioral momentum (high-p request) sequence for a student.
+${RESTORATIVE_PREAMBLE}
+
+Student: ${studentName || 'Student'}
+Low-probability (difficult) request: ${lowPRequest || 'not specified yet'}
+${abcContext}
+Existing high-p requests: ${existing || 'none yet'}
+
+Suggest 6 HIGH-PROBABILITY requests — things this student would very likely comply with based on the available data. These should be quick, easy tasks that naturally occur in the classroom.
+
+Return ONLY a JSON array of strings.
+Example: ["give me a high five", "hand me that pencil", "say your name", "touch your nose", "stand up", "sit down"]`;
+                const result = await callGemini(prompt, true);
+                const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                const parsed = JSON.parse(cleaned);
+                if (Array.isArray(parsed)) {
+                    const newOnes = parsed.filter(s => !highPBank.some(h => h.request === s));
+                    setHighPBank(prev => [...prev, ...newOnes.map(r => ({ id: Date.now() + Math.random(), request: r, successRate: 100 }))]);
+                    if (addToast) addToast(`${newOnes.length} high-p requests added ✨`, 'success');
+                }
+            } catch { if (addToast) addToast('AI suggestion failed', 'error'); }
+            setAiLoading(false);
+        };
+
+        const generateSequence = () => {
+            if (highPBank.length < 3 || !lowPRequest.trim()) {
+                if (addToast) addToast('Need at least 3 high-p requests and 1 low-p request', 'error');
+                return;
+            }
+            const shuffled = [...highPBank].sort(() => Math.random() - 0.5);
+            const selected = shuffled.slice(0, Math.min(4, highPBank.length));
+            const seq = {
+                id: Date.now(),
+                steps: [...selected.map(h => ({ type: 'high', request: h.request })), { type: 'low', request: lowPRequest }],
+                createdAt: new Date().toISOString(),
+            };
+            setSequences(prev => [seq, ...prev].slice(0, 10));
+            setActiveView('sequence');
+            if (addToast) addToast('Momentum sequence generated 🚀', 'success');
+        };
+
+        const logAttempt = (seqId, outcome) => {
+            setAttempts(prev => [{ id: Date.now(), seqId, outcome, timestamp: new Date().toISOString() }, ...prev]);
+            if (addToast) addToast(`Attempt logged: ${outcome}`, outcome === 'success' ? 'success' : 'info');
+        };
+
+        const successCount = attempts.filter(a => a.outcome === 'success').length;
+        const totalAttempts = attempts.length;
+        const successRate = totalAttempts > 0 ? Math.round((successCount / totalAttempts) * 100) : 0;
+
+        const views = [
+            { id: 'setup', label: '⚙️ Setup', desc: 'Build request bank' },
+            { id: 'sequence', label: '🚀 Sequences', desc: 'Generated plans' },
+            { id: 'log', label: '📊 Tracking', desc: `${totalAttempts} attempts` },
+        ];
+
+        return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
+            h('div', { className: 'text-center py-3' },
+                h('div', { className: 'text-4xl mb-2' }, '🚀'),
+                h('h2', { className: 'text-lg font-black text-slate-800' }, DualLabel('Behavior Momentum Planner')),
+                h('p', { className: 'text-xs text-slate-500 mt-1' }, 'Build compliance momentum with high-probability request sequences'),
+                studentName && h('p', { className: 'text-[10px] text-slate-400 mt-0.5' }, `For: ${studentName}`)
+            ),
+            // View tabs
+            h('div', { className: 'flex gap-1 bg-slate-100 rounded-xl p-1' },
+                views.map(v => h('button', { key: v.id, onClick: () => setActiveView(v.id),
+                    className: `flex-1 py-2 rounded-lg text-[10px] font-bold transition-all ${activeView === v.id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}` },
+                    `${v.label}`
+                ))
+            ),
+            // Setup view
+            activeView === 'setup' && h('div', { className: 'space-y-3' },
+                // Low-p request
+                h('div', { className: 'bg-red-50 rounded-xl border-2 border-red-200 p-4' },
+                    h('h3', { className: 'text-xs font-black text-red-700 uppercase mb-2' }, '🎯 Low-Probability Request (Difficult)'),
+                    h('p', { className: 'text-[10px] text-red-600 mb-2' }, 'What does the student typically refuse or resist?'),
+                    h('input', { value: lowPRequest, onChange: e => setLowPRequest(e.target.value), placeholder: 'e.g., "Open your math book to page 42"', className: 'w-full border border-red-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-300 bg-white' })
+                ),
+                // High-p bank
+                h('div', { className: 'bg-green-50 rounded-xl border-2 border-green-200 p-4' },
+                    h('h3', { className: 'text-xs font-black text-green-700 uppercase mb-2' }, `✅ High-Probability Requests (${highPBank.length})`),
+                    h('p', { className: 'text-[10px] text-green-600 mb-2' }, 'Quick, easy requests the student almost always complies with'),
+                    h('div', { className: 'flex gap-2 mb-3' },
+                        h('input', { value: newHighP, onChange: e => setNewHighP(e.target.value), onKeyDown: e => { if (e.key === 'Enter') addHighP(); }, placeholder: 'e.g., "Give me a thumbs up"', className: 'flex-1 border border-green-200 rounded-lg px-3 py-2 text-xs outline-none bg-white' }),
+                        h('button', { onClick: addHighP, disabled: !newHighP.trim(), className: 'px-3 py-2 bg-green-600 text-white rounded-lg text-xs font-bold disabled:opacity-40' }, '+')
+                    ),
+                    highPBank.length > 0 && h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
+                        highPBank.map(hp => h('span', { key: hp.id, className: 'inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 rounded-lg text-[10px] font-bold border border-green-200' },
+                            hp.request,
+                            h('button', { onClick: () => removeHighP(hp.id), className: 'text-green-400 hover:text-red-500 ml-1' }, '✕')
+                        ))
+                    ),
+                    callGemini && h('button', { onClick: handleAISuggest, disabled: aiLoading, className: 'w-full py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-xs disabled:opacity-50 transition-all' }, aiLoading ? '⏳ Thinking...' : '🧠 AI Suggest High-P Requests')
+                ),
+                // Generate button
+                h('button', { onClick: generateSequence, disabled: highPBank.length < 3 || !lowPRequest.trim(), className: 'w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all' },
+                    `🚀 Generate Momentum Sequence (${Math.min(4, highPBank.length)} high-p → 1 low-p)`
+                ),
+                // How it works
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                    h('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, '💡 How Behavior Momentum Works'),
+                    h('div', { className: 'space-y-1.5 text-[10px] text-slate-600' },
+                        h('p', null, '1. Deliver 3–5 quick, easy requests the student reliably follows (high-p)'),
+                        h('p', null, '2. After each success, provide brief praise ("Nice job!", "Thanks!")'),
+                        h('p', null, '3. Immediately deliver the difficult request (low-p) while momentum is high'),
+                        h('p', null, '4. The rapid success builds "momentum" that carries into the harder task'),
+                        h('p', { className: 'font-bold text-indigo-600 mt-1' }, '📚 Evidence: Cooper, Heron, & Heward (2020). Applied Behavior Analysis.')
+                    )
+                )
+            ),
+            // Sequence view
+            activeView === 'sequence' && h('div', { className: 'space-y-3' },
+                sequences.length === 0
+                    ? h('div', { className: 'text-center py-8 bg-white rounded-xl border border-slate-200' },
+                        h('div', { className: 'text-3xl mb-2' }, '🚀'),
+                        h('p', { className: 'text-sm text-slate-500' }, 'No sequences yet — go to Setup to build one'))
+                    : sequences.map(seq => h('div', { key: seq.id, className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                        h('div', { className: 'flex items-center justify-between mb-3' },
+                            h('span', { className: 'text-[10px] text-slate-400' }, fmtDate(seq.createdAt)),
+                            h('div', { className: 'flex gap-1' },
+                                h('button', { onClick: () => logAttempt(seq.id, 'success'), className: 'px-2 py-1 bg-green-100 text-green-700 rounded-lg text-[9px] font-bold hover:bg-green-200' }, '✅ Worked'),
+                                h('button', { onClick: () => logAttempt(seq.id, 'partial'), className: 'px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-[9px] font-bold hover:bg-amber-200' }, '🔶 Partial'),
+                                h('button', { onClick: () => logAttempt(seq.id, 'failed'), className: 'px-2 py-1 bg-red-100 text-red-700 rounded-lg text-[9px] font-bold hover:bg-red-200' }, '❌ Didn\'t work')
+                            )
+                        ),
+                        h('div', { className: 'flex items-center gap-1 flex-wrap' },
+                            seq.steps.map((step, i) => h(Fragment, { key: i },
+                                h('div', { className: `px-3 py-1.5 rounded-lg text-[10px] font-bold border ${step.type === 'high' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'}` },
+                                    step.type === 'high' ? `✅ ${step.request}` : `🎯 ${step.request}`
+                                ),
+                                i < seq.steps.length - 1 && h('span', { className: 'text-slate-300 text-xs' }, '→')
+                            ))
+                        )
+                    ))
+            ),
+            // Log/tracking view
+            activeView === 'log' && h('div', { className: 'space-y-3' },
+                // Summary stats
+                h('div', { className: 'grid grid-cols-3 gap-3' },
+                    h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 text-center shadow-sm' },
+                        h('div', { className: 'text-2xl font-black text-indigo-600' }, totalAttempts),
+                        h('div', { className: 'text-[10px] text-slate-500 font-bold' }, 'Total Attempts')
+                    ),
+                    h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 text-center shadow-sm' },
+                        h('div', { className: 'text-2xl font-black text-green-600' }, successCount),
+                        h('div', { className: 'text-[10px] text-slate-500 font-bold' }, 'Successes')
+                    ),
+                    h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 text-center shadow-sm' },
+                        h('div', { className: `text-2xl font-black ${successRate >= 70 ? 'text-green-600' : successRate >= 40 ? 'text-amber-600' : 'text-red-600'}` }, `${successRate}%`),
+                        h('div', { className: 'text-[10px] text-slate-500 font-bold' }, 'Success Rate')
+                    )
+                ),
+                // Attempt log
+                attempts.length === 0
+                    ? h('div', { className: 'text-center py-8 bg-white rounded-xl border border-slate-200' },
+                        h('div', { className: 'text-3xl mb-2' }, '📊'),
+                        h('p', { className: 'text-sm text-slate-500' }, 'No attempts logged yet — generate a sequence and try it!'))
+                    : h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                        h('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, '📋 Attempt History'),
+                        h('div', { className: 'space-y-1.5' },
+                            attempts.map(a => {
+                                const outcomeConfig = { success: { emoji: '✅', label: 'Worked', color: 'text-green-700 bg-green-50' }, partial: { emoji: '🔶', label: 'Partial', color: 'text-amber-700 bg-amber-50' }, failed: { emoji: '❌', label: 'Didn\'t work', color: 'text-red-700 bg-red-50' } };
+                                const oc = outcomeConfig[a.outcome] || outcomeConfig.failed;
+                                return h('div', { key: a.id, className: `flex items-center justify-between p-2 rounded-lg ${oc.color}` },
+                                    h('span', { className: 'text-[10px] font-bold' }, `${oc.emoji} ${oc.label}`),
+                                    h('span', { className: 'text-[9px] text-slate-400' }, fmtDate(a.timestamp))
+                                );
+                            })
+                        )
+                    ),
+                // Recommendations
+                totalAttempts >= 3 && h('div', { className: `p-4 rounded-xl border-2 ${successRate >= 70 ? 'bg-green-50 border-green-200' : successRate >= 40 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}` },
+                    h('h4', { className: 'text-xs font-black mb-1' },
+                        successRate >= 70 ? '🌟 Momentum is working!' : successRate >= 40 ? '🔄 Adjust your approach' : '⚠️ Consider changes'),
+                    h('p', { className: 'text-[10px] leading-relaxed' },
+                        successRate >= 70 ? 'The high-p sequence is effectively building momentum. Continue using and gradually increase low-p demand complexity.' :
+                        successRate >= 40 ? 'Partial success — try adding more high-p requests before the low-p, or choose even easier high-p tasks.' :
+                        'Low success rate — verify that high-p requests truly have near-100% compliance. Consider reducing the difficulty of the low-p request or increasing reinforcement.')
+                )
+            )
         );
     };
 
@@ -21260,6 +21885,30 @@ Analyze this data and return ONLY valid JSON:
                     color: 'rose',
                 },
                 {
+                    id: 'selfregulation',
+                    icon: '🧩',
+                    title: 'Self-Regulation Toolkit',
+                    desc: 'Students build personalized coping strategies mapped to their energy states — printable toolkit cards included',
+                    color: 'violet',
+                    cat: 'classroom',
+                },
+                {
+                    id: 'restitution',
+                    icon: '🔧',
+                    title: 'Restitution Planner',
+                    desc: 'AI-guided consequence planning that logically connects to the harm — direct repair, service, or learning',
+                    color: 'amber',
+                    cat: 'restorative',
+                },
+                {
+                    id: 'behaviormomentum',
+                    icon: '🚀',
+                    title: 'Behavior Momentum Planner',
+                    desc: 'Build compliance through high-probability request sequences — evidence-based ABA strategy with tracking',
+                    color: 'indigo',
+                    cat: 'intervention',
+                },
+                {
                     id: 'reinforcement',
                     icon: '⭐',
                     title: t('behavior_lens.hub.reinforcement_title') || 'Reinforcement Inventory',
@@ -22721,6 +23370,26 @@ Analyze this data and return ONLY valid JSON:
                     t
                 }),
                 activePanel === 'replacebehavior' && h(ReplacementBehaviorPlanner, {
+                    abcEntries,
+                    callGemini: callGeminiWithContext,
+                    t,
+                    addToast
+                }),
+                activePanel === 'selfregulation' && h(SelfRegulationToolkit, {
+                    studentName: selectedStudent,
+                    callGemini: callGeminiWithContext,
+                    t,
+                    addToast
+                }),
+                activePanel === 'restitution' && h(RestitutionPlanner, {
+                    studentName: selectedStudent,
+                    abcEntries,
+                    callGemini: callGeminiWithContext,
+                    t,
+                    addToast
+                }),
+                activePanel === 'behaviormomentum' && h(BehaviorMomentumPlanner, {
+                    studentName: selectedStudent,
                     abcEntries,
                     callGemini: callGeminiWithContext,
                     t,
