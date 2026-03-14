@@ -22966,7 +22966,6 @@
                 React.createElement("canvas", {
                   ref: canvasRef, onClick: canvasClick, onMouseMove: canvasHover,
                   onWheel: function (e) {
-                    e.preventDefault();
                     var z = d.canvasZoom || 1;
                     z = Math.max(0.5, Math.min(3, z + (e.deltaY > 0 ? -0.1 : 0.1)));
                     upd('canvasZoom', z);
