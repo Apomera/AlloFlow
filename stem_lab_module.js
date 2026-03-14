@@ -20794,8 +20794,8 @@
             var wrong = quizPool.filter(function (o) { return o.id !== quizQ.id; });
             var shuffled = wrong.sort(function () { return Math.random() - 0.5; }).slice(0, 3);
             quizOptions = shuffled.concat([quizQ]).sort(function () { return Math.random() - 0.5; });
-            upd('_dissQuizOpts', quizOptions);
-            upd('_dissQuizFor', specimen + '|' + activeLayer + '|' + d.quizIdx);
+            var _qo = quizOptions, _qf = specimen + '|' + activeLayer + '|' + d.quizIdx;
+            setTimeout(function () { upd('_dissQuizOpts', _qo); upd('_dissQuizFor', _qf); }, 0);
           }
 
           function peelCurrentLayer() {
