@@ -14691,12 +14691,14 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
     };
 
     // ─── LatencyRecorder ────────────────────────────────────────────────
-    // Stimulus-to-response latency measurement
+    // Stimulus-to-response latency measurement with SVG graph, goal line, and export
     const LatencyRecorder = ({ t, addToast, onSaveSession }) => {
         const [trials, setTrials] = useState([]);
         const [stimulusTime, setStimulusTime] = useState(null);
         const [waitingForResponse, setWaitingForResponse] = useState(false);
         const [behaviorName, setBehaviorName] = useState('');
+        const [goalSec, setGoalSec] = useState('');
+        const svgRef = useRef(null);
 
         const saveToSessionHistory = () => {
             if (trials.length === 0 || !onSaveSession) return;
@@ -14733,10 +14735,42 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             setStimulusTime(null);
         };
 
+        const clearTrials = () => { setTrials([]); if (addToast) addToast('Trials cleared', 'info'); };
+
         const validTrials = trials.filter(t => t.latency !== null);
-        const mean = validTrials.length > 0 ? (validTrials.reduce((a, t) => a + t.latency, 0) / validTrials.length).toFixed(2) : 0;
+        const meanVal = validTrials.length > 0 ? (validTrials.reduce((a, t) => a + t.latency, 0) / validTrials.length) : 0;
+        const mean = meanVal.toFixed(2);
         const median = validTrials.length > 0 ? validTrials.map(t => t.latency).sort((a, b) => a - b)[Math.floor(validTrials.length / 2)].toFixed(2) : 0;
         const range = validTrials.length > 1 ? `${Math.min(...validTrials.map(t => t.latency)).toFixed(1)}–${Math.max(...validTrials.map(t => t.latency)).toFixed(1)}` : 'N/A';
+        const sdVal = validTrials.length > 1 ? Math.sqrt(validTrials.reduce((s, tr) => s + Math.pow(tr.latency - meanVal, 2), 0) / (validTrials.length - 1)) : 0;
+
+        // SVG graph dimensions
+        const W = 500, H = 200, padL = 45, padR = 15, padT = 25, padB = 30;
+        const plotW = W - padL - padR, plotH = H - padT - padB;
+        const goalNum = parseFloat(goalSec);
+        const maxLat = Math.max(5, ...trials.map(tr => tr.latency || 0), isNaN(goalNum) ? 0 : goalNum * 1.2);
+        const barW = trials.length > 0 ? Math.min(30, (plotW / trials.length) * 0.7) : 20;
+        const barGap = trials.length > 0 ? plotW / trials.length : 20;
+        const toGX = (i) => padL + i * barGap + barGap / 2;
+        const toGY = (v) => padT + plotH - (v / maxLat) * plotH;
+
+        const exportPNG = () => {
+            const svgEl = svgRef.current;
+            if (!svgEl) return;
+            const svgData = new XMLSerializer().serializeToString(svgEl);
+            const canvas = document.createElement('canvas');
+            canvas.width = W * 2; canvas.height = H * 2;
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.onload = () => { ctx.fillStyle = 'white'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); const a = document.createElement('a'); a.download = 'latency_trials.png'; a.href = canvas.toDataURL('image/png'); a.click(); if (addToast) addToast('Exported as PNG ✅', 'success'); };
+            img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+        };
+
+        const copyCSV = () => {
+            const header = 'Trial,Latency(s),Response,Timestamp';
+            const rows = trials.map((tr, i) => `${i + 1},${tr.noResponse ? 'NR' : tr.latency},${tr.noResponse ? 'No' : 'Yes'},${tr.timestamp}`);
+            navigator.clipboard.writeText([header, ...rows].join('\n')).then(() => { if (addToast) addToast('Data copied to clipboard ✅', 'success'); });
+        };
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
@@ -14744,10 +14778,20 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.latency_recorder') || 'Latency Recorder'),
                 h('p', { className: 'text-xs text-slate-500 mt-1' }, t('behavior_lens.ui.measure_time_between_stimulus_presentation_and_beh') || 'Measure time between stimulus presentation and behavioral response')
             ),
+            // Setup
             h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
-                h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, t('behavior_lens.ui.behavior_2') || 'Behavior'),
-                h('input', { value: behaviorName, onChange: e => setBehaviorName(e.target.value), placeholder: t('behavior_lens.ph.eg_responding_to_name') || 'e.g. Responding to name', className: 'w-full text-xs border border-slate-200 rounded-lg px-3 py-2 mt-1' })
+                h('div', { className: 'grid grid-cols-2 gap-3' },
+                    h('div', null,
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, t('behavior_lens.ui.behavior_2') || 'Behavior'),
+                        h('input', { value: behaviorName, onChange: e => setBehaviorName(e.target.value), placeholder: t('behavior_lens.ph.eg_responding_to_name') || 'e.g. Responding to name', className: 'w-full text-xs border border-slate-200 rounded-lg px-3 py-2 mt-1' })
+                    ),
+                    h('div', null,
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Goal (seconds)'),
+                        h('input', { type: 'number', value: goalSec, onChange: e => setGoalSec(e.target.value), placeholder: 'e.g. 3', step: '0.5', min: '0', className: 'w-full text-xs border border-slate-200 rounded-lg px-3 py-2 mt-1' })
+                    )
+                )
             ),
+            // Action buttons
             !waitingForResponse ?
                 h('button', { onClick: presentStimulus, className: 'w-full py-6 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-black text-lg hover:from-blue-600 hover:to-indigo-700 shadow-lg transition-all hover:scale-[1.02] active:scale-95' }, '📢 Present Stimulus') :
                 h('div', { className: 'space-y-3' },
@@ -14759,20 +14803,74 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                         h('button', { onClick: recordNoResponse, className: 'py-6 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl font-bold text-sm shadow-lg hover:scale-105 active:scale-95 transition-transform' }, '✗ No Response')
                     )
                 ),
-            trials.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
-                h('h3', { className: 'text-xs font-bold text-slate-600 mb-3' }, `📊 Results (${trials.length} trials)`),
-                h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
-                    h('div', { className: 'bg-indigo-50 rounded-lg p-3 text-center' }, h('p', { className: 'text-[10px] text-indigo-600' }, t('behavior_lens.ui.mean') || 'Mean'), h('p', { className: 'text-lg font-black text-indigo-800' }, `${mean}s`)),
-                    h('div', { className: 'bg-purple-50 rounded-lg p-3 text-center' }, h('p', { className: 'text-[10px] text-purple-600' }, t('behavior_lens.ui.median') || 'Median'), h('p', { className: 'text-lg font-black text-purple-800' }, `${median}s`)),
-                    h('div', { className: 'bg-emerald-50 rounded-lg p-3 text-center' }, h('p', { className: 'text-[10px] text-emerald-600' }, t('behavior_lens.ui.range') || 'Range'), h('p', { className: 'text-lg font-black text-emerald-800' }, range))
+            // Results
+            trials.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-4' },
+                h('h3', { className: 'text-xs font-bold text-slate-600' }, `📊 Results (${trials.length} trials)`),
+                // Stats cards
+                h('div', { className: 'grid grid-cols-4 gap-2' },
+                    h('div', { className: 'bg-indigo-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[9px] text-indigo-600' }, t('behavior_lens.ui.mean') || 'Mean'), h('p', { className: 'text-lg font-black text-indigo-800' }, `${mean}s`)),
+                    h('div', { className: 'bg-purple-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[9px] text-purple-600' }, t('behavior_lens.ui.median') || 'Median'), h('p', { className: 'text-lg font-black text-purple-800' }, `${median}s`)),
+                    h('div', { className: 'bg-emerald-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[9px] text-emerald-600' }, t('behavior_lens.ui.range') || 'Range'), h('p', { className: 'text-lg font-black text-emerald-800' }, range)),
+                    h('div', { className: 'bg-amber-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[9px] text-amber-600' }, 'SD'), h('p', { className: 'text-lg font-black text-amber-800' }, `${sdVal.toFixed(2)}s`))
                 ),
+                // SVG Trial Graph
+                h('svg', { ref: svgRef, viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { maxHeight: '230px', fontFamily: 'Arial, sans-serif' } },
+                    h('rect', { x: 0, y: 0, width: W, height: H, fill: 'white' }),
+                    h('text', { x: W / 2, y: 14, textAnchor: 'middle', fontSize: 10, fontWeight: 'bold', fill: '#1e293b' }, `Latency Across Trials — ${behaviorName || 'Untitled'}`),
+                    h('text', { x: 10, y: H / 2, textAnchor: 'middle', fontSize: 9, fill: '#64748b', transform: `rotate(-90, 10, ${H / 2})` }, 'Latency (s)'),
+                    h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fontSize: 9, fill: '#64748b' }, 'Trials'),
+                    // Axes
+                    h('line', { x1: padL, y1: padT, x2: padL, y2: padT + plotH, stroke: '#1e293b', strokeWidth: 1.5 }),
+                    h('line', { x1: padL, y1: padT + plotH, x2: padL + plotW, y2: padT + plotH, stroke: '#1e293b', strokeWidth: 1.5 }),
+                    // Y-axis ticks
+                    ...[0, 0.25, 0.5, 0.75, 1].map(pct => h('g', { key: pct },
+                        h('line', { x1: padL - 3, y1: toGY(maxLat * pct), x2: padL + plotW, y2: toGY(maxLat * pct), stroke: '#f1f5f9', strokeWidth: pct === 0 ? 0 : 0.5 }),
+                        h('text', { x: padL - 6, y: toGY(maxLat * pct) + 3, textAnchor: 'end', fontSize: 7, fill: '#94a3b8' }, (maxLat * pct).toFixed(1))
+                    )),
+                    // Goal line
+                    ...(!isNaN(goalNum) && goalNum > 0 ? [
+                        h('line', { key: 'goal', x1: padL, y1: toGY(goalNum), x2: padL + plotW, y2: toGY(goalNum), stroke: '#22c55e', strokeWidth: 1.5, strokeDasharray: '6,3' }),
+                        h('text', { key: 'goal-lbl', x: padL + plotW + 2, y: toGY(goalNum) + 3, fontSize: 7, fontWeight: 'bold', fill: '#22c55e' }, `Goal: ${goalNum}s`)
+                    ] : []),
+                    // Mean line
+                    ...(validTrials.length > 0 ? [
+                        h('line', { key: 'mean', x1: padL, y1: toGY(meanVal), x2: padL + plotW, y2: toGY(meanVal), stroke: '#6366f1', strokeWidth: 1, strokeDasharray: '4,2' }),
+                        h('text', { key: 'mean-lbl', x: padL + plotW + 2, y: toGY(meanVal) + 3, fontSize: 7, fontWeight: 'bold', fill: '#6366f1' }, `M: ${mean}s`)
+                    ] : []),
+                    // Bars
+                    ...trials.map((tr, i) => {
+                        if (tr.noResponse) {
+                            // Red X for no-response
+                            return h('g', { key: i },
+                                h('rect', { x: toGX(i) - barW / 2, y: padT, width: barW, height: plotH, fill: 'rgba(239, 68, 68, 0.08)', rx: 2 }),
+                                h('text', { x: toGX(i), y: padT + plotH / 2 + 4, textAnchor: 'middle', fontSize: 12, fontWeight: 'bold', fill: '#ef4444' }, '✗'),
+                                h('text', { x: toGX(i), y: padT + plotH + 10, textAnchor: 'middle', fontSize: 7, fill: '#94a3b8' }, i + 1)
+                            );
+                        }
+                        const barH = (tr.latency / maxLat) * plotH;
+                        const meetsGoal = !isNaN(goalNum) && goalNum > 0 && tr.latency <= goalNum;
+                        return h('g', { key: i },
+                            h('rect', { x: toGX(i) - barW / 2, y: padT + plotH - barH, width: barW, height: barH, fill: meetsGoal ? '#22c55e' : '#6366f1', rx: 2, opacity: 0.85 }),
+                            h('text', { x: toGX(i), y: padT + plotH - barH - 4, textAnchor: 'middle', fontSize: 7, fontWeight: 'bold', fill: meetsGoal ? '#16a34a' : '#4f46e5' }, `${tr.latency}s`),
+                            h('text', { x: toGX(i), y: padT + plotH + 10, textAnchor: 'middle', fontSize: 7, fill: '#94a3b8' }, i + 1)
+                        );
+                    })
+                ),
+                // Trial badges
                 h('div', { className: 'flex flex-wrap gap-1' },
-                    trials.map((t, i) => h('span', { key: i, className: `px-2 py-1 rounded-lg text-[10px] font-bold ${t.noResponse ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700'}` }, t.noResponse ? 'NR' : `${t.latency}s`))
+                    trials.map((t, i) => h('span', { key: i, className: `px-2 py-1 rounded-lg text-[10px] font-bold ${t.noResponse ? 'bg-red-100 text-red-600' : !isNaN(goalNum) && goalNum > 0 && t.latency <= goalNum ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'}` }, t.noResponse ? 'NR' : `${t.latency}s`))
                 ),
-                onSaveSession && h('button', {
-                    onClick: saveToSessionHistory,
-                    className: 'mt-3 w-full py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg text-xs font-bold hover:from-emerald-600 hover:to-teal-600 transition-all'
-                }, '💾 Save to Session History')
+                // Action buttons
+                h('div', { className: 'flex gap-2 flex-wrap' },
+                    onSaveSession && h('button', { onClick: saveToSessionHistory, className: 'flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg text-xs font-bold hover:from-emerald-600 hover:to-teal-600 transition-all' }, '💾 Save to Session History'),
+                    h('button', { onClick: exportPNG, className: 'px-3 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg text-[10px] font-bold hover:bg-indigo-100 transition-all' }, '📷 PNG'),
+                    h('button', { onClick: copyCSV, className: 'px-3 py-2 bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-[10px] font-bold hover:bg-slate-100 transition-all' }, '📋 CSV'),
+                    h('button', { onClick: clearTrials, className: 'px-3 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-[10px] font-bold hover:bg-red-100 transition-all' }, '🗑️ Clear')
+                ),
+                // Goal summary
+                !isNaN(goalNum) && goalNum > 0 && validTrials.length > 0 && h('div', { className: `rounded-lg p-3 border text-xs ${validTrials.filter(tr => tr.latency <= goalNum).length / validTrials.length >= 0.8 ? 'bg-green-50 border-green-200 text-green-700' : 'bg-amber-50 border-amber-200 text-amber-700'}` },
+                    `🎯 Goal (≤${goalNum}s): ${validTrials.filter(tr => tr.latency <= goalNum).length}/${validTrials.length} trials met criteria (${Math.round(validTrials.filter(tr => tr.latency <= goalNum).length / validTrials.length * 100)}%)`
+                )
             )
         );
     };
@@ -15320,11 +15418,18 @@ Keep the language professional but accessible.`;
 
 
     // ─── CumulativeRecord ───────────────────────────────────────────────
-    // Skinner-style cumulative frequency graph
+    // Skinner-style cumulative frequency graph with phase lines, slope indicators, JABA mode, and export
     const CumulativeRecord = ({ sessionHistory, t, addToast }) => {
         const [behaviorName, setBehaviorName] = useState('');
         const [manualData, setManualData] = useState('');
         const [showManual, setShowManual] = useState(false);
+        const [phases, setPhases] = useState([]); // [{ session: 4, label: 'Intervention' }]
+        const [addingPhase, setAddingPhase] = useState(false);
+        const [newPhaseSession, setNewPhaseSession] = useState('');
+        const [newPhaseLabel, setNewPhaseLabel] = useState('Intervention');
+        const [jabaMode, setJabaMode] = useState(false);
+        const [showSlope, setShowSlope] = useState(true);
+        const svgRef = useRef(null);
 
         const dataPoints = useMemo(() => {
             if (showManual && manualData.trim()) {
@@ -15343,7 +15448,25 @@ Keep the language professional but accessible.`;
             });
         }, [sessionHistory, behaviorName, manualData, showManual]);
 
-        const W = 600, H = 250, padL = 55, padR = 20, padT = 30, padB = 40;
+        // Compute per-phase slope (responses per session)
+        const phaseSlopes = useMemo(() => {
+            if (dataPoints.length < 2) return [];
+            const sortedPhases = [...phases].sort((a, b) => a.session - b.session);
+            const boundaries = [1, ...sortedPhases.map(p => p.session), dataPoints.length + 1];
+            const slopes = [];
+            for (let i = 0; i < boundaries.length - 1; i++) {
+                const start = boundaries[i];
+                const end = boundaries[i + 1] - 1;
+                const pts = dataPoints.filter(d => d.session >= start && d.session <= end);
+                if (pts.length < 2) continue;
+                const first = pts[0]; const last = pts[pts.length - 1];
+                const slope = (last.cumulative - first.cumulative) / (last.session - first.session);
+                slopes.push({ startSession: first.session, endSession: last.session, startCum: first.cumulative, endCum: last.cumulative, slope, label: sortedPhases[i - 1]?.label || 'Baseline' });
+            }
+            return slopes;
+        }, [dataPoints, phases]);
+
+        const W = 600, H = 280, padL = 55, padR = 20, padT = 30, padB = 40;
         const plotW = W - padL - padR, plotH = H - padT - padB;
         const maxCum = Math.max(5, ...dataPoints.map(d => d.cumulative));
         const maxSession = Math.max(5, dataPoints.length);
@@ -15352,38 +15475,124 @@ Keep the language professional but accessible.`;
 
         const pathD = dataPoints.map((d, i) => `${i === 0 ? 'M' : 'L'} ${toX(d.session)} ${toY(d.cumulative)}`).join(' ');
 
+        // Colors — JABA mode uses grayscale
+        const lineColor = jabaMode ? '#1e293b' : '#6366f1';
+        const fillColor = jabaMode ? 'rgba(30, 41, 59, 0.06)' : 'rgba(99, 102, 241, 0.1)';
+        const dotFill = jabaMode ? '#f8fafc' : 'white';
+        const phaseColor = jabaMode ? '#475569' : '#ef4444';
+        const slopeColor = jabaMode ? '#64748b' : '#22c55e';
+
+        const addPhase = () => {
+            const s = parseInt(newPhaseSession);
+            if (isNaN(s) || s < 2 || s > dataPoints.length) return;
+            setPhases(prev => [...prev, { session: s, label: newPhaseLabel || 'Phase' }]);
+            setAddingPhase(false); setNewPhaseSession(''); setNewPhaseLabel('Intervention');
+            if (addToast) addToast('Phase line added ✅', 'success');
+        };
+
+        const removePhase = (idx) => setPhases(prev => prev.filter((_, i) => i !== idx));
+
+        const exportPNG = () => {
+            const svgEl = svgRef.current;
+            if (!svgEl) return;
+            const svgData = new XMLSerializer().serializeToString(svgEl);
+            const canvas = document.createElement('canvas');
+            canvas.width = W * 2; canvas.height = H * 2;
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.onload = () => { ctx.fillStyle = 'white'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); const a = document.createElement('a'); a.download = 'cumulative_record.png'; a.href = canvas.toDataURL('image/png'); a.click(); if (addToast) addToast('Exported as PNG ✅', 'success'); };
+            img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+        };
+
+        const copyCSV = () => {
+            const header = 'Session,Count,Cumulative';
+            const rows = dataPoints.map(d => `${d.session},${d.count},${d.cumulative}`);
+            navigator.clipboard.writeText([header, ...rows].join('\n')).then(() => { if (addToast) addToast('Data copied to clipboard ✅', 'success'); });
+        };
+
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '📈'),
                 h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.cumulative_record') || 'Cumulative Record'),
-                h('p', { className: 'text-xs text-slate-500 mt-1' }, 'Classic Skinner-style cumulative frequency display')
+                h('p', { className: 'text-xs text-slate-500 mt-1' }, 'Skinner-style cumulative frequency display with phase analysis')
             ),
+            // Controls
             h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
-                h('div', { className: 'flex items-center gap-2 mb-3' },
+                h('div', { className: 'flex items-center gap-2 mb-3 flex-wrap' },
                     h('label', { className: 'flex items-center gap-1 text-[10px] font-medium text-slate-600 cursor-pointer' },
-                        h('input', { type: 'checkbox', checked: showManual, onChange: () => setShowManual(!showManual), className: 'accent-indigo-600' }), 'Manual data entry'
+                        h('input', { type: 'checkbox', checked: showManual, onChange: () => setShowManual(!showManual), className: 'accent-indigo-600' }), 'Manual data'
+                    ),
+                    h('label', { className: 'flex items-center gap-1 text-[10px] font-medium text-slate-600 cursor-pointer' },
+                        h('input', { type: 'checkbox', checked: showSlope, onChange: () => setShowSlope(!showSlope), className: 'accent-emerald-600' }), 'Slope lines'
+                    ),
+                    h('label', { className: 'flex items-center gap-1 text-[10px] font-medium text-slate-600 cursor-pointer' },
+                        h('input', { type: 'checkbox', checked: jabaMode, onChange: () => setJabaMode(!jabaMode), className: 'accent-slate-600' }), 'JABA B\u0026W'
                     ),
                     !showManual && h('input', { value: behaviorName, onChange: e => setBehaviorName(e.target.value), placeholder: t('behavior_lens.ph.behavior_name_from_sessions') || 'Behavior name (from sessions)...', className: 'flex-1 text-xs border border-slate-200 rounded-lg px-2 py-1.5' }),
                     showManual && h('input', { value: manualData, onChange: e => setManualData(e.target.value), placeholder: t('behavior_lens.ph.counts_per_session_3_5_2_8_4') || 'Counts per session: 3, 5, 2, 8, 4...', className: 'flex-1 text-xs border border-slate-200 rounded-lg px-2 py-1.5' })
                 ),
-                dataPoints.length > 0 ? h('svg', { viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { maxHeight: '280px', fontFamily: 'Arial, sans-serif' } },
+                // SVG Graph
+                dataPoints.length > 0 ? h('svg', { ref: svgRef, viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { maxHeight: '320px', fontFamily: 'Arial, sans-serif' } },
                     h('rect', { x: 0, y: 0, width: W, height: H, fill: 'white' }),
                     h('text', { x: W / 2, y: 16, textAnchor: 'middle', fontSize: 12, fontWeight: 'bold', fill: '#1e293b' }, (t('behavior_lens.raw.cumulative_record') || 'Cumulative Record')),
                     h('text', { x: 12, y: H / 2, textAnchor: 'middle', fontSize: 10, fill: '#64748b', transform: `rotate(-90, 12, ${H / 2})` }, (t('behavior_lens.raw.cumulative_responses') || 'Cumulative Responses')),
                     h('text', { x: W / 2, y: H - 5, textAnchor: 'middle', fontSize: 10, fill: '#64748b' }, (t('behavior_lens.raw.sessions') || 'Sessions')),
                     h('line', { x1: padL, y1: padT, x2: padL, y2: padT + plotH, stroke: '#1e293b', strokeWidth: 1.5 }),
                     h('line', { x1: padL, y1: padT + plotH, x2: padL + plotW, y2: padT + plotH, stroke: '#1e293b', strokeWidth: 1.5 }),
-                    // Filled area
-                    h('path', { d: pathD + ` L ${toX(dataPoints[dataPoints.length - 1].session)} ${padT + plotH} L ${toX(1)} ${padT + plotH} Z`, fill: 'rgba(99, 102, 241, 0.1)' }),
-                    h('path', { d: pathD, fill: 'none', stroke: '#6366f1', strokeWidth: 2.5, strokeLinejoin: 'round' }),
-                    ...dataPoints.map(d => h('circle', { key: d.session, cx: toX(d.session), cy: toY(d.cumulative), r: 3, fill: 'white', stroke: '#6366f1', strokeWidth: 2 }))
+                    // Y-axis ticks
+                    ...[0, 0.25, 0.5, 0.75, 1].map(pct => h('g', { key: pct },
+                        h('line', { x1: padL - 4, y1: toY(maxCum * pct), x2: padL, y2: toY(maxCum * pct), stroke: '#94a3b8', strokeWidth: 1 }),
+                        h('text', { x: padL - 8, y: toY(maxCum * pct) + 3, textAnchor: 'end', fontSize: 8, fill: '#94a3b8' }, Math.round(maxCum * pct))
+                    )),
+                    // Phase change lines
+                    ...phases.map((p, idx) => h('g', { key: `phase-${idx}` },
+                        h('line', { x1: toX(p.session), y1: padT, x2: toX(p.session), y2: padT + plotH, stroke: phaseColor, strokeWidth: 1.5, strokeDasharray: '6,4' }),
+                        h('text', { x: toX(p.session), y: padT - 4, textAnchor: 'middle', fontSize: 8, fontWeight: 'bold', fill: phaseColor }, p.label)
+                    )),
+                    // Slope lines per phase
+                    ...(showSlope ? phaseSlopes.map((sl, idx) => h('line', {
+                        key: `slope-${idx}`, x1: toX(sl.startSession), y1: toY(sl.startCum), x2: toX(sl.endSession), y2: toY(sl.endCum),
+                        stroke: slopeColor, strokeWidth: 1.5, strokeDasharray: '4,3', opacity: 0.8
+                    })) : []),
+                    // Slope rate labels
+                    ...(showSlope ? phaseSlopes.map((sl, idx) => h('text', {
+                        key: `slope-lbl-${idx}`, x: toX((sl.startSession + sl.endSession) / 2), y: toY((sl.startCum + sl.endCum) / 2) - 8,
+                        textAnchor: 'middle', fontSize: 8, fontWeight: 'bold', fill: slopeColor
+                    }, `${sl.slope.toFixed(1)}/session`)) : []),
+                    // Filled area + line
+                    h('path', { d: pathD + ` L ${toX(dataPoints[dataPoints.length - 1].session)} ${padT + plotH} L ${toX(1)} ${padT + plotH} Z`, fill: fillColor }),
+                    h('path', { d: pathD, fill: 'none', stroke: lineColor, strokeWidth: 2.5, strokeLinejoin: 'round' }),
+                    ...dataPoints.map(d => h('circle', { key: d.session, cx: toX(d.session), cy: toY(d.cumulative), r: 3, fill: dotFill, stroke: lineColor, strokeWidth: 2 }))
                 ) : h('p', { className: 'text-center text-sm text-slate-400 py-8' }, t('behavior_lens.ui.enter_data_or_record_sessions_to_generate_a_cumula') || 'Enter data or record sessions to generate a cumulative record.')
             ),
-            dataPoints.length > 0 && h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
-                h('div', { className: 'flex justify-between text-xs' },
-                    h('span', { className: 'text-indigo-700 font-medium' }, `Total: ${dataPoints[dataPoints.length - 1]?.cumulative || 0} responses`),
-                    h('span', { className: 'text-indigo-700 font-medium' }, `Sessions: ${dataPoints.length}`),
-                    h('span', { className: 'text-indigo-700 font-medium' }, `Avg rate: ${(dataPoints[dataPoints.length - 1]?.cumulative / dataPoints.length).toFixed(1)}/session`)
+            // Phase management + export
+            dataPoints.length > 0 && h('div', { className: 'flex flex-wrap gap-2' },
+                h('button', { onClick: () => setAddingPhase(!addingPhase), className: 'px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded-lg text-[10px] font-bold hover:bg-red-100 transition-all' }, addingPhase ? '✕ Cancel' : '➕ Add Phase Line'),
+                h('button', { onClick: exportPNG, className: 'px-3 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg text-[10px] font-bold hover:bg-indigo-100 transition-all' }, '📷 Export PNG'),
+                h('button', { onClick: copyCSV, className: 'px-3 py-1.5 bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-[10px] font-bold hover:bg-slate-100 transition-all' }, '📋 Copy Data'),
+                ...phases.map((p, i) => h('span', { key: i, className: 'flex items-center gap-1 px-2 py-1 bg-red-50 border border-red-200 rounded-lg text-[10px] font-medium text-red-700' },
+                    `S${p.session}: ${p.label}`, h('button', { onClick: () => removePhase(i), className: 'ml-1 text-red-400 hover:text-red-600' }, '×')
+                ))
+            ),
+            // Add phase form
+            addingPhase && h('div', { className: 'bg-red-50 rounded-xl border border-red-200 p-4 flex items-end gap-3' },
+                h('div', { className: 'flex-1' },
+                    h('label', { className: 'text-[10px] font-bold text-red-700 block mb-1' }, 'Session #'),
+                    h('input', { type: 'number', value: newPhaseSession, onChange: e => setNewPhaseSession(e.target.value), min: 2, max: dataPoints.length, placeholder: 'e.g. 4', className: 'w-full text-xs border border-red-200 rounded-lg px-2 py-1.5' })
+                ),
+                h('div', { className: 'flex-1' },
+                    h('label', { className: 'text-[10px] font-bold text-red-700 block mb-1' }, 'Phase Label'),
+                    h('input', { value: newPhaseLabel, onChange: e => setNewPhaseLabel(e.target.value), placeholder: 'Intervention', className: 'w-full text-xs border border-red-200 rounded-lg px-2 py-1.5' })
+                ),
+                h('button', { onClick: addPhase, className: 'px-4 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 transition-all' }, '✓ Add')
+            ),
+            // Stats
+            dataPoints.length > 0 && h('div', { className: `rounded-xl p-3 border ${jabaMode ? 'bg-slate-50 border-slate-300' : 'bg-indigo-50 border-indigo-200'}` },
+                h('div', { className: 'flex justify-between text-xs flex-wrap gap-2' },
+                    h('span', { className: `font-medium ${jabaMode ? 'text-slate-700' : 'text-indigo-700'}` }, `Total: ${dataPoints[dataPoints.length - 1]?.cumulative || 0} responses`),
+                    h('span', { className: `font-medium ${jabaMode ? 'text-slate-700' : 'text-indigo-700'}` }, `Sessions: ${dataPoints.length}`),
+                    h('span', { className: `font-medium ${jabaMode ? 'text-slate-700' : 'text-indigo-700'}` }, `Avg rate: ${(dataPoints[dataPoints.length - 1]?.cumulative / dataPoints.length).toFixed(1)}/session`),
+                    phaseSlopes.length > 0 && h('span', { className: `font-medium ${jabaMode ? 'text-slate-700' : 'text-emerald-700'}` }, `Phases: ${phaseSlopes.length} (slopes: ${phaseSlopes.map(s => s.slope.toFixed(1)).join(', ')})`)
                 )
             )
         );
