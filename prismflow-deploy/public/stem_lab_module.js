@@ -20819,13 +20819,21 @@
             var dissTick = 0;
             function drawDissectionFrame() {
               dissTick++;
+              // Guard: skip frame if canvas dimensions are not finite or zero
+              W = canvas.width; H = canvas.height;
+              if (!W || !H || !isFinite(W) || !isFinite(H)) {
+                canvas._dissAnim = requestAnimationFrame(drawDissectionFrame);
+                return;
+              }
+              try {
               ctx.clearRect(0, 0, W, H);
+              var cx = W * 0.5, cy = H * 0.45;
               // Apply zoom transform
               var zoom = d.canvasZoom || 1;
               ctx.save();
-              ctx.translate(W/2, H/2);
+              ctx.translate(W / 2, H / 2);
               ctx.scale(zoom, zoom);
-              ctx.translate(-W/2, -H/2);
+              ctx.translate(-W / 2, -H / 2);
               // Dark dissection tray background
               var isHC = d.highContrast;
               var trayGrad = ctx.createLinearGradient(0, 0, 0, H);
@@ -20839,28 +20847,28 @@
               ctx.lineJoin = 'round'; ctx.lineCap = 'round';
               // Specular highlight for 3D effect
               if (spec.bodyShape !== 'worm') {
-                var specGrad = ctx.createRadialGradient(cx-W*0.05, cy-H*0.08, 0, cx-W*0.05, cy-H*0.08, W*0.15);
+                var specGrad = ctx.createRadialGradient(cx - W * 0.05, cy - H * 0.08, 0, cx - W * 0.05, cy - H * 0.08, W * 0.15);
                 specGrad.addColorStop(0, 'rgba(255,255,255,0.06)');
                 specGrad.addColorStop(1, 'rgba(255,255,255,0)');
                 ctx.fillStyle = specGrad;
-                ctx.beginPath(); ctx.ellipse(cx-W*0.05, cy-H*0.08, W*0.12, H*0.08, -0.3, 0, Math.PI*2);
+                ctx.beginPath(); ctx.ellipse(cx - W * 0.05, cy - H * 0.08, W * 0.12, H * 0.08, -0.3, 0, Math.PI * 2);
                 ctx.fill();
               } else {
                 // Worm gets elongated highlight
-                var wSpecGrad = ctx.createRadialGradient(cx-W*0.01, H*0.30, 0, cx-W*0.01, H*0.30, W*0.04);
+                var wSpecGrad = ctx.createRadialGradient(cx - W * 0.01, H * 0.30, 0, cx - W * 0.01, H * 0.30, W * 0.04);
                 wSpecGrad.addColorStop(0, 'rgba(255,255,255,0.06)');
                 wSpecGrad.addColorStop(1, 'rgba(255,255,255,0)');
                 ctx.fillStyle = wSpecGrad;
-                ctx.fillRect(cx-W*0.03, H*0.08, W*0.04, H*0.84);
+                ctx.fillRect(cx - W * 0.03, H * 0.08, W * 0.04, H * 0.84);
               }
               // 3D depth shadow under body
               ctx.globalAlpha = 0.08;
               ctx.beginPath();
-              if (spec.bodyShape === 'frog') { ctx.ellipse(cx+3, cy+5, W*0.18, H*0.30, 0, 0, Math.PI*2); }
-              else if (spec.bodyShape === 'pig') { ctx.ellipse(cx+3, cy+5, W*0.30, H*0.14, 0, 0, Math.PI*2); }
-              else if (spec.bodyShape === 'fish') { ctx.ellipse(cx+3, cy+5, W*0.32, H*0.10, 0, 0, Math.PI*2); }
-              else if (spec.bodyShape === 'crayfish') { ctx.ellipse(cx+3, cy+5, W*0.32, H*0.08, 0, 0, Math.PI*2); }
-              else if (spec.bodyShape === 'worm') { ctx.ellipse(cx+2, H*0.50+5, W*0.05, H*0.42, 0, 0, Math.PI*2); }
+              if (spec.bodyShape === 'frog') { ctx.ellipse(cx + 3, cy + 5, W * 0.18, H * 0.30, 0, 0, Math.PI * 2); }
+              else if (spec.bodyShape === 'pig') { ctx.ellipse(cx + 3, cy + 5, W * 0.30, H * 0.14, 0, 0, Math.PI * 2); }
+              else if (spec.bodyShape === 'fish') { ctx.ellipse(cx + 3, cy + 5, W * 0.32, H * 0.10, 0, 0, Math.PI * 2); }
+              else if (spec.bodyShape === 'crayfish') { ctx.ellipse(cx + 3, cy + 5, W * 0.32, H * 0.08, 0, 0, Math.PI * 2); }
+              else if (spec.bodyShape === 'worm') { ctx.ellipse(cx + 2, H * 0.50 + 5, W * 0.05, H * 0.42, 0, 0, Math.PI * 2); }
               ctx.fillStyle = '#000'; ctx.fill();
               ctx.globalAlpha = 1;
               // Tissue texture overlay (stipple for organic feel)
@@ -20869,7 +20877,7 @@
                 for (var stip = 0; stip < 80; stip++) {
                   var sx = cx + (Math.sin(stip * 137.5) * W * 0.25);
                   var sy_t = cy + (Math.cos(stip * 47.3) * H * 0.30);
-                  ctx.beginPath(); ctx.arc(sx, sy_t, Math.random() * 2 + 0.5, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.arc(sx, sy_t, Math.random() * 2 + 0.5, 0, Math.PI * 2);
                   ctx.fillStyle = stip % 2 === 0 ? '#000' : '#fff'; ctx.fill();
                 }
                 ctx.globalAlpha = 1;
@@ -20877,19 +20885,19 @@
               // Dissection tools illustration (bottom-right corner)
               ctx.globalAlpha = 0.15;
               // Scalpel
-              ctx.beginPath(); ctx.moveTo(W-60, H-60); ctx.lineTo(W-35, H-35);
+              ctx.beginPath(); ctx.moveTo(W - 60, H - 60); ctx.lineTo(W - 35, H - 35);
               ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.stroke();
-              ctx.beginPath(); ctx.moveTo(W-35, H-35); ctx.lineTo(W-30, H-32);
+              ctx.beginPath(); ctx.moveTo(W - 35, H - 35); ctx.lineTo(W - 30, H - 32);
               ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 3; ctx.stroke();
               // Forceps
-              ctx.beginPath(); ctx.moveTo(W-80, H-55); ctx.lineTo(W-55, H-40);
-              ctx.moveTo(W-80, H-48); ctx.lineTo(W-55, H-40);
+              ctx.beginPath(); ctx.moveTo(W - 80, H - 55); ctx.lineTo(W - 55, H - 40);
+              ctx.moveTo(W - 80, H - 48); ctx.lineTo(W - 55, H - 40);
               ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5; ctx.stroke();
               // Pins
               for (var pi_tool = 0; pi_tool < 3; pi_tool++) {
-                ctx.beginPath(); ctx.arc(W-90+pi_tool*8, H-70, 1.5, 0, Math.PI*2);
+                ctx.beginPath(); ctx.arc(W - 90 + pi_tool * 8, H - 70, 1.5, 0, Math.PI * 2);
                 ctx.fillStyle = '#94a3b8'; ctx.fill();
-                ctx.beginPath(); ctx.moveTo(W-90+pi_tool*8, H-70); ctx.lineTo(W-90+pi_tool*8, H-62);
+                ctx.beginPath(); ctx.moveTo(W - 90 + pi_tool * 8, H - 70); ctx.lineTo(W - 90 + pi_tool * 8, H - 62);
                 ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 0.5; ctx.stroke();
               }
               ctx.globalAlpha = 1;
@@ -20898,10 +20906,10 @@
               var curLayer = spec.layers[currentLayerIdx] || spec.layers[0];
               var layerColor = curLayer.color || '#94a3b8';
               var layerStroke = curLayer.accent || '#64748b';
-              var cx = W * 0.5, cy = H * 0.45;
+              // cx, cy declared at top of drawDissectionFrame
 
               // Create body gradient for 3D depth effect
-              var bodyGrad = ctx.createRadialGradient(cx - W*0.05, cy - H*0.05, 10, cx, cy, W*0.30);
+              var bodyGrad = ctx.createRadialGradient(cx - W * 0.05, cy - H * 0.05, 10, cx, cy, W * 0.30);
               bodyGrad.addColorStop(0, layerColor);
               bodyGrad.addColorStop(0.7, layerColor);
               bodyGrad.addColorStop(1, layerStroke);
@@ -20914,45 +20922,47 @@
               // ── Draw specimen body based on bodyShape ──
               if (spec.bodyShape === 'frog') {
                 // Frog body
-                ctx.beginPath(); ctx.ellipse(cx, cy, W*0.18*breathScale, H*0.28*breathScale, 0, 0, Math.PI*2);
+                ctx.beginPath(); ctx.ellipse(cx, cy, W * 0.18 * breathScale, H * 0.28 * breathScale, 0, 0, Math.PI * 2);
                 ctx.fillStyle = bodyGrad; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
                 ctx.shadowBlur = 0;
                 // Inner body shading
-                ctx.beginPath(); ctx.ellipse(cx - W*0.02, cy - H*0.03, W*0.12, H*0.18, 0, 0, Math.PI*2);
+                ctx.beginPath(); ctx.ellipse(cx - W * 0.02, cy - H * 0.03, W * 0.12, H * 0.18, 0, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fill();
                 // Head
-                var headGrad = ctx.createRadialGradient(cx-W*0.02, cy-H*0.27, 4, cx, cy-H*0.25, W*0.12);
+                var headGrad = ctx.createRadialGradient(cx - W * 0.02, cy - H * 0.27, 4, cx, cy - H * 0.25, W * 0.12);
                 headGrad.addColorStop(0, layerColor); headGrad.addColorStop(1, layerStroke);
-                ctx.beginPath(); ctx.ellipse(cx, cy-H*0.25, W*0.12, H*0.08, 0, 0, Math.PI*2);
+                ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.25, W * 0.12, H * 0.08, 0, 0, Math.PI * 2);
                 ctx.fillStyle = headGrad; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke();
                 // Nostrils
-                ctx.beginPath(); ctx.arc(cx - W*0.03, cy-H*0.30, 1.5, 0, Math.PI*2); ctx.fillStyle = layerStroke; ctx.fill();
-                ctx.beginPath(); ctx.arc(cx + W*0.03, cy-H*0.30, 1.5, 0, Math.PI*2); ctx.fillStyle = layerStroke; ctx.fill();
+                ctx.beginPath(); ctx.arc(cx - W * 0.03, cy - H * 0.30, 1.5, 0, Math.PI * 2); ctx.fillStyle = layerStroke; ctx.fill();
+                ctx.beginPath(); ctx.arc(cx + W * 0.03, cy - H * 0.30, 1.5, 0, Math.PI * 2); ctx.fillStyle = layerStroke; ctx.fill();
                 // Eyes (tympanic membrane markers)
-                [-1, 1].forEach(function(s) {
-                  ctx.beginPath(); ctx.arc(cx + s*W*0.10, cy-H*0.22, 4, 0, Math.PI*2);
+                [-1, 1].forEach(function (s) {
+                  ctx.beginPath(); ctx.arc(cx + s * W * 0.10, cy - H * 0.22, 4, 0, Math.PI * 2);
                   ctx.fillStyle = 'rgba(139,92,246,0.3)'; ctx.fill();
                   ctx.strokeStyle = 'rgba(139,92,246,0.5)'; ctx.lineWidth = 0.5; ctx.stroke();
                 });
                 // Eyes (prominent amphibian eyes)
-                [cx-W*0.08, cx+W*0.08].forEach(function(ex) {
-                  ctx.beginPath(); ctx.arc(ex, cy-H*0.28, 6, 0, Math.PI*2);
+                [cx - W * 0.08, cx + W * 0.08].forEach(function (ex) {
+                  ctx.beginPath(); ctx.arc(ex, cy - H * 0.28, 6, 0, Math.PI * 2);
                   ctx.fillStyle = '#fef9c3'; ctx.fill(); ctx.strokeStyle = '#854d0e'; ctx.lineWidth = 1.2; ctx.stroke();
-                  ctx.beginPath(); ctx.arc(ex, cy-H*0.28, 2.5, 0, Math.PI*2); ctx.fillStyle = '#1a1a1a'; ctx.fill();
+                  ctx.beginPath(); ctx.arc(ex, cy - H * 0.28, 2.5, 0, Math.PI * 2); ctx.fillStyle = '#1a1a1a'; ctx.fill();
                 });
                 // Hindlimbs
-                ['L','R'].forEach(function(s) { var sx = s === 'L' ? -1 : 1;
+                ['L', 'R'].forEach(function (s) {
+                  var sx = s === 'L' ? -1 : 1;
                   ctx.beginPath();
-                  ctx.moveTo(cx+sx*W*0.12,cy+H*0.22); ctx.quadraticCurveTo(cx+sx*W*0.25,cy+H*0.28,cx+sx*W*0.22,cy+H*0.40);
-                  ctx.quadraticCurveTo(cx+sx*W*0.18,cy+H*0.44,cx+sx*W*0.20,cy+H*0.38);
-                  ctx.quadraticCurveTo(cx+sx*W*0.16,cy+H*0.28,cx+sx*W*0.10,cy+H*0.22); ctx.closePath();
+                  ctx.moveTo(cx + sx * W * 0.12, cy + H * 0.22); ctx.quadraticCurveTo(cx + sx * W * 0.25, cy + H * 0.28, cx + sx * W * 0.22, cy + H * 0.40);
+                  ctx.quadraticCurveTo(cx + sx * W * 0.18, cy + H * 0.44, cx + sx * W * 0.20, cy + H * 0.38);
+                  ctx.quadraticCurveTo(cx + sx * W * 0.16, cy + H * 0.28, cx + sx * W * 0.10, cy + H * 0.22); ctx.closePath();
                   ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.stroke();
                 });
                 // Forelimbs
-                ['L','R'].forEach(function(s) { var sx = s === 'L' ? -1 : 1;
+                ['L', 'R'].forEach(function (s) {
+                  var sx = s === 'L' ? -1 : 1;
                   ctx.beginPath();
-                  ctx.moveTo(cx+sx*W*0.14,cy-H*0.15); ctx.quadraticCurveTo(cx+sx*W*0.22,cy-H*0.10,cx+sx*W*0.24,cy-H*0.02);
-                  ctx.quadraticCurveTo(cx+sx*W*0.20,cy-H*0.05,cx+sx*W*0.12,cy-H*0.12); ctx.closePath();
+                  ctx.moveTo(cx + sx * W * 0.14, cy - H * 0.15); ctx.quadraticCurveTo(cx + sx * W * 0.22, cy - H * 0.10, cx + sx * W * 0.24, cy - H * 0.02);
+                  ctx.quadraticCurveTo(cx + sx * W * 0.20, cy - H * 0.05, cx + sx * W * 0.12, cy - H * 0.12); ctx.closePath();
                   ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.stroke();
                 });
                 // Skin spots when on skin layer
@@ -20970,22 +20980,22 @@
                     ctx.fillStyle = spotGrad; ctx.fill();
                   }
                   // Subtle dorsal stripe
-                  ctx.beginPath(); ctx.moveTo(cx, cy - H*0.22); ctx.lineTo(cx, cy + H*0.18);
+                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.22); ctx.lineTo(cx, cy + H * 0.18);
                   ctx.strokeStyle = 'rgba(21,128,61,0.25)'; ctx.lineWidth = 3; ctx.stroke();
                   ctx.globalAlpha = 1;
                   // Webbing detail on feet
                   ctx.globalAlpha = 0.2;
-                  [[-1, 1], [1, 1]].forEach(function(dir) {
+                  [[-1, 1], [1, 1]].forEach(function (dir) {
                     for (var ww = 0; ww < 4; ww++) {
                       ctx.beginPath();
-                      ctx.moveTo(cx + dir[0]*W*0.20, cy + H*0.38);
-                      ctx.lineTo(cx + dir[0]*(W*0.22 + ww*W*0.015), cy + H*0.42);
+                      ctx.moveTo(cx + dir[0] * W * 0.20, cy + H * 0.38);
+                      ctx.lineTo(cx + dir[0] * (W * 0.22 + ww * W * 0.015), cy + H * 0.42);
                       ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.5; ctx.stroke();
                     }
                   });
                   ctx.globalAlpha = 1;
                 }
-              
+
                 // ── Frog layer-specific internal anatomy ──
                 // Muscle layer: animated fiber contraction
                 if (activeLayer === 'muscle') {
@@ -20995,11 +21005,11 @@
                   // Abdominal muscle fibers with contraction wave
                   var contractionWave = Math.sin(dissTick * 0.04);
                   for (var mf = 0; mf < 12; mf++) {
-                    var mfy = cy - H*0.15 + mf * H*0.035;
+                    var mfy = cy - H * 0.15 + mf * H * 0.035;
                     var mfContract = Math.sin(dissTick * 0.04 + mf * 0.5) * 2;
                     ctx.beginPath();
-                    ctx.moveTo(cx - W*0.10, mfy);
-                    ctx.quadraticCurveTo(cx, mfy + mfContract, cx + W*0.10, mfy);
+                    ctx.moveTo(cx - W * 0.10, mfy);
+                    ctx.quadraticCurveTo(cx, mfy + mfContract, cx + W * 0.10, mfy);
                     ctx.lineWidth = 0.6 + Math.abs(mfContract) * 0.15;
                     ctx.stroke();
                   }
@@ -21007,14 +21017,14 @@
                   ctx.globalAlpha = 0.15;
                   var tensionColor = 'rgba(220,38,38,' + (0.1 + Math.abs(contractionWave) * 0.12) + ')';
                   ctx.fillStyle = tensionColor;
-                  ctx.beginPath(); ctx.ellipse(cx, cy, W*0.12, H*0.20, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx, cy, W * 0.12, H * 0.20, 0, 0, Math.PI * 2);
                   ctx.fill();
                   // Leg muscle detail
-                  [-1, 1].forEach(function(side) {
+                  [-1, 1].forEach(function (side) {
                     for (var lm = 0; lm < 5; lm++) {
                       ctx.beginPath();
-                      ctx.moveTo(cx + side*W*0.12, cy + H*0.24 + lm*H*0.03);
-                      ctx.quadraticCurveTo(cx + side*W*0.18, cy + H*0.28 + lm*H*0.02, cx + side*W*0.20, cy + H*0.32 + lm*H*0.01);
+                      ctx.moveTo(cx + side * W * 0.12, cy + H * 0.24 + lm * H * 0.03);
+                      ctx.quadraticCurveTo(cx + side * W * 0.18, cy + H * 0.28 + lm * H * 0.02, cx + side * W * 0.20, cy + H * 0.32 + lm * H * 0.01);
                       ctx.stroke();
                     }
                   });
@@ -21024,44 +21034,44 @@
                 if (activeLayer === 'organs') {
                   ctx.globalAlpha = 0.55;
                   // Heart (anterior)
-                  ctx.beginPath(); ctx.arc(cx, cy - H*0.08, W*0.03, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.arc(cx, cy - H * 0.08, W * 0.03, 0, Math.PI * 2);
                   ctx.fillStyle = '#dc2626'; ctx.fill();
                   ctx.strokeStyle = '#991b1b'; ctx.lineWidth = 0.8; ctx.stroke();
                   // Aorta line from heart
-                  ctx.beginPath(); ctx.moveTo(cx, cy-H*0.11);
-                  ctx.lineTo(cx, cy-H*0.18);
+                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.11);
+                  ctx.lineTo(cx, cy - H * 0.18);
                   ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5; ctx.stroke();
                   // Lungs (paired)
-                  [-1, 1].forEach(function(s) {
-                    ctx.beginPath(); ctx.ellipse(cx + s*W*0.06, cy - H*0.06, W*0.03, H*0.04, 0, 0, Math.PI*2);
+                  [-1, 1].forEach(function (s) {
+                    ctx.beginPath(); ctx.ellipse(cx + s * W * 0.06, cy - H * 0.06, W * 0.03, H * 0.04, 0, 0, Math.PI * 2);
                     ctx.fillStyle = '#fca5a5'; ctx.fill();
                     ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.5; ctx.stroke();
                   });
                   // Liver (3 lobes)
-                  ctx.beginPath(); ctx.ellipse(cx, cy + H*0.02, W*0.10, H*0.04, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.02, W * 0.10, H * 0.04, 0, 0, Math.PI * 2);
                   ctx.fillStyle = '#92400e'; ctx.fill();
                   ctx.strokeStyle = '#78350f'; ctx.lineWidth = 0.6; ctx.stroke();
                   // Gallbladder
-                  ctx.beginPath(); ctx.ellipse(cx + W*0.04, cy + H*0.03, W*0.015, H*0.02, 0.3, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx + W * 0.04, cy + H * 0.03, W * 0.015, H * 0.02, 0.3, 0, Math.PI * 2);
                   ctx.fillStyle = '#22c55e'; ctx.fill(); ctx.strokeStyle = '#15803d'; ctx.lineWidth = 0.5; ctx.stroke();
                   // Stomach
-                  ctx.beginPath(); ctx.ellipse(cx - W*0.03, cy + H*0.08, W*0.04, H*0.025, -0.3, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.03, cy + H * 0.08, W * 0.04, H * 0.025, -0.3, 0, Math.PI * 2);
                   ctx.fillStyle = '#fde68a'; ctx.fill(); ctx.strokeStyle = '#d97706'; ctx.lineWidth = 0.5; ctx.stroke();
                   // Small intestine (coiled)
                   ctx.beginPath();
                   ctx.strokeStyle = '#f97316'; ctx.lineWidth = 2;
-                  ctx.moveTo(cx - W*0.01, cy + H*0.10);
+                  ctx.moveTo(cx - W * 0.01, cy + H * 0.10);
                   for (var gi = 0; gi < 6; gi++) {
-                    ctx.quadraticCurveTo(cx + (gi%2?1:-1)*W*0.06, cy + H*0.11 + gi*H*0.015, cx + (gi%2?-1:1)*W*0.02, cy + H*0.12 + gi*H*0.015);
+                    ctx.quadraticCurveTo(cx + (gi % 2 ? 1 : -1) * W * 0.06, cy + H * 0.11 + gi * H * 0.015, cx + (gi % 2 ? -1 : 1) * W * 0.02, cy + H * 0.12 + gi * H * 0.015);
                   }
                   ctx.stroke();
                   // Fat bodies (yellow fingers)
-                  [-1, 1].forEach(function(s) {
-                    ctx.beginPath(); ctx.ellipse(cx + s*W*0.05, cy - H*0.10, W*0.008, H*0.03, s*0.3, 0, Math.PI*2);
+                  [-1, 1].forEach(function (s) {
+                    ctx.beginPath(); ctx.ellipse(cx + s * W * 0.05, cy - H * 0.10, W * 0.008, H * 0.03, s * 0.3, 0, Math.PI * 2);
                     ctx.fillStyle = '#fbbf24'; ctx.fill();
                   });
                   // Bladder
-                  ctx.beginPath(); ctx.ellipse(cx, cy+H*0.15, W*0.025, H*0.018, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.15, W * 0.025, H * 0.018, 0, 0, Math.PI * 2);
                   ctx.fillStyle = 'rgba(186,230,253,0.4)'; ctx.fill();
                   ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 0.5; ctx.stroke();
                   // Stomach churning animation
@@ -21069,36 +21079,36 @@
                     ctx.globalAlpha = 0.12;
                     var churnPhase = Math.sin(dissTick * 0.04);
                     ctx.beginPath();
-                    ctx.ellipse(cx-W*0.02, cy-H*0.04, W*0.02 + churnPhase*W*0.005, H*0.015 - churnPhase*H*0.003, 0, 0, Math.PI*2);
+                    ctx.ellipse(cx - W * 0.02, cy - H * 0.04, W * 0.02 + churnPhase * W * 0.005, H * 0.015 - churnPhase * H * 0.003, 0, 0, Math.PI * 2);
                     ctx.fillStyle = '#fbbf24'; ctx.fill();
                     ctx.globalAlpha = 0.5;
                   }
                   // Spleen (small red organ near stomach)
-                  ctx.beginPath(); ctx.ellipse(cx+W*0.06, cy-H*0.03, W*0.012, H*0.008, 0.3, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx + W * 0.06, cy - H * 0.03, W * 0.012, H * 0.008, 0.3, 0, Math.PI * 2);
                   ctx.fillStyle = '#7f1d1d'; ctx.fill();
                   // Pancreas (thin, yellowish)
-                  ctx.beginPath(); ctx.moveTo(cx+W*0.02, cy-H*0.04);
-                  ctx.quadraticCurveTo(cx+W*0.05, cy-H*0.02, cx+W*0.08, cy-H*0.01);
+                  ctx.beginPath(); ctx.moveTo(cx + W * 0.02, cy - H * 0.04);
+                  ctx.quadraticCurveTo(cx + W * 0.05, cy - H * 0.02, cx + W * 0.08, cy - H * 0.01);
                   ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2; ctx.globalAlpha = 0.4; ctx.stroke(); ctx.globalAlpha = 0.5;
                   // Adrenal glands (on top of kidneys)
-                  [-1, 1].forEach(function(s) {
-                    ctx.beginPath(); ctx.ellipse(cx+s*W*0.06, cy+H*0.07, W*0.008, H*0.004, 0, 0, Math.PI*2);
+                  [-1, 1].forEach(function (s) {
+                    ctx.beginPath(); ctx.ellipse(cx + s * W * 0.06, cy + H * 0.07, W * 0.008, H * 0.004, 0, 0, Math.PI * 2);
                     ctx.fillStyle = '#fbbf24'; ctx.fill();
                   });
                   // Peritoneum lining (body cavity membrane)
                   ctx.globalAlpha = 0.04;
                   ctx.beginPath();
-                  ctx.ellipse(cx, cy, W*0.14, H*0.25, 0, 0, Math.PI*2);
-                  ctx.strokeStyle = '#fef08a'; ctx.lineWidth = 1; ctx.setLineDash([2,3]); ctx.stroke(); ctx.setLineDash([]);
+                  ctx.ellipse(cx, cy, W * 0.14, H * 0.25, 0, 0, Math.PI * 2);
+                  ctx.strokeStyle = '#fef08a'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]); ctx.stroke(); ctx.setLineDash([]);
                   ctx.globalAlpha = 0.5;
                   ctx.font = '6px Inter, system-ui'; ctx.fillStyle = 'rgba(254,240,138,0.4)';
-                  ctx.fillText('peritoneum', cx+W*0.12, cy+H*0.22);
+                  ctx.fillText('peritoneum', cx + W * 0.12, cy + H * 0.22);
                   // Mesentery (translucent membrane connecting organs)
                   ctx.globalAlpha = 0.06;
                   ctx.beginPath();
-                  ctx.moveTo(cx-W*0.05, cy-H*0.08);
-                  ctx.quadraticCurveTo(cx+W*0.08, cy, cx-W*0.03, cy+H*0.10);
-                  ctx.quadraticCurveTo(cx+W*0.06, cy+H*0.05, cx-W*0.05, cy-H*0.08);
+                  ctx.moveTo(cx - W * 0.05, cy - H * 0.08);
+                  ctx.quadraticCurveTo(cx + W * 0.08, cy, cx - W * 0.03, cy + H * 0.10);
+                  ctx.quadraticCurveTo(cx + W * 0.06, cy + H * 0.05, cx - W * 0.05, cy - H * 0.08);
                   ctx.fillStyle = '#fde68a'; ctx.fill();
                   ctx.globalAlpha = 0.5;
                   // Animated blood flow paths
@@ -21108,20 +21118,20 @@
                   ctx.lineDashOffset = -dissTick * 0.5;
                   ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1; ctx.globalAlpha = 0.4;
                   // Aorta → body
-                  ctx.beginPath(); ctx.moveTo(cx, cy-H*0.11);
-                  ctx.quadraticCurveTo(cx+W*0.03, cy-H*0.15, cx+W*0.05, cy-H*0.18);
+                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.11);
+                  ctx.quadraticCurveTo(cx + W * 0.03, cy - H * 0.15, cx + W * 0.05, cy - H * 0.18);
                   ctx.stroke();
                   // To legs
-                  [-1, 1].forEach(function(s) {
-                    ctx.beginPath(); ctx.moveTo(cx+s*W*0.02, cy+H*0.10);
-                    ctx.lineTo(cx+s*W*0.10, cy+H*0.30);
+                  [-1, 1].forEach(function (s) {
+                    ctx.beginPath(); ctx.moveTo(cx + s * W * 0.02, cy + H * 0.10);
+                    ctx.lineTo(cx + s * W * 0.10, cy + H * 0.30);
                     ctx.stroke();
                   });
                   // Venous return (blue)
                   ctx.strokeStyle = '#3b82f6';
-                  [-1, 1].forEach(function(s) {
-                    ctx.beginPath(); ctx.moveTo(cx+s*W*0.12, cy+H*0.32);
-                    ctx.quadraticCurveTo(cx+s*W*0.04, cy+H*0.15, cx+s*W*0.01, cy-H*0.05);
+                  [-1, 1].forEach(function (s) {
+                    ctx.beginPath(); ctx.moveTo(cx + s * W * 0.12, cy + H * 0.32);
+                    ctx.quadraticCurveTo(cx + s * W * 0.04, cy + H * 0.15, cx + s * W * 0.01, cy - H * 0.05);
                     ctx.stroke();
                   });
                   ctx.setLineDash([]); ctx.lineDashOffset = 0;
@@ -21132,42 +21142,42 @@
                   ctx.globalAlpha = 0.6;
                   ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2;
                   // Skull
-                  ctx.beginPath(); ctx.ellipse(cx, cy-H*0.25, W*0.09, H*0.055, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.25, W * 0.09, H * 0.055, 0, 0, Math.PI * 2);
                   ctx.stroke();
                   // Orbits
-                  [-1, 1].forEach(function(s) {
-                    ctx.beginPath(); ctx.arc(cx + s*W*0.05, cy-H*0.26, W*0.025, 0, Math.PI*2);
+                  [-1, 1].forEach(function (s) {
+                    ctx.beginPath(); ctx.arc(cx + s * W * 0.05, cy - H * 0.26, W * 0.025, 0, Math.PI * 2);
                     ctx.stroke();
                   });
                   // Vertebral column (9 vertebrae)
                   for (var vi = 0; vi < 9; vi++) {
-                    var vy = cy - H*0.18 + vi * (H*0.36/9);
-                    ctx.beginPath(); ctx.ellipse(cx, vy, W*0.015, H*0.01, 0, 0, Math.PI*2);
+                    var vy = cy - H * 0.18 + vi * (H * 0.36 / 9);
+                    ctx.beginPath(); ctx.ellipse(cx, vy, W * 0.015, H * 0.01, 0, 0, Math.PI * 2);
                     ctx.fillStyle = 'rgba(226,232,240,0.4)'; ctx.fill();
                     ctx.stroke();
                   }
                   // Urostyle
-                  ctx.beginPath(); ctx.moveTo(cx, cy+H*0.15);
-                  ctx.lineTo(cx, cy+H*0.24);
+                  ctx.beginPath(); ctx.moveTo(cx, cy + H * 0.15);
+                  ctx.lineTo(cx, cy + H * 0.24);
                   ctx.lineWidth = 3; ctx.stroke();
                   // Pelvic girdle
-                  ctx.beginPath(); ctx.ellipse(cx, cy+H*0.16, W*0.08, H*0.025, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.16, W * 0.08, H * 0.025, 0, 0, Math.PI * 2);
                   ctx.lineWidth = 1.5; ctx.stroke();
                   // Pectoral girdle
-                  ctx.beginPath(); ctx.ellipse(cx, cy-H*0.16, W*0.10, H*0.02, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.16, W * 0.10, H * 0.02, 0, 0, Math.PI * 2);
                   ctx.stroke();
                   // Femur + tibiofibula outlines
-                  [-1, 1].forEach(function(s) {
+                  [-1, 1].forEach(function (s) {
                     ctx.beginPath();
-                    ctx.moveTo(cx+s*W*0.08, cy+H*0.18);
-                    ctx.lineTo(cx+s*W*0.16, cy+H*0.26);
-                    ctx.lineTo(cx+s*W*0.18, cy+H*0.36);
+                    ctx.moveTo(cx + s * W * 0.08, cy + H * 0.18);
+                    ctx.lineTo(cx + s * W * 0.16, cy + H * 0.26);
+                    ctx.lineTo(cx + s * W * 0.18, cy + H * 0.36);
                     ctx.lineWidth = 2.5; ctx.stroke();
                     // Humerus + radioulna
                     ctx.beginPath();
-                    ctx.moveTo(cx+s*W*0.10, cy-H*0.14);
-                    ctx.lineTo(cx+s*W*0.18, cy-H*0.08);
-                    ctx.lineTo(cx+s*W*0.20, cy-H*0.02);
+                    ctx.moveTo(cx + s * W * 0.10, cy - H * 0.14);
+                    ctx.lineTo(cx + s * W * 0.18, cy - H * 0.08);
+                    ctx.lineTo(cx + s * W * 0.20, cy - H * 0.02);
                     ctx.lineWidth = 2; ctx.stroke();
                   });
                   ctx.globalAlpha = 1;
@@ -21176,34 +21186,34 @@
                 if (activeLayer === 'nervous') {
                   ctx.globalAlpha = 0.6;
                   // Brain
-                  ctx.beginPath(); ctx.ellipse(cx, cy-H*0.25, W*0.05, H*0.03, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.25, W * 0.05, H * 0.03, 0, 0, Math.PI * 2);
                   ctx.fillStyle = 'rgba(167,139,250,0.4)'; ctx.fill();
                   ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 1.5; ctx.stroke();
                   // Optic lobes
-                  ctx.beginPath(); ctx.ellipse(cx, cy-H*0.28, W*0.03, H*0.015, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.28, W * 0.03, H * 0.015, 0, 0, Math.PI * 2);
                   ctx.fillStyle = 'rgba(196,181,253,0.4)'; ctx.fill(); ctx.stroke();
                   // Spinal cord
-                  ctx.beginPath(); ctx.moveTo(cx, cy-H*0.22); ctx.lineTo(cx, cy+H*0.18);
-                  ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2.5; ctx.setLineDash([4,2]); ctx.stroke(); ctx.setLineDash([]);
+                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.22); ctx.lineTo(cx, cy + H * 0.18);
+                  ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2.5; ctx.setLineDash([4, 2]); ctx.stroke(); ctx.setLineDash([]);
                   // Spinal nerves (10 pairs)
                   for (var sn = 0; sn < 10; sn++) {
-                    var sny = cy - H*0.18 + sn * (H*0.36/10);
-                    [-1, 1].forEach(function(s) {
+                    var sny = cy - H * 0.18 + sn * (H * 0.36 / 10);
+                    [-1, 1].forEach(function (s) {
                       ctx.beginPath(); ctx.moveTo(cx, sny);
-                      ctx.lineTo(cx + s*W*0.08, sny + H*0.01);
+                      ctx.lineTo(cx + s * W * 0.08, sny + H * 0.01);
                       ctx.strokeStyle = 'rgba(167,139,250,0.3)'; ctx.lineWidth = 0.8; ctx.stroke();
                     });
                   }
                   // Sciatic nerves
-                  [-1, 1].forEach(function(s) {
-                    ctx.beginPath(); ctx.moveTo(cx + s*W*0.04, cy+H*0.15);
-                    ctx.quadraticCurveTo(cx + s*W*0.10, cy+H*0.25, cx + s*W*0.16, cy+H*0.38);
-                    ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2; ctx.setLineDash([3,2]); ctx.stroke(); ctx.setLineDash([]);
+                  [-1, 1].forEach(function (s) {
+                    ctx.beginPath(); ctx.moveTo(cx + s * W * 0.04, cy + H * 0.15);
+                    ctx.quadraticCurveTo(cx + s * W * 0.10, cy + H * 0.25, cx + s * W * 0.16, cy + H * 0.38);
+                    ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2; ctx.setLineDash([3, 2]); ctx.stroke(); ctx.setLineDash([]);
                   });
                   // Optic nerves to eyes
-                  [-1, 1].forEach(function(s) {
-                    ctx.beginPath(); ctx.moveTo(cx + s*W*0.03, cy-H*0.26);
-                    ctx.lineTo(cx + s*W*0.07, cy-H*0.28);
+                  [-1, 1].forEach(function (s) {
+                    ctx.beginPath(); ctx.moveTo(cx + s * W * 0.03, cy - H * 0.26);
+                    ctx.lineTo(cx + s * W * 0.07, cy - H * 0.28);
                     ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 1; ctx.stroke();
                   });
                   ctx.globalAlpha = 1;
@@ -21212,112 +21222,112 @@
               } else if (spec.bodyShape === 'worm') {
                 // Earthworm — segmented tube
                 ctx.beginPath();
-                ctx.moveTo(cx-W*0.04, H*0.06); ctx.lineTo(cx+W*0.04, H*0.06);
-                ctx.quadraticCurveTo(cx+W*0.06, H*0.07, cx+W*0.05, H*0.10);
-                ctx.lineTo(cx+W*0.045, H*0.90);
-                ctx.quadraticCurveTo(cx+W*0.04, H*0.94, cx, H*0.95);
-                ctx.quadraticCurveTo(cx-W*0.04, H*0.94, cx-W*0.045, H*0.90);
-                ctx.lineTo(cx-W*0.05, H*0.10);
-                ctx.quadraticCurveTo(cx-W*0.06, H*0.07, cx-W*0.04, H*0.06);
+                ctx.moveTo(cx - W * 0.04, H * 0.06); ctx.lineTo(cx + W * 0.04, H * 0.06);
+                ctx.quadraticCurveTo(cx + W * 0.06, H * 0.07, cx + W * 0.05, H * 0.10);
+                ctx.lineTo(cx + W * 0.045, H * 0.90);
+                ctx.quadraticCurveTo(cx + W * 0.04, H * 0.94, cx, H * 0.95);
+                ctx.quadraticCurveTo(cx - W * 0.04, H * 0.94, cx - W * 0.045, H * 0.90);
+                ctx.lineTo(cx - W * 0.05, H * 0.10);
+                ctx.quadraticCurveTo(cx - W * 0.06, H * 0.07, cx - W * 0.04, H * 0.06);
                 ctx.closePath();
                 ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
                 ctx.shadowBlur = 0;
                 // Segments
                 ctx.strokeStyle = layerStroke; ctx.globalAlpha = 0.4;
                 for (var seg = 0; seg < 30; seg++) {
-                  var sy = H*(0.08 + seg*0.028);
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.048, sy); ctx.lineTo(cx+W*0.048, sy);
+                  var sy = H * (0.08 + seg * 0.028);
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.048, sy); ctx.lineTo(cx + W * 0.048, sy);
                   ctx.lineWidth = 0.5; ctx.stroke();
                 }
                 ctx.globalAlpha = 1;
                 // Clitellum band (segments 32-37) with gradient
                 if (activeLayer === 'skin') {
-                  var clitGrad = ctx.createLinearGradient(cx-W*0.05, H*0.22, cx+W*0.05, H*0.22);
+                  var clitGrad = ctx.createLinearGradient(cx - W * 0.05, H * 0.22, cx + W * 0.05, H * 0.22);
                   clitGrad.addColorStop(0, 'rgba(200,150,100,0.2)');
                   clitGrad.addColorStop(0.5, 'rgba(200,150,100,0.5)');
                   clitGrad.addColorStop(1, 'rgba(200,150,100,0.2)');
                   ctx.fillStyle = clitGrad;
-                  ctx.fillRect(cx-W*0.05, H*0.22, W*0.10, H*0.06);
+                  ctx.fillRect(cx - W * 0.05, H * 0.22, W * 0.10, H * 0.06);
                   // Clitellum label
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = 'rgba(200,150,100,0.6)';
-                  ctx.fillText('clitellum (32-37)', cx+W*0.055, H*0.26);
+                  ctx.fillText('clitellum (32-37)', cx + W * 0.055, H * 0.26);
                   // Genital pore openings
-                  ctx.beginPath(); ctx.arc(cx, H*0.21, 1, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.arc(cx, H * 0.21, 1, 0, Math.PI * 2);
                   ctx.fillStyle = 'rgba(200,150,100,0.4)'; ctx.fill();
-                  ctx.beginPath(); ctx.arc(cx, H*0.225, 1, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.arc(cx, H * 0.225, 1, 0, Math.PI * 2);
                   ctx.fill();
                   ctx.font = '5px Inter, system-ui'; ctx.fillStyle = 'rgba(200,150,100,0.3)';
-                  ctx.fillText('male pore (15)', cx+W*0.05, H*0.215);
-                  ctx.fillText('female pore (14)', cx+W*0.05, H*0.23);
+                  ctx.fillText('male pore (15)', cx + W * 0.05, H * 0.215);
+                  ctx.fillText('female pore (14)', cx + W * 0.05, H * 0.23);
                   // Seminal vesicles (segments 9-12)
                   ctx.globalAlpha = 0.1;
-                  ctx.beginPath(); ctx.ellipse(cx, H*0.175, W*0.03, H*0.015, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx, H * 0.175, W * 0.03, H * 0.015, 0, 0, Math.PI * 2);
                   ctx.fillStyle = '#f9a8d4'; ctx.fill();
                   ctx.fillStyle = 'rgba(249,168,212,0.3)'; ctx.globalAlpha = 0.4;
-                  ctx.fillText('seminal vesicles', cx+W*0.04, H*0.178);
+                  ctx.fillText('seminal vesicles', cx + W * 0.04, H * 0.178);
                   // Mouth and anus
-                  ctx.beginPath(); ctx.arc(cx, H*0.06, 2, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.arc(cx, H * 0.06, 2, 0, Math.PI * 2);
                   ctx.fillStyle = 'rgba(180,120,80,0.6)'; ctx.fill();
-                  ctx.fillStyle = 'rgba(180,120,80,0.3)'; ctx.fillText('mouth', cx+W*0.04, H*0.065);
-                  ctx.beginPath(); ctx.arc(cx, H*0.94, 1.5, 0, Math.PI*2);
+                  ctx.fillStyle = 'rgba(180,120,80,0.3)'; ctx.fillText('mouth', cx + W * 0.04, H * 0.065);
+                  ctx.beginPath(); ctx.arc(cx, H * 0.94, 1.5, 0, Math.PI * 2);
                   ctx.fillStyle = 'rgba(180,120,80,0.5)'; ctx.fill();
-                  ctx.fillStyle = 'rgba(180,120,80,0.3)'; ctx.fillText('anus', cx+W*0.04, H*0.945);
+                  ctx.fillStyle = 'rgba(180,120,80,0.3)'; ctx.fillText('anus', cx + W * 0.04, H * 0.945);
                   // Prostomium detail (fleshy lip)
-                  ctx.beginPath(); ctx.ellipse(cx, H*0.06, W*0.035, H*0.015, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx, H * 0.06, W * 0.035, H * 0.015, 0, 0, Math.PI * 2);
                   ctx.fillStyle = 'rgba(180,120,80,0.4)'; ctx.fill();
                   // Setae (tiny bristles on each segment)
                   ctx.globalAlpha = 0.2; ctx.strokeStyle = '#a16207';
                   for (var seta = 0; seta < 25; seta++) {
-                    var setaY = H*0.10 + seta*H*0.031;
-                    [-1, 1].forEach(function(s) {
+                    var setaY = H * 0.10 + seta * H * 0.031;
+                    [-1, 1].forEach(function (s) {
                       ctx.beginPath();
-                      ctx.moveTo(cx + s*W*0.046, setaY);
-                      ctx.lineTo(cx + s*W*0.055, setaY+1);
+                      ctx.moveTo(cx + s * W * 0.046, setaY);
+                      ctx.lineTo(cx + s * W * 0.055, setaY + 1);
                       ctx.lineWidth = 0.3; ctx.stroke();
-                      ctx.moveTo(cx + s*W*0.046, setaY+H*0.01);
-                      ctx.lineTo(cx + s*W*0.055, setaY+H*0.01+1);
+                      ctx.moveTo(cx + s * W * 0.046, setaY + H * 0.01);
+                      ctx.lineTo(cx + s * W * 0.055, setaY + H * 0.01 + 1);
                       ctx.stroke();
                     });
                   }
                   ctx.globalAlpha = 1;
                 }
                 // Body gradient for 3D tube effect
-                var tubeGrad = ctx.createLinearGradient(cx-W*0.05, 0, cx+W*0.05, 0);
+                var tubeGrad = ctx.createLinearGradient(cx - W * 0.05, 0, cx + W * 0.05, 0);
                 tubeGrad.addColorStop(0, 'rgba(0,0,0,0.15)');
                 tubeGrad.addColorStop(0.3, 'rgba(255,255,255,0.08)');
                 tubeGrad.addColorStop(0.5, 'rgba(255,255,255,0.12)');
                 tubeGrad.addColorStop(0.7, 'rgba(255,255,255,0.08)');
                 tubeGrad.addColorStop(1, 'rgba(0,0,0,0.15)');
                 ctx.fillStyle = tubeGrad;
-                ctx.fillRect(cx-W*0.048, H*0.08, W*0.096, H*0.84);
+                ctx.fillRect(cx - W * 0.048, H * 0.08, W * 0.096, H * 0.84);
                 // ── Worm layer overlays ──
                 if (activeLayer === 'organs') {
                   ctx.globalAlpha = 0.5;
                   // Pharynx
-                  ctx.beginPath(); ctx.ellipse(cx, H*0.10, W*0.025, H*0.02, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx, H * 0.10, W * 0.025, H * 0.02, 0, 0, Math.PI * 2);
                   ctx.fillStyle = '#f87171'; ctx.fill();
                   // Aortic arches (5 hearts)
                   for (var aa = 0; aa < 5; aa++) {
-                    ctx.beginPath(); ctx.ellipse(cx, H*0.18+aa*H*0.015, W*0.02, H*0.005, 0, 0, Math.PI*2);
+                    ctx.beginPath(); ctx.ellipse(cx, H * 0.18 + aa * H * 0.015, W * 0.02, H * 0.005, 0, 0, Math.PI * 2);
                     ctx.fillStyle = '#dc2626'; ctx.fill();
                   }
                   // Crop
-                  ctx.beginPath(); ctx.ellipse(cx, H*0.28, W*0.03, H*0.02, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx, H * 0.28, W * 0.03, H * 0.02, 0, 0, Math.PI * 2);
                   ctx.fillStyle = '#fde68a'; ctx.fill();
                   // Gizzard
-                  ctx.beginPath(); ctx.ellipse(cx, H*0.33, W*0.025, H*0.015, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx, H * 0.33, W * 0.025, H * 0.015, 0, 0, Math.PI * 2);
                   ctx.fillStyle = '#94a3b8'; ctx.fill(); ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1; ctx.stroke();
                   // Intestine (long tube)
-                  ctx.beginPath(); ctx.moveTo(cx, H*0.36); ctx.lineTo(cx, H*0.88);
+                  ctx.beginPath(); ctx.moveTo(cx, H * 0.36); ctx.lineTo(cx, H * 0.88);
                   ctx.strokeStyle = '#f97316'; ctx.lineWidth = 3; ctx.stroke();
                   // Typhlosole (fold inside intestine)
-                  ctx.beginPath(); ctx.moveTo(cx, H*0.38); ctx.lineTo(cx, H*0.86);
-                  ctx.strokeStyle = '#fb923c'; ctx.lineWidth = 1; ctx.setLineDash([2,3]); ctx.stroke(); ctx.setLineDash([]);
+                  ctx.beginPath(); ctx.moveTo(cx, H * 0.38); ctx.lineTo(cx, H * 0.86);
+                  ctx.strokeStyle = '#fb923c'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]); ctx.stroke(); ctx.setLineDash([]);
                   // Nephridia marks (paired dots along body)
                   for (var np = 0; np < 10; np++) {
-                    var npy = H*0.36 + np*H*0.05;
-                    [-1, 1].forEach(function(s) {
-                      ctx.beginPath(); ctx.arc(cx + s*W*0.025, npy, 1.5, 0, Math.PI*2);
+                    var npy = H * 0.36 + np * H * 0.05;
+                    [-1, 1].forEach(function (s) {
+                      ctx.beginPath(); ctx.arc(cx + s * W * 0.025, npy, 1.5, 0, Math.PI * 2);
                       ctx.fillStyle = '#a78bfa'; ctx.fill();
                     });
                   }
@@ -21326,20 +21336,20 @@
                 if (activeLayer === 'nervous') {
                   ctx.globalAlpha = 0.5;
                   // Brain
-                  ctx.beginPath(); ctx.ellipse(cx, H*0.065, W*0.02, H*0.01, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx, H * 0.065, W * 0.02, H * 0.01, 0, 0, Math.PI * 2);
                   ctx.fillStyle = 'rgba(167,139,250,0.5)'; ctx.fill(); ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 1; ctx.stroke();
                   // Ventral nerve cord
-                  ctx.beginPath(); ctx.moveTo(cx, H*0.08); ctx.lineTo(cx, H*0.92);
-                  ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2; ctx.setLineDash([4,2]); ctx.stroke(); ctx.setLineDash([]);
+                  ctx.beginPath(); ctx.moveTo(cx, H * 0.08); ctx.lineTo(cx, H * 0.92);
+                  ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2; ctx.setLineDash([4, 2]); ctx.stroke(); ctx.setLineDash([]);
                   // Segmental ganglia
                   for (var wg = 0; wg < 25; wg++) {
-                    ctx.beginPath(); ctx.arc(cx, H*0.10 + wg*H*0.032, 2, 0, Math.PI*2);
+                    ctx.beginPath(); ctx.arc(cx, H * 0.10 + wg * H * 0.032, 2, 0, Math.PI * 2);
                     ctx.fillStyle = '#c084fc'; ctx.fill();
                   }
                   // Giant nerve fibers (fast escape)
-                  ctx.beginPath(); ctx.moveTo(cx - W*0.01, H*0.08); ctx.lineTo(cx - W*0.01, H*0.90);
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.01, H * 0.08); ctx.lineTo(cx - W * 0.01, H * 0.90);
                   ctx.strokeStyle = 'rgba(196,181,253,0.3)'; ctx.lineWidth = 1; ctx.stroke();
-                  ctx.beginPath(); ctx.moveTo(cx + W*0.01, H*0.08); ctx.lineTo(cx + W*0.01, H*0.90);
+                  ctx.beginPath(); ctx.moveTo(cx + W * 0.01, H * 0.08); ctx.lineTo(cx + W * 0.01, H * 0.90);
                   ctx.stroke();
                   ctx.globalAlpha = 1;
                 }
@@ -21347,19 +21357,19 @@
                   // Circular muscle rings with peristalsis animation
                   ctx.globalAlpha = 0.2; ctx.strokeStyle = '#dc2626';
                   for (var cm = 0; cm < 28; cm++) {
-                    var cmy = H*0.09 + cm*H*0.029;
+                    var cmy = H * 0.09 + cm * H * 0.029;
                     // Peristaltic wave: rings expand and contract in sequence
                     var peristalsis = Math.sin(dissTick * 0.03 - cm * 0.4);
-                    var ringW = W*0.044 + peristalsis * W*0.006;
-                    var ringH = H*0.005 + Math.abs(peristalsis) * H*0.002;
-                    ctx.beginPath(); ctx.ellipse(cx, cmy, ringW, ringH, 0, 0, Math.PI*2);
+                    var ringW = W * 0.044 + peristalsis * W * 0.006;
+                    var ringH = H * 0.005 + Math.abs(peristalsis) * H * 0.002;
+                    ctx.beginPath(); ctx.ellipse(cx, cmy, ringW, ringH, 0, 0, Math.PI * 2);
                     ctx.lineWidth = 0.8 + Math.abs(peristalsis) * 0.4;
                     ctx.stroke();
                   }
                   // Longitudinal muscle lines
                   ctx.strokeStyle = '#b91c1c'; ctx.lineWidth = 0.4;
-                  [-W*0.03, -W*0.01, W*0.01, W*0.03].forEach(function(off) {
-                    ctx.beginPath(); ctx.moveTo(cx+off, H*0.08); ctx.lineTo(cx+off, H*0.90);
+                  [-W * 0.03, -W * 0.01, W * 0.01, W * 0.03].forEach(function (off) {
+                    ctx.beginPath(); ctx.moveTo(cx + off, H * 0.08); ctx.lineTo(cx + off, H * 0.90);
                     ctx.stroke();
                   });
                   ctx.globalAlpha = 1;
@@ -21367,49 +21377,49 @@
 
               } else if (spec.bodyShape === 'pig') {
                 // Fetal pig — simplied quadruped
-                ctx.beginPath(); ctx.ellipse(cx, cy, W*0.22, H*0.16, 0, 0, Math.PI*2);
+                ctx.beginPath(); ctx.ellipse(cx, cy, W * 0.22, H * 0.16, 0, 0, Math.PI * 2);
                 ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
                 ctx.shadowBlur = 0;
                 // Head
-                ctx.beginPath(); ctx.ellipse(cx-W*0.22, cy-H*0.02, W*0.10, H*0.10, -0.2, 0, Math.PI*2);
+                ctx.beginPath(); ctx.ellipse(cx - W * 0.22, cy - H * 0.02, W * 0.10, H * 0.10, -0.2, 0, Math.PI * 2);
                 ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke();
                 // Snout
-                ctx.beginPath(); ctx.ellipse(cx-W*0.32, cy, W*0.04, H*0.05, 0, 0, Math.PI*2);
+                ctx.beginPath(); ctx.ellipse(cx - W * 0.32, cy, W * 0.04, H * 0.05, 0, 0, Math.PI * 2);
                 ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke();
                 // Eye with highlight
-                ctx.beginPath(); ctx.arc(cx-W*0.24, cy-H*0.06, 4, 0, Math.PI*2); ctx.fillStyle = '#1a1a1a'; ctx.fill();
-                ctx.beginPath(); ctx.arc(cx-W*0.235, cy-H*0.065, 1.5, 0, Math.PI*2); ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fill();
+                ctx.beginPath(); ctx.arc(cx - W * 0.24, cy - H * 0.06, 4, 0, Math.PI * 2); ctx.fillStyle = '#1a1a1a'; ctx.fill();
+                ctx.beginPath(); ctx.arc(cx - W * 0.235, cy - H * 0.065, 1.5, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fill();
                 // Snout nostrils
-                ctx.beginPath(); ctx.arc(cx-W*0.34, cy-H*0.015, 1.5, 0, Math.PI*2); ctx.fillStyle = layerStroke; ctx.fill();
-                ctx.beginPath(); ctx.arc(cx-W*0.34, cy+H*0.015, 1.5, 0, Math.PI*2); ctx.fillStyle = layerStroke; ctx.fill();
+                ctx.beginPath(); ctx.arc(cx - W * 0.34, cy - H * 0.015, 1.5, 0, Math.PI * 2); ctx.fillStyle = layerStroke; ctx.fill();
+                ctx.beginPath(); ctx.arc(cx - W * 0.34, cy + H * 0.015, 1.5, 0, Math.PI * 2); ctx.fillStyle = layerStroke; ctx.fill();
                 // Curly tail
                 ctx.beginPath();
-                ctx.moveTo(cx+W*0.26, cy);
-                var tailR = W*0.02;
+                ctx.moveTo(cx + W * 0.26, cy);
+                var tailR = W * 0.02;
                 for (var tt = 0; tt < 8; tt++) {
                   var ta = tt * 0.9;
-                  ctx.lineTo(cx+W*0.26 + tailR*Math.cos(ta) + tt*W*0.005, cy + tailR*Math.sin(ta));
+                  ctx.lineTo(cx + W * 0.26 + tailR * Math.cos(ta) + tt * W * 0.005, cy + tailR * Math.sin(ta));
                 }
                 ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
                 // Hooves
-                [-1, 1].forEach(function(s) {
+                [-1, 1].forEach(function (s) {
                   // Front hooves
-                  ctx.beginPath(); ctx.ellipse(cx-W*0.15, cy+s*H*0.18, W*0.015, H*0.01, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.15, cy + s * H * 0.18, W * 0.015, H * 0.01, 0, 0, Math.PI * 2);
                   ctx.fillStyle = '#292524'; ctx.fill();
                   // Rear hooves
-                  ctx.beginPath(); ctx.ellipse(cx+W*0.18, cy+s*H*0.18, W*0.015, H*0.01, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx + W * 0.18, cy + s * H * 0.18, W * 0.015, H * 0.01, 0, 0, Math.PI * 2);
                   ctx.fillStyle = '#292524'; ctx.fill();
                 });
                 // Ear (one visible)
-                ctx.beginPath(); ctx.moveTo(cx-W*0.22, cy-H*0.10);
-                ctx.quadraticCurveTo(cx-W*0.25, cy-H*0.16, cx-W*0.20, cy-H*0.14);
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.22, cy - H * 0.10);
+                ctx.quadraticCurveTo(cx - W * 0.25, cy - H * 0.16, cx - W * 0.20, cy - H * 0.14);
                 ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
                 // Hair follicle texture on skin layer
                 if (activeLayer === 'skin') {
                   ctx.globalAlpha = 0.08;
                   for (var hf = 0; hf < 40; hf++) {
-                    var hfx = cx - W*0.22 + (hf % 8) * W*0.06;
-                    var hfy = cy - H*0.10 + Math.floor(hf / 8) * H*0.05;
+                    var hfx = cx - W * 0.22 + (hf % 8) * W * 0.06;
+                    var hfy = cy - H * 0.10 + Math.floor(hf / 8) * H * 0.05;
                     ctx.beginPath(); ctx.moveTo(hfx, hfy);
                     ctx.lineTo(hfx + Math.random() * 2, hfy - 3);
                     ctx.strokeStyle = '#78716c'; ctx.lineWidth = 0.4; ctx.stroke();
@@ -21417,72 +21427,72 @@
                   ctx.globalAlpha = 1;
                 }
                 // Ear
-                ctx.beginPath(); ctx.ellipse(cx-W*0.18, cy-H*0.12, W*0.04, H*0.05, -0.5, 0, Math.PI*2);
+                ctx.beginPath(); ctx.ellipse(cx - W * 0.18, cy - H * 0.12, W * 0.04, H * 0.05, -0.5, 0, Math.PI * 2);
                 ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke();
                 // Legs
-                [[-0.12,-0.01],[0.08,-0.01],[-0.14,0.01],[0.10,0.01]].forEach(function(lp) {
+                [[-0.12, -0.01], [0.08, -0.01], [-0.14, 0.01], [0.10, 0.01]].forEach(function (lp) {
                   ctx.beginPath();
-                  ctx.moveTo(cx+W*lp[0], cy+H*0.14+H*lp[1]);
-                  ctx.lineTo(cx+W*lp[0], cy+H*0.30);
-                  ctx.lineTo(cx+W*(lp[0]+0.03), cy+H*0.30);
-                  ctx.lineTo(cx+W*(lp[0]+0.03), cy+H*0.14+H*lp[1]);
+                  ctx.moveTo(cx + W * lp[0], cy + H * 0.14 + H * lp[1]);
+                  ctx.lineTo(cx + W * lp[0], cy + H * 0.30);
+                  ctx.lineTo(cx + W * (lp[0] + 0.03), cy + H * 0.30);
+                  ctx.lineTo(cx + W * (lp[0] + 0.03), cy + H * 0.14 + H * lp[1]);
                   ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1; ctx.stroke();
                 });
                 // Tail
-                ctx.beginPath(); ctx.moveTo(cx+W*0.22, cy-H*0.02);
-                ctx.quadraticCurveTo(cx+W*0.28, cy-H*0.10, cx+W*0.26, cy-H*0.14);
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.22, cy - H * 0.02);
+                ctx.quadraticCurveTo(cx + W * 0.28, cy - H * 0.10, cx + W * 0.26, cy - H * 0.14);
                 ctx.strokeStyle = layerStroke; ctx.lineWidth = 2; ctx.stroke();
-              
+
                 // ── Pig layer overlays ──
                 if (activeLayer === 'organs') {
                   ctx.globalAlpha = 0.5;
                   // Heart
-                  ctx.beginPath(); ctx.arc(cx-W*0.04, cy-H*0.06, W*0.025, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.arc(cx - W * 0.04, cy - H * 0.06, W * 0.025, 0, Math.PI * 2);
                   ctx.fillStyle = '#dc2626'; ctx.fill();
                   // Lungs
-                  [-1, 1].forEach(function(s) {
-                    ctx.beginPath(); ctx.ellipse(cx + s*W*0.08 - W*0.04, cy-H*0.04, W*0.04, H*0.06, 0, 0, Math.PI*2);
+                  [-1, 1].forEach(function (s) {
+                    ctx.beginPath(); ctx.ellipse(cx + s * W * 0.08 - W * 0.04, cy - H * 0.04, W * 0.04, H * 0.06, 0, 0, Math.PI * 2);
                     ctx.fillStyle = '#fca5a5'; ctx.fill(); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.5; ctx.stroke();
                   });
                   // Liver
-                  ctx.beginPath(); ctx.ellipse(cx-W*0.02, cy+H*0.02, W*0.10, H*0.04, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.02, cy + H * 0.02, W * 0.10, H * 0.04, 0, 0, Math.PI * 2);
                   ctx.fillStyle = '#92400e'; ctx.fill();
                   // Stomach
-                  ctx.beginPath(); ctx.ellipse(cx, cy+H*0.06, W*0.06, H*0.03, 0.2, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.06, W * 0.06, H * 0.03, 0.2, 0, Math.PI * 2);
                   ctx.fillStyle = '#fde68a'; ctx.fill(); ctx.strokeStyle = '#d97706'; ctx.lineWidth = 0.5; ctx.stroke();
                   // Intestines (coiled)
                   ctx.beginPath(); ctx.strokeStyle = '#f97316'; ctx.lineWidth = 1.5;
-                  ctx.moveTo(cx-W*0.05, cy+H*0.08);
+                  ctx.moveTo(cx - W * 0.05, cy + H * 0.08);
                   for (var pi = 0; pi < 5; pi++) {
-                    ctx.quadraticCurveTo(cx+(pi%2?1:-1)*W*0.08, cy+H*0.09+pi*H*0.012, cx+(pi%2?-1:1)*W*0.03, cy+H*0.10+pi*H*0.012);
+                    ctx.quadraticCurveTo(cx + (pi % 2 ? 1 : -1) * W * 0.08, cy + H * 0.09 + pi * H * 0.012, cx + (pi % 2 ? -1 : 1) * W * 0.03, cy + H * 0.10 + pi * H * 0.012);
                   }
                   ctx.stroke();
                   // Umbilical cord
-                  ctx.beginPath(); ctx.moveTo(cx, cy+H*0.14);
-                  ctx.quadraticCurveTo(cx+W*0.05, cy+H*0.20, cx+W*0.02, cy+H*0.26);
+                  ctx.beginPath(); ctx.moveTo(cx, cy + H * 0.14);
+                  ctx.quadraticCurveTo(cx + W * 0.05, cy + H * 0.20, cx + W * 0.02, cy + H * 0.26);
                   ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 3; ctx.stroke();
                   ctx.globalAlpha = 1;
                 }
                 if (activeLayer === 'skeleton') {
                   ctx.globalAlpha = 0.5; ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1.5;
                   // Skull
-                  ctx.beginPath(); ctx.ellipse(cx-W*0.22, cy-H*0.02, W*0.08, H*0.07, -0.2, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.22, cy - H * 0.02, W * 0.08, H * 0.07, -0.2, 0, Math.PI * 2);
                   ctx.stroke();
                   // Spine
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.14, cy-H*0.02);
-                  ctx.lineTo(cx+W*0.18, cy-H*0.02);
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.14, cy - H * 0.02);
+                  ctx.lineTo(cx + W * 0.18, cy - H * 0.02);
                   ctx.lineWidth = 2.5; ctx.stroke();
                   // Vertebrae marks
                   for (var pv = 0; pv < 15; pv++) {
-                    var pvx = cx-W*0.12 + pv*(W*0.30/15);
-                    ctx.beginPath(); ctx.moveTo(pvx, cy-H*0.04); ctx.lineTo(pvx, cy);
+                    var pvx = cx - W * 0.12 + pv * (W * 0.30 / 15);
+                    ctx.beginPath(); ctx.moveTo(pvx, cy - H * 0.04); ctx.lineTo(pvx, cy);
                     ctx.lineWidth = 0.8; ctx.stroke();
                   }
                   // Ribs
                   for (var pr = 0; pr < 7; pr++) {
-                    var prx = cx-W*0.10+pr*(W*0.14/7);
-                    ctx.beginPath(); ctx.moveTo(prx, cy-H*0.04);
-                    ctx.quadraticCurveTo(prx, cy+H*0.06, prx+W*0.01, cy+H*0.10);
+                    var prx = cx - W * 0.10 + pr * (W * 0.14 / 7);
+                    ctx.beginPath(); ctx.moveTo(prx, cy - H * 0.04);
+                    ctx.quadraticCurveTo(prx, cy + H * 0.06, prx + W * 0.01, cy + H * 0.10);
                     ctx.lineWidth = 0.8; ctx.stroke();
                   }
                   ctx.globalAlpha = 1;
@@ -21491,100 +21501,100 @@
               } else if (spec.bodyShape === 'fish') {
                 // Fish — elongated with fins
                 ctx.beginPath();
-                ctx.moveTo(cx-W*0.30, cy); // nose
-                ctx.quadraticCurveTo(cx-W*0.15, cy-H*0.18, cx, cy-H*0.12);
-                ctx.quadraticCurveTo(cx+W*0.15, cy-H*0.10, cx+W*0.25, cy-H*0.06);
-                ctx.lineTo(cx+W*0.32, cy-H*0.14); ctx.lineTo(cx+W*0.32, cy+H*0.14); // tail
-                ctx.lineTo(cx+W*0.25, cy+H*0.06);
-                ctx.quadraticCurveTo(cx+W*0.15, cy+H*0.10, cx, cy+H*0.12);
-                ctx.quadraticCurveTo(cx-W*0.15, cy+H*0.18, cx-W*0.30, cy);
+                ctx.moveTo(cx - W * 0.30, cy); // nose
+                ctx.quadraticCurveTo(cx - W * 0.15, cy - H * 0.18, cx, cy - H * 0.12);
+                ctx.quadraticCurveTo(cx + W * 0.15, cy - H * 0.10, cx + W * 0.25, cy - H * 0.06);
+                ctx.lineTo(cx + W * 0.32, cy - H * 0.14); ctx.lineTo(cx + W * 0.32, cy + H * 0.14); // tail
+                ctx.lineTo(cx + W * 0.25, cy + H * 0.06);
+                ctx.quadraticCurveTo(cx + W * 0.15, cy + H * 0.10, cx, cy + H * 0.12);
+                ctx.quadraticCurveTo(cx - W * 0.15, cy + H * 0.18, cx - W * 0.30, cy);
                 ctx.closePath();
                 ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
                 ctx.shadowBlur = 0;
                 // Eye
-                ctx.beginPath(); ctx.arc(cx-W*0.22, cy-H*0.02, 5, 0, Math.PI*2);
+                ctx.beginPath(); ctx.arc(cx - W * 0.22, cy - H * 0.02, 5, 0, Math.PI * 2);
                 ctx.fillStyle = '#fef9c3'; ctx.fill(); ctx.strokeStyle = '#854d0e'; ctx.lineWidth = 1; ctx.stroke();
-                ctx.beginPath(); ctx.arc(cx-W*0.22, cy-H*0.02, 2, 0, Math.PI*2); ctx.fillStyle = '#1a1a1a'; ctx.fill();
+                ctx.beginPath(); ctx.arc(cx - W * 0.22, cy - H * 0.02, 2, 0, Math.PI * 2); ctx.fillStyle = '#1a1a1a'; ctx.fill();
                 // Dorsal fin
-                ctx.beginPath(); ctx.moveTo(cx-W*0.05, cy-H*0.12);
-                ctx.lineTo(cx, cy-H*0.22); ctx.lineTo(cx+W*0.10, cy-H*0.12);
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.05, cy - H * 0.12);
+                ctx.lineTo(cx, cy - H * 0.22); ctx.lineTo(cx + W * 0.10, cy - H * 0.12);
                 ctx.fillStyle = layerColor; ctx.globalAlpha = 0.6; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke();
                 ctx.globalAlpha = 1;
                 // Scale pattern
                 ctx.globalAlpha = 0.15;
                 for (var sc = 0; sc < 8; sc++) {
                   for (var sr = 0; sr < 3; sr++) {
-                    var scx = cx - W*0.15 + sc * W*0.05;
-                    var scy = cy - H*0.06 + sr * H*0.05;
-                    ctx.beginPath(); ctx.arc(scx, scy, W*0.015, 0, Math.PI, true);
+                    var scx = cx - W * 0.15 + sc * W * 0.05;
+                    var scy = cy - H * 0.06 + sr * H * 0.05;
+                    ctx.beginPath(); ctx.arc(scx, scy, W * 0.015, 0, Math.PI, true);
                     ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.5; ctx.stroke();
                   }
                 }
                 ctx.globalAlpha = 1;
                 // Lateral line with pores
-                ctx.beginPath(); ctx.moveTo(cx-W*0.22, cy); ctx.lineTo(cx+W*0.22, cy);
-                ctx.strokeStyle = layerStroke; ctx.setLineDash([3,2]); ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.22, cy); ctx.lineTo(cx + W * 0.22, cy);
+                ctx.strokeStyle = layerStroke; ctx.setLineDash([3, 2]); ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
                 for (var lp = 0; lp < 8; lp++) {
-                  ctx.beginPath(); ctx.arc(cx - W*0.20 + lp*W*0.055, cy, 1.2, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.arc(cx - W * 0.20 + lp * W * 0.055, cy, 1.2, 0, Math.PI * 2);
                   ctx.fillStyle = layerStroke; ctx.fill();
                 }
                 // Pectoral fin
-                ctx.beginPath(); ctx.ellipse(cx-W*0.15, cy+H*0.06, W*0.05, H*0.03, 0.3, 0, Math.PI*2);
+                ctx.beginPath(); ctx.ellipse(cx - W * 0.15, cy + H * 0.06, W * 0.05, H * 0.03, 0.3, 0, Math.PI * 2);
                 ctx.fillStyle = layerColor; ctx.globalAlpha = 0.5; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
-              
+
                 // ── Fish layer overlays ──
                 if (activeLayer === 'organs') {
                   ctx.globalAlpha = 0.5;
                   // Swim bladder
-                  ctx.beginPath(); ctx.ellipse(cx, cy-H*0.04, W*0.10, H*0.035, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.04, W * 0.10, H * 0.035, 0, 0, Math.PI * 2);
                   ctx.fillStyle = 'rgba(219,234,254,0.6)'; ctx.fill();
                   ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 0.8; ctx.stroke();
                   // Heart (anterior)
-                  ctx.beginPath(); ctx.arc(cx-W*0.20, cy+H*0.04, W*0.015, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.arc(cx - W * 0.20, cy + H * 0.04, W * 0.015, 0, Math.PI * 2);
                   ctx.fillStyle = '#dc2626'; ctx.fill();
                   // Liver
-                  ctx.beginPath(); ctx.ellipse(cx-W*0.10, cy+H*0.02, W*0.05, H*0.03, 0.2, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.10, cy + H * 0.02, W * 0.05, H * 0.03, 0.2, 0, Math.PI * 2);
                   ctx.fillStyle = '#92400e'; ctx.fill();
                   // Stomach
-                  ctx.beginPath(); ctx.ellipse(cx-W*0.03, cy+H*0.04, W*0.04, H*0.02, -0.1, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.03, cy + H * 0.04, W * 0.04, H * 0.02, -0.1, 0, Math.PI * 2);
                   ctx.fillStyle = '#fde68a'; ctx.fill();
                   // Intestine
-                  ctx.beginPath(); ctx.moveTo(cx+W*0.01, cy+H*0.04);
-                  ctx.quadraticCurveTo(cx+W*0.08, cy+H*0.06, cx+W*0.12, cy+H*0.04);
+                  ctx.beginPath(); ctx.moveTo(cx + W * 0.01, cy + H * 0.04);
+                  ctx.quadraticCurveTo(cx + W * 0.08, cy + H * 0.06, cx + W * 0.12, cy + H * 0.04);
                   ctx.strokeStyle = '#f97316'; ctx.lineWidth = 2; ctx.stroke();
                   // Gills (red filaments)
                   for (var gf = 0; gf < 4; gf++) {
-                    ctx.beginPath(); ctx.moveTo(cx-W*0.22, cy-H*0.04+gf*H*0.025);
-                    ctx.lineTo(cx-W*0.26, cy-H*0.04+gf*H*0.025);
+                    ctx.beginPath(); ctx.moveTo(cx - W * 0.22, cy - H * 0.04 + gf * H * 0.025);
+                    ctx.lineTo(cx - W * 0.26, cy - H * 0.04 + gf * H * 0.025);
                     ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5; ctx.stroke();
                   }
                   // Kidney (dorsal)
-                  ctx.beginPath(); ctx.ellipse(cx, cy-H*0.08, W*0.12, H*0.01, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.08, W * 0.12, H * 0.01, 0, 0, Math.PI * 2);
                   ctx.fillStyle = '#78350f'; ctx.fill();
                   ctx.globalAlpha = 1;
                 }
                 if (activeLayer === 'skeleton') {
                   ctx.globalAlpha = 0.5; ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1.5;
                   // Spine
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.22, cy-H*0.02);
-                  ctx.lineTo(cx+W*0.22, cy-H*0.02);
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.22, cy - H * 0.02);
+                  ctx.lineTo(cx + W * 0.22, cy - H * 0.02);
                   ctx.lineWidth = 2; ctx.stroke();
                   // Vertebrae
                   for (var fv = 0; fv < 20; fv++) {
-                    var fvx = cx-W*0.20 + fv*(W*0.40/20);
-                    ctx.beginPath(); ctx.moveTo(fvx, cy-H*0.04); ctx.lineTo(fvx, cy);
+                    var fvx = cx - W * 0.20 + fv * (W * 0.40 / 20);
+                    ctx.beginPath(); ctx.moveTo(fvx, cy - H * 0.04); ctx.lineTo(fvx, cy);
                     ctx.lineWidth = 0.5; ctx.stroke();
                   }
                   // Skull
-                  ctx.beginPath(); ctx.ellipse(cx-W*0.25, cy-H*0.01, W*0.06, H*0.05, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.25, cy - H * 0.01, W * 0.06, H * 0.05, 0, 0, Math.PI * 2);
                   ctx.stroke();
                   // Jaw
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.28, cy); ctx.lineTo(cx-W*0.30, cy+H*0.03); ctx.lineTo(cx-W*0.24, cy+H*0.02);
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.28, cy); ctx.lineTo(cx - W * 0.30, cy + H * 0.03); ctx.lineTo(cx - W * 0.24, cy + H * 0.02);
                   ctx.stroke();
                   // Fin ray outlines
                   for (var fr = 0; fr < 5; fr++) {
-                    ctx.beginPath(); ctx.moveTo(cx-W*0.05+fr*W*0.03, cy-H*0.12);
-                    ctx.lineTo(cx-W*0.04+fr*W*0.03, cy-H*0.19);
+                    ctx.beginPath(); ctx.moveTo(cx - W * 0.05 + fr * W * 0.03, cy - H * 0.12);
+                    ctx.lineTo(cx - W * 0.04 + fr * W * 0.03, cy - H * 0.19);
                     ctx.lineWidth = 0.6; ctx.stroke();
                   }
                   ctx.globalAlpha = 1;
@@ -21593,199 +21603,199 @@
               } else if (spec.bodyShape === 'crayfish') {
                 // Crayfish — crustacean
                 // Carapace (cephalothorax)
-                ctx.beginPath(); ctx.ellipse(cx-W*0.05, cy, W*0.18, H*0.12, 0, 0, Math.PI*2);
+                ctx.beginPath(); ctx.ellipse(cx - W * 0.05, cy, W * 0.18, H * 0.12, 0, 0, Math.PI * 2);
                 ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
                 ctx.shadowBlur = 0;
                 // Abdomen segments
                 for (var ab = 0; ab < 6; ab++) {
-                  var abx = cx + W*(0.12 + ab*0.05);
-                  ctx.beginPath(); ctx.ellipse(abx, cy, W*0.025, H*0.08-ab*H*0.005, 0, 0, Math.PI*2);
+                  var abx = cx + W * (0.12 + ab * 0.05);
+                  ctx.beginPath(); ctx.ellipse(abx, cy, W * 0.025, H * 0.08 - ab * H * 0.005, 0, 0, Math.PI * 2);
                   ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1; ctx.stroke();
                 }
                 // Tail fan
-                ctx.beginPath(); ctx.moveTo(cx+W*0.38, cy);
-                ctx.lineTo(cx+W*0.44, cy-H*0.08); ctx.lineTo(cx+W*0.44, cy+H*0.08); ctx.closePath();
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.38, cy);
+                ctx.lineTo(cx + W * 0.44, cy - H * 0.08); ctx.lineTo(cx + W * 0.44, cy + H * 0.08); ctx.closePath();
                 ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke();
                 // Claws
-                [cy-H*0.08, cy+H*0.08].forEach(function(cly) {
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.22, cly);
-                  ctx.lineTo(cx-W*0.36, cly-H*0.02); ctx.lineTo(cx-W*0.34, cly);
-                  ctx.lineTo(cx-W*0.36, cly+H*0.02); ctx.closePath();
+                [cy - H * 0.08, cy + H * 0.08].forEach(function (cly) {
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.22, cly);
+                  ctx.lineTo(cx - W * 0.36, cly - H * 0.02); ctx.lineTo(cx - W * 0.34, cly);
+                  ctx.lineTo(cx - W * 0.36, cly + H * 0.02); ctx.closePath();
                   ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.stroke();
                 });
                 // Eyes (stalked)
-                ctx.beginPath(); ctx.arc(cx-W*0.22, cy-H*0.14, 4, 0, Math.PI*2);
+                ctx.beginPath(); ctx.arc(cx - W * 0.22, cy - H * 0.14, 4, 0, Math.PI * 2);
                 ctx.fillStyle = '#1a1a1a'; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke();
-                ctx.beginPath(); ctx.arc(cx-W*0.22, cy+H*0.14, 4, 0, Math.PI*2);
+                ctx.beginPath(); ctx.arc(cx - W * 0.22, cy + H * 0.14, 4, 0, Math.PI * 2);
                 ctx.fillStyle = '#1a1a1a'; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke();
                 // Antennae
-                ctx.beginPath(); ctx.moveTo(cx-W*0.22, cy-H*0.12);
-                ctx.quadraticCurveTo(cx-W*0.35, cy-H*0.20, cx-W*0.40, cy-H*0.16);
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.22, cy - H * 0.12);
+                ctx.quadraticCurveTo(cx - W * 0.35, cy - H * 0.20, cx - W * 0.40, cy - H * 0.16);
                 ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
               }
-                // Walking legs (4 pairs)
-                for (var wl = 0; wl < 4; wl++) {
-                  var wlx = cx - W*0.08 + wl*W*0.06;
-                  [-1, 1].forEach(function(s) {
-                    ctx.beginPath(); ctx.moveTo(wlx, cy + s*H*0.10);
-                    ctx.lineTo(wlx - W*0.02, cy + s*H*0.16);
-                    ctx.lineTo(wlx - W*0.04, cy + s*H*0.18);
-                    ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.stroke();
-                  });
+              // Walking legs (4 pairs)
+              for (var wl = 0; wl < 4; wl++) {
+                var wlx = cx - W * 0.08 + wl * W * 0.06;
+                [-1, 1].forEach(function (s) {
+                  ctx.beginPath(); ctx.moveTo(wlx, cy + s * H * 0.10);
+                  ctx.lineTo(wlx - W * 0.02, cy + s * H * 0.16);
+                  ctx.lineTo(wlx - W * 0.04, cy + s * H * 0.18);
+                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.stroke();
+                });
+              }
+              // Swimmerets on abdomen
+              for (var sw = 0; sw < 5; sw++) {
+                var swx = cx + W * (0.14 + sw * 0.05);
+                ctx.beginPath(); ctx.moveTo(swx, cy + H * 0.06);
+                ctx.lineTo(swx - W * 0.01, cy + H * 0.10);
+                ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.6; ctx.globalAlpha = 0.4; ctx.stroke();
+                ctx.globalAlpha = 1;
+              }
+              // ── Crayfish layer overlays ──
+              if (activeLayer === 'organs') {
+                ctx.globalAlpha = 0.5;
+                // Heart
+                ctx.beginPath(); ctx.arc(cx - W * 0.02, cy - H * 0.04, W * 0.015, 0, Math.PI * 2);
+                ctx.fillStyle = '#dc2626'; ctx.fill();
+                // Hepatopancreas
+                ctx.beginPath(); ctx.ellipse(cx - W * 0.06, cy, W * 0.06, H * 0.05, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#d97706'; ctx.fill(); ctx.strokeStyle = '#92400e'; ctx.lineWidth = 0.5; ctx.stroke();
+                // Gastric mill teeth
+                for (var gt = 0; gt < 3; gt++) {
+                  ctx.beginPath(); ctx.arc(cx - W * 0.14 + gt * W * 0.02, cy - H * 0.01, 2, 0, Math.PI * 2);
+                  ctx.fillStyle = '#e2e8f0'; ctx.fill();
                 }
-                // Swimmerets on abdomen
-                for (var sw = 0; sw < 5; sw++) {
-                  var swx = cx + W*(0.14 + sw*0.05);
-                  ctx.beginPath(); ctx.moveTo(swx, cy + H*0.06);
-                  ctx.lineTo(swx - W*0.01, cy + H*0.10);
-                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.6; ctx.globalAlpha = 0.4; ctx.stroke();
-                  ctx.globalAlpha = 1;
+                // Gills (feathery)
+                for (var cg = 0; cg < 3; cg++) {
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy + H * 0.06 + cg * H * 0.02);
+                  ctx.lineTo(cx - W * 0.16, cy + H * 0.08 + cg * H * 0.02);
+                  ctx.strokeStyle = '#fca5a5'; ctx.lineWidth = 1.5; ctx.stroke();
                 }
-                // ── Crayfish layer overlays ──
-                if (activeLayer === 'organs') {
-                  ctx.globalAlpha = 0.5;
-                  // Heart
-                  ctx.beginPath(); ctx.arc(cx - W*0.02, cy - H*0.04, W*0.015, 0, Math.PI*2);
-                  ctx.fillStyle = '#dc2626'; ctx.fill();
-                  // Hepatopancreas
-                  ctx.beginPath(); ctx.ellipse(cx - W*0.06, cy, W*0.06, H*0.05, 0, 0, Math.PI*2);
-                  ctx.fillStyle = '#d97706'; ctx.fill(); ctx.strokeStyle = '#92400e'; ctx.lineWidth = 0.5; ctx.stroke();
-                  // Gastric mill teeth
-                  for (var gt = 0; gt < 3; gt++) {
-                    ctx.beginPath(); ctx.arc(cx-W*0.14+gt*W*0.02, cy-H*0.01, 2, 0, Math.PI*2);
-                    ctx.fillStyle = '#e2e8f0'; ctx.fill();
-                  }
-                  // Gills (feathery)
-                  for (var cg = 0; cg < 3; cg++) {
-                    ctx.beginPath(); ctx.moveTo(cx-W*0.10, cy+H*0.06+cg*H*0.02);
-                    ctx.lineTo(cx-W*0.16, cy+H*0.08+cg*H*0.02);
-                    ctx.strokeStyle = '#fca5a5'; ctx.lineWidth = 1.5; ctx.stroke();
-                  }
-                  ctx.globalAlpha = 1;
+                ctx.globalAlpha = 1;
+              }
+              if (activeLayer === 'nervous') {
+                ctx.globalAlpha = 0.5;
+                // Brain
+                ctx.beginPath(); ctx.arc(cx - W * 0.18, cy, W * 0.015, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(167,139,250,0.5)'; ctx.fill(); ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 1; ctx.stroke();
+                // Ventral nerve cord
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.16, cy);
+                ctx.lineTo(cx + W * 0.35, cy + H * 0.02);
+                ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1.5; ctx.setLineDash([3, 2]); ctx.stroke(); ctx.setLineDash([]);
+                // Segmental ganglia
+                for (var sg = 0; sg < 8; sg++) {
+                  ctx.beginPath(); ctx.arc(cx - W * 0.12 + sg * W * 0.065, cy + H * 0.01, 2, 0, Math.PI * 2);
+                  ctx.fillStyle = '#a78bfa'; ctx.fill();
                 }
-                if (activeLayer === 'nervous') {
-                  ctx.globalAlpha = 0.5;
-                  // Brain
-                  ctx.beginPath(); ctx.arc(cx-W*0.18, cy, W*0.015, 0, Math.PI*2);
-                  ctx.fillStyle = 'rgba(167,139,250,0.5)'; ctx.fill(); ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 1; ctx.stroke();
-                  // Ventral nerve cord
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.16, cy);
-                  ctx.lineTo(cx+W*0.35, cy+H*0.02);
-                  ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1.5; ctx.setLineDash([3,2]); ctx.stroke(); ctx.setLineDash([]);
-                  // Segmental ganglia
-                  for (var sg = 0; sg < 8; sg++) {
-                    ctx.beginPath(); ctx.arc(cx-W*0.12+sg*W*0.065, cy+H*0.01, 2, 0, Math.PI*2);
-                    ctx.fillStyle = '#a78bfa'; ctx.fill();
-                  }
-                  ctx.globalAlpha = 1;
-                }
- else if (spec.bodyShape === 'eye') {
+                ctx.globalAlpha = 1;
+              }
+              else if (spec.bodyShape === 'eye') {
                 // Sheep eye — cross-section
-                ctx.beginPath(); ctx.arc(cx, cy, W*0.30, 0, Math.PI*2);
+                ctx.beginPath(); ctx.arc(cx, cy, W * 0.30, 0, Math.PI * 2);
                 ctx.fillStyle = '#f1f5f9'; ctx.fill(); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 3; ctx.stroke();
                 ctx.shadowBlur = 0;
                 // Choroid (dark inner layer)
-                ctx.beginPath(); ctx.arc(cx, cy, W*0.27, 0, Math.PI*2);
+                ctx.beginPath(); ctx.arc(cx, cy, W * 0.27, 0, Math.PI * 2);
                 ctx.fillStyle = '#1e1b4b'; ctx.fill();
                 // Retina (inner)
-                ctx.beginPath(); ctx.arc(cx, cy, W*0.25, 0, Math.PI*2);
+                ctx.beginPath(); ctx.arc(cx, cy, W * 0.25, 0, Math.PI * 2);
                 ctx.fillStyle = '#fef3c7'; ctx.fill();
                 // Vitreous humor (clear)
-                ctx.beginPath(); ctx.arc(cx, cy, W*0.23, 0, Math.PI*2);
+                ctx.beginPath(); ctx.arc(cx, cy, W * 0.23, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(219,234,254,0.5)'; ctx.fill();
                 // Lens
-                ctx.beginPath(); ctx.ellipse(cx-W*0.12, cy, W*0.06, H*0.10, 0, 0, Math.PI*2);
+                ctx.beginPath(); ctx.ellipse(cx - W * 0.12, cy, W * 0.06, H * 0.10, 0, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fill(); ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 1.5; ctx.stroke();
                 // Cornea (front bulge)
-                ctx.beginPath(); ctx.arc(cx-W*0.28, cy, W*0.08, -Math.PI*0.4, Math.PI*0.4);
+                ctx.beginPath(); ctx.arc(cx - W * 0.28, cy, W * 0.08, -Math.PI * 0.4, Math.PI * 0.4);
                 ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2.5; ctx.stroke();
                 // Iris
-                ctx.beginPath(); ctx.arc(cx-W*0.16, cy, H*0.08, 0, Math.PI*2);
+                ctx.beginPath(); ctx.arc(cx - W * 0.16, cy, H * 0.08, 0, Math.PI * 2);
                 ctx.fillStyle = '#7c3aed'; ctx.globalAlpha = 0.6; ctx.fill(); ctx.globalAlpha = 1;
-                ctx.beginPath(); ctx.arc(cx-W*0.16, cy, H*0.03, 0, Math.PI*2);
+                ctx.beginPath(); ctx.arc(cx - W * 0.16, cy, H * 0.03, 0, Math.PI * 2);
                 ctx.fillStyle = '#0f172a'; ctx.fill(); // pupil
                 // Optic nerve with myelin sheath
-                ctx.beginPath(); ctx.moveTo(cx+W*0.30, cy);
-                ctx.lineTo(cx+W*0.38, cy+H*0.05);
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.30, cy);
+                ctx.lineTo(cx + W * 0.38, cy + H * 0.05);
                 ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 6; ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(cx+W*0.30, cy);
-                ctx.lineTo(cx+W*0.38, cy+H*0.05);
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.30, cy);
+                ctx.lineTo(cx + W * 0.38, cy + H * 0.05);
                 ctx.strokeStyle = '#fde68a'; ctx.lineWidth = 3; ctx.stroke();
                 // Blood vessels on retina
                 ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 0.8; ctx.globalAlpha = 0.4;
-                ctx.beginPath(); ctx.moveTo(cx+W*0.10, cy);
-                ctx.quadraticCurveTo(cx+W*0.05, cy-H*0.10, cx-W*0.05, cy-H*0.12); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(cx+W*0.10, cy);
-                ctx.quadraticCurveTo(cx+W*0.05, cy+H*0.08, cx-W*0.05, cy+H*0.10); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.10, cy);
+                ctx.quadraticCurveTo(cx + W * 0.05, cy - H * 0.10, cx - W * 0.05, cy - H * 0.12); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.10, cy);
+                ctx.quadraticCurveTo(cx + W * 0.05, cy + H * 0.08, cx - W * 0.05, cy + H * 0.10); ctx.stroke();
                 ctx.globalAlpha = 1;
                 // Tapetum reflection
-                ctx.beginPath(); ctx.arc(cx+W*0.10, cy, W*0.08, -0.5, 0.5);
+                ctx.beginPath(); ctx.arc(cx + W * 0.10, cy, W * 0.08, -0.5, 0.5);
                 ctx.strokeStyle = 'rgba(34,211,238,0.3)'; ctx.lineWidth = 8; ctx.stroke();
                 // Animated light refraction ray
                 var rayPhase = (dissTick * 0.02) % (Math.PI * 2);
                 var rayAlpha = 0.3 + Math.sin(rayPhase) * 0.15;
                 ctx.globalAlpha = rayAlpha;
                 // Incoming ray
-                ctx.beginPath(); ctx.moveTo(cx-W*0.45, cy-H*0.08);
-                ctx.lineTo(cx-W*0.28, cy); // hits cornea
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.45, cy - H * 0.08);
+                ctx.lineTo(cx - W * 0.28, cy); // hits cornea
                 ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.stroke();
                 // Ray through cornea → aqueous humor → lens (bends)
-                ctx.beginPath(); ctx.moveTo(cx-W*0.28, cy);
-                ctx.quadraticCurveTo(cx-W*0.20, cy+H*0.01, cx-W*0.12, cy); // through pupil/lens
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.28, cy);
+                ctx.quadraticCurveTo(cx - W * 0.20, cy + H * 0.01, cx - W * 0.12, cy); // through pupil/lens
                 ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.stroke();
                 // Ray through vitreous → hits retina (converges)
-                ctx.beginPath(); ctx.moveTo(cx-W*0.12, cy);
-                ctx.lineTo(cx+W*0.10, cy+H*0.02); // focal point on retina
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.12, cy);
+                ctx.lineTo(cx + W * 0.10, cy + H * 0.02); // focal point on retina
                 ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.stroke();
                 // Focal point glow
-                ctx.beginPath(); ctx.arc(cx+W*0.10, cy+H*0.02, 4, 0, Math.PI*2);
-                var focalGrad = ctx.createRadialGradient(cx+W*0.10, cy+H*0.02, 0, cx+W*0.10, cy+H*0.02, 4);
+                ctx.beginPath(); ctx.arc(cx + W * 0.10, cy + H * 0.02, 4, 0, Math.PI * 2);
+                var focalGrad = ctx.createRadialGradient(cx + W * 0.10, cy + H * 0.02, 0, cx + W * 0.10, cy + H * 0.02, 4);
                 focalGrad.addColorStop(0, 'rgba(251,191,36,0.8)');
                 focalGrad.addColorStop(1, 'rgba(251,191,36,0)');
                 ctx.fillStyle = focalGrad; ctx.fill();
                 // Ray label
                 ctx.font = '8px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
-                ctx.fillText('light ray', cx-W*0.44, cy-H*0.10);
+                ctx.fillText('light ray', cx - W * 0.44, cy - H * 0.10);
                 ctx.globalAlpha = 1;
                 // Aqueous humor label
                 ctx.font = '7px Inter, system-ui'; ctx.fillStyle = 'rgba(255,255,255,0.25)';
-                ctx.fillText('aqueous humor', cx-W*0.24, cy+H*0.06);
-                ctx.fillText('vitreous humor', cx-W*0.05, cy+H*0.10);
+                ctx.fillText('aqueous humor', cx - W * 0.24, cy + H * 0.06);
+                ctx.fillText('vitreous humor', cx - W * 0.05, cy + H * 0.10);
                 // Ciliary body
-                ctx.beginPath(); ctx.arc(cx-W*0.14, cy-H*0.08, W*0.015, 0, Math.PI);
+                ctx.beginPath(); ctx.arc(cx - W * 0.14, cy - H * 0.08, W * 0.015, 0, Math.PI);
                 ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1; ctx.stroke();
-                ctx.beginPath(); ctx.arc(cx-W*0.14, cy+H*0.08, W*0.015, Math.PI, Math.PI*2);
+                ctx.beginPath(); ctx.arc(cx - W * 0.14, cy + H * 0.08, W * 0.015, Math.PI, Math.PI * 2);
                 ctx.strokeStyle = '#a78bfa'; ctx.stroke();
-                ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillText('ciliary body', cx-W*0.18, cy-H*0.11);
+                ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillText('ciliary body', cx - W * 0.18, cy - H * 0.11);
                 // Suspensory ligaments (zonules)
                 ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 0.4;
                 for (var zl = 0; zl < 6; zl++) {
                   var za = -0.5 + zl * 0.2;
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.14+Math.cos(za)*W*0.015, cy+Math.sin(za)*H*0.08);
-                  ctx.lineTo(cx-W*0.12+Math.cos(za)*W*0.04, cy+Math.sin(za)*H*0.06);
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.14 + Math.cos(za) * W * 0.015, cy + Math.sin(za) * H * 0.08);
+                  ctx.lineTo(cx - W * 0.12 + Math.cos(za) * W * 0.04, cy + Math.sin(za) * H * 0.06);
                   ctx.stroke();
                 }
                 // Fovea centralis (center of macula)
-                ctx.beginPath(); ctx.arc(cx+W*0.10, cy, 2.5, 0, Math.PI*2);
+                ctx.beginPath(); ctx.arc(cx + W * 0.10, cy, 2.5, 0, Math.PI * 2);
                 ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1; ctx.stroke();
-                ctx.fillStyle = 'rgba(251,191,36,0.3)'; ctx.fillText('fovea', cx+W*0.12, cy-H*0.02);
+                ctx.fillStyle = 'rgba(251,191,36,0.3)'; ctx.fillText('fovea', cx + W * 0.12, cy - H * 0.02);
                 // Blind spot (optic disc)
-                ctx.beginPath(); ctx.arc(cx+W*0.18, cy+H*0.03, 3, 0, Math.PI*2);
+                ctx.beginPath(); ctx.arc(cx + W * 0.18, cy + H * 0.03, 3, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(251,191,36,0.4)'; ctx.fill();
-                ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillText('optic disc', cx+W*0.20, cy+H*0.02);
+                ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillText('optic disc', cx + W * 0.20, cy + H * 0.02);
                 // Iris sphincter muscle detail
                 ctx.globalAlpha = 0.15;
                 for (var ism = 0; ism < 12; ism++) {
                   var ismA = (ism / 12) * Math.PI * 2;
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.24 + Math.cos(ismA)*W*0.06, cy + Math.sin(ismA)*H*0.04);
-                  ctx.lineTo(cx-W*0.24 + Math.cos(ismA)*W*0.08, cy + Math.sin(ismA)*H*0.06);
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.24 + Math.cos(ismA) * W * 0.06, cy + Math.sin(ismA) * H * 0.04);
+                  ctx.lineTo(cx - W * 0.24 + Math.cos(ismA) * W * 0.08, cy + Math.sin(ismA) * H * 0.06);
                   ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 0.5; ctx.stroke();
                 }
                 ctx.globalAlpha = 1;
                 // Macula lutea region
-                ctx.beginPath(); ctx.ellipse(cx+W*0.10, cy, W*0.03, H*0.02, 0, 0, Math.PI*2);
+                ctx.beginPath(); ctx.ellipse(cx + W * 0.10, cy, W * 0.03, H * 0.02, 0, 0, Math.PI * 2);
                 ctx.strokeStyle = 'rgba(251,191,36,0.2)'; ctx.lineWidth = 0.5; ctx.stroke();
-                ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fillText('macula', cx+W*0.12, cy+H*0.03);
+                ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fillText('macula', cx + W * 0.12, cy + H * 0.03);
                 // Rod and cone cell detail on retina
                 ctx.globalAlpha = 0.15;
                 for (var rc = 0; rc < 20; rc++) {
@@ -21796,19 +21806,19 @@
                   ctx.beginPath();
                   if (rc % 3 === 0) {
                     // Cone cell (triangle shape)
-                    ctx.moveTo(rcx, rcy-1.5); ctx.lineTo(rcx-1, rcy+1.5); ctx.lineTo(rcx+1, rcy+1.5); ctx.closePath();
+                    ctx.moveTo(rcx, rcy - 1.5); ctx.lineTo(rcx - 1, rcy + 1.5); ctx.lineTo(rcx + 1, rcy + 1.5); ctx.closePath();
                     ctx.fillStyle = '#3b82f6'; ctx.fill();
                   } else {
                     // Rod cell (rectangle shape)
                     ctx.fillStyle = '#94a3b8';
-                    ctx.fillRect(rcx-0.5, rcy-2, 1, 4);
+                    ctx.fillRect(rcx - 0.5, rcy - 2, 1, 4);
                   }
                 }
                 ctx.globalAlpha = 1;
                 ctx.font = '5px Inter, system-ui'; ctx.fillStyle = 'rgba(255,255,255,0.15)';
-                ctx.fillText('rods', cx+W*0.22, cy-H*0.14);
+                ctx.fillText('rods', cx + W * 0.22, cy - H * 0.14);
                 ctx.fillStyle = 'rgba(59,130,246,0.15)';
-                ctx.fillText('cones', cx+W*0.22, cy-H*0.12);
+                ctx.fillText('cones', cx + W * 0.22, cy - H * 0.12);
               } else if (spec.bodyShape === 'heart') {
                 // Sheep heart — anatomical shape with beating animation
                 var heartPhase = (dissTick * 0.04) % (Math.PI * 2);
@@ -21819,62 +21829,62 @@
                 ctx.scale(heartScale, heartScale);
                 ctx.translate(-cx, -cy);
                 ctx.beginPath();
-                ctx.moveTo(cx, cy-H*0.25);
-                ctx.quadraticCurveTo(cx-W*0.22, cy-H*0.30, cx-W*0.25, cy-H*0.10);
-                ctx.quadraticCurveTo(cx-W*0.26, cy+H*0.05, cx-W*0.15, cy+H*0.18);
-                ctx.quadraticCurveTo(cx-W*0.05, cy+H*0.30, cx, cy+H*0.28);
-                ctx.quadraticCurveTo(cx+W*0.05, cy+H*0.30, cx+W*0.15, cy+H*0.18);
-                ctx.quadraticCurveTo(cx+W*0.26, cy+H*0.05, cx+W*0.25, cy-H*0.10);
-                ctx.quadraticCurveTo(cx+W*0.22, cy-H*0.30, cx, cy-H*0.25);
+                ctx.moveTo(cx, cy - H * 0.25);
+                ctx.quadraticCurveTo(cx - W * 0.22, cy - H * 0.30, cx - W * 0.25, cy - H * 0.10);
+                ctx.quadraticCurveTo(cx - W * 0.26, cy + H * 0.05, cx - W * 0.15, cy + H * 0.18);
+                ctx.quadraticCurveTo(cx - W * 0.05, cy + H * 0.30, cx, cy + H * 0.28);
+                ctx.quadraticCurveTo(cx + W * 0.05, cy + H * 0.30, cx + W * 0.15, cy + H * 0.18);
+                ctx.quadraticCurveTo(cx + W * 0.26, cy + H * 0.05, cx + W * 0.25, cy - H * 0.10);
+                ctx.quadraticCurveTo(cx + W * 0.22, cy - H * 0.30, cx, cy - H * 0.25);
                 ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 2; ctx.stroke();
                 ctx.shadowBlur = 0;
                 // Septum line
-                ctx.beginPath(); ctx.moveTo(cx, cy-H*0.20); ctx.lineTo(cx, cy+H*0.25);
+                ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.20); ctx.lineTo(cx, cy + H * 0.25);
                 ctx.strokeStyle = layerStroke; ctx.globalAlpha = 0.3; ctx.lineWidth = 1; ctx.stroke(); ctx.globalAlpha = 1;
                 // Great vessels stubs
-                ctx.beginPath(); ctx.moveTo(cx-W*0.08, cy-H*0.25); ctx.lineTo(cx-W*0.10, cy-H*0.35);
-                ctx.lineTo(cx-W*0.04, cy-H*0.35); ctx.closePath();
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.08, cy - H * 0.25); ctx.lineTo(cx - W * 0.10, cy - H * 0.35);
+                ctx.lineTo(cx - W * 0.04, cy - H * 0.35); ctx.closePath();
                 ctx.fillStyle = '#ef4444'; ctx.fill(); // aorta stub
-                ctx.beginPath(); ctx.moveTo(cx+W*0.08, cy-H*0.25); ctx.lineTo(cx+W*0.10, cy-H*0.35);
-                ctx.lineTo(cx+W*0.04, cy-H*0.35); ctx.closePath();
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.08, cy - H * 0.25); ctx.lineTo(cx + W * 0.10, cy - H * 0.35);
+                ctx.lineTo(cx + W * 0.04, cy - H * 0.35); ctx.closePath();
                 ctx.fillStyle = '#3b82f6'; ctx.fill(); // pulm trunk stub
                 // Left coronary artery (LAD)
-                ctx.beginPath(); ctx.moveTo(cx-W*0.06, cy-H*0.18);
-                ctx.quadraticCurveTo(cx-W*0.15, cy, cx-W*0.10, cy+H*0.15);
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.06, cy - H * 0.18);
+                ctx.quadraticCurveTo(cx - W * 0.15, cy, cx - W * 0.10, cy + H * 0.15);
                 ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; ctx.globalAlpha = 0.7; ctx.stroke();
                 // Right coronary artery
-                ctx.beginPath(); ctx.moveTo(cx+W*0.06, cy-H*0.18);
-                ctx.quadraticCurveTo(cx+W*0.18, cy-H*0.05, cx+W*0.12, cy+H*0.10);
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.06, cy - H * 0.18);
+                ctx.quadraticCurveTo(cx + W * 0.18, cy - H * 0.05, cx + W * 0.12, cy + H * 0.10);
                 ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5; ctx.stroke();
                 // Coronary sinus (venous drainage)
-                ctx.beginPath(); ctx.moveTo(cx-W*0.12, cy+H*0.12);
-                ctx.quadraticCurveTo(cx, cy+H*0.18, cx+W*0.10, cy+H*0.12);
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.12, cy + H * 0.12);
+                ctx.quadraticCurveTo(cx, cy + H * 0.18, cx + W * 0.10, cy + H * 0.12);
                 ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1; ctx.stroke();
                 // Pericardium outline (outer membrane)
                 ctx.beginPath();
-                ctx.ellipse(cx, cy, W*0.28, H*0.30, 0, 0, Math.PI*2);
-                ctx.strokeStyle = 'rgba(148,163,184,0.2)'; ctx.lineWidth = 1; ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
+                ctx.ellipse(cx, cy, W * 0.28, H * 0.30, 0, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(148,163,184,0.2)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
                 ctx.globalAlpha = 1;
                 // ECG waveform display (bottom of canvas)
                 var ecgY = H - 35; var ecgW = W * 0.6; var ecgX = (W - ecgW) / 2;
                 ctx.fillStyle = 'rgba(15,23,42,0.7)';
-                ctx.fillRect(ecgX-5, ecgY-20, ecgW+10, 35);
+                ctx.fillRect(ecgX - 5, ecgY - 20, ecgW + 10, 35);
                 ctx.strokeStyle = 'rgba(34,197,94,0.15)'; ctx.lineWidth = 0.3;
                 // Grid lines
-                for (var eg = 0; eg < 6; eg++) { ctx.beginPath(); ctx.moveTo(ecgX, ecgY-15+eg*5); ctx.lineTo(ecgX+ecgW, ecgY-15+eg*5); ctx.stroke(); }
+                for (var eg = 0; eg < 6; eg++) { ctx.beginPath(); ctx.moveTo(ecgX, ecgY - 15 + eg * 5); ctx.lineTo(ecgX + ecgW, ecgY - 15 + eg * 5); ctx.stroke(); }
                 // ECG trace
                 ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1.5; ctx.beginPath();
                 for (var ep = 0; ep < ecgW; ep++) {
                   var et = ((ep + dissTick * 2) % ecgW) / ecgW;
                   var ey = ecgY;
                   // P wave
-                  if (et > 0.05 && et < 0.15) ey -= Math.sin((et-0.05)*10*Math.PI) * 4;
+                  if (et > 0.05 && et < 0.15) ey -= Math.sin((et - 0.05) * 10 * Math.PI) * 4;
                   // QRS complex
-                  else if (et > 0.20 && et < 0.22) ey += (et-0.20)*200;
-                  else if (et > 0.22 && et < 0.26) ey -= 15 - (et-0.22)*375;
-                  else if (et > 0.26 && et < 0.28) ey += (et-0.26)*150;
+                  else if (et > 0.20 && et < 0.22) ey += (et - 0.20) * 200;
+                  else if (et > 0.22 && et < 0.26) ey -= 15 - (et - 0.22) * 375;
+                  else if (et > 0.26 && et < 0.28) ey += (et - 0.26) * 150;
                   // T wave
-                  else if (et > 0.35 && et < 0.50) ey -= Math.sin((et-0.35)*6.67*Math.PI) * 5;
+                  else if (et > 0.35 && et < 0.50) ey -= Math.sin((et - 0.35) * 6.67 * Math.PI) * 5;
                   ep === 0 ? ctx.moveTo(ecgX + ep, ey) : ctx.lineTo(ecgX + ep, ey);
                 }
                 ctx.stroke();
@@ -21883,16 +21893,16 @@
                 ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#22c55e';
                 ctx.fillText(bpm + ' BPM', ecgX + ecgW + 8, ecgY);
                 ctx.font = '6px Inter, system-ui'; ctx.fillStyle = 'rgba(34,197,94,0.5)';
-                ctx.fillText('P', ecgX+ecgW*0.10, ecgY-18); ctx.fillText('QRS', ecgX+ecgW*0.23, ecgY-18); ctx.fillText('T', ecgX+ecgW*0.42, ecgY-18);
+                ctx.fillText('P', ecgX + ecgW * 0.10, ecgY - 18); ctx.fillText('QRS', ecgX + ecgW * 0.23, ecgY - 18); ctx.fillText('T', ecgX + ecgW * 0.42, ecgY - 18);
                 // Chamber shading (left side thicker wall)
                 ctx.beginPath();
-                ctx.moveTo(cx-W*0.04, cy-H*0.15);
-                ctx.quadraticCurveTo(cx-W*0.20, cy, cx-W*0.10, cy+H*0.20);
+                ctx.moveTo(cx - W * 0.04, cy - H * 0.15);
+                ctx.quadraticCurveTo(cx - W * 0.20, cy, cx - W * 0.10, cy + H * 0.20);
                 ctx.strokeStyle = 'rgba(239,68,68,0.15)'; ctx.lineWidth = 12; ctx.stroke();
                 // Right side (thinner wall)
                 ctx.beginPath();
-                ctx.moveTo(cx+W*0.04, cy-H*0.15);
-                ctx.quadraticCurveTo(cx+W*0.18, cy, cx+W*0.10, cy+H*0.18);
+                ctx.moveTo(cx + W * 0.04, cy - H * 0.15);
+                ctx.quadraticCurveTo(cx + W * 0.18, cy, cx + W * 0.10, cy + H * 0.18);
                 ctx.strokeStyle = 'rgba(59,130,246,0.12)'; ctx.lineWidth = 8; ctx.stroke();
                 ctx.restore(); // End heartbeat scale
                 // Conduction system animation
@@ -21901,47 +21911,47 @@
                   var condPhase = (dissTick * 0.03) % 1;
                   // SA Node (pacemaker)
                   var saGlow = Math.max(0, Math.sin(condPhase * Math.PI * 2));
-                  ctx.beginPath(); ctx.arc(cx+W*0.12, cy-H*0.14, 5 + saGlow * 3, 0, Math.PI*2);
-                  var saGrad = ctx.createRadialGradient(cx+W*0.12, cy-H*0.14, 0, cx+W*0.12, cy-H*0.14, 5+saGlow*3);
-                  saGrad.addColorStop(0, 'rgba(251,191,36,' + (0.5+saGlow*0.5) + ')');
+                  ctx.beginPath(); ctx.arc(cx + W * 0.12, cy - H * 0.14, 5 + saGlow * 3, 0, Math.PI * 2);
+                  var saGrad = ctx.createRadialGradient(cx + W * 0.12, cy - H * 0.14, 0, cx + W * 0.12, cy - H * 0.14, 5 + saGlow * 3);
+                  saGrad.addColorStop(0, 'rgba(251,191,36,' + (0.5 + saGlow * 0.5) + ')');
                   saGrad.addColorStop(1, 'rgba(251,191,36,0)');
                   ctx.fillStyle = saGrad; ctx.fill();
-                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#fbbf24'; ctx.fillText('SA', cx+W*0.13, cy-H*0.18);
+                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#fbbf24'; ctx.fillText('SA', cx + W * 0.13, cy - H * 0.18);
                   // AV Node
                   var avDelay = Math.max(0, Math.sin((condPhase - 0.15) * Math.PI * 2));
-                  ctx.beginPath(); ctx.arc(cx, cy-H*0.04, 4 + avDelay * 2, 0, Math.PI*2);
-                  var avGrad = ctx.createRadialGradient(cx, cy-H*0.04, 0, cx, cy-H*0.04, 4+avDelay*2);
-                  avGrad.addColorStop(0, 'rgba(34,197,94,' + (0.4+avDelay*0.5) + ')');
+                  ctx.beginPath(); ctx.arc(cx, cy - H * 0.04, 4 + avDelay * 2, 0, Math.PI * 2);
+                  var avGrad = ctx.createRadialGradient(cx, cy - H * 0.04, 0, cx, cy - H * 0.04, 4 + avDelay * 2);
+                  avGrad.addColorStop(0, 'rgba(34,197,94,' + (0.4 + avDelay * 0.5) + ')');
                   avGrad.addColorStop(1, 'rgba(34,197,94,0)');
                   ctx.fillStyle = avGrad; ctx.fill();
-                  ctx.fillStyle = '#22c55e'; ctx.fillText('AV', cx+W*0.02, cy-H*0.06);
+                  ctx.fillStyle = '#22c55e'; ctx.fillText('AV', cx + W * 0.02, cy - H * 0.06);
                   // Bundle of His
                   var hisPhase = Math.max(0, Math.sin((condPhase - 0.3) * Math.PI * 2));
-                  ctx.beginPath(); ctx.moveTo(cx, cy-H*0.02); ctx.lineTo(cx, cy+H*0.06);
-                  ctx.strokeStyle = 'rgba(59,130,246,' + (0.3+hisPhase*0.5) + ')'; ctx.lineWidth = 2; ctx.stroke();
-                  ctx.fillStyle = '#3b82f6'; ctx.fillText('Bundle of His', cx+W*0.02, cy+H*0.02);
+                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.02); ctx.lineTo(cx, cy + H * 0.06);
+                  ctx.strokeStyle = 'rgba(59,130,246,' + (0.3 + hisPhase * 0.5) + ')'; ctx.lineWidth = 2; ctx.stroke();
+                  ctx.fillStyle = '#3b82f6'; ctx.fillText('Bundle of His', cx + W * 0.02, cy + H * 0.02);
                   // Left and right bundle branches
-                  ctx.beginPath(); ctx.moveTo(cx, cy+H*0.06);
-                  ctx.lineTo(cx-W*0.08, cy+H*0.18);
-                  ctx.strokeStyle = 'rgba(59,130,246,' + (0.2+hisPhase*0.4) + ')'; ctx.lineWidth = 1.5; ctx.stroke();
-                  ctx.beginPath(); ctx.moveTo(cx, cy+H*0.06);
-                  ctx.lineTo(cx+W*0.06, cy+H*0.16);
+                  ctx.beginPath(); ctx.moveTo(cx, cy + H * 0.06);
+                  ctx.lineTo(cx - W * 0.08, cy + H * 0.18);
+                  ctx.strokeStyle = 'rgba(59,130,246,' + (0.2 + hisPhase * 0.4) + ')'; ctx.lineWidth = 1.5; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(cx, cy + H * 0.06);
+                  ctx.lineTo(cx + W * 0.06, cy + H * 0.16);
                   ctx.stroke();
                   // Purkinje fibers (fan out in ventricles)
                   var purkPhase = Math.max(0, Math.sin((condPhase - 0.5) * Math.PI * 2));
-                  ctx.strokeStyle = 'rgba(168,85,247,' + (0.2+purkPhase*0.4) + ')'; ctx.lineWidth = 0.8;
+                  ctx.strokeStyle = 'rgba(168,85,247,' + (0.2 + purkPhase * 0.4) + ')'; ctx.lineWidth = 0.8;
                   for (var pk = 0; pk < 5; pk++) {
-                    ctx.beginPath(); ctx.moveTo(cx-W*0.08, cy+H*0.18);
-                    ctx.lineTo(cx-W*0.12+pk*W*0.02, cy+H*0.22+pk*H*0.01);
+                    ctx.beginPath(); ctx.moveTo(cx - W * 0.08, cy + H * 0.18);
+                    ctx.lineTo(cx - W * 0.12 + pk * W * 0.02, cy + H * 0.22 + pk * H * 0.01);
                     ctx.stroke();
-                    ctx.beginPath(); ctx.moveTo(cx+W*0.06, cy+H*0.16);
-                    ctx.lineTo(cx+W*0.02+pk*W*0.02, cy+H*0.20+pk*H*0.01);
+                    ctx.beginPath(); ctx.moveTo(cx + W * 0.06, cy + H * 0.16);
+                    ctx.lineTo(cx + W * 0.02 + pk * W * 0.02, cy + H * 0.20 + pk * H * 0.01);
                     ctx.stroke();
                   }
-                  ctx.fillStyle = '#a855f7'; ctx.fillText('Purkinje', cx-W*0.14, cy+H*0.24);
+                  ctx.fillStyle = '#a855f7'; ctx.fillText('Purkinje', cx - W * 0.14, cy + H * 0.24);
                   // Signal propagation indicator
-                  var sigY = cy-H*0.14 + condPhase * H*0.38;
-                  ctx.beginPath(); ctx.arc(cx, sigY, 3, 0, Math.PI*2);
+                  var sigY = cy - H * 0.14 + condPhase * H * 0.38;
+                  ctx.beginPath(); ctx.arc(cx, sigY, 3, 0, Math.PI * 2);
                   ctx.fillStyle = 'rgba(251,191,36,0.8)'; ctx.fill();
                   ctx.globalAlpha = 1;
                 }
@@ -21949,60 +21959,60 @@
                 if (activeLayer === 'chambers' || activeLayer === 'interior') {
                   ctx.globalAlpha = 0.4;
                   // Left atrium
-                  ctx.beginPath(); ctx.ellipse(cx-W*0.10, cy-H*0.10, W*0.08, H*0.06, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.10, cy - H * 0.10, W * 0.08, H * 0.06, 0, 0, Math.PI * 2);
                   ctx.fillStyle = '#dc2626'; ctx.fill();
-                  ctx.font = '8px Inter'; ctx.fillStyle = '#ffffff'; ctx.fillText('LA', cx-W*0.11, cy-H*0.09);
+                  ctx.font = '8px Inter'; ctx.fillStyle = '#ffffff'; ctx.fillText('LA', cx - W * 0.11, cy - H * 0.09);
                   // Right atrium
-                  ctx.beginPath(); ctx.ellipse(cx+W*0.10, cy-H*0.10, W*0.08, H*0.06, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx + W * 0.10, cy - H * 0.10, W * 0.08, H * 0.06, 0, 0, Math.PI * 2);
                   ctx.fillStyle = '#3b82f6'; ctx.fill();
-                  ctx.fillStyle = '#ffffff'; ctx.fillText('RA', cx+W*0.09, cy-H*0.09);
+                  ctx.fillStyle = '#ffffff'; ctx.fillText('RA', cx + W * 0.09, cy - H * 0.09);
                   // Left ventricle (thicker wall)
-                  ctx.beginPath(); ctx.ellipse(cx-W*0.08, cy+H*0.08, W*0.10, H*0.10, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.08, cy + H * 0.08, W * 0.10, H * 0.10, 0, 0, Math.PI * 2);
                   ctx.fillStyle = '#b91c1c'; ctx.fill();
-                  ctx.fillStyle = '#ffffff'; ctx.fillText('LV', cx-W*0.09, cy+H*0.09);
+                  ctx.fillStyle = '#ffffff'; ctx.fillText('LV', cx - W * 0.09, cy + H * 0.09);
                   // Right ventricle (thinner wall)
-                  ctx.beginPath(); ctx.ellipse(cx+W*0.08, cy+H*0.08, W*0.08, H*0.08, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx + W * 0.08, cy + H * 0.08, W * 0.08, H * 0.08, 0, 0, Math.PI * 2);
                   ctx.fillStyle = '#2563eb'; ctx.fill();
-                  ctx.fillStyle = '#ffffff'; ctx.fillText('RV', cx+W*0.07, cy+H*0.09);
+                  ctx.fillStyle = '#ffffff'; ctx.fillText('RV', cx + W * 0.07, cy + H * 0.09);
                   // Valve lines
                   ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.5;
                   // Mitral valve
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.15, cy-H*0.02); ctx.lineTo(cx-W*0.04, cy-H*0.02); ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.15, cy - H * 0.02); ctx.lineTo(cx - W * 0.04, cy - H * 0.02); ctx.stroke();
                   ctx.font = '6px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
                   // Animated valve movement
                   var valveOpen = Math.sin(dissTick * 0.05);
                   var vOff = Math.max(0, valveOpen) * 3;
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.10, cy-H*0.02-vOff); ctx.lineTo(cx-W*0.10, cy-H*0.02+vOff);
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy - H * 0.02 - vOff); ctx.lineTo(cx - W * 0.10, cy - H * 0.02 + vOff);
                   ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2; ctx.stroke();
-                  ctx.fillText('mitral (bicuspid)' + (valveOpen > 0 ? ' OPEN' : ' CLOSED'), cx-W*0.14, cy-H*0.035);
+                  ctx.fillText('mitral (bicuspid)' + (valveOpen > 0 ? ' OPEN' : ' CLOSED'), cx - W * 0.14, cy - H * 0.035);
                   // Tricuspid valve
-                  ctx.beginPath(); ctx.moveTo(cx+W*0.04, cy-H*0.02); ctx.lineTo(cx+W*0.15, cy-H*0.02); ctx.stroke();
-                  ctx.fillText('tricuspid', cx+W*0.05, cy-H*0.035);
+                  ctx.beginPath(); ctx.moveTo(cx + W * 0.04, cy - H * 0.02); ctx.lineTo(cx + W * 0.15, cy - H * 0.02); ctx.stroke();
+                  ctx.fillText('tricuspid', cx + W * 0.05, cy - H * 0.035);
                   // Semilunar valves (above ventricles)
-                  ctx.beginPath(); ctx.arc(cx-W*0.08, cy-H*0.05, 3, 0, Math.PI); ctx.stroke();
-                  ctx.fillText('aortic', cx-W*0.10, cy-H*0.07);
-                  ctx.beginPath(); ctx.arc(cx+W*0.06, cy-H*0.05, 3, 0, Math.PI); ctx.stroke();
-                  ctx.fillText('pulmonary', cx+W*0.04, cy-H*0.07);
+                  ctx.beginPath(); ctx.arc(cx - W * 0.08, cy - H * 0.05, 3, 0, Math.PI); ctx.stroke();
+                  ctx.fillText('aortic', cx - W * 0.10, cy - H * 0.07);
+                  ctx.beginPath(); ctx.arc(cx + W * 0.06, cy - H * 0.05, 3, 0, Math.PI); ctx.stroke();
+                  ctx.fillText('pulmonary', cx + W * 0.04, cy - H * 0.07);
                   // Papillary muscles (bumps on ventricle walls)
                   ctx.globalAlpha = 0.4;
-                  ctx.beginPath(); ctx.ellipse(cx-W*0.10, cy+H*0.12, W*0.008, H*0.015, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.10, cy + H * 0.12, W * 0.008, H * 0.015, 0, 0, Math.PI * 2);
                   ctx.fillStyle = '#ef4444'; ctx.fill();
-                  ctx.beginPath(); ctx.ellipse(cx+W*0.08, cy+H*0.10, W*0.006, H*0.012, 0, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.ellipse(cx + W * 0.08, cy + H * 0.10, W * 0.006, H * 0.012, 0, 0, Math.PI * 2);
                   ctx.fillStyle = '#ef4444'; ctx.fill();
                   // Chordae tendinae (strings connecting papillary to valves)
                   ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 0.4;
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.10, cy+H*0.105);
-                  ctx.lineTo(cx-W*0.08, cy-H*0.02); ctx.stroke();
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.10, cy+H*0.105);
-                  ctx.lineTo(cx-W*0.06, cy-H*0.02); ctx.stroke();
-                  ctx.beginPath(); ctx.moveTo(cx+W*0.08, cy+H*0.088);
-                  ctx.lineTo(cx+W*0.06, cy-H*0.02); ctx.stroke();
-                  ctx.beginPath(); ctx.moveTo(cx+W*0.08, cy+H*0.088);
-                  ctx.lineTo(cx+W*0.10, cy-H*0.02); ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy + H * 0.105);
+                  ctx.lineTo(cx - W * 0.08, cy - H * 0.02); ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy + H * 0.105);
+                  ctx.lineTo(cx - W * 0.06, cy - H * 0.02); ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(cx + W * 0.08, cy + H * 0.088);
+                  ctx.lineTo(cx + W * 0.06, cy - H * 0.02); ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(cx + W * 0.08, cy + H * 0.088);
+                  ctx.lineTo(cx + W * 0.10, cy - H * 0.02); ctx.stroke();
                   ctx.globalAlpha = 0.35;
                   ctx.font = '5px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
-                  ctx.fillText('chordae tendinae', cx-W*0.14, cy+H*0.08);
-                  ctx.fillText('papillary m.', cx-W*0.14, cy+H*0.14);
+                  ctx.fillText('chordae tendinae', cx - W * 0.14, cy + H * 0.08);
+                  ctx.fillText('papillary m.', cx - W * 0.14, cy + H * 0.14);
                   ctx.globalAlpha = 0.5;
                   ctx.globalAlpha = 1;
                   // Animated blood flow through chambers
@@ -22010,14 +22020,14 @@
                   ctx.globalAlpha = 0.6;
                   // Deoxygenated flow: RA → RV → lungs
                   ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1.2;
-                  ctx.beginPath(); ctx.moveTo(cx+W*0.10, cy-H*0.16);
-                  ctx.lineTo(cx+W*0.10, cy-H*0.03);
-                  ctx.lineTo(cx+W*0.08, cy+H*0.05); ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(cx + W * 0.10, cy - H * 0.16);
+                  ctx.lineTo(cx + W * 0.10, cy - H * 0.03);
+                  ctx.lineTo(cx + W * 0.08, cy + H * 0.05); ctx.stroke();
                   // Oxygenated flow: LA → LV → body
                   ctx.strokeStyle = '#ef4444';
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.10, cy-H*0.16);
-                  ctx.lineTo(cx-W*0.10, cy-H*0.03);
-                  ctx.lineTo(cx-W*0.08, cy+H*0.05); ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy - H * 0.16);
+                  ctx.lineTo(cx - W * 0.10, cy - H * 0.03);
+                  ctx.lineTo(cx - W * 0.08, cy + H * 0.05); ctx.stroke();
                   ctx.setLineDash([]); ctx.lineDashOffset = 0;
                   ctx.globalAlpha = 1;
                 }
@@ -22040,16 +22050,15 @@
                   ctx.fillStyle = glowGrad; ctx.fill();
                 }
                 // Pin dot with system color
-                var orgSys = getOrganSystem(org.name);
-                var sysCol = orgSys ? sysColors[orgSys] : '#94a3b8';
+                var sysCol = layerStroke || '#94a3b8';
                 ctx.beginPath(); ctx.arc(px, py, 5 * pulse, 0, Math.PI * 2);
-                var pinGrad = ctx.createRadialGradient(px-1, py-1, 1, px, py, 5 * pulse);
+                var pinGrad = ctx.createRadialGradient(px - 1, py - 1, 1, px, py, 5 * pulse);
                 pinGrad.addColorStop(0, isSel ? '#fef08a' : isHov ? '#bfdbfe' : '#ffffff');
                 pinGrad.addColorStop(1, isSel ? '#f59e0b' : isHov ? '#3b82f6' : sysCol);
                 ctx.fillStyle = pinGrad; ctx.fill();
                 ctx.strokeStyle = isSel ? '#f59e0b' : 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1.5; ctx.stroke();
                 // Selection/hover ring
-                if (isSel) { ctx.beginPath(); ctx.arc(px, py, 12 * pulse, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(251,191,36,0.7)'; ctx.lineWidth = 2; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]); }
+                if (isSel) { ctx.beginPath(); ctx.arc(px, py, 12 * pulse, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(251,191,36,0.7)'; ctx.lineWidth = 2; ctx.setLineDash([3, 3]); ctx.stroke(); ctx.setLineDash([]); }
                 if (isHov) { ctx.beginPath(); ctx.arc(px, py, 10, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(59,130,246,0.5)'; ctx.lineWidth = 1.5; ctx.stroke(); }
                 ctx.font = '10px Inter, system-ui, sans-serif';
                 var tw = ctx.measureText(org.name).width + 10;
@@ -22066,9 +22075,9 @@
                   // Hidden mode: show numbered markers instead of names
                   var markerNum = String(oi + 1);
                   ctx.fillStyle = 'rgba(30,41,59,0.7)';
-                  ctx.beginPath(); ctx.arc(lx + 8, ly + 8, 8, 0, Math.PI*2); ctx.fill();
+                  ctx.beginPath(); ctx.arc(lx + 8, ly + 8, 8, 0, Math.PI * 2); ctx.fill();
                   ctx.fillStyle = '#ffffff'; ctx.font = 'bold 8px Inter, system-ui';
-                  ctx.fillText(markerNum, lx + 8 - ctx.measureText(markerNum).width/2, ly + 11);
+                  ctx.fillText(markerNum, lx + 8 - ctx.measureText(markerNum).width / 2, ly + 11);
                   ctx.font = '10px Inter, system-ui, sans-serif';
                 }
               });
@@ -22083,14 +22092,14 @@
                     ctx.beginPath(); ctx.moveTo(ann.prevX, ann.prevY);
                     ctx.lineTo(ann.x, ann.y); ctx.stroke();
                   }
-                  ctx.beginPath(); ctx.arc(ann.x, ann.y, 2, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.arc(ann.x, ann.y, 2, 0, Math.PI * 2);
                   ctx.fillStyle = '#ec4899'; ctx.fill();
                 });
               }
               // Clear annotations button hint
               if (d.annotateMode && d.annotations && d.annotations.length > 0) {
                 ctx.font = '8px Inter, system-ui'; ctx.fillStyle = 'rgba(236,72,153,0.6)';
-                ctx.fillText('Dbl-click to clear', 10, H-5);
+                ctx.fillText('Dbl-click to clear', 10, H - 5);
               }
               // Ruler tool overlay
               if (d.rulerMode && d.rulerStart && d.rulerEnd) {
@@ -22098,15 +22107,15 @@
                 ctx.beginPath(); ctx.moveTo(d.rulerStart.x, d.rulerStart.y);
                 ctx.lineTo(d.rulerEnd.x, d.rulerEnd.y); ctx.stroke();
                 // Endpoints
-                ctx.beginPath(); ctx.arc(d.rulerStart.x, d.rulerStart.y, 3, 0, Math.PI*2); ctx.fillStyle = '#fbbf24'; ctx.fill();
-                ctx.beginPath(); ctx.arc(d.rulerEnd.x, d.rulerEnd.y, 3, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(d.rulerStart.x, d.rulerStart.y, 3, 0, Math.PI * 2); ctx.fillStyle = '#fbbf24'; ctx.fill();
+                ctx.beginPath(); ctx.arc(d.rulerEnd.x, d.rulerEnd.y, 3, 0, Math.PI * 2); ctx.fill();
                 // Distance
                 var rdx = d.rulerEnd.x - d.rulerStart.x;
                 var rdy = d.rulerEnd.y - d.rulerStart.y;
-                var rDist = Math.sqrt(rdx*rdx + rdy*rdy);
+                var rDist = Math.sqrt(rdx * rdx + rdy * rdy);
                 var rCm = (rDist / W * (spec.bodyShape === 'worm' ? 15 : spec.bodyShape === 'pig' ? 25 : spec.bodyShape === 'fish' ? 20 : spec.bodyShape === 'crayfish' ? 12 : spec.bodyShape === 'frog' ? 8 : 3)).toFixed(1);
                 ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
-                ctx.fillText(rCm + ' cm', (d.rulerStart.x + d.rulerEnd.x)/2 + 5, (d.rulerStart.y + d.rulerEnd.y)/2 - 5);
+                ctx.fillText(rCm + ' cm', (d.rulerStart.x + d.rulerEnd.x) / 2 + 5, (d.rulerStart.y + d.rulerEnd.y) / 2 - 5);
               }
               // Scale bar
               ctx.fillStyle = 'rgba(255,255,255,0.25)';
@@ -22118,36 +22127,36 @@
                 var glands = [];
                 if (spec.bodyShape === 'frog') {
                   glands = [
-                    { name: 'pituitary', x: cx, y: cy-H*0.24, hormone: 'GH, TSH, FSH', color: '#ec4899' },
-                    { name: 'thyroid', x: cx-W*0.03, y: cy-H*0.18, hormone: 'T3, T4 (metabolism)', color: '#f472b6' },
-                    { name: 'parathyroid', x: cx+W*0.03, y: cy-H*0.17, hormone: 'PTH (calcium)', color: '#fb7185' },
-                    { name: 'adrenals', x: cx+W*0.06, y: cy+H*0.07, hormone: 'cortisol, adrenaline', color: '#fbbf24' },
-                    { name: 'pancreas (islets)', x: cx+W*0.04, y: cy-H*0.02, hormone: 'insulin, glucagon', color: '#34d399' },
-                    { name: 'gonads', x: cx, y: cy+H*0.12, hormone: 'estrogen/testosterone', color: '#a78bfa' }
+                    { name: 'pituitary', x: cx, y: cy - H * 0.24, hormone: 'GH, TSH, FSH', color: '#ec4899' },
+                    { name: 'thyroid', x: cx - W * 0.03, y: cy - H * 0.18, hormone: 'T3, T4 (metabolism)', color: '#f472b6' },
+                    { name: 'parathyroid', x: cx + W * 0.03, y: cy - H * 0.17, hormone: 'PTH (calcium)', color: '#fb7185' },
+                    { name: 'adrenals', x: cx + W * 0.06, y: cy + H * 0.07, hormone: 'cortisol, adrenaline', color: '#fbbf24' },
+                    { name: 'pancreas (islets)', x: cx + W * 0.04, y: cy - H * 0.02, hormone: 'insulin, glucagon', color: '#34d399' },
+                    { name: 'gonads', x: cx, y: cy + H * 0.12, hormone: 'estrogen/testosterone', color: '#a78bfa' }
                   ];
                 } else if (spec.bodyShape === 'pig') {
                   glands = [
-                    { name: 'pituitary', x: cx-W*0.26, y: cy-H*0.06, hormone: 'master gland', color: '#ec4899' },
-                    { name: 'thyroid', x: cx-W*0.16, y: cy-H*0.06, hormone: 'T3, T4', color: '#f472b6' },
-                    { name: 'thymus', x: cx-W*0.08, y: cy-H*0.08, hormone: 'thymosin (immunity)', color: '#fbbf24' },
-                    { name: 'adrenals', x: cx+W*0.09, y: cy+H*0.065, hormone: 'cortisol', color: '#fbbf24' },
-                    { name: 'pancreas', x: cx+W*0.02, y: cy+H*0.04, hormone: 'insulin', color: '#34d399' }
+                    { name: 'pituitary', x: cx - W * 0.26, y: cy - H * 0.06, hormone: 'master gland', color: '#ec4899' },
+                    { name: 'thyroid', x: cx - W * 0.16, y: cy - H * 0.06, hormone: 'T3, T4', color: '#f472b6' },
+                    { name: 'thymus', x: cx - W * 0.08, y: cy - H * 0.08, hormone: 'thymosin (immunity)', color: '#fbbf24' },
+                    { name: 'adrenals', x: cx + W * 0.09, y: cy + H * 0.065, hormone: 'cortisol', color: '#fbbf24' },
+                    { name: 'pancreas', x: cx + W * 0.02, y: cy + H * 0.04, hormone: 'insulin', color: '#34d399' }
                   ];
                 }
                 glands.forEach(function (gl) {
                   // Gland marker (pulsing circle)
                   var glPulse = 1 + Math.sin(dissTick * 0.04) * 0.2;
-                  ctx.beginPath(); ctx.arc(gl.x, gl.y, 5 * glPulse, 0, Math.PI*2);
-                  var glGrad = ctx.createRadialGradient(gl.x, gl.y, 0, gl.x, gl.y, 5*glPulse);
-                  glGrad.addColorStop(0, gl.color); glGrad.addColorStop(1, gl.color.slice(0,-1) + ',0)');
+                  ctx.beginPath(); ctx.arc(gl.x, gl.y, 5 * glPulse, 0, Math.PI * 2);
+                  var glGrad = ctx.createRadialGradient(gl.x, gl.y, 0, gl.x, gl.y, 5 * glPulse);
+                  glGrad.addColorStop(0, gl.color); glGrad.addColorStop(1, gl.color.slice(0, -1) + ',0)');
                   ctx.fillStyle = glGrad; ctx.fill();
                   // Hormone arrows radiating out
                   ctx.strokeStyle = gl.color; ctx.lineWidth = 0.5;
                   for (var ha = 0; ha < 4; ha++) {
                     var hAngle = ha * Math.PI / 2 + dissTick * 0.02;
                     var hLen = 8 + Math.sin(dissTick * 0.05 + ha) * 3;
-                    ctx.beginPath(); ctx.moveTo(gl.x + Math.cos(hAngle)*6, gl.y + Math.sin(hAngle)*6);
-                    ctx.lineTo(gl.x + Math.cos(hAngle)*hLen, gl.y + Math.sin(hAngle)*hLen);
+                    ctx.beginPath(); ctx.moveTo(gl.x + Math.cos(hAngle) * 6, gl.y + Math.sin(hAngle) * 6);
+                    ctx.lineTo(gl.x + Math.cos(hAngle) * hLen, gl.y + Math.sin(hAngle) * hLen);
                     ctx.stroke();
                   }
                   // Labels
@@ -22166,73 +22175,73 @@
                 if (spec.bodyShape === 'frog') {
                   ctx.strokeStyle = '#a855f7';
                   // Brain → spinal cord
-                  ctx.beginPath(); ctx.moveTo(cx, cy-H*0.25); // brain
-                  ctx.lineTo(cx, cy+H*0.10); // spinal cord
+                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.25); // brain
+                  ctx.lineTo(cx, cy + H * 0.10); // spinal cord
                   ctx.stroke();
                   // Cranial nerves radiating from brain
                   for (var cn = 0; cn < 5; cn++) {
                     var cnAngle = -1.2 + cn * 0.5;
-                    ctx.beginPath(); ctx.moveTo(cx, cy-H*0.24);
-                    ctx.lineTo(cx + Math.cos(cnAngle)*W*0.08, cy-H*0.24 + Math.sin(cnAngle)*H*0.06);
+                    ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.24);
+                    ctx.lineTo(cx + Math.cos(cnAngle) * W * 0.08, cy - H * 0.24 + Math.sin(cnAngle) * H * 0.06);
                     ctx.stroke();
                   }
                   // Sciatic nerves to legs
-                  [-1, 1].forEach(function(s) {
-                    ctx.beginPath(); ctx.moveTo(cx, cy+H*0.08);
-                    ctx.quadraticCurveTo(cx+s*W*0.06, cy+H*0.18, cx+s*W*0.10, cy+H*0.35);
+                  [-1, 1].forEach(function (s) {
+                    ctx.beginPath(); ctx.moveTo(cx, cy + H * 0.08);
+                    ctx.quadraticCurveTo(cx + s * W * 0.06, cy + H * 0.18, cx + s * W * 0.10, cy + H * 0.35);
                     ctx.stroke();
                   });
                   // Brachial plexus to arms
-                  [-1, 1].forEach(function(s) {
-                    ctx.beginPath(); ctx.moveTo(cx, cy-H*0.12);
-                    ctx.quadraticCurveTo(cx+s*W*0.08, cy-H*0.08, cx+s*W*0.14, cy+H*0.05);
+                  [-1, 1].forEach(function (s) {
+                    ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.12);
+                    ctx.quadraticCurveTo(cx + s * W * 0.08, cy - H * 0.08, cx + s * W * 0.14, cy + H * 0.05);
                     ctx.stroke();
                   });
                   // Signal pulse animation
                   var sigT = (dissTick * 0.01) % 1;
-                  var sigY = cy-H*0.25 + sigT * H*0.35;
-                  ctx.beginPath(); ctx.arc(cx, sigY, 3, 0, Math.PI*2);
+                  var sigY = cy - H * 0.25 + sigT * H * 0.35;
+                  ctx.beginPath(); ctx.arc(cx, sigY, 3, 0, Math.PI * 2);
                   ctx.fillStyle = '#e879f9'; ctx.fill();
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#a855f7';
-                  ctx.fillText('brain', cx+W*0.03, cy-H*0.26);
-                  ctx.fillText('spinal cord', cx+W*0.02, cy);
-                  ctx.fillText('sciatic n.', cx+W*0.08, cy+H*0.25);
-                  ctx.fillText('brachial plexus', cx+W*0.06, cy-H*0.10);
+                  ctx.fillText('brain', cx + W * 0.03, cy - H * 0.26);
+                  ctx.fillText('spinal cord', cx + W * 0.02, cy);
+                  ctx.fillText('sciatic n.', cx + W * 0.08, cy + H * 0.25);
+                  ctx.fillText('brachial plexus', cx + W * 0.06, cy - H * 0.10);
                 } else if (spec.bodyShape === 'worm') {
                   ctx.strokeStyle = '#a855f7';
                   // Ventral nerve cord
-                  ctx.beginPath(); ctx.moveTo(cx, H*0.07); ctx.lineTo(cx, H*0.93); ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(cx, H * 0.07); ctx.lineTo(cx, H * 0.93); ctx.stroke();
                   // Segmental ganglia
                   for (var sg = 0; sg < 20; sg++) {
-                    var sgY = H*0.10 + sg * H*0.04;
-                    ctx.beginPath(); ctx.arc(cx, sgY, 2, 0, Math.PI*2);
+                    var sgY = H * 0.10 + sg * H * 0.04;
+                    ctx.beginPath(); ctx.arc(cx, sgY, 2, 0, Math.PI * 2);
                     ctx.fillStyle = '#c084fc'; ctx.fill();
                     // Lateral nerves
                     ctx.beginPath(); ctx.moveTo(cx, sgY);
-                    ctx.lineTo(cx-W*0.04, sgY); ctx.stroke();
+                    ctx.lineTo(cx - W * 0.04, sgY); ctx.stroke();
                     ctx.beginPath(); ctx.moveTo(cx, sgY);
-                    ctx.lineTo(cx+W*0.04, sgY); ctx.stroke();
+                    ctx.lineTo(cx + W * 0.04, sgY); ctx.stroke();
                   }
                   var wSigT = (dissTick * 0.008) % 1;
-                  ctx.beginPath(); ctx.arc(cx, H*0.07+wSigT*H*0.86, 3, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.arc(cx, H * 0.07 + wSigT * H * 0.86, 3, 0, Math.PI * 2);
                   ctx.fillStyle = '#e879f9'; ctx.fill();
                   ctx.font = '6px Inter, system-ui'; ctx.fillStyle = '#a855f7';
-                  ctx.fillText('ventral nerve cord', cx+W*0.05, H*0.50);
-                  ctx.fillText('segmental ganglia', cx+W*0.05, H*0.52);
+                  ctx.fillText('ventral nerve cord', cx + W * 0.05, H * 0.50);
+                  ctx.fillText('segmental ganglia', cx + W * 0.05, H * 0.52);
                 } else if (spec.bodyShape === 'crayfish') {
                   ctx.strokeStyle = '#a855f7';
                   // Brain → ventral cord
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.20, cy); // brain
-                  ctx.lineTo(cx+W*0.25, cy); // ventral cord
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.20, cy); // brain
+                  ctx.lineTo(cx + W * 0.25, cy); // ventral cord
                   ctx.stroke();
                   // Ganglia
                   for (var cg = 0; cg < 6; cg++) {
-                    ctx.beginPath(); ctx.arc(cx-W*0.15+cg*W*0.08, cy, 2, 0, Math.PI*2);
+                    ctx.beginPath(); ctx.arc(cx - W * 0.15 + cg * W * 0.08, cy, 2, 0, Math.PI * 2);
                     ctx.fillStyle = '#c084fc'; ctx.fill();
                   }
                   ctx.font = '6px Inter, system-ui'; ctx.fillStyle = '#a855f7';
-                  ctx.fillText('brain', cx-W*0.22, cy-H*0.03);
-                  ctx.fillText('ventral cord', cx+W*0.05, cy-H*0.03);
+                  ctx.fillText('brain', cx - W * 0.22, cy - H * 0.03);
+                  ctx.fillText('ventral cord', cx + W * 0.05, cy - H * 0.03);
                 }
                 ctx.setLineDash([]); ctx.lineDashOffset = 0;
                 ctx.globalAlpha = 1;
@@ -22245,51 +22254,51 @@
                 if (spec.bodyShape === 'frog') {
                   ctx.strokeStyle = '#84cc16';
                   // Kidneys → ureters → bladder → cloaca
-                  [-1, 1].forEach(function(s) {
+                  [-1, 1].forEach(function (s) {
                     ctx.beginPath();
-                    ctx.moveTo(cx + s*W*0.06, cy+H*0.08); // kidney
-                    ctx.quadraticCurveTo(cx + s*W*0.03, cy+H*0.12, cx, cy+H*0.15); // ureter → bladder
+                    ctx.moveTo(cx + s * W * 0.06, cy + H * 0.08); // kidney
+                    ctx.quadraticCurveTo(cx + s * W * 0.03, cy + H * 0.12, cx, cy + H * 0.15); // ureter → bladder
                     ctx.stroke();
                   });
-                  ctx.beginPath(); ctx.moveTo(cx, cy+H*0.15); // bladder
-                  ctx.lineTo(cx, cy+H*0.22); // cloaca
+                  ctx.beginPath(); ctx.moveTo(cx, cy + H * 0.15); // bladder
+                  ctx.lineTo(cx, cy + H * 0.22); // cloaca
                   ctx.stroke();
                   // Filtrate animation
                   var filtT = (dissTick * 0.006) % 1;
-                  ctx.beginPath(); ctx.arc(cx + Math.cos(filtT*6)*W*0.03, cy+H*0.08+filtT*H*0.14, 2, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.arc(cx + Math.cos(filtT * 6) * W * 0.03, cy + H * 0.08 + filtT * H * 0.14, 2, 0, Math.PI * 2);
                   ctx.fillStyle = '#a3e635'; ctx.fill();
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#84cc16';
-                  ctx.fillText('kidneys', cx+W*0.08, cy+H*0.09);
-                  ctx.fillText('ureters', cx+W*0.04, cy+H*0.13);
-                  ctx.fillText('bladder', cx+W*0.03, cy+H*0.16);
-                  ctx.fillText('cloaca', cx+W*0.02, cy+H*0.23);
+                  ctx.fillText('kidneys', cx + W * 0.08, cy + H * 0.09);
+                  ctx.fillText('ureters', cx + W * 0.04, cy + H * 0.13);
+                  ctx.fillText('bladder', cx + W * 0.03, cy + H * 0.16);
+                  ctx.fillText('cloaca', cx + W * 0.02, cy + H * 0.23);
                 } else if (spec.bodyShape === 'worm') {
                   ctx.strokeStyle = '#84cc16';
                   // Nephridia along body
                   for (var neph = 0; neph < 8; neph++) {
-                    var nephY = H*0.22 + neph * H*0.08;
+                    var nephY = H * 0.22 + neph * H * 0.08;
                     ctx.beginPath();
-                    ctx.moveTo(cx-W*0.04, nephY);
-                    ctx.quadraticCurveTo(cx-W*0.05, nephY+H*0.02, cx-W*0.045, nephY+H*0.04);
+                    ctx.moveTo(cx - W * 0.04, nephY);
+                    ctx.quadraticCurveTo(cx - W * 0.05, nephY + H * 0.02, cx - W * 0.045, nephY + H * 0.04);
                     ctx.stroke();
                     // Nephridiopore
-                    ctx.beginPath(); ctx.arc(cx-W*0.045, nephY+H*0.04, 1.5, 0, Math.PI*2);
+                    ctx.beginPath(); ctx.arc(cx - W * 0.045, nephY + H * 0.04, 1.5, 0, Math.PI * 2);
                     ctx.fillStyle = '#84cc16'; ctx.fill();
                   }
                   ctx.font = '6px Inter, system-ui'; ctx.fillStyle = '#84cc16';
-                  ctx.fillText('nephridia', cx-W*0.09, H*0.35);
-                  ctx.fillText('nephridiopores', cx-W*0.10, H*0.37);
+                  ctx.fillText('nephridia', cx - W * 0.09, H * 0.35);
+                  ctx.fillText('nephridiopores', cx - W * 0.10, H * 0.37);
                 } else if (spec.bodyShape === 'pig') {
                   ctx.strokeStyle = '#84cc16';
                   ctx.beginPath();
-                  ctx.moveTo(cx+W*0.08, cy+H*0.08); // kidney
-                  ctx.quadraticCurveTo(cx+W*0.06, cy+H*0.12, cx+W*0.04, cy+H*0.14); // ureter
-                  ctx.lineTo(cx, cy+H*0.16); // bladder
+                  ctx.moveTo(cx + W * 0.08, cy + H * 0.08); // kidney
+                  ctx.quadraticCurveTo(cx + W * 0.06, cy + H * 0.12, cx + W * 0.04, cy + H * 0.14); // ureter
+                  ctx.lineTo(cx, cy + H * 0.16); // bladder
                   ctx.stroke();
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#84cc16';
-                  ctx.fillText('kidney', cx+W*0.09, cy+H*0.07);
-                  ctx.fillText('ureter', cx+W*0.07, cy+H*0.13);
-                  ctx.fillText('bladder', cx+W*0.01, cy+H*0.18);
+                  ctx.fillText('kidney', cx + W * 0.09, cy + H * 0.07);
+                  ctx.fillText('ureter', cx + W * 0.07, cy + H * 0.13);
+                  ctx.fillText('bladder', cx + W * 0.01, cy + H * 0.18);
                 }
                 ctx.setLineDash([]); ctx.lineDashOffset = 0;
                 ctx.globalAlpha = 1;
@@ -22302,65 +22311,65 @@
                   // Heart → Arteries (red, oxygenated)
                   ctx.lineDashOffset = -dissTick * 0.6;
                   ctx.strokeStyle = '#ef4444';
-                  ctx.beginPath(); ctx.moveTo(cx, cy-H*0.12); // heart
-                  ctx.quadraticCurveTo(cx-W*0.08, cy-H*0.18, cx-W*0.04, cy-H*0.24); // carotid → head
+                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.12); // heart
+                  ctx.quadraticCurveTo(cx - W * 0.08, cy - H * 0.18, cx - W * 0.04, cy - H * 0.24); // carotid → head
                   ctx.stroke();
-                  ctx.beginPath(); ctx.moveTo(cx, cy-H*0.12);
-                  ctx.quadraticCurveTo(cx+W*0.05, cy-H*0.05, cx+W*0.03, cy+H*0.06); // systemic → body
+                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.12);
+                  ctx.quadraticCurveTo(cx + W * 0.05, cy - H * 0.05, cx + W * 0.03, cy + H * 0.06); // systemic → body
                   ctx.stroke();
-                  ctx.beginPath(); ctx.moveTo(cx+W*0.03, cy+H*0.06);
-                  ctx.lineTo(cx+W*0.12, cy+H*0.30); // to legs
+                  ctx.beginPath(); ctx.moveTo(cx + W * 0.03, cy + H * 0.06);
+                  ctx.lineTo(cx + W * 0.12, cy + H * 0.30); // to legs
                   ctx.stroke();
-                  ctx.beginPath(); ctx.moveTo(cx+W*0.03, cy+H*0.06);
-                  ctx.lineTo(cx-W*0.12, cy+H*0.30);
+                  ctx.beginPath(); ctx.moveTo(cx + W * 0.03, cy + H * 0.06);
+                  ctx.lineTo(cx - W * 0.12, cy + H * 0.30);
                   ctx.stroke();
                   // Veins (blue, deoxygenated) → back to heart
                   ctx.lineDashOffset = dissTick * 0.6;
                   ctx.strokeStyle = '#3b82f6';
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.12, cy+H*0.32);
-                  ctx.quadraticCurveTo(cx-W*0.06, cy+H*0.15, cx-W*0.02, cy-H*0.10);
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.12, cy + H * 0.32);
+                  ctx.quadraticCurveTo(cx - W * 0.06, cy + H * 0.15, cx - W * 0.02, cy - H * 0.10);
                   ctx.stroke();
-                  ctx.beginPath(); ctx.moveTo(cx+W*0.12, cy+H*0.32);
-                  ctx.quadraticCurveTo(cx+W*0.06, cy+H*0.15, cx+W*0.02, cy-H*0.10);
+                  ctx.beginPath(); ctx.moveTo(cx + W * 0.12, cy + H * 0.32);
+                  ctx.quadraticCurveTo(cx + W * 0.06, cy + H * 0.15, cx + W * 0.02, cy - H * 0.10);
                   ctx.stroke();
                   // Pulmonary loop
                   ctx.strokeStyle = '#a855f7';
-                  ctx.beginPath(); ctx.moveTo(cx, cy-H*0.12);
-                  ctx.quadraticCurveTo(cx-W*0.10, cy-H*0.10, cx-W*0.08, cy-H*0.06);
+                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.12);
+                  ctx.quadraticCurveTo(cx - W * 0.10, cy - H * 0.10, cx - W * 0.08, cy - H * 0.06);
                   ctx.stroke();
                   // Labels
                   ctx.font = '7px Inter, system-ui';
-                  ctx.fillStyle = '#ef4444'; ctx.fillText('arteries (O\u2082)', cx-W*0.12, cy-H*0.20);
-                  ctx.fillStyle = '#3b82f6'; ctx.fillText('veins (CO\u2082)', cx+W*0.06, cy+H*0.20);
-                  ctx.fillStyle = '#a855f7'; ctx.fillText('pulmonary', cx-W*0.14, cy-H*0.08);
+                  ctx.fillStyle = '#ef4444'; ctx.fillText('arteries (O\u2082)', cx - W * 0.12, cy - H * 0.20);
+                  ctx.fillStyle = '#3b82f6'; ctx.fillText('veins (CO\u2082)', cx + W * 0.06, cy + H * 0.20);
+                  ctx.fillStyle = '#a855f7'; ctx.fillText('pulmonary', cx - W * 0.14, cy - H * 0.08);
                   // Blood cell animation
                   var bcT = (dissTick * 0.008) % 1;
-                  ctx.beginPath(); ctx.arc(cx + bcT*W*0.15, cy-H*0.12+(bcT*H*0.42), 3, 0, Math.PI*2);
+                  ctx.beginPath(); ctx.arc(cx + bcT * W * 0.15, cy - H * 0.12 + (bcT * H * 0.42), 3, 0, Math.PI * 2);
                   ctx.fillStyle = '#ef4444'; ctx.fill();
                 } else if (spec.bodyShape === 'heart') {
                   // Through chambers
                   ctx.lineDashOffset = -dissTick * 0.5;
                   ctx.strokeStyle = '#3b82f6'; // deoxygenated
-                  ctx.beginPath(); ctx.moveTo(cx+W*0.15, cy-H*0.25); // SVC
-                  ctx.lineTo(cx+W*0.10, cy-H*0.10); // RA
-                  ctx.lineTo(cx+W*0.08, cy+H*0.05); // RV
+                  ctx.beginPath(); ctx.moveTo(cx + W * 0.15, cy - H * 0.25); // SVC
+                  ctx.lineTo(cx + W * 0.10, cy - H * 0.10); // RA
+                  ctx.lineTo(cx + W * 0.08, cy + H * 0.05); // RV
                   ctx.stroke();
-                  ctx.beginPath(); ctx.moveTo(cx+W*0.08, cy+H*0.05);
-                  ctx.quadraticCurveTo(cx+W*0.15, cy-H*0.15, cx+W*0.20, cy-H*0.25); // pulmonary artery
+                  ctx.beginPath(); ctx.moveTo(cx + W * 0.08, cy + H * 0.05);
+                  ctx.quadraticCurveTo(cx + W * 0.15, cy - H * 0.15, cx + W * 0.20, cy - H * 0.25); // pulmonary artery
                   ctx.stroke();
                   ctx.strokeStyle = '#ef4444'; // oxygenated
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.15, cy-H*0.20); // pulmonary vein
-                  ctx.lineTo(cx-W*0.10, cy-H*0.10); // LA
-                  ctx.lineTo(cx-W*0.08, cy+H*0.05); // LV
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.15, cy - H * 0.20); // pulmonary vein
+                  ctx.lineTo(cx - W * 0.10, cy - H * 0.10); // LA
+                  ctx.lineTo(cx - W * 0.08, cy + H * 0.05); // LV
                   ctx.stroke();
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.08, cy+H*0.05);
-                  ctx.quadraticCurveTo(cx-W*0.15, cy, cx, cy-H*0.28); // aorta
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.08, cy + H * 0.05);
+                  ctx.quadraticCurveTo(cx - W * 0.15, cy, cx, cy - H * 0.28); // aorta
                   ctx.stroke();
                   ctx.font = '7px Inter, system-ui';
-                  ctx.fillStyle = '#3b82f6'; ctx.fillText('SVC', cx+W*0.16, cy-H*0.26);
-                  ctx.fillText('pulm. artery', cx+W*0.16, cy-H*0.16);
-                  ctx.fillStyle = '#ef4444'; ctx.fillText('pulm. vein', cx-W*0.20, cy-H*0.22);
-                  ctx.fillText('aorta', cx-W*0.04, cy-H*0.30);
+                  ctx.fillStyle = '#3b82f6'; ctx.fillText('SVC', cx + W * 0.16, cy - H * 0.26);
+                  ctx.fillText('pulm. artery', cx + W * 0.16, cy - H * 0.16);
+                  ctx.fillStyle = '#ef4444'; ctx.fillText('pulm. vein', cx - W * 0.20, cy - H * 0.22);
+                  ctx.fillText('aorta', cx - W * 0.04, cy - H * 0.30);
                 }
                 ctx.setLineDash([]); ctx.lineDashOffset = 0;
                 ctx.globalAlpha = 1;
@@ -22374,66 +22383,66 @@
                   ctx.strokeStyle = '#38bdf8';
                   // Air path: nares → glottis → lungs
                   ctx.beginPath();
-                  ctx.moveTo(cx, cy-H*0.28); // nostrils
-                  ctx.lineTo(cx, cy-H*0.20); // pharynx
-                  ctx.lineTo(cx, cy-H*0.15); // glottis
+                  ctx.moveTo(cx, cy - H * 0.28); // nostrils
+                  ctx.lineTo(cx, cy - H * 0.20); // pharynx
+                  ctx.lineTo(cx, cy - H * 0.15); // glottis
                   ctx.stroke();
                   // Left lung
-                  ctx.beginPath(); ctx.moveTo(cx, cy-H*0.15);
-                  ctx.quadraticCurveTo(cx-W*0.06, cy-H*0.12, cx-W*0.08, cy-H*0.06);
+                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.15);
+                  ctx.quadraticCurveTo(cx - W * 0.06, cy - H * 0.12, cx - W * 0.08, cy - H * 0.06);
                   ctx.stroke();
                   // Right lung
-                  ctx.beginPath(); ctx.moveTo(cx, cy-H*0.15);
-                  ctx.quadraticCurveTo(cx+W*0.06, cy-H*0.12, cx+W*0.08, cy-H*0.06);
+                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.15);
+                  ctx.quadraticCurveTo(cx + W * 0.06, cy - H * 0.12, cx + W * 0.08, cy - H * 0.06);
                   ctx.stroke();
                   // Air particles animation
                   for (var ap = 0; ap < 5; ap++) {
                     var apT = ((dissTick * 0.01 + ap * 0.2) % 1);
-                    var apY = cy - H*0.28 + apT * H*0.22;
-                    ctx.beginPath(); ctx.arc(cx + Math.sin(apT * 8) * W*0.01, apY, 2, 0, Math.PI*2);
+                    var apY = cy - H * 0.28 + apT * H * 0.22;
+                    ctx.beginPath(); ctx.arc(cx + Math.sin(apT * 8) * W * 0.01, apY, 2, 0, Math.PI * 2);
                     ctx.fillStyle = '#38bdf8'; ctx.fill();
                   }
                   // O2/CO2 labels
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#38bdf8';
-                  ctx.fillText('O\u2082 in', cx+W*0.02, cy-H*0.26);
+                  ctx.fillText('O\u2082 in', cx + W * 0.02, cy - H * 0.26);
                   ctx.fillStyle = '#ef4444';
-                  ctx.fillText('CO\u2082 out', cx+W*0.02, cy-H*0.24);
+                  ctx.fillText('CO\u2082 out', cx + W * 0.02, cy - H * 0.24);
                   // Cutaneous respiration note
                   ctx.fillStyle = 'rgba(56,189,248,0.4)'; ctx.font = '6px Inter, system-ui';
-                  ctx.fillText('\u2248 30% cutaneous', cx+W*0.10, cy+H*0.05);
+                  ctx.fillText('\u2248 30% cutaneous', cx + W * 0.10, cy + H * 0.05);
                 } else if (spec.bodyShape === 'pig') {
                   ctx.strokeStyle = '#38bdf8';
                   ctx.beginPath();
-                  ctx.moveTo(cx-W*0.32, cy-H*0.01); // nostrils
-                  ctx.lineTo(cx-W*0.20, cy-H*0.02); // trachea
+                  ctx.moveTo(cx - W * 0.32, cy - H * 0.01); // nostrils
+                  ctx.lineTo(cx - W * 0.20, cy - H * 0.02); // trachea
                   ctx.stroke();
                   // Bronchi split
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.20, cy-H*0.02);
-                  ctx.quadraticCurveTo(cx-W*0.12, cy-H*0.06, cx-W*0.06, cy-H*0.08);
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.20, cy - H * 0.02);
+                  ctx.quadraticCurveTo(cx - W * 0.12, cy - H * 0.06, cx - W * 0.06, cy - H * 0.08);
                   ctx.stroke();
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.20, cy-H*0.02);
-                  ctx.quadraticCurveTo(cx-W*0.12, cy+H*0.02, cx-W*0.06, cy+H*0.02);
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.20, cy - H * 0.02);
+                  ctx.quadraticCurveTo(cx - W * 0.12, cy + H * 0.02, cx - W * 0.06, cy + H * 0.02);
                   ctx.stroke();
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#38bdf8';
-                  ctx.fillText('trachea', cx-W*0.22, cy-H*0.05);
-                  ctx.fillText('L bronchus', cx-W*0.10, cy-H*0.10);
-                  ctx.fillText('R bronchus', cx-W*0.10, cy+H*0.05);
+                  ctx.fillText('trachea', cx - W * 0.22, cy - H * 0.05);
+                  ctx.fillText('L bronchus', cx - W * 0.10, cy - H * 0.10);
+                  ctx.fillText('R bronchus', cx - W * 0.10, cy + H * 0.05);
                 } else if (spec.bodyShape === 'fish') {
                   ctx.strokeStyle = '#38bdf8';
                   // Water flow through gills
-                  ctx.beginPath(); ctx.moveTo(cx-W*0.35, cy); // mouth intake
-                  ctx.lineTo(cx-W*0.22, cy); // through pharynx
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.35, cy); // mouth intake
+                  ctx.lineTo(cx - W * 0.22, cy); // through pharynx
                   ctx.stroke();
                   // Through gills and out operculum
                   for (var gf = 0; gf < 3; gf++) {
-                    ctx.beginPath(); ctx.moveTo(cx-W*0.22, cy-H*0.02+gf*H*0.02);
-                    ctx.lineTo(cx-W*0.28, cy-H*0.03+gf*H*0.02);
+                    ctx.beginPath(); ctx.moveTo(cx - W * 0.22, cy - H * 0.02 + gf * H * 0.02);
+                    ctx.lineTo(cx - W * 0.28, cy - H * 0.03 + gf * H * 0.02);
                     ctx.stroke();
                   }
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#38bdf8';
-                  ctx.fillText('water in', cx-W*0.38, cy-H*0.02);
-                  ctx.fillText('O\u2082 exchange', cx-W*0.26, cy-H*0.06);
-                  ctx.fillText('water out', cx-W*0.30, cy+H*0.06);
+                  ctx.fillText('water in', cx - W * 0.38, cy - H * 0.02);
+                  ctx.fillText('O\u2082 exchange', cx - W * 0.26, cy - H * 0.06);
+                  ctx.fillText('water out', cx - W * 0.30, cy + H * 0.06);
                 }
                 ctx.setLineDash([]); ctx.lineDashOffset = 0;
                 ctx.globalAlpha = 1;
@@ -22446,75 +22455,75 @@
                 if (spec.bodyShape === 'frog') {
                   ctx.strokeStyle = '#f59e0b';
                   ctx.beginPath();
-                  ctx.moveTo(cx, cy-H*0.26); // mouth
-                  ctx.lineTo(cx, cy-H*0.18); // esophagus
-                  ctx.quadraticCurveTo(cx+W*0.02, cy-H*0.12, cx+W*0.04, cy-H*0.05); // stomach
-                  ctx.quadraticCurveTo(cx+W*0.06, cy+H*0.02, cx+W*0.03, cy+H*0.05); // duodenum
-                  ctx.quadraticCurveTo(cx-W*0.02, cy+H*0.10, cx, cy+H*0.14); // intestines
-                  ctx.quadraticCurveTo(cx+W*0.03, cy+H*0.18, cx, cy+H*0.22); // large intestine
+                  ctx.moveTo(cx, cy - H * 0.26); // mouth
+                  ctx.lineTo(cx, cy - H * 0.18); // esophagus
+                  ctx.quadraticCurveTo(cx + W * 0.02, cy - H * 0.12, cx + W * 0.04, cy - H * 0.05); // stomach
+                  ctx.quadraticCurveTo(cx + W * 0.06, cy + H * 0.02, cx + W * 0.03, cy + H * 0.05); // duodenum
+                  ctx.quadraticCurveTo(cx - W * 0.02, cy + H * 0.10, cx, cy + H * 0.14); // intestines
+                  ctx.quadraticCurveTo(cx + W * 0.03, cy + H * 0.18, cx, cy + H * 0.22); // large intestine
                   ctx.stroke();
                   // Food bolus moving along path
                   var foodT = (dissTick * 0.005) % 1;
-                  var foodY = cy-H*0.26 + foodT * H*0.48;
-                  ctx.beginPath(); ctx.arc(cx + Math.sin(foodT * 10) * W*0.02, foodY, 4, 0, Math.PI*2);
+                  var foodY = cy - H * 0.26 + foodT * H * 0.48;
+                  ctx.beginPath(); ctx.arc(cx + Math.sin(foodT * 10) * W * 0.02, foodY, 4, 0, Math.PI * 2);
                   ctx.fillStyle = '#92400e'; ctx.fill();
                   ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1; ctx.stroke();
                   // Labels
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#f59e0b';
-                  ctx.fillText('mouth', cx+W*0.02, cy-H*0.27);
-                  ctx.fillText('esophagus', cx+W*0.04, cy-H*0.17);
-                  ctx.fillText('stomach', cx+W*0.07, cy-H*0.06);
-                  ctx.fillText('sm. intestine', cx+W*0.06, cy+H*0.08);
-                  ctx.fillText('lg. intestine', cx+W*0.04, cy+H*0.18);
-                  ctx.fillText('cloaca', cx+W*0.02, cy+H*0.23);
+                  ctx.fillText('mouth', cx + W * 0.02, cy - H * 0.27);
+                  ctx.fillText('esophagus', cx + W * 0.04, cy - H * 0.17);
+                  ctx.fillText('stomach', cx + W * 0.07, cy - H * 0.06);
+                  ctx.fillText('sm. intestine', cx + W * 0.06, cy + H * 0.08);
+                  ctx.fillText('lg. intestine', cx + W * 0.04, cy + H * 0.18);
+                  ctx.fillText('cloaca', cx + W * 0.02, cy + H * 0.23);
                 } else if (spec.bodyShape === 'worm') {
                   ctx.strokeStyle = '#f59e0b';
                   ctx.beginPath();
-                  ctx.moveTo(cx, H*0.06); // mouth
-                  ctx.lineTo(cx, H*0.10); // pharynx
-                  ctx.lineTo(cx, H*0.28); // crop
-                  ctx.lineTo(cx, H*0.33); // gizzard
-                  ctx.lineTo(cx, H*0.88); // intestine
-                  ctx.lineTo(cx, H*0.94); // anus
+                  ctx.moveTo(cx, H * 0.06); // mouth
+                  ctx.lineTo(cx, H * 0.10); // pharynx
+                  ctx.lineTo(cx, H * 0.28); // crop
+                  ctx.lineTo(cx, H * 0.33); // gizzard
+                  ctx.lineTo(cx, H * 0.88); // intestine
+                  ctx.lineTo(cx, H * 0.94); // anus
                   ctx.stroke();
                   var wFoodT = (dissTick * 0.003) % 1;
-                  var wFoodY = H*0.06 + wFoodT * H*0.88;
-                  ctx.beginPath(); ctx.arc(cx, wFoodY, 3, 0, Math.PI*2);
+                  var wFoodY = H * 0.06 + wFoodT * H * 0.88;
+                  ctx.beginPath(); ctx.arc(cx, wFoodY, 3, 0, Math.PI * 2);
                   ctx.fillStyle = '#92400e'; ctx.fill();
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#f59e0b';
-                  ctx.fillText('mouth', cx+W*0.05, H*0.065);
-                  ctx.fillText('pharynx', cx+W*0.05, H*0.11);
-                  ctx.fillText('crop', cx+W*0.05, H*0.29);
-                  ctx.fillText('gizzard', cx+W*0.05, H*0.34);
-                  ctx.fillText('intestine', cx+W*0.05, H*0.60);
-                  ctx.fillText('anus', cx+W*0.05, H*0.945);
+                  ctx.fillText('mouth', cx + W * 0.05, H * 0.065);
+                  ctx.fillText('pharynx', cx + W * 0.05, H * 0.11);
+                  ctx.fillText('crop', cx + W * 0.05, H * 0.29);
+                  ctx.fillText('gizzard', cx + W * 0.05, H * 0.34);
+                  ctx.fillText('intestine', cx + W * 0.05, H * 0.60);
+                  ctx.fillText('anus', cx + W * 0.05, H * 0.945);
                 } else if (spec.bodyShape === 'pig') {
                   ctx.strokeStyle = '#f59e0b';
                   ctx.beginPath();
-                  ctx.moveTo(cx-W*0.30, cy); // mouth
-                  ctx.lineTo(cx-W*0.20, cy); // esophagus
-                  ctx.quadraticCurveTo(cx-W*0.05, cy-H*0.02, cx, cy+H*0.02); // stomach
-                  ctx.quadraticCurveTo(cx+W*0.08, cy+H*0.06, cx+W*0.10, cy+H*0.10); // intestines
-                  ctx.quadraticCurveTo(cx+W*0.12, cy+H*0.14, cx+W*0.16, cy+H*0.12); // rectum
+                  ctx.moveTo(cx - W * 0.30, cy); // mouth
+                  ctx.lineTo(cx - W * 0.20, cy); // esophagus
+                  ctx.quadraticCurveTo(cx - W * 0.05, cy - H * 0.02, cx, cy + H * 0.02); // stomach
+                  ctx.quadraticCurveTo(cx + W * 0.08, cy + H * 0.06, cx + W * 0.10, cy + H * 0.10); // intestines
+                  ctx.quadraticCurveTo(cx + W * 0.12, cy + H * 0.14, cx + W * 0.16, cy + H * 0.12); // rectum
                   ctx.stroke();
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#f59e0b';
-                  ctx.fillText('mouth', cx-W*0.33, cy-H*0.02);
-                  ctx.fillText('esophagus', cx-W*0.18, cy-H*0.03);
-                  ctx.fillText('stomach', cx+W*0.02, cy-H*0.01);
-                  ctx.fillText('intestines', cx+W*0.09, cy+H*0.13);
+                  ctx.fillText('mouth', cx - W * 0.33, cy - H * 0.02);
+                  ctx.fillText('esophagus', cx - W * 0.18, cy - H * 0.03);
+                  ctx.fillText('stomach', cx + W * 0.02, cy - H * 0.01);
+                  ctx.fillText('intestines', cx + W * 0.09, cy + H * 0.13);
                 } else if (spec.bodyShape === 'fish') {
                   ctx.strokeStyle = '#f59e0b';
                   ctx.beginPath();
-                  ctx.moveTo(cx-W*0.32, cy); // mouth
-                  ctx.lineTo(cx-W*0.18, cy); // pharynx
-                  ctx.quadraticCurveTo(cx-W*0.08, cy+H*0.02, cx, cy+H*0.03); // stomach
-                  ctx.lineTo(cx+W*0.10, cy+H*0.02); // pyloric caeca
-                  ctx.lineTo(cx+W*0.20, cy+H*0.04); // intestine
+                  ctx.moveTo(cx - W * 0.32, cy); // mouth
+                  ctx.lineTo(cx - W * 0.18, cy); // pharynx
+                  ctx.quadraticCurveTo(cx - W * 0.08, cy + H * 0.02, cx, cy + H * 0.03); // stomach
+                  ctx.lineTo(cx + W * 0.10, cy + H * 0.02); // pyloric caeca
+                  ctx.lineTo(cx + W * 0.20, cy + H * 0.04); // intestine
                   ctx.stroke();
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#f59e0b';
-                  ctx.fillText('mouth', cx-W*0.35, cy-H*0.02);
-                  ctx.fillText('stomach', cx-W*0.04, cy+H*0.06);
-                  ctx.fillText('intestine', cx+W*0.12, cy+H*0.07);
+                  ctx.fillText('mouth', cx - W * 0.35, cy - H * 0.02);
+                  ctx.fillText('stomach', cx - W * 0.04, cy + H * 0.06);
+                  ctx.fillText('intestine', cx + W * 0.12, cy + H * 0.07);
                 }
                 ctx.setLineDash([]); ctx.lineDashOffset = 0;
                 ctx.globalAlpha = 1;
@@ -22523,9 +22532,9 @@
               if (activeLayer === 'organs' && (spec.bodyShape === 'frog' || spec.bodyShape === 'pig' || spec.bodyShape === 'fish')) {
                 ctx.globalAlpha = 0.15; ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 0.5; ctx.setLineDash([4, 6]);
                 // Transverse section lines
-                var sectionYs = spec.bodyShape === 'frog' ? [cy - H*0.12, cy, cy + H*0.10] :
-                                spec.bodyShape === 'pig' ? [cy - H*0.06, cy + H*0.04] :
-                                [cy - H*0.04, cy + H*0.04];
+                var sectionYs = spec.bodyShape === 'frog' ? [cy - H * 0.12, cy, cy + H * 0.10] :
+                  spec.bodyShape === 'pig' ? [cy - H * 0.06, cy + H * 0.04] :
+                    [cy - H * 0.04, cy + H * 0.04];
                 sectionYs.forEach(function (sy, si) {
                   ctx.beginPath(); ctx.moveTo(10, sy); ctx.lineTo(W - 10, sy); ctx.stroke();
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = 'rgba(148,163,184,0.3)';
@@ -22536,11 +22545,11 @@
               // Dissection tray corner labels
               ctx.font = '7px Inter, system-ui';
               ctx.fillStyle = 'rgba(100,116,139,0.3)';
-              ctx.fillText('ANTERIOR', W/2 - 20, 14);
-              ctx.fillText('POSTERIOR', W/2 - 20, H - 4);
-              ctx.save(); ctx.translate(8, H/2 + 10); ctx.rotate(-Math.PI/2);
+              ctx.fillText('ANTERIOR', W / 2 - 20, 14);
+              ctx.fillText('POSTERIOR', W / 2 - 20, H - 4);
+              ctx.save(); ctx.translate(8, H / 2 + 10); ctx.rotate(-Math.PI / 2);
               ctx.fillText('LEFT', 0, 0); ctx.restore();
-              ctx.save(); ctx.translate(W - 4, H/2 - 10); ctx.rotate(Math.PI/2);
+              ctx.save(); ctx.translate(W - 4, H / 2 - 10); ctx.rotate(Math.PI / 2);
               ctx.fillText('RIGHT', 0, 0); ctx.restore();
               // Specimen label
               ctx.font = '11px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)';
@@ -22568,7 +22577,7 @@
                 ctx.fillText(exploredCount + '/' + totalOrgansInSpecimen + ' explored (' + progressPct + '%)', 14, 42);
               }
               // Hover tooltip
-              var hovOrg = d.hoveredOrgan ? organs.find(function(o) { return o.id === d.hoveredOrgan; }) : null;
+              var hovOrg = d.hoveredOrgan ? organs.find(function (o) { return o.id === d.hoveredOrgan; }) : null;
               if (hovOrg && d.selectedOrgan !== hovOrg.id) {
                 var hpx = hovOrg.x * W, hpy = hovOrg.y * H;
                 var hText = hovOrg.name + ': ' + hovOrg.fn.split('.')[0] + '.';
@@ -22604,66 +22613,67 @@
                 ctx.fillStyle = '#ffffff';
                 ctx.fillText(currentGuided.prompt, 22, H - 30);
                 // Highlight guided organ with arrow
-                var gOrg = organs.find(function(o) { return o.id === currentGuided.organId; });
+                var gOrg = organs.find(function (o) { return o.id === currentGuided.organId; });
                 if (gOrg) {
                   var gx = gOrg.x * W, gy = gOrg.y * H;
-                  ctx.beginPath(); ctx.arc(gx, gy, 16 + Math.sin(dissTick * 0.08) * 3, 0, Math.PI*2);
-                  ctx.strokeStyle = 'rgba(147,51,234,0.7)'; ctx.lineWidth = 2.5; ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
+                  ctx.beginPath(); ctx.arc(gx, gy, 16 + Math.sin(dissTick * 0.08) * 3, 0, Math.PI * 2);
+                  ctx.strokeStyle = 'rgba(147,51,234,0.7)'; ctx.lineWidth = 2.5; ctx.setLineDash([4, 3]); ctx.stroke(); ctx.setLineDash([]);
                 }
               }
 
               ctx.restore(); // End zoom transform
+              } catch (e) { /* swallow non-finite gradient errors to avoid crashing React */ }
               canvas._dissAnim = requestAnimationFrame(drawDissectionFrame);
             }
             drawDissectionFrame();
           };
 
           // Auto-save progress to localStorage (non-hook: inline during render)
-           try {
-             var saveKey = 'dissection_progress_' + (spec ? spec.id : '');
-             var saveData = {
-               exploredOrgans: d.exploredOrgans || {},
-               quizScore: d.quizScore || 0,
-               completedObjectives: d.completedObjectives || {},
-               currentLayerIdx: d.currentDissLayer || 0,
-               timeSpent: d.timeSpent || 0
-             };
-             localStorage.setItem(saveKey, JSON.stringify(saveData));
-           } catch(e) {}
-           // Load progress (non-hook: deferred to avoid setState-during-render)
-           if (!d._dissLoadedSpec || d._dissLoadedSpec !== (spec ? spec.id : '')) {
-             setTimeout(function () {
-               var saveKey2 = 'dissection_progress_' + (spec ? spec.id : '');
-               try {
-                 var saved = localStorage.getItem(saveKey2);
-                 if (saved) {
-                   var data = JSON.parse(saved);
-                   if (data.exploredOrgans) upd('exploredOrgans', data.exploredOrgans);
-                   if (data.quizScore) upd('quizScore', data.quizScore);
-                   if (data.completedObjectives) upd('completedObjectives', data.completedObjectives);
-                 }
-               } catch(e) {}
-               upd('_dissLoadedSpec', spec ? spec.id : '');
-             }, 0);
-           }
-           // Keyboard shortcuts (non-hook: window global ref for cleanup)
-           window._dissectionKeyHandler = function (e) {
-             if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-               var oi = organs.findIndex(function(o) { return o.id === d.selectedOrgan; });
-               if (oi < organs.length - 1) upd('selectedOrgan', organs[oi + 1].id);
-             } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-               var oi2 = organs.findIndex(function(o) { return o.id === d.selectedOrgan; });
-               if (oi2 > 0) upd('selectedOrgan', organs[oi2 - 1].id);
-             } else if (e.key === 'Escape') {
-               upd('selectedOrgan', null);
-             } else if (e.key === 'r' || e.key === 'R') {
-               upd('dissZoom', 1); upd('dissPanX', 0); upd('dissPanY', 0);
-             }
-           };
-           if (!window._dissectionKeyBound) {
-             window._dissectionKeyBound = true;
-             window.addEventListener('keydown', function (e) { if (window._dissectionKeyHandler) window._dissectionKeyHandler(e); });
-           }
+          try {
+            var saveKey = 'dissection_progress_' + (spec ? spec.id : '');
+            var saveData = {
+              exploredOrgans: d.exploredOrgans || {},
+              quizScore: d.quizScore || 0,
+              completedObjectives: d.completedObjectives || {},
+              currentLayerIdx: d.currentDissLayer || 0,
+              timeSpent: d.timeSpent || 0
+            };
+            localStorage.setItem(saveKey, JSON.stringify(saveData));
+          } catch (e) { }
+          // Load progress (non-hook: deferred to avoid setState-during-render)
+          if (!d._dissLoadedSpec || d._dissLoadedSpec !== (spec ? spec.id : '')) {
+            setTimeout(function () {
+              var saveKey2 = 'dissection_progress_' + (spec ? spec.id : '');
+              try {
+                var saved = localStorage.getItem(saveKey2);
+                if (saved) {
+                  var data = JSON.parse(saved);
+                  if (data.exploredOrgans) upd('exploredOrgans', data.exploredOrgans);
+                  if (data.quizScore) upd('quizScore', data.quizScore);
+                  if (data.completedObjectives) upd('completedObjectives', data.completedObjectives);
+                }
+              } catch (e) { }
+              upd('_dissLoadedSpec', spec ? spec.id : '');
+            }, 0);
+          }
+          // Keyboard shortcuts (non-hook: window global ref for cleanup)
+          window._dissectionKeyHandler = function (e) {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+              var oi = organs.findIndex(function (o) { return o.id === d.selectedOrgan; });
+              if (oi < organs.length - 1) upd('selectedOrgan', organs[oi + 1].id);
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+              var oi2 = organs.findIndex(function (o) { return o.id === d.selectedOrgan; });
+              if (oi2 > 0) upd('selectedOrgan', organs[oi2 - 1].id);
+            } else if (e.key === 'Escape') {
+              upd('selectedOrgan', null);
+            } else if (e.key === 'r' || e.key === 'R') {
+              upd('dissZoom', 1); upd('dissPanX', 0); upd('dissPanY', 0);
+            }
+          };
+          if (!window._dissectionKeyBound) {
+            window._dissectionKeyBound = true;
+            window.addEventListener('keydown', function (e) { if (window._dissectionKeyHandler) window._dissectionKeyHandler(e); });
+          }
 
           // Simple sound effects via Web Audio API
           var audioCtx = null;
@@ -22677,7 +22687,7 @@
               if (type === 'pin') { osc.frequency.setValueAtTime(880, audioCtx.currentTime); osc.type = 'sine'; gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1); osc.start(); osc.stop(audioCtx.currentTime + 0.1); }
               else if (type === 'peel') { osc.frequency.setValueAtTime(220, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(440, audioCtx.currentTime + 0.2); osc.type = 'sawtooth'; gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25); osc.start(); osc.stop(audioCtx.currentTime + 0.25); }
               else if (type === 'success') { osc.frequency.setValueAtTime(523, audioCtx.currentTime); osc.type = 'sine'; gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15); osc.start(); osc.stop(audioCtx.currentTime + 0.15); var osc2 = audioCtx.createOscillator(); var g2 = audioCtx.createGain(); osc2.connect(g2); g2.connect(audioCtx.destination); g2.gain.setValueAtTime(0.05, audioCtx.currentTime + 0.12); osc2.frequency.setValueAtTime(659, audioCtx.currentTime + 0.12); osc2.type = 'sine'; g2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); osc2.start(audioCtx.currentTime + 0.12); osc2.stop(audioCtx.currentTime + 0.3); }
-            } catch(e) {}
+            } catch (e) { }
           }
 
           var canvasClick = function (e) {
@@ -22769,10 +22779,11 @@
                 React.createElement("p", { className: "text-xs text-slate-500" }, spec.icon + ' ' + spec.name),
                 React.createElement("p", { className: "text-[9px] text-slate-400 mt-0.5" }, '\uD83D\uDD0E Scroll to zoom \u2022 Click organs to explore'),
                 React.createElement("div", { className: "flex gap-1 mt-0.5" },
-                  React.createElement("span", { className: "text-[9px] px-1.5 py-0.5 rounded-full " +
-                    (totalOrgansInSpecimen > 30 ? 'bg-red-100 text-red-600' :
-                     totalOrgansInSpecimen > 18 ? 'bg-amber-100 text-amber-600' :
-                     'bg-green-100 text-green-600')
+                  React.createElement("span", {
+                    className: "text-[9px] px-1.5 py-0.5 rounded-full " +
+                      (totalOrgansInSpecimen > 30 ? 'bg-red-100 text-red-600' :
+                        totalOrgansInSpecimen > 18 ? 'bg-amber-100 text-amber-600' :
+                          'bg-green-100 text-green-600')
                   }, totalOrgansInSpecimen > 30 ? '\uD83D\uDD34 Advanced' : totalOrgansInSpecimen > 18 ? '\uD83D\uDFE1 Intermediate' : '\uD83D\uDFE2 Beginner'),
                   React.createElement("span", { className: "text-[9px] text-slate-400" }, totalOrgansInSpecimen + ' structures \u2022 ' + spec.layers.length + ' layers'),
                   React.createElement("span", { className: "text-[8px] text-slate-300 ml-1" }, '\u2328 \u2190\u2192 nav \u2022 Esc clear \u2022 R reset')
@@ -22852,11 +22863,11 @@
                     var explored = d.exploredOrgans || {};
                     spec.layers.forEach(function (layer) {
                       var layerOrgans = spec.organs[layer.id] || [];
-                      var examined = layerOrgans.filter(function(o) { return explored[specimen + '|' + o.id]; });
+                      var examined = layerOrgans.filter(function (o) { return explored[specimen + '|' + o.id]; });
                       if (examined.length > 0) {
                         report += layer.icon + ' ' + layer.name.toUpperCase() + ' (' + examined.length + '/' + layerOrgans.length + ')\n';
                         report += '---\n';
-                        examined.forEach(function(o) {
+                        examined.forEach(function (o) {
                           report += '\u2022 ' + o.name + ': ' + o.fn.split('.')[0] + '.\n';
                         });
                         report += '\n';
@@ -22871,7 +22882,7 @@
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700"
                 }, '\uD83D\uDCCB Report'),
                 React.createElement("button", {
-                  onClick: function () { upd('revealedLayers', {}); upd('activeLayer', (spec.layers[0]||{}).id||'skin'); upd('selectedOrgan', null); },
+                  onClick: function () { upd('revealedLayers', {}); upd('activeLayer', (spec.layers[0] || {}).id || 'skin'); upd('selectedOrgan', null); },
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700"
                 }, '\uD83D\uDD04 Reset'),
                 React.createElement("button", {
@@ -22905,7 +22916,7 @@
                       // Start countdown
                       var tmr = setInterval(function () {
                         var t = (d.practicalTimer || 120) - 1;
-                        if (t <= 0) { clearInterval(tmr); upd('practicalMode', false); upd('labelMode', 'show'); if (addToast) addToast('\u23F0 Time\'s up! Score: ' + (d.quizScore||0), 'info'); }
+                        if (t <= 0) { clearInterval(tmr); upd('practicalMode', false); upd('labelMode', 'show'); if (addToast) addToast('\u23F0 Time\'s up! Score: ' + (d.quizScore || 0), 'info'); }
                         upd('practicalTimer', t);
                       }, 1000);
                       upd('_practicalInterval', tmr);
@@ -22917,7 +22928,7 @@
                     }
                   },
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.practicalMode ? 'bg-red-600 text-white animate-pulse' : 'bg-orange-100 text-orange-700')
-                }, d.practicalMode ? '\u23F0 ' + Math.floor((d.practicalTimer||0)/60) + ':' + String((d.practicalTimer||0)%60).padStart(2,'0') : '\u23F1 Practical')
+                }, d.practicalMode ? '\u23F0 ' + Math.floor((d.practicalTimer || 0) / 60) + ':' + String((d.practicalTimer || 0) % 60).padStart(2, '0') : '\u23F1 Practical')
               )
             ),
 
@@ -22928,7 +22939,7 @@
                 var isActive = sk === specimen;
                 return React.createElement("button", {
                   key: sk,
-                  onClick: function () { upd('specimen', sk); upd('activeLayer', (sp.layers[0]||{}).id||'skin'); upd('revealedLayers', {}); upd('selectedOrgan', null); upd('quizMode', false); },
+                  onClick: function () { upd('specimen', sk); upd('activeLayer', (sp.layers[0] || {}).id || 'skin'); upd('revealedLayers', {}); upd('selectedOrgan', null); upd('quizMode', false); },
                   className: "px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap " + (isActive ? 'bg-white shadow-md text-slate-800 ring-1 ring-slate-200' : 'text-slate-500 hover:bg-white/60 hover:text-slate-700')
                 }, sp.icon + ' ' + sp.name.split('(')[0].trim());
               })
@@ -22954,23 +22965,38 @@
               React.createElement("div", { className: "flex-1" },
                 React.createElement("canvas", {
                   ref: canvasRef, onClick: canvasClick, onMouseMove: canvasHover,
-                  onWheel: function(e) {
-                    e.preventDefault();
+                  onWheel: function (e) {
+                    var now = Date.now();
+                    if (now - (canvas._lastZoomTs || 0) < 50) return;
+                    canvas._lastZoomTs = now;
                     var z = d.canvasZoom || 1;
-                    z = Math.max(0.5, Math.min(3, z + (e.deltaY > 0 ? -0.1 : 0.1)));
+                    var factor = e.deltaY > 0 ? 0.95 : 1.05;
+                    z = Math.max(0.5, Math.min(3, z * factor));
+                    if (Math.abs(z - 1) < 0.03) z = 1;
                     upd('canvasZoom', z);
                   },
                   width: 500, height: 600,
                   className: "w-full rounded-xl border border-slate-200 cursor-crosshair",
                   style: { aspectRatio: '5/6', background: '#0f172a' }
                 }),
-                // Zoom indicator
-                (d.canvasZoom && d.canvasZoom !== 1) && React.createElement("div", { className: "flex items-center justify-between mt-1" },
-                  React.createElement("span", { className: "text-[10px] text-slate-400" }, '\uD83D\uDD0D ' + Math.round((d.canvasZoom || 1) * 100) + '%'),
+                // Zoom control bar — always visible
+                React.createElement("div", { className: "flex items-center justify-center gap-2 mt-1.5 py-1 px-2 rounded-lg bg-slate-100 border border-slate-200" },
                   React.createElement("button", {
+                    onClick: function () { var z = Math.max(0.5, (d.canvasZoom || 1) * 0.9); if (Math.abs(z - 1) < 0.03) z = 1; upd('canvasZoom', z); },
+                    className: "w-7 h-7 flex items-center justify-center rounded-md text-sm font-bold bg-white shadow-sm border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-all",
+                    title: 'Zoom out'
+                  }, '\u2212'),
+                  React.createElement("span", { className: "text-xs font-semibold text-slate-600 min-w-[48px] text-center select-none" }, Math.round((d.canvasZoom || 1) * 100) + '%'),
+                  React.createElement("button", {
+                    onClick: function () { var z = Math.min(3, (d.canvasZoom || 1) * 1.1); if (Math.abs(z - 1) < 0.03) z = 1; upd('canvasZoom', z); },
+                    className: "w-7 h-7 flex items-center justify-center rounded-md text-sm font-bold bg-white shadow-sm border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-all",
+                    title: 'Zoom in'
+                  }, '+'),
+                  (d.canvasZoom && d.canvasZoom !== 1) && React.createElement("button", {
                     onClick: function () { upd('canvasZoom', 1); },
-                    className: "text-[10px] text-slate-400 hover:text-slate-600 px-1"
-                  }, 'Reset zoom')
+                    className: "ml-1 px-2 h-7 flex items-center justify-center rounded-md text-xs font-semibold bg-white shadow-sm border border-slate-200 text-blue-600 hover:bg-blue-50 transition-all",
+                    title: 'Reset to 100%'
+                  }, '\u21BA 100%')
                 ),
                 currentLayerIdx < spec.layers.length - 1 && React.createElement("button", {
                   onClick: peelCurrentLayer,
@@ -23002,77 +23028,77 @@
                 }, d.showEndocrine ? '\u23F9 Hide Glands' : '\uD83E\uDDE0 Endocrine System')
               ),
 
-                // Flashcard panel
-                d.flashcardMode && React.createElement("div", { className: "mt-2 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-200 p-4" },
-                  React.createElement("div", { className: "text-center" },
-                    React.createElement("div", {
-                      onClick: function () { upd('flashcardFlipped', !d.flashcardFlipped); },
-                      className: "cursor-pointer bg-white rounded-xl shadow-lg p-6 min-h-[100px] flex items-center justify-center border-2 border-indigo-200 hover:shadow-xl transition-shadow"
-                    },
-                      React.createElement("div", null,
-                        !d.flashcardFlipped && React.createElement("div", null,
-                          React.createElement("p", { className: "text-sm font-bold text-indigo-700" }, organs[d.flashcardIdx || 0] ? organs[d.flashcardIdx || 0].name : 'No organs'),
-                          React.createElement("p", { className: "text-[10px] text-indigo-400 mt-1" }, 'Click to reveal function')
-                        ),
-                        d.flashcardFlipped && React.createElement("div", null,
-                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, organs[d.flashcardIdx || 0] ? organs[d.flashcardIdx || 0].fn : ''),
-                          organs[d.flashcardIdx || 0] && organs[d.flashcardIdx || 0].clinical && React.createElement("p", { className: "text-[10px] text-amber-600 mt-1 italic" }, organs[d.flashcardIdx || 0].clinical)
-                        )
+              // Flashcard panel
+              d.flashcardMode && React.createElement("div", { className: "mt-2 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-200 p-4" },
+                React.createElement("div", { className: "text-center" },
+                  React.createElement("div", {
+                    onClick: function () { upd('flashcardFlipped', !d.flashcardFlipped); },
+                    className: "cursor-pointer bg-white rounded-xl shadow-lg p-6 min-h-[100px] flex items-center justify-center border-2 border-indigo-200 hover:shadow-xl transition-shadow"
+                  },
+                    React.createElement("div", null,
+                      !d.flashcardFlipped && React.createElement("div", null,
+                        React.createElement("p", { className: "text-sm font-bold text-indigo-700" }, organs[d.flashcardIdx || 0] ? organs[d.flashcardIdx || 0].name : 'No organs'),
+                        React.createElement("p", { className: "text-[10px] text-indigo-400 mt-1" }, 'Click to reveal function')
+                      ),
+                      d.flashcardFlipped && React.createElement("div", null,
+                        React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, organs[d.flashcardIdx || 0] ? organs[d.flashcardIdx || 0].fn : ''),
+                        organs[d.flashcardIdx || 0] && organs[d.flashcardIdx || 0].clinical && React.createElement("p", { className: "text-[10px] text-amber-600 mt-1 italic" }, organs[d.flashcardIdx || 0].clinical)
                       )
-                    ),
-                    React.createElement("div", { className: "flex items-center justify-between mt-3" },
-                      React.createElement("button", {
-                        onClick: function () { upd('flashcardIdx', Math.max(0, (d.flashcardIdx||0) - 1)); upd('flashcardFlipped', false); },
-                        className: "px-3 py-1 rounded-lg text-xs bg-indigo-100 text-indigo-700"
-                      }, '\u25C0 Prev'),
-                      React.createElement("span", { className: "text-[10px] text-indigo-400" }, ((d.flashcardIdx||0)+1) + ' / ' + organs.length),
-                      React.createElement("button", {
-                        onClick: function () { upd('flashcardIdx', Math.min(organs.length-1, (d.flashcardIdx||0) + 1)); upd('flashcardFlipped', false); },
-                        className: "px-3 py-1 rounded-lg text-xs bg-indigo-100 text-indigo-700"
-                      }, 'Next \u25B6')
                     )
+                  ),
+                  React.createElement("div", { className: "flex items-center justify-between mt-3" },
+                    React.createElement("button", {
+                      onClick: function () { upd('flashcardIdx', Math.max(0, (d.flashcardIdx || 0) - 1)); upd('flashcardFlipped', false); },
+                      className: "px-3 py-1 rounded-lg text-xs bg-indigo-100 text-indigo-700"
+                    }, '\u25C0 Prev'),
+                    React.createElement("span", { className: "text-[10px] text-indigo-400" }, ((d.flashcardIdx || 0) + 1) + ' / ' + organs.length),
+                    React.createElement("button", {
+                      onClick: function () { upd('flashcardIdx', Math.min(organs.length - 1, (d.flashcardIdx || 0) + 1)); upd('flashcardFlipped', false); },
+                      className: "px-3 py-1 rounded-lg text-xs bg-indigo-100 text-indigo-700"
+                    }, 'Next \u25B6')
                   )
-                ),
-                // Comparison panel
-                d.compareMode && sel && React.createElement("div", { className: "mt-2 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl border border-cyan-200 p-3" },
-                  React.createElement("div", { className: "text-xs font-bold text-cyan-800 mb-2" }, '\uD83D\uDD0D Comparing: ' + sel.name + ' across specimens'),
-                  React.createElement("div", { className: "space-y-1.5 max-h-48 overflow-y-auto" },
-                    SPEC_KEYS.map(function (sk) {
-                      var sp = SPECIMENS[sk];
-                      // Search for matching organ name in all layers
-                      var match = null;
+                )
+              ),
+              // Comparison panel
+              d.compareMode && sel && React.createElement("div", { className: "mt-2 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl border border-cyan-200 p-3" },
+                React.createElement("div", { className: "text-xs font-bold text-cyan-800 mb-2" }, '\uD83D\uDD0D Comparing: ' + sel.name + ' across specimens'),
+                React.createElement("div", { className: "space-y-1.5 max-h-48 overflow-y-auto" },
+                  SPEC_KEYS.map(function (sk) {
+                    var sp = SPECIMENS[sk];
+                    // Search for matching organ name in all layers
+                    var match = null;
+                    sp.layers.forEach(function (layer) {
+                      if (match) return;
+                      var layerOrgans = sp.organs[layer.id] || [];
+                      layerOrgans.forEach(function (org) {
+                        if (!match && org.name.toLowerCase() === sel.name.toLowerCase()) match = { organ: org, layer: layer };
+                      });
+                    });
+                    // Also try partial match (e.g. "Heart" matches "3-Chamber Heart")
+                    if (!match) {
+                      var searchWord = sel.name.split(' ').pop().toLowerCase();
                       sp.layers.forEach(function (layer) {
                         if (match) return;
                         var layerOrgans = sp.organs[layer.id] || [];
                         layerOrgans.forEach(function (org) {
-                          if (!match && org.name.toLowerCase() === sel.name.toLowerCase()) match = { organ: org, layer: layer };
+                          if (!match && org.name.toLowerCase().indexOf(searchWord) >= 0) match = { organ: org, layer: layer };
                         });
                       });
-                      // Also try partial match (e.g. "Heart" matches "3-Chamber Heart")
-                      if (!match) {
-                        var searchWord = sel.name.split(' ').pop().toLowerCase();
-                        sp.layers.forEach(function (layer) {
-                          if (match) return;
-                          var layerOrgans = sp.organs[layer.id] || [];
-                          layerOrgans.forEach(function (org) {
-                            if (!match && org.name.toLowerCase().indexOf(searchWord) >= 0) match = { organ: org, layer: layer };
-                          });
-                        });
-                      }
-                      if (!match) return null;
-                      var isCurrent = sk === specimen;
-                      return React.createElement("div", {
-                        key: sk,
-                        className: "p-2 rounded-lg text-xs " + (isCurrent ? 'bg-cyan-100 border border-cyan-300' : 'bg-white border border-slate-200')
-                      },
-                        React.createElement("div", { className: "font-bold " + (isCurrent ? 'text-cyan-800' : 'text-slate-700') }, sp.icon + ' ' + sp.name.split('(')[0].trim() + ': ' + match.organ.name),
-                        React.createElement("p", { className: "text-[10px] text-slate-500 mt-0.5 leading-relaxed" }, match.organ.fn.substring(0, 120) + (match.organ.fn.length > 120 ? '...' : '')),
-                        match.organ.clinical && React.createElement("p", { className: "text-[10px] text-amber-600 mt-0.5 italic" }, '\uD83C\uDFEB ' + match.organ.clinical.substring(0, 80) + '...')
-                      );
-                    })
-                  ),
-                  !sel && React.createElement("p", { className: "text-xs text-cyan-600 italic" }, 'Click an organ to compare it across all specimens')
+                    }
+                    if (!match) return null;
+                    var isCurrent = sk === specimen;
+                    return React.createElement("div", {
+                      key: sk,
+                      className: "p-2 rounded-lg text-xs " + (isCurrent ? 'bg-cyan-100 border border-cyan-300' : 'bg-white border border-slate-200')
+                    },
+                      React.createElement("div", { className: "font-bold " + (isCurrent ? 'text-cyan-800' : 'text-slate-700') }, sp.icon + ' ' + sp.name.split('(')[0].trim() + ': ' + match.organ.name),
+                      React.createElement("p", { className: "text-[10px] text-slate-500 mt-0.5 leading-relaxed" }, match.organ.fn.substring(0, 120) + (match.organ.fn.length > 120 ? '...' : '')),
+                      match.organ.clinical && React.createElement("p", { className: "text-[10px] text-amber-600 mt-0.5 italic" }, '\uD83C\uDFEB ' + match.organ.clinical.substring(0, 80) + '...')
+                    );
+                  })
                 ),
+                !sel && React.createElement("p", { className: "text-xs text-cyan-600 italic" }, 'Click an organ to compare it across all specimens')
+              ),
 
               // Sidebar
               React.createElement("div", { className: "w-72 space-y-3" },
@@ -23083,14 +23109,14 @@
                     React.createElement("div", { className: "flex gap-1" },
                       React.createElement("button", {
                         onClick: function () {
-                          var idx = organs.findIndex(function(o) { return o.id === sel.id; });
+                          var idx = organs.findIndex(function (o) { return o.id === sel.id; });
                           if (idx > 0) upd('selectedOrgan', organs[idx - 1].id);
                         },
                         className: "w-6 h-6 rounded bg-slate-100 text-slate-500 text-xs hover:bg-slate-200 flex items-center justify-center"
                       }, '\u25C0'),
                       React.createElement("button", {
                         onClick: function () {
-                          var idx = organs.findIndex(function(o) { return o.id === sel.id; });
+                          var idx = organs.findIndex(function (o) { return o.id === sel.id; });
                           if (idx < organs.length - 1) upd('selectedOrgan', organs[idx + 1].id);
                         },
                         className: "w-6 h-6 rounded bg-slate-100 text-slate-500 text-xs hover:bg-slate-200 flex items-center justify-center"
@@ -23098,7 +23124,7 @@
                     )
                   ),
                   // Embryological origin badge
-                  (function() {
+                  (function () {
                     var devMap = {
                       heart: 'Mesoderm', liver: 'Endoderm', brain: 'Ectoderm', kidney: 'Mesoderm',
                       lung: 'Endoderm', stomach: 'Endoderm', intestine: 'Endoderm', spleen: 'Mesoderm',
@@ -23107,13 +23133,13 @@
                       blood: 'Mesoderm', thyroid: 'Endoderm'
                     };
                     var sn = sel.name.toLowerCase(); var dev = null;
-                    Object.keys(devMap).forEach(function(k) { if (sn.indexOf(k) >= 0) dev = devMap[k]; });
+                    Object.keys(devMap).forEach(function (k) { if (sn.indexOf(k) >= 0) dev = devMap[k]; });
                     var dColors = { Ectoderm: 'bg-blue-50 text-blue-600 border-blue-200', Mesoderm: 'bg-red-50 text-red-600 border-red-200', Endoderm: 'bg-yellow-50 text-yellow-600 border-yellow-200' };
                     var dcKey = dev ? (dev.indexOf('Ecto') >= 0 ? 'Ectoderm' : dev.indexOf('Meso') >= 0 ? 'Mesoderm' : 'Endoderm') : null;
                     return dev ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[9px] font-bold mr-1 mb-1 border " + (dColors[dcKey] || 'bg-slate-50 text-slate-600 border-slate-200') }, '\uD83E\uDDEC ' + dev) : null;
                   })(),
                   // Tissue type badge
-                  (function() {
+                  (function () {
                     var tissueMap = {
                       heart: 'Cardiac muscle', liver: 'Epithelial', brain: 'Nervous', kidney: 'Epithelial',
                       lung: 'Epithelial', stomach: 'Smooth muscle', intestine: 'Epithelial', spleen: 'Lymphoid',
@@ -23122,29 +23148,31 @@
                       eye: 'Mixed', lens: 'Epithelial', retina: 'Nervous', esophagus: 'Smooth muscle'
                     };
                     var sn = sel.name.toLowerCase(); var tissue = null;
-                    Object.keys(tissueMap).forEach(function(k) { if (sn.indexOf(k) >= 0) tissue = tissueMap[k]; });
-                    var tColors = { 'Cardiac muscle': 'bg-red-100 text-red-600', 'Epithelial': 'bg-emerald-100 text-emerald-600',
+                    Object.keys(tissueMap).forEach(function (k) { if (sn.indexOf(k) >= 0) tissue = tissueMap[k]; });
+                    var tColors = {
+                      'Cardiac muscle': 'bg-red-100 text-red-600', 'Epithelial': 'bg-emerald-100 text-emerald-600',
                       'Nervous': 'bg-purple-100 text-purple-600', 'Smooth muscle': 'bg-rose-100 text-rose-600',
                       'Lymphoid': 'bg-amber-100 text-amber-600', 'Connective': 'bg-blue-100 text-blue-600',
                       'Skeletal muscle': 'bg-red-100 text-red-600', 'Glandular': 'bg-teal-100 text-teal-600',
-                      'Mixed': 'bg-slate-100 text-slate-600', 'Connective (fluid)': 'bg-blue-100 text-blue-600' };
+                      'Mixed': 'bg-slate-100 text-slate-600', 'Connective (fluid)': 'bg-blue-100 text-blue-600'
+                    };
                     return tissue ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[9px] font-bold mr-1 mb-1 " + (tColors[tissue] || 'bg-slate-100 text-slate-600') }, '\uD83E\uDDA0 ' + tissue) : null;
                   })(),
                   // Organ weight estimate
-                  (function() {
-                    var weightMap = {heart:'250-350g',liver:'1.4-1.5kg',brain:'1.3-1.4kg',kidney:'120-170g',lung:'0.5-0.6kg',stomach:'150g',spleen:'170g',pancreas:'80g',eye:'7.5g',thyroid:'20-25g',adrenal:'4-5g',gallbladder:'30-50ml'};
+                  (function () {
+                    var weightMap = { heart: '250-350g', liver: '1.4-1.5kg', brain: '1.3-1.4kg', kidney: '120-170g', lung: '0.5-0.6kg', stomach: '150g', spleen: '170g', pancreas: '80g', eye: '7.5g', thyroid: '20-25g', adrenal: '4-5g', gallbladder: '30-50ml' };
                     var w = null; var sn = sel.name.toLowerCase();
-                    Object.keys(weightMap).forEach(function(k) { if (sn.indexOf(k) >= 0) w = weightMap[k]; });
+                    Object.keys(weightMap).forEach(function (k) { if (sn.indexOf(k) >= 0) w = weightMap[k]; });
                     return w ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 text-slate-500 border border-slate-200 mr-1 mb-1" }, '\u2696\uFE0F ' + w + ' (human)') : null;
                   })(),
                   // System badge
-                  (function() {
+                  (function () {
                     var sn = sel.name.toLowerCase();
                     var sysN = null;
-                    var sysBadges = {circulatory:'\u2764\uFE0F Circulatory',digestive:'\uD83C\uDF7D\uFE0F Digestive',respiratory:'\uD83C\uDF2C\uFE0F Respiratory',nervous:'\u26A1 Nervous',skeletal:'\uD83E\uDDB4 Skeletal',muscular:'\uD83D\uDCAA Muscular',excretory:'\uD83D\uDCA7 Excretory',reproductive:'\u2665\uFE0F Reproductive'};
-                    var sysCols = {circulatory:'bg-red-50 text-red-700 border-red-200',digestive:'bg-amber-50 text-amber-700 border-amber-200',respiratory:'bg-blue-50 text-blue-700 border-blue-200',nervous:'bg-purple-50 text-purple-700 border-purple-200',skeletal:'bg-slate-50 text-slate-700 border-slate-200',muscular:'bg-red-50 text-red-700 border-red-200',excretory:'bg-lime-50 text-lime-700 border-lime-200',reproductive:'bg-pink-50 text-pink-700 border-pink-200'};
-                    var sysKW = {circulatory:['heart','aorta','artery','vein','atrium','ventricle','blood','aortic'],digestive:['stomach','liver','intestin','gizzard','crop','pancreas','gallbladder'],respiratory:['lung','gill','trachea','swim bladder'],nervous:['brain','nerve','spinal','eye','optic'],skeletal:['bone','skull','vertebr','femur'],muscular:['muscle','rectus'],excretory:['kidney','nephri'],reproductive:['gonad','ovary','testi']};
-                    Object.keys(sysKW).forEach(function(sk) { sysKW[sk].forEach(function(kw) { if (!sysN && sn.indexOf(kw) >= 0) sysN = sk; }); });
+                    var sysBadges = { circulatory: '\u2764\uFE0F Circulatory', digestive: '\uD83C\uDF7D\uFE0F Digestive', respiratory: '\uD83C\uDF2C\uFE0F Respiratory', nervous: '\u26A1 Nervous', skeletal: '\uD83E\uDDB4 Skeletal', muscular: '\uD83D\uDCAA Muscular', excretory: '\uD83D\uDCA7 Excretory', reproductive: '\u2665\uFE0F Reproductive' };
+                    var sysCols = { circulatory: 'bg-red-50 text-red-700 border-red-200', digestive: 'bg-amber-50 text-amber-700 border-amber-200', respiratory: 'bg-blue-50 text-blue-700 border-blue-200', nervous: 'bg-purple-50 text-purple-700 border-purple-200', skeletal: 'bg-slate-50 text-slate-700 border-slate-200', muscular: 'bg-red-50 text-red-700 border-red-200', excretory: 'bg-lime-50 text-lime-700 border-lime-200', reproductive: 'bg-pink-50 text-pink-700 border-pink-200' };
+                    var sysKW = { circulatory: ['heart', 'aorta', 'artery', 'vein', 'atrium', 'ventricle', 'blood', 'aortic'], digestive: ['stomach', 'liver', 'intestin', 'gizzard', 'crop', 'pancreas', 'gallbladder'], respiratory: ['lung', 'gill', 'trachea', 'swim bladder'], nervous: ['brain', 'nerve', 'spinal', 'eye', 'optic'], skeletal: ['bone', 'skull', 'vertebr', 'femur'], muscular: ['muscle', 'rectus'], excretory: ['kidney', 'nephri'], reproductive: ['gonad', 'ovary', 'testi'] };
+                    Object.keys(sysKW).forEach(function (sk) { sysKW[sk].forEach(function (kw) { if (!sysN && sn.indexOf(kw) >= 0) sysN = sk; }); });
                     return sysN ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[9px] font-bold border mb-1 " + sysCols[sysN] }, sysBadges[sysN]) : null;
                   })(),
                   React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-2" }, sel.fn),
@@ -23158,7 +23186,7 @@
                     React.createElement("span", null, '\uD83C\uDFF7 ' + (sel.layer || activeLayer))
                   ),
                   // Clinical correlations
-                  (function() {
+                  (function () {
                     var clinMap = {
                       heart: '\u26A0 Myocardial infarction, arrhythmia, heart murmur',
                       liver: '\u26A0 Hepatitis, cirrhosis, fatty liver disease',
@@ -23174,11 +23202,11 @@
                       retina: '\u26A0 Macular degeneration, diabetic retinopathy'
                     };
                     var sn = sel.name.toLowerCase(); var clin = null;
-                    Object.keys(clinMap).forEach(function(k) { if (sn.indexOf(k) >= 0) clin = clinMap[k]; });
+                    Object.keys(clinMap).forEach(function (k) { if (sn.indexOf(k) >= 0) clin = clinMap[k]; });
                     return clin ? React.createElement("div", { className: "text-[9px] text-amber-500 mt-1 italic border-l-2 border-amber-300 pl-2" }, clin) : null;
                   })(),
                   // Related organs info
-                  (function() {
+                  (function () {
                     var relMap = {
                       heart: ['lungs', 'aorta', 'blood vessels'],
                       lungs: ['heart', 'trachea', 'diaphragm'],
@@ -23189,7 +23217,7 @@
                     };
                     var sn = sel.name.toLowerCase();
                     var related = null;
-                    Object.keys(relMap).forEach(function(k) { if (sn.indexOf(k) >= 0) related = relMap[k]; });
+                    Object.keys(relMap).forEach(function (k) { if (sn.indexOf(k) >= 0) related = relMap[k]; });
                     return related ? React.createElement("div", { className: "text-[9px] text-slate-400 mt-1" },
                       React.createElement("span", { className: "font-bold" }, '\uD83D\uDD17 Related: '),
                       related.join(', ')
@@ -23221,7 +23249,7 @@
 
                 // Organ list with search
                 !sel && React.createElement("div", { className: "bg-white rounded-xl border p-3" },
-                  React.createElement("div", { className: "text-xs font-bold text-slate-700 mb-2" }, (spec.layers[currentLayerIdx]||{}).icon + ' ' + (spec.layers[currentLayerIdx]||{}).name + ' Structures (' + organs.length + ')'),
+                  React.createElement("div", { className: "text-xs font-bold text-slate-700 mb-2" }, (spec.layers[currentLayerIdx] || {}).icon + ' ' + (spec.layers[currentLayerIdx] || {}).name + ' Structures (' + organs.length + ')'),
                   React.createElement("input", {
                     type: "text",
                     placeholder: "\uD83D\uDD0D Search organs...",
@@ -23237,8 +23265,8 @@
                     }).map(function (org) {
                       var orgSys = null;
                       var orgName = org.name.toLowerCase();
-                      var sysKeys = ['circulatory','digestive','respiratory','nervous','skeletal','muscular','excretory','reproductive'];
-                      var sysKws = {circulatory:['heart','aorta','artery','vein','atrium','ventricle','blood','aortic'],digestive:['stomach','liver','intestin','gizzard','crop','pancreas','gallbladder'],respiratory:['lung','gill','trachea','swim bladder'],nervous:['brain','nerve','spinal','eye','optic'],skeletal:['bone','skull','vertebr','femur'],muscular:['muscle','rectus'],excretory:['kidney','nephri'],reproductive:['gonad','ovary','testi','oviduct']};
+                      var sysKeys = ['circulatory', 'digestive', 'respiratory', 'nervous', 'skeletal', 'muscular', 'excretory', 'reproductive'];
+                      var sysKws = { circulatory: ['heart', 'aorta', 'artery', 'vein', 'atrium', 'ventricle', 'blood', 'aortic'], digestive: ['stomach', 'liver', 'intestin', 'gizzard', 'crop', 'pancreas', 'gallbladder'], respiratory: ['lung', 'gill', 'trachea', 'swim bladder'], nervous: ['brain', 'nerve', 'spinal', 'eye', 'optic'], skeletal: ['bone', 'skull', 'vertebr', 'femur'], muscular: ['muscle', 'rectus'], excretory: ['kidney', 'nephri'], reproductive: ['gonad', 'ovary', 'testi', 'oviduct'] };
                       for (var si = 0; si < sysKeys.length; si++) {
                         var kws = sysKws[sysKeys[si]];
                         for (var ki = 0; kws && ki < kws.length; ki++) {
@@ -23246,7 +23274,7 @@
                         }
                         if (orgSys) break;
                       }
-                      var sysColorsMap = {circulatory:'#ef4444',digestive:'#f59e0b',respiratory:'#3b82f6',nervous:'#8b5cf6',skeletal:'#94a3b8',muscular:'#dc2626',excretory:'#84cc16',reproductive:'#ec4899'};
+                      var sysColorsMap = { circulatory: '#ef4444', digestive: '#f59e0b', respiratory: '#3b82f6', nervous: '#8b5cf6', skeletal: '#94a3b8', muscular: '#dc2626', excretory: '#84cc16', reproductive: '#ec4899' };
                       var dotColor = orgSys ? sysColorsMap[orgSys] : '#94a3b8';
                       var isExplored = (d.exploredOrgans || {})[specimen + '|' + org.id];
                       return React.createElement("button", {
@@ -23340,27 +23368,27 @@
                   ),
                   React.createElement("div", { className: "mt-1 text-[9px] text-blue-500" }, exploredCount + ' of ' + totalOrgansInSpecimen + ' structures examined'),
                   progressPct >= 100 && React.createElement("div", { className: "mt-1" },
-                  React.createElement("div", { className: "text-[10px] font-bold text-green-600" }, '\u2B50 Specimen Complete!'),
-                  React.createElement("div", { className: "text-[9px] text-emerald-500 mt-0.5" },
-                    '\uD83C\uDFC6 ' + Object.keys(d.exploredOrgans || {}).length + '/' + totalOrgansInSpecimen + ' identified'
-                  ),
-                  React.createElement("button", {
-                    onClick: function () {
-                      var cert = '\u2728 CERTIFICATE OF COMPLETION \u2728\n';
-                      cert += '\u2500'.repeat(40) + '\n';
-                      cert += 'Specimen: ' + spec.icon + ' ' + spec.name + '\n';
-                      cert += 'Structures identified: ' + totalOrgansInSpecimen + '/' + totalOrgansInSpecimen + '\n';
-                      cert += 'Layers examined: ' + spec.layers.length + '\n';
-                      cert += 'Quiz score: ' + (d.quizScore || 0) + '\n';
-                      cert += 'Date: ' + new Date().toLocaleDateString() + '\n';
-                      cert += '\u2500'.repeat(40) + '\n';
-                      cert += 'Verified by AlloFlow Virtual Dissection Lab';
-                      if (navigator.clipboard) navigator.clipboard.writeText(cert);
-                      if (addToast) addToast('\uD83C\uDF93 Certificate copied!', 'success');
-                    },
-                    className: "mt-1 px-2 py-1 rounded-lg text-[9px] font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white"
-                  }, '\uD83C\uDF93 Copy Certificate')
-                )
+                    React.createElement("div", { className: "text-[10px] font-bold text-green-600" }, '\u2B50 Specimen Complete!'),
+                    React.createElement("div", { className: "text-[9px] text-emerald-500 mt-0.5" },
+                      '\uD83C\uDFC6 ' + Object.keys(d.exploredOrgans || {}).length + '/' + totalOrgansInSpecimen + ' identified'
+                    ),
+                    React.createElement("button", {
+                      onClick: function () {
+                        var cert = '\u2728 CERTIFICATE OF COMPLETION \u2728\n';
+                        cert += '\u2500'.repeat(40) + '\n';
+                        cert += 'Specimen: ' + spec.icon + ' ' + spec.name + '\n';
+                        cert += 'Structures identified: ' + totalOrgansInSpecimen + '/' + totalOrgansInSpecimen + '\n';
+                        cert += 'Layers examined: ' + spec.layers.length + '\n';
+                        cert += 'Quiz score: ' + (d.quizScore || 0) + '\n';
+                        cert += 'Date: ' + new Date().toLocaleDateString() + '\n';
+                        cert += '\u2500'.repeat(40) + '\n';
+                        cert += 'Verified by AlloFlow Virtual Dissection Lab';
+                        if (navigator.clipboard) navigator.clipboard.writeText(cert);
+                        if (addToast) addToast('\uD83C\uDF93 Certificate copied!', 'success');
+                      },
+                      className: "mt-1 px-2 py-1 rounded-lg text-[9px] font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+                    }, '\uD83C\uDF93 Copy Certificate')
+                  )
                 ),
 
                 // Specimen stats card
@@ -23380,9 +23408,9 @@
                       React.createElement("div", { className: "text-[8px] text-slate-400" }, 'Quiz Score')
                     ),
                     React.createElement("div", null,
-                      React.createElement("div", { className: "text-lg font-bold text-violet-600" }, (function() {
+                      React.createElement("div", { className: "text-lg font-bold text-violet-600" }, (function () {
                         var t = d.timeSpent || 0;
-                        return t < 60 ? t + 's' : Math.floor(t/60) + 'm';
+                        return t < 60 ? t + 's' : Math.floor(t / 60) + 'm';
                       })()),
                       React.createElement("div", { className: "text-[8px] text-slate-400" }, 'Time')
                     )
@@ -29427,21 +29455,21 @@
           // Per-species reproductive strategies and parameters
           var BREEDING_DATA = {
             // Livebearers — give birth to free-swimming fry, no egg stage
-            guppy:    { type: 'livebearer',   gestationTicks: 20, fryCount: [3, 7],  breedChance: 0.12, minPop: 2, desc: 'Males display vibrant color patterns to attract females. Females store sperm and can produce multiple broods.' },
-            platy:    { type: 'livebearer',   gestationTicks: 18, fryCount: [2, 5],  breedChance: 0.10, minPop: 2, desc: 'Prolific livebearers that give birth to free-swimming fry every 4-6 weeks.' },
-            molly:    { type: 'livebearer',   gestationTicks: 22, fryCount: [3, 8],  breedChance: 0.08, minPop: 2, desc: 'Mollies prefer slightly brackish conditions for breeding. Fry are large and independent at birth.' },
+            guppy: { type: 'livebearer', gestationTicks: 20, fryCount: [3, 7], breedChance: 0.12, minPop: 2, desc: 'Males display vibrant color patterns to attract females. Females store sperm and can produce multiple broods.' },
+            platy: { type: 'livebearer', gestationTicks: 18, fryCount: [2, 5], breedChance: 0.10, minPop: 2, desc: 'Prolific livebearers that give birth to free-swimming fry every 4-6 weeks.' },
+            molly: { type: 'livebearer', gestationTicks: 22, fryCount: [3, 8], breedChance: 0.08, minPop: 2, desc: 'Mollies prefer slightly brackish conditions for breeding. Fry are large and independent at birth.' },
             // Egg-layers — lay eggs on surfaces, parents may guard
-            angel:    { type: 'egg_layer',    gestationTicks: 30, fryCount: [1, 3],  breedChance: 0.05, minPop: 2, desc: 'Angelfish carefully clean a flat surface before laying hundreds of eggs. Both parents fan and guard the clutch.' },
-            clown:    { type: 'egg_layer',    gestationTicks: 35, fryCount: [1, 2],  breedChance: 0.04, minPop: 2, hermaphrodite: true, desc: 'All clownfish are born male. The dominant fish becomes female — if she dies, the next male transitions.' },
-            cory:     { type: 'egg_layer',    gestationTicks: 25, fryCount: [2, 4],  breedChance: 0.06, minPop: 2, desc: 'Corydoras perform a unique "T-position" mating dance. Females carry eggs in their pelvic fins before depositing them on glass or leaves.' },
+            angel: { type: 'egg_layer', gestationTicks: 30, fryCount: [1, 3], breedChance: 0.05, minPop: 2, desc: 'Angelfish carefully clean a flat surface before laying hundreds of eggs. Both parents fan and guard the clutch.' },
+            clown: { type: 'egg_layer', gestationTicks: 35, fryCount: [1, 2], breedChance: 0.04, minPop: 2, hermaphrodite: true, desc: 'All clownfish are born male. The dominant fish becomes female — if she dies, the next male transitions.' },
+            cory: { type: 'egg_layer', gestationTicks: 25, fryCount: [2, 4], breedChance: 0.06, minPop: 2, desc: 'Corydoras perform a unique "T-position" mating dance. Females carry eggs in their pelvic fins before depositing them on glass or leaves.' },
             // Bubble nest builders — male builds floating bubble nest
-            betta:    { type: 'bubble_nest',  gestationTicks: 25, fryCount: [1, 2],  breedChance: 0.04, minPop: 1, desc: 'Males blow mucus-coated bubbles to build a floating nest. After spawning, the male guards eggs and returns fallen fry to the nest.' },
+            betta: { type: 'bubble_nest', gestationTicks: 25, fryCount: [1, 2], breedChance: 0.04, minPop: 1, desc: 'Males blow mucus-coated bubbles to build a floating nest. After spawning, the male guards eggs and returns fallen fry to the nest.' },
             // Colony breeders — rapid reproduction, females carry eggs
-            shrimp:   { type: 'colony',       gestationTicks: 12, fryCount: [4, 10], breedChance: 0.15, minPop: 2, desc: 'Females carry fertilized eggs under their abdomen ("berried"). Shrimplets are miniature adults at birth.' },
+            shrimp: { type: 'colony', gestationTicks: 12, fryCount: [4, 10], breedChance: 0.15, minPop: 2, desc: 'Females carry fertilized eggs under their abdomen ("berried"). Shrimplets are miniature adults at birth.' },
             // Schooling egg-scatterers — eggs scattered among plants, no parental care
-            neon:     { type: 'egg_scatter',  gestationTicks: 28, fryCount: [1, 3],  breedChance: 0.03, minPop: 4, desc: 'Scatter tiny adhesive eggs among fine-leaved plants at dawn. Eggs are light-sensitive and hatch in 24 hours.' },
-            cardinal: { type: 'egg_scatter',  gestationTicks: 28, fryCount: [1, 3],  breedChance: 0.03, minPop: 4, desc: 'Prefer very soft, acidic water for spawning. Eggs and fry are extremely small and fragile.' },
-            rummy:    { type: 'egg_scatter',  gestationTicks: 28, fryCount: [1, 2],  breedChance: 0.03, minPop: 4, desc: 'Spawn in tight schools at first light. Red nose coloration intensifies during courtship.' }
+            neon: { type: 'egg_scatter', gestationTicks: 28, fryCount: [1, 3], breedChance: 0.03, minPop: 4, desc: 'Scatter tiny adhesive eggs among fine-leaved plants at dawn. Eggs are light-sensitive and hatch in 24 hours.' },
+            cardinal: { type: 'egg_scatter', gestationTicks: 28, fryCount: [1, 3], breedChance: 0.03, minPop: 4, desc: 'Prefer very soft, acidic water for spawning. Eggs and fry are extremely small and fragile.' },
+            rummy: { type: 'egg_scatter', gestationTicks: 28, fryCount: [1, 2], breedChance: 0.03, minPop: 4, desc: 'Spawn in tight schools at first light. Red nose coloration intensifies during courtship.' }
           };
 
           // Breeding event messages by reproductive type
@@ -29453,7 +29481,7 @@
             },
             egg_layer: {
               court: function (n) { return '\uD83D\uDC95 Your ' + n + ' are cleaning a surface for egg-laying...'; },
-              eggs:  function (n) { return '\uD83E\uDD5A ' + n + ' have laid eggs! Parents are guarding the nest.'; },
+              eggs: function (n) { return '\uD83E\uDD5A ' + n + ' have laid eggs! Parents are guarding the nest.'; },
               birth: function (n, c) { return '\uD83D\uDC23 ' + c + ' ' + n + ' fry have hatched from the eggs!'; },
               abort: function (n) { return '\u26A0\uFE0F ' + n + ' eggs failed to develop \u2014 water quality too poor.'; }
             },
@@ -31073,54 +31101,54 @@
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
                     React.createElement("h4", { className: "text-xs font-bold text-emerald-700" }, "\uD83C\uDF31 Aquatic Plants (" + tankPlants.length + "/8)"),
                     tankPlants.length > 0 && React.createElement("span", { className: "text-[9px] text-emerald-500 italic" },
-                      "\uD83C\uDF3F " + tankPlants.reduce(function(s, pid) { var b = plantBiomass[pid]; return s + (b ? b : 0); }, 0).toFixed(1) + " total biomass"
+                      "\uD83C\uDF3F " + tankPlants.reduce(function (s, pid) { var b = plantBiomass[pid]; return s + (b ? b : 0); }, 0).toFixed(1) + " total biomass"
                     )
                   ),
                   // Current plants list
                   tankPlants.length === 0
                     ? React.createElement("div", { className: "text-center py-4 text-sm text-emerald-400 italic" },
-                        "\uD83C\uDF3E No plants yet \u2014 add some to boost O\u2082 and absorb nitrates!"
-                      )
+                      "\uD83C\uDF3E No plants yet \u2014 add some to boost O\u2082 and absorb nitrates!"
+                    )
                     : React.createElement("div", { className: "space-y-1.5 mb-3" },
-                        tankPlants.map(function(pid, idx) {
-                          var pSpec = plantCatalog.find(function(ps) { return ps.id === pid; });
-                          if (!pSpec) return null;
-                          var hp = (plantHealth[pid] !== undefined ? plantHealth[pid] : 100);
-                          var bm = (plantBiomass[pid] !== undefined ? plantBiomass[pid] : 1.0);
-                          var hpColor = hp > 70 ? 'bg-green-500' : hp > 40 ? 'bg-yellow-500' : 'bg-red-500';
-                          var hpTextColor = hp > 70 ? 'text-green-600' : hp > 40 ? 'text-yellow-600' : 'text-red-600';
-                          return React.createElement("div", {
-                            key: pid + '-' + idx,
-                            className: "flex items-center gap-2 bg-white/80 rounded-lg p-2 border border-emerald-100 hover:border-emerald-300 transition-all"
-                          },
-                            React.createElement("span", { className: "text-lg" }, pSpec.icon || '\uD83C\uDF3F'),
-                            React.createElement("div", { className: "flex-1 min-w-0" },
-                              React.createElement("div", { className: "text-[11px] font-bold text-emerald-800 truncate" }, pSpec.name),
-                              React.createElement("div", { className: "flex items-center gap-2 mt-0.5" },
-                                React.createElement("div", { className: "flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden" },
-                                  React.createElement("div", { style: { width: Math.max(0, Math.min(100, hp)) + '%', transition: 'width 0.5s' }, className: "h-full rounded-full " + hpColor })
-                                ),
-                                React.createElement("span", { className: "text-[9px] font-mono " + hpTextColor }, hp.toFixed(0) + '%'),
-                                React.createElement("span", { className: "text-[9px] text-slate-400" }, '\uD83C\uDF3F' + bm.toFixed(1))
-                              )
-                            ),
-                            React.createElement("button", {
-                              onClick: function() { removePlant(idx); },
-                              className: "text-[10px] text-red-400 hover:text-red-600 font-bold px-1",
-                              title: "Remove plant"
-                            }, "\u2715")
-                          );
-                        })
-                      ),
+                      tankPlants.map(function (pid, idx) {
+                        var pSpec = plantCatalog.find(function (ps) { return ps.id === pid; });
+                        if (!pSpec) return null;
+                        var hp = (plantHealth[pid] !== undefined ? plantHealth[pid] : 100);
+                        var bm = (plantBiomass[pid] !== undefined ? plantBiomass[pid] : 1.0);
+                        var hpColor = hp > 70 ? 'bg-green-500' : hp > 40 ? 'bg-yellow-500' : 'bg-red-500';
+                        var hpTextColor = hp > 70 ? 'text-green-600' : hp > 40 ? 'text-yellow-600' : 'text-red-600';
+                        return React.createElement("div", {
+                          key: pid + '-' + idx,
+                          className: "flex items-center gap-2 bg-white/80 rounded-lg p-2 border border-emerald-100 hover:border-emerald-300 transition-all"
+                        },
+                          React.createElement("span", { className: "text-lg" }, pSpec.icon || '\uD83C\uDF3F'),
+                          React.createElement("div", { className: "flex-1 min-w-0" },
+                            React.createElement("div", { className: "text-[11px] font-bold text-emerald-800 truncate" }, pSpec.name),
+                            React.createElement("div", { className: "flex items-center gap-2 mt-0.5" },
+                              React.createElement("div", { className: "flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden" },
+                                React.createElement("div", { style: { width: Math.max(0, Math.min(100, hp)) + '%', transition: 'width 0.5s' }, className: "h-full rounded-full " + hpColor })
+                              ),
+                              React.createElement("span", { className: "text-[9px] font-mono " + hpTextColor }, hp.toFixed(0) + '%'),
+                              React.createElement("span", { className: "text-[9px] text-slate-400" }, '\uD83C\uDF3F' + bm.toFixed(1))
+                            )
+                          ),
+                          React.createElement("button", {
+                            onClick: function () { removePlant(idx); },
+                            className: "text-[10px] text-red-400 hover:text-red-600 font-bold px-1",
+                            title: "Remove plant"
+                          }, "\u2715")
+                        );
+                      })
+                    ),
                   // Add plant selector
                   tankPlants.length < 8 && React.createElement("div", { className: "mt-2" },
                     React.createElement("div", { className: "text-[10px] font-bold text-emerald-600 mb-1" }, "\u2795 Add a Plant:"),
                     React.createElement("div", { className: "grid grid-cols-2 gap-1.5 max-h-32 overflow-y-auto" },
-                      plantCatalog.map(function(ps) {
+                      plantCatalog.map(function (ps) {
                         var alreadyAdded = tankPlants.indexOf(ps.id) !== -1;
                         return React.createElement("button", {
                           key: ps.id,
-                          onClick: function() { if (!alreadyAdded) addPlant(ps.id); },
+                          onClick: function () { if (!alreadyAdded) addPlant(ps.id); },
                           disabled: alreadyAdded,
                           className: "text-left rounded-lg p-1.5 text-[10px] transition-all " +
                             (alreadyAdded
@@ -32052,1270 +32080,1294 @@
         // ═══════════════════════════════════════════════════════════════
         // ██  CODING PLAYGROUND — Visual Block / Text Turtle Graphics  ██
 
-          // ══════════════════════════════════════════════════
-          // KEPLER COLONY — Educational Space Colonization
-          // ══════════════════════════════════════════════════
-          stemLabTab === 'explore' && stemLabTool === 'spaceColony' && (function() {
-            var d = labToolData || {};
-            var upd = function(k, v) { setLabToolData(function(n) { var o = Object.assign({}, n); o[k] = v; return o; }); };
-            var colony = d.colony || null;
-            var turn = d.colonyTurn || 0;
-            var resources = d.colonyRes || { food: 20, energy: 15, water: 15, materials: 10, science: 5 };
-            var buildings = d.colonyBuildings || [];
-            var settlers = d.colonySettlers || [];
-            var mapData = d.colonyMap || null;
-            var mapSize = 12;
-            var selectedTile = d.colonySelTile || null;
-            var colonyEvent = d.colonyEvent || null;
-            var scienceGate = d.scienceGate || null;
-            var gameLog = d.colonyLog || [];
-            var colonyPhase = d.colonyPhase || 'setup';
-            var terraform = d.colonyTerraform || 0;
-            var weather = d.colonyWeather || null;
-            var gameMode = d.colonyMode || 'mcq'; // 'mcq' or 'freeResponse'
-            var gradeLevel = d.colonyGrade || '6-8';
-            var gradeDifficultyMap = { 'K-2': 'very easy, age 5-7, use simple words', '3-5': 'easy, age 8-10, elementary level', '6-8': 'medium, age 11-13, middle school level', '9-12': 'challenging, age 14-17, high school level', 'College': 'advanced, undergraduate university level' };
-            var stats = d.colonyStats || { questionsAnswered: 0, correct: 0, buildingsConstructed: 0, anomaliesExplored: 0, turnsPlayed: 0 };
+        // ══════════════════════════════════════════════════
+        // KEPLER COLONY — Educational Space Colonization
+        // ══════════════════════════════════════════════════
+        stemLabTab === 'explore' && stemLabTool === 'spaceColony' && (function () {
+          var d = labToolData || {};
+          var upd = function (k, v) { setLabToolData(function (n) { var o = Object.assign({}, n); o[k] = v; return o; }); };
+          var colony = d.colony || null;
+          var turn = d.colonyTurn || 0;
+          var resources = d.colonyRes || { food: 20, energy: 15, water: 15, materials: 10, science: 5 };
+          var buildings = d.colonyBuildings || [];
+          var settlers = d.colonySettlers || [];
+          var mapData = d.colonyMap || null;
+          var mapSize = 12;
+          var selectedTile = d.colonySelTile || null;
+          var colonyEvent = d.colonyEvent || null;
+          var scienceGate = d.scienceGate || null;
+          var gameLog = d.colonyLog || [];
+          var colonyPhase = d.colonyPhase || 'setup';
+          var terraform = d.colonyTerraform || 0;
+          var weather = d.colonyWeather || null;
+          var gameMode = d.colonyMode || 'mcq'; // 'mcq' or 'freeResponse'
+          var gradeLevel = d.colonyGrade || '6-8';
+          var gradeDifficultyMap = { 'K-2': 'very easy, age 5-7, use simple words', '3-5': 'easy, age 8-10, elementary level', '6-8': 'medium, age 11-13, middle school level', '9-12': 'challenging, age 14-17, high school level', 'College': 'advanced, undergraduate university level' };
+          var stats = d.colonyStats || { questionsAnswered: 0, correct: 0, buildingsConstructed: 0, anomaliesExplored: 0, turnsPlayed: 0 };
 
-            // Civilization Mechanics
-            var era = d.colonyEra || 'survival';
-            var eraData = {
-              survival: { name: 'Survival', icon: '\u26A0\uFE0F', next: 'expansion', req: 'Build 3 buildings', color: '#ef4444' },
-              expansion: { name: 'Expansion', icon: '\uD83C\uDF10', next: 'prosperity', req: 'Build 6 buildings + 50% terraform', color: '#f59e0b' },
-              prosperity: { name: 'Prosperity', icon: '\uD83C\uDF1F', next: 'transcendence', req: 'All 10 buildings + 75% terraform', color: '#22c55e' },
-              transcendence: { name: 'Transcendence', icon: '\uD83D\uDE80', next: null, req: 'Victory!', color: '#8b5cf6' }
-            };
-            var currentEra = eraData[era] || eraData.survival;
+          // Civilization Mechanics
+          var era = d.colonyEra || 'survival';
+          var eraData = {
+            survival: { name: 'Survival', icon: '\u26A0\uFE0F', next: 'expansion', req: 'Build 3 buildings', color: '#ef4444' },
+            expansion: { name: 'Expansion', icon: '\uD83C\uDF10', next: 'prosperity', req: 'Build 6 buildings + 50% terraform', color: '#f59e0b' },
+            prosperity: { name: 'Prosperity', icon: '\uD83C\uDF1F', next: 'transcendence', req: 'All 10 buildings + 75% terraform', color: '#22c55e' },
+            transcendence: { name: 'Transcendence', icon: '\uD83D\uDE80', next: null, req: 'Victory!', color: '#8b5cf6' }
+          };
+          var currentEra = eraData[era] || eraData.survival;
 
-            var activePolicy = d.colonyPolicy || null;
-            var policyDefs = [
-              { id: 'militarist', name: 'Frontier Expansion', icon: '\uD83D\uDEE1\uFE0F', desc: 'Exploration costs 0 energy. +1 materials/turn.', effect: { exploreFreeCost: true, materialBonus: 1 } },
-              { id: 'scientific', name: 'Knowledge First', icon: '\uD83E\uDDEC', desc: '+50% science production. +5 XP per question.', effect: { scienceMultiplier: 1.5, xpBonus: 5 } },
-              { id: 'agrarian', name: 'Colony Welfare', icon: '\uD83C\uDF3E', desc: '+2 food/turn. New settlers arrive 50% faster.', effect: { foodBonus: 2, popGrowthBonus: 0.5 } },
-              { id: 'industrial', name: 'Heavy Industry', icon: '\u2699\uFE0F', desc: 'Buildings cost 20% fewer materials. +2 energy/turn.', effect: { buildDiscount: 0.2, energyBonus: 2 } }
-            ];
+          var activePolicy = d.colonyPolicy || null;
+          var policyDefs = [
+            { id: 'militarist', name: 'Frontier Expansion', icon: '\uD83D\uDEE1\uFE0F', desc: 'Exploration costs 0 energy. +1 materials/turn.', effect: { exploreFreeCost: true, materialBonus: 1 } },
+            { id: 'scientific', name: 'Knowledge First', icon: '\uD83E\uDDEC', desc: '+50% science production. +5 XP per question.', effect: { scienceMultiplier: 1.5, xpBonus: 5 } },
+            { id: 'agrarian', name: 'Colony Welfare', icon: '\uD83C\uDF3E', desc: '+2 food/turn. New settlers arrive 50% faster.', effect: { foodBonus: 2, popGrowthBonus: 0.5 } },
+            { id: 'industrial', name: 'Heavy Industry', icon: '\u2699\uFE0F', desc: 'Buildings cost 20% fewer materials. +2 energy/turn.', effect: { buildDiscount: 0.2, energyBonus: 2 } }
+          ];
 
-            var researchQueue = d.colonyResearch || [];
-            var researchDefs = [
-              { id: 'xenobiology', name: 'Xenobiology', icon: '\uD83E\uDDA0', cost: 15, desc: 'Study alien life. +3 food & water/turn.', bonus: { food: 3, water: 3 }, era: 'expansion', domain: 'biology' },
-              { id: 'gravimetrics', name: 'Gravimetrics', icon: '\uD83C\uDF0C', cost: 20, desc: 'Map gravity wells. All exploration reveals +1 tile radius.', bonus: { exploreRadius: 2 }, era: 'expansion', domain: 'physics' },
-              { id: 'nanotech', name: 'Nanotechnology', icon: '\uD83E\uDDF2', cost: 25, desc: 'Self-repairing buildings. Effectiveness never drops below 75%.', bonus: { minEfficiency: 75 }, era: 'prosperity', domain: 'chemistry' },
-              { id: 'terraAI', name: 'Terraform AI', icon: '\uD83E\uDD16', cost: 30, desc: 'AI-guided terraforming. +3% terraform/turn base.', bonus: { terraformBonus: 3 }, era: 'prosperity', domain: 'math' },
-              { id: 'warpComms', name: 'Subspace Comms', icon: '\uD83D\uDCE1', cost: 40, desc: 'FTL communication with Earth. +10 science/turn.', bonus: { science: 10 }, era: 'transcendence', domain: 'physics' },
-              { id: 'bioengine', name: 'Bioengineering', icon: '\uD83E\uDDEC', cost: 18, desc: 'Genetically adapted crops for alien soil. +5 food/turn.', bonus: { food: 5 }, era: 'expansion', domain: 'biology' },
-              { id: 'quantumComp', name: 'Quantum Computing', icon: '\uD83D\uDDA5\uFE0F', cost: 35, desc: 'Quantum processors for colony AI. +5 science/turn.', bonus: { science: 5 }, era: 'prosperity', domain: 'physics' },
-              { id: 'plasmaDrill', name: 'Plasma Mining', icon: '\u26CF\uFE0F', cost: 22, desc: 'Superheated plasma drills. +5 materials/turn.', bonus: { materials: 5 }, era: 'expansion', domain: 'chemistry' },
-              { id: 'cryonics', name: 'Cryogenic Storage', icon: '\u2744\uFE0F', cost: 28, desc: 'Preserve food indefinitely. +3 food, +3 water/turn.', bonus: { food: 3, water: 3 }, era: 'prosperity', domain: 'biology' },
-              { id: 'dysonSwarm', name: 'Dyson Swarm', icon: '\u2600\uFE0F', cost: 50, desc: 'Orbital solar collectors. +15 energy/turn.', bonus: { energy: 15 }, era: 'transcendence', domain: 'physics' }
-            ];
+          var researchQueue = d.colonyResearch || [];
+          var researchDefs = [
+            { id: 'xenobiology', name: 'Xenobiology', icon: '\uD83E\uDDA0', cost: 15, desc: 'Study alien life. +3 food & water/turn.', bonus: { food: 3, water: 3 }, era: 'expansion', domain: 'biology' },
+            { id: 'gravimetrics', name: 'Gravimetrics', icon: '\uD83C\uDF0C', cost: 20, desc: 'Map gravity wells. All exploration reveals +1 tile radius.', bonus: { exploreRadius: 2 }, era: 'expansion', domain: 'physics' },
+            { id: 'nanotech', name: 'Nanotechnology', icon: '\uD83E\uDDF2', cost: 25, desc: 'Self-repairing buildings. Effectiveness never drops below 75%.', bonus: { minEfficiency: 75 }, era: 'prosperity', domain: 'chemistry' },
+            { id: 'terraAI', name: 'Terraform AI', icon: '\uD83E\uDD16', cost: 30, desc: 'AI-guided terraforming. +3% terraform/turn base.', bonus: { terraformBonus: 3 }, era: 'prosperity', domain: 'math' },
+            { id: 'warpComms', name: 'Subspace Comms', icon: '\uD83D\uDCE1', cost: 40, desc: 'FTL communication with Earth. +10 science/turn.', bonus: { science: 10 }, era: 'transcendence', domain: 'physics' },
+            { id: 'bioengine', name: 'Bioengineering', icon: '\uD83E\uDDEC', cost: 18, desc: 'Genetically adapted crops for alien soil. +5 food/turn.', bonus: { food: 5 }, era: 'expansion', domain: 'biology' },
+            { id: 'quantumComp', name: 'Quantum Computing', icon: '\uD83D\uDDA5\uFE0F', cost: 35, desc: 'Quantum processors for colony AI. +5 science/turn.', bonus: { science: 5 }, era: 'prosperity', domain: 'physics' },
+            { id: 'plasmaDrill', name: 'Plasma Mining', icon: '\u26CF\uFE0F', cost: 22, desc: 'Superheated plasma drills. +5 materials/turn.', bonus: { materials: 5 }, era: 'expansion', domain: 'chemistry' },
+            { id: 'cryonics', name: 'Cryogenic Storage', icon: '\u2744\uFE0F', cost: 28, desc: 'Preserve food indefinitely. +3 food, +3 water/turn.', bonus: { food: 3, water: 3 }, era: 'prosperity', domain: 'biology' },
+            { id: 'dysonSwarm', name: 'Dyson Swarm', icon: '\u2600\uFE0F', cost: 50, desc: 'Orbital solar collectors. +15 energy/turn.', bonus: { energy: 15 }, era: 'transcendence', domain: 'physics' }
+          ];
 
-            var greatScientists = d.colonyGreatSci || [];
-            var greatSciDefs = [
-              { name: 'Marie Curie', icon: '\u2622\uFE0F', specialty: 'physics', bonus: 'energy', amount: 5, fact: 'Discovered radioactivity and won 2 Nobel Prizes in different sciences.' },
-              { name: 'Charles Darwin', icon: '\uD83E\uDD86', specialty: 'biology', bonus: 'science', amount: 5, fact: 'Theory of evolution by natural selection revolutionized biology.' },
-              { name: 'Nikola Tesla', icon: '\u26A1', specialty: 'physics', bonus: 'energy', amount: 8, fact: 'Pioneered alternating current (AC) electricity used worldwide today.' },
-              { name: 'Rosalind Franklin', icon: '\uD83E\uDDEC', specialty: 'chemistry', bonus: 'science', amount: 5, fact: 'Her X-ray crystallography was key to discovering DNA\'s structure.' },
-              { name: 'Ada Lovelace', icon: '\uD83D\uDCBB', specialty: 'math', bonus: 'science', amount: 8, fact: 'Wrote the world\'s first computer program in the 1840s.' },
-              { name: 'Galileo Galilei', icon: '\uD83D\uDD2D', specialty: 'physics', bonus: 'science', amount: 5, fact: 'Father of modern observational astronomy. Proved heliocentrism.' },
-              { name: 'Rachel Carson', icon: '\uD83C\uDF3F', specialty: 'biology', bonus: 'water', amount: 5, fact: 'Silent Spring launched the modern environmental movement in 1962.' },
-              { name: 'Albert Einstein', icon: '\uD83C\uDF0C', specialty: 'physics', bonus: 'energy', amount: 10, fact: 'E=mc\u00B2 showed mass and energy are interchangeable. Revolutionized physics forever.' },
-              { name: 'Mae Jemison', icon: '\uD83D\uDE80', specialty: 'biology', bonus: 'science', amount: 8, fact: 'First African-American woman in space (1992). Also a physician and engineer.' },
-              { name: 'Dmitri Mendeleev', icon: '\uD83E\uDDEA', specialty: 'chemistry', bonus: 'materials', amount: 8, fact: 'Created the Periodic Table, predicting undiscovered elements by their properties.' },
-              { name: 'Wangari Maathai', icon: '\uD83C\uDF33', specialty: 'biology', bonus: 'food', amount: 6, fact: 'Kenyan environmentalist who planted 51 million trees via the Green Belt Movement. First African woman to win the Nobel Peace Prize.' },
-              { name: 'Jagadish Chandra Bose', icon: '\uD83D\uDCE1', specialty: 'physics', bonus: 'science', amount: 8, fact: 'Indian polymath who proved plants have feelings, pioneered radio science, and invented the crescograph to measure plant growth.' },
-              { name: 'Maryam Mirzakhani', icon: '\uD83C\uDF00', specialty: 'math', bonus: 'science', amount: 10, fact: 'First woman and first Iranian to win the Fields Medal \u2014 the Nobel Prize of mathematics \u2014 for work on curved surfaces.' },
-              { name: 'Srinivasa Ramanujan', icon: '\u221E', specialty: 'math', bonus: 'science', amount: 8, fact: 'Self-taught Indian genius who discovered over 3,900 mathematical identities. His notebooks still yield new theorems today.' }
-            ];
+          var greatScientists = d.colonyGreatSci || [];
+          var greatSciDefs = [
+            { name: 'Marie Curie', icon: '\u2622\uFE0F', specialty: 'physics', bonus: 'energy', amount: 5, fact: 'Discovered radioactivity and won 2 Nobel Prizes in different sciences.' },
+            { name: 'Charles Darwin', icon: '\uD83E\uDD86', specialty: 'biology', bonus: 'science', amount: 5, fact: 'Theory of evolution by natural selection revolutionized biology.' },
+            { name: 'Nikola Tesla', icon: '\u26A1', specialty: 'physics', bonus: 'energy', amount: 8, fact: 'Pioneered alternating current (AC) electricity used worldwide today.' },
+            { name: 'Rosalind Franklin', icon: '\uD83E\uDDEC', specialty: 'chemistry', bonus: 'science', amount: 5, fact: 'Her X-ray crystallography was key to discovering DNA\'s structure.' },
+            { name: 'Ada Lovelace', icon: '\uD83D\uDCBB', specialty: 'math', bonus: 'science', amount: 8, fact: 'Wrote the world\'s first computer program in the 1840s.' },
+            { name: 'Galileo Galilei', icon: '\uD83D\uDD2D', specialty: 'physics', bonus: 'science', amount: 5, fact: 'Father of modern observational astronomy. Proved heliocentrism.' },
+            { name: 'Rachel Carson', icon: '\uD83C\uDF3F', specialty: 'biology', bonus: 'water', amount: 5, fact: 'Silent Spring launched the modern environmental movement in 1962.' },
+            { name: 'Albert Einstein', icon: '\uD83C\uDF0C', specialty: 'physics', bonus: 'energy', amount: 10, fact: 'E=mc\u00B2 showed mass and energy are interchangeable. Revolutionized physics forever.' },
+            { name: 'Mae Jemison', icon: '\uD83D\uDE80', specialty: 'biology', bonus: 'science', amount: 8, fact: 'First African-American woman in space (1992). Also a physician and engineer.' },
+            { name: 'Dmitri Mendeleev', icon: '\uD83E\uDDEA', specialty: 'chemistry', bonus: 'materials', amount: 8, fact: 'Created the Periodic Table, predicting undiscovered elements by their properties.' },
+            { name: 'Wangari Maathai', icon: '\uD83C\uDF33', specialty: 'biology', bonus: 'food', amount: 6, fact: 'Kenyan environmentalist who planted 51 million trees via the Green Belt Movement. First African woman to win the Nobel Peace Prize.' },
+            { name: 'Jagadish Chandra Bose', icon: '\uD83D\uDCE1', specialty: 'physics', bonus: 'science', amount: 8, fact: 'Indian polymath who proved plants have feelings, pioneered radio science, and invented the crescograph to measure plant growth.' },
+            { name: 'Maryam Mirzakhani', icon: '\uD83C\uDF00', specialty: 'math', bonus: 'science', amount: 10, fact: 'First woman and first Iranian to win the Fields Medal \u2014 the Nobel Prize of mathematics \u2014 for work on curved surfaces.' },
+            { name: 'Srinivasa Ramanujan', icon: '\u221E', specialty: 'math', bonus: 'science', amount: 8, fact: 'Self-taught Indian genius who discovered over 3,900 mathematical identities. His notebooks still yield new theorems today.' }
+          ];
 
-            var popGrowthAccum = d.colonyPopGrowth || 0;
+          var popGrowthAccum = d.colonyPopGrowth || 0;
 
-            // Diplomacy — alien species
-            var alienContact = d.alienContact || null;
-            var alienRelations = d.alienRelations || 0; // -100 to 100
-            var alienDefs = {
-              name: 'The Keth\u2019ora',
-              icon: '\uD83D\uDC7E',
-              desc: 'Silicon-based lifeforms indigenous to Kepler-442b. Communicate through bioluminescent patterns.',
-              trades: [
-                { give: { materials: 10 }, get: { science: 8 }, name: 'Knowledge Exchange' },
-                { give: { food: 8 }, get: { materials: 12 }, name: 'Organic Trade' },
-                { give: { energy: 10 }, get: { water: 15 }, name: 'Ice Mining Rights' }
-              ]
-            };
-            var colonyHappiness = d.colonyHappiness || 70;
+          // Diplomacy — alien species
+          var alienContact = d.alienContact || null;
+          var alienRelations = d.alienRelations || 0; // -100 to 100
+          var alienDefs = {
+            name: 'The Keth\u2019ora',
+            icon: '\uD83D\uDC7E',
+            desc: 'Silicon-based lifeforms indigenous to Kepler-442b. Communicate through bioluminescent patterns.',
+            trades: [
+              { give: { materials: 10 }, get: { science: 8 }, name: 'Knowledge Exchange' },
+              { give: { food: 8 }, get: { materials: 12 }, name: 'Organic Trade' },
+              { give: { energy: 10 }, get: { water: 15 }, name: 'Ice Mining Rights' }
+            ]
+          };
+          var colonyHappiness = d.colonyHappiness || 70;
 
-            // Wonders — mega-structures
-            var wonders = d.colonyWonders || {};
-            var wonderDefs = [
-              { id: 'terraformEngine', name: 'Planetary Terraform Engine', icon: '\uD83C\uDF0D', challenges: 3, domain: 'chemistry',
-                desc: 'Planet-scale atmospheric converter. +5% terraform/turn permanently.', effect: { terraformBonus: 5 },
-                cost: { materials: 80, energy: 50, science: 40, water: 30 }, era: 'prosperity' },
-              { id: 'arkVault', name: 'Genetic Ark Vault', icon: '\uD83E\uDDEC', challenges: 3, domain: 'biology',
-                desc: 'Preserves 10,000 species from Earth. +8 food, +5 science/turn.', effect: { food: 8, science: 5 },
-                cost: { materials: 60, science: 50, water: 25, food: 20 }, era: 'prosperity' },
-              { id: 'quantumGate', name: 'Quantum Gate', icon: '\uD83D\uDD73\uFE0F', challenges: 3, domain: 'physics',
-                desc: 'Wormhole to Earth. Instant communication & settler transfer. +20 pop growth.', effect: { popBoost: true, science: 10 },
-                cost: { materials: 100, energy: 80, science: 60 }, era: 'transcendence' }
-            ];
+          // Wonders — mega-structures
+          var wonders = d.colonyWonders || {};
+          var wonderDefs = [
+            {
+              id: 'terraformEngine', name: 'Planetary Terraform Engine', icon: '\uD83C\uDF0D', challenges: 3, domain: 'chemistry',
+              desc: 'Planet-scale atmospheric converter. +5% terraform/turn permanently.', effect: { terraformBonus: 5 },
+              cost: { materials: 80, energy: 50, science: 40, water: 30 }, era: 'prosperity'
+            },
+            {
+              id: 'arkVault', name: 'Genetic Ark Vault', icon: '\uD83E\uDDEC', challenges: 3, domain: 'biology',
+              desc: 'Preserves 10,000 species from Earth. +8 food, +5 science/turn.', effect: { food: 8, science: 5 },
+              cost: { materials: 60, science: 50, water: 25, food: 20 }, era: 'prosperity'
+            },
+            {
+              id: 'quantumGate', name: 'Quantum Gate', icon: '\uD83D\uDD73\uFE0F', challenges: 3, domain: 'physics',
+              desc: 'Wormhole to Earth. Instant communication & settler transfer. +20 pop growth.', effect: { popBoost: true, science: 10 },
+              cost: { materials: 100, energy: 80, science: 60 }, era: 'transcendence'
+            }
+          ];
 
-            // Expeditions
-            var expeditions = d.colonyExpeditions || [];
-            var activeExpedition = d.activeExpedition || null;
+          // Expeditions
+          var expeditions = d.colonyExpeditions || [];
+          var activeExpedition = d.activeExpedition || null;
 
-            // Science Journal
-            var scienceJournal = d.scienceJournal || [];
+          // Science Journal
+          var scienceJournal = d.scienceJournal || [];
 
-            // Tile improvements
-            var tileImprovements = d.tileImprovements || {};
+          // Tile improvements
+          var tileImprovements = d.tileImprovements || {};
 
-            // Equity & Culture Systems
-            var equity = d.colonyEquity || 75; // 0-100, higher = more equitable
-            var colonyValues = d.colonyValues || { collectivism: 50, innovation: 50, ecology: 50, tradition: 50, openness: 50 };
-            var dilemmaLog = d.dilemmaLog || [];
+          // Equity & Culture Systems
+          var equity = d.colonyEquity || 75; // 0-100, higher = more equitable
+          var colonyValues = d.colonyValues || { collectivism: 50, innovation: 50, ecology: 50, tradition: 50, openness: 50 };
+          var dilemmaLog = d.dilemmaLog || [];
 
-            // Cultural Knowledge Traditions
-            var traditions = d.colonyTraditions || [];
+          // Cultural Knowledge Traditions
+          var traditions = d.colonyTraditions || [];
 
-            // Colony Radio
-            var radioMessage = d.colonyRadio || null;
+          // Colony Radio
+          var radioMessage = d.colonyRadio || null;
 
-            // Colony Name
-            var colonyName = d.colonyName || 'New Kepler';
+          // Colony Name
+          var colonyName = d.colonyName || 'New Kepler';
 
-            // Achievements
-            var achievements = d.colonyAchievements || {};
-            var achievementDefs = [
-              { id: 'firstBuild', name: 'Foundation Stone', icon: '\uD83C\uDFD7\uFE0F', desc: 'Build your first structure.', check: function() { return buildings.length >= 1; } },
-              { id: 'fiveBuild', name: 'Growing Pains', icon: '\uD83C\uDFD8\uFE0F', desc: 'Build 5 structures.', check: function() { return buildings.length >= 5; } },
-              { id: 'tenBuild', name: 'City Planner', icon: '\uD83C\uDFD9\uFE0F', desc: 'Build 10 structures.', check: function() { return buildings.length >= 10; } },
-              { id: 'allBuild', name: 'Master Builder', icon: '\uD83C\uDFDF\uFE0F', desc: 'Build all 16 structures.', check: function() { return buildings.length >= 16; } },
-              { id: 'pop10', name: 'Small Town', icon: '\uD83D\uDC65', desc: 'Reach 10 settlers.', check: function() { return settlers.length >= 10; } },
-              { id: 'pop25', name: 'Borough', icon: '\uD83C\uDFD8\uFE0F', desc: 'Reach 25 settlers.', check: function() { return settlers.length >= 25; } },
-              { id: 'pop50', name: 'Metropolis', icon: '\uD83C\uDFD9\uFE0F', desc: 'Win by population!', check: function() { return settlers.length >= 50; } },
-              { id: 'tf25', name: 'Green Shoots', icon: '\uD83C\uDF31', desc: '25% terraformed.', check: function() { return terraform >= 25; } },
-              { id: 'tf50', name: 'Halfway Home', icon: '\uD83C\uDF0D', desc: '50% terraformed.', check: function() { return terraform >= 50; } },
-              { id: 'tf100', name: 'New Earth', icon: '\uD83C\uDF0E', desc: '100% terraformed! Victory!', check: function() { return terraform >= 100; } },
-              { id: 'res3', name: 'Curious Mind', icon: '\uD83D\uDD2C', desc: 'Complete 3 research techs.', check: function() { return researchQueue.length >= 3; } },
-              { id: 'res7', name: 'Renaissance', icon: '\uD83D\uDCDA', desc: 'Complete 7 research techs.', check: function() { return researchQueue.length >= 7; } },
-              { id: 'res10', name: 'Omniscient', icon: '\uD83E\uDDE0', desc: 'Complete all 10! Victory!', check: function() { return researchQueue.length >= 10; } },
-              { id: 'explore15', name: 'Cartographer', icon: '\uD83D\uDDFA\uFE0F', desc: 'Explore 15 tiles.', check: function() { return stats.tilesExplored >= 15; } },
-              { id: 'exploreAll', name: 'World Walker', icon: '\uD83C\uDF0F', desc: 'Explore all tiles.', check: function() { return stats.tilesExplored >= mapSize * mapSize; } },
-              { id: 'science100', name: 'Knowledge Hoard', icon: '\uD83D\uDCDA', desc: 'Accumulate 100+ science.', check: function() { return resources.science >= 100; } },
-              { id: 'journal10', name: 'Studious', icon: '\uD83D\uDCD6', desc: '10 science journal entries.', check: function() { return scienceJournal.length >= 10; } },
-              { id: 'journal25', name: 'Scholar', icon: '\uD83C\uDF93', desc: '25 science journal entries.', check: function() { return scienceJournal.length >= 25; } },
-              { id: 'tradition3', name: 'Cultural Mosaic', icon: '\uD83C\uDF10', desc: 'Adopt 3 cultural traditions.', check: function() { return traditions.length >= 3; } },
-              { id: 'equityHigh', name: 'Just Society', icon: '\u2696\uFE0F', desc: 'Maintain equity above 85%.', check: function() { return equity >= 85; } },
-              { id: 'happyMax', name: 'Utopia', icon: '\uD83D\uDE04', desc: 'Reach 100% happiness.', check: function() { return colonyHappiness >= 100; } },
-              { id: 'alienFriend', name: 'Diplomat', icon: '\uD83D\uDC7E', desc: 'Allied with the Keth\u2019ora.', check: function() { return alienRelations >= 50; } },
-              { id: 'wonder1', name: 'Wonderous', icon: '\uD83C\uDFDB\uFE0F', desc: 'Complete a Wonder.', check: function() { return wonders.terraformEngine || wonders.arkVault || wonders.quantumGate; } },
-              { id: 'mentor5', name: 'Awakener', icon: '\uD83E\uDD16', desc: 'Activate 5 Digital Mentors.', check: function() { return greatScientists.length >= 5; } },
-              { id: 'turn50', name: 'Endurance', icon: '\u23F0', desc: 'Survive 50 turns.', check: function() { return turn >= 50; } },
-              { id: 'perfect10', name: 'Perfect 10', icon: '\uD83C\uDFAF', desc: 'Answer 10 questions correctly in a row.', check: function() { return stats.streak >= 10; } }
-            ];
-            var traditionDefs = [
-              { id: 'ubuntu', name: 'Ubuntu Philosophy', origin: 'Southern African', icon: '\uD83E\uDD1D', desc: '"I am because we are." Community-centered decision making. +10 equity, +5 happiness.',
-                bonus: { equity: 10, happiness: 5 }, value: 'collectivism', fact: 'Ubuntu is a Nguni Bantu concept meaning shared humanity. Archbishop Desmond Tutu described it as knowing you belong in a greater whole.' },
-              { id: 'kintsugi', name: 'Kintsugi Resilience', origin: 'Japanese', icon: '\uD83C\uDFFA', desc: 'Golden repair \u2014 finding strength in imperfection. Buildings regain 10% effectiveness each turn.',
-                bonus: { repair: 10 }, value: 'tradition', fact: 'Kintsugi is the Japanese art of repairing broken pottery with gold. It embraces flaws as part of history rather than something to hide.' },
-              { id: 'milpa', name: 'Three Sisters Agriculture', origin: 'Mesoamerican / Indigenous', icon: '\uD83C\uDF3D', desc: 'Corn, beans, squash companion planting. +6 food/turn, +2% terraform.',
-                bonus: { food: 6, terraform: 2 }, value: 'ecology', fact: 'The Three Sisters (corn, beans, squash) is an Indigenous agricultural system where each plant benefits the others \u2014 corn provides structure, beans fix nitrogen, squash shades soil.' },
-              { id: 'sankofa', name: 'Sankofa Wisdom', origin: 'Akan / West African', icon: '\uD83D\uDD4A\uFE0F', desc: '"Go back and get it." Learning from the past to build the future. +8 science/turn.',
-                bonus: { science: 8 }, value: 'tradition', fact: 'Sankofa is an Adinkra symbol meaning "it is not taboo to go back for what you forgot." It teaches that wisdom from the past is essential for progress.' },
-              { id: 'ayni', name: 'Ayni Reciprocity', origin: 'Andean / Quechua', icon: '\uD83C\uDFD4\uFE0F', desc: 'Sacred reciprocity with the land. +5 water, +5 materials, +3% terraform.',
-                bonus: { water: 5, materials: 5, terraform: 3 }, value: 'ecology', fact: 'Ayni is the Andean principle of reciprocity \u2014 every exchange with nature or community must be balanced. The Inca built their entire economy on this concept.' },
-              { id: 'griot', name: 'Griot Oral Tradition', origin: 'West African', icon: '\uD83C\uDFB6', desc: 'Storytelling preserves knowledge across generations. +10 science, +5 happiness.',
-                bonus: { science: 10, happiness: 5 }, value: 'openness', fact: 'Griots are West African historians, storytellers, and musicians who preserve knowledge orally. Some griot lineages stretch back over 800 years.' },
-              { id: 'whakapapa', name: 'Whakapapa Genealogy', origin: 'M\u0101ori / Polynesian', icon: '\uD83C\uDF0A', desc: 'Ancestral connection to land and sea. +5 water, +8 food, stronger settler bonds.',
-                bonus: { water: 5, food: 8 }, value: 'collectivism', fact: 'Whakapapa is the M\u0101ori concept of genealogical connection \u2014 linking people to ancestors, the land, and even the stars. It underpins Polynesian navigation.' },
-              { id: 'dreamtime', name: 'Songlines Navigation', origin: 'Aboriginal Australian', icon: '\u2B50', desc: 'Ancient wayfinding through story and song. Expeditions complete 1 turn faster.',
-                bonus: { expeditionSpeed: 1 }, value: 'tradition', fact: 'Aboriginal Songlines are navigational paths across Australia encoded in songs, stories, and art. Some Songlines are over 10,000 years old \u2014 among the oldest knowledge systems on Earth.' }
-            ];
-            var buildingEff = d.buildingEff || {}; // { buildingId: 100, ... } effectiveness %
-            var lastMaintTurn = d.lastMaintTurn || 0;
-            var maintChallenge = d.maintChallenge || null;
+          // Achievements
+          var achievements = d.colonyAchievements || {};
+          var achievementDefs = [
+            { id: 'firstBuild', name: 'Foundation Stone', icon: '\uD83C\uDFD7\uFE0F', desc: 'Build your first structure.', check: function () { return buildings.length >= 1; } },
+            { id: 'fiveBuild', name: 'Growing Pains', icon: '\uD83C\uDFD8\uFE0F', desc: 'Build 5 structures.', check: function () { return buildings.length >= 5; } },
+            { id: 'tenBuild', name: 'City Planner', icon: '\uD83C\uDFD9\uFE0F', desc: 'Build 10 structures.', check: function () { return buildings.length >= 10; } },
+            { id: 'allBuild', name: 'Master Builder', icon: '\uD83C\uDFDF\uFE0F', desc: 'Build all 16 structures.', check: function () { return buildings.length >= 16; } },
+            { id: 'pop10', name: 'Small Town', icon: '\uD83D\uDC65', desc: 'Reach 10 settlers.', check: function () { return settlers.length >= 10; } },
+            { id: 'pop25', name: 'Borough', icon: '\uD83C\uDFD8\uFE0F', desc: 'Reach 25 settlers.', check: function () { return settlers.length >= 25; } },
+            { id: 'pop50', name: 'Metropolis', icon: '\uD83C\uDFD9\uFE0F', desc: 'Win by population!', check: function () { return settlers.length >= 50; } },
+            { id: 'tf25', name: 'Green Shoots', icon: '\uD83C\uDF31', desc: '25% terraformed.', check: function () { return terraform >= 25; } },
+            { id: 'tf50', name: 'Halfway Home', icon: '\uD83C\uDF0D', desc: '50% terraformed.', check: function () { return terraform >= 50; } },
+            { id: 'tf100', name: 'New Earth', icon: '\uD83C\uDF0E', desc: '100% terraformed! Victory!', check: function () { return terraform >= 100; } },
+            { id: 'res3', name: 'Curious Mind', icon: '\uD83D\uDD2C', desc: 'Complete 3 research techs.', check: function () { return researchQueue.length >= 3; } },
+            { id: 'res7', name: 'Renaissance', icon: '\uD83D\uDCDA', desc: 'Complete 7 research techs.', check: function () { return researchQueue.length >= 7; } },
+            { id: 'res10', name: 'Omniscient', icon: '\uD83E\uDDE0', desc: 'Complete all 10! Victory!', check: function () { return researchQueue.length >= 10; } },
+            { id: 'explore15', name: 'Cartographer', icon: '\uD83D\uDDFA\uFE0F', desc: 'Explore 15 tiles.', check: function () { return stats.tilesExplored >= 15; } },
+            { id: 'exploreAll', name: 'World Walker', icon: '\uD83C\uDF0F', desc: 'Explore all tiles.', check: function () { return stats.tilesExplored >= mapSize * mapSize; } },
+            { id: 'science100', name: 'Knowledge Hoard', icon: '\uD83D\uDCDA', desc: 'Accumulate 100+ science.', check: function () { return resources.science >= 100; } },
+            { id: 'journal10', name: 'Studious', icon: '\uD83D\uDCD6', desc: '10 science journal entries.', check: function () { return scienceJournal.length >= 10; } },
+            { id: 'journal25', name: 'Scholar', icon: '\uD83C\uDF93', desc: '25 science journal entries.', check: function () { return scienceJournal.length >= 25; } },
+            { id: 'tradition3', name: 'Cultural Mosaic', icon: '\uD83C\uDF10', desc: 'Adopt 3 cultural traditions.', check: function () { return traditions.length >= 3; } },
+            { id: 'equityHigh', name: 'Just Society', icon: '\u2696\uFE0F', desc: 'Maintain equity above 85%.', check: function () { return equity >= 85; } },
+            { id: 'happyMax', name: 'Utopia', icon: '\uD83D\uDE04', desc: 'Reach 100% happiness.', check: function () { return colonyHappiness >= 100; } },
+            { id: 'alienFriend', name: 'Diplomat', icon: '\uD83D\uDC7E', desc: 'Allied with the Keth\u2019ora.', check: function () { return alienRelations >= 50; } },
+            { id: 'wonder1', name: 'Wonderous', icon: '\uD83C\uDFDB\uFE0F', desc: 'Complete a Wonder.', check: function () { return wonders.terraformEngine || wonders.arkVault || wonders.quantumGate; } },
+            { id: 'mentor5', name: 'Awakener', icon: '\uD83E\uDD16', desc: 'Activate 5 Digital Mentors.', check: function () { return greatScientists.length >= 5; } },
+            { id: 'turn50', name: 'Endurance', icon: '\u23F0', desc: 'Survive 50 turns.', check: function () { return turn >= 50; } },
+            { id: 'perfect10', name: 'Perfect 10', icon: '\uD83C\uDFAF', desc: 'Answer 10 questions correctly in a row.', check: function () { return stats.streak >= 10; } }
+          ];
+          var traditionDefs = [
+            {
+              id: 'ubuntu', name: 'Ubuntu Philosophy', origin: 'Southern African', icon: '\uD83E\uDD1D', desc: '"I am because we are." Community-centered decision making. +10 equity, +5 happiness.',
+              bonus: { equity: 10, happiness: 5 }, value: 'collectivism', fact: 'Ubuntu is a Nguni Bantu concept meaning shared humanity. Archbishop Desmond Tutu described it as knowing you belong in a greater whole.'
+            },
+            {
+              id: 'kintsugi', name: 'Kintsugi Resilience', origin: 'Japanese', icon: '\uD83C\uDFFA', desc: 'Golden repair \u2014 finding strength in imperfection. Buildings regain 10% effectiveness each turn.',
+              bonus: { repair: 10 }, value: 'tradition', fact: 'Kintsugi is the Japanese art of repairing broken pottery with gold. It embraces flaws as part of history rather than something to hide.'
+            },
+            {
+              id: 'milpa', name: 'Three Sisters Agriculture', origin: 'Mesoamerican / Indigenous', icon: '\uD83C\uDF3D', desc: 'Corn, beans, squash companion planting. +6 food/turn, +2% terraform.',
+              bonus: { food: 6, terraform: 2 }, value: 'ecology', fact: 'The Three Sisters (corn, beans, squash) is an Indigenous agricultural system where each plant benefits the others \u2014 corn provides structure, beans fix nitrogen, squash shades soil.'
+            },
+            {
+              id: 'sankofa', name: 'Sankofa Wisdom', origin: 'Akan / West African', icon: '\uD83D\uDD4A\uFE0F', desc: '"Go back and get it." Learning from the past to build the future. +8 science/turn.',
+              bonus: { science: 8 }, value: 'tradition', fact: 'Sankofa is an Adinkra symbol meaning "it is not taboo to go back for what you forgot." It teaches that wisdom from the past is essential for progress.'
+            },
+            {
+              id: 'ayni', name: 'Ayni Reciprocity', origin: 'Andean / Quechua', icon: '\uD83C\uDFD4\uFE0F', desc: 'Sacred reciprocity with the land. +5 water, +5 materials, +3% terraform.',
+              bonus: { water: 5, materials: 5, terraform: 3 }, value: 'ecology', fact: 'Ayni is the Andean principle of reciprocity \u2014 every exchange with nature or community must be balanced. The Inca built their entire economy on this concept.'
+            },
+            {
+              id: 'griot', name: 'Griot Oral Tradition', origin: 'West African', icon: '\uD83C\uDFB6', desc: 'Storytelling preserves knowledge across generations. +10 science, +5 happiness.',
+              bonus: { science: 10, happiness: 5 }, value: 'openness', fact: 'Griots are West African historians, storytellers, and musicians who preserve knowledge orally. Some griot lineages stretch back over 800 years.'
+            },
+            {
+              id: 'whakapapa', name: 'Whakapapa Genealogy', origin: 'M\u0101ori / Polynesian', icon: '\uD83C\uDF0A', desc: 'Ancestral connection to land and sea. +5 water, +8 food, stronger settler bonds.',
+              bonus: { water: 5, food: 8 }, value: 'collectivism', fact: 'Whakapapa is the M\u0101ori concept of genealogical connection \u2014 linking people to ancestors, the land, and even the stars. It underpins Polynesian navigation.'
+            },
+            {
+              id: 'dreamtime', name: 'Songlines Navigation', origin: 'Aboriginal Australian', icon: '\u2B50', desc: 'Ancient wayfinding through story and song. Expeditions complete 1 turn faster.',
+              bonus: { expeditionSpeed: 1 }, value: 'tradition', fact: 'Aboriginal Songlines are navigational paths across Australia encoded in songs, stories, and art. Some Songlines are over 10,000 years old \u2014 among the oldest knowledge systems on Earth.'
+            }
+          ];
+          var buildingEff = d.buildingEff || {}; // { buildingId: 100, ... } effectiveness %
+          var lastMaintTurn = d.lastMaintTurn || 0;
+          var maintChallenge = d.maintChallenge || null;
 
-            // TTS helper
-            function colonySpeak(text2, voice) {
-              if (!window.speechSynthesis) return;
-              window.speechSynthesis.cancel();
-              var utter = new SpeechSynthesisUtterance(text2);
-              utter.rate = 0.95; utter.pitch = voice === 'narrator' ? 0.8 : voice === 'female' ? 1.2 : 1.0;
-              utter.volume = 0.8;
-              var voices = window.speechSynthesis.getVoices();
-              if (voice === 'narrator') {
-                var deep = voices.find(function(v) { return v.name.indexOf('Male') >= 0 || v.name.indexOf('David') >= 0 || v.name.indexOf('Daniel') >= 0; });
-                if (deep) utter.voice = deep;
-              } else if (voice === 'female') {
-                var fem = voices.find(function(v) { return v.name.indexOf('Female') >= 0 || v.name.indexOf('Zira') >= 0 || v.name.indexOf('Samantha') >= 0; });
-                if (fem) utter.voice = fem;
+          // TTS helper
+          function colonySpeak(text2, voice) {
+            if (!window.speechSynthesis) return;
+            window.speechSynthesis.cancel();
+            var utter = new SpeechSynthesisUtterance(text2);
+            utter.rate = 0.95; utter.pitch = voice === 'narrator' ? 0.8 : voice === 'female' ? 1.2 : 1.0;
+            utter.volume = 0.8;
+            var voices = window.speechSynthesis.getVoices();
+            if (voice === 'narrator') {
+              var deep = voices.find(function (v) { return v.name.indexOf('Male') >= 0 || v.name.indexOf('David') >= 0 || v.name.indexOf('Daniel') >= 0; });
+              if (deep) utter.voice = deep;
+            } else if (voice === 'female') {
+              var fem = voices.find(function (v) { return v.name.indexOf('Female') >= 0 || v.name.indexOf('Zira') >= 0 || v.name.indexOf('Samantha') >= 0; });
+              if (fem) utter.voice = fem;
+            }
+            window.speechSynthesis.speak(utter);
+          }
+
+          var terrainTypes = [
+            { type: 'plains', color: '#4ade80', name: 'Fertile Plains', icon: '\uD83C\uDF3F', res: 'food' },
+            { type: 'mountain', color: '#94a3b8', name: 'Mountains', icon: '\uD83C\uDFD4\uFE0F', res: 'materials' },
+            { type: 'volcanic', color: '#f97316', name: 'Volcanic', icon: '\uD83C\uDF0B', res: 'energy' },
+            { type: 'ice', color: '#a5f3fc', name: 'Ice Fields', icon: '\u2744\uFE0F', res: 'water' },
+            { type: 'desert', color: '#fbbf24', name: 'Desert', icon: '\uD83C\uDFDC\uFE0F', res: 'materials' },
+            { type: 'ocean', color: '#3b82f6', name: 'Ocean', icon: '\uD83C\uDF0A', res: 'water' },
+            { type: 'radiation', color: '#a855f7', name: 'Radiation Zone', icon: '\u2622\uFE0F', res: 'science' }
+          ];
+
+          function generateMap() {
+            var tiles = [];
+            var s = Math.floor(Math.random() * 99999);
+            for (var y = 0; y < mapSize; y++) {
+              for (var x = 0; x < mapSize; x++) {
+                s = (s * 9301 + 49297) % 233280;
+                var r = s / 233280;
+                var tIdx = r < 0.25 ? 0 : r < 0.40 ? 1 : r < 0.50 ? 2 : r < 0.62 ? 3 : r < 0.72 ? 4 : r < 0.88 ? 5 : 6;
+                var t2 = terrainTypes[tIdx];
+                tiles.push({ x: x, y: y, type: t2.type, color: t2.color, name: t2.name, icon: t2.icon, res: t2.res, explored: false, hasAnomaly: r > 0.92 });
               }
-              window.speechSynthesis.speak(utter);
+            }
+            var cx = Math.floor(mapSize / 2); var cy = Math.floor(mapSize / 2);
+            tiles[cy * mapSize + cx] = { x: cx, y: cy, type: 'colony', color: '#f1f5f9', name: 'Colony Base', icon: '\uD83C\uDFE0', res: 'none', explored: true, hasAnomaly: false };
+            for (var dy = -2; dy <= 2; dy++) for (var dx = -2; dx <= 2; dx++) {
+              var ni = (cy + dy) * mapSize + (cx + dx);
+              if (ni >= 0 && ni < tiles.length) tiles[ni].explored = true;
+            }
+            return { tiles: tiles, colonyPos: { x: cx, y: cy } };
+          }
+
+          var defaultSettlers = [
+            { name: 'Dr. Elena Vasquez', role: 'Botanist', icon: '\uD83C\uDF31', specialty: 'biology', morale: 80, health: 100 },
+            { name: 'Cmdr. James Chen', role: 'Engineer', icon: '\u2699\uFE0F', specialty: 'physics', morale: 85, health: 100 },
+            { name: 'Dr. Aisha Okafor', role: 'Geologist', icon: '\u26CF\uFE0F', specialty: 'geology', morale: 75, health: 100 },
+            { name: 'Dr. Yuki Tanaka', role: 'Medic', icon: '\uD83E\uDE7A', specialty: 'biology', morale: 90, health: 100 },
+            { name: 'Prof. Raj Patel', role: 'Physicist', icon: '\u269B\uFE0F', specialty: 'physics', morale: 70, health: 100 },
+            { name: 'Dr. Marta Schmidt', role: 'Chemist', icon: '\uD83E\uDDEA', specialty: 'chemistry', morale: 82, health: 100 }
+          ];
+
+          var buildingDefs = [
+            // Tier 1 — No prerequisites
+            { id: 'hydroponics', name: 'Hydroponics Bay', icon: '\uD83C\uDF31', tier: 1, requires: [], cost: { materials: 15, energy: 5 }, production: { food: 3 }, gate: 'biology', gateQ: 'What process do plants use to convert light energy into chemical energy?', gateA: 'photosynthesis', desc: 'Grows food using nutrient-rich water. Photosynthesis converts CO\u2082 and water into glucose using light.' },
+            { id: 'solar', name: 'Solar Array', icon: '\u2600\uFE0F', tier: 1, requires: [], cost: { materials: 10, science: 5 }, production: { energy: 3 }, gate: 'physics', gateQ: 'What particles of light does a solar panel absorb to generate electricity?', gateA: 'photon', desc: 'Converts stellar radiation into power via the photoelectric effect.' },
+            { id: 'waterReclaim', name: 'Water Reclaimer', icon: '\uD83D\uDCA7', tier: 1, requires: [], cost: { materials: 12, energy: 5 }, production: { water: 3 }, gate: 'chemistry', gateQ: 'What is the chemical formula for water?', gateA: 'h2o', desc: 'Extracts water from ice and atmosphere via distillation and filtration.' },
+            { id: 'mine', name: 'Mining Rig', icon: '\u26CF\uFE0F', tier: 1, requires: [], cost: { energy: 10, water: 5 }, production: { materials: 3 }, gate: 'geology', gateQ: 'Name one of the three main types of rocks (igneous, sedimentary, or metamorphic)', gateA: ['igneous', 'sedimentary', 'metamorphic'], desc: 'Drills into planetary crust to extract minerals and metals.' },
+            // Tier 2 — Requires 2 Tier 1 buildings
+            { id: 'lab', name: 'Research Lab', icon: '\uD83D\uDD2C', tier: 2, requires: ['solar', 'mine'], cost: { materials: 20, energy: 10 }, production: { science: 3 }, gate: 'math', gateQ: 'What is the value of pi to 2 decimal places?', gateA: '3.14', desc: 'Conducts experiments and data analysis. Requires stable power and materials.' },
+            { id: 'medbay', name: 'Med Bay', icon: '\uD83C\uDFE5', tier: 2, requires: ['hydroponics', 'waterReclaim'], cost: { materials: 15, science: 10 }, production: {}, gate: 'biology', gateQ: 'What are the basic structural units of all living organisms?', gateA: 'cell', desc: 'Heals settlers (+10 health/turn). Needs food & water infrastructure first.' },
+            // Tier 3 — Requires Tier 2 buildings
+            { id: 'atmo', name: 'Atmospheric Processor', icon: '\uD83C\uDF2C\uFE0F', tier: 3, requires: ['lab', 'waterReclaim'], cost: { materials: 25, energy: 15, science: 10 }, production: { water: 1, food: 1 }, gate: 'chemistry', gateQ: 'What gas makes up about 78% of Earth\'s atmosphere?', gateA: 'nitrogen', desc: 'Converts alien atmosphere. +5% terraforming per turn.' },
+            { id: 'fusion', name: 'Fusion Reactor', icon: '\u2622\uFE0F', tier: 3, requires: ['lab', 'solar'], cost: { materials: 30, science: 20 }, production: { energy: 10 }, gate: 'physics', gateQ: 'In E=mc\u00B2, what does the \'m\' stand for?', gateA: 'mass', desc: 'Fuses hydrogen isotopes for massive energy. The ultimate power source.' },
+            // Tier 4 — Victory building
+            { id: 'biodome', name: 'Biodome', icon: '\uD83C\uDF0D', tier: 4, requires: ['atmo', 'fusion', 'medbay'], cost: { materials: 50, energy: 30, science: 25, water: 20 }, production: { food: 5, water: 2 }, gate: 'ecology', gateQ: 'What is the term for a self-sustaining ecological system that recycles nutrients and energy?', gateA: ['ecosystem', 'biosphere', 'closed ecosystem'], desc: 'Self-sustaining biosphere. Build this to achieve COLONY VICTORY!' },
+            { id: 'comms', name: 'Deep Space Comms', icon: '\uD83D\uDCE1', tier: 4, requires: ['fusion', 'lab'], cost: { materials: 40, energy: 25, science: 30 }, production: { science: 5 }, gate: 'physics', gateQ: 'What is the speed of light in km/s (approximately)?', gateA: ['300000', '3e5', '300,000'], desc: 'Contacts Earth! Signal takes 1,206 years to arrive. Massive science boost.' },
+            // Tier 2 Additions
+            { id: 'greenhouse', name: 'Greenhouse Dome', icon: '\uD83C\uDFE1', tier: 2, requires: ['hydroponics', 'waterReclaim'], cost: { materials: 18, water: 10 }, production: { food: 4 }, gate: 'biology', gateQ: 'What is the greenhouse effect?', gateA: ['trap', 'heat', 'warm'], desc: 'Large-scale food production. +0.5% terraform/turn.' },
+            { id: 'refinery', name: 'Material Refinery', icon: '\uD83C\uDFED', tier: 2, requires: ['mine', 'solar'], cost: { energy: 15, materials: 10 }, production: { materials: 5 }, gate: 'chemistry', gateQ: 'What is smelting?', gateA: ['melt', 'extract', 'ore'], desc: 'Refines raw ore into construction-grade materials.' },
+            // Tier 3 Additions
+            { id: 'cloning', name: 'Cloning Lab', icon: '\uD83E\uDDEC', tier: 3, requires: ['medbay', 'lab'], cost: { materials: 30, science: 20, energy: 15 }, production: { food: 2 }, gate: 'biology', gateQ: 'What is the name of the first cloned mammal?', gateA: ['dolly'], desc: 'Accelerates population growth. Clones food organisms.' },
+            { id: 'shield', name: 'Planetary Shield', icon: '\uD83D\uDEE1\uFE0F', tier: 3, requires: ['fusion', 'atmo'], cost: { materials: 35, energy: 25, science: 15 }, production: { energy: 2 }, gate: 'physics', gateQ: 'What protects Earth from solar radiation?', gateA: ['magnetic', 'magnetosphere', 'field'], desc: 'Deflects solar flares & meteors. Reduces weather damage.' },
+            { id: 'oceanSeeder', name: 'Ocean Seeder', icon: '\uD83C\uDF0A', tier: 3, requires: ['waterReclaim', 'atmo'], cost: { materials: 25, water: 15, science: 10 }, production: { water: 4, food: 2 }, gate: 'biology', gateQ: 'What process do phytoplankton use to produce oxygen?', gateA: ['photosynthesis'], desc: 'Seeds alien oceans with microbes. +1.5% terraform/turn.' },
+            // Tier 4 Addition
+            { id: 'spaceport', name: 'Spaceport', icon: '\uD83D\uDE80', tier: 4, requires: ['comms', 'fusion', 'shield'], cost: { materials: 60, energy: 40, science: 35 }, production: { materials: 5, science: 3 }, gate: 'physics', gateQ: 'What is escape velocity from Earth in km/s (approximately)?', gateA: ['11', '11.2'], desc: 'Launches supply missions. Attracts settlers from other colonies.' }
+          ];
+
+          // Canvas Map Rendering (non-hook: using global ref to avoid conditional hook)
+          if (!window._spaceColonyCanvasRef) window._spaceColonyCanvasRef = { current: null };
+          var canvasRef = window._spaceColonyCanvasRef;
+          setTimeout(function () {
+            if (!canvasRef.current || !mapData) return;
+            var canvas = canvasRef.current;
+            var ctx = canvas.getContext('2d');
+            var w = canvas.width = canvas.offsetWidth;
+            var h = canvas.height = Math.min(520, canvas.offsetWidth * 0.9);
+            var animPhase = (Date.now() / 1000) % (Math.PI * 2);
+
+            // Season-tinted background
+            var seasonBGs = { bloom: '#0a1a0f', dry: '#1a0f0a', storm: '#0a0f1a', calm: '#0f172a' };
+            var bgCol = seasonBGs[(seasonCycle || {}).id] || '#0f172a';
+            ctx.fillStyle = bgCol; ctx.fillRect(0, 0, w, h);
+
+            // Enhanced starfield with twinkling
+            for (var si = 0; si < 120; si++) {
+              var sx = (si * 7919 + 12345) % w; var sy = (si * 6271 + 54321) % h;
+              var twinkle = 0.15 + Math.sin(animPhase + si * 0.5) * 0.15 + ((si * 31) % 8) * 0.06;
+              var starSize = si < 10 ? 2.5 : si < 30 ? 2 : 1.5;
+              ctx.fillStyle = si < 5 ? 'rgba(200,220,255,' + twinkle + ')' : 'rgba(255,255,255,' + twinkle + ')';
+              ctx.beginPath(); ctx.arc(sx, sy, starSize / 2, 0, Math.PI * 2); ctx.fill();
             }
 
-            var terrainTypes = [
-              { type: 'plains', color: '#4ade80', name: 'Fertile Plains', icon: '\uD83C\uDF3F', res: 'food' },
-              { type: 'mountain', color: '#94a3b8', name: 'Mountains', icon: '\uD83C\uDFD4\uFE0F', res: 'materials' },
-              { type: 'volcanic', color: '#f97316', name: 'Volcanic', icon: '\uD83C\uDF0B', res: 'energy' },
-              { type: 'ice', color: '#a5f3fc', name: 'Ice Fields', icon: '\u2744\uFE0F', res: 'water' },
-              { type: 'desert', color: '#fbbf24', name: 'Desert', icon: '\uD83C\uDFDC\uFE0F', res: 'materials' },
-              { type: 'ocean', color: '#3b82f6', name: 'Ocean', icon: '\uD83C\uDF0A', res: 'water' },
-              { type: 'radiation', color: '#a855f7', name: 'Radiation Zone', icon: '\u2622\uFE0F', res: 'science' }
-            ];
+            // Nebula glow (season-colored)
+            var nebulaColors = { bloom: 'rgba(34,197,94,0.03)', dry: 'rgba(234,179,8,0.03)', storm: 'rgba(59,130,246,0.04)', calm: 'rgba(139,92,246,0.03)' };
+            var nebCol = nebulaColors[(seasonCycle || {}).id] || 'rgba(139,92,246,0.03)';
+            var nebGrad = ctx.createRadialGradient(w * 0.3, h * 0.4, 0, w * 0.3, h * 0.4, w * 0.5);
+            nebGrad.addColorStop(0, nebCol); nebGrad.addColorStop(1, 'transparent');
+            ctx.fillStyle = nebGrad; ctx.fillRect(0, 0, w, h);
 
-            function generateMap() {
-              var tiles = [];
-              var s = Math.floor(Math.random() * 99999);
-              for (var y = 0; y < mapSize; y++) {
-                for (var x = 0; x < mapSize; x++) {
-                  s = (s * 9301 + 49297) % 233280;
-                  var r = s / 233280;
-                  var tIdx = r < 0.25 ? 0 : r < 0.40 ? 1 : r < 0.50 ? 2 : r < 0.62 ? 3 : r < 0.72 ? 4 : r < 0.88 ? 5 : 6;
-                  var t2 = terrainTypes[tIdx];
-                  tiles.push({ x: x, y: y, type: t2.type, color: t2.color, name: t2.name, icon: t2.icon, res: t2.res, explored: false, hasAnomaly: r > 0.92 });
+            var tileSize = Math.floor(Math.min((w - 40) / mapSize, (h - 60) / mapSize));
+            var offsetX = Math.floor((w - tileSize * mapSize) / 2);
+            var offsetY = 30;
+
+            // Title bar with season + era badges
+            var seasonIcons = { bloom: '\uD83C\uDF3C', dry: '\uD83C\uDF35', storm: '\u26C8\uFE0F', calm: '\u2728' };
+            ctx.font = 'bold 14px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+            ctx.fillText('\uD83D\uDE80 ' + colonyName.toUpperCase(), offsetX, 20);
+            ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+            ctx.fillText((seasonIcons[(seasonCycle || {}).id] || '\u2728') + ' ' + ((seasonDefs[(seasonCycle || {}).index] || {}).name || 'Calm'), w / 2 - 30, 20);
+            ctx.fillStyle = '#64748b';
+            ctx.fillText('T' + turn + ' | \uD83D\uDC65' + settlers.length + ' | \uD83C\uDFD7\uFE0F' + buildings.length, w - 135, 20);
+
+            // Tiles
+            var tiles = mapData.tiles;
+            for (var ti = 0; ti < tiles.length; ti++) {
+              var tile = tiles[ti];
+              var tx = offsetX + tile.x * tileSize;
+              var ty = offsetY + tile.y * tileSize;
+              if (!tile.explored) {
+                // Fog of war with gradient edge detection
+                var nearExplored = false;
+                for (var dx2 = -1; dx2 <= 1; dx2++) {
+                  for (var dy2 = -1; dy2 <= 1; dy2++) {
+                    if (dx2 === 0 && dy2 === 0) continue;
+                    var ni2 = (tile.y + dy2) * mapSize + (tile.x + dx2);
+                    if (ni2 >= 0 && ni2 < tiles.length && tiles[ni2].explored) nearExplored = true;
+                  }
                 }
-              }
-              var cx = Math.floor(mapSize / 2); var cy = Math.floor(mapSize / 2);
-              tiles[cy * mapSize + cx] = { x: cx, y: cy, type: 'colony', color: '#f1f5f9', name: 'Colony Base', icon: '\uD83C\uDFE0', res: 'none', explored: true, hasAnomaly: false };
-              for (var dy = -2; dy <= 2; dy++) for (var dx = -2; dx <= 2; dx++) {
-                var ni = (cy+dy) * mapSize + (cx+dx);
-                if (ni >= 0 && ni < tiles.length) tiles[ni].explored = true;
-              }
-              return { tiles: tiles, colonyPos: { x: cx, y: cy } };
-            }
-
-            var defaultSettlers = [
-              { name: 'Dr. Elena Vasquez', role: 'Botanist', icon: '\uD83C\uDF31', specialty: 'biology', morale: 80, health: 100 },
-              { name: 'Cmdr. James Chen', role: 'Engineer', icon: '\u2699\uFE0F', specialty: 'physics', morale: 85, health: 100 },
-              { name: 'Dr. Aisha Okafor', role: 'Geologist', icon: '\u26CF\uFE0F', specialty: 'geology', morale: 75, health: 100 },
-              { name: 'Dr. Yuki Tanaka', role: 'Medic', icon: '\uD83E\uDE7A', specialty: 'biology', morale: 90, health: 100 },
-              { name: 'Prof. Raj Patel', role: 'Physicist', icon: '\u269B\uFE0F', specialty: 'physics', morale: 70, health: 100 },
-              { name: 'Dr. Marta Schmidt', role: 'Chemist', icon: '\uD83E\uDDEA', specialty: 'chemistry', morale: 82, health: 100 }
-            ];
-
-            var buildingDefs = [
-              // Tier 1 — No prerequisites
-              { id: 'hydroponics', name: 'Hydroponics Bay', icon: '\uD83C\uDF31', tier: 1, requires: [], cost: { materials: 15, energy: 5 }, production: { food: 3 }, gate: 'biology', gateQ: 'What process do plants use to convert light energy into chemical energy?', gateA: 'photosynthesis', desc: 'Grows food using nutrient-rich water. Photosynthesis converts CO\u2082 and water into glucose using light.' },
-              { id: 'solar', name: 'Solar Array', icon: '\u2600\uFE0F', tier: 1, requires: [], cost: { materials: 10, science: 5 }, production: { energy: 3 }, gate: 'physics', gateQ: 'What particles of light does a solar panel absorb to generate electricity?', gateA: 'photon', desc: 'Converts stellar radiation into power via the photoelectric effect.' },
-              { id: 'waterReclaim', name: 'Water Reclaimer', icon: '\uD83D\uDCA7', tier: 1, requires: [], cost: { materials: 12, energy: 5 }, production: { water: 3 }, gate: 'chemistry', gateQ: 'What is the chemical formula for water?', gateA: 'h2o', desc: 'Extracts water from ice and atmosphere via distillation and filtration.' },
-              { id: 'mine', name: 'Mining Rig', icon: '\u26CF\uFE0F', tier: 1, requires: [], cost: { energy: 10, water: 5 }, production: { materials: 3 }, gate: 'geology', gateQ: 'Name one of the three main types of rocks (igneous, sedimentary, or metamorphic)', gateA: ['igneous', 'sedimentary', 'metamorphic'], desc: 'Drills into planetary crust to extract minerals and metals.' },
-              // Tier 2 — Requires 2 Tier 1 buildings
-              { id: 'lab', name: 'Research Lab', icon: '\uD83D\uDD2C', tier: 2, requires: ['solar', 'mine'], cost: { materials: 20, energy: 10 }, production: { science: 3 }, gate: 'math', gateQ: 'What is the value of pi to 2 decimal places?', gateA: '3.14', desc: 'Conducts experiments and data analysis. Requires stable power and materials.' },
-              { id: 'medbay', name: 'Med Bay', icon: '\uD83C\uDFE5', tier: 2, requires: ['hydroponics', 'waterReclaim'], cost: { materials: 15, science: 10 }, production: {}, gate: 'biology', gateQ: 'What are the basic structural units of all living organisms?', gateA: 'cell', desc: 'Heals settlers (+10 health/turn). Needs food & water infrastructure first.' },
-              // Tier 3 — Requires Tier 2 buildings
-              { id: 'atmo', name: 'Atmospheric Processor', icon: '\uD83C\uDF2C\uFE0F', tier: 3, requires: ['lab', 'waterReclaim'], cost: { materials: 25, energy: 15, science: 10 }, production: { water: 1, food: 1 }, gate: 'chemistry', gateQ: 'What gas makes up about 78% of Earth\'s atmosphere?', gateA: 'nitrogen', desc: 'Converts alien atmosphere. +5% terraforming per turn.' },
-              { id: 'fusion', name: 'Fusion Reactor', icon: '\u2622\uFE0F', tier: 3, requires: ['lab', 'solar'], cost: { materials: 30, science: 20 }, production: { energy: 10 }, gate: 'physics', gateQ: 'In E=mc\u00B2, what does the \'m\' stand for?', gateA: 'mass', desc: 'Fuses hydrogen isotopes for massive energy. The ultimate power source.' },
-              // Tier 4 — Victory building
-              { id: 'biodome', name: 'Biodome', icon: '\uD83C\uDF0D', tier: 4, requires: ['atmo', 'fusion', 'medbay'], cost: { materials: 50, energy: 30, science: 25, water: 20 }, production: { food: 5, water: 2 }, gate: 'ecology', gateQ: 'What is the term for a self-sustaining ecological system that recycles nutrients and energy?', gateA: ['ecosystem', 'biosphere', 'closed ecosystem'], desc: 'Self-sustaining biosphere. Build this to achieve COLONY VICTORY!' },
-              { id: 'comms', name: 'Deep Space Comms', icon: '\uD83D\uDCE1', tier: 4, requires: ['fusion', 'lab'], cost: { materials: 40, energy: 25, science: 30 }, production: { science: 5 }, gate: 'physics', gateQ: 'What is the speed of light in km/s (approximately)?', gateA: ['300000', '3e5', '300,000'], desc: 'Contacts Earth! Signal takes 1,206 years to arrive. Massive science boost.' },
-              // Tier 2 Additions
-              { id: 'greenhouse', name: 'Greenhouse Dome', icon: '\uD83C\uDFE1', tier: 2, requires: ['hydroponics', 'waterReclaim'], cost: { materials: 18, water: 10 }, production: { food: 4 }, gate: 'biology', gateQ: 'What is the greenhouse effect?', gateA: ['trap', 'heat', 'warm'], desc: 'Large-scale food production. +0.5% terraform/turn.' },
-              { id: 'refinery', name: 'Material Refinery', icon: '\uD83C\uDFED', tier: 2, requires: ['mine', 'solar'], cost: { energy: 15, materials: 10 }, production: { materials: 5 }, gate: 'chemistry', gateQ: 'What is smelting?', gateA: ['melt', 'extract', 'ore'], desc: 'Refines raw ore into construction-grade materials.' },
-              // Tier 3 Additions
-              { id: 'cloning', name: 'Cloning Lab', icon: '\uD83E\uDDEC', tier: 3, requires: ['medbay', 'lab'], cost: { materials: 30, science: 20, energy: 15 }, production: { food: 2 }, gate: 'biology', gateQ: 'What is the name of the first cloned mammal?', gateA: ['dolly'], desc: 'Accelerates population growth. Clones food organisms.' },
-              { id: 'shield', name: 'Planetary Shield', icon: '\uD83D\uDEE1\uFE0F', tier: 3, requires: ['fusion', 'atmo'], cost: { materials: 35, energy: 25, science: 15 }, production: { energy: 2 }, gate: 'physics', gateQ: 'What protects Earth from solar radiation?', gateA: ['magnetic', 'magnetosphere', 'field'], desc: 'Deflects solar flares & meteors. Reduces weather damage.' },
-              { id: 'oceanSeeder', name: 'Ocean Seeder', icon: '\uD83C\uDF0A', tier: 3, requires: ['waterReclaim', 'atmo'], cost: { materials: 25, water: 15, science: 10 }, production: { water: 4, food: 2 }, gate: 'biology', gateQ: 'What process do phytoplankton use to produce oxygen?', gateA: ['photosynthesis'], desc: 'Seeds alien oceans with microbes. +1.5% terraform/turn.' },
-              // Tier 4 Addition
-              { id: 'spaceport', name: 'Spaceport', icon: '\uD83D\uDE80', tier: 4, requires: ['comms', 'fusion', 'shield'], cost: { materials: 60, energy: 40, science: 35 }, production: { materials: 5, science: 3 }, gate: 'physics', gateQ: 'What is escape velocity from Earth in km/s (approximately)?', gateA: ['11', '11.2'], desc: 'Launches supply missions. Attracts settlers from other colonies.' }
-            ];
-
-            // Canvas Map Rendering (non-hook: using global ref to avoid conditional hook)
-            if (!window._spaceColonyCanvasRef) window._spaceColonyCanvasRef = { current: null };
-            var canvasRef = window._spaceColonyCanvasRef;
-            setTimeout(function() {
-              if (!canvasRef.current || !mapData) return;
-              var canvas = canvasRef.current;
-              var ctx = canvas.getContext('2d');
-              var w = canvas.width = canvas.offsetWidth;
-              var h = canvas.height = Math.min(520, canvas.offsetWidth * 0.9);
-              var animPhase = (Date.now() / 1000) % (Math.PI * 2);
-
-              // Season-tinted background
-              var seasonBGs = { bloom: '#0a1a0f', dry: '#1a0f0a', storm: '#0a0f1a', calm: '#0f172a' };
-              var bgCol = seasonBGs[(seasonCycle || {}).id] || '#0f172a';
-              ctx.fillStyle = bgCol; ctx.fillRect(0, 0, w, h);
-
-              // Enhanced starfield with twinkling
-              for (var si = 0; si < 120; si++) {
-                var sx = (si * 7919 + 12345) % w; var sy = (si * 6271 + 54321) % h;
-                var twinkle = 0.15 + Math.sin(animPhase + si * 0.5) * 0.15 + ((si * 31) % 8) * 0.06;
-                var starSize = si < 10 ? 2.5 : si < 30 ? 2 : 1.5;
-                ctx.fillStyle = si < 5 ? 'rgba(200,220,255,' + twinkle + ')' : 'rgba(255,255,255,' + twinkle + ')';
-                ctx.beginPath(); ctx.arc(sx, sy, starSize / 2, 0, Math.PI * 2); ctx.fill();
-              }
-
-              // Nebula glow (season-colored)
-              var nebulaColors = { bloom: 'rgba(34,197,94,0.03)', dry: 'rgba(234,179,8,0.03)', storm: 'rgba(59,130,246,0.04)', calm: 'rgba(139,92,246,0.03)' };
-              var nebCol = nebulaColors[(seasonCycle || {}).id] || 'rgba(139,92,246,0.03)';
-              var nebGrad = ctx.createRadialGradient(w * 0.3, h * 0.4, 0, w * 0.3, h * 0.4, w * 0.5);
-              nebGrad.addColorStop(0, nebCol); nebGrad.addColorStop(1, 'transparent');
-              ctx.fillStyle = nebGrad; ctx.fillRect(0, 0, w, h);
-
-              var tileSize = Math.floor(Math.min((w - 40) / mapSize, (h - 60) / mapSize));
-              var offsetX = Math.floor((w - tileSize * mapSize) / 2);
-              var offsetY = 30;
-
-              // Title bar with season + era badges
-              var seasonIcons = { bloom: '\uD83C\uDF3C', dry: '\uD83C\uDF35', storm: '\u26C8\uFE0F', calm: '\u2728' };
-              ctx.font = 'bold 14px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
-              ctx.fillText('\uD83D\uDE80 ' + colonyName.toUpperCase(), offsetX, 20);
-              ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
-              ctx.fillText((seasonIcons[(seasonCycle || {}).id] || '\u2728') + ' ' + ((seasonDefs[(seasonCycle || {}).index] || {}).name || 'Calm'), w / 2 - 30, 20);
-              ctx.fillStyle = '#64748b';
-              ctx.fillText('T' + turn + ' | \uD83D\uDC65' + settlers.length + ' | \uD83C\uDFD7\uFE0F' + buildings.length, w - 135, 20);
-
-              // Tiles
-              var tiles = mapData.tiles;
-              for (var ti = 0; ti < tiles.length; ti++) {
-                var tile = tiles[ti];
-                var tx = offsetX + tile.x * tileSize;
-                var ty = offsetY + tile.y * tileSize;
-                if (!tile.explored) {
-                  // Fog of war with gradient edge detection
-                  var nearExplored = false;
-                  for (var dx2 = -1; dx2 <= 1; dx2++) {
-                    for (var dy2 = -1; dy2 <= 1; dy2++) {
-                      if (dx2 === 0 && dy2 === 0) continue;
-                      var ni2 = (tile.y + dy2) * mapSize + (tile.x + dx2);
-                      if (ni2 >= 0 && ni2 < tiles.length && tiles[ni2].explored) nearExplored = true;
-                    }
-                  }
-                  if (nearExplored) {
-                    // Glowing fog edge
-                    var fogGrad = ctx.createRadialGradient(tx + tileSize/2, ty + tileSize/2, 0, tx + tileSize/2, ty + tileSize/2, tileSize);
-                    fogGrad.addColorStop(0, 'rgba(51,65,85,0.6)'); fogGrad.addColorStop(1, 'rgba(30,41,59,0.95)');
-                    ctx.fillStyle = fogGrad; ctx.fillRect(tx, ty, tileSize - 1, tileSize - 1);
-                    ctx.fillStyle = 'rgba(100,116,139,0.4)'; ctx.font = (tileSize * 0.35) + 'px sans-serif';
-                    ctx.fillText('?', tx + tileSize * 0.35, ty + tileSize * 0.65);
-                  } else {
-                    ctx.fillStyle = '#1e293b'; ctx.fillRect(tx, ty, tileSize - 1, tileSize - 1);
-                  }
+                if (nearExplored) {
+                  // Glowing fog edge
+                  var fogGrad = ctx.createRadialGradient(tx + tileSize / 2, ty + tileSize / 2, 0, tx + tileSize / 2, ty + tileSize / 2, tileSize);
+                  fogGrad.addColorStop(0, 'rgba(51,65,85,0.6)'); fogGrad.addColorStop(1, 'rgba(30,41,59,0.95)');
+                  ctx.fillStyle = fogGrad; ctx.fillRect(tx, ty, tileSize - 1, tileSize - 1);
+                  ctx.fillStyle = 'rgba(100,116,139,0.4)'; ctx.font = (tileSize * 0.35) + 'px sans-serif';
+                  ctx.fillText('?', tx + tileSize * 0.35, ty + tileSize * 0.65);
                 } else {
-                  // Gradient terrain fill
-                  var tGrad = ctx.createLinearGradient(tx, ty, tx + tileSize, ty + tileSize);
-                  tGrad.addColorStop(0, tile.color);
-                  tGrad.addColorStop(1, tile.type === 'ocean' ? '#1e40af' : tile.type === 'mountain' ? '#44403c' : tile.type === 'forest' ? '#14532d' : tile.type === 'volcanic' ? '#7f1d1d' : tile.type === 'ice' ? '#e0f2fe' : tile.type === 'radiation' ? '#3b0764' : tile.type === 'colony' ? '#1e3a5f' : tile.color);
-                  ctx.globalAlpha = 0.9; ctx.fillStyle = tGrad;
-                  ctx.fillRect(tx, ty, tileSize - 1, tileSize - 1); ctx.globalAlpha = 1;
+                  ctx.fillStyle = '#1e293b'; ctx.fillRect(tx, ty, tileSize - 1, tileSize - 1);
+                }
+              } else {
+                // Gradient terrain fill
+                var tGrad = ctx.createLinearGradient(tx, ty, tx + tileSize, ty + tileSize);
+                tGrad.addColorStop(0, tile.color);
+                tGrad.addColorStop(1, tile.type === 'ocean' ? '#1e40af' : tile.type === 'mountain' ? '#44403c' : tile.type === 'forest' ? '#14532d' : tile.type === 'volcanic' ? '#7f1d1d' : tile.type === 'ice' ? '#e0f2fe' : tile.type === 'radiation' ? '#3b0764' : tile.type === 'colony' ? '#1e3a5f' : tile.color);
+                ctx.globalAlpha = 0.9; ctx.fillStyle = tGrad;
+                ctx.fillRect(tx, ty, tileSize - 1, tileSize - 1); ctx.globalAlpha = 1;
 
-                  // Terrain detail drawing
-                  if (tile.type === 'ocean') {
-                    var waveOff = Math.sin(animPhase + tile.x * 0.5) * 2;
-                    ctx.strokeStyle = 'rgba(147,197,253,0.35)'; ctx.lineWidth = 0.7;
-                    for (var wi = 0; wi < 3; wi++) {
-                      ctx.beginPath(); ctx.moveTo(tx + 2, ty + tileSize * (0.3 + wi * 0.22) + waveOff);
-                      ctx.quadraticCurveTo(tx + tileSize/2, ty + tileSize * (0.2 + wi * 0.22) - waveOff, tx + tileSize - 3, ty + tileSize * (0.35 + wi * 0.22) + waveOff);
-                      ctx.stroke();
+                // Terrain detail drawing
+                if (tile.type === 'ocean') {
+                  var waveOff = Math.sin(animPhase + tile.x * 0.5) * 2;
+                  ctx.strokeStyle = 'rgba(147,197,253,0.35)'; ctx.lineWidth = 0.7;
+                  for (var wi = 0; wi < 3; wi++) {
+                    ctx.beginPath(); ctx.moveTo(tx + 2, ty + tileSize * (0.3 + wi * 0.22) + waveOff);
+                    ctx.quadraticCurveTo(tx + tileSize / 2, ty + tileSize * (0.2 + wi * 0.22) - waveOff, tx + tileSize - 3, ty + tileSize * (0.35 + wi * 0.22) + waveOff);
+                    ctx.stroke();
+                  }
+                } else if (tile.type === 'mountain') {
+                  // Mountain range with snow caps
+                  ctx.fillStyle = 'rgba(120,113,108,0.5)'; ctx.beginPath();
+                  ctx.moveTo(tx + tileSize * 0.15, ty + tileSize * 0.82);
+                  ctx.lineTo(tx + tileSize * 0.35, ty + tileSize * 0.25);
+                  ctx.lineTo(tx + tileSize * 0.55, ty + tileSize * 0.6);
+                  ctx.lineTo(tx + tileSize * 0.7, ty + tileSize * 0.18);
+                  ctx.lineTo(tx + tileSize * 0.88, ty + tileSize * 0.82);
+                  ctx.closePath(); ctx.fill();
+                  // Snow cap
+                  ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.beginPath();
+                  ctx.moveTo(tx + tileSize * 0.3, ty + tileSize * 0.33);
+                  ctx.lineTo(tx + tileSize * 0.35, ty + tileSize * 0.25);
+                  ctx.lineTo(tx + tileSize * 0.4, ty + tileSize * 0.33); ctx.fill();
+                  ctx.beginPath();
+                  ctx.moveTo(tx + tileSize * 0.65, ty + tileSize * 0.26);
+                  ctx.lineTo(tx + tileSize * 0.7, ty + tileSize * 0.18);
+                  ctx.lineTo(tx + tileSize * 0.75, ty + tileSize * 0.26); ctx.fill();
+                } else if (tile.type === 'volcanic') {
+                  // Lava glow with pulsing
+                  var lavaGlow = 0.3 + Math.sin(animPhase * 2 + tile.x) * 0.15;
+                  ctx.fillStyle = 'rgba(239,68,68,' + lavaGlow + ')'; ctx.beginPath();
+                  ctx.arc(tx + tileSize / 2, ty + tileSize / 2, tileSize * 0.22, 0, Math.PI * 2); ctx.fill();
+                  ctx.fillStyle = 'rgba(251,191,36,' + (lavaGlow * 0.5) + ')'; ctx.beginPath();
+                  ctx.arc(tx + tileSize / 2, ty + tileSize / 2, tileSize * 0.12, 0, Math.PI * 2); ctx.fill();
+                } else if (tile.type === 'colony') {
+                  // Enhanced colony with building count + glow
+                  var colGlow = 0.15 + Math.sin(animPhase) * 0.05;
+                  ctx.fillStyle = 'rgba(59,130,246,' + colGlow + ')';
+                  ctx.fillRect(tx, ty, tileSize - 1, tileSize - 1);
+                  ctx.fillStyle = '#e0f2fe'; ctx.fillRect(tx + 3, ty + 3, tileSize - 7, tileSize - 7);
+                  // Dome
+                  ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2; ctx.beginPath();
+                  ctx.arc(tx + tileSize / 2, ty + tileSize * 0.5, tileSize * 0.22, Math.PI, 0); ctx.stroke();
+                  ctx.moveTo(tx + tileSize * 0.28, ty + tileSize * 0.5);
+                  ctx.lineTo(tx + tileSize * 0.72, ty + tileSize * 0.5); ctx.stroke();
+                  // Building count badge
+                  ctx.fillStyle = '#1e40af'; ctx.beginPath();
+                  ctx.arc(tx + tileSize * 0.82, ty + tileSize * 0.2, tileSize * 0.13, 0, Math.PI * 2); ctx.fill();
+                  ctx.fillStyle = '#fff'; ctx.font = 'bold ' + (tileSize * 0.15) + 'px sans-serif';
+                  ctx.fillText(String(buildings.length), tx + tileSize * 0.75, ty + tileSize * 0.25);
+                  // Pop count
+                  ctx.fillStyle = '#166534'; ctx.beginPath();
+                  ctx.arc(tx + tileSize * 0.18, ty + tileSize * 0.2, tileSize * 0.13, 0, Math.PI * 2); ctx.fill();
+                  ctx.fillStyle = '#fff'; ctx.font = (tileSize * 0.13) + 'px sans-serif';
+                  ctx.fillText(String(settlers.length), tx + tileSize * 0.1, ty + tileSize * 0.25);
+                } else if (tile.type === 'radiation') {
+                  // Pulsing radiation rings
+                  var radGlow = 0.3 + Math.sin(animPhase * 1.5 + tile.y) * 0.2;
+                  ctx.strokeStyle = 'rgba(168,85,247,' + radGlow + ')'; ctx.lineWidth = 0.8;
+                  for (var ri = 0; ri < 3; ri++) { ctx.beginPath(); ctx.arc(tx + tileSize / 2, ty + tileSize / 2, tileSize * (0.08 + ri * 0.1), 0, Math.PI * 2); ctx.stroke(); }
+                } else if (tile.type === 'ice') {
+                  // Ice crystal sparkles
+                  ctx.fillStyle = 'rgba(255,255,255,' + (0.3 + Math.sin(animPhase + ti) * 0.15) + ')';
+                  var icePositions = [[0.25, 0.25], [0.55, 0.35], [0.35, 0.65], [0.7, 0.6], [0.5, 0.2]];
+                  icePositions.forEach(function (ip) { ctx.fillRect(tx + tileSize * ip[0], ty + tileSize * ip[1], 2.5, 2.5); });
+                } else if (tile.type === 'forest') {
+                  // Tree canopy dots
+                  ctx.fillStyle = 'rgba(34,197,94,0.5)';
+                  var treePos = [[0.3, 0.3], [0.6, 0.25], [0.45, 0.55], [0.2, 0.65], [0.7, 0.6]];
+                  treePos.forEach(function (tp2) { ctx.beginPath(); ctx.arc(tx + tileSize * tp2[0], ty + tileSize * tp2[1], tileSize * 0.08, 0, Math.PI * 2); ctx.fill(); });
+                }
+
+                // Pulsing anomaly glow
+                if (tile.hasAnomaly) {
+                  var anomGlow = 0.5 + Math.sin(animPhase * 3) * 0.3;
+                  ctx.fillStyle = 'rgba(250,204,21,' + (anomGlow * 0.2) + ')';
+                  ctx.beginPath(); ctx.arc(tx + tileSize * 0.78, ty + tileSize * 0.22, tileSize * 0.18, 0, Math.PI * 2); ctx.fill();
+                  ctx.fillStyle = 'rgba(250,204,21,' + anomGlow + ')'; ctx.font = 'bold ' + (tileSize * 0.28) + 'px sans-serif';
+                  ctx.fillText('!', tx + tileSize * 0.72, ty + tileSize * 0.32);
+                }
+
+                // Enhanced outpost with flag
+                var tiKey = tile.x + ',' + tile.y;
+                if (tileImprovements[tiKey]) {
+                  ctx.fillStyle = '#f97316'; ctx.beginPath();
+                  ctx.arc(tx + tileSize * 0.85, ty + tileSize * 0.82, tileSize * 0.1, 0, Math.PI * 2); ctx.fill();
+                  ctx.strokeStyle = '#fdba74'; ctx.lineWidth = 1; ctx.stroke();
+                  // Flag pole
+                  ctx.strokeStyle = '#fdba74'; ctx.lineWidth = 1; ctx.beginPath();
+                  ctx.moveTo(tx + tileSize * 0.85, ty + tileSize * 0.72); ctx.lineTo(tx + tileSize * 0.85, ty + tileSize * 0.82); ctx.stroke();
+                  ctx.fillStyle = '#fb923c'; ctx.fillRect(tx + tileSize * 0.85, ty + tileSize * 0.72, tileSize * 0.08, tileSize * 0.05);
+                  // Trade route lines to adjacent outposts
+                  [[1, 0], [0, 1]].forEach(function (dd2) {
+                    var adjK2 = (tile.x + dd2[0]) + ',' + (tile.y + dd2[1]);
+                    if (tileImprovements[adjK2]) {
+                      ctx.strokeStyle = 'rgba(251,191,36,0.4)'; ctx.lineWidth = 1.5;
+                      ctx.setLineDash([3, 3]); ctx.beginPath();
+                      ctx.moveTo(tx + tileSize / 2, ty + tileSize / 2);
+                      ctx.lineTo(tx + tileSize / 2 + dd2[0] * tileSize, ty + tileSize / 2 + dd2[1] * tileSize);
+                      ctx.stroke(); ctx.setLineDash([]);
                     }
-                  } else if (tile.type === 'mountain') {
-                    // Mountain range with snow caps
-                    ctx.fillStyle = 'rgba(120,113,108,0.5)'; ctx.beginPath();
-                    ctx.moveTo(tx + tileSize * 0.15, ty + tileSize * 0.82);
-                    ctx.lineTo(tx + tileSize * 0.35, ty + tileSize * 0.25);
-                    ctx.lineTo(tx + tileSize * 0.55, ty + tileSize * 0.6);
-                    ctx.lineTo(tx + tileSize * 0.7, ty + tileSize * 0.18);
-                    ctx.lineTo(tx + tileSize * 0.88, ty + tileSize * 0.82);
-                    ctx.closePath(); ctx.fill();
-                    // Snow cap
-                    ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.beginPath();
-                    ctx.moveTo(tx + tileSize * 0.3, ty + tileSize * 0.33);
-                    ctx.lineTo(tx + tileSize * 0.35, ty + tileSize * 0.25);
-                    ctx.lineTo(tx + tileSize * 0.4, ty + tileSize * 0.33); ctx.fill();
-                    ctx.beginPath();
-                    ctx.moveTo(tx + tileSize * 0.65, ty + tileSize * 0.26);
-                    ctx.lineTo(tx + tileSize * 0.7, ty + tileSize * 0.18);
-                    ctx.lineTo(tx + tileSize * 0.75, ty + tileSize * 0.26); ctx.fill();
-                  } else if (tile.type === 'volcanic') {
-                    // Lava glow with pulsing
-                    var lavaGlow = 0.3 + Math.sin(animPhase * 2 + tile.x) * 0.15;
-                    ctx.fillStyle = 'rgba(239,68,68,' + lavaGlow + ')'; ctx.beginPath();
-                    ctx.arc(tx + tileSize/2, ty + tileSize/2, tileSize * 0.22, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = 'rgba(251,191,36,' + (lavaGlow * 0.5) + ')'; ctx.beginPath();
-                    ctx.arc(tx + tileSize/2, ty + tileSize/2, tileSize * 0.12, 0, Math.PI * 2); ctx.fill();
-                  } else if (tile.type === 'colony') {
-                    // Enhanced colony with building count + glow
-                    var colGlow = 0.15 + Math.sin(animPhase) * 0.05;
-                    ctx.fillStyle = 'rgba(59,130,246,' + colGlow + ')';
-                    ctx.fillRect(tx, ty, tileSize - 1, tileSize - 1);
-                    ctx.fillStyle = '#e0f2fe'; ctx.fillRect(tx + 3, ty + 3, tileSize - 7, tileSize - 7);
-                    // Dome
-                    ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2; ctx.beginPath();
-                    ctx.arc(tx + tileSize/2, ty + tileSize * 0.5, tileSize * 0.22, Math.PI, 0); ctx.stroke();
-                    ctx.moveTo(tx + tileSize * 0.28, ty + tileSize * 0.5);
-                    ctx.lineTo(tx + tileSize * 0.72, ty + tileSize * 0.5); ctx.stroke();
-                    // Building count badge
-                    ctx.fillStyle = '#1e40af'; ctx.beginPath();
-                    ctx.arc(tx + tileSize * 0.82, ty + tileSize * 0.2, tileSize * 0.13, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = '#fff'; ctx.font = 'bold ' + (tileSize * 0.15) + 'px sans-serif';
-                    ctx.fillText(String(buildings.length), tx + tileSize * 0.75, ty + tileSize * 0.25);
-                    // Pop count
-                    ctx.fillStyle = '#166534'; ctx.beginPath();
-                    ctx.arc(tx + tileSize * 0.18, ty + tileSize * 0.2, tileSize * 0.13, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = '#fff'; ctx.font = (tileSize * 0.13) + 'px sans-serif';
-                    ctx.fillText(String(settlers.length), tx + tileSize * 0.1, ty + tileSize * 0.25);
-                  } else if (tile.type === 'radiation') {
-                    // Pulsing radiation rings
-                    var radGlow = 0.3 + Math.sin(animPhase * 1.5 + tile.y) * 0.2;
-                    ctx.strokeStyle = 'rgba(168,85,247,' + radGlow + ')'; ctx.lineWidth = 0.8;
-                    for (var ri = 0; ri < 3; ri++) { ctx.beginPath(); ctx.arc(tx + tileSize/2, ty + tileSize/2, tileSize * (0.08 + ri * 0.1), 0, Math.PI * 2); ctx.stroke(); }
-                  } else if (tile.type === 'ice') {
-                    // Ice crystal sparkles
-                    ctx.fillStyle = 'rgba(255,255,255,' + (0.3 + Math.sin(animPhase + ti) * 0.15) + ')';
-                    var icePositions = [[0.25,0.25],[0.55,0.35],[0.35,0.65],[0.7,0.6],[0.5,0.2]];
-                    icePositions.forEach(function(ip) { ctx.fillRect(tx + tileSize * ip[0], ty + tileSize * ip[1], 2.5, 2.5); });
-                  } else if (tile.type === 'forest') {
-                    // Tree canopy dots
-                    ctx.fillStyle = 'rgba(34,197,94,0.5)';
-                    var treePos = [[0.3,0.3],[0.6,0.25],[0.45,0.55],[0.2,0.65],[0.7,0.6]];
-                    treePos.forEach(function(tp2) { ctx.beginPath(); ctx.arc(tx + tileSize * tp2[0], ty + tileSize * tp2[1], tileSize * 0.08, 0, Math.PI * 2); ctx.fill(); });
-                  }
-
-                  // Pulsing anomaly glow
-                  if (tile.hasAnomaly) {
-                    var anomGlow = 0.5 + Math.sin(animPhase * 3) * 0.3;
-                    ctx.fillStyle = 'rgba(250,204,21,' + (anomGlow * 0.2) + ')';
-                    ctx.beginPath(); ctx.arc(tx + tileSize * 0.78, ty + tileSize * 0.22, tileSize * 0.18, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = 'rgba(250,204,21,' + anomGlow + ')'; ctx.font = 'bold ' + (tileSize * 0.28) + 'px sans-serif';
-                    ctx.fillText('!', tx + tileSize * 0.72, ty + tileSize * 0.32);
-                  }
-
-                  // Enhanced outpost with flag
-                  var tiKey = tile.x + ',' + tile.y;
-                  if (tileImprovements[tiKey]) {
-                    ctx.fillStyle = '#f97316'; ctx.beginPath();
-                    ctx.arc(tx + tileSize * 0.85, ty + tileSize * 0.82, tileSize * 0.1, 0, Math.PI * 2); ctx.fill();
-                    ctx.strokeStyle = '#fdba74'; ctx.lineWidth = 1; ctx.stroke();
-                    // Flag pole
-                    ctx.strokeStyle = '#fdba74'; ctx.lineWidth = 1; ctx.beginPath();
-                    ctx.moveTo(tx + tileSize * 0.85, ty + tileSize * 0.72); ctx.lineTo(tx + tileSize * 0.85, ty + tileSize * 0.82); ctx.stroke();
-                    ctx.fillStyle = '#fb923c'; ctx.fillRect(tx + tileSize * 0.85, ty + tileSize * 0.72, tileSize * 0.08, tileSize * 0.05);
-                    // Trade route lines to adjacent outposts
-                    [[1,0],[0,1]].forEach(function(dd2) {
-                      var adjK2 = (tile.x + dd2[0]) + ',' + (tile.y + dd2[1]);
-                      if (tileImprovements[adjK2]) {
-                        ctx.strokeStyle = 'rgba(251,191,36,0.4)'; ctx.lineWidth = 1.5;
-                        ctx.setLineDash([3,3]); ctx.beginPath();
-                        ctx.moveTo(tx + tileSize/2, ty + tileSize/2);
-                        ctx.lineTo(tx + tileSize/2 + dd2[0] * tileSize, ty + tileSize/2 + dd2[1] * tileSize);
-                        ctx.stroke(); ctx.setLineDash([]);
-                      }
-                    });
-                  }
-
-                  // Terrain emoji
-                  ctx.font = (tileSize * 0.3) + 'px sans-serif'; ctx.fillText(tile.icon, tx + 2, ty + tileSize - 3);
+                  });
                 }
 
-                // Selection highlight with animated corners
-                if (selectedTile && selectedTile.x === tile.x && selectedTile.y === tile.y) {
-                  ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2.5;
-                  ctx.strokeRect(tx + 1, ty + 1, tileSize - 3, tileSize - 3);
-                  // Corner accents
-                  ctx.strokeStyle = '#fef08a'; ctx.lineWidth = 2;
-                  var cs = tileSize * 0.2;
-                  ctx.beginPath(); ctx.moveTo(tx, ty + cs); ctx.lineTo(tx, ty); ctx.lineTo(tx + cs, ty); ctx.stroke();
-                  ctx.beginPath(); ctx.moveTo(tx + tileSize - cs - 1, ty); ctx.lineTo(tx + tileSize - 1, ty); ctx.lineTo(tx + tileSize - 1, ty + cs); ctx.stroke();
-                  ctx.beginPath(); ctx.moveTo(tx, ty + tileSize - cs - 1); ctx.lineTo(tx, ty + tileSize - 1); ctx.lineTo(tx + cs, ty + tileSize - 1); ctx.stroke();
-                  ctx.beginPath(); ctx.moveTo(tx + tileSize - cs - 1, ty + tileSize - 1); ctx.lineTo(tx + tileSize - 1, ty + tileSize - 1); ctx.lineTo(tx + tileSize - 1, ty + tileSize - cs - 1); ctx.stroke();
+                // Terrain emoji
+                ctx.font = (tileSize * 0.3) + 'px sans-serif'; ctx.fillText(tile.icon, tx + 2, ty + tileSize - 3);
+              }
+
+              // Selection highlight with animated corners
+              if (selectedTile && selectedTile.x === tile.x && selectedTile.y === tile.y) {
+                ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2.5;
+                ctx.strokeRect(tx + 1, ty + 1, tileSize - 3, tileSize - 3);
+                // Corner accents
+                ctx.strokeStyle = '#fef08a'; ctx.lineWidth = 2;
+                var cs = tileSize * 0.2;
+                ctx.beginPath(); ctx.moveTo(tx, ty + cs); ctx.lineTo(tx, ty); ctx.lineTo(tx + cs, ty); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(tx + tileSize - cs - 1, ty); ctx.lineTo(tx + tileSize - 1, ty); ctx.lineTo(tx + tileSize - 1, ty + cs); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(tx, ty + tileSize - cs - 1); ctx.lineTo(tx, ty + tileSize - 1); ctx.lineTo(tx + cs, ty + tileSize - 1); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(tx + tileSize - cs - 1, ty + tileSize - 1); ctx.lineTo(tx + tileSize - 1, ty + tileSize - 1); ctx.lineTo(tx + tileSize - 1, ty + tileSize - cs - 1); ctx.stroke();
+              }
+              // Grid lines
+              ctx.strokeStyle = 'rgba(100,116,139,0.15)'; ctx.lineWidth = 0.5; ctx.strokeRect(tx, ty, tileSize - 1, tileSize - 1);
+            }
+
+            // Weather particles
+            var wx2 = d.colonyWeather;
+            if (wx2) {
+              var mapArea = { x: offsetX, y: offsetY, w: mapSize * tileSize, h: mapSize * tileSize };
+              for (var pi = 0; pi < 30; pi++) {
+                var px = mapArea.x + ((pi * 3571 + turn * 137 + Math.floor(animPhase * 10)) % mapArea.w);
+                var py = mapArea.y + ((pi * 2971 + turn * 97) % mapArea.h);
+                if (wx2.name === 'Dust Storm') {
+                  ctx.fillStyle = 'rgba(194,165,128,' + (0.2 + Math.sin(animPhase + pi) * 0.1) + ')';
+                  ctx.fillRect(px, py, 3 + Math.random() * 3, 1);
+                } else if (wx2.name === 'Solar Flare') {
+                  ctx.fillStyle = 'rgba(250,204,21,' + (0.15 + Math.sin(animPhase * 2 + pi) * 0.1) + ')';
+                  ctx.beginPath(); ctx.arc(px, py, 1.5, 0, Math.PI * 2); ctx.fill();
+                } else {
+                  ctx.fillStyle = 'rgba(147,197,253,' + (0.2 + Math.sin(animPhase + pi) * 0.1) + ')';
+                  ctx.fillRect(px, py, 1, 4);
                 }
-                // Grid lines
-                ctx.strokeStyle = 'rgba(100,116,139,0.15)'; ctx.lineWidth = 0.5; ctx.strokeRect(tx, ty, tileSize - 1, tileSize - 1);
-              }
-
-              // Weather particles
-              var wx2 = d.colonyWeather;
-              if (wx2) {
-                var mapArea = { x: offsetX, y: offsetY, w: mapSize * tileSize, h: mapSize * tileSize };
-                for (var pi = 0; pi < 30; pi++) {
-                  var px = mapArea.x + ((pi * 3571 + turn * 137 + Math.floor(animPhase * 10)) % mapArea.w);
-                  var py = mapArea.y + ((pi * 2971 + turn * 97) % mapArea.h);
-                  if (wx2.name === 'Dust Storm') {
-                    ctx.fillStyle = 'rgba(194,165,128,' + (0.2 + Math.sin(animPhase + pi) * 0.1) + ')';
-                    ctx.fillRect(px, py, 3 + Math.random() * 3, 1);
-                  } else if (wx2.name === 'Solar Flare') {
-                    ctx.fillStyle = 'rgba(250,204,21,' + (0.15 + Math.sin(animPhase * 2 + pi) * 0.1) + ')';
-                    ctx.beginPath(); ctx.arc(px, py, 1.5, 0, Math.PI * 2); ctx.fill();
-                  } else {
-                    ctx.fillStyle = 'rgba(147,197,253,' + (0.2 + Math.sin(animPhase + pi) * 0.1) + ')';
-                    ctx.fillRect(px, py, 1, 4);
-                  }
-                }
-              }
-
-              // Expedition progress on map (if active)
-              if (activeExpedition) {
-                ctx.fillStyle = 'rgba(6,182,212,0.15)';
-                ctx.fillRect(offsetX, offsetY + mapSize * tileSize - 8, mapSize * tileSize * ((activeExpedition.totalTurns - activeExpedition.turnsLeft) / activeExpedition.totalTurns), 6);
-                ctx.fillStyle = '#06b6d4'; ctx.font = '8px Inter, system-ui';
-                ctx.fillText('\u26F5 ' + activeExpedition.type + ' (' + activeExpedition.turnsLeft + 't)', offsetX + 2, offsetY + mapSize * tileSize - 1);
-              }
-
-              // Enhanced resource bar
-              var rbY = offsetY + mapSize * tileSize + 12;
-              // Background
-              ctx.fillStyle = 'rgba(15,23,42,0.8)';
-              ctx.fillRect(offsetX - 5, rbY - 5, mapSize * tileSize + 10, 22);
-              ctx.strokeStyle = 'rgba(100,116,139,0.3)'; ctx.lineWidth = 0.5;
-              ctx.strokeRect(offsetX - 5, rbY - 5, mapSize * tileSize + 10, 22);
-
-              var resData = [
-                ['\uD83C\uDF3E',resources.food,'#4ade80','#166534'],
-                ['\u26A1',resources.energy,'#facc15','#713f12'],
-                ['\uD83D\uDCA7',resources.water,'#38bdf8','#0c4a6e'],
-                ['\uD83E\uDEA8',resources.materials,'#94a3b8','#334155'],
-                ['\uD83D\uDD2C',resources.science,'#a78bfa','#4c1d95']
-              ];
-              var resW = Math.floor(mapSize * tileSize / 5);
-              ctx.font = 'bold 10px Inter, system-ui';
-              resData.forEach(function(rd, rdi) {
-                var rxPos = offsetX + rdi * resW;
-                // Tiny colored bg
-                ctx.fillStyle = rd[3]; ctx.fillRect(rxPos, rbY - 2, resW - 4, 16);
-                ctx.fillStyle = rd[2]; ctx.fillText(rd[0] + ' ' + rd[1], rxPos + 3, rbY + 9);
-              });
-
-              // Terraform + Equity mini bar
-              ctx.fillStyle = '#166534'; ctx.fillRect(offsetX, rbY + 18, Math.floor(mapSize * tileSize * terraform / 100), 3);
-              ctx.strokeStyle = '#14532d'; ctx.lineWidth = 0.5; ctx.strokeRect(offsetX, rbY + 18, mapSize * tileSize, 3);
-              ctx.fillStyle = '#64748b'; ctx.font = '7px Inter, system-ui';
-              ctx.fillText('\uD83C\uDF0D ' + terraform + '%', offsetX, rbY + 28);
-              ctx.fillText('\u2696\uFE0F ' + equity + '%', offsetX + 50, rbY + 28);
-              ctx.fillText('\uD83D\uDE42 ' + colonyHappiness + '%', offsetX + 100, rbY + 28);
-            }, 0);
-
-            function handleMapClick(e) {
-              if (!mapData || !canvasRef.current) return;
-              var rect = canvasRef.current.getBoundingClientRect();
-              var w = canvasRef.current.width; var h = canvasRef.current.height;
-              var tileSize = Math.floor(Math.min((w - 40) / mapSize, (h - 50) / mapSize));
-              var offsetX = Math.floor((w - tileSize * mapSize) / 2);
-              var tileX = Math.floor((e.clientX - rect.left - offsetX) / tileSize);
-              var tileY = Math.floor((e.clientY - rect.top - 25) / tileSize);
-              if (tileX >= 0 && tileX < mapSize && tileY >= 0 && tileY < mapSize) {
-                var tile = mapData.tiles[tileY * mapSize + tileX];
-                upd('colonySelTile', { x: tileX, y: tileY, tile: tile });
               }
             }
 
-            return React.createElement('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-2xl p-4 border border-slate-700' },
-              React.createElement('div', { className: 'flex items-center justify-between mb-4' },
-                React.createElement('div', { className: 'flex items-center gap-2' },
-                  React.createElement('button', { onClick: function() { upd('selectedTool', null); }, className: 'text-slate-400 hover:text-white text-lg' }, '\u2190'),
-                  React.createElement('h2', { className: 'text-xl font-bold text-white' }, '\uD83D\uDE80 Kepler Colony'),
-                  React.createElement('span', { className: 'text-[9px] text-indigo-400 bg-indigo-900 px-2 py-0.5 rounded-full' }, 'Turn-Based Strategy')
-                ),
-                colony && React.createElement('div', { className: 'flex gap-3 text-[10px]' },
-                  React.createElement('span', { className: 'text-green-400' }, '\uD83C\uDF3E ' + resources.food),
-                  React.createElement('span', { className: 'text-yellow-400' }, '\u26A1 ' + resources.energy),
-                  React.createElement('span', { className: 'text-cyan-400' }, '\uD83D\uDCA7 ' + resources.water),
-                  React.createElement('span', { className: 'text-slate-300' }, '\uD83E\uDEA8 ' + resources.materials),
-                  React.createElement('span', { className: 'text-purple-400' }, '\uD83D\uDD2C ' + resources.science),
-                  React.createElement('span', { className: 'text-amber-300 font-bold' }, 'Turn ' + turn),
-                  React.createElement('span', { className: 'text-[9px] px-1.5 py-0.5 rounded-full', style: { backgroundColor: currentEra.color + '33', color: currentEra.color } }, currentEra.icon + ' ' + currentEra.name),
-                  React.createElement('span', { className: 'text-[9px] text-cyan-300' }, (seasonDefs[seasonCycle.index] || {}).icon + ' ' + (seasonDefs[seasonCycle.index] || {}).name + ' (' + seasonCycle.turnsLeft + 't)')
+            // Expedition progress on map (if active)
+            if (activeExpedition) {
+              ctx.fillStyle = 'rgba(6,182,212,0.15)';
+              ctx.fillRect(offsetX, offsetY + mapSize * tileSize - 8, mapSize * tileSize * ((activeExpedition.totalTurns - activeExpedition.turnsLeft) / activeExpedition.totalTurns), 6);
+              ctx.fillStyle = '#06b6d4'; ctx.font = '8px Inter, system-ui';
+              ctx.fillText('\u26F5 ' + activeExpedition.type + ' (' + activeExpedition.turnsLeft + 't)', offsetX + 2, offsetY + mapSize * tileSize - 1);
+            }
+
+            // Enhanced resource bar
+            var rbY = offsetY + mapSize * tileSize + 12;
+            // Background
+            ctx.fillStyle = 'rgba(15,23,42,0.8)';
+            ctx.fillRect(offsetX - 5, rbY - 5, mapSize * tileSize + 10, 22);
+            ctx.strokeStyle = 'rgba(100,116,139,0.3)'; ctx.lineWidth = 0.5;
+            ctx.strokeRect(offsetX - 5, rbY - 5, mapSize * tileSize + 10, 22);
+
+            var resData = [
+              ['\uD83C\uDF3E', resources.food, '#4ade80', '#166534'],
+              ['\u26A1', resources.energy, '#facc15', '#713f12'],
+              ['\uD83D\uDCA7', resources.water, '#38bdf8', '#0c4a6e'],
+              ['\uD83E\uDEA8', resources.materials, '#94a3b8', '#334155'],
+              ['\uD83D\uDD2C', resources.science, '#a78bfa', '#4c1d95']
+            ];
+            var resW = Math.floor(mapSize * tileSize / 5);
+            ctx.font = 'bold 10px Inter, system-ui';
+            resData.forEach(function (rd, rdi) {
+              var rxPos = offsetX + rdi * resW;
+              // Tiny colored bg
+              ctx.fillStyle = rd[3]; ctx.fillRect(rxPos, rbY - 2, resW - 4, 16);
+              ctx.fillStyle = rd[2]; ctx.fillText(rd[0] + ' ' + rd[1], rxPos + 3, rbY + 9);
+            });
+
+            // Terraform + Equity mini bar
+            ctx.fillStyle = '#166534'; ctx.fillRect(offsetX, rbY + 18, Math.floor(mapSize * tileSize * terraform / 100), 3);
+            ctx.strokeStyle = '#14532d'; ctx.lineWidth = 0.5; ctx.strokeRect(offsetX, rbY + 18, mapSize * tileSize, 3);
+            ctx.fillStyle = '#64748b'; ctx.font = '7px Inter, system-ui';
+            ctx.fillText('\uD83C\uDF0D ' + terraform + '%', offsetX, rbY + 28);
+            ctx.fillText('\u2696\uFE0F ' + equity + '%', offsetX + 50, rbY + 28);
+            ctx.fillText('\uD83D\uDE42 ' + colonyHappiness + '%', offsetX + 100, rbY + 28);
+          }, 0);
+
+          function handleMapClick(e) {
+            if (!mapData || !canvasRef.current) return;
+            var rect = canvasRef.current.getBoundingClientRect();
+            var w = canvasRef.current.width; var h = canvasRef.current.height;
+            var tileSize = Math.floor(Math.min((w - 40) / mapSize, (h - 50) / mapSize));
+            var offsetX = Math.floor((w - tileSize * mapSize) / 2);
+            var tileX = Math.floor((e.clientX - rect.left - offsetX) / tileSize);
+            var tileY = Math.floor((e.clientY - rect.top - 25) / tileSize);
+            if (tileX >= 0 && tileX < mapSize && tileY >= 0 && tileY < mapSize) {
+              var tile = mapData.tiles[tileY * mapSize + tileX];
+              upd('colonySelTile', { x: tileX, y: tileY, tile: tile });
+            }
+          }
+
+          return React.createElement('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-2xl p-4 border border-slate-700' },
+            React.createElement('div', { className: 'flex items-center justify-between mb-4' },
+              React.createElement('div', { className: 'flex items-center gap-2' },
+                React.createElement('button', { onClick: function () { upd('selectedTool', null); }, className: 'text-slate-400 hover:text-white text-lg' }, '\u2190'),
+                React.createElement('h2', { className: 'text-xl font-bold text-white' }, '\uD83D\uDE80 Kepler Colony'),
+                React.createElement('span', { className: 'text-[9px] text-indigo-400 bg-indigo-900 px-2 py-0.5 rounded-full' }, 'Turn-Based Strategy')
+              ),
+              colony && React.createElement('div', { className: 'flex gap-3 text-[10px]' },
+                React.createElement('span', { className: 'text-green-400' }, '\uD83C\uDF3E ' + resources.food),
+                React.createElement('span', { className: 'text-yellow-400' }, '\u26A1 ' + resources.energy),
+                React.createElement('span', { className: 'text-cyan-400' }, '\uD83D\uDCA7 ' + resources.water),
+                React.createElement('span', { className: 'text-slate-300' }, '\uD83E\uDEA8 ' + resources.materials),
+                React.createElement('span', { className: 'text-purple-400' }, '\uD83D\uDD2C ' + resources.science),
+                React.createElement('span', { className: 'text-amber-300 font-bold' }, 'Turn ' + turn),
+                React.createElement('span', { className: 'text-[9px] px-1.5 py-0.5 rounded-full', style: { backgroundColor: currentEra.color + '33', color: currentEra.color } }, currentEra.icon + ' ' + currentEra.name),
+                React.createElement('span', { className: 'text-[9px] text-cyan-300' }, (seasonDefs[seasonCycle.index] || {}).icon + ' ' + (seasonDefs[seasonCycle.index] || {}).name + ' (' + seasonCycle.turnsLeft + 't)')
+              )
+            ),
+            // SETUP
+            colonyPhase === 'setup' && React.createElement('div', { className: 'text-center py-10' },
+              React.createElement('div', { className: 'text-6xl mb-4' }, '\uD83D\uDE80'),
+              React.createElement('h3', { className: 'text-2xl font-bold text-white mb-2' }, 'Welcome to Kepler-442b'),
+              React.createElement('p', { className: 'text-slate-400 text-sm max-w-lg mx-auto mb-6' },
+                'You have arrived at a habitable exoplanet 1,206 light-years from Earth. Build a self-sustaining colony by mastering real science. Every building requires passing a science challenge. Your 6 settlers are counting on you!'
+              ),
+              React.createElement('div', { className: 'grid grid-cols-3 gap-3 max-w-md mx-auto mb-6 text-slate-300 text-[10px]' },
+                [['\uD83C\uDF0D', 'Explore', 'Reveal the alien planet tile by tile'], ['\uD83D\uDD2C', 'Learn', 'Pass science challenges to build'], ['\uD83E\uDD1D', 'Cooperate', '6 specialists with unique skills']].map(function (item) {
+                  return React.createElement('div', { key: item[1], className: 'bg-slate-800 rounded-xl p-3 border border-slate-700 text-center' },
+                    React.createElement('div', { className: 'text-2xl mb-1' }, item[0]),
+                    React.createElement('div', { className: 'font-bold' }, item[1]),
+                    item[2]
+                  );
+                })
+              ),
+              // Difficulty Settings
+              React.createElement('div', { className: 'bg-slate-800/80 rounded-xl p-4 border border-slate-700 max-w-md mx-auto mb-6' },
+                React.createElement('h4', { className: 'text-[11px] font-bold text-white mb-3 text-center' }, '\u2699\uFE0F Game Settings'),
+                React.createElement('div', { className: 'grid grid-cols-3 gap-3' },
+                  // Grade Level
+                  React.createElement('div', null,
+                    React.createElement('div', { className: 'text-[9px] text-slate-400 mb-1' }, '\uD83C\uDF93 Grade Level'),
+                    React.createElement('div', { className: 'flex flex-col gap-1' },
+                      ['K-2', '3-5', '6-8', '9-12', 'College'].map(function (gl) {
+                        return React.createElement('button', {
+                          key: gl,
+                          onClick: function () { upd('colonyGrade', gl); },
+                          className: 'px-2 py-1 rounded-lg text-[8px] font-bold border transition-all ' +
+                            ((d.colonyGrade || '6-8') === gl ? 'border-green-400 bg-green-900 text-green-200' : 'border-slate-700 bg-slate-900 text-slate-500 hover:border-slate-500')
+                        }, gl);
+                      })
+                    ),
+                    React.createElement('div', { className: 'text-[8px] text-slate-500 mt-1' }, 'Adjusts question difficulty')
+                  ),
+                  React.createElement('div', null,
+                    React.createElement('div', { className: 'text-[9px] text-slate-400 mb-1' }, 'Science Challenge Mode'),
+                    React.createElement('div', { className: 'flex gap-1' },
+                      React.createElement('button', {
+                        onClick: function () { upd('colonyMode', 'mcq'); },
+                        className: 'flex-1 px-2 py-2 rounded-lg text-[9px] font-bold border-2 transition-all ' +
+                          ((d.colonyMode || 'mcq') === 'mcq' ? 'border-indigo-400 bg-indigo-900 text-indigo-200' : 'border-slate-600 bg-slate-900 text-slate-400')
+                      }, '\uD83D\uDCCB MCQ'),
+                      React.createElement('button', {
+                        onClick: function () { upd('colonyMode', 'freeResponse'); },
+                        className: 'flex-1 px-2 py-2 rounded-lg text-[9px] font-bold border-2 transition-all ' +
+                          ((d.colonyMode || 'mcq') === 'freeResponse' ? 'border-purple-400 bg-purple-900 text-purple-200' : 'border-slate-600 bg-slate-900 text-slate-400')
+                      }, '\u270D\uFE0F Free Response')
+                    ),
+                    React.createElement('div', { className: 'text-[8px] text-slate-500 mt-1' },
+                      (d.colonyMode || 'mcq') === 'mcq' ? 'Multiple choice \u2014 4 options, scaffolded learning' : 'Type your answer \u2014 harder but deeper understanding'
+                    )
+                  ),
+                  React.createElement('div', null,
+                    React.createElement('div', { className: 'text-[9px] text-slate-400 mb-1' }, 'Audio Narration'),
+                    React.createElement('div', { className: 'flex gap-1' },
+                      React.createElement('button', {
+                        onClick: function () { upd('colonyTTS', !(d.colonyTTS)); },
+                        className: 'flex-1 px-2 py-2 rounded-lg text-[9px] font-bold border-2 transition-all ' +
+                          (d.colonyTTS ? 'border-green-400 bg-green-900 text-green-200' : 'border-slate-600 bg-slate-900 text-slate-400')
+                      }, d.colonyTTS ? '\uD83D\uDD0A ON' : '\uD83D\uDD07 OFF')
+                    ),
+                    React.createElement('div', { className: 'text-[8px] text-slate-500 mt-1' }, 'Characters speak with TTS voices')
+                  )
                 )
               ),
-              // SETUP
-              colonyPhase === 'setup' && React.createElement('div', { className: 'text-center py-10' },
-                React.createElement('div', { className: 'text-6xl mb-4' }, '\uD83D\uDE80'),
-                React.createElement('h3', { className: 'text-2xl font-bold text-white mb-2' }, 'Welcome to Kepler-442b'),
-                React.createElement('p', { className: 'text-slate-400 text-sm max-w-lg mx-auto mb-6' },
-                  'You have arrived at a habitable exoplanet 1,206 light-years from Earth. Build a self-sustaining colony by mastering real science. Every building requires passing a science challenge. Your 6 settlers are counting on you!'
-                ),
-                React.createElement('div', { className: 'grid grid-cols-3 gap-3 max-w-md mx-auto mb-6 text-slate-300 text-[10px]' },
-                  [['\uD83C\uDF0D','Explore','Reveal the alien planet tile by tile'],['\uD83D\uDD2C','Learn','Pass science challenges to build'],['\uD83E\uDD1D','Cooperate','6 specialists with unique skills']].map(function(item) {
-                    return React.createElement('div', { key: item[1], className: 'bg-slate-800 rounded-xl p-3 border border-slate-700 text-center' },
-                      React.createElement('div', { className: 'text-2xl mb-1' }, item[0]),
-                      React.createElement('div', { className: 'font-bold' }, item[1]),
-                      item[2]
-                    );
-                  })
-                ),
-                // Difficulty Settings
-                React.createElement('div', { className: 'bg-slate-800/80 rounded-xl p-4 border border-slate-700 max-w-md mx-auto mb-6' },
-                  React.createElement('h4', { className: 'text-[11px] font-bold text-white mb-3 text-center' }, '\u2699\uFE0F Game Settings'),
-                  React.createElement('div', { className: 'grid grid-cols-3 gap-3' },
-                    // Grade Level
-                    React.createElement('div', null,
-                      React.createElement('div', { className: 'text-[9px] text-slate-400 mb-1' }, '\uD83C\uDF93 Grade Level'),
-                      React.createElement('div', { className: 'flex flex-col gap-1' },
-                        ['K-2', '3-5', '6-8', '9-12', 'College'].map(function(gl) {
-                          return React.createElement('button', {
-                            key: gl,
-                            onClick: function() { upd('colonyGrade', gl); },
-                            className: 'px-2 py-1 rounded-lg text-[8px] font-bold border transition-all ' +
-                              ((d.colonyGrade || '6-8') === gl ? 'border-green-400 bg-green-900 text-green-200' : 'border-slate-700 bg-slate-900 text-slate-500 hover:border-slate-500')
-                          }, gl);
-                        })
-                      ),
-                      React.createElement('div', { className: 'text-[8px] text-slate-500 mt-1' }, 'Adjusts question difficulty')
-                    ),
-                    React.createElement('div', null,
-                      React.createElement('div', { className: 'text-[9px] text-slate-400 mb-1' }, 'Science Challenge Mode'),
-                      React.createElement('div', { className: 'flex gap-1' },
-                        React.createElement('button', {
-                          onClick: function() { upd('colonyMode', 'mcq'); },
-                          className: 'flex-1 px-2 py-2 rounded-lg text-[9px] font-bold border-2 transition-all ' +
-                            ((d.colonyMode || 'mcq') === 'mcq' ? 'border-indigo-400 bg-indigo-900 text-indigo-200' : 'border-slate-600 bg-slate-900 text-slate-400')
-                        }, '\uD83D\uDCCB MCQ'),
-                        React.createElement('button', {
-                          onClick: function() { upd('colonyMode', 'freeResponse'); },
-                          className: 'flex-1 px-2 py-2 rounded-lg text-[9px] font-bold border-2 transition-all ' +
-                            ((d.colonyMode || 'mcq') === 'freeResponse' ? 'border-purple-400 bg-purple-900 text-purple-200' : 'border-slate-600 bg-slate-900 text-slate-400')
-                        }, '\u270D\uFE0F Free Response')
-                      ),
-                      React.createElement('div', { className: 'text-[8px] text-slate-500 mt-1' },
-                        (d.colonyMode || 'mcq') === 'mcq' ? 'Multiple choice \u2014 4 options, scaffolded learning' : 'Type your answer \u2014 harder but deeper understanding'
-                      )
-                    ),
-                    React.createElement('div', null,
-                      React.createElement('div', { className: 'text-[9px] text-slate-400 mb-1' }, 'Audio Narration'),
-                      React.createElement('div', { className: 'flex gap-1' },
-                        React.createElement('button', {
-                          onClick: function() { upd('colonyTTS', !(d.colonyTTS)); },
-                          className: 'flex-1 px-2 py-2 rounded-lg text-[9px] font-bold border-2 transition-all ' +
-                            (d.colonyTTS ? 'border-green-400 bg-green-900 text-green-200' : 'border-slate-600 bg-slate-900 text-slate-400')
-                        }, d.colonyTTS ? '\uD83D\uDD0A ON' : '\uD83D\uDD07 OFF')
-                      ),
-                      React.createElement('div', { className: 'text-[8px] text-slate-500 mt-1' }, 'Characters speak with TTS voices')
-                    )
-                  )
-                ),
-                React.createElement('button', {
-                  onClick: function() {
-                    upd('colonyMap', generateMap()); upd('colonyPhase', 'playing'); upd('colonyTurn', 1);
-                    upd('colonyRes', { food: 20, energy: 15, water: 15, materials: 10, science: 5 });
-                    upd('colonyBuildings', []); upd('colonySettlers', JSON.parse(JSON.stringify(defaultSettlers)));
-                    upd('colonyLog', ['Turn 1: Colony established on Kepler-442b. 6 settlers ready.']);
-                    upd('colony', { name: 'Kepler-442b' });
-                    upd('buildingEff', {}); upd('lastMaintTurn', 0); upd('maintChallenge', null);
-                    upd('colonyStats', { questionsAnswered: 0, correct: 0, buildingsConstructed: 0, anomaliesExplored: 0, turnsPlayed: 0 });
-                    if (d.colonyTTS) colonySpeak('Mission log. Colony established on Kepler 442 b. Six settlers are ready to begin construction. Good luck, Commander.', 'narrator');
-                    if (addToast) addToast('\uD83D\uDE80 Colony established!', 'success');
-                    if (typeof addXP === 'function') addXP(10, 'Kepler Colony: Mission launched');
-                  },
-                  className: 'px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl text-lg font-bold hover:shadow-lg hover:shadow-indigo-500/30 transition-all'
-                }, '\uD83D\uDE80 Launch Colony Mission')
-              ),
-              // PLAYING
-              colonyPhase === 'playing' && mapData && React.createElement('div', null,
-                React.createElement('canvas', { ref: canvasRef, onClick: handleMapClick, className: 'w-full rounded-xl border border-slate-700 cursor-pointer mb-3', style: { maxHeight: '480px' } }),
-                // Selected tile
-                selectedTile && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-slate-700 mb-3' },
-                  React.createElement('div', { className: 'flex items-center justify-between' },
-                    React.createElement('div', null,
-                      React.createElement('span', { className: 'text-sm font-bold text-white' }, selectedTile.tile.icon + ' ' + selectedTile.tile.name),
-                      React.createElement('span', { className: 'text-[10px] text-slate-400 ml-2' }, '(' + selectedTile.x + ',' + selectedTile.y + ')' + (selectedTile.tile.res !== 'none' ? ' +' + selectedTile.tile.res : '') + (selectedTile.tile.hasAnomaly ? ' \u26A0\uFE0F Anomaly detected!' : ''))
-                    ),
-                    selectedTile.tile.hasAnomaly && selectedTile.tile.explored && !d.anomalyLoading && React.createElement('button', {
-                      onClick: function() {
-                        upd('anomalyLoading', true);
-                        var tName = selectedTile.tile.name;
-                        callGemini('You are the AI game master for a space colony on alien planet Kepler-442b. Settlers are exploring an anomaly on a ' + tName + ' tile. Generate a discovery event. This should be a fascinating alien ruin, geological wonder, or xenobiological find. Include real science. Return ONLY valid JSON:\n{"emoji":"<emoji>","title":"<discovery name>","description":"<3-4 sentences describing the find>","lesson":"<real science behind this type of discovery, 2-3 sentences>","reward":{"food":<0-8>,"energy":<0-8>,"water":<0-8>,"materials":<0-8>,"science":<3-15>},"terraformBonus":<0-5>}', true).then(function(result) {
-                          try {
-                            var cl = result.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
-                            var s2 = cl.indexOf('{'); if (s2 > 0) cl = cl.substring(s2);
-                            var e2 = cl.lastIndexOf('}'); if (e2 > 0) cl = cl.substring(0, e2 + 1);
-                            var parsed = JSON.parse(cl);
-                            upd('anomalyResult', parsed); upd('anomalyLoading', false);
-                            // Apply rewards
-                            var nr5 = Object.assign({}, resources);
-                            Object.keys(parsed.reward || {}).forEach(function(k) { if (nr5[k] !== undefined) nr5[k] += parsed.reward[k]; });
-                            upd('colonyRes', nr5);
-                            if (parsed.terraformBonus) upd('colonyTerraform', Math.min(100, (d.colonyTerraform || 0) + parsed.terraformBonus));
-                            // Remove anomaly
-                            var nm2 = JSON.parse(JSON.stringify(mapData));
-                            nm2.tiles[selectedTile.y * mapSize + selectedTile.x].hasAnomaly = false;
-                            upd('colonyMap', nm2);
-                            var nl5 = gameLog.slice(); nl5.push('\u2728 Anomaly: ' + parsed.title); upd('colonyLog', nl5);
-                            if (d.colonyTTS) colonySpeak('Anomaly investigated. ' + parsed.title + '. ' + parsed.description, 'narrator');
-                            var ns6 = Object.assign({}, stats); ns6.anomaliesExplored++; upd('colonyStats', ns6);
-                            if (typeof addXP === 'function') addXP(25, 'Kepler Colony: Anomaly explored');
-                          } catch(err) { upd('anomalyLoading', false); }
-                        }).catch(function() { upd('anomalyLoading', false); });
-                      },
-                      className: 'px-3 py-1 bg-purple-600 text-white rounded-lg text-[10px] font-bold'
-                    }, d.anomalyLoading ? '\u23F3' : '\u2728 Investigate Anomaly'),
-                    !selectedTile.tile.explored && React.createElement('button', {
-                      onClick: function() {
-                        var nm = JSON.parse(JSON.stringify(mapData));
-                        for (var dy2 = -1; dy2 <= 1; dy2++) for (var dx2 = -1; dx2 <= 1; dx2++) {
-                          var ni2 = (selectedTile.y+dy2) * mapSize + (selectedTile.x+dx2);
-                          if (ni2 >= 0 && ni2 < nm.tiles.length) nm.tiles[ni2].explored = true;
-                        }
-                        upd('colonyMap', nm);
-                        var nr = Object.assign({}, resources);
-                        var exploreCost = (activePolicy === 'militarist') ? 0 : 2;
-                        nr.energy = Math.max(0, nr.energy - exploreCost); upd('colonyRes', nr);
-                        // Terrain resource bonus
-                        var terrainBonus = { plains: 'food', mountain: 'materials', volcanic: 'energy', ice: 'water', desert: 'materials', ocean: 'water', radiation: 'science' };
-                        var bonusRes = terrainBonus[selectedTile.tile.type];
-                        if (bonusRes && nr[bonusRes] !== undefined) { nr[bonusRes] += 2; }
-                        if (addToast) addToast('Explored ' + selectedTile.tile.name + '!' + (bonusRes ? ' +2 ' + bonusRes : ''), 'info');
-                      },
-                      className: 'px-3 py-1 bg-indigo-600 text-white rounded-lg text-[10px] font-bold'
-                    }, '\uD83D\uDDFA Explore (-2\u26A1)')
-                  )
-                ),
-                // Anomaly Result
-                d.anomalyResult && React.createElement('div', { className: 'bg-gradient-to-r from-purple-900 to-violet-900 rounded-xl p-3 border border-purple-600 mb-3' },
-                  React.createElement('div', { className: 'flex justify-between items-center mb-1' },
-                    React.createElement('h4', { className: 'text-sm font-bold text-purple-200' }, (d.anomalyResult.emoji || '\u2728') + ' ' + d.anomalyResult.title),
-                    React.createElement('button', { onClick: function() { upd('anomalyResult', null); }, className: 'text-purple-400 text-xs' }, '\u2715')
-                  ),
-                  React.createElement('p', { className: 'text-xs text-purple-100 leading-relaxed' }, d.anomalyResult.description),
-                  d.anomalyResult.lesson && React.createElement('div', { className: 'mt-2 bg-purple-950 rounded-lg px-3 py-2 text-[10px] text-purple-300 border border-purple-800' },
-                    React.createElement('span', { className: 'font-bold text-purple-200' }, '\uD83D\uDCDA Science: '), d.anomalyResult.lesson
-                  ),
-                  React.createElement('div', { className: 'flex gap-2 mt-2 text-[9px] flex-wrap' },
-                    Object.keys(d.anomalyResult.reward || {}).filter(function(k) { return d.anomalyResult.reward[k] > 0; }).map(function(k) {
-                      return React.createElement('span', { key: k, className: 'text-green-400 bg-green-900/30 px-2 py-0.5 rounded-full' }, '+' + d.anomalyResult.reward[k] + ' ' + k);
-                    }),
-                    d.anomalyResult.terraformBonus > 0 && React.createElement('span', { className: 'text-emerald-400 bg-emerald-900/30 px-2 py-0.5 rounded-full' }, '+' + d.anomalyResult.terraformBonus + '% terraform')
-                  )
-                ),
-                // Actions
-                React.createElement('div', { className: 'grid grid-cols-4 gap-1 mb-2' },
-                  React.createElement('button', {
-                    onClick: function() {
-                      var nt = turn + 1; var nr2 = Object.assign({}, resources);
-                      buildings.forEach(function(b) {
-                        var def = buildingDefs.find(function(bd) { return bd.id === b; });
-                        if (def) {
-                          var eff = (buildingEff[b] !== undefined ? buildingEff[b] : 100) / 100;
-                          // Season multipliers
-                          var sMult = activeSeason.effect.allMult || 1;
-                          // Nanotech research: min 75% efficiency
-                          if (researchQueue.indexOf('nanotech') >= 0 && eff < 0.75) eff = 0.75;
-                          Object.keys(def.production).forEach(function(k) {
-                            var val2 = Math.round(def.production[k] * eff * sMult);
-                            if (k === 'food' && activeSeason.effect.foodMult) val2 = Math.round(val2 * activeSeason.effect.foodMult);
-                            if (k === 'water' && activeSeason.effect.waterMult) val2 = Math.round(val2 * activeSeason.effect.waterMult);
-                            nr2[k] = (nr2[k]||0) + val2;
-                          });
-                        }
-                      });
-                      nr2.food = Math.max(0, nr2.food - settlers.length);
-                      // Terraforming progress
-                      var tfGain = buildings.indexOf('atmo') >= 0 ? 2 : 0;
-                      tfGain += buildings.indexOf('biodome') >= 0 ? 3 : 0;
-                      tfGain += buildings.indexOf('hydroponics') >= 0 ? 0.5 : 0;
-                      tfGain += buildings.indexOf('greenhouse') >= 0 ? 1 : 0;
-                      tfGain += buildings.indexOf('oceanSeeder') >= 0 ? 1.5 : 0;
-                      var newTf = Math.min(100, (d.colonyTerraform || 0) + tfGain);
-                      upd('colonyTerraform', newTf);
-                      // Med Bay heals settlers
-                      if (buildings.indexOf('medbay') >= 0) {
-                        upd('colonySettlers', settlers.map(function(s4) { return Object.assign({}, s4, { health: Math.min(100, s4.health + 5) }); }));
-                      }
-                      // Weather hazard (random)
-                      var weatherTypes = [null, null, null, null, // 4/7 = calm
-                        { name: 'Dust Storm', icon: '\uD83C\uDF2A\uFE0F', effect: 'Materials production halved', res: 'materials', penalty: -2 },
-                        { name: 'Solar Flare', icon: '\u2604\uFE0F', effect: 'Energy surge! Equipment overloaded', res: 'energy', penalty: -3 },
-                        { name: 'Ice Rain', icon: '\uD83C\uDF28\uFE0F', effect: 'Frozen pipes, water loss', res: 'water', penalty: -2 }
-                      ];
-                      var wIdx = Math.floor(Math.random() * weatherTypes.length);
-                      var wx = weatherTypes[wIdx];
-                      upd('colonyWeather', wx);
-                      if (wx) {
-                        var weatherPenalty = wx.penalty;
-                        if (buildings.indexOf('shield') >= 0) weatherPenalty = Math.ceil(weatherPenalty / 2);
-                        nr2[wx.res] = Math.max(0, nr2[wx.res] + weatherPenalty);
-                      }
-                      // Colony milestones
-                      var milestones = [
-                        { id: 'first_build', check: buildings.length >= 1, text: '\uD83C\uDFD7 First Construction!', xp: 15 },
-                        { id: 'tier2', check: buildings.indexOf('lab') >= 0 || buildings.indexOf('medbay') >= 0, text: '\uD83D\uDD2C Tier 2 Unlocked!', xp: 25 },
-                        { id: 'tier3', check: buildings.indexOf('atmo') >= 0 || buildings.indexOf('fusion') >= 0, text: '\u2622\uFE0F Advanced Tech!', xp: 40 },
-                        { id: 'self_sustain', check: nr2.food >= 30 && nr2.energy >= 30 && nr2.water >= 30, text: '\uD83C\uDF3E Self-Sustaining!', xp: 30 },
-                        { id: 'full_colony', check: buildings.length >= 8, text: '\uD83C\uDFD9\uFE0F Full Colony!', xp: 50 },
-                        { id: 'pop20', check: settlers.length >= 20, text: '\uD83D\uDC65 20 Settlers!', xp: 40 },
-                        { id: 'pop35', check: settlers.length >= 35, text: '\uD83C\uDFD8\uFE0F Thriving Town!', xp: 60 },
-                        { id: 'pop50', check: settlers.length >= 50, text: '\uD83C\uDFD9\uFE0F Population Victory!', xp: 100 },
-                        { id: 'research5', check: researchQueue.length >= 5, text: '\uD83E\uDDEC Half Researched!', xp: 40 },
-                        { id: 'research10', check: researchQueue.length >= 10, text: '\uD83C\uDF1F Research Victory!', xp: 100 },
-                        { id: 'allbuildings', check: buildings.length >= 16, text: '\uD83C\uDFD7\uFE0F Master Builder!', xp: 80 },
-                        { id: 'terraform25', check: newTf >= 25, text: '\uD83C\uDF27\uFE0F First Clouds!', xp: 20 },
-                        { id: 'terraform50', check: newTf >= 50, text: '\uD83C\uDF31 Microorganisms!', xp: 30 },
-                        { id: 'terraform75', check: newTf >= 75, text: '\uD83C\uDF24\uFE0F Atmosphere Forming!', xp: 40 },
-                        { id: 'master', check: stats.questionsAnswered >= 10 && stats.correct / Math.max(1, stats.questionsAnswered) >= 0.8, text: '\uD83C\uDFAF Science Master!', xp: 50 }
-                      ];
-                      var achieved = d.colonyMilestones || {};
-                      milestones.forEach(function(ms) {
-                        if (ms.check && !achieved[ms.id]) {
-                          achieved[ms.id] = true;
-                          if (addToast) addToast(ms.text, 'success');
-                          if (d.colonyTTS) colonySpeak('Milestone achieved. ' + ms.text.replace(/[^a-zA-Z0-9 ]/g, ''), 'narrator');
-                          if (typeof addXP === 'function') addXP(ms.xp, ms.text);
-                          var nl9 = gameLog.slice(); nl9.push('\uD83C\uDFC6 ' + ms.text); upd('colonyLog', nl9);
-                        }
-                      });
-                      upd('colonyMilestones', achieved);
-                      // Maintenance challenge every 8 turns (if buildings exist)
-                      if (buildings.length > 0 && (nt - (d.lastMaintTurn || 0)) >= 8) {
-                        upd('lastMaintTurn', nt);
-                        // Pick a random built building for maintenance
-                        var maintBuild = buildings[Math.floor(Math.random() * buildings.length)];
-                        var maintDef = buildingDefs.find(function(bd3) { return bd3.id === maintBuild; });
-                        if (maintDef) {
-                          upd('maintChallengeLoading', true);
-                          var modeStr = (d.colonyMode || 'mcq') === 'mcq' ? 'Return ONLY valid JSON: {"question":"<science question about ' + maintDef.gate + '>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"explanation":"<why correct, 2-3 sentences with real science>"}. Generate exactly 6 options. Shuffle correct answer randomly (position 0-5). correctIndex must match.' : 'Return ONLY valid JSON: {"question":"<science question about ' + maintDef.gate + '>","answer":"<correct answer, 1-3 words>","explanation":"<why correct, 2-3 sentences with real science>"}';
-                          callGemini('Generate a ' + maintDef.gate + ' science question for maintaining the ' + maintDef.name + ' in a space colony on an alien planet. The question should test understanding of the science behind this building. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. ' + modeStr, true).then(function(result) {
-                            try {
-                              var cl2 = result.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
-                              var s3 = cl2.indexOf('{'); if (s3 > 0) cl2 = cl2.substring(s3);
-                              var e3 = cl2.lastIndexOf('}'); if (e3 > 0) cl2 = cl2.substring(0, e3 + 1);
-                              var mq = JSON.parse(cl2);
-                              mq.building = maintBuild; mq.buildingName = maintDef.name; mq.buildingIcon = maintDef.icon;
-                              upd('maintChallenge', mq); upd('maintChallengeLoading', false);
-                              if (d.colonyTTS) colonySpeak('Maintenance alert. Your ' + maintDef.name + ' requires a systems check. Answer the science challenge to maintain full output.', 'narrator');
-                              var nl7 = gameLog.slice(); nl7.push('\uD83D\uDD27 Turn ' + nt + ': ' + maintDef.icon + ' ' + maintDef.name + ' needs maintenance!'); upd('colonyLog', nl7);
-                            } catch(err) { upd('maintChallengeLoading', false); }
-                          }).catch(function() { upd('maintChallengeLoading', false); });
-                        }
-                      }
-                      nr2.water = Math.max(0, nr2.water - Math.ceil(settlers.length * 0.5));
-                      upd('colonyRes', nr2); upd('colonyTurn', nt); upd('colonyEventLoading', true);
-                      var ctx2 = 'Colony on Kepler-442b, turn ' + nt + '. Resources: food=' + nr2.food + ' energy=' + nr2.energy + ' water=' + nr2.water + ' materials=' + nr2.materials + ' science=' + nr2.science + '. Buildings: ' + (buildings.length > 0 ? buildings.join(', ') : 'none') + '. ' + settlers.length + ' settlers. Terraforming: ' + newTf + '%. ' + (wx ? 'Current weather: ' + wx.name + '. ' : 'Weather: calm. ') + 'Tech tier reached: ' + (buildings.indexOf('biodome') >= 0 ? 4 : buildings.indexOf('atmo') >= 0 || buildings.indexOf('fusion') >= 0 ? 3 : buildings.indexOf('lab') >= 0 || buildings.indexOf('medbay') >= 0 ? 2 : buildings.length > 0 ? 1 : 0) + '.';
-                      callGemini('You are the AI game master for an educational space colony on an alien planet. Target audience: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Colony values: collectivism=' + colonyValues.collectivism + ', innovation=' + colonyValues.innovation + ', ecology=' + colonyValues.ecology + ', tradition=' + colonyValues.tradition + ', openness=' + colonyValues.openness + '. Equity: ' + equity + '/100. Sometimes let colony values influence event themes (high ecology = nature events, high tradition = cultural discovery events, low equity = social tension events). ' + ctx2 + '\n\nGenerate a planet event. Include a REAL science concept. Return ONLY valid JSON:\n{"emoji":"<emoji>","title":"<event>","description":"<2-3 sentences>","lesson":"<real science concept, 2-3 sentences>","choices":[{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"},{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"}]}\n\nEvents: alien microbes, geologic discoveries, meteor showers, equipment failures, resource finds, atmospheric anomalies, alien ruins. Effects: -5 to +10 resources, -15 to +15 morale. One choice should reward scientific knowledge.', true).then(function(result) {
-                        try { var cl = result.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim(); var s2=cl.indexOf('{'); if(s2>0) cl=cl.substring(s2); var e2=cl.lastIndexOf('}'); if(e2>0) cl=cl.substring(0,e2+1);
-                          var parsed = JSON.parse(cl); upd('colonyEvent', parsed); upd('colonyEventLoading', false);
-                          if (d.colonyTTS) colonySpeak(parsed.title + '. ' + parsed.description, 'narrator');
-                          var nl2 = gameLog.slice(); nl2.push('Turn ' + nt + ': ' + (parsed.emoji||'') + ' ' + parsed.title); upd('colonyLog', nl2);
-                        } catch(err) { upd('colonyEventLoading', false); if (addToast) addToast('Event failed to generate', 'error'); }
-                      }).catch(function() { upd('colonyEventLoading', false); });
-                      var ns5 = Object.assign({}, stats); ns5.turnsPlayed++; upd('colonyStats', ns5);
-                      if (typeof addXP === 'function') addXP(5, 'Kepler Colony: Turn ' + nt);
-                      // Population growth — food surplus attracts new settlers (Civ-inspired)
-                      var foodSurplus = nr2.food - settlers.length * 2; // need 2x population in food
-                      var growthRate = 0.15 + (activePolicy && activePolicy === 'agrarian' ? 0.075 : 0);
-                      if (buildings.indexOf('spaceport') >= 0) growthRate += 0.1;
-                      if (buildings.indexOf('cloning') >= 0) growthRate += 0.05;
-                      if (foodSurplus > 0) {
-                        var newPG = (d.colonyPopGrowth || 0) + growthRate;
-                        if (newPG >= 1.0 && settlers.length < 50) {
-                          // New settler arrives!
-                          var newRoles = [
-                            { name: 'Lt. Alex Rivera', role: 'Pilot', icon: '\u2708\uFE0F', specialty: 'physics' },
-                            { name: 'Dr. Sarah Kim', role: 'Xenobiologist', icon: '\uD83E\uDDA0', specialty: 'biology' },
-                            { name: 'Prof. Dimitri Volkov', role: 'Mathematician', icon: '\uD83D\uDCCA', specialty: 'math' },
-                            { name: 'Eng. Fatima Hassan', role: 'Architect', icon: '\uD83C\uDFD7\uFE0F', specialty: 'geology' },
-                            { name: 'Dr. Li Wei', role: 'Astronomer', icon: '\uD83D\uDD2D', specialty: 'physics' },
-                            { name: 'Dr. Amara Osei', role: 'Biochemist', icon: '\uD83E\uDDEA', specialty: 'chemistry' },
-                            { name: 'Sgt. Kofi Mensah', role: 'Security', icon: '\uD83D\uDEE1\uFE0F', specialty: 'geology' },
-                            { name: 'Dr. Lucia Torres', role: 'Physician', icon: '\u2695\uFE0F', specialty: 'biology' },
-                            { name: 'Dr. Hans Mueller', role: 'Climatologist', icon: '\uD83C\uDF0A', specialty: 'chemistry' },
-                            { name: 'Eng. Priya Nair', role: 'Roboticist', icon: '\uD83E\uDD16', specialty: 'physics' },
-                            { name: 'Dr. Jun Sato', role: 'Volcanologist', icon: '\uD83C\uDF0B', specialty: 'geology' },
-                            { name: 'Prof. Anya Petrov', role: 'Astrophysicist', icon: '\u2B50', specialty: 'physics' },
-                            { name: 'Dr. Maria Santos', role: 'Ecologist', icon: '\uD83C\uDF3F', specialty: 'biology' },
-                            { name: 'Eng. David Park', role: 'Structural Eng.', icon: '\uD83C\uDFD7\uFE0F', specialty: 'math' },
-                            { name: 'Dr. Fatou Diallo', role: 'Geneticist', icon: '\uD83E\uDDEC', specialty: 'biology' },
-                            { name: 'Lt. Ivan Kozlov', role: 'Navigator', icon: '\uD83E\uDDED', specialty: 'math' },
-                            { name: 'Dr. Aiko Tanabe', role: 'Microbiologist', icon: '\uD83E\uDDA0', specialty: 'biology' },
-                            { name: 'Eng. Omar Ali', role: 'Energy Eng.', icon: '\u26A1', specialty: 'physics' },
-                            { name: 'Dr. Elena Popova', role: 'Hydrologist', icon: '\uD83D\uDCA7', specialty: 'chemistry' },
-                            { name: 'Prof. Chen Guang', role: 'Seismologist', icon: '\uD83C\uDF0D', specialty: 'geology' },
-                            { name: 'Dr. Sofia Romano', role: 'Botanist II', icon: '\uD83C\uDF3A', specialty: 'biology' },
-                            { name: 'Eng. James Okafor', role: 'Systems Eng.', icon: '\u2699\uFE0F', specialty: 'math' },
-                            { name: 'Dr. Mei Lin', role: 'Pharmacologist', icon: '\uD83D\uDC8A', specialty: 'chemistry' },
-                            { name: 'Lt. Rosa Martinez', role: 'Comms Officer', icon: '\uD83D\uDCE1', specialty: 'physics' }
-                          ];
-                          var available = newRoles.filter(function(nr7) { return !settlers.some(function(s5) { return s5.name === nr7.name; }); });
-                          if (available.length > 0) {
-                            var newSettler = Object.assign({}, available[Math.floor(Math.random() * available.length)], { morale: 85, health: 100 });
-                            var updSettlers = settlers.slice(); updSettlers.push(newSettler);
-                            upd('colonySettlers', updSettlers);
-                            var nl13 = gameLog.slice(); nl13.push('\uD83D\uDC64 ' + newSettler.name + ' (' + newSettler.role + ') joined the colony!'); upd('colonyLog', nl13);
-                            if (addToast) addToast('\uD83D\uDC64 New settler: ' + newSettler.name + ' (' + newSettler.role + ')!', 'success');
-                            if (d.colonyTTS) colonySpeak('New colonist arrived. ' + newSettler.name + ', a ' + newSettler.role + ', has joined the team.', 'narrator');
-                          }
-                          newPG -= 1.0;
-                        }
-                        upd('colonyPopGrowth', newPG);
-                      }
-
-                      // Era progression
-                      var newEra = era;
-                      if (era === 'survival' && buildings.length >= 4 && settlers.length >= 8) newEra = 'expansion';
-                      else if (era === 'expansion' && buildings.length >= 8 && newTf >= 30 && researchQueue.length >= 3) newEra = 'prosperity';
-                      else if (era === 'prosperity' && buildings.length >= 14 && newTf >= 60 && settlers.length >= 25) newEra = 'transcendence';
-                      if (newEra !== era) {
-                        upd('colonyEra', newEra);
-                        var eraInfo = eraData[newEra];
-                        if (addToast) addToast(eraInfo.icon + ' ERA: ' + eraInfo.name + '!', 'success');
-                        if (d.colonyTTS) colonySpeak('New era reached! The colony has entered the ' + eraInfo.name + ' era.', 'narrator');
-                        var nl14 = gameLog.slice(); nl14.push('\uD83C\uDF1F ERA: ' + eraInfo.name + '!'); upd('colonyLog', nl14);
-                        if (typeof addXP === 'function') addXP(40, 'Era: ' + eraInfo.name);
-                      }
-
-                      // Colony Charter (generated once at turn 20 from colony values)
-                      if (nt === 20 && !d.colonyCharter) {
-                        callGemini('Generate a founding charter for a space colony on planet Kepler-442b. The colony has these values: collectivism=' + colonyValues.collectivism + ', innovation=' + colonyValues.innovation + ', ecology=' + colonyValues.ecology + ', tradition=' + colonyValues.tradition + ', openness=' + colonyValues.openness + '. Equity: ' + equity + '. They have adopted these cultural traditions: ' + (traditions.length > 0 ? traditions.join(', ') : 'none yet') + '. Write a brief founding charter (4-5 sentences) that reflects these values. It should feel like a real historical document — inspirational, specific, and grounded in the colony\u2019s unique blend of cultures and science. Do NOT use bullet points. Write it as flowing prose.', true).then(function(charter) {
-                          upd('colonyCharter', charter);
-                          if (d.colonyTTS) colonySpeak('The colony charter has been drafted. A founding document for a new civilization.', 'narrator');
-                          var nl29 = gameLog.slice(); nl29.push('\uD83D\uDCDC Colony Charter drafted!'); upd('colonyLog', nl29);
-                          if (addToast) addToast('\uD83D\uDCDC Colony Charter drafted from your values!', 'success');
-                          if (typeof addXP === 'function') addXP(30, 'Colony Charter');
-                        });
-                      }
-
-                      // Alien first contact (turn 10+, once)
-                      if (nt >= 10 && !d.alienContact && Math.random() < 0.3) {
-                        upd('alienContact', true); upd('alienRelations', 0);
-                        var nl18 = gameLog.slice(); nl18.push('\uD83D\uDC7E FIRST CONTACT: The Keth\u2019ora detected!'); upd('colonyLog', nl18);
-                        if (addToast) addToast('\uD83D\uDC7E First Contact! An alien species has been detected!', 'success');
-                        if (d.colonyTTS) colonySpeak('Alert! Alien life detected. The indigenous Kethora species has made contact. They communicate through bioluminescent patterns.', 'narrator');
-                        if (typeof addXP === 'function') addXP(50, 'First Contact!');
-                      }
-
-                      // Governance Dilemma (NationStates-style — every 5 turns)
-                      if (nt > 2 && nt % 5 === 0 && !d.activeDilemma) {
-                        var valStr = Object.keys(colonyValues).map(function(k2) { return k2 + ':' + colonyValues[k2]; }).join(', ');
-                        upd('dilemmaLoading', true);
-                        callGemini('You are creating a governance dilemma for a space colony on alien planet Kepler-442b. Colony values: ' + valStr + '. Equity: ' + equity + '/100. Population: ' + settlers.length + '. This colony values diverse knowledge traditions. Create a nuanced moral/political/cultural dilemma with NO clear right answer (like NationStates). The dilemma should involve balancing competing goods (e.g. innovation vs tradition, individual freedom vs collective welfare, rapid growth vs sustainability, scientific progress vs cultural preservation). Sometimes draw on wisdom from real-world cultural traditions (African, Indigenous, Asian, etc.) as viable solutions. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Return ONLY valid JSON: {"emoji":"<emoji>","title":"<dilemma>","description":"<3-4 sentence scenario>","choices":[{"text":"<choice A>","values":{"collectivism":<-10 to 10>,"innovation":<-10 to 10>,"ecology":<-10 to 10>,"tradition":<-10 to 10>,"openness":<-10 to 10>},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<1-2 sentence result>"},{"text":"<choice B>","values":{same},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<result>"},{"text":"<choice C>","values":{same},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<result>"}],"lesson":"<real social science or cultural insight, 2-3 sentences>"}', true).then(function(result) {
-                          try {
-                            var cl7 = result.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
-                            var s8 = cl7.indexOf('{'); if (s8 > 0) cl7 = cl7.substring(s8);
-                            var e8 = cl7.lastIndexOf('}'); if (e8 > 0) cl7 = cl7.substring(0, e8 + 1);
-                            var dil = JSON.parse(cl7);
-                            upd('activeDilemma', dil); upd('dilemmaLoading', false);
-                            if (d.colonyTTS) colonySpeak('Colony council convenes. ' + dil.title + '. ' + dil.description, 'narrator');
-                            var nl25 = gameLog.slice(); nl25.push('\uD83C\uDFDB\uFE0F Dilemma: ' + dil.title); upd('colonyLog', nl25);
-                          } catch(err) { upd('dilemmaLoading', false); }
-                        }).catch(function() { upd('dilemmaLoading', false); });
-                      }
-
-                      // Major disaster (rare — every ~20 turns)
-                      if (nt > 1 && nt % 20 === 0 && Math.random() < 0.5) {
-                        upd('disasterLoading', true);
-                        callGemini('Generate a MAJOR disaster event for a space colony on alien planet Kepler-442b. Turn ' + nt + '. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. The disaster should be science-based (asteroid impact, volcanic eruption, alien plague, equipment catastrophe, radiation storm). Return ONLY valid JSON: {"emoji":"<emoji>","title":"<disaster name>","description":"<dramatic 3-4 sentences>","lesson":"<real science about this type of disaster, 2-3 sentences>","question":"<science question to mitigate damage>","options":["<correct mitigation>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"fullDamage":{"food":<-5 to -15>,"energy":<-5 to -15>,"water":<-5 to -15>,"materials":<-5 to -15>,"morale":<-10 to -20>},"mitigatedDamage":{"food":<0 to -5>,"energy":<0 to -5>,"water":<0 to -5>,"materials":<0 to -5>,"morale":<-3 to -8>}}. Shuffle correct answer (0-5).', true).then(function(result) {
-                          try {
-                            var cl6 = result.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
-                            var s7 = cl6.indexOf('{'); if (s7 > 0) cl6 = cl6.substring(s7);
-                            var e7 = cl6.lastIndexOf('}'); if (e7 > 0) cl6 = cl6.substring(0, e7 + 1);
-                            var dis = JSON.parse(cl6);
-                            upd('activeDisaster', dis); upd('disasterLoading', false);
-                            var nl24 = gameLog.slice(); nl24.push('\uD83D\uDCA5 DISASTER: ' + dis.title + '!'); upd('colonyLog', nl24);
-                            if (d.colonyTTS) colonySpeak('Emergency alert! ' + dis.title + '! ' + dis.description, 'narrator');
-                          } catch(err) { upd('disasterLoading', false); }
-                        }).catch(function() { upd('disasterLoading', false); });
-                      }
-
-                      // Happiness mechanic
-                      var newHappy = d.colonyHappiness || 70;
-                      if (nr2.food > settlers.length * 2) newHappy = Math.min(100, newHappy + 2);
-                      else if (nr2.food < settlers.length) newHappy = Math.max(0, newHappy - 5);
-                      if (buildings.indexOf('medbay') >= 0) newHappy = Math.min(100, newHappy + 1);
-                      var avgMorale = settlers.reduce(function(sum, s6) { return sum + s6.morale; }, 0) / Math.max(1, settlers.length);
-                      if (avgMorale < 50) newHappy = Math.max(0, newHappy - 3);
-                      if (wx) newHappy = Math.max(0, newHappy - 2);
-                      upd('colonyHappiness', newHappy);
-
-                      // Happiness affects production (Civ-style)
-                      if (newHappy < 30) {
-                        // Unrest — 50% production penalty
-                        nr2.food = Math.max(0, Math.floor(nr2.food * 0.8));
-                        nr2.materials = Math.max(0, Math.floor(nr2.materials * 0.8));
-                        if (addToast) addToast('\uD83D\uDE21 Colony unrest! Production reduced!', 'warning');
-                      } else if (newHappy > 80) {
-                        // Golden age — bonus production
-                        nr2.science += 2;
-                        nr2.food += 1;
-                      }
-
-                      // Achievement check
-                      var newAch = Object.assign({}, achievements);
-                      var achChanged = false;
-                      achievementDefs.forEach(function(ad) {
-                        if (!newAch[ad.id] && ad.check()) {
-                          newAch[ad.id] = { turn: nt, ts: Date.now() };
-                          achChanged = true;
-                          if (addToast) addToast(ad.icon + ' Achievement: ' + ad.name + '!', 'success');
-                          if (d.colonyTTS) colonySpeak('Achievement unlocked. ' + ad.name + '. ' + ad.desc, 'narrator');
-                          var nl31 = gameLog.slice(); nl31.push(ad.icon + ' Achievement: ' + ad.name); upd('colonyLog', nl31);
-                          if (typeof addXP === 'function') addXP(20, 'Achievement: ' + ad.name);
-                        }
-                      });
-                      if (achChanged) upd('colonyAchievements', newAch);
-
-                      // Streak tracking
-                      var ns9 = Object.assign({}, stats);
-                      if (!ns9.streak) ns9.streak = 0;
-                      upd('colonyStats', ns9);
-
-                      // Colony Radio — AI broadcast every 8 turns
-                      if (nt > 3 && nt % 8 === 0) {
-                        callGemini('You are the radio host for a space colony called "' + colonyName + '" on planet Kepler-442b. Give a brief radio news broadcast (3-4 sentences) reporting on recent colony events. Turn: ' + nt + '. Population: ' + settlers.length + '. Buildings: ' + buildings.length + '. Terraform: ' + terraform + '%. Era: ' + era + '. Season: ' + ((seasonDefs[(seasonCycle || {}).index] || {}).name || 'Calm') + '. Recent events from log: ' + gameLog.slice(-5).join('; ') + '. Make it feel like a real news broadcast — upbeat, informative, with a sign-off. Grade level: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function(broadcast) {
-                          upd('colonyRadio', broadcast);
-                          if (d.colonyTTS) colonySpeak(broadcast, 'narrator');
-                        });
-                      }
-
-                      // Settler celebrations (happiness > 85) or protests (happiness < 25)
-                      if (newHappy > 85 && nt % 10 === 0) {
-                        var nl32 = gameLog.slice(); nl32.push('\uD83C\uDF89 Colony Celebration! Settlers throw a festival!'); upd('colonyLog', nl32);
-                        if (addToast) addToast('\uD83C\uDF89 Colony Celebration! +5 happiness, +10 XP!', 'success');
-                        newHappy = Math.min(100, newHappy + 5); upd('colonyHappiness', newHappy);
-                        if (typeof addXP === 'function') addXP(10, 'Colony Festival');
-                      } else if (newHappy < 25 && nt % 7 === 0) {
-                        var nl33 = gameLog.slice(); nl33.push('\u270A Settler Protest! Demanding better conditions!'); upd('colonyLog', nl33);
-                        if (addToast) addToast('\u270A Settler Protest! Productivity drops!', 'warning');
-                        nr2.food = Math.max(0, nr2.food - 3); nr2.materials = Math.max(0, nr2.materials - 3);
-                      }
-
-                      // Great Scientist arrival (every 15 turns + high science)
-                      if (nt % 15 === 0 && nr2.science >= 10 && greatScientists.length < greatSciDefs.length) {
-                        var availGS = greatSciDefs.filter(function(gs) { return !greatScientists.some(function(g) { return g.name === gs.name; }); });
-                        if (availGS.length > 0) {
-                          var gs2 = availGS[Math.floor(Math.random() * availGS.length)];
-                          var updGS = greatScientists.slice(); updGS.push(gs2);
-                          upd('colonyGreatSci', updGS);
-                          // Apply bonus permanently
-                          if (gs2.bonus && nr2[gs2.bonus] !== undefined) nr2[gs2.bonus] += gs2.amount;
-                          var nl15 = gameLog.slice(); nl15.push('\uD83E\uDD16 Mentor: ' + gs2.name + ' AI activated (+' + gs2.amount + ' ' + gs2.bonus + '/turn)'); upd('colonyLog', nl15);
-                          if (addToast) addToast('\uD83E\uDD16 ' + gs2.icon + ' ' + gs2.name + ' AI activated! ' + gs2.fact, 'success');
-                          if (d.colonyTTS) colonySpeak('Digital Mentor activated. The AI reconstruction of ' + gs2.name + ' is now online. ' + gs2.fact, 'narrator');
-                          if (typeof addXP === 'function') addXP(30, 'Mentor: ' + gs2.name);
-                        }
-                      }
-
-                      // Season bonuses
-                      if (activeSeason.effect.materialBonus) nr2.materials += activeSeason.effect.materialBonus;
-                      if (activeSeason.effect.energyBonus) nr2.energy += activeSeason.effect.energyBonus;
-                      if (activeSeason.effect.heal) settlers.forEach(function(s9) { s9.health = Math.min(100, s9.health + activeSeason.effect.heal); });
-
-                      // Apply policy bonuses to resources
-                      if (activePolicy) {
-                        var pol = policyDefs.find(function(p) { return p.id === activePolicy; });
-                        if (pol && pol.effect) {
-                          if (pol.effect.materialBonus) nr2.materials += pol.effect.materialBonus;
-                          if (pol.effect.foodBonus) nr2.food += pol.effect.foodBonus;
-                          if (pol.effect.energyBonus) nr2.energy += pol.effect.energyBonus;
-                        }
-                      }
-
-                      // Tile improvement bonuses (outposts) + trade routes
-                      var outpostKeys = Object.keys(tileImprovements);
-                      var tradeRoutes = 0;
-                      outpostKeys.forEach(function(tKey2) {
-                        var imp = tileImprovements[tKey2];
-                        if (imp && imp.res && nr2[imp.res] !== undefined) nr2[imp.res] += 1;
-                        // Check for adjacent outposts = trade route
-                        var coords = tKey2.split(','); var ox = parseInt(coords[0]); var oy = parseInt(coords[1]);
-                        [[1,0],[-1,0],[0,1],[0,-1]].forEach(function(dd) {
-                          var adjKey = (ox + dd[0]) + ',' + (oy + dd[1]);
-                          if (tileImprovements[adjKey] && adjKey > tKey2) tradeRoutes++;
-                        });
-                      });
-                      // Trade route bonus: +1 of each resource per route
-                      if (tradeRoutes > 0) {
-                        nr2.food += tradeRoutes; nr2.materials += tradeRoutes; nr2.science += tradeRoutes;
-                      }
-
-                      // Expedition progress
-                      if (activeExpedition) {
-                        var exp = Object.assign({}, activeExpedition);
-                        var expSpeed = traditions.indexOf('dreamtime') >= 0 ? 2 : 1;
-                        exp.turnsLeft = (exp.turnsLeft || 0) - expSpeed;
-                        if (exp.turnsLeft <= 0) {
-                          // Expedition complete — generate reward
-                          upd('activeExpedition', null);
-                          upd('expResultLoading', true);
-                          callGemini('You are narrating a space colony expedition on alien planet Kepler-442b. A team of ' + (exp.teamSize || 3) + ' settlers went on a ' + exp.type + ' expedition to ' + exp.destination + '. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Generate the expedition result. Return ONLY valid JSON: {"title":"<discovery>","emoji":"<emoji>","narrative":"<exciting 3-4 sentence story of what happened>","lesson":"<real science concept learned, 2-3 sentences>","rewards":{"food":<0-15>,"energy":<0-15>,"water":<0-15>,"materials":<0-15>,"science":<5-20>},"terraformBonus":<0-5>,"newSettler":' + (settlers.length < 50 ? 'true or false' : 'false') + ',"settlerName":"<name if newSettler>","settlerRole":"<role if newSettler>"}', true).then(function(result) {
-                            try {
-                              var cl4 = result.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
-                              var s5 = cl4.indexOf('{'); if (s5 > 0) cl4 = cl4.substring(s5);
-                              var e5 = cl4.lastIndexOf('}'); if (e5 > 0) cl4 = cl4.substring(0, e5 + 1);
-                              var expR = JSON.parse(cl4);
-                              upd('expResult', expR); upd('expResultLoading', false);
-                              var nr11 = Object.assign({}, resources);
-                              Object.keys(expR.rewards || {}).forEach(function(k) { if (nr11[k] !== undefined) nr11[k] += expR.rewards[k]; });
-                              upd('colonyRes', nr11);
-                              if (expR.terraformBonus) upd('colonyTerraform', Math.min(100, (d.colonyTerraform || 0) + expR.terraformBonus));
-                              if (expR.newSettler && expR.settlerName && settlers.length < 50) {
-                                var ns7 = settlers.slice();
-                                ns7.push({ name: expR.settlerName, role: expR.settlerRole || 'Explorer', icon: '\uD83E\uDDD1\u200D\uD83D\uDE80', specialty: 'physics', morale: 90, health: 100 });
-                                upd('colonySettlers', ns7);
-                              }
-                              // Add to science journal
-                              if (expR.lesson) {
-                                var nj = scienceJournal.slice();
-                                nj.push({ turn: turn, source: 'Expedition: ' + expR.title, fact: expR.lesson });
-                                upd('scienceJournal', nj);
-                              }
-                              var nl21 = gameLog.slice(); nl21.push('\u26F5 Expedition: ' + expR.title); upd('colonyLog', nl21);
-                              if (addToast) addToast('\u26F5 Expedition complete: ' + expR.title, 'success');
-                              if (d.colonyTTS) colonySpeak('Expedition report. ' + expR.title + '. ' + expR.narrative, 'narrator');
-                              if (typeof addXP === 'function') addXP(25, 'Expedition: ' + expR.title);
-                            } catch(err) { upd('expResultLoading', false); }
-                          }).catch(function() { upd('expResultLoading', false); });
-                        } else {
-                          upd('activeExpedition', exp);
-                        }
-                      }
-
-                      // Cultural Tradition bonuses
-                      traditions.forEach(function(tid) {
-                        var tdef = traditionDefs.find(function(td2) { return td2.id === tid; });
-                        if (tdef && tdef.bonus) {
-                          if (tdef.bonus.food) nr2.food += tdef.bonus.food;
-                          if (tdef.bonus.water) nr2.water += tdef.bonus.water;
-                          if (tdef.bonus.materials) nr2.materials += tdef.bonus.materials;
-                          if (tdef.bonus.science) nr2.science += tdef.bonus.science;
-                          if (tdef.bonus.terraform) { var tfC = Math.min(100, (d.colonyTerraform || 0) + tdef.bonus.terraform); upd('colonyTerraform', tfC); }
-                          if (tdef.bonus.repair) {
-                            // Kintsugi: repair 10% effectiveness on all buildings
-                            var repEff = Object.assign({}, buildingEff);
-                            buildings.forEach(function(b2) { if (repEff[b2] !== undefined && repEff[b2] < 100) repEff[b2] = Math.min(100, repEff[b2] + 10); });
-                            upd('buildingEff', repEff);
-                          }
-                        }
-                      });
-
-                      // Equity effects
-                      if (equity < 25) {
-                        newHappy = Math.max(0, newHappy - 5);
-                        if (nt % 5 === 0) { var nl26 = gameLog.slice(); nl26.push('\u26A0\uFE0F Inequality crisis! Settlers dissatisfied with resource distribution.'); upd('colonyLog', nl26); }
-                      } else if (equity > 75) {
-                        newHappy = Math.min(100, newHappy + 2);
-                        nr2.science += 2; // equitable societies innovate better
-                      }
-
-                      // Wonder bonuses
-                      if (wonders.terraformEngine) { var tfW = Math.min(100, (d.colonyTerraform || 0) + 5); upd('colonyTerraform', tfW); }
-                      if (wonders.arkVault) { nr2.food += 8; nr2.science += 5; }
-                      if (wonders.quantumGate) { nr2.science += 10; }
-
-                      // Alien alliance bonuses
-                      if (alienContact && alienRelations >= 50) {
-                        nr2.science += 3; nr2.water += 2;
-                      }
-                      // Apply research bonuses
-                      researchQueue.forEach(function(rid) {
-                        var rdef = researchDefs.find(function(rd) { return rd.id === rid; });
-                        if (rdef && rdef.bonus) {
-                          if (rdef.bonus.food) nr2.food += rdef.bonus.food;
-                          if (rdef.bonus.water) nr2.water += rdef.bonus.water;
-                          if (rdef.bonus.science) nr2.science += rdef.bonus.science;
-                          if (rdef.bonus.terraformBonus) { var tfb = Math.min(100, newTf + rdef.bonus.terraformBonus); upd('colonyTerraform', tfb); }
-                        }
-                      });
-
-                      // Great Scientists permanent bonus
-                      greatScientists.forEach(function(gs3) { if (gs3.bonus && nr2[gs3.bonus] !== undefined) nr2[gs3.bonus] += gs3.amount; });
-
-                      // Emergency events for critical resources
-                      if (nr2.food <= 3 && buildings.length > 0) {
-                        var nl10 = gameLog.slice(); nl10.push('\uD83D\uDEA8 EMERGENCY: Food critically low! Build Hydroponics or explore for food!'); upd('colonyLog', nl10);
-                        if (d.colonyTTS) colonySpeak('Emergency! Food reserves critically low. Settlers are at risk of starvation. Prioritize food production immediately.', 'narrator');
-                      }
-                      if (nr2.energy <= 2 && buildings.length > 0) {
-                        var nl11 = gameLog.slice(); nl11.push('\uD83D\uDEA8 EMERGENCY: Energy critical! Buildings may shut down!'); upd('colonyLog', nl11);
-                        if (d.colonyTTS) colonySpeak('Warning! Energy levels critical. Colony systems are at risk of shutdown.', 'narrator');
-                      }
-                      if (nr2.water <= 2 && buildings.length > 0) {
-                        var nl12 = gameLog.slice(); nl12.push('\uD83D\uDEA8 EMERGENCY: Water reserves depleted!'); upd('colonyLog', nl12);
-                      }
-                    },
-                    disabled: d.colonyEventLoading, className: 'py-3 rounded-xl text-xs font-bold ' + (d.colonyEventLoading ? 'bg-slate-700 text-slate-500' : 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white')
-                  }, d.colonyEventLoading ? '\u23F3 Processing...' : '\u27A1\uFE0F Next Turn'),
-                  React.createElement('button', { onClick: function() { upd('showBuild', !d.showBuild); }, className: 'py-3 rounded-xl text-xs font-bold bg-amber-600 text-white' }, '\uD83C\uDFD7 Build (' + buildings.length + '/' + buildingDefs.length + ')'),
-                  React.createElement('button', { onClick: function() { upd('showSettlers', !d.showSettlers); }, className: 'py-3 rounded-xl text-xs font-bold bg-teal-600 text-white' }, '\uD83D\uDC65 ' + settlers.length),
-                  React.createElement('button', { onClick: function() { upd('showPolicy', !d.showPolicy); }, className: 'py-3 rounded-xl text-xs font-bold ' + (activePolicy ? 'bg-emerald-700' : 'bg-slate-700') + ' text-white' }, '\uD83C\uDFDB\uFE0F Gov'),
-                  React.createElement('button', { onClick: function() { upd('showResearch', !d.showResearch); }, className: 'py-3 rounded-xl text-xs font-bold bg-violet-700 text-white' }, '\uD83E\uDDEC ' + researchQueue.length),
-                  React.createElement('button', { onClick: function() { upd('showGreatSci', !d.showGreatSci); }, className: 'py-3 rounded-xl text-xs font-bold bg-yellow-700 text-white' }, '\uD83E\uDD16 ' + greatScientists.length + '/' + greatSciDefs.length)
-                ),
-                React.createElement('div', { className: 'grid grid-cols-4 gap-1 mb-3' },
-                  React.createElement('button', { onClick: function() { upd('showWonders', !d.showWonders); }, className: 'py-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-amber-800 to-amber-700 text-amber-200' }, '\uD83C\uDFDB\uFE0F Wonders'),
-                  React.createElement('button', { onClick: function() { upd('showAchievements', !d.showAchievements); }, className: 'py-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-rose-800 to-rose-700 text-rose-200' }, '\uD83C\uDFC5 ' + Object.keys(achievements).length + '/' + achievementDefs.length),
-                  React.createElement('button', { onClick: function() { upd('showExpeditions', !d.showExpeditions); }, className: 'py-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-cyan-800 to-cyan-700 text-cyan-200' }, '\u26F5 Expeditions'),
-                  React.createElement('button', { onClick: function() { upd('showJournal', !d.showJournal); }, className: 'py-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-green-800 to-green-700 text-green-200' }, '\uD83D\uDCD6 ' + scienceJournal.length),
-                  selectedTile && selectedTile.tile.explored && selectedTile.tile.type !== 'colony' && React.createElement('button', {
-                    onClick: function() {
-                      var tKey = selectedTile.x + ',' + selectedTile.y;
-                      if (!tileImprovements[tKey] && resources.materials >= 8) {
-                        var nr10 = Object.assign({}, resources); nr10.materials -= 8; upd('colonyRes', nr10);
-                        var newTI = Object.assign({}, tileImprovements);
-                        newTI[tKey] = { type: 'outpost', tile: selectedTile.tile.type, res: selectedTile.tile.res };
-                        upd('tileImprovements', newTI);
-                        if (addToast) addToast('\uD83C\uDFD5\uFE0F Outpost built! +1 ' + selectedTile.tile.res + '/turn', 'success');
-                        var nl20 = gameLog.slice(); nl20.push('\uD83C\uDFD5\uFE0F Outpost at (' + selectedTile.x + ',' + selectedTile.y + ')'); upd('colonyLog', nl20);
-                      }
-                    },
-                    disabled: !selectedTile || tileImprovements[selectedTile.x + ',' + selectedTile.y] || resources.materials < 8,
-                    className: 'py-2 rounded-xl text-[10px] font-bold ' + (selectedTile && !tileImprovements[selectedTile.x + ',' + selectedTile.y] && resources.materials >= 8 ? 'bg-orange-700 text-orange-200' : 'bg-slate-700 text-slate-500')
-                  }, '\uD83C\uDFD5\uFE0F Outpost (-8\uD83E\uDEA8)')
-                ),
-                // Terraforming Progress
-                React.createElement('div', { className: 'bg-gradient-to-r from-emerald-900/50 to-teal-900/50 rounded-xl p-3 border border-emerald-700 mb-3' },
-                  React.createElement('div', { className: 'flex justify-between items-center mb-1' },
-                    React.createElement('h4', { className: 'text-[10px] font-bold text-emerald-400' }, '\uD83C\uDF0D Victory Progress'),
-                    React.createElement('span', { className: 'text-xs font-bold ' + (terraform >= 100 ? 'text-green-400' : 'text-emerald-300') }, terraform + '%')
-                  ),
-                  React.createElement('div', { className: 'w-full bg-slate-700 rounded-full h-3 overflow-hidden' },
-                    React.createElement('div', { className: 'h-3 rounded-full transition-all bg-gradient-to-r ' + (terraform >= 100 ? 'from-green-400 to-emerald-400' : terraform >= 50 ? 'from-emerald-500 to-teal-500' : 'from-indigo-500 to-emerald-600'), style: { width: terraform + '%' } })
-                  ),
-                  React.createElement('div', { className: 'text-[8px] text-slate-400 mt-1' },
-                    terraform >= 100 ? '\uD83C\uDF89 VICTORY! The planet is habitable! Your colony is self-sustaining!' :
-                    terraform >= 75 ? 'Atmosphere thickening, water cycles forming. Almost habitable!' :
-                    terraform >= 50 ? 'Microorganisms detected in soil. Oxygen levels rising.' :
-                    terraform >= 25 ? 'Ice caps melting. First clouds forming in the sky.' :
-                    'Raw alien world. Build Atmospheric Processor (+5%/turn) and Biodome (+10%/turn) to terraform.'
-                  ),
-                  // Victory Paths
-                  React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-[8px]' },
-                    React.createElement('div', { className: 'p-1 rounded text-center ' + (terraform >= 100 ? 'bg-emerald-900/50 text-emerald-400' : 'text-slate-500') },
-                      '\uD83C\uDF0D Terraform: ' + terraform + '/100%'
-                    ),
-                    React.createElement('div', { className: 'p-1 rounded text-center ' + (settlers.length >= 50 ? 'bg-teal-900/50 text-teal-400' : 'text-slate-500') },
-                      '\uD83D\uDC65 Population: ' + settlers.length + '/50'
-                    ),
-                    React.createElement('div', { className: 'p-1 rounded text-center ' + (researchQueue.length >= 10 ? 'bg-violet-900/50 text-violet-400' : 'text-slate-500') },
-                      '\uD83E\uDDEC Research: ' + researchQueue.length + '/10'
-                    )
-                  ),
-                  terraform >= 100 && React.createElement('div', { className: 'mt-2 text-center' },
-                    React.createElement('div', { className: 'text-3xl mb-1' }, '\uD83C\uDF89\uD83C\uDF0D\uD83D\uDE80'),
-                    React.createElement('div', { className: 'text-sm font-bold text-green-400' }, 'COLONY VICTORY!'),
-                    React.createElement('div', { className: 'text-[10px] text-green-300' }, 'Turn ' + turn + ' | ' + buildings.length + ' buildings | All ' + settlers.length + ' settlers survived')
-                  )
-                ),
-                // Colony Stats Dashboard
-                React.createElement('div', { className: 'bg-slate-800/80 rounded-xl p-2 border border-slate-700 mb-3' },
-                  React.createElement('div', { className: 'flex gap-3 justify-center text-[9px]' },
-                    React.createElement('span', { className: 'text-[9px] px-1 rounded', style: { color: currentEra.color } }, currentEra.icon + ' ' + currentEra.name),
-                    React.createElement('span', { className: 'text-slate-400' }, '\uD83C\uDF93 ' + gradeLevel),
-                    React.createElement('span', { className: 'text-teal-400' }, '\uD83D\uDC65 Pop: ' + settlers.length + (popGrowthAccum > 0 ? ' (+' + Math.round(popGrowthAccum * 100) + '%)' : '')),
-                    React.createElement('span', { className: 'text-indigo-400' }, '\u2753 ' + stats.questionsAnswered + ' questions'),
-                    React.createElement('span', { className: stats.questionsAnswered > 0 && stats.correct / stats.questionsAnswered >= 0.7 ? 'text-green-400' : 'text-amber-400' },
-                      '\uD83C\uDFAF ' + (stats.questionsAnswered > 0 ? Math.round(stats.correct / stats.questionsAnswered * 100) : 0) + '% accuracy'),
-                    React.createElement('span', { className: 'text-cyan-400' }, '\uD83C\uDFD7 ' + stats.buildingsConstructed + ' built'),
-                    React.createElement('span', { className: 'text-purple-400' }, '\u2728 ' + stats.anomaliesExplored + ' anom'),
-                    React.createElement('span', { className: colonyHappiness > 60 ? 'text-green-400' : colonyHappiness > 30 ? 'text-amber-400' : 'text-red-400' },
-                      (colonyHappiness > 80 ? '\uD83D\uDE04' : colonyHappiness > 60 ? '\uD83D\uDE42' : colonyHappiness > 30 ? '\uD83D\uDE10' : '\uD83D\uDE21') + ' ' + colonyHappiness + '%'),
-                    alienContact && React.createElement('span', { className: alienRelations > 20 ? 'text-green-400' : alienRelations < -20 ? 'text-red-400' : 'text-amber-400' }, '\uD83D\uDC7E ' + (alienRelations > 0 ? '+' : '') + alienRelations),
-                    React.createElement('span', { className: 'text-amber-400' }, gameMode === 'mcq' ? '\uD83D\uDCCB MCQ' : '\u270D\uFE0F FR'),
-                    React.createElement('span', { className: equity > 60 ? 'text-green-400' : equity > 35 ? 'text-amber-400' : 'text-red-400' },
-                      '\u2696\uFE0F ' + equity + '%')
-                  )
-                ),
-                // Weather indicator
-                weather && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-2 border border-amber-700 mb-3 flex items-center gap-2' },
-                  React.createElement('span', { className: 'text-lg' }, weather.icon),
+              React.createElement('button', {
+                onClick: function () {
+                  upd('colonyMap', generateMap()); upd('colonyPhase', 'playing'); upd('colonyTurn', 1);
+                  upd('colonyRes', { food: 20, energy: 15, water: 15, materials: 10, science: 5 });
+                  upd('colonyBuildings', []); upd('colonySettlers', JSON.parse(JSON.stringify(defaultSettlers)));
+                  upd('colonyLog', ['Turn 1: Colony established on Kepler-442b. 6 settlers ready.']);
+                  upd('colony', { name: 'Kepler-442b' });
+                  upd('buildingEff', {}); upd('lastMaintTurn', 0); upd('maintChallenge', null);
+                  upd('colonyStats', { questionsAnswered: 0, correct: 0, buildingsConstructed: 0, anomaliesExplored: 0, turnsPlayed: 0 });
+                  if (d.colonyTTS) colonySpeak('Mission log. Colony established on Kepler 442 b. Six settlers are ready to begin construction. Good luck, Commander.', 'narrator');
+                  if (addToast) addToast('\uD83D\uDE80 Colony established!', 'success');
+                  if (typeof addXP === 'function') addXP(10, 'Kepler Colony: Mission launched');
+                },
+                className: 'px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl text-lg font-bold hover:shadow-lg hover:shadow-indigo-500/30 transition-all'
+              }, '\uD83D\uDE80 Launch Colony Mission')
+            ),
+            // PLAYING
+            colonyPhase === 'playing' && mapData && React.createElement('div', null,
+              React.createElement('canvas', { ref: canvasRef, onClick: handleMapClick, className: 'w-full rounded-xl border border-slate-700 cursor-pointer mb-3', style: { maxHeight: '480px' } }),
+              // Selected tile
+              selectedTile && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-slate-700 mb-3' },
+                React.createElement('div', { className: 'flex items-center justify-between' },
                   React.createElement('div', null,
-                    React.createElement('span', { className: 'text-[10px] font-bold text-amber-400' }, '\u26A0\uFE0F ' + weather.name),
-                    React.createElement('span', { className: 'text-[9px] text-slate-400 ml-2' }, weather.effect + ' (' + weather.penalty + ' ' + weather.res + ')')
+                    React.createElement('span', { className: 'text-sm font-bold text-white' }, selectedTile.tile.icon + ' ' + selectedTile.tile.name),
+                    React.createElement('span', { className: 'text-[10px] text-slate-400 ml-2' }, '(' + selectedTile.x + ',' + selectedTile.y + ')' + (selectedTile.tile.res !== 'none' ? ' +' + selectedTile.tile.res : '') + (selectedTile.tile.hasAnomaly ? ' \u26A0\uFE0F Anomaly detected!' : ''))
+                  ),
+                  selectedTile.tile.hasAnomaly && selectedTile.tile.explored && !d.anomalyLoading && React.createElement('button', {
+                    onClick: function () {
+                      upd('anomalyLoading', true);
+                      var tName = selectedTile.tile.name;
+                      callGemini('You are the AI game master for a space colony on alien planet Kepler-442b. Settlers are exploring an anomaly on a ' + tName + ' tile. Generate a discovery event. This should be a fascinating alien ruin, geological wonder, or xenobiological find. Include real science. Return ONLY valid JSON:\n{"emoji":"<emoji>","title":"<discovery name>","description":"<3-4 sentences describing the find>","lesson":"<real science behind this type of discovery, 2-3 sentences>","reward":{"food":<0-8>,"energy":<0-8>,"water":<0-8>,"materials":<0-8>,"science":<3-15>},"terraformBonus":<0-5>}', true).then(function (result) {
+                        try {
+                          var cl = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+                          var s2 = cl.indexOf('{'); if (s2 > 0) cl = cl.substring(s2);
+                          var e2 = cl.lastIndexOf('}'); if (e2 > 0) cl = cl.substring(0, e2 + 1);
+                          var parsed = JSON.parse(cl);
+                          upd('anomalyResult', parsed); upd('anomalyLoading', false);
+                          // Apply rewards
+                          var nr5 = Object.assign({}, resources);
+                          Object.keys(parsed.reward || {}).forEach(function (k) { if (nr5[k] !== undefined) nr5[k] += parsed.reward[k]; });
+                          upd('colonyRes', nr5);
+                          if (parsed.terraformBonus) upd('colonyTerraform', Math.min(100, (d.colonyTerraform || 0) + parsed.terraformBonus));
+                          // Remove anomaly
+                          var nm2 = JSON.parse(JSON.stringify(mapData));
+                          nm2.tiles[selectedTile.y * mapSize + selectedTile.x].hasAnomaly = false;
+                          upd('colonyMap', nm2);
+                          var nl5 = gameLog.slice(); nl5.push('\u2728 Anomaly: ' + parsed.title); upd('colonyLog', nl5);
+                          if (d.colonyTTS) colonySpeak('Anomaly investigated. ' + parsed.title + '. ' + parsed.description, 'narrator');
+                          var ns6 = Object.assign({}, stats); ns6.anomaliesExplored++; upd('colonyStats', ns6);
+                          if (typeof addXP === 'function') addXP(25, 'Kepler Colony: Anomaly explored');
+                        } catch (err) { upd('anomalyLoading', false); }
+                      }).catch(function () { upd('anomalyLoading', false); });
+                    },
+                    className: 'px-3 py-1 bg-purple-600 text-white rounded-lg text-[10px] font-bold'
+                  }, d.anomalyLoading ? '\u23F3' : '\u2728 Investigate Anomaly'),
+                  !selectedTile.tile.explored && React.createElement('button', {
+                    onClick: function () {
+                      var nm = JSON.parse(JSON.stringify(mapData));
+                      for (var dy2 = -1; dy2 <= 1; dy2++) for (var dx2 = -1; dx2 <= 1; dx2++) {
+                        var ni2 = (selectedTile.y + dy2) * mapSize + (selectedTile.x + dx2);
+                        if (ni2 >= 0 && ni2 < nm.tiles.length) nm.tiles[ni2].explored = true;
+                      }
+                      upd('colonyMap', nm);
+                      var nr = Object.assign({}, resources);
+                      var exploreCost = (activePolicy === 'militarist') ? 0 : 2;
+                      nr.energy = Math.max(0, nr.energy - exploreCost); upd('colonyRes', nr);
+                      // Terrain resource bonus
+                      var terrainBonus = { plains: 'food', mountain: 'materials', volcanic: 'energy', ice: 'water', desert: 'materials', ocean: 'water', radiation: 'science' };
+                      var bonusRes = terrainBonus[selectedTile.tile.type];
+                      if (bonusRes && nr[bonusRes] !== undefined) { nr[bonusRes] += 2; }
+                      if (addToast) addToast('Explored ' + selectedTile.tile.name + '!' + (bonusRes ? ' +2 ' + bonusRes : ''), 'info');
+                    },
+                    className: 'px-3 py-1 bg-indigo-600 text-white rounded-lg text-[10px] font-bold'
+                  }, '\uD83D\uDDFA Explore (-2\u26A1)')
+                )
+              ),
+              // Anomaly Result
+              d.anomalyResult && React.createElement('div', { className: 'bg-gradient-to-r from-purple-900 to-violet-900 rounded-xl p-3 border border-purple-600 mb-3' },
+                React.createElement('div', { className: 'flex justify-between items-center mb-1' },
+                  React.createElement('h4', { className: 'text-sm font-bold text-purple-200' }, (d.anomalyResult.emoji || '\u2728') + ' ' + d.anomalyResult.title),
+                  React.createElement('button', { onClick: function () { upd('anomalyResult', null); }, className: 'text-purple-400 text-xs' }, '\u2715')
+                ),
+                React.createElement('p', { className: 'text-xs text-purple-100 leading-relaxed' }, d.anomalyResult.description),
+                d.anomalyResult.lesson && React.createElement('div', { className: 'mt-2 bg-purple-950 rounded-lg px-3 py-2 text-[10px] text-purple-300 border border-purple-800' },
+                  React.createElement('span', { className: 'font-bold text-purple-200' }, '\uD83D\uDCDA Science: '), d.anomalyResult.lesson
+                ),
+                React.createElement('div', { className: 'flex gap-2 mt-2 text-[9px] flex-wrap' },
+                  Object.keys(d.anomalyResult.reward || {}).filter(function (k) { return d.anomalyResult.reward[k] > 0; }).map(function (k) {
+                    return React.createElement('span', { key: k, className: 'text-green-400 bg-green-900/30 px-2 py-0.5 rounded-full' }, '+' + d.anomalyResult.reward[k] + ' ' + k);
+                  }),
+                  d.anomalyResult.terraformBonus > 0 && React.createElement('span', { className: 'text-emerald-400 bg-emerald-900/30 px-2 py-0.5 rounded-full' }, '+' + d.anomalyResult.terraformBonus + '% terraform')
+                )
+              ),
+              // Actions
+              React.createElement('div', { className: 'grid grid-cols-4 gap-1 mb-2' },
+                React.createElement('button', {
+                  onClick: function () {
+                    var nt = turn + 1; var nr2 = Object.assign({}, resources);
+                    buildings.forEach(function (b) {
+                      var def = buildingDefs.find(function (bd) { return bd.id === b; });
+                      if (def) {
+                        var eff = (buildingEff[b] !== undefined ? buildingEff[b] : 100) / 100;
+                        // Season multipliers
+                        var sMult = activeSeason.effect.allMult || 1;
+                        // Nanotech research: min 75% efficiency
+                        if (researchQueue.indexOf('nanotech') >= 0 && eff < 0.75) eff = 0.75;
+                        Object.keys(def.production).forEach(function (k) {
+                          var val2 = Math.round(def.production[k] * eff * sMult);
+                          if (k === 'food' && activeSeason.effect.foodMult) val2 = Math.round(val2 * activeSeason.effect.foodMult);
+                          if (k === 'water' && activeSeason.effect.waterMult) val2 = Math.round(val2 * activeSeason.effect.waterMult);
+                          nr2[k] = (nr2[k] || 0) + val2;
+                        });
+                      }
+                    });
+                    nr2.food = Math.max(0, nr2.food - settlers.length);
+                    // Terraforming progress
+                    var tfGain = buildings.indexOf('atmo') >= 0 ? 2 : 0;
+                    tfGain += buildings.indexOf('biodome') >= 0 ? 3 : 0;
+                    tfGain += buildings.indexOf('hydroponics') >= 0 ? 0.5 : 0;
+                    tfGain += buildings.indexOf('greenhouse') >= 0 ? 1 : 0;
+                    tfGain += buildings.indexOf('oceanSeeder') >= 0 ? 1.5 : 0;
+                    var newTf = Math.min(100, (d.colonyTerraform || 0) + tfGain);
+                    upd('colonyTerraform', newTf);
+                    // Med Bay heals settlers
+                    if (buildings.indexOf('medbay') >= 0) {
+                      upd('colonySettlers', settlers.map(function (s4) { return Object.assign({}, s4, { health: Math.min(100, s4.health + 5) }); }));
+                    }
+                    // Weather hazard (random)
+                    var weatherTypes = [null, null, null, null, // 4/7 = calm
+                      { name: 'Dust Storm', icon: '\uD83C\uDF2A\uFE0F', effect: 'Materials production halved', res: 'materials', penalty: -2 },
+                      { name: 'Solar Flare', icon: '\u2604\uFE0F', effect: 'Energy surge! Equipment overloaded', res: 'energy', penalty: -3 },
+                      { name: 'Ice Rain', icon: '\uD83C\uDF28\uFE0F', effect: 'Frozen pipes, water loss', res: 'water', penalty: -2 }
+                    ];
+                    var wIdx = Math.floor(Math.random() * weatherTypes.length);
+                    var wx = weatherTypes[wIdx];
+                    upd('colonyWeather', wx);
+                    if (wx) {
+                      var weatherPenalty = wx.penalty;
+                      if (buildings.indexOf('shield') >= 0) weatherPenalty = Math.ceil(weatherPenalty / 2);
+                      nr2[wx.res] = Math.max(0, nr2[wx.res] + weatherPenalty);
+                    }
+                    // Colony milestones
+                    var milestones = [
+                      { id: 'first_build', check: buildings.length >= 1, text: '\uD83C\uDFD7 First Construction!', xp: 15 },
+                      { id: 'tier2', check: buildings.indexOf('lab') >= 0 || buildings.indexOf('medbay') >= 0, text: '\uD83D\uDD2C Tier 2 Unlocked!', xp: 25 },
+                      { id: 'tier3', check: buildings.indexOf('atmo') >= 0 || buildings.indexOf('fusion') >= 0, text: '\u2622\uFE0F Advanced Tech!', xp: 40 },
+                      { id: 'self_sustain', check: nr2.food >= 30 && nr2.energy >= 30 && nr2.water >= 30, text: '\uD83C\uDF3E Self-Sustaining!', xp: 30 },
+                      { id: 'full_colony', check: buildings.length >= 8, text: '\uD83C\uDFD9\uFE0F Full Colony!', xp: 50 },
+                      { id: 'pop20', check: settlers.length >= 20, text: '\uD83D\uDC65 20 Settlers!', xp: 40 },
+                      { id: 'pop35', check: settlers.length >= 35, text: '\uD83C\uDFD8\uFE0F Thriving Town!', xp: 60 },
+                      { id: 'pop50', check: settlers.length >= 50, text: '\uD83C\uDFD9\uFE0F Population Victory!', xp: 100 },
+                      { id: 'research5', check: researchQueue.length >= 5, text: '\uD83E\uDDEC Half Researched!', xp: 40 },
+                      { id: 'research10', check: researchQueue.length >= 10, text: '\uD83C\uDF1F Research Victory!', xp: 100 },
+                      { id: 'allbuildings', check: buildings.length >= 16, text: '\uD83C\uDFD7\uFE0F Master Builder!', xp: 80 },
+                      { id: 'terraform25', check: newTf >= 25, text: '\uD83C\uDF27\uFE0F First Clouds!', xp: 20 },
+                      { id: 'terraform50', check: newTf >= 50, text: '\uD83C\uDF31 Microorganisms!', xp: 30 },
+                      { id: 'terraform75', check: newTf >= 75, text: '\uD83C\uDF24\uFE0F Atmosphere Forming!', xp: 40 },
+                      { id: 'master', check: stats.questionsAnswered >= 10 && stats.correct / Math.max(1, stats.questionsAnswered) >= 0.8, text: '\uD83C\uDFAF Science Master!', xp: 50 }
+                    ];
+                    var achieved = d.colonyMilestones || {};
+                    milestones.forEach(function (ms) {
+                      if (ms.check && !achieved[ms.id]) {
+                        achieved[ms.id] = true;
+                        if (addToast) addToast(ms.text, 'success');
+                        if (d.colonyTTS) colonySpeak('Milestone achieved. ' + ms.text.replace(/[^a-zA-Z0-9 ]/g, ''), 'narrator');
+                        if (typeof addXP === 'function') addXP(ms.xp, ms.text);
+                        var nl9 = gameLog.slice(); nl9.push('\uD83C\uDFC6 ' + ms.text); upd('colonyLog', nl9);
+                      }
+                    });
+                    upd('colonyMilestones', achieved);
+                    // Maintenance challenge every 8 turns (if buildings exist)
+                    if (buildings.length > 0 && (nt - (d.lastMaintTurn || 0)) >= 8) {
+                      upd('lastMaintTurn', nt);
+                      // Pick a random built building for maintenance
+                      var maintBuild = buildings[Math.floor(Math.random() * buildings.length)];
+                      var maintDef = buildingDefs.find(function (bd3) { return bd3.id === maintBuild; });
+                      if (maintDef) {
+                        upd('maintChallengeLoading', true);
+                        var modeStr = (d.colonyMode || 'mcq') === 'mcq' ? 'Return ONLY valid JSON: {"question":"<science question about ' + maintDef.gate + '>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"explanation":"<why correct, 2-3 sentences with real science>"}. Generate exactly 6 options. Shuffle correct answer randomly (position 0-5). correctIndex must match.' : 'Return ONLY valid JSON: {"question":"<science question about ' + maintDef.gate + '>","answer":"<correct answer, 1-3 words>","explanation":"<why correct, 2-3 sentences with real science>"}';
+                        callGemini('Generate a ' + maintDef.gate + ' science question for maintaining the ' + maintDef.name + ' in a space colony on an alien planet. The question should test understanding of the science behind this building. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. ' + modeStr, true).then(function (result) {
+                          try {
+                            var cl2 = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+                            var s3 = cl2.indexOf('{'); if (s3 > 0) cl2 = cl2.substring(s3);
+                            var e3 = cl2.lastIndexOf('}'); if (e3 > 0) cl2 = cl2.substring(0, e3 + 1);
+                            var mq = JSON.parse(cl2);
+                            mq.building = maintBuild; mq.buildingName = maintDef.name; mq.buildingIcon = maintDef.icon;
+                            upd('maintChallenge', mq); upd('maintChallengeLoading', false);
+                            if (d.colonyTTS) colonySpeak('Maintenance alert. Your ' + maintDef.name + ' requires a systems check. Answer the science challenge to maintain full output.', 'narrator');
+                            var nl7 = gameLog.slice(); nl7.push('\uD83D\uDD27 Turn ' + nt + ': ' + maintDef.icon + ' ' + maintDef.name + ' needs maintenance!'); upd('colonyLog', nl7);
+                          } catch (err) { upd('maintChallengeLoading', false); }
+                        }).catch(function () { upd('maintChallengeLoading', false); });
+                      }
+                    }
+                    nr2.water = Math.max(0, nr2.water - Math.ceil(settlers.length * 0.5));
+                    upd('colonyRes', nr2); upd('colonyTurn', nt); upd('colonyEventLoading', true);
+                    var ctx2 = 'Colony on Kepler-442b, turn ' + nt + '. Resources: food=' + nr2.food + ' energy=' + nr2.energy + ' water=' + nr2.water + ' materials=' + nr2.materials + ' science=' + nr2.science + '. Buildings: ' + (buildings.length > 0 ? buildings.join(', ') : 'none') + '. ' + settlers.length + ' settlers. Terraforming: ' + newTf + '%. ' + (wx ? 'Current weather: ' + wx.name + '. ' : 'Weather: calm. ') + 'Tech tier reached: ' + (buildings.indexOf('biodome') >= 0 ? 4 : buildings.indexOf('atmo') >= 0 || buildings.indexOf('fusion') >= 0 ? 3 : buildings.indexOf('lab') >= 0 || buildings.indexOf('medbay') >= 0 ? 2 : buildings.length > 0 ? 1 : 0) + '.';
+                    callGemini('You are the AI game master for an educational space colony on an alien planet. Target audience: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Colony values: collectivism=' + colonyValues.collectivism + ', innovation=' + colonyValues.innovation + ', ecology=' + colonyValues.ecology + ', tradition=' + colonyValues.tradition + ', openness=' + colonyValues.openness + '. Equity: ' + equity + '/100. Sometimes let colony values influence event themes (high ecology = nature events, high tradition = cultural discovery events, low equity = social tension events). ' + ctx2 + '\n\nGenerate a planet event. Include a REAL science concept. Return ONLY valid JSON:\n{"emoji":"<emoji>","title":"<event>","description":"<2-3 sentences>","lesson":"<real science concept, 2-3 sentences>","choices":[{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"},{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"}]}\n\nEvents: alien microbes, geologic discoveries, meteor showers, equipment failures, resource finds, atmospheric anomalies, alien ruins. Effects: -5 to +10 resources, -15 to +15 morale. One choice should reward scientific knowledge.', true).then(function (result) {
+                      try {
+                        var cl = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim(); var s2 = cl.indexOf('{'); if (s2 > 0) cl = cl.substring(s2); var e2 = cl.lastIndexOf('}'); if (e2 > 0) cl = cl.substring(0, e2 + 1);
+                        var parsed = JSON.parse(cl); upd('colonyEvent', parsed); upd('colonyEventLoading', false);
+                        if (d.colonyTTS) colonySpeak(parsed.title + '. ' + parsed.description, 'narrator');
+                        var nl2 = gameLog.slice(); nl2.push('Turn ' + nt + ': ' + (parsed.emoji || '') + ' ' + parsed.title); upd('colonyLog', nl2);
+                      } catch (err) { upd('colonyEventLoading', false); if (addToast) addToast('Event failed to generate', 'error'); }
+                    }).catch(function () { upd('colonyEventLoading', false); });
+                    var ns5 = Object.assign({}, stats); ns5.turnsPlayed++; upd('colonyStats', ns5);
+                    if (typeof addXP === 'function') addXP(5, 'Kepler Colony: Turn ' + nt);
+                    // Population growth — food surplus attracts new settlers (Civ-inspired)
+                    var foodSurplus = nr2.food - settlers.length * 2; // need 2x population in food
+                    var growthRate = 0.15 + (activePolicy && activePolicy === 'agrarian' ? 0.075 : 0);
+                    if (buildings.indexOf('spaceport') >= 0) growthRate += 0.1;
+                    if (buildings.indexOf('cloning') >= 0) growthRate += 0.05;
+                    if (foodSurplus > 0) {
+                      var newPG = (d.colonyPopGrowth || 0) + growthRate;
+                      if (newPG >= 1.0 && settlers.length < 50) {
+                        // New settler arrives!
+                        var newRoles = [
+                          { name: 'Lt. Alex Rivera', role: 'Pilot', icon: '\u2708\uFE0F', specialty: 'physics' },
+                          { name: 'Dr. Sarah Kim', role: 'Xenobiologist', icon: '\uD83E\uDDA0', specialty: 'biology' },
+                          { name: 'Prof. Dimitri Volkov', role: 'Mathematician', icon: '\uD83D\uDCCA', specialty: 'math' },
+                          { name: 'Eng. Fatima Hassan', role: 'Architect', icon: '\uD83C\uDFD7\uFE0F', specialty: 'geology' },
+                          { name: 'Dr. Li Wei', role: 'Astronomer', icon: '\uD83D\uDD2D', specialty: 'physics' },
+                          { name: 'Dr. Amara Osei', role: 'Biochemist', icon: '\uD83E\uDDEA', specialty: 'chemistry' },
+                          { name: 'Sgt. Kofi Mensah', role: 'Security', icon: '\uD83D\uDEE1\uFE0F', specialty: 'geology' },
+                          { name: 'Dr. Lucia Torres', role: 'Physician', icon: '\u2695\uFE0F', specialty: 'biology' },
+                          { name: 'Dr. Hans Mueller', role: 'Climatologist', icon: '\uD83C\uDF0A', specialty: 'chemistry' },
+                          { name: 'Eng. Priya Nair', role: 'Roboticist', icon: '\uD83E\uDD16', specialty: 'physics' },
+                          { name: 'Dr. Jun Sato', role: 'Volcanologist', icon: '\uD83C\uDF0B', specialty: 'geology' },
+                          { name: 'Prof. Anya Petrov', role: 'Astrophysicist', icon: '\u2B50', specialty: 'physics' },
+                          { name: 'Dr. Maria Santos', role: 'Ecologist', icon: '\uD83C\uDF3F', specialty: 'biology' },
+                          { name: 'Eng. David Park', role: 'Structural Eng.', icon: '\uD83C\uDFD7\uFE0F', specialty: 'math' },
+                          { name: 'Dr. Fatou Diallo', role: 'Geneticist', icon: '\uD83E\uDDEC', specialty: 'biology' },
+                          { name: 'Lt. Ivan Kozlov', role: 'Navigator', icon: '\uD83E\uDDED', specialty: 'math' },
+                          { name: 'Dr. Aiko Tanabe', role: 'Microbiologist', icon: '\uD83E\uDDA0', specialty: 'biology' },
+                          { name: 'Eng. Omar Ali', role: 'Energy Eng.', icon: '\u26A1', specialty: 'physics' },
+                          { name: 'Dr. Elena Popova', role: 'Hydrologist', icon: '\uD83D\uDCA7', specialty: 'chemistry' },
+                          { name: 'Prof. Chen Guang', role: 'Seismologist', icon: '\uD83C\uDF0D', specialty: 'geology' },
+                          { name: 'Dr. Sofia Romano', role: 'Botanist II', icon: '\uD83C\uDF3A', specialty: 'biology' },
+                          { name: 'Eng. James Okafor', role: 'Systems Eng.', icon: '\u2699\uFE0F', specialty: 'math' },
+                          { name: 'Dr. Mei Lin', role: 'Pharmacologist', icon: '\uD83D\uDC8A', specialty: 'chemistry' },
+                          { name: 'Lt. Rosa Martinez', role: 'Comms Officer', icon: '\uD83D\uDCE1', specialty: 'physics' }
+                        ];
+                        var available = newRoles.filter(function (nr7) { return !settlers.some(function (s5) { return s5.name === nr7.name; }); });
+                        if (available.length > 0) {
+                          var newSettler = Object.assign({}, available[Math.floor(Math.random() * available.length)], { morale: 85, health: 100 });
+                          var updSettlers = settlers.slice(); updSettlers.push(newSettler);
+                          upd('colonySettlers', updSettlers);
+                          var nl13 = gameLog.slice(); nl13.push('\uD83D\uDC64 ' + newSettler.name + ' (' + newSettler.role + ') joined the colony!'); upd('colonyLog', nl13);
+                          if (addToast) addToast('\uD83D\uDC64 New settler: ' + newSettler.name + ' (' + newSettler.role + ')!', 'success');
+                          if (d.colonyTTS) colonySpeak('New colonist arrived. ' + newSettler.name + ', a ' + newSettler.role + ', has joined the team.', 'narrator');
+                        }
+                        newPG -= 1.0;
+                      }
+                      upd('colonyPopGrowth', newPG);
+                    }
+
+                    // Era progression
+                    var newEra = era;
+                    if (era === 'survival' && buildings.length >= 4 && settlers.length >= 8) newEra = 'expansion';
+                    else if (era === 'expansion' && buildings.length >= 8 && newTf >= 30 && researchQueue.length >= 3) newEra = 'prosperity';
+                    else if (era === 'prosperity' && buildings.length >= 14 && newTf >= 60 && settlers.length >= 25) newEra = 'transcendence';
+                    if (newEra !== era) {
+                      upd('colonyEra', newEra);
+                      var eraInfo = eraData[newEra];
+                      if (addToast) addToast(eraInfo.icon + ' ERA: ' + eraInfo.name + '!', 'success');
+                      if (d.colonyTTS) colonySpeak('New era reached! The colony has entered the ' + eraInfo.name + ' era.', 'narrator');
+                      var nl14 = gameLog.slice(); nl14.push('\uD83C\uDF1F ERA: ' + eraInfo.name + '!'); upd('colonyLog', nl14);
+                      if (typeof addXP === 'function') addXP(40, 'Era: ' + eraInfo.name);
+                    }
+
+                    // Colony Charter (generated once at turn 20 from colony values)
+                    if (nt === 20 && !d.colonyCharter) {
+                      callGemini('Generate a founding charter for a space colony on planet Kepler-442b. The colony has these values: collectivism=' + colonyValues.collectivism + ', innovation=' + colonyValues.innovation + ', ecology=' + colonyValues.ecology + ', tradition=' + colonyValues.tradition + ', openness=' + colonyValues.openness + '. Equity: ' + equity + '. They have adopted these cultural traditions: ' + (traditions.length > 0 ? traditions.join(', ') : 'none yet') + '. Write a brief founding charter (4-5 sentences) that reflects these values. It should feel like a real historical document — inspirational, specific, and grounded in the colony\u2019s unique blend of cultures and science. Do NOT use bullet points. Write it as flowing prose.', true).then(function (charter) {
+                        upd('colonyCharter', charter);
+                        if (d.colonyTTS) colonySpeak('The colony charter has been drafted. A founding document for a new civilization.', 'narrator');
+                        var nl29 = gameLog.slice(); nl29.push('\uD83D\uDCDC Colony Charter drafted!'); upd('colonyLog', nl29);
+                        if (addToast) addToast('\uD83D\uDCDC Colony Charter drafted from your values!', 'success');
+                        if (typeof addXP === 'function') addXP(30, 'Colony Charter');
+                      });
+                    }
+
+                    // Alien first contact (turn 10+, once)
+                    if (nt >= 10 && !d.alienContact && Math.random() < 0.3) {
+                      upd('alienContact', true); upd('alienRelations', 0);
+                      var nl18 = gameLog.slice(); nl18.push('\uD83D\uDC7E FIRST CONTACT: The Keth\u2019ora detected!'); upd('colonyLog', nl18);
+                      if (addToast) addToast('\uD83D\uDC7E First Contact! An alien species has been detected!', 'success');
+                      if (d.colonyTTS) colonySpeak('Alert! Alien life detected. The indigenous Kethora species has made contact. They communicate through bioluminescent patterns.', 'narrator');
+                      if (typeof addXP === 'function') addXP(50, 'First Contact!');
+                    }
+
+                    // Governance Dilemma (NationStates-style — every 5 turns)
+                    if (nt > 2 && nt % 5 === 0 && !d.activeDilemma) {
+                      var valStr = Object.keys(colonyValues).map(function (k2) { return k2 + ':' + colonyValues[k2]; }).join(', ');
+                      upd('dilemmaLoading', true);
+                      callGemini('You are creating a governance dilemma for a space colony on alien planet Kepler-442b. Colony values: ' + valStr + '. Equity: ' + equity + '/100. Population: ' + settlers.length + '. This colony values diverse knowledge traditions. Create a nuanced moral/political/cultural dilemma with NO clear right answer (like NationStates). The dilemma should involve balancing competing goods (e.g. innovation vs tradition, individual freedom vs collective welfare, rapid growth vs sustainability, scientific progress vs cultural preservation). Sometimes draw on wisdom from real-world cultural traditions (African, Indigenous, Asian, etc.) as viable solutions. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Return ONLY valid JSON: {"emoji":"<emoji>","title":"<dilemma>","description":"<3-4 sentence scenario>","choices":[{"text":"<choice A>","values":{"collectivism":<-10 to 10>,"innovation":<-10 to 10>,"ecology":<-10 to 10>,"tradition":<-10 to 10>,"openness":<-10 to 10>},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<1-2 sentence result>"},{"text":"<choice B>","values":{same},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<result>"},{"text":"<choice C>","values":{same},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<result>"}],"lesson":"<real social science or cultural insight, 2-3 sentences>"}', true).then(function (result) {
+                        try {
+                          var cl7 = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+                          var s8 = cl7.indexOf('{'); if (s8 > 0) cl7 = cl7.substring(s8);
+                          var e8 = cl7.lastIndexOf('}'); if (e8 > 0) cl7 = cl7.substring(0, e8 + 1);
+                          var dil = JSON.parse(cl7);
+                          upd('activeDilemma', dil); upd('dilemmaLoading', false);
+                          if (d.colonyTTS) colonySpeak('Colony council convenes. ' + dil.title + '. ' + dil.description, 'narrator');
+                          var nl25 = gameLog.slice(); nl25.push('\uD83C\uDFDB\uFE0F Dilemma: ' + dil.title); upd('colonyLog', nl25);
+                        } catch (err) { upd('dilemmaLoading', false); }
+                      }).catch(function () { upd('dilemmaLoading', false); });
+                    }
+
+                    // Major disaster (rare — every ~20 turns)
+                    if (nt > 1 && nt % 20 === 0 && Math.random() < 0.5) {
+                      upd('disasterLoading', true);
+                      callGemini('Generate a MAJOR disaster event for a space colony on alien planet Kepler-442b. Turn ' + nt + '. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. The disaster should be science-based (asteroid impact, volcanic eruption, alien plague, equipment catastrophe, radiation storm). Return ONLY valid JSON: {"emoji":"<emoji>","title":"<disaster name>","description":"<dramatic 3-4 sentences>","lesson":"<real science about this type of disaster, 2-3 sentences>","question":"<science question to mitigate damage>","options":["<correct mitigation>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"fullDamage":{"food":<-5 to -15>,"energy":<-5 to -15>,"water":<-5 to -15>,"materials":<-5 to -15>,"morale":<-10 to -20>},"mitigatedDamage":{"food":<0 to -5>,"energy":<0 to -5>,"water":<0 to -5>,"materials":<0 to -5>,"morale":<-3 to -8>}}. Shuffle correct answer (0-5).', true).then(function (result) {
+                        try {
+                          var cl6 = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+                          var s7 = cl6.indexOf('{'); if (s7 > 0) cl6 = cl6.substring(s7);
+                          var e7 = cl6.lastIndexOf('}'); if (e7 > 0) cl6 = cl6.substring(0, e7 + 1);
+                          var dis = JSON.parse(cl6);
+                          upd('activeDisaster', dis); upd('disasterLoading', false);
+                          var nl24 = gameLog.slice(); nl24.push('\uD83D\uDCA5 DISASTER: ' + dis.title + '!'); upd('colonyLog', nl24);
+                          if (d.colonyTTS) colonySpeak('Emergency alert! ' + dis.title + '! ' + dis.description, 'narrator');
+                        } catch (err) { upd('disasterLoading', false); }
+                      }).catch(function () { upd('disasterLoading', false); });
+                    }
+
+                    // Happiness mechanic
+                    var newHappy = d.colonyHappiness || 70;
+                    if (nr2.food > settlers.length * 2) newHappy = Math.min(100, newHappy + 2);
+                    else if (nr2.food < settlers.length) newHappy = Math.max(0, newHappy - 5);
+                    if (buildings.indexOf('medbay') >= 0) newHappy = Math.min(100, newHappy + 1);
+                    var avgMorale = settlers.reduce(function (sum, s6) { return sum + s6.morale; }, 0) / Math.max(1, settlers.length);
+                    if (avgMorale < 50) newHappy = Math.max(0, newHappy - 3);
+                    if (wx) newHappy = Math.max(0, newHappy - 2);
+                    upd('colonyHappiness', newHappy);
+
+                    // Happiness affects production (Civ-style)
+                    if (newHappy < 30) {
+                      // Unrest — 50% production penalty
+                      nr2.food = Math.max(0, Math.floor(nr2.food * 0.8));
+                      nr2.materials = Math.max(0, Math.floor(nr2.materials * 0.8));
+                      if (addToast) addToast('\uD83D\uDE21 Colony unrest! Production reduced!', 'warning');
+                    } else if (newHappy > 80) {
+                      // Golden age — bonus production
+                      nr2.science += 2;
+                      nr2.food += 1;
+                    }
+
+                    // Achievement check
+                    var newAch = Object.assign({}, achievements);
+                    var achChanged = false;
+                    achievementDefs.forEach(function (ad) {
+                      if (!newAch[ad.id] && ad.check()) {
+                        newAch[ad.id] = { turn: nt, ts: Date.now() };
+                        achChanged = true;
+                        if (addToast) addToast(ad.icon + ' Achievement: ' + ad.name + '!', 'success');
+                        if (d.colonyTTS) colonySpeak('Achievement unlocked. ' + ad.name + '. ' + ad.desc, 'narrator');
+                        var nl31 = gameLog.slice(); nl31.push(ad.icon + ' Achievement: ' + ad.name); upd('colonyLog', nl31);
+                        if (typeof addXP === 'function') addXP(20, 'Achievement: ' + ad.name);
+                      }
+                    });
+                    if (achChanged) upd('colonyAchievements', newAch);
+
+                    // Streak tracking
+                    var ns9 = Object.assign({}, stats);
+                    if (!ns9.streak) ns9.streak = 0;
+                    upd('colonyStats', ns9);
+
+                    // Colony Radio — AI broadcast every 8 turns
+                    if (nt > 3 && nt % 8 === 0) {
+                      callGemini('You are the radio host for a space colony called "' + colonyName + '" on planet Kepler-442b. Give a brief radio news broadcast (3-4 sentences) reporting on recent colony events. Turn: ' + nt + '. Population: ' + settlers.length + '. Buildings: ' + buildings.length + '. Terraform: ' + terraform + '%. Era: ' + era + '. Season: ' + ((seasonDefs[(seasonCycle || {}).index] || {}).name || 'Calm') + '. Recent events from log: ' + gameLog.slice(-5).join('; ') + '. Make it feel like a real news broadcast — upbeat, informative, with a sign-off. Grade level: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (broadcast) {
+                        upd('colonyRadio', broadcast);
+                        if (d.colonyTTS) colonySpeak(broadcast, 'narrator');
+                      });
+                    }
+
+                    // Settler celebrations (happiness > 85) or protests (happiness < 25)
+                    if (newHappy > 85 && nt % 10 === 0) {
+                      var nl32 = gameLog.slice(); nl32.push('\uD83C\uDF89 Colony Celebration! Settlers throw a festival!'); upd('colonyLog', nl32);
+                      if (addToast) addToast('\uD83C\uDF89 Colony Celebration! +5 happiness, +10 XP!', 'success');
+                      newHappy = Math.min(100, newHappy + 5); upd('colonyHappiness', newHappy);
+                      if (typeof addXP === 'function') addXP(10, 'Colony Festival');
+                    } else if (newHappy < 25 && nt % 7 === 0) {
+                      var nl33 = gameLog.slice(); nl33.push('\u270A Settler Protest! Demanding better conditions!'); upd('colonyLog', nl33);
+                      if (addToast) addToast('\u270A Settler Protest! Productivity drops!', 'warning');
+                      nr2.food = Math.max(0, nr2.food - 3); nr2.materials = Math.max(0, nr2.materials - 3);
+                    }
+
+                    // Great Scientist arrival (every 15 turns + high science)
+                    if (nt % 15 === 0 && nr2.science >= 10 && greatScientists.length < greatSciDefs.length) {
+                      var availGS = greatSciDefs.filter(function (gs) { return !greatScientists.some(function (g) { return g.name === gs.name; }); });
+                      if (availGS.length > 0) {
+                        var gs2 = availGS[Math.floor(Math.random() * availGS.length)];
+                        var updGS = greatScientists.slice(); updGS.push(gs2);
+                        upd('colonyGreatSci', updGS);
+                        // Apply bonus permanently
+                        if (gs2.bonus && nr2[gs2.bonus] !== undefined) nr2[gs2.bonus] += gs2.amount;
+                        var nl15 = gameLog.slice(); nl15.push('\uD83E\uDD16 Mentor: ' + gs2.name + ' AI activated (+' + gs2.amount + ' ' + gs2.bonus + '/turn)'); upd('colonyLog', nl15);
+                        if (addToast) addToast('\uD83E\uDD16 ' + gs2.icon + ' ' + gs2.name + ' AI activated! ' + gs2.fact, 'success');
+                        if (d.colonyTTS) colonySpeak('Digital Mentor activated. The AI reconstruction of ' + gs2.name + ' is now online. ' + gs2.fact, 'narrator');
+                        if (typeof addXP === 'function') addXP(30, 'Mentor: ' + gs2.name);
+                      }
+                    }
+
+                    // Season bonuses
+                    if (activeSeason.effect.materialBonus) nr2.materials += activeSeason.effect.materialBonus;
+                    if (activeSeason.effect.energyBonus) nr2.energy += activeSeason.effect.energyBonus;
+                    if (activeSeason.effect.heal) settlers.forEach(function (s9) { s9.health = Math.min(100, s9.health + activeSeason.effect.heal); });
+
+                    // Apply policy bonuses to resources
+                    if (activePolicy) {
+                      var pol = policyDefs.find(function (p) { return p.id === activePolicy; });
+                      if (pol && pol.effect) {
+                        if (pol.effect.materialBonus) nr2.materials += pol.effect.materialBonus;
+                        if (pol.effect.foodBonus) nr2.food += pol.effect.foodBonus;
+                        if (pol.effect.energyBonus) nr2.energy += pol.effect.energyBonus;
+                      }
+                    }
+
+                    // Tile improvement bonuses (outposts) + trade routes
+                    var outpostKeys = Object.keys(tileImprovements);
+                    var tradeRoutes = 0;
+                    outpostKeys.forEach(function (tKey2) {
+                      var imp = tileImprovements[tKey2];
+                      if (imp && imp.res && nr2[imp.res] !== undefined) nr2[imp.res] += 1;
+                      // Check for adjacent outposts = trade route
+                      var coords = tKey2.split(','); var ox = parseInt(coords[0]); var oy = parseInt(coords[1]);
+                      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (dd) {
+                        var adjKey = (ox + dd[0]) + ',' + (oy + dd[1]);
+                        if (tileImprovements[adjKey] && adjKey > tKey2) tradeRoutes++;
+                      });
+                    });
+                    // Trade route bonus: +1 of each resource per route
+                    if (tradeRoutes > 0) {
+                      nr2.food += tradeRoutes; nr2.materials += tradeRoutes; nr2.science += tradeRoutes;
+                    }
+
+                    // Expedition progress
+                    if (activeExpedition) {
+                      var exp = Object.assign({}, activeExpedition);
+                      var expSpeed = traditions.indexOf('dreamtime') >= 0 ? 2 : 1;
+                      exp.turnsLeft = (exp.turnsLeft || 0) - expSpeed;
+                      if (exp.turnsLeft <= 0) {
+                        // Expedition complete — generate reward
+                        upd('activeExpedition', null);
+                        upd('expResultLoading', true);
+                        callGemini('You are narrating a space colony expedition on alien planet Kepler-442b. A team of ' + (exp.teamSize || 3) + ' settlers went on a ' + exp.type + ' expedition to ' + exp.destination + '. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Generate the expedition result. Return ONLY valid JSON: {"title":"<discovery>","emoji":"<emoji>","narrative":"<exciting 3-4 sentence story of what happened>","lesson":"<real science concept learned, 2-3 sentences>","rewards":{"food":<0-15>,"energy":<0-15>,"water":<0-15>,"materials":<0-15>,"science":<5-20>},"terraformBonus":<0-5>,"newSettler":' + (settlers.length < 50 ? 'true or false' : 'false') + ',"settlerName":"<name if newSettler>","settlerRole":"<role if newSettler>"}', true).then(function (result) {
+                          try {
+                            var cl4 = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+                            var s5 = cl4.indexOf('{'); if (s5 > 0) cl4 = cl4.substring(s5);
+                            var e5 = cl4.lastIndexOf('}'); if (e5 > 0) cl4 = cl4.substring(0, e5 + 1);
+                            var expR = JSON.parse(cl4);
+                            upd('expResult', expR); upd('expResultLoading', false);
+                            var nr11 = Object.assign({}, resources);
+                            Object.keys(expR.rewards || {}).forEach(function (k) { if (nr11[k] !== undefined) nr11[k] += expR.rewards[k]; });
+                            upd('colonyRes', nr11);
+                            if (expR.terraformBonus) upd('colonyTerraform', Math.min(100, (d.colonyTerraform || 0) + expR.terraformBonus));
+                            if (expR.newSettler && expR.settlerName && settlers.length < 50) {
+                              var ns7 = settlers.slice();
+                              ns7.push({ name: expR.settlerName, role: expR.settlerRole || 'Explorer', icon: '\uD83E\uDDD1\u200D\uD83D\uDE80', specialty: 'physics', morale: 90, health: 100 });
+                              upd('colonySettlers', ns7);
+                            }
+                            // Add to science journal
+                            if (expR.lesson) {
+                              var nj = scienceJournal.slice();
+                              nj.push({ turn: turn, source: 'Expedition: ' + expR.title, fact: expR.lesson });
+                              upd('scienceJournal', nj);
+                            }
+                            var nl21 = gameLog.slice(); nl21.push('\u26F5 Expedition: ' + expR.title); upd('colonyLog', nl21);
+                            if (addToast) addToast('\u26F5 Expedition complete: ' + expR.title, 'success');
+                            if (d.colonyTTS) colonySpeak('Expedition report. ' + expR.title + '. ' + expR.narrative, 'narrator');
+                            if (typeof addXP === 'function') addXP(25, 'Expedition: ' + expR.title);
+                          } catch (err) { upd('expResultLoading', false); }
+                        }).catch(function () { upd('expResultLoading', false); });
+                      } else {
+                        upd('activeExpedition', exp);
+                      }
+                    }
+
+                    // Cultural Tradition bonuses
+                    traditions.forEach(function (tid) {
+                      var tdef = traditionDefs.find(function (td2) { return td2.id === tid; });
+                      if (tdef && tdef.bonus) {
+                        if (tdef.bonus.food) nr2.food += tdef.bonus.food;
+                        if (tdef.bonus.water) nr2.water += tdef.bonus.water;
+                        if (tdef.bonus.materials) nr2.materials += tdef.bonus.materials;
+                        if (tdef.bonus.science) nr2.science += tdef.bonus.science;
+                        if (tdef.bonus.terraform) { var tfC = Math.min(100, (d.colonyTerraform || 0) + tdef.bonus.terraform); upd('colonyTerraform', tfC); }
+                        if (tdef.bonus.repair) {
+                          // Kintsugi: repair 10% effectiveness on all buildings
+                          var repEff = Object.assign({}, buildingEff);
+                          buildings.forEach(function (b2) { if (repEff[b2] !== undefined && repEff[b2] < 100) repEff[b2] = Math.min(100, repEff[b2] + 10); });
+                          upd('buildingEff', repEff);
+                        }
+                      }
+                    });
+
+                    // Equity effects
+                    if (equity < 25) {
+                      newHappy = Math.max(0, newHappy - 5);
+                      if (nt % 5 === 0) { var nl26 = gameLog.slice(); nl26.push('\u26A0\uFE0F Inequality crisis! Settlers dissatisfied with resource distribution.'); upd('colonyLog', nl26); }
+                    } else if (equity > 75) {
+                      newHappy = Math.min(100, newHappy + 2);
+                      nr2.science += 2; // equitable societies innovate better
+                    }
+
+                    // Wonder bonuses
+                    if (wonders.terraformEngine) { var tfW = Math.min(100, (d.colonyTerraform || 0) + 5); upd('colonyTerraform', tfW); }
+                    if (wonders.arkVault) { nr2.food += 8; nr2.science += 5; }
+                    if (wonders.quantumGate) { nr2.science += 10; }
+
+                    // Alien alliance bonuses
+                    if (alienContact && alienRelations >= 50) {
+                      nr2.science += 3; nr2.water += 2;
+                    }
+                    // Apply research bonuses
+                    researchQueue.forEach(function (rid) {
+                      var rdef = researchDefs.find(function (rd) { return rd.id === rid; });
+                      if (rdef && rdef.bonus) {
+                        if (rdef.bonus.food) nr2.food += rdef.bonus.food;
+                        if (rdef.bonus.water) nr2.water += rdef.bonus.water;
+                        if (rdef.bonus.science) nr2.science += rdef.bonus.science;
+                        if (rdef.bonus.terraformBonus) { var tfb = Math.min(100, newTf + rdef.bonus.terraformBonus); upd('colonyTerraform', tfb); }
+                      }
+                    });
+
+                    // Great Scientists permanent bonus
+                    greatScientists.forEach(function (gs3) { if (gs3.bonus && nr2[gs3.bonus] !== undefined) nr2[gs3.bonus] += gs3.amount; });
+
+                    // Emergency events for critical resources
+                    if (nr2.food <= 3 && buildings.length > 0) {
+                      var nl10 = gameLog.slice(); nl10.push('\uD83D\uDEA8 EMERGENCY: Food critically low! Build Hydroponics or explore for food!'); upd('colonyLog', nl10);
+                      if (d.colonyTTS) colonySpeak('Emergency! Food reserves critically low. Settlers are at risk of starvation. Prioritize food production immediately.', 'narrator');
+                    }
+                    if (nr2.energy <= 2 && buildings.length > 0) {
+                      var nl11 = gameLog.slice(); nl11.push('\uD83D\uDEA8 EMERGENCY: Energy critical! Buildings may shut down!'); upd('colonyLog', nl11);
+                      if (d.colonyTTS) colonySpeak('Warning! Energy levels critical. Colony systems are at risk of shutdown.', 'narrator');
+                    }
+                    if (nr2.water <= 2 && buildings.length > 0) {
+                      var nl12 = gameLog.slice(); nl12.push('\uD83D\uDEA8 EMERGENCY: Water reserves depleted!'); upd('colonyLog', nl12);
+                    }
+                  },
+                  disabled: d.colonyEventLoading, className: 'py-3 rounded-xl text-xs font-bold ' + (d.colonyEventLoading ? 'bg-slate-700 text-slate-500' : 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white')
+                }, d.colonyEventLoading ? '\u23F3 Processing...' : '\u27A1\uFE0F Next Turn'),
+                React.createElement('button', { onClick: function () { upd('showBuild', !d.showBuild); }, className: 'py-3 rounded-xl text-xs font-bold bg-amber-600 text-white' }, '\uD83C\uDFD7 Build (' + buildings.length + '/' + buildingDefs.length + ')'),
+                React.createElement('button', { onClick: function () { upd('showSettlers', !d.showSettlers); }, className: 'py-3 rounded-xl text-xs font-bold bg-teal-600 text-white' }, '\uD83D\uDC65 ' + settlers.length),
+                React.createElement('button', { onClick: function () { upd('showPolicy', !d.showPolicy); }, className: 'py-3 rounded-xl text-xs font-bold ' + (activePolicy ? 'bg-emerald-700' : 'bg-slate-700') + ' text-white' }, '\uD83C\uDFDB\uFE0F Gov'),
+                React.createElement('button', { onClick: function () { upd('showResearch', !d.showResearch); }, className: 'py-3 rounded-xl text-xs font-bold bg-violet-700 text-white' }, '\uD83E\uDDEC ' + researchQueue.length),
+                React.createElement('button', { onClick: function () { upd('showGreatSci', !d.showGreatSci); }, className: 'py-3 rounded-xl text-xs font-bold bg-yellow-700 text-white' }, '\uD83E\uDD16 ' + greatScientists.length + '/' + greatSciDefs.length)
+              ),
+              React.createElement('div', { className: 'grid grid-cols-4 gap-1 mb-3' },
+                React.createElement('button', { onClick: function () { upd('showWonders', !d.showWonders); }, className: 'py-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-amber-800 to-amber-700 text-amber-200' }, '\uD83C\uDFDB\uFE0F Wonders'),
+                React.createElement('button', { onClick: function () { upd('showAchievements', !d.showAchievements); }, className: 'py-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-rose-800 to-rose-700 text-rose-200' }, '\uD83C\uDFC5 ' + Object.keys(achievements).length + '/' + achievementDefs.length),
+                React.createElement('button', { onClick: function () { upd('showExpeditions', !d.showExpeditions); }, className: 'py-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-cyan-800 to-cyan-700 text-cyan-200' }, '\u26F5 Expeditions'),
+                React.createElement('button', { onClick: function () { upd('showJournal', !d.showJournal); }, className: 'py-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-green-800 to-green-700 text-green-200' }, '\uD83D\uDCD6 ' + scienceJournal.length),
+                selectedTile && selectedTile.tile.explored && selectedTile.tile.type !== 'colony' && React.createElement('button', {
+                  onClick: function () {
+                    var tKey = selectedTile.x + ',' + selectedTile.y;
+                    if (!tileImprovements[tKey] && resources.materials >= 8) {
+                      var nr10 = Object.assign({}, resources); nr10.materials -= 8; upd('colonyRes', nr10);
+                      var newTI = Object.assign({}, tileImprovements);
+                      newTI[tKey] = { type: 'outpost', tile: selectedTile.tile.type, res: selectedTile.tile.res };
+                      upd('tileImprovements', newTI);
+                      if (addToast) addToast('\uD83C\uDFD5\uFE0F Outpost built! +1 ' + selectedTile.tile.res + '/turn', 'success');
+                      var nl20 = gameLog.slice(); nl20.push('\uD83C\uDFD5\uFE0F Outpost at (' + selectedTile.x + ',' + selectedTile.y + ')'); upd('colonyLog', nl20);
+                    }
+                  },
+                  disabled: !selectedTile || tileImprovements[selectedTile.x + ',' + selectedTile.y] || resources.materials < 8,
+                  className: 'py-2 rounded-xl text-[10px] font-bold ' + (selectedTile && !tileImprovements[selectedTile.x + ',' + selectedTile.y] && resources.materials >= 8 ? 'bg-orange-700 text-orange-200' : 'bg-slate-700 text-slate-500')
+                }, '\uD83C\uDFD5\uFE0F Outpost (-8\uD83E\uDEA8)')
+              ),
+              // Terraforming Progress
+              React.createElement('div', { className: 'bg-gradient-to-r from-emerald-900/50 to-teal-900/50 rounded-xl p-3 border border-emerald-700 mb-3' },
+                React.createElement('div', { className: 'flex justify-between items-center mb-1' },
+                  React.createElement('h4', { className: 'text-[10px] font-bold text-emerald-400' }, '\uD83C\uDF0D Victory Progress'),
+                  React.createElement('span', { className: 'text-xs font-bold ' + (terraform >= 100 ? 'text-green-400' : 'text-emerald-300') }, terraform + '%')
+                ),
+                React.createElement('div', { className: 'w-full bg-slate-700 rounded-full h-3 overflow-hidden' },
+                  React.createElement('div', { className: 'h-3 rounded-full transition-all bg-gradient-to-r ' + (terraform >= 100 ? 'from-green-400 to-emerald-400' : terraform >= 50 ? 'from-emerald-500 to-teal-500' : 'from-indigo-500 to-emerald-600'), style: { width: terraform + '%' } })
+                ),
+                React.createElement('div', { className: 'text-[8px] text-slate-400 mt-1' },
+                  terraform >= 100 ? '\uD83C\uDF89 VICTORY! The planet is habitable! Your colony is self-sustaining!' :
+                    terraform >= 75 ? 'Atmosphere thickening, water cycles forming. Almost habitable!' :
+                      terraform >= 50 ? 'Microorganisms detected in soil. Oxygen levels rising.' :
+                        terraform >= 25 ? 'Ice caps melting. First clouds forming in the sky.' :
+                          'Raw alien world. Build Atmospheric Processor (+5%/turn) and Biodome (+10%/turn) to terraform.'
+                ),
+                // Victory Paths
+                React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-[8px]' },
+                  React.createElement('div', { className: 'p-1 rounded text-center ' + (terraform >= 100 ? 'bg-emerald-900/50 text-emerald-400' : 'text-slate-500') },
+                    '\uD83C\uDF0D Terraform: ' + terraform + '/100%'
+                  ),
+                  React.createElement('div', { className: 'p-1 rounded text-center ' + (settlers.length >= 50 ? 'bg-teal-900/50 text-teal-400' : 'text-slate-500') },
+                    '\uD83D\uDC65 Population: ' + settlers.length + '/50'
+                  ),
+                  React.createElement('div', { className: 'p-1 rounded text-center ' + (researchQueue.length >= 10 ? 'bg-violet-900/50 text-violet-400' : 'text-slate-500') },
+                    '\uD83E\uDDEC Research: ' + researchQueue.length + '/10'
                   )
                 ),
-                // Event
-                colonyEvent && React.createElement('div', { className: 'bg-gradient-to-r from-slate-800 to-indigo-900 rounded-xl p-4 border border-indigo-700 mb-3' },
-                  React.createElement('h3', { className: 'text-sm font-bold text-white mb-1' }, (colonyEvent.emoji||'') + ' ' + colonyEvent.title),
-                  React.createElement('p', { className: 'text-xs text-slate-300' }, colonyEvent.description),
-                  colonyEvent.lesson && React.createElement('div', { className: 'mt-2 bg-indigo-950 rounded-lg px-3 py-2 text-[10px] text-indigo-300 border border-indigo-800' }, React.createElement('span', { className: 'font-bold text-indigo-200' }, '\uD83D\uDCDA Science: '), colonyEvent.lesson),
-                  React.createElement('div', { className: 'grid gap-2 mt-3' }, (colonyEvent.choices||[]).map(function(ch, ci2) {
-                    return React.createElement('button', { key: ci2, onClick: function() {
+                terraform >= 100 && React.createElement('div', { className: 'mt-2 text-center' },
+                  React.createElement('div', { className: 'text-3xl mb-1' }, '\uD83C\uDF89\uD83C\uDF0D\uD83D\uDE80'),
+                  React.createElement('div', { className: 'text-sm font-bold text-green-400' }, 'COLONY VICTORY!'),
+                  React.createElement('div', { className: 'text-[10px] text-green-300' }, 'Turn ' + turn + ' | ' + buildings.length + ' buildings | All ' + settlers.length + ' settlers survived')
+                )
+              ),
+              // Colony Stats Dashboard
+              React.createElement('div', { className: 'bg-slate-800/80 rounded-xl p-2 border border-slate-700 mb-3' },
+                React.createElement('div', { className: 'flex gap-3 justify-center text-[9px]' },
+                  React.createElement('span', { className: 'text-[9px] px-1 rounded', style: { color: currentEra.color } }, currentEra.icon + ' ' + currentEra.name),
+                  React.createElement('span', { className: 'text-slate-400' }, '\uD83C\uDF93 ' + gradeLevel),
+                  React.createElement('span', { className: 'text-teal-400' }, '\uD83D\uDC65 Pop: ' + settlers.length + (popGrowthAccum > 0 ? ' (+' + Math.round(popGrowthAccum * 100) + '%)' : '')),
+                  React.createElement('span', { className: 'text-indigo-400' }, '\u2753 ' + stats.questionsAnswered + ' questions'),
+                  React.createElement('span', { className: stats.questionsAnswered > 0 && stats.correct / stats.questionsAnswered >= 0.7 ? 'text-green-400' : 'text-amber-400' },
+                    '\uD83C\uDFAF ' + (stats.questionsAnswered > 0 ? Math.round(stats.correct / stats.questionsAnswered * 100) : 0) + '% accuracy'),
+                  React.createElement('span', { className: 'text-cyan-400' }, '\uD83C\uDFD7 ' + stats.buildingsConstructed + ' built'),
+                  React.createElement('span', { className: 'text-purple-400' }, '\u2728 ' + stats.anomaliesExplored + ' anom'),
+                  React.createElement('span', { className: colonyHappiness > 60 ? 'text-green-400' : colonyHappiness > 30 ? 'text-amber-400' : 'text-red-400' },
+                    (colonyHappiness > 80 ? '\uD83D\uDE04' : colonyHappiness > 60 ? '\uD83D\uDE42' : colonyHappiness > 30 ? '\uD83D\uDE10' : '\uD83D\uDE21') + ' ' + colonyHappiness + '%'),
+                  alienContact && React.createElement('span', { className: alienRelations > 20 ? 'text-green-400' : alienRelations < -20 ? 'text-red-400' : 'text-amber-400' }, '\uD83D\uDC7E ' + (alienRelations > 0 ? '+' : '') + alienRelations),
+                  React.createElement('span', { className: 'text-amber-400' }, gameMode === 'mcq' ? '\uD83D\uDCCB MCQ' : '\u270D\uFE0F FR'),
+                  React.createElement('span', { className: equity > 60 ? 'text-green-400' : equity > 35 ? 'text-amber-400' : 'text-red-400' },
+                    '\u2696\uFE0F ' + equity + '%')
+                )
+              ),
+              // Weather indicator
+              weather && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-2 border border-amber-700 mb-3 flex items-center gap-2' },
+                React.createElement('span', { className: 'text-lg' }, weather.icon),
+                React.createElement('div', null,
+                  React.createElement('span', { className: 'text-[10px] font-bold text-amber-400' }, '\u26A0\uFE0F ' + weather.name),
+                  React.createElement('span', { className: 'text-[9px] text-slate-400 ml-2' }, weather.effect + ' (' + weather.penalty + ' ' + weather.res + ')')
+                )
+              ),
+              // Event
+              colonyEvent && React.createElement('div', { className: 'bg-gradient-to-r from-slate-800 to-indigo-900 rounded-xl p-4 border border-indigo-700 mb-3' },
+                React.createElement('h3', { className: 'text-sm font-bold text-white mb-1' }, (colonyEvent.emoji || '') + ' ' + colonyEvent.title),
+                React.createElement('p', { className: 'text-xs text-slate-300' }, colonyEvent.description),
+                colonyEvent.lesson && React.createElement('div', { className: 'mt-2 bg-indigo-950 rounded-lg px-3 py-2 text-[10px] text-indigo-300 border border-indigo-800' }, React.createElement('span', { className: 'font-bold text-indigo-200' }, '\uD83D\uDCDA Science: '), colonyEvent.lesson),
+                React.createElement('div', { className: 'grid gap-2 mt-3' }, (colonyEvent.choices || []).map(function (ch, ci2) {
+                  return React.createElement('button', {
+                    key: ci2, onClick: function () {
                       var ef2 = ch.effects || {}; var nr3 = Object.assign({}, resources);
-                      Object.keys(ef2).forEach(function(k) { if (k === 'morale') { upd('colonySettlers', settlers.map(function(s3) { return Object.assign({}, s3, { morale: Math.max(0, Math.min(100, s3.morale + (ef2.morale||0))) }); })); } else if (nr3[k] !== undefined) nr3[k] = Math.max(0, nr3[k] + ef2[k]); });
+                      Object.keys(ef2).forEach(function (k) { if (k === 'morale') { upd('colonySettlers', settlers.map(function (s3) { return Object.assign({}, s3, { morale: Math.max(0, Math.min(100, s3.morale + (ef2.morale || 0))) }); })); } else if (nr3[k] !== undefined) nr3[k] = Math.max(0, nr3[k] + ef2[k]); });
                       upd('colonyRes', nr3); upd('colonyEvent', null);
                       var nl3 = gameLog.slice(); nl3.push('  \u2192 ' + ch.label + ': ' + ch.outcome); upd('colonyLog', nl3);
                       if (colonyEvent.lesson) {
@@ -33325,367 +33377,373 @@
                       }
                       if (addToast) addToast(ch.outcome, ef2.morale > 0 ? 'success' : ef2.morale < 0 ? 'warning' : 'info');
                       if (typeof addXP === 'function') addXP(15, 'Kepler Colony: Decision made');
-                    }, className: 'w-full text-left p-3 rounded-xl border-2 border-slate-600 bg-slate-800 hover:border-indigo-400 transition-all text-xs text-slate-200' },
-                      React.createElement('div', { className: 'font-bold text-white' }, ch.label),
-                      React.createElement('div', { className: 'text-[9px] text-slate-400 mt-1 flex gap-2 flex-wrap' },
-                        Object.keys(ch.effects||{}).filter(function(ek) { return ch.effects[ek] !== 0; }).map(function(ek) { return React.createElement('span', { key: ek, className: ch.effects[ek] > 0 ? 'text-green-400' : 'text-red-400' }, ek + ':' + (ch.effects[ek]>0?'+':'') + ch.effects[ek]); })
+                    }, className: 'w-full text-left p-3 rounded-xl border-2 border-slate-600 bg-slate-800 hover:border-indigo-400 transition-all text-xs text-slate-200'
+                  },
+                    React.createElement('div', { className: 'font-bold text-white' }, ch.label),
+                    React.createElement('div', { className: 'text-[9px] text-slate-400 mt-1 flex gap-2 flex-wrap' },
+                      Object.keys(ch.effects || {}).filter(function (ek) { return ch.effects[ek] !== 0; }).map(function (ek) { return React.createElement('span', { key: ek, className: ch.effects[ek] > 0 ? 'text-green-400' : 'text-red-400' }, ek + ':' + (ch.effects[ek] > 0 ? '+' : '') + ch.effects[ek]); })
+                    )
+                  );
+                }))
+              ),
+              // Governance Dilemma (NationStates-style)
+              d.activeDilemma && React.createElement('div', { className: 'bg-gradient-to-r from-indigo-900 to-slate-800 rounded-xl p-4 border-2 border-indigo-500 mb-3' },
+                React.createElement('h3', { className: 'text-sm font-bold text-indigo-200 mb-1' }, (d.activeDilemma.emoji || '\uD83C\uDFDB\uFE0F') + ' Colony Dilemma: ' + d.activeDilemma.title),
+                React.createElement('p', { className: 'text-xs text-indigo-100 mb-3' }, d.activeDilemma.description),
+                React.createElement('div', { className: 'grid gap-2' },
+                  (d.activeDilemma.choices || []).map(function (ch2, ci2) {
+                    return React.createElement('button', {
+                      key: ci2,
+                      onClick: function () {
+                        // Apply value shifts
+                        var newVals = Object.assign({}, colonyValues);
+                        Object.keys(ch2.values || {}).forEach(function (vk) {
+                          newVals[vk] = Math.max(0, Math.min(100, (newVals[vk] || 50) + ch2.values[vk]));
+                        });
+                        upd('colonyValues', newVals);
+                        // Apply equity + happiness
+                        var newEq = Math.max(0, Math.min(100, equity + (ch2.equity || 0)));
+                        upd('colonyEquity', newEq);
+                        var newH2 = Math.max(0, Math.min(100, colonyHappiness + (ch2.happiness || 0)));
+                        upd('colonyHappiness', newH2);
+                        // Log
+                        var dl = dilemmaLog.slice();
+                        dl.push({ turn: turn, title: d.activeDilemma.title, choice: ch2.text, values: ch2.values, equity: ch2.equity });
+                        upd('dilemmaLog', dl);
+                        if (d.activeDilemma.lesson) {
+                          var nj6 = scienceJournal.slice();
+                          nj6.push({ turn: turn, source: 'Dilemma: ' + d.activeDilemma.title, fact: d.activeDilemma.lesson });
+                          upd('scienceJournal', nj6);
+                        }
+                        upd('dilemmaResult', { outcome: ch2.outcome, lesson: d.activeDilemma.lesson, equity: ch2.equity, values: ch2.values });
+                        upd('activeDilemma', null);
+                        if (addToast) addToast(ch2.outcome, ch2.equity >= 0 ? 'info' : 'warning');
+                        // AI narrates the full consequence
+                        var valShiftDesc = Object.keys(ch2.values || {}).filter(function (vk4) { return ch2.values[vk4] !== 0; }).map(function (vk4) { return vk4 + (ch2.values[vk4] > 0 ? ' rose' : ' fell'); }).join(', ');
+                        callGemini('You are the narrator for a space colony on Kepler-442b. The colony council just decided: "' + ch2.text + '" in response to the dilemma "' + d.activeDilemma.title + '". The outcome is: ' + ch2.outcome + '. Colony value shifts: ' + valShiftDesc + '. Equity changed by ' + (ch2.equity || 0) + '. Narrate the consequences in 3-4 dramatic, reflective sentences. Include how this affects daily life in the colony and what it reveals about the colonists\u2019 values. Be thoughtful, not preachy. Target audience: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (narration) {
+                          upd('dilemmaNarration', narration);
+                          if (d.colonyTTS) colonySpeak(narration, 'narrator');
+                        }).catch(function () {
+                          if (d.colonyTTS) colonySpeak(ch2.outcome, 'narrator');
+                        });
+                        var nl27 = gameLog.slice(); nl27.push('\uD83C\uDFDB\uFE0F Decision: ' + ch2.text.substring(0, 50)); upd('colonyLog', nl27);
+                        if (typeof addXP === 'function') addXP(15, 'Governance: ' + d.activeDilemma.title);
+                      },
+                      className: 'p-3 rounded-xl border-2 border-indigo-700 bg-indigo-950 text-indigo-100 text-xs hover:border-indigo-400 transition-all text-left'
+                    },
+                      React.createElement('div', { className: 'font-bold text-[10px] text-indigo-200 mb-1' }, String.fromCharCode(65 + ci2) + '. ' + ch2.text),
+                      React.createElement('div', { className: 'flex gap-2 text-[8px] flex-wrap' },
+                        Object.keys(ch2.values || {}).filter(function (vk2) { return ch2.values[vk2] !== 0; }).map(function (vk2) {
+                          return React.createElement('span', { key: vk2, className: ch2.values[vk2] > 0 ? 'text-green-400' : 'text-red-400' },
+                            vk2 + (ch2.values[vk2] > 0 ? '+' : '') + ch2.values[vk2]);
+                        }),
+                        ch2.equity !== 0 && React.createElement('span', { className: ch2.equity > 0 ? 'text-cyan-400' : 'text-red-400' },
+                          '\u2696\uFE0F' + (ch2.equity > 0 ? '+' : '') + ch2.equity)
                       )
                     );
-                  }))
+                  })
                 ),
-                // Governance Dilemma (NationStates-style)
-                d.activeDilemma && React.createElement('div', { className: 'bg-gradient-to-r from-indigo-900 to-slate-800 rounded-xl p-4 border-2 border-indigo-500 mb-3' },
-                  React.createElement('h3', { className: 'text-sm font-bold text-indigo-200 mb-1' }, (d.activeDilemma.emoji || '\uD83C\uDFDB\uFE0F') + ' Colony Dilemma: ' + d.activeDilemma.title),
-                  React.createElement('p', { className: 'text-xs text-indigo-100 mb-3' }, d.activeDilemma.description),
-                  React.createElement('div', { className: 'grid gap-2' },
-                    (d.activeDilemma.choices || []).map(function(ch2, ci2) {
-                      return React.createElement('button', {
-                        key: ci2,
-                        onClick: function() {
-                          // Apply value shifts
-                          var newVals = Object.assign({}, colonyValues);
-                          Object.keys(ch2.values || {}).forEach(function(vk) {
-                            newVals[vk] = Math.max(0, Math.min(100, (newVals[vk] || 50) + ch2.values[vk]));
-                          });
-                          upd('colonyValues', newVals);
-                          // Apply equity + happiness
-                          var newEq = Math.max(0, Math.min(100, equity + (ch2.equity || 0)));
-                          upd('colonyEquity', newEq);
-                          var newH2 = Math.max(0, Math.min(100, colonyHappiness + (ch2.happiness || 0)));
-                          upd('colonyHappiness', newH2);
-                          // Log
-                          var dl = dilemmaLog.slice();
-                          dl.push({ turn: turn, title: d.activeDilemma.title, choice: ch2.text, values: ch2.values, equity: ch2.equity });
-                          upd('dilemmaLog', dl);
-                          if (d.activeDilemma.lesson) {
-                            var nj6 = scienceJournal.slice();
-                            nj6.push({ turn: turn, source: 'Dilemma: ' + d.activeDilemma.title, fact: d.activeDilemma.lesson });
-                            upd('scienceJournal', nj6);
-                          }
-                          upd('dilemmaResult', { outcome: ch2.outcome, lesson: d.activeDilemma.lesson, equity: ch2.equity, values: ch2.values });
-                          upd('activeDilemma', null);
-                          if (addToast) addToast(ch2.outcome, ch2.equity >= 0 ? 'info' : 'warning');
-                          // AI narrates the full consequence
-                          var valShiftDesc = Object.keys(ch2.values || {}).filter(function(vk4) { return ch2.values[vk4] !== 0; }).map(function(vk4) { return vk4 + (ch2.values[vk4] > 0 ? ' rose' : ' fell'); }).join(', ');
-                          callGemini('You are the narrator for a space colony on Kepler-442b. The colony council just decided: "' + ch2.text + '" in response to the dilemma "' + d.activeDilemma.title + '". The outcome is: ' + ch2.outcome + '. Colony value shifts: ' + valShiftDesc + '. Equity changed by ' + (ch2.equity || 0) + '. Narrate the consequences in 3-4 dramatic, reflective sentences. Include how this affects daily life in the colony and what it reveals about the colonists\u2019 values. Be thoughtful, not preachy. Target audience: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function(narration) {
-                            upd('dilemmaNarration', narration);
-                            if (d.colonyTTS) colonySpeak(narration, 'narrator');
-                          }).catch(function() {
-                            if (d.colonyTTS) colonySpeak(ch2.outcome, 'narrator');
-                          });
-                          var nl27 = gameLog.slice(); nl27.push('\uD83C\uDFDB\uFE0F Decision: ' + ch2.text.substring(0, 50)); upd('colonyLog', nl27);
-                          if (typeof addXP === 'function') addXP(15, 'Governance: ' + d.activeDilemma.title);
-                        },
-                        className: 'p-3 rounded-xl border-2 border-indigo-700 bg-indigo-950 text-indigo-100 text-xs hover:border-indigo-400 transition-all text-left'
-                      },
-                        React.createElement('div', { className: 'font-bold text-[10px] text-indigo-200 mb-1' }, String.fromCharCode(65 + ci2) + '. ' + ch2.text),
-                        React.createElement('div', { className: 'flex gap-2 text-[8px] flex-wrap' },
-                          Object.keys(ch2.values || {}).filter(function(vk2) { return ch2.values[vk2] !== 0; }).map(function(vk2) {
-                            return React.createElement('span', { key: vk2, className: ch2.values[vk2] > 0 ? 'text-green-400' : 'text-red-400' },
-                              vk2 + (ch2.values[vk2] > 0 ? '+' : '') + ch2.values[vk2]);
-                          }),
-                          ch2.equity !== 0 && React.createElement('span', { className: ch2.equity > 0 ? 'text-cyan-400' : 'text-red-400' },
-                            '\u2696\uFE0F' + (ch2.equity > 0 ? '+' : '') + ch2.equity)
-                        )
-                      );
-                    })
-                  ),
-                  React.createElement('div', { className: 'text-[8px] text-indigo-400 mt-2' }, '\uD83D\uDCA1 No wrong answers \u2014 your choices shape your colony\u2019s identity.')
+                React.createElement('div', { className: 'text-[8px] text-indigo-400 mt-2' }, '\uD83D\uDCA1 No wrong answers \u2014 your choices shape your colony\u2019s identity.')
+              ),
+              d.dilemmaResult && React.createElement('div', { className: 'bg-indigo-950 rounded-xl p-3 border border-indigo-700 mb-3' },
+                React.createElement('div', { className: 'flex justify-between items-center mb-1' },
+                  React.createElement('span', { className: 'text-[10px] font-bold text-indigo-300' }, '\uD83C\uDFDB\uFE0F Decision Made'),
+                  React.createElement('button', { onClick: function () { upd('dilemmaResult', null); upd('dilemmaNarration', null); }, className: 'text-indigo-500 text-xs' }, '\u2715')
                 ),
-                d.dilemmaResult && React.createElement('div', { className: 'bg-indigo-950 rounded-xl p-3 border border-indigo-700 mb-3' },
-                  React.createElement('div', { className: 'flex justify-between items-center mb-1' },
-                    React.createElement('span', { className: 'text-[10px] font-bold text-indigo-300' }, '\uD83C\uDFDB\uFE0F Decision Made'),
-                    React.createElement('button', { onClick: function() { upd('dilemmaResult', null); upd('dilemmaNarration', null); }, className: 'text-indigo-500 text-xs' }, '\u2715')
-                  ),
-                  React.createElement('p', { className: 'text-[9px] text-indigo-200 mb-1' }, d.dilemmaResult.outcome),
-                  d.dilemmaNarration && React.createElement('div', { className: 'bg-indigo-900/30 rounded-lg p-2 mt-1 border-l-2 border-indigo-500' },
-                    React.createElement('p', { className: 'text-[9px] text-indigo-100 italic leading-relaxed' }, '\uD83C\uDFA4 ' + d.dilemmaNarration)
-                  ),
-                  d.dilemmaResult.lesson && React.createElement('div', { className: 'mt-1 text-[9px] text-indigo-300 bg-indigo-900/50 rounded-lg px-2 py-1' }, '\uD83D\uDCDA ' + d.dilemmaResult.lesson),
-                  d.dilemmaResult.values && React.createElement('div', { className: 'mt-1 flex gap-1 flex-wrap text-[8px]' },
-                    Object.keys(d.dilemmaResult.values).filter(function(vk5) { return d.dilemmaResult.values[vk5] !== 0; }).map(function(vk5) {
-                      return React.createElement('span', { key: vk5, className: d.dilemmaResult.values[vk5] > 0 ? 'text-green-400 bg-green-900/30 px-1 rounded' : 'text-red-400 bg-red-900/30 px-1 rounded' },
-                        vk5 + (d.dilemmaResult.values[vk5] > 0 ? '\u2191' : '\u2193'));
-                    }),
-                    d.dilemmaResult.equity !== 0 && React.createElement('span', { className: d.dilemmaResult.equity > 0 ? 'text-cyan-400 bg-cyan-900/30 px-1 rounded' : 'text-red-400 bg-red-900/30 px-1 rounded' },
-                      '\u2696\uFE0F' + (d.dilemmaResult.equity > 0 ? '\u2191' : '\u2193'))
-                  )
+                React.createElement('p', { className: 'text-[9px] text-indigo-200 mb-1' }, d.dilemmaResult.outcome),
+                d.dilemmaNarration && React.createElement('div', { className: 'bg-indigo-900/30 rounded-lg p-2 mt-1 border-l-2 border-indigo-500' },
+                  React.createElement('p', { className: 'text-[9px] text-indigo-100 italic leading-relaxed' }, '\uD83C\uDFA4 ' + d.dilemmaNarration)
                 ),
-                d.dilemmaLoading && React.createElement('div', { className: 'bg-indigo-900/50 rounded-xl p-3 border border-indigo-700 mb-3 text-center text-indigo-300 text-xs' }, '\uD83C\uDFDB\uFE0F Colony council deliberating...'),
-                // Disaster Event
-                d.activeDisaster && React.createElement('div', { className: 'bg-gradient-to-r from-red-900 to-orange-900 rounded-xl p-4 border-2 border-red-500 mb-3' },
-                  React.createElement('h3', { className: 'text-sm font-bold text-red-200 mb-1' }, (d.activeDisaster.emoji || '\uD83D\uDCA5') + ' DISASTER: ' + d.activeDisaster.title),
-                  React.createElement('p', { className: 'text-xs text-red-100 mb-2' }, d.activeDisaster.description),
-                  d.activeDisaster.lesson && React.createElement('div', { className: 'bg-red-950 rounded-lg px-3 py-2 text-[10px] text-red-300 border border-red-800 mb-2' }, '\uD83D\uDCDA Science: ' + d.activeDisaster.lesson),
-                  React.createElement('p', { className: 'text-[10px] text-amber-200 font-bold mb-2' }, '\u26A0\uFE0F Answer correctly to MITIGATE damage! Wrong answer = FULL damage!'),
-                  React.createElement('p', { className: 'text-xs text-red-100 mb-2 font-bold' }, d.activeDisaster.question),
-                  React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
-                    (d.activeDisaster.options || []).map(function(opt3, oi3) {
-                      return React.createElement('button', {
-                        key: oi3,
-                        onClick: function() {
-                          var correct4 = oi3 === d.activeDisaster.correctIndex;
-                          var damage = correct4 ? d.activeDisaster.mitigatedDamage : d.activeDisaster.fullDamage;
-                          var nr14 = Object.assign({}, resources);
-                          Object.keys(damage || {}).forEach(function(k) {
-                            if (k === 'morale') {
-                              upd('colonySettlers', settlers.map(function(s8) { return Object.assign({}, s8, { morale: Math.max(0, s8.morale + (damage[k] || 0)) }); }));
-                            } else if (nr14[k] !== undefined) { nr14[k] = Math.max(0, nr14[k] + damage[k]); }
-                          });
-                          upd('colonyRes', nr14);
-                          if (d.activeDisaster.lesson) {
-                            var nj5 = scienceJournal.slice();
-                            nj5.push({ turn: turn, source: 'Disaster: ' + d.activeDisaster.title, fact: d.activeDisaster.lesson });
-                            upd('scienceJournal', nj5);
-                          }
-                          var ns8 = Object.assign({}, stats); ns8.questionsAnswered++; if (correct4) ns8.correct++; upd('colonyStats', ns8);
-                          if (correct4) {
-                            if (addToast) addToast('\u2705 Damage mitigated! Your science knowledge saved the colony!', 'success');
-                            if (d.colonyTTS) colonySpeak('Excellent! Disaster mitigated through scientific knowledge. Damage was minimized.', 'narrator');
-                            if (typeof addXP === 'function') addXP(40, 'Disaster mitigated: ' + d.activeDisaster.title);
-                          } else {
-                            if (addToast) addToast('\u274C Full damage! The correct answer was: ' + d.activeDisaster.options[d.activeDisaster.correctIndex], 'error');
-                            if (d.colonyTTS) colonySpeak('Incorrect. The colony takes full damage. The answer was ' + d.activeDisaster.options[d.activeDisaster.correctIndex] + '.', 'narrator');
-                          }
-                          upd('activeDisaster', null);
-                        },
-                        className: 'p-2 rounded-xl border-2 border-red-700 bg-red-950 text-red-100 text-xs hover:border-red-400 transition-all'
-                      }, String.fromCharCode(65 + oi3) + '. ' + opt3);
-                    })
-                  )
-                ),
-                d.disasterLoading && React.createElement('div', { className: 'bg-red-900/50 rounded-xl p-3 border border-red-700 mb-3 text-center text-red-300 text-xs' }, '\uD83D\uDCA5 Disaster incoming...'),
-                // Maintenance Challenge
-                maintChallenge && React.createElement('div', { className: 'bg-gradient-to-r from-amber-900 to-orange-900 rounded-xl p-4 border-2 border-amber-500 mb-3' },
-                  React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
-                    React.createElement('span', { className: 'text-lg' }, maintChallenge.buildingIcon),
-                    React.createElement('div', null,
-                      React.createElement('h4', { className: 'text-sm font-bold text-amber-200' }, '\uD83D\uDD27 Maintenance Check: ' + maintChallenge.buildingName),
-                      React.createElement('span', { className: 'text-[9px] text-amber-400' }, 'Answer correctly to maintain 100% effectiveness!')
-                    )
-                  ),
-                  React.createElement('p', { className: 'text-xs text-amber-100 mb-3' }, maintChallenge.question),
-                  // MCQ Mode
-                  maintChallenge.options && React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
-                    maintChallenge.options.map(function(opt, oi) {
-                      return React.createElement('button', {
-                        key: oi,
-                        onClick: function() {
-                          var correct = oi === maintChallenge.correctIndex;
-                          var newEff = Object.assign({}, buildingEff);
-                          if (correct) {
-                            newEff[maintChallenge.building] = 100;
-                            var ns = Object.assign({}, stats); ns.questionsAnswered++; ns.correct++; upd('colonyStats', ns);
-                            if (addToast) addToast('\u2705 Correct! ' + maintChallenge.buildingName + ' running at 100%!', 'success');
-                            if (d.colonyTTS) colonySpeak('Excellent! Maintenance check passed. ' + maintChallenge.buildingName + ' operating at full capacity.', 'narrator');
-                            if (typeof addXP === 'function') addXP(20, 'Maintenance: ' + maintChallenge.buildingName);
-                          } else {
-                            var curEff = newEff[maintChallenge.building] !== undefined ? newEff[maintChallenge.building] : 100;
-                            newEff[maintChallenge.building] = Math.max(25, curEff - 25);
-                            var ns2 = Object.assign({}, stats); ns2.questionsAnswered++; upd('colonyStats', ns2);
-                            if (addToast) addToast('\u274C Wrong! ' + maintChallenge.buildingName + ' reduced to ' + newEff[maintChallenge.building] + '% output.', 'warning');
-                            if (d.colonyTTS) colonySpeak('Incorrect. The ' + maintChallenge.buildingName + ' is now operating at reduced capacity. Study the science and try the next maintenance cycle.', 'narrator');
-                          }
-                          upd('buildingEff', newEff);
-                          if (maintChallenge.explanation) {
-                            var nj4 = scienceJournal.slice();
-                            nj4.push({ turn: turn, source: 'Maintenance: ' + maintChallenge.buildingName, fact: maintChallenge.explanation });
-                            upd('scienceJournal', nj4);
-                          }
-                          upd('maintExplanation', { text: maintChallenge.explanation, correct: correct, answer: maintChallenge.options[maintChallenge.correctIndex] });
-                          upd('maintChallenge', null);
-                        },
-                        className: 'p-2 rounded-xl border-2 border-amber-700 bg-amber-950 text-amber-100 text-xs hover:border-amber-400 transition-all text-left'
-                      }, String.fromCharCode(65 + oi) + '. ' + opt);
-                    })
-                  ),
-                  // Free Response Mode
-                  !maintChallenge.options && React.createElement('div', { className: 'flex gap-2' },
-                    React.createElement('input', {
-                      type: 'text', value: d.maintInput || '',
-                      onChange: function(e) { upd('maintInput', e.target.value); },
-                      onKeyDown: function(e) { if (e.key === 'Enter') document.getElementById('kepler-maint-btn').click(); },
-                      placeholder: 'Type your answer...',
-                      className: 'flex-1 px-3 py-2 bg-amber-950 border-2 border-amber-600 rounded-xl text-xs text-white outline-none focus:border-amber-400'
-                    }),
-                    React.createElement('button', {
-                      id: 'kepler-maint-btn',
-                      onClick: function() {
-                        var inp2 = (d.maintInput || '').trim().toLowerCase();
-                        var correct2 = inp2.indexOf((maintChallenge.answer || '').toLowerCase()) >= 0;
-                        var newEff2 = Object.assign({}, buildingEff);
-                        if (correct2) {
-                          newEff2[maintChallenge.building] = 100;
-                          if (addToast) addToast('\u2705 Correct! ' + maintChallenge.buildingName + ' at 100%!', 'success');
-                          if (d.colonyTTS) colonySpeak('Excellent! Maintenance passed. Full capacity restored.', 'narrator');
-                          if (typeof addXP === 'function') addXP(25, 'Maintenance: ' + maintChallenge.buildingName);
-                        } else {
-                          var curEff2 = newEff2[maintChallenge.building] !== undefined ? newEff2[maintChallenge.building] : 100;
-                          newEff2[maintChallenge.building] = Math.max(25, curEff2 - 25);
-                          if (addToast) addToast('\u274C ' + maintChallenge.buildingName + ' reduced to ' + newEff2[maintChallenge.building] + '%', 'warning');
-                          if (d.colonyTTS) colonySpeak('Incorrect. Reduced capacity. The correct answer was ' + (maintChallenge.answer || '') + '.', 'narrator');
+                d.dilemmaResult.lesson && React.createElement('div', { className: 'mt-1 text-[9px] text-indigo-300 bg-indigo-900/50 rounded-lg px-2 py-1' }, '\uD83D\uDCDA ' + d.dilemmaResult.lesson),
+                d.dilemmaResult.values && React.createElement('div', { className: 'mt-1 flex gap-1 flex-wrap text-[8px]' },
+                  Object.keys(d.dilemmaResult.values).filter(function (vk5) { return d.dilemmaResult.values[vk5] !== 0; }).map(function (vk5) {
+                    return React.createElement('span', { key: vk5, className: d.dilemmaResult.values[vk5] > 0 ? 'text-green-400 bg-green-900/30 px-1 rounded' : 'text-red-400 bg-red-900/30 px-1 rounded' },
+                      vk5 + (d.dilemmaResult.values[vk5] > 0 ? '\u2191' : '\u2193'));
+                  }),
+                  d.dilemmaResult.equity !== 0 && React.createElement('span', { className: d.dilemmaResult.equity > 0 ? 'text-cyan-400 bg-cyan-900/30 px-1 rounded' : 'text-red-400 bg-red-900/30 px-1 rounded' },
+                    '\u2696\uFE0F' + (d.dilemmaResult.equity > 0 ? '\u2191' : '\u2193'))
+                )
+              ),
+              d.dilemmaLoading && React.createElement('div', { className: 'bg-indigo-900/50 rounded-xl p-3 border border-indigo-700 mb-3 text-center text-indigo-300 text-xs' }, '\uD83C\uDFDB\uFE0F Colony council deliberating...'),
+              // Disaster Event
+              d.activeDisaster && React.createElement('div', { className: 'bg-gradient-to-r from-red-900 to-orange-900 rounded-xl p-4 border-2 border-red-500 mb-3' },
+                React.createElement('h3', { className: 'text-sm font-bold text-red-200 mb-1' }, (d.activeDisaster.emoji || '\uD83D\uDCA5') + ' DISASTER: ' + d.activeDisaster.title),
+                React.createElement('p', { className: 'text-xs text-red-100 mb-2' }, d.activeDisaster.description),
+                d.activeDisaster.lesson && React.createElement('div', { className: 'bg-red-950 rounded-lg px-3 py-2 text-[10px] text-red-300 border border-red-800 mb-2' }, '\uD83D\uDCDA Science: ' + d.activeDisaster.lesson),
+                React.createElement('p', { className: 'text-[10px] text-amber-200 font-bold mb-2' }, '\u26A0\uFE0F Answer correctly to MITIGATE damage! Wrong answer = FULL damage!'),
+                React.createElement('p', { className: 'text-xs text-red-100 mb-2 font-bold' }, d.activeDisaster.question),
+                React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
+                  (d.activeDisaster.options || []).map(function (opt3, oi3) {
+                    return React.createElement('button', {
+                      key: oi3,
+                      onClick: function () {
+                        var correct4 = oi3 === d.activeDisaster.correctIndex;
+                        var damage = correct4 ? d.activeDisaster.mitigatedDamage : d.activeDisaster.fullDamage;
+                        var nr14 = Object.assign({}, resources);
+                        Object.keys(damage || {}).forEach(function (k) {
+                          if (k === 'morale') {
+                            upd('colonySettlers', settlers.map(function (s8) { return Object.assign({}, s8, { morale: Math.max(0, s8.morale + (damage[k] || 0)) }); }));
+                          } else if (nr14[k] !== undefined) { nr14[k] = Math.max(0, nr14[k] + damage[k]); }
+                        });
+                        upd('colonyRes', nr14);
+                        if (d.activeDisaster.lesson) {
+                          var nj5 = scienceJournal.slice();
+                          nj5.push({ turn: turn, source: 'Disaster: ' + d.activeDisaster.title, fact: d.activeDisaster.lesson });
+                          upd('scienceJournal', nj5);
                         }
-                        upd('buildingEff', newEff2);
-                        upd('maintExplanation', { text: maintChallenge.explanation, correct: correct2, answer: maintChallenge.answer });
-                        upd('maintChallenge', null); upd('maintInput', '');
+                        var ns8 = Object.assign({}, stats); ns8.questionsAnswered++; if (correct4) ns8.correct++; upd('colonyStats', ns8);
+                        if (correct4) {
+                          if (addToast) addToast('\u2705 Damage mitigated! Your science knowledge saved the colony!', 'success');
+                          if (d.colonyTTS) colonySpeak('Excellent! Disaster mitigated through scientific knowledge. Damage was minimized.', 'narrator');
+                          if (typeof addXP === 'function') addXP(40, 'Disaster mitigated: ' + d.activeDisaster.title);
+                        } else {
+                          if (addToast) addToast('\u274C Full damage! The correct answer was: ' + d.activeDisaster.options[d.activeDisaster.correctIndex], 'error');
+                          if (d.colonyTTS) colonySpeak('Incorrect. The colony takes full damage. The answer was ' + d.activeDisaster.options[d.activeDisaster.correctIndex] + '.', 'narrator');
+                        }
+                        upd('activeDisaster', null);
                       },
-                      className: 'px-4 py-2 bg-amber-500 text-slate-900 rounded-xl text-xs font-bold'
-                    }, '\u2705 Submit')
+                      className: 'p-2 rounded-xl border-2 border-red-700 bg-red-950 text-red-100 text-xs hover:border-red-400 transition-all'
+                    }, String.fromCharCode(65 + oi3) + '. ' + opt3);
+                  })
+                )
+              ),
+              d.disasterLoading && React.createElement('div', { className: 'bg-red-900/50 rounded-xl p-3 border border-red-700 mb-3 text-center text-red-300 text-xs' }, '\uD83D\uDCA5 Disaster incoming...'),
+              // Maintenance Challenge
+              maintChallenge && React.createElement('div', { className: 'bg-gradient-to-r from-amber-900 to-orange-900 rounded-xl p-4 border-2 border-amber-500 mb-3' },
+                React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
+                  React.createElement('span', { className: 'text-lg' }, maintChallenge.buildingIcon),
+                  React.createElement('div', null,
+                    React.createElement('h4', { className: 'text-sm font-bold text-amber-200' }, '\uD83D\uDD27 Maintenance Check: ' + maintChallenge.buildingName),
+                    React.createElement('span', { className: 'text-[9px] text-amber-400' }, 'Answer correctly to maintain 100% effectiveness!')
                   )
                 ),
-                // Maintenance explanation (after answering)
-                d.maintExplanation && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border mb-3 ' + (d.maintExplanation.correct ? 'border-green-600' : 'border-red-600') },
-                  React.createElement('div', { className: 'flex justify-between items-center mb-1' },
-                    React.createElement('span', { className: 'text-[10px] font-bold ' + (d.maintExplanation.correct ? 'text-green-400' : 'text-red-400') },
-                      d.maintExplanation.correct ? '\u2705 Correct!' : '\u274C Incorrect \u2014 Answer: ' + d.maintExplanation.answer
-                    ),
-                    React.createElement('button', { onClick: function() { upd('maintExplanation', null); }, className: 'text-slate-500 text-xs' }, '\u2715')
-                  ),
-                  React.createElement('p', { className: 'text-[10px] text-slate-300 leading-relaxed' }, '\uD83D\uDCDA ' + d.maintExplanation.text)
+                React.createElement('p', { className: 'text-xs text-amber-100 mb-3' }, maintChallenge.question),
+                // MCQ Mode
+                maintChallenge.options && React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
+                  maintChallenge.options.map(function (opt, oi) {
+                    return React.createElement('button', {
+                      key: oi,
+                      onClick: function () {
+                        var correct = oi === maintChallenge.correctIndex;
+                        var newEff = Object.assign({}, buildingEff);
+                        if (correct) {
+                          newEff[maintChallenge.building] = 100;
+                          var ns = Object.assign({}, stats); ns.questionsAnswered++; ns.correct++; upd('colonyStats', ns);
+                          if (addToast) addToast('\u2705 Correct! ' + maintChallenge.buildingName + ' running at 100%!', 'success');
+                          if (d.colonyTTS) colonySpeak('Excellent! Maintenance check passed. ' + maintChallenge.buildingName + ' operating at full capacity.', 'narrator');
+                          if (typeof addXP === 'function') addXP(20, 'Maintenance: ' + maintChallenge.buildingName);
+                        } else {
+                          var curEff = newEff[maintChallenge.building] !== undefined ? newEff[maintChallenge.building] : 100;
+                          newEff[maintChallenge.building] = Math.max(25, curEff - 25);
+                          var ns2 = Object.assign({}, stats); ns2.questionsAnswered++; upd('colonyStats', ns2);
+                          if (addToast) addToast('\u274C Wrong! ' + maintChallenge.buildingName + ' reduced to ' + newEff[maintChallenge.building] + '% output.', 'warning');
+                          if (d.colonyTTS) colonySpeak('Incorrect. The ' + maintChallenge.buildingName + ' is now operating at reduced capacity. Study the science and try the next maintenance cycle.', 'narrator');
+                        }
+                        upd('buildingEff', newEff);
+                        if (maintChallenge.explanation) {
+                          var nj4 = scienceJournal.slice();
+                          nj4.push({ turn: turn, source: 'Maintenance: ' + maintChallenge.buildingName, fact: maintChallenge.explanation });
+                          upd('scienceJournal', nj4);
+                        }
+                        upd('maintExplanation', { text: maintChallenge.explanation, correct: correct, answer: maintChallenge.options[maintChallenge.correctIndex] });
+                        upd('maintChallenge', null);
+                      },
+                      className: 'p-2 rounded-xl border-2 border-amber-700 bg-amber-950 text-amber-100 text-xs hover:border-amber-400 transition-all text-left'
+                    }, String.fromCharCode(65 + oi) + '. ' + opt);
+                  })
                 ),
-                d.maintChallengeLoading && React.createElement('div', { className: 'bg-amber-900/50 rounded-xl p-3 border border-amber-700 mb-3 text-center text-amber-300 text-xs' }, '\u23F3 Generating maintenance challenge...'),
-                // Build panel
-                d.showBuild && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-slate-700 mb-3' },
-                  React.createElement('h4', { className: 'text-sm font-bold text-amber-400 mb-2' }, '\uD83C\uDFD7 Buildings'),
-                  React.createElement('div', { className: 'grid grid-cols-2 gap-2' }, buildingDefs.map(function(bd) {
-                    var isBuilt = buildings.indexOf(bd.id) >= 0;
-                    var hasPrereqs = (bd.requires || []).every(function(r) { return buildings.indexOf(r) >= 0; });
-                    var canAff = !isBuilt && hasPrereqs && Object.keys(bd.cost).every(function(k) { return resources[k] >= bd.cost[k]; });
-                    return React.createElement('div', { key: bd.id, className: 'p-2 rounded-xl border-2 ' + (isBuilt ? 'border-green-600 bg-green-900/30' : canAff ? 'border-slate-600 bg-slate-900' : 'border-slate-700 bg-slate-900/50 opacity-50') },
-                      React.createElement('div', { className: 'flex items-center justify-between' },
-                        React.createElement('span', null, React.createElement('span', { className: 'text-base' }, bd.icon), React.createElement('span', { className: 'text-[10px] font-bold text-white ml-1' }, bd.name), isBuilt && React.createElement('span', { className: 'ml-1 text-[9px] ' + ((buildingEff[bd.id] !== undefined ? buildingEff[bd.id] : 100) >= 75 ? 'text-green-400' : 'text-amber-400') },
-                          '\u2705 ' + (buildingEff[bd.id] !== undefined ? buildingEff[bd.id] : 100) + '%')),
-                        canAff && React.createElement('button', { onClick: function() {
-                              if ((d.colonyMode || 'mcq') === 'mcq') {
-                                // Generate AI MCQ for the gate
-                                upd('scienceGateLoading', true);
-                                callGemini('Generate a ' + bd.gate + ' science question for building a ' + bd.name + ' in a space colony. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Return ONLY valid JSON: {"question":"<question>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"explanation":"<real science explanation 2-3 sentences>"}. Generate exactly 6 answer options. Shuffle the correct answer randomly (position 0-5). Make sure correctIndex matches the position of the correct answer.', true).then(function(gateResult) {
-                                  try {
-                                    var gcl = gateResult.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
-                                    var gs = gcl.indexOf('{'); if (gs > 0) gcl = gcl.substring(gs);
-                                    var ge = gcl.lastIndexOf('}'); if (ge > 0) gcl = gcl.substring(0, ge + 1);
-                                    var gp = JSON.parse(gcl);
-                                    gp.building = bd.id; gp.domain = bd.gate; gp.mode = 'mcq';
-                                    upd('scienceGate', gp); upd('scienceGateLoading', false);
-                                    if (d.colonyTTS) colonySpeak('Science challenge. ' + gp.question, 'narrator');
-                                  } catch(err) {
-                                    // Fallback to static question
-                                    upd('scienceGate', { building: bd.id, question: bd.gateQ, answer: bd.gateA, domain: bd.gate, mode: 'freeResponse' });
-                                    upd('scienceGateLoading', false);
-                                  }
-                                }).catch(function() {
-                                  upd('scienceGate', { building: bd.id, question: bd.gateQ, answer: bd.gateA, domain: bd.gate, mode: 'freeResponse' });
-                                  upd('scienceGateLoading', false);
-                                });
-                              } else {
-                                // Free response: use static question
+                // Free Response Mode
+                !maintChallenge.options && React.createElement('div', { className: 'flex gap-2' },
+                  React.createElement('input', {
+                    type: 'text', value: d.maintInput || '',
+                    onChange: function (e) { upd('maintInput', e.target.value); },
+                    onKeyDown: function (e) { if (e.key === 'Enter') document.getElementById('kepler-maint-btn').click(); },
+                    placeholder: 'Type your answer...',
+                    className: 'flex-1 px-3 py-2 bg-amber-950 border-2 border-amber-600 rounded-xl text-xs text-white outline-none focus:border-amber-400'
+                  }),
+                  React.createElement('button', {
+                    id: 'kepler-maint-btn',
+                    onClick: function () {
+                      var inp2 = (d.maintInput || '').trim().toLowerCase();
+                      var correct2 = inp2.indexOf((maintChallenge.answer || '').toLowerCase()) >= 0;
+                      var newEff2 = Object.assign({}, buildingEff);
+                      if (correct2) {
+                        newEff2[maintChallenge.building] = 100;
+                        if (addToast) addToast('\u2705 Correct! ' + maintChallenge.buildingName + ' at 100%!', 'success');
+                        if (d.colonyTTS) colonySpeak('Excellent! Maintenance passed. Full capacity restored.', 'narrator');
+                        if (typeof addXP === 'function') addXP(25, 'Maintenance: ' + maintChallenge.buildingName);
+                      } else {
+                        var curEff2 = newEff2[maintChallenge.building] !== undefined ? newEff2[maintChallenge.building] : 100;
+                        newEff2[maintChallenge.building] = Math.max(25, curEff2 - 25);
+                        if (addToast) addToast('\u274C ' + maintChallenge.buildingName + ' reduced to ' + newEff2[maintChallenge.building] + '%', 'warning');
+                        if (d.colonyTTS) colonySpeak('Incorrect. Reduced capacity. The correct answer was ' + (maintChallenge.answer || '') + '.', 'narrator');
+                      }
+                      upd('buildingEff', newEff2);
+                      upd('maintExplanation', { text: maintChallenge.explanation, correct: correct2, answer: maintChallenge.answer });
+                      upd('maintChallenge', null); upd('maintInput', '');
+                    },
+                    className: 'px-4 py-2 bg-amber-500 text-slate-900 rounded-xl text-xs font-bold'
+                  }, '\u2705 Submit')
+                )
+              ),
+              // Maintenance explanation (after answering)
+              d.maintExplanation && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border mb-3 ' + (d.maintExplanation.correct ? 'border-green-600' : 'border-red-600') },
+                React.createElement('div', { className: 'flex justify-between items-center mb-1' },
+                  React.createElement('span', { className: 'text-[10px] font-bold ' + (d.maintExplanation.correct ? 'text-green-400' : 'text-red-400') },
+                    d.maintExplanation.correct ? '\u2705 Correct!' : '\u274C Incorrect \u2014 Answer: ' + d.maintExplanation.answer
+                  ),
+                  React.createElement('button', { onClick: function () { upd('maintExplanation', null); }, className: 'text-slate-500 text-xs' }, '\u2715')
+                ),
+                React.createElement('p', { className: 'text-[10px] text-slate-300 leading-relaxed' }, '\uD83D\uDCDA ' + d.maintExplanation.text)
+              ),
+              d.maintChallengeLoading && React.createElement('div', { className: 'bg-amber-900/50 rounded-xl p-3 border border-amber-700 mb-3 text-center text-amber-300 text-xs' }, '\u23F3 Generating maintenance challenge...'),
+              // Build panel
+              d.showBuild && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-slate-700 mb-3' },
+                React.createElement('h4', { className: 'text-sm font-bold text-amber-400 mb-2' }, '\uD83C\uDFD7 Buildings'),
+                React.createElement('div', { className: 'grid grid-cols-2 gap-2' }, buildingDefs.map(function (bd) {
+                  var isBuilt = buildings.indexOf(bd.id) >= 0;
+                  var hasPrereqs = (bd.requires || []).every(function (r) { return buildings.indexOf(r) >= 0; });
+                  var canAff = !isBuilt && hasPrereqs && Object.keys(bd.cost).every(function (k) { return resources[k] >= bd.cost[k]; });
+                  return React.createElement('div', { key: bd.id, className: 'p-2 rounded-xl border-2 ' + (isBuilt ? 'border-green-600 bg-green-900/30' : canAff ? 'border-slate-600 bg-slate-900' : 'border-slate-700 bg-slate-900/50 opacity-50') },
+                    React.createElement('div', { className: 'flex items-center justify-between' },
+                      React.createElement('span', null, React.createElement('span', { className: 'text-base' }, bd.icon), React.createElement('span', { className: 'text-[10px] font-bold text-white ml-1' }, bd.name), isBuilt && React.createElement('span', { className: 'ml-1 text-[9px] ' + ((buildingEff[bd.id] !== undefined ? buildingEff[bd.id] : 100) >= 75 ? 'text-green-400' : 'text-amber-400') },
+                        '\u2705 ' + (buildingEff[bd.id] !== undefined ? buildingEff[bd.id] : 100) + '%')),
+                      canAff && React.createElement('button', {
+                        onClick: function () {
+                          if ((d.colonyMode || 'mcq') === 'mcq') {
+                            // Generate AI MCQ for the gate
+                            upd('scienceGateLoading', true);
+                            callGemini('Generate a ' + bd.gate + ' science question for building a ' + bd.name + ' in a space colony. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Return ONLY valid JSON: {"question":"<question>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"explanation":"<real science explanation 2-3 sentences>"}. Generate exactly 6 answer options. Shuffle the correct answer randomly (position 0-5). Make sure correctIndex matches the position of the correct answer.', true).then(function (gateResult) {
+                              try {
+                                var gcl = gateResult.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+                                var gs = gcl.indexOf('{'); if (gs > 0) gcl = gcl.substring(gs);
+                                var ge = gcl.lastIndexOf('}'); if (ge > 0) gcl = gcl.substring(0, ge + 1);
+                                var gp = JSON.parse(gcl);
+                                gp.building = bd.id; gp.domain = bd.gate; gp.mode = 'mcq';
+                                upd('scienceGate', gp); upd('scienceGateLoading', false);
+                                if (d.colonyTTS) colonySpeak('Science challenge. ' + gp.question, 'narrator');
+                              } catch (err) {
+                                // Fallback to static question
                                 upd('scienceGate', { building: bd.id, question: bd.gateQ, answer: bd.gateA, domain: bd.gate, mode: 'freeResponse' });
+                                upd('scienceGateLoading', false);
                               }
-                              upd('scienceGateInput', '');
-                            }, className: 'px-2 py-1 bg-amber-500 text-slate-900 rounded-lg text-[9px] font-bold' }, '\uD83D\uDD13 Build')
-                      ),
-                      React.createElement('div', { className: 'text-[8px] text-slate-400 mt-1' }, bd.desc),
-                      React.createElement('div', { className: 'flex gap-1 mt-1 text-[8px] flex-wrap' },
-                        Object.keys(bd.cost).map(function(ck) { return React.createElement('span', { key: ck, className: resources[ck] >= bd.cost[ck] ? 'text-green-400' : 'text-red-400' }, ck + ':' + bd.cost[ck]); }),
-                        React.createElement('span', { className: 'text-slate-500' }, '|'),
-                        Object.keys(bd.production).map(function(pk) { return React.createElement('span', { key: pk, className: 'text-cyan-400' }, '+' + bd.production[pk] + ' ' + pk); })
-                      ),
-                      React.createElement('div', { className: 'text-[8px] text-indigo-400 mt-0.5' }, '\uD83D\uDD12 ' + bd.gate + (bd.tier > 1 ? ' | Tier ' + bd.tier : '')),
-                      !isBuilt && bd.requires && bd.requires.length > 0 && !hasPrereqs && React.createElement('div', { className: 'text-[8px] text-red-400 mt-0.5' }, '\u26D4 Requires: ' + bd.requires.join(', '))
-                    );
-                  }))
-                ),
-                // Science gate
-                d.scienceGateLoading && React.createElement('div', { className: 'bg-purple-900/50 rounded-xl p-3 border border-purple-700 mb-3 text-center text-purple-300 text-xs' }, '\u23F3 Generating science challenge...'),
-                scienceGate && React.createElement('div', { className: 'bg-gradient-to-r from-purple-900 to-indigo-900 rounded-xl p-4 border-2 border-purple-500 mb-3' },
-                  React.createElement('h4', { className: 'text-sm font-bold text-purple-200 mb-2' }, '\uD83D\uDD2C Science Challenge: ' + scienceGate.domain.toUpperCase()),
-                  React.createElement('div', { className: 'text-[8px] text-purple-400 mb-1' }, scienceGate.mode === 'mcq' ? '\uD83D\uDCCB Multiple Choice \u2014 select the correct answer' : '\u270D\uFE0F Free Response \u2014 type your answer'),
-                  React.createElement('p', { className: 'text-xs text-purple-100 mb-3' }, scienceGate.question),
-                  // MCQ Mode
-                  scienceGate.options && React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
-                    scienceGate.options.map(function(opt2, oi2) {
-                      return React.createElement('button', {
-                        key: oi2,
-                        onClick: function() {
-                          var correct3 = oi2 === scienceGate.correctIndex;
-                          if (correct3) {
-                            var bdef3 = buildingDefs.find(function(bd4) { return bd4.id === scienceGate.building; });
-                            var nr7 = Object.assign({}, resources); Object.keys(bdef3.cost).forEach(function(k) { nr7[k] -= bdef3.cost[k]; }); upd('colonyRes', nr7);
-                            var nb2 = buildings.slice(); nb2.push(scienceGate.building); upd('colonyBuildings', nb2);
-                            var newEff3 = Object.assign({}, buildingEff); newEff3[scienceGate.building] = 100; upd('buildingEff', newEff3);
-                            var nl8 = gameLog.slice(); nl8.push('Built ' + bdef3.icon + ' ' + bdef3.name + '!'); upd('colonyLog', nl8);
-                            var ns3 = Object.assign({}, stats); ns3.questionsAnswered++; ns3.correct++;
-                            // Handle wonder progress
-                            if (scienceGate._wonderId) {
-                              var newWonders = Object.assign({}, wonders);
-                              var wProg = (newWonders[scienceGate._wonderId + '_progress'] || 0) + 1;
-                              newWonders[scienceGate._wonderId + '_progress'] = wProg;
-                              if (wProg >= scienceGate._wonderChallenges) {
-                                // Wonder complete!
-                                newWonders[scienceGate._wonderId] = true;
-                                var nr13 = Object.assign({}, resources);
-                                Object.keys(scienceGate._wonderCost).forEach(function(k) { nr13[k] -= scienceGate._wonderCost[k]; });
-                                upd('colonyRes', nr13);
-                                var nl23 = gameLog.slice(); nl23.push('\uD83C\uDFDB\uFE0F WONDER: ' + scienceGate._wonderName + ' complete!'); upd('colonyLog', nl23);
-                                if (addToast) addToast('\uD83C\uDFDB\uFE0F ' + scienceGate._wonderName + ' COMPLETE! Permanent bonuses active!', 'success');
-                                if (d.colonyTTS) colonySpeak('Wonder complete! The ' + scienceGate._wonderName + ' is now operational. This is a monumental achievement for the colony.', 'narrator');
-                                if (typeof addXP === 'function') addXP(75, 'Wonder: ' + scienceGate._wonderName);
-                              } else {
-                                if (addToast) addToast('\u2705 Challenge ' + wProg + '/' + scienceGate._wonderChallenges + ' passed!', 'success');
-                              }
-                              upd('colonyWonders', newWonders);
-                              upd('colonyStats', ns3);
-                              upd('scienceGate', null);
-                              return;
-                            }
-                            // Handle research completion
-                            if (scienceGate._researchId) {
-                              var rq2 = researchQueue.slice(); rq2.push(scienceGate._researchId); upd('colonyResearch', rq2);
-                              var nr8 = Object.assign({}, resources); nr8.science -= scienceGate._researchCost; upd('colonyRes', nr8);
-                              var rdef2 = researchDefs.find(function(rd3) { return rd3.id === scienceGate._researchId; });
-                              var nl17 = gameLog.slice(); nl17.push('\uD83E\uDDEC Research: ' + (rdef2 ? rdef2.name : scienceGate._researchId) + ' complete!'); upd('colonyLog', nl17);
-                              if (addToast) addToast('\uD83E\uDDEC ' + (rdef2 ? rdef2.name : '') + ' researched!', 'success');
-                              if (d.colonyTTS) colonySpeak('Research complete. ' + (rdef2 ? rdef2.name + '. ' + rdef2.desc : ''), 'narrator');
-                              upd('colonyStats', ns3);
-                              upd('scienceGate', null);
-                              return;
-                            }
-                            ns3.buildingsConstructed++; upd('colonyStats', ns3);
-                            if (addToast) addToast('\u2705 ' + bdef3.name + ' built! Science verified!', 'success');
-                            callGemini('You are narrating a space colony game. The colony just built a ' + bdef3.name + ' (' + bdef3.desc + '). Narrate the construction completion in 2 dramatic sentences. Include a real science fact. Target: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function(buildNarr) {
-                              upd('buildNarration', buildNarr);
-                              if (d.colonyTTS) colonySpeak(buildNarr, 'narrator');
-                            }).catch(function() {
-                              if (d.colonyTTS) colonySpeak('Construction complete. ' + bdef3.name + ' is now operational.', 'narrator');
+                            }).catch(function () {
+                              upd('scienceGate', { building: bd.id, question: bd.gateQ, answer: bd.gateA, domain: bd.gate, mode: 'freeResponse' });
+                              upd('scienceGateLoading', false);
                             });
-                            if (typeof addXP === 'function') addXP(30, 'Built ' + bdef3.name);
                           } else {
-                            if (addToast) addToast('\u274C Wrong! The correct answer was: ' + scienceGate.options[scienceGate.correctIndex], 'error');
-                            if (d.colonyTTS) colonySpeak('Incorrect. The answer was ' + scienceGate.options[scienceGate.correctIndex] + '. Try again next time.', 'narrator');
+                            // Free response: use static question
+                            upd('scienceGate', { building: bd.id, question: bd.gateQ, answer: bd.gateA, domain: bd.gate, mode: 'freeResponse' });
                           }
-                          if (scienceGate.explanation) {
-                              var nj3 = scienceJournal.slice();
-                              nj3.push({ turn: turn, source: 'Build: ' + (bdef3 ? bdef3.name : ''), fact: scienceGate.explanation });
-                              upd('scienceJournal', nj3);
+                          upd('scienceGateInput', '');
+                        }, className: 'px-2 py-1 bg-amber-500 text-slate-900 rounded-lg text-[9px] font-bold'
+                      }, '\uD83D\uDD13 Build')
+                    ),
+                    React.createElement('div', { className: 'text-[8px] text-slate-400 mt-1' }, bd.desc),
+                    React.createElement('div', { className: 'flex gap-1 mt-1 text-[8px] flex-wrap' },
+                      Object.keys(bd.cost).map(function (ck) { return React.createElement('span', { key: ck, className: resources[ck] >= bd.cost[ck] ? 'text-green-400' : 'text-red-400' }, ck + ':' + bd.cost[ck]); }),
+                      React.createElement('span', { className: 'text-slate-500' }, '|'),
+                      Object.keys(bd.production).map(function (pk) { return React.createElement('span', { key: pk, className: 'text-cyan-400' }, '+' + bd.production[pk] + ' ' + pk); })
+                    ),
+                    React.createElement('div', { className: 'text-[8px] text-indigo-400 mt-0.5' }, '\uD83D\uDD12 ' + bd.gate + (bd.tier > 1 ? ' | Tier ' + bd.tier : '')),
+                    !isBuilt && bd.requires && bd.requires.length > 0 && !hasPrereqs && React.createElement('div', { className: 'text-[8px] text-red-400 mt-0.5' }, '\u26D4 Requires: ' + bd.requires.join(', '))
+                  );
+                }))
+              ),
+              // Science gate
+              d.scienceGateLoading && React.createElement('div', { className: 'bg-purple-900/50 rounded-xl p-3 border border-purple-700 mb-3 text-center text-purple-300 text-xs' }, '\u23F3 Generating science challenge...'),
+              scienceGate && React.createElement('div', { className: 'bg-gradient-to-r from-purple-900 to-indigo-900 rounded-xl p-4 border-2 border-purple-500 mb-3' },
+                React.createElement('h4', { className: 'text-sm font-bold text-purple-200 mb-2' }, '\uD83D\uDD2C Science Challenge: ' + scienceGate.domain.toUpperCase()),
+                React.createElement('div', { className: 'text-[8px] text-purple-400 mb-1' }, scienceGate.mode === 'mcq' ? '\uD83D\uDCCB Multiple Choice \u2014 select the correct answer' : '\u270D\uFE0F Free Response \u2014 type your answer'),
+                React.createElement('p', { className: 'text-xs text-purple-100 mb-3' }, scienceGate.question),
+                // MCQ Mode
+                scienceGate.options && React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
+                  scienceGate.options.map(function (opt2, oi2) {
+                    return React.createElement('button', {
+                      key: oi2,
+                      onClick: function () {
+                        var correct3 = oi2 === scienceGate.correctIndex;
+                        if (correct3) {
+                          var bdef3 = buildingDefs.find(function (bd4) { return bd4.id === scienceGate.building; });
+                          var nr7 = Object.assign({}, resources); Object.keys(bdef3.cost).forEach(function (k) { nr7[k] -= bdef3.cost[k]; }); upd('colonyRes', nr7);
+                          var nb2 = buildings.slice(); nb2.push(scienceGate.building); upd('colonyBuildings', nb2);
+                          var newEff3 = Object.assign({}, buildingEff); newEff3[scienceGate.building] = 100; upd('buildingEff', newEff3);
+                          var nl8 = gameLog.slice(); nl8.push('Built ' + bdef3.icon + ' ' + bdef3.name + '!'); upd('colonyLog', nl8);
+                          var ns3 = Object.assign({}, stats); ns3.questionsAnswered++; ns3.correct++;
+                          // Handle wonder progress
+                          if (scienceGate._wonderId) {
+                            var newWonders = Object.assign({}, wonders);
+                            var wProg = (newWonders[scienceGate._wonderId + '_progress'] || 0) + 1;
+                            newWonders[scienceGate._wonderId + '_progress'] = wProg;
+                            if (wProg >= scienceGate._wonderChallenges) {
+                              // Wonder complete!
+                              newWonders[scienceGate._wonderId] = true;
+                              var nr13 = Object.assign({}, resources);
+                              Object.keys(scienceGate._wonderCost).forEach(function (k) { nr13[k] -= scienceGate._wonderCost[k]; });
+                              upd('colonyRes', nr13);
+                              var nl23 = gameLog.slice(); nl23.push('\uD83C\uDFDB\uFE0F WONDER: ' + scienceGate._wonderName + ' complete!'); upd('colonyLog', nl23);
+                              if (addToast) addToast('\uD83C\uDFDB\uFE0F ' + scienceGate._wonderName + ' COMPLETE! Permanent bonuses active!', 'success');
+                              if (d.colonyTTS) colonySpeak('Wonder complete! The ' + scienceGate._wonderName + ' is now operational. This is a monumental achievement for the colony.', 'narrator');
+                              if (typeof addXP === 'function') addXP(75, 'Wonder: ' + scienceGate._wonderName);
+                            } else {
+                              if (addToast) addToast('\u2705 Challenge ' + wProg + '/' + scienceGate._wonderChallenges + ' passed!', 'success');
                             }
-                            upd('gateExplanation', { text: scienceGate.explanation, correct: correct3, answer: scienceGate.options[scienceGate.correctIndex] });
-                          upd('scienceGate', null);
-                        },
-                        className: 'p-3 rounded-xl border-2 border-purple-700 bg-purple-950 text-purple-100 text-xs hover:border-purple-400 transition-all text-left'
-                      }, String.fromCharCode(65 + oi2) + '. ' + opt2);
-                    })
-                  ),
-                  // Free Response Mode
-                  !scienceGate.options && React.createElement('div', { className: 'flex gap-2' },
-                    React.createElement('input', { type: 'text', value: d.scienceGateInput || '', onChange: function(e) { upd('scienceGateInput', e.target.value); },
-                      onKeyDown: function(e) { if (e.key === 'Enter') document.getElementById('kepler-gate-btn').click(); },
-                      placeholder: 'Type your answer...', className: 'flex-1 px-3 py-2 bg-purple-950 border-2 border-purple-600 rounded-xl text-xs text-white outline-none focus:border-purple-400' }),
-                    React.createElement('button', { id: 'kepler-gate-btn', onClick: function() {
-                      var inp = (d.scienceGateInput||'').trim().toLowerCase();
-                      var correct = Array.isArray(scienceGate.answer) ? scienceGate.answer.some(function(a) { return inp.indexOf(a.toLowerCase()) >= 0; }) : inp.indexOf(scienceGate.answer.toLowerCase()) >= 0;
+                            upd('colonyWonders', newWonders);
+                            upd('colonyStats', ns3);
+                            upd('scienceGate', null);
+                            return;
+                          }
+                          // Handle research completion
+                          if (scienceGate._researchId) {
+                            var rq2 = researchQueue.slice(); rq2.push(scienceGate._researchId); upd('colonyResearch', rq2);
+                            var nr8 = Object.assign({}, resources); nr8.science -= scienceGate._researchCost; upd('colonyRes', nr8);
+                            var rdef2 = researchDefs.find(function (rd3) { return rd3.id === scienceGate._researchId; });
+                            var nl17 = gameLog.slice(); nl17.push('\uD83E\uDDEC Research: ' + (rdef2 ? rdef2.name : scienceGate._researchId) + ' complete!'); upd('colonyLog', nl17);
+                            if (addToast) addToast('\uD83E\uDDEC ' + (rdef2 ? rdef2.name : '') + ' researched!', 'success');
+                            if (d.colonyTTS) colonySpeak('Research complete. ' + (rdef2 ? rdef2.name + '. ' + rdef2.desc : ''), 'narrator');
+                            upd('colonyStats', ns3);
+                            upd('scienceGate', null);
+                            return;
+                          }
+                          ns3.buildingsConstructed++; upd('colonyStats', ns3);
+                          if (addToast) addToast('\u2705 ' + bdef3.name + ' built! Science verified!', 'success');
+                          callGemini('You are narrating a space colony game. The colony just built a ' + bdef3.name + ' (' + bdef3.desc + '). Narrate the construction completion in 2 dramatic sentences. Include a real science fact. Target: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (buildNarr) {
+                            upd('buildNarration', buildNarr);
+                            if (d.colonyTTS) colonySpeak(buildNarr, 'narrator');
+                          }).catch(function () {
+                            if (d.colonyTTS) colonySpeak('Construction complete. ' + bdef3.name + ' is now operational.', 'narrator');
+                          });
+                          if (typeof addXP === 'function') addXP(30, 'Built ' + bdef3.name);
+                        } else {
+                          if (addToast) addToast('\u274C Wrong! The correct answer was: ' + scienceGate.options[scienceGate.correctIndex], 'error');
+                          if (d.colonyTTS) colonySpeak('Incorrect. The answer was ' + scienceGate.options[scienceGate.correctIndex] + '. Try again next time.', 'narrator');
+                        }
+                        if (scienceGate.explanation) {
+                          var nj3 = scienceJournal.slice();
+                          nj3.push({ turn: turn, source: 'Build: ' + (bdef3 ? bdef3.name : ''), fact: scienceGate.explanation });
+                          upd('scienceJournal', nj3);
+                        }
+                        upd('gateExplanation', { text: scienceGate.explanation, correct: correct3, answer: scienceGate.options[scienceGate.correctIndex] });
+                        upd('scienceGate', null);
+                      },
+                      className: 'p-3 rounded-xl border-2 border-purple-700 bg-purple-950 text-purple-100 text-xs hover:border-purple-400 transition-all text-left'
+                    }, String.fromCharCode(65 + oi2) + '. ' + opt2);
+                  })
+                ),
+                // Free Response Mode
+                !scienceGate.options && React.createElement('div', { className: 'flex gap-2' },
+                  React.createElement('input', {
+                    type: 'text', value: d.scienceGateInput || '', onChange: function (e) { upd('scienceGateInput', e.target.value); },
+                    onKeyDown: function (e) { if (e.key === 'Enter') document.getElementById('kepler-gate-btn').click(); },
+                    placeholder: 'Type your answer...', className: 'flex-1 px-3 py-2 bg-purple-950 border-2 border-purple-600 rounded-xl text-xs text-white outline-none focus:border-purple-400'
+                  }),
+                  React.createElement('button', {
+                    id: 'kepler-gate-btn', onClick: function () {
+                      var inp = (d.scienceGateInput || '').trim().toLowerCase();
+                      var correct = Array.isArray(scienceGate.answer) ? scienceGate.answer.some(function (a) { return inp.indexOf(a.toLowerCase()) >= 0; }) : inp.indexOf(scienceGate.answer.toLowerCase()) >= 0;
                       if (correct) {
-                        var bdef2 = buildingDefs.find(function(bd2) { return bd2.id === scienceGate.building; });
-                        var nr4 = Object.assign({}, resources); Object.keys(bdef2.cost).forEach(function(k) { nr4[k] -= bdef2.cost[k]; }); upd('colonyRes', nr4);
+                        var bdef2 = buildingDefs.find(function (bd2) { return bd2.id === scienceGate.building; });
+                        var nr4 = Object.assign({}, resources); Object.keys(bdef2.cost).forEach(function (k) { nr4[k] -= bdef2.cost[k]; }); upd('colonyRes', nr4);
                         var nb = buildings.slice(); nb.push(scienceGate.building); upd('colonyBuildings', nb);
                         var newEff4 = Object.assign({}, buildingEff); newEff4[scienceGate.building] = 100; upd('buildingEff', newEff4);
                         var nl4 = gameLog.slice(); nl4.push('Built ' + bdef2.icon + ' ' + bdef2.name + '!'); upd('colonyLog', nl4);
@@ -33694,300 +33752,307 @@
                         if (typeof addXP === 'function') addXP(30, 'Built ' + bdef2.name);
                       } else { if (addToast) addToast('\u274C Incorrect! Study and try again.', 'error'); upd('scienceGateInput', ''); }
                       upd('scienceGate', null);
-                    }, className: 'px-4 py-2 bg-purple-500 text-white rounded-xl text-xs font-bold' }, '\u2705 Submit'),
-                    React.createElement('button', { onClick: function() { upd('scienceGate', null); }, className: 'px-3 py-2 bg-slate-700 text-slate-300 rounded-xl text-xs' }, '\u2715')
-                  ),
-                  // Build narration
-                  d.buildNarration && React.createElement('div', { className: 'bg-green-950 rounded-xl p-3 border border-green-700 mb-3' },
-                    React.createElement('div', { className: 'flex justify-between items-center mb-1' },
-                      React.createElement('span', { className: 'text-[10px] font-bold text-green-300' }, '\uD83C\uDFD7\uFE0F Construction Report'),
-                      React.createElement('button', { onClick: function() { upd('buildNarration', null); }, className: 'text-green-500 text-xs' }, '\u2715')
-                    ),
-                    React.createElement('p', { className: 'text-[9px] text-green-100 italic leading-relaxed' }, '\uD83C\uDFA4 ' + d.buildNarration)
-                  ),
-                  // Gate explanation
-                  d.gateExplanation && React.createElement('div', { className: 'mt-2 bg-purple-950 rounded-lg px-3 py-2 text-[10px] border ' + (d.gateExplanation.correct ? 'text-green-300 border-green-800' : 'text-red-300 border-red-800') },
-                    React.createElement('span', { className: 'font-bold' }, d.gateExplanation.correct ? '\u2705 Correct! ' : '\u274C Answer: ' + d.gateExplanation.answer + '. '),
-                    d.gateExplanation.text
-                  ),
-                  React.createElement('div', { className: 'text-[9px] text-purple-300 mt-2' }, '\uD83D\uDCA1 This is real science! Research online if unsure.')
+                    }, className: 'px-4 py-2 bg-purple-500 text-white rounded-xl text-xs font-bold'
+                  }, '\u2705 Submit'),
+                  React.createElement('button', { onClick: function () { upd('scienceGate', null); }, className: 'px-3 py-2 bg-slate-700 text-slate-300 rounded-xl text-xs' }, '\u2715')
                 ),
-                // Settlers
-                d.showSettlers && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-slate-700 mb-3' },
-                  React.createElement('h4', { className: 'text-sm font-bold text-teal-400 mb-2' }, '\uD83D\uDC65 Colony Crew'),
-                  React.createElement('div', { className: 'grid grid-cols-3 gap-2' }, settlers.map(function(st, si2) {
-                    return React.createElement('div', { key: si2, className: 'bg-slate-900 rounded-xl p-2 border border-slate-700 text-center' },
-                      React.createElement('div', { className: 'text-xl' }, st.icon),
-                      React.createElement('div', { className: 'text-[9px] font-bold text-white mt-1' }, st.name),
-                      React.createElement('div', { className: 'text-[8px] text-slate-400' }, st.role),
-                      React.createElement('div', { className: 'mt-1 grid grid-cols-2 gap-1 text-[7px]' },
-                        React.createElement('div', null, 'Morale', React.createElement('div', { className: 'w-full bg-slate-700 rounded-full h-1 mt-0.5' }, React.createElement('div', { className: 'h-1 rounded-full ' + (st.morale > 60 ? 'bg-green-500' : 'bg-amber-500'), style: { width: st.morale + '%' } }))),
-                        React.createElement('div', null, 'Health', React.createElement('div', { className: 'w-full bg-slate-700 rounded-full h-1 mt-0.5' }, React.createElement('div', { className: 'h-1 rounded-full bg-cyan-500', style: { width: st.health + '%' } }))),
-                        React.createElement('button', {
-                          onClick: function() {
-                            upd('talkSettler', si2);
-                            upd('settlerChatLoading', true);
-                            callGemini('You are ' + st.name + ', a ' + st.role + ' (specialty: ' + st.specialty + ') on the Kepler-442b space colony. Morale: ' + st.morale + '%, Health: ' + st.health + '%. Colony has ' + buildings.length + ' buildings, turn ' + turn + '. Resources: food=' + resources.food + ' energy=' + resources.energy + '. Give a brief in-character update (2-3 sentences) about your work, mood, and a science fact related to your specialty. Be personable and educational.', true).then(function(result) {
-                              upd('settlerChat', result); upd('settlerChatLoading', false);
-                              if (d.colonyTTS) colonySpeak(result, st.role === 'Medic' || st.role === 'Botanist' || st.role === 'Chemist' ? 'female' : 'narrator');
-                              if (typeof addXP === 'function') addXP(5, 'Talked to ' + st.name);
-                            }).catch(function() { upd('settlerChatLoading', false); });
-                          },
-                          className: 'mt-1 col-span-2 px-2 py-0.5 rounded bg-indigo-800 text-indigo-300 text-[7px] hover:bg-indigo-700'
-                        }, '\uD83D\uDCAC Talk')
-                      )
-                    );
-                  }))
+                // Build narration
+                d.buildNarration && React.createElement('div', { className: 'bg-green-950 rounded-xl p-3 border border-green-700 mb-3' },
+                  React.createElement('div', { className: 'flex justify-between items-center mb-1' },
+                    React.createElement('span', { className: 'text-[10px] font-bold text-green-300' }, '\uD83C\uDFD7\uFE0F Construction Report'),
+                    React.createElement('button', { onClick: function () { upd('buildNarration', null); }, className: 'text-green-500 text-xs' }, '\u2715')
+                  ),
+                  React.createElement('p', { className: 'text-[9px] text-green-100 italic leading-relaxed' }, '\uD83C\uDFA4 ' + d.buildNarration)
                 ),
-                // Policy Panel (Civ-inspired social policies)
-                d.showPolicy && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-emerald-700 mb-3' },
-                  React.createElement('h4', { className: 'text-sm font-bold text-emerald-400 mb-2' }, '\uD83C\uDFDB\uFE0F Colony Governance'),
-                  React.createElement('p', { className: 'text-[9px] text-slate-400 mb-2' }, 'Choose a governing policy. Each provides unique bonuses. You may change policy once every 10 turns.'),
-                  React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
-                    policyDefs.map(function(pol2) {
-                      var isActive = activePolicy === pol2.id;
-                      return React.createElement('button', {
-                        key: pol2.id,
-                        onClick: function() {
-                          if (!isActive) {
-                            upd('colonyPolicy', pol2.id);
-                            if (addToast) addToast(pol2.icon + ' Policy: ' + pol2.name + ' adopted!', 'success');
-                            if (d.colonyTTS) colonySpeak('Colony policy changed to ' + pol2.name + '. ' + pol2.desc, 'narrator');
-                            var nl16 = gameLog.slice(); nl16.push('\uD83C\uDFDB\uFE0F Policy: ' + pol2.name); upd('colonyLog', nl16);
-                          }
+                // Gate explanation
+                d.gateExplanation && React.createElement('div', { className: 'mt-2 bg-purple-950 rounded-lg px-3 py-2 text-[10px] border ' + (d.gateExplanation.correct ? 'text-green-300 border-green-800' : 'text-red-300 border-red-800') },
+                  React.createElement('span', { className: 'font-bold' }, d.gateExplanation.correct ? '\u2705 Correct! ' : '\u274C Answer: ' + d.gateExplanation.answer + '. '),
+                  d.gateExplanation.text
+                ),
+                React.createElement('div', { className: 'text-[9px] text-purple-300 mt-2' }, '\uD83D\uDCA1 This is real science! Research online if unsure.')
+              ),
+              // Settlers
+              d.showSettlers && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-slate-700 mb-3' },
+                React.createElement('h4', { className: 'text-sm font-bold text-teal-400 mb-2' }, '\uD83D\uDC65 Colony Crew'),
+                React.createElement('div', { className: 'grid grid-cols-3 gap-2' }, settlers.map(function (st, si2) {
+                  return React.createElement('div', { key: si2, className: 'bg-slate-900 rounded-xl p-2 border border-slate-700 text-center' },
+                    React.createElement('div', { className: 'text-xl' }, st.icon),
+                    React.createElement('div', { className: 'text-[9px] font-bold text-white mt-1' }, st.name),
+                    React.createElement('div', { className: 'text-[8px] text-slate-400' }, st.role),
+                    React.createElement('div', { className: 'mt-1 grid grid-cols-2 gap-1 text-[7px]' },
+                      React.createElement('div', null, 'Morale', React.createElement('div', { className: 'w-full bg-slate-700 rounded-full h-1 mt-0.5' }, React.createElement('div', { className: 'h-1 rounded-full ' + (st.morale > 60 ? 'bg-green-500' : 'bg-amber-500'), style: { width: st.morale + '%' } }))),
+                      React.createElement('div', null, 'Health', React.createElement('div', { className: 'w-full bg-slate-700 rounded-full h-1 mt-0.5' }, React.createElement('div', { className: 'h-1 rounded-full bg-cyan-500', style: { width: st.health + '%' } }))),
+                      React.createElement('button', {
+                        onClick: function () {
+                          upd('talkSettler', si2);
+                          upd('settlerChatLoading', true);
+                          callGemini('You are ' + st.name + ', a ' + st.role + ' (specialty: ' + st.specialty + ') on the Kepler-442b space colony. Morale: ' + st.morale + '%, Health: ' + st.health + '%. Colony has ' + buildings.length + ' buildings, turn ' + turn + '. Resources: food=' + resources.food + ' energy=' + resources.energy + '. Give a brief in-character update (2-3 sentences) about your work, mood, and a science fact related to your specialty. Be personable and educational.', true).then(function (result) {
+                            upd('settlerChat', result); upd('settlerChatLoading', false);
+                            if (d.colonyTTS) colonySpeak(result, st.role === 'Medic' || st.role === 'Botanist' || st.role === 'Chemist' ? 'female' : 'narrator');
+                            if (typeof addXP === 'function') addXP(5, 'Talked to ' + st.name);
+                          }).catch(function () { upd('settlerChatLoading', false); });
                         },
-                        className: 'p-3 rounded-xl border-2 text-left transition-all ' +
-                          (isActive ? 'border-emerald-400 bg-emerald-900/50' : 'border-slate-600 bg-slate-900 hover:border-emerald-500')
+                        className: 'mt-1 col-span-2 px-2 py-0.5 rounded bg-indigo-800 text-indigo-300 text-[7px] hover:bg-indigo-700'
+                      }, '\uD83D\uDCAC Talk')
+                    )
+                  );
+                }))
+              ),
+              // Policy Panel (Civ-inspired social policies)
+              d.showPolicy && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-emerald-700 mb-3' },
+                React.createElement('h4', { className: 'text-sm font-bold text-emerald-400 mb-2' }, '\uD83C\uDFDB\uFE0F Colony Governance'),
+                React.createElement('p', { className: 'text-[9px] text-slate-400 mb-2' }, 'Choose a governing policy. Each provides unique bonuses. You may change policy once every 10 turns.'),
+                React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+                  policyDefs.map(function (pol2) {
+                    var isActive = activePolicy === pol2.id;
+                    return React.createElement('button', {
+                      key: pol2.id,
+                      onClick: function () {
+                        if (!isActive) {
+                          upd('colonyPolicy', pol2.id);
+                          if (addToast) addToast(pol2.icon + ' Policy: ' + pol2.name + ' adopted!', 'success');
+                          if (d.colonyTTS) colonySpeak('Colony policy changed to ' + pol2.name + '. ' + pol2.desc, 'narrator');
+                          var nl16 = gameLog.slice(); nl16.push('\uD83C\uDFDB\uFE0F Policy: ' + pol2.name); upd('colonyLog', nl16);
+                        }
                       },
-                        React.createElement('div', { className: 'flex items-center gap-1 mb-1' },
-                          React.createElement('span', { className: 'text-lg' }, pol2.icon),
-                          React.createElement('span', { className: 'text-[10px] font-bold text-white' }, pol2.name),
-                          isActive && React.createElement('span', { className: 'text-[8px] text-emerald-400 ml-auto' }, '\u2705 ACTIVE')
-                        ),
-                        React.createElement('div', { className: 'text-[8px] text-slate-400' }, pol2.desc)
-                      );
-                    })
-                  )
-                ),
-                // Cultural Traditions Panel
-                d.showPolicy && React.createElement('div', { className: 'bg-gradient-to-r from-amber-950/50 to-slate-800 rounded-xl p-3 border border-amber-700 mb-3' },
-                  React.createElement('h4', { className: 'text-sm font-bold text-amber-300 mb-2' }, '\uD83C\uDF0D Cultural Knowledge Traditions'),
-                  React.createElement('p', { className: 'text-[9px] text-slate-400 mb-2' }, 'Ancient wisdom from diverse civilizations. Each tradition provides permanent bonuses and a real cultural lesson.'),
-                  React.createElement('div', { className: 'grid gap-2' },
-                    traditionDefs.map(function(td3) {
-                      var isAdopted = traditions.indexOf(td3.id) >= 0;
-                      var canAdopt = !isAdopted && resources.science >= 10;
-                      return React.createElement('div', { key: td3.id, className: 'p-2 rounded-xl border flex items-center justify-between ' +
+                      className: 'p-3 rounded-xl border-2 text-left transition-all ' +
+                        (isActive ? 'border-emerald-400 bg-emerald-900/50' : 'border-slate-600 bg-slate-900 hover:border-emerald-500')
+                    },
+                      React.createElement('div', { className: 'flex items-center gap-1 mb-1' },
+                        React.createElement('span', { className: 'text-lg' }, pol2.icon),
+                        React.createElement('span', { className: 'text-[10px] font-bold text-white' }, pol2.name),
+                        isActive && React.createElement('span', { className: 'text-[8px] text-emerald-400 ml-auto' }, '\u2705 ACTIVE')
+                      ),
+                      React.createElement('div', { className: 'text-[8px] text-slate-400' }, pol2.desc)
+                    );
+                  })
+                )
+              ),
+              // Cultural Traditions Panel
+              d.showPolicy && React.createElement('div', { className: 'bg-gradient-to-r from-amber-950/50 to-slate-800 rounded-xl p-3 border border-amber-700 mb-3' },
+                React.createElement('h4', { className: 'text-sm font-bold text-amber-300 mb-2' }, '\uD83C\uDF0D Cultural Knowledge Traditions'),
+                React.createElement('p', { className: 'text-[9px] text-slate-400 mb-2' }, 'Ancient wisdom from diverse civilizations. Each tradition provides permanent bonuses and a real cultural lesson.'),
+                React.createElement('div', { className: 'grid gap-2' },
+                  traditionDefs.map(function (td3) {
+                    var isAdopted = traditions.indexOf(td3.id) >= 0;
+                    var canAdopt = !isAdopted && resources.science >= 10;
+                    return React.createElement('div', {
+                      key: td3.id, className: 'p-2 rounded-xl border flex items-center justify-between ' +
                         (isAdopted ? 'border-amber-500 bg-amber-900/30' : canAdopt ? 'border-slate-600 bg-slate-900' : 'border-slate-700 bg-slate-900/50 opacity-60')
-                      },
-                        React.createElement('div', { className: 'flex items-center gap-2 flex-1' },
-                          React.createElement('span', { className: 'text-xl' }, td3.icon),
-                          React.createElement('div', { className: 'flex-1' },
-                            React.createElement('div', { className: 'flex items-center gap-1' },
-                              React.createElement('span', { className: 'text-[10px] font-bold text-amber-200' }, td3.name),
-                              React.createElement('span', { className: 'text-[8px] text-slate-500' }, '(' + td3.origin + ')'),
-                              isAdopted && React.createElement('span', { className: 'text-amber-400 text-[8px]' }, '\u2705')
-                            ),
-                            React.createElement('div', { className: 'text-[8px] text-slate-400' }, td3.desc),
-                            isAdopted && React.createElement('div', { className: 'text-[7px] text-amber-300 mt-0.5 italic' }, '\uD83D\uDCDA ' + td3.fact)
-                          )
-                        ),
-                        !isAdopted && React.createElement('button', {
-                          onClick: function() {
-                            if (canAdopt) {
-                              var nr15 = Object.assign({}, resources); nr15.science -= 10; upd('colonyRes', nr15);
-                              var newTrad = traditions.slice(); newTrad.push(td3.id); upd('colonyTraditions', newTrad);
-                              // Update values
-                              var nv2 = Object.assign({}, colonyValues);
-                              if (td3.value) nv2[td3.value] = Math.min(100, (nv2[td3.value] || 50) + 10);
-                              upd('colonyValues', nv2);
-                              if (td3.bonus.equity) upd('colonyEquity', Math.min(100, equity + td3.bonus.equity));
-                              if (td3.bonus.happiness) upd('colonyHappiness', Math.min(100, colonyHappiness + td3.bonus.happiness));
-                              var nj7 = scienceJournal.slice();
-                              nj7.push({ turn: turn, source: 'Tradition: ' + td3.name + ' (' + td3.origin + ')', fact: td3.fact });
-                              upd('scienceJournal', nj7);
-                              if (addToast) addToast(td3.icon + ' ' + td3.name + ' adopted!', 'success');
-                              callGemini('The space colony on Kepler-442b has adopted the ' + td3.name + ' cultural tradition from ' + td3.origin + ' heritage. Fact: ' + td3.fact + '. Narrate how the colony integrates this wisdom into daily life in 2-3 thoughtful sentences. Be respectful and authentic. Target: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function(tradNarr) {
+                    },
+                      React.createElement('div', { className: 'flex items-center gap-2 flex-1' },
+                        React.createElement('span', { className: 'text-xl' }, td3.icon),
+                        React.createElement('div', { className: 'flex-1' },
+                          React.createElement('div', { className: 'flex items-center gap-1' },
+                            React.createElement('span', { className: 'text-[10px] font-bold text-amber-200' }, td3.name),
+                            React.createElement('span', { className: 'text-[8px] text-slate-500' }, '(' + td3.origin + ')'),
+                            isAdopted && React.createElement('span', { className: 'text-amber-400 text-[8px]' }, '\u2705')
+                          ),
+                          React.createElement('div', { className: 'text-[8px] text-slate-400' }, td3.desc),
+                          isAdopted && React.createElement('div', { className: 'text-[7px] text-amber-300 mt-0.5 italic' }, '\uD83D\uDCDA ' + td3.fact)
+                        )
+                      ),
+                      !isAdopted && React.createElement('button', {
+                        onClick: function () {
+                          if (canAdopt) {
+                            var nr15 = Object.assign({}, resources); nr15.science -= 10; upd('colonyRes', nr15);
+                            var newTrad = traditions.slice(); newTrad.push(td3.id); upd('colonyTraditions', newTrad);
+                            // Update values
+                            var nv2 = Object.assign({}, colonyValues);
+                            if (td3.value) nv2[td3.value] = Math.min(100, (nv2[td3.value] || 50) + 10);
+                            upd('colonyValues', nv2);
+                            if (td3.bonus.equity) upd('colonyEquity', Math.min(100, equity + td3.bonus.equity));
+                            if (td3.bonus.happiness) upd('colonyHappiness', Math.min(100, colonyHappiness + td3.bonus.happiness));
+                            var nj7 = scienceJournal.slice();
+                            nj7.push({ turn: turn, source: 'Tradition: ' + td3.name + ' (' + td3.origin + ')', fact: td3.fact });
+                            upd('scienceJournal', nj7);
+                            if (addToast) addToast(td3.icon + ' ' + td3.name + ' adopted!', 'success');
+                            callGemini('The space colony on Kepler-442b has adopted the ' + td3.name + ' cultural tradition from ' + td3.origin + ' heritage. Fact: ' + td3.fact + '. Narrate how the colony integrates this wisdom into daily life in 2-3 thoughtful sentences. Be respectful and authentic. Target: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (tradNarr) {
                               upd('tradNarration', tradNarr);
                               if (d.colonyTTS) colonySpeak(tradNarr, 'narrator');
-                            }).catch(function() {
+                            }).catch(function () {
                               if (d.colonyTTS) colonySpeak('Cultural tradition adopted. ' + td3.name + '. ' + td3.fact, 'narrator');
                             });
-                              var nl28 = gameLog.slice(); nl28.push(td3.icon + ' Tradition: ' + td3.name); upd('colonyLog', nl28);
-                              if (typeof addXP === 'function') addXP(20, 'Tradition: ' + td3.name);
-                            }
-                          },
-                          disabled: !canAdopt,
-                          className: 'px-2 py-1 rounded-lg text-[9px] font-bold ml-2 ' + (canAdopt ? 'bg-amber-600 text-white' : 'bg-slate-700 text-slate-500')
-                        }, '\uD83D\uDD2C 10 sci')
-                      );
-                    })
-                  )
-                ),
-                // Colony Values radar
-                d.showPolicy && React.createElement('div', { className: 'bg-slate-800/80 rounded-xl p-3 border border-slate-700 mb-3' },
-                  d.colonyCharter && React.createElement('div', { className: 'bg-amber-950/30 rounded-lg p-2 mb-2 border border-amber-800' },
-                    React.createElement('h5', { className: 'text-[9px] font-bold text-amber-300 mb-1' }, '\uD83D\uDCDC Colony Charter'),
-                    React.createElement('p', { className: 'text-[8px] text-amber-200 italic leading-relaxed' }, d.colonyCharter)
-                  ),
-                  React.createElement('h4', { className: 'text-[10px] font-bold text-slate-300 mb-2' }, '\uD83C\uDFAD Colony Identity'),
-                  React.createElement('div', { className: 'grid grid-cols-5 gap-1 text-center' },
-                    Object.keys(colonyValues).map(function(vk3) {
-                      var val = colonyValues[vk3];
-                      var icons = { collectivism: '\uD83E\uDD1D', innovation: '\uD83D\uDCA1', ecology: '\uD83C\uDF3F', tradition: '\uD83C\uDFDB\uFE0F', openness: '\uD83C\uDF10' };
-                      return React.createElement('div', { key: vk3 },
-                        React.createElement('div', { className: 'text-lg' }, icons[vk3] || '\u2022'),
-                        React.createElement('div', { className: 'text-[8px] text-slate-400 capitalize' }, vk3),
-                        React.createElement('div', { className: 'w-full bg-slate-700 rounded-full h-1.5 mt-1' },
-                          React.createElement('div', { className: 'h-1.5 rounded-full transition-all ' + (val > 60 ? 'bg-green-500' : val > 40 ? 'bg-amber-500' : 'bg-red-500'),
-                            style: { width: val + '%' } })
-                        ),
-                        React.createElement('div', { className: 'text-[7px] text-slate-500 mt-0.5' }, val)
-                      );
-                    })
-                  ),
-                  React.createElement('div', { className: 'mt-2 text-center' },
-                    React.createElement('div', { className: 'text-[9px] ' + (equity > 60 ? 'text-green-400' : equity > 35 ? 'text-amber-400' : 'text-red-400') },
-                      '\u2696\uFE0F Resource Equity: ' + equity + '%' + (equity > 75 ? ' \u2014 Fair & thriving' : equity > 50 ? ' \u2014 Moderate inequality' : equity > 25 ? ' \u2014 Growing inequality' : ' \u2014 Crisis! Settlers restless'))
-                  )
-                ),
-                // Research Panel
-                d.showResearch && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-violet-700 mb-3' },
-                  React.createElement('h4', { className: 'text-sm font-bold text-violet-400 mb-2' }, '\uD83E\uDDEC Research Tree'),
-                  React.createElement('p', { className: 'text-[9px] text-slate-400 mb-2' }, 'Spend science to unlock permanent bonuses. Complete all 10 for Research Victory! (' + researchQueue.length + '/10)'),
-                  React.createElement('div', { className: 'grid grid-cols-1 gap-2' },
-                    researchDefs.map(function(rd2) {
-                      var isResearched = researchQueue.indexOf(rd2.id) >= 0;
-                      var canResearch = !isResearched && resources.science >= rd2.cost;
-                      var eraReady = rd2.era === 'expansion' ? (era !== 'survival') : rd2.era === 'prosperity' ? (era === 'prosperity' || era === 'transcendence') : rd2.era === 'transcendence' ? era === 'transcendence' : true;
-                      return React.createElement('div', { key: rd2.id, className: 'p-2 rounded-xl border flex items-center justify-between ' +
-                        (isResearched ? 'border-violet-500 bg-violet-900/30' : eraReady && canResearch ? 'border-slate-600 bg-slate-900' : 'border-slate-700 bg-slate-900/50 opacity-50')
-                      },
-                        React.createElement('div', { className: 'flex items-center gap-2' },
-                          React.createElement('span', { className: 'text-lg' }, rd2.icon),
-                          React.createElement('div', null,
-                            React.createElement('span', { className: 'text-[10px] font-bold text-white' }, rd2.name),
-                            isResearched && React.createElement('span', { className: 'text-violet-400 ml-1 text-[8px]' }, '\u2705'),
-                            React.createElement('div', { className: 'text-[8px] text-slate-400' }, rd2.desc),
-                            !eraReady && React.createElement('div', { className: 'text-[8px] text-red-400' }, '\u26D4 Requires ' + rd2.era + ' era')
-                          )
-                        ),
-                        !isResearched && eraReady && React.createElement('button', {
-                          onClick: function() {
-                            if (resources.science >= rd2.cost) {
-                              // Science challenge gate for research
-                              upd('scienceGateLoading', true);
-                              var modeR = (d.colonyMode || 'mcq') === 'mcq' ?
-                                'Return ONLY valid JSON: {"question":"<question>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"explanation":"<2-3 sentences>"}. 6 options, shuffle correct (0-5).' :
-                                'Return ONLY valid JSON: {"question":"<question>","answer":"<1-3 words>","explanation":"<2-3 sentences>"}';
-                              callGemini('Generate a ' + rd2.domain + ' science question about ' + rd2.name + ' for a space colony research project. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. ' + modeR, true).then(function(result) {
-                                try {
-                                  var cl3 = result.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
-                                  var s4 = cl3.indexOf('{'); if (s4 > 0) cl3 = cl3.substring(s4);
-                                  var e4 = cl3.lastIndexOf('}'); if (e4 > 0) cl3 = cl3.substring(0, e4 + 1);
-                                  var rq = JSON.parse(cl3);
-                                  rq.building = '_research_' + rd2.id; rq.domain = rd2.domain; rq.mode = rq.options ? 'mcq' : 'freeResponse';
-                                  rq._researchId = rd2.id; rq._researchCost = rd2.cost;
-                                  upd('scienceGate', rq); upd('scienceGateLoading', false);
-                                } catch(err) { upd('scienceGateLoading', false); }
-                              }).catch(function() { upd('scienceGateLoading', false); });
-                            }
-                          },
-                          disabled: !canResearch,
-                          className: 'px-2 py-1 rounded-lg text-[9px] font-bold ' + (canResearch ? 'bg-violet-500 text-white' : 'bg-slate-700 text-slate-500')
-                        }, '\uD83D\uDD2C ' + rd2.cost + ' sci')
-                      );
-                    })
-                  )
-                ),
-                // Great Scientists Panel
-                d.showGreatSci && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-yellow-700 mb-3' },
-                  React.createElement('h4', { className: 'text-sm font-bold text-yellow-400 mb-2' }, '\uD83E\uDD16 Digital Mentors \u2014 Earth Archive AI'),
-                  React.createElement('p', { className: 'text-[9px] text-slate-400 mb-2' }, 'AI reconstructions of history\u2019s greatest minds, stored in the colony ship\u2019s quantum memory. Activated as your computing power grows. Click a mentor to consult them!'),
-                  greatScientists.length === 0 && React.createElement('div', { className: 'text-center text-slate-500 text-[10px] py-4' }, 'No Great Scientists yet. Maintain high science reserves!'),
-                  React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
-                    greatScientists.map(function(gs4, gi) {
-                      return React.createElement('div', { key: gi, className: 'bg-yellow-900/30 rounded-xl p-2 border border-yellow-800 text-center' },
-                        React.createElement('div', { className: 'text-xl' }, gs4.icon),
-                        React.createElement('div', { className: 'text-[9px] font-bold text-yellow-200 mt-1' }, gs4.name),
-                        React.createElement('div', { className: 'text-[7px] text-cyan-400' }, '\uD83E\uDD16 AI Simulation'),
-                        React.createElement('div', { className: 'text-[8px] text-yellow-400' }, '+' + gs4.amount + ' ' + gs4.bonus + '/turn'),
-                        React.createElement('div', { className: 'text-[7px] text-slate-400 mt-1 italic' }, gs4.fact),
-                        React.createElement('button', {
-                          onClick: function() {
-                            upd('mentorChatLoading', gs4.name);
-                            callGemini('You are an AI reconstruction of ' + gs4.name + ', a famous scientist, running on the quantum computers of a space colony on planet Kepler-442b in the far future. A colonist is consulting you for advice. Stay in character as ' + gs4.name + '. Respond warmly but share real scientific knowledge from your field (' + gs4.specialty + '). Reference your real historical achievements. Give practical advice that would help the colony. Keep response to 3-4 sentences. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Current colony situation: Turn ' + turn + ', ' + settlers.length + ' settlers, ' + buildings.length + ' buildings, ' + terraform + '% terraformed.', true).then(function(mentorResult) {
-                              upd('mentorChat', { name: gs4.name, icon: gs4.icon, text: mentorResult }); upd('mentorChatLoading', null);
-                              if (d.colonyTTS) colonySpeak(mentorResult, gs4.specialty === 'biology' || gs4.name === 'Mae Jemison' || gs4.name === 'Rachel Carson' || gs4.name === 'Rosalind Franklin' || gs4.name === 'Ada Lovelace' ? 'female' : 'narrator');
-                            }).catch(function() { upd('mentorChatLoading', null); });
-                          },
-                          className: 'mt-1 w-full py-1 rounded-lg bg-yellow-800 text-yellow-200 text-[8px] font-bold hover:bg-yellow-700'
-                        }, d.mentorChatLoading === gs4.name ? '\u23F3...' : '\uD83D\uDCAC Consult')
-                      );
-                    })
-                  ),
-                  d.mentorChat && React.createElement('div', { className: 'mt-2 bg-yellow-900/30 rounded-xl p-3 border border-yellow-700' },
-                    React.createElement('div', { className: 'flex justify-between items-center mb-1' },
-                      React.createElement('span', { className: 'text-[10px] font-bold text-yellow-300' }, d.mentorChat.icon + ' ' + d.mentorChat.name + ' (AI)'),
-                      React.createElement('button', { onClick: function() { upd('mentorChat', null); }, className: 'text-yellow-500 text-xs' }, '\u2715')
-                    ),
-                    React.createElement('p', { className: 'text-[9px] text-yellow-100 leading-relaxed italic' }, '\u201C' + d.mentorChat.text + '\u201D')
-                  ),
-                  greatScientists.length < greatSciDefs.length && React.createElement('div', { className: 'mt-2 text-[8px] text-slate-500 text-center' },
-                    '\u23F3 Next activation in ~' + (15 - (turn % 15)) + ' turns (need \uD83D\uDD2C 10+)'
-                  )
-                ),
-                // Settler Chat
-                d.settlerChat && d.talkSettler !== undefined && React.createElement('div', { className: 'bg-indigo-900/50 rounded-xl p-3 border border-indigo-700 mb-3' },
-                  React.createElement('div', { className: 'flex justify-between items-center mb-1' },
-                    React.createElement('span', { className: 'text-[10px] font-bold text-indigo-300' },
-                      (settlers[d.talkSettler] ? settlers[d.talkSettler].icon + ' ' + settlers[d.talkSettler].name : '') + ' says:'
-                    ),
-                    React.createElement('button', { onClick: function() { upd('settlerChat', null); }, className: 'text-indigo-400 text-xs' }, '\u2715')
-                  ),
-                  React.createElement('p', { className: 'text-[10px] text-indigo-200 leading-relaxed italic' },
-                    d.settlerChatLoading ? '\u23F3 Thinking...' : d.settlerChat
-                  )
-                ),
-                // Resource Conversion
-                React.createElement('div', { className: 'bg-slate-800 rounded-xl p-2 border border-slate-700 mb-3' },
-                  React.createElement('div', { className: 'flex items-center justify-between mb-1' },
-                    React.createElement('h4', { className: 'text-[9px] font-bold text-slate-500 uppercase' }, '\u267B Resource Converter'),
-                    React.createElement('span', { className: 'text-[8px] text-slate-600' }, 'Trade 5 of one for 3 of another')
-                  ),
-                  React.createElement('div', { className: 'flex gap-1 flex-wrap' },
-                    [['food','energy'],['energy','materials'],['materials','science'],['water','food'],['science','energy']].map(function(pair) {
-                      var from = pair[0]; var to = pair[1];
-                      var icons = { food: '\uD83C\uDF3E', energy: '\u26A1', water: '\uD83D\uDCA7', materials: '\uD83E\uDEA8', science: '\uD83D\uDD2C' };
-                      return React.createElement('button', {
-                        key: from + to,
-                        onClick: function() {
-                          if (resources[from] >= 5) {
-                            var nr6 = Object.assign({}, resources); nr6[from] -= 5; nr6[to] += 3; upd('colonyRes', nr6);
-                            if (addToast) addToast(icons[from] + ' 5 ' + from + ' \u2192 ' + icons[to] + ' 3 ' + to, 'info');
+                            var nl28 = gameLog.slice(); nl28.push(td3.icon + ' Tradition: ' + td3.name); upd('colonyLog', nl28);
+                            if (typeof addXP === 'function') addXP(20, 'Tradition: ' + td3.name);
                           }
                         },
-                        disabled: resources[from] < 5,
-                        className: 'px-2 py-1 rounded-lg text-[8px] border ' + (resources[from] >= 5 ? 'border-slate-600 bg-slate-900 text-slate-300 hover:border-indigo-500' : 'border-slate-700 bg-slate-900/50 text-slate-600')
-                      }, icons[from] + '\u2192' + icons[to]);
-                    })
-                  )
+                        disabled: !canAdopt,
+                        className: 'px-2 py-1 rounded-lg text-[9px] font-bold ml-2 ' + (canAdopt ? 'bg-amber-600 text-white' : 'bg-slate-700 text-slate-500')
+                      }, '\uD83D\uDD2C 10 sci')
+                    );
+                  })
+                )
+              ),
+              // Colony Values radar
+              d.showPolicy && React.createElement('div', { className: 'bg-slate-800/80 rounded-xl p-3 border border-slate-700 mb-3' },
+                d.colonyCharter && React.createElement('div', { className: 'bg-amber-950/30 rounded-lg p-2 mb-2 border border-amber-800' },
+                  React.createElement('h5', { className: 'text-[9px] font-bold text-amber-300 mb-1' }, '\uD83D\uDCDC Colony Charter'),
+                  React.createElement('p', { className: 'text-[8px] text-amber-200 italic leading-relaxed' }, d.colonyCharter)
                 ),
-                // Log
-                React.createElement('div', { className: 'bg-slate-800 rounded-xl p-2 border border-slate-700 max-h-28 overflow-y-auto' },
-                  React.createElement('h4', { className: 'text-[9px] font-bold text-slate-500 uppercase mb-1' }, '\uD83D\uDCDC Log'),
-                  gameLog.slice(-6).reverse().map(function(log, li) { return React.createElement('div', { key: li, className: 'text-[8px] text-slate-400 py-0.5 border-b border-slate-700/50' }, log); })
+                React.createElement('h4', { className: 'text-[10px] font-bold text-slate-300 mb-2' }, '\uD83C\uDFAD Colony Identity'),
+                React.createElement('div', { className: 'grid grid-cols-5 gap-1 text-center' },
+                  Object.keys(colonyValues).map(function (vk3) {
+                    var val = colonyValues[vk3];
+                    var icons = { collectivism: '\uD83E\uDD1D', innovation: '\uD83D\uDCA1', ecology: '\uD83C\uDF3F', tradition: '\uD83C\uDFDB\uFE0F', openness: '\uD83C\uDF10' };
+                    return React.createElement('div', { key: vk3 },
+                      React.createElement('div', { className: 'text-lg' }, icons[vk3] || '\u2022'),
+                      React.createElement('div', { className: 'text-[8px] text-slate-400 capitalize' }, vk3),
+                      React.createElement('div', { className: 'w-full bg-slate-700 rounded-full h-1.5 mt-1' },
+                        React.createElement('div', {
+                          className: 'h-1.5 rounded-full transition-all ' + (val > 60 ? 'bg-green-500' : val > 40 ? 'bg-amber-500' : 'bg-red-500'),
+                          style: { width: val + '%' }
+                        })
+                      ),
+                      React.createElement('div', { className: 'text-[7px] text-slate-500 mt-0.5' }, val)
+                    );
+                  })
                 ),
-                React.createElement('button', { onClick: function() { upd('colonyPhase', 'setup'); upd('colony', null); upd('colonyMap', null); upd('colonyTurn', 0); upd('colonyEvent', null); upd('scienceGate', null); upd('colonyLog', []); if (addToast) addToast('Colony reset', 'info'); },
-                  className: 'mt-2 w-full py-2 rounded-xl text-[9px] text-slate-500 bg-slate-800 border border-slate-700' }, '\u267B Abandon & Start New')
-              )
-            );
-          })(),
+                React.createElement('div', { className: 'mt-2 text-center' },
+                  React.createElement('div', { className: 'text-[9px] ' + (equity > 60 ? 'text-green-400' : equity > 35 ? 'text-amber-400' : 'text-red-400') },
+                    '\u2696\uFE0F Resource Equity: ' + equity + '%' + (equity > 75 ? ' \u2014 Fair & thriving' : equity > 50 ? ' \u2014 Moderate inequality' : equity > 25 ? ' \u2014 Growing inequality' : ' \u2014 Crisis! Settlers restless'))
+                )
+              ),
+              // Research Panel
+              d.showResearch && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-violet-700 mb-3' },
+                React.createElement('h4', { className: 'text-sm font-bold text-violet-400 mb-2' }, '\uD83E\uDDEC Research Tree'),
+                React.createElement('p', { className: 'text-[9px] text-slate-400 mb-2' }, 'Spend science to unlock permanent bonuses. Complete all 10 for Research Victory! (' + researchQueue.length + '/10)'),
+                React.createElement('div', { className: 'grid grid-cols-1 gap-2' },
+                  researchDefs.map(function (rd2) {
+                    var isResearched = researchQueue.indexOf(rd2.id) >= 0;
+                    var canResearch = !isResearched && resources.science >= rd2.cost;
+                    var eraReady = rd2.era === 'expansion' ? (era !== 'survival') : rd2.era === 'prosperity' ? (era === 'prosperity' || era === 'transcendence') : rd2.era === 'transcendence' ? era === 'transcendence' : true;
+                    return React.createElement('div', {
+                      key: rd2.id, className: 'p-2 rounded-xl border flex items-center justify-between ' +
+                        (isResearched ? 'border-violet-500 bg-violet-900/30' : eraReady && canResearch ? 'border-slate-600 bg-slate-900' : 'border-slate-700 bg-slate-900/50 opacity-50')
+                    },
+                      React.createElement('div', { className: 'flex items-center gap-2' },
+                        React.createElement('span', { className: 'text-lg' }, rd2.icon),
+                        React.createElement('div', null,
+                          React.createElement('span', { className: 'text-[10px] font-bold text-white' }, rd2.name),
+                          isResearched && React.createElement('span', { className: 'text-violet-400 ml-1 text-[8px]' }, '\u2705'),
+                          React.createElement('div', { className: 'text-[8px] text-slate-400' }, rd2.desc),
+                          !eraReady && React.createElement('div', { className: 'text-[8px] text-red-400' }, '\u26D4 Requires ' + rd2.era + ' era')
+                        )
+                      ),
+                      !isResearched && eraReady && React.createElement('button', {
+                        onClick: function () {
+                          if (resources.science >= rd2.cost) {
+                            // Science challenge gate for research
+                            upd('scienceGateLoading', true);
+                            var modeR = (d.colonyMode || 'mcq') === 'mcq' ?
+                              'Return ONLY valid JSON: {"question":"<question>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"explanation":"<2-3 sentences>"}. 6 options, shuffle correct (0-5).' :
+                              'Return ONLY valid JSON: {"question":"<question>","answer":"<1-3 words>","explanation":"<2-3 sentences>"}';
+                            callGemini('Generate a ' + rd2.domain + ' science question about ' + rd2.name + ' for a space colony research project. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. ' + modeR, true).then(function (result) {
+                              try {
+                                var cl3 = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+                                var s4 = cl3.indexOf('{'); if (s4 > 0) cl3 = cl3.substring(s4);
+                                var e4 = cl3.lastIndexOf('}'); if (e4 > 0) cl3 = cl3.substring(0, e4 + 1);
+                                var rq = JSON.parse(cl3);
+                                rq.building = '_research_' + rd2.id; rq.domain = rd2.domain; rq.mode = rq.options ? 'mcq' : 'freeResponse';
+                                rq._researchId = rd2.id; rq._researchCost = rd2.cost;
+                                upd('scienceGate', rq); upd('scienceGateLoading', false);
+                              } catch (err) { upd('scienceGateLoading', false); }
+                            }).catch(function () { upd('scienceGateLoading', false); });
+                          }
+                        },
+                        disabled: !canResearch,
+                        className: 'px-2 py-1 rounded-lg text-[9px] font-bold ' + (canResearch ? 'bg-violet-500 text-white' : 'bg-slate-700 text-slate-500')
+                      }, '\uD83D\uDD2C ' + rd2.cost + ' sci')
+                    );
+                  })
+                )
+              ),
+              // Great Scientists Panel
+              d.showGreatSci && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-yellow-700 mb-3' },
+                React.createElement('h4', { className: 'text-sm font-bold text-yellow-400 mb-2' }, '\uD83E\uDD16 Digital Mentors \u2014 Earth Archive AI'),
+                React.createElement('p', { className: 'text-[9px] text-slate-400 mb-2' }, 'AI reconstructions of history\u2019s greatest minds, stored in the colony ship\u2019s quantum memory. Activated as your computing power grows. Click a mentor to consult them!'),
+                greatScientists.length === 0 && React.createElement('div', { className: 'text-center text-slate-500 text-[10px] py-4' }, 'No Great Scientists yet. Maintain high science reserves!'),
+                React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
+                  greatScientists.map(function (gs4, gi) {
+                    return React.createElement('div', { key: gi, className: 'bg-yellow-900/30 rounded-xl p-2 border border-yellow-800 text-center' },
+                      React.createElement('div', { className: 'text-xl' }, gs4.icon),
+                      React.createElement('div', { className: 'text-[9px] font-bold text-yellow-200 mt-1' }, gs4.name),
+                      React.createElement('div', { className: 'text-[7px] text-cyan-400' }, '\uD83E\uDD16 AI Simulation'),
+                      React.createElement('div', { className: 'text-[8px] text-yellow-400' }, '+' + gs4.amount + ' ' + gs4.bonus + '/turn'),
+                      React.createElement('div', { className: 'text-[7px] text-slate-400 mt-1 italic' }, gs4.fact),
+                      React.createElement('button', {
+                        onClick: function () {
+                          upd('mentorChatLoading', gs4.name);
+                          callGemini('You are an AI reconstruction of ' + gs4.name + ', a famous scientist, running on the quantum computers of a space colony on planet Kepler-442b in the far future. A colonist is consulting you for advice. Stay in character as ' + gs4.name + '. Respond warmly but share real scientific knowledge from your field (' + gs4.specialty + '). Reference your real historical achievements. Give practical advice that would help the colony. Keep response to 3-4 sentences. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Current colony situation: Turn ' + turn + ', ' + settlers.length + ' settlers, ' + buildings.length + ' buildings, ' + terraform + '% terraformed.', true).then(function (mentorResult) {
+                            upd('mentorChat', { name: gs4.name, icon: gs4.icon, text: mentorResult }); upd('mentorChatLoading', null);
+                            if (d.colonyTTS) colonySpeak(mentorResult, gs4.specialty === 'biology' || gs4.name === 'Mae Jemison' || gs4.name === 'Rachel Carson' || gs4.name === 'Rosalind Franklin' || gs4.name === 'Ada Lovelace' ? 'female' : 'narrator');
+                          }).catch(function () { upd('mentorChatLoading', null); });
+                        },
+                        className: 'mt-1 w-full py-1 rounded-lg bg-yellow-800 text-yellow-200 text-[8px] font-bold hover:bg-yellow-700'
+                      }, d.mentorChatLoading === gs4.name ? '\u23F3...' : '\uD83D\uDCAC Consult')
+                    );
+                  })
+                ),
+                d.mentorChat && React.createElement('div', { className: 'mt-2 bg-yellow-900/30 rounded-xl p-3 border border-yellow-700' },
+                  React.createElement('div', { className: 'flex justify-between items-center mb-1' },
+                    React.createElement('span', { className: 'text-[10px] font-bold text-yellow-300' }, d.mentorChat.icon + ' ' + d.mentorChat.name + ' (AI)'),
+                    React.createElement('button', { onClick: function () { upd('mentorChat', null); }, className: 'text-yellow-500 text-xs' }, '\u2715')
+                  ),
+                  React.createElement('p', { className: 'text-[9px] text-yellow-100 leading-relaxed italic' }, '\u201C' + d.mentorChat.text + '\u201D')
+                ),
+                greatScientists.length < greatSciDefs.length && React.createElement('div', { className: 'mt-2 text-[8px] text-slate-500 text-center' },
+                  '\u23F3 Next activation in ~' + (15 - (turn % 15)) + ' turns (need \uD83D\uDD2C 10+)'
+                )
+              ),
+              // Settler Chat
+              d.settlerChat && d.talkSettler !== undefined && React.createElement('div', { className: 'bg-indigo-900/50 rounded-xl p-3 border border-indigo-700 mb-3' },
+                React.createElement('div', { className: 'flex justify-between items-center mb-1' },
+                  React.createElement('span', { className: 'text-[10px] font-bold text-indigo-300' },
+                    (settlers[d.talkSettler] ? settlers[d.talkSettler].icon + ' ' + settlers[d.talkSettler].name : '') + ' says:'
+                  ),
+                  React.createElement('button', { onClick: function () { upd('settlerChat', null); }, className: 'text-indigo-400 text-xs' }, '\u2715')
+                ),
+                React.createElement('p', { className: 'text-[10px] text-indigo-200 leading-relaxed italic' },
+                  d.settlerChatLoading ? '\u23F3 Thinking...' : d.settlerChat
+                )
+              ),
+              // Resource Conversion
+              React.createElement('div', { className: 'bg-slate-800 rounded-xl p-2 border border-slate-700 mb-3' },
+                React.createElement('div', { className: 'flex items-center justify-between mb-1' },
+                  React.createElement('h4', { className: 'text-[9px] font-bold text-slate-500 uppercase' }, '\u267B Resource Converter'),
+                  React.createElement('span', { className: 'text-[8px] text-slate-600' }, 'Trade 5 of one for 3 of another')
+                ),
+                React.createElement('div', { className: 'flex gap-1 flex-wrap' },
+                  [['food', 'energy'], ['energy', 'materials'], ['materials', 'science'], ['water', 'food'], ['science', 'energy']].map(function (pair) {
+                    var from = pair[0]; var to = pair[1];
+                    var icons = { food: '\uD83C\uDF3E', energy: '\u26A1', water: '\uD83D\uDCA7', materials: '\uD83E\uDEA8', science: '\uD83D\uDD2C' };
+                    return React.createElement('button', {
+                      key: from + to,
+                      onClick: function () {
+                        if (resources[from] >= 5) {
+                          var nr6 = Object.assign({}, resources); nr6[from] -= 5; nr6[to] += 3; upd('colonyRes', nr6);
+                          if (addToast) addToast(icons[from] + ' 5 ' + from + ' \u2192 ' + icons[to] + ' 3 ' + to, 'info');
+                        }
+                      },
+                      disabled: resources[from] < 5,
+                      className: 'px-2 py-1 rounded-lg text-[8px] border ' + (resources[from] >= 5 ? 'border-slate-600 bg-slate-900 text-slate-300 hover:border-indigo-500' : 'border-slate-700 bg-slate-900/50 text-slate-600')
+                    }, icons[from] + '\u2192' + icons[to]);
+                  })
+                )
+              ),
+              // Log
+              React.createElement('div', { className: 'bg-slate-800 rounded-xl p-2 border border-slate-700 max-h-28 overflow-y-auto' },
+                React.createElement('h4', { className: 'text-[9px] font-bold text-slate-500 uppercase mb-1' }, '\uD83D\uDCDC Log'),
+                gameLog.slice(-6).reverse().map(function (log, li) { return React.createElement('div', { key: li, className: 'text-[8px] text-slate-400 py-0.5 border-b border-slate-700/50' }, log); })
+              ),
+              React.createElement('button', {
+                onClick: function () { upd('colonyPhase', 'setup'); upd('colony', null); upd('colonyMap', null); upd('colonyTurn', 0); upd('colonyEvent', null); upd('scienceGate', null); upd('colonyLog', []); if (addToast) addToast('Colony reset', 'info'); },
+                className: 'mt-2 w-full py-2 rounded-xl text-[9px] text-slate-500 bg-slate-800 border border-slate-700'
+              }, '\u267B Abandon & Start New')
+            )
+          );
+        })(),
 
         // ═══════════════════════════════════════════════════════════════
         stemLabTab === 'explore' && stemLabTool === 'economicsLab' && (() => {
           var d = labToolData || {};
-          var upd = function(k,v) { setLabToolData(function(p) { var n = Object.assign({}, p); n[k]=v; return n; }); };
+          var upd = function (k, v) { setLabToolData(function (p) { var n = Object.assign({}, p); n[k] = v; return n; }); };
           var econTab = d.econTab || 'supplyDemand';
           if (!window._econCanvasRef) window._econCanvasRef = { current: null };
           var canvasRef = window._econCanvasRef;
@@ -34040,7 +34105,7 @@
           if ((d.pfCredit || 650) >= 800) econAchievements.push({ icon: '\u2B50', title: 'Excellent Credit', desc: 'Credit score 800+' });
           if ((d.pfHappiness || 70) >= 95) econAchievements.push({ icon: '\uD83C\uDF1F', title: 'Living the Dream', desc: '95%+ happiness' });
           if ((d.pfDebt || 0) === 0 && (d.pfAge || 22) > 25) econAchievements.push({ icon: '\u2705', title: 'Debt Free', desc: 'Eliminated all debt' });
-          var smTotalVal = (d.smCash || 10000) + (d.smCompanies || []).reduce(function(s,c) { return s + ((d.smPortfolio || {})[c.ticker] || 0) * c.price; }, 0);
+          var smTotalVal = (d.smCash || 10000) + (d.smCompanies || []).reduce(function (s, c) { return s + ((d.smPortfolio || {})[c.ticker] || 0) * c.price; }, 0);
           if (smTotalVal >= 15000) econAchievements.push({ icon: '\uD83D\uDCC8', title: 'Market Gains', desc: 'Portfolio grew 50%+' });
           if (smTotalVal >= 25000) econAchievements.push({ icon: '\uD83D\uDE80', title: 'Wall Street Wolf', desc: 'Portfolio hit $25K' });
           if ((d.smDay || 0) >= 30) econAchievements.push({ icon: '\uD83D\uDCC5', title: 'Seasoned Trader', desc: '30+ trading days' });
@@ -34067,7 +34132,7 @@
           if (conceptsLearned >= 30) econAchievements.push({ icon: '\uD83E\uDDD1\u200D\uD83C\uDF93', title: 'PhD Economist', desc: '30+ concepts learned' });
 
           // ── Canvas Rendering ── (non-hook: setTimeout to avoid conditional hook)
-          setTimeout(function() {
+          setTimeout(function () {
             var canvas = canvasRef.current;
             if (!canvas) return;
             var ctx = canvas.getContext('2d');
@@ -34084,58 +34149,58 @@
               // Grid
               ctx.strokeStyle = 'rgba(148,163,184,0.1)'; ctx.lineWidth = 1;
               for (var gi = 0; gi <= 10; gi++) {
-                ctx.beginPath(); ctx.moveTo(gx + gi*gw/10, gy); ctx.lineTo(gx + gi*gw/10, gy+gh); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(gx, gy + gi*gh/10); ctx.lineTo(gx+gw, gy + gi*gh/10); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(gx + gi * gw / 10, gy); ctx.lineTo(gx + gi * gw / 10, gy + gh); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(gx, gy + gi * gh / 10); ctx.lineTo(gx + gw, gy + gi * gh / 10); ctx.stroke();
               }
               // Axes
               ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2;
-              ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, gy+gh); ctx.lineTo(gx+gw, gy+gh); ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, gy + gh); ctx.lineTo(gx + gw, gy + gh); ctx.stroke();
               ctx.font = 'bold 14px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
-              ctx.fillText('Price ($)', gx - 50, gy + gh/2);
-              ctx.fillText('Quantity', gx + gw/2 - 25, gy + gh + 35);
+              ctx.fillText('Price ($)', gx - 50, gy + gh / 2);
+              ctx.fillText('Quantity', gx + gw / 2 - 25, gy + gh + 35);
               // Labels
               ctx.font = '11px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
               for (var li = 0; li <= 10; li++) {
-                ctx.fillText((100 - li*10).toString(), gx - 30, gy + li*gh/10 + 4);
-                ctx.fillText((li*10).toString(), gx + li*gw/10 - 5, gy + gh + 18);
+                ctx.fillText((100 - li * 10).toString(), gx - 30, gy + li * gh / 10 + 4);
+                ctx.fillText((li * 10).toString(), gx + li * gw / 10 - 5, gy + gh + 18);
               }
 
               // Demand curve (downward sloping, shifted)
               ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3; ctx.beginPath();
               for (var dx = 0; dx <= 100; dx++) {
                 var dp = 90 - dx * 0.8 + sdDemandShift * 5;
-                var px = gx + dx/100 * gw;
-                var py = gy + (100 - dp)/100 * gh;
+                var px = gx + dx / 100 * gw;
+                var py = gy + (100 - dp) / 100 * gh;
                 dx === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
               }
               ctx.stroke();
               ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 13px Inter, system-ui';
-              ctx.fillText('D' + (sdDemandShift !== 0 ? '\'' : ''), gx + gw - 30, gy + 30 - sdDemandShift*25);
+              ctx.fillText('D' + (sdDemandShift !== 0 ? '\'' : ''), gx + gw - 30, gy + 30 - sdDemandShift * 25);
 
               // Supply curve (upward sloping, shifted)
               ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.beginPath();
               for (var sx = 0; sx <= 100; sx++) {
                 var sp = 10 + sx * 0.8 + sdSupplyShift * 5;
-                var spx = gx + sx/100 * gw;
-                var spy = gy + (100 - sp)/100 * gh;
+                var spx = gx + sx / 100 * gw;
+                var spy = gy + (100 - sp) / 100 * gh;
                 sx === 0 ? ctx.moveTo(spx, spy) : ctx.lineTo(spx, spy);
               }
               ctx.stroke();
               ctx.fillStyle = '#ef4444';
-              ctx.fillText('S' + (sdSupplyShift !== 0 ? '\'' : ''), gx + gw - 30, gy + gh - 30 - sdSupplyShift*25);
+              ctx.fillText('S' + (sdSupplyShift !== 0 ? '\'' : ''), gx + gw - 30, gy + gh - 30 - sdSupplyShift * 25);
 
               // Equilibrium point
-              var eqQ = (80 - sdSupplyShift*5 + sdDemandShift*5) / 1.6;
+              var eqQ = (80 - sdSupplyShift * 5 + sdDemandShift * 5) / 1.6;
               var eqP = 10 + eqQ * 0.8 + sdSupplyShift * 5;
-              var eqPx = gx + eqQ/100 * gw;
-              var eqPy = gy + (100 - eqP)/100 * gh;
+              var eqPx = gx + eqQ / 100 * gw;
+              var eqPy = gy + (100 - eqP) / 100 * gh;
               // Dashed lines to axes
               ctx.setLineDash([5, 5]); ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5;
               ctx.beginPath(); ctx.moveTo(eqPx, eqPy); ctx.lineTo(gx, eqPy); ctx.stroke();
-              ctx.beginPath(); ctx.moveTo(eqPx, eqPy); ctx.lineTo(eqPx, gy+gh); ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(eqPx, eqPy); ctx.lineTo(eqPx, gy + gh); ctx.stroke();
               ctx.setLineDash([]);
               // Equilibrium dot
-              ctx.beginPath(); ctx.arc(eqPx, eqPy, 8, 0, Math.PI*2);
+              ctx.beginPath(); ctx.arc(eqPx, eqPy, 8, 0, Math.PI * 2);
               ctx.fillStyle = '#fbbf24'; ctx.fill();
               ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2; ctx.stroke();
               ctx.font = 'bold 12px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
@@ -34152,9 +34217,9 @@
 
               // Price floor
               if (sdPriceFloor > 0) {
-                var pfY = gy + (100 - sdPriceFloor)/100 * gh;
+                var pfY = gy + (100 - sdPriceFloor) / 100 * gh;
                 ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 2; ctx.setLineDash([8, 4]);
-                ctx.beginPath(); ctx.moveTo(gx, pfY); ctx.lineTo(gx+gw, pfY); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(gx, pfY); ctx.lineTo(gx + gw, pfY); ctx.stroke();
                 ctx.setLineDash([]); ctx.fillStyle = '#22c55e'; ctx.font = 'bold 11px Inter, system-ui';
                 ctx.fillText('Price Floor $' + sdPriceFloor, gx + gw - 120, pfY - 8);
                 if (sdPriceFloor > eqP) {
@@ -34164,9 +34229,9 @@
               }
               // Price ceiling
               if (sdPriceCeiling > 0) {
-                var pcY = gy + (100 - sdPriceCeiling)/100 * gh;
+                var pcY = gy + (100 - sdPriceCeiling) / 100 * gh;
                 ctx.strokeStyle = '#f97316'; ctx.lineWidth = 2; ctx.setLineDash([8, 4]);
-                ctx.beginPath(); ctx.moveTo(gx, pcY); ctx.lineTo(gx+gw, pcY); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(gx, pcY); ctx.lineTo(gx + gw, pcY); ctx.stroke();
                 ctx.setLineDash([]); ctx.fillStyle = '#f97316'; ctx.font = 'bold 11px Inter, system-ui';
                 ctx.fillText('Price Ceiling $' + sdPriceCeiling, gx + gw - 130, pcY + 18);
                 if (sdPriceCeiling < eqP) {
@@ -34177,7 +34242,7 @@
               // Tax wedge
               if (sdTax > 0) {
                 ctx.fillStyle = 'rgba(168,85,247,0.15)';
-                ctx.fillRect(eqPx - 20, eqPy - sdTax/100*gh/2, 40, sdTax/100*gh);
+                ctx.fillRect(eqPx - 20, eqPy - sdTax / 100 * gh / 2, 40, sdTax / 100 * gh);
                 ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#a855f7';
                 ctx.fillText('Tax: $' + sdTax, eqPx + 25, eqPy);
               }
@@ -34186,7 +34251,7 @@
             else if (econTab === 'personalFinance') {
               // ── Life Sim Net Worth Chart ──
               ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
-              var pieX = W * 0.25, pieY = H * 0.45, pieR = Math.min(W*0.2, H*0.35);
+              var pieX = W * 0.25, pieY = H * 0.45, pieR = Math.min(W * 0.2, H * 0.35);
               var expenses = [
                 { name: 'Rent/Housing', val: pfRent, color: '#ef4444' },
                 { name: 'Food', val: pfFood, color: '#f59e0b' },
@@ -34194,12 +34259,12 @@
                 { name: 'Entertainment', val: pfEntertain, color: '#8b5cf6' },
                 { name: 'Savings', val: pfSavings, color: '#22c55e' }
               ];
-              var totalExp = expenses.reduce(function(s,e) { return s + e.val; }, 0);
+              var totalExp = expenses.reduce(function (s, e) { return s + e.val; }, 0);
               var remaining = Math.max(0, pfIncome - totalExp);
               if (remaining > 0) expenses.push({ name: 'Remaining', val: remaining, color: '#64748b' });
-              var total = expenses.reduce(function(s,e) { return s + e.val; }, 0);
-              var angle = -Math.PI/2;
-              expenses.forEach(function(e) {
+              var total = expenses.reduce(function (s, e) { return s + e.val; }, 0);
+              var angle = -Math.PI / 2;
+              expenses.forEach(function (e) {
                 var sliceAngle = (e.val / total) * Math.PI * 2;
                 ctx.beginPath(); ctx.moveTo(pieX, pieY);
                 ctx.arc(pieX, pieY, pieR, angle, angle + sliceAngle);
@@ -34212,7 +34277,7 @@
                 if (e.val / total > 0.05) {
                   ctx.font = 'bold 11px Inter, system-ui'; ctx.fillStyle = '#fff';
                   ctx.textAlign = 'center';
-                  ctx.fillText(Math.round(e.val/total*100) + '%', lx, ly);
+                  ctx.fillText(Math.round(e.val / total * 100) + '%', lx, ly);
                   ctx.fillText(e.name, lx, ly + 14);
                 }
                 angle += sliceAngle;
@@ -34220,25 +34285,25 @@
               ctx.textAlign = 'left';
               // Income display
               ctx.font = 'bold 16px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
-              ctx.fillText('Monthly Income: $' + pfIncome.toLocaleString(), W*0.55, 40);
+              ctx.fillText('Monthly Income: $' + pfIncome.toLocaleString(), W * 0.55, 40);
               ctx.font = '13px Inter, system-ui'; ctx.fillStyle = totalExp > pfIncome ? '#ef4444' : '#22c55e';
-              ctx.fillText('Total Expenses: $' + totalExp.toLocaleString() + (totalExp > pfIncome ? ' \u26A0 OVER BUDGET' : ' \u2713 Within Budget'), W*0.55, 65);
+              ctx.fillText('Total Expenses: $' + totalExp.toLocaleString() + (totalExp > pfIncome ? ' \u26A0 OVER BUDGET' : ' \u2713 Within Budget'), W * 0.55, 65);
               ctx.fillStyle = '#94a3b8';
-              ctx.fillText('Savings Rate: ' + (pfSavings/pfIncome*100).toFixed(1) + '%', W*0.55, 85);
+              ctx.fillText('Savings Rate: ' + (pfSavings / pfIncome * 100).toFixed(1) + '%', W * 0.55, 85);
 
               // Compound Interest Chart (right side)
               ctx.font = 'bold 14px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
-              ctx.fillText('\uD83D\uDCC8 Compound Interest Growth', W*0.55, 130);
-              var ciX = W*0.55, ciY = 150, ciW = W*0.4, ciH = H - 200;
+              ctx.fillText('\uD83D\uDCC8 Compound Interest Growth', W * 0.55, 130);
+              var ciX = W * 0.55, ciY = 150, ciW = W * 0.4, ciH = H - 200;
               ctx.strokeStyle = '#334155'; ctx.lineWidth = 1;
               ctx.strokeRect(ciX, ciY, ciW, ciH);
               // Growth curve
-              var maxVal = pfPrincipal * Math.pow(1 + pfRate/100, pfYears);
+              var maxVal = pfPrincipal * Math.pow(1 + pfRate / 100, pfYears);
               ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 2.5; ctx.beginPath();
               for (var yr = 0; yr <= pfYears; yr++) {
-                var val = pfPrincipal * Math.pow(1 + pfRate/100, yr);
-                var cx2 = ciX + (yr/pfYears) * ciW;
-                var cy2 = ciY + ciH - (val/maxVal) * ciH;
+                var val = pfPrincipal * Math.pow(1 + pfRate / 100, yr);
+                var cx2 = ciX + (yr / pfYears) * ciW;
+                var cy2 = ciY + ciH - (val / maxVal) * ciH;
                 yr === 0 ? ctx.moveTo(cx2, cy2) : ctx.lineTo(cx2, cy2);
               }
               ctx.stroke();
@@ -34266,8 +34331,8 @@
               // Grid
               ctx.strokeStyle = 'rgba(148,163,184,0.08)'; ctx.lineWidth = 1;
               for (var cgi = 0; cgi <= 5; cgi++) {
-                var cgy = chY + cgi*chH/5;
-                ctx.beginPath(); ctx.moveTo(chX, cgy); ctx.lineTo(chX+chW, cgy); ctx.stroke();
+                var cgy = chY + cgi * chH / 5;
+                ctx.beginPath(); ctx.moveTo(chX, cgy); ctx.lineTo(chX + chW, cgy); ctx.stroke();
               }
               // Price history line
               var hist = co.history;
@@ -34278,8 +34343,8 @@
                 // Area fill
                 ctx.beginPath();
                 for (var hi = 0; hi < hist.length; hi++) {
-                  var hx = chX + (hi/(hist.length-1)) * chW;
-                  var hy = chY + chH - ((hist[hi]-minP)/priceRange) * chH;
+                  var hx = chX + (hi / (hist.length - 1)) * chW;
+                  var hy = chY + chH - ((hist[hi] - minP) / priceRange) * chH;
                   hi === 0 ? ctx.moveTo(hx, hy) : ctx.lineTo(hx, hy);
                 }
                 ctx.lineTo(chX + chW, chY + chH); ctx.lineTo(chX, chY + chH); ctx.closePath();
@@ -34289,18 +34354,18 @@
                 // Line
                 ctx.beginPath();
                 for (var hi2 = 0; hi2 < hist.length; hi2++) {
-                  var hx2 = chX + (hi2/(hist.length-1)) * chW;
-                  var hy2 = chY + chH - ((hist[hi2]-minP)/priceRange) * chH;
+                  var hx2 = chX + (hi2 / (hist.length - 1)) * chW;
+                  var hy2 = chY + chH - ((hist[hi2] - minP) / priceRange) * chH;
                   hi2 === 0 ? ctx.moveTo(hx2, hy2) : ctx.lineTo(hx2, hy2);
                 }
                 ctx.strokeStyle = co.color; ctx.lineWidth = 2.5; ctx.stroke();
                 // Moving average line (5-period)
                 if (hist.length >= 5) {
-                  ctx.strokeStyle = 'rgba(251,191,36,0.6)'; ctx.lineWidth = 1.5; ctx.setLineDash([3,3]); ctx.beginPath();
+                  ctx.strokeStyle = 'rgba(251,191,36,0.6)'; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]); ctx.beginPath();
                   for (var mai = 4; mai < hist.length; mai++) {
-                    var maVal = (hist[mai] + hist[mai-1] + hist[mai-2] + hist[mai-3] + hist[mai-4]) / 5;
-                    var maxr = chX + (mai/(hist.length-1)) * chW;
-                    var mayr = chY + chH - ((maVal-minP)/priceRange) * chH;
+                    var maVal = (hist[mai] + hist[mai - 1] + hist[mai - 2] + hist[mai - 3] + hist[mai - 4]) / 5;
+                    var maxr = chX + (mai / (hist.length - 1)) * chW;
+                    var mayr = chY + chH - ((maVal - minP) / priceRange) * chH;
                     mai === 4 ? ctx.moveTo(maxr, mayr) : ctx.lineTo(maxr, mayr);
                   }
                   ctx.stroke(); ctx.setLineDash([]);
@@ -34309,8 +34374,8 @@
                 }
                 // Current price dot
                 var lastX = chX + chW;
-                var lastY = chY + chH - ((hist[hist.length-1]-minP)/priceRange) * chH;
-                ctx.beginPath(); ctx.arc(lastX, lastY, 5, 0, Math.PI*2);
+                var lastY = chY + chH - ((hist[hist.length - 1] - minP) / priceRange) * chH;
+                ctx.beginPath(); ctx.arc(lastX, lastY, 5, 0, Math.PI * 2);
                 ctx.fillStyle = co.color; ctx.fill();
                 // Price labels
                 ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
@@ -34323,7 +34388,7 @@
               ctx.font = '13px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
               ctx.fillText(co.name + ' | ' + co.sector, chX + 80, 30);
               ctx.font = 'bold 16px Inter, system-ui';
-              var priceChange = hist.length > 1 ? hist[hist.length-1] - hist[hist.length-2] : 0;
+              var priceChange = hist.length > 1 ? hist[hist.length - 1] - hist[hist.length - 2] : 0;
               ctx.fillStyle = priceChange >= 0 ? '#22c55e' : '#ef4444';
               ctx.fillText('$' + co.price.toFixed(2) + ' ' + (priceChange >= 0 ? '\u25B2' : '\u25BC') + Math.abs(priceChange).toFixed(2), chX + chW - 150, 30);
 
@@ -34336,12 +34401,12 @@
               // Holdings
               var portVal = 0;
               var holdX = chX;
-              smCompanies.forEach(function(c, ci) {
+              smCompanies.forEach(function (c, ci) {
                 var shares = (smPortfolio[c.ticker] || 0);
                 if (shares > 0) {
                   portVal += shares * c.price;
                   ctx.fillStyle = c.color; ctx.font = '11px Inter, system-ui';
-                  ctx.fillText(c.ticker + ': ' + shares + ' ($' + (shares*c.price).toFixed(0) + ')', holdX, portY + 25);
+                  ctx.fillText(c.ticker + ': ' + shares + ' ($' + (shares * c.price).toFixed(0) + ')', holdX, portY + 25);
                   holdX += 140;
                 }
               });
@@ -34370,7 +34435,7 @@
                 { label: 'Trade Balance', val: macroTrade, unit: '%', good: macroTrade > 0, color: macroTrade > 0 ? '#22c55e' : macroTrade > -2 ? '#fbbf24' : '#ef4444' }
               ];
               var gaugeW = (W - 80) / 5;
-              indicators.forEach(function(ind, ii) {
+              indicators.forEach(function (ind, ii) {
                 var gx2 = 40 + ii * gaugeW;
                 // Background bar
                 ctx.fillStyle = '#1e293b'; ctx.fillRect(gx2, 60, gaugeW - 10, 50);
@@ -34390,21 +34455,21 @@
                 var mhX = 40, mhY = 140, mhW = W - 80, mhH = H - 200;
                 ctx.fillStyle = '#1e293b'; ctx.fillRect(mhX, mhY, mhW, mhH);
                 // Plot GDP line
-                var gdpVals = macroHistory.map(function(h) { return h.gdp; });
+                var gdpVals = macroHistory.map(function (h) { return h.gdp; });
                 var gdpMin = Math.min.apply(null, gdpVals) - 1;
                 var gdpMax = Math.max.apply(null, gdpVals) + 1;
                 var gdpRange = gdpMax - gdpMin || 1;
                 ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 2; ctx.beginPath();
-                gdpVals.forEach(function(v, vi) {
+                gdpVals.forEach(function (v, vi) {
                   var x = mhX + (vi / Math.max(1, gdpVals.length - 1)) * mhW;
                   var y = mhY + mhH - ((v - gdpMin) / gdpRange) * mhH;
                   vi === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
                 });
                 ctx.stroke();
                 // Plot inflation line
-                var infVals = macroHistory.map(function(h) { return h.inflation; });
-                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; ctx.setLineDash([5,3]); ctx.beginPath();
-                infVals.forEach(function(v, vi) {
+                var infVals = macroHistory.map(function (h) { return h.inflation; });
+                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; ctx.setLineDash([5, 3]); ctx.beginPath();
+                infVals.forEach(function (v, vi) {
                   var infRange = (Math.max.apply(null, infVals) + 1) - (Math.min.apply(null, infVals) - 1) || 1;
                   var infMin = Math.min.apply(null, infVals) - 1;
                   var x = mhX + (vi / Math.max(1, infVals.length - 1)) * mhW;
@@ -34418,12 +34483,12 @@
                 ctx.fillStyle = '#ef4444'; ctx.fillText('--- Inflation', mhX + 110, mhY + 15);
                 ctx.fillStyle = '#64748b';
                 ctx.fillText('Year ' + (macroHistory[0].year || 2025), mhX, mhY + mhH + 15);
-                ctx.fillText('Year ' + (macroHistory[macroHistory.length-1].year || macroYear), mhX + mhW - 60, mhY + mhH + 15);
+                ctx.fillText('Year ' + (macroHistory[macroHistory.length - 1].year || macroYear), mhX + mhW - 60, mhY + mhH + 15);
               } else {
                 ctx.font = '14px Inter, system-ui'; ctx.fillStyle = '#64748b'; ctx.textAlign = 'center';
-                ctx.fillText('Click "Next Year" to simulate national economic policy changes', W/2, H/2);
+                ctx.fillText('Click "Next Year" to simulate national economic policy changes', W / 2, H / 2);
                 ctx.font = '11px Inter, system-ui'; ctx.fillStyle = '#475569';
-                ctx.fillText('AI will generate policy events that cascade to all other simulators', W/2, H/2 + 25);
+                ctx.fillText('AI will generate policy events that cascade to all other simulators', W / 2, H / 2 + 25);
                 ctx.textAlign = 'left';
               }
             }
@@ -34433,22 +34498,22 @@
               ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
               // Weather display
               var weatherEmoji = enWeather === 'sunny' ? '\u2600\uFE0F' : enWeather === 'cloudy' ? '\u2601\uFE0F' : enWeather === 'rainy' ? '\uD83C\uDF27\uFE0F' : '\uD83C\uDF24\uFE0F';
-              ctx.font = 'bold 40px Inter, system-ui'; ctx.fillText(weatherEmoji, W/2 - 25, 60);
+              ctx.font = 'bold 40px Inter, system-ui'; ctx.fillText(weatherEmoji, W / 2 - 25, 60);
               ctx.font = 'bold 16px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
-              ctx.fillText('Day ' + enDay + ' | ' + enWeather.charAt(0).toUpperCase() + enWeather.slice(1), W/2 - 60, 90);
+              ctx.fillText('Day ' + enDay + ' | ' + enWeather.charAt(0).toUpperCase() + enWeather.slice(1), W / 2 - 60, 90);
 
               // Lemonade stand illustration
               ctx.fillStyle = '#fbbf24';
-              ctx.fillRect(W/2 - 60, 110, 120, 80);
+              ctx.fillRect(W / 2 - 60, 110, 120, 80);
               ctx.fillStyle = '#f59e0b';
-              ctx.beginPath(); ctx.moveTo(W/2 - 80, 110); ctx.lineTo(W/2, 85); ctx.lineTo(W/2 + 80, 110); ctx.closePath(); ctx.fill();
+              ctx.beginPath(); ctx.moveTo(W / 2 - 80, 110); ctx.lineTo(W / 2, 85); ctx.lineTo(W / 2 + 80, 110); ctx.closePath(); ctx.fill();
               ctx.font = 'bold 12px Inter, system-ui'; ctx.fillStyle = '#7c2d12';
-              ctx.fillText('LEMONADE', W/2 - 35, 155);
-              ctx.fillText('$' + enPrice.toFixed(2), W/2 - 15, 175);
+              ctx.fillText('LEMONADE', W / 2 - 35, 155);
+              ctx.fillText('$' + enPrice.toFixed(2), W / 2 - 15, 175);
 
               // Cash register
               ctx.font = 'bold 20px Inter, system-ui'; ctx.fillStyle = '#22c55e';
-              ctx.fillText('\uD83D\uDCB5 $' + enCash.toFixed(2), W/2 - 50, 230);
+              ctx.fillText('\uD83D\uDCB5 $' + enCash.toFixed(2), W / 2 - 50, 230);
 
               // Daily stats
               ctx.font = '13px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
@@ -34469,26 +34534,26 @@
 
               // Profit history chart
               if (enHistory.length > 0) {
-                var phX = W*0.55, phY = 260, phW = W*0.4, phH = 170;
+                var phX = W * 0.55, phY = 260, phW = W * 0.4, phH = 170;
                 ctx.fillStyle = '#1e293b'; ctx.fillRect(phX, phY, phW, phH);
                 ctx.font = 'bold 12px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
                 ctx.fillText('Profit History', phX, phY - 8);
-                var maxProfit = Math.max.apply(null, enHistory.map(function(h){return Math.abs(h.profit);})) || 1;
-                var zeroY = phY + phH/2;
+                var maxProfit = Math.max.apply(null, enHistory.map(function (h) { return Math.abs(h.profit); })) || 1;
+                var zeroY = phY + phH / 2;
                 ctx.strokeStyle = '#475569'; ctx.lineWidth = 1;
-                ctx.beginPath(); ctx.moveTo(phX, zeroY); ctx.lineTo(phX+phW, zeroY); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(phX, zeroY); ctx.lineTo(phX + phW, zeroY); ctx.stroke();
                 ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 2; ctx.beginPath();
-                enHistory.forEach(function(h, hi) {
-                  var hx3 = phX + (hi/(Math.max(1,enHistory.length-1))) * phW;
-                  var hy3 = zeroY - (h.profit/maxProfit) * phH/2;
+                enHistory.forEach(function (h, hi) {
+                  var hx3 = phX + (hi / (Math.max(1, enHistory.length - 1))) * phW;
+                  var hy3 = zeroY - (h.profit / maxProfit) * phH / 2;
                   hi === 0 ? ctx.moveTo(hx3, hy3) : ctx.lineTo(hx3, hy3);
                 });
                 ctx.stroke();
                 // Dots
-                enHistory.forEach(function(h, hi) {
-                  var hx4 = phX + (hi/(Math.max(1,enHistory.length-1))) * phW;
-                  var hy4 = zeroY - (h.profit/maxProfit) * phH/2;
-                  ctx.beginPath(); ctx.arc(hx4, hy4, 3, 0, Math.PI*2);
+                enHistory.forEach(function (h, hi) {
+                  var hx4 = phX + (hi / (Math.max(1, enHistory.length - 1))) * phW;
+                  var hy4 = zeroY - (h.profit / maxProfit) * phH / 2;
+                  ctx.beginPath(); ctx.arc(hx4, hy4, 3, 0, Math.PI * 2);
                   ctx.fillStyle = h.profit >= 0 ? '#22c55e' : '#ef4444'; ctx.fill();
                 });
               }
@@ -34499,7 +34564,7 @@
             // Header
             React.createElement('div', { className: 'flex items-center gap-3 mb-4' },
               React.createElement('button', {
-                onClick: function() { setStemLabTool(null); },
+                onClick: function () { setStemLabTool(null); },
                 className: 'text-slate-400 hover:text-white transition-colors text-lg'
               }, '\u2190'),
               React.createElement('h2', { className: 'text-xl font-bold text-slate-800' }, '\uD83D\uDCB0 Economics Lab'),
@@ -34507,30 +34572,30 @@
               React.createElement('span', {
                 className: 'text-[9px] font-bold px-2 py-0.5 rounded-full border ' +
                   (econLiteracyScore >= 80 ? 'text-green-700 bg-green-50 border-green-200' :
-                   econLiteracyScore >= 50 ? 'text-blue-700 bg-blue-50 border-blue-200' :
-                   econLiteracyScore >= 25 ? 'text-amber-700 bg-amber-50 border-amber-200' :
-                   'text-slate-500 bg-slate-50 border-slate-200')
+                    econLiteracyScore >= 50 ? 'text-blue-700 bg-blue-50 border-blue-200' :
+                      econLiteracyScore >= 25 ? 'text-amber-700 bg-amber-50 border-amber-200' :
+                        'text-slate-500 bg-slate-50 border-slate-200')
               }, '\uD83C\uDF93 Literacy: ' + econLiteracyScore + '%'),
               React.createElement('span', { className: 'text-[9px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' }, '\uD83D\uDCDA AI-Powered Learning'),
               econAchievements.length > 0 && React.createElement('span', {
                 className: 'text-[9px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 cursor-pointer',
-                onClick: function() { upd('showAchievements', !(d.showAchievements)); }
+                onClick: function () { upd('showAchievements', !(d.showAchievements)); }
               }, '\uD83C\uDFC6 ' + econAchievements.length + ' achievements'),
               React.createElement('span', {
                 className: 'text-[9px] text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200 cursor-pointer',
-                onClick: function() { upd('showGlossary', !(d.showGlossary)); }
+                onClick: function () { upd('showGlossary', !(d.showGlossary)); }
               }, '\uD83D\uDCD6 Glossary (' + (d.econGlossary || []).length + ')'),
               React.createElement('button', {
-                onClick: function() { upd('showQuiz', !(d.showQuiz)); },
+                onClick: function () { upd('showQuiz', !(d.showQuiz)); },
                 className: 'text-[9px] text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 cursor-pointer font-bold'
               }, '\u270D\uFE0F Quiz Me'),
               React.createElement('button', {
-                onClick: function() { upd('showAdvisor', !(d.showAdvisor)); },
+                onClick: function () { upd('showAdvisor', !(d.showAdvisor)); },
                 className: 'text-[9px] text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200 cursor-pointer font-bold'
               }, '\uD83E\uDDD1\u200D\uD83C\uDFEB Ask Tutor'),
               React.createElement('select', {
                 value: d.econDifficulty || 'medium',
-                onChange: function(e) { upd('econDifficulty', e.target.value); if (addToast) addToast('Difficulty: ' + e.target.value.toUpperCase(), 'info'); },
+                onChange: function (e) { upd('econDifficulty', e.target.value); if (addToast) addToast('Difficulty: ' + e.target.value.toUpperCase(), 'info'); },
                 className: 'text-[9px] bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5 text-slate-600 outline-none cursor-pointer'
               },
                 React.createElement('option', { value: 'easy' }, '\uD83C\uDF31 Easy'),
@@ -34546,10 +34611,10 @@
                 { id: 'stockMarket', label: '\uD83D\uDCC8 Stock Market' },
                 { id: 'entrepreneur', label: '\uD83C\uDFEA Business Sim' },
                 { id: 'macro', label: '\uD83C\uDFDB\uFE0F National Economy' }
-              ].map(function(tab) {
+              ].map(function (tab) {
                 return React.createElement('button', {
                   key: tab.id,
-                  onClick: function() { upd('econTab', tab.id); },
+                  onClick: function () { upd('econTab', tab.id); },
                   className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ' +
                     (econTab === tab.id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700')
                 }, tab.label);
@@ -34559,10 +34624,10 @@
             d.showAchievements && React.createElement('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200 mb-4' },
               React.createElement('div', { className: 'flex justify-between items-center mb-3' },
                 React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC6 Achievements (' + econAchievements.length + '/20)'),
-                React.createElement('button', { onClick: function() { upd('showAchievements', false); }, className: 'text-amber-400 hover:text-amber-600 text-xs' }, '\u2715')
+                React.createElement('button', { onClick: function () { upd('showAchievements', false); }, className: 'text-amber-400 hover:text-amber-600 text-xs' }, '\u2715')
               ),
               React.createElement('div', { className: 'grid grid-cols-4 gap-2' },
-                econAchievements.map(function(a, ai) {
+                econAchievements.map(function (a, ai) {
                   return React.createElement('div', { key: ai, className: 'bg-white rounded-lg p-2 text-center border border-amber-100 shadow-sm' },
                     React.createElement('div', { className: 'text-xl' }, a.icon),
                     React.createElement('div', { className: 'text-[9px] font-bold text-amber-800 mt-1' }, a.title),
@@ -34575,37 +34640,37 @@
             d.showGlossary && React.createElement('div', { className: 'bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-4 border border-violet-200 mb-4 max-h-60 overflow-y-auto' },
               React.createElement('div', { className: 'flex justify-between items-center mb-3' },
                 React.createElement('h4', { className: 'text-sm font-bold text-violet-800' }, '\uD83D\uDCD6 Economics Glossary (' + (d.econGlossary || []).length + ' concepts learned)'),
-                React.createElement('button', { onClick: function() { upd('showGlossary', false); }, className: 'text-violet-400 hover:text-violet-600 text-xs' }, '\u2715')
+                React.createElement('button', { onClick: function () { upd('showGlossary', false); }, className: 'text-violet-400 hover:text-violet-600 text-xs' }, '\u2715')
               ),
               (d.econGlossary || []).length === 0 ? React.createElement('p', { className: 'text-xs text-violet-500 text-center py-4' }, 'Play the simulations to discover economics concepts! Each event teaches a new concept that gets added here.') :
-              React.createElement('div', { className: 'space-y-2' },
-                (d.econGlossary || []).map(function(g, gi) {
-                  return React.createElement('div', { key: gi, className: 'bg-white rounded-lg p-2 border border-violet-100' },
-                    React.createElement('div', { className: 'flex items-center gap-2' },
-                      React.createElement('span', { className: 'text-[9px] px-1.5 py-0.5 rounded bg-violet-100 text-violet-700 font-bold' }, g.tab),
-                      React.createElement('span', { className: 'text-[10px] font-bold text-slate-700' }, g.concept)
-                    ),
-                    React.createElement('p', { className: 'text-[9px] text-slate-500 mt-1' }, g.explanation)
-                  );
-                })
-              )
+                React.createElement('div', { className: 'space-y-2' },
+                  (d.econGlossary || []).map(function (g, gi) {
+                    return React.createElement('div', { key: gi, className: 'bg-white rounded-lg p-2 border border-violet-100' },
+                      React.createElement('div', { className: 'flex items-center gap-2' },
+                        React.createElement('span', { className: 'text-[9px] px-1.5 py-0.5 rounded bg-violet-100 text-violet-700 font-bold' }, g.tab),
+                        React.createElement('span', { className: 'text-[10px] font-bold text-slate-700' }, g.concept)
+                      ),
+                      React.createElement('p', { className: 'text-[9px] text-slate-500 mt-1' }, g.explanation)
+                    );
+                  })
+                )
             ),
             // Quiz mode
             d.showQuiz && React.createElement('div', { className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200 mb-4' },
               React.createElement('div', { className: 'flex justify-between items-center mb-3' },
                 React.createElement('h4', { className: 'text-sm font-bold text-rose-800' }, '\u270D\uFE0F Economics Quiz'),
-                React.createElement('button', { onClick: function() { upd('showQuiz', false); upd('quizQuestion', null); }, className: 'text-rose-400 hover:text-rose-600 text-xs' }, '\u2715')
+                React.createElement('button', { onClick: function () { upd('showQuiz', false); upd('quizQuestion', null); }, className: 'text-rose-400 hover:text-rose-600 text-xs' }, '\u2715')
               ),
               d.quizQuestion ? React.createElement('div', null,
                 React.createElement('p', { className: 'text-xs text-slate-700 font-bold mb-3' }, d.quizQuestion.question),
                 React.createElement('div', { className: 'grid gap-2' },
-                  (d.quizQuestion.options || []).map(function(opt, oi) {
+                  (d.quizQuestion.options || []).map(function (opt, oi) {
                     var isAnswered = d.quizAnswer !== undefined && d.quizAnswer !== null;
                     var isCorrect = oi === d.quizQuestion.correctIndex;
                     var isSelected = d.quizAnswer === oi;
                     return React.createElement('button', {
                       key: oi,
-                      onClick: function() {
+                      onClick: function () {
                         if (isAnswered) return;
                         upd('quizAnswer', oi);
                         upd('quizScore', (d.quizScore || 0) + (oi === d.quizQuestion.correctIndex ? 1 : 0));
@@ -34614,9 +34679,9 @@
                       },
                       className: 'w-full text-left p-3 rounded-xl border-2 text-xs transition-all ' +
                         (isAnswered && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
-                         isAnswered && isSelected && !isCorrect ? 'border-red-400 bg-red-50 text-red-800' :
-                         isAnswered ? 'border-slate-200 bg-white text-slate-400' :
-                         'border-rose-100 bg-white hover:border-rose-400 text-slate-700')
+                          isAnswered && isSelected && !isCorrect ? 'border-red-400 bg-red-50 text-red-800' :
+                            isAnswered ? 'border-slate-200 bg-white text-slate-400' :
+                              'border-rose-100 bg-white hover:border-rose-400 text-slate-700')
                     }, (isAnswered && isCorrect ? '\u2705 ' : isAnswered && isSelected ? '\u274C ' : '') + opt);
                   })
                 ),
@@ -34627,38 +34692,38 @@
                   )
                 ),
                 d.quizAnswer !== undefined && d.quizAnswer !== null && React.createElement('button', {
-                  onClick: function() { upd('quizQuestion', null); upd('quizAnswer', null); },
+                  onClick: function () { upd('quizQuestion', null); upd('quizAnswer', null); },
                   className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-rose-100 text-rose-700 border border-rose-200'
                 }, '\u27A1\uFE0F Next Question')
               ) :
-              React.createElement('div', { className: 'text-center' },
-                React.createElement('div', { className: 'text-xs text-slate-500 mb-2' }, 'Score: ' + (d.quizScore || 0) + '/' + (d.quizTotal || 0) + (d.quizTotal > 0 ? ' (' + Math.round((d.quizScore || 0)/(d.quizTotal || 1)*100) + '%)' : '')),
-                React.createElement('button', {
-                  onClick: function() {
-                    upd('quizLoading', true);
-                    var topics = (d.econGlossary || []).map(function(g) { return g.concept; }).join(', ') || 'supply and demand, inflation, GDP, interest rates, opportunity cost';
-                    var prompt = 'You are an economics teacher creating a quiz. The student has studied these topics: ' + topics + '.\n\nGenerate 1 multiple-choice question. Return ONLY valid JSON:\n{"question":"<question text>","options":["<option A>","<option B>","<option C>","<option D>"],"correctIndex":<0-3>,"explanation":"<2-3 sentence explanation of the correct answer and the underlying economic concept>"}\n\nMake questions that test UNDERSTANDING, not just definitions. Include real-world application questions, cause-and-effect reasoning, and scenario-based problems. Vary difficulty.';
-                    callGemini(prompt, true).then(function(result) {
-                      try {
-                        var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-                        var s = cleaned.indexOf('{'); if (s > 0) cleaned = cleaned.substring(s);
-                        var e = cleaned.lastIndexOf('}'); if (e > 0) cleaned = cleaned.substring(0, e + 1);
-                        upd('quizQuestion', JSON.parse(cleaned));
-                        upd('quizAnswer', null);
-                        upd('quizLoading', false);
-                      } catch(err) { upd('quizLoading', false); if (addToast) addToast('Quiz generation failed', 'error'); }
-                    }).catch(function() { upd('quizLoading', false); });
-                  },
-                  disabled: d.quizLoading,
-                  className: 'py-3 px-8 rounded-xl text-sm font-bold transition-all ' + (d.quizLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-rose-500 to-pink-500 text-white hover:shadow-lg')
-                }, d.quizLoading ? '\u23F3 Generating...' : '\uD83C\uDFB2 Generate Quiz Question')
-              )
+                React.createElement('div', { className: 'text-center' },
+                  React.createElement('div', { className: 'text-xs text-slate-500 mb-2' }, 'Score: ' + (d.quizScore || 0) + '/' + (d.quizTotal || 0) + (d.quizTotal > 0 ? ' (' + Math.round((d.quizScore || 0) / (d.quizTotal || 1) * 100) + '%)' : '')),
+                  React.createElement('button', {
+                    onClick: function () {
+                      upd('quizLoading', true);
+                      var topics = (d.econGlossary || []).map(function (g) { return g.concept; }).join(', ') || 'supply and demand, inflation, GDP, interest rates, opportunity cost';
+                      var prompt = 'You are an economics teacher creating a quiz. The student has studied these topics: ' + topics + '.\n\nGenerate 1 multiple-choice question. Return ONLY valid JSON:\n{"question":"<question text>","options":["<option A>","<option B>","<option C>","<option D>"],"correctIndex":<0-3>,"explanation":"<2-3 sentence explanation of the correct answer and the underlying economic concept>"}\n\nMake questions that test UNDERSTANDING, not just definitions. Include real-world application questions, cause-and-effect reasoning, and scenario-based problems. Vary difficulty.';
+                      callGemini(prompt, true).then(function (result) {
+                        try {
+                          var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+                          var s = cleaned.indexOf('{'); if (s > 0) cleaned = cleaned.substring(s);
+                          var e = cleaned.lastIndexOf('}'); if (e > 0) cleaned = cleaned.substring(0, e + 1);
+                          upd('quizQuestion', JSON.parse(cleaned));
+                          upd('quizAnswer', null);
+                          upd('quizLoading', false);
+                        } catch (err) { upd('quizLoading', false); if (addToast) addToast('Quiz generation failed', 'error'); }
+                      }).catch(function () { upd('quizLoading', false); });
+                    },
+                    disabled: d.quizLoading,
+                    className: 'py-3 px-8 rounded-xl text-sm font-bold transition-all ' + (d.quizLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-rose-500 to-pink-500 text-white hover:shadow-lg')
+                  }, d.quizLoading ? '\u23F3 Generating...' : '\uD83C\uDFB2 Generate Quiz Question')
+                )
             ),
             // AI Economic Advisor
             d.showAdvisor && React.createElement('div', { className: 'bg-gradient-to-r from-sky-50 to-cyan-50 rounded-xl p-4 border border-sky-200 mb-4' },
               React.createElement('div', { className: 'flex justify-between items-center mb-3' },
                 React.createElement('h4', { className: 'text-sm font-bold text-sky-800' }, '\uD83E\uDDD1\u200D\uD83C\uDFEB AI Economics Tutor'),
-                React.createElement('button', { onClick: function() { upd('showAdvisor', false); }, className: 'text-sky-400 hover:text-sky-600 text-xs' }, '\u2715')
+                React.createElement('button', { onClick: function () { upd('showAdvisor', false); }, className: 'text-sky-400 hover:text-sky-600 text-xs' }, '\u2715')
               ),
               d.advisorAnswer && React.createElement('div', { className: 'bg-white rounded-lg p-3 border border-sky-100 mb-3 text-xs text-slate-700 leading-relaxed whitespace-pre-line max-h-48 overflow-y-auto' },
                 d.advisorAnswer
@@ -34667,28 +34732,28 @@
                 React.createElement('input', {
                   type: 'text',
                   value: d.advisorInput || '',
-                  onChange: function(e) { upd('advisorInput', e.target.value); },
-                  onKeyDown: function(e) { if (e.key === 'Enter' && (d.advisorInput || '').trim()) { document.getElementById('econ-advisor-ask').click(); } },
+                  onChange: function (e) { upd('advisorInput', e.target.value); },
+                  onKeyDown: function (e) { if (e.key === 'Enter' && (d.advisorInput || '').trim()) { document.getElementById('econ-advisor-ask').click(); } },
                   placeholder: 'Ask any economics question...',
                   className: 'flex-1 px-3 py-2 border-2 border-sky-200 rounded-xl text-xs focus:border-sky-400 outline-none'
                 }),
                 React.createElement('button', {
                   id: 'econ-advisor-ask',
-                  onClick: function() {
+                  onClick: function () {
                     if (!(d.advisorInput || '').trim()) return;
                     upd('advisorLoading', true);
                     var context = 'Student is using an economics simulator with: Supply & Demand (equilibrium, shifts, price controls), Personal Finance Life Sim (age ' + (d.pfAge || 22) + ', salary $' + (d.pfSalary || 35000) + ', credit ' + (d.pfCredit || 650) + '), Stock Market (day ' + (d.smDay || 0) + '), Business Sim (day ' + (d.enBizDay || 0) + '), and National Economy (GDP ' + (d.macroGDP || 2.1) + '%, inflation ' + (d.macroInflation || 3.2) + '%, interest ' + (d.macroInterest || 5.25) + '%).';
                     var prompt = 'You are a friendly economics tutor for students. ' + context + '\n\nStudent asks: "' + d.advisorInput.trim() + '"\n\nProvide a clear, educational answer. Use real-world examples. If relevant, explain how this connects to what the student is experiencing in their simulation. Keep the answer concise but thorough (3-5 paragraphs max). Use simple language appropriate for students.';
-                    callGemini(prompt, true).then(function(result) {
+                    callGemini(prompt, true).then(function (result) {
                       upd('advisorAnswer', result);
                       upd('advisorLoading', false);
                       upd('advisorInput', '');
                       // Add to glossary
                       var gl = (d.econGlossary || []).slice();
-                      var exists = gl.some(function(g) { return g.concept === d.advisorInput.trim().substring(0, 50); });
+                      var exists = gl.some(function (g) { return g.concept === d.advisorInput.trim().substring(0, 50); });
                       if (!exists && gl.length < 100) { gl.push({ tab: 'Advisor', concept: d.advisorInput.trim().substring(0, 50), explanation: result.substring(0, 200) + '...' }); upd('econGlossary', gl); }
                       if (typeof addXP === 'function') addXP(10, 'Asked an economics question');
-                    }).catch(function() { upd('advisorLoading', false); });
+                    }).catch(function () { upd('advisorLoading', false); });
                   },
                   disabled: d.advisorLoading || !(d.advisorInput || '').trim(),
                   className: 'px-4 py-2 rounded-xl text-xs font-bold ' + (d.advisorLoading ? 'bg-slate-300 text-slate-500' : 'bg-sky-500 text-white')
@@ -34696,10 +34761,10 @@
               ),
               // Quick question suggestions
               !d.advisorAnswer && React.createElement('div', { className: 'flex flex-wrap gap-1 mt-2' },
-                ['What is inflation?', 'How do interest rates work?', 'What causes a recession?', 'Why diversify investments?', 'What is GDP?', 'How do taxes work?'].map(function(q) {
+                ['What is inflation?', 'How do interest rates work?', 'What causes a recession?', 'Why diversify investments?', 'What is GDP?', 'How do taxes work?'].map(function (q) {
                   return React.createElement('button', {
                     key: q,
-                    onClick: function() { upd('advisorInput', q); },
+                    onClick: function () { upd('advisorInput', q); },
                     className: 'text-[9px] px-2 py-1 rounded-full bg-sky-100 text-sky-600 hover:bg-sky-200'
                   }, q);
                 })
@@ -34758,32 +34823,42 @@
                 )
               ),
               React.createElement('div', { className: 'grid grid-cols-2 gap-4' },
-              React.createElement('div', { className: 'space-y-3 bg-blue-50 rounded-xl p-4 border border-blue-200' },
-                React.createElement('h4', { className: 'text-sm font-bold text-blue-700' }, '\uD83D\uDCC9 Curve Shifts'),
-                React.createElement('label', { className: 'block text-xs text-blue-600' }, 'Demand Shift: ' + sdDemandShift),
-                React.createElement('input', { type: 'range', min: -5, max: 5, value: sdDemandShift,
-                  onChange: function(e) { upd('sdDemandShift', parseInt(e.target.value)); },
-                  className: 'w-full accent-blue-500' }),
-                React.createElement('label', { className: 'block text-xs text-red-600' }, 'Supply Shift: ' + sdSupplyShift),
-                React.createElement('input', { type: 'range', min: -5, max: 5, value: sdSupplyShift,
-                  onChange: function(e) { upd('sdSupplyShift', parseInt(e.target.value)); },
-                  className: 'w-full accent-red-500' })
-              ),
-              React.createElement('div', { className: 'space-y-3 bg-emerald-50 rounded-xl p-4 border border-emerald-200' },
-                React.createElement('h4', { className: 'text-sm font-bold text-emerald-700' }, '\u2696\uFE0F Government Controls'),
-                React.createElement('label', { className: 'block text-xs text-emerald-600' }, 'Price Floor: $' + sdPriceFloor),
-                React.createElement('input', { type: 'range', min: 0, max: 90, value: sdPriceFloor,
-                  onChange: function(e) { upd('sdPriceFloor', parseInt(e.target.value)); },
-                  className: 'w-full accent-emerald-500' }),
-                React.createElement('label', { className: 'block text-xs text-orange-600' }, 'Price Ceiling: $' + sdPriceCeiling),
-                React.createElement('input', { type: 'range', min: 0, max: 90, value: sdPriceCeiling,
-                  onChange: function(e) { upd('sdPriceCeiling', parseInt(e.target.value)); },
-                  className: 'w-full accent-orange-500' }),
-                React.createElement('label', { className: 'block text-xs text-purple-600' }, 'Tax: $' + sdTax),
-                React.createElement('input', { type: 'range', min: 0, max: 30, value: sdTax,
-                  onChange: function(e) { upd('sdTax', parseInt(e.target.value)); },
-                  className: 'w-full accent-purple-500' })
-              )
+                React.createElement('div', { className: 'space-y-3 bg-blue-50 rounded-xl p-4 border border-blue-200' },
+                  React.createElement('h4', { className: 'text-sm font-bold text-blue-700' }, '\uD83D\uDCC9 Curve Shifts'),
+                  React.createElement('label', { className: 'block text-xs text-blue-600' }, 'Demand Shift: ' + sdDemandShift),
+                  React.createElement('input', {
+                    type: 'range', min: -5, max: 5, value: sdDemandShift,
+                    onChange: function (e) { upd('sdDemandShift', parseInt(e.target.value)); },
+                    className: 'w-full accent-blue-500'
+                  }),
+                  React.createElement('label', { className: 'block text-xs text-red-600' }, 'Supply Shift: ' + sdSupplyShift),
+                  React.createElement('input', {
+                    type: 'range', min: -5, max: 5, value: sdSupplyShift,
+                    onChange: function (e) { upd('sdSupplyShift', parseInt(e.target.value)); },
+                    className: 'w-full accent-red-500'
+                  })
+                ),
+                React.createElement('div', { className: 'space-y-3 bg-emerald-50 rounded-xl p-4 border border-emerald-200' },
+                  React.createElement('h4', { className: 'text-sm font-bold text-emerald-700' }, '\u2696\uFE0F Government Controls'),
+                  React.createElement('label', { className: 'block text-xs text-emerald-600' }, 'Price Floor: $' + sdPriceFloor),
+                  React.createElement('input', {
+                    type: 'range', min: 0, max: 90, value: sdPriceFloor,
+                    onChange: function (e) { upd('sdPriceFloor', parseInt(e.target.value)); },
+                    className: 'w-full accent-emerald-500'
+                  }),
+                  React.createElement('label', { className: 'block text-xs text-orange-600' }, 'Price Ceiling: $' + sdPriceCeiling),
+                  React.createElement('input', {
+                    type: 'range', min: 0, max: 90, value: sdPriceCeiling,
+                    onChange: function (e) { upd('sdPriceCeiling', parseInt(e.target.value)); },
+                    className: 'w-full accent-orange-500'
+                  }),
+                  React.createElement('label', { className: 'block text-xs text-purple-600' }, 'Tax: $' + sdTax),
+                  React.createElement('input', {
+                    type: 'range', min: 0, max: 30, value: sdTax,
+                    onChange: function (e) { upd('sdTax', parseInt(e.target.value)); },
+                    className: 'w-full accent-purple-500'
+                  })
+                )
               ),
               // Elasticity Education
               React.createElement('div', { className: 'col-span-2 bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl p-3 border border-cyan-200 mb-2' },
@@ -34830,7 +34905,7 @@
                     )
                   ),
                   React.createElement('button', {
-                    onClick: function() {
+                    onClick: function () {
                       upd('sdDemandShift', d.sdScenario.demandShift || 0);
                       upd('sdSupplyShift', d.sdScenario.supplyShift || 0);
                       upd('sdPriceFloor', d.sdScenario.priceFloor || 0);
@@ -34839,29 +34914,29 @@
                       if (addToast) addToast('\u2705 Scenario applied to graph!', 'success');
                       if (d.sdScenario && d.sdScenario.lesson) {
                         var gl5 = (d.econGlossary || []).slice();
-                        var exists5 = gl5.some(function(g) { return g.concept === d.sdScenario.title; });
+                        var exists5 = gl5.some(function (g) { return g.concept === d.sdScenario.title; });
                         if (!exists5) { gl5.push({ tab: 'S&D', concept: d.sdScenario.title, explanation: d.sdScenario.lesson }); upd('econGlossary', gl5); }
                       }
                     },
                     className: 'w-full py-2 rounded-lg text-xs font-bold bg-violet-500 text-white mb-1'
                   }, '\u2705 Apply Scenario to Graph'),
                   React.createElement('button', {
-                    onClick: function() { upd('sdScenario', null); },
+                    onClick: function () { upd('sdScenario', null); },
                     className: 'w-full py-1.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-500'
                   }, 'Dismiss')
                 ) : React.createElement('button', {
-                  onClick: function() {
+                  onClick: function () {
                     upd('sdLoading', true);
                     var prompt = 'You are an economics teacher. Generate a real-world supply and demand scenario for students.\n\nReturn ONLY valid JSON:\n{"title":"<short scenario title>","explanation":"<2-3 sentences explaining what happened and why it shifts supply/demand>","demandShift":<integer -5 to 5>,"supplyShift":<integer -5 to 5>,"priceFloor":<0 or number if relevant>,"priceCeiling":<0 or number if relevant>,"tax":<0 or number if relevant>}\n\nExamples: new iPhone launch (demand +3), oil embargo (supply -4), minimum wage law (price floor 40), rent control (price ceiling 30), sugar tax (tax 5). Be creative.\n\nIMPORTANT: Include a "lesson" field with a 1-2 sentence economics concept (e.g., elasticity, substitute goods, complement goods, deadweight loss, consumer surplus, producer surplus, market failure, externalities, public goods).';
-                    callGemini(prompt, true).then(function(result) {
+                    callGemini(prompt, true).then(function (result) {
                       try {
                         var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
                         var s = cleaned.indexOf('{'); if (s > 0) cleaned = cleaned.substring(s);
                         var e = cleaned.lastIndexOf('}'); if (e > 0) cleaned = cleaned.substring(0, e + 1);
                         upd('sdScenario', JSON.parse(cleaned));
                         upd('sdLoading', false);
-                      } catch(err2) { upd('sdLoading', false); if (addToast) addToast('Scenario generation failed', 'error'); }
-                    }).catch(function() { upd('sdLoading', false); });
+                      } catch (err2) { upd('sdLoading', false); if (addToast) addToast('Scenario generation failed', 'error'); }
+                    }).catch(function () { upd('sdLoading', false); });
                   },
                   disabled: d.sdLoading,
                   className: 'w-full py-3 rounded-xl text-xs font-bold transition-all ' + (d.sdLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:shadow-lg')
@@ -34884,10 +34959,10 @@
                   )
                 ),
                 React.createElement('div', { className: 'grid gap-2' },
-                  (d.lifeEvent.choices || []).map(function(choice, ci) {
+                  (d.lifeEvent.choices || []).map(function (choice, ci) {
                     return React.createElement('button', {
                       key: ci,
-                      onClick: function() {
+                      onClick: function () {
                         var eff = choice.effect || {};
                         upd('pfCash', (d.pfCash || 2000) + (eff.cash || 0));
                         upd('pfDebt', Math.max(0, (d.pfDebt || 0) + (eff.debt || 0)));
@@ -34923,7 +34998,7 @@
                         // Auto-add lesson to glossary
                         if (d.lifeEvent && d.lifeEvent.lesson) {
                           var gl = (d.econGlossary || []).slice();
-                          var exists = gl.some(function(g) { return g.concept === d.lifeEvent.title; });
+                          var exists = gl.some(function (g) { return g.concept === d.lifeEvent.title; });
                           if (!exists) { gl.push({ tab: 'Life Sim', concept: d.lifeEvent.title, explanation: d.lifeEvent.lesson }); upd('econGlossary', gl); }
                         }
                       },
@@ -34949,7 +35024,7 @@
                   { label: 'Debt', val: '$' + (d.pfDebt || 0).toLocaleString(), icon: '\uD83D\uDCB3', color: (d.pfDebt || 0) > 0 ? 'red' : 'green' },
                   { label: 'Happiness', val: (d.pfHappiness || 70) + '%', icon: '\u2764\uFE0F', color: (d.pfHappiness || 70) > 50 ? 'pink' : 'slate' },
                   { label: 'Credit', val: (d.pfCredit || 650), icon: '\uD83D\uDCB3', color: (d.pfCredit || 650) > 700 ? 'green' : (d.pfCredit || 650) > 580 ? 'amber' : 'red' }
-                ].map(function(s) {
+                ].map(function (s) {
                   return React.createElement('div', { key: s.label, className: 'bg-white rounded-xl p-3 border border-slate-200 text-center' },
                     React.createElement('div', { className: 'text-lg' }, s.icon),
                     React.createElement('div', { className: 'text-[10px] text-slate-400 font-bold uppercase tracking-wide' }, s.label),
@@ -34960,10 +35035,10 @@
               React.createElement('div', { className: 'text-xs text-slate-400 text-center mb-2' }, (d.pfCareer ? '\uD83D\uDCBC ' + d.pfCareer + ' | ' : '') + 'Salary: $' + (d.pfSalary || 35000).toLocaleString() + '/yr | Net Worth: $' + ((d.pfCash || 2000) - (d.pfDebt || 0)).toLocaleString() + ' | Credit: ' + (d.pfCredit || 650) + (d.pfInsurance ? ' | \uD83D\uDEE1\uFE0F Insured' : ' | \u26A0\uFE0F No Insurance')),
               // Next Year / Generate Event button
               !d.lifeEvent && React.createElement('button', {
-                onClick: function() {
+                onClick: function () {
                   upd('pfLoading', true);
                   var prompt = 'You are a life simulation game engine (difficulty: ' + (d.econDifficulty || 'medium') + '). The player is ' + (d.pfAge || 22) + ' years old, earns $' + (d.pfSalary || 35000).toLocaleString() + '/year, has $' + (d.pfCash || 2000).toLocaleString() + ' in savings, $' + (d.pfDebt || 0).toLocaleString() + ' in debt, and ' + (d.pfHappiness || 70) + '% happiness.\n\nGenerate a realistic random life event with 3 choices. Return ONLY valid JSON:\n{"emoji":"<single emoji>","title":"<short title>","description":"<2-3 sentence scenario>","choices":[{"label":"<action description>","effect":{"cash":<number>,"debt":<number>,"salary":<number>,"happiness":<number>,"credit":<number -50 to 50>,"career":<optional string or null>,"insurance":<optional true/false or null>}}]}\n\nEvent categories to rotate through: CAREER (promotion, job offer, layoff, interview, raise negotiation, networking opportunity, career pivot, sabbatical), FINANCIAL (tax refund, bank error, stock tip, loan offer, credit card fraud, inheritance, gambling opportunity, unexpected bill), HOUSING (lease renewal, repair needed, roommate issue, property tax, home improvement, neighbor dispute), HEALTH (medical bill, gym membership, insurance claim, dental work, mental health day), EDUCATION (online course, certification, student loan, scholarship, mentorship), SOCIAL (wedding, baby shower, charity request, family emergency, holiday spending, friend opening business), MARKET (inflation spike, stock crash, crypto opportunity, interest rate change). Tailor to player age bracket and career stage. Make effects realistic. Cash effects should be -5000 to +10000 range. Salary changes should be -5000 to +15000 range. Happiness -20 to +20. Credit -50 to +50.\n\nIMPORTANT: Include a "lesson" field in your JSON with a 1-2 sentence financial literacy lesson explaining the real-world economics behind this event (e.g., compound interest, opportunity cost, inflation, risk vs. reward, emergency funds, diversification). Format: {"emoji":"...","title":"...","description":"...","lesson":"<financial literacy concept>","choices":[...]}';
-                  callGemini(prompt, true).then(function(result) {
+                  callGemini(prompt, true).then(function (result) {
                     try {
                       var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
                       var start = cleaned.indexOf('{');
@@ -34973,12 +35048,12 @@
                       var parsed = JSON.parse(cleaned);
                       upd('lifeEvent', parsed);
                       upd('pfLoading', false);
-                    } catch(e) {
+                    } catch (e) {
                       console.error('[EconLab] Parse error:', e);
                       upd('pfLoading', false);
                       if (addToast) addToast('Failed to generate event. Try again!', 'error');
                     }
-                  }).catch(function(e) { upd('pfLoading', false); if (addToast) addToast('AI error: ' + e.message, 'error'); });
+                  }).catch(function (e) { upd('pfLoading', false); if (addToast) addToast('AI error: ' + e.message, 'error'); });
                 },
                 disabled: d.pfLoading,
                 className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg transition-all ' + (d.pfLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 hover:shadow-xl hover:scale-[1.02]')
@@ -34991,10 +35066,10 @@
                     { id: 'renting', label: '\uD83C\uDFE2 Rent', desc: 'Lower monthly cost, flexibility', cost: '-$1,000/mo' },
                     { id: 'owning', label: '\uD83C\uDFE0 Own', desc: 'Build equity, but mortgage + maintenance', cost: '-$1,800/mo' },
                     { id: 'frugal', label: '\uD83D\uDECB\uFE0F Roommate', desc: 'Cheapest option, save more', cost: '-$500/mo' }
-                  ].map(function(h) {
+                  ].map(function (h) {
                     return React.createElement('button', {
                       key: h.id,
-                      onClick: function() { upd('pfHousing', h.id); },
+                      onClick: function () { upd('pfHousing', h.id); },
                       className: 'flex-1 p-2 rounded-lg text-center transition-all border-2 ' +
                         ((d.pfHousing || 'renting') === h.id ? 'border-orange-400 bg-orange-100' : 'border-slate-200 bg-white hover:border-orange-300')
                     },
@@ -35016,18 +35091,18 @@
                 React.createElement('div', { className: 'flex items-center gap-3' },
                   React.createElement('input', {
                     type: 'range', min: 0, max: 50, value: d.pfInvestPct || 0,
-                    onChange: function(e) { upd('pfInvestPct', parseInt(e.target.value)); },
+                    onChange: function (e) { upd('pfInvestPct', parseInt(e.target.value)); },
                     className: 'flex-1 accent-green-500'
                   }),
                   React.createElement('span', { className: 'text-xs font-bold text-green-700 w-12 text-right' }, (d.pfInvestPct || 0) + '%'),
                   React.createElement('span', { className: 'text-[10px] text-slate-500' }, '$' + Math.round((d.pfSalary || 35000) * (d.pfInvestPct || 0) / 100).toLocaleString() + '/yr')
                 ),
                 React.createElement('div', { className: 'flex gap-1 mt-2' },
-                  ['Conservative (Bonds)', 'Balanced (60/40)', 'Aggressive (Stocks)', 'Speculative (Crypto)'].map(function(type) {
+                  ['Conservative (Bonds)', 'Balanced (60/40)', 'Aggressive (Stocks)', 'Speculative (Crypto)'].map(function (type) {
                     var short = type.split(' ')[0];
                     return React.createElement('button', {
                       key: type,
-                      onClick: function() { upd('pfInvestType', short); },
+                      onClick: function () { upd('pfInvestType', short); },
                       className: 'flex-1 py-1.5 rounded-lg text-[9px] font-bold transition-all ' +
                         ((d.pfInvestType || '') === short ? 'bg-green-500 text-white shadow-sm' : 'bg-white text-slate-500 border border-green-200 hover:border-green-400')
                     }, type);
@@ -35043,17 +35118,17 @@
               // History log
               (d.pfHistory || []).length > 0 && React.createElement('div', { className: 'mt-4 bg-white rounded-xl border border-slate-200 p-3 max-h-40 overflow-y-auto' },
                 React.createElement('h4', { className: 'text-xs font-bold text-slate-500 mb-2' }, '\uD83D\uDCDC Life History'),
-                (d.pfHistory || []).slice().reverse().map(function(h, hi) {
+                (d.pfHistory || []).slice().reverse().map(function (h, hi) {
                   return React.createElement('div', { key: hi, className: 'flex justify-between text-[10px] py-1 border-b border-slate-50' },
                     React.createElement('span', { className: 'text-slate-400' }, 'Age ' + h.age),
                     React.createElement('span', { className: 'text-slate-600 flex-1 px-2 truncate' }, h.event + ' \u2192 ' + h.choice),
-                    React.createElement('span', { className: h.cash >= (d.pfHistory[Math.max(0,d.pfHistory.length-hi-2)] || {}).cash ? 'text-green-600 font-bold' : 'text-red-500 font-bold' }, '$' + (h.cash || 0).toLocaleString())
+                    React.createElement('span', { className: h.cash >= (d.pfHistory[Math.max(0, d.pfHistory.length - hi - 2)] || {}).cash ? 'text-green-600 font-bold' : 'text-red-500 font-bold' }, '$' + (h.cash || 0).toLocaleString())
                   );
                 })
               ),
               // Reset button
               React.createElement('button', {
-                onClick: function() { upd('pfAge', 22); upd('pfCash', 2000); upd('pfDebt', 0); upd('pfSalary', 35000); upd('pfHappiness', 70); upd('pfCredit', 650); upd('pfCareer', null); upd('pfInsurance', false); upd('pfHistory', []); upd('lifeEvent', null); if (addToast) addToast('\u267B Starting over at age 22!', 'info'); },
+                onClick: function () { upd('pfAge', 22); upd('pfCash', 2000); upd('pfDebt', 0); upd('pfSalary', 35000); upd('pfHappiness', 70); upd('pfCredit', 650); upd('pfCareer', null); upd('pfInsurance', false); upd('pfHistory', []); upd('lifeEvent', null); if (addToast) addToast('\u267B Starting over at age 22!', 'info'); },
                 className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200'
               }, '\u267B New Life')
             ),
@@ -35067,23 +35142,23 @@
                 React.createElement('input', {
                   type: 'text',
                   value: d.smInput || '',
-                  onChange: function(e) { upd('smInput', e.target.value); },
+                  onChange: function (e) { upd('smInput', e.target.value); },
                   placeholder: 'e.g. "renewable energy startups", "gaming companies", "space industry", or leave blank for mixed...',
                   className: 'w-full max-w-md px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none transition-all mb-3'
                 }),
                 React.createElement('button', {
-                  onClick: function() {
+                  onClick: function () {
                     upd('smLoading', true);
                     var theme = (d.smInput || '').trim() || 'diverse mix of tech, energy, healthcare, food, and finance';
                     var prompt = 'You are a stock market simulator for students. Generate 5 fictional publicly traded companies for a market themed around: "' + theme + '".\n\nReturn ONLY valid JSON:\n{"companies":[{"name":"<company name>","ticker":"<3-4 letter ticker>","price":<number 10-200>,"sector":"<sector>","description":"<1 sentence>"}]}\n\nMake company names creative and realistic. Prices should vary. Include diverse sectors within the theme.';
-                    callGemini(prompt, true).then(function(result) {
+                    callGemini(prompt, true).then(function (result) {
                       try {
                         var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
                         var s = cleaned.indexOf('{'); if (s > 0) cleaned = cleaned.substring(s);
                         var e = cleaned.lastIndexOf('}'); if (e > 0) cleaned = cleaned.substring(0, e + 1);
                         var parsed = JSON.parse(cleaned);
                         var colors = ['#3b82f6', '#22c55e', '#ef4444', '#f59e0b', '#8b5cf6'];
-                        var companies = (parsed.companies || []).slice(0, 5).map(function(c, ci) {
+                        var companies = (parsed.companies || []).slice(0, 5).map(function (c, ci) {
                           return { name: c.name, ticker: c.ticker, price: c.price || 50, history: [c.price * 0.95, c.price * 0.97, c.price * 0.99, c.price], sector: c.sector, color: colors[ci % 5], description: c.description };
                         });
                         upd('smCompanies', companies);
@@ -35092,203 +35167,203 @@
                         upd('smDay', 0);
                         upd('smLoading', false);
                         if (addToast) addToast('\uD83D\uDCC8 Market open! 5 companies generated. Start trading!', 'success');
-                      } catch(err) { upd('smLoading', false); if (addToast) addToast('Failed to generate market. Try again!', 'error'); console.error('[StockSim]', err); }
-                    }).catch(function(err) { upd('smLoading', false); if (addToast) addToast('AI error', 'error'); });
+                      } catch (err) { upd('smLoading', false); if (addToast) addToast('Failed to generate market. Try again!', 'error'); console.error('[StockSim]', err); }
+                    }).catch(function (err) { upd('smLoading', false); if (addToast) addToast('AI error', 'error'); });
                   },
                   disabled: d.smLoading,
                   className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-xl')
                 }, d.smLoading ? '\u23F3 AI generating companies...' : '\uD83D\uDE80 Open Market')
               ) :
-              // Company selector (only when companies exist)
-              smCompanies && React.createElement('div', null,
-              React.createElement('div', { className: 'flex gap-2 mb-3' },
-                smCompanies.map(function(c, ci) {
-                  return React.createElement('button', {
-                    key: ci,
-                    onClick: function() { upd('smSelected', ci); },
-                    className: 'flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all border-2 ' +
-                      (smSelected === ci ? 'text-white shadow-md' : 'bg-slate-50 text-slate-600 border-slate-200'),
-                    style: smSelected === ci ? { background: c.color, borderColor: c.color } : {}
-                  }, c.ticker + ' $' + c.price.toFixed(0) + (c.history && c.history.length > 1 ? ' ' + (c.price >= c.history[c.history.length-2] ? '\u25B2' : '\u25BC') : ''));
-                })
-              ),
-              // Selected company detail
-              smCompanies[smSelected] && React.createElement('div', { className: 'bg-gradient-to-r from-slate-50 to-gray-50 rounded-xl p-3 border border-slate-200 mb-3' },
-                React.createElement('div', { className: 'flex justify-between items-center' },
-                  React.createElement('div', null,
-                    React.createElement('h4', { className: 'text-sm font-bold text-slate-800' }, smCompanies[smSelected].name + ' (' + smCompanies[smSelected].ticker + ')'),
-                    React.createElement('span', { className: 'text-[10px] text-slate-500' }, smCompanies[smSelected].sector + (smCompanies[smSelected].description ? ' \u2014 ' + smCompanies[smSelected].description : ''))
+                // Company selector (only when companies exist)
+                smCompanies && React.createElement('div', null,
+                  React.createElement('div', { className: 'flex gap-2 mb-3' },
+                    smCompanies.map(function (c, ci) {
+                      return React.createElement('button', {
+                        key: ci,
+                        onClick: function () { upd('smSelected', ci); },
+                        className: 'flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all border-2 ' +
+                          (smSelected === ci ? 'text-white shadow-md' : 'bg-slate-50 text-slate-600 border-slate-200'),
+                        style: smSelected === ci ? { background: c.color, borderColor: c.color } : {}
+                      }, c.ticker + ' $' + c.price.toFixed(0) + (c.history && c.history.length > 1 ? ' ' + (c.price >= c.history[c.history.length - 2] ? '\u25B2' : '\u25BC') : ''));
+                    })
                   ),
-                  React.createElement('div', { className: 'text-right' },
-                    React.createElement('div', { className: 'text-lg font-bold', style: { color: smCompanies[smSelected].color } }, '$' + smCompanies[smSelected].price.toFixed(2)),
-                    smCompanies[smSelected].history && smCompanies[smSelected].history.length > 1 && React.createElement('div', {
-                      className: 'text-[10px] font-bold ' + (smCompanies[smSelected].price >= smCompanies[smSelected].history[smCompanies[smSelected].history.length - 2] ? 'text-green-600' : 'text-red-500')
-                    }, (smCompanies[smSelected].price >= smCompanies[smSelected].history[smCompanies[smSelected].history.length - 2] ? '\u25B2 +' : '\u25BC ') +
-                      ((smCompanies[smSelected].price / smCompanies[smSelected].history[smCompanies[smSelected].history.length - 2] - 1) * 100).toFixed(1) + '%'),
-                    React.createElement('div', { className: 'text-[9px] text-slate-400' }, 'Held: ' + (smPortfolio[smCompanies[smSelected].ticker] || 0) + ' shares ($' + ((smPortfolio[smCompanies[smSelected].ticker] || 0) * smCompanies[smSelected].price).toFixed(0) + ')')
-                  )
-                )
-              ),
-              // AI News Event display
-              d.smNewsEvent ? React.createElement('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200 mb-3' },
-                React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, '\uD83D\uDCF0 ' + (d.smNewsEvent.headline || 'Breaking News')),
-                React.createElement('p', { className: 'text-xs text-amber-700 mt-1' }, d.smNewsEvent.analysis || ''),
-                React.createElement('div', { className: 'text-[10px] text-amber-600 mt-2 font-bold' }, 'Impact: ' + (d.smNewsEvent.impact > 0 ? '\u25B2 +' : '\u25BC ') + (d.smNewsEvent.impact * 100).toFixed(1) + '%'),
-                d.smNewsEvent.lesson && React.createElement('div', { className: 'mt-2 bg-amber-100 rounded-lg px-3 py-2 text-[10px] text-amber-800 border border-amber-200' },
-                  React.createElement('span', { className: 'font-bold' }, '\uD83D\uDCDA Investing Concept: '),
-                  d.smNewsEvent.lesson
-                )
-              ) : null,
-              // Buy/Sell + Next Day
-              React.createElement('div', { className: 'flex gap-3 mb-3' },
-                React.createElement('button', {
-                  onClick: function() {
-                    var co2 = smCompanies[smSelected];
-                    if (smCash >= co2.price) {
-                      upd('smCash', smCash - co2.price);
-                      var newPort = Object.assign({}, smPortfolio);
-                      newPort[co2.ticker] = (newPort[co2.ticker] || 0) + 1;
-                      upd('smPortfolio', newPort);
-                      if (addToast) addToast('Bought 1 ' + co2.ticker + ' @ $' + co2.price.toFixed(2), 'success');
-                      if (typeof addXP === 'function') addXP(5, 'Stock Market: Executed trade');
-                    } else { if (addToast) addToast('Not enough cash!', 'error'); }
-                  },
-                  className: 'flex-1 py-3 rounded-xl text-xs font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white'
-                }, '\u25B2 Buy 1 ($' + (smCompanies[smSelected] ? smCompanies[smSelected].price.toFixed(2) : '0') + ')'),
-                React.createElement('button', {
-                  onClick: function() {
-                    var co5 = smCompanies[smSelected];
-                    var cost10 = co5.price * 10;
-                    if (smCash >= cost10) {
-                      upd('smCash', smCash - cost10);
-                      var newPort3 = Object.assign({}, smPortfolio);
-                      newPort3[co5.ticker] = (newPort3[co5.ticker] || 0) + 10;
-                      upd('smPortfolio', newPort3);
-                      if (addToast) addToast('Bought 10 ' + co5.ticker + ' @ $' + co5.price.toFixed(2) + ' = $' + cost10.toFixed(2), 'success');
-                    } else { if (addToast) addToast('Need $' + cost10.toFixed(2) + ' (have $' + smCash.toFixed(2) + ')', 'error'); }
-                  },
-                  className: 'py-3 px-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-green-600 to-emerald-600 text-white'
-                }, '\u25B2\u25B2 Buy 10'),
-                React.createElement('button', {
-                  onClick: function() {
-                    var co3 = smCompanies[smSelected];
-                    if ((smPortfolio[co3.ticker] || 0) > 0) {
-                      upd('smCash', smCash + co3.price);
-                      var newPort2 = Object.assign({}, smPortfolio);
-                      newPort2[co3.ticker] = newPort2[co3.ticker] - 1;
-                      if (newPort2[co3.ticker] <= 0) delete newPort2[co3.ticker];
-                      upd('smPortfolio', newPort2);
-                      if (addToast) addToast('Sold 1 ' + co3.ticker + ' @ $' + co3.price.toFixed(2), 'info');
-                    } else { if (addToast) addToast('No shares to sell!', 'error'); }
-                  },
-                  className: 'flex-1 py-3 rounded-xl text-xs font-bold bg-gradient-to-r from-red-500 to-rose-500 text-white'
-                }, '\u25BC Sell 1'),
-                React.createElement('button', {
-                  onClick: function() {
-                    var co6 = smCompanies[smSelected];
-                    var held = smPortfolio[co6.ticker] || 0;
-                    if (held > 0) {
-                      var sellAmt = Math.min(held, 10);
-                      upd('smCash', smCash + co6.price * sellAmt);
-                      var newPort4 = Object.assign({}, smPortfolio);
-                      newPort4[co6.ticker] = held - sellAmt;
-                      if (newPort4[co6.ticker] <= 0) delete newPort4[co6.ticker];
-                      upd('smPortfolio', newPort4);
-                      if (addToast) addToast('Sold ' + sellAmt + ' ' + co6.ticker + ' @ $' + co6.price.toFixed(2), 'info');
-                    }
-                  },
-                  className: 'py-3 px-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-red-600 to-rose-600 text-white'
-                }, '\u25BC\u25BC Sell ' + Math.min(smPortfolio[smCompanies[smSelected] ? smCompanies[smSelected].ticker : ''] || 0, 10)),
-                React.createElement('button', {
-                  onClick: function() {
-                    upd('smLoading', true);
-                    var co4 = smCompanies[smSelected];
-                    var prompt = 'You are a financial news AI (difficulty: ' + (d.econDifficulty || 'medium') + ') for an educational stock market simulator. Generate a market news event. Currently tracking: ' + smCompanies.map(function(c){return c.ticker + ' (' + c.name + ', ' + c.sector + ') @ $' + c.price.toFixed(2);}).join(', ') + '.\n\nReturn ONLY valid JSON:\n{"headline":"<breaking news headline>","analysis":"<1-2 sentence market analysis>","impacts":[{"ticker":"<TICKER>","change":<decimal between -0.15 and 0.15>}]}\n\nGenerate realistic business news. Impact 1-3 companies.\n\nIMPORTANT: Include a "lesson" field with a 1-2 sentence investing/market concept explanation (e.g., diversification, P/E ratios, market sentiment, bull vs bear markets, risk tolerance, dollar-cost averaging, index funds, short selling, market capitalization, dividends).\n\nFormat: {"headline":"...","analysis":"...","lesson":"<investing concept>","impacts":[{"ticker":"...","change":<decimal>}]}';
-                    callGemini(prompt, true).then(function(result) {
-                      try {
-                        var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-                        var start = cleaned.indexOf('{'); if (start > 0) cleaned = cleaned.substring(start);
-                        var end = cleaned.lastIndexOf('}'); if (end > 0) cleaned = cleaned.substring(0, end + 1);
-                        var parsed = JSON.parse(cleaned);
-                        var maxImpact = 0;
-                        var newCos = smCompanies.map(function(c) {
-                          var impact = 0;
-                          (parsed.impacts || []).forEach(function(imp) { if (imp.ticker === c.ticker) impact = imp.change; });
-                          var rnd = (Math.random() - 0.48) * 0.03;
-                          var newPrice = Math.max(1, c.price * (1 + impact + rnd));
-                          newPrice = Math.round(newPrice * 100) / 100;
-                          if (Math.abs(impact) > Math.abs(maxImpact)) maxImpact = impact;
-                          var newHist = c.history.slice(-29); newHist.push(newPrice);
-                          return Object.assign({}, c, { price: newPrice, history: newHist });
-                        });
-                        upd('smCompanies', newCos);
-                        upd('smDay', smDay + 1);
-                        upd('smNewsEvent', { headline: parsed.headline, analysis: parsed.analysis, impact: maxImpact, lesson: parsed.lesson });
-                        if (parsed.lesson) {
-                          var gl2 = (d.econGlossary || []).slice();
-                          var exists2 = gl2.some(function(g) { return g.concept === parsed.headline; });
-                          if (!exists2) { gl2.push({ tab: 'Stock Market', concept: parsed.headline, explanation: parsed.lesson }); upd('econGlossary', gl2); }
-                        }
-                        upd('smLoading', false);
-                      } catch(e) {
-                        console.error('[StockSim] Parse error:', e);
-                        var fallbackCos = smCompanies.map(function(c) {
-                          var rnd = (Math.random() - 0.48) * 0.06;
-                          var np = Math.max(1, Math.round(c.price * (1 + rnd) * 100) / 100);
-                          var nh = c.history.slice(-29); nh.push(np);
-                          return Object.assign({}, c, { price: np, history: nh });
-                        });
-                        upd('smCompanies', fallbackCos); upd('smDay', smDay + 1);
-                        upd('smLoading', false);
-                        if (addToast) addToast('Market moved (AI unavailable)', 'warning');
-                      }
-                    }).catch(function(e) { upd('smLoading', false); if (addToast) addToast('AI error', 'error'); });
-                  },
-                  disabled: d.smLoading,
-                  className: 'py-3 px-6 rounded-xl text-xs font-bold transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white')
-                }, d.smLoading ? '\u23F3...' : '\u23ED Day ' + (smDay + 1))
-              ),
-              // Portfolio summary
-              React.createElement('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 text-xs' },
-                React.createElement('div', { className: 'flex justify-between mb-2' },
-                  React.createElement('span', { className: 'font-bold text-slate-700' }, '\uD83D\uDCBC Cash: $' + smCash.toFixed(2)),
-                  React.createElement('span', { className: 'font-bold text-amber-600' }, 'Day ' + smDay),
-                  React.createElement('span', { className: 'font-bold text-green-600' }, 'Total: $' + (smCash + smCompanies.reduce(function(s,c){ return s + (smPortfolio[c.ticker]||0)*c.price; },0)).toFixed(2))
-                ),
-                Object.keys(smPortfolio).length > 0 && React.createElement('div', { className: 'flex gap-2 flex-wrap' },
-                  Object.keys(smPortfolio).map(function(ticker) {
-                    var c = smCompanies.find(function(x){return x.ticker===ticker;});
-                    return smPortfolio[ticker] > 0 ? React.createElement('span', { key: ticker, className: 'bg-slate-100 px-2 py-1 rounded text-[10px] font-bold' }, ticker + ': ' + smPortfolio[ticker] + ' ($' + (smPortfolio[ticker]*c.price).toFixed(0) + ')') : null;
-                  })
-                ),
-                // Portfolio Analytics
-                smDay > 0 && React.createElement('div', { className: 'mt-3 bg-slate-50 rounded-xl p-3 border border-slate-200' },
-                  React.createElement('h4', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2' }, '\uD83D\uDCC8 Portfolio Analytics'),
-                  React.createElement('div', { className: 'grid grid-cols-3 gap-2 text-center' },
-                    React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
-                      React.createElement('div', { className: 'text-[9px] text-slate-400' }, 'Total P&L'),
-                      React.createElement('div', { className: 'text-sm font-bold ' + (smTotalVal - 10000 >= 0 ? 'text-green-600' : 'text-red-500') },
-                        (smTotalVal - 10000 >= 0 ? '+' : '') + '$' + (smTotalVal - 10000).toFixed(0))
-                    ),
-                    React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
-                      React.createElement('div', { className: 'text-[9px] text-slate-400' }, 'Return %'),
-                      React.createElement('div', { className: 'text-sm font-bold ' + (smTotalVal >= 10000 ? 'text-green-600' : 'text-red-500') },
-                        (smTotalVal >= 10000 ? '+' : '') + ((smTotalVal / 10000 - 1) * 100).toFixed(1) + '%')
-                    ),
-                    React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
-                      React.createElement('div', { className: 'text-[9px] text-slate-400' }, 'Holdings'),
-                      React.createElement('div', { className: 'text-sm font-bold text-slate-700' },
-                        Object.keys(smPortfolio).filter(function(t) { return smPortfolio[t] > 0; }).length + ' stocks')
+                  // Selected company detail
+                  smCompanies[smSelected] && React.createElement('div', { className: 'bg-gradient-to-r from-slate-50 to-gray-50 rounded-xl p-3 border border-slate-200 mb-3' },
+                    React.createElement('div', { className: 'flex justify-between items-center' },
+                      React.createElement('div', null,
+                        React.createElement('h4', { className: 'text-sm font-bold text-slate-800' }, smCompanies[smSelected].name + ' (' + smCompanies[smSelected].ticker + ')'),
+                        React.createElement('span', { className: 'text-[10px] text-slate-500' }, smCompanies[smSelected].sector + (smCompanies[smSelected].description ? ' \u2014 ' + smCompanies[smSelected].description : ''))
+                      ),
+                      React.createElement('div', { className: 'text-right' },
+                        React.createElement('div', { className: 'text-lg font-bold', style: { color: smCompanies[smSelected].color } }, '$' + smCompanies[smSelected].price.toFixed(2)),
+                        smCompanies[smSelected].history && smCompanies[smSelected].history.length > 1 && React.createElement('div', {
+                          className: 'text-[10px] font-bold ' + (smCompanies[smSelected].price >= smCompanies[smSelected].history[smCompanies[smSelected].history.length - 2] ? 'text-green-600' : 'text-red-500')
+                        }, (smCompanies[smSelected].price >= smCompanies[smSelected].history[smCompanies[smSelected].history.length - 2] ? '\u25B2 +' : '\u25BC ') +
+                        ((smCompanies[smSelected].price / smCompanies[smSelected].history[smCompanies[smSelected].history.length - 2] - 1) * 100).toFixed(1) + '%'),
+                        React.createElement('div', { className: 'text-[9px] text-slate-400' }, 'Held: ' + (smPortfolio[smCompanies[smSelected].ticker] || 0) + ' shares ($' + ((smPortfolio[smCompanies[smSelected].ticker] || 0) * smCompanies[smSelected].price).toFixed(0) + ')')
+                      )
                     )
+                  ),
+                  // AI News Event display
+                  d.smNewsEvent ? React.createElement('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200 mb-3' },
+                    React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, '\uD83D\uDCF0 ' + (d.smNewsEvent.headline || 'Breaking News')),
+                    React.createElement('p', { className: 'text-xs text-amber-700 mt-1' }, d.smNewsEvent.analysis || ''),
+                    React.createElement('div', { className: 'text-[10px] text-amber-600 mt-2 font-bold' }, 'Impact: ' + (d.smNewsEvent.impact > 0 ? '\u25B2 +' : '\u25BC ') + (d.smNewsEvent.impact * 100).toFixed(1) + '%'),
+                    d.smNewsEvent.lesson && React.createElement('div', { className: 'mt-2 bg-amber-100 rounded-lg px-3 py-2 text-[10px] text-amber-800 border border-amber-200' },
+                      React.createElement('span', { className: 'font-bold' }, '\uD83D\uDCDA Investing Concept: '),
+                      d.smNewsEvent.lesson
+                    )
+                  ) : null,
+                  // Buy/Sell + Next Day
+                  React.createElement('div', { className: 'flex gap-3 mb-3' },
+                    React.createElement('button', {
+                      onClick: function () {
+                        var co2 = smCompanies[smSelected];
+                        if (smCash >= co2.price) {
+                          upd('smCash', smCash - co2.price);
+                          var newPort = Object.assign({}, smPortfolio);
+                          newPort[co2.ticker] = (newPort[co2.ticker] || 0) + 1;
+                          upd('smPortfolio', newPort);
+                          if (addToast) addToast('Bought 1 ' + co2.ticker + ' @ $' + co2.price.toFixed(2), 'success');
+                          if (typeof addXP === 'function') addXP(5, 'Stock Market: Executed trade');
+                        } else { if (addToast) addToast('Not enough cash!', 'error'); }
+                      },
+                      className: 'flex-1 py-3 rounded-xl text-xs font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+                    }, '\u25B2 Buy 1 ($' + (smCompanies[smSelected] ? smCompanies[smSelected].price.toFixed(2) : '0') + ')'),
+                    React.createElement('button', {
+                      onClick: function () {
+                        var co5 = smCompanies[smSelected];
+                        var cost10 = co5.price * 10;
+                        if (smCash >= cost10) {
+                          upd('smCash', smCash - cost10);
+                          var newPort3 = Object.assign({}, smPortfolio);
+                          newPort3[co5.ticker] = (newPort3[co5.ticker] || 0) + 10;
+                          upd('smPortfolio', newPort3);
+                          if (addToast) addToast('Bought 10 ' + co5.ticker + ' @ $' + co5.price.toFixed(2) + ' = $' + cost10.toFixed(2), 'success');
+                        } else { if (addToast) addToast('Need $' + cost10.toFixed(2) + ' (have $' + smCash.toFixed(2) + ')', 'error'); }
+                      },
+                      className: 'py-3 px-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-green-600 to-emerald-600 text-white'
+                    }, '\u25B2\u25B2 Buy 10'),
+                    React.createElement('button', {
+                      onClick: function () {
+                        var co3 = smCompanies[smSelected];
+                        if ((smPortfolio[co3.ticker] || 0) > 0) {
+                          upd('smCash', smCash + co3.price);
+                          var newPort2 = Object.assign({}, smPortfolio);
+                          newPort2[co3.ticker] = newPort2[co3.ticker] - 1;
+                          if (newPort2[co3.ticker] <= 0) delete newPort2[co3.ticker];
+                          upd('smPortfolio', newPort2);
+                          if (addToast) addToast('Sold 1 ' + co3.ticker + ' @ $' + co3.price.toFixed(2), 'info');
+                        } else { if (addToast) addToast('No shares to sell!', 'error'); }
+                      },
+                      className: 'flex-1 py-3 rounded-xl text-xs font-bold bg-gradient-to-r from-red-500 to-rose-500 text-white'
+                    }, '\u25BC Sell 1'),
+                    React.createElement('button', {
+                      onClick: function () {
+                        var co6 = smCompanies[smSelected];
+                        var held = smPortfolio[co6.ticker] || 0;
+                        if (held > 0) {
+                          var sellAmt = Math.min(held, 10);
+                          upd('smCash', smCash + co6.price * sellAmt);
+                          var newPort4 = Object.assign({}, smPortfolio);
+                          newPort4[co6.ticker] = held - sellAmt;
+                          if (newPort4[co6.ticker] <= 0) delete newPort4[co6.ticker];
+                          upd('smPortfolio', newPort4);
+                          if (addToast) addToast('Sold ' + sellAmt + ' ' + co6.ticker + ' @ $' + co6.price.toFixed(2), 'info');
+                        }
+                      },
+                      className: 'py-3 px-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-red-600 to-rose-600 text-white'
+                    }, '\u25BC\u25BC Sell ' + Math.min(smPortfolio[smCompanies[smSelected] ? smCompanies[smSelected].ticker : ''] || 0, 10)),
+                    React.createElement('button', {
+                      onClick: function () {
+                        upd('smLoading', true);
+                        var co4 = smCompanies[smSelected];
+                        var prompt = 'You are a financial news AI (difficulty: ' + (d.econDifficulty || 'medium') + ') for an educational stock market simulator. Generate a market news event. Currently tracking: ' + smCompanies.map(function (c) { return c.ticker + ' (' + c.name + ', ' + c.sector + ') @ $' + c.price.toFixed(2); }).join(', ') + '.\n\nReturn ONLY valid JSON:\n{"headline":"<breaking news headline>","analysis":"<1-2 sentence market analysis>","impacts":[{"ticker":"<TICKER>","change":<decimal between -0.15 and 0.15>}]}\n\nGenerate realistic business news. Impact 1-3 companies.\n\nIMPORTANT: Include a "lesson" field with a 1-2 sentence investing/market concept explanation (e.g., diversification, P/E ratios, market sentiment, bull vs bear markets, risk tolerance, dollar-cost averaging, index funds, short selling, market capitalization, dividends).\n\nFormat: {"headline":"...","analysis":"...","lesson":"<investing concept>","impacts":[{"ticker":"...","change":<decimal>}]}';
+                        callGemini(prompt, true).then(function (result) {
+                          try {
+                            var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+                            var start = cleaned.indexOf('{'); if (start > 0) cleaned = cleaned.substring(start);
+                            var end = cleaned.lastIndexOf('}'); if (end > 0) cleaned = cleaned.substring(0, end + 1);
+                            var parsed = JSON.parse(cleaned);
+                            var maxImpact = 0;
+                            var newCos = smCompanies.map(function (c) {
+                              var impact = 0;
+                              (parsed.impacts || []).forEach(function (imp) { if (imp.ticker === c.ticker) impact = imp.change; });
+                              var rnd = (Math.random() - 0.48) * 0.03;
+                              var newPrice = Math.max(1, c.price * (1 + impact + rnd));
+                              newPrice = Math.round(newPrice * 100) / 100;
+                              if (Math.abs(impact) > Math.abs(maxImpact)) maxImpact = impact;
+                              var newHist = c.history.slice(-29); newHist.push(newPrice);
+                              return Object.assign({}, c, { price: newPrice, history: newHist });
+                            });
+                            upd('smCompanies', newCos);
+                            upd('smDay', smDay + 1);
+                            upd('smNewsEvent', { headline: parsed.headline, analysis: parsed.analysis, impact: maxImpact, lesson: parsed.lesson });
+                            if (parsed.lesson) {
+                              var gl2 = (d.econGlossary || []).slice();
+                              var exists2 = gl2.some(function (g) { return g.concept === parsed.headline; });
+                              if (!exists2) { gl2.push({ tab: 'Stock Market', concept: parsed.headline, explanation: parsed.lesson }); upd('econGlossary', gl2); }
+                            }
+                            upd('smLoading', false);
+                          } catch (e) {
+                            console.error('[StockSim] Parse error:', e);
+                            var fallbackCos = smCompanies.map(function (c) {
+                              var rnd = (Math.random() - 0.48) * 0.06;
+                              var np = Math.max(1, Math.round(c.price * (1 + rnd) * 100) / 100);
+                              var nh = c.history.slice(-29); nh.push(np);
+                              return Object.assign({}, c, { price: np, history: nh });
+                            });
+                            upd('smCompanies', fallbackCos); upd('smDay', smDay + 1);
+                            upd('smLoading', false);
+                            if (addToast) addToast('Market moved (AI unavailable)', 'warning');
+                          }
+                        }).catch(function (e) { upd('smLoading', false); if (addToast) addToast('AI error', 'error'); });
+                      },
+                      disabled: d.smLoading,
+                      className: 'py-3 px-6 rounded-xl text-xs font-bold transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white')
+                    }, d.smLoading ? '\u23F3...' : '\u23ED Day ' + (smDay + 1))
+                  ),
+                  // Portfolio summary
+                  React.createElement('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 text-xs' },
+                    React.createElement('div', { className: 'flex justify-between mb-2' },
+                      React.createElement('span', { className: 'font-bold text-slate-700' }, '\uD83D\uDCBC Cash: $' + smCash.toFixed(2)),
+                      React.createElement('span', { className: 'font-bold text-amber-600' }, 'Day ' + smDay),
+                      React.createElement('span', { className: 'font-bold text-green-600' }, 'Total: $' + (smCash + smCompanies.reduce(function (s, c) { return s + (smPortfolio[c.ticker] || 0) * c.price; }, 0)).toFixed(2))
+                    ),
+                    Object.keys(smPortfolio).length > 0 && React.createElement('div', { className: 'flex gap-2 flex-wrap' },
+                      Object.keys(smPortfolio).map(function (ticker) {
+                        var c = smCompanies.find(function (x) { return x.ticker === ticker; });
+                        return smPortfolio[ticker] > 0 ? React.createElement('span', { key: ticker, className: 'bg-slate-100 px-2 py-1 rounded text-[10px] font-bold' }, ticker + ': ' + smPortfolio[ticker] + ' ($' + (smPortfolio[ticker] * c.price).toFixed(0) + ')') : null;
+                      })
+                    ),
+                    // Portfolio Analytics
+                    smDay > 0 && React.createElement('div', { className: 'mt-3 bg-slate-50 rounded-xl p-3 border border-slate-200' },
+                      React.createElement('h4', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2' }, '\uD83D\uDCC8 Portfolio Analytics'),
+                      React.createElement('div', { className: 'grid grid-cols-3 gap-2 text-center' },
+                        React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
+                          React.createElement('div', { className: 'text-[9px] text-slate-400' }, 'Total P&L'),
+                          React.createElement('div', { className: 'text-sm font-bold ' + (smTotalVal - 10000 >= 0 ? 'text-green-600' : 'text-red-500') },
+                            (smTotalVal - 10000 >= 0 ? '+' : '') + '$' + (smTotalVal - 10000).toFixed(0))
+                        ),
+                        React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
+                          React.createElement('div', { className: 'text-[9px] text-slate-400' }, 'Return %'),
+                          React.createElement('div', { className: 'text-sm font-bold ' + (smTotalVal >= 10000 ? 'text-green-600' : 'text-red-500') },
+                            (smTotalVal >= 10000 ? '+' : '') + ((smTotalVal / 10000 - 1) * 100).toFixed(1) + '%')
+                        ),
+                        React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
+                          React.createElement('div', { className: 'text-[9px] text-slate-400' }, 'Holdings'),
+                          React.createElement('div', { className: 'text-sm font-bold text-slate-700' },
+                            Object.keys(smPortfolio).filter(function (t) { return smPortfolio[t] > 0; }).length + ' stocks')
+                        )
+                      )
+                    ),
+                    // Reset Market button
+                    React.createElement('button', {
+                      onClick: function () { upd('smCompanies', null); upd('smPortfolio', {}); upd('smCash', 10000); upd('smDay', 0); upd('smInput', ''); upd('smNewsEvent', null); if (addToast) addToast('\u267B Market reset! Create a new one.', 'info'); },
+                      className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200'
+                    }, '\u267B Reset Market & Generate New Companies')
                   )
-                ),
-                // Reset Market button
-                React.createElement('button', {
-                  onClick: function() { upd('smCompanies', null); upd('smPortfolio', {}); upd('smCash', 10000); upd('smDay', 0); upd('smInput', ''); upd('smNewsEvent', null); if (addToast) addToast('\u267B Market reset! Create a new one.', 'info'); },
-                  className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200'
-                }, '\u267B Reset Market & Generate New Companies')
-              )
-              )
+                )
             ),
 
             econTab === 'entrepreneur' && React.createElement('div', { className: 'mt-4' },
@@ -35300,18 +35375,18 @@
                 React.createElement('input', {
                   type: 'text',
                   value: d.enInput || '',
-                  onChange: function(e) { upd('enInput', e.target.value); },
+                  onChange: function (e) { upd('enInput', e.target.value); },
                   placeholder: 'e.g. food truck, dog walking, tutoring, bakery, app development...',
                   className: 'w-full max-w-md px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none transition-all mb-3',
-                  onKeyDown: function(e) { if (e.key === 'Enter' && (d.enInput || '').trim()) { document.getElementById('econ-start-biz').click(); } }
+                  onKeyDown: function (e) { if (e.key === 'Enter' && (d.enInput || '').trim()) { document.getElementById('econ-start-biz').click(); } }
                 }),
                 React.createElement('button', {
                   id: 'econ-start-biz',
-                  onClick: function() {
+                  onClick: function () {
                     if (!(d.enInput || '').trim()) return;
                     upd('enLoading', true);
                     var prompt = 'You are a business simulation game engine for students. The player wants to start a "' + d.enInput.trim() + '" business.\n\nGenerate realistic startup details. Return ONLY valid JSON:\n{"businessName":"<creative name>","emoji":"<single emoji>","startupCost":<number 500-50000>,"dailyFixedCosts":<number 10-500>,"unitCost":<number, cost per unit/customer served>,"unitName":"<what 1 unit is, e.g. meal, walk, lesson, item>","suggestedPrice":<number>,"maxDailyCustomers":<number 5-200>,"description":"<1 sentence pitch>","riskFactors":["<risk 1>","<risk 2>","<risk 3>"]}\n\nMake the numbers realistic for a small business startup.';
-                    callGemini(prompt, true).then(function(result) {
+                    callGemini(prompt, true).then(function (result) {
                       try {
                         var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
                         var s2 = cleaned.indexOf('{'); if (s2 > 0) cleaned = cleaned.substring(s2);
@@ -35326,141 +35401,141 @@
                         upd('enBizEvent', null);
                         upd('enLoading', false);
                         if (addToast) addToast('\uD83C\uDF89 ' + biz.businessName + ' is open! Starting capital: $' + (10000 - biz.startupCost).toLocaleString(), 'success');
-                      } catch(e3) { upd('enLoading', false); if (addToast) addToast('Failed to create business. Try again!', 'error'); console.error('[BizSim]', e3); }
-                    }).catch(function(e4) { upd('enLoading', false); if (addToast) addToast('AI error', 'error'); });
+                      } catch (e3) { upd('enLoading', false); if (addToast) addToast('Failed to create business. Try again!', 'error'); console.error('[BizSim]', e3); }
+                    }).catch(function (e4) { upd('enLoading', false); if (addToast) addToast('AI error', 'error'); });
                   },
                   disabled: d.enLoading || !(d.enInput || '').trim(),
                   className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.enLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-xl')
                 }, d.enLoading ? '\u23F3 AI is building your business...' : '\uD83D\uDE80 Launch Business')
               ) :
-              // Active business view
-              React.createElement('div', null,
-                // Business header
-                React.createElement('div', { className: 'flex items-center gap-3 mb-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200' },
-                  React.createElement('span', { className: 'text-3xl' }, d.enBusiness.emoji || '\uD83C\uDFEA'),
-                  React.createElement('div', { className: 'flex-1' },
-                    React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, d.enBusiness.businessName),
-                    React.createElement('p', { className: 'text-[10px] text-amber-600' }, d.enBusiness.description)
-                  ),
-                  React.createElement('div', { className: 'text-right' },
-                    React.createElement('div', { className: 'text-lg font-bold ' + ((d.enBizCash || 0) >= 0 ? 'text-green-600' : 'text-red-500') }, '$' + (d.enBizCash || 0).toLocaleString()),
-                    React.createElement('div', { className: 'text-[10px] text-slate-400' }, 'Day ' + (d.enBizDay || 1) + ' | Rep: ' + (d.enBizRep || 50) + '/100 | Staff: ' + (d.enBizEmployees || 0))
-                  )
-                ),
-                // Price adjustment + stats
-                React.createElement('div', { className: 'grid grid-cols-3 gap-2 mb-3' },
-                  React.createElement('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
-                    React.createElement('label', { className: 'block text-[10px] font-bold text-amber-700 mb-1' }, '\uD83D\uDCB2 Price per ' + (d.enBusiness.unitName || 'unit') + ': $' + (d.enBizPrice || d.enBusiness.suggestedPrice || 10).toFixed(2)),
-                    React.createElement('input', {
-                      type: 'range', min: 1, max: (d.enBusiness.suggestedPrice || 10) * 3, step: 0.5,
-                      value: d.enBizPrice || d.enBusiness.suggestedPrice || 10,
-                      onChange: function(e) { upd('enBizPrice', parseFloat(e.target.value)); },
-                      className: 'w-full accent-amber-500'
-                    }),
-                    React.createElement('div', { className: 'text-[9px] text-amber-600 mt-0.5' }, 'Suggested: $' + (d.enBusiness.suggestedPrice || 10))
-                  ),
-                  React.createElement('div', { className: 'bg-blue-50 rounded-xl p-3 border border-blue-200 text-center' },
-                    React.createElement('div', { className: 'text-[9px] text-blue-500 font-bold' }, 'Profit Margin'),
-                    React.createElement('div', { className: 'text-lg font-bold ' + (((d.enBizPrice || d.enBusiness.suggestedPrice || 10) - (d.enBusiness.unitCost || 5)) / (d.enBizPrice || d.enBusiness.suggestedPrice || 10) * 100 > 30 ? 'text-green-600' : 'text-amber-600') },
-                      (((d.enBizPrice || d.enBusiness.suggestedPrice || 10) - (d.enBusiness.unitCost || 5)) / (d.enBizPrice || d.enBusiness.suggestedPrice || 10) * 100).toFixed(0) + '%'),
-                    React.createElement('div', { className: 'text-[9px] text-blue-400' }, 'Cost: $' + (d.enBusiness.unitCost || 5))
-                  ),
-                  React.createElement('div', { className: 'bg-purple-50 rounded-xl p-3 border border-purple-200 text-center' },
-                    React.createElement('div', { className: 'text-[9px] text-purple-500 font-bold' }, 'Break-Even'),
-                    React.createElement('div', { className: 'text-lg font-bold text-purple-700' },
-                      Math.ceil((d.enBusiness.dailyFixedCosts || 50) / Math.max(0.01, (d.enBizPrice || d.enBusiness.suggestedPrice || 10) - (d.enBusiness.unitCost || 5)))),
-                    React.createElement('div', { className: 'text-[9px] text-purple-400' }, d.enBusiness.unitName + 's/day')
-                  )
-                  )
-                ),
-                // AI Event display
-                d.enBizEvent ? React.createElement('div', { className: 'bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200 mb-3' },
-                  React.createElement('div', { className: 'flex items-start gap-2 mb-3' },
-                    React.createElement('span', { className: 'text-2xl' }, d.enBizEvent.emoji || '\u26A1'),
-                    React.createElement('div', null,
-                      React.createElement('h4', { className: 'text-sm font-bold text-purple-800' }, d.enBizEvent.title),
-                      React.createElement('p', { className: 'text-xs text-purple-600 mt-1' }, d.enBizEvent.description),
-                      d.enBizEvent.lesson && React.createElement('div', { className: 'mt-2 bg-purple-100 rounded-lg px-3 py-2 text-[10px] text-purple-800 border border-purple-200' },
-                        React.createElement('span', { className: 'font-bold' }, '\uD83D\uDCDA Business Concept: '),
-                        d.enBizEvent.lesson
-                      )
+                // Active business view
+                React.createElement('div', null,
+                  // Business header
+                  React.createElement('div', { className: 'flex items-center gap-3 mb-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200' },
+                    React.createElement('span', { className: 'text-3xl' }, d.enBusiness.emoji || '\uD83C\uDFEA'),
+                    React.createElement('div', { className: 'flex-1' },
+                      React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, d.enBusiness.businessName),
+                      React.createElement('p', { className: 'text-[10px] text-amber-600' }, d.enBusiness.description)
+                    ),
+                    React.createElement('div', { className: 'text-right' },
+                      React.createElement('div', { className: 'text-lg font-bold ' + ((d.enBizCash || 0) >= 0 ? 'text-green-600' : 'text-red-500') }, '$' + (d.enBizCash || 0).toLocaleString()),
+                      React.createElement('div', { className: 'text-[10px] text-slate-400' }, 'Day ' + (d.enBizDay || 1) + ' | Rep: ' + (d.enBizRep || 50) + '/100 | Staff: ' + (d.enBizEmployees || 0))
                     )
                   ),
-                  React.createElement('div', { className: 'grid gap-2' },
-                    (d.enBizEvent.choices || []).map(function(ch, chi) {
-                      return React.createElement('button', {
-                        key: chi,
-                        onClick: function() {
-                          var ef = ch.effect || {};
-                          upd('enBizCash', (d.enBizCash || 0) + (ef.cash || 0));
-                          upd('enBizRep', Math.min(100, Math.max(0, (d.enBizRep || 50) + (ef.reputation || 0))));
-                          if (ef.employees) upd('enBizEmployees', Math.max(0, (d.enBizEmployees || 0) + ef.employees));
-                          upd('enBizEvent', null);
-                          if (addToast) addToast(ch.label + ' \u2192 ' + (ef.cash >= 0 ? '+$' : '-$') + Math.abs(ef.cash || 0), ef.cash >= 0 ? 'success' : 'warning');
-                        },
-                        className: 'w-full text-left p-3 rounded-xl border-2 border-purple-100 hover:border-purple-400 bg-white hover:bg-purple-50 transition-all text-xs'
-                      },
-                        React.createElement('div', { className: 'font-bold text-slate-700' }, ch.label),
-                        React.createElement('div', { className: 'text-slate-400 mt-0.5 flex gap-3' },
-                          ch.effect && ch.effect.cash ? React.createElement('span', { className: ch.effect.cash >= 0 ? 'text-green-500' : 'text-red-500' }, (ch.effect.cash >= 0 ? '+' : '') + '$' + ch.effect.cash) : null,
-                          ch.effect && ch.effect.reputation ? React.createElement('span', { className: 'text-purple-500' }, (ch.effect.reputation > 0 ? '+' : '') + ch.effect.reputation + ' rep') : null,
-                          ch.effect && ch.effect.employees ? React.createElement('span', { className: 'text-sky-500' }, (ch.effect.employees > 0 ? '+' : '') + ch.effect.employees + ' staff') : null
-                        )
-                      );
-                    })
+                  // Price adjustment + stats
+                  React.createElement('div', { className: 'grid grid-cols-3 gap-2 mb-3' },
+                    React.createElement('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
+                      React.createElement('label', { className: 'block text-[10px] font-bold text-amber-700 mb-1' }, '\uD83D\uDCB2 Price per ' + (d.enBusiness.unitName || 'unit') + ': $' + (d.enBizPrice || d.enBusiness.suggestedPrice || 10).toFixed(2)),
+                      React.createElement('input', {
+                        type: 'range', min: 1, max: (d.enBusiness.suggestedPrice || 10) * 3, step: 0.5,
+                        value: d.enBizPrice || d.enBusiness.suggestedPrice || 10,
+                        onChange: function (e) { upd('enBizPrice', parseFloat(e.target.value)); },
+                        className: 'w-full accent-amber-500'
+                      }),
+                      React.createElement('div', { className: 'text-[9px] text-amber-600 mt-0.5' }, 'Suggested: $' + (d.enBusiness.suggestedPrice || 10))
+                    ),
+                    React.createElement('div', { className: 'bg-blue-50 rounded-xl p-3 border border-blue-200 text-center' },
+                      React.createElement('div', { className: 'text-[9px] text-blue-500 font-bold' }, 'Profit Margin'),
+                      React.createElement('div', { className: 'text-lg font-bold ' + (((d.enBizPrice || d.enBusiness.suggestedPrice || 10) - (d.enBusiness.unitCost || 5)) / (d.enBizPrice || d.enBusiness.suggestedPrice || 10) * 100 > 30 ? 'text-green-600' : 'text-amber-600') },
+                        (((d.enBizPrice || d.enBusiness.suggestedPrice || 10) - (d.enBusiness.unitCost || 5)) / (d.enBizPrice || d.enBusiness.suggestedPrice || 10) * 100).toFixed(0) + '%'),
+                      React.createElement('div', { className: 'text-[9px] text-blue-400' }, 'Cost: $' + (d.enBusiness.unitCost || 5))
+                    ),
+                    React.createElement('div', { className: 'bg-purple-50 rounded-xl p-3 border border-purple-200 text-center' },
+                      React.createElement('div', { className: 'text-[9px] text-purple-500 font-bold' }, 'Break-Even'),
+                      React.createElement('div', { className: 'text-lg font-bold text-purple-700' },
+                        Math.ceil((d.enBusiness.dailyFixedCosts || 50) / Math.max(0.01, (d.enBizPrice || d.enBusiness.suggestedPrice || 10) - (d.enBusiness.unitCost || 5)))),
+                      React.createElement('div', { className: 'text-[9px] text-purple-400' }, d.enBusiness.unitName + 's/day')
+                    )
                   )
-                ) : null,
-                // Run Day button
-                !d.enBizEvent && React.createElement('button', {
-                  onClick: function() {
-                    upd('enBizLoading', true);
-                    var biz = d.enBusiness;
-                    var prompt = 'You are a business simulation game engine (difficulty: ' + (d.econDifficulty || 'medium') + '). The player runs "' + biz.businessName + '" (a ' + (d.enInput || 'business') + '). Day ' + (d.enBizDay || 1) + ', cash: $' + (d.enBizCash || 0) + ', reputation: ' + (d.enBizRep || 50) + '/100. They sell ' + biz.unitName + ' at $' + (d.enBizPrice || biz.suggestedPrice) + ' each. Daily fixed costs: $' + biz.dailyFixedCosts + ', unit cost: $' + biz.unitCost + '. They have ' + (d.enBizLocations || 1) + ' location(s) and ' + (d.enBizEmployees || 0) + ' employees (each costs $80/day but increases max customers by 20%).\n\nSimulate today and generate an event. Return ONLY valid JSON:\n{"customersToday":<number>,"revenue":<number>,"costs":<number>,"emoji":"<emoji>","title":"<event title>","description":"<what happened today + the event>","choices":[{"label":"<option>","effect":{"cash":<number>,"reputation":<number>,"employees":<number or 0>}}]}\n\nMake daily customers based on reputation (higher rep = more customers, max ' + biz.maxDailyCustomers + '). Include a realistic challenge with 2-3 choices.\n\nIMPORTANT: Include a "lesson" field with a 1-2 sentence business/entrepreneurship concept (e.g., break-even analysis, profit margins, customer acquisition cost, cash flow management, competitive advantage, economies of scale, marketing ROI, supply chain, pivot strategy, unit economics, customer retention vs acquisition).';
-                    callGemini(prompt, true).then(function(result) {
-                      try {
-                        var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-                        var s3 = cleaned.indexOf('{'); if (s3 > 0) cleaned = cleaned.substring(s3);
-                        var e3 = cleaned.lastIndexOf('}'); if (e3 > 0) cleaned = cleaned.substring(0, e3 + 1);
-                        var dayResult = JSON.parse(cleaned);
-                        var dailyProfit = (dayResult.revenue || 0) - (dayResult.costs || 0);
-                        upd('enBizCash', (d.enBizCash || 0) + dailyProfit);
-                        upd('enBizDay', (d.enBizDay || 1) + 1);
-                        if (typeof addXP === 'function') addXP(10, 'Business Sim: Completed a day');
-                        var h2 = (d.enBizHistory || []).slice(-29);
-                        h2.push({ day: d.enBizDay || 1, revenue: dayResult.revenue, costs: dayResult.costs, profit: dailyProfit, customers: dayResult.customersToday });
-                        upd('enBizHistory', h2);
-                        upd('enBizEvent', dayResult);
-                        if (dayResult.lesson) {
-                          var gl3 = (d.econGlossary || []).slice();
-                          var exists3 = gl3.some(function(g) { return g.concept === dayResult.title; });
-                          if (!exists3) { gl3.push({ tab: 'Business', concept: dayResult.title, explanation: dayResult.lesson }); upd('econGlossary', gl3); }
-                        }
-                        upd('enBizLoading', false);
-                      } catch(e4) { upd('enBizLoading', false); if (addToast) addToast('Day sim failed. Try again!', 'error'); console.error('[BizSim]', e4); }
-                    }).catch(function(e5) { upd('enBizLoading', false); if (addToast) addToast('AI error', 'error'); });
-                  },
-                  disabled: d.enBizLoading,
-                  className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg mb-3 transition-all ' + (d.enBizLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:shadow-xl hover:scale-[1.02]')
-                }, d.enBizLoading ? '\u23F3 Simulating day...' : '\u2600\uFE0F Open for Business! (Day ' + (d.enBizDay || 1) + ')'),
-                // Stats + History
-                (d.enBizHistory || []).length > 0 && React.createElement('div', { className: 'bg-white rounded-xl border border-slate-200 p-3' },
-                  React.createElement('h4', { className: 'text-xs font-bold text-slate-500 mb-2' }, '\uD83D\uDCC8 Business History'),
-                  (d.enBizHistory || []).slice(-7).reverse().map(function(dh, dhi) {
-                    return React.createElement('div', { key: dhi, className: 'flex justify-between text-[10px] py-1 border-b border-slate-50' },
-                      React.createElement('span', { className: 'text-slate-400' }, 'Day ' + dh.day),
-                      React.createElement('span', { className: 'text-slate-500' }, dh.customers + ' customers'),
-                      React.createElement('span', { className: 'text-blue-500' }, 'Rev $' + (dh.revenue || 0).toFixed(0)),
-                      React.createElement('span', { className: dh.profit >= 0 ? 'text-green-600 font-bold' : 'text-red-500 font-bold' }, (dh.profit >= 0 ? '+' : '') + '$' + (dh.profit || 0).toFixed(0))
+                ),
+              // AI Event display
+              d.enBizEvent ? React.createElement('div', { className: 'bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200 mb-3' },
+                React.createElement('div', { className: 'flex items-start gap-2 mb-3' },
+                  React.createElement('span', { className: 'text-2xl' }, d.enBizEvent.emoji || '\u26A1'),
+                  React.createElement('div', null,
+                    React.createElement('h4', { className: 'text-sm font-bold text-purple-800' }, d.enBizEvent.title),
+                    React.createElement('p', { className: 'text-xs text-purple-600 mt-1' }, d.enBizEvent.description),
+                    d.enBizEvent.lesson && React.createElement('div', { className: 'mt-2 bg-purple-100 rounded-lg px-3 py-2 text-[10px] text-purple-800 border border-purple-200' },
+                      React.createElement('span', { className: 'font-bold' }, '\uD83D\uDCDA Business Concept: '),
+                      d.enBizEvent.lesson
+                    )
+                  )
+                ),
+                React.createElement('div', { className: 'grid gap-2' },
+                  (d.enBizEvent.choices || []).map(function (ch, chi) {
+                    return React.createElement('button', {
+                      key: chi,
+                      onClick: function () {
+                        var ef = ch.effect || {};
+                        upd('enBizCash', (d.enBizCash || 0) + (ef.cash || 0));
+                        upd('enBizRep', Math.min(100, Math.max(0, (d.enBizRep || 50) + (ef.reputation || 0))));
+                        if (ef.employees) upd('enBizEmployees', Math.max(0, (d.enBizEmployees || 0) + ef.employees));
+                        upd('enBizEvent', null);
+                        if (addToast) addToast(ch.label + ' \u2192 ' + (ef.cash >= 0 ? '+$' : '-$') + Math.abs(ef.cash || 0), ef.cash >= 0 ? 'success' : 'warning');
+                      },
+                      className: 'w-full text-left p-3 rounded-xl border-2 border-purple-100 hover:border-purple-400 bg-white hover:bg-purple-50 transition-all text-xs'
+                    },
+                      React.createElement('div', { className: 'font-bold text-slate-700' }, ch.label),
+                      React.createElement('div', { className: 'text-slate-400 mt-0.5 flex gap-3' },
+                        ch.effect && ch.effect.cash ? React.createElement('span', { className: ch.effect.cash >= 0 ? 'text-green-500' : 'text-red-500' }, (ch.effect.cash >= 0 ? '+' : '') + '$' + ch.effect.cash) : null,
+                        ch.effect && ch.effect.reputation ? React.createElement('span', { className: 'text-purple-500' }, (ch.effect.reputation > 0 ? '+' : '') + ch.effect.reputation + ' rep') : null,
+                        ch.effect && ch.effect.employees ? React.createElement('span', { className: 'text-sky-500' }, (ch.effect.employees > 0 ? '+' : '') + ch.effect.employees + ' staff') : null
+                      )
                     );
                   })
-                ),
-                // Close business
-                React.createElement('button', {
-                  onClick: function() { upd('enBusiness', null); upd('enInput', ''); if (addToast) addToast('Business closed. Start a new one!', 'info'); },
-                  className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200'
-                }, '\u267B Close Business & Start New')
-              )
-            );
+                )
+              ) : null,
+              // Run Day button
+              !d.enBizEvent && React.createElement('button', {
+                onClick: function () {
+                  upd('enBizLoading', true);
+                  var biz = d.enBusiness;
+                  var prompt = 'You are a business simulation game engine (difficulty: ' + (d.econDifficulty || 'medium') + '). The player runs "' + biz.businessName + '" (a ' + (d.enInput || 'business') + '). Day ' + (d.enBizDay || 1) + ', cash: $' + (d.enBizCash || 0) + ', reputation: ' + (d.enBizRep || 50) + '/100. They sell ' + biz.unitName + ' at $' + (d.enBizPrice || biz.suggestedPrice) + ' each. Daily fixed costs: $' + biz.dailyFixedCosts + ', unit cost: $' + biz.unitCost + '. They have ' + (d.enBizLocations || 1) + ' location(s) and ' + (d.enBizEmployees || 0) + ' employees (each costs $80/day but increases max customers by 20%).\n\nSimulate today and generate an event. Return ONLY valid JSON:\n{"customersToday":<number>,"revenue":<number>,"costs":<number>,"emoji":"<emoji>","title":"<event title>","description":"<what happened today + the event>","choices":[{"label":"<option>","effect":{"cash":<number>,"reputation":<number>,"employees":<number or 0>}}]}\n\nMake daily customers based on reputation (higher rep = more customers, max ' + biz.maxDailyCustomers + '). Include a realistic challenge with 2-3 choices.\n\nIMPORTANT: Include a "lesson" field with a 1-2 sentence business/entrepreneurship concept (e.g., break-even analysis, profit margins, customer acquisition cost, cash flow management, competitive advantage, economies of scale, marketing ROI, supply chain, pivot strategy, unit economics, customer retention vs acquisition).';
+                  callGemini(prompt, true).then(function (result) {
+                    try {
+                      var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+                      var s3 = cleaned.indexOf('{'); if (s3 > 0) cleaned = cleaned.substring(s3);
+                      var e3 = cleaned.lastIndexOf('}'); if (e3 > 0) cleaned = cleaned.substring(0, e3 + 1);
+                      var dayResult = JSON.parse(cleaned);
+                      var dailyProfit = (dayResult.revenue || 0) - (dayResult.costs || 0);
+                      upd('enBizCash', (d.enBizCash || 0) + dailyProfit);
+                      upd('enBizDay', (d.enBizDay || 1) + 1);
+                      if (typeof addXP === 'function') addXP(10, 'Business Sim: Completed a day');
+                      var h2 = (d.enBizHistory || []).slice(-29);
+                      h2.push({ day: d.enBizDay || 1, revenue: dayResult.revenue, costs: dayResult.costs, profit: dailyProfit, customers: dayResult.customersToday });
+                      upd('enBizHistory', h2);
+                      upd('enBizEvent', dayResult);
+                      if (dayResult.lesson) {
+                        var gl3 = (d.econGlossary || []).slice();
+                        var exists3 = gl3.some(function (g) { return g.concept === dayResult.title; });
+                        if (!exists3) { gl3.push({ tab: 'Business', concept: dayResult.title, explanation: dayResult.lesson }); upd('econGlossary', gl3); }
+                      }
+                      upd('enBizLoading', false);
+                    } catch (e4) { upd('enBizLoading', false); if (addToast) addToast('Day sim failed. Try again!', 'error'); console.error('[BizSim]', e4); }
+                  }).catch(function (e5) { upd('enBizLoading', false); if (addToast) addToast('AI error', 'error'); });
+                },
+                disabled: d.enBizLoading,
+                className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg mb-3 transition-all ' + (d.enBizLoading ? 'bg-slate-300 text-slate-500' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:shadow-xl hover:scale-[1.02]')
+              }, d.enBizLoading ? '\u23F3 Simulating day...' : '\u2600\uFE0F Open for Business! (Day ' + (d.enBizDay || 1) + ')'),
+              // Stats + History
+              (d.enBizHistory || []).length > 0 && React.createElement('div', { className: 'bg-white rounded-xl border border-slate-200 p-3' },
+                React.createElement('h4', { className: 'text-xs font-bold text-slate-500 mb-2' }, '\uD83D\uDCC8 Business History'),
+                (d.enBizHistory || []).slice(-7).reverse().map(function (dh, dhi) {
+                  return React.createElement('div', { key: dhi, className: 'flex justify-between text-[10px] py-1 border-b border-slate-50' },
+                    React.createElement('span', { className: 'text-slate-400' }, 'Day ' + dh.day),
+                    React.createElement('span', { className: 'text-slate-500' }, dh.customers + ' customers'),
+                    React.createElement('span', { className: 'text-blue-500' }, 'Rev $' + (dh.revenue || 0).toFixed(0)),
+                    React.createElement('span', { className: dh.profit >= 0 ? 'text-green-600 font-bold' : 'text-red-500 font-bold' }, (dh.profit >= 0 ? '+' : '') + '$' + (dh.profit || 0).toFixed(0))
+                  );
+                })
+              ),
+              // Close business
+              React.createElement('button', {
+                onClick: function () { upd('enBusiness', null); upd('enInput', ''); if (addToast) addToast('Business closed. Start a new one!', 'info'); },
+                className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200'
+              }, '\u267B Close Business & Start New')
+            )
+          );
         })(), stemLabTab === 'explore' && stemLabTool === 'codingPlayground' && (() => {
           // ── State from labToolData ──
           var d = (labToolData && labToolData._codingPlayground) || {};
@@ -36481,58 +36556,74 @@
         // ═══════════════════════════════════════════════════════════════
         stemLabTab === 'explore' && stemLabTool === 'behaviorLab' && (() => {
           var d = labToolData || {};
-          var upd = function(k,v) { setLabToolData(function(p) { var n = Object.assign({}, p); n[k]=v; return n; }); };
+          var upd = function (k, v) { setLabToolData(function (p) { var n = Object.assign({}, p); n[k] = v; return n; }); };
 
           // ── Level definitions ──
           var LEVELS = [
-            { id: 1, title: 'First Food', concept: 'Positive Reinforcement', target: 'pressLever', goal: 10,
+            {
+              id: 1, title: 'First Food', concept: 'Positive Reinforcement', target: 'pressLever', goal: 10,
               intro: 'In positive reinforcement, a consequence is ADDED after a behavior to INCREASE the likelihood of that behavior occurring again. Your job: click "Deliver Food" immediately after the mouse presses the lever. Reinforce 10 lever presses!',
               termDef: 'Positive Reinforcement (SR+): Adding a stimulus after a behavior that increases the future probability of that behavior.',
               funFact: '🧪 B.F. Skinner discovered that pigeons could be trained to guide missiles during WWII using operant conditioning — the project was called "Project Pigeon"!',
               vocab: ['SR+ (Positive Reinforcement)', 'Operant Behavior', 'Consequence'],
-              contingency: { a: 'Chamber present', b: 'Presses lever', c: '🍕 Food delivered (+SR)' } },
-            { id: 2, title: 'Shape Up!', concept: 'Shaping', target: 'spin', goal: 5,
+              contingency: { a: 'Chamber present', b: 'Presses lever', c: '🍕 Food delivered (+SR)' }
+            },
+            {
+              id: 2, title: 'Shape Up!', concept: 'Shaping', target: 'spin', goal: 5,
               intro: 'Shaping uses successive approximations — reinforcing behaviors that are progressively closer to the target. The mouse won\'t spin on its own at first! Reinforce turning, then half-turns, then full spins. Shape 5 complete spins!',
               termDef: 'Shaping: Differentially reinforcing successive approximations toward a terminal (target) behavior.',
               funFact: '🐬 Dolphin trainers at SeaWorld use shaping to teach dolphins to do backflips — they start by reinforcing any upward movement!',
               vocab: ['Successive Approximations', 'Terminal Behavior', 'Differential Reinforcement'],
-              contingency: { a: 'Trainer present', b: 'Closer to spin', c: '🍕 Food (reinforce!)' } },
-            { id: 3, title: 'The Burst', concept: 'Extinction', target: 'pressLever', goal: 0,
+              contingency: { a: 'Trainer present', b: 'Closer to spin', c: '🍕 Food (reinforce!)' }
+            },
+            {
+              id: 3, title: 'The Burst', concept: 'Extinction', target: 'pressLever', goal: 0,
               intro: 'When reinforcement is suddenly withheld, the organism often shows an extinction burst — a temporary INCREASE in the behavior before it decreases. First, reinforce 5 lever presses, then STOP reinforcing and watch what happens!',
               termDef: 'Extinction Burst: A temporary increase in frequency/intensity of a previously reinforced behavior when reinforcement is discontinued.',
               funFact: '🛗 Ever push an elevator button multiple times when it doesn\'t light up? That\'s YOUR extinction burst!',
               vocab: ['Extinction', 'Extinction Burst', 'Spontaneous Recovery'],
-              contingency: { a: 'Chamber present', b: 'Presses lever', c: '❌ No food (extinction)' } },
-            { id: 4, title: 'On Schedule', concept: 'Schedules of Reinforcement', target: 'pressLever', goal: 20,
+              contingency: { a: 'Chamber present', b: 'Presses lever', c: '❌ No food (extinction)' }
+            },
+            {
+              id: 4, title: 'On Schedule', concept: 'Schedules of Reinforcement', target: 'pressLever', goal: 20,
               intro: 'Not every response needs reinforcement! A Fixed Ratio (FR) schedule reinforces after a set number of responses. Try FR-3: reinforce every 3rd lever press. Watch how the mouse responds differently than continuous reinforcement!',
               termDef: 'Fixed Ratio (FR): A schedule where reinforcement is delivered after a fixed number of responses.',
               funFact: '🎰 Slot machines use Variable Ratio (VR) schedules — the most resistant to extinction — which is why they\'re so addictive!',
               vocab: ['Fixed Ratio (FR)', 'Continuous Reinforcement (CRF)', 'Intermittent Reinforcement'],
-              contingency: { a: 'Chamber present', b: 'Every 3rd press', c: '🍕 Food (FR-3)' } },
-            { id: 5, title: 'Green Means Go', concept: 'Stimulus Discrimination', target: 'pressLever', goal: 10,
+              contingency: { a: 'Chamber present', b: 'Every 3rd press', c: '🍕 Food (FR-3)' }
+            },
+            {
+              id: 5, title: 'Green Means Go', concept: 'Stimulus Discrimination', target: 'pressLever', goal: 10,
               intro: 'A discriminative stimulus (SD) signals that reinforcement is available. The green light = SD (reinforce lever presses). Red light = S-delta (do NOT reinforce). Teach the mouse to press only when the green light is on!',
               termDef: 'SD (Discriminative Stimulus): A stimulus that signals reinforcement is available for a specific behavior.',
               funFact: '🚦 Traffic lights work as discriminative stimuli for drivers — green (SD) signals "go" and red (S-delta) signals "stop"!',
               vocab: ['SD (Discriminative Stimulus)', 'S-delta (S∆)', 'Stimulus Control'],
-              contingency: { a: '🟢 Green light (SD)', b: 'Presses lever', c: '🍕 Food delivered' } },
-            { id: 6, title: 'Free Lab', concept: 'Sandbox Mode', target: null, goal: 0,
+              contingency: { a: '🟢 Green light (SD)', b: 'Presses lever', c: '🍕 Food delivered' }
+            },
+            {
+              id: 6, title: 'Free Lab', concept: 'Sandbox Mode', target: null, goal: 0,
               intro: 'Welcome to the Free Lab! All tools are unlocked. Design your own experiment. Try shaping a new behavior, testing different schedules, or building a behavior chain. Happy experimenting!',
               termDef: 'Applied Behavior Analysis (ABA): The science of applying behavioral principles to improve socially significant behavior.',
               funFact: '🌍 ABA principles are used everywhere — from teaching children with autism to training service dogs, to designing better apps!',
               vocab: ['Behavior Chain', 'Generalization', 'Maintenance'],
-              contingency: { a: 'Your choice!', b: 'Pick a behavior', c: 'Design the consequence' } },
-            { id: 7, title: 'Chain Reaction', concept: 'Behavior Chaining', target: 'pressLever', goal: 3,
+              contingency: { a: 'Your choice!', b: 'Pick a behavior', c: 'Design the consequence' }
+            },
+            {
+              id: 7, title: 'Chain Reaction', concept: 'Behavior Chaining', target: 'pressLever', goal: 3,
               intro: 'A behavior chain links multiple behaviors in a specific sequence. The completion of one step becomes the signal (SD) for the next. Teach the mouse this chain: Sniff ➜ Rear Up ➜ Press Lever. Reinforce ONLY when the full 3-step chain is completed!',
               termDef: 'Behavior Chain: A sequence of responses where each response produces the discriminative stimulus (SD) for the next response, and the last response is followed by a reinforcer.',
               funFact: '🐕 Service dogs learn behavior chains of 20+ steps — like opening the fridge, grabbing a drink, closing the fridge, and bringing it to their handler!',
               vocab: ['Behavior Chain', 'Forward Chaining', 'Task Analysis', 'Terminal Reinforcer'],
-              contingency: { a: 'Chain cue', b: 'Sniff→Rear→Lever', c: '🍕 Food (chain complete!)' } },
-            { id: 8, title: 'Not That!', concept: 'DRO — Differential Reinforcement', target: null, goal: 5,
+              contingency: { a: 'Chain cue', b: 'Sniff→Rear→Lever', c: '🍕 Food (chain complete!)' }
+            },
+            {
+              id: 8, title: 'Not That!', concept: 'DRO — Differential Reinforcement', target: null, goal: 5,
               intro: 'DRO (Differential Reinforcement of Other behavior) means reinforcing the ABSENCE of a specific behavior for a set time interval. A countdown timer runs — if the mouse does NOT press the lever before the timer finishes, deliver food! If the mouse presses the lever, the timer resets. Deliver 5 successful DRO intervals!',
               termDef: 'DRO (Differential Reinforcement of Other Behavior): Reinforcement is delivered when a specified behavior does NOT occur for a predetermined interval of time.',
               funFact: '🏫 Teachers use DRO all the time — "If no one calls out for 5 minutes, the class earns a point!" It reduces unwanted behavior without punishment.',
               vocab: ['DRO', 'Differential Reinforcement', 'Interval', 'Target Behavior Reduction'],
-              contingency: { a: 'Timer running', b: 'Any behavior EXCEPT lever', c: '🍕 Food (DRO interval met!)' } }
+              contingency: { a: 'Timer running', b: 'Any behavior EXCEPT lever', c: '🍕 Food (DRO interval met!)' }
+            }
           ];
 
           // ── Knowledge Quiz Questions ──
@@ -36615,7 +36706,7 @@
               gain.gain.value = vol || 0.15;
               gain.gain.exponentialRampToValueAtTime(0.001, _blAudioCtx.currentTime + (dur || 0.15));
               osc.start(); osc.stop(_blAudioCtx.currentTime + (dur || 0.15));
-            } catch(e) {}
+            } catch (e) { }
           }
 
           // Default probability weights
@@ -36633,7 +36724,7 @@
             else if (blLevel === 5 && blTick > 3) blHint = '\uD83D\uDCA1 Only reinforce when the GREEN light (SD) is on!';
           }
 
-          var currentLevel = LEVELS.find(function(l) { return l.id === blLevel; }) || LEVELS[0];
+          var currentLevel = LEVELS.find(function (l) { return l.id === blLevel; }) || LEVELS[0];
 
           // ── Action labels for display ──
           var ACTION_LABELS = {
@@ -36695,7 +36786,7 @@
             upd('blFoodVisible', true);
             upd('blFoodTime', Date.now());
             blBeep(880, 0.12, 0.2);
-            setTimeout(function() { upd('blFoodVisible', false); }, 1200);
+            setTimeout(function () { upd('blFoodVisible', false); }, 1200);
 
             // Mood update — happy!
             upd('blMoodEmoji', '😊');
@@ -36879,7 +36970,7 @@
                   upd('blMoodEmoji', '😊');
                   upd('blMoodTimer', Date.now());
                   blBeep(880, 0.12, 0.2);
-                  setTimeout(function() { upd('blFoodVisible', false); }, 1200);
+                  setTimeout(function () { upd('blFoodVisible', false); }, 1200);
                   var droSuccessLog = blAbcLog.slice();
                   droSuccessLog.unshift({ tick: newTick, a: 'DRO interval complete', b: 'No lever press for ' + blDroInterval + ' ticks', c: '🍕 Food delivered (DRO success!)', t: Date.now() });
                   upd('blAbcLog', droSuccessLog.slice(0, 50));
@@ -36936,7 +37027,7 @@
           // ── Auto-advance timer (speed-adjusted) ──
           var tickDelay = blSpeed === 3 ? 500 : blSpeed === 2 ? 900 : 1500;
           if (blPhase === 'running' && !blPaused) {
-            setTimeout(function() { advanceTick(); }, tickDelay);
+            setTimeout(function () { advanceTick(); }, tickDelay);
           }
 
           // ── Canvas Drawing ──
@@ -37448,7 +37539,7 @@
           }
 
           // ── Render canvases via setTimeout (no hooks in conditional IIFE) ──
-          setTimeout(function() {
+          setTimeout(function () {
             var chamberCv = document.getElementById('bl-chamber-canvas');
             var cumCv = document.getElementById('bl-cumrecord-canvas');
             drawChamber(chamberCv);
@@ -37456,11 +37547,11 @@
           }, 0);
 
           // ── Weight bar chart data ──
-          var sortedWeights = Object.keys(blWeights).map(function(k) {
+          var sortedWeights = Object.keys(blWeights).map(function (k) {
             return { action: k, weight: blWeights[k], isTarget: k === (currentLevel.target || 'pressLever') };
-          }).sort(function(a, b) { return b.weight - a.weight; });
+          }).sort(function (a, b) { return b.weight - a.weight; });
 
-          var maxWeight = Math.max.apply(null, sortedWeights.map(function(w) { return w.weight; }));
+          var maxWeight = Math.max.apply(null, sortedWeights.map(function (w) { return w.weight; }));
 
           // ═══════════ RENDER ═══════════
           // Intro Phase
@@ -37469,7 +37560,7 @@
               // Header
               React.createElement("div", { className: "flex items-center gap-3 mb-2" },
                 React.createElement("button", {
-                  onClick: function() { setStemLabTool(null); },
+                  onClick: function () { setStemLabTool(null); },
                   className: "text-2xl hover:scale-110 transition-transform", 'aria-label': 'Back to tools'
                 }, "\u2B05"),
                 React.createElement("div", null,
@@ -37479,14 +37570,14 @@
               ),
               // Level select
               React.createElement("div", { className: "flex gap-2 flex-wrap mb-3" },
-                LEVELS.map(function(lvl) {
+                LEVELS.map(function (lvl) {
                   var unlocked = lvl.id === 1 || blCompletedLevels.indexOf(lvl.id - 1) >= 0 || lvl.id === 6;
                   var isCurrent = lvl.id === blLevel;
                   var isComplete = blCompletedLevels.indexOf(lvl.id) >= 0;
                   return React.createElement("button", {
                     key: lvl.id,
                     disabled: !unlocked,
-                    onClick: function() {
+                    onClick: function () {
                       upd('blLevel', lvl.id);
                       upd('blPhase', 'intro');
                       upd('blLevelScore', 0);
@@ -37501,9 +37592,9 @@
                     },
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
                       (isCurrent ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30' :
-                       isComplete ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/50' :
-                       unlocked ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' :
-                       'bg-slate-800 text-slate-600 cursor-not-allowed')
+                        isComplete ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/50' :
+                          unlocked ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' :
+                            'bg-slate-800 text-slate-600 cursor-not-allowed')
                   }, (isComplete ? '\u2705 ' : '') + lvl.id + '. ' + lvl.title);
                 })
               ),
@@ -37521,7 +37612,7 @@
               ),
               // Start button
               React.createElement("button", {
-                onClick: function() {
+                onClick: function () {
                   upd('blPhase', 'running');
                   upd('blTick', 0);
                   upd('blHistory', []);
@@ -37561,10 +37652,12 @@
             ),
 
             // ── Header row ──
-            React.createElement("div", { className: "flex items-center gap-3 flex-wrap",
-              style: Object.assign({ background: 'rgba(30,27,46,0.7)', borderRadius: 16, padding: '10px 14px', border: '1px solid rgba(99,102,241,0.2)' }, glass) },
+            React.createElement("div", {
+              className: "flex items-center gap-3 flex-wrap",
+              style: Object.assign({ background: 'rgba(30,27,46,0.7)', borderRadius: 16, padding: '10px 14px', border: '1px solid rgba(99,102,241,0.2)' }, glass)
+            },
               React.createElement("button", {
-                onClick: function() { upd('blPhase', 'intro'); },
+                onClick: function () { upd('blPhase', 'intro'); },
                 className: "text-xl hover:scale-110 transition-transform", 'aria-label': 'Back to level select'
               }, "\u2B05"),
               React.createElement("div", { className: "flex-1 min-w-0" },
@@ -37573,10 +37666,10 @@
               ),
               // ── Speed segmented control ──
               React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-slate-600/50", style: { fontSize: 11 } },
-                [1, 2, 3].map(function(sp) {
+                [1, 2, 3].map(function (sp) {
                   return React.createElement("button", {
                     key: sp,
-                    onClick: function() { upd('blSpeed', sp); },
+                    onClick: function () { upd('blSpeed', sp); },
                     className: "px-2.5 py-1 font-bold transition-all " +
                       (blSpeed === sp ? 'bg-amber-500 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700')
                   }, sp + '\u00D7');
@@ -37584,14 +37677,14 @@
               ),
               // ── Sound toggle ──
               React.createElement("button", {
-                onClick: function() { upd('blSoundOn', !blSoundOn); },
+                onClick: function () { upd('blSoundOn', !blSoundOn); },
                 className: "px-2 py-1 rounded-lg text-sm transition-all " +
                   (blSoundOn ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'),
                 'aria-label': blSoundOn ? 'Mute' : 'Unmute', title: blSoundOn ? 'Sound On' : 'Sound Off'
               }, blSoundOn ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
               // ── Pause button ──
               React.createElement("button", {
-                onClick: function() { upd('blPaused', !blPaused); },
+                onClick: function () { upd('blPaused', !blPaused); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (blPaused ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
               }, blPaused ? '\u25B6 Resume' : '\u23F8 Pause')
             ),
@@ -37624,7 +37717,7 @@
               style: Object.assign({ background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(20,184,166,0.15))', border: '1px solid rgba(52,211,153,0.35)', borderRadius: 18, padding: '20px 22px' }, glass)
             },
               // Star rating (efficiency-based)
-              (function() {
+              (function () {
                 var efficiency = blTick > 0 ? blReinforcements / blTick : 0;
                 var stars = efficiency > 0.6 ? 3 : efficiency > 0.3 ? 2 : 1;
                 return React.createElement("p", { className: "text-2xl text-center mb-1", style: { letterSpacing: 4, textShadow: '0 0 12px rgba(251,191,36,0.5)' } },
@@ -37650,7 +37743,7 @@
                 ),
                 blLatencies.length > 0 && React.createElement("div", { className: "bg-slate-900/50 rounded-xl p-3 text-center border border-slate-700/40" },
                   React.createElement("p", { className: "text-lg font-extrabold text-purple-400" },
-                    (blLatencies.reduce(function(a,b){return a+b;},0) / blLatencies.length).toFixed(1)),
+                    (blLatencies.reduce(function (a, b) { return a + b; }, 0) / blLatencies.length).toFixed(1)),
                   React.createElement("p", { className: "text-[10px] text-slate-400" }, "Avg Latency (ticks)")
                 )
               ),
@@ -37658,7 +37751,7 @@
               React.createElement("div", { className: "bg-slate-900/40 rounded-xl p-3 border border-slate-700/30 mb-3" },
                 React.createElement("p", { className: "text-xs font-bold text-amber-300 mb-1" }, "\uD83D\uDCD6 Key Vocabulary:"),
                 React.createElement("ul", { className: "space-y-0.5" },
-                  (currentLevel.vocab || []).map(function(v, vi) {
+                  (currentLevel.vocab || []).map(function (v, vi) {
                     return React.createElement("li", { key: vi, className: "text-xs text-slate-300" }, '\u2022 ' + v);
                   })
                 )
@@ -37668,7 +37761,7 @@
                 React.createElement("p", { className: "text-xs font-bold text-indigo-300 mb-2" }, "🧠 Knowledge Check"),
                 React.createElement("p", { className: "text-sm text-slate-200 font-semibold mb-3" }, QUIZ_BANK[blLevel].q),
                 React.createElement("div", { className: "space-y-1.5" },
-                  QUIZ_BANK[blLevel].opts.map(function(opt, oi) {
+                  QUIZ_BANK[blLevel].opts.map(function (opt, oi) {
                     var isSelected = blQuizSelected === oi;
                     var isCorrect = oi === QUIZ_BANK[blLevel].correct;
                     var showResult = blQuizAnswered;
@@ -37680,7 +37773,7 @@
                     return React.createElement("button", {
                       key: oi,
                       disabled: blQuizAnswered,
-                      onClick: function() {
+                      onClick: function () {
                         upd('blQuizSelected', oi);
                         upd('blQuizAnswered', true);
                         var correct = oi === QUIZ_BANK[blLevel].correct;
@@ -37709,7 +37802,7 @@
               ),
               // Next level button
               React.createElement("button", {
-                onClick: function() {
+                onClick: function () {
                   var nextLevel = Math.min(blLevel + 1, LEVELS.length);
                   upd('blLevel', nextLevel);
                   upd('blPhase', 'intro');
@@ -37751,7 +37844,7 @@
             },
               React.createElement("p", { className: "text-[9px] text-slate-500 font-bold mb-1.5 uppercase tracking-wider" }, "\uD83D\uDD25 Recent Behaviors"),
               React.createElement("div", { className: "flex gap-1 items-center flex-wrap" },
-                blRecentActions.map(function(act, ai) {
+                blRecentActions.map(function (act, ai) {
                   return React.createElement("div", {
                     key: ai,
                     title: ACTION_LABELS[act] || act,
@@ -37776,24 +37869,24 @@
                 className: "flex-1 py-2.5 rounded-xl text-center text-cyan-300 font-bold text-xs",
                 style: { background: 'rgba(8,145,178,0.2)', border: '1px solid rgba(6,182,212,0.3)', borderRadius: 12 }
               }, "\u23F1 Automatic (DRO) — food delivered when timer completes") :
-              React.createElement("button", {
-                onClick: function() {
-                  if (blLevel === 3 && blExtinctionPhase) {
-                    if (addToast) addToast('\u26A0\uFE0F Extinction phase: do NOT reinforce!', 'warning');
-                    return;
-                  }
-                  reinforceAction();
-                },
-                disabled: !blLastAction || blPhase !== 'running',
-                className: "flex-1 py-2.5 rounded-xl font-bold text-sm transition-all " +
-                  (blLastAction && blPhase === 'running'
-                    ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md hover:from-amber-600 hover:to-yellow-600 hover:scale-[1.02]"
-                    : "bg-slate-700 text-slate-500 cursor-not-allowed"),
-                style: pulseStyle
-              }, "\uD83C\uDF55 Deliver Food" + (blLevel === 4 ? '  (' + frCurrent + '/' + frRatio + ')' : '')),
+                React.createElement("button", {
+                  onClick: function () {
+                    if (blLevel === 3 && blExtinctionPhase) {
+                      if (addToast) addToast('\u26A0\uFE0F Extinction phase: do NOT reinforce!', 'warning');
+                      return;
+                    }
+                    reinforceAction();
+                  },
+                  disabled: !blLastAction || blPhase !== 'running',
+                  className: "flex-1 py-2.5 rounded-xl font-bold text-sm transition-all " +
+                    (blLastAction && blPhase === 'running'
+                      ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md hover:from-amber-600 hover:to-yellow-600 hover:scale-[1.02]"
+                      : "bg-slate-700 text-slate-500 cursor-not-allowed"),
+                  style: pulseStyle
+                }, "\uD83C\uDF55 Deliver Food" + (blLevel === 4 ? '  (' + frCurrent + '/' + frRatio + ')' : '')),
               // Level 3: extinction trigger
               blLevel === 3 && !blExtinctionPhase && blLevelScore >= 5 && React.createElement("button", {
-                onClick: function() {
+                onClick: function () {
                   upd('blExtinctionPhase', true);
                   upd('blExtinctionStart', blTick);
                   if (addToast) addToast('\uD83D\uDEAB Extinction phase started! Do NOT deliver food.', 'info');
@@ -37807,12 +37900,12 @@
               // Level 6: sandbox target selector
               blLevel === 6 && React.createElement("select", {
                 value: blSandboxTarget,
-                onChange: function(e) { upd('blSandboxTarget', e.target.value); },
+                onChange: function (e) { upd('blSandboxTarget', e.target.value); },
                 'aria-label': 'Target behavior selector',
                 className: "px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 text-indigo-300 border border-indigo-500/30 cursor-pointer",
                 style: Object.assign({}, glass)
               },
-                Object.keys(ACTION_LABELS).map(function(ak) {
+                Object.keys(ACTION_LABELS).map(function (ak) {
                   return React.createElement("option", { key: ak, value: ak }, ACTION_LABELS[ak]);
                 })
               )
@@ -37824,7 +37917,7 @@
             },
               React.createElement("p", { className: "text-[10px] text-purple-400 font-bold mb-2 uppercase tracking-wider" }, "\uD83D\uDD17 Chain Progress"),
               React.createElement("div", { className: "flex items-center justify-center gap-2" },
-                CHAIN_SEQ.map(function(step, si) {
+                CHAIN_SEQ.map(function (step, si) {
                   var isDone = si < blChainStep;
                   var isCurrent = si === blChainStep;
                   var stepLabel = step === 'sniff' ? '👃 Sniff' : step === 'rearUp' ? '🐭 Rear Up' : '⚡ Press Lever';
@@ -37835,8 +37928,8 @@
                     React.createElement("div", {
                       className: "px-3 py-2 rounded-xl text-xs font-bold text-center transition-all " +
                         (isDone ? 'bg-emerald-600/40 text-emerald-200 border border-emerald-500/40 shadow-md shadow-emerald-500/10' :
-                         isCurrent ? 'bg-amber-600/40 text-amber-200 border border-amber-500/40 ring-2 ring-amber-400/50 animate-pulse' :
-                         'bg-slate-800/60 text-slate-500 border border-slate-700/40')
+                          isCurrent ? 'bg-amber-600/40 text-amber-200 border border-amber-500/40 ring-2 ring-amber-400/50 animate-pulse' :
+                            'bg-slate-800/60 text-slate-500 border border-slate-700/40')
                     }, (isDone ? '✅ ' : isCurrent ? '⏳ ' : '') + stepLabel)
                   );
                 }),
@@ -37854,7 +37947,8 @@
             },
               React.createElement("p", { className: "text-[10px] text-cyan-400 font-bold mb-2 uppercase tracking-wider" }, "\u23F1 DRO Timer"),
               // Timer bar
-              React.createElement("div", { className: "relative mb-2",
+              React.createElement("div", {
+                className: "relative mb-2",
                 style: { height: 16, borderRadius: 8, overflow: 'hidden', background: 'rgba(30,41,59,0.8)', border: '1px solid rgba(6,182,212,0.2)' }
               },
                 React.createElement("div", {
@@ -37894,7 +37988,7 @@
                 React.createElement("p", { className: "text-[10px] text-slate-500 font-bold mb-0.5 uppercase tracking-wider" }, "Session Stats"),
                 React.createElement("p", { className: "text-xs text-amber-300" }, "\uD83C\uDF55 Reinforcements: " + blReinforcements),
                 React.createElement("p", { className: "text-xs text-emerald-300" }, "\uD83C\uDFAF Target hits: " + blLevelScore + (currentLevel.goal > 0 ? '/' + currentLevel.goal : '')),
-                blLatencies.length > 0 && React.createElement("p", { className: "text-xs text-purple-300" }, "\u23F1 Avg Latency: " + (blLatencies.reduce(function(a,b){return a+b;},0) / blLatencies.length).toFixed(1) + " ticks"),
+                blLatencies.length > 0 && React.createElement("p", { className: "text-xs text-purple-300" }, "\u23F1 Avg Latency: " + (blLatencies.reduce(function (a, b) { return a + b; }, 0) / blLatencies.length).toFixed(1) + " ticks"),
                 blLevel === 4 && React.createElement("p", { className: "text-xs text-blue-300 mt-0.5" }, "\uD83D\uDD22 FR-3 count: " + frCurrent + " / " + frRatio)
               )
             ),
@@ -37905,7 +37999,7 @@
             },
               React.createElement("p", { className: "text-[10px] text-slate-500 font-bold mb-2 uppercase tracking-wider" }, "\uD83D\uDCCA Behavior Probability Weights"),
               React.createElement("div", { className: "space-y-1" },
-                sortedWeights.map(function(w) {
+                sortedWeights.map(function (w) {
                   var pct = maxWeight > 0 ? Math.round((w.weight / maxWeight) * 100) : 0;
                   var isSandboxTarget = blLevel === 6 && w.action === blSandboxTarget;
                   var highlight = w.isTarget || isSandboxTarget;
@@ -37945,9 +38039,9 @@
                 React.createElement("p", { className: "text-[10px] text-slate-500 font-bold uppercase tracking-wider" }, "\uD83D\uDCCB ABC Data Log"),
                 // CSV Export button
                 React.createElement("button", {
-                  onClick: function() {
+                  onClick: function () {
                     var csvRows = ['Tick,Antecedent,Behavior,Consequence,Timestamp'];
-                    blAbcLog.forEach(function(e) {
+                    blAbcLog.forEach(function (e) {
                       csvRows.push([e.tick, '"' + (e.a || '') + '"', '"' + (e.b || '') + '"', '"' + (e.c || '') + '"', e.t || ''].join(','));
                     });
                     var blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
@@ -37962,7 +38056,7 @@
                 }, "\uD83D\uDCE5 Export CSV")
               ),
               React.createElement("div", { className: "space-y-0.5 max-h-40 overflow-y-auto" },
-                blAbcLog.slice(0, 15).map(function(entry, idx) {
+                blAbcLog.slice(0, 15).map(function (entry, idx) {
                   return React.createElement("div", { key: idx, className: "flex gap-2 text-xs py-1 border-b border-slate-700/30" },
                     React.createElement("span", { className: "text-slate-500 w-8 font-mono" }, '#' + entry.tick),
                     React.createElement("span", { className: "text-blue-300 w-24 truncate", title: 'Antecedent: ' + entry.a }, "A: " + entry.a),

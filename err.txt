@@ -1,0 +1,9 @@
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\behavior_lens_module.js:11900
+                ),
+                 ^
+
+SyntaxError: Unexpected token ','
+    at wrapSafe (node:internal/modules/cjs/loader:1692:18)
+    at checkSyntax (node:internal/main/check_syntax:76:3)
+
+Node.js v24.11.1
