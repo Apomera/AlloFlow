@@ -20825,6 +20825,7 @@
                 canvas._dissAnim = requestAnimationFrame(drawDissectionFrame);
                 return;
               }
+              try {
               ctx.clearRect(0, 0, W, H);
               var cx = W * 0.5, cy = H * 0.45;
               // Apply zoom transform
@@ -22049,8 +22050,7 @@
                   ctx.fillStyle = glowGrad; ctx.fill();
                 }
                 // Pin dot with system color
-                var orgSys = getOrganSystem(org.name);
-                var sysCol = orgSys ? sysColors[orgSys] : '#94a3b8';
+                var sysCol = layerStroke || '#94a3b8';
                 ctx.beginPath(); ctx.arc(px, py, 5 * pulse, 0, Math.PI * 2);
                 var pinGrad = ctx.createRadialGradient(px - 1, py - 1, 1, px, py, 5 * pulse);
                 pinGrad.addColorStop(0, isSel ? '#fef08a' : isHov ? '#bfdbfe' : '#ffffff');
@@ -22622,6 +22622,7 @@
               }
 
               ctx.restore(); // End zoom transform
+              } catch (e) { /* swallow non-finite gradient errors to avoid crashing React */ }
               canvas._dissAnim = requestAnimationFrame(drawDissectionFrame);
             }
             drawDissectionFrame();
