@@ -22966,21 +22966,37 @@
                 React.createElement("canvas", {
                   ref: canvasRef, onClick: canvasClick, onMouseMove: canvasHover,
                   onWheel: function (e) {
+                    var now = Date.now();
+                    if (now - (canvas._lastZoomTs || 0) < 50) return;
+                    canvas._lastZoomTs = now;
                     var z = d.canvasZoom || 1;
-                    z = Math.max(0.5, Math.min(3, z + (e.deltaY > 0 ? -0.1 : 0.1)));
+                    var factor = e.deltaY > 0 ? 0.95 : 1.05;
+                    z = Math.max(0.5, Math.min(3, z * factor));
+                    if (Math.abs(z - 1) < 0.03) z = 1;
                     upd('canvasZoom', z);
                   },
                   width: 500, height: 600,
                   className: "w-full rounded-xl border border-slate-200 cursor-crosshair",
                   style: { aspectRatio: '5/6', background: '#0f172a' }
                 }),
-                // Zoom indicator
-                (d.canvasZoom && d.canvasZoom !== 1) && React.createElement("div", { className: "flex items-center justify-between mt-1" },
-                  React.createElement("span", { className: "text-[10px] text-slate-400" }, '\uD83D\uDD0D ' + Math.round((d.canvasZoom || 1) * 100) + '%'),
+                // Zoom control bar — always visible
+                React.createElement("div", { className: "flex items-center justify-center gap-2 mt-1.5 py-1 px-2 rounded-lg bg-slate-100 border border-slate-200" },
                   React.createElement("button", {
+                    onClick: function () { var z = Math.max(0.5, (d.canvasZoom || 1) * 0.9); if (Math.abs(z - 1) < 0.03) z = 1; upd('canvasZoom', z); },
+                    className: "w-7 h-7 flex items-center justify-center rounded-md text-sm font-bold bg-white shadow-sm border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-all",
+                    title: 'Zoom out'
+                  }, '\u2212'),
+                  React.createElement("span", { className: "text-xs font-semibold text-slate-600 min-w-[48px] text-center select-none" }, Math.round((d.canvasZoom || 1) * 100) + '%'),
+                  React.createElement("button", {
+                    onClick: function () { var z = Math.min(3, (d.canvasZoom || 1) * 1.1); if (Math.abs(z - 1) < 0.03) z = 1; upd('canvasZoom', z); },
+                    className: "w-7 h-7 flex items-center justify-center rounded-md text-sm font-bold bg-white shadow-sm border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-all",
+                    title: 'Zoom in'
+                  }, '+'),
+                  (d.canvasZoom && d.canvasZoom !== 1) && React.createElement("button", {
                     onClick: function () { upd('canvasZoom', 1); },
-                    className: "text-[10px] text-slate-400 hover:text-slate-600 px-1"
-                  }, 'Reset zoom')
+                    className: "ml-1 px-2 h-7 flex items-center justify-center rounded-md text-xs font-semibold bg-white shadow-sm border border-slate-200 text-blue-600 hover:bg-blue-50 transition-all",
+                    title: 'Reset to 100%'
+                  }, '\u21BA 100%')
                 ),
                 currentLayerIdx < spec.layers.length - 1 && React.createElement("button", {
                   onClick: peelCurrentLayer,
