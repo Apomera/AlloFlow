@@ -18601,233 +18601,20 @@
               )
             ),
 
-            // ═══════════ COMPOSE SECTION (in Play tab) ═══════════
+            // ═══════════ COMPOSE — redirect to Production Studio ═══════════
             synthTab === 'play' && React.createElement("div", { className: "mt-3" },
-              // Transport bar
-              React.createElement("div", { className: "flex items-center gap-2 mb-3 bg-slate-50 rounded-xl border p-2" },
-                React.createElement("button", {
-                  onClick: function () { if (seqPlaying) stopSequencer(); else startSequencer(); },
-                  className: "px-4 py-2 rounded-lg text-sm font-bold transition-all " + (seqPlaying ? 'bg-red-500 text-white' : 'bg-green-600 text-white hover:bg-green-700')
-                }, seqPlaying ? '\u23F9 Stop' : '\u25B6 Play'),
-                React.createElement("button", {
-                  onClick: function () { if (metroOn) stopMetronome(); else startMetronome(); },
-                  className: "px-3 py-2 rounded-lg text-xs font-bold " + (metroOn ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-600')
-                }, metroOn ? '\uD83E\uDD41 Metro ON' : '\uD83E\uDD41 Metronome'),
-                React.createElement("div", { className: "flex items-center gap-1" },
-                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, "BPM"),
-                  React.createElement("input", {
-                    type: "range", min: 60, max: 200, step: 1, value: d.bpm || 120, "aria-label": "Beats per minute",
-                    onChange: function (e) { upd('bpm', parseInt(e.target.value)); },
-                    className: "w-24 accent-purple-600"
-                  }),
-                  React.createElement("span", { className: "text-xs font-bold text-slate-700 w-8" }, d.bpm || 120)
-                ),
-                React.createElement("select", {
-                  'aria-label': 'Time signature',
-                  value: timeSig,
-                  onChange: function (e) { upd('timeSig', e.target.value); },
-                  className: "px-2 py-1 rounded text-xs font-bold bg-white border"
-                }, Object.keys(TIME_SIGS).map(function (ts) { return React.createElement("option", { key: ts, value: ts }, ts); })),
-                React.createElement("div", { className: "flex gap-1 ml-auto" },
-                  LOOP_LENGTHS.map(function (ll) {
-                    return React.createElement("button", {
-                      key: ll,
-                      onClick: function () { upd('loopLen', ll); var newSeq = new Array(ll).fill(0); for (var i = 0; i < Math.min(seq.length, ll); i++) newSeq[i] = seq[i]; upd('sequence', newSeq); var newDrums = Object.assign({}, drumSeq); DRUM_TYPES.forEach(function (dt) { if (newDrums[dt]) { var nd = new Array(ll).fill(0); for (var j = 0; j < Math.min(newDrums[dt].length, ll); j++) nd[j] = newDrums[dt][j]; newDrums[dt] = nd; } }); upd('drumSequence', newDrums); },
-                      className: "px-1.5 py-0.5 rounded text-[10px] font-bold " + (loopLen === ll ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-500')
-                    }, ll);
-                  })
-                ),
-                React.createElement("button", {
-                  onClick: function () { upd('looping', !looping); },
-                  className: "px-2 py-1 rounded text-xs font-bold " + (looping ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-500')
-                }, looping ? '\uD83D\uDD01' : '\u27A1')
-              ),
-
-              // ── Melody Sequencer Grid ──
-              React.createElement("div", { className: "bg-white rounded-xl border p-3 mb-3 overflow-x-auto" },
-                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                  React.createElement("span", { className: "text-xs font-bold text-slate-700" }, "\uD83C\uDFBC Melody"),
-                  React.createElement("span", { className: "text-[9px] text-slate-400 cursor-help", title: EFFECT_TIPS.composition.text }, "\u2753"),
-                  React.createElement("button", {
-                    onClick: function () { upd('sequence', new Array(loopLen).fill(0)); },
-                    className: "ml-auto px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500 hover:bg-slate-200"
-                  }, "\uD83D\uDDD1 Clear")
-                ),
-                // Note name labels on left + grid
-                React.createElement("div", { className: "flex" },
-                  React.createElement("div", { className: "flex flex-col gap-0.5 mr-1", style: { width: '28px' } },
-                    SEQ_NOTES.slice().reverse().map(function (n, ri) {
-                      var origIdx = SEQ_NOTES.length - 1 - ri;
-                      var isBlack = SEQ_IS_BLACK[origIdx];
-                      return React.createElement("div", { key: n, className: "h-5 flex items-center justify-end pr-1 text-[8px] font-bold " + (isBlack ? 'text-slate-300 bg-slate-100 rounded-l' : 'text-slate-400') }, n);
-                    })
+              React.createElement("div", {
+                onClick: function () { upd('synthTab', 'beatpad'); },
+                className: "bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 p-4 cursor-pointer hover:shadow-md hover:from-purple-100 hover:to-pink-100 transition-all group"
+              },
+                React.createElement("div", { className: "flex items-center gap-3" },
+                  React.createElement("span", { className: "text-3xl" }, "\uD83E\uDD41"),
+                  React.createElement("div", null,
+                    React.createElement("div", { className: "text-sm font-bold text-purple-700 group-hover:text-purple-800" }, "Production Studio"),
+                    React.createElement("div", { className: "text-[11px] text-purple-500" }, "Sequencer, drum pads, notation, samples & more \u2192")
                   ),
-                  React.createElement("div", { className: "flex-1 grid gap-0.5", style: { gridTemplateColumns: 'repeat(' + loopLen + ', minmax(20px, 1fr))' } },
-                    (function () {
-                      var cells = [];
-                      for (var row = SEQ_NOTES.length - 1; row >= 0; row--) {
-                        for (var col = 0; col < loopLen; col++) {
-                          (function (r, c) {
-                            var noteIdx = r + 1;
-                            var isActive = seq[c] === noteIdx;
-                            var isCurrentStep = seqPlaying && (d.seqStep || 0) === c;
-                            var beatNum = TIME_SIGS[timeSig] ? TIME_SIGS[timeSig].beats : 4;
-                            var isDownbeat = c % beatNum === 0;
-                            var isBlackRow = SEQ_IS_BLACK[r];
-                            cells.push(React.createElement("div", {
-                              key: r + '_' + c,
-                              onClick: function () { var s = seq.slice(); s[c] = s[c] === noteIdx ? 0 : noteIdx; upd('sequence', s); },
-                              className: "h-5 rounded-sm cursor-pointer transition-all select-none " +
-                                (isActive ? 'bg-purple-500 shadow-sm' : isCurrentStep ? 'bg-purple-100 border border-purple-300' : isBlackRow ? (isDownbeat ? 'bg-slate-150 hover:bg-purple-100' : 'bg-slate-100 hover:bg-purple-50 border border-slate-150') : isDownbeat ? 'bg-slate-100 hover:bg-purple-100' : 'bg-slate-50 hover:bg-purple-50 border border-slate-100')
-                            }));
-                          })(row, col);
-                        }
-                      }
-                      return cells;
-                    })()
-                  )
-                ),
-                // Step indicators below
-                React.createElement("div", { className: "flex mt-1 ml-7" },
-                  Array.from({ length: loopLen }, function (_, i) {
-                    return React.createElement("div", {
-                      key: i,
-                      className: "flex-1 text-center text-[7px] font-bold " + (seqPlaying && (d.seqStep || 0) === i ? 'text-purple-600' : 'text-slate-300'),
-                      style: { minWidth: '20px' }
-                    }, i + 1);
-                  })
+                  React.createElement("span", { className: "ml-auto text-purple-400 group-hover:text-purple-600 text-lg transition-transform group-hover:translate-x-1" }, "\u2192")
                 )
-              ),
-
-              // ── Drum Sequencer ──
-              React.createElement("div", { className: "bg-white rounded-xl border p-3 mb-3 overflow-x-auto" },
-                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                  React.createElement("span", { className: "text-xs font-bold text-slate-700" }, "\uD83E\uDD41 Drums"),
-                  React.createElement("span", { className: "text-[9px] text-slate-400 cursor-help", title: EFFECT_TIPS.drums.text }, "\u2753"),
-                  React.createElement("button", {
-                    onClick: function () { upd('drumSequence', {}); },
-                    className: "ml-auto px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500"
-                  }, "\uD83D\uDDD1 Clear")
-                ),
-                DRUM_TYPES.map(function (dt, di) {
-                  var row = drumSeq[dt] || new Array(loopLen).fill(0);
-                  return React.createElement("div", { key: dt, className: "flex items-center gap-1 mb-0.5" },
-                    React.createElement("span", { className: "text-[9px] font-bold text-slate-500 w-14 text-right pr-1" }, DRUM_LABELS[di]),
-                    Array.from({ length: loopLen }, function (_, i) {
-                      var isOn = row[i];
-                      var isCurrentStep = seqPlaying && (d.seqStep || 0) === i;
-                      var beatNum = TIME_SIGS[timeSig] ? TIME_SIGS[timeSig].beats : 4;
-                      var isDownbeat = i % beatNum === 0;
-                      var colors = ['bg-red-400', 'bg-orange-400', 'bg-yellow-400', 'bg-pink-400', 'bg-amber-500'];
-                      return React.createElement("div", {
-                        key: i,
-                        onClick: function () { toggleDrumStep(dt, i); },
-                        className: "flex-1 h-5 rounded-sm cursor-pointer transition-all " +
-                          (isOn ? colors[di] + ' shadow-sm' : isCurrentStep ? 'bg-slate-200' : isDownbeat ? 'bg-slate-100' : 'bg-slate-50 border border-slate-100') + ' hover:opacity-80',
-                        style: { minWidth: '20px' }
-                      });
-                    })
-                  );
-                })
-              ),
-
-              // ── Musical Notation View ──
-              React.createElement("div", { className: "bg-white rounded-xl border p-3 mb-3" },
-                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                  React.createElement("span", { className: "text-xs font-bold text-slate-700" }, "\uD83C\uDFBC Notation"),
-                  React.createElement("span", { className: "text-[9px] text-slate-400 cursor-help", title: EFFECT_TIPS.notation.text }, "\u2753")
-                ),
-                React.createElement("svg", { viewBox: "0 0 " + (loopLen * 30 + 60) + " 100", className: "w-full bg-[#fefcf3] rounded-lg border border-amber-100", style: { maxHeight: '120px' } },
-                  // Staff lines
-                  [0, 1, 2, 3, 4].map(function (li) {
-                    return React.createElement("line", { key: li, x1: 30, y1: 25 + li * 10, x2: loopLen * 30 + 40, y2: 25 + li * 10, stroke: '#d4d0c8', strokeWidth: 0.8 });
-                  }),
-                  // Treble clef (SVG path)
-                  React.createElement("text", { x: 12, y: 60, fill: "#8b7355", style: { fontSize: '42px', fontFamily: 'serif' } }, "\uD834\uDD1E"),
-                  // Time signature
-                  React.createElement("text", { x: 38, y: 40, fill: "#8b7355", style: { fontSize: '14px', fontWeight: 'bold', fontFamily: 'serif' } }, timeSig.split('/')[0]),
-                  React.createElement("text", { x: 38, y: 57, fill: "#8b7355", style: { fontSize: '14px', fontWeight: 'bold', fontFamily: 'serif' } }, timeSig.split('/')[1]),
-                  // Notes
-                  seqToNotation(seq).map(function (note, idx) {
-                    var x = 55 + idx * 30;
-                    var isCurrentStep = seqPlaying && (d.seqStep || 0) === idx;
-                    if (note.rest) {
-                      // Draw rest symbol (quarter rest)
-                      return React.createElement("g", { key: idx },
-                        React.createElement("text", { x: x, y: 50, textAnchor: "middle", fill: isCurrentStep ? '#7c3aed' : '#999', style: { fontSize: '16px', fontFamily: 'serif' } }, "\uD834\uDD3D"),
-                        isCurrentStep && React.createElement("line", { x1: x, y1: 20, x2: x, y2: 75, stroke: '#7c3aed', strokeWidth: 1, opacity: 0.3 })
-                      );
-                    }
-                    var stave = note.staffPos || 0;
-                    var y = 65 - stave * 5;
-                    return React.createElement("g", { key: idx },
-                      React.createElement("ellipse", { cx: x, cy: y, rx: 5, ry: 3.5, fill: isCurrentStep ? '#7c3aed' : '#333', transform: "rotate(-10 " + x + " " + y + ")" }),
-                      React.createElement("line", { x1: x + 4.5, y1: y, x2: x + 4.5, y2: y - 22, stroke: isCurrentStep ? '#7c3aed' : '#333', strokeWidth: 1.2 }),
-                      y > 64 && React.createElement("line", { x1: x - 7, y1: 65, x2: x + 7, y2: 65, stroke: '#999', strokeWidth: 0.5 }),
-                      React.createElement("text", { x: x, y: y + 14, textAnchor: "middle", fill: '#999', style: { fontSize: '6px' } }, note.note)
-                    );
-                  }),
-                  // Bar lines
-                  (function () {
-                    var bars = [];
-                    var beatsPerBar = TIME_SIGS[timeSig] ? TIME_SIGS[timeSig].beats : 4;
-                    for (var bl = beatsPerBar; bl < loopLen; bl += beatsPerBar) {
-                      bars.push(React.createElement("line", { key: 'bar_' + bl, x1: 55 + bl * 30 - 15, y1: 25, x2: 55 + bl * 30 - 15, y2: 65, stroke: '#aaa', strokeWidth: 0.8 }));
-                    }
-                    return bars;
-                  })(),
-                  // Playhead
-                  seqPlaying && React.createElement("line", { x1: 55 + (d.seqStep || 0) * 30, y1: 20, x2: 55 + (d.seqStep || 0) * 30, y2: 75, stroke: '#7c3aed', strokeWidth: 1.5, opacity: 0.6 })
-                )
-              ),
-              // ── Composition Save/Load ──
-              React.createElement("div", { className: "bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-3 mt-3" },
-                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                  React.createElement("span", { className: "text-xs font-bold text-indigo-700" }, "\uD83D\uDCBE Compositions"),
-                  React.createElement("button", {
-                    onClick: function () {
-                      var name = prompt('Name your composition:', 'My Composition ' + new Date().toLocaleDateString());
-                      if (!name) return;
-                      var comp = { name: name, sequence: seq.slice(), drumSequence: JSON.parse(JSON.stringify(drumSeq)), loopLen: loopLen, bpm: d.bpm || 120, timeSig: timeSig, waveType: d.waveType || 'sine', synthEngine: synthEngine, timestamp: Date.now() };
-                      var saved = JSON.parse(localStorage.getItem('alloflow_compositions') || '[]');
-                      saved.push(comp); localStorage.setItem('alloflow_compositions', JSON.stringify(saved));
-                      upd('compRefresh', Date.now());
-                      addToast('\uD83D\uDCBE Composition "' + name + '" saved!', 'success');
-                    },
-                    className: "px-3 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm"
-                  }, "\uD83D\uDCBE Save"),
-                  React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sy-' + Date.now(), tool: 'synth', label: t('stem.synth.composition'), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold bg-purple-100 text-purple-700 hover:bg-purple-200 transition-all" }, "\uD83D\uDCF8 Snapshot")
-                ),
-                // Saved compositions list
-                (function () {
-                  var saved = JSON.parse(localStorage.getItem('alloflow_compositions') || '[]');
-                  if (saved.length === 0) return React.createElement("p", { className: "text-[10px] text-slate-400 italic" }, "No saved compositions yet. Click Save to store your work!");
-                  return React.createElement("div", { className: "flex flex-col gap-1 max-h-32 overflow-y-auto" },
-                    saved.map(function (comp, ci) {
-                      return React.createElement("div", { key: ci, className: "flex items-center gap-2 bg-white rounded-lg px-2 py-1.5 border border-indigo-100" },
-                        React.createElement("span", { className: "text-[10px] font-bold text-indigo-700 flex-1 truncate" }, comp.name),
-                        React.createElement("span", { className: "text-[9px] text-slate-400" }, comp.loopLen + " steps \u00B7 " + comp.bpm + " BPM"),
-                        React.createElement("button", {
-                          onClick: function () {
-                            upd('sequence', comp.sequence); upd('drumSequence', comp.drumSequence); upd('loopLen', comp.loopLen); upd('bpm', comp.bpm); upd('timeSig', comp.timeSig);
-                            if (comp.waveType) upd('waveType', comp.waveType); if (comp.synthEngine) upd('synthEngine', comp.synthEngine);
-                            addToast('\uD83C\uDFB5 Loaded "' + comp.name + '"', 'success');
-                          },
-                          className: "px-2 py-0.5 rounded text-[9px] font-bold bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
-                        }, "\u25B6 Load"),
-                        React.createElement("button", {
-                          onClick: function () {
-                            var s = JSON.parse(localStorage.getItem('alloflow_compositions') || '[]');
-                            s.splice(ci, 1); localStorage.setItem('alloflow_compositions', JSON.stringify(s));
-                            upd('compRefresh', Date.now());
-                            addToast('\uD83D\uDDD1 Deleted "' + comp.name + '"', 'info');
-                          },
-                          className: "px-1.5 py-0.5 rounded text-[9px] font-bold text-red-400 hover:text-red-600 hover:bg-red-50"
-                        }, "\u2715")
-                      );
-                    })
-                  );
-                })()
               )
             ),
 
@@ -19252,6 +19039,24 @@
             }
           }
 
+          // ═══ MELODY FREQUENCY TABLE (C4–B4 chromatic) ═══
+          var MELODY_FREQS_BP = [261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16, 493.88];
+
+          // ═══ playSample: CDN sample → fallback playDrumExt ═══
+          function playSample(type) {
+            var kit = d.activeKit || '';
+            var cache = window._alloSampleCache || {};
+            if (kit && cache[kit] && cache[kit][type]) {
+              try {
+                var audio = getCtx(); var ctx = audio.ctx;
+                var src = ctx.createBufferSource();
+                src.buffer = cache[kit][type];
+                src.connect(audio.masterGain || ctx.destination);
+                src.start();
+              } catch (e) { playDrumExt(type); }
+            } else { playDrumExt(type); }
+          }
+
           // ═══ SEQUENCER ENGINE (runs in background across tabs) ═══
           var _seqTimer = React.useRef(null);
           var _seqStep = React.useRef(0);
@@ -19266,9 +19071,15 @@
               BEAT_PAD_SOUNDS.forEach(function (sound, row) {
                 var key = row + '_' + step;
                 if (grid[key]) {
-                  playDrumExt(sound.type);
+                  playSample(sound.type);
                 }
               });
+              // Play melody note if set
+              var mel = d.beatMelody || [];
+              var ni = mel[step];
+              if (ni > 0 && ni <= MELODY_FREQS_BP.length) {
+                playNoteFor(MELODY_FREQS_BP[ni - 1], 'bpmel_' + step, stepMs * 0.8);
+              }
               upd('seqCurrentStep', step);
               _seqStep.current = (step + 1) % 16;
             }, stepMs);
@@ -19292,8 +19103,14 @@
                 var step = _seqStep.current;
                 var grid = d.seqGrid || {};
                 BEAT_PAD_SOUNDS.forEach(function (sound, row) {
-                  if (grid[row + '_' + step]) playDrumExt(sound.type);
+                  if (grid[row + '_' + step]) playSample(sound.type);
                 });
+                var mel = d.beatMelody || [];
+                var ni = mel[step];
+                if (ni > 0 && ni <= MELODY_FREQS_BP.length) {
+                  var bpm = d.seqBPM || 120;
+                  playNoteFor(MELODY_FREQS_BP[ni - 1], 'bpmel_' + step, ((60000 / bpm) / 4) * 0.8);
+                }
                 upd('seqCurrentStep', step);
                 _seqStep.current = (step + 1) % 16;
               }, stepMs);
@@ -19309,6 +19126,404 @@
             'reggaeton': { name: 'Reggaeton', grid: {'0_0':1,'0_6':1,'0_12':1,'1_3':1,'1_7':1,'1_11':1,'1_15':1,'4_0':1,'4_4':1,'4_8':1,'4_12':1} },
           };
 
+          // ═══ CDN SAMPLE LOADER (lazy-loads on first Beat Pad open) ═══
+          var SAMPLE_CDN = 'https://tonejs.github.io/audio/drum-samples/';
+          var SAMPLE_KITS = {
+            'CR78': { name: 'CR-78 Vintage', icon: '\uD83C\uDFDB\uFE0F', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } },
+            'acoustic-kit': { name: 'Acoustic Kit', icon: '\uD83E\uDD41', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } },
+            'Techno': { name: 'Techno EDM', icon: '\u26A1', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } },
+            'LINN': { name: 'LinnDrum', icon: '\uD83D\uDD0A', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } },
+            '4OP-FM': { name: 'FM Synthesis', icon: '\uD83C\uDF1F', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } }
+          };
+          // Sample cache: { kitName: { soundType: AudioBuffer } }
+          if (!window._alloSampleCache) window._alloSampleCache = {};
+          if (!window._alloUserSamples) window._alloUserSamples = [];
+          function loadSampleKit(kitName) {
+            if (window._alloSampleCache[kitName]) { upd('samplesLoaded', kitName); return; }
+            var kit = SAMPLE_KITS[kitName]; if (!kit) return;
+            upd('samplesLoading', true);
+            var audio = getCtx(); var ctx = audio.ctx;
+            var loaded = {}; var total = Object.keys(kit.files).length; var count = 0;
+            Object.keys(kit.files).forEach(function (type) {
+              var url = SAMPLE_CDN + kitName + '/' + kit.files[type];
+              fetch(url).then(function (r) { return r.arrayBuffer(); }).then(function (buf) {
+                return ctx.decodeAudioData(buf);
+              }).then(function (decoded) {
+                loaded[type] = decoded; count++;
+                if (count >= total) {
+                  window._alloSampleCache[kitName] = loaded;
+                  upd('samplesLoading', false); upd('samplesLoaded', kitName);
+                  upd('activeKit', kitName);
+                }
+              }).catch(function (e) { console.warn('[Beat Pad] Failed to load sample:', url, e); count++; if (count >= total) upd('samplesLoading', false); });
+            });
+          }
+          // Play sample from loaded kit, fall back to synth
+          function playSample(type) {
+            var kit = d.activeKit || '';
+            var cache = window._alloSampleCache[kit];
+            if (cache && cache[type]) {
+              var audio = getCtx(); var ctx = audio.ctx;
+              var source = ctx.createBufferSource();
+              source.buffer = cache[type];
+              var g = ctx.createGain(); g.gain.value = 0.8;
+              source.connect(g); g.connect(audio.gain);
+              source.start(0);
+              return;
+            }
+            // Fall back to oscillator synthesis
+            playDrumExt(type);
+          }
+          // Play user-uploaded sample by index
+          function playUserSample(idx) {
+            var samples = window._alloUserSamples || [];
+            if (!samples[idx]) return;
+            var audio = getCtx(); var ctx = audio.ctx;
+            var source = ctx.createBufferSource();
+            source.buffer = samples[idx].buffer;
+            var g = ctx.createGain(); g.gain.value = 0.8;
+            source.connect(g); g.connect(audio.gain);
+            source.start(0);
+          }
+          // Melody notes for the sequencer row
+          var MELODY_NOTES_BP = ['C4','D4','E4','F4','G4','A4','B4','C5'];
+          var MELODY_FREQS_BP = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+          var melodySeqBP = d.beatMelody || new Array(16).fill(0);
+          // Load default kit on first beatpad visit
+          React.useEffect(function () {
+            if (synthTab === 'beatpad' && !d.activeKit && !d.samplesLoading) {
+              loadSampleKit('CR78');
+            }
+          }, [synthTab]);
+          // Keyboard shortcuts for drum pads (number row)
+          React.useEffect(function () {
+            function handlePadKey(e) {
+              if (synthTab !== 'beatpad') return;
+              if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+              var padMap = { '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6, '8': 7, '9': 8, '0': 9, '-': 10, '=': 11 };
+              var idx = padMap[e.key];
+              if (idx !== undefined && BEAT_PAD_SOUNDS[idx]) {
+                e.preventDefault();
+                playSample(BEAT_PAD_SOUNDS[idx].type);
+                upd('padHit_' + idx, true);
+                setTimeout(function () { upd('padHit_' + idx, false); }, 120);
+              }
+            }
+            window.addEventListener('keydown', handlePadKey);
+            return function () { window.removeEventListener('keydown', handlePadKey); };
+          }, [synthTab, d.activeKit]);
+
+            // ═══════════ TAB: BEAT PAD (Production Studio) ═══════════
+            synthTab === 'beatpad' && React.createElement("div", { className: "animate-in fade-in duration-200" },
+
+              // ── Header + Kit Selector ──
+              React.createElement("div", { className: "flex items-center gap-2 mb-3 flex-wrap" },
+                React.createElement("span", { className: "text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600" }, "\uD83E\uDD41 Production Studio"),
+                d.samplesLoading && React.createElement("span", { className: "text-[9px] text-amber-500 animate-pulse font-bold" }, "\u23F3 Loading samples..."),
+                d.activeKit && React.createElement("span", { className: "text-[9px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-bold" }, "\u2705 " + (SAMPLE_KITS[d.activeKit] || {}).name),
+                React.createElement("div", { className: "flex gap-1 ml-auto" },
+                  Object.keys(SAMPLE_KITS).map(function (kitId) {
+                    var kit = SAMPLE_KITS[kitId];
+                    var isActive = (d.activeKit || '') === kitId;
+                    var isLoaded = !!window._alloSampleCache[kitId];
+                    return React.createElement("button", {
+                      key: kitId,
+                      onClick: function () { if (isLoaded) { upd('activeKit', kitId); } else { loadSampleKit(kitId); } },
+                      className: "px-2 py-1 rounded-lg text-[9px] font-bold transition-all " + (isActive ? 'bg-purple-600 text-white shadow-md' : isLoaded ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'),
+                      title: isLoaded ? 'Switch to ' + kit.name : 'Click to download ' + kit.name + ' samples'
+                    }, kit.icon + ' ' + kit.name + (isLoaded ? '' : ' \u2B07'));
+                  })
+                )
+              ),
+
+              // ── MPC Drum Pads ──
+              React.createElement("div", { className: "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-3 mb-3 shadow-xl border border-slate-700/50" },
+                React.createElement("div", { className: "grid grid-cols-4 gap-2" },
+                  BEAT_PAD_SOUNDS.map(function (sound, idx) {
+                    var isHit = d['padHit_' + idx];
+                    return React.createElement("button", {
+                      key: sound.type,
+                      onMouseDown: function () { playSample(sound.type); upd('padHit_' + idx, true); setTimeout(function () { upd('padHit_' + idx, false); }, 120); },
+                      className: "relative h-14 rounded-xl font-bold text-white text-xs select-none transition-all duration-75 " + (isHit ? 'scale-[0.93] brightness-150 shadow-lg ring-2 ring-white/40' : 'hover:scale-[1.02] shadow-md hover:shadow-lg'),
+                      style: { background: isHit ? sound.color : 'linear-gradient(145deg, ' + sound.color + '55, ' + sound.color + '99)', border: '1px solid ' + sound.color + '44' }
+                    },
+                      React.createElement("div", { className: "text-[10px] font-bold drop-shadow-sm" }, sound.label),
+                      React.createElement("div", { className: "text-[7px] opacity-40 mt-0.5 font-mono" }, sound.key)
+                    );
+                  })
+                )
+              ),
+
+              // ── Transport Bar ──
+              React.createElement("div", { className: "flex items-center gap-2 mb-3 bg-gradient-to-r from-slate-50 to-purple-50 rounded-xl border border-purple-200/50 p-2" },
+                React.createElement("button", {
+                  onClick: function () { if (d.seqPlaying) stopSequencer(); else startSequencer(); },
+                  className: "px-4 py-2 rounded-lg text-sm font-bold transition-all " + (d.seqPlaying ? 'bg-red-500 text-white shadow-inner' : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-md')
+                }, d.seqPlaying ? '\u23F9 Stop' : '\u25B6 Play'),
+                React.createElement("div", { className: "flex items-center gap-1" },
+                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, "BPM"),
+                  React.createElement("input", { type: "range", min: 60, max: 200, step: 1, value: d.seqBPM || 120, 'aria-label': 'Beats per minute', onChange: function (e) { upd('seqBPM', parseInt(e.target.value)); }, className: "w-20 accent-purple-600" }),
+                  React.createElement("span", { className: "text-xs font-bold text-purple-700 w-8 text-center" }, d.seqBPM || 120)
+                ),
+                React.createElement("select", {
+                  value: d.seqSwing || '0',
+                  onChange: function (e) { upd('seqSwing', e.target.value); },
+                  className: "px-2 py-1 rounded text-[10px] font-bold bg-white border border-slate-200",
+                  'aria-label': 'Swing amount'
+                },
+                  React.createElement("option", { value: '0' }, "No Swing"),
+                  React.createElement("option", { value: '15' }, "Swing 15%"),
+                  React.createElement("option", { value: '30' }, "Swing 30%"),
+                  React.createElement("option", { value: '50' }, "Swing 50%")
+                ),
+                React.createElement("button", {
+                  onClick: function () { upd('seqGrid', {}); upd('beatMelody', null); },
+                  className: "ml-auto px-2 py-1 rounded text-[10px] font-bold bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-500 transition-all"
+                }, "\uD83D\uDDD1 Clear")
+              ),
+
+              // ── EDM Preset Buttons ──
+              React.createElement("div", { className: "flex gap-1.5 mb-3 flex-wrap" },
+                Object.keys(SEQ_PRESETS).map(function (key) {
+                  return React.createElement("button", {
+                    key: key,
+                    onClick: function () { upd('seqGrid', Object.assign({}, SEQ_PRESETS[key].grid)); },
+                    className: "px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 border border-purple-200 hover:from-purple-100 hover:to-pink-100 hover:shadow-sm transition-all"
+                  }, "\uD83C\uDFB5 " + SEQ_PRESETS[key].name);
+                })
+              ),
+
+              // ── Sequencer Grid ──
+              React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-3 mb-3 overflow-x-auto shadow-sm" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                  React.createElement("span", { className: "text-xs font-bold text-slate-700" }, "\uD83C\uDFBC Sequencer"),
+                  React.createElement("span", { className: "text-[9px] text-slate-400" }, "16 steps = 1 bar \u2022 Click cells to toggle")
+                ),
+                // Beat subdivision labels
+                React.createElement("div", { className: "flex mb-1", style: { marginLeft: '68px' } },
+                  Array.from({ length: 16 }, function (_, i) {
+                    var labels = ['1', 'e', '&', 'a', '2', 'e', '&', 'a', '3', 'e', '&', 'a', '4', 'e', '&', 'a'];
+                    var isDown = i % 4 === 0;
+                    return React.createElement("div", { key: i, className: "flex-1 text-center text-[7px] font-bold " + (isDown ? 'text-purple-600' : 'text-slate-300'), style: { minWidth: '22px' } }, labels[i]);
+                  })
+                ),
+                // Melody row
+                React.createElement("div", { className: "flex items-center gap-1 mb-1" },
+                  React.createElement("span", { className: "text-[8px] font-bold text-purple-500 w-16 text-right pr-1 truncate" }, "\uD83C\uDFB9 Melody"),
+                  Array.from({ length: 16 }, function (_, i) {
+                    var ni = melodySeqBP[i] || 0;
+                    var isCur = d.seqPlaying && d.seqCurrentStep === i;
+                    var isDown = i % 4 === 0;
+                    return React.createElement("div", {
+                      key: 'mel_' + i,
+                      onClick: function () { var nm = (d.beatMelody || new Array(16).fill(0)).slice(); nm[i] = (nm[i] + 1) % (MELODY_NOTES_BP.length + 1); upd('beatMelody', nm); },
+                      onContextMenu: function (e) { e.preventDefault(); var nm = (d.beatMelody || new Array(16).fill(0)).slice(); nm[i] = nm[i] <= 0 ? MELODY_NOTES_BP.length : nm[i] - 1; upd('beatMelody', nm); },
+                      className: "flex-1 h-7 rounded-sm cursor-pointer transition-all flex items-center justify-center text-[7px] font-bold select-none " +
+                        (ni > 0 ? 'bg-gradient-to-b from-purple-400 to-purple-500 text-white shadow-sm' : isCur ? 'bg-purple-100 ring-1 ring-purple-300' : isDown ? 'bg-purple-50/80' : 'bg-slate-50 border border-slate-100') + ' hover:brightness-110',
+                      style: { minWidth: '22px' },
+                      title: ni > 0 ? MELODY_NOTES_BP[ni - 1] + ' (click to change, right-click to go back)' : 'Click to add note'
+                    }, ni > 0 ? MELODY_NOTES_BP[ni - 1].replace('4', '').replace('5', '\u2019') : '');
+                  })
+                ),
+                // Separator
+                React.createElement("div", { className: "border-b border-dashed border-slate-200 mb-1 ml-16" }),
+                // Drum rows
+                BEAT_PAD_SOUNDS.slice(0, 8).map(function (sound, row) {
+                  return React.createElement("div", { key: sound.type, className: "flex items-center gap-1 mb-0.5" },
+                    React.createElement("span", { className: "text-[8px] font-bold w-16 text-right pr-1 truncate", style: { color: sound.color } }, sound.label),
+                    Array.from({ length: 16 }, function (_, col) {
+                      var gKey = row + '_' + col;
+                      var grid = d.seqGrid || {};
+                      var isOn = grid[gKey];
+                      var isCur = d.seqPlaying && d.seqCurrentStep === col;
+                      var isDown = col % 4 === 0;
+                      return React.createElement("div", {
+                        key: gKey,
+                        onClick: function () { var g = Object.assign({}, d.seqGrid || {}); g[gKey] = g[gKey] ? 0 : 1; upd('seqGrid', g); },
+                        className: "flex-1 h-5 rounded-sm cursor-pointer transition-all " +
+                          (isOn ? 'shadow-sm' : isCur ? 'bg-slate-200 ring-1 ring-purple-200' : isDown ? 'bg-slate-100' : 'bg-slate-50 border border-slate-100') + ' hover:opacity-80',
+                        style: isOn ? { background: sound.color, opacity: isCur ? 1 : 0.85 } : { minWidth: '22px' }
+                      });
+                    })
+                  );
+                }),
+                // Step position indicator
+                React.createElement("div", { className: "flex mt-1", style: { marginLeft: '68px' } },
+                  Array.from({ length: 16 }, function (_, i) {
+                    return React.createElement("div", {
+                      key: 's_' + i,
+                      className: "flex-1 h-1 rounded-full mx-px transition-all " + (d.seqPlaying && d.seqCurrentStep === i ? 'bg-purple-500' : 'bg-slate-200'),
+                      style: { minWidth: '22px' }
+                    });
+                  })
+                )
+              ),
+
+              // ── Notation Teaching View ──
+              React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200/60 p-3 mb-3" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                  React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "\uD83C\uDFBC Musical Notation"),
+                  React.createElement("span", { className: "text-[9px] text-amber-600" }, "Your melody on the staff")
+                ),
+                // SVG Staff
+                React.createElement("svg", { viewBox: "0 0 560 110", className: "w-full bg-[#fefcf3] rounded-lg border border-amber-100 mb-2", style: { maxHeight: '130px' }, role: "img", 'aria-label': "Musical notation showing your melody on a treble clef staff" },
+                  // Staff lines
+                  [0, 1, 2, 3, 4].map(function (li) {
+                    return React.createElement("line", { key: 'sl_' + li, x1: 35, y1: 25 + li * 10, x2: 540, y2: 25 + li * 10, stroke: '#d4d0c8', strokeWidth: 0.8 });
+                  }),
+                  // Treble clef
+                  React.createElement("text", { x: 8, y: 60, fill: "#8b7355", style: { fontSize: '42px', fontFamily: 'serif' } }, "\uD834\uDD1E"),
+                  // Time signature 4/4
+                  React.createElement("text", { x: 42, y: 40, fill: "#8b7355", style: { fontSize: '14px', fontWeight: 'bold', fontFamily: 'serif' } }, "4"),
+                  React.createElement("text", { x: 42, y: 57, fill: "#8b7355", style: { fontSize: '14px', fontWeight: 'bold', fontFamily: 'serif' } }, "4"),
+                  // Bar lines
+                  [4, 8, 12].map(function (bl) {
+                    return React.createElement("line", { key: 'bar_' + bl, x1: 55 + bl * 30, y1: 25, x2: 55 + bl * 30, y2: 65, stroke: '#bbb', strokeWidth: 0.8 });
+                  }),
+                  // Notes from melody sequence
+                  melodySeqBP.map(function (ni, idx) {
+                    var x = 70 + idx * 29;
+                    var isCur = d.seqPlaying && d.seqCurrentStep === idx;
+                    if (!ni || ni <= 0) {
+                      // Rest symbol
+                      return React.createElement("text", { key: 'n_' + idx, x: x, y: 50, textAnchor: "middle", fill: isCur ? '#7c3aed' : '#bbb', style: { fontSize: '14px', fontFamily: 'serif' } }, "\uD834\uDD3D");
+                    }
+                    // Note positions: C4=ledger below (y=70), D=65, E=60, F=55, G=50, A=45, B=40, C5=35
+                    var yMap = [70, 65, 60, 55, 50, 45, 40, 35];
+                    var y = yMap[ni - 1] || 50;
+                    var col = isCur ? '#7c3aed' : '#333';
+                    return React.createElement("g", { key: 'n_' + idx },
+                      React.createElement("ellipse", { cx: x, cy: y, rx: 5, ry: 3.5, fill: col, transform: "rotate(-12 " + x + " " + y + ")" }),
+                      React.createElement("line", { x1: x + 4.5, y1: y, x2: x + 4.5, y2: y - 22, stroke: col, strokeWidth: 1.2 }),
+                      y >= 65 && React.createElement("line", { x1: x - 7, y1: 65, x2: x + 7, y2: 65, stroke: '#999', strokeWidth: 0.5 }),
+                      y >= 70 && React.createElement("line", { x1: x - 7, y1: 70, x2: x + 7, y2: 70, stroke: '#999', strokeWidth: 0.5 }),
+                      React.createElement("text", { x: x, y: y + 14, textAnchor: "middle", fill: '#999', style: { fontSize: '6px' } }, MELODY_NOTES_BP[ni - 1])
+                    );
+                  }),
+                  // Playhead
+                  d.seqPlaying && React.createElement("line", { x1: 70 + (d.seqCurrentStep || 0) * 29, y1: 20, x2: 70 + (d.seqCurrentStep || 0) * 29, y2: 80, stroke: '#7c3aed', strokeWidth: 1.5, opacity: 0.5 })
+                ),
+                // Notation Legend (educational)
+                React.createElement("div", { className: "grid grid-cols-4 gap-2" },
+                  [
+                    { name: 'Whole Note', beats: '4 beats', sym: '\uD834\uDD5D', desc: 'Held for a full bar' },
+                    { name: 'Half Note', beats: '2 beats', sym: '\uD834\uDD5E', desc: 'Held for half a bar' },
+                    { name: 'Quarter Note', beats: '1 beat', sym: '\u2669', desc: 'One tap per beat' },
+                    { name: 'Eighth Note', beats: '\u00BD beat', sym: '\u266A', desc: 'Two per beat (1 & 2 &)' }
+                  ].map(function (note) {
+                    return React.createElement("div", { key: note.name, className: "bg-white/80 rounded-lg p-2 text-center border border-amber-100" },
+                      React.createElement("div", { className: "text-2xl mb-0.5", style: { fontFamily: 'serif' } }, note.sym),
+                      React.createElement("div", { className: "text-[9px] font-bold text-amber-800" }, note.name),
+                      React.createElement("div", { className: "text-[8px] text-amber-600" }, note.beats),
+                      React.createElement("div", { className: "text-[7px] text-amber-500 italic mt-0.5" }, note.desc)
+                    );
+                  })
+                )
+              ),
+
+              // ── User Sample Upload ──
+              React.createElement("div", { className: "bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-200/60 p-3 mb-3" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                  React.createElement("span", { className: "text-xs font-bold text-indigo-700" }, "\uD83D\uDCC2 Your Samples"),
+                  React.createElement("span", { className: "text-[9px] text-indigo-400" }, "Upload .wav/.mp3/.ogg \u2022 Max 4 custom sounds"),
+                  React.createElement("label", { className: "ml-auto px-3 py-1.5 rounded-lg text-[10px] font-bold bg-indigo-600 text-white cursor-pointer hover:bg-indigo-700 transition-all shadow-sm" },
+                    "\u2B06 Upload",
+                    React.createElement("input", {
+                      type: "file", accept: ".wav,.mp3,.ogg,audio/*", className: "hidden",
+                      onChange: function (e) {
+                        var file = e.target.files && e.target.files[0]; if (!file) return;
+                        if (file.size > 512000) { addToast('\u26A0\uFE0F File too large (max 500KB)', 'error'); return; }
+                        if ((window._alloUserSamples || []).length >= 4) { addToast('\u26A0\uFE0F Max 4 user samples', 'error'); return; }
+                        var reader = new FileReader();
+                        reader.onload = function (ev) {
+                          var audio = getCtx(); var ctx = audio.ctx;
+                          ctx.decodeAudioData(ev.target.result.slice(0), function (buffer) {
+                            window._alloUserSamples = (window._alloUserSamples || []).concat([{ name: file.name.replace(/\.[^.]+$/, ''), buffer: buffer }]);
+                            upd('userSampleCount', (window._alloUserSamples || []).length);
+                            addToast('\uD83C\uDFB5 Sample "' + file.name + '" loaded!', 'success');
+                          }, function () { addToast('\u274C Could not decode audio file', 'error'); });
+                        };
+                        reader.readAsArrayBuffer(file);
+                        e.target.value = '';
+                      }
+                    })
+                  )
+                ),
+                // Show uploaded samples
+                (window._alloUserSamples || []).length > 0
+                  ? React.createElement("div", { className: "flex gap-2 flex-wrap" },
+                      (window._alloUserSamples || []).map(function (smp, si) {
+                        return React.createElement("button", {
+                          key: si,
+                          onMouseDown: function () { playUserSample(si); },
+                          className: "px-3 py-2 rounded-lg text-[10px] font-bold bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:shadow-sm transition-all flex items-center gap-1"
+                        },
+                          React.createElement("span", null, "\uD83C\uDFB5"),
+                          React.createElement("span", { className: "truncate max-w-[80px]" }, smp.name),
+                          React.createElement("span", {
+                            onClick: function (e) { e.stopPropagation(); window._alloUserSamples.splice(si, 1); upd('userSampleCount', window._alloUserSamples.length); },
+                            className: "ml-1 text-red-400 hover:text-red-600 cursor-pointer"
+                          }, "\u2715")
+                        );
+                      })
+                    )
+                  : React.createElement("p", { className: "text-[10px] text-indigo-400 italic" }, "Upload WAV or MP3 files to create custom pads. Samples clear on page refresh.")
+              ),
+
+              // ── Save/Load Compositions ──
+              React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200/60 p-3" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                  React.createElement("span", { className: "text-xs font-bold text-emerald-700" }, "\uD83D\uDCBE Compositions"),
+                  React.createElement("button", {
+                    onClick: function () {
+                      var name = prompt('Name your composition:', 'Beat ' + new Date().toLocaleDateString());
+                      if (!name) return;
+                      var comp = { name: name, grid: Object.assign({}, d.seqGrid || {}), melody: (d.beatMelody || []).slice(), bpm: d.seqBPM || 120, kit: d.activeKit || '', swing: d.seqSwing || '0', timestamp: Date.now() };
+                      var saved = JSON.parse(localStorage.getItem('alloflow_beats') || '[]');
+                      saved.push(comp); localStorage.setItem('alloflow_beats', JSON.stringify(saved));
+                      upd('beatSaveRefresh', Date.now());
+                      addToast('\uD83D\uDCBE Beat "' + name + '" saved!', 'success');
+                    },
+                    className: "px-3 py-1.5 rounded-lg text-[10px] font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-sm"
+                  }, "\uD83D\uDCBE Save Beat"),
+                  React.createElement("button", {
+                    onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'bp-' + Date.now(), tool: 'synth', label: 'Beat Pad', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); },
+                    className: "px-3 py-1.5 rounded-lg text-[10px] font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-all"
+                  }, "\uD83D\uDCF8 Snapshot")
+                ),
+                // Saved beats list
+                (function () {
+                  var saved = JSON.parse(localStorage.getItem('alloflow_beats') || '[]');
+                  if (saved.length === 0) return React.createElement("p", { className: "text-[10px] text-emerald-400 italic" }, "No saved beats yet. Create a pattern and click Save!");
+                  return React.createElement("div", { className: "flex flex-col gap-1 max-h-28 overflow-y-auto" },
+                    saved.map(function (comp, ci) {
+                      return React.createElement("div", { key: ci, className: "flex items-center gap-2 bg-white rounded-lg px-2 py-1.5 border border-emerald-100" },
+                        React.createElement("span", { className: "text-[10px] font-bold text-emerald-700 flex-1 truncate" }, comp.name),
+                        React.createElement("span", { className: "text-[9px] text-slate-400" }, (comp.bpm || 120) + " BPM" + (comp.kit ? ' \u00B7 ' + comp.kit : '')),
+                        React.createElement("button", {
+                          onClick: function () {
+                            upd('seqGrid', comp.grid || {}); upd('beatMelody', comp.melody || null);
+                            upd('seqBPM', comp.bpm || 120); upd('seqSwing', comp.swing || '0');
+                            if (comp.kit && window._alloSampleCache[comp.kit]) upd('activeKit', comp.kit);
+                            else if (comp.kit) loadSampleKit(comp.kit);
+                            addToast('\uD83C\uDFB5 Loaded "' + comp.name + '"', 'success');
+                          },
+                          className: "px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                        }, "\u25B6 Load"),
+                        React.createElement("button", {
+                          onClick: function () {
+                            var s = JSON.parse(localStorage.getItem('alloflow_beats') || '[]');
+                            s.splice(ci, 1); localStorage.setItem('alloflow_beats', JSON.stringify(s));
+                            upd('beatSaveRefresh', Date.now());
+                          },
+                          className: "px-1.5 py-0.5 rounded text-[9px] font-bold text-red-400 hover:text-red-600 hover:bg-red-50"
+                        }, "\u2715")
+                      );
+                    })
+                  );
+                })()
+              )
+            ),
 
             // ═══════════ TAB: HARMONYPAD ═══════════
             synthTab === 'harmonypad' && React.createElement("div", null,
