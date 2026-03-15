@@ -21,6 +21,10 @@ api key.txt
 *.key
 *.secret
 
+# Security: CSE API key config — deployed to Firebase only, never committed
+prismflow-deploy/public/cse-config.json
+cse-config.json
+
 # Large media files (too large for GitHub)
 *.m4a
 *.mp4

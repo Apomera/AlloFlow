@@ -32284,8 +32284,24 @@
           var lastMaintTurn = d.lastMaintTurn || 0;
           var maintChallenge = d.maintChallenge || null;
 
-          // TTS helper
+          // TTS helper — prefers Kokoro TTS when available, falls back to browser TTS
           function colonySpeak(text2, voice) {
+            if (!text2) return;
+            // Try Kokoro TTS first (async, fire-and-forget for narration)
+            if (window._kokoroTTS) {
+              try {
+                window._kokoroTTS.speak(text2, null, 0.95).then(function (url) {
+                  if (url) {
+                    var audio = new Audio(url);
+                    audio.playbackRate = 0.95;
+                    audio.volume = 0.8;
+                    audio.play().catch(function (e) { console.warn('[Colony TTS] Kokoro playback failed:', e); });
+                  }
+                }).catch(function (e) { console.warn('[Colony TTS] Kokoro generation failed:', e); });
+                return; // Kokoro will handle it
+              } catch (e) { console.warn('[Colony TTS] Kokoro exception:', e); }
+            }
+            // Browser TTS fallback — only when Kokoro is not available
             if (!window.speechSynthesis) return;
             window.speechSynthesis.cancel();
             var utter = new SpeechSynthesisUtterance(text2);
