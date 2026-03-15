@@ -320,7 +320,7 @@
     let _streamDoneResolve = null;   // resolve() when all chunks generated
     let _streamActive = false;       // true while streaming is in progress
     let _streamId = null;            // current stream ID (to ignore stale messages)
-    const STREAM_PRELOAD = 2;        // Wait for this many chunks before starting playback
+    const STREAM_PRELOAD = 3;        // Wait for this many chunks before starting playback
 
     // ─── Worker Setup ───────────────────────────────────────────────────
     function _createWorker() {
