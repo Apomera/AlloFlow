@@ -11521,7 +11521,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             "fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in",
           role: "dialog",
           "aria-modal": "true",
-          "aria-label": t("common.word_sounds_activity"),
+          "aria-label": "Welcome to Word Sounds!",
         },
         /*#__PURE__*/ React.createElement(
           "div",
