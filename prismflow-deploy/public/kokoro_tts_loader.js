@@ -24,13 +24,14 @@
     'use strict';
 
     // ─── Duplicate-load guard ────────────────────────────────────────────
-    // React StrictMode or Canvas iframe can load this script twice,
-    // creating two workers that both download the model simultaneously.
-    // Guard against that by checking if we already registered.
-    if (window._kokoroTTS) {
-        console.log('[Kokoro TTS] Already registered, skipping duplicate load');
+    // React StrictMode runs useEffect twice, injecting two <script> tags.
+    // Both scripts can execute before either sets window._kokoroTTS (line ~687).
+    // Use a synchronous sentinel set IMMEDIATELY to block the second load.
+    if (window._kokoroTTS || window.__kokoroTTSLoading) {
+        console.log('[Kokoro TTS] Already registered/loading, skipping duplicate load');
         return;
     }
+    window.__kokoroTTSLoading = true; // Synchronous sentinel — blocks any racing duplicate
 
     // ─── Constants ──────────────────────────────────────────────────────
     const MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX';
