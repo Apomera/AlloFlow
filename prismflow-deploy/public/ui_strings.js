@@ -5949,7 +5949,7 @@
                                                                                                                                                             "play": "Play",
                                                                                                                                                               "scales": "Scales",
                                                                                                                                                                 "chords": "Chords",
-                                                                                                                                                                  "omnichord": "Omnichord",
+                                                                                                                                                                  "harmonypad": "HarmonyPad", "beatpad": "Beat Pad",
                                                                                                                                                                     "theory": "Theory",
                                                                                                                                                                       "attack": "Attack",
                                                                                                                                                                         "decay": "Decay",
