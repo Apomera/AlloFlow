@@ -315,9 +315,12 @@
     let _streamResolveFirst = null;  // resolve() for first chunk promise
     let _streamRejectFirst = null;   // reject() for first chunk promise
     let _streamQueue = [];           // Array of blob URLs for subsequent chunks
+    let _streamBuffer = [];          // Preload buffer — collects chunks before playback starts
+    let _streamBufferFlushed = false;// true once preload buffer has been flushed to queue
     let _streamDoneResolve = null;   // resolve() when all chunks generated
     let _streamActive = false;       // true while streaming is in progress
     let _streamId = null;            // current stream ID (to ignore stale messages)
+    const STREAM_PRELOAD = 2;        // Wait for this many chunks before starting playback
 
     // ─── Worker Setup ───────────────────────────────────────────────────
     function _createWorker() {
@@ -376,14 +379,24 @@
                     const chunkUrl = URL.createObjectURL(chunkBlob);
                     console.log(`[Kokoro TTS] 🎤 Stream chunk ${data.index + 1}/${data.total} ready (${Math.round(data.elapsed)}ms)`);
 
-                    if (data.index === 0 && _streamResolveFirst) {
-                        // First chunk → resolve the promise so caller starts playing immediately
-                        _streamResolveFirst(chunkUrl);
-                        _streamResolveFirst = null;
-                        _streamRejectFirst = null;
-                    } else {
-                        // Subsequent chunks → queue for sequential playback
+                    if (_streamBufferFlushed) {
+                        // Buffer already flushed — go straight to queue
                         _streamQueue.push(chunkUrl);
+                    } else {
+                        // Accumulate in preload buffer
+                        _streamBuffer.push(chunkUrl);
+                        // Flush when we have enough chunks (or this is the only chunk)
+                        if (_streamBuffer.length >= STREAM_PRELOAD || data.total === 1) {
+                            _streamBufferFlushed = true;
+                            const [first, ...rest] = _streamBuffer;
+                            _streamQueue.push(...rest);
+                            console.log(`[Kokoro TTS] 📦 Preload buffer full (${_streamBuffer.length} chunks) — starting playback`);
+                            if (_streamResolveFirst) {
+                                _streamResolveFirst(first);
+                                _streamResolveFirst = null;
+                                _streamRejectFirst = null;
+                            }
+                        }
                     }
                     break;
                 }
@@ -393,6 +406,18 @@
                     if (data.id !== _streamId) break;
                     console.log(`[Kokoro TTS] ✅ Stream complete: ${data.total} chunks in ${Math.round(data.elapsed)}ms`);
                     _streamActive = false;
+                    // Flush preload buffer if stream ended before buffer was full
+                    if (!_streamBufferFlushed && _streamBuffer.length > 0) {
+                        _streamBufferFlushed = true;
+                        const [first, ...rest] = _streamBuffer;
+                        _streamQueue.push(...rest);
+                        console.log(`[Kokoro TTS] 📦 Stream ended — flushing ${_streamBuffer.length} buffered chunk(s)`);
+                        if (_streamResolveFirst) {
+                            _streamResolveFirst(first);
+                            _streamResolveFirst = null;
+                            _streamRejectFirst = null;
+                        }
+                    }
                     if (_streamDoneResolve) {
                         _streamDoneResolve();
                         _streamDoneResolve = null;
@@ -555,6 +580,8 @@
 
         // Reset streaming state
         _streamQueue = [];
+        _streamBuffer = [];
+        _streamBufferFlushed = false;
         _streamActive = true;
         _streamId = `stream_${++_msgId}`;
 
@@ -577,7 +604,7 @@
         });
 
         try {
-            // Block only until the FIRST chunk is ready — caller starts playing immediately
+            // Block until preload buffer is full (STREAM_PRELOAD chunks) or stream ends
             const firstUrl = await firstChunkPromise;
             return firstUrl;
         } catch (e) {
@@ -620,6 +647,8 @@
         _initPromise = null;
         _audioCache.clear();
         _streamQueue = [];
+        _streamBuffer = [];
+        _streamBufferFlushed = false;
         _streamActive = false;
 
         // Re-initialize with new dtype
