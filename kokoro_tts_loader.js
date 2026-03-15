@@ -192,8 +192,13 @@
                     _tts = await KokoroTTS.from_pretrained(data.modelId, {
                         dtype: data.dtype,
                         progress_callback: (p) => {
-                            if (p && typeof p.progress === 'number') {
+                            if (!p) return;
+                            if (typeof p.progress === 'number') {
                                 self.postMessage({ type: 'progress', stage: 'Downloading voice model', pct: 0.1 + (p.progress / 100) * 0.85 });
+                            } else if (p.status === 'initiate') {
+                                self.postMessage({ type: 'progress', stage: 'Downloading voice model (' + (data.sizeLabel || '~43MB') + ')', pct: 0.1 });
+                            } else if (p.status === 'done') {
+                                self.postMessage({ type: 'progress', stage: 'Loading voice model into memory', pct: 0.95 });
                             }
                         }
                     });
@@ -414,10 +419,9 @@
 
     // ─── Initialize ─────────────────────────────────────────────────────
     async function init(onProgress) {
+        if (onProgress) _onProgress = onProgress; // Always update callback before early returns
         if (_ready && _worker) return true;
         if (_initPromise) return _initPromise;
-
-        _onProgress = onProgress || null;
 
         _initPromise = (async () => {
             try {
