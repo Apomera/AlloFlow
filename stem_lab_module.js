@@ -32662,6 +32662,17 @@
           var buildingEff = d.buildingEff || {}; // { buildingId: 100, ... } effectiveness %
           var lastMaintTurn = d.lastMaintTurn || 0;
           var maintChallenge = d.maintChallenge || null;
+          var colonyName = d.colonyName || 'New Kepler';
+
+          // ── Planetary Seasons (4 seasons, each lasts 10 turns) ──
+          var seasonDefs = [
+            { id: 'bloom', name: 'Bloom Season', icon: '\uD83C\uDF3C', desc: 'Alien flora flourishes. +2 food/turn.', effect: { food: 2 } },
+            { id: 'dry', name: 'Dry Season', icon: '\uD83C\uDF35', desc: 'Arid conditions. Energy production up, water down.', effect: { energy: 2, water: -1 } },
+            { id: 'storm', name: 'Storm Season', icon: '\u26C8\uFE0F', desc: 'Electromagnetic storms. Science surges, buildings at risk.', effect: { science: 3, damageRisk: true } },
+            { id: 'calm', name: 'Calm Season', icon: '\u2728', desc: 'Stable conditions. All production normal.', effect: {} }
+          ];
+          var seasonIndex2 = Math.floor((turn % 40) / 10); // 4 seasons × 10 turns each = 40-turn cycle
+          var seasonCycle = { id: seasonDefs[seasonIndex2].id, index: seasonIndex2, turnsLeft: 10 - (turn % 10) };
 
           // TTS helper — prefers Kokoro TTS when available, falls back to browser TTS
           function colonySpeak(text2, voice) {
