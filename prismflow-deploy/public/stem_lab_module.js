@@ -18497,17 +18497,22 @@
         // ═══════════════════════════════════════════════════════
 
         (function _musicSynth() { var _isMusicSynth = stemLabTab === 'explore' && stemLabTool === 'musicSynth'; if (!_isMusicSynth) {
-            // Placeholder hooks to maintain consistent hook count
-            React.useEffect(function(){}, []);
-            React.useEffect(function(){}, []);
-            React.useEffect(function(){}, []);
-            React.useEffect(function(){}, []);
-            React.useEffect(function(){}, []);
-            React.useEffect(function(){}, []);
-            React.useEffect(function(){}, []);
-            React.useEffect(function(){}, []);
-            React.useEffect(function(){}, []);
-            React.useEffect(function(){}, []);
+            // Placeholder hooks — must match exact active-path sequence (verified L19411–19953)
+            React.useEffect(function(){}, []);  // 1 – waveform draw loop
+            React.useEffect(function(){}, []);  // 2 – sequencer playback
+            React.useRef(null);                 // 3 – beat-painter FX ref
+            React.useEffect(function(){}, []);  // 4 – beat-painter cleanup
+            React.useEffect(function(){}, []);  // 5 – chord helper
+            React.useRef(null);                 // 6 – recording ref
+            React.useRef(null);                 // 7 – recording chunks ref
+            React.useRef(null);                 // 8 – recording stream ref
+            React.useEffect(function(){}, []);  // 9 – recording toggle
+            React.useRef(null);                 // 10 – sequencer step ref
+            React.useRef(null);                 // 11 – metronome ref
+            React.useEffect(function(){}, []);  // 12 – metronome tick
+            React.useEffect(function(){}, []);  // 13 – metronome cleanup
+            React.useEffect(function(){}, []);  // 14 – arpeggiator
+            React.useEffect(function(){}, []);  // 15 – particle cleanup
             return null;
           }
           const d = labToolData.musicSynth;
