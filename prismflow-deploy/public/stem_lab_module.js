@@ -18191,6 +18191,574 @@
           // ═══ RETURN: UI RENDERING ═══
           // ═════════════════════════════════════════════════════════════
 
+          // ═══ KEYBOARD CHORD SWITCHING (QAZ/WSX/EDC/RFV/TGB/YHN/UJM) ═══
+          var CHORD_KEY_MAP = {
+            'q': { root: 'C', type: 'Major' }, 'a': { root: 'C', type: 'Minor' }, 'z': { root: 'C', type: 'Dom7' },
+            'w': { root: 'D', type: 'Major' }, 's': { root: 'D', type: 'Minor' }, 'x': { root: 'D', type: 'Dom7' },
+            'e': { root: 'E', type: 'Major' }, 'd': { root: 'E', type: 'Minor' }, 'c': { root: 'E', type: 'Dom7' },
+            'r': { root: 'F', type: 'Major' }, 'f': { root: 'F', type: 'Minor' }, 'v': { root: 'F', type: 'Dom7' },
+            't': { root: 'G', type: 'Major' }, 'g': { root: 'G', type: 'Minor' }, 'b': { root: 'G', type: 'Dom7' },
+            'y': { root: 'A', type: 'Major' }, 'h': { root: 'A', type: 'Minor' }, 'n': { root: 'A', type: 'Dom7' },
+            'u': { root: 'B', type: 'Major' }, 'j': { root: 'B', type: 'Minor' }, 'm': { root: 'B', type: 'Dom7' }
+          };
+          React.useEffect(function () {
+            if (synthTab !== 'harmonypad' && synthTab !== 'beatpad') return;
+            function onKeyDown(e) {
+              if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+              var k = e.key.toLowerCase();
+              if (synthTab === 'harmonypad') {
+                var chord = CHORD_KEY_MAP[k];
+                if (chord) { upd('omniChordRoot', chord.root); upd('omniChordType', chord.type); e.preventDefault(); return; }
+                if (k === ' ') { strumHarmony(d.omniChordRoot || 'C', d.omniChordType || 'Major', d.omniVoice || 'harp'); e.preventDefault(); return; }
+              }
+              // Beat pad keyboard triggers (number row for pads)
+              if (synthTab === 'beatpad') {
+                var padKeys = ['1','2','3','4','5','6','7','8','9','0','-','='];
+                var pi = padKeys.indexOf(k);
+                if (pi !== -1 && pi < (window._alloBeatPadSounds || []).length) {
+                  var ps = (window._alloBeatPadSounds || [])[pi];
+                  if (ps) playDrum(ps.type);
+                  upd('beatPadActive', pi);
+                  setTimeout(function () { upd('beatPadActive', -1); }, 150);
+                  e.preventDefault();
+                }
+              }
+            }
+            document.addEventListener('keydown', onKeyDown);
+            return function () { document.removeEventListener('keydown', onKeyDown); };
+          }, [synthTab, d.omniChordRoot, d.omniChordType, d.omniVoice]);
+
+          // ═══ WEB MIDI CONTROLLER SUPPORT ═══
+          React.useEffect(function () {
+            if (!navigator.requestMIDIAccess) return;
+            var cleanup = [];
+            navigator.requestMIDIAccess({ sysex: false }).then(function (midi) {
+              upd('midiConnected', midi.inputs.size > 0);
+              midi.onstatechange = function () { upd('midiConnected', midi.inputs.size > 0); };
+              midi.inputs.forEach(function (input) {
+                function handler(msg) {
+                  var cmd = msg.data[0] & 0xf0;
+                  var note = msg.data[1];
+                  var vel = msg.data.length > 2 ? msg.data[2] : 0;
+                  if (cmd === 0x90 && vel > 0) {
+                    // Note On — play synth note
+                    var nNames = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+                    var midiOct = Math.floor(note / 12) - 1;
+                    var midiNote = nNames[note % 12];
+                    var freq = 440 * Math.pow(2, (note - 69) / 12);
+                    var volume = vel / 127;
+                    playHarmonyTone(freq, 'midi_' + note, 2000, d.omniVoice || 'harp');
+                  }
+                  if (cmd === 0x80 || (cmd === 0x90 && vel === 0)) {
+                    // Note Off — stop note
+                    if (window._alloSynthActiveNotes['midi_' + note]) {
+                      var n = window._alloSynthActiveNotes['midi_' + note];
+                      if (n.master) { n.master.gain.cancelScheduledValues(0); n.master.gain.linearRampToValueAtTime(0, getCtx().ctx.currentTime + 0.05); }
+                      delete window._alloSynthActiveNotes['midi_' + note];
+                    }
+                  }
+                }
+                input.addEventListener('midimessage', handler);
+                cleanup.push(function () { input.removeEventListener('midimessage', handler); });
+              });
+            }).catch(function () { /* MIDI not available */ });
+            return function () { cleanup.forEach(function (fn) { fn(); }); };
+          }, [d.omniVoice]);
+
+          // ═══ SOUND ENGINE BOOST: Reverb + Compressor ═══
+          (function initSynthEffects() {
+            if (window._alloSynthReverbInit) return;
+            window._alloSynthReverbInit = true;
+            try {
+              var audio = getCtx();
+              var ctx = audio.ctx;
+              // Create DynamicsCompressor for master limiting
+              if (!audio._compressor) {
+                var comp = ctx.createDynamicsCompressor();
+                comp.threshold.value = -12;
+                comp.knee.value = 10;
+                comp.ratio.value = 4;
+                comp.attack.value = 0.003;
+                comp.release.value = 0.15;
+                // Create convolver reverb with procedural impulse response
+                var reverbLen = ctx.sampleRate * 1.5;
+                var impulse = ctx.createBuffer(2, reverbLen, ctx.sampleRate);
+                for (var ch = 0; ch < 2; ch++) {
+                  var impData = impulse.getChannelData(ch);
+                  for (var i = 0; i < reverbLen; i++) {
+                    impData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / reverbLen, 2.5);
+                  }
+                }
+                var convolver = ctx.createConvolver();
+                convolver.buffer = impulse;
+                var reverbGain = ctx.createGain();
+                reverbGain.gain.value = 0.15; // wet mix
+                var dryGain = ctx.createGain();
+                dryGain.gain.value = 0.85;
+                // Reroute: audio.gain → split → dry + reverb → compressor → destination
+                audio.gain.disconnect();
+                audio.gain.connect(dryGain);
+                audio.gain.connect(convolver);
+                convolver.connect(reverbGain);
+                dryGain.connect(comp);
+                reverbGain.connect(comp);
+                comp.connect(ctx.destination);
+                audio._compressor = comp;
+                audio._convolver = convolver;
+                audio._reverbGain = reverbGain;
+              }
+            } catch (e) { console.warn('[Synth] Reverb init failed:', e); }
+          })();
+
+          // ═══ BEAT PAD: 16-step sequencer state & engine ═══
+          var BEAT_PAD_SOUNDS = [
+            { type: 'kick', label: 'Kick', color: '#ef4444', key: '1' },
+            { type: 'snare', label: 'Snare', color: '#f97316', key: '2' },
+            { type: 'clap', label: 'Clap', color: '#eab308', key: '3' },
+            { type: 'rim', label: 'Rim', color: '#84cc16', key: '4' },
+            { type: 'hihat', label: 'CH Hat', color: '#22c55e', key: '5' },
+            { type: 'openhat', label: 'OH Hat', color: '#06b6d4', key: '6' },
+            { type: 'cymbal', label: 'Cymbal', color: '#3b82f6', key: '7' },
+            { type: 'tom1', label: 'Tom Hi', color: '#8b5cf6', key: '8' },
+            { type: 'tom2', label: 'Tom Lo', color: '#a855f7', key: '9' },
+            { type: 'cowbell', label: 'Cowbell', color: '#ec4899', key: '0' },
+            { type: 'clave', label: 'Clave', color: '#f43f5e', key: '-' },
+            { type: 'shaker', label: 'Shaker', color: '#14b8a6', key: '=' }
+          ];
+          window._alloBeatPadSounds = BEAT_PAD_SOUNDS;
+
+          // Extended drum synthesis for new types
+          var _origPlayDrum = playDrum;
+          function playDrumExt(type) {
+            var audio = getCtx(); var ctx = audio.ctx; var now = ctx.currentTime;
+            var drumGain = ctx.createGain(); drumGain.connect(audio.gain);
+            if (type === 'clap') {
+              // Multi-burst noise clap
+              for (var ci = 0; ci < 3; ci++) {
+                (function(delay) {
+                  var noise = ctx.createBufferSource(); var nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.04, ctx.sampleRate);
+                  var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+                  noise.buffer = nBuf;
+                  var bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2000; bp.Q.value = 1.5;
+                  var eg = ctx.createGain(); eg.gain.setValueAtTime(0.6, now + delay); eg.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.08);
+                  noise.connect(bp); bp.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.7;
+                  noise.start(now + delay); noise.stop(now + delay + 0.08);
+                })(ci * 0.012);
+              }
+            } else if (type === 'rim') {
+              var osc = ctx.createOscillator(); osc.type = 'square';
+              osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(200, now + 0.03);
+              var eg = ctx.createGain(); eg.gain.setValueAtTime(0.5, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+              osc.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.5; osc.start(now); osc.stop(now + 0.05);
+            } else if (type === 'openhat') {
+              var noise = ctx.createBufferSource(); var nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
+              var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+              noise.buffer = nBuf;
+              var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 6000;
+              var eg = ctx.createGain(); eg.gain.setValueAtTime(0.4, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+              noise.connect(hp); hp.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.5; noise.start(now); noise.stop(now + 0.3);
+            } else if (type === 'cymbal') {
+              var noise = ctx.createBufferSource(); var nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
+              var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+              noise.buffer = nBuf;
+              var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 8000;
+              var eg = ctx.createGain(); eg.gain.setValueAtTime(0.3, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+              noise.connect(hp); hp.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.4; noise.start(now); noise.stop(now + 0.5);
+            } else if (type === 'tom1' || type === 'tom2') {
+              var baseF = type === 'tom1' ? 200 : 120;
+              var osc = ctx.createOscillator(); osc.type = 'sine';
+              osc.frequency.setValueAtTime(baseF, now); osc.frequency.exponentialRampToValueAtTime(baseF * 0.5, now + 0.2);
+              var eg = ctx.createGain(); eg.gain.setValueAtTime(0.7, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+              osc.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.6; osc.start(now); osc.stop(now + 0.25);
+            } else if (type === 'cowbell') {
+              var osc1 = ctx.createOscillator(); osc1.type = 'square'; osc1.frequency.value = 560;
+              var osc2 = ctx.createOscillator(); osc2.type = 'square'; osc2.frequency.value = 845;
+              var eg = ctx.createGain(); eg.gain.setValueAtTime(0.5, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+              var bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 700; bp.Q.value = 3;
+              osc1.connect(bp); osc2.connect(bp); bp.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.4;
+              osc1.start(now); osc2.start(now); osc1.stop(now + 0.3); osc2.stop(now + 0.3);
+            } else if (type === 'clave') {
+              var osc = ctx.createOscillator(); osc.type = 'triangle'; osc.frequency.value = 2500;
+              var eg = ctx.createGain(); eg.gain.setValueAtTime(0.6, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
+              osc.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.5; osc.start(now); osc.stop(now + 0.04);
+            } else if (type === 'shaker') {
+              var noise = ctx.createBufferSource(); var nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
+              var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+              noise.buffer = nBuf;
+              var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 5000;
+              var eg = ctx.createGain(); eg.gain.setValueAtTime(0.3, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+              noise.connect(hp); hp.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.4; noise.start(now); noise.stop(now + 0.08);
+            } else {
+              _origPlayDrum(type); return;
+            }
+          }
+
+
+
+          // ═══ PER-CHANNEL MIXER ═══
+          function getChVol(row) { var v = d.chVolumes || {}; return v[row] !== undefined ? v[row] : 0.8; }
+          function isChMuted(row) {
+            var solo = d.chSolo;
+            if (solo !== undefined && solo >= 0 && solo !== row) return true;
+            return !!(d.chMutes && d.chMutes[row]);
+          }
+
+          // ═══ EFFECTS RACK (Web Audio lazy-init) ═══
+          var _bpFxRef = React.useRef(null);
+          function _initBpFx() {
+            if (_bpFxRef.current) return _bpFxRef.current;
+            var audio = getCtx(); var ctx = audio.ctx;
+            var irLen = Math.round(ctx.sampleRate * 1.5);
+            var irBuf = ctx.createBuffer(2, irLen, ctx.sampleRate);
+            for (var ch = 0; ch < 2; ch++) { var dd = irBuf.getChannelData(ch); for (var i = 0; i < irLen; i++) dd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / irLen, 2.5); }
+            var conv = ctx.createConvolver(); conv.buffer = irBuf;
+            var revG = ctx.createGain(); revG.gain.value = 0;
+            var dryG = ctx.createGain(); dryG.gain.value = 1;
+            var del = ctx.createDelay(1.0); del.delayTime.value = 0.25;
+            var delFb = ctx.createGain(); delFb.gain.value = 0;
+            var delW = ctx.createGain(); delW.gain.value = 0;
+            var flt = ctx.createBiquadFilter(); flt.type = 'lowpass'; flt.frequency.value = 20000; flt.Q.value = 1;
+            var inp = ctx.createGain(); inp.gain.value = 1;
+            var out = ctx.createGain(); out.gain.value = 1;
+            inp.connect(flt);
+            flt.connect(dryG); dryG.connect(out);
+            flt.connect(conv); conv.connect(revG); revG.connect(out);
+            flt.connect(del); del.connect(delW); delW.connect(out);
+            del.connect(delFb); delFb.connect(del);
+            out.connect(audio.gain);
+            _bpFxRef.current = { inp: inp, revG: revG, dryG: dryG, del: del, delFb: delFb, delW: delW, flt: flt, out: out };
+            return _bpFxRef.current;
+          }
+          function _getBpFxDest(audio) {
+            if (!d.bpFxOn) return audio.gain;
+            return _initBpFx().inp;
+          }
+          React.useEffect(function () {
+            if (!_bpFxRef.current) return;
+            var fx = _bpFxRef.current;
+            var r = (d.bpReverb || 0) / 100, dl = (d.bpDelay || 0) / 100, c = d.bpFilterCut || 20000;
+            fx.revG.gain.value = r * 0.6; fx.dryG.gain.value = 1 - r * 0.3;
+            fx.delW.gain.value = dl * 0.5; fx.delFb.gain.value = dl * 0.4;
+            fx.flt.frequency.value = c;
+          }, [d.bpReverb, d.bpDelay, d.bpFilterCut]);
+
+          // ═══ TAP TEMPO ═══
+          if (!window._bpTapTimes) window._bpTapTimes = [];
+          function tapTempo() {
+            var now = Date.now(); var taps = window._bpTapTimes;
+            if (taps.length > 0 && now - taps[taps.length - 1] > 2000) taps.length = 0;
+            taps.push(now);
+            if (taps.length > 1) {
+              var ints = []; for (var i = 1; i < Math.min(taps.length, 5); i++) ints.push(taps[i] - taps[i - 1]);
+              var avg = ints.reduce(function (a, b) { return a + b; }, 0) / ints.length;
+              upd('seqBPM', Math.max(60, Math.min(200, Math.round(60000 / avg))));
+            }
+          }
+
+          // ═══ UNDO / REDO ═══
+          if (!window._bpUndoStack) window._bpUndoStack = [];
+          if (!window._bpRedoStack) window._bpRedoStack = [];
+          function pushBpUndo() {
+            window._bpUndoStack.push({ g: JSON.parse(JSON.stringify(d.seqGrid || {})), m: (d.beatMelody || []).slice() });
+            if (window._bpUndoStack.length > 30) window._bpUndoStack.shift();
+            window._bpRedoStack.length = 0;
+          }
+          function bpUndo() {
+            if (!window._bpUndoStack.length) return;
+            window._bpRedoStack.push({ g: JSON.parse(JSON.stringify(d.seqGrid || {})), m: (d.beatMelody || []).slice() });
+            var prev = window._bpUndoStack.pop();
+            upd('seqGrid', prev.g); upd('beatMelody', prev.m);
+          }
+          function bpRedo() {
+            if (!window._bpRedoStack.length) return;
+            window._bpUndoStack.push({ g: JSON.parse(JSON.stringify(d.seqGrid || {})), m: (d.beatMelody || []).slice() });
+            var nxt = window._bpRedoStack.pop();
+            upd('seqGrid', nxt.g); upd('beatMelody', nxt.m);
+          }
+
+          // ═══ SCALE-LOCKED MELODY ═══
+          var SCALE_PATTERNS = {
+            'chromatic': { name: 'All Notes', intervals: [0,1,2,3,4,5,6,7,8,9,10,11,12] },
+            'major': { name: 'Major', intervals: [0,2,4,5,7,9,11,12] },
+            'minor': { name: 'Minor', intervals: [0,2,3,5,7,8,10,12] },
+            'pentatonic': { name: 'Pentatonic', intervals: [0,2,4,7,9,12] },
+            'blues': { name: 'Blues', intervals: [0,3,5,6,7,10,12] },
+            'dorian': { name: 'Dorian', intervals: [0,2,3,5,7,9,10,12] },
+            'mixolydian': { name: 'Mixolydian', intervals: [0,2,4,5,7,9,10,12] }
+          };
+          var ALL_NOTE_NAMES = ['C4','C#4','D4','D#4','E4','F4','F#4','G4','G#4','A4','A#4','B4','C5'];
+          var ALL_NOTE_FREQS = [261.63,277.18,293.66,311.13,329.63,349.23,369.99,392.00,415.30,440.00,466.16,493.88,523.25];
+          function getScaleNotes() {
+            var sc = SCALE_PATTERNS[d.bpScale || 'major'] || SCALE_PATTERNS['major'];
+            var n = [], f = [];
+            sc.intervals.forEach(function (iv) { if (iv < ALL_NOTE_NAMES.length) { n.push(ALL_NOTE_NAMES[iv]); f.push(ALL_NOTE_FREQS[iv]); } });
+            return { notes: n, freqs: f };
+          }
+
+          // ═══ STEP RECORDING ═══
+          function stepRecHit(row) {
+            if (!d.bpStepRec) return false;
+            var pos = d.bpStepRecPos || 0;
+            var g = Object.assign({}, d.seqGrid || {});
+            g[row + '_' + pos] = 1;
+            upd('seqGrid', g);
+            upd('bpStepRecPos', (pos + 1) % 16);
+            pushBpUndo();
+            return true;
+          }
+
+          // ═══ SHARE VIA URL ═══
+          function sharePattern() {
+            try {
+              var obj = { g: d.seqGrid || {}, m: d.beatMelody || [], b: d.seqBPM || 120, s: d.seqSwing || '0' };
+              var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+              var url = location.origin + location.pathname + '#beat=' + b64;
+              navigator.clipboard.writeText(url).then(function () { addToast('\uD83D\uDD17 Beat URL copied!', 'success'); })
+                .catch(function () { prompt('Copy this URL:', url); });
+            } catch (e) { addToast('\u274C Share failed', 'error'); }
+          }
+          React.useEffect(function () {
+            try {
+              var h = location.hash;
+              if (!h || h.indexOf('#beat=') !== 0) return;
+              var json = decodeURIComponent(escape(atob(h.substring(6))));
+              var obj = JSON.parse(json);
+              if (obj.g) upd('seqGrid', obj.g);
+              if (obj.m) upd('beatMelody', obj.m);
+              if (obj.b) upd('seqBPM', obj.b);
+              if (obj.s) upd('seqSwing', obj.s);
+              history.replaceState(null, '', location.pathname);
+              addToast('\uD83C\uDFB5 Loaded shared beat!', 'success');
+            } catch (e) {}
+          }, []);
+
+          // ═══ WAV EXPORT (MediaRecorder) ═══
+          function exportBeat() {
+            try {
+              var audio = getCtx(); var ctx = audio.ctx;
+              var dest = ctx.createMediaStreamDestination();
+              audio.gain.connect(dest);
+              var chunks = []; var mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm';
+              var rec = new MediaRecorder(dest.stream, { mimeType: mimeType });
+              rec.ondataavailable = function (e) { if (e.data.size > 0) chunks.push(e.data); };
+              rec.onstop = function () {
+                audio.gain.disconnect(dest);
+                var blob = new Blob(chunks, { type: mimeType });
+                var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+                a.download = 'beat_' + new Date().toISOString().slice(0, 10) + '.webm';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                addToast('\uD83D\uDCE5 Beat exported!', 'success'); upd('bpExporting', false);
+              };
+              rec.start(); upd('bpExporting', true);
+              var bpm = d.seqBPM || 120; var total = ((60000 / bpm) / 4) * 16 + 300;
+              if (!d.seqPlaying) startSequencer();
+              setTimeout(function () { rec.stop(); stopSequencer(); }, total);
+            } catch (e) { addToast('\u274C Export failed', 'error'); upd('bpExporting', false); }
+          }
+
+          // ═══ WAVEFORM VISUALIZER ═══
+          var _bpCanvasRef = React.useRef(null);
+          var _bpAnimRef = React.useRef(null);
+          var _bpAnalyserRef = React.useRef(null);
+          React.useEffect(function () {
+            if (!d.seqPlaying) { if (_bpAnimRef.current) { cancelAnimationFrame(_bpAnimRef.current); _bpAnimRef.current = null; } return; }
+            var canvas = _bpCanvasRef.current; if (!canvas) return;
+            var audio = getCtx(); var ctx = audio.ctx;
+            if (!_bpAnalyserRef.current) { var an = ctx.createAnalyser(); an.fftSize = 256; audio.gain.connect(an); _bpAnalyserRef.current = an; }
+            var analyser = _bpAnalyserRef.current; var cctx = canvas.getContext('2d');
+            var w = canvas.width, h = canvas.height, buf = new Uint8Array(analyser.frequencyBinCount);
+            function draw() {
+              _bpAnimRef.current = requestAnimationFrame(draw);
+              analyser.getByteTimeDomainData(buf);
+              var grd = cctx.createLinearGradient(0, 0, w, 0);
+              grd.addColorStop(0, '#1e1b4b'); grd.addColorStop(0.5, '#312e81'); grd.addColorStop(1, '#1e1b4b');
+              cctx.fillStyle = grd; cctx.fillRect(0, 0, w, h);
+              var wg = cctx.createLinearGradient(0, 0, w, 0);
+              wg.addColorStop(0, '#a78bfa'); wg.addColorStop(0.5, '#f472b6'); wg.addColorStop(1, '#a78bfa');
+              cctx.strokeStyle = wg; cctx.lineWidth = 2; cctx.beginPath();
+              var sw = w / buf.length;
+              for (var i = 0; i < buf.length; i++) { var y = (buf[i] / 128.0) * h / 2; if (i === 0) cctx.moveTo(0, y); else cctx.lineTo(i * sw, y); }
+              cctx.lineTo(w, h / 2); cctx.stroke();
+              cctx.shadowBlur = 8; cctx.shadowColor = '#a78bfa'; cctx.stroke(); cctx.shadowBlur = 0;
+            }
+            draw();
+            return function () { if (_bpAnimRef.current) cancelAnimationFrame(_bpAnimRef.current); };
+          }, [d.seqPlaying, synthTab]);
+
+          // ═══ RHYTHM EXERCISES ═══
+          var RHYTHM_CHALLENGES = [
+            { name: 'Rock Beat', pattern: [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0], desc: 'Quarter notes on the beat' },
+            { name: 'Backbeat', pattern: [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0], desc: 'Snare on 2 and 4' },
+            { name: 'Syncopation', pattern: [1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0], desc: 'Off-beat accents' },
+            { name: '16th Notes', pattern: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], desc: 'Every subdivision' },
+            { name: 'Swing Feel', pattern: [1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0], desc: 'Triplet-style groove' },
+            { name: 'Reggae One-Drop', pattern: [0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0], desc: 'Accent only on beat 3' }
+          ];
+          function genRandomRhythm() {
+            var p = new Array(16).fill(0);
+            for (var i = 0; i < 16; i++) { if (Math.random() < (i % 4 === 0 ? 0.7 : 0.3)) p[i] = 1; }
+            return { name: 'Random #' + Math.floor(Math.random() * 100), pattern: p, desc: 'Try to match this pattern!' };
+          }
+
+          // ═══ SEQUENCER ENGINE (runs in background across tabs) ═══
+          var _seqTimer = React.useRef(null);
+          var _seqStep = React.useRef(0);
+          function startSequencer() {
+            if (_seqTimer.current) return;
+            var bpm = d.seqBPM || 120;
+            var stepMs = (60000 / bpm) / 4; // 16th notes
+            _seqStep.current = 0;
+            _seqTimer.current = setInterval(function () {
+              var step = _seqStep.current;
+              var grid = d.seqGrid || {};
+              BEAT_PAD_SOUNDS.forEach(function (sound, row) {
+                var key = row + '_' + step;
+                if (grid[key]) {
+                  playSample(sound.type, row);
+                }
+              });
+              // Play melody note (scale-aware)
+              var mel = d.beatMelody || [];
+              var _scD = getScaleNotes();
+              var ni = mel[step];
+              if (ni > 0 && ni <= _scD.freqs.length) {
+                playNoteFor(_scD.freqs[ni - 1], 'bpmel_' + step, stepMs * 0.8);
+              }
+              upd('seqCurrentStep', step);
+              _seqStep.current = (step + 1) % 16;
+            }, stepMs);
+            upd('seqPlaying', true);
+          }
+          function stopSequencer() {
+            if (_seqTimer.current) { clearInterval(_seqTimer.current); _seqTimer.current = null; }
+            upd('seqPlaying', false);
+            upd('seqCurrentStep', -1);
+          }
+          // Clean up on unmount
+          React.useEffect(function () { return function () { stopSequencer(); }; }, []);
+          // Restart sequencer when BPM changes while playing
+          React.useEffect(function () {
+            if (d.seqPlaying && _seqTimer.current) {
+              clearInterval(_seqTimer.current);
+              _seqTimer.current = null;
+              var bpm = d.seqBPM || 120;
+              var stepMs = (60000 / bpm) / 4;
+              _seqTimer.current = setInterval(function () {
+                var step = _seqStep.current;
+                var grid = d.seqGrid || {};
+                BEAT_PAD_SOUNDS.forEach(function (sound, row) {
+                  if (grid[row + '_' + step]) playSample(sound.type);
+                });
+                var mel = d.beatMelody || [];
+                var ni = mel[step];
+                if (ni > 0 && ni <= MELODY_FREQS_BP.length) {
+                  var bpm = d.seqBPM || 120;
+                  playNoteFor(MELODY_FREQS_BP[ni - 1], 'bpmel_' + step, ((60000 / bpm) / 4) * 0.8);
+                }
+                upd('seqCurrentStep', step);
+                _seqStep.current = (step + 1) % 16;
+              }, stepMs);
+            }
+          }, [d.seqBPM]);
+
+          // ═══ EDM PRESET PATTERNS ═══
+          var SEQ_PRESETS = {
+            'four_on_floor': { name: '4-on-the-Floor', grid: {'0_0':1,'0_4':1,'0_8':1,'0_12':1,'1_4':1,'1_12':1,'4_0':1,'4_2':1,'4_4':1,'4_6':1,'4_8':1,'4_10':1,'4_12':1,'4_14':1} },
+            'breakbeat': { name: 'Breakbeat', grid: {'0_0':1,'0_6':1,'0_10':1,'1_4':1,'1_12':1,'4_0':1,'4_4':1,'4_8':1,'4_12':1,'4_2':1,'4_10':1} },
+            'trap_hats': { name: 'Trap Hi-Hats', grid: {'0_0':1,'0_8':1,'1_4':1,'1_12':1,'4_0':1,'4_1':1,'4_2':1,'4_3':1,'4_4':1,'4_5':1,'4_6':1,'4_7':1,'4_8':1,'4_9':1,'4_10':1,'4_11':1,'4_12':1,'4_13':1,'4_14':1,'4_15':1,'5_2':1,'5_6':1,'5_10':1,'5_14':1} },
+            'house': { name: 'House', grid: {'0_0':1,'0_4':1,'0_8':1,'0_12':1,'1_4':1,'1_12':1,'4_0':1,'4_2':1,'4_4':1,'4_6':1,'4_8':1,'4_10':1,'4_12':1,'4_14':1,'5_2':1,'5_6':1,'5_10':1,'5_14':1,'2_2':1,'2_14':1} },
+            'reggaeton': { name: 'Reggaeton', grid: {'0_0':1,'0_6':1,'0_12':1,'1_3':1,'1_7':1,'1_11':1,'1_15':1,'4_0':1,'4_4':1,'4_8':1,'4_12':1} },
+          };
+
+          // ═══ CDN SAMPLE LOADER (lazy-loads on first Beat Pad open) ═══
+          var SAMPLE_CDN = 'https://tonejs.github.io/audio/drum-samples/';
+          var SAMPLE_KITS = {
+            'CR78': { name: 'CR-78 Vintage', icon: '\uD83C\uDFDB\uFE0F', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } },
+            'acoustic-kit': { name: 'Acoustic Kit', icon: '\uD83E\uDD41', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } },
+            'Techno': { name: 'Techno EDM', icon: '\u26A1', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } },
+            'LINN': { name: 'LinnDrum', icon: '\uD83D\uDD0A', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } },
+            '4OP-FM': { name: 'FM Synthesis', icon: '\uD83C\uDF1F', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } }
+          };
+          // Sample cache: { kitName: { soundType: AudioBuffer } }
+          if (!window._alloSampleCache) window._alloSampleCache = {};
+          if (!window._alloUserSamples) window._alloUserSamples = [];
+          function loadSampleKit(kitName) {
+            if (window._alloSampleCache[kitName]) { upd('samplesLoaded', kitName); return; }
+            var kit = SAMPLE_KITS[kitName]; if (!kit) return;
+            upd('samplesLoading', true);
+            var audio = getCtx(); var ctx = audio.ctx;
+            var loaded = {}; var total = Object.keys(kit.files).length; var count = 0;
+            Object.keys(kit.files).forEach(function (type) {
+              var url = SAMPLE_CDN + kitName + '/' + kit.files[type];
+              fetch(url).then(function (r) { return r.arrayBuffer(); }).then(function (buf) {
+                return ctx.decodeAudioData(buf);
+              }).then(function (decoded) {
+                loaded[type] = decoded; count++;
+                if (count >= total) {
+                  window._alloSampleCache[kitName] = loaded;
+                  upd('samplesLoading', false); upd('samplesLoaded', kitName);
+                  upd('activeKit', kitName);
+                }
+              }).catch(function (e) { console.warn('[Beat Pad] Failed to load sample:', url, e); count++; if (count >= total) upd('samplesLoading', false); });
+            });
+          }
+          // Play sample from loaded kit, fall back to synth
+          function playSample(type, row) {
+            if (row !== undefined && isChMuted(row)) return;
+            var vol = (row !== undefined) ? getChVol(row) : 0.8;
+            var kit = d.activeKit || '';
+            var cache = window._alloSampleCache[kit];
+            if (cache && cache[type]) {
+              var audio = getCtx(); var ctx = audio.ctx;
+              var source = ctx.createBufferSource();
+              source.buffer = cache[type];
+              var g = ctx.createGain(); g.gain.value = vol;
+              source.connect(g);
+              var dest = _getBpFxDest(audio);
+              g.connect(dest);
+              source.start(0);
+              return;
+            }
+            playDrumExt(type);
+          }
+          // Play user-uploaded sample by index
+          function playUserSample(idx) {
+            var samples = window._alloUserSamples || [];
+            if (!samples[idx]) return;
+            var audio = getCtx(); var ctx = audio.ctx;
+            var source = ctx.createBufferSource();
+            source.buffer = samples[idx].buffer;
+            var g = ctx.createGain(); g.gain.value = 0.8;
+            source.connect(g); g.connect(audio.gain);
+            source.start(0);
+          }
+          // Melody notes for the sequencer row
+          var MELODY_NOTES_BP = ['C4','D4','E4','F4','G4','A4','B4','C5'];
+          var MELODY_FREQS_BP = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+          var melodySeqBP = d.beatMelody || new Array(16).fill(0);
+          // Load default kit on first beatpad visit
+          React.useEffect(function () {
+            if (synthTab === 'beatpad' && !d.activeKit && !d.samplesLoading) {
+              loadSampleKit('CR78');
+            }
+          }, [synthTab]);
+          // Keyboard shortcuts for drum pads (number row)
+          React.useEffect(function () {
+            function handlePadKey(e) {
+              if (synthTab !== 'beatpad') return;
+              if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+              var padMap = { '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6, '8': 7, '9': 8, '0': 9, '-': 10, '=': 11 };
+              var idx = padMap[e.key];
+              if (idx !== undefined && BEAT_PAD_SOUNDS[idx]) {
+                e.preventDefault();
+                playSample(BEAT_PAD_SOUNDS[idx].type, idx); stepRecHit(idx);
+                upd('padHit_' + idx, true);
+                setTimeout(function () { upd('padHit_' + idx, false); }, 120);
+              }
+            }
+            window.addEventListener('keydown', handlePadKey);
+            return function () { window.removeEventListener('keydown', handlePadKey); };
+          }, [synthTab, d.activeKit]);
           return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
             // ── Header ──
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
@@ -18837,574 +19405,6 @@
             ),
 
 
-          // ═══ KEYBOARD CHORD SWITCHING (QAZ/WSX/EDC/RFV/TGB/YHN/UJM) ═══
-          var CHORD_KEY_MAP = {
-            'q': { root: 'C', type: 'Major' }, 'a': { root: 'C', type: 'Minor' }, 'z': { root: 'C', type: 'Dom7' },
-            'w': { root: 'D', type: 'Major' }, 's': { root: 'D', type: 'Minor' }, 'x': { root: 'D', type: 'Dom7' },
-            'e': { root: 'E', type: 'Major' }, 'd': { root: 'E', type: 'Minor' }, 'c': { root: 'E', type: 'Dom7' },
-            'r': { root: 'F', type: 'Major' }, 'f': { root: 'F', type: 'Minor' }, 'v': { root: 'F', type: 'Dom7' },
-            't': { root: 'G', type: 'Major' }, 'g': { root: 'G', type: 'Minor' }, 'b': { root: 'G', type: 'Dom7' },
-            'y': { root: 'A', type: 'Major' }, 'h': { root: 'A', type: 'Minor' }, 'n': { root: 'A', type: 'Dom7' },
-            'u': { root: 'B', type: 'Major' }, 'j': { root: 'B', type: 'Minor' }, 'm': { root: 'B', type: 'Dom7' }
-          };
-          React.useEffect(function () {
-            if (synthTab !== 'harmonypad' && synthTab !== 'beatpad') return;
-            function onKeyDown(e) {
-              if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-              var k = e.key.toLowerCase();
-              if (synthTab === 'harmonypad') {
-                var chord = CHORD_KEY_MAP[k];
-                if (chord) { upd('omniChordRoot', chord.root); upd('omniChordType', chord.type); e.preventDefault(); return; }
-                if (k === ' ') { strumHarmony(d.omniChordRoot || 'C', d.omniChordType || 'Major', d.omniVoice || 'harp'); e.preventDefault(); return; }
-              }
-              // Beat pad keyboard triggers (number row for pads)
-              if (synthTab === 'beatpad') {
-                var padKeys = ['1','2','3','4','5','6','7','8','9','0','-','='];
-                var pi = padKeys.indexOf(k);
-                if (pi !== -1 && pi < (window._alloBeatPadSounds || []).length) {
-                  var ps = (window._alloBeatPadSounds || [])[pi];
-                  if (ps) playDrum(ps.type);
-                  upd('beatPadActive', pi);
-                  setTimeout(function () { upd('beatPadActive', -1); }, 150);
-                  e.preventDefault();
-                }
-              }
-            }
-            document.addEventListener('keydown', onKeyDown);
-            return function () { document.removeEventListener('keydown', onKeyDown); };
-          }, [synthTab, d.omniChordRoot, d.omniChordType, d.omniVoice]);
-
-          // ═══ WEB MIDI CONTROLLER SUPPORT ═══
-          React.useEffect(function () {
-            if (!navigator.requestMIDIAccess) return;
-            var cleanup = [];
-            navigator.requestMIDIAccess({ sysex: false }).then(function (midi) {
-              upd('midiConnected', midi.inputs.size > 0);
-              midi.onstatechange = function () { upd('midiConnected', midi.inputs.size > 0); };
-              midi.inputs.forEach(function (input) {
-                function handler(msg) {
-                  var cmd = msg.data[0] & 0xf0;
-                  var note = msg.data[1];
-                  var vel = msg.data.length > 2 ? msg.data[2] : 0;
-                  if (cmd === 0x90 && vel > 0) {
-                    // Note On — play synth note
-                    var nNames = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-                    var midiOct = Math.floor(note / 12) - 1;
-                    var midiNote = nNames[note % 12];
-                    var freq = 440 * Math.pow(2, (note - 69) / 12);
-                    var volume = vel / 127;
-                    playHarmonyTone(freq, 'midi_' + note, 2000, d.omniVoice || 'harp');
-                  }
-                  if (cmd === 0x80 || (cmd === 0x90 && vel === 0)) {
-                    // Note Off — stop note
-                    if (window._alloSynthActiveNotes['midi_' + note]) {
-                      var n = window._alloSynthActiveNotes['midi_' + note];
-                      if (n.master) { n.master.gain.cancelScheduledValues(0); n.master.gain.linearRampToValueAtTime(0, getCtx().ctx.currentTime + 0.05); }
-                      delete window._alloSynthActiveNotes['midi_' + note];
-                    }
-                  }
-                }
-                input.addEventListener('midimessage', handler);
-                cleanup.push(function () { input.removeEventListener('midimessage', handler); });
-              });
-            }).catch(function () { /* MIDI not available */ });
-            return function () { cleanup.forEach(function (fn) { fn(); }); };
-          }, [d.omniVoice]);
-
-          // ═══ SOUND ENGINE BOOST: Reverb + Compressor ═══
-          (function initSynthEffects() {
-            if (window._alloSynthReverbInit) return;
-            window._alloSynthReverbInit = true;
-            try {
-              var audio = getCtx();
-              var ctx = audio.ctx;
-              // Create DynamicsCompressor for master limiting
-              if (!audio._compressor) {
-                var comp = ctx.createDynamicsCompressor();
-                comp.threshold.value = -12;
-                comp.knee.value = 10;
-                comp.ratio.value = 4;
-                comp.attack.value = 0.003;
-                comp.release.value = 0.15;
-                // Create convolver reverb with procedural impulse response
-                var reverbLen = ctx.sampleRate * 1.5;
-                var impulse = ctx.createBuffer(2, reverbLen, ctx.sampleRate);
-                for (var ch = 0; ch < 2; ch++) {
-                  var impData = impulse.getChannelData(ch);
-                  for (var i = 0; i < reverbLen; i++) {
-                    impData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / reverbLen, 2.5);
-                  }
-                }
-                var convolver = ctx.createConvolver();
-                convolver.buffer = impulse;
-                var reverbGain = ctx.createGain();
-                reverbGain.gain.value = 0.15; // wet mix
-                var dryGain = ctx.createGain();
-                dryGain.gain.value = 0.85;
-                // Reroute: audio.gain → split → dry + reverb → compressor → destination
-                audio.gain.disconnect();
-                audio.gain.connect(dryGain);
-                audio.gain.connect(convolver);
-                convolver.connect(reverbGain);
-                dryGain.connect(comp);
-                reverbGain.connect(comp);
-                comp.connect(ctx.destination);
-                audio._compressor = comp;
-                audio._convolver = convolver;
-                audio._reverbGain = reverbGain;
-              }
-            } catch (e) { console.warn('[Synth] Reverb init failed:', e); }
-          })();
-
-          // ═══ BEAT PAD: 16-step sequencer state & engine ═══
-          var BEAT_PAD_SOUNDS = [
-            { type: 'kick', label: 'Kick', color: '#ef4444', key: '1' },
-            { type: 'snare', label: 'Snare', color: '#f97316', key: '2' },
-            { type: 'clap', label: 'Clap', color: '#eab308', key: '3' },
-            { type: 'rim', label: 'Rim', color: '#84cc16', key: '4' },
-            { type: 'hihat', label: 'CH Hat', color: '#22c55e', key: '5' },
-            { type: 'openhat', label: 'OH Hat', color: '#06b6d4', key: '6' },
-            { type: 'cymbal', label: 'Cymbal', color: '#3b82f6', key: '7' },
-            { type: 'tom1', label: 'Tom Hi', color: '#8b5cf6', key: '8' },
-            { type: 'tom2', label: 'Tom Lo', color: '#a855f7', key: '9' },
-            { type: 'cowbell', label: 'Cowbell', color: '#ec4899', key: '0' },
-            { type: 'clave', label: 'Clave', color: '#f43f5e', key: '-' },
-            { type: 'shaker', label: 'Shaker', color: '#14b8a6', key: '=' }
-          ];
-          window._alloBeatPadSounds = BEAT_PAD_SOUNDS;
-
-          // Extended drum synthesis for new types
-          var _origPlayDrum = playDrum;
-          function playDrumExt(type) {
-            var audio = getCtx(); var ctx = audio.ctx; var now = ctx.currentTime;
-            var drumGain = ctx.createGain(); drumGain.connect(audio.gain);
-            if (type === 'clap') {
-              // Multi-burst noise clap
-              for (var ci = 0; ci < 3; ci++) {
-                (function(delay) {
-                  var noise = ctx.createBufferSource(); var nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.04, ctx.sampleRate);
-                  var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
-                  noise.buffer = nBuf;
-                  var bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2000; bp.Q.value = 1.5;
-                  var eg = ctx.createGain(); eg.gain.setValueAtTime(0.6, now + delay); eg.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.08);
-                  noise.connect(bp); bp.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.7;
-                  noise.start(now + delay); noise.stop(now + delay + 0.08);
-                })(ci * 0.012);
-              }
-            } else if (type === 'rim') {
-              var osc = ctx.createOscillator(); osc.type = 'square';
-              osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(200, now + 0.03);
-              var eg = ctx.createGain(); eg.gain.setValueAtTime(0.5, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-              osc.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.5; osc.start(now); osc.stop(now + 0.05);
-            } else if (type === 'openhat') {
-              var noise = ctx.createBufferSource(); var nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
-              var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
-              noise.buffer = nBuf;
-              var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 6000;
-              var eg = ctx.createGain(); eg.gain.setValueAtTime(0.4, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-              noise.connect(hp); hp.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.5; noise.start(now); noise.stop(now + 0.3);
-            } else if (type === 'cymbal') {
-              var noise = ctx.createBufferSource(); var nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
-              var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
-              noise.buffer = nBuf;
-              var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 8000;
-              var eg = ctx.createGain(); eg.gain.setValueAtTime(0.3, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-              noise.connect(hp); hp.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.4; noise.start(now); noise.stop(now + 0.5);
-            } else if (type === 'tom1' || type === 'tom2') {
-              var baseF = type === 'tom1' ? 200 : 120;
-              var osc = ctx.createOscillator(); osc.type = 'sine';
-              osc.frequency.setValueAtTime(baseF, now); osc.frequency.exponentialRampToValueAtTime(baseF * 0.5, now + 0.2);
-              var eg = ctx.createGain(); eg.gain.setValueAtTime(0.7, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-              osc.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.6; osc.start(now); osc.stop(now + 0.25);
-            } else if (type === 'cowbell') {
-              var osc1 = ctx.createOscillator(); osc1.type = 'square'; osc1.frequency.value = 560;
-              var osc2 = ctx.createOscillator(); osc2.type = 'square'; osc2.frequency.value = 845;
-              var eg = ctx.createGain(); eg.gain.setValueAtTime(0.5, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-              var bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 700; bp.Q.value = 3;
-              osc1.connect(bp); osc2.connect(bp); bp.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.4;
-              osc1.start(now); osc2.start(now); osc1.stop(now + 0.3); osc2.stop(now + 0.3);
-            } else if (type === 'clave') {
-              var osc = ctx.createOscillator(); osc.type = 'triangle'; osc.frequency.value = 2500;
-              var eg = ctx.createGain(); eg.gain.setValueAtTime(0.6, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
-              osc.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.5; osc.start(now); osc.stop(now + 0.04);
-            } else if (type === 'shaker') {
-              var noise = ctx.createBufferSource(); var nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
-              var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
-              noise.buffer = nBuf;
-              var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 5000;
-              var eg = ctx.createGain(); eg.gain.setValueAtTime(0.3, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
-              noise.connect(hp); hp.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.4; noise.start(now); noise.stop(now + 0.08);
-            } else {
-              _origPlayDrum(type); return;
-            }
-          }
-
-
-
-          // ═══ PER-CHANNEL MIXER ═══
-          function getChVol(row) { var v = d.chVolumes || {}; return v[row] !== undefined ? v[row] : 0.8; }
-          function isChMuted(row) {
-            var solo = d.chSolo;
-            if (solo !== undefined && solo >= 0 && solo !== row) return true;
-            return !!(d.chMutes && d.chMutes[row]);
-          }
-
-          // ═══ EFFECTS RACK (Web Audio lazy-init) ═══
-          var _bpFxRef = React.useRef(null);
-          function _initBpFx() {
-            if (_bpFxRef.current) return _bpFxRef.current;
-            var audio = getCtx(); var ctx = audio.ctx;
-            var irLen = Math.round(ctx.sampleRate * 1.5);
-            var irBuf = ctx.createBuffer(2, irLen, ctx.sampleRate);
-            for (var ch = 0; ch < 2; ch++) { var dd = irBuf.getChannelData(ch); for (var i = 0; i < irLen; i++) dd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / irLen, 2.5); }
-            var conv = ctx.createConvolver(); conv.buffer = irBuf;
-            var revG = ctx.createGain(); revG.gain.value = 0;
-            var dryG = ctx.createGain(); dryG.gain.value = 1;
-            var del = ctx.createDelay(1.0); del.delayTime.value = 0.25;
-            var delFb = ctx.createGain(); delFb.gain.value = 0;
-            var delW = ctx.createGain(); delW.gain.value = 0;
-            var flt = ctx.createBiquadFilter(); flt.type = 'lowpass'; flt.frequency.value = 20000; flt.Q.value = 1;
-            var inp = ctx.createGain(); inp.gain.value = 1;
-            var out = ctx.createGain(); out.gain.value = 1;
-            inp.connect(flt);
-            flt.connect(dryG); dryG.connect(out);
-            flt.connect(conv); conv.connect(revG); revG.connect(out);
-            flt.connect(del); del.connect(delW); delW.connect(out);
-            del.connect(delFb); delFb.connect(del);
-            out.connect(audio.gain);
-            _bpFxRef.current = { inp: inp, revG: revG, dryG: dryG, del: del, delFb: delFb, delW: delW, flt: flt, out: out };
-            return _bpFxRef.current;
-          }
-          function _getBpFxDest(audio) {
-            if (!d.bpFxOn) return audio.gain;
-            return _initBpFx().inp;
-          }
-          React.useEffect(function () {
-            if (!_bpFxRef.current) return;
-            var fx = _bpFxRef.current;
-            var r = (d.bpReverb || 0) / 100, dl = (d.bpDelay || 0) / 100, c = d.bpFilterCut || 20000;
-            fx.revG.gain.value = r * 0.6; fx.dryG.gain.value = 1 - r * 0.3;
-            fx.delW.gain.value = dl * 0.5; fx.delFb.gain.value = dl * 0.4;
-            fx.flt.frequency.value = c;
-          }, [d.bpReverb, d.bpDelay, d.bpFilterCut]);
-
-          // ═══ TAP TEMPO ═══
-          if (!window._bpTapTimes) window._bpTapTimes = [];
-          function tapTempo() {
-            var now = Date.now(); var taps = window._bpTapTimes;
-            if (taps.length > 0 && now - taps[taps.length - 1] > 2000) taps.length = 0;
-            taps.push(now);
-            if (taps.length > 1) {
-              var ints = []; for (var i = 1; i < Math.min(taps.length, 5); i++) ints.push(taps[i] - taps[i - 1]);
-              var avg = ints.reduce(function (a, b) { return a + b; }, 0) / ints.length;
-              upd('seqBPM', Math.max(60, Math.min(200, Math.round(60000 / avg))));
-            }
-          }
-
-          // ═══ UNDO / REDO ═══
-          if (!window._bpUndoStack) window._bpUndoStack = [];
-          if (!window._bpRedoStack) window._bpRedoStack = [];
-          function pushBpUndo() {
-            window._bpUndoStack.push({ g: JSON.parse(JSON.stringify(d.seqGrid || {})), m: (d.beatMelody || []).slice() });
-            if (window._bpUndoStack.length > 30) window._bpUndoStack.shift();
-            window._bpRedoStack.length = 0;
-          }
-          function bpUndo() {
-            if (!window._bpUndoStack.length) return;
-            window._bpRedoStack.push({ g: JSON.parse(JSON.stringify(d.seqGrid || {})), m: (d.beatMelody || []).slice() });
-            var prev = window._bpUndoStack.pop();
-            upd('seqGrid', prev.g); upd('beatMelody', prev.m);
-          }
-          function bpRedo() {
-            if (!window._bpRedoStack.length) return;
-            window._bpUndoStack.push({ g: JSON.parse(JSON.stringify(d.seqGrid || {})), m: (d.beatMelody || []).slice() });
-            var nxt = window._bpRedoStack.pop();
-            upd('seqGrid', nxt.g); upd('beatMelody', nxt.m);
-          }
-
-          // ═══ SCALE-LOCKED MELODY ═══
-          var SCALE_PATTERNS = {
-            'chromatic': { name: 'All Notes', intervals: [0,1,2,3,4,5,6,7,8,9,10,11,12] },
-            'major': { name: 'Major', intervals: [0,2,4,5,7,9,11,12] },
-            'minor': { name: 'Minor', intervals: [0,2,3,5,7,8,10,12] },
-            'pentatonic': { name: 'Pentatonic', intervals: [0,2,4,7,9,12] },
-            'blues': { name: 'Blues', intervals: [0,3,5,6,7,10,12] },
-            'dorian': { name: 'Dorian', intervals: [0,2,3,5,7,9,10,12] },
-            'mixolydian': { name: 'Mixolydian', intervals: [0,2,4,5,7,9,10,12] }
-          };
-          var ALL_NOTE_NAMES = ['C4','C#4','D4','D#4','E4','F4','F#4','G4','G#4','A4','A#4','B4','C5'];
-          var ALL_NOTE_FREQS = [261.63,277.18,293.66,311.13,329.63,349.23,369.99,392.00,415.30,440.00,466.16,493.88,523.25];
-          function getScaleNotes() {
-            var sc = SCALE_PATTERNS[d.bpScale || 'major'] || SCALE_PATTERNS['major'];
-            var n = [], f = [];
-            sc.intervals.forEach(function (iv) { if (iv < ALL_NOTE_NAMES.length) { n.push(ALL_NOTE_NAMES[iv]); f.push(ALL_NOTE_FREQS[iv]); } });
-            return { notes: n, freqs: f };
-          }
-
-          // ═══ STEP RECORDING ═══
-          function stepRecHit(row) {
-            if (!d.bpStepRec) return false;
-            var pos = d.bpStepRecPos || 0;
-            var g = Object.assign({}, d.seqGrid || {});
-            g[row + '_' + pos] = 1;
-            upd('seqGrid', g);
-            upd('bpStepRecPos', (pos + 1) % 16);
-            pushBpUndo();
-            return true;
-          }
-
-          // ═══ SHARE VIA URL ═══
-          function sharePattern() {
-            try {
-              var obj = { g: d.seqGrid || {}, m: d.beatMelody || [], b: d.seqBPM || 120, s: d.seqSwing || '0' };
-              var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
-              var url = location.origin + location.pathname + '#beat=' + b64;
-              navigator.clipboard.writeText(url).then(function () { addToast('\uD83D\uDD17 Beat URL copied!', 'success'); })
-                .catch(function () { prompt('Copy this URL:', url); });
-            } catch (e) { addToast('\u274C Share failed', 'error'); }
-          }
-          React.useEffect(function () {
-            try {
-              var h = location.hash;
-              if (!h || h.indexOf('#beat=') !== 0) return;
-              var json = decodeURIComponent(escape(atob(h.substring(6))));
-              var obj = JSON.parse(json);
-              if (obj.g) upd('seqGrid', obj.g);
-              if (obj.m) upd('beatMelody', obj.m);
-              if (obj.b) upd('seqBPM', obj.b);
-              if (obj.s) upd('seqSwing', obj.s);
-              history.replaceState(null, '', location.pathname);
-              addToast('\uD83C\uDFB5 Loaded shared beat!', 'success');
-            } catch (e) {}
-          }, []);
-
-          // ═══ WAV EXPORT (MediaRecorder) ═══
-          function exportBeat() {
-            try {
-              var audio = getCtx(); var ctx = audio.ctx;
-              var dest = ctx.createMediaStreamDestination();
-              audio.gain.connect(dest);
-              var chunks = []; var mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm';
-              var rec = new MediaRecorder(dest.stream, { mimeType: mimeType });
-              rec.ondataavailable = function (e) { if (e.data.size > 0) chunks.push(e.data); };
-              rec.onstop = function () {
-                audio.gain.disconnect(dest);
-                var blob = new Blob(chunks, { type: mimeType });
-                var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-                a.download = 'beat_' + new Date().toISOString().slice(0, 10) + '.webm';
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                addToast('\uD83D\uDCE5 Beat exported!', 'success'); upd('bpExporting', false);
-              };
-              rec.start(); upd('bpExporting', true);
-              var bpm = d.seqBPM || 120; var total = ((60000 / bpm) / 4) * 16 + 300;
-              if (!d.seqPlaying) startSequencer();
-              setTimeout(function () { rec.stop(); stopSequencer(); }, total);
-            } catch (e) { addToast('\u274C Export failed', 'error'); upd('bpExporting', false); }
-          }
-
-          // ═══ WAVEFORM VISUALIZER ═══
-          var _bpCanvasRef = React.useRef(null);
-          var _bpAnimRef = React.useRef(null);
-          var _bpAnalyserRef = React.useRef(null);
-          React.useEffect(function () {
-            if (!d.seqPlaying) { if (_bpAnimRef.current) { cancelAnimationFrame(_bpAnimRef.current); _bpAnimRef.current = null; } return; }
-            var canvas = _bpCanvasRef.current; if (!canvas) return;
-            var audio = getCtx(); var ctx = audio.ctx;
-            if (!_bpAnalyserRef.current) { var an = ctx.createAnalyser(); an.fftSize = 256; audio.gain.connect(an); _bpAnalyserRef.current = an; }
-            var analyser = _bpAnalyserRef.current; var cctx = canvas.getContext('2d');
-            var w = canvas.width, h = canvas.height, buf = new Uint8Array(analyser.frequencyBinCount);
-            function draw() {
-              _bpAnimRef.current = requestAnimationFrame(draw);
-              analyser.getByteTimeDomainData(buf);
-              var grd = cctx.createLinearGradient(0, 0, w, 0);
-              grd.addColorStop(0, '#1e1b4b'); grd.addColorStop(0.5, '#312e81'); grd.addColorStop(1, '#1e1b4b');
-              cctx.fillStyle = grd; cctx.fillRect(0, 0, w, h);
-              var wg = cctx.createLinearGradient(0, 0, w, 0);
-              wg.addColorStop(0, '#a78bfa'); wg.addColorStop(0.5, '#f472b6'); wg.addColorStop(1, '#a78bfa');
-              cctx.strokeStyle = wg; cctx.lineWidth = 2; cctx.beginPath();
-              var sw = w / buf.length;
-              for (var i = 0; i < buf.length; i++) { var y = (buf[i] / 128.0) * h / 2; if (i === 0) cctx.moveTo(0, y); else cctx.lineTo(i * sw, y); }
-              cctx.lineTo(w, h / 2); cctx.stroke();
-              cctx.shadowBlur = 8; cctx.shadowColor = '#a78bfa'; cctx.stroke(); cctx.shadowBlur = 0;
-            }
-            draw();
-            return function () { if (_bpAnimRef.current) cancelAnimationFrame(_bpAnimRef.current); };
-          }, [d.seqPlaying, synthTab]);
-
-          // ═══ RHYTHM EXERCISES ═══
-          var RHYTHM_CHALLENGES = [
-            { name: 'Rock Beat', pattern: [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0], desc: 'Quarter notes on the beat' },
-            { name: 'Backbeat', pattern: [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0], desc: 'Snare on 2 and 4' },
-            { name: 'Syncopation', pattern: [1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0], desc: 'Off-beat accents' },
-            { name: '16th Notes', pattern: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], desc: 'Every subdivision' },
-            { name: 'Swing Feel', pattern: [1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0], desc: 'Triplet-style groove' },
-            { name: 'Reggae One-Drop', pattern: [0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0], desc: 'Accent only on beat 3' }
-          ];
-          function genRandomRhythm() {
-            var p = new Array(16).fill(0);
-            for (var i = 0; i < 16; i++) { if (Math.random() < (i % 4 === 0 ? 0.7 : 0.3)) p[i] = 1; }
-            return { name: 'Random #' + Math.floor(Math.random() * 100), pattern: p, desc: 'Try to match this pattern!' };
-          }
-
-          // ═══ SEQUENCER ENGINE (runs in background across tabs) ═══
-          var _seqTimer = React.useRef(null);
-          var _seqStep = React.useRef(0);
-          function startSequencer() {
-            if (_seqTimer.current) return;
-            var bpm = d.seqBPM || 120;
-            var stepMs = (60000 / bpm) / 4; // 16th notes
-            _seqStep.current = 0;
-            _seqTimer.current = setInterval(function () {
-              var step = _seqStep.current;
-              var grid = d.seqGrid || {};
-              BEAT_PAD_SOUNDS.forEach(function (sound, row) {
-                var key = row + '_' + step;
-                if (grid[key]) {
-                  playSample(sound.type, row);
-                }
-              });
-              // Play melody note (scale-aware)
-              var mel = d.beatMelody || [];
-              var _scD = getScaleNotes();
-              var ni = mel[step];
-              if (ni > 0 && ni <= _scD.freqs.length) {
-                playNoteFor(_scD.freqs[ni - 1], 'bpmel_' + step, stepMs * 0.8);
-              }
-              upd('seqCurrentStep', step);
-              _seqStep.current = (step + 1) % 16;
-            }, stepMs);
-            upd('seqPlaying', true);
-          }
-          function stopSequencer() {
-            if (_seqTimer.current) { clearInterval(_seqTimer.current); _seqTimer.current = null; }
-            upd('seqPlaying', false);
-            upd('seqCurrentStep', -1);
-          }
-          // Clean up on unmount
-          React.useEffect(function () { return function () { stopSequencer(); }; }, []);
-          // Restart sequencer when BPM changes while playing
-          React.useEffect(function () {
-            if (d.seqPlaying && _seqTimer.current) {
-              clearInterval(_seqTimer.current);
-              _seqTimer.current = null;
-              var bpm = d.seqBPM || 120;
-              var stepMs = (60000 / bpm) / 4;
-              _seqTimer.current = setInterval(function () {
-                var step = _seqStep.current;
-                var grid = d.seqGrid || {};
-                BEAT_PAD_SOUNDS.forEach(function (sound, row) {
-                  if (grid[row + '_' + step]) playSample(sound.type);
-                });
-                var mel = d.beatMelody || [];
-                var ni = mel[step];
-                if (ni > 0 && ni <= MELODY_FREQS_BP.length) {
-                  var bpm = d.seqBPM || 120;
-                  playNoteFor(MELODY_FREQS_BP[ni - 1], 'bpmel_' + step, ((60000 / bpm) / 4) * 0.8);
-                }
-                upd('seqCurrentStep', step);
-                _seqStep.current = (step + 1) % 16;
-              }, stepMs);
-            }
-          }, [d.seqBPM]);
-
-          // ═══ EDM PRESET PATTERNS ═══
-          var SEQ_PRESETS = {
-            'four_on_floor': { name: '4-on-the-Floor', grid: {'0_0':1,'0_4':1,'0_8':1,'0_12':1,'1_4':1,'1_12':1,'4_0':1,'4_2':1,'4_4':1,'4_6':1,'4_8':1,'4_10':1,'4_12':1,'4_14':1} },
-            'breakbeat': { name: 'Breakbeat', grid: {'0_0':1,'0_6':1,'0_10':1,'1_4':1,'1_12':1,'4_0':1,'4_4':1,'4_8':1,'4_12':1,'4_2':1,'4_10':1} },
-            'trap_hats': { name: 'Trap Hi-Hats', grid: {'0_0':1,'0_8':1,'1_4':1,'1_12':1,'4_0':1,'4_1':1,'4_2':1,'4_3':1,'4_4':1,'4_5':1,'4_6':1,'4_7':1,'4_8':1,'4_9':1,'4_10':1,'4_11':1,'4_12':1,'4_13':1,'4_14':1,'4_15':1,'5_2':1,'5_6':1,'5_10':1,'5_14':1} },
-            'house': { name: 'House', grid: {'0_0':1,'0_4':1,'0_8':1,'0_12':1,'1_4':1,'1_12':1,'4_0':1,'4_2':1,'4_4':1,'4_6':1,'4_8':1,'4_10':1,'4_12':1,'4_14':1,'5_2':1,'5_6':1,'5_10':1,'5_14':1,'2_2':1,'2_14':1} },
-            'reggaeton': { name: 'Reggaeton', grid: {'0_0':1,'0_6':1,'0_12':1,'1_3':1,'1_7':1,'1_11':1,'1_15':1,'4_0':1,'4_4':1,'4_8':1,'4_12':1} },
-          };
-
-          // ═══ CDN SAMPLE LOADER (lazy-loads on first Beat Pad open) ═══
-          var SAMPLE_CDN = 'https://tonejs.github.io/audio/drum-samples/';
-          var SAMPLE_KITS = {
-            'CR78': { name: 'CR-78 Vintage', icon: '\uD83C\uDFDB\uFE0F', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } },
-            'acoustic-kit': { name: 'Acoustic Kit', icon: '\uD83E\uDD41', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } },
-            'Techno': { name: 'Techno EDM', icon: '\u26A1', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } },
-            'LINN': { name: 'LinnDrum', icon: '\uD83D\uDD0A', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } },
-            '4OP-FM': { name: 'FM Synthesis', icon: '\uD83C\uDF1F', files: { kick: 'kick.mp3', snare: 'snare.mp3', hihat: 'hihat.mp3', tom1: 'tom1.mp3', tom2: 'tom2.mp3' } }
-          };
-          // Sample cache: { kitName: { soundType: AudioBuffer } }
-          if (!window._alloSampleCache) window._alloSampleCache = {};
-          if (!window._alloUserSamples) window._alloUserSamples = [];
-          function loadSampleKit(kitName) {
-            if (window._alloSampleCache[kitName]) { upd('samplesLoaded', kitName); return; }
-            var kit = SAMPLE_KITS[kitName]; if (!kit) return;
-            upd('samplesLoading', true);
-            var audio = getCtx(); var ctx = audio.ctx;
-            var loaded = {}; var total = Object.keys(kit.files).length; var count = 0;
-            Object.keys(kit.files).forEach(function (type) {
-              var url = SAMPLE_CDN + kitName + '/' + kit.files[type];
-              fetch(url).then(function (r) { return r.arrayBuffer(); }).then(function (buf) {
-                return ctx.decodeAudioData(buf);
-              }).then(function (decoded) {
-                loaded[type] = decoded; count++;
-                if (count >= total) {
-                  window._alloSampleCache[kitName] = loaded;
-                  upd('samplesLoading', false); upd('samplesLoaded', kitName);
-                  upd('activeKit', kitName);
-                }
-              }).catch(function (e) { console.warn('[Beat Pad] Failed to load sample:', url, e); count++; if (count >= total) upd('samplesLoading', false); });
-            });
-          }
-          // Play sample from loaded kit, fall back to synth
-          function playSample(type, row) {
-            if (row !== undefined && isChMuted(row)) return;
-            var vol = (row !== undefined) ? getChVol(row) : 0.8;
-            var kit = d.activeKit || '';
-            var cache = window._alloSampleCache[kit];
-            if (cache && cache[type]) {
-              var audio = getCtx(); var ctx = audio.ctx;
-              var source = ctx.createBufferSource();
-              source.buffer = cache[type];
-              var g = ctx.createGain(); g.gain.value = vol;
-              source.connect(g);
-              var dest = _getBpFxDest(audio);
-              g.connect(dest);
-              source.start(0);
-              return;
-            }
-            playDrumExt(type);
-          }
-          // Play user-uploaded sample by index
-          function playUserSample(idx) {
-            var samples = window._alloUserSamples || [];
-            if (!samples[idx]) return;
-            var audio = getCtx(); var ctx = audio.ctx;
-            var source = ctx.createBufferSource();
-            source.buffer = samples[idx].buffer;
-            var g = ctx.createGain(); g.gain.value = 0.8;
-            source.connect(g); g.connect(audio.gain);
-            source.start(0);
-          }
-          // Melody notes for the sequencer row
-          var MELODY_NOTES_BP = ['C4','D4','E4','F4','G4','A4','B4','C5'];
-          var MELODY_FREQS_BP = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
-          var melodySeqBP = d.beatMelody || new Array(16).fill(0);
-          // Load default kit on first beatpad visit
-          React.useEffect(function () {
-            if (synthTab === 'beatpad' && !d.activeKit && !d.samplesLoading) {
-              loadSampleKit('CR78');
-            }
-          }, [synthTab]);
-          // Keyboard shortcuts for drum pads (number row)
-          React.useEffect(function () {
-            function handlePadKey(e) {
-              if (synthTab !== 'beatpad') return;
-              if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-              var padMap = { '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6, '8': 7, '9': 8, '0': 9, '-': 10, '=': 11 };
-              var idx = padMap[e.key];
-              if (idx !== undefined && BEAT_PAD_SOUNDS[idx]) {
-                e.preventDefault();
-                playSample(BEAT_PAD_SOUNDS[idx].type, idx); stepRecHit(idx);
-                upd('padHit_' + idx, true);
-                setTimeout(function () { upd('padHit_' + idx, false); }, 120);
-              }
-            }
-            window.addEventListener('keydown', handlePadKey);
-            return function () { window.removeEventListener('keydown', handlePadKey); };
-          }, [synthTab, d.activeKit]);
 
 
             // ═══════════ TAB: BEAT PAD (Production Studio) ═══════════
