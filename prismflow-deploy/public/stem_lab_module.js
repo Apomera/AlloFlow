@@ -35409,6 +35409,32 @@
             }
             upd('colonyZoom', newZoom);
           }
+          // ── Keyboard Shortcuts ──
+          if (!window._colonyKeyHandler) {
+            window._colonyKeyHandler = function (e) {
+              if (!window._colonyKeyActive) return;
+              // Don't capture if typing in an input
+              if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+              var _upd = window._colonyUpd;
+              var _d = window._colonyState || {};
+              if (!_upd) return;
+              var panSpeed = 3;
+              switch (e.key.toLowerCase()) {
+                case 'w': case 'arrowup':    _upd('colonyCamY', Math.max(0, (_d.colonyCamY || 0) - panSpeed)); e.preventDefault(); break;
+                case 's': case 'arrowdown':  _upd('colonyCamY', (_d.colonyCamY || 0) + panSpeed); e.preventDefault(); break;
+                case 'a': case 'arrowleft':  _upd('colonyCamX', Math.max(0, (_d.colonyCamX || 0) - panSpeed)); e.preventDefault(); break;
+                case 'd': case 'arrowright': _upd('colonyCamX', (_d.colonyCamX || 0) + panSpeed); e.preventDefault(); break;
+                case '=': case '+': _upd('colonyZoom', Math.min(3.0, (_d.colonyZoom || 1) * 1.15)); e.preventDefault(); break;
+                case '-': case '_': _upd('colonyZoom', Math.max(0.4, (_d.colonyZoom || 1) * 0.85)); e.preventDefault(); break;
+                case 'escape': _upd('colonySelTile', null); _upd('selectedRover', null); _upd('turnSummary', null); break;
+                case 'h': _upd('colonyCamX', Math.max(0, ((_d.colonyMap || {}).colonyPos || {}).x - 10)); _upd('colonyCamY', Math.max(0, ((_d.colonyMap || {}).colonyPos || {}).y - 10)); break;
+              }
+            };
+            window.addEventListener('keydown', window._colonyKeyHandler);
+          }
+          window._colonyKeyActive = (colonyPhase === 'playing');
+          window._colonyUpd = upd;
+          window._colonyState = d;
 
           return React.createElement('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-2xl p-4 border border-slate-700' },
             React.createElement('div', { className: 'flex items-center justify-between mb-4' },
@@ -35528,7 +35554,8 @@
                   React.createElement('button', { onClick: function () { upd('colonyZoom', Math.min(3.0, colonyZoom * 1.25)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600 font-bold', title: 'Zoom In' }, '+'),
                   React.createElement('button', { onClick: function () { upd('colonyZoom', Math.max(0.4, colonyZoom * 0.8)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600 font-bold', title: 'Zoom Out' }, '\u2212'),
                   React.createElement('button', { onClick: function () { upd('colonyZoom', 1.0); }, className: 'px-1.5 py-1 bg-slate-700 text-white rounded text-[9px] hover:bg-slate-600', title: 'Reset Zoom' }, '1:1'),
-                  React.createElement('span', { className: 'text-[9px] text-slate-500 ml-1' }, Math.round(colonyZoom * 100) + '%')
+                  React.createElement('span', { className: 'text-[9px] text-slate-500 ml-1' }, Math.round(colonyZoom * 100) + '%'),
+                React.createElement('span', { className: 'text-[8px] text-slate-600 ml-2 hidden sm:inline' }, 'WASD pan \u2022 +/- zoom \u2022 Esc clear \u2022 H home')
                 ),
                 React.createElement('span', { className: 'text-[9px] text-slate-500' }, mapSize + '\u00D7' + mapSize + ' (' + camX + ',' + camY + ')')
               ),
@@ -35670,6 +35697,7 @@
                 React.createElement('button', {
                   onClick: function () {
                     var nt = turn + 1; var nr2 = Object.assign({}, resources);
+                    var _preRes = { food: nr2.food, energy: nr2.energy, water: nr2.water, materials: nr2.materials, science: nr2.science };
                     buildings.forEach(function (b) {
                       var def = buildingDefs.find(function (bd) { return bd.id === b; });
                       if (def) {
@@ -35766,6 +35794,28 @@
                       }
                     }
                     nr2.water = Math.max(0, nr2.water - Math.ceil(settlers.length * 0.5));
+                    // Turn Summary — compute deltas
+                    var _turnSummary = {
+                      turn: nt,
+                      deltas: {
+                        food: nr2.food - _preRes.food,
+                        energy: nr2.energy - _preRes.energy,
+                        water: nr2.water - _preRes.water,
+                        materials: nr2.materials - _preRes.materials,
+                        science: nr2.science - _preRes.science
+                      },
+                      weather: wx ? wx.name : null,
+                      terraform: newTf,
+                      tfGain: tfGain,
+                      happiness: newHappy,
+                      population: settlers.length,
+                      era: era,
+                      events: []
+                    };
+                    if (wx) _turnSummary.events.push(wx.icon + ' ' + wx.name);
+                    if (newHappy < 30) _turnSummary.events.push('\uD83D\uDE21 Colony Unrest');
+                    if (newHappy > 80) _turnSummary.events.push('\u2728 Golden Age');
+                    upd('turnSummary', _turnSummary);
                     upd('colonyRes', nr2); upd('colonyTurn', nt); upd('colonyEventLoading', true);
                     var ctx2 = 'Colony on Kepler-442b, turn ' + nt + '. Resources: food=' + nr2.food + ' energy=' + nr2.energy + ' water=' + nr2.water + ' materials=' + nr2.materials + ' science=' + nr2.science + '. Buildings: ' + (buildings.length > 0 ? buildings.join(', ') : 'none') + '. ' + settlers.length + ' settlers. Terraforming: ' + newTf + '%. ' + (wx ? 'Current weather: ' + wx.name + '. ' : 'Weather: calm. ') + 'Tech tier reached: ' + (buildings.indexOf('biodome') >= 0 ? 4 : buildings.indexOf('atmo') >= 0 || buildings.indexOf('fusion') >= 0 ? 3 : buildings.indexOf('lab') >= 0 || buildings.indexOf('medbay') >= 0 ? 2 : buildings.length > 0 ? 1 : 0) + '.';
                     callGemini('You are the AI game master for an educational space colony on an alien planet. Target audience: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Colony values: collectivism=' + colonyValues.collectivism + ', innovation=' + colonyValues.innovation + ', ecology=' + colonyValues.ecology + ', tradition=' + colonyValues.tradition + ', openness=' + colonyValues.openness + '. Equity: ' + equity + '/100. Sometimes let colony values influence event themes (high ecology = nature events, high tradition = cultural discovery events, low equity = social tension events). ' + ctx2 + '\n\nGenerate a planet event. Include a REAL science concept. Return ONLY valid JSON:\n{"emoji":"<emoji>","title":"<event>","description":"<2-3 sentences>","lesson":"<real science concept, 2-3 sentences>","choices":[{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"},{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"}]}\n\nEvents: alien microbes, geologic discoveries, meteor showers, equipment failures, resource finds, atmospheric anomalies, alien ruins. Effects: -5 to +10 resources, -15 to +15 morale. One choice should reward scientific knowledge.', true).then(function (result) {
@@ -36137,17 +36187,49 @@
                   },
                   disabled: d.colonyEventLoading, className: 'py-3 rounded-xl text-xs font-bold ' + (d.colonyEventLoading ? 'bg-slate-700 text-slate-500' : 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white')
                 }, d.colonyEventLoading ? '\u23F3 Processing...' : '\u27A1\uFE0F Next Turn'),
+                // ── Turn Summary Pop-up ──
+                d.turnSummary && !d.colonyEventLoading && React.createElement('div', {
+                  className: 'col-span-6 bg-gradient-to-r from-slate-800/95 to-indigo-900/95 rounded-xl p-3 border border-indigo-500/30 mb-1 relative',
+                  style: { animation: 'fadeIn 0.3s ease-out' }
+                },
+                  React.createElement('button', {
+                    onClick: function () { upd('turnSummary', null); },
+                    className: 'absolute top-1 right-2 text-slate-500 hover:text-white text-sm', title: 'Dismiss'
+                  }, '\u2715'),
+                  React.createElement('div', { className: 'text-[10px] font-bold text-indigo-300 mb-1.5' }, '\uD83D\uDCCB Turn ' + d.turnSummary.turn + ' Report'),
+                  React.createElement('div', { className: 'grid grid-cols-5 gap-1 mb-1.5' },
+                    [
+                      ['\uD83C\uDF3E', 'Food', d.turnSummary.deltas.food, '#4ade80'],
+                      ['\u26A1', 'Energy', d.turnSummary.deltas.energy, '#facc15'],
+                      ['\uD83D\uDCA7', 'Water', d.turnSummary.deltas.water, '#38bdf8'],
+                      ['\uD83E\uDEA8', 'Mat.', d.turnSummary.deltas.materials, '#94a3b8'],
+                      ['\uD83D\uDD2C', 'Sci.', d.turnSummary.deltas.science, '#a78bfa']
+                    ].map(function (rd) {
+                      var val = rd[2]; var col = val > 0 ? '#4ade80' : val < 0 ? '#f87171' : '#64748b';
+                      return React.createElement('div', { key: rd[1], className: 'text-center rounded-lg py-1', style: { backgroundColor: col + '15', border: '1px solid ' + col + '30' } },
+                        React.createElement('div', { className: 'text-[9px]', style: { color: col } }, rd[0] + ' ' + (val > 0 ? '+' : '') + val),
+                        React.createElement('div', { className: 'text-[7px] text-slate-500' }, rd[1])
+                      );
+                    })
+                  ),
+                  React.createElement('div', { className: 'flex gap-2 text-[8px] text-slate-400 flex-wrap' },
+                    d.turnSummary.tfGain > 0 && React.createElement('span', { className: 'text-emerald-400' }, '\uD83C\uDF0D +' + d.turnSummary.tfGain + '% terraform (' + d.turnSummary.terraform + '%)'),
+                    React.createElement('span', null, '\uD83D\uDE42 ' + d.turnSummary.happiness + '%'),
+                    React.createElement('span', null, '\uD83D\uDC65 ' + d.turnSummary.population),
+                    d.turnSummary.events.map(function (ev, ei) { return React.createElement('span', { key: ei, className: 'text-amber-300' }, ev); })
+                  )
+                ),
                 React.createElement('button', { onClick: function () { upd('showBuild', !d.showBuild); }, className: 'py-3 rounded-xl text-xs font-bold bg-amber-600 text-white' }, '\uD83C\uDFD7 Build (' + buildings.length + '/' + buildingDefs.length + ')'),
                 React.createElement('button', { onClick: function () { upd('showSettlers', !d.showSettlers); }, className: 'py-3 rounded-xl text-xs font-bold bg-teal-600 text-white' }, '\uD83D\uDC65 ' + settlers.length),
-                React.createElement('button', { onClick: function () { upd('showPolicy', !d.showPolicy); }, className: 'py-3 rounded-xl text-xs font-bold ' + (activePolicy ? 'bg-emerald-700' : 'bg-slate-700') + ' text-white' }, '\uD83C\uDFDB\uFE0F Gov'),
-                React.createElement('button', { onClick: function () { upd('showResearch', !d.showResearch); }, className: 'py-3 rounded-xl text-xs font-bold bg-violet-700 text-white' }, '\uD83E\uDDEC ' + researchQueue.length),
-                React.createElement('button', { onClick: function () { upd('showGreatSci', !d.showGreatSci); }, className: 'py-3 rounded-xl text-xs font-bold bg-yellow-700 text-white' }, '\uD83E\uDD16 ' + greatScientists.length + '/' + greatSciDefs.length)
+                (buildings.length >= 2 || activePolicy) && React.createElement('button', { onClick: function () { upd('showPolicy', !d.showPolicy); }, className: 'py-3 rounded-xl text-xs font-bold ' + (activePolicy ? 'bg-emerald-700' : 'bg-slate-700') + ' text-white' }, '\uD83C\uDFDB\uFE0F Gov'),
+                (buildings.length >= 3 || researchQueue.length > 0) && React.createElement('button', { onClick: function () { upd('showResearch', !d.showResearch); }, className: 'py-3 rounded-xl text-xs font-bold bg-violet-700 text-white' }, '\uD83E\uDDEC ' + researchQueue.length),
+                (greatScientists.length > 0 || buildings.length >= 5) && React.createElement('button', { onClick: function () { upd('showGreatSci', !d.showGreatSci); }, className: 'py-3 rounded-xl text-xs font-bold bg-yellow-700 text-white' }, '\uD83E\uDD16 ' + greatScientists.length + '/' + greatSciDefs.length)
               ),
-              React.createElement('div', { className: 'grid grid-cols-4 gap-1 mb-3' },
-                React.createElement('button', { onClick: function () { upd('showWonders', !d.showWonders); }, className: 'py-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-amber-800 to-amber-700 text-amber-200' }, '\uD83C\uDFDB\uFE0F Wonders'),
-                React.createElement('button', { onClick: function () { upd('showAchievements', !d.showAchievements); }, className: 'py-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-rose-800 to-rose-700 text-rose-200' }, '\uD83C\uDFC5 ' + Object.keys(achievements).length + '/' + achievementDefs.length),
-                React.createElement('button', { onClick: function () { upd('showExpeditions', !d.showExpeditions); }, className: 'py-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-cyan-800 to-cyan-700 text-cyan-200' }, '\u26F5 Expeditions'),
-                React.createElement('button', { onClick: function () { upd('showJournal', !d.showJournal); }, className: 'py-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-green-800 to-green-700 text-green-200' }, '\uD83D\uDCD6 ' + scienceJournal.length),
+              React.createElement('div', { className: 'flex gap-1 mb-3 flex-wrap' },
+                React.createElement('button', { onClick: function () { upd('showAchievements', !d.showAchievements); }, className: 'py-2 px-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-rose-800 to-rose-700 text-rose-200' }, '\uD83C\uDFC5 ' + Object.keys(achievements).length + '/' + achievementDefs.length),
+                React.createElement('button', { onClick: function () { upd('showJournal', !d.showJournal); }, className: 'py-2 px-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-green-800 to-green-700 text-green-200' }, '\uD83D\uDCD6 ' + scienceJournal.length),
+                (era !== 'survival') && React.createElement('button', { onClick: function () { upd('showExpeditions', !d.showExpeditions); }, className: 'py-2 px-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-cyan-800 to-cyan-700 text-cyan-200' }, '\u26F5 Expeditions'),
+                (era !== 'survival') && React.createElement('button', { onClick: function () { upd('showWonders', !d.showWonders); }, className: 'py-2 px-2 rounded-xl text-[10px] font-bold bg-gradient-to-r from-amber-800 to-amber-700 text-amber-200' }, '\uD83C\uDFDB\uFE0F Wonders'),
                 selectedTile && selectedTile.tile.explored && selectedTile.tile.type !== 'colony' && React.createElement('button', {
                   onClick: function () {
                     var tKey = selectedTile.x + ',' + selectedTile.y;
