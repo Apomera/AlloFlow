@@ -24556,7 +24556,7 @@
                 ctx.globalAlpha = 1;
               }
               // Digestive tract tracing overlay
-              if (traceDigestion && activeLayer === 'organs') {
+              if (d.traceDigestion && activeLayer === 'organs') {
                 ctx.setLineDash([6, 4]);
                 ctx.lineDashOffset = -dissTick * 0.6;
                 ctx.lineWidth = 2.5; ctx.globalAlpha = 0.7;
@@ -25075,8 +25075,9 @@
                   ref: canvasRef, onClick: canvasClick, onMouseMove: canvasHover,
                   onWheel: function (e) {
                     var now = Date.now();
-                    if (now - (canvas._lastZoomTs || 0) < 50) return;
-                    canvas._lastZoomTs = now;
+                    var _ct = e.currentTarget;
+                    if (now - (_ct._lastZoomTs || 0) < 50) return;
+                    _ct._lastZoomTs = now;
                     var z = d.canvasZoom || 1;
                     var factor = e.deltaY > 0 ? 0.95 : 1.05;
                     z = Math.max(0.5, Math.min(3, z * factor));
@@ -25111,9 +25112,9 @@
                   className: "w-full mt-2 py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600 shadow-md hover:shadow-lg transition-all"
                 }, '\u2702\uFE0F Peel ' + spec.layers[currentLayerIdx].name + ' \u2192 ' + spec.layers[Math.min(currentLayerIdx + 1, spec.layers.length - 1)].name),
                 (activeLayer === 'organs') && React.createElement("button", {
-                  onClick: function () { upd('traceDigestion', !traceDigestion); upd('traceRespiration', false); },
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (traceDigestion ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700 border border-amber-200')
-                }, traceDigestion ? '\u23F9 Stop Trace' : '\uD83E\uDD62 Trace Digestive Path'),
+                  onClick: function () { upd('traceDigestion', !d.traceDigestion); upd('traceRespiration', false); },
+                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceDigestion ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700 border border-amber-200')
+                }, d.traceDigestion ? '\u23F9 Stop Trace' : '\uD83E\uDD62 Trace Digestive Path'),
                 (activeLayer === 'organs') && React.createElement("button", {
                   onClick: function () { upd('traceRespiration', !d.traceRespiration); upd('traceDigestion', false); upd('traceCirculation', false); },
                   className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceRespiration ? 'bg-sky-500 text-white' : 'bg-sky-50 text-sky-700 border border-sky-200')
