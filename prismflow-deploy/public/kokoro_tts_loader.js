@@ -192,8 +192,13 @@
                     _tts = await KokoroTTS.from_pretrained(data.modelId, {
                         dtype: data.dtype,
                         progress_callback: (p) => {
-                            if (p && typeof p.progress === 'number') {
+                            if (!p) return;
+                            if (typeof p.progress === 'number') {
                                 self.postMessage({ type: 'progress', stage: 'Downloading voice model', pct: 0.1 + (p.progress / 100) * 0.85 });
+                            } else if (p.status === 'initiate') {
+                                self.postMessage({ type: 'progress', stage: 'Downloading voice model (' + (data.sizeLabel || '~43MB') + ')', pct: 0.1 });
+                            } else if (p.status === 'done') {
+                                self.postMessage({ type: 'progress', stage: 'Loading voice model into memory', pct: 0.95 });
                             }
                         }
                     });
@@ -310,9 +315,12 @@
     let _streamResolveFirst = null;  // resolve() for first chunk promise
     let _streamRejectFirst = null;   // reject() for first chunk promise
     let _streamQueue = [];           // Array of blob URLs for subsequent chunks
+    let _streamBuffer = [];          // Preload buffer — collects chunks before playback starts
+    let _streamBufferFlushed = false;// true once preload buffer has been flushed to queue
     let _streamDoneResolve = null;   // resolve() when all chunks generated
     let _streamActive = false;       // true while streaming is in progress
     let _streamId = null;            // current stream ID (to ignore stale messages)
+    const STREAM_PRELOAD = 3;        // Wait for this many chunks before starting playback
 
     // ─── Worker Setup ───────────────────────────────────────────────────
     function _createWorker() {
@@ -325,7 +333,9 @@
                 case 'progress':
                     _loadProgress = data.pct;
                     if (_onProgress) _onProgress({ stage: data.stage, pct: data.pct });
-                    console.log(`[Kokoro TTS] ${data.stage}: ${Math.round(data.pct * 100)}%`);
+                    // Only log at 25% milestones to reduce console noise
+                    var pctRound = Math.round(data.pct * 100);
+                    if (pctRound % 25 === 0 || pctRound >= 95) console.log('[Kokoro TTS] ' + data.stage + ': ' + pctRound + '%');
                     break;
 
                 case 'ready': {
@@ -369,16 +379,26 @@
                     if (data.id !== _streamId) break; // Ignore stale streams
                     const chunkBlob = new Blob([data.buffer], { type: 'audio/wav' });
                     const chunkUrl = URL.createObjectURL(chunkBlob);
-                    console.log(`[Kokoro TTS] 🎤 Stream chunk ${data.index + 1}/${data.total} ready (${Math.round(data.elapsed)}ms)`);
+                    // Silenced per-chunk log to reduce console noise
 
-                    if (data.index === 0 && _streamResolveFirst) {
-                        // First chunk → resolve the promise so caller starts playing immediately
-                        _streamResolveFirst(chunkUrl);
-                        _streamResolveFirst = null;
-                        _streamRejectFirst = null;
-                    } else {
-                        // Subsequent chunks → queue for sequential playback
+                    if (_streamBufferFlushed) {
+                        // Buffer already flushed — go straight to queue
                         _streamQueue.push(chunkUrl);
+                    } else {
+                        // Accumulate in preload buffer
+                        _streamBuffer.push(chunkUrl);
+                        // Flush when we have enough chunks (or this is the only chunk)
+                        if (_streamBuffer.length >= STREAM_PRELOAD || data.total === 1) {
+                            _streamBufferFlushed = true;
+                            const [first, ...rest] = _streamBuffer;
+                            _streamQueue.push(...rest);
+                            // Silenced preload buffer log
+                            if (_streamResolveFirst) {
+                                _streamResolveFirst(first);
+                                _streamResolveFirst = null;
+                                _streamRejectFirst = null;
+                            }
+                        }
                     }
                     break;
                 }
@@ -388,6 +408,18 @@
                     if (data.id !== _streamId) break;
                     console.log(`[Kokoro TTS] ✅ Stream complete: ${data.total} chunks in ${Math.round(data.elapsed)}ms`);
                     _streamActive = false;
+                    // Flush preload buffer if stream ended before buffer was full
+                    if (!_streamBufferFlushed && _streamBuffer.length > 0) {
+                        _streamBufferFlushed = true;
+                        const [first, ...rest] = _streamBuffer;
+                        _streamQueue.push(...rest);
+                        // Silenced buffer flush log
+                        if (_streamResolveFirst) {
+                            _streamResolveFirst(first);
+                            _streamResolveFirst = null;
+                            _streamRejectFirst = null;
+                        }
+                    }
                     if (_streamDoneResolve) {
                         _streamDoneResolve();
                         _streamDoneResolve = null;
@@ -414,10 +446,9 @@
 
     // ─── Initialize ─────────────────────────────────────────────────────
     async function init(onProgress) {
+        if (onProgress) _onProgress = onProgress; // Always update callback before early returns
         if (_ready && _worker) return true;
         if (_initPromise) return _initPromise;
-
-        _onProgress = onProgress || null;
 
         _initPromise = (async () => {
             try {
@@ -479,7 +510,7 @@
 
         const cacheKey = `kokoro__${text.toLowerCase().trim().substring(0, 200)}__${voice}__${speed}`;
         if (_audioCache.has(cacheKey)) {
-            console.log('[Kokoro TTS] ⚡ Cache HIT:', text.substring(0, 30));
+            // Silenced cache hit log
             return _audioCache.get(cacheKey);
         }
 
@@ -493,7 +524,7 @@
             const audioBlob = new Blob([result.buffer], { type: 'audio/wav' });
             const audioUrl = URL.createObjectURL(audioBlob);
             const elapsed = Math.round(result.elapsed);
-            console.log(`[Kokoro TTS] 🎤 Generated in ${elapsed}ms (${result.chunks} chunk${result.chunks > 1 ? 's' : ''}): ${text.substring(0, 40)}`);
+            // Silenced per-generation log
 
             _audioCache.set(cacheKey, audioUrl);
             if (_audioCache.size > CACHE_MAX) {
@@ -536,7 +567,7 @@
         // Cache check — for cached text, no need to stream
         const cacheKey = `kokoro__${text.toLowerCase().trim().substring(0, 200)}__${voice}__${speed}`;
         if (_audioCache.has(cacheKey)) {
-            console.log('[Kokoro TTS] ⚡ Cache HIT (streaming skip):', text.substring(0, 30));
+            // Silenced streaming cache hit log
             _streamQueue = [];
             _streamActive = false;
             return _audioCache.get(cacheKey);
@@ -551,6 +582,8 @@
 
         // Reset streaming state
         _streamQueue = [];
+        _streamBuffer = [];
+        _streamBufferFlushed = false;
         _streamActive = true;
         _streamId = `stream_${++_msgId}`;
 
@@ -573,7 +606,7 @@
         });
 
         try {
-            // Block only until the FIRST chunk is ready — caller starts playing immediately
+            // Block until preload buffer is full (STREAM_PRELOAD chunks) or stream ends
             const firstUrl = await firstChunkPromise;
             return firstUrl;
         } catch (e) {
@@ -616,6 +649,8 @@
         _initPromise = null;
         _audioCache.clear();
         _streamQueue = [];
+        _streamBuffer = [];
+        _streamBufferFlushed = false;
         _streamActive = false;
 
         // Re-initialize with new dtype

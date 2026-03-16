@@ -8163,9 +8163,11 @@ Keep it concise and encouraging. Use plain language.`;
         const heatmapData = useMemo(() => {
             const grid = Array.from({ length: 7 }, () => Array(4).fill(0)); // 7 days × 4 time blocks
             abcEntries.forEach(e => {
+                if (!e.timestamp) return;
                 const d = new Date(e.timestamp);
                 const day = d.getDay();
                 const hour = d.getHours();
+                if (isNaN(day) || isNaN(hour) || day < 0 || day > 6) return;
                 const block = hour < 9 ? 0 : hour < 12 ? 1 : hour < 15 ? 2 : 3;
                 grid[day][block]++;
             });
