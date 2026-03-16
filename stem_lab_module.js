@@ -34597,8 +34597,15 @@
           var mapData = d.colonyMap || null;
           var mapSize = 200;
           var selectedTile = d.colonySelTile || null;
+          var colonyZoom = d.colonyZoom || 1.0;
           var camX = d.colonyCamX || 0;
           var camY = d.colonyCamY || 0;
+          // Drag state for pan
+          if (!window._colonyDragState) window._colonyDragState = { dragging: false, startX: 0, startY: 0, startCamX: 0, startCamY: 0, didDrag: false };
+          var dragState = window._colonyDragState;
+          // Edge scroll state
+          if (!window._colonyEdgeScroll) window._colonyEdgeScroll = { active: false, dx: 0, dy: 0 };
+          var edgeScroll = window._colonyEdgeScroll;
           var colonyEvent = d.colonyEvent || null;
           var scienceGate = d.scienceGate || null;
           var gameLog = d.colonyLog || [];
@@ -35007,7 +35014,7 @@
             var canvas = canvasRef.current;
             var ctx = canvas.getContext('2d');
             var w = canvas.width = canvas.offsetWidth;
-            var h = canvas.height = Math.min(520, canvas.offsetWidth * 0.9);
+            var h = canvas.height = Math.min(560, canvas.offsetWidth * 0.85);
             var animPhase = (Date.now() / 1000) % (Math.PI * 2);
 
             // Season-tinted background
@@ -35031,9 +35038,27 @@
             nebGrad.addColorStop(0, nebCol); nebGrad.addColorStop(1, 'transparent');
             ctx.fillStyle = nebGrad; ctx.fillRect(0, 0, w, h);
 
-            var tileSize = Math.floor(Math.min((w - 40) / mapSize, (h - 60) / mapSize));
-            var offsetX = Math.floor((w - tileSize * mapSize) / 2);
+            var baseTile = 24;
+            var tileSize = Math.max(4, Math.round(baseTile * colonyZoom));
+            var visibleW = Math.ceil(w / tileSize) + 1;
+            var visibleH = Math.ceil((h - 60) / tileSize) + 1;
+            // Clamp camera so we don't scroll past map edges
+            var maxCamX = Math.max(0, mapSize - visibleW + 1);
+            var maxCamY = Math.max(0, mapSize - visibleH + 1);
+            if (camX > maxCamX) { camX = maxCamX; upd('colonyCamX', camX); }
+            if (camY > maxCamY) { camY = maxCamY; upd('colonyCamY', camY); }
+            if (camX < 0) { camX = 0; upd('colonyCamX', 0); }
+            if (camY < 0) { camY = 0; upd('colonyCamY', 0); }
+            var offsetX = 0;
             var offsetY = 30;
+            // Edge-scroll tick
+            if (edgeScroll.active && (edgeScroll.dx !== 0 || edgeScroll.dy !== 0)) {
+              var newCX = Math.max(0, Math.min(maxCamX, camX + edgeScroll.dx));
+              var newCY = Math.max(0, Math.min(maxCamY, camY + edgeScroll.dy));
+              if (newCX !== camX || newCY !== camY) {
+                upd('colonyCamX', newCX); upd('colonyCamY', newCY);
+              }
+            }
 
             // Title bar with season + era badges
             var seasonIcons = { bloom: '\uD83C\uDF3C', dry: '\uD83C\uDF35', storm: '\u26C8\uFE0F', calm: '\u2728' };
@@ -35044,10 +35069,12 @@
             ctx.fillStyle = '#64748b';
             ctx.fillText('T' + turn + ' | \uD83D\uDC65' + settlers.length + ' | \uD83C\uDFD7\uFE0F' + buildings.length, w - 135, 20);
 
-            // Tiles
+            // Tiles (only render visible ones for performance)
             var tiles = mapData.tiles;
             for (var ti = 0; ti < tiles.length; ti++) {
               var tile = tiles[ti];
+              // Culling: skip tiles outside viewport
+              if (tile.x < camX - 1 || tile.x > camX + visibleW || tile.y < camY - 1 || tile.y > camY + visibleH) continue;
               var tx = offsetX + (tile.x - camX) * tileSize;
               var ty = offsetY + (tile.y - camY) * tileSize;
               if (!tile.explored) {
@@ -35288,36 +35315,99 @@
               ['\uD83E\uDEA8', resources.materials, '#94a3b8', '#334155'],
               ['\uD83D\uDD2C', resources.science, '#a78bfa', '#4c1d95']
             ];
-            var resW = Math.floor(mapSize * tileSize / 5);
+            var resW = Math.floor(w / 5);
             ctx.font = 'bold 10px Inter, system-ui';
             resData.forEach(function (rd, rdi) {
-              var rxPos = offsetX + rdi * resW;
+              var rxPos = 4 + rdi * resW;
               // Tiny colored bg
               ctx.fillStyle = rd[3]; ctx.fillRect(rxPos, rbY - 2, resW - 4, 16);
               ctx.fillStyle = rd[2]; ctx.fillText(rd[0] + ' ' + rd[1], rxPos + 3, rbY + 9);
             });
 
             // Terraform + Equity mini bar
-            ctx.fillStyle = '#166534'; ctx.fillRect(offsetX, rbY + 18, Math.floor(mapSize * tileSize * terraform / 100), 3);
-            ctx.strokeStyle = '#14532d'; ctx.lineWidth = 0.5; ctx.strokeRect(offsetX, rbY + 18, mapSize * tileSize, 3);
+            ctx.fillStyle = '#166534'; ctx.fillRect(4, rbY + 18, Math.floor((w - 8) * terraform / 100), 3);
+            ctx.strokeStyle = '#14532d'; ctx.lineWidth = 0.5; ctx.strokeRect(4, rbY + 18, w - 8, 3);
             ctx.fillStyle = '#64748b'; ctx.font = '7px Inter, system-ui';
-            ctx.fillText('\uD83C\uDF0D ' + terraform + '%', offsetX, rbY + 28);
-            ctx.fillText('\u2696\uFE0F ' + equity + '%', offsetX + 50, rbY + 28);
-            ctx.fillText('\uD83D\uDE42 ' + colonyHappiness + '%', offsetX + 100, rbY + 28);
+            ctx.fillText('\uD83C\uDF0D ' + terraform + '%', 4, rbY + 28);
+            ctx.fillText('\u2696\uFE0F ' + equity + '%', 54, rbY + 28);
+            ctx.fillText('\uD83D\uDE42 ' + colonyHappiness + '%', 104, rbY + 28);
           }, 0);
 
           function handleMapClick(e) {
+            // Don't select tile if user was dragging
+            if (dragState.didDrag) { dragState.didDrag = false; return; }
             if (!mapData || !canvasRef.current) return;
             var rect = canvasRef.current.getBoundingClientRect();
-            var w = canvasRef.current.width; var h = canvasRef.current.height;
-            var tileSize = Math.floor(Math.min((w - 40) / mapSize, (h - 50) / mapSize));
-            var offsetX = Math.floor((w - tileSize * mapSize) / 2);
-            var tileX = Math.floor((e.clientX - rect.left - offsetX) / tileSize) + camX;
-            var tileY = Math.floor((e.clientY - rect.top - 25) / tileSize) + camY;
+            var w2 = canvasRef.current.width;
+            var ts2 = Math.max(4, Math.round(24 * colonyZoom));
+            var tileX = Math.floor((e.clientX - rect.left) / ts2) + camX;
+            var tileY = Math.floor((e.clientY - rect.top - 30) / ts2) + camY;
             if (tileX >= 0 && tileX < mapSize && tileY >= 0 && tileY < mapSize) {
               var tile = mapData.tiles[tileY * mapSize + tileX];
               upd('colonySelTile', { x: tileX, y: tileY, tile: tile });
+              // Auto-center on selected tile if it's near the edge of the viewport
+              var vW2 = Math.ceil(w2 / ts2);
+              var h2 = canvasRef.current.height;
+              var vH2 = Math.ceil((h2 - 60) / ts2);
+              if (tileX < camX + 2 || tileX > camX + vW2 - 3) upd('colonyCamX', Math.max(0, tileX - Math.floor(vW2 / 2)));
+              if (tileY < camY + 2 || tileY > camY + vH2 - 3) upd('colonyCamY', Math.max(0, tileY - Math.floor(vH2 / 2)));
             }
+          }
+          // ── Drag Pan Handlers ──
+          function handleMapMouseDown(e) {
+            dragState.dragging = true;
+            dragState.didDrag = false;
+            dragState.startX = e.clientX;
+            dragState.startY = e.clientY;
+            dragState.startCamX = camX;
+            dragState.startCamY = camY;
+            e.preventDefault();
+          }
+          function handleMapMouseMove(e) {
+            if (!canvasRef.current) return;
+            var rect = canvasRef.current.getBoundingClientRect();
+            // Edge-scroll detection
+            var relX = e.clientX - rect.left; var relY = e.clientY - rect.top;
+            var edgeZone = 30;
+            edgeScroll.dx = 0; edgeScroll.dy = 0;
+            if (relX < edgeZone) edgeScroll.dx = -1;
+            else if (relX > rect.width - edgeZone) edgeScroll.dx = 1;
+            if (relY < edgeZone) edgeScroll.dy = -1;
+            else if (relY > rect.height - edgeZone) edgeScroll.dy = 1;
+            // Drag panning
+            if (!dragState.dragging) return;
+            var ts3 = Math.max(4, Math.round(24 * colonyZoom));
+            var dx = Math.round((dragState.startX - e.clientX) / ts3);
+            var dy = Math.round((dragState.startY - e.clientY) / ts3);
+            if (Math.abs(dx) > 0 || Math.abs(dy) > 0) {
+              dragState.didDrag = true;
+              var maxCX2 = Math.max(0, mapSize - Math.ceil(rect.width / ts3));
+              var maxCY2 = Math.max(0, mapSize - Math.ceil((rect.height - 60) / ts3));
+              upd('colonyCamX', Math.max(0, Math.min(maxCX2, dragState.startCamX + dx)));
+              upd('colonyCamY', Math.max(0, Math.min(maxCY2, dragState.startCamY + dy)));
+            }
+          }
+          function handleMapMouseUp() { dragState.dragging = false; }
+          function handleMapMouseLeave() { dragState.dragging = false; edgeScroll.active = false; edgeScroll.dx = 0; edgeScroll.dy = 0; }
+          function handleMapMouseEnter() { edgeScroll.active = true; }
+          function handleMapWheel(e) {
+            e.preventDefault();
+            var newZoom = colonyZoom * (e.deltaY > 0 ? 0.88 : 1.12);
+            newZoom = Math.max(0.4, Math.min(3.0, newZoom));
+            if (Math.abs(newZoom - 1.0) < 0.08) newZoom = 1.0;
+            // Zoom toward cursor — adjust camera
+            if (canvasRef.current) {
+              var rect2 = canvasRef.current.getBoundingClientRect();
+              var ts4 = Math.max(4, Math.round(24 * colonyZoom));
+              var cursorTileX = (e.clientX - rect2.left) / ts4 + camX;
+              var cursorTileY = (e.clientY - rect2.top - 30) / ts4 + camY;
+              var newTs = Math.max(4, Math.round(24 * newZoom));
+              var newCamX = Math.round(cursorTileX - (e.clientX - rect2.left) / newTs);
+              var newCamY = Math.round(cursorTileY - (e.clientY - rect2.top - 30) / newTs);
+              upd('colonyCamX', Math.max(0, newCamX));
+              upd('colonyCamY', Math.max(0, newCamY));
+            }
+            upd('colonyZoom', newZoom);
           }
 
           return React.createElement('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-2xl p-4 border border-slate-700' },
@@ -35406,7 +35496,11 @@
               ),
               React.createElement('button', {
                 onClick: function () {
-                  upd('colonyMap', generateMap()); upd('colonyPhase', 'playing'); upd('colonyTurn', 1);
+                  var startMap = generateMap();
+                  upd('colonyMap', startMap); upd('colonyPhase', 'playing'); upd('colonyTurn', 1);
+                  upd('colonyZoom', 1.0);
+                  upd('colonyCamX', Math.max(0, startMap.colonyPos.x - 10));
+                  upd('colonyCamY', Math.max(0, startMap.colonyPos.y - 10));
                   upd('colonyRes', { food: 40, energy: 30, water: 30, materials: 20, science: 10 });
                   upd('colonyBuildings', []); upd('colonySettlers', JSON.parse(JSON.stringify(defaultSettlers)));
                   upd('colonyLog', ['Turn 1: Colony established on Kepler-442b. 6 settlers ready.']);
@@ -35424,16 +35518,79 @@
             // PLAYING
             colonyPhase === 'playing' && mapData && React.createElement('div', null,
               React.createElement('div', { className: 'flex justify-between items-center mb-1' },
-                React.createElement('div', { className: 'flex gap-1' },
-                  React.createElement('button', { onClick: function () { upd('colonyCamX', Math.max(0, camX - 20)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600', disabled: camX <= 0 }, '\u2190'),
-                  React.createElement('button', { onClick: function () { upd('colonyCamY', Math.max(0, camY - 20)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600', disabled: camY <= 0 }, '\u2191'),
-                  React.createElement('button', { onClick: function () { upd('colonyCamY', Math.min(mapSize - 12, camY + 20)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600' }, '\u2193'),
-                  React.createElement('button', { onClick: function () { upd('colonyCamX', Math.min(mapSize - 12, camX + 20)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600' }, '\u2192'),
-                  React.createElement('button', { onClick: function () { upd('colonyCamX', mapData.colonyPos.x - 5); upd('colonyCamY', mapData.colonyPos.y - 5); }, className: 'px-2 py-1 bg-indigo-700 text-white rounded text-[10px] hover:bg-indigo-600' }, '\uD83C\uDFE0 Center')
+                React.createElement('div', { className: 'flex gap-1 items-center' },
+                  React.createElement('button', { onClick: function () { upd('colonyCamX', Math.max(0, camX - 10)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600', title: 'Scroll Left' }, '\u2190'),
+                  React.createElement('button', { onClick: function () { upd('colonyCamY', Math.max(0, camY - 10)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600', title: 'Scroll Up' }, '\u2191'),
+                  React.createElement('button', { onClick: function () { upd('colonyCamY', camY + 10); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600', title: 'Scroll Down' }, '\u2193'),
+                  React.createElement('button', { onClick: function () { upd('colonyCamX', camX + 10); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600', title: 'Scroll Right' }, '\u2192'),
+                  React.createElement('button', { onClick: function () { upd('colonyCamX', Math.max(0, mapData.colonyPos.x - 6)); upd('colonyCamY', Math.max(0, mapData.colonyPos.y - 6)); }, className: 'px-2 py-1 bg-indigo-700 text-white rounded text-[10px] hover:bg-indigo-600', title: 'Center on Colony' }, '\uD83C\uDFE0'),
+                  React.createElement('span', { className: 'text-slate-600 mx-1' }, '|'),
+                  React.createElement('button', { onClick: function () { upd('colonyZoom', Math.min(3.0, colonyZoom * 1.25)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600 font-bold', title: 'Zoom In' }, '+'),
+                  React.createElement('button', { onClick: function () { upd('colonyZoom', Math.max(0.4, colonyZoom * 0.8)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600 font-bold', title: 'Zoom Out' }, '\u2212'),
+                  React.createElement('button', { onClick: function () { upd('colonyZoom', 1.0); }, className: 'px-1.5 py-1 bg-slate-700 text-white rounded text-[9px] hover:bg-slate-600', title: 'Reset Zoom' }, '1:1'),
+                  React.createElement('span', { className: 'text-[9px] text-slate-500 ml-1' }, Math.round(colonyZoom * 100) + '%')
                 ),
-                React.createElement('span', { className: 'text-[9px] text-slate-500' }, 'Map ' + mapSize + '\u00D7' + mapSize + ' | View: (' + camX + ',' + camY + ')')
+                React.createElement('span', { className: 'text-[9px] text-slate-500' }, mapSize + '\u00D7' + mapSize + ' (' + camX + ',' + camY + ')')
               ),
-              React.createElement('canvas', { ref: canvasRef, onClick: handleMapClick, className: 'w-full rounded-xl border border-slate-700 cursor-pointer mb-3', style: { maxHeight: '480px' } }),
+              React.createElement('canvas', {
+                ref: canvasRef,
+                onClick: handleMapClick,
+                onMouseDown: handleMapMouseDown,
+                onMouseMove: handleMapMouseMove,
+                onMouseUp: handleMapMouseUp,
+                onMouseLeave: handleMapMouseLeave,
+                onMouseEnter: handleMapMouseEnter,
+                onWheel: handleMapWheel,
+                className: 'w-full rounded-xl border border-slate-700 mb-3',
+                style: { maxHeight: '520px', cursor: dragState.dragging ? 'grabbing' : 'grab' }
+              }),
+              // ── Minimap ──
+              React.createElement('div', { className: 'relative', style: { width: '120px', height: '120px', position: 'absolute', right: '16px', top: '80px', zIndex: 10 } },
+                React.createElement('canvas', {
+                  ref: function (miniCanvas) {
+                    if (!miniCanvas || !mapData) return;
+                    var mCtx = miniCanvas.getContext('2d');
+                    var mW = 120, mH = 120;
+                    miniCanvas.width = mW; miniCanvas.height = mH;
+                    mCtx.fillStyle = '#0f172a'; mCtx.fillRect(0, 0, mW, mH);
+                    var mTile = mW / mapSize;
+                    // Draw explored tiles
+                    var mTiles = mapData.tiles;
+                    for (var mi = 0; mi < mTiles.length; mi++) {
+                      var mt = mTiles[mi];
+                      if (mt.explored) {
+                        mCtx.fillStyle = mt.type === 'colony' ? '#3b82f6' : mt.type === 'ocean' ? '#1e40af' : mt.type === 'mountain' ? '#78716c' : mt.type === 'forest' ? '#166534' : mt.type === 'volcanic' ? '#991b1b' : mt.type === 'ice' ? '#bae6fd' : mt.color || '#334155';
+                        mCtx.fillRect(mt.x * mTile, mt.y * mTile, Math.max(1, mTile), Math.max(1, mTile));
+                      }
+                    }
+                    // Viewport rectangle
+                    var vpX = camX * mTile, vpY = camY * mTile;
+                    var ts5 = Math.max(4, Math.round(24 * colonyZoom));
+                    var vpW2 = Math.ceil(((canvasRef.current || {}).width || 500) / ts5) * mTile;
+                    var vpH2 = Math.ceil((((canvasRef.current || {}).height || 400) - 60) / ts5) * mTile;
+                    mCtx.strokeStyle = '#facc15'; mCtx.lineWidth = 1.5;
+                    mCtx.strokeRect(vpX, vpY, vpW2, vpH2);
+                    // Colony marker
+                    if (mapData.colonyPos) {
+                      mCtx.fillStyle = '#22d3ee';
+                      mCtx.fillRect(mapData.colonyPos.x * mTile - 1, mapData.colonyPos.y * mTile - 1, 3, 3);
+                    }
+                  },
+                  onClick: function (e2) {
+                    var rect3 = e2.target.getBoundingClientRect();
+                    var mx = (e2.clientX - rect3.left) / 120 * mapSize;
+                    var my = (e2.clientY - rect3.top) / 120 * mapSize;
+                    var ts6 = Math.max(4, Math.round(24 * colonyZoom));
+                    var vw3 = Math.ceil(((canvasRef.current || {}).width || 500) / ts6);
+                    var vh3 = Math.ceil((((canvasRef.current || {}).height || 400) - 60) / ts6);
+                    upd('colonyCamX', Math.max(0, Math.round(mx - vw3 / 2)));
+                    upd('colonyCamY', Math.max(0, Math.round(my - vh3 / 2)));
+                  },
+                  className: 'rounded border border-slate-600 cursor-pointer',
+                  style: { width: '120px', height: '120px', opacity: 0.85 },
+                  title: 'Click to navigate'
+                })
+              ),
               // Selected tile
               selectedTile && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-slate-700 mb-3' },
                 React.createElement('div', { className: 'flex items-center justify-between' },
