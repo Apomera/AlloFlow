@@ -33011,6 +33011,105 @@
           var gradeDifficultyMap = { 'K-2': 'very easy, age 5-7, use simple words', '3-5': 'easy, age 8-10, elementary level', '6-8': 'medium, age 11-13, middle school level', '9-12': 'challenging, age 14-17, high school level', 'College': 'advanced, undergraduate university level' };
           var stats = d.colonyStats || { questionsAnswered: 0, correct: 0, buildingsConstructed: 0, anomaliesExplored: 0, turnsPlayed: 0 };
 
+          // ── Rover & Exploration Units ──
+          var rovers = d.colonyRovers || [];
+          var selectedRover = d.selectedRover || null;
+          var roverDefs = [
+            { type: 'scout', name: 'Scout Rover', icon: '\uD83D\uDE99', vision: 3, maxMoves: 3, maxFuel: 12, cost: { materials: 8, energy: 5 }, desc: 'Fast recon. 3-tile vision, 3 moves/turn.', color: '#22d3ee' },
+            { type: 'heavy', name: 'Heavy Rover', icon: '\uD83D\uDE9B', vision: 2, maxMoves: 1, maxFuel: 8, cost: { materials: 15, energy: 10 }, desc: 'Slow but can build outposts. 2-tile vision.', color: '#f97316' },
+            { type: 'science', name: 'Science Rover', icon: '\uD83D\uDD2C', vision: 2, maxMoves: 2, maxFuel: 10, cost: { materials: 12, science: 8 }, desc: 'Auto-collects +2 science/turn from terrain.', color: '#a78bfa' }
+          ];
+          function getRoverDef(type) { return roverDefs.find(function (rd) { return rd.type === type; }) || roverDefs[0]; }
+          function buildRover(type) {
+            var def = getRoverDef(type);
+            var nr = Object.assign({}, resources);
+            var canAfford = true;
+            Object.keys(def.cost).forEach(function (k) { if ((nr[k] || 0) < def.cost[k]) canAfford = false; });
+            if (!canAfford) { if (addToast) addToast('Not enough resources!', 'error'); return; }
+            Object.keys(def.cost).forEach(function (k) { nr[k] -= def.cost[k]; });
+            upd('colonyRes', nr);
+            var cx = mapData ? mapData.colonyPos.x : 6;
+            var cy = mapData ? mapData.colonyPos.y : 6;
+            var newRover = { id: 'rv_' + Date.now(), type: type, x: cx, y: cy, fuel: def.maxFuel, movesLeft: def.maxMoves, status: 'idle' };
+            var nrvs = rovers.slice(); nrvs.push(newRover); upd('colonyRovers', nrvs);
+            if (addToast) addToast(def.icon + ' ' + def.name + ' deployed!', 'success');
+            if (typeof addXP === 'function') addXP(5, 'Rover deployed: ' + def.name);
+            var nl = gameLog.slice(); nl.push(def.icon + ' ' + def.name + ' deployed at colony.'); upd('colonyLog', nl);
+          }
+          function moveRover(roverId, tx, ty) {
+            var rv = rovers.find(function (r) { return r.id === roverId; });
+            if (!rv || rv.movesLeft <= 0 || rv.fuel <= 0) return;
+            var dist = Math.abs(tx - rv.x) + Math.abs(ty - rv.y);
+            if (dist > rv.movesLeft || dist > rv.fuel) return;
+            var def = getRoverDef(rv.type);
+            // Move the rover
+            var nrvs = rovers.map(function (r) {
+              if (r.id !== roverId) return r;
+              return Object.assign({}, r, { x: tx, y: ty, movesLeft: r.movesLeft - dist, fuel: r.fuel - dist, status: 'moved' });
+            });
+            upd('colonyRovers', nrvs);
+            // Explore tiles in vision radius
+            if (mapData) {
+              var nm = JSON.parse(JSON.stringify(mapData));
+              var vis = def.vision;
+              var explored2 = 0;
+              for (var dy = -vis; dy <= vis; dy++) {
+                for (var dx = -vis; dx <= vis; dx++) {
+                  if (Math.abs(dx) + Math.abs(dy) > vis + 1) continue; // diamond shape
+                  var ni = (ty + dy) * mapSize + (tx + dx);
+                  if (ni >= 0 && ni < nm.tiles.length && tx + dx >= 0 && tx + dx < mapSize && ty + dy >= 0 && ty + dy < mapSize) {
+                    if (!nm.tiles[ni].explored) { nm.tiles[ni].explored = true; explored2++; }
+                  }
+                }
+              }
+              upd('colonyMap', nm);
+              if (explored2 > 0) {
+                if (addToast) addToast(def.icon + ' Revealed ' + explored2 + ' new tiles!', 'info');
+                var ns = Object.assign({}, stats); ns.tilesExplored = (ns.tilesExplored || 0) + explored2; upd('colonyStats', ns);
+              }
+            }
+          }
+          function refuelRover(roverId) {
+            var rv = rovers.find(function (r) { return r.id === roverId; });
+            if (!rv) return;
+            var def = getRoverDef(rv.type);
+            if (rv.fuel >= def.maxFuel) { if (addToast) addToast('Already full fuel!', 'info'); return; }
+            var nr = Object.assign({}, resources);
+            if (nr.energy < 3) { if (addToast) addToast('Need 3 energy to refuel!', 'error'); return; }
+            nr.energy -= 3; upd('colonyRes', nr);
+            var nrvs = rovers.map(function (r) {
+              if (r.id !== roverId) return r;
+              return Object.assign({}, r, { fuel: Math.min(def.maxFuel, r.fuel + 4) });
+            });
+            upd('colonyRovers', nrvs);
+            if (addToast) addToast('Refueled! +4 fuel', 'success');
+          }
+          function roverBuildOutpost(roverId) {
+            var rv = rovers.find(function (r) { return r.id === roverId; });
+            if (!rv || rv.type !== 'heavy') return;
+            var tKey = rv.x + ',' + rv.y;
+            if (tileImprovements[tKey]) { if (addToast) addToast('Outpost already here!', 'info'); return; }
+            var nr = Object.assign({}, resources);
+            if (nr.materials < 10) { if (addToast) addToast('Need 10 materials!', 'error'); return; }
+            nr.materials -= 10; upd('colonyRes', nr);
+            var tile = mapData ? mapData.tiles[rv.y * mapSize + rv.x] : null;
+            var newTI = Object.assign({}, tileImprovements);
+            newTI[tKey] = { res: tile ? tile.res : 'materials', name: tile ? tile.name : 'Outpost', x: rv.x, y: rv.y };
+            upd('tileImprovements', newTI);
+            if (addToast) addToast('\uD83C\uDFD7\uFE0F Outpost established!', 'success');
+            if (typeof addXP === 'function') addXP(15, 'Outpost built at (' + rv.x + ',' + rv.y + ')');
+            var nl = gameLog.slice(); nl.push('\uD83C\uDFD7\uFE0F Outpost built at (' + rv.x + ',' + rv.y + ')'); upd('colonyLog', nl);
+            // Explore around outpost
+            if (mapData) {
+              var nm = JSON.parse(JSON.stringify(mapData));
+              for (var dy = -2; dy <= 2; dy++) for (var dx = -2; dx <= 2; dx++) {
+                var ni = (rv.y + dy) * mapSize + (rv.x + dx);
+                if (ni >= 0 && ni < nm.tiles.length) nm.tiles[ni].explored = true;
+              }
+              upd('colonyMap', nm);
+            }
+          }
+
           // Civilization Mechanics
           var era = d.colonyEra || 'survival';
           var eraData = {
@@ -33486,6 +33585,29 @@
 
                 // Terrain emoji
                 ctx.font = (tileSize * 0.3) + 'px sans-serif'; ctx.fillText(tile.icon, tx + 2, ty + tileSize - 3);
+                // Rover on this tile
+                rovers.forEach(function (rv) {
+                  if (rv.x === tile.x && rv.y === tile.y) {
+                    var rvDef = getRoverDef(rv.type);
+                    var isSelected = selectedRover === rv.id;
+                    // Rover body glow
+                    if (isSelected) {
+                      var selGlow = 0.4 + Math.sin(animPhase * 3) * 0.2;
+                      ctx.fillStyle = 'rgba(250,204,21,' + selGlow + ')';
+                      ctx.beginPath(); ctx.arc(tx + tileSize / 2, ty + tileSize / 2, tileSize * 0.4, 0, Math.PI * 2); ctx.fill();
+                    }
+                    // Rover icon
+                    ctx.fillStyle = rvDef.color; ctx.beginPath();
+                    ctx.arc(tx + tileSize / 2, ty + tileSize / 2, tileSize * 0.22, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = isSelected ? '#fef08a' : 'rgba(255,255,255,0.5)'; ctx.lineWidth = isSelected ? 2 : 1; ctx.stroke();
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold ' + (tileSize * 0.22) + 'px sans-serif';
+                    ctx.fillText(rvDef.icon, tx + tileSize * 0.32, ty + tileSize * 0.58);
+                    // Fuel bar
+                    var fuelPct = rv.fuel / rvDef.maxFuel;
+                    ctx.fillStyle = fuelPct > 0.5 ? '#22c55e' : fuelPct > 0.2 ? '#eab308' : '#ef4444';
+                    ctx.fillRect(tx + 2, ty + tileSize - 5, (tileSize - 4) * fuelPct, 2);
+                  }
+                });
               }
 
               // Selection highlight with animated corners
@@ -33504,6 +33626,26 @@
               ctx.strokeStyle = 'rgba(100,116,139,0.15)'; ctx.lineWidth = 0.5; ctx.strokeRect(tx, ty, tileSize - 1, tileSize - 1);
             }
 
+
+            // Selected rover move range overlay
+            if (selectedRover) {
+              var selRv = rovers.find(function (r2) { return r2.id === selectedRover; });
+              if (selRv && selRv.movesLeft > 0 && selRv.fuel > 0) {
+                var maxMove = Math.min(selRv.movesLeft, selRv.fuel);
+                for (var mti = 0; mti < tiles.length; mti++) {
+                  var mt = tiles[mti];
+                  var mdist = Math.abs(mt.x - selRv.x) + Math.abs(mt.y - selRv.y);
+                  if (mdist > 0 && mdist <= maxMove) {
+                    var mtx = offsetX + mt.x * tileSize;
+                    var mty = offsetY + mt.y * tileSize;
+                    ctx.fillStyle = 'rgba(250,204,21,' + (0.08 + Math.sin(animPhase * 2) * 0.04) + ')';
+                    ctx.fillRect(mtx, mty, tileSize - 1, tileSize - 1);
+                    ctx.strokeStyle = 'rgba(250,204,21,0.3)'; ctx.lineWidth = 1;
+                    ctx.strokeRect(mtx + 1, mty + 1, tileSize - 3, tileSize - 3);
+                  }
+                }
+              }
+            }
             // Weather particles
             var wx2 = d.colonyWeather;
             if (wx2) {
@@ -33672,6 +33814,7 @@
                   upd('colony', { name: 'Kepler-442b' });
                   upd('buildingEff', {}); upd('lastMaintTurn', 0); upd('maintChallenge', null);
                   upd('colonyStats', { questionsAnswered: 0, correct: 0, buildingsConstructed: 0, anomaliesExplored: 0, turnsPlayed: 0 });
+                  upd('colonyRovers', []); upd('selectedRover', null); upd('tileImprovements', {});
                   if (d.colonyTTS) colonySpeak('Mission log. Colony established on Kepler 442 b. Six settlers are ready to begin construction. Good luck, Commander.', 'narrator');
                   if (addToast) addToast('\uD83D\uDE80 Colony established!', 'success');
                   if (typeof addXP === 'function') addXP(10, 'Kepler Colony: Mission launched');
@@ -33869,6 +34012,31 @@
                     }).catch(function () { upd('colonyEventLoading', false); });
                     var ns5 = Object.assign({}, stats); ns5.turnsPlayed++; upd('colonyStats', ns5);
                     if (typeof addXP === 'function') addXP(5, 'Kepler Colony: Turn ' + nt);
+                    // Rover per-turn processing
+                    if (rovers.length > 0) {
+                      var nrvs2 = rovers.map(function (rv2) {
+                        var rvDef2 = getRoverDef(rv2.type);
+                        var newRv = Object.assign({}, rv2);
+                        // Reset moves each turn
+                        newRv.movesLeft = rvDef2.maxMoves;
+                        // Natural fuel regen +1
+                        newRv.fuel = Math.min(rvDef2.maxFuel, newRv.fuel + 1);
+                        newRv.status = 'idle';
+                        // Science rover auto-collect
+                        if (rv2.type === 'science' && mapData) {
+                          var rvTile = mapData.tiles[rv2.y * mapSize + rv2.x];
+                          if (rvTile && rvTile.explored) {
+                            nr2.science = (nr2.science || 0) + 2;
+                            var bonusType = rvTile.res;
+                            if (bonusType && bonusType !== 'none' && nr2[bonusType] !== undefined) {
+                              nr2[bonusType] += 1;
+                            }
+                          }
+                        }
+                        return newRv;
+                      });
+                      upd('colonyRovers', nrvs2);
+                    }
                     // Population growth — food surplus attracts new settlers (Civ-inspired)
                     var foodSurplus = nr2.food - settlers.length * 2; // need 2x population in food
                     var growthRate = 0.15 + (activePolicy && activePolicy === 'agrarian' ? 0.075 : 0);
