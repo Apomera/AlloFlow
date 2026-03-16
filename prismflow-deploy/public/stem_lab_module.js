@@ -14672,20 +14672,7 @@
             ),
 
             // ── Minerals mode ──
-            mode === 'minerals' && React.createElement("div", null,
-              React.createElement("p", { className: "text-xs text-slate-500 mb-3 italic" }, "Minerals are the building blocks of rocks. Explore their properties below."),
-              React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-3" },
-                MINERALS.map(function (min) {
-                  return React.createElement("button", {
-                    key: min.id, onClick: function () { upd("selectedMineral", d.selectedMineral === min.id ? null : min.id); upd("selectedRock", null); },
-                    className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
-                      (d.selectedMineral === min.id ? 'shadow-lg' : 'border-slate-200 bg-slate-50'),
-                    style: d.selectedMineral === min.id ? { borderColor: '#8b5cf6', background: min.color, color: '#1e1b4b' } : {}
-                  },
-                    React.createElement("div", { className: "text-lg mb-0.5" }, "💎"),
-                    min.label);
-                })
-              ),
+            mode === 'minerals' && (() => {
               // ── Mineral cross-section canvas ref ──
               var _lastMineralCanvas = null;
               var mineralCrossSectionRef = function (canvasEl) {
@@ -14961,7 +14948,7 @@
               };
 
               // Selected mineral detail
-              selMineral && React.createElement("div", { className: "bg-white rounded-xl border-2 border-violet-300 p-4 animate-in fade-in space-y-3" },
+              return selMineral && React.createElement("div", { className: "bg-white rounded-xl border-2 border-violet-300 p-4 animate-in fade-in space-y-3" },
                 React.createElement("h4", { className: "font-bold text-base text-violet-700 mb-1" }, "\uD83D\uDC8E " + selMineral.label),
                 React.createElement("p", { className: "text-xs text-slate-500 font-mono mb-1" }, "Formula: " + selMineral.formula),
                 // Cross-section canvas
@@ -15014,7 +15001,7 @@
                     React.createElement("span", null, "10 (Diamond)"))
                 )
               )
-            ),
+            })(),
 
             // ── Quiz mode ──
             d.quizMode && quizQ && React.createElement("div", { className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in" },
