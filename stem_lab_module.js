@@ -7542,7 +7542,7 @@
         // NEW TOOLS: Function Grapher, Physics, Chem, Punnett, Circuit, Data, Inequality, Molecule
         // ═══════════════════════════════════════════════════════
 
-        stemLabTab === 'explore' && stemLabTool === 'funcGrapher' && (() => {
+        (function _funcGrapherTool() { var _isFuncGrapher = stemLabTab === 'explore' && stemLabTool === 'funcGrapher'; if (!_isFuncGrapher) { React.useEffect(function(){}, []); return null; }
           const d = labToolData.funcGrapher;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, funcGrapher: { ...prev.funcGrapher, [key]: val } }));
           const W = 440, H = 320, pad = 45;
@@ -9163,7 +9163,7 @@
         })(),
 
 
-        stemLabTab === 'explore' && stemLabTool === 'circuit' && (() => {
+        (function _circuitTool() { var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_isCircuit) { React.useEffect(function(){}, []); return null; }
           const d = labToolData.circuit;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, circuit: { ...prev.circuit, [key]: val } }));
           const mode = d.mode || 'series';
@@ -17307,7 +17307,20 @@
 
         // ═══════════════════════════════════════════════════════
 
-        stemLabTab === 'explore' && stemLabTool === 'musicSynth' && (() => {
+        (function _musicSynth() { var _isMusicSynth = stemLabTab === 'explore' && stemLabTool === 'musicSynth'; if (!_isMusicSynth) {
+            // Placeholder hooks to maintain consistent hook count
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            return null;
+          }
           const d = labToolData.musicSynth;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, musicSynth: { ...prev.musicSynth, [key]: val } }));
 
@@ -32998,8 +33011,10 @@
           var buildings = d.colonyBuildings || [];
           var settlers = d.colonySettlers || [];
           var mapData = d.colonyMap || null;
-          var mapSize = 12;
+          var mapSize = 24;
           var selectedTile = d.colonySelTile || null;
+          var camX = d.colonyCamX || 0;
+          var camY = d.colonyCamY || 0;
           var colonyEvent = d.colonyEvent || null;
           var scienceGate = d.scienceGate || null;
           var gameLog = d.colonyLog || [];
@@ -33449,8 +33464,8 @@
             var tiles = mapData.tiles;
             for (var ti = 0; ti < tiles.length; ti++) {
               var tile = tiles[ti];
-              var tx = offsetX + tile.x * tileSize;
-              var ty = offsetY + tile.y * tileSize;
+              var tx = offsetX + (tile.x - camX) * tileSize;
+              var ty = offsetY + (tile.y - camY) * tileSize;
               if (!tile.explored) {
                 // Fog of war with gradient edge detection
                 var nearExplored = false;
@@ -33636,8 +33651,8 @@
                   var mt = tiles[mti];
                   var mdist = Math.abs(mt.x - selRv.x) + Math.abs(mt.y - selRv.y);
                   if (mdist > 0 && mdist <= maxMove) {
-                    var mtx = offsetX + mt.x * tileSize;
-                    var mty = offsetY + mt.y * tileSize;
+                    var mtx = offsetX + (mt.x - camX) * tileSize;
+                    var mty = offsetY + (mt.y - camY) * tileSize;
                     ctx.fillStyle = 'rgba(250,204,21,' + (0.08 + Math.sin(animPhase * 2) * 0.04) + ')';
                     ctx.fillRect(mtx, mty, tileSize - 1, tileSize - 1);
                     ctx.strokeStyle = 'rgba(250,204,21,0.3)'; ctx.lineWidth = 1;
@@ -33713,8 +33728,8 @@
             var w = canvasRef.current.width; var h = canvasRef.current.height;
             var tileSize = Math.floor(Math.min((w - 40) / mapSize, (h - 50) / mapSize));
             var offsetX = Math.floor((w - tileSize * mapSize) / 2);
-            var tileX = Math.floor((e.clientX - rect.left - offsetX) / tileSize);
-            var tileY = Math.floor((e.clientY - rect.top - 25) / tileSize);
+            var tileX = Math.floor((e.clientX - rect.left - offsetX) / tileSize) + camX;
+            var tileY = Math.floor((e.clientY - rect.top - 25) / tileSize) + camY;
             if (tileX >= 0 && tileX < mapSize && tileY >= 0 && tileY < mapSize) {
               var tile = mapData.tiles[tileY * mapSize + tileX];
               upd('colonySelTile', { x: tileX, y: tileY, tile: tile });
@@ -33824,6 +33839,16 @@
             ),
             // PLAYING
             colonyPhase === 'playing' && mapData && React.createElement('div', null,
+              React.createElement('div', { className: 'flex justify-between items-center mb-1' },
+                React.createElement('div', { className: 'flex gap-1' },
+                  React.createElement('button', { onClick: function () { upd('colonyCamX', Math.max(0, camX - 4)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600', disabled: camX <= 0 }, '\u2190'),
+                  React.createElement('button', { onClick: function () { upd('colonyCamY', Math.max(0, camY - 4)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600', disabled: camY <= 0 }, '\u2191'),
+                  React.createElement('button', { onClick: function () { upd('colonyCamY', Math.min(mapSize - 10, camY + 4)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600' }, '\u2193'),
+                  React.createElement('button', { onClick: function () { upd('colonyCamX', Math.min(mapSize - 10, camX + 4)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600' }, '\u2192'),
+                  React.createElement('button', { onClick: function () { upd('colonyCamX', mapData.colonyPos.x - 5); upd('colonyCamY', mapData.colonyPos.y - 5); }, className: 'px-2 py-1 bg-indigo-700 text-white rounded text-[10px] hover:bg-indigo-600' }, '\uD83C\uDFE0 Center')
+                ),
+                React.createElement('span', { className: 'text-[9px] text-slate-500' }, 'Map ' + mapSize + '\u00D7' + mapSize + ' | View: (' + camX + ',' + camY + ')')
+              ),
               React.createElement('canvas', { ref: canvasRef, onClick: handleMapClick, className: 'w-full rounded-xl border border-slate-700 cursor-pointer mb-3', style: { maxHeight: '480px' } }),
               // Selected tile
               selectedTile && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-slate-700 mb-3' },
