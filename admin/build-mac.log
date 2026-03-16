@@ -1,0 +1,47 @@
+
+> alloflow-admin@0.2.0 dist-mac
+> npm run build && electron-builder --mac dmg --publish never
+
+
+> alloflow-admin@0.2.0 build
+> react-scripts build
+
+(node:90609) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Creating an optimized production build...
+Compiled with warnings.
+
+[eslint] 
+src/components/UpdateNotification.jsx
+  Line 2:49:  'RefreshCw' is defined but never used                       no-unused-vars
+  Line 85:9:  'handleCheckForUpdates' is assigned a value but never used  no-unused-vars
+
+src/setup/SetupWizard.jsx
+  Line 62:6:  React Hook useEffect has missing dependencies: 'config.gpuDetecting' and 'config.gpuType'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+File sizes after gzip:
+
+  60.8 kB  build/static/js/main.112618c6.js
+  1.39 kB  build/static/css/main.1d1f327a.css
+
+The project was built assuming it is hosted at ./.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+  • electron-builder  version=24.13.3 os=25.3.0
+  • loaded configuration  file=/Users/hubby/AlloFlow/admin/electron-builder.yml
+  • public/electron.js not found. Please see https://medium.com/@kitze/%EF%B8%8F-from-react-to-an-electron-app-ready-for-production-a0468ecb1da3
+  • loaded parent configuration  preset=react-cra
+  • packaging       platform=darwin arch=arm64 electron=27.3.11 appOutDir=dist/mac-arm64
+  • downloading     url=https://github.com/electron/electron/releases/download/v27.3.11/electron-v27.3.11-darwin-arm64.zip size=93 MB parts=8
+  • downloaded      url=https://github.com/electron/electron/releases/download/v27.3.11/electron-v27.3.11-darwin-arm64.zip duration=2.453s
+  • default Electron icon is used  reason=application icon is not set
+  ⨯ cannot expand pattern "${UPDATE_SERVER_URL}": macro UPDATE_SERVER_URL is not defined

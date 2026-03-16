@@ -9,6 +9,11 @@ _archive/
 prismflow-deploy/build/
 prismflow-deploy/.firebase/
 
+# Admin center build artifacts (too large for GitHub)
+admin/dist/
+admin/build/
+admin/node_modules/
+
 # Security: Never commit environment files with secrets
 prismflow-deploy/.env
 prismflow-deploy/.env.local

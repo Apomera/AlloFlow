@@ -1,0 +1,81 @@
+appId: "com.alloflow.admin"
+productName: "AlloFlow Admin"
+
+# Ensure main.js is used as entry point (not build/electron.js)
+extraMetadata:
+  main: "main.js"
+
+directories:
+  buildResources: "assets"
+  output: "dist"
+
+# Auto-update configuration (optional - uncomment and set when deploying)
+# To enable updates, set these environment variables before building:
+#   export UPDATE_SERVER_URL="https://updates.alloflow.com/production"
+#   export UPDATE_CHANNEL="production"
+# Then uncomment the publish section below:
+
+# publish:
+#   - provider: "generic"
+#     url: "${UPDATE_SERVER_URL}"  # Set via environment variable
+#     channel: "${UPDATE_CHANNEL}"  # 'test' or 'production'
+#   # Alternative: GitHub Releases
+#   # - provider: "github"
+#   #   owner: "yourusername"
+#   #   repo: "AlloFlow"
+
+files:
+  - "main.js"
+  - "preload.js"
+  - "build/**/*"
+  - "node_modules/**/*"
+
+win:
+  target:
+    - nsis
+  certificateFile: null
+  certificatePassword: null
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: "AlloFlow Admin"
+  # Uninstaller options
+  allowElevation: true
+  perMachine: true  # Install for all users (requires admin)
+  installerIcon: "assets/icon.ico"
+  uninstallerIcon: "assets/icon.ico"
+  include: "build/installer.nsh"  # Custom uninstall script
+  # Uninstaller will appear in Windows "Programs and Features"
+  displayLanguageSelector: true
+  menuCategory: true
+  runAfterFinish: true
+
+mac:
+  target:
+    - dmg
+    - zip
+  category: "public.app-category.utilities"
+  identity: null
+  extraResources:
+    - from: "assets/uninstall.sh"
+      to: "uninstall.sh"
+  # macOS uninstall: Users drag app to Trash
+  # For complete removal, run: /Applications/AlloFlow Admin.app/Contents/Resources/uninstall.sh
+
+dmg:
+  contents:
+    - x: 110
+      y: 150
+      type: "file"
+    - x: 240
+      y: 150
+      type: "link"
+      path: "/Applications"
+
+linux:
+  target:
+    - AppImage
+  category: "Utility"
