@@ -37,6 +37,8 @@ echo.
 
 :: Download Ollama installer
 set "INSTALLER=%TEMP%\OllamaSetup.exe"
+set "HASH_FILE=%TEMP%\OllamaSetup.exe.sha256"
+
 powershell -Command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://ollama.com/download/OllamaSetup.exe' -OutFile '%INSTALLER%' -UseBasicParsing }"
 
 if not exist "%INSTALLER%" (
@@ -47,6 +49,38 @@ if not exist "%INSTALLER%" (
     echo.
     pause
     exit /b 1
+)
+
+echo.
+echo  [Step 1.5/4] Verifying installer integrity (SHA-256)...
+echo.
+
+:: Calculate SHA-256 hash of downloaded file
+for /f "delims=" %%A in ('powershell -Command "(Get-FileHash -Path '%INSTALLER%' -Algorithm SHA256).Hash"') do set "COMPUTED_HASH=%%A"
+
+:: Known good hash (update this from official Ollama releases page)
+:: Last verified: https://ollama.com/download/windows
+set "EXPECTED_HASH=" & REM Replace with actual hash from ollama.com
+
+if not "%EXPECTED_HASH%"=="" (
+    if not "%COMPUTED_HASH%"=="%EXPECTED_HASH%" (
+        echo.
+        echo  ✗ Hash verification failed!
+        echo    Expected: %EXPECTED_HASH%
+        echo    Got:      %COMPUTED_HASH%
+        echo.
+        echo    The downloaded file may be corrupted or compromised.
+        echo    Please try again or download manually from:
+        echo    https://ollama.com/download/windows
+        echo.
+        del /q "%INSTALLER%"
+        pause
+        exit /b 1
+    )
+    echo  ✓ Hash verification passed!
+) else (
+    echo  ⚠ Warning: Hash verification not configured (hash is empty).
+    echo    Proceeding with installation (set EXPECTED_HASH to verify).
 )
 
 echo.

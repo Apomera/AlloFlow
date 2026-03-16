@@ -34,6 +34,11 @@ services:
     restart: unless-stopped
     networks:
       - frontend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/api/health"]
       interval: 15s
@@ -59,6 +64,11 @@ services:
               count: all
               capabilities: [gpu]
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # ── Image Generation (Flux.1-schnell) ──────────────────────
   flux:
@@ -85,6 +95,11 @@ services:
               count: all
               capabilities: [gpu]
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
       interval: 30s
@@ -107,6 +122,11 @@ services:
       --data-dir /data
       --download-dir /data
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # ── Neural TTS (Edge TTS — 28 voices, 20 languages) ────────
   edge-tts:
@@ -119,6 +139,11 @@ services:
     networks:
       - backend
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
       interval: 30s
@@ -140,6 +165,11 @@ services:
     networks:
       - backend
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   pocketbase_data:
