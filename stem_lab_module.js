@@ -26144,7 +26144,7 @@
                 ctx.strokeStyle = '#9b7fb8';
                 ctx.lineWidth = 0.7;
                 for (var gi = 0; gi < count; gi++) {
-                  var angle = (gi / count) * Math.PI * 2 + brainTick * 0.001;
+                  var angle = (gi / count) * Math.PI * 2 + canvas._brainTick * 0.001;
                   var r1 = radius * (0.3 + Math.random() * 0.5);
                   var gx = cx + Math.cos(angle) * r1;
                   var gy = cy + Math.sin(angle) * r1;
@@ -26577,7 +26577,7 @@
                 var rad = isSel ? 10 : 5;
                 // Animated pulsing ring for selected
                 if (isSel) {
-                  var pulse = 1.0 + Math.sin(brainTick * 0.06) * 0.3;
+                  var pulse = 1.0 + Math.sin(canvas._brainTick * 0.06) * 0.3;
                   ctx.save();
                   ctx.globalAlpha = 0.3 - pulse * 0.1;
                   ctx.beginPath(); ctx.arc(px, py, rad + 6 + pulse * 4, 0, Math.PI * 2);
