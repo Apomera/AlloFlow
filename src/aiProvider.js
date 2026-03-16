@@ -119,8 +119,7 @@ class AIProvider {
     async _geminiGenerateText(prompt, { json, search, temperature, maxTokens }) {
         const buildUrl = (model) => {
             this._debugLog(`[AIProvider] ✉ Using model: ${model}`);
-            const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
-            return `${this.baseUrl}/models/${model}:generateContent${keyParam}`;
+            return `${this.baseUrl}/models/${model}:generateContent`;
         };
 
         const payload = {
@@ -147,6 +146,10 @@ class AIProvider {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         };
+
+        if (this.apiKey) {
+            fetchOpts.headers['Authorization'] = `Bearer ${this.apiKey}`;
+        }
 
         let response;
         try {
@@ -305,8 +308,11 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiGenerateImage(prompt, width, quality) {
-        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
-        const url = `${this.baseUrl}/models/${this.models.imagen}:predict${keyParam}`;
+        const url = `${this.baseUrl}/models/${this.models.imagen}:predict`;
+        const headers = { 'Content-Type': 'application/json' };
+        if (this.apiKey) {
+            headers['Authorization'] = `Bearer ${this.apiKey}`;
+        }
         const payload = {
             instances: [{ prompt }],
             parameters: { sampleCount: 1 },
@@ -315,7 +321,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         const executeRequest = async () => {
             const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify(payload),
             });
 
@@ -435,8 +441,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiEditImage(prompt, base64Image, width, quality, referenceBase64) {
-        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
-        const url = `${this.baseUrl}/models/${this.models.image}:generateContent${keyParam}`;
+        const url = `${this.baseUrl}/models/${this.models.image}:generateContent`;
 
         const parts = [
             { text: prompt },

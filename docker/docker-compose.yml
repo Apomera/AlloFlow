@@ -27,7 +27,7 @@ services:
     image: ghcr.io/muchobien/pocketbase:latest
     container_name: alloflow-pocketbase
     ports:
-      - "8090:8090"
+      - "127.0.0.1:8090:8090"
     volumes:
       - pocketbase_data:/pb/pb_data
       - ./pocketbase/pb_migrations:/pb/pb_migrations
@@ -44,7 +44,7 @@ services:
     image: ollama/ollama:latest
     container_name: alloflow-ollama
     ports:
-      - "11434:11434"
+      - "127.0.0.1:11434:11434"
     volumes:
       - ollama_data:/root/.ollama
     deploy:
@@ -63,7 +63,7 @@ services:
       dockerfile: Dockerfile
     container_name: alloflow-flux
     ports:
-      - "7860:7860"
+      - "127.0.0.1:7860:7860"
     environment:
       - FLUX_MODEL=black-forest-labs/FLUX.1-schnell
       - PORT=7860
@@ -91,7 +91,7 @@ services:
     image: rhasspy/wyoming-piper:latest
     container_name: alloflow-piper
     ports:
-      - "10200:10200"
+      - "127.0.0.1:10200:10200"
     volumes:
       - piper_data:/data
     command: >
@@ -107,7 +107,7 @@ services:
       dockerfile: Dockerfile
     container_name: alloflow-edge-tts
     ports:
-      - "5001:5001"
+      - "127.0.0.1:5001:5001"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
@@ -121,9 +121,10 @@ services:
     image: searxng/searxng:latest
     container_name: alloflow-searxng
     ports:
-      - "8888:8080"
+      - "127.0.0.1:8888:8080"
     environment:
       - SEARXNG_BASE_URL=http://localhost:8888
+      - SEARXNG_SECRET_KEY=${SEARXNG_SECRET_KEY}
     volumes:
       - searxng_data:/etc/searxng
     restart: unless-stopped

@@ -90,9 +90,13 @@ app = FastAPI(title="AlloFlow Flux Image Server", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=[
+        "http://localhost:",
+        "http://localhost",
+        "https://localhost",
+    ],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 

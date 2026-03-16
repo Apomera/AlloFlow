@@ -4,7 +4,7 @@
 use_default_settings: true
 
 server:
-  secret_key: "alloflow2026searxng"
+  secret_key: "${SEARXNG_SECRET_KEY}"
   limiter: false
 
 search:

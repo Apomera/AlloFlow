@@ -20,7 +20,7 @@
     {"@context":"https://schema.org","@type":"SoftwareApplication","name":"AlloFlow","applicationCategory":"EducationalApplication","operatingSystem":"Web Browser","description":"Open-source, privacy-first AI tool for differentiated instruction.","url":"https://apomera.github.io/AlloFlow/","author":{"@type":"Person","name":"Aaron Pomeranz","jobTitle":"EdTech Developer"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isAccessibleForFree":true}
     </script>
     <link rel="stylesheet" href="shared.css">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.405.0" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -99,14 +99,9 @@
                     </a>
                 </div>
                 <div style="margin:20px auto 0;position:relative;display:inline-block">
-                    <!-- Allobot SVG (inline for CSS animation support) -->
+                    <!-- Allobot SVG (loaded safely via img tag) -->
                     <div style="width:110px;height:110px;margin:0 auto;position:relative;z-index:2" id="hero-allobot">
                         <img src="allobot.svg" alt="Allobot" class="allobot-svg" style="width:100%;height:100%">
-                        <script>
-                            fetch('allobot.svg').then(r => r.text()).then(svg => {
-                                document.getElementById('hero-allobot').innerHTML = svg;
-                            });
-                        </script>
                     </div>
                     <div
                         style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:60px;height:6px;background:rgba(0,0,0,0.2);border-radius:50%;filter:blur(4px);animation:shadowScale 4s ease-in-out infinite;z-index:1">
