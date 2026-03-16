@@ -1,0 +1,213 @@
+﻿diff --git a/word_sounds_module.js b/word_sounds_module.js
+index 60cee2f..82aa0f9 100644
+--- a/word_sounds_module.js
++++ b/word_sounds_module.js
+@@ -1884,45 +1884,7 @@
+               className:
+                 "flex flex-col items-center gap-8 animate-in slide-in-from-right duration-500",
+             },
+-            /*#__PURE__*/ React.createElement(
+-              "div",
+-              {
+-                className:
+-                  "bg-orange-100 p-6 rounded-3xl flex items-center gap-6 shadow-sm border-2 border-orange-200",
+-              },
+-              /*#__PURE__*/ React.createElement(
+-                "button",
+-                {
+-                  "aria-label": t("common.volume"),
+-                  onClick: () => onPlayAudio(data.word),
+-                  disabled: isAudioBusy,
+-                  className: `w-20 h-20 rounded-2xl bg-white flex items-center justify-center shadow-lg focus:ring-4 focus:ring-orange-300 focus:outline-none hover:scale-105 transition-all ${isAudioBusy ? "text-orange-300 cursor-wait" : "text-orange-500"}`,
+-                },
+-                isAudioBusy
+-                  ? /*#__PURE__*/ React.createElement("div", {
+-                    className:
+-                      "animate-spin h-8 w-8 border-3 border-orange-400 border-t-transparent rounded-full",
+-                  })
+-                  : /*#__PURE__*/ React.createElement(Volume2, { size: 32 }),
+-              ),
+-              /*#__PURE__*/ React.createElement(
+-                "div",
+-                null,
+-                /*#__PURE__*/ React.createElement(
+-                  "span",
+-                  {
+-                    className:
+-                      "text-sm font-bold text-orange-600 uppercase tracking-wider",
+-                  },
+-                  ts("word_sounds.target_word") || "Target Word",
+-                ),
+-                /*#__PURE__*/ React.createElement(
+-                  "h3",
+-                  { className: "text-4xl font-black text-slate-800" },
+-                  showLetterHints ? data.word : "???",
+-                ),
+-              ),
+-            ),
++
+             /*#__PURE__*/ React.createElement(
+               "h3",
+               { className: "text-xl font-bold text-slate-600" },
+@@ -4426,7 +4388,7 @@
+                   ),
+               ),
+             ];
+-            if (uniqueDistractors.length < 3) {
++            if (uniqueDistractors.length < 5) {
+               debugLog("ΓÜá∩╕Å Insufficient unique distractors. Repairing...");
+               try {
+                 const repairPrompt = `List 3 unique distractor words for "${targetToCheck}" (cannot be the word itself). Return JSON array.`;
+@@ -4448,8 +4410,11 @@
+               }
+             }
+             const finalDistractors = uniqueDistractors.slice(0, 5);
+-            if (finalDistractors.length === 0) {
+-              finalDistractors.push("cat", "dog", "run");
++            while (finalDistractors.length < 5) {
++              const fallbacks = ["cat", "dog", "run", "pig", "sun", "mat", "hat"];
++              const needed = fallbacks.find(f => !finalDistractors.includes(f) && f !== targetToCheck);
++              if (needed) finalDistractors.push(needed);
++              else break;
+             }
+             const finalOptions = [targetToCheck, ...finalDistractors];
+             const uniqueFinalOptions = [...new Set(finalOptions)];
+@@ -5290,6 +5255,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ─ü,─ô,─½,┼ì,┼½ for long vowels.`;
+             audioInstances.current.delete(targetWord);
+             audioInstances.current.delete(targetWord.toLowerCase());
+           }
++          if (typeof window !== "undefined" && window._CACHE_WORD_AUDIO_BANK) {
++            delete window._CACHE_WORD_AUDIO_BANK[targetWord.toLowerCase()];
++          }
+           if (preloadedWordCache.current) {
+             preloadedWordCache.current.delete(targetWord.toLowerCase());
+           }
+@@ -6392,10 +6360,18 @@ Use digraphs (sh,ch,th) as single sounds. Use ─ü,─ô,─½,┼ì,┼½ for long vowels.`;
+                 activityId === "blending" &&
+                 preloadedWord.blendingDistractors
+               ) {
+-                const distractors = preloadedWord.blendingDistractors.slice(
++                let distractors = preloadedWord.blendingDistractors.slice(
+                   0,
+                   5,
+                 );
++                if (distractors.length < 5) {
++                  const pool = ["dog","cat","sun","bed","map","pig","run","hop","net","cup","hat","log","mop","pen","rug","van","zip","fox","jet","web"];
++                  const used = new Set([targetWord.toLowerCase(), ...distractors.map(d => d.toLowerCase())]);
++                  for (const w of [...pool].sort(() => Math.random() - 0.5)) {
++                    if (distractors.length >= 5) break;
++                    if (!used.has(w)) { distractors.push(w); used.add(w); }
++                  }
++                }
+                 setBlendingOptions(
+                   fisherYatesShuffle([targetWord, ...distractors]),
+                 );
+@@ -7050,7 +7026,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ─ü,─ô,─½,┼ì,┼½ for long vowels.`;
+             const isCorrect =
+               normAnswer === normExpected || safeAnswer === safeExpected;
+             const effectiveCheckMode = getEffectiveImageMode();
+-            if (!isCorrect && attempts < 2 && !isProbeMode) {
++            if (!isCorrect && attempts < 1 && !isProbeMode) {
+               const newAttempts = attempts + 1;
+               setAttempts(newAttempts);
+               playSound("error");
+@@ -7220,6 +7196,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ─ü,─ô,─½,┼ì,┼½ for long vowels.`;
+                 phonemes: wordSoundsPhonemes?.phonemes || [],
+               },
+             ]);
++            // If the user gets it wrong, we do NOT re-queue it, giving them a maximum of 2 attempts 
++            // when it appears, and then progression to the next problem.
++            /*
+             if (!isCorrect && currentWordSoundsWord && !isProbeMode) {
+               const requeueActId = wordSoundsActivity || "segmentation";
+               const currentQueue = sessionQueueRef.current[requeueActId] || [];
+@@ -7227,9 +7206,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ─ü,─ô,─½,┼ì,┼½ for long vowels.`;
+                 preloadedWords.find(
+                   (pw) =>
+                     pw.word?.toLowerCase() ===
+-                    currentWordSoundsWord.toLowerCase() ||
++                      currentWordSoundsWord.toLowerCase() ||
+                     pw.targetWord?.toLowerCase() ===
+-                    currentWordSoundsWord.toLowerCase(),
++                      currentWordSoundsWord.toLowerCase(),
+                 ) || currentWordSoundsWord;
+               sessionQueueRef.current[requeueActId] = [
+                 ...currentQueue,
+@@ -7701,8 +7680,16 @@ Use digraphs (sh,ch,th) as single sounds. Use ─ü,─ô,─½,┼ì,┼½ for long vowels.`;
+                         wordSoundsActivity === "blending" &&
+                         phonemeData?.blendingDistractors
+                       ) {
+-                        const distractors =
++                        let distractors =
+                           phonemeData.blendingDistractors.slice(0, 5);
++                        if (distractors.length < 5) {
++                          const pool = ["dog","cat","sun","bed","map","pig","run","hop","net","cup","hat","log","mop","pen","rug","van","zip","fox","jet","web"];
++                          const used = new Set([targetWord.toLowerCase(), ...distractors.map(d => d.toLowerCase())]);
++                          for (const w of [...pool].sort(() => Math.random() - 0.5)) {
++                            if (distractors.length >= 5) break;
++                            if (!used.has(w)) { distractors.push(w); used.add(w); }
++                          }
++                        }
+                         const options = fisherYatesShuffle([
+                           targetWord,
+                           ...distractors,
+@@ -7908,8 +7895,16 @@ Use digraphs (sh,ch,th) as single sounds. Use ─ü,─ô,─½,┼ì,┼½ for long vowels.`;
+                         wordSoundsActivity === "blending" &&
+                         preloadedMatch.blendingDistractors
+                       ) {
+-                        const distractors =
++                        let distractors =
+                           preloadedMatch.blendingDistractors.slice(0, 5);
++                        if (distractors.length < 5) {
++                          const pool = ["dog","cat","sun","bed","map","pig","run","hop","net","cup","hat","log","mop","pen","rug","van","zip","fox","jet","web"];
++                          const used = new Set([targetWord.toLowerCase(), ...distractors.map(d => d.toLowerCase())]);
++                          for (const w of [...pool].sort(() => Math.random() - 0.5)) {
++                            if (distractors.length >= 5) break;
++                            if (!used.has(w)) { distractors.push(w); used.add(w); }
++                          }
++                        }
+                         const options = fisherYatesShuffle([
+                           targetWord,
+                           ...distractors,
+@@ -10812,19 +10807,20 @@ Use digraphs (sh,ch,th) as single sounds. Use ─ü,─ô,─½,┼ì,┼½ for long vowels.`;
+               wordSoundsPhonemes?.phonemeCount ||
+               wordSoundsPhonemes?.phonemes?.length ||
+               0;
++            const expectedCount = count >= 11 ? "11+" : count;
+             const numberOptions = Array.from({ length: 10 }, (_, i) => i + 1);
+             const handleCountDrop = (e) => {
+               e.preventDefault();
+               if (!draggedItem) return;
+               const { item } = draggedItem;
+-              const val = parseInt(item);
+-              checkAnswer(val, count);
++              const val = item === 11 || item === "11+" ? "11+" : parseInt(item);
++              checkAnswer(val, expectedCount);
+               setDraggedItem(null);
+             };
+             const handleCountKeyDown = (e, num) => {
+               if (e.key === "Enter") {
+                 e.preventDefault();
+-                checkAnswer(num, count);
++                checkAnswer(num === 11 ? "11+" : num, expectedCount);
+               }
+             };
+             return /*#__PURE__*/ React.createElement(
+@@ -10895,7 +10891,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ─ü,─ô,─½,┼ì,┼½ for long vowels.`;
+                     onDragStart: (e) => handleDragStart(e, num, "number"),
+                     onKeyDown: (e) => handleCountKeyDown(e, num),
+                     tabIndex: 0,
+-                    onClick: () => checkAnswer(num, count),
++                    onClick: () => checkAnswer(num, expectedCount),
+                     className:
+                       "w-16 h-16 rounded-2xl bg-white border-b-4 border-violet-200 text-violet-700 font-black text-2xl flex items-center justify-center shadow-sm hover:shadow-md hover:scale-110 hover:bg-violet-50 hover:border-violet-400 transition-all cursor-grab active:cursor-grabbing",
+                     "aria-label": `Number ${num}`,
+@@ -10910,7 +10906,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ─ü,─ô,─½,┼ì,┼½ for long vowels.`;
+                     onDragStart: (e) => handleDragStart(e, 11, "number"),
+                     onKeyDown: (e) => handleCountKeyDown(e, 11),
+                     tabIndex: 0,
+-                    onClick: () => checkAnswer(11, count),
++                    onClick: () => checkAnswer("11+", expectedCount),
+                     className:
+                       "w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-100 to-purple-100 border-b-4 border-purple-300 text-purple-700 font-black text-lg flex items-center justify-center shadow-sm hover:shadow-md hover:scale-110 hover:bg-purple-50 hover:border-purple-400 transition-all cursor-grab active:cursor-grabbing",
+                     "aria-label": t("common.11_or_more_sounds"),

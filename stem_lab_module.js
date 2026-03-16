@@ -5544,20 +5544,23 @@
                 // ── Match the Waveform target ──
                 var targetAmp = parseFloat(canvasEl.dataset.targetAmp || '0');
                 var targetFreq = parseFloat(canvasEl.dataset.targetFreq || '0');
+                var isEquationMatch = canvasEl.dataset.targetIsEquation === 'true';
                 if (targetAmp > 0 && targetFreq > 0) {
-                  ctx.lineWidth = 2.5 * dpr;
-                  ctx.strokeStyle = '#fbbf24';
-                  ctx.setLineDash([8, 6]);
-                  ctx.globalAlpha = 0.8;
-                  ctx.beginPath();
-                  for (var xt = 0; xt < cW; xt++) {
-                    var tt = xt / cW * Math.PI * 2 * targetFreq - tick * 0.08 * speed;
-                    var yt = Math.sin(tt);
-                    var pyt = cH / 2 - yt * targetAmp * dpr;
-                    if (xt === 0) ctx.moveTo(xt, pyt); else ctx.lineTo(xt, pyt);
+                  if (!isEquationMatch) {
+                    ctx.lineWidth = 2.5 * dpr;
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.setLineDash([8, 6]);
+                    ctx.globalAlpha = 0.8;
+                    ctx.beginPath();
+                    for (var xt = 0; xt < cW; xt++) {
+                      var tt = xt / cW * Math.PI * 2 * targetFreq - tick * 0.08 * speed;
+                      var yt = Math.sin(tt);
+                      var pyt = cH / 2 - yt * targetAmp * dpr;
+                      if (xt === 0) ctx.moveTo(xt, pyt); else ctx.lineTo(xt, pyt);
+                    }
+                    ctx.stroke();
+                    ctx.setLineDash([]); ctx.globalAlpha = 1;
                   }
-                  ctx.stroke();
-                  ctx.setLineDash([]); ctx.globalAlpha = 1;
                   // Match score HUD
                   var ampDiff = Math.abs(amp - targetAmp) / targetAmp;
                   var freqDiff = Math.abs(freq - targetFreq) / targetFreq;
@@ -5669,6 +5672,50 @@
             }
           };
 
+          var checkWaveMatch = function(a, f) {
+            if (!d.matchTarget) return;
+            var pct = Math.max(0, Math.round((1 - (Math.abs(a - d.matchTarget.amp) / d.matchTarget.amp + Math.abs(f - d.matchTarget.freq) / d.matchTarget.freq) / 2) * 100));
+            if (pct > 90 && !d.matchXpClaimed) {
+              awardStemXP('wave-match', 15, 'Matched a wave exactly!');
+              upd('matchXpClaimed', true);
+              addToast('\u2705 Excellent match! Equation mastered! +15 XP', 'success');
+            }
+          };
+
+          // Helper to render math equations with highlighted inputs
+          var renderEq = function(a, f, isTarget, isInteractive) {
+             var baseHc = isTarget ? "bg-purple-800/80 text-purple-100 px-1.5 py-0.5 rounded-md mx-0.5 border border-purple-500/50 shadow-sm" : "bg-cyan-800/80 text-cyan-100 px-1.5 py-0.5 rounded-md mx-0.5 border border-cyan-500/50 shadow-sm";
+             var tc = isTarget ? "text-purple-400" : "text-cyan-300";
+             
+             var wrapA = isInteractive ? 
+                 React.createElement("input", {
+                     type: "number", value: a,
+                     onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) { upd('amplitude', v); try { if (typeof checkWaveMatch !== 'undefined') checkWaveMatch(v, f); } catch(ex){} } },
+                     className: "bg-slate-900 border border-cyan-500 text-cyan-300 rounded px-1.5 py-0.5 mx-0.5 text-center focus:outline-none focus:ring-1 focus:ring-cyan-400 w-16 font-mono shadow-sm",
+                     min: 10, max: 100, step: 1
+                 }) : React.createElement("span", {className: baseHc}, a);
+
+             var wrapF = isInteractive ? 
+                 React.createElement("input", {
+                     type: "number", value: f,
+                     onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) { upd('frequency', v); try { if (typeof checkWaveMatch !== 'undefined') checkWaveMatch(a, v); } catch(ex){} } },
+                     className: "bg-slate-900 border border-cyan-500 text-cyan-300 rounded px-1.5 py-0.5 mx-0.5 text-center focus:outline-none focus:ring-1 focus:ring-cyan-400 w-16 font-mono shadow-sm",
+                     min: 0.5, max: 10, step: 0.5
+                 }) : React.createElement("span", {className: baseHc}, f);
+
+             if (waveMode === 'standing') {
+               var wStr = ((d.harmonic || 1) * f * 2 * Math.PI).toFixed(1);
+               return React.createElement("span", {className: tc + " inline-flex items-center justify-center flex-wrap gap-y-1 align-middle whitespace-nowrap"}, 
+                 "y(x,t) =", wrapA, "sin(" + (d.harmonic || 1) + "\u03C0x/L) cos(", React.createElement("span", {className: baseHc}, wStr), "t)"
+               );
+             } else {
+               var kStr = (2 * Math.PI * f).toFixed(1);
+               return React.createElement("span", {className: tc + " inline-flex items-center justify-center flex-wrap gap-y-1 align-middle whitespace-nowrap"}, 
+                 "y(x,t) =", wrapA, "sin(2\u03C0\u00B7", wrapF, "t \u2212 " + kStr + "x)"
+               );
+             }
+          };
+
           // Quiz bank
           var WAVE_QUIZ = [
             { q: 'What happens to pitch when frequency increases?', a: 'Goes up', opts: ['Goes up', 'Goes down', 'Stays same', 'Disappears'] },
@@ -5710,6 +5757,7 @@
                 "data-harmonic": d.harmonic || 1,
                 "data-target-amp": d.matchTarget ? d.matchTarget.amp : 0,
                 "data-target-freq": d.matchTarget ? d.matchTarget.freq : 0,
+                "data-target-is-equation": (d.matchTarget && d.matchTarget.isEquation) ? 'true' : 'false',
                 onKeyDown: function (e) {
                   if (e.key === 'ArrowUp') { e.preventDefault(); upd('amplitude', Math.min(100, (d.amplitude || 50) + 5)); }
                   else if (e.key === 'ArrowDown') { e.preventDefault(); upd('amplitude', Math.max(5, (d.amplitude || 50) - 5)); }
@@ -5782,12 +5830,40 @@
             // Wave equation display
             React.createElement("div", { className: "bg-slate-800 rounded-lg p-3 mb-3 text-center" },
               React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1" }, "\uD83D\uDCDD Wave Equation"),
-              React.createElement("p", { className: "text-lg font-mono font-bold text-cyan-300" },
-                waveMode === 'standing'
-                  ? 'y(x,t) = ' + d.amplitude + ' sin(' + (d.harmonic || 1) + '\u03C0x/L) cos(' + ((d.harmonic || 1) * d.frequency * 2 * Math.PI).toFixed(1) + 't)'
-                  : 'y(x,t) = ' + d.amplitude + ' sin(2\u03C0\u00B7' + d.frequency + 't \u2212 ' + (2 * Math.PI * d.frequency).toFixed(1) + 'x)'
+              
+              // General Template Formula
+              React.createElement("div", { className: "mb-3 p-1.5 bg-slate-900/50 rounded-lg border border-slate-700/50 inline-block text-center" },
+                 React.createElement("p", { className: "text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5" }, "General Formula"),
+                 React.createElement("p", { className: "text-sm font-mono font-bold text-slate-300" }, 
+                    waveMode === 'standing' ? 'y(x,t) = A sin(n\u03C0x/L) cos(\u03C9t)' : 'y(x,t) = A sin(2\u03C0ft \u2212 kx)'
+                 )
               ),
-              React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, waveMode === 'standing' ? 'Standing wave \u2014 superposition of two traveling waves' : 'A = ' + d.amplitude + ', f = ' + d.frequency + ' Hz, \u03BB = ' + (1 / d.frequency).toFixed(2) + ' m, T = ' + (1 / d.frequency).toFixed(3) + ' s')
+              React.createElement("br"),
+
+              (d.matchTarget && d.matchTarget.isEquation) && React.createElement("div", { className: "mb-3 p-2 bg-purple-900/50 rounded-lg border border-purple-500/50 inline-block text-left" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-purple-300 uppercase tracking-wider mb-1" }, "Target Equation:"),
+                  React.createElement("div", { className: "text-lg font-mono font-bold opacity-90" }, 
+                      renderEq(d.matchTarget.amp, d.matchTarget.freq, true, false)
+                  )
+              ),
+              React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 mt-1 flex justify-center items-center h-4" }, 
+                  (d.matchTarget && d.matchTarget.isEquation) ? "Your Equation:" : "Current Equation:",
+                  (function() {
+                    if (!d.matchTarget) return null;
+                    var pct = Math.max(0, Math.round((1 - (Math.abs(d.amplitude - d.matchTarget.amp) / d.matchTarget.amp + Math.abs(d.frequency - d.matchTarget.freq) / d.matchTarget.freq) / 2) * 100));
+                    return pct > 90 
+                      ? React.createElement("span", {className: "text-[9px] font-bold text-emerald-400 bg-emerald-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, "\u2705 " + pct + "% match") 
+                      : React.createElement("span", {className: "text-[9px] font-bold text-amber-400 bg-amber-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, pct + "% match");
+                  })()
+              ),
+              React.createElement("div", { className: "text-lg font-mono font-bold" },
+                  renderEq(d.amplitude, d.frequency, false, true)
+              ),
+              React.createElement("p", { className: "text-[10px] text-slate-500 mt-2" }, 
+                  waveMode === 'standing' 
+                  ? 'Standing wave \u2014 superposition of two traveling waves. A = Amplitude, n = Harmonic' 
+                  : 'A = ' + d.amplitude + ', f = ' + d.frequency + ' Hz, \u03BB = ' + (1 / d.frequency).toFixed(2) + ' m, T = ' + (1 / d.frequency).toFixed(3) + ' s'
+              )
             ),
             // Info cards
             React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-3 text-center" },
@@ -5822,11 +5898,22 @@
                   var tFreqs = [1, 2, 3, 4, 5, 6];
                   var ta = tAmps[Math.floor(Math.random() * tAmps.length)];
                   var tf = tFreqs[Math.floor(Math.random() * tFreqs.length)];
-                  upd('matchTarget', { amp: ta, freq: tf });
+                  upd('matchTarget', { amp: ta, freq: tf, isEquation: false });
                   upd('matchXpClaimed', false);
                   addToast(t('stem.wave.ud83cudfaf_match_the_yellow_dashed'), 'info');
-                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.matchTarget ? 'bg-amber-100 text-amber-700' : 'bg-amber-500 text-white') + " transition-all"
-              }, d.matchTarget ? "\uD83D\uDD04 New Target" : "\uD83C\uDFAF Match Waveform"),
+                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.matchTarget && !d.matchTarget.isEquation ? 'bg-amber-100 text-amber-700' : 'bg-amber-500 text-white') + " transition-all"
+              }, d.matchTarget && !d.matchTarget.isEquation ? "\uD83D\uDD04 New Target" : "\uD83C\uDFAF Match Waveform"),
+              React.createElement("button", {
+                onClick: function () {
+                  var tAmps = [20, 30, 40, 50, 60, 70];
+                  var tFreqs = [1, 2, 3, 4, 5, 6];
+                  var ta = tAmps[Math.floor(Math.random() * tAmps.length)];
+                  var tf = tFreqs[Math.floor(Math.random() * tFreqs.length)];
+                  upd('matchTarget', { amp: ta, freq: tf, isEquation: true });
+                  upd('matchXpClaimed', false);
+                  addToast("Match the mathematical equation!", 'info');
+                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.matchTarget && d.matchTarget.isEquation ? 'bg-purple-100 text-purple-700' : 'bg-purple-500 text-white') + " transition-all"
+              }, (d.matchTarget && d.matchTarget.isEquation) ? "\uD83D\uDD04 New Equation" : "\uD83D\uDCDD Match Equation"),
               d.matchTarget && React.createElement("button", {
                 onClick: function () { upd('matchTarget', null); upd('matchXpClaimed', false); },
                 className: "px-2 py-1 rounded-lg text-xs text-slate-500 hover:bg-slate-100"
@@ -18476,6 +18563,21 @@
             ),
             // Last 10 results
             d.trials > 0 && React.createElement("div", { className: "text-center" },
+              d.mode === 'marbleBag' && React.createElement("div", { className: "mb-3 bg-white rounded-lg p-3 border shadow-sm mx-auto", style: { maxWidth: 500 } },
+                React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-wider mb-2", style: { color: _accent } }, "\uD83C\uDFB1 Draw History Breakdown"),
+                React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" },
+                  Object.keys(expected).map(function (k) {
+                    var count = counts[k] || 0;
+                    var pct = d.trials > 0 ? (count / d.trials * 100) : 0;
+                    return React.createElement("div", { key: k, className: "flex items-center gap-1.5 px-2 py-1 bg-slate-50 rounded-md border" },
+                      React.createElement("div", { style: { width: 8, height: 8, borderRadius: '50%', background: barColors[k] || '#8b5cf6' } }),
+                      React.createElement("span", { className: "text-[10px] font-bold text-slate-700" }, k + ":"),
+                      React.createElement("span", { className: "text-[10px] font-mono text-slate-900" }, count),
+                      React.createElement("span", { className: "text-[9px] text-slate-500" }, "(" + pct.toFixed(1) + "%)")
+                    );
+                  })
+                )
+              ),
               React.createElement("p", { className: "text-xs text-slate-400" }, "Last 10: " + d.results.slice(-10).map(function (r) {
                 if (d.mode === 'coin') return r === 'H' ? '\uD83E\uDE99' : '\u25CB';
                 if (d.mode === 'dice') return ['\u2680', '\u2681', '\u2682', '\u2683', '\u2684', '\u2685'][r - 1] || r;
@@ -27230,9 +27332,27 @@
                 }),
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-3" }, "Brush:"),
                 React.createElement("input", { type: "range", min: 1, max: 10, value: d.brushSize || 3, onChange: function (e) { upd('brushSize', parseInt(e.target.value)); }, className: "w-20 accent-pink-600" }),
-                React.createElement("button", { onClick: function () { upd('symmetryClear', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear")
+                React.createElement("button", { onClick: function () { upd('symmetryClear', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG")
               ),
-              React.createElement("canvas", { ref: symmetryRef, width: 512, height: 512, key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', background: '#0f172a' } })
+              React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-200" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
+                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, "\uD83C\uDFA8 Palettes"),
+                  [{ id: 'retro', label: '\uD83D\uDD79 Retro' }, { id: 'nature', label: '\uD83C\uDF3F Nature' }, { id: 'warm', label: '\uD83D\uDD25 Warm' }, { id: 'cool', label: '\u2744 Cool' }, { id: 'neon', label: '\uD83D\uDCA5 Neon' }].map(function (pal) {
+                    return React.createElement("button", { key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-pink-50') }, pal.label);
+                  })
+                ),
+                React.createElement("div", { className: "flex gap-1 flex-wrap" },
+                  (function () {
+                    var palettes = { retro: [[0,85,45],[30,90,55],[55,90,55],[120,60,40],[200,70,50],[240,60,35],[280,70,45],[0,0,15],[0,0,85],[30,20,70]], nature: [[85,50,35],[100,40,45],[120,55,30],[140,60,40],[45,70,45],[30,60,35],[20,50,30],[195,50,50],[210,40,60],[40,30,70]], warm: [[0,80,50],[10,85,55],[20,90,55],[35,95,55],[45,90,55],[350,70,45],[15,70,40],[40,80,65],[5,60,35],[25,50,70]], cool: [[195,70,50],[210,65,55],[225,60,50],[240,55,45],[180,50,40],[200,80,60],[170,45,50],[260,50,55],[190,40,65],[220,30,70]], neon: [[330,100,55],[300,100,55],[280,100,60],[200,100,55],[170,100,50],[120,100,45],[60,100,50],[30,100,55],[0,100,50],[45,100,55]] };
+                    var activePal = palettes[d.activePalette || 'retro'] || palettes.retro;
+                    return activePal.map(function (c, i) {
+                      return React.createElement("button", { key: i, onClick: function () { upd('hue', c[0]); upd('sat', c[1]); upd('lit', c[2]); }, className: "rounded-md border-2 transition-all hover:scale-110", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: (d.hue === c[0] && d.sat === c[1] && d.lit === c[2]) ? '#ec4899' : 'rgba(255,255,255,0.6)', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
+                    });
+                  })()
+                )
+              ),
+              React.createElement("canvas", { id: 'symmetryCanvas', ref: symmetryRef, width: 512, height: 512, key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block mt-3", style: { maxWidth: '100%', background: '#0f172a' } })
             ),
             tab === 'contrast' && React.createElement("div", { className: "space-y-4" },
               React.createElement("div", { className: "grid grid-cols-2 gap-4" },
