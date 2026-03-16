@@ -37696,7 +37696,7 @@
             },
             {
               id: 2, title: 'Shape Up!', concept: 'Shaping', target: 'spin', goal: 5,
-              intro: 'Shaping uses successive approximations — reinforcing behaviors that are progressively closer to the target. The mouse won\'t spin on its own at first! Reinforce turning, then half-turns, then full spins. Shape 5 complete spins!',
+              intro: 'Shaping uses successive approximations. The mouse won\'t spin on its own! Follow this 3-step sequence: (1) Reinforce "Turning Right" (↪️) to increase turning. (2) Once turns are frequent, wait for "Half-Turn" (↩️↪️) and reinforce those. (3) Finally, wait for full "Spinning" (🌀) and reinforce! Shape 5 complete spins through 3 stages of approximation!',
               termDef: 'Shaping: Differentially reinforcing successive approximations toward a terminal (target) behavior.',
               funFact: '🐬 Dolphin trainers at SeaWorld use shaping to teach dolphins to do backflips — they start by reinforcing any upward movement!',
               vocab: ['Successive Approximations', 'Terminal Behavior', 'Differential Reinforcement'],
@@ -37818,6 +37818,9 @@
           var blEarTwitchSeed = d.blEarTwitchSeed || Math.random() * 1000;
           var blSpinAngle = d.blSpinAngle || 0;
           var blRecentActions = d.blRecentActions || [];
+          var blTargetX = d.blTargetX || blMouseX;
+          var blTargetY = d.blTargetY || blMouseY;
+          var blActionDwell = d.blActionDwell || 0;
 
           // ── Sound effects (Web Audio API) ──
           var _blAudioCtx = null;
@@ -37836,15 +37839,15 @@
           }
 
           // Default probability weights
-          var defaultWeights = { explore: 30, groom: 15, sniff: 15, pressLever: 5, turnLeft: 10, turnRight: 10, rearUp: 5, freeze: 5, spin: 2, touchWall: 3 };
+          var defaultWeights = { explore: 30, groom: 15, sniff: 15, approachLever: 10, pressLever: 3, turnLeft: 10, turnRight: 10, halfTurn: 3, rearUp: 5, freeze: 5, spin: 1, touchWall: 3 };
           var blWeights = d.blWeights || Object.assign({}, defaultWeights);
 
           // ── Contextual Hints ──
           var blHint = '';
           if (blShowHints && blPhase === 'running') {
-            if (blLevel === 1 && blLevelScore === 0 && blTick > 3) blHint = '\uD83D\uDCA1 Wait for the mouse to press the lever, then click Deliver Food!';
+            if (blLevel === 1 && blLevelScore === 0 && blTick > 3) blHint = '\uD83D\uDCA1 Start by reinforcing when the mouse approaches the lever area. Then wait for actual presses!';
             else if (blLevel === 1 && blLevelScore > 0 && blLevelScore < 3) blHint = '\uD83D\uDC4D Great! Keep reinforcing lever presses. Watch the probability bar grow!';
-            else if (blLevel === 2 && blLevelScore === 0 && blTick > 5) blHint = '\uD83D\uDCA1 Start by reinforcing turnRight, then wait for spin!';
+            else if (blLevel === 2 && blLevelScore === 0 && blTick > 5) blHint = '\uD83D\uDCA1 Shape in stages: reinforce Turn Right (↪️) first, then Half-Turns, then full Spins!';
             else if (blLevel === 3 && !blExtinctionPhase && blLevelScore >= 5) blHint = '\uD83D\uDCA1 You\'ve reinforced 5 times! Click "Start Extinction" to stop reinforcing.';
             else if (blLevel === 4 && blTick > 3) blHint = '\uD83D\uDCA1 FR-3: Only reinforce every 3rd lever press (count them!)';
             else if (blLevel === 5 && blTick > 3) blHint = '\uD83D\uDCA1 Only reinforce when the GREEN light (SD) is on!';
@@ -37888,7 +37891,7 @@
             if (!blLastAction) return;
             var actionToReinforce = blLastAction;
             var newWeights = Object.assign({}, blWeights);
-            newWeights[actionToReinforce] = Math.min((newWeights[actionToReinforce] || 5) + 8, 80);
+            newWeights[actionToReinforce] = Math.min((newWeights[actionToReinforce] || 5) + 4, 70);
 
             // For level 5 (stimulus discrimination), only count if light is correct color
             if (blLevel === 5 && blLightColor !== 'green') {
@@ -37953,12 +37956,31 @@
             }
           }
 
+          // ── Action dwell times (ticks an action persists) ──
+          var ACTION_DWELL = { explore: 2, groom: 3, sniff: 2, approachLever: 2, pressLever: 2, turnLeft: 2, turnRight: 2, halfTurn: 3, rearUp: 2, freeze: 3, spin: 3, touchWall: 2 };
+
           // ── Advance simulation by one tick ──
           function advanceTick() {
             if (blPaused || blPhase !== 'running') return;
 
             var newTick = blTick + 1;
+
+            // Dwell: if current action still has dwell ticks, keep it
+            if (blActionDwell > 1) {
+              upd('blActionDwell', blActionDwell - 1);
+              upd('blTick', newTick);
+              upd('blTotalTicks', (d.blTotalTicks || 0) + 1);
+              var targetAction2 = currentLevel.target || 'pressLever';
+              var cumCount2 = blCumRecord.length > 0 ? blCumRecord[blCumRecord.length - 1].cum : 0;
+              var newCumDwell = blCumRecord.concat([{ tick: newTick, cum: cumCount2, burst: false }]);
+              if (newCumDwell.length > 200) newCumDwell = newCumDwell.slice(-200);
+              upd('blCumRecord', newCumDwell);
+              return;
+            }
+
             var action = selectAction();
+            var dwell = ACTION_DWELL[action] || 2;
+            upd('blActionDwell', dwell);
 
             // Update mouse position based on action
             var newX = blMouseX;
@@ -37968,9 +37990,14 @@
 
             switch (action) {
               case 'explore':
-                newX = Math.max(40, Math.min(360, blMouseX + (Math.random() - 0.5) * 60));
-                newY = Math.max(80, Math.min(230, blMouseY + (Math.random() - 0.5) * 40));
+                newX = Math.max(40, Math.min(360, blMouseX + (Math.random() - 0.5) * 50));
+                newY = Math.max(80, Math.min(230, blMouseY + (Math.random() - 0.5) * 35));
                 newDir = Math.random() > 0.5 ? 1 : -1;
+                break;
+              case 'approachLever':
+                newX = 280 + Math.random() * 40;
+                newY = 180 + Math.random() * 30;
+                newDir = 1;
                 break;
               case 'pressLever':
                 newX = 340; newY = 210;
@@ -37982,6 +38009,10 @@
               case 'turnRight':
                 newDir = 1;
                 newAngle = blMouseAngle + 90;
+                break;
+              case 'halfTurn':
+                newDir = -newDir;
+                newAngle = blMouseAngle + 180;
                 break;
               case 'spin':
                 newAngle = blMouseAngle + 360;
@@ -38001,6 +38032,13 @@
               case 'freeze':
                 // Stay in place
                 break;
+            }
+
+            // Level 1 shaping: reinforcing approachLever gently boosts pressLever
+            if (blLevel === 1 && action === 'approachLever' && blReinforcements > 0) {
+              var w2 = Object.assign({}, blWeights);
+              if (w2.pressLever < 8) w2.pressLever = Math.min(8, (w2.pressLever || 3) + 0.5);
+              upd('blWeights', w2);
             }
 
             // Update cumulative record for target behavior
@@ -38050,7 +38088,7 @@
             for (var wi = 0; wi < wKeys.length; wi++) {
               var wk = wKeys[wi];
               if (newWeights[wk] > defaultWeights[wk] + 2) {
-                newWeights[wk] = Math.max(defaultWeights[wk], newWeights[wk] - 0.3);
+                newWeights[wk] = Math.max(defaultWeights[wk], newWeights[wk] - 0.15);
               }
             }
 
@@ -38135,8 +38173,8 @@
             // Batch update state
             upd('blTick', newTick);
             upd('blMouseAction', action);
-            upd('blMouseX', newX);
-            upd('blMouseY', newY);
+            upd('blTargetX', newX);
+            upd('blTargetY', newY);
             upd('blMouseDir', newDir);
             upd('blMouseAngle', newAngle);
             upd('blHistory', newHistory);
@@ -38148,6 +38186,15 @@
             var newRecentActions = blRecentActions.concat([action]);
             if (newRecentActions.length > 20) newRecentActions = newRecentActions.slice(-20);
             upd('blRecentActions', newRecentActions);
+          }
+
+          // ── Smooth mouse interpolation ──
+          var lerpRate = 0.12;
+          var dxLerp = blTargetX - blMouseX;
+          var dyLerp = blTargetY - blMouseY;
+          if (Math.abs(dxLerp) > 0.5 || Math.abs(dyLerp) > 0.5) {
+            upd('blMouseX', blMouseX + dxLerp * lerpRate);
+            upd('blMouseY', blMouseY + dyLerp * lerpRate);
           }
 
           // ── Auto-advance timer (speed-adjusted) ──
@@ -38357,8 +38404,9 @@
             var actionBounce = 0;
             var actionGlow = null;
             var walkCycle = Math.sin(Date.now() / 120) * 3;
-            var isMoving = blMouseAction === 'explore' || blMouseAction === 'turnLeft' || blMouseAction === 'turnRight' || blMouseAction === 'touchWall';
+            var isMoving = blMouseAction === 'explore' || blMouseAction === 'turnLeft' || blMouseAction === 'turnRight' || blMouseAction === 'halfTurn' || blMouseAction === 'approachLever' || blMouseAction === 'touchWall';
             switch (blMouseAction) {
+              case 'approachLever': actionGlow = '#fbbf24'; break;
               case 'pressLever': actionGlow = '#f59e0b'; break;
               case 'spin': actionGlow = '#c084fc'; actionBounce = -3; break;
               case 'rearUp': actionBounce = -12; break;
