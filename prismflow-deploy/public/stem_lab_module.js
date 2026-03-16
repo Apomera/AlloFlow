@@ -3268,6 +3268,7 @@
             // ═══════════════ BASE-10 BLOCKS MODE ═══════════════
             if (_manipMode === 'blocks') {
               const totalValue = base10Value.ones + base10Value.tens * 10 + base10Value.hundreds * 100 + base10Value.thousands * 1000;
+              const _regroupFlash = (labToolData && labToolData._regroupFlash) || null;
               const checkBase10 = () => {
                 if (!base10Challenge) return;
                 const ok = totalValue === base10Challenge.target;
@@ -3283,7 +3284,29 @@
                 });
                 setExploreScore(prev => ({ correct: prev.correct + (ok ? 1 : 0), total: prev.total + 1 }));
               };
-              // 3D-styled block renderer
+              // Regrouping helpers — group 10 of lower → 1 of higher, with animation flash
+              const doRegroup = (fromPlace, toPlace) => {
+                setBase10Value(prev => {
+                  if (prev[fromPlace] < 10 || prev[toPlace] >= 9) return prev;
+                  return { ...prev, [fromPlace]: prev[fromPlace] - 10, [toPlace]: prev[toPlace] + 1 };
+                });
+                setLabToolData(prev => Object.assign({}, prev, { _regroupFlash: toPlace }));
+                setTimeout(() => setLabToolData(prev => Object.assign({}, prev, { _regroupFlash: null })), 700);
+              };
+              const doUngroup = (fromPlace, toPlace) => {
+                setBase10Value(prev => {
+                  if (prev[fromPlace] < 1) return prev;
+                  var newLower = prev[toPlace] + 10;
+                  return { ...prev, [fromPlace]: prev[fromPlace] - 1, [toPlace]: newLower };
+                });
+                setLabToolData(prev => Object.assign({}, prev, { _regroupFlash: toPlace }));
+                setTimeout(() => setLabToolData(prev => Object.assign({}, prev, { _regroupFlash: null })), 700);
+              };
+              // 3D-styled block renderer — sizes now dramatically proportional
+              // Thousands = large cube (56×56 w/10×10 grid)
+              // Hundreds  = wide flat  (48×14 w/10×1 grid)
+              // Tens      = tall rod   (10×48 w/1×10 grid)
+              // Ones      = tiny unit  (10×10 w/1×1 grid)
               const renderBlock3D = (color, lightColor, w, h, count, gridCols, gridRows) => Array.from({ length: count }).map((_, i) => /*#__PURE__*/React.createElement("div", {
                 key: i,
                 style: {
@@ -3292,14 +3315,19 @@
                   border: '1px solid rgba(0,0,0,0.2)',
                   borderRadius: '3px',
                   boxShadow: '1px 2px 4px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.4)',
-                  backgroundImage: gridCols > 1 ? 'repeating-linear-gradient(90deg, transparent, transparent ' + (100 / gridCols) + '%, rgba(0,0,0,0.08) ' + (100 / gridCols) + '%, rgba(0,0,0,0.08) calc(' + (100 / gridCols) + '% + 1px)), repeating-linear-gradient(0deg, transparent, transparent ' + (100 / gridRows) + '%, rgba(0,0,0,0.08) ' + (100 / gridRows) + '%, rgba(0,0,0,0.08) calc(' + (100 / gridRows) + '% + 1px))' : 'none',
-                  transition: 'transform 0.15s ease',
-                  cursor: 'default'
+                  backgroundImage: gridCols > 1 || gridRows > 1 ? 'repeating-linear-gradient(90deg, transparent, transparent ' + (100 / gridCols) + '%, rgba(0,0,0,0.08) ' + (100 / gridCols) + '%, rgba(0,0,0,0.08) calc(' + (100 / gridCols) + '% + 1px)), repeating-linear-gradient(0deg, transparent, transparent ' + (100 / gridRows) + '%, rgba(0,0,0,0.08) ' + (100 / gridRows) + '%, rgba(0,0,0,0.08) calc(' + (100 / gridRows) + '% + 1px))' : 'none',
+                  transition: 'transform 0.2s ease, opacity 0.2s ease',
+                  cursor: 'default',
+                  flexShrink: 0
                 }
               }));
               return /*#__PURE__*/React.createElement("div", {
                 className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200"
               }, headerEl,
+                // CSS for regrouping animation
+                /*#__PURE__*/React.createElement("style", null,
+                  '@keyframes b10regroup { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(168,85,247,0.5); } 40% { transform: scale(1.15); box-shadow: 0 0 20px 8px rgba(168,85,247,0.4); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(168,85,247,0); } }'
+                ),
                 /*#__PURE__*/React.createElement("div", {
                 className: "bg-gradient-to-b from-orange-50 to-amber-50 rounded-xl border-2 border-orange-200 p-6"
               },
@@ -3307,23 +3335,30 @@
                 /*#__PURE__*/React.createElement("div", { className: "text-center mb-4" },
                   /*#__PURE__*/React.createElement("span", { className: "text-4xl font-bold text-orange-800 font-mono" }, totalValue.toLocaleString()),
                   /*#__PURE__*/React.createElement("span", { className: "text-2xl text-slate-400 mx-3" }, "="),
-                  /*#__PURE__*/React.createElement("div", { className: "flex items-end gap-1 flex-wrap justify-center" },
-                renderBlock3D('#a855f7', '#c084fc', 30, 30, base10Value.thousands, 10, 10),
-                base10Value.thousands > 0 && base10Value.hundreds > 0 && /*#__PURE__*/React.createElement("span", { className: "w-px h-6 bg-slate-200 mx-0.5" }),
-                renderBlock3D('#3b82f6', '#60a5fa', 26, 26, base10Value.hundreds, 10, 10),
-                (base10Value.thousands > 0 || base10Value.hundreds > 0) && base10Value.tens > 0 && /*#__PURE__*/React.createElement("span", { className: "w-px h-6 bg-slate-200 mx-0.5" }),
-                renderBlock3D('#22c55e', '#4ade80', 10, 38, base10Value.tens, 1, 10),
-                (base10Value.thousands > 0 || base10Value.hundreds > 0 || base10Value.tens > 0) && base10Value.ones > 0 && /*#__PURE__*/React.createElement("span", { className: "w-px h-6 bg-slate-200 mx-0.5" }),
-                renderBlock3D('#f59e0b', '#fbbf24', 12, 12, base10Value.ones, 1, 1),
+                  /*#__PURE__*/React.createElement("div", { className: "flex items-end gap-2 flex-wrap justify-center", style: { minHeight: '60px' } },
+                renderBlock3D('#a855f7', '#c084fc', 56, 56, base10Value.thousands, 10, 10),
+                base10Value.thousands > 0 && base10Value.hundreds > 0 && /*#__PURE__*/React.createElement("span", { className: "w-px h-8 bg-slate-200 mx-0.5" }),
+                renderBlock3D('#3b82f6', '#60a5fa', 48, 14, base10Value.hundreds, 10, 1),
+                (base10Value.thousands > 0 || base10Value.hundreds > 0) && base10Value.tens > 0 && /*#__PURE__*/React.createElement("span", { className: "w-px h-8 bg-slate-200 mx-0.5" }),
+                renderBlock3D('#22c55e', '#4ade80', 10, 48, base10Value.tens, 1, 10),
+                (base10Value.thousands > 0 || base10Value.hundreds > 0 || base10Value.tens > 0) && base10Value.ones > 0 && /*#__PURE__*/React.createElement("span", { className: "w-px h-8 bg-slate-200 mx-0.5" }),
+                renderBlock3D('#f59e0b', '#fbbf24', 10, 10, base10Value.ones, 1, 1),
                 totalValue === 0 && /*#__PURE__*/React.createElement("span", { className: "text-sm text-slate-300 italic" }, "no blocks")
               )
               ),
+                // Shape legend
+                /*#__PURE__*/React.createElement("div", { className: "flex items-center justify-center gap-4 mb-3 text-[10px] font-bold text-slate-400" },
+                  /*#__PURE__*/React.createElement("span", null, "\u25A0 Cube = 1000"),
+                  /*#__PURE__*/React.createElement("span", null, "\u25AC Flat = 100"),
+                  /*#__PURE__*/React.createElement("span", null, "\u2503 Rod = 10"),
+                  /*#__PURE__*/React.createElement("span", null, "\u25AA Unit = 1")
+                ),
                 // Place value columns
                 /*#__PURE__*/React.createElement("div", { className: "grid grid-cols-4 gap-3" },
                   // Thousands
-                  /*#__PURE__*/React.createElement("div", { className: "bg-white rounded-xl p-3 border-2 border-purple-200 text-center shadow-sm" },
-                    /*#__PURE__*/React.createElement("div", { className: "text-xs font-bold text-purple-700 uppercase mb-2" }, "Thousands"),
-                    /*#__PURE__*/React.createElement("div", { className: "flex justify-center gap-1 mb-2 min-h-[48px] flex-wrap" }, renderBlock3D('#a855f7', '#c084fc', 30, 30, base10Value.thousands, 10, 10)),
+                  /*#__PURE__*/React.createElement("div", { className: "bg-white rounded-xl p-3 border-2 border-purple-200 text-center shadow-sm", style: _regroupFlash === 'thousands' ? { animation: 'b10regroup 0.7s ease' } : {} },
+                    /*#__PURE__*/React.createElement("div", { className: "text-xs font-bold text-purple-700 uppercase mb-1" }, "\u25A0 Thousands"),
+                    /*#__PURE__*/React.createElement("div", { className: "flex justify-center gap-1 mb-2 min-h-[58px] flex-wrap items-center" }, renderBlock3D('#a855f7', '#c084fc', 56, 56, base10Value.thousands, 10, 10)),
                     /*#__PURE__*/React.createElement("div", { className: "flex items-center justify-center gap-2" },
                       /*#__PURE__*/React.createElement("button", { onClick: () => setBase10Value(prev => ({ ...prev, thousands: Math.max(0, prev.thousands - 1) })), className: "w-8 h-8 rounded-full bg-purple-100 text-purple-700 font-bold text-lg hover:bg-purple-200 transition-all flex items-center justify-center" }, "\u2212"),
                       /*#__PURE__*/React.createElement("span", { className: "text-2xl font-bold text-purple-800 w-8 text-center" }, base10Value.thousands),
@@ -3332,9 +3367,9 @@
                     /*#__PURE__*/React.createElement("div", { className: "text-xs text-purple-500 mt-1" }, "\u00D71000 = ", base10Value.thousands * 1000)
               ),
                   // Hundreds
-                  /*#__PURE__*/React.createElement("div", { className: "bg-white rounded-xl p-3 border-2 border-blue-200 text-center shadow-sm" },
-                    /*#__PURE__*/React.createElement("div", { className: "text-xs font-bold text-blue-700 uppercase mb-2" }, "Hundreds"),
-                    /*#__PURE__*/React.createElement("div", { className: "flex justify-center gap-1 mb-2 min-h-[48px] flex-wrap" }, renderBlock3D('#3b82f6', '#60a5fa', 26, 26, base10Value.hundreds, 10, 10)),
+                  /*#__PURE__*/React.createElement("div", { className: "bg-white rounded-xl p-3 border-2 border-blue-200 text-center shadow-sm", style: _regroupFlash === 'hundreds' ? { animation: 'b10regroup 0.7s ease' } : {} },
+                    /*#__PURE__*/React.createElement("div", { className: "text-xs font-bold text-blue-700 uppercase mb-1" }, "\u25AC Hundreds"),
+                    /*#__PURE__*/React.createElement("div", { className: "flex justify-center gap-1 mb-2 min-h-[58px] flex-wrap items-center" }, renderBlock3D('#3b82f6', '#60a5fa', 48, 14, base10Value.hundreds, 10, 1)),
                     /*#__PURE__*/React.createElement("div", { className: "flex items-center justify-center gap-2" },
                       /*#__PURE__*/React.createElement("button", { onClick: () => setBase10Value(prev => ({ ...prev, hundreds: Math.max(0, prev.hundreds - 1) })), className: "w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold text-lg hover:bg-blue-200 transition-all flex items-center justify-center" }, "\u2212"),
                       /*#__PURE__*/React.createElement("span", { className: "text-2xl font-bold text-blue-800 w-8 text-center" }, base10Value.hundreds),
@@ -3343,9 +3378,9 @@
                     /*#__PURE__*/React.createElement("div", { className: "text-xs text-blue-500 mt-1" }, "\u00D7100 = ", base10Value.hundreds * 100)
               ),
                   // Tens
-                  /*#__PURE__*/React.createElement("div", { className: "bg-white rounded-xl p-3 border-2 border-green-200 text-center shadow-sm" },
-                    /*#__PURE__*/React.createElement("div", { className: "text-xs font-bold text-green-700 uppercase mb-2" }, "Tens"),
-                    /*#__PURE__*/React.createElement("div", { className: "flex justify-center gap-1 mb-2 min-h-[48px] flex-wrap" }, renderBlock3D('#22c55e', '#4ade80', 10, 38, base10Value.tens, 1, 10)),
+                  /*#__PURE__*/React.createElement("div", { className: "bg-white rounded-xl p-3 border-2 border-green-200 text-center shadow-sm", style: _regroupFlash === 'tens' ? { animation: 'b10regroup 0.7s ease' } : {} },
+                    /*#__PURE__*/React.createElement("div", { className: "text-xs font-bold text-green-700 uppercase mb-1" }, "\u2503 Tens"),
+                    /*#__PURE__*/React.createElement("div", { className: "flex justify-center gap-1 mb-2 min-h-[58px] flex-wrap items-center" }, renderBlock3D('#22c55e', '#4ade80', 10, 48, base10Value.tens, 1, 10)),
                     /*#__PURE__*/React.createElement("div", { className: "flex items-center justify-center gap-2" },
                       /*#__PURE__*/React.createElement("button", { onClick: () => setBase10Value(prev => ({ ...prev, tens: Math.max(0, prev.tens - 1) })), className: "w-8 h-8 rounded-full bg-green-100 text-green-700 font-bold text-lg hover:bg-green-200 transition-all flex items-center justify-center" }, "\u2212"),
                       /*#__PURE__*/React.createElement("span", { className: "text-2xl font-bold text-green-800 w-8 text-center" }, base10Value.tens),
@@ -3354,9 +3389,9 @@
                     /*#__PURE__*/React.createElement("div", { className: "text-xs text-green-500 mt-1" }, "\u00D710 = ", base10Value.tens * 10)
               ),
                   // Ones
-                  /*#__PURE__*/React.createElement("div", { className: "bg-white rounded-xl p-3 border-2 border-amber-200 text-center shadow-sm" },
-                    /*#__PURE__*/React.createElement("div", { className: "text-xs font-bold text-amber-700 uppercase mb-2" }, "Ones"),
-                    /*#__PURE__*/React.createElement("div", { className: "flex justify-center gap-1 mb-2 min-h-[48px] flex-wrap" }, renderBlock3D('#f59e0b', '#fbbf24', 12, 12, base10Value.ones, 1, 1)),
+                  /*#__PURE__*/React.createElement("div", { className: "bg-white rounded-xl p-3 border-2 border-amber-200 text-center shadow-sm", style: _regroupFlash === 'ones' ? { animation: 'b10regroup 0.7s ease' } : {} },
+                    /*#__PURE__*/React.createElement("div", { className: "text-xs font-bold text-amber-700 uppercase mb-1" }, "\u25AA Ones"),
+                    /*#__PURE__*/React.createElement("div", { className: "flex justify-center gap-1 mb-2 min-h-[58px] flex-wrap items-center" }, renderBlock3D('#f59e0b', '#fbbf24', 10, 10, base10Value.ones, 1, 1)),
                     /*#__PURE__*/React.createElement("div", { className: "flex items-center justify-center gap-2" },
                       /*#__PURE__*/React.createElement("button", { onClick: () => setBase10Value(prev => ({ ...prev, ones: Math.max(0, prev.ones - 1) })), className: "w-8 h-8 rounded-full bg-amber-100 text-amber-700 font-bold text-lg hover:bg-amber-200 transition-all flex items-center justify-center" }, "\u2212"),
                       /*#__PURE__*/React.createElement("span", { className: "text-2xl font-bold text-amber-800 w-8 text-center" }, base10Value.ones),
@@ -3364,7 +3399,58 @@
               ),
                     /*#__PURE__*/React.createElement("div", { className: "text-xs text-amber-500 mt-1" }, "\u00D71 = ", base10Value.ones)
               )
-              )),
+              ),
+                // ── Regrouping / Ungrouping Buttons ──
+                /*#__PURE__*/React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-3 mt-1" },
+                  /*#__PURE__*/React.createElement("p", { className: "text-[10px] font-bold text-violet-700 uppercase tracking-wider mb-2 text-center" }, "\u21C4 Regroup / Ungroup"),
+                  /*#__PURE__*/React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" },
+                    // 10 ones → 1 ten
+                    /*#__PURE__*/React.createElement("button", {
+                      onClick: () => doRegroup('ones', 'tens'),
+                      disabled: base10Value.ones < 10 || base10Value.tens >= 9,
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (base10Value.ones >= 10 && base10Value.tens < 9 ? "bg-gradient-to-r from-amber-400 to-green-400 text-white shadow hover:shadow-md hover:scale-105" : "bg-slate-100 text-slate-300 cursor-not-allowed"),
+                      title: "Convert 10 ones into 1 ten"
+                    }, "10 \u25AA \u2192 1 \u2503"),
+                    // 1 ten → 10 ones
+                    /*#__PURE__*/React.createElement("button", {
+                      onClick: () => doUngroup('tens', 'ones'),
+                      disabled: base10Value.tens < 1,
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (base10Value.tens >= 1 ? "bg-gradient-to-r from-green-400 to-amber-400 text-white shadow hover:shadow-md hover:scale-105" : "bg-slate-100 text-slate-300 cursor-not-allowed"),
+                      title: "Break 1 ten into 10 ones"
+                    }, "1 \u2503 \u2192 10 \u25AA"),
+                    /*#__PURE__*/React.createElement("span", { className: "w-px h-6 bg-violet-200 mx-1 self-center" }),
+                    // 10 tens → 1 hundred
+                    /*#__PURE__*/React.createElement("button", {
+                      onClick: () => doRegroup('tens', 'hundreds'),
+                      disabled: base10Value.tens < 10 || base10Value.hundreds >= 9,
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (base10Value.tens >= 10 && base10Value.hundreds < 9 ? "bg-gradient-to-r from-green-400 to-blue-400 text-white shadow hover:shadow-md hover:scale-105" : "bg-slate-100 text-slate-300 cursor-not-allowed"),
+                      title: "Convert 10 tens into 1 hundred"
+                    }, "10 \u2503 \u2192 1 \u25AC"),
+                    // 1 hundred → 10 tens
+                    /*#__PURE__*/React.createElement("button", {
+                      onClick: () => doUngroup('hundreds', 'tens'),
+                      disabled: base10Value.hundreds < 1,
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (base10Value.hundreds >= 1 ? "bg-gradient-to-r from-blue-400 to-green-400 text-white shadow hover:shadow-md hover:scale-105" : "bg-slate-100 text-slate-300 cursor-not-allowed"),
+                      title: "Break 1 hundred into 10 tens"
+                    }, "1 \u25AC \u2192 10 \u2503"),
+                    /*#__PURE__*/React.createElement("span", { className: "w-px h-6 bg-violet-200 mx-1 self-center" }),
+                    // 10 hundreds → 1 thousand
+                    /*#__PURE__*/React.createElement("button", {
+                      onClick: () => doRegroup('hundreds', 'thousands'),
+                      disabled: base10Value.hundreds < 10 || base10Value.thousands >= 9,
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (base10Value.hundreds >= 10 && base10Value.thousands < 9 ? "bg-gradient-to-r from-blue-400 to-purple-400 text-white shadow hover:shadow-md hover:scale-105" : "bg-slate-100 text-slate-300 cursor-not-allowed"),
+                      title: "Convert 10 hundreds into 1 thousand"
+                    }, "10 \u25AC \u2192 1 \u25A0"),
+                    // 1 thousand → 10 hundreds
+                    /*#__PURE__*/React.createElement("button", {
+                      onClick: () => doUngroup('thousands', 'hundreds'),
+                      disabled: base10Value.thousands < 1,
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (base10Value.thousands >= 1 ? "bg-gradient-to-r from-purple-400 to-blue-400 text-white shadow hover:shadow-md hover:scale-105" : "bg-slate-100 text-slate-300 cursor-not-allowed"),
+                      title: "Break 1 thousand into 10 hundreds"
+                    }, "1 \u25A0 \u2192 10 \u25AC")
+                  ),
+                  /*#__PURE__*/React.createElement("p", { className: "text-[9px] text-violet-400 text-center mt-1.5 italic" }, "\uD83D\uDCA1 10 of one place value always equals 1 of the next. Try adding 10+ ones, then regroup!")
+                )),
                 // Buttons row
                 /*#__PURE__*/React.createElement("div", { className: "flex gap-2 flex-wrap" },
                   /*#__PURE__*/React.createElement("button", {
@@ -4096,7 +4182,7 @@
               className: "text-xs font-bold text-purple-600 uppercase mb-1"
             }, "Type"), /*#__PURE__*/React.createElement("div", {
               className: `text-lg font-bold ${angleClass === t('stem.calculus.right') ? 'text-green-600' : angleClass === 'Acute' ? 'text-blue-600' : angleClass === 'Obtuse' ? 'text-orange-600' : 'text-red-600'}`
-            }, angleClass)), /*#__PURE__*/React.createElement("div", {
+            }, (angleChallenge && !angleFeedback) ? "\u2753" : angleClass)), /*#__PURE__*/React.createElement("div", {
               className: "bg-white rounded-xl p-3 border border-purple-100 text-center"
             }, /*#__PURE__*/React.createElement("div", {
               className: "text-xs font-bold text-purple-600 uppercase mb-1"
@@ -5271,7 +5357,7 @@
               for (var sj = 0; sj < _seaGrass.length; sj++) {
                 var sg = _seaGrass[sj];
                 var sgBaseY = floorY + Math.sin(sg.x * 0.015) * 6;
-                var sway = Math.sin(tick * 0.025 + sg.phase) * 8;
+                var sway = Math.sin(tick * 0.008 + sg.phase) * 8;
                 ctx.beginPath();
                 ctx.moveTo(sg.x, sgBaseY);
                 ctx.quadraticCurveTo(sg.x + sway * 0.5, sgBaseY - sg.h * 0.5, sg.x + sway, sgBaseY - sg.h);
@@ -5286,11 +5372,11 @@
               ctx.save();
               for (var pk = 0; pk < _plankton.length; pk++) {
                 var pl = _plankton[pk];
-                pl.x += pl.vx + Math.sin(tick * 0.01 + pl.phase) * 0.1;
+                pl.x += pl.vx + Math.sin(tick * 0.003 + pl.phase) * 0.1;
                 pl.y += pl.vy;
                 if (pl.x < 0) pl.x = cW; if (pl.x > cW) pl.x = 0;
                 if (pl.y < cH * 0.1) pl.y = cH * 0.8; if (pl.y > cH * 0.85) pl.y = cH * 0.1;
-                ctx.globalAlpha = 0.3 + Math.sin(tick * 0.03 + pk) * 0.15;
+                ctx.globalAlpha = 0.3 + Math.sin(tick * 0.01 + pk) * 0.15;
                 ctx.beginPath(); ctx.arc(pl.x, pl.y, pl.size * dpr, 0, Math.PI * 2);
                 ctx.fillStyle = '#a0e8c0'; ctx.fill();
               }
@@ -5304,7 +5390,7 @@
               var mSpeed = parseFloat(canvasEl.dataset.speed || '1');
               for (var mi = 0; mi < _mediumParticles.length; mi++) {
                 var mPart = _mediumParticles[mi];
-                var mWaveT = mPart.x / cW * Math.PI * 2 * mFreq - tick * 0.03 * mSpeed;
+                var mWaveT = mPart.x / cW * Math.PI * 2 * mFreq - tick * 0.08 * mSpeed;
                 var mDisp = Math.sin(mWaveT) * mAmp * dpr * 0.3;
                 var mpy = mPart.baseY - mDisp;
                 // Glow
@@ -5329,7 +5415,7 @@
               for (var bj = 0; bj < _bubbles.length; bj++) {
                 var bub = _bubbles[bj];
                 bub.y -= bub.speed;
-                bub.x += Math.sin(tick * 0.02 + bub.wobble) * bub.wobbleAmp;
+                bub.x += Math.sin(tick * 0.006 + bub.wobble) * bub.wobbleAmp;
                 if (bub.y < cH * 0.03) { bub.y = cH * 0.9 + Math.random() * cH * 0.1; bub.x = Math.random() * cW; }
                 var bubR = bub.r * dpr;
                 ctx.globalAlpha = 0.25;
@@ -5440,7 +5526,7 @@
                 ctx.shadowBlur = 8;
                 ctx.beginPath();
                 for (var x = 0; x < cW; x++) {
-                  var t = x / (cW) * Math.PI * 2 * freq - tick * 0.03 * speed;
+                  var t = x / (cW) * Math.PI * 2 * freq - tick * 0.08 * speed;
                   var y = waveVal(t, waveType);
                   var py = cH / 2 - y * amp * dpr;
                   if (x === 0) ctx.moveTo(x, py); else ctx.lineTo(x, py);
@@ -5457,7 +5543,7 @@
                   ctx.globalAlpha = 0.8;
                   ctx.beginPath();
                   for (var xt = 0; xt < cW; xt++) {
-                    var tt = xt / cW * Math.PI * 2 * targetFreq - tick * 0.03 * speed;
+                    var tt = xt / cW * Math.PI * 2 * targetFreq - tick * 0.08 * speed;
                     var yt = Math.sin(tt);
                     var pyt = cH / 2 - yt * targetAmp * dpr;
                     if (xt === 0) ctx.moveTo(xt, pyt); else ctx.lineTo(xt, pyt);
@@ -7542,7 +7628,7 @@
         // NEW TOOLS: Function Grapher, Physics, Chem, Punnett, Circuit, Data, Inequality, Molecule
         // ═══════════════════════════════════════════════════════
 
-        stemLabTab === 'explore' && stemLabTool === 'funcGrapher' && (() => {
+        (function _funcGrapherTool() { var _isFuncGrapher = stemLabTab === 'explore' && stemLabTool === 'funcGrapher'; if (!_isFuncGrapher) { React.useEffect(function(){}, []); return null; }
           const d = labToolData.funcGrapher;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, funcGrapher: { ...prev.funcGrapher, [key]: val } }));
           const W = 440, H = 320, pad = 45;
@@ -7898,7 +7984,7 @@
             if (!canvasEl) {
               if (canvasRef._lastCanvas && canvasRef._lastCanvas._physAnim) {
                 cancelAnimationFrame(canvasRef._lastCanvas._physAnim);
-                canvasRef._lastCanvas._physInit = false;
+                // _physInit stays true — state persists on canvas element
                 canvasRef._lastCanvas = null;
               }
               return;
@@ -7910,12 +7996,13 @@
             var cH = canvasEl.height = canvasEl.offsetHeight * 2;
             var ctx = canvasEl.getContext('2d');
             var dpr = 2;
-            var tick = 0;
-            var trails = [];
-            var ball = null;
-            var launched = false;
-            var impactParticles = [];
-            var landingMarkers = [];
+            // Store animation state ON the canvas element so it persists across React re-renders
+            var tick = canvasEl._tick || 0;
+            var trails = canvasEl._trails || [];
+            var ball = canvasEl._ball || null;
+            var launched = canvasEl._launched || false;
+            var impactParticles = canvasEl._impactParticles || [];
+            var landingMarkers = canvasEl._landingMarkers || [];
             // Target flags
             var targets = [
               { dist: 50, color: '#22c55e', label: '50m', hit: false },
@@ -8415,6 +8502,10 @@
               ctx.fillStyle = '#ef4444'; ctx.textAlign = 'right'; ctx.fillText('FAST', legX + legW - 4 * dpr, legY + 14 * dpr);
               ctx.restore();
 
+
+              // Sync state back to canvas element for persistence
+              canvasEl._tick = tick; canvasEl._trails = trails; canvasEl._ball = ball;
+              canvasEl._launched = launched; canvasEl._impactParticles = impactParticles; canvasEl._landingMarkers = landingMarkers;
               canvasEl._physAnim = requestAnimationFrame(draw);
             }
             canvasEl._physAnim = requestAnimationFrame(draw);
@@ -9163,18 +9254,22 @@
         })(),
 
 
-        stemLabTab === 'explore' && stemLabTool === 'circuit' && (() => {
+        (function _circuitTool() { var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_isCircuit) { React.useEffect(function(){}, []); return null; }
           const d = labToolData.circuit;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, circuit: { ...prev.circuit, [key]: val } }));
           const mode = d.mode || 'series';
-          const resistors = d.components.filter(c => c.type === 'resistor');
-          const bulbs = d.components.filter(c => c.type === 'bulb');
-          const totalR = mode === 'series'
-            ? d.components.reduce((s, c) => s + c.value, 0) || 0.001
-            : (d.components.length > 0 ? 1 / d.components.reduce((s, c) => s + 1 / (c.value || 1), 0) : 0.001);
-          const current = d.voltage / totalR;
+          // Component resistance helper (switch, LED, ammeter, voltmeter support)
+          const getCompR = (c) => c.type === 'switch' ? (c.closed ? 0.001 : 1e9) : c.type === 'ammeter' ? 0.001 : c.type === 'voltmeter' ? 1e9 : (c.value || 1);
+          const toggleSwitch = (compId) => upd('components', d.components.map(c => c.id === compId ? Object.assign({}, c, { closed: !c.closed }) : c));
+          const cycleLedColor = (compId) => { var _cs = ['#ef4444','#22c55e','#3b82f6','#eab308','#f8fafc']; upd('components', d.components.map(c => { if (c.id !== compId) return c; var ci = _cs.indexOf(c.ledColor || '#ef4444'); return Object.assign({}, c, { ledColor: _cs[(ci + 1) % _cs.length] }); })); };
+          const hasOpenSwitch = mode === 'series' && d.components.some(c => c.type === 'switch' && !c.closed);
+          const totalR = hasOpenSwitch ? 1e9 : (mode === 'series'
+            ? d.components.reduce((s, c) => s + getCompR(c), 0) || 0.001
+            : (d.components.length > 0 ? 1 / d.components.reduce((s, c) => s + 1 / (getCompR(c) || 1), 0) : 0.001));
+          const current = hasOpenSwitch ? 0 : d.voltage / totalR;
           const power = d.voltage * current;
-          const isShort = d.components.length > 0 && totalR < 1;
+          const isShort = d.components.length > 0 && totalR < 1 && !hasOpenSwitch;
+          const isOpen = hasOpenSwitch;
           const W = 440, H = 200;
 
           // Electron animation tick
@@ -9245,9 +9340,11 @@
                   var spacing = Math.min(70, 280 / Math.max(d.components.length, 1));
                   var cx = 80 + i * spacing;
                   var compI = current;
-                  var compV = current * comp.value;
+                  var compR = getCompR(comp);
+                  var compV = current * compR;
                   var compP = compV * compI;
                   var bulbBright = comp.type === 'bulb' ? Math.min(compP / 10, 1) : 0;
+                  var ledGlow = comp.type === 'led' && current > 0.005 ? Math.min(current * 20, 1) : 0;
                   return React.createElement("g", { key: comp.id },
                     React.createElement("line", { x1: cx, y1: 20, x2: cx, y2: 55, stroke: "#1e293b", strokeWidth: 2 }),
                     comp.type === 'resistor'
@@ -9258,6 +9355,38 @@
                         React.createElement("line", { x1: cx - 8, y1: 79, x2: cx + 8, y2: 79, stroke: "#ca8a04", strokeWidth: 1 }),
                         React.createElement("line", { x1: cx - 8, y1: 86, x2: cx + 8, y2: 86, stroke: "#ca8a04", strokeWidth: 1 })
                       )
+                      : comp.type === 'switch'
+                      ? React.createElement("g", { onClick: function () { toggleSwitch(comp.id); }, style: { cursor: 'pointer' } },
+                        React.createElement("rect", { x: cx - 14, y: 55, width: 28, height: 40, fill: comp.closed ? '#d1fae5' : '#fee2e2', stroke: comp.closed ? '#059669' : '#dc2626', strokeWidth: 1.5, rx: 4 }),
+                        React.createElement("circle", { cx: cx - 6, cy: 75, r: 3, fill: '#1e293b' }),
+                        React.createElement("circle", { cx: cx + 6, cy: 75, r: 3, fill: '#1e293b' }),
+                        comp.closed
+                          ? React.createElement("line", { x1: cx - 6, y1: 75, x2: cx + 6, y2: 75, stroke: '#059669', strokeWidth: 2.5 })
+                          : React.createElement("line", { x1: cx - 6, y1: 75, x2: cx + 4, y2: 62, stroke: '#dc2626', strokeWidth: 2.5 }),
+                        React.createElement("text", { x: cx, y: 68, textAnchor: 'middle', style: { fontSize: '7px', fontWeight: 'bold' }, fill: comp.closed ? '#059669' : '#dc2626' }, comp.closed ? 'ON' : 'OFF')
+                      )
+                      : comp.type === 'led'
+                      ? React.createElement("g", { onClick: function () { cycleLedColor(comp.id); }, style: { cursor: 'pointer' } },
+                        ledGlow > 0.1 && React.createElement("circle", { cx: cx, cy: 75, r: 18 + ledGlow * 8, fill: (comp.ledColor || '#ef4444').replace(')', ',' + (ledGlow * 0.3).toFixed(2) + ')').replace('rgb', 'rgba').replace('#ef4444', 'rgba(239,68,68,' + (ledGlow * 0.3).toFixed(2) + ')').replace('#22c55e', 'rgba(34,197,94,' + (ledGlow * 0.3).toFixed(2) + ')').replace('#3b82f6', 'rgba(59,130,246,' + (ledGlow * 0.3).toFixed(2) + ')').replace('#eab308', 'rgba(234,179,8,' + (ledGlow * 0.3).toFixed(2) + ')').replace('#f8fafc', 'rgba(248,250,252,' + (ledGlow * 0.3).toFixed(2) + ')') }),
+                        React.createElement("polygon", { points: (cx - 10) + ',65 ' + (cx + 10) + ',65 ' + cx + ',88', fill: ledGlow > 0.2 ? (comp.ledColor || '#ef4444') : '#fecaca', stroke: comp.ledColor || '#ef4444', strokeWidth: 1.5 }),
+                        React.createElement("line", { x1: cx - 10, y1: 88, x2: cx + 10, y2: 88, stroke: comp.ledColor || '#ef4444', strokeWidth: 2 }),
+                        React.createElement("line", { x1: cx + 7, y1: 70, x2: cx + 13, y2: 63, stroke: comp.ledColor || '#ef4444', strokeWidth: 1 }),
+                        React.createElement("polygon", { points: (cx + 13) + ',63 ' + (cx + 11) + ',66 ' + (cx + 14) + ',65', fill: comp.ledColor || '#ef4444' }),
+                        React.createElement("line", { x1: cx + 10, y1: 74, x2: cx + 16, y2: 67, stroke: comp.ledColor || '#ef4444', strokeWidth: 1 }),
+                        React.createElement("polygon", { points: (cx + 16) + ',67 ' + (cx + 14) + ',70 ' + (cx + 17) + ',69', fill: comp.ledColor || '#ef4444' })
+                      )
+                      : comp.type === 'ammeter'
+                      ? React.createElement("g", null,
+                        React.createElement("circle", { cx: cx, cy: 75, r: 15, fill: '#eff6ff', stroke: '#2563eb', strokeWidth: 2 }),
+                        React.createElement("text", { x: cx, y: 79, textAnchor: 'middle', style: { fontSize: '12px', fontWeight: 'bold' }, fill: '#2563eb' }, 'A'),
+                        current > 0.001 && React.createElement("text", { x: cx, y: 68, textAnchor: 'middle', style: { fontSize: '6px', fontWeight: 'bold' }, fill: '#1d4ed8' }, current.toFixed(3) + 'A')
+                      )
+                      : comp.type === 'voltmeter'
+                      ? React.createElement("g", null,
+                        React.createElement("circle", { cx: cx, cy: 75, r: 15, fill: '#fefce8', stroke: '#ca8a04', strokeWidth: 2 }),
+                        React.createElement("text", { x: cx, y: 79, textAnchor: 'middle', style: { fontSize: '12px', fontWeight: 'bold' }, fill: '#ca8a04' }, 'V'),
+                        React.createElement("text", { x: cx, y: 68, textAnchor: 'middle', style: { fontSize: '6px', fontWeight: 'bold' }, fill: '#a16207' }, d.voltage.toFixed(1) + 'V')
+                      )
                       : React.createElement("g", null,
                         // Glowing halo for bulb
                         bulbBright > 0.1 && React.createElement("circle", { cx: cx, cy: 77, r: 20 + bulbBright * 8, fill: "rgba(251,191,36," + (bulbBright * 0.25).toFixed(2) + ")" }),
@@ -9265,28 +9394,53 @@
                         React.createElement("line", { x1: cx - 5, y1: 72, x2: cx + 5, y2: 82, stroke: "#92400e", strokeWidth: 1 }),
                         React.createElement("line", { x1: cx + 5, y1: 72, x2: cx - 5, y2: 82, stroke: "#92400e", strokeWidth: 1 })
                       ),
-                    React.createElement("text", { x: cx, y: comp.type === 'resistor' ? 110 : 100, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold' }, fill: "#78350f" }, comp.value + "\u03A9"),
+                    comp.type !== 'switch' && comp.type !== 'ammeter' && comp.type !== 'voltmeter' && React.createElement("text", { x: cx, y: comp.type === 'resistor' ? 110 : (comp.type === 'led' ? 104 : 100), textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold' }, fill: "#78350f" }, (comp.type === 'led' ? '~2V drop' : comp.value + "\u03A9")),
                     // Voltage drop label
-                    current > 0.01 && React.createElement("text", { x: cx, y: comp.type === 'resistor' ? 118 : 108, textAnchor: "middle", style: { fontSize: '7px' }, fill: "#3b82f6" }, compV.toFixed(1) + "V"),
-                    React.createElement("line", { x1: cx, y1: comp.type === 'resistor' ? 100 : 92, x2: cx, y2: 140, stroke: "#1e293b", strokeWidth: 2 })
+                    current > 0.01 && comp.type !== 'switch' && comp.type !== 'ammeter' && comp.type !== 'voltmeter' && React.createElement("text", { x: cx, y: comp.type === 'resistor' ? 118 : (comp.type === 'led' ? 112 : 108), textAnchor: "middle", style: { fontSize: '7px' }, fill: "#3b82f6" }, compV.toFixed(1) + "V"),
+                    React.createElement("line", { x1: cx, y1: comp.type === 'resistor' ? 100 : (comp.type === 'switch' ? 95 : (comp.type === 'ammeter' || comp.type === 'voltmeter' ? 90 : 92)), x2: cx, y2: 140, stroke: "#1e293b", strokeWidth: 2 })
                   );
                 })
                 // Components — Parallel
                 : d.components.map(function (comp, i) {
                   var cy = 40 + i * Math.min(30, 80 / Math.max(d.components.length, 1));
-                  var compI2 = d.voltage / (comp.value || 1);
+                  var compR2 = getCompR(comp);
+                  var compI2 = d.voltage / compR2;
                   var compP2 = d.voltage * compI2;
                   var bulbBright2 = comp.type === 'bulb' ? Math.min(compP2 / 10, 1) : 0;
+                  var ledGlow2 = comp.type === 'led' && compI2 > 0.005 ? Math.min(compI2 * 20, 1) : 0;
                   return React.createElement("g", { key: comp.id },
                     React.createElement("line", { x1: 180, y1: cy, x2: 200, y2: cy, stroke: "#1e293b", strokeWidth: 1.5 }),
                     comp.type === 'resistor'
                       ? React.createElement("rect", { x: 200, y: cy - 8, width: 40, height: 16, fill: "#fef9c3", stroke: "#ca8a04", strokeWidth: 1.5, rx: 2 })
+                      : comp.type === 'switch'
+                      ? React.createElement("g", { onClick: function () { toggleSwitch(comp.id); }, style: { cursor: 'pointer' } },
+                        React.createElement("rect", { x: 200, y: cy - 8, width: 40, height: 16, fill: comp.closed ? '#d1fae5' : '#fee2e2', stroke: comp.closed ? '#059669' : '#dc2626', strokeWidth: 1.5, rx: 3 }),
+                        React.createElement("text", { x: 220, y: cy + 4, textAnchor: 'middle', style: { fontSize: '8px', fontWeight: 'bold' }, fill: comp.closed ? '#059669' : '#dc2626' }, comp.closed ? 'ON' : 'OFF')
+                      )
+                      : comp.type === 'led'
+                      ? React.createElement("g", { onClick: function () { cycleLedColor(comp.id); }, style: { cursor: 'pointer' } },
+                        ledGlow2 > 0.1 && React.createElement("circle", { cx: 220, cy: cy, r: 14 + ledGlow2 * 5, fill: 'rgba(239,68,68,' + (ledGlow2 * 0.25).toFixed(2) + ')' }),
+                        React.createElement("polygon", { points: '210,' + (cy - 6) + ' 230,' + (cy - 6) + ' 220,' + (cy + 8), fill: ledGlow2 > 0.2 ? (comp.ledColor || '#ef4444') : '#fecaca', stroke: comp.ledColor || '#ef4444', strokeWidth: 1 }),
+                        React.createElement("line", { x1: 210, y1: cy + 8, x2: 230, y2: cy + 8, stroke: comp.ledColor || '#ef4444', strokeWidth: 1.5 })
+                      )
+                      : comp.type === 'ammeter'
+                      ? React.createElement("g", null,
+                        React.createElement("circle", { cx: 220, cy: cy, r: 10, fill: '#eff6ff', stroke: '#2563eb', strokeWidth: 1.5 }),
+                        React.createElement("text", { x: 220, y: cy + 4, textAnchor: 'middle', style: { fontSize: '9px', fontWeight: 'bold' }, fill: '#2563eb' }, 'A')
+                      )
+                      : comp.type === 'voltmeter'
+                      ? React.createElement("g", null,
+                        React.createElement("circle", { cx: 220, cy: cy, r: 10, fill: '#fefce8', stroke: '#ca8a04', strokeWidth: 1.5 }),
+                        React.createElement("text", { x: 220, y: cy + 4, textAnchor: 'middle', style: { fontSize: '9px', fontWeight: 'bold' }, fill: '#ca8a04' }, 'V')
+                      )
                       : React.createElement("g", null,
                         bulbBright2 > 0.1 && React.createElement("circle", { cx: 220, cy: cy, r: 15 + bulbBright2 * 5, fill: "rgba(251,191,36," + (bulbBright2 * 0.25).toFixed(2) + ")" }),
                         React.createElement("circle", { cx: 220, cy: cy, r: 10, fill: bulbBright2 > 0.3 ? "rgba(251,191,36," + (0.3 + bulbBright2 * 0.7).toFixed(2) + ")" : '#fef3c7', stroke: "#f59e0b", strokeWidth: 1.5 })
                       ),
-                    React.createElement("text", { x: 220, y: cy + 4, textAnchor: "middle", style: { fontSize: '7px', fontWeight: 'bold' }, fill: "#78350f" }, comp.value + "\u03A9"),
-                    React.createElement("text", { x: 250, y: cy + 3, style: { fontSize: '6px' }, fill: "#3b82f6" }, compI2.toFixed(2) + "A"),
+                    comp.type !== 'switch' && comp.type !== 'ammeter' && comp.type !== 'voltmeter' && React.createElement("text", { x: 220, y: cy + 4, textAnchor: "middle", style: { fontSize: '7px', fontWeight: 'bold' }, fill: "#78350f" }, comp.type === 'led' ? '~2V' : comp.value + "\u03A9"),
+                    comp.type === 'ammeter' && React.createElement("text", { x: 250, y: cy + 3, style: { fontSize: '6px', fontWeight: 'bold' }, fill: "#2563eb" }, compI2.toFixed(3) + 'A'),
+                    comp.type === 'voltmeter' && React.createElement("text", { x: 250, y: cy + 3, style: { fontSize: '6px', fontWeight: 'bold' }, fill: "#ca8a04" }, d.voltage.toFixed(1) + 'V'),
+                    comp.type !== 'ammeter' && comp.type !== 'voltmeter' && React.createElement("text", { x: 250, y: cy + 3, style: { fontSize: '6px' }, fill: "#3b82f6" }, compI2.toFixed(2) + "A"),
                     React.createElement("line", { x1: 240, y1: cy, x2: 260, y2: cy, stroke: "#1e293b", strokeWidth: 1.5 })
                   );
                 }),
@@ -9298,9 +9452,13 @@
               d.components.length === 0 && React.createElement("text", { x: W / 2, y: H / 2, textAnchor: "middle", fill: "#94a3b8", style: { fontSize: '12px' } }, "Add components below")
             ),
             // Component buttons
-            React.createElement("div", { className: "flex gap-2 mt-3 mb-3" },
+            React.createElement("div", { className: "flex flex-wrap gap-2 mt-3 mb-3" },
               React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'resistor', value: 100, id: Date.now() }]), className: "px-3 py-1.5 bg-yellow-100 text-yellow-800 font-bold rounded-lg text-sm border border-yellow-300 hover:bg-yellow-200 transition-all" }, "\u2795 Resistor"),
               React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'bulb', value: 50, id: Date.now() + 1 }]), className: "px-3 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-lg text-sm border border-amber-300 hover:bg-amber-200 transition-all" }, "\uD83D\uDCA1 Bulb"),
+              React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'switch', value: 0, id: Date.now() + 2, closed: true }]), className: "px-3 py-1.5 bg-emerald-100 text-emerald-800 font-bold rounded-lg text-sm border border-emerald-300 hover:bg-emerald-200 transition-all" }, "\uD83D\uDD18 Switch"),
+              React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'led', value: 40, id: Date.now() + 3, ledColor: '#ef4444' }]), className: "px-3 py-1.5 bg-rose-100 text-rose-800 font-bold rounded-lg text-sm border border-rose-300 hover:bg-rose-200 transition-all" }, "\uD83D\uDD34 LED"),
+              React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'ammeter', value: 0, id: Date.now() + 4 }]), className: "px-3 py-1.5 bg-blue-100 text-blue-800 font-bold rounded-lg text-sm border border-blue-300 hover:bg-blue-200 transition-all" }, "\u26A1 Ammeter"),
+              React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'voltmeter', value: 0, id: Date.now() + 5 }]), className: "px-3 py-1.5 bg-orange-100 text-orange-800 font-bold rounded-lg text-sm border border-orange-300 hover:bg-orange-200 transition-all" }, "\uD83D\uDD0B Voltmeter"),
               React.createElement("button", { onClick: () => upd('components', []), className: "px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm border border-red-200 hover:bg-red-100 transition-all" }, "\uD83D\uDDD1 Clear"),
               d.components.length > 0 && React.createElement("span", { className: "self-center text-xs text-slate-400 ml-auto" }, d.components.length + " component" + (d.components.length > 1 ? 's' : ''))
             ),
@@ -9313,11 +9471,16 @@
               ),
               React.createElement("div", { className: "flex flex-wrap gap-2" },
                 d.components.map(function (comp, i) {
+                  var compIcon = comp.type === 'resistor' ? '\u2AE8' : comp.type === 'bulb' ? '\uD83D\uDCA1' : comp.type === 'switch' ? '\uD83D\uDD18' : comp.type === 'led' ? '\uD83D\uDD34' : comp.type === 'ammeter' ? '\u26A1' : '\uD83D\uDD0B';
+                  var compLabel = comp.type === 'resistor' ? 'R' : comp.type === 'bulb' ? 'Bulb' : comp.type === 'switch' ? (comp.closed ? 'ON' : 'OFF') : comp.type === 'led' ? 'LED' : comp.type === 'ammeter' ? 'Ammeter' : 'Voltmeter';
                   return React.createElement("div", { key: comp.id, className: "flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2 border border-slate-200" },
-                    React.createElement("span", null, comp.type === 'resistor' ? '\u2AE8' : '\uD83D\uDCA1'),
-                    React.createElement("input", { type: "number", min: 1, max: 10000, value: comp.value, onChange: function (e) { var nc = [...d.components]; nc[i] = Object.assign({}, nc[i], { value: parseInt(e.target.value) || 1 }); upd('components', nc); }, className: "w-20 px-2 py-1 text-sm border rounded text-center font-mono" }),
-                    React.createElement("span", { className: "text-xs text-slate-500" }, "\u03A9"),
-                    React.createElement("button", { onClick: function () { upd('components', d.components.filter(function (_, j) { return j !== i; })); }, className: "text-red-400 hover:text-red-600" }, "\u00D7")
+                    React.createElement("span", null, compIcon),
+                    React.createElement("span", { className: "text-xs font-bold text-slate-600 min-w-[40px]" }, compLabel),
+                    (comp.type === 'resistor' || comp.type === 'bulb') && React.createElement("input", { type: "number", min: 1, max: 10000, value: comp.value, onChange: function (e) { var nc = [...d.components]; nc[i] = Object.assign({}, nc[i], { value: parseInt(e.target.value) || 1 }); upd('components', nc); }, className: "w-20 px-2 py-1 text-sm border rounded text-center font-mono" }),
+                    (comp.type === 'resistor' || comp.type === 'bulb') && React.createElement("span", { className: "text-xs text-slate-500" }, "\u03A9"),
+                    comp.type === 'switch' && React.createElement("button", { onClick: function () { toggleSwitch(comp.id); }, className: "px-2 py-1 text-xs font-bold rounded border transition-all " + (comp.closed ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-red-100 text-red-700 border-red-300') }, comp.closed ? 'Close' : 'Open'),
+                    comp.type === 'led' && React.createElement("button", { onClick: function () { cycleLedColor(comp.id); }, className: "w-5 h-5 rounded-full border-2 border-slate-300", style: { backgroundColor: comp.ledColor || '#ef4444' } }),
+                    React.createElement("button", { onClick: function () { upd('components', d.components.filter(function (_, j) { return j !== i; })); }, className: "text-red-400 hover:text-red-600 ml-auto" }, "\u00D7")
                   );
                 })
               )
@@ -9341,17 +9504,25 @@
               React.createElement("p", { className: "text-[10px] font-bold text-yellow-700 uppercase tracking-wider mb-2" }, "\u26A1 Per-Component Analysis"),
               React.createElement("div", { className: "space-y-1" },
                 d.components.map(function (comp, i) {
-                  var compR = comp.value || 1;
+                  var compR = getCompR(comp);
                   var compI = mode === 'series' ? current : d.voltage / compR;
                   var compV = mode === 'series' ? current * compR : d.voltage;
                   var compP = compV * compI;
+                  var typeIcon = comp.type === 'resistor' ? '\u2AE8 R' : comp.type === 'bulb' ? '\uD83D\uDCA1 B' : comp.type === 'switch' ? '\uD83D\uDD18 S' : comp.type === 'led' ? '\uD83D\uDD34 L' : comp.type === 'ammeter' ? '\u26A1 A' : '\uD83D\uDD0B V';
+                  var rDisplay = comp.type === 'switch' ? (comp.closed ? '~0\u03A9' : '\u221E') : comp.type === 'ammeter' ? '~0\u03A9' : comp.type === 'voltmeter' ? '\u221E' : comp.type === 'led' ? '~40\u03A9' : comp.value + '\u03A9';
                   return React.createElement("div", { key: comp.id, className: "flex items-center gap-2 text-xs bg-white rounded-lg px-2 py-1.5 border" },
-                    React.createElement("span", { className: "font-bold text-yellow-700 w-16" }, (comp.type === 'resistor' ? '\u2AE8 R' : '\uD83D\uDCA1 B') + (i + 1)),
-                    React.createElement("span", { className: "text-slate-500 w-16" }, comp.value + '\u03A9'),
-                    React.createElement("span", { className: "text-blue-600 w-20 font-mono" }, compV.toFixed(2) + 'V'),
-                    React.createElement("span", { className: "text-emerald-600 w-20 font-mono" }, compI.toFixed(3) + 'A'),
-                    React.createElement("span", { className: "text-red-600 w-20 font-mono font-bold" }, compP.toFixed(2) + 'W'),
-                    comp.type === 'bulb' && React.createElement("span", { className: "text-yellow-500" }, compP > 10 ? '\uD83D\uDD06' : compP > 3 ? '\uD83D\uDCA1' : '\uD83D\uDD05')
+                    React.createElement("span", { className: "font-bold text-yellow-700 w-16" }, typeIcon + (i + 1)),
+                    React.createElement("span", { className: "text-slate-500 w-16" }, rDisplay),
+                    comp.type === 'ammeter' ? React.createElement("span", { className: "text-blue-600 w-40 font-mono font-bold" }, '\u27A1 ' + compI.toFixed(3) + 'A (reads current)')
+                    : comp.type === 'voltmeter' ? React.createElement("span", { className: "text-amber-600 w-40 font-mono font-bold" }, '\u27A1 ' + d.voltage.toFixed(1) + 'V (reads voltage)')
+                    : React.createElement(React.Fragment, null,
+                      React.createElement("span", { className: "text-blue-600 w-20 font-mono" }, compV.toFixed(2) + 'V'),
+                      React.createElement("span", { className: "text-emerald-600 w-20 font-mono" }, compI.toFixed(3) + 'A'),
+                      React.createElement("span", { className: "text-red-600 w-20 font-mono font-bold" }, compP.toFixed(2) + 'W')
+                    ),
+                    comp.type === 'bulb' && React.createElement("span", { className: "text-yellow-500" }, compP > 10 ? '\uD83D\uDD06' : compP > 3 ? '\uD83D\uDCA1' : '\uD83D\uDD05'),
+                    comp.type === 'switch' && React.createElement("span", { className: comp.closed ? 'text-emerald-500' : 'text-red-500' }, comp.closed ? '\u2705 Closed' : '\u274C Open'),
+                    comp.type === 'led' && React.createElement("span", { style: { color: comp.ledColor || '#ef4444' } }, compI > 0.005 ? '\u2B50 Lit' : '\u26AB Off')
                   );
                 })
               ),
@@ -9362,6 +9533,11 @@
                 React.createElement("span", null, "\u2022"),
                 React.createElement("span", null, mode === 'series' ? 'Series: same current through all' : 'Parallel: same voltage across all')
               )
+            ),
+            // Open circuit warning
+            isOpen && React.createElement("div", { className: "mt-3 bg-amber-100 rounded-xl border-2 border-amber-400 p-3 text-center" },
+              React.createElement("p", { className: "text-lg font-black text-amber-700" }, "\uD83D\uDD13 CIRCUIT OPEN"),
+              React.createElement("p", { className: "text-xs text-amber-600 mt-1" }, "A switch is open \u2014 no current flows. Close all switches to complete the circuit.")
             ),
             // Short circuit warning
             isShort && React.createElement("div", { className: "mt-3 bg-red-100 rounded-xl border-2 border-red-400 p-3 text-center animate-pulse" },
@@ -10002,11 +10178,38 @@
           const catColors = { nonmetal: 'bg-blue-100 text-blue-700 border-blue-200', noble: 'bg-purple-100 text-purple-700 border-purple-200', alkali: 'bg-red-100 text-red-700 border-red-200', alkaline: 'bg-yellow-100 text-yellow-700 border-yellow-200', transition: 'bg-orange-100 text-orange-700 border-orange-200', metal: 'bg-slate-200 text-slate-700 border-slate-300', metalloid: 'bg-emerald-100 text-emerald-700 border-emerald-200', halogen: 'bg-teal-100 text-teal-700 border-teal-200', lanthanide: 'bg-violet-100 text-violet-700 border-violet-200', actinide: 'bg-pink-100 text-pink-700 border-pink-200' };
           // ── Molecule Viewer presets ──
           const viewerPresets = [
-            { name: t('stem.periodic.hu2082o'), atoms: [{ el: 'O', x: 200, y: 120, color: '#ef4444' }, { el: 'H', x: 140, y: 190, color: '#60a5fa' }, { el: 'H', x: 260, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2]], formula: 'H2O' },
-            { name: t('stem.periodic.cou2082'), atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 120, y: 150, color: '#ef4444' }, { el: 'O', x: 280, y: 150, color: '#ef4444' }], bonds: [[0, 1], [0, 2]], formula: 'CO2' },
-            { name: t('stem.periodic.chu2084'), atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'H', x: 200, y: 80, color: '#60a5fa' }, { el: 'H', x: 270, y: 180, color: '#60a5fa' }, { el: 'H', x: 130, y: 180, color: '#60a5fa' }, { el: 'H', x: 200, y: 220, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [0, 3], [0, 4]], formula: 'CH4' },
-            { name: t('stem.periodic.nacl'), atoms: [{ el: 'Na', x: 160, y: 150, color: '#a855f7' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0, 1]], formula: t('stem.periodic.nacl') },
-            { name: t('stem.periodic.nhu2083'), atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'H', x: 140, y: 185, color: '#94a3b8' }, { el: 'H', x: 200, y: 210, color: '#94a3b8' }, { el: 'H', x: 260, y: 185, color: '#94a3b8' }], bonds: [[0, 1], [0, 2], [0, 3]], formula: 'NH3' },
+            { name: 'H₂O (Water)', atoms: [{ el: 'O', x: 200, y: 120, color: '#ef4444' }, { el: 'H', x: 140, y: 190, color: '#60a5fa' }, { el: 'H', x: 260, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2]], formula: 'H₂O' },
+            { name: 'CO₂ (Carbon Dioxide)', atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 120, y: 150, color: '#ef4444' }, { el: 'O', x: 280, y: 150, color: '#ef4444' }], bonds: [[0, 1], [0, 2]], formula: 'CO₂' },
+            { name: 'CH₄ (Methane)', atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'H', x: 200, y: 80, color: '#60a5fa' }, { el: 'H', x: 270, y: 180, color: '#60a5fa' }, { el: 'H', x: 130, y: 180, color: '#60a5fa' }, { el: 'H', x: 200, y: 220, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [0, 3], [0, 4]], formula: 'CH₄' },
+            { name: 'NaCl (Table Salt)', atoms: [{ el: 'Na', x: 160, y: 150, color: '#a855f7' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0, 1]], formula: 'NaCl' },
+            { name: 'NH₃ (Ammonia)', atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'H', x: 140, y: 185, color: '#94a3b8' }, { el: 'H', x: 200, y: 210, color: '#94a3b8' }, { el: 'H', x: 260, y: 185, color: '#94a3b8' }], bonds: [[0, 1], [0, 2], [0, 3]], formula: 'NH₃' },
+            { name: 'O₂ (Oxygen Gas)', atoms: [{ el: 'O', x: 160, y: 150, color: '#ef4444' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0, 1]], formula: 'O₂' },
+            { name: 'N₂ (Nitrogen Gas)', atoms: [{ el: 'N', x: 155, y: 150, color: '#3b82f6' }, { el: 'N', x: 245, y: 150, color: '#3b82f6' }], bonds: [[0, 1]], formula: 'N₂' },
+            { name: 'H₂O₂ (Hydrogen Peroxide)', atoms: [{ el: 'O', x: 160, y: 130, color: '#ef4444' }, { el: 'O', x: 240, y: 130, color: '#ef4444' }, { el: 'H', x: 110, y: 190, color: '#60a5fa' }, { el: 'H', x: 290, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [1, 3]], formula: 'H₂O₂' },
+            { name: 'HCl (Hydrochloric Acid)', atoms: [{ el: 'H', x: 160, y: 150, color: '#60a5fa' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0, 1]], formula: 'HCl' },
+            { name: 'H₂SO₄ (Sulfuric Acid)', atoms: [{ el: 'S', x: 200, y: 140, color: '#facc15' }, { el: 'O', x: 130, y: 100, color: '#ef4444' }, { el: 'O', x: 270, y: 100, color: '#ef4444' }, { el: 'O', x: 130, y: 190, color: '#ef4444' }, { el: 'O', x: 270, y: 190, color: '#ef4444' }, { el: 'H', x: 80, y: 210, color: '#60a5fa' }, { el: 'H', x: 320, y: 210, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[0,4],[3,5],[4,6]], formula: 'H₂SO₄' },
+            { name: 'C₂H₅OH (Ethanol)', atoms: [{ el: 'C', x: 150, y: 140, color: '#1e293b' }, { el: 'C', x: 230, y: 140, color: '#1e293b' }, { el: 'O', x: 300, y: 140, color: '#ef4444' }, { el: 'H', x: 320, y: 200, color: '#60a5fa' }, { el: 'H', x: 110, y: 90, color: '#60a5fa' }, { el: 'H', x: 110, y: 190, color: '#60a5fa' }, { el: 'H', x: 190, y: 90, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[0,4],[0,5],[0,6]], formula: 'C₂H₅OH' },
+            { name: 'CaCO₃ (Calcium Carbonate)', atoms: [{ el: 'Ca', x: 100, y: 150, color: '#fbbf24' }, { el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 200, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 190, color: '#ef4444' }, { el: 'O', x: 130, y: 190, color: '#ef4444' }], bonds: [[0,4],[1,2],[1,3],[1,4]], formula: 'CaCO₃' },
+            { name: 'C₆H₁₂O₆ (Glucose)', atoms: [{ el: 'C', x: 120, y: 110, color: '#1e293b' }, { el: 'C', x: 180, y: 110, color: '#1e293b' }, { el: 'C', x: 240, y: 110, color: '#1e293b' }, { el: 'O', x: 120, y: 180, color: '#ef4444' }, { el: 'O', x: 180, y: 180, color: '#ef4444' }, { el: 'O', x: 240, y: 180, color: '#ef4444' }, { el: 'H', x: 300, y: 110, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[1,4],[2,5],[2,6]], formula: 'C₆H₁₂O₆' },
+            { name: 'NaOH (Sodium Hydroxide)', atoms: [{ el: 'Na', x: 130, y: 150, color: '#a855f7' }, { el: 'O', x: 210, y: 150, color: '#ef4444' }, { el: 'H', x: 280, y: 150, color: '#60a5fa' }], bonds: [[0,1],[1,2]], formula: 'NaOH' },
+            { name: 'Fe₂O₃ (Iron Oxide)', atoms: [{ el: 'Fe', x: 140, y: 120, color: '#fb923c' }, { el: 'Fe', x: 260, y: 120, color: '#fb923c' }, { el: 'O', x: 120, y: 200, color: '#ef4444' }, { el: 'O', x: 200, y: 200, color: '#ef4444' }, { el: 'O', x: 280, y: 200, color: '#ef4444' }], bonds: [[0,2],[0,3],[1,3],[1,4]], formula: 'Fe₂O₃' },
+            { name: 'O₃ (Ozone)', atoms: [{ el: 'O', x: 130, y: 150, color: '#ef4444' }, { el: 'O', x: 200, y: 110, color: '#ef4444' }, { el: 'O', x: 270, y: 150, color: '#ef4444' }], bonds: [[0,1],[1,2]], formula: 'O₃' },
+            { name: 'CO (Carbon Monoxide)', atoms: [{ el: 'C', x: 160, y: 150, color: '#1e293b' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0,1]], formula: 'CO' },
+            { name: 'NO₂ (Nitrogen Dioxide)', atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'O', x: 140, y: 180, color: '#ef4444' }, { el: 'O', x: 260, y: 180, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'NO₂' },
+            { name: 'SO₂ (Sulfur Dioxide)', atoms: [{ el: 'S', x: 200, y: 120, color: '#facc15' }, { el: 'O', x: 130, y: 180, color: '#ef4444' }, { el: 'O', x: 270, y: 180, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'SO₂' },
+            { name: 'N₂O (Nitrous Oxide)', atoms: [{ el: 'N', x: 140, y: 150, color: '#3b82f6' }, { el: 'N', x: 200, y: 150, color: '#3b82f6' }, { el: 'O', x: 260, y: 150, color: '#ef4444' }], bonds: [[0,1],[1,2]], formula: 'N₂O' },
+            { name: 'CH₃OH (Methanol)', atoms: [{ el: 'C', x: 160, y: 140, color: '#1e293b' }, { el: 'O', x: 240, y: 140, color: '#ef4444' }, { el: 'H', x: 300, y: 140, color: '#60a5fa' }, { el: 'H', x: 120, y: 90, color: '#60a5fa' }, { el: 'H', x: 120, y: 190, color: '#60a5fa' }, { el: 'H', x: 190, y: 80, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[0,4],[0,5]], formula: 'CH₃OH' },
+            { name: 'HNO₃ (Nitric Acid)', atoms: [{ el: 'N', x: 200, y: 130, color: '#3b82f6' }, { el: 'O', x: 140, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 100, color: '#ef4444' }, { el: 'O', x: 200, y: 200, color: '#ef4444' }, { el: 'H', x: 260, y: 200, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[3,4]], formula: 'HNO₃' },
+            { name: 'H₃PO₄ (Phosphoric Acid)', atoms: [{ el: 'P', x: 200, y: 140, color: '#f97316' }, { el: 'O', x: 140, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 90, color: '#ef4444' }, { el: 'O', x: 270, y: 195, color: '#ef4444' }, { el: 'O', x: 130, y: 195, color: '#ef4444' }, { el: 'H', x: 310, y: 60, color: '#60a5fa' }, { el: 'H', x: 320, y: 210, color: '#60a5fa' }, { el: 'H', x: 80, y: 210, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[0,4],[2,5],[3,6],[4,7]], formula: 'H₃PO₄' },
+            { name: 'C₃H₈ (Propane)', atoms: [{ el: 'C', x: 130, y: 140, color: '#1e293b' }, { el: 'C', x: 200, y: 140, color: '#1e293b' }, { el: 'C', x: 270, y: 140, color: '#1e293b' }, { el: 'H', x: 100, y: 90, color: '#60a5fa' }, { el: 'H', x: 100, y: 190, color: '#60a5fa' }, { el: 'H', x: 130, y: 210, color: '#60a5fa' }, { el: 'H', x: 200, y: 90, color: '#60a5fa' }, { el: 'H', x: 200, y: 190, color: '#60a5fa' }, { el: 'H', x: 300, y: 90, color: '#60a5fa' }, { el: 'H', x: 300, y: 190, color: '#60a5fa' }, { el: 'H', x: 270, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[0,4],[0,5],[1,6],[1,7],[2,8],[2,9],[2,10]], formula: 'C₃H₈' },
+            { name: 'C₄H₁₀ (Butane)', atoms: [{ el: 'C', x: 100, y: 140, color: '#1e293b' }, { el: 'C', x: 170, y: 140, color: '#1e293b' }, { el: 'C', x: 240, y: 140, color: '#1e293b' }, { el: 'C', x: 310, y: 140, color: '#1e293b' }, { el: 'H', x: 70, y: 100, color: '#60a5fa' }, { el: 'H', x: 70, y: 180, color: '#60a5fa' }, { el: 'H', x: 100, y: 210, color: '#60a5fa' }, { el: 'H', x: 170, y: 100, color: '#60a5fa' }, { el: 'H', x: 170, y: 195, color: '#60a5fa' }, { el: 'H', x: 240, y: 100, color: '#60a5fa' }, { el: 'H', x: 240, y: 195, color: '#60a5fa' }, { el: 'H', x: 340, y: 100, color: '#60a5fa' }, { el: 'H', x: 340, y: 180, color: '#60a5fa' }, { el: 'H', x: 310, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[0,4],[0,5],[0,6],[1,7],[1,8],[2,9],[2,10],[3,11],[3,12],[3,13]], formula: 'C₄H₁₀' },
+            { name: 'SiO₂ (Silicon Dioxide)', atoms: [{ el: 'Si', x: 200, y: 150, color: '#34d399' }, { el: 'O', x: 130, y: 150, color: '#ef4444' }, { el: 'O', x: 270, y: 150, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'SiO₂' },
+            { name: 'KCl (Potassium Chloride)', atoms: [{ el: 'K', x: 160, y: 150, color: '#f87171' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0,1]], formula: 'KCl' },
+            { name: 'MgO (Magnesium Oxide)', atoms: [{ el: 'Mg', x: 160, y: 150, color: '#fbbf24' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0,1]], formula: 'MgO' },
+            { name: 'NaHCO₃ (Baking Soda)', atoms: [{ el: 'Na', x: 80, y: 150, color: '#a855f7' }, { el: 'O', x: 150, y: 150, color: '#ef4444' }, { el: 'C', x: 220, y: 150, color: '#1e293b' }, { el: 'O', x: 220, y: 80, color: '#ef4444' }, { el: 'O', x: 290, y: 150, color: '#ef4444' }, { el: 'H', x: 340, y: 150, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[2,4],[4,5]], formula: 'NaHCO₃' },
+            { name: 'CH₃COOH (Acetic Acid)', atoms: [{ el: 'C', x: 140, y: 140, color: '#1e293b' }, { el: 'C', x: 220, y: 140, color: '#1e293b' }, { el: 'O', x: 220, y: 70, color: '#ef4444' }, { el: 'O', x: 290, y: 160, color: '#ef4444' }, { el: 'H', x: 340, y: 160, color: '#60a5fa' }, { el: 'H', x: 100, y: 95, color: '#60a5fa' }, { el: 'H', x: 100, y: 185, color: '#60a5fa' }, { el: 'H', x: 140, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[1,3],[3,4],[0,5],[0,6],[0,7]], formula: 'CH₃COOH' },
+            { name: 'KNO₃ (Potassium Nitrate)', atoms: [{ el: 'K', x: 100, y: 150, color: '#f87171' }, { el: 'N', x: 200, y: 130, color: '#3b82f6' }, { el: 'O', x: 160, y: 190, color: '#ef4444' }, { el: 'O', x: 240, y: 190, color: '#ef4444' }, { el: 'O', x: 200, y: 70, color: '#ef4444' }], bonds: [[0,2],[1,2],[1,3],[1,4]], formula: 'KNO₃' },
+            { name: 'CuSO₄ (Copper Sulfate)', atoms: [{ el: 'Cu', x: 100, y: 150, color: '#fb923c' }, { el: 'S', x: 200, y: 140, color: '#facc15' }, { el: 'O', x: 160, y: 80, color: '#ef4444' }, { el: 'O', x: 260, y: 90, color: '#ef4444' }, { el: 'O', x: 260, y: 200, color: '#ef4444' }, { el: 'O', x: 140, y: 200, color: '#ef4444' }], bonds: [[0,5],[1,2],[1,3],[1,4],[1,5]], formula: 'CuSO₄' },
           ];
           return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
             // Header
@@ -10017,7 +10220,7 @@
             ),
             // Mode tabs
             React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-100 p-1 rounded-xl" },
-              [['viewer', '\uD83D\uDD2C Viewer'], ['creator', '\u2697\uFE0F Compound Creator'], ['table', '\uD83D\uDDC2\uFE0F Periodic Table']].map(([m, label]) =>
+              [['viewer', '\uD83D\uDD2C Viewer'], ['creator', '\u2697\uFE0F Compound Creator'], ['build', '\uD83E\uDDF1 Build'], ['table', '\uD83D\uDDC2\uFE0F Periodic Table']].map(([m, label]) =>
                 React.createElement("button", { key: m, onClick: () => upd('moleculeMode', m), className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (mode === m ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700') }, label)
               )
             ),
@@ -10038,7 +10241,7 @@
             ),
             // ── Compound Creator Mode ──
             mode === 'creator' && React.createElement("div", null,
-              React.createElement("p", { className: "text-xs text-slate-500 mb-3" }, "Select elements to craft compounds. Like Minecraft\u2019s Compound Creator!"),
+              React.createElement("p", { className: "text-xs text-slate-500 mb-3" }, "Select elements to craft compounds \u2014 discover real-world chemistry by combining atoms!"),
               // Element selector grid (common elements)
               React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-4" },
                 ['H', 'C', 'N', 'O', 'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'K', 'Ca', 'Fe', 'Cu', 'Zn', 'Br', 'Ag', 'I', 'Au'].map(sym => {
@@ -10083,6 +10286,267 @@
                 React.createElement("p", { className: "text-xs font-bold text-slate-600 mb-2" }, "\uD83D\uDCDA Discovery Log (" + discovered.length + "/" + COMPOUNDS.length + ")"),
                 React.createElement("div", { className: "flex flex-wrap gap-1" },
                   COMPOUNDS.map(c => React.createElement("span", { key: c.formula, className: "px-2 py-0.5 rounded text-xs font-bold " + (discovered.includes(c.formula) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-400') }, discovered.includes(c.formula) ? c.emoji + ' ' + c.name : '\uD83D\uDD12 ???'))
+                )
+              )
+            ),
+            // ── Build Mode ──
+            mode === 'build' && React.createElement("div", null,
+              React.createElement("p", { className: "text-xs text-slate-500 mb-2" }, "Drag atoms onto the canvas and draw bonds to build molecules! Click two atoms to connect them."),
+              // Atom palette
+              React.createElement("div", { className: "flex gap-1 mb-3 flex-wrap" },
+                [
+                  { sym: 'H', color: '#60a5fa', label: 'Hydrogen' },
+                  { sym: 'C', color: '#1e293b', label: 'Carbon' },
+                  { sym: 'N', color: '#3b82f6', label: 'Nitrogen' },
+                  { sym: 'O', color: '#ef4444', label: 'Oxygen' },
+                  { sym: 'S', color: '#facc15', label: 'Sulfur' },
+                  { sym: 'P', color: '#f97316', label: 'Phosphorus' },
+                  { sym: 'Cl', color: '#22c55e', label: 'Chlorine' },
+                  { sym: 'Na', color: '#a855f7', label: 'Sodium' },
+                  { sym: 'Ca', color: '#fbbf24', label: 'Calcium' },
+                  { sym: 'Fe', color: '#fb923c', label: 'Iron' },
+                  { sym: 'K', color: '#f87171', label: 'Potassium' },
+                  { sym: 'Si', color: '#34d399', label: 'Silicon' },
+                ].map(a => React.createElement("button", {
+                  key: a.sym,
+                  onClick: () => {
+                    const ba = d.buildAtoms || [];
+                    // Place new atom at a random position in the canvas
+                    const nx = 80 + Math.random() * (W - 160);
+                    const ny = 60 + Math.random() * (H - 120);
+                    upd('buildAtoms', [...ba, { el: a.sym, x: Math.round(nx), y: Math.round(ny), color: a.color }]);
+                    upd('buildCheckResult', null);
+                  },
+                  className: "px-2 py-1.5 rounded-lg text-xs font-bold border-2 transition-all hover:scale-105 hover:shadow-md active:scale-95",
+                  style: { borderColor: a.color, color: a.color, backgroundColor: a.color + '18' },
+                  title: 'Add ' + a.label
+                }, a.sym))
+              ),
+              // Canvas workspace
+              React.createElement("svg", {
+                viewBox: "0 0 " + W + " " + H,
+                className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border-2 border-dashed border-slate-300 cursor-crosshair",
+                style: { maxHeight: "320px", touchAction: 'none' },
+                onMouseMove: e => {
+                  if (d.buildDragging !== null && d.buildDragging !== undefined) {
+                    const svg = e.currentTarget;
+                    const rect = svg.getBoundingClientRect();
+                    const nx = (e.clientX - rect.left) / rect.width * W;
+                    const ny = (e.clientY - rect.top) / rect.height * H;
+                    const na = (d.buildAtoms || []).map((a, i) => i === d.buildDragging ? { ...a, x: Math.max(20, Math.min(W - 20, Math.round(nx))), y: Math.max(20, Math.min(H - 20, Math.round(ny))) } : a);
+                    upd('buildAtoms', na);
+                  }
+                },
+                onMouseUp: () => upd('buildDragging', null),
+                onMouseLeave: () => upd('buildDragging', null)
+              },
+                // Grid dots for visual guide
+                Array.from({ length: 10 }, (_, r) => Array.from({ length: 13 }, (_, c) => React.createElement("circle", { key: 'g' + r + '-' + c, cx: 30 + c * 28, cy: 25 + r * 28, r: 1, fill: '#e2e8f0' }))).flat(),
+                // Draw bonds
+                (d.buildBonds || []).map((b, i) => {
+                  const atoms = d.buildAtoms || [];
+                  const a1 = atoms[b[0]], a2 = atoms[b[1]];
+                  if (!a1 || !a2) return null;
+                  const bondType = b[2] || 1; // 1=single, 2=double, 3=triple
+                  const dx = a2.x - a1.x, dy = a2.y - a1.y;
+                  const len = Math.sqrt(dx * dx + dy * dy) || 1;
+                  const px = -dy / len, py = dx / len; // perpendicular
+                  const bondLines = [];
+                  if (bondType === 1) {
+                    bondLines.push(React.createElement("line", { key: 'bl' + i, x1: a1.x, y1: a1.y, x2: a2.x, y2: a2.y, stroke: "#64748b", strokeWidth: 3.5, strokeLinecap: "round" }));
+                  } else if (bondType === 2) {
+                    const off = 3;
+                    bondLines.push(React.createElement("line", { key: 'bl' + i + 'a', x1: a1.x + px * off, y1: a1.y + py * off, x2: a2.x + px * off, y2: a2.y + py * off, stroke: "#64748b", strokeWidth: 2.5, strokeLinecap: "round" }));
+                    bondLines.push(React.createElement("line", { key: 'bl' + i + 'b', x1: a1.x - px * off, y1: a1.y - py * off, x2: a2.x - px * off, y2: a2.y - py * off, stroke: "#64748b", strokeWidth: 2.5, strokeLinecap: "round" }));
+                  } else {
+                    bondLines.push(React.createElement("line", { key: 'bl' + i + 'a', x1: a1.x + px * 5, y1: a1.y + py * 5, x2: a2.x + px * 5, y2: a2.y + py * 5, stroke: "#64748b", strokeWidth: 2, strokeLinecap: "round" }));
+                    bondLines.push(React.createElement("line", { key: 'bl' + i + 'b', x1: a1.x, y1: a1.y, x2: a2.x, y2: a2.y, stroke: "#64748b", strokeWidth: 2, strokeLinecap: "round" }));
+                    bondLines.push(React.createElement("line", { key: 'bl' + i + 'c', x1: a1.x - px * 5, y1: a1.y - py * 5, x2: a2.x - px * 5, y2: a2.y - py * 5, stroke: "#64748b", strokeWidth: 2, strokeLinecap: "round" }));
+                  }
+                  // Clickable hit area to cycle bond type
+                  bondLines.push(React.createElement("line", {
+                    key: 'bh' + i, x1: a1.x, y1: a1.y, x2: a2.x, y2: a2.y,
+                    stroke: "transparent", strokeWidth: 12, style: { cursor: 'pointer' },
+                    onClick: (e) => {
+                      e.stopPropagation();
+                      const nb = (d.buildBonds || []).map((bb, bi) => bi === i ? [bb[0], bb[1], ((bb[2] || 1) % 3) + 1] : bb);
+                      upd('buildBonds', nb);
+                      upd('buildCheckResult', null);
+                    }
+                  }));
+                  return React.createElement("g", { key: 'bg' + i }, ...bondLines);
+                }),
+                // Draw atoms
+                (d.buildAtoms || []).map((a, i) => {
+                  const isSelected = d.buildBondFrom === i;
+                  return React.createElement("g", { key: 'ba' + i },
+                    // Selection ring
+                    isSelected && React.createElement("circle", { cx: a.x, cy: a.y, r: 28, fill: "none", stroke: "#3b82f6", strokeWidth: 2, strokeDasharray: "4 2", className: "animate-spin" }),
+                    // Atom circle
+                    React.createElement("circle", {
+                      cx: a.x, cy: a.y, r: 22, fill: a.color || '#64748b', stroke: isSelected ? '#3b82f6' : '#fff', strokeWidth: isSelected ? 3 : 2.5,
+                      style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' },
+                      onMouseDown: e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        // If in bond-drawing mode
+                        if (d.buildBondFrom !== null && d.buildBondFrom !== undefined && d.buildBondFrom !== i) {
+                          // Create bond
+                          const existingBonds = d.buildBonds || [];
+                          const already = existingBonds.find(b => (b[0] === d.buildBondFrom && b[1] === i) || (b[0] === i && b[1] === d.buildBondFrom));
+                          if (!already) {
+                            upd('buildBonds', [...existingBonds, [d.buildBondFrom, i, 1]]);
+                          }
+                          upd('buildBondFrom', null);
+                          upd('buildCheckResult', null);
+                        } else {
+                          upd('buildDragging', i);
+                        }
+                      }
+                    }),
+                    // Atom label
+                    React.createElement("text", { x: a.x, y: a.y + 5, textAnchor: "middle", fill: "white", style: { fontSize: '13px', fontWeight: 'bold', pointerEvents: 'none' } }, a.el),
+                    // Delete button (small x in corner)
+                    React.createElement("g", {
+                      onClick: e => {
+                        e.stopPropagation();
+                        const newAtoms = (d.buildAtoms || []).filter((_, ai) => ai !== i);
+                        const newBonds = (d.buildBonds || []).filter(b => b[0] !== i && b[1] !== i).map(b => [b[0] > i ? b[0] - 1 : b[0], b[1] > i ? b[1] - 1 : b[1], b[2] || 1]);
+                        upd('buildAtoms', newAtoms);
+                        upd('buildBonds', newBonds);
+                        if (d.buildBondFrom === i) upd('buildBondFrom', null);
+                        upd('buildCheckResult', null);
+                      },
+                      style: { cursor: 'pointer' }
+                    },
+                      React.createElement("circle", { cx: a.x + 16, cy: a.y - 16, r: 7, fill: '#ef4444', stroke: '#fff', strokeWidth: 1.5 }),
+                      React.createElement("text", { x: a.x + 16, y: a.y - 12.5, textAnchor: "middle", fill: "white", style: { fontSize: '9px', fontWeight: 'bold', pointerEvents: 'none' } }, "\u2715")
+                    )
+                  );
+                }),
+                // "Drawing bond from..." indicator line
+                d.buildBondFrom !== null && d.buildBondFrom !== undefined && (d.buildAtoms || [])[d.buildBondFrom] && React.createElement("text", { x: W / 2, y: H - 10, textAnchor: "middle", fill: "#3b82f6", style: { fontSize: '10px', fontWeight: 'bold' } }, "\u{1F517} Click another atom to connect...")
+              ),
+              // Controls bar
+              React.createElement("div", { className: "flex items-center gap-2 mt-3 flex-wrap" },
+                // Bond draw button
+                React.createElement("button", {
+                  onClick: () => {
+                    if (d.buildBondFrom !== null && d.buildBondFrom !== undefined) {
+                      upd('buildBondFrom', null);
+                    } else {
+                      // Enter bond mode — user must click first atom
+                      upd('buildBondFrom', null);
+                      addToast('\u{1F517} Click an atom to start a bond, then click another to connect.', 'info');
+                    }
+                  },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all " + (d.buildBondFrom !== null && d.buildBondFrom !== undefined ? 'bg-blue-100 text-blue-700 border-blue-300' : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200')
+                }, "\u{1F517} " + (d.buildBondFrom !== null && d.buildBondFrom !== undefined ? 'Cancel Bond' : 'Draw Bond')),
+                // Bond-from selector — click an atom first
+                (d.buildAtoms || []).length >= 2 && d.buildBondFrom === null && React.createElement("div", { className: "flex gap-1" },
+                  (d.buildAtoms || []).map((a, i) => React.createElement("button", {
+                    key: 'bf' + i,
+                    onClick: () => { upd('buildBondFrom', i); },
+                    className: "w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold border-2 border-white hover:scale-110 transition-transform shadow-sm",
+                    style: { backgroundColor: a.color },
+                    title: 'Start bond from ' + a.el
+                  }, a.el))
+                ),
+                // Clear all
+                React.createElement("button", {
+                  onClick: () => { upd('buildAtoms', []); upd('buildBonds', []); upd('buildBondFrom', null); upd('buildCheckResult', null); },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all ml-auto"
+                }, "\uD83D\uDDD1\uFE0F Clear All")
+              ),
+              // Running formula display
+              (d.buildAtoms || []).length > 0 && (() => {
+                const counts = {};
+                (d.buildAtoms || []).forEach(a => { counts[a.el] = (counts[a.el] || 0) + 1; });
+                // Standard chemistry ordering: C, H, then alphabetical
+                const order = ['C', 'H'];
+                const remaining = Object.keys(counts).filter(k => !order.includes(k)).sort();
+                const sorted = [...order.filter(k => counts[k]), ...remaining];
+                const formulaStr = sorted.map(k => k + (counts[k] > 1 ? counts[k] : '')).join('');
+                return React.createElement("div", { className: "mt-3 bg-slate-50 rounded-xl p-3 border border-slate-200 flex items-center justify-between" },
+                  React.createElement("div", null,
+                    React.createElement("span", { className: "text-[10px] font-bold text-slate-400 uppercase tracking-wider" }, "Formula: "),
+                    React.createElement("span", { className: "text-lg font-black text-slate-800 font-mono" }, formulaStr)
+                  ),
+                  React.createElement("div", { className: "flex items-center gap-1 text-[10px] text-slate-400" },
+                    React.createElement("span", null, (d.buildAtoms || []).length + " atoms"),
+                    React.createElement("span", null, "\u2022"),
+                    React.createElement("span", null, (d.buildBonds || []).length + " bonds")
+                  )
+                );
+              })(),
+              // Check molecule button + result
+              (d.buildAtoms || []).length > 0 && React.createElement("div", { className: "mt-3 flex gap-2" },
+                React.createElement("button", {
+                  onClick: () => {
+                    const counts = {};
+                    (d.buildAtoms || []).forEach(a => { counts[a.el] = (counts[a.el] || 0) + 1; });
+                    const match = COMPOUNDS.find(c => {
+                      const rKeys = Object.keys(c.recipe); const bKeys = Object.keys(counts);
+                      if (rKeys.length !== bKeys.length) return false;
+                      return rKeys.every(k => counts[k] === c.recipe[k]);
+                    });
+                    if (match) {
+                      upd('buildCheckResult', { success: true, compound: match });
+                      addToast('\u2705 You built ' + match.name + '!', 'success');
+                      if (typeof awardStemXP === 'function') awardStemXP('molecule', 15, 'Built ' + match.name);
+                      // Add to discovered
+                      const disc = d.discoveredCompounds || [];
+                      if (!disc.includes(match.formula)) upd('discoveredCompounds', [...disc, match.formula]);
+                    } else {
+                      upd('buildCheckResult', { success: false });
+                      addToast('\u{1F914} No known compound matches this structure.', 'warning');
+                    }
+                  },
+                  className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:from-indigo-600 hover:to-purple-600 shadow-md transition-all"
+                }, "\u{1F50D} Check Molecule"),
+                React.createElement("button", {
+                  onClick: () => {
+                    // Random challenge: pick a compound and show target
+                    const target = COMPOUNDS[Math.floor(Math.random() * COMPOUNDS.length)];
+                    upd('buildTarget', target);
+                    upd('buildAtoms', []); upd('buildBonds', []); upd('buildBondFrom', null); upd('buildCheckResult', null);
+                    addToast('\u{1F3AF} Build: ' + target.name + ' (' + target.formula + ')', 'info');
+                  },
+                  className: "px-4 py-2.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold rounded-xl hover:from-amber-500 hover:to-orange-600 shadow-md transition-all"
+                }, "\u{1F3AF} Random Challenge")
+              ),
+              // Target compound display
+              d.buildTarget && React.createElement("div", { className: "mt-2 bg-amber-50 rounded-xl p-3 border border-amber-200 flex items-center gap-3" },
+                React.createElement("span", { className: "text-2xl" }, d.buildTarget.emoji),
+                React.createElement("div", null,
+                  React.createElement("p", { className: "text-sm font-bold text-amber-800" }, "\u{1F3AF} Target: " + d.buildTarget.name),
+                  React.createElement("p", { className: "text-xs text-amber-600" }, d.buildTarget.formula + " \u2014 " + d.buildTarget.desc),
+                  React.createElement("p", { className: "text-[10px] text-amber-500 mt-0.5" }, "Recipe: " + Object.entries(d.buildTarget.recipe).map(([el, n]) => el + (n > 1 ? '\u00D7' + n : '')).join(' + '))
+                )
+              ),
+              // Check result
+              d.buildCheckResult && (d.buildCheckResult.success
+                ? React.createElement("div", { className: "mt-2 bg-emerald-50 border-2 border-emerald-200 rounded-xl p-3 text-center animate-in zoom-in" },
+                    React.createElement("p", { className: "text-3xl mb-1" }, d.buildCheckResult.compound.emoji),
+                    React.createElement("p", { className: "text-lg font-black text-emerald-700" }, "\u{1F389} " + d.buildCheckResult.compound.name),
+                    React.createElement("p", { className: "text-sm font-bold text-emerald-600" }, d.buildCheckResult.compound.formula + " \u2014 " + d.buildCheckResult.compound.desc),
+                    React.createElement("p", { className: "text-xs text-emerald-500 mt-1" }, "+15 XP \u{1F31F}")
+                  )
+                : React.createElement("div", { className: "mt-2 bg-amber-50 border border-amber-200 rounded-xl p-3 text-center" },
+                    React.createElement("p", { className: "text-sm font-bold text-amber-700" }, "\u{1F914} No known compound matches. Keep experimenting!"),
+                    React.createElement("p", { className: "text-[10px] text-amber-500 mt-1" }, "Tip: Click bonds to cycle between single, double, and triple bonds")
+                  )
+              ),
+              // Build tips
+              (d.buildAtoms || []).length === 0 && React.createElement("div", { className: "mt-4 bg-indigo-50 rounded-xl p-4 border border-indigo-200" },
+                React.createElement("p", { className: "text-sm font-bold text-indigo-700 mb-2" }, "\u{1F4A1} How to Build"),
+                React.createElement("div", { className: "grid grid-cols-1 gap-1.5 text-xs text-indigo-600" },
+                  React.createElement("p", null, "\u2460 Click element buttons above to add atoms to the canvas"),
+                  React.createElement("p", null, "\u2461 Drag atoms to arrange them"),
+                  React.createElement("p", null, "\u2462 Click an atom in the bond selector, then click another atom to draw a bond"),
+                  React.createElement("p", null, "\u2463 Click a bond to cycle: single \u2192 double \u2192 triple"),
+                  React.createElement("p", null, "\u2464 Click \u{1F50D} Check to identify your molecule!"),
+                  React.createElement("p", null, "\u{1F3AF} Try 'Random Challenge' for a guided build quest")
                 )
               )
             ),
@@ -13801,17 +14265,66 @@
               ctx.fillText('←', W * 0.93, H * 0.72);
               ctx.fillText('↓', W * 0.8, H * 0.56);
 
-              // ── Zone hover highlights ──
+              // ── Always-on zone markers + hover highlights ──
               zones.forEach(z => {
-                if (hoverZone === z.id) {
-                  ctx.strokeStyle = ROCK_TYPES[z.type].color;
-                  ctx.lineWidth = 3 * dpr;
-                  ctx.setLineDash([6 * dpr, 4 * dpr]);
-                  ctx.strokeRect(z.x * W, z.y * H, z.w * W, z.h * H);
-                  ctx.setLineDash([]);
-                  ctx.fillStyle = 'rgba(255,255,255,0.85)';
-                  ctx.font = 'bold ' + (11 * dpr) + 'px sans-serif';
-                  ctx.fillText(z.label, z.x * W + 6 * dpr, (z.y + z.h) * H - 6 * dpr);
+                var zx = z.x * W, zy = z.y * H, zw = z.w * W, zh = z.h * H;
+                var isHover = hoverZone === z.id;
+                var zColor = ROCK_TYPES[z.type].color;
+
+                // Always-on: subtle zone boundary outline
+                ctx.save();
+                ctx.globalAlpha = isHover ? 0.6 : 0.15 + Math.sin(tick * 0.03) * 0.05;
+                ctx.strokeStyle = zColor;
+                ctx.lineWidth = (isHover ? 3 : 1.5) * dpr;
+                ctx.setLineDash(isHover ? [6 * dpr, 4 * dpr] : [3 * dpr, 6 * dpr]);
+                ctx.strokeRect(zx, zy, zw, zh);
+                ctx.setLineDash([]);
+                ctx.restore();
+
+                // Always-on: pulsing icon marker at zone center
+                var iconScale = 1 + Math.sin(tick * 0.04 + z.x * 10) * 0.15;
+                var cxZ = zx + zw / 2, cyZ = zy + zh / 2;
+                ctx.save();
+                ctx.globalAlpha = isHover ? 1.0 : 0.7;
+                // Glow behind icon
+                ctx.shadowColor = zColor;
+                ctx.shadowBlur = (isHover ? 16 : 8) * dpr;
+                ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                ctx.beginPath();
+                ctx.arc(cxZ, cyZ - 2 * dpr, 14 * dpr * iconScale, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                // Icon emoji
+                ctx.font = 'bold ' + Math.round(18 * dpr * iconScale) + 'px sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#fff';
+                ctx.fillText(z.id === 'volcano' ? '🌋' : z.id === 'river' ? '🏖️' : '⛰️', cxZ, cyZ);
+                ctx.restore();
+
+                // Always-on: label below icon
+                ctx.save();
+                ctx.globalAlpha = isHover ? 0.95 : 0.55;
+                ctx.font = 'bold ' + (isHover ? 12 : 10) * dpr + 'px sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+                // Text background pill
+                var labelText = z.id === 'volcano' ? 'Igneous' : z.id === 'river' ? 'Sedimentary' : 'Metamorphic';
+                var labelW = ctx.measureText(labelText).width + 12 * dpr;
+                ctx.fillStyle = 'rgba(0,0,0,0.45)';
+                ctx.beginPath();
+                ctx.roundRect(cxZ - labelW / 2, cyZ + 16 * dpr, labelW, 18 * dpr, 6 * dpr);
+                ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.fillText(labelText, cxZ, cyZ + 18 * dpr);
+                ctx.restore();
+
+                // Hover: "Click to explore" hint
+                if (isHover) {
+                  ctx.save();
+                  ctx.font = (9 * dpr) + 'px sans-serif';
+                  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+                  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                  ctx.fillText('Click to explore →', cxZ, cyZ + 36 * dpr);
+                  ctx.restore();
                 }
               });
 
@@ -14165,11 +14678,291 @@
                     min.label);
                 })
               ),
+              // ── Mineral cross-section canvas ref ──
+              var _lastMineralCanvas = null;
+              var mineralCrossSectionRef = function (canvasEl) {
+                if (!canvasEl || !selMineral || canvasEl._lastMineral === selMineral.id) return;
+                canvasEl._lastMineral = selMineral.id;
+                var csW = canvasEl.width = 280 * (window.devicePixelRatio || 1);
+                var csH = canvasEl.height = 200 * (window.devicePixelRatio || 1);
+                var csCtx = canvasEl.getContext('2d');
+                var csDpr = window.devicePixelRatio || 1;
+
+                // Background - dark slate for contrast
+                csCtx.fillStyle = '#1e293b';
+                csCtx.fillRect(0, 0, csW, csH);
+
+                // Inner region for crystal drawing
+                var crystalX = csW * 0.08, crystalY = csH * 0.08;
+                var crystalW = csW * 0.6, crystalH = csH * 0.7;
+                csCtx.fillStyle = 'rgba(255,255,255,0.04)';
+                csCtx.fillRect(crystalX, crystalY, crystalW, crystalH);
+
+                var cx = crystalX + crystalW / 2;
+                var cy = crystalY + crystalH / 2;
+                var crystalSys = (selMineral.crystal || '').toLowerCase();
+
+                // Parse mineral color for crystal fill
+                var mColor = selMineral.color || '#a78bfa';
+                var mColorAlpha = mColor.replace('#', '');
+                if (mColorAlpha.length === 3) mColorAlpha = mColorAlpha[0]+mColorAlpha[0]+mColorAlpha[1]+mColorAlpha[1]+mColorAlpha[2]+mColorAlpha[2];
+                var cr = parseInt(mColorAlpha.substring(0,2),16);
+                var cg = parseInt(mColorAlpha.substring(2,4),16);
+                var cb = parseInt(mColorAlpha.substring(4,6),16);
+
+                if (crystalSys.indexOf('cubic') >= 0 || crystalSys.indexOf('isometric') >= 0) {
+                  // ── Cubic: Draw interlocking 3D cubes ──
+                  var cubeSize = 28 * csDpr;
+                  var offsets = [[-1,-1],[0,-0.5],[1,-1],[-0.5,0.5],[0.5,0.5],[0,1.2]];
+                  offsets.forEach(function(off, idx) {
+                    var bx = cx + off[0] * cubeSize * 1.1;
+                    var by = cy + off[1] * cubeSize * 0.9;
+                    var s = cubeSize * (0.7 + (idx % 3) * 0.15);
+                    // Top face
+                    csCtx.beginPath();
+                    csCtx.moveTo(bx, by - s * 0.5);
+                    csCtx.lineTo(bx + s * 0.5, by - s * 0.25);
+                    csCtx.lineTo(bx, by);
+                    csCtx.lineTo(bx - s * 0.5, by - s * 0.25);
+                    csCtx.closePath();
+                    csCtx.fillStyle = 'rgba(' + Math.min(255,cr+60) + ',' + Math.min(255,cg+60) + ',' + Math.min(255,cb+60) + ',0.8)';
+                    csCtx.fill();
+                    csCtx.strokeStyle = 'rgba(255,255,255,0.3)'; csCtx.lineWidth = 1 * csDpr; csCtx.stroke();
+                    // Left face
+                    csCtx.beginPath();
+                    csCtx.moveTo(bx - s * 0.5, by - s * 0.25);
+                    csCtx.lineTo(bx, by);
+                    csCtx.lineTo(bx, by + s * 0.5);
+                    csCtx.lineTo(bx - s * 0.5, by + s * 0.25);
+                    csCtx.closePath();
+                    csCtx.fillStyle = 'rgba(' + cr + ',' + cg + ',' + cb + ',0.7)';
+                    csCtx.fill();
+                    csCtx.strokeStyle = 'rgba(255,255,255,0.2)'; csCtx.stroke();
+                    // Right face
+                    csCtx.beginPath();
+                    csCtx.moveTo(bx + s * 0.5, by - s * 0.25);
+                    csCtx.lineTo(bx, by);
+                    csCtx.lineTo(bx, by + s * 0.5);
+                    csCtx.lineTo(bx + s * 0.5, by + s * 0.25);
+                    csCtx.closePath();
+                    csCtx.fillStyle = 'rgba(' + Math.max(0,cr-30) + ',' + Math.max(0,cg-30) + ',' + Math.max(0,cb-30) + ',0.65)';
+                    csCtx.fill();
+                    csCtx.strokeStyle = 'rgba(255,255,255,0.2)'; csCtx.stroke();
+                  });
+                } else if (crystalSys.indexOf('hexagonal') >= 0) {
+                  // ── Hexagonal: Six-sided prism ──
+                  var hR = 32 * csDpr;
+                  var hH = 50 * csDpr;
+                  // Top hexagon
+                  csCtx.beginPath();
+                  for (var hi = 0; hi < 6; hi++) {
+                    var ha = (hi / 6) * Math.PI * 2 - Math.PI / 2;
+                    var hx = cx + Math.cos(ha) * hR;
+                    var hy = (cy - hH * 0.3) + Math.sin(ha) * hR * 0.35;
+                    if (hi === 0) csCtx.moveTo(hx, hy); else csCtx.lineTo(hx, hy);
+                  }
+                  csCtx.closePath();
+                  csCtx.fillStyle = 'rgba(' + Math.min(255,cr+40) + ',' + Math.min(255,cg+40) + ',' + Math.min(255,cb+40) + ',0.7)';
+                  csCtx.fill();
+                  csCtx.strokeStyle = 'rgba(255,255,255,0.4)'; csCtx.lineWidth = 1.5 * csDpr; csCtx.stroke();
+                  // Side faces
+                  for (var hsi = 0; hsi < 6; hsi++) {
+                    var a1 = (hsi / 6) * Math.PI * 2 - Math.PI / 2;
+                    var a2 = ((hsi + 1) / 6) * Math.PI * 2 - Math.PI / 2;
+                    if (hsi >= 1 && hsi <= 4) {
+                      csCtx.beginPath();
+                      csCtx.moveTo(cx + Math.cos(a1) * hR, (cy - hH * 0.3) + Math.sin(a1) * hR * 0.35);
+                      csCtx.lineTo(cx + Math.cos(a2) * hR, (cy - hH * 0.3) + Math.sin(a2) * hR * 0.35);
+                      csCtx.lineTo(cx + Math.cos(a2) * hR, (cy + hH * 0.3) + Math.sin(a2) * hR * 0.35);
+                      csCtx.lineTo(cx + Math.cos(a1) * hR, (cy + hH * 0.3) + Math.sin(a1) * hR * 0.35);
+                      csCtx.closePath();
+                      var shade = 0.5 + hsi * 0.08;
+                      csCtx.fillStyle = 'rgba(' + cr + ',' + cg + ',' + cb + ',' + shade + ')';
+                      csCtx.fill();
+                      csCtx.strokeStyle = 'rgba(255,255,255,0.25)'; csCtx.stroke();
+                    }
+                  }
+                  // Pointed termination (top)
+                  csCtx.beginPath();
+                  csCtx.moveTo(cx, cy - hH * 0.7);
+                  for (var pt = 0; pt < 6; pt++) {
+                    var pa = (pt / 6) * Math.PI * 2 - Math.PI / 2;
+                    csCtx.lineTo(cx + Math.cos(pa) * hR * 0.85, (cy - hH * 0.3) + Math.sin(pa) * hR * 0.35);
+                  }
+                  csCtx.closePath();
+                  csCtx.fillStyle = 'rgba(' + Math.min(255,cr+80) + ',' + Math.min(255,cg+80) + ',' + Math.min(255,cb+80) + ',0.5)';
+                  csCtx.fill();
+                  csCtx.strokeStyle = 'rgba(255,255,255,0.35)'; csCtx.stroke();
+                } else if (crystalSys.indexOf('monoclinic') >= 0 || crystalSys.indexOf('triclinic') >= 0) {
+                  // ── Monoclinic: Oblique prisms / sheet layers ──
+                  var layers = 5;
+                  var lW = 55 * csDpr, lH2 = 8 * csDpr;
+                  var skew = 12 * csDpr;
+                  for (var li = 0; li < layers; li++) {
+                    var ly = cy - (layers * lH2) / 2 + li * (lH2 + 3 * csDpr);
+                    var lx = cx - lW / 2 + li * (skew / layers);
+                    csCtx.beginPath();
+                    csCtx.moveTo(lx, ly);
+                    csCtx.lineTo(lx + lW, ly);
+                    csCtx.lineTo(lx + lW + skew / layers, ly + lH2);
+                    csCtx.lineTo(lx + skew / layers, ly + lH2);
+                    csCtx.closePath();
+                    var shade2 = 0.4 + li * 0.1;
+                    csCtx.fillStyle = 'rgba(' + cr + ',' + cg + ',' + cb + ',' + shade2 + ')';
+                    csCtx.fill();
+                    csCtx.strokeStyle = 'rgba(255,255,255,0.3)'; csCtx.lineWidth = 1 * csDpr; csCtx.stroke();
+                  }
+                } else if (crystalSys.indexOf('trigonal') >= 0 || crystalSys.indexOf('rhombohedral') >= 0) {
+                  // ── Trigonal/Rhombohedral: Rhomb shapes ──
+                  var rW = 30 * csDpr, rH2 = 45 * csDpr;
+                  var positions = [[0, 0], [-rW * 0.9, -rH2 * 0.2], [rW * 0.9, -rH2 * 0.2], [0, rH2 * 0.5]];
+                  positions.forEach(function(pos, idx2) {
+                    var rx = cx + pos[0];
+                    var ry = cy + pos[1];
+                    csCtx.beginPath();
+                    csCtx.moveTo(rx, ry - rH2 * 0.4);
+                    csCtx.lineTo(rx + rW * 0.5, ry);
+                    csCtx.lineTo(rx, ry + rH2 * 0.4);
+                    csCtx.lineTo(rx - rW * 0.5, ry);
+                    csCtx.closePath();
+                    var shade3 = 0.5 + idx2 * 0.1;
+                    csCtx.fillStyle = 'rgba(' + cr + ',' + cg + ',' + cb + ',' + shade3 + ')';
+                    csCtx.fill();
+                    csCtx.strokeStyle = 'rgba(255,255,255,0.3)'; csCtx.lineWidth = 1.5 * csDpr; csCtx.stroke();
+                  });
+                } else if (crystalSys.indexOf('orthorhombic') >= 0) {
+                  // ── Orthorhombic: Rectangular prisms ──
+                  var bW = 28 * csDpr, bH2 = 50 * csDpr, bD = 18 * csDpr;
+                  // Front face
+                  csCtx.fillStyle = 'rgba(' + cr + ',' + cg + ',' + cb + ',0.7)';
+                  csCtx.fillRect(cx - bW / 2, cy - bH2 / 2, bW, bH2);
+                  csCtx.strokeStyle = 'rgba(255,255,255,0.3)'; csCtx.lineWidth = 1 * csDpr;
+                  csCtx.strokeRect(cx - bW / 2, cy - bH2 / 2, bW, bH2);
+                  // Top face
+                  csCtx.beginPath();
+                  csCtx.moveTo(cx - bW / 2, cy - bH2 / 2);
+                  csCtx.lineTo(cx - bW / 2 + bD * 0.7, cy - bH2 / 2 - bD * 0.4);
+                  csCtx.lineTo(cx + bW / 2 + bD * 0.7, cy - bH2 / 2 - bD * 0.4);
+                  csCtx.lineTo(cx + bW / 2, cy - bH2 / 2);
+                  csCtx.closePath();
+                  csCtx.fillStyle = 'rgba(' + Math.min(255,cr+50) + ',' + Math.min(255,cg+50) + ',' + Math.min(255,cb+50) + ',0.6)';
+                  csCtx.fill();
+                  csCtx.strokeStyle = 'rgba(255,255,255,0.3)'; csCtx.stroke();
+                  // Right face
+                  csCtx.beginPath();
+                  csCtx.moveTo(cx + bW / 2, cy - bH2 / 2);
+                  csCtx.lineTo(cx + bW / 2 + bD * 0.7, cy - bH2 / 2 - bD * 0.4);
+                  csCtx.lineTo(cx + bW / 2 + bD * 0.7, cy + bH2 / 2 - bD * 0.4);
+                  csCtx.lineTo(cx + bW / 2, cy + bH2 / 2);
+                  csCtx.closePath();
+                  csCtx.fillStyle = 'rgba(' + Math.max(0,cr-40) + ',' + Math.max(0,cg-40) + ',' + Math.max(0,cb-40) + ',0.6)';
+                  csCtx.fill();
+                  csCtx.strokeStyle = 'rgba(255,255,255,0.25)'; csCtx.stroke();
+                } else {
+                  // ── Default: Generic crystal facets ──
+                  var pts = 8;
+                  var gR = 35 * csDpr;
+                  csCtx.beginPath();
+                  for (var gi = 0; gi < pts; gi++) {
+                    var ga = (gi / pts) * Math.PI * 2;
+                    var gr = gR * (0.7 + Math.sin(gi * 2.3) * 0.3);
+                    if (gi === 0) csCtx.moveTo(cx + Math.cos(ga) * gr, cy + Math.sin(ga) * gr);
+                    else csCtx.lineTo(cx + Math.cos(ga) * gr, cy + Math.sin(ga) * gr);
+                  }
+                  csCtx.closePath();
+                  csCtx.fillStyle = 'rgba(' + cr + ',' + cg + ',' + cb + ',0.6)';
+                  csCtx.fill();
+                  csCtx.strokeStyle = 'rgba(255,255,255,0.3)'; csCtx.lineWidth = 1.5 * csDpr; csCtx.stroke();
+                }
+
+                // ── Cleavage / fracture lines ──
+                csCtx.save();
+                csCtx.globalAlpha = 0.2;
+                csCtx.strokeStyle = '#94a3b8';
+                csCtx.lineWidth = 0.5 * csDpr;
+                csCtx.setLineDash([3 * csDpr, 4 * csDpr]);
+                for (var cli = 0; cli < 4; cli++) {
+                  csCtx.beginPath();
+                  csCtx.moveTo(crystalX + Math.random() * crystalW * 0.3, crystalY + cli * crystalH * 0.25);
+                  csCtx.lineTo(crystalX + crystalW * 0.7 + Math.random() * crystalW * 0.3, crystalY + cli * crystalH * 0.25 + crystalH * 0.15);
+                  csCtx.stroke();
+                }
+                csCtx.setLineDash([]);
+                csCtx.restore();
+
+                // ── Right panel: Streak color bar ──
+                var panelX = csW * 0.73;
+                csCtx.fillStyle = 'rgba(255,255,255,0.08)';
+                csCtx.fillRect(panelX, csH * 0.08, csW * 0.24, csH * 0.84);
+
+                // Streak label & bar
+                csCtx.font = 'bold ' + (8 * csDpr) + 'px sans-serif';
+                csCtx.fillStyle = 'rgba(255,255,255,0.6)';
+                csCtx.textAlign = 'center';
+                csCtx.fillText('Streak', panelX + csW * 0.12, csH * 0.16);
+                var streakColors = { 'White': '#f8fafc', 'Greenish-black': '#1a3a1a', 'Black': '#1e1e1e', 'Red-brown': '#8b3a2a', 'Lead-gray': '#6b7280', 'White-yellow': '#fef9c3', 'None (too hard)': '#94a3b8' };
+                var streakC = streakColors[selMineral.streak] || '#e2e8f0';
+                csCtx.fillStyle = streakC;
+                csCtx.beginPath();
+                csCtx.roundRect(panelX + csW * 0.03, csH * 0.2, csW * 0.18, 12 * csDpr, 3 * csDpr);
+                csCtx.fill();
+                csCtx.strokeStyle = 'rgba(255,255,255,0.2)'; csCtx.lineWidth = 1; csCtx.stroke();
+                csCtx.font = (7 * csDpr) + 'px sans-serif';
+                csCtx.fillStyle = 'rgba(255,255,255,0.5)';
+                csCtx.fillText(selMineral.streak, panelX + csW * 0.12, csH * 0.2 + 24 * csDpr);
+
+                // Luster indicator
+                csCtx.font = 'bold ' + (8 * csDpr) + 'px sans-serif';
+                csCtx.fillStyle = 'rgba(255,255,255,0.6)';
+                csCtx.fillText('Luster', panelX + csW * 0.12, csH * 0.48);
+                var lusterIcons = { 'Vitreous': '✨', 'Metallic': '🪙', 'Pearly': '🫧', 'Adamantine': '💎', 'Resinous': '🍯', 'Waxy': '🕯️', 'Silky': '🧵', 'Earthy': '🏜️', 'Submetallic': '🪙' };
+                var matchedLuster = Object.keys(lusterIcons).find(function(k) { return (selMineral.luster || '').indexOf(k) >= 0; });
+                csCtx.font = (16 * csDpr) + 'px sans-serif';
+                csCtx.fillText(lusterIcons[matchedLuster] || '✨', panelX + csW * 0.12, csH * 0.56);
+                csCtx.font = (6 * csDpr) + 'px sans-serif';
+                csCtx.fillStyle = 'rgba(255,255,255,0.4)';
+                csCtx.fillText(selMineral.luster, panelX + csW * 0.12, csH * 0.64);
+
+                // Mohs hardness pin
+                csCtx.font = 'bold ' + (8 * csDpr) + 'px sans-serif';
+                csCtx.fillStyle = 'rgba(255,255,255,0.6)';
+                csCtx.fillText('Hardness', panelX + csW * 0.12, csH * 0.76);
+                // Mini scale
+                var scaleY = csH * 0.8;
+                var scaleW2 = csW * 0.18;
+                var scaleX = panelX + csW * 0.03;
+                for (var mi = 0; mi < 10; mi++) {
+                  var mActive = mi + 1 <= Math.round(selMineral.hardness);
+                  csCtx.fillStyle = mActive ? '#8b5cf6' : 'rgba(255,255,255,0.1)';
+                  csCtx.fillRect(scaleX + mi * (scaleW2 / 10), scaleY, scaleW2 / 10 - 1 * csDpr, 6 * csDpr);
+                }
+                csCtx.font = 'bold ' + (10 * csDpr) + 'px sans-serif';
+                csCtx.fillStyle = '#a78bfa';
+                csCtx.fillText(selMineral.hardness + '/10', panelX + csW * 0.12, scaleY + 18 * csDpr);
+
+                // Crystal system label at bottom
+                csCtx.font = (7 * csDpr) + 'px sans-serif';
+                csCtx.fillStyle = 'rgba(255,255,255,0.4)';
+                csCtx.textAlign = 'left';
+                csCtx.fillText('Crystal System: ' + selMineral.crystal, csW * 0.04, csH * 0.95);
+
+                // Border
+                csCtx.strokeStyle = 'rgba(139,92,246,0.3)';
+                csCtx.lineWidth = 2 * csDpr;
+                csCtx.strokeRect(0, 0, csW, csH);
+              };
+
               // Selected mineral detail
               selMineral && React.createElement("div", { className: "bg-white rounded-xl border-2 border-violet-300 p-4 animate-in fade-in space-y-3" },
                 React.createElement("h4", { className: "font-bold text-base text-violet-700 mb-1" }, "\uD83D\uDC8E " + selMineral.label),
                 React.createElement("p", { className: "text-xs text-slate-500 font-mono mb-1" }, "Formula: " + selMineral.formula),
-                selMineral.desc && React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selMineral.desc),
+                // Cross-section canvas
+                React.createElement("div", { className: "flex gap-3 items-start" },
+                  React.createElement("canvas", { ref: mineralCrossSectionRef, role: "img", "aria-label": "Mineral cross-section", style: { width: '140px', height: '100px', borderRadius: '10px', flexShrink: 0 } }),
+                  React.createElement("div", { className: "flex-1 min-w-0" },
+                    selMineral.desc && React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selMineral.desc)
+                  )
+                ),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                   [
                     { label: t('stem.rocks.hardness'), value: selMineral.hardness + ' / 10', icon: '\uD83D\uDCAA' },
@@ -15435,6 +16228,8 @@
             }
             // Catch particles on predation
             var catchParticles = [];
+            // Population history for live graph
+            var popHistory = [];
             // Ambient creatures (butterflies + fireflies)
             var ambientBugs = [];
             for (var abi = 0; abi < 12; abi++) {
@@ -15984,6 +16779,19 @@
                 }
               }
 
+              // ── Track population history for live graph ──
+              if (tick % 10 === 0) {
+                var vegHealthAvg = Math.max(0.3, 1 - aliveCount / 80);
+                popHistory.push({ tick: tick, prey: aliveCount, pred: alivePredCount, vegHealth: Math.round(vegHealthAvg * 100), dayPhase: Math.round(dayPhase * 100) });
+                if (popHistory.length > 200) popHistory.shift();
+              }
+              // Push to React state periodically so SVG panel can access it
+              if (tick % 50 === 0 && popHistory.length > 2) {
+                var histCopy = popHistory.slice();
+                canvasEl._latestPopHistory = histCopy;
+                if (canvasEl._onPopUpdate) canvasEl._onPopUpdate(histCopy);
+              }
+
               // ── HUD ──
               ctx.fillStyle = 'rgba(0,0,0,0.6)';
               ctx.fillRect(6 * dpr, 6 * dpr, 135 * dpr, 60 * dpr);
@@ -16006,6 +16814,66 @@
               ctx.textAlign = 'right';
               ctx.fillText(isDay ? '\u2600\uFE0F Day' : '\uD83C\uDF19 Night', (cW / dpr - 10) * dpr, 18 * dpr);
 
+              // ── Live Population Graph (mini) ──
+              if (popHistory.length > 2) {
+                var gW = 160 * dpr, gH = 50 * dpr;
+                var gX = cW - gW - 8 * dpr, gY = 28 * dpr;
+                // Background
+                ctx.fillStyle = 'rgba(0,0,0,0.55)';
+                ctx.beginPath();
+                ctx.roundRect(gX - 4 * dpr, gY - 14 * dpr, gW + 8 * dpr, gH + 22 * dpr, 6 * dpr);
+                ctx.fill();
+                // Title
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                ctx.font = 'bold ' + (6 * dpr) + 'px sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('\uD83D\uDCC8 Population', gX, gY - 4 * dpr);
+                // Find max for scaling
+                var gMax = 1;
+                for (var gi = 0; gi < popHistory.length; gi++) {
+                  if (popHistory[gi].prey > gMax) gMax = popHistory[gi].prey;
+                  if (popHistory[gi].pred > gMax) gMax = popHistory[gi].pred;
+                }
+                gMax = Math.max(gMax, 5);
+                var step = gW / Math.max(popHistory.length - 1, 1);
+                // Grid lines
+                ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+                ctx.lineWidth = 0.5 * dpr;
+                for (var gl = 0; gl <= 4; gl++) {
+                  var glY = gY + (gl / 4) * gH;
+                  ctx.beginPath(); ctx.moveTo(gX, glY); ctx.lineTo(gX + gW, glY); ctx.stroke();
+                }
+                // Prey line (green)
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(134,239,172,0.9)';
+                ctx.lineWidth = 1.5 * dpr;
+                for (var gi2 = 0; gi2 < popHistory.length; gi2++) {
+                  var px = gX + gi2 * step;
+                  var py = gY + gH - (popHistory[gi2].prey / gMax) * gH;
+                  if (gi2 === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                }
+                ctx.stroke();
+                // Predator line (red)
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(252,165,165,0.9)';
+                ctx.lineWidth = 1.5 * dpr;
+                for (var gi3 = 0; gi3 < popHistory.length; gi3++) {
+                  var px2 = gX + gi3 * step;
+                  var py2 = gY + gH - (popHistory[gi3].pred / gMax) * gH;
+                  if (gi3 === 0) ctx.moveTo(px2, py2); else ctx.lineTo(px2, py2);
+                }
+                ctx.stroke();
+                // Legend dots
+                ctx.fillStyle = '#86efac';
+                ctx.beginPath(); ctx.arc(gX + gW - 50 * dpr, gY + gH + 6 * dpr, 2 * dpr, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = (5 * dpr) + 'px sans-serif'; ctx.textAlign = 'left';
+                ctx.fillText('Prey', gX + gW - 46 * dpr, gY + gH + 8 * dpr);
+                ctx.fillStyle = '#fca5a5';
+                ctx.beginPath(); ctx.arc(gX + gW - 20 * dpr, gY + gH + 6 * dpr, 2 * dpr, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                ctx.fillText('Pred', gX + gW - 16 * dpr, gY + gH + 8 * dpr);
+              }
+
               canvasEl._ecoAnim = requestAnimationFrame(draw);
             }
             canvasEl._ecoAnim = requestAnimationFrame(draw);
@@ -16018,11 +16886,169 @@
               React.createElement("span", { className: "px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full" }, "LIVE")
             ),
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-emerald-300 shadow-lg mb-3", style: { height: '320px' } },
-              React.createElement("canvas", { ref: canvasRef, style: { width: '100%', height: '100%', display: 'block' } }),
+              React.createElement("canvas", { ref: function(el) { canvasRef(el); if (el) { el._onPopUpdate = function(h) { upd('livePopHistory', h); }; } }, style: { width: '100%', height: '100%', display: 'block' } }),
               React.createElement("div", { className: "absolute bottom-2 left-2 right-2 flex items-center gap-1 pointer-events-none" },
                 React.createElement("span", { className: "text-[9px] text-white/80 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm" }, "\uD83D\uDC07 Rabbits = prey  \u2022  \uD83E\uDD8A Foxes = predators  \u2022  \uD83C\uDF33 Vegetation reacts to grazing")
               )
             ),
+            // ── Live Population Graph Panel (collapsible) ──
+            (function() {
+              var liveHist = d.livePopHistory || [];
+              var graphView = d.ecoGraphView || 'population';
+              var graphOpen = d.ecoGraphOpen !== false;
+              if (liveHist.length < 3) return React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-3 mb-3 text-center" },
+                React.createElement("p", { className: "text-xs text-emerald-600 italic" }, "\uD83D\uDCC8 Live population graph will appear here as the simulation runs..."));
+              var gW = 460, gH = 180, gPad = 45, gPadR = 20, gPadTop = 25, gPadBot = 30;
+              var plotW = gW - gPad - gPadR, plotH = gH - gPadTop - gPadBot;
+              var maxPrey = 1, maxPred = 1;
+              for (var hi = 0; hi < liveHist.length; hi++) {
+                if (liveHist[hi].prey > maxPrey) maxPrey = liveHist[hi].prey;
+                if (liveHist[hi].pred > maxPred) maxPred = liveHist[hi].pred;
+              }
+              var maxPop = Math.max(maxPrey, maxPred, 5);
+              var stepX = plotW / Math.max(liveHist.length - 1, 1);
+              // Build polyline points
+              var preyPts = [], predPts = [], vegPts = [], dayPts = [];
+              for (var pi = 0; pi < liveHist.length; pi++) {
+                var px = gPad + pi * stepX;
+                preyPts.push(px + ',' + (gPadTop + plotH - (liveHist[pi].prey / maxPop) * plotH));
+                predPts.push(px + ',' + (gPadTop + plotH - (liveHist[pi].pred / maxPop) * plotH));
+                vegPts.push(px + ',' + (gPadTop + plotH - (liveHist[pi].vegHealth || 50) / 100 * plotH));
+                dayPts.push(px + ',' + (gPadTop + plotH - (liveHist[pi].dayPhase || 50) / 100 * plotH));
+              }
+              // Area fill points (close at bottom)
+              var preyArea = preyPts.join(' ') + ' ' + (gPad + (liveHist.length - 1) * stepX) + ',' + (gPadTop + plotH) + ' ' + gPad + ',' + (gPadTop + plotH);
+              var predArea = predPts.join(' ') + ' ' + (gPad + (liveHist.length - 1) * stepX) + ',' + (gPadTop + plotH) + ' ' + gPad + ',' + (gPadTop + plotH);
+              // Y-axis ticks
+              var yTicks = [];
+              var numYTicks = 5;
+              for (var yt = 0; yt <= numYTicks; yt++) {
+                var yVal = graphView === 'population' ? Math.round(maxPop * yt / numYTicks) : Math.round(100 * yt / numYTicks);
+                var yPos = gPadTop + plotH - (yt / numYTicks) * plotH;
+                yTicks.push({ val: yVal, y: yPos });
+              }
+              return React.createElement("div", { className: "rounded-xl border-2 border-emerald-200 mb-3 overflow-hidden shadow-sm" },
+                React.createElement("button", {
+                  onClick: function() { upd('ecoGraphOpen', !graphOpen); },
+                  className: "w-full flex items-center justify-between px-4 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 transition-all"
+                },
+                  React.createElement("span", { className: "text-xs font-bold text-emerald-700" }, "\uD83D\uDCC8 Live Population Graph"),
+                  React.createElement("span", { className: "text-emerald-500 text-sm" }, graphOpen ? '\u25B2' : '\u25BC')
+                ),
+                graphOpen && React.createElement("div", { className: "p-3 bg-white" },
+                  // Toggle tabs
+                  React.createElement("div", { className: "flex gap-2 mb-2" },
+                    React.createElement("button", {
+                      onClick: function() { upd('ecoGraphView', 'population'); },
+                      className: "px-3 py-1 rounded-lg text-[10px] font-bold transition-all " + (graphView === 'population' ? 'bg-emerald-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
+                    }, "\uD83D\uDC3E Populations"),
+                    React.createElement("button", {
+                      onClick: function() { upd('ecoGraphView', 'environment'); },
+                      className: "px-3 py-1 rounded-lg text-[10px] font-bold transition-all " + (graphView === 'environment' ? 'bg-teal-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-teal-50')
+                    }, "\uD83C\uDF3F Environment")
+                  ),
+                  // SVG Graph
+                  React.createElement("svg", { viewBox: '0 0 ' + gW + ' ' + gH, className: "w-full", style: { maxHeight: '240px' } },
+                    // Gradient defs
+                    React.createElement("defs", null,
+                      React.createElement("linearGradient", { id: 'ecoPreyFill', x1: '0', y1: '0', x2: '0', y2: '1' },
+                        React.createElement("stop", { offset: '0%', stopColor: '#22c55e', stopOpacity: '0.35' }),
+                        React.createElement("stop", { offset: '100%', stopColor: '#22c55e', stopOpacity: '0.02' })
+                      ),
+                      React.createElement("linearGradient", { id: 'ecoPredFill', x1: '0', y1: '0', x2: '0', y2: '1' },
+                        React.createElement("stop", { offset: '0%', stopColor: '#ef4444', stopOpacity: '0.25' }),
+                        React.createElement("stop", { offset: '100%', stopColor: '#ef4444', stopOpacity: '0.02' })
+                      )
+                    ),
+                    // Grid lines
+                    yTicks.map(function(t, i) {
+                      return React.createElement("g", { key: 'yt' + i },
+                        React.createElement("line", { x1: gPad, y1: t.y, x2: gPad + plotW, y2: t.y, stroke: '#e2e8f0', strokeWidth: 0.5, strokeDasharray: i > 0 && i < numYTicks ? '3,3' : 'none' }),
+                        React.createElement("text", { x: gPad - 5, y: t.y + 3, textAnchor: 'end', style: { fontSize: '7px', fontWeight: 'bold' }, fill: '#94a3b8' }, t.val + (graphView === 'environment' ? '%' : ''))
+                      );
+                    }),
+                    // X-axis line
+                    React.createElement("line", { x1: gPad, y1: gPadTop + plotH, x2: gPad + plotW, y2: gPadTop + plotH, stroke: '#cbd5e1', strokeWidth: 1 }),
+                    // Y-axis line
+                    React.createElement("line", { x1: gPad, y1: gPadTop, x2: gPad, y2: gPadTop + plotH, stroke: '#cbd5e1', strokeWidth: 1 }),
+                    // Axis labels
+                    React.createElement("text", { x: gPad + plotW / 2, y: gH - 4, textAnchor: 'middle', style: { fontSize: '8px', fontWeight: 'bold' }, fill: '#64748b' }, 'Time (ticks)'),
+                    React.createElement("text", { x: 8, y: gPadTop + plotH / 2, textAnchor: 'middle', style: { fontSize: '8px', fontWeight: 'bold' }, fill: '#64748b', transform: 'rotate(-90,8,' + (gPadTop + plotH / 2) + ')' }, graphView === 'population' ? 'Count' : 'Level %'),
+                    // Population view
+                    graphView === 'population' && React.createElement("g", null,
+                      // Area fills
+                      React.createElement("polygon", { points: preyArea, fill: 'url(#ecoPreyFill)' }),
+                      React.createElement("polygon", { points: predArea, fill: 'url(#ecoPredFill)' }),
+                      // Prey line
+                      React.createElement("polyline", { points: preyPts.join(' '), fill: 'none', stroke: '#22c55e', strokeWidth: 2, strokeLinejoin: 'round' }),
+                      // Predator line
+                      React.createElement("polyline", { points: predPts.join(' '), fill: 'none', stroke: '#ef4444', strokeWidth: 2, strokeLinejoin: 'round' }),
+                      // Current value dots at end
+                      liveHist.length > 0 && React.createElement("circle", { cx: parseFloat(preyPts[preyPts.length - 1].split(',')[0]), cy: parseFloat(preyPts[preyPts.length - 1].split(',')[1]), r: 3.5, fill: '#22c55e', stroke: 'white', strokeWidth: 1.5 }),
+                      liveHist.length > 0 && React.createElement("circle", { cx: parseFloat(predPts[predPts.length - 1].split(',')[0]), cy: parseFloat(predPts[predPts.length - 1].split(',')[1]), r: 3.5, fill: '#ef4444', stroke: 'white', strokeWidth: 1.5 }),
+                      // Current value labels at end
+                      liveHist.length > 0 && React.createElement("text", { x: parseFloat(preyPts[preyPts.length - 1].split(',')[0]) + 6, y: parseFloat(preyPts[preyPts.length - 1].split(',')[1]) + 3, style: { fontSize: '7px', fontWeight: 'bold' }, fill: '#16a34a' }, liveHist[liveHist.length - 1].prey),
+                      liveHist.length > 0 && React.createElement("text", { x: parseFloat(predPts[predPts.length - 1].split(',')[0]) + 6, y: parseFloat(predPts[predPts.length - 1].split(',')[1]) + 3, style: { fontSize: '7px', fontWeight: 'bold' }, fill: '#dc2626' }, liveHist[liveHist.length - 1].pred)
+                    ),
+                    // Environment view
+                    graphView === 'environment' && React.createElement("g", null,
+                      // Veg health line
+                      React.createElement("polyline", { points: vegPts.join(' '), fill: 'none', stroke: '#16a34a', strokeWidth: 2, strokeDasharray: '6,2', strokeLinejoin: 'round' }),
+                      // Day/night line
+                      React.createElement("polyline", { points: dayPts.join(' '), fill: 'none', stroke: '#f59e0b', strokeWidth: 2, strokeDasharray: '4,4', strokeLinejoin: 'round' }),
+                      // End dots
+                      liveHist.length > 0 && React.createElement("circle", { cx: parseFloat(vegPts[vegPts.length - 1].split(',')[0]), cy: parseFloat(vegPts[vegPts.length - 1].split(',')[1]), r: 3, fill: '#16a34a', stroke: 'white', strokeWidth: 1.5 }),
+                      liveHist.length > 0 && React.createElement("circle", { cx: parseFloat(dayPts[dayPts.length - 1].split(',')[0]), cy: parseFloat(dayPts[dayPts.length - 1].split(',')[1]), r: 3, fill: '#f59e0b', stroke: 'white', strokeWidth: 1.5 }),
+                      // Labels
+                      liveHist.length > 0 && React.createElement("text", { x: parseFloat(vegPts[vegPts.length - 1].split(',')[0]) + 6, y: parseFloat(vegPts[vegPts.length - 1].split(',')[1]) + 3, style: { fontSize: '7px', fontWeight: 'bold' }, fill: '#16a34a' }, (liveHist[liveHist.length - 1].vegHealth || 0) + '%'),
+                      liveHist.length > 0 && React.createElement("text", { x: parseFloat(dayPts[dayPts.length - 1].split(',')[0]) + 6, y: parseFloat(dayPts[dayPts.length - 1].split(',')[1]) + 3, style: { fontSize: '7px', fontWeight: 'bold' }, fill: '#f59e0b' }, (liveHist[liveHist.length - 1].dayPhase || 0) + '%')
+                    )
+                  ),
+                  // Legend
+                  React.createElement("div", { className: "flex items-center justify-center gap-4 mt-2" },
+                    graphView === 'population' && React.createElement(React.Fragment, null,
+                      React.createElement("div", { className: "flex items-center gap-1" },
+                        React.createElement("div", { className: "w-3 h-1 rounded-full", style: { backgroundColor: '#22c55e' } }),
+                        React.createElement("span", { className: "text-[10px] font-bold text-emerald-700" }, "\uD83D\uDC07 Prey (" + (liveHist.length > 0 ? liveHist[liveHist.length - 1].prey : 0) + ")")
+                      ),
+                      React.createElement("div", { className: "flex items-center gap-1" },
+                        React.createElement("div", { className: "w-3 h-1 rounded-full", style: { backgroundColor: '#ef4444' } }),
+                        React.createElement("span", { className: "text-[10px] font-bold text-red-600" }, "\uD83E\uDD8A Predators (" + (liveHist.length > 0 ? liveHist[liveHist.length - 1].pred : 0) + ")")
+                      )
+                    ),
+                    graphView === 'environment' && React.createElement(React.Fragment, null,
+                      React.createElement("div", { className: "flex items-center gap-1" },
+                        React.createElement("div", { className: "w-3 h-0.5 rounded-full border-t-2 border-dashed", style: { borderColor: '#16a34a' } }),
+                        React.createElement("span", { className: "text-[10px] font-bold text-green-700" }, "\uD83C\uDF3F Vegetation Health")
+                      ),
+                      React.createElement("div", { className: "flex items-center gap-1" },
+                        React.createElement("div", { className: "w-3 h-0.5 rounded-full border-t-2 border-dashed", style: { borderColor: '#f59e0b' } }),
+                        React.createElement("span", { className: "text-[10px] font-bold text-amber-600" }, "\u2600\uFE0F Day/Night Cycle")
+                      )
+                    )
+                  ),
+                  // Stats row
+                  liveHist.length > 2 && React.createElement("div", { className: "grid grid-cols-4 gap-2 mt-2" },
+                    React.createElement("div", { className: "p-1.5 bg-emerald-50 rounded-lg text-center border border-emerald-200" },
+                      React.createElement("p", { className: "text-[8px] font-bold text-emerald-600 uppercase" }, "Peak Prey"),
+                      React.createElement("p", { className: "text-sm font-bold text-emerald-800" }, maxPrey)
+                    ),
+                    React.createElement("div", { className: "p-1.5 bg-red-50 rounded-lg text-center border border-red-200" },
+                      React.createElement("p", { className: "text-[8px] font-bold text-red-600 uppercase" }, "Peak Pred"),
+                      React.createElement("p", { className: "text-sm font-bold text-red-800" }, maxPred)
+                    ),
+                    React.createElement("div", { className: "p-1.5 bg-blue-50 rounded-lg text-center border border-blue-200" },
+                      React.createElement("p", { className: "text-[8px] font-bold text-blue-600 uppercase" }, "Ratio"),
+                      React.createElement("p", { className: "text-sm font-bold text-blue-800" }, liveHist.length > 0 ? (liveHist[liveHist.length - 1].prey / Math.max(1, liveHist[liveHist.length - 1].pred)).toFixed(1) + ':1' : '-')
+                    ),
+                    React.createElement("div", { className: "p-1.5 bg-amber-50 rounded-lg text-center border border-amber-200" },
+                      React.createElement("p", { className: "text-[8px] font-bold text-amber-600 uppercase" }, "Samples"),
+                      React.createElement("p", { className: "text-sm font-bold text-amber-800" }, liveHist.length)
+                    )
+                  )
+                )
+              );
+            })(),
             // ── Food Web Diagram ──
             React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-3 mb-3" },
               React.createElement("p", { className: "text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-2" }, "\uD83D\uDD17 Food Web"),
@@ -16911,6 +17937,11 @@
             if (customSubMode === 'fraction') { customOutcomes = customOutcomes.map(function (o) { var den = o.denominator || 20; return Object.assign({}, o, { prob: den > 0 ? (o.numerator != null ? o.numerator : 1) / den : 0 }); }); }
             else if (customSubMode === 'marbleBag') { var _totalM = customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0); if (_totalM > 0) { customOutcomes = customOutcomes.map(function (o) { return Object.assign({}, o, { prob: (o.count || 1) / _totalM }); }); } }
           }
+          // ── Marble bag mode: compute probs from counts ──
+          if (d.mode === 'marbleBag') {
+            var _mbTotal = customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0);
+            if (_mbTotal > 0) { customOutcomes = customOutcomes.map(function (o) { return Object.assign({}, o, { prob: (o.count || 1) / _mbTotal }); }); }
+          }
 
           // ── Run trials ──
           const runTrial = (n) => {
@@ -16935,13 +17966,41 @@
                 }
                 if (results.length === d.results.length + i) results.push(customOutcomes[customOutcomes.length - 1].label);
               }
+              else if (d.mode === 'marbleBag') {
+                var mbWithoutRepl = d.mbWithoutReplacement || false;
+                if (mbWithoutRepl) {
+                  // Without replacement: use remaining pool
+                  var mbRemaining = d._mbRemaining || null;
+                  if (!mbRemaining || mbRemaining.length === 0) {
+                    // Rebuild pool from marble counts
+                    mbRemaining = [];
+                    customOutcomes.forEach(function (o) { for (var _mi = 0; _mi < (o.count || 1); _mi++) mbRemaining.push(o.label); });
+                  }
+                  if (mbRemaining.length > 0) {
+                    var mbIdx = Math.floor(Math.random() * mbRemaining.length);
+                    results.push(mbRemaining[mbIdx]);
+                    mbRemaining = mbRemaining.slice(0, mbIdx).concat(mbRemaining.slice(mbIdx + 1));
+                    upd('_mbRemaining', mbRemaining);
+                  } else {
+                    results.push(customOutcomes[0].label);
+                  }
+                } else {
+                  // With replacement — same as custom
+                  var mbr = Math.random(), mbcum = 0;
+                  for (var mbi = 0; mbi < customOutcomes.length; mbi++) {
+                    mbcum += customOutcomes[mbi].prob;
+                    if (mbr < mbcum) { results.push(customOutcomes[mbi].label); break; }
+                  }
+                  if (results.length === d.results.length + i) results.push(customOutcomes[customOutcomes.length - 1].label);
+                }
+              }
             }
             upd('results', results);
             upd('trials', results.length);
             var hist = d.convergenceHistory || [];
             var total = results.length;
             if (total > 0) {
-              var firstKey = d.mode === 'coin' ? 'H' : d.mode === 'dice' ? 1 : d.mode === 'spinner' ? 'Red' : d.mode === 'sports' ? activeSport.outcomes[0] : customOutcomes[0].label;
+              var firstKey = d.mode === 'coin' ? 'H' : d.mode === 'dice' ? 1 : d.mode === 'spinner' ? 'Red' : d.mode === 'sports' ? activeSport.outcomes[0] : customOutcomes[0] ? customOutcomes[0].label : 'Red';
               var cnt = results.filter(function (r) { return r === firstKey; }).length;
               hist = hist.concat([{ t: total, pct: cnt / total * 100 }]);
               if (hist.length > 50) hist = hist.slice(-50);
@@ -16949,6 +18008,7 @@
             }
             upd('lastResult', results[results.length - 1]);
             upd('animTick', (d.animTick || 0) + 1);
+            if (d.mode === 'marbleBag') { upd('_mbShaking', true); setTimeout(function () { upd('_mbShaking', false); }, 600); }
           };
 
           // ── Compute expected & counts ──
@@ -16961,6 +18021,9 @@
           else if (d.mode === 'sports') {
             expected = {};
             activeSport.outcomes.forEach(function (o, i) { expected[o] = activeSport.probs[i]; });
+          } else if (d.mode === 'marbleBag') {
+            expected = {};
+            customOutcomes.forEach(function (o) { expected[o.label] = o.prob; });
           } else {
             expected = {};
             customOutcomes.forEach(function (o) { expected[o.label] = o.prob; });
@@ -16969,6 +18032,7 @@
           var barColors = { H: '#3b82f6', T: '#ef4444', 1: '#ef4444', 2: '#f97316', 3: '#eab308', 4: '#22c55e', 5: '#3b82f6', 6: '#8b5cf6', Red: '#ef4444', Blue: '#3b82f6', Green: '#22c55e', Yellow: '#eab308' };
           if (d.mode === 'sports') { activeSport.outcomes.forEach(function (o, i) { barColors[o] = activeSport.colors[i]; }); }
           if (d.mode === 'custom') { customOutcomes.forEach(function (o) { barColors[o.label] = o.color; }); }
+          if (d.mode === 'marbleBag') { customOutcomes.forEach(function (o) { barColors[o.label] = o.color; }); }
 
           // Chi-squared
           var chiSq = 0;
@@ -16984,7 +18048,7 @@
           var chiPass = chiSq < chiCritical;
 
           var convHist = d.convergenceHistory || [];
-          var convExpected = d.mode === 'coin' ? 50 : d.mode === 'dice' ? 16.67 : d.mode === 'spinner' ? 25 : d.mode === 'sports' ? activeSport.probs[0] * 100 : customOutcomes[0].prob * 100;
+          var convExpected = d.mode === 'coin' ? 50 : d.mode === 'dice' ? 16.67 : d.mode === 'spinner' ? 25 : d.mode === 'sports' ? activeSport.probs[0] * 100 : customOutcomes[0] ? customOutcomes[0].prob * 100 : 50;
 
           // Dice face SVG
           var diceFace = function (val, size) {
@@ -17069,8 +18133,83 @@
             React.createElement("p", { className: "text-xs italic -mt-1 mb-3", style: { color: _muted } }, "Explore probability through experiments. Run trials and watch observed frequencies converge to expected values."),
             // Mode selector
             React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
-              [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['custom', '\u2699\uFE0F Custom']].map(([m, label]) =>
-                React.createElement("button", { key: m, onClick: () => { upd('mode', m); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
+              [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom']].map(([m, label]) =>
+                React.createElement("button", { key: m, onClick: () => { upd('mode', m); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); upd('_mbRemaining', null); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
+              )
+            ),
+
+            // ── Marble Bag mode config ──
+            d.mode === 'marbleBag' && React.createElement("div", { className: "mb-4 rounded-xl p-4", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.08)' : 'linear-gradient(135deg, #fdf4ff, #faf5ff, #f5f3ff)', border: '2px solid ' + (isDark || isContrast ? 'rgba(168,85,247,0.3)' : '#c4b5fd') } },
+              React.createElement("div", { className: "flex items-center justify-between mb-3" },
+                React.createElement("p", { className: "text-sm font-black", style: { color: isDark || isContrast ? '#c4b5fd' : '#7c3aed' } }, "\uD83C\uDFB1 Marble Bag Setup"),
+                // Without-replacement toggle
+                React.createElement("label", { className: "flex items-center gap-2 cursor-pointer select-none" },
+                  React.createElement("span", { className: "text-[10px] font-bold", style: { color: isDark || isContrast ? '#a5b4fc' : '#6d28d9' } }, d.mbWithoutReplacement ? '\uD83D\uDD04 Without Replacement' : '\u267B\uFE0F With Replacement'),
+                  React.createElement("div", {
+                    onClick: function () { upd('mbWithoutReplacement', !d.mbWithoutReplacement); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); upd('_mbRemaining', null); },
+                    className: "relative w-10 h-5 rounded-full transition-colors cursor-pointer",
+                    style: { background: d.mbWithoutReplacement ? '#7c3aed' : '#cbd5e1' }
+                  },
+                    React.createElement("div", { className: "absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform", style: { left: d.mbWithoutReplacement ? '22px' : '2px' } })
+                  )
+                )
+              ),
+              d.mbWithoutReplacement && React.createElement("div", { className: "mb-3 px-3 py-2 rounded-lg text-[10px] font-bold", style: { background: 'rgba(139,92,246,0.1)', color: isDark || isContrast ? '#c4b5fd' : '#6d28d9', border: '1px dashed rgba(139,92,246,0.3)' } },
+                "\uD83D\uDCA1 Without replacement: Each marble drawn is removed from the bag. Probabilities change after each draw! Bag refills when empty.",
+                (d._mbRemaining && d._mbRemaining.length >= 0) ? ' \u2014 ' + d._mbRemaining.length + ' marbles remaining' : ''
+              ),
+              // Marble color rows
+              React.createElement("div", { className: "space-y-2 mb-3" },
+                customOutcomes.map(function (o, i) {
+                  var count = o.count || 1;
+                  return React.createElement("div", { key: i, className: "flex items-center gap-2 rounded-lg p-2", style: { background: isDark || isContrast ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.7)', border: '1px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.15)' : '#e9d5ff') } },
+                    React.createElement("input", { type: "color", value: o.color, onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); upd('customOutcomes', co); }, className: "w-7 h-7 rounded-full border-0 cursor-pointer flex-shrink-0", style: { borderRadius: '50%' } }),
+                    React.createElement("input", { type: "text", value: o.label, placeholder: "Color " + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "w-20 px-2 py-1 rounded-lg text-sm font-bold flex-shrink-0", style: { border: '1px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.2)' : '#ddd6fe'), background: isDark || isContrast ? 'rgba(255,255,255,0.05)' : '#fff', color: _text } }),
+                    React.createElement("button", { onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('_mbRemaining', null); }, className: "w-7 h-7 rounded-full font-bold text-sm flex-shrink-0 flex items-center justify-center transition-all hover:scale-110", style: { background: '#fecaca', color: '#dc2626' } }, "\u2212"),
+                    React.createElement("span", { className: "w-8 text-center text-sm font-black", style: { color: _text } }, count),
+                    React.createElement("button", { onClick: function () { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count + 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('_mbRemaining', null); }, className: "w-7 h-7 rounded-full font-bold text-sm flex-shrink-0 flex items-center justify-center transition-all hover:scale-110", style: { background: '#bbf7d0', color: '#16a34a' } }, "+"),
+                    React.createElement("span", { className: "ml-auto text-[10px] font-mono", style: { color: isDark || isContrast ? '#a5b4fc' : '#7c3aed' } }, count + '/' + customOutcomes.reduce(function (s, c) { return s + (c.count || 1); }, 0) + ' = ' + ((o.prob || 0) * 100).toFixed(1) + '%'),
+                    customOutcomes.length > 2 && React.createElement("button", { onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('_mbRemaining', null); }, className: "text-sm font-bold px-1 flex-shrink-0 transition-colors", style: { color: '#f87171' } }, "\u2715")
+                  );
+                })
+              ),
+              customOutcomes.length < 8 && React.createElement("button", { onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: ['Green', 'Yellow', 'Purple', 'Orange', 'Pink', 'Teal'][Math.min(customOutcomes.length - 2, 5)] || String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0, count: 3, color: ['#22c55e', '#eab308', '#8b5cf6', '#f97316', '#ec4899', '#06b6d4', '#14b8a6', '#f43f5e'][customOutcomes.length % 8] }]); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('_mbRemaining', null); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:scale-105", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.2)' : '#ede9fe', color: isDark || isContrast ? '#c4b5fd' : '#7c3aed' } }, "+ Add Color"),
+              // ── SVG Bag Visualization ──
+              React.createElement("div", { className: "mt-4 flex justify-center" },
+                React.createElement("div", { style: { position: 'relative', display: 'inline-block', animation: d._mbShaking ? 'mbShake 0.5s ease-in-out' : 'none' } },
+                  React.createElement("svg", { viewBox: "0 0 180 200", width: 180, height: 200, style: { filter: 'drop-shadow(0 4px 12px rgba(139,92,246,0.2))' } },
+                    // Bag body
+                    React.createElement("path", { d: "M30 60 Q20 60 15 80 L10 170 Q10 195 40 195 L140 195 Q170 195 170 170 L165 80 Q160 60 150 60", fill: isDark || isContrast ? '#2d1b69' : '#ddd6fe', stroke: isDark || isContrast ? '#7c3aed' : '#a78bfa', strokeWidth: 2.5 }),
+                    // Bag opening / drawstring
+                    React.createElement("path", { d: "M30 60 Q55 45 90 45 Q125 45 150 60", fill: "none", stroke: isDark || isContrast ? '#a78bfa' : '#7c3aed', strokeWidth: 2, strokeDasharray: "4 3" }),
+                    // Drawstring knot
+                    React.createElement("ellipse", { cx: 90, cy: 48, rx: 8, ry: 5, fill: isDark || isContrast ? '#a78bfa' : '#7c3aed' }),
+                    // Bag label
+                    React.createElement("text", { x: 90, y: 32, textAnchor: "middle", style: { fontSize: '10px', fontWeight: 'bold', fill: isDark || isContrast ? '#c4b5fd' : '#6d28d9' } }, customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0) + ' marbles'),
+                    // Marbles inside bag
+                    (function () {
+                      var allMarbles = []; customOutcomes.forEach(function (o) { for (var _mj = 0; _mj < Math.min(o.count || 1, 15); _mj++) allMarbles.push(o.color); });
+                      // Deterministic positioning for marbles
+                      var positions = [];
+                      var cols = Math.ceil(Math.sqrt(allMarbles.length));
+                      for (var _mk = 0; _mk < Math.min(allMarbles.length, 50); _mk++) {
+                        var row = Math.floor(_mk / cols), col = _mk % cols;
+                        var px = 40 + col * 20 + (row % 2 ? 10 : 0) + (Math.sin(_mk * 7.3) * 4);
+                        var py = 90 + row * 20 + (Math.cos(_mk * 5.1) * 3);
+                        if (px > 150) px = 40 + (px % 110); if (py > 185) py = 90 + (py % 95);
+                        positions.push({ x: px, y: py, color: allMarbles[_mk] });
+                      }
+                      return positions.map(function (p, idx) {
+                        return React.createElement("g", { key: idx },
+                          React.createElement("circle", { cx: p.x, cy: p.y, r: 8, fill: p.color, stroke: 'rgba(0,0,0,0.15)', strokeWidth: 0.5 }),
+                          React.createElement("circle", { cx: p.x - 2, cy: p.y - 2, r: 3, fill: 'rgba(255,255,255,0.4)' })
+                        );
+                      });
+                    })()
+                  ),
+                  // CSS animation style
+                  React.createElement("style", null, '@keyframes mbShake { 0%,100% { transform: rotate(0deg); } 15% { transform: rotate(-8deg); } 30% { transform: rotate(8deg); } 45% { transform: rotate(-5deg); } 60% { transform: rotate(5deg); } 75% { transform: rotate(-2deg); } }')
+                )
               )
             ),
 
@@ -17177,6 +18316,14 @@
                 ),
                 React.createElement("span", { className: "text-xs font-bold text-slate-600" }, d.lastResult || '?')
               ),
+              d.mode === 'marbleBag' && React.createElement("div", { className: "flex flex-col items-center gap-2" },
+                // Drawn marble with glow animation
+                React.createElement("div", { style: { width: 56, height: 56, borderRadius: '50%', background: barColors[d.lastResult] || '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px ' + (barColors[d.lastResult] || '#e2e8f0') + '80, inset 0 -4px 8px rgba(0,0,0,0.2), inset 0 2px 4px rgba(255,255,255,0.4)', transition: 'all 0.3s ease', transform: d._mbShaking ? 'scale(1.2)' : 'scale(1)' } },
+                  React.createElement("span", { style: { fontSize: '18px', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.3)' } }, d.lastResult || '?')
+                ),
+                React.createElement("span", { className: "text-xs font-bold", style: { color: barColors[d.lastResult] || _muted } }, d.lastResult ? '\uD83C\uDFB1 Drew: ' + d.lastResult : 'Shake the bag!'),
+                d.mbWithoutReplacement && d._mbRemaining && React.createElement("span", { className: "text-[10px] font-bold", style: { color: _accent } }, d._mbRemaining.length + ' left in bag')
+              ),
               React.createElement("div", { className: "text-center" },
                 React.createElement("p", { className: "text-3xl font-black text-violet-700 mb-1" }, d.lastResult != null ? String(d.lastResult) : '?'),
                 React.createElement("p", { className: "text-xs text-slate-400" }, d.lastResult != null ? 'Last result' : 'Click to start!')
@@ -17215,7 +18362,7 @@
             // Convergence chart
             convHist.length > 1 && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: _cardBg, border: '1px solid ' + _border } },
               React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-wider mb-2", style: { color: _accent } },
-                "\uD83D\uDCC8 Convergence to Expected (" + (d.mode === 'coin' ? 'P(H)=50%' : d.mode === 'dice' ? 'P(1)=16.7%' : d.mode === 'sports' ? 'P(' + activeSport.outcomes[0] + ')=' + (activeSport.probs[0] * 100).toFixed(0) + '%' : d.mode === 'custom' ? 'P(' + customOutcomes[0].label + ')=' + (customOutcomes[0].prob * 100).toFixed(0) + '%' : 'P(Red)=25%') + ")"
+                "\uD83D\uDCC8 Convergence to Expected (" + (d.mode === 'coin' ? 'P(H)=50%' : d.mode === 'dice' ? 'P(1)=16.7%' : d.mode === 'sports' ? 'P(' + activeSport.outcomes[0] + ')=' + (activeSport.probs[0] * 100).toFixed(0) + '%' : (d.mode === 'custom' || d.mode === 'marbleBag') && customOutcomes[0] ? 'P(' + customOutcomes[0].label + ')=' + (customOutcomes[0].prob * 100).toFixed(0) + '%' : 'P(Red)=25%') + ")"
               ),
               React.createElement("svg", { viewBox: "0 0 400 100", className: "w-full", style: { maxHeight: '120px' } },
                 React.createElement("line", { x1: 0, y1: 100 - convExpected, x2: 400, y2: 100 - convExpected, stroke: "#22c55e", strokeWidth: 1, strokeDasharray: "4 2" }),
@@ -17285,6 +18432,53 @@
                         : 'With ' + d.trials + '+ trials, you can calculate confidence intervals! The 95% confidence interval for the true probability is approximately observed% \u00B1 ' + (1.96 * Math.sqrt(0.25 / d.trials) * 100).toFixed(1) + '%. This is how pollsters predict elections and scientists validate hypotheses.'
               )
             ),
+            // ── Marble Bag: Theoretical vs Observed Comparison Histogram ──
+            d.mode === 'marbleBag' && d.trials >= 5 && React.createElement("div", { className: "rounded-xl p-4 mb-3", style: { background: _cardBg, border: '1px solid ' + _border } },
+              React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-wider mb-3", style: { color: _accent } }, "\uD83D\uDCCA Theoretical vs Observed Comparison"),
+              React.createElement("div", { className: "flex gap-3" },
+                // Theoretical column
+                React.createElement("div", { className: "flex-1" },
+                  React.createElement("p", { className: "text-[9px] font-bold text-center mb-2", style: { color: isDark || isContrast ? '#a5b4fc' : '#6d28d9' } }, "\uD83C\uDFAF Theoretical"),
+                  React.createElement("div", { className: "space-y-1.5" },
+                    Object.keys(expected).map(function (k) {
+                      var expPct = expected[k] * 100;
+                      return React.createElement("div", { key: 'theo-' + k, className: "flex items-center gap-1" },
+                        React.createElement("div", { style: { width: 10, height: 10, borderRadius: '50%', background: barColors[k] || '#8b5cf6', flexShrink: 0 } }),
+                        React.createElement("span", { className: "text-[9px] font-bold w-12 truncate", style: { color: _text } }, k),
+                        React.createElement("div", { className: "flex-1 rounded-full overflow-hidden", style: { height: '10px', background: isDark || isContrast ? 'rgba(255,255,255,0.08)' : '#f1f5f9' } },
+                          React.createElement("div", { style: { width: expPct + '%', height: '100%', background: (barColors[k] || '#8b5cf6') + '60', borderRadius: '9999px' } })
+                        ),
+                        React.createElement("span", { className: "text-[9px] font-mono w-10 text-right", style: { color: _muted } }, expPct.toFixed(1) + '%')
+                      );
+                    })
+                  )
+                ),
+                // Divider
+                React.createElement("div", { style: { width: '1px', background: isDark || isContrast ? 'rgba(139,92,246,0.2)' : '#e2e8f0', margin: '0 4px' } }),
+                // Observed column
+                React.createElement("div", { className: "flex-1" },
+                  React.createElement("p", { className: "text-[9px] font-bold text-center mb-2", style: { color: isDark || isContrast ? '#86efac' : '#16a34a' } }, "\uD83D\uDD2C Observed (" + d.trials + " draws)"),
+                  React.createElement("div", { className: "space-y-1.5" },
+                    Object.keys(expected).map(function (k) {
+                      var obsPct = d.trials > 0 ? ((counts[k] || 0) / d.trials * 100) : 0;
+                      var expPct2 = expected[k] * 100;
+                      var diff = obsPct - expPct2;
+                      return React.createElement("div", { key: 'obs-' + k, className: "flex items-center gap-1" },
+                        React.createElement("div", { style: { width: 10, height: 10, borderRadius: '50%', background: barColors[k] || '#8b5cf6', flexShrink: 0 } }),
+                        React.createElement("span", { className: "text-[9px] font-bold w-12 truncate", style: { color: _text } }, k),
+                        React.createElement("div", { className: "flex-1 rounded-full overflow-hidden", style: { height: '10px', background: isDark || isContrast ? 'rgba(255,255,255,0.08)' : '#f1f5f9' } },
+                          React.createElement("div", { style: { width: Math.min(obsPct, 100) + '%', height: '100%', background: barColors[k] || '#8b5cf6', borderRadius: '9999px', transition: 'width 0.3s' } })
+                        ),
+                        React.createElement("span", { className: "text-[9px] font-mono w-10 text-right font-bold", style: { color: Math.abs(diff) < 3 ? (isDark || isContrast ? '#86efac' : '#16a34a') : Math.abs(diff) < 8 ? '#f59e0b' : '#ef4444' } }, obsPct.toFixed(1) + '%')
+                      );
+                    })
+                  )
+                )
+              ),
+              d.trials >= 20 && React.createElement("p", { className: "text-[10px] mt-2 italic text-center", style: { color: _muted } },
+                '\uD83D\uDCA1 As you run more trials, the observed bars should get closer to the theoretical bars \u2014 that\'s the Law of Large Numbers in action!'
+              )
+            ),
             // Last 10 results
             d.trials > 0 && React.createElement("div", { className: "text-center" },
               React.createElement("p", { className: "text-xs text-slate-400" }, "Last 10: " + d.results.slice(-10).map(function (r) {
@@ -17307,7 +18501,20 @@
 
         // ═══════════════════════════════════════════════════════
 
-        stemLabTab === 'explore' && stemLabTool === 'musicSynth' && (() => {
+        (function _musicSynth() { var _isMusicSynth = stemLabTab === 'explore' && stemLabTool === 'musicSynth'; if (!_isMusicSynth) {
+            // Placeholder hooks to maintain consistent hook count
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            React.useEffect(function(){}, []);
+            return null;
+          }
           const d = labToolData.musicSynth;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, musicSynth: { ...prev.musicSynth, [key]: val } }));
 
@@ -25731,6 +26938,26 @@
               for (var gx = 0; gx <= gridSize; gx++) { ctx.beginPath(); ctx.moveTo(gx * cellW, 0); ctx.lineTo(gx * cellW, H); ctx.stroke(); }
               for (var gy = 0; gy <= gridSize; gy++) { ctx.beginPath(); ctx.moveTo(0, gy * cellH); ctx.lineTo(W, gy * cellH); ctx.stroke(); }
             }
+            function floodFill(startX, startY, fillColor) {
+              var targetColor = grid[startX + ',' + startY] || null;
+              if (targetColor === fillColor) return;
+              var queue = [[startX, startY]];
+              var visited = {};
+              while (queue.length > 0) {
+                var cell = queue.shift();
+                var cx2 = cell[0], cy2 = cell[1];
+                var k = cx2 + ',' + cy2;
+                if (cx2 < 0 || cx2 >= gridSize || cy2 < 0 || cy2 >= gridSize) continue;
+                if (visited[k]) continue;
+                visited[k] = true;
+                var cellColor = grid[k] || null;
+                if (cellColor !== targetColor) continue;
+                grid[k] = fillColor;
+                queue.push([cx2 + 1, cy2], [cx2 - 1, cy2], [cx2, cy2 + 1], [cx2, cy2 - 1]);
+              }
+              upd('pixelData', Object.assign({}, grid));
+              drawPixelGrid();
+            }
             function paint(e) {
               var rect = canvas.getBoundingClientRect();
               var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
@@ -25738,6 +26965,10 @@
               var gx = Math.floor(ex * (W / rect.width) / cellW);
               var gy = Math.floor(ey * (H / rect.height) / cellH);
               if (gx >= 0 && gx < gridSize && gy >= 0 && gy < gridSize) {
+                if (d.pixelTool === 'fill') {
+                  floodFill(gx, gy, currentColor);
+                  return;
+                }
                 var key = gx + ',' + gy;
                 if (d.pixelTool === 'eraser') delete grid[key]; else grid[key] = currentColor;
                 upd('pixelData', Object.assign({}, grid));
@@ -25894,13 +27125,36 @@
               React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
                 React.createElement("div", { style: { width: 28, height: 28, borderRadius: 6, background: 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)', border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' } }),
                 React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, "Current color"),
-                React.createElement("div", { className: "ml-auto flex gap-1" },
-                  [{ id: 'brush', icon: '\uD83D\uDD8C', label: 'Brush' }, { id: 'eraser', icon: '\uD83E\uDDFD', label: 'Eraser' }].map(function (t) {
+                React.createElement("div", { className: "ml-auto flex gap-1 flex-wrap" },
+                  [{ id: 'brush', icon: '\uD83D\uDD8C', label: 'Brush' }, { id: 'eraser', icon: '\uD83E\uDDFD', label: 'Eraser' }, { id: 'fill', icon: '\uD83E\uDEA3', label: 'Fill' }].map(function (t) {
                     return React.createElement("button", { key: t.id, onClick: function () { upd('pixelTool', t.id); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.pixelTool || 'brush') === t.id ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, t.icon + ' ' + t.label);
                   }),
                   React.createElement("button", { onClick: function () { upd('pixelData', {}); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                  React.createElement("button", { onClick: function () { var c = document.querySelector('canvas[style*="pixelated"]'); if (!c) return; var link = document.createElement('a'); link.download = 'pixel-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG"),
                   React.createElement("select", { 'aria-label': 'Grid size', value: typeof d.pixelGrid === 'number' ? d.pixelGrid : 16, onChange: function (e) { upd('pixelGrid', parseInt(e.target.value)); upd('pixelData', {}); }, className: "px-2 py-1 text-xs border border-slate-200 rounded-lg" },
                     [8, 16, 24, 32].map(function (s) { return React.createElement("option", { key: s, value: s }, s + 'x' + s); }))
+                )
+              ),
+              // Color Palette Presets
+              React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-200" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
+                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, "\uD83C\uDFA8 Palettes"),
+                  [{ id: 'retro', label: '\uD83D\uDD79 Retro', colors: [[0,85,45],[30,90,55],[55,90,55],[120,60,40],[200,70,50],[240,60,35],[280,70,45],[0,0,15],[0,0,85],[30,20,70]] },
+                   { id: 'nature', label: '\uD83C\uDF3F Nature', colors: [[85,50,35],[100,40,45],[120,55,30],[140,60,40],[45,70,45],[30,60,35],[20,50,30],[195,50,50],[210,40,60],[40,30,70]] },
+                   { id: 'warm', label: '\uD83D\uDD25 Warm', colors: [[0,80,50],[10,85,55],[20,90,55],[35,95,55],[45,90,55],[350,70,45],[15,70,40],[40,80,65],[5,60,35],[25,50,70]] },
+                   { id: 'cool', label: '\u2744 Cool', colors: [[195,70,50],[210,65,55],[225,60,50],[240,55,45],[180,50,40],[200,80,60],[170,45,50],[260,50,55],[190,40,65],[220,30,70]] },
+                   { id: 'neon', label: '\uD83D\uDCA5 Neon', colors: [[330,100,55],[300,100,55],[280,100,60],[200,100,55],[170,100,50],[120,100,45],[60,100,50],[30,100,55],[0,100,50],[45,100,55]] }].map(function (pal) {
+                    return React.createElement("button", { key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-pink-50') }, pal.label);
+                  })
+                ),
+                React.createElement("div", { className: "flex gap-1 flex-wrap" },
+                  (function () {
+                    var palettes = { retro: [[0,85,45],[30,90,55],[55,90,55],[120,60,40],[200,70,50],[240,60,35],[280,70,45],[0,0,15],[0,0,85],[30,20,70]], nature: [[85,50,35],[100,40,45],[120,55,30],[140,60,40],[45,70,45],[30,60,35],[20,50,30],[195,50,50],[210,40,60],[40,30,70]], warm: [[0,80,50],[10,85,55],[20,90,55],[35,95,55],[45,90,55],[350,70,45],[15,70,40],[40,80,65],[5,60,35],[25,50,70]], cool: [[195,70,50],[210,65,55],[225,60,50],[240,55,45],[180,50,40],[200,80,60],[170,45,50],[260,50,55],[190,40,65],[220,30,70]], neon: [[330,100,55],[300,100,55],[280,100,60],[200,100,55],[170,100,50],[120,100,45],[60,100,50],[30,100,55],[0,100,50],[45,100,55]] };
+                    var activePal = palettes[d.activePalette || 'retro'] || palettes.retro;
+                    return activePal.map(function (c, i) {
+                      return React.createElement("button", { key: i, onClick: function () { upd('hue', c[0]); upd('sat', c[1]); upd('lit', c[2]); }, className: "rounded-md border-2 transition-all hover:scale-110", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: (d.hue === c[0] && d.sat === c[1] && d.lit === c[2]) ? '#ec4899' : 'rgba(255,255,255,0.6)', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
+                    });
+                  })()
                 )
               ),
               React.createElement("canvas", { ref: pixelRef, width: 512, height: 512, className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', imageRendering: 'pixelated' } })
@@ -26825,6 +28079,46 @@
                 ctx.restore();
               }
 
+              // ── Seasonal Transition Animation ──
+              var _dayInSeason = _dayNum % 30;
+              if (_dayInSeason < 2 && _dayNum > 1 && (_corn || _beans || _squash)) {
+                var _transAlpha = Math.max(0, (2 - _dayInSeason) / 2) * (0.3 + 0.25 * Math.sin(tick * 0.04));
+                var _seasonOverlays = [
+                  { color: 'rgba(100,200,100,', emoji: '🌱', name: 'Spring' },
+                  { color: 'rgba(255,200,50,', emoji: '☀️', name: 'Summer' },
+                  { color: 'rgba(180,120,50,', emoji: '🍂', name: 'Autumn' },
+                  { color: 'rgba(180,200,230,', emoji: '❄️', name: 'Winter' }
+                ];
+                var _so = _seasonOverlays[_season];
+                ctx.fillStyle = _so.color + _transAlpha + ')';
+                ctx.fillRect(0, 0, cW, cH);
+                // Banner
+                var _bannerAlpha = Math.max(0, (2 - _dayInSeason) / 2) * (0.6 + 0.3 * Math.sin(tick * 0.06));
+                ctx.save();
+                ctx.fillStyle = 'rgba(0,0,0,' + (_bannerAlpha * 0.6) + ')';
+                var _bannerH = 50;
+                var _bannerY = cH / 2 - _bannerH / 2;
+                ctx.fillRect(0, _bannerY, cW, _bannerH);
+                ctx.fillStyle = 'rgba(255,255,255,' + _bannerAlpha + ')';
+                ctx.font = 'bold 20px system-ui';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(_so.emoji + ' ' + _so.name + ' has arrived!', cW / 2, cH / 2);
+                ctx.restore();
+                // Particles burst (seasonal)
+                for (var _tp = 0; _tp < 8; _tp++) {
+                  var _tpx = Math.random() * cW;
+                  var _tpy = Math.random() * cH * 0.4;
+                  var _tpSize = 2 + Math.random() * 3;
+                  var _tpAlpha2 = _transAlpha * (0.3 + Math.random() * 0.4);
+                  if (_season === 0) { ctx.fillStyle = 'rgba(100,220,100,' + _tpAlpha2 + ')'; } // green buds
+                  else if (_season === 1) { ctx.fillStyle = 'rgba(255,220,50,' + _tpAlpha2 + ')'; } // sun sparkles
+                  else if (_season === 2) { ctx.fillStyle = 'rgba(200,120,40,' + _tpAlpha2 + ')'; } // falling leaves
+                  else { ctx.fillStyle = 'rgba(240,240,255,' + _tpAlpha2 + ')'; } // snowflakes
+                  ctx.beginPath(); ctx.arc(_tpx, _tpy, _tpSize, 0, Math.PI * 2); ctx.fill();
+                }
+              }
+
               canvasEl._gardenAnim = requestAnimationFrame(draw);
             }
             canvasEl._gardenAnim = requestAnimationFrame(draw);
@@ -27127,8 +28421,44 @@
               ),
 
               // ── Harvest Panel ──
-              phase === 'harvest' && React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border-2 border-amber-300 p-4 space-y-3 shadow-lg" },
+              phase === 'harvest' && (() => {
+                // Calculate per-crop yields based on health, synergies, and growth
+                var _yieldBase = plantHealth / 100;
+                var _cornYield = cornPlanted ? Math.round(_yieldBase * (70 + synCornBeans * 0.3) * synergyBonus) : 0;
+                var _beanYield = beansPlanted ? Math.round(_yieldBase * (50 + synBeansSoil * 0.4) * synergyBonus) : 0;
+                var _squashYield = squashPlanted ? Math.round(_yieldBase * (60 + synSquashAll * 0.35) * synergyBonus) : 0;
+                var _totalYield = _cornYield + _beanYield + _squashYield;
+                var _maxSingleYield = Math.max(_cornYield, _beanYield, _squashYield, 1);
+                return React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border-2 border-amber-300 p-4 space-y-3 shadow-lg" },
                 React.createElement("h4", { className: "text-sm font-bold text-amber-900 flex items-center gap-2" }, "🌾 Season " + (seasonIndex + 1) + " Harvest Report"),
+                // ── Per-Crop Yield Indicators ──
+                React.createElement("div", { className: "bg-white rounded-xl p-3 space-y-2 border border-amber-200" },
+                  React.createElement("div", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1" }, "🌾 Crop Yields"),
+                  [
+                    { emoji: '🌽', name: 'Corn', value: _cornYield, planted: cornPlanted, color: '#ca8a04', bgColor: '#fef9c3', unit: 'ears' },
+                    { emoji: '🫘', name: 'Beans', value: _beanYield, planted: beansPlanted, color: '#16a34a', bgColor: '#dcfce7', unit: 'lbs' },
+                    { emoji: '🎃', name: 'Squash', value: _squashYield, planted: squashPlanted, color: '#ea580c', bgColor: '#fff7ed', unit: 'lbs' }
+                  ].map(function (crop) {
+                    var pct = _maxSingleYield > 0 ? (crop.value / _maxSingleYield) * 100 : 0;
+                    return React.createElement("div", { key: crop.name, className: "flex items-center gap-2" },
+                      React.createElement("span", { className: "text-base w-6 text-center" }, crop.emoji),
+                      React.createElement("div", { className: "flex-1" },
+                        React.createElement("div", { className: "flex justify-between mb-0.5" },
+                          React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, crop.name),
+                          React.createElement("span", { className: "text-[10px] font-bold", style: { color: crop.color } }, crop.planted ? crop.value + ' ' + crop.unit : '—')
+                        ),
+                        React.createElement("div", { className: "w-full h-2.5 rounded-full overflow-hidden", style: { background: crop.bgColor } },
+                          React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: (crop.planted ? Math.round(pct) : 0) + '%', background: crop.color } })
+                        )
+                      )
+                    );
+                  }),
+                  React.createElement("div", { className: "flex items-center justify-between pt-1.5 border-t border-amber-100 mt-1" },
+                    React.createElement("span", { className: "text-[10px] font-bold text-amber-800" }, "Total Harvest"),
+                    React.createElement("span", { className: "text-sm font-bold text-amber-700" }, _totalYield + ' units'),
+                    synergyBonus > 1.05 && React.createElement("span", { className: "text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full" }, '✨ +' + Math.round((synergyBonus - 1) * 100) + '% synergy bonus')
+                  )
+                ),
                 React.createElement("div", { className: "grid grid-cols-3 gap-3 text-center" },
                   React.createElement("div", { className: "bg-white rounded-lg p-2" },
                     React.createElement("div", { className: "text-lg font-bold text-emerald-700" }, Math.round(plantHealth)),
@@ -27167,11 +28497,11 @@
                       cp.eventPopup = null;
                       return Object.assign({}, prev, { companionPlanting: cp });
                     });
-                    if (addToast) addToast('🌾 Harvest complete! Nitrogen carryover: +' + Math.round(_carry) + '%. Soil improved for next season! +20 XP', 'success');
+                    if (addToast) addToast('🌾 Harvest complete! Yield: ' + (_cornYield + _beanYield + _squashYield) + ' units. Nitrogen carryover: +' + Math.round(_carry) + '%. +20 XP', 'success');
                   },
                   className: "w-full px-4 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-yellow-600 text-white shadow-lg shadow-amber-200 hover:from-amber-600 hover:to-yellow-700 transition-all"
                 }, "🌾 Harvest & Start Next Season →")
-              )
+              ); })()
             ),
 
             // ── Quiz Button ──
@@ -27356,6 +28686,82 @@
           };
           const m = calcMeasurements();
 
+          // === CHALLENGE MODE ===
+          const challenge = gd.challenge || null;
+          const challengeAnswer = gd.challengeAnswer || '';
+          const challengeResult = gd.challengeResult || null;
+          const challengeScore = gd.challengeScore || { correct: 0, total: 0 };
+
+          const challengeCalc = (sid, rd) => {
+            const PI = Math.PI;
+            switch (sid) {
+              case 'box': { const w=rd.w,h=rd.h,d=rd.d; return { vol:w*h*d, sa:2*(w*h+w*d+h*d), lat:2*h*(w+d), f:6, e:12, v:8, name:'Rectangular Prism' }; }
+              case 'sphere': { const r=rd.r; return { vol:(4/3)*PI*r*r*r, sa:4*PI*r*r, lat:0, f:0, e:0, v:0, name:'Sphere' }; }
+              case 'cylinder': { const rT=rd.rTop||rd.r,rB=rd.rBot||rd.r,h=rd.h; const sl=Math.sqrt(Math.pow(rT-rB,2)+h*h); return { vol:(PI*h/3)*(rT*rT+rB*rT+rB*rB), sa:PI*(rT*rT+rB*rB+(rT+rB)*sl), lat:PI*(rT+rB)*sl, f:3, e:2, v:0, name:rT===rB?'Cylinder':'Frustum' }; }
+              case 'cone': { const r=rd.r,h=rd.h; const sl=Math.sqrt(r*r+h*h); return { vol:(PI*r*r*h)/3, sa:PI*r*(r+sl), lat:PI*r*sl, f:2, e:1, v:1, name:'Cone' }; }
+              case 'pyramid': { const r=rd.r,h=rd.h,base=2*r,bA=base*base; const sl=Math.sqrt(r*r+h*h); return { vol:bA*h/3, sa:bA+4*(0.5*base*sl), lat:4*(0.5*base*sl), f:5, e:8, v:5, name:'Square Pyramid' }; }
+              case 'torus': { const R=rd.r,r=rd.tube; return { vol:2*PI*PI*R*r*r, sa:4*PI*PI*R*r, lat:0, f:0, e:0, v:0, name:'Torus' }; }
+              case 'prism': { const w=rd.w,h=rd.h,d=rd.d; const tA=0.5*w*h,hyp=Math.sqrt((w/2)*(w/2)+h*h); return { vol:tA*d, sa:2*tA+w*d+2*hyp*d, lat:w*d+2*hyp*d, f:5, e:9, v:6, name:'Triangular Prism' }; }
+              default: return { vol:0, sa:0, lat:0, f:0, e:0, v:0, name:'Shape' };
+            }
+          };
+
+          const generateChallenge = () => {
+            const sids = ['box','sphere','cylinder','cone','pyramid','torus','prism'];
+            const tmpls = [
+              { type:'volume', q:'Calculate the volume of this shape', unit:'u\u00B3' },
+              { type:'surfaceArea', q:'Calculate the total surface area', unit:'u\u00B2' },
+              { type:'faces', q:'How many faces does this shape have?', unit:'' },
+              { type:'edges', q:'How many edges does this shape have?', unit:'' },
+              { type:'vertices', q:'How many vertices does this shape have?', unit:'' },
+              { type:'identify', q:'What type of 3D shape is this?', unit:'' },
+              { type:'lateralArea', q:'Calculate the lateral (side) surface area only', unit:'u\u00B2' },
+              { type:'eulerCheck', q:'Calculate V \u2212 E + F (Euler\u2019s formula)', unit:'' }
+            ];
+            const sid = sids[Math.floor(Math.random()*sids.length)];
+            let valid = tmpls.filter(t => {
+              if (['faces','edges','vertices','eulerCheck'].indexOf(t.type)>=0 && (sid==='sphere'||sid==='torus')) return false;
+              if (t.type==='lateralArea' && (sid==='sphere'||sid==='torus')) return false;
+              return true;
+            });
+            const tmpl = valid[Math.floor(Math.random()*valid.length)];
+            const rd = { w:+(1+Math.random()*7).toFixed(1), h:+(1+Math.random()*7).toFixed(1), d:+(1+Math.random()*7).toFixed(1), r:+(0.5+Math.random()*3.5).toFixed(1), rTop:+(0.5+Math.random()*2.5).toFixed(1), rBot:+(0.5+Math.random()*2.5).toFixed(1), tube:+(0.2+Math.random()*1.3).toFixed(1), segs:32 };
+            const cm = challengeCalc(sid, rd);
+            let answer;
+            switch(tmpl.type) { case 'volume': answer=cm.vol; break; case 'surfaceArea': answer=cm.sa; break; case 'faces': answer=cm.f; break; case 'edges': answer=cm.e; break; case 'vertices': answer=cm.v; break; case 'identify': answer=cm.name; break; case 'lateralArea': answer=cm.lat; break; case 'eulerCheck': answer=cm.v-cm.e+cm.f; break; }
+            let dd;
+            switch(sid) {
+              case 'box': dd='W='+rd.w+', H='+rd.h+', D='+rd.d; break;
+              case 'sphere': dd='r='+rd.r; break;
+              case 'cylinder': dd='rTop='+rd.rTop+', rBot='+rd.rBot+', H='+rd.h; break;
+              case 'cone': dd='r='+rd.r+', H='+rd.h; break;
+              case 'pyramid': dd='Base='+(2*rd.r).toFixed(1)+', H='+rd.h; break;
+              case 'torus': dd='R='+rd.r+', tube='+rd.tube; break;
+              case 'prism': dd='W='+rd.w+', H='+rd.h+', D='+rd.d; break;
+              default: dd=''; break;
+            }
+            setLabToolData(prev => ({ ...prev, geoSandbox: { ...(prev.geoSandbox||{}), shape:sid, dims:rd, challengeMode:true, challenge:{ type:tmpl.type, shapeId:sid, dims:rd, answer:answer, question:tmpl.q, unit:tmpl.unit, dimDesc:dd, shapeName:cm.name }, challengeAnswer:'', challengeResult:null } }));
+          };
+
+          const checkChallengeAnswer = () => {
+            if (!challenge || !challengeAnswer.trim()) return;
+            const ua = challengeAnswer.trim();
+            let correct = false;
+            if (challenge.type === 'identify') {
+              const la = ua.toLowerCase(), ca = challenge.answer.toLowerCase();
+              correct = la===ca || ca.indexOf(la)>=0 || la.indexOf(ca.split(' ')[0])>=0;
+            } else if (['faces','edges','vertices','eulerCheck'].indexOf(challenge.type)>=0) {
+              correct = parseInt(ua) === challenge.answer;
+            } else {
+              const num = parseFloat(ua);
+              if (!isNaN(num) && challenge.answer!==0) correct = Math.abs(num-challenge.answer)/Math.abs(challenge.answer)<=0.05;
+              else if (challenge.answer===0) correct = num===0;
+            }
+            const ns = { correct:challengeScore.correct+(correct?1:0), total:challengeScore.total+1 };
+            setLabToolData(prev => ({ ...prev, geoSandbox: { ...(prev.geoSandbox||{}), challengeResult:correct?'correct':'wrong', challengeScore:ns } }));
+            if (correct && typeof addXP === 'function') addXP(5, 'Geometry challenge correct!');
+          };
+
           // --- STL Export ---
           const exportSTL = () => {
             if (!window._geoScene || !window._geoScene.mesh || !window.THREE) return;
@@ -27484,6 +28890,14 @@
                 '\uD83D\uDD37 Geometry Sandbox'
               ),
               React.createElement('div', { className: 'flex gap-2' },
+                React.createElement('button', {
+                  onClick: generateChallenge,
+                  className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 ' + (gd.challengeMode ? 'text-white bg-gradient-to-r from-amber-500 to-orange-600 shadow-md shadow-amber-500/20 hover:from-amber-600 hover:to-orange-700' : 'text-amber-300 bg-amber-500/20 border border-amber-500/30 hover:bg-amber-500/30')
+                }, '\uD83C\uDFAF Challenge'),
+                gd.challengeMode && React.createElement('button', {
+                  onClick: () => setLabToolData(prev => ({ ...prev, geoSandbox: { ...(prev.geoSandbox||{}), challengeMode:false, challenge:null, challengeAnswer:'', challengeResult:null } })),
+                  className: 'px-3 py-1.5 text-xs font-bold text-slate-400 bg-slate-700/60 rounded-full hover:bg-slate-600 transition-all'
+                }, '\u2716 Exit Challenge'),
                 React.createElement('button', {
                   onClick: exportSTL,
                   className: 'px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 rounded-full hover:from-emerald-600 hover:to-green-700 shadow-md hover:shadow-lg transition-all flex items-center gap-1'
@@ -27637,6 +29051,66 @@
                   React.createElement('div', { className: 'text-xs text-slate-300 mb-1' }, ct.tip),
                   React.createElement('div', { className: 'text-[10px] text-slate-400 italic' }, '\uD83C\uDF0D ' + ct.example)
                 )
+              )
+            ),
+
+            // === CHALLENGE MODE PANEL ===
+            gd.challengeMode && challenge && React.createElement('div', { className: 'bg-gradient-to-br from-amber-900/30 to-orange-900/20 backdrop-blur-md rounded-xl border border-amber-600/40 p-4 space-y-3' },
+              // Challenge header with score
+              React.createElement('div', { className: 'flex items-center justify-between' },
+                React.createElement('h3', { className: 'text-sm font-bold text-amber-300 flex items-center gap-2' }, '\uD83C\uDFAF Geometry Challenge'),
+                React.createElement('div', { className: 'flex items-center gap-3' },
+                  React.createElement('span', { className: 'text-xs font-bold text-emerald-400' }, '\u2705 ' + challengeScore.correct),
+                  React.createElement('span', { className: 'text-xs text-slate-400' }, '/'),
+                  React.createElement('span', { className: 'text-xs font-bold text-slate-300' }, challengeScore.total + ' attempted'),
+                  challengeScore.total > 0 && React.createElement('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full ' + (challengeScore.correct/challengeScore.total >= 0.8 ? 'bg-emerald-500/30 text-emerald-300' : challengeScore.correct/challengeScore.total >= 0.5 ? 'bg-amber-500/30 text-amber-300' : 'bg-red-500/30 text-red-300') }, Math.round(challengeScore.correct/challengeScore.total*100) + '%')
+                )
+              ),
+              // Shape info + question
+              React.createElement('div', { className: 'bg-slate-800/50 rounded-lg p-3 space-y-2' },
+                React.createElement('div', { className: 'flex items-center gap-2' },
+                  React.createElement('span', { className: 'text-xs font-bold text-sky-400 bg-sky-500/20 px-2 py-0.5 rounded-full' }, challenge.shapeName),
+                  React.createElement('span', { className: 'text-xs text-slate-400 font-mono' }, challenge.dimDesc)
+                ),
+                React.createElement('p', { className: 'text-sm font-bold text-white' }, challenge.question + (challenge.unit ? ' (' + challenge.unit + ')' : ''))
+              ),
+              // Answer input + check button
+              !challengeResult && React.createElement('div', { className: 'flex gap-2' },
+                React.createElement('input', {
+                  type: challenge.type === 'identify' ? 'text' : 'number',
+                  value: challengeAnswer,
+                  onChange: e => upd('challengeAnswer', e.target.value),
+                  onKeyDown: e => { if (e.key === 'Enter') checkChallengeAnswer(); },
+                  placeholder: challenge.type === 'identify' ? 'Type the shape name...' : 'Enter your answer...',
+                  className: 'flex-1 px-3 py-2 bg-slate-700/60 border border-slate-600/50 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30',
+                  step: 'any'
+                }),
+                React.createElement('button', {
+                  onClick: checkChallengeAnswer,
+                  disabled: !challengeAnswer.trim(),
+                  className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (challengeAnswer.trim() ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md hover:from-amber-600 hover:to-orange-700' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
+                }, '\u2714 Check')
+              ),
+              // Result feedback
+              challengeResult && React.createElement('div', { className: 'space-y-2' },
+                React.createElement('div', { className: 'flex items-center gap-2 p-3 rounded-lg ' + (challengeResult === 'correct' ? 'bg-emerald-500/20 border border-emerald-500/30' : 'bg-red-500/20 border border-red-500/30') },
+                  React.createElement('span', { className: 'text-lg' }, challengeResult === 'correct' ? '\u2705' : '\u274C'),
+                  React.createElement('div', null,
+                    React.createElement('div', { className: 'text-sm font-bold ' + (challengeResult === 'correct' ? 'text-emerald-300' : 'text-red-300') }, challengeResult === 'correct' ? 'Correct! +5 XP' : 'Not quite!'),
+                    challengeResult !== 'correct' && React.createElement('div', { className: 'text-xs text-slate-400 mt-0.5' }, 'The correct answer is: ',
+                      React.createElement('span', { className: 'font-bold text-amber-300 font-mono' }, typeof challenge.answer === 'number' ? challenge.answer.toFixed(2) : challenge.answer),
+                      challenge.unit ? ' ' + challenge.unit : ''
+                    )
+                  )
+                ),
+                React.createElement('button', {
+                  onClick: generateChallenge,
+                  className: 'w-full px-4 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md hover:from-amber-600 hover:to-orange-700 transition-all'
+                }, '\u27A1 Next Challenge')
+              ),
+              // Hint for numeric challenges
+              !challengeResult && ['volume','surfaceArea','lateralArea'].indexOf(challenge.type) >= 0 && React.createElement('div', { className: 'text-[10px] text-slate-500 italic' },
+                '\uD83D\uDCA1 Tip: Your answer must be within 5% of the exact value. Use \u03C0 \u2248 3.14159'
               )
             ),
 
@@ -28375,11 +29849,16 @@
           var chartTitle = d.chartTitle || 'My Data';
           var editRow = d.editRow || { label: '', value: '' };
           var showStats = d.showStats !== undefined ? d.showStats : true;
+          var showTrendline = d.showTrendline || false;
+          var sortOrder = d.sortOrder || 'none';  // 'none', 'asc', 'desc'
+          var filterMin = typeof d.filterMin === 'number' ? d.filterMin : '';
+          var filterMax = typeof d.filterMax === 'number' ? d.filterMax : '';
 
           var CHART_TYPES = [
             { id: 'bar', icon: '📊', label: 'Bar Chart' },
             { id: 'pie', icon: '🥧', label: 'Pie Chart' },
             { id: 'line', icon: '📈', label: 'Line Graph' },
+            { id: 'scatter', icon: '⚬', label: 'Scatter Plot' },
             { id: 'histogram', icon: '📉', label: 'Histogram' }
           ];
 
@@ -28412,8 +29891,16 @@
             }
           };
 
-          // Statistics
-          var values = dataRows.map(function (r) { return r.value; });
+          // Apply sort and filter
+          var filteredRows = dataRows;
+          if (filterMin !== '' && !isNaN(filterMin)) filteredRows = filteredRows.filter(function (r) { return r.value >= filterMin; });
+          if (filterMax !== '' && !isNaN(filterMax)) filteredRows = filteredRows.filter(function (r) { return r.value <= filterMax; });
+          if (sortOrder === 'asc') filteredRows = filteredRows.slice().sort(function (a, b) { return a.value - b.value; });
+          else if (sortOrder === 'desc') filteredRows = filteredRows.slice().sort(function (a, b) { return b.value - a.value; });
+          var displayRows = filteredRows;
+
+          // Statistics (on displayed rows)
+          var values = displayRows.map(function (r) { return r.value; });
           var total = values.reduce(function (s, v) { return s + v; }, 0);
           var mean = values.length > 0 ? total / values.length : 0;
           var sorted = values.slice().sort(function (a, b) { return a - b; });
@@ -28421,6 +29908,19 @@
           var maxVal = Math.max.apply(null, values.concat([1]));
           var minVal = Math.min.apply(null, values.concat([0]));
           var stdDev = values.length > 0 ? Math.sqrt(values.reduce(function (s, v) { return s + Math.pow(v - mean, 2); }, 0) / values.length) : 0;
+
+          // Linear regression for trendline
+          function calcTrendline(rows) {
+            var n = rows.length;
+            if (n < 2) return null;
+            var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+            rows.forEach(function (r, i) { sumX += i; sumY += r.value; sumXY += i * r.value; sumX2 += i * i; });
+            var denom = n * sumX2 - sumX * sumX;
+            if (denom === 0) return null;
+            var slope = (n * sumXY - sumX * sumY) / denom;
+            var intercept = (sumY - slope * sumX) / n;
+            return { slope: slope, intercept: intercept };
+          }
 
           // Color palette
           var COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#14b8a6', '#a855f7', '#eab308', '#3b82f6'];
@@ -28490,9 +29990,9 @@
                 React.createElement("text", { x: W / 2, y: 18, textAnchor: "middle", style: { fontSize: '13px', fontWeight: 'bold', fill: _text } }, chartTitle),
 
                 // ── Bar Chart ──
-                chartType === 'bar' && dataRows.length > 0 && (() => {
-                  var barW = Math.min(40, (W - 2 * pad) / dataRows.length - 4);
-                  var gap = (W - 2 * pad) / dataRows.length;
+                chartType === 'bar' && displayRows.length > 0 && (() => {
+                  var barW = Math.min(40, (W - 2 * pad) / displayRows.length - 4);
+                  var gap = (W - 2 * pad) / displayRows.length;
                   return React.createElement("g", null,
                     // Y axis
                     React.createElement("line", { x1: pad, y1: 25, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
@@ -28508,7 +30008,7 @@
                       );
                     }),
                     // Bars
-                    dataRows.map(function (row, i) {
+                    displayRows.map(function (row, i) {
                       var barH = maxVal > 0 ? (row.value / maxVal) * (H - pad - 28) : 0;
                       var x = pad + i * gap + (gap - barW) / 2;
                       var y = (H - pad) - barH;
@@ -28522,11 +30022,11 @@
                 })(),
 
                 // ── Pie Chart ──
-                chartType === 'pie' && dataRows.length > 0 && (() => {
+                chartType === 'pie' && displayRows.length > 0 && (() => {
                   var cx = W / 2, cy = (H + 10) / 2, r = Math.min(W, H) / 2.8;
                   var cumAngle = -Math.PI / 2;
                   return React.createElement("g", null,
-                    dataRows.map(function (row, i) {
+                    displayRows.map(function (row, i) {
                       var angle = total > 0 ? (row.value / total) * 2 * Math.PI : 0;
                       var startAngle = cumAngle;
                       cumAngle += angle;
@@ -28540,7 +30040,7 @@
                       var lx = cx + (r + 16) * Math.cos(midAngle);
                       var ly = cy + (r + 16) * Math.sin(midAngle);
                       var pct = total > 0 ? Math.round(row.value / total * 100) : 0;
-                      if (dataRows.length === 1) {
+                      if (displayRows.length === 1) {
                         return React.createElement("g", { key: 'pie' + i },
                           React.createElement("circle", { cx: cx, cy: cy, r: r, fill: COLORS[0], opacity: 0.85 }),
                           React.createElement("text", { x: cx, y: cy + 4, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: '#fff' } }, '100%')
@@ -28558,17 +30058,28 @@
                 })(),
 
                 // ── Line Graph ──
-                chartType === 'line' && dataRows.length > 0 && (() => {
+                chartType === 'line' && displayRows.length > 0 && (() => {
                   var rangeY = maxVal - minVal || 1;
-                  var gap = dataRows.length > 1 ? (W - 2 * pad) / (dataRows.length - 1) : 0;
-                  var pts = dataRows.map(function (row, i) {
-                    var x = dataRows.length === 1 ? W / 2 : pad + i * gap;
+                  var gap = displayRows.length > 1 ? (W - 2 * pad) / (displayRows.length - 1) : 0;
+                  var pts = displayRows.map(function (row, i) {
+                    var x = displayRows.length === 1 ? W / 2 : pad + i * gap;
                     var y = (H - pad) - ((row.value - minVal) / rangeY) * (H - pad - 28);
                     return { x: x, y: y, label: row.label, value: row.value };
                   });
                   var pathD = pts.map(function (p, i) { return (i === 0 ? 'M' : 'L') + ' ' + p.x + ' ' + p.y; }).join(' ');
                   // Area fill
                   var areaD = pathD + ' L ' + pts[pts.length - 1].x + ' ' + (H - pad) + ' L ' + pts[0].x + ' ' + (H - pad) + ' Z';
+                  // Trendline
+                  var trendEls = [];
+                  if (showTrendline && displayRows.length >= 2) {
+                    var tl = calcTrendline(displayRows);
+                    if (tl) {
+                      var tlY0 = (H - pad) - ((tl.intercept - minVal) / rangeY) * (H - pad - 28);
+                      var tlY1 = (H - pad) - (((tl.slope * (displayRows.length - 1) + tl.intercept) - minVal) / rangeY) * (H - pad - 28);
+                      trendEls.push(React.createElement("line", { key: 'tl', x1: pad, y1: tlY0, x2: pad + (displayRows.length - 1) * gap, y2: tlY1, stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '6 3', opacity: 0.7 }));
+                      trendEls.push(React.createElement("text", { key: 'tl-label', x: W - 12, y: tlY1 - 5, textAnchor: "end", style: { fontSize: '7px', fontWeight: 'bold', fill: '#ef4444' } }, 'y=' + tl.slope.toFixed(1) + 'x+' + tl.intercept.toFixed(1)));
+                    }
+                  }
                   return React.createElement("g", null,
                     React.createElement("line", { x1: pad, y1: 25, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
                     React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
@@ -28579,6 +30090,7 @@
                     }),
                     React.createElement("path", { d: areaD, fill: _accent, opacity: 0.08 }),
                     React.createElement("path", { d: pathD, fill: "none", stroke: _accent, strokeWidth: 2.5, strokeLinecap: "round", strokeLinejoin: "round" }),
+                    trendEls,
                     pts.map(function (p, i) {
                       return React.createElement("g", { key: 'lp' + i },
                         React.createElement("circle", { cx: p.x, cy: p.y, r: 4, fill: _accent, stroke: _svgBg, strokeWidth: 2 }),
@@ -28589,8 +30101,55 @@
                   );
                 })(),
 
+                // ── Scatter Plot ──
+                chartType === 'scatter' && displayRows.length > 0 && (() => {
+                  var rangeY = maxVal - minVal || 1;
+                  var gap = displayRows.length > 1 ? (W - 2 * pad) / (displayRows.length - 1) : 0;
+                  var pts = displayRows.map(function (row, i) {
+                    var x = displayRows.length === 1 ? W / 2 : pad + i * gap;
+                    var y = (H - pad) - ((row.value - minVal) / rangeY) * (H - pad - 28);
+                    return { x: x, y: y, label: row.label, value: row.value };
+                  });
+                  // Trendline for scatter
+                  var trendEls = [];
+                  if (showTrendline && displayRows.length >= 2) {
+                    var tl = calcTrendline(displayRows);
+                    if (tl) {
+                      var tlY0 = (H - pad) - ((tl.intercept - minVal) / rangeY) * (H - pad - 28);
+                      var tlY1 = (H - pad) - (((tl.slope * (displayRows.length - 1) + tl.intercept) - minVal) / rangeY) * (H - pad - 28);
+                      trendEls.push(React.createElement("line", { key: 'tl', x1: pad, y1: tlY0, x2: pad + (displayRows.length - 1) * gap, y2: tlY1, stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '6 3', opacity: 0.7 }));
+                      trendEls.push(React.createElement("text", { key: 'tl-label', x: W - 12, y: tlY1 - 5, textAnchor: "end", style: { fontSize: '7px', fontWeight: 'bold', fill: '#ef4444' } }, 'y=' + tl.slope.toFixed(1) + 'x+' + tl.intercept.toFixed(1)));
+                      // R² value
+                      var ssRes = 0, ssTot = 0;
+                      displayRows.forEach(function (r, i) { var pred = tl.slope * i + tl.intercept; ssRes += Math.pow(r.value - pred, 2); ssTot += Math.pow(r.value - mean, 2); });
+                      var rSquared = ssTot > 0 ? (1 - ssRes / ssTot) : 0;
+                      trendEls.push(React.createElement("text", { key: 'r2', x: W - 12, y: tlY1 + 5, textAnchor: "end", style: { fontSize: '7px', fill: '#ef4444', opacity: 0.7 } }, 'R²=' + rSquared.toFixed(3)));
+                    }
+                  }
+                  return React.createElement("g", null,
+                    React.createElement("line", { x1: pad, y1: 25, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                    React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                    [0, 0.25, 0.5, 0.75, 1].map(function (frac, i) {
+                      var yVal = (minVal + rangeY * frac).toFixed(0);
+                      var yPos = (H - pad) - frac * (H - pad - 28);
+                      return React.createElement("g", { key: 'syl' + i },
+                        React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '9px', fill: _muted } }, yVal),
+                        React.createElement("line", { x1: pad, y1: yPos, x2: W - 10, y2: yPos, stroke: _muted, strokeWidth: 0.2, strokeDasharray: "3 3" })
+                      );
+                    }),
+                    trendEls,
+                    pts.map(function (p, i) {
+                      return React.createElement("g", { key: 'sp' + i },
+                        React.createElement("circle", { cx: p.x, cy: p.y, r: 5, fill: COLORS[i % COLORS.length], stroke: _svgBg, strokeWidth: 2, opacity: 0.85 }),
+                        React.createElement("text", { x: p.x, y: p.y - 8, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, p.value),
+                        React.createElement("text", { x: p.x, y: H - pad + 12, textAnchor: "middle", style: { fontSize: '7px', fill: _muted } }, p.label.length > 5 ? p.label.substring(0, 4) + '..' : p.label)
+                      );
+                    })
+                  );
+                })(),
+
                 // ── Histogram ──
-                chartType === 'histogram' && dataRows.length > 0 && (() => {
+                chartType === 'histogram' && displayRows.length > 0 && (() => {
                   // For histogram, bin the values
                   var numBins = Math.min(8, Math.max(3, Math.ceil(Math.sqrt(values.length))));
                   var range = maxVal - minVal || 1;
@@ -28619,6 +30178,48 @@
                   );
                 })()
               )
+            ),
+
+            // ── Sort / Filter / Trendline Controls ──
+            React.createElement("div", { className: "flex gap-2 flex-wrap items-center", style: { marginBottom: 4 } },
+              // Sort controls
+              React.createElement("span", { className: "text-[10px] font-bold", style: { color: _muted } }, "SORT:"),
+              ['none', 'asc', 'desc'].map(function (s) {
+                var labels = { none: '— None', asc: '↑ Asc', desc: '↓ Desc' };
+                return React.createElement("button", {
+                  key: s,
+                  onClick: function () { updDS('sortOrder', s); },
+                  className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all",
+                  style: { background: sortOrder === s ? _btnBg : _card, color: sortOrder === s ? '#fff' : _text, border: '1px solid ' + _border }
+                }, labels[s]);
+              }),
+              // Filter controls
+              React.createElement("span", { className: "text-[10px] font-bold ml-2", style: { color: _muted } }, "FILTER:"),
+              React.createElement("input", {
+                type: "number", placeholder: "Min", value: filterMin,
+                onChange: function (e) { updDS('filterMin', e.target.value === '' ? '' : parseFloat(e.target.value)); },
+                className: "w-14 px-1.5 py-1 rounded-lg text-[10px] font-mono",
+                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' }
+              }),
+              React.createElement("span", { className: "text-[10px]", style: { color: _muted } }, "to"),
+              React.createElement("input", {
+                type: "number", placeholder: "Max", value: filterMax,
+                onChange: function (e) { updDS('filterMax', e.target.value === '' ? '' : parseFloat(e.target.value)); },
+                className: "w-14 px-1.5 py-1 rounded-lg text-[10px] font-mono",
+                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' }
+              }),
+              (filterMin !== '' || filterMax !== '') && React.createElement("button", {
+                onClick: function () { updDS('filterMin', ''); updDS('filterMax', ''); },
+                className: "px-2 py-1 rounded-lg text-[10px] font-bold",
+                style: { background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
+              }, "✕ Clear"),
+              displayRows.length !== dataRows.length && React.createElement("span", { className: "text-[10px] font-bold", style: { color: _accent } }, '(' + displayRows.length + '/' + dataRows.length + ' shown)'),
+              // Trendline toggle (for line/scatter)
+              (chartType === 'line' || chartType === 'scatter') && React.createElement("button", {
+                onClick: function () { updDS('showTrendline', !showTrendline); },
+                className: "px-2.5 py-1 rounded-lg text-[10px] font-bold ml-auto transition-all",
+                style: { background: showTrendline ? '#ef4444' : _card, color: showTrendline ? '#fff' : _text, border: '1px solid ' + (showTrendline ? '#ef4444' : _border) }
+              }, showTrendline ? '📉 Trendline On' : '📉 Trendline')
             ),
 
             // ── Preset Datasets ──
@@ -28670,7 +30271,7 @@
 
             // ── Data Editor ──
             React.createElement("div", { className: "rounded-2xl p-3", style: { background: _card, border: '1px solid ' + _border } },
-              React.createElement("div", { className: "text-xs font-bold mb-2", style: { color: _accent } }, "📝 Data (" + dataRows.length + " items)"),
+              React.createElement("div", { className: "text-xs font-bold mb-2", style: { color: _accent } }, "📝 Data (" + dataRows.length + " items" + (displayRows.length !== dataRows.length ? ', ' + displayRows.length + ' shown' : '') + ")"),
               // Add row
               React.createElement("div", { className: "flex gap-2 mb-2" },
                 React.createElement("input", {
@@ -32994,12 +34595,14 @@
           var upd = function (k, v) { setLabToolData(function (n) { var o = Object.assign({}, n); o[k] = v; return o; }); };
           var colony = d.colony || null;
           var turn = d.colonyTurn || 0;
-          var resources = d.colonyRes || { food: 20, energy: 15, water: 15, materials: 10, science: 5 };
+          var resources = d.colonyRes || { food: 40, energy: 30, water: 30, materials: 20, science: 10 };
           var buildings = d.colonyBuildings || [];
           var settlers = d.colonySettlers || [];
           var mapData = d.colonyMap || null;
-          var mapSize = 12;
+          var mapSize = 200;
           var selectedTile = d.colonySelTile || null;
+          var camX = d.colonyCamX || 0;
+          var camY = d.colonyCamY || 0;
           var colonyEvent = d.colonyEvent || null;
           var scienceGate = d.scienceGate || null;
           var gameLog = d.colonyLog || [];
@@ -33010,6 +34613,105 @@
           var gradeLevel = d.colonyGrade || '6-8';
           var gradeDifficultyMap = { 'K-2': 'very easy, age 5-7, use simple words', '3-5': 'easy, age 8-10, elementary level', '6-8': 'medium, age 11-13, middle school level', '9-12': 'challenging, age 14-17, high school level', 'College': 'advanced, undergraduate university level' };
           var stats = d.colonyStats || { questionsAnswered: 0, correct: 0, buildingsConstructed: 0, anomaliesExplored: 0, turnsPlayed: 0 };
+
+          // ── Rover & Exploration Units ──
+          var rovers = d.colonyRovers || [];
+          var selectedRover = d.selectedRover || null;
+          var roverDefs = [
+            { type: 'scout', name: 'Scout Rover', icon: '\uD83D\uDE99', vision: 5, maxMoves: 6, maxFuel: 20, cost: { materials: 8, energy: 5 }, desc: 'Fast recon. 5-tile vision, 6 moves/turn.', color: '#22d3ee' },
+            { type: 'heavy', name: 'Heavy Rover', icon: '\uD83D\uDE9B', vision: 3, maxMoves: 2, maxFuel: 14, cost: { materials: 15, energy: 10 }, desc: 'Slow but can build outposts. 3-tile vision.', color: '#f97316' },
+            { type: 'science', name: 'Science Rover', icon: '\uD83D\uDD2C', vision: 4, maxMoves: 4, maxFuel: 16, cost: { materials: 12, science: 8 }, desc: 'Auto-collects +2 science/turn from terrain. 4-tile vision.', color: '#a78bfa' }
+          ];
+          function getRoverDef(type) { return roverDefs.find(function (rd) { return rd.type === type; }) || roverDefs[0]; }
+          function buildRover(type) {
+            var def = getRoverDef(type);
+            var nr = Object.assign({}, resources);
+            var canAfford = true;
+            Object.keys(def.cost).forEach(function (k) { if ((nr[k] || 0) < def.cost[k]) canAfford = false; });
+            if (!canAfford) { if (addToast) addToast('Not enough resources!', 'error'); return; }
+            Object.keys(def.cost).forEach(function (k) { nr[k] -= def.cost[k]; });
+            upd('colonyRes', nr);
+            var cx = mapData ? mapData.colonyPos.x : 6;
+            var cy = mapData ? mapData.colonyPos.y : 6;
+            var newRover = { id: 'rv_' + Date.now(), type: type, x: cx, y: cy, fuel: def.maxFuel, movesLeft: def.maxMoves, status: 'idle' };
+            var nrvs = rovers.slice(); nrvs.push(newRover); upd('colonyRovers', nrvs);
+            if (addToast) addToast(def.icon + ' ' + def.name + ' deployed!', 'success');
+            if (typeof addXP === 'function') addXP(5, 'Rover deployed: ' + def.name);
+            var nl = gameLog.slice(); nl.push(def.icon + ' ' + def.name + ' deployed at colony.'); upd('colonyLog', nl);
+          }
+          function moveRover(roverId, tx, ty) {
+            var rv = rovers.find(function (r) { return r.id === roverId; });
+            if (!rv || rv.movesLeft <= 0 || rv.fuel <= 0) return;
+            var dist = Math.abs(tx - rv.x) + Math.abs(ty - rv.y);
+            if (dist > rv.movesLeft || dist > rv.fuel) return;
+            var def = getRoverDef(rv.type);
+            // Move the rover
+            var nrvs = rovers.map(function (r) {
+              if (r.id !== roverId) return r;
+              return Object.assign({}, r, { x: tx, y: ty, movesLeft: r.movesLeft - dist, fuel: r.fuel - dist, status: 'moved' });
+            });
+            upd('colonyRovers', nrvs);
+            // Explore tiles in vision radius
+            if (mapData) {
+              var nm = JSON.parse(JSON.stringify(mapData));
+              var vis = def.vision;
+              var explored2 = 0;
+              for (var dy = -vis; dy <= vis; dy++) {
+                for (var dx = -vis; dx <= vis; dx++) {
+                  if (Math.abs(dx) + Math.abs(dy) > vis + 1) continue; // diamond shape
+                  var ni = (ty + dy) * mapSize + (tx + dx);
+                  if (ni >= 0 && ni < nm.tiles.length && tx + dx >= 0 && tx + dx < mapSize && ty + dy >= 0 && ty + dy < mapSize) {
+                    if (!nm.tiles[ni].explored) { nm.tiles[ni].explored = true; explored2++; }
+                  }
+                }
+              }
+              upd('colonyMap', nm);
+              if (explored2 > 0) {
+                if (addToast) addToast(def.icon + ' Revealed ' + explored2 + ' new tiles!', 'info');
+                var ns = Object.assign({}, stats); ns.tilesExplored = (ns.tilesExplored || 0) + explored2; upd('colonyStats', ns);
+              }
+            }
+          }
+          function refuelRover(roverId) {
+            var rv = rovers.find(function (r) { return r.id === roverId; });
+            if (!rv) return;
+            var def = getRoverDef(rv.type);
+            if (rv.fuel >= def.maxFuel) { if (addToast) addToast('Already full fuel!', 'info'); return; }
+            var nr = Object.assign({}, resources);
+            if (nr.energy < 3) { if (addToast) addToast('Need 3 energy to refuel!', 'error'); return; }
+            nr.energy -= 3; upd('colonyRes', nr);
+            var nrvs = rovers.map(function (r) {
+              if (r.id !== roverId) return r;
+              return Object.assign({}, r, { fuel: Math.min(def.maxFuel, r.fuel + 4) });
+            });
+            upd('colonyRovers', nrvs);
+            if (addToast) addToast('Refueled! +4 fuel', 'success');
+          }
+          function roverBuildOutpost(roverId) {
+            var rv = rovers.find(function (r) { return r.id === roverId; });
+            if (!rv || rv.type !== 'heavy') return;
+            var tKey = rv.x + ',' + rv.y;
+            if (tileImprovements[tKey]) { if (addToast) addToast('Outpost already here!', 'info'); return; }
+            var nr = Object.assign({}, resources);
+            if (nr.materials < 10) { if (addToast) addToast('Need 10 materials!', 'error'); return; }
+            nr.materials -= 10; upd('colonyRes', nr);
+            var tile = mapData ? mapData.tiles[rv.y * mapSize + rv.x] : null;
+            var newTI = Object.assign({}, tileImprovements);
+            newTI[tKey] = { res: tile ? tile.res : 'materials', name: tile ? tile.name : 'Outpost', x: rv.x, y: rv.y };
+            upd('tileImprovements', newTI);
+            if (addToast) addToast('\uD83C\uDFD7\uFE0F Outpost established!', 'success');
+            if (typeof addXP === 'function') addXP(15, 'Outpost built at (' + rv.x + ',' + rv.y + ')');
+            var nl = gameLog.slice(); nl.push('\uD83C\uDFD7\uFE0F Outpost built at (' + rv.x + ',' + rv.y + ')'); upd('colonyLog', nl);
+            // Explore around outpost
+            if (mapData) {
+              var nm = JSON.parse(JSON.stringify(mapData));
+              for (var dy = -2; dy <= 2; dy++) for (var dx = -2; dx <= 2; dx++) {
+                var ni = (rv.y + dy) * mapSize + (rv.x + dx);
+                if (ni >= 0 && ni < nm.tiles.length) nm.tiles[ni].explored = true;
+              }
+              upd('colonyMap', nm);
+            }
+          }
 
           // Civilization Mechanics
           var era = d.colonyEra || 'survival';
@@ -33254,12 +34956,12 @@
                 var r = s / 233280;
                 var tIdx = r < 0.25 ? 0 : r < 0.40 ? 1 : r < 0.50 ? 2 : r < 0.62 ? 3 : r < 0.72 ? 4 : r < 0.88 ? 5 : 6;
                 var t2 = terrainTypes[tIdx];
-                tiles.push({ x: x, y: y, type: t2.type, color: t2.color, name: t2.name, icon: t2.icon, res: t2.res, explored: false, hasAnomaly: r > 0.92 });
+                tiles.push({ x: x, y: y, type: t2.type, color: t2.color, name: t2.name, icon: t2.icon, res: t2.res, explored: false, hasAnomaly: r > 0.88 });
               }
             }
             var cx = Math.floor(mapSize / 2); var cy = Math.floor(mapSize / 2);
             tiles[cy * mapSize + cx] = { x: cx, y: cy, type: 'colony', color: '#f1f5f9', name: 'Colony Base', icon: '\uD83C\uDFE0', res: 'none', explored: true, hasAnomaly: false };
-            for (var dy = -2; dy <= 2; dy++) for (var dx = -2; dx <= 2; dx++) {
+            for (var dy = -5; dy <= 5; dy++) for (var dx = -5; dx <= 5; dx++) {
               var ni = (cy + dy) * mapSize + (cx + dx);
               if (ni >= 0 && ni < tiles.length) tiles[ni].explored = true;
             }
@@ -33350,8 +35052,8 @@
             var tiles = mapData.tiles;
             for (var ti = 0; ti < tiles.length; ti++) {
               var tile = tiles[ti];
-              var tx = offsetX + tile.x * tileSize;
-              var ty = offsetY + tile.y * tileSize;
+              var tx = offsetX + (tile.x - camX) * tileSize;
+              var ty = offsetY + (tile.y - camY) * tileSize;
               if (!tile.explored) {
                 // Fog of war with gradient edge detection
                 var nearExplored = false;
@@ -33486,6 +35188,29 @@
 
                 // Terrain emoji
                 ctx.font = (tileSize * 0.3) + 'px sans-serif'; ctx.fillText(tile.icon, tx + 2, ty + tileSize - 3);
+                // Rover on this tile
+                rovers.forEach(function (rv) {
+                  if (rv.x === tile.x && rv.y === tile.y) {
+                    var rvDef = getRoverDef(rv.type);
+                    var isSelected = selectedRover === rv.id;
+                    // Rover body glow
+                    if (isSelected) {
+                      var selGlow = 0.4 + Math.sin(animPhase * 3) * 0.2;
+                      ctx.fillStyle = 'rgba(250,204,21,' + selGlow + ')';
+                      ctx.beginPath(); ctx.arc(tx + tileSize / 2, ty + tileSize / 2, tileSize * 0.4, 0, Math.PI * 2); ctx.fill();
+                    }
+                    // Rover icon
+                    ctx.fillStyle = rvDef.color; ctx.beginPath();
+                    ctx.arc(tx + tileSize / 2, ty + tileSize / 2, tileSize * 0.22, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = isSelected ? '#fef08a' : 'rgba(255,255,255,0.5)'; ctx.lineWidth = isSelected ? 2 : 1; ctx.stroke();
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold ' + (tileSize * 0.22) + 'px sans-serif';
+                    ctx.fillText(rvDef.icon, tx + tileSize * 0.32, ty + tileSize * 0.58);
+                    // Fuel bar
+                    var fuelPct = rv.fuel / rvDef.maxFuel;
+                    ctx.fillStyle = fuelPct > 0.5 ? '#22c55e' : fuelPct > 0.2 ? '#eab308' : '#ef4444';
+                    ctx.fillRect(tx + 2, ty + tileSize - 5, (tileSize - 4) * fuelPct, 2);
+                  }
+                });
               }
 
               // Selection highlight with animated corners
@@ -33504,6 +35229,26 @@
               ctx.strokeStyle = 'rgba(100,116,139,0.15)'; ctx.lineWidth = 0.5; ctx.strokeRect(tx, ty, tileSize - 1, tileSize - 1);
             }
 
+
+            // Selected rover move range overlay
+            if (selectedRover) {
+              var selRv = rovers.find(function (r2) { return r2.id === selectedRover; });
+              if (selRv && selRv.movesLeft > 0 && selRv.fuel > 0) {
+                var maxMove = Math.min(selRv.movesLeft, selRv.fuel);
+                for (var mti = 0; mti < tiles.length; mti++) {
+                  var mt = tiles[mti];
+                  var mdist = Math.abs(mt.x - selRv.x) + Math.abs(mt.y - selRv.y);
+                  if (mdist > 0 && mdist <= maxMove) {
+                    var mtx = offsetX + (mt.x - camX) * tileSize;
+                    var mty = offsetY + (mt.y - camY) * tileSize;
+                    ctx.fillStyle = 'rgba(250,204,21,' + (0.08 + Math.sin(animPhase * 2) * 0.04) + ')';
+                    ctx.fillRect(mtx, mty, tileSize - 1, tileSize - 1);
+                    ctx.strokeStyle = 'rgba(250,204,21,0.3)'; ctx.lineWidth = 1;
+                    ctx.strokeRect(mtx + 1, mty + 1, tileSize - 3, tileSize - 3);
+                  }
+                }
+              }
+            }
             // Weather particles
             var wx2 = d.colonyWeather;
             if (wx2) {
@@ -33571,8 +35316,8 @@
             var w = canvasRef.current.width; var h = canvasRef.current.height;
             var tileSize = Math.floor(Math.min((w - 40) / mapSize, (h - 50) / mapSize));
             var offsetX = Math.floor((w - tileSize * mapSize) / 2);
-            var tileX = Math.floor((e.clientX - rect.left - offsetX) / tileSize);
-            var tileY = Math.floor((e.clientY - rect.top - 25) / tileSize);
+            var tileX = Math.floor((e.clientX - rect.left - offsetX) / tileSize) + camX;
+            var tileY = Math.floor((e.clientY - rect.top - 25) / tileSize) + camY;
             if (tileX >= 0 && tileX < mapSize && tileY >= 0 && tileY < mapSize) {
               var tile = mapData.tiles[tileY * mapSize + tileX];
               upd('colonySelTile', { x: tileX, y: tileY, tile: tile });
@@ -33666,12 +35411,13 @@
               React.createElement('button', {
                 onClick: function () {
                   upd('colonyMap', generateMap()); upd('colonyPhase', 'playing'); upd('colonyTurn', 1);
-                  upd('colonyRes', { food: 20, energy: 15, water: 15, materials: 10, science: 5 });
+                  upd('colonyRes', { food: 40, energy: 30, water: 30, materials: 20, science: 10 });
                   upd('colonyBuildings', []); upd('colonySettlers', JSON.parse(JSON.stringify(defaultSettlers)));
                   upd('colonyLog', ['Turn 1: Colony established on Kepler-442b. 6 settlers ready.']);
                   upd('colony', { name: 'Kepler-442b' });
                   upd('buildingEff', {}); upd('lastMaintTurn', 0); upd('maintChallenge', null);
                   upd('colonyStats', { questionsAnswered: 0, correct: 0, buildingsConstructed: 0, anomaliesExplored: 0, turnsPlayed: 0 });
+                  upd('colonyRovers', []); upd('selectedRover', null); upd('tileImprovements', {});
                   if (d.colonyTTS) colonySpeak('Mission log. Colony established on Kepler 442 b. Six settlers are ready to begin construction. Good luck, Commander.', 'narrator');
                   if (addToast) addToast('\uD83D\uDE80 Colony established!', 'success');
                   if (typeof addXP === 'function') addXP(10, 'Kepler Colony: Mission launched');
@@ -33681,6 +35427,16 @@
             ),
             // PLAYING
             colonyPhase === 'playing' && mapData && React.createElement('div', null,
+              React.createElement('div', { className: 'flex justify-between items-center mb-1' },
+                React.createElement('div', { className: 'flex gap-1' },
+                  React.createElement('button', { onClick: function () { upd('colonyCamX', Math.max(0, camX - 20)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600', disabled: camX <= 0 }, '\u2190'),
+                  React.createElement('button', { onClick: function () { upd('colonyCamY', Math.max(0, camY - 20)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600', disabled: camY <= 0 }, '\u2191'),
+                  React.createElement('button', { onClick: function () { upd('colonyCamY', Math.min(mapSize - 12, camY + 20)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600' }, '\u2193'),
+                  React.createElement('button', { onClick: function () { upd('colonyCamX', Math.min(mapSize - 12, camX + 20)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600' }, '\u2192'),
+                  React.createElement('button', { onClick: function () { upd('colonyCamX', mapData.colonyPos.x - 5); upd('colonyCamY', mapData.colonyPos.y - 5); }, className: 'px-2 py-1 bg-indigo-700 text-white rounded text-[10px] hover:bg-indigo-600' }, '\uD83C\uDFE0 Center')
+                ),
+                React.createElement('span', { className: 'text-[9px] text-slate-500' }, 'Map ' + mapSize + '\u00D7' + mapSize + ' | View: (' + camX + ',' + camY + ')')
+              ),
               React.createElement('canvas', { ref: canvasRef, onClick: handleMapClick, className: 'w-full rounded-xl border border-slate-700 cursor-pointer mb-3', style: { maxHeight: '480px' } }),
               // Selected tile
               selectedTile && React.createElement('div', { className: 'bg-slate-800 rounded-xl p-3 border border-slate-700 mb-3' },
@@ -33869,6 +35625,31 @@
                     }).catch(function () { upd('colonyEventLoading', false); });
                     var ns5 = Object.assign({}, stats); ns5.turnsPlayed++; upd('colonyStats', ns5);
                     if (typeof addXP === 'function') addXP(5, 'Kepler Colony: Turn ' + nt);
+                    // Rover per-turn processing
+                    if (rovers.length > 0) {
+                      var nrvs2 = rovers.map(function (rv2) {
+                        var rvDef2 = getRoverDef(rv2.type);
+                        var newRv = Object.assign({}, rv2);
+                        // Reset moves each turn
+                        newRv.movesLeft = rvDef2.maxMoves;
+                        // Natural fuel regen +1
+                        newRv.fuel = Math.min(rvDef2.maxFuel, newRv.fuel + 1);
+                        newRv.status = 'idle';
+                        // Science rover auto-collect
+                        if (rv2.type === 'science' && mapData) {
+                          var rvTile = mapData.tiles[rv2.y * mapSize + rv2.x];
+                          if (rvTile && rvTile.explored) {
+                            nr2.science = (nr2.science || 0) + 2;
+                            var bonusType = rvTile.res;
+                            if (bonusType && bonusType !== 'none' && nr2[bonusType] !== undefined) {
+                              nr2[bonusType] += 1;
+                            }
+                          }
+                        }
+                        return newRv;
+                      });
+                      upd('colonyRovers', nrvs2);
+                    }
                     // Population growth — food surplus attracts new settlers (Civ-inspired)
                     var foodSurplus = nr2.food - settlers.length * 2; // need 2x population in food
                     var growthRate = 0.15 + (activePolicy && activePolicy === 'agrarian' ? 0.075 : 0);
@@ -37503,7 +39284,7 @@
             },
             {
               id: 2, title: 'Shape Up!', concept: 'Shaping', target: 'spin', goal: 5,
-              intro: 'Shaping uses successive approximations — reinforcing behaviors that are progressively closer to the target. The mouse won\'t spin on its own at first! Reinforce turning, then half-turns, then full spins. Shape 5 complete spins!',
+              intro: 'Shaping uses successive approximations. The mouse won\'t spin on its own! Follow this 3-step sequence: (1) Reinforce "Turning Right" (↪️) to increase turning. (2) Once turns are frequent, wait for "Half-Turn" (↩️↪️) and reinforce those. (3) Finally, wait for full "Spinning" (🌀) and reinforce! Shape 5 complete spins through 3 stages of approximation!',
               termDef: 'Shaping: Differentially reinforcing successive approximations toward a terminal (target) behavior.',
               funFact: '🐬 Dolphin trainers at SeaWorld use shaping to teach dolphins to do backflips — they start by reinforcing any upward movement!',
               vocab: ['Successive Approximations', 'Terminal Behavior', 'Differential Reinforcement'],
@@ -37625,6 +39406,9 @@
           var blEarTwitchSeed = d.blEarTwitchSeed || Math.random() * 1000;
           var blSpinAngle = d.blSpinAngle || 0;
           var blRecentActions = d.blRecentActions || [];
+          var blTargetX = d.blTargetX || blMouseX;
+          var blTargetY = d.blTargetY || blMouseY;
+          var blActionDwell = d.blActionDwell || 0;
 
           // ── Sound effects (Web Audio API) ──
           var _blAudioCtx = null;
@@ -37643,15 +39427,15 @@
           }
 
           // Default probability weights
-          var defaultWeights = { explore: 30, groom: 15, sniff: 15, pressLever: 5, turnLeft: 10, turnRight: 10, rearUp: 5, freeze: 5, spin: 2, touchWall: 3 };
+          var defaultWeights = { explore: 30, groom: 15, sniff: 15, approachLever: 10, pressLever: 3, turnLeft: 10, turnRight: 10, halfTurn: 3, rearUp: 5, freeze: 5, spin: 1, touchWall: 3 };
           var blWeights = d.blWeights || Object.assign({}, defaultWeights);
 
           // ── Contextual Hints ──
           var blHint = '';
           if (blShowHints && blPhase === 'running') {
-            if (blLevel === 1 && blLevelScore === 0 && blTick > 3) blHint = '\uD83D\uDCA1 Wait for the mouse to press the lever, then click Deliver Food!';
+            if (blLevel === 1 && blLevelScore === 0 && blTick > 3) blHint = '\uD83D\uDCA1 Start by reinforcing when the mouse approaches the lever area. Then wait for actual presses!';
             else if (blLevel === 1 && blLevelScore > 0 && blLevelScore < 3) blHint = '\uD83D\uDC4D Great! Keep reinforcing lever presses. Watch the probability bar grow!';
-            else if (blLevel === 2 && blLevelScore === 0 && blTick > 5) blHint = '\uD83D\uDCA1 Start by reinforcing turnRight, then wait for spin!';
+            else if (blLevel === 2 && blLevelScore === 0 && blTick > 5) blHint = '\uD83D\uDCA1 Shape in stages: reinforce Turn Right (↪️) first, then Half-Turns, then full Spins!';
             else if (blLevel === 3 && !blExtinctionPhase && blLevelScore >= 5) blHint = '\uD83D\uDCA1 You\'ve reinforced 5 times! Click "Start Extinction" to stop reinforcing.';
             else if (blLevel === 4 && blTick > 3) blHint = '\uD83D\uDCA1 FR-3: Only reinforce every 3rd lever press (count them!)';
             else if (blLevel === 5 && blTick > 3) blHint = '\uD83D\uDCA1 Only reinforce when the GREEN light (SD) is on!';
@@ -37695,7 +39479,7 @@
             if (!blLastAction) return;
             var actionToReinforce = blLastAction;
             var newWeights = Object.assign({}, blWeights);
-            newWeights[actionToReinforce] = Math.min((newWeights[actionToReinforce] || 5) + 8, 80);
+            newWeights[actionToReinforce] = Math.min((newWeights[actionToReinforce] || 5) + 4, 70);
 
             // For level 5 (stimulus discrimination), only count if light is correct color
             if (blLevel === 5 && blLightColor !== 'green') {
@@ -37760,12 +39544,31 @@
             }
           }
 
+          // ── Action dwell times (ticks an action persists) ──
+          var ACTION_DWELL = { explore: 2, groom: 3, sniff: 2, approachLever: 2, pressLever: 2, turnLeft: 2, turnRight: 2, halfTurn: 3, rearUp: 2, freeze: 3, spin: 3, touchWall: 2 };
+
           // ── Advance simulation by one tick ──
           function advanceTick() {
             if (blPaused || blPhase !== 'running') return;
 
             var newTick = blTick + 1;
+
+            // Dwell: if current action still has dwell ticks, keep it
+            if (blActionDwell > 1) {
+              upd('blActionDwell', blActionDwell - 1);
+              upd('blTick', newTick);
+              upd('blTotalTicks', (d.blTotalTicks || 0) + 1);
+              var targetAction2 = currentLevel.target || 'pressLever';
+              var cumCount2 = blCumRecord.length > 0 ? blCumRecord[blCumRecord.length - 1].cum : 0;
+              var newCumDwell = blCumRecord.concat([{ tick: newTick, cum: cumCount2, burst: false }]);
+              if (newCumDwell.length > 200) newCumDwell = newCumDwell.slice(-200);
+              upd('blCumRecord', newCumDwell);
+              return;
+            }
+
             var action = selectAction();
+            var dwell = ACTION_DWELL[action] || 2;
+            upd('blActionDwell', dwell);
 
             // Update mouse position based on action
             var newX = blMouseX;
@@ -37775,9 +39578,14 @@
 
             switch (action) {
               case 'explore':
-                newX = Math.max(40, Math.min(360, blMouseX + (Math.random() - 0.5) * 60));
-                newY = Math.max(80, Math.min(230, blMouseY + (Math.random() - 0.5) * 40));
+                newX = Math.max(40, Math.min(360, blMouseX + (Math.random() - 0.5) * 50));
+                newY = Math.max(80, Math.min(230, blMouseY + (Math.random() - 0.5) * 35));
                 newDir = Math.random() > 0.5 ? 1 : -1;
+                break;
+              case 'approachLever':
+                newX = 280 + Math.random() * 40;
+                newY = 180 + Math.random() * 30;
+                newDir = 1;
                 break;
               case 'pressLever':
                 newX = 340; newY = 210;
@@ -37789,6 +39597,10 @@
               case 'turnRight':
                 newDir = 1;
                 newAngle = blMouseAngle + 90;
+                break;
+              case 'halfTurn':
+                newDir = -newDir;
+                newAngle = blMouseAngle + 180;
                 break;
               case 'spin':
                 newAngle = blMouseAngle + 360;
@@ -37808,6 +39620,13 @@
               case 'freeze':
                 // Stay in place
                 break;
+            }
+
+            // Level 1 shaping: reinforcing approachLever gently boosts pressLever
+            if (blLevel === 1 && action === 'approachLever' && blReinforcements > 0) {
+              var w2 = Object.assign({}, blWeights);
+              if (w2.pressLever < 8) w2.pressLever = Math.min(8, (w2.pressLever || 3) + 0.5);
+              upd('blWeights', w2);
             }
 
             // Update cumulative record for target behavior
@@ -37857,7 +39676,7 @@
             for (var wi = 0; wi < wKeys.length; wi++) {
               var wk = wKeys[wi];
               if (newWeights[wk] > defaultWeights[wk] + 2) {
-                newWeights[wk] = Math.max(defaultWeights[wk], newWeights[wk] - 0.3);
+                newWeights[wk] = Math.max(defaultWeights[wk], newWeights[wk] - 0.15);
               }
             }
 
@@ -37942,8 +39761,8 @@
             // Batch update state
             upd('blTick', newTick);
             upd('blMouseAction', action);
-            upd('blMouseX', newX);
-            upd('blMouseY', newY);
+            upd('blTargetX', newX);
+            upd('blTargetY', newY);
             upd('blMouseDir', newDir);
             upd('blMouseAngle', newAngle);
             upd('blHistory', newHistory);
@@ -37955,6 +39774,15 @@
             var newRecentActions = blRecentActions.concat([action]);
             if (newRecentActions.length > 20) newRecentActions = newRecentActions.slice(-20);
             upd('blRecentActions', newRecentActions);
+          }
+
+          // ── Smooth mouse interpolation ──
+          var lerpRate = 0.12;
+          var dxLerp = blTargetX - blMouseX;
+          var dyLerp = blTargetY - blMouseY;
+          if (Math.abs(dxLerp) > 0.5 || Math.abs(dyLerp) > 0.5) {
+            upd('blMouseX', blMouseX + dxLerp * lerpRate);
+            upd('blMouseY', blMouseY + dyLerp * lerpRate);
           }
 
           // ── Auto-advance timer (speed-adjusted) ──
@@ -38164,8 +39992,9 @@
             var actionBounce = 0;
             var actionGlow = null;
             var walkCycle = Math.sin(Date.now() / 120) * 3;
-            var isMoving = blMouseAction === 'explore' || blMouseAction === 'turnLeft' || blMouseAction === 'turnRight' || blMouseAction === 'touchWall';
+            var isMoving = blMouseAction === 'explore' || blMouseAction === 'turnLeft' || blMouseAction === 'turnRight' || blMouseAction === 'halfTurn' || blMouseAction === 'approachLever' || blMouseAction === 'touchWall';
             switch (blMouseAction) {
+              case 'approachLever': actionGlow = '#fbbf24'; break;
               case 'pressLever': actionGlow = '#f59e0b'; break;
               case 'spin': actionGlow = '#c084fc'; actionBounce = -3; break;
               case 'rearUp': actionBounce = -12; break;
