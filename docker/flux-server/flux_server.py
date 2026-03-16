@@ -25,7 +25,7 @@ import torch
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from typing import Optional
 from PIL import Image
 
@@ -104,17 +104,17 @@ app.add_middleware(
 
 class ImageGenerationRequest(BaseModel):
     model: str = "flux"
-    prompt: str
+    prompt: str = Field(..., max_length=1000)
     n: int = 1
     size: str = "512x512"
     response_format: str = "b64_json"
-    negative_prompt: Optional[str] = None
+    negative_prompt: Optional[str] = Field(None, max_length=1000)
     num_inference_steps: Optional[int] = None
     guidance_scale: Optional[float] = None
 
 class ImageEditRequest(BaseModel):
     model: str = "flux"
-    prompt: str
+    prompt: str = Field(..., max_length=1000)
     image: str  # base64 encoded image
     n: int = 1
     size: str = "512x512"

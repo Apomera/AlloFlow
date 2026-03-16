@@ -32,6 +32,8 @@ services:
       - pocketbase_data:/pb/pb_data
       - ./pocketbase/pb_migrations:/pb/pb_migrations
     restart: unless-stopped
+    networks:
+      - frontend
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/api/health"]
       interval: 15s
@@ -47,6 +49,8 @@ services:
       - "127.0.0.1:11434:11434"
     volumes:
       - ollama_data:/root/.ollama
+    networks:
+      - backend
     deploy:
       resources:
         reservations:
@@ -64,6 +68,8 @@ services:
     container_name: alloflow-flux
     ports:
       - "127.0.0.1:7860:7860"
+    networks:
+      - backend
     environment:
       - FLUX_MODEL=black-forest-labs/FLUX.1-schnell
       - PORT=7860
@@ -94,6 +100,8 @@ services:
       - "127.0.0.1:10200:10200"
     volumes:
       - piper_data:/data
+    networks:
+      - backend
     command: >
       --voice en_US-amy-medium
       --data-dir /data
@@ -108,6 +116,8 @@ services:
     container_name: alloflow-edge-tts
     ports:
       - "127.0.0.1:5001:5001"
+    networks:
+      - backend
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
@@ -127,6 +137,8 @@ services:
       - SEARXNG_SECRET_KEY=${SEARXNG_SECRET_KEY}
     volumes:
       - searxng_data:/etc/searxng
+    networks:
+      - backend
     restart: unless-stopped
 
 volumes:
@@ -135,3 +147,10 @@ volumes:
   flux_models:
   piper_data:
   searxng_data:
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+    internal: true  # No external access to backend

@@ -39,6 +39,9 @@ COPY src/dataLayer.js ./public/dataLayer.js
 # Run the build script in dev mode (local paths for modules)
 RUN node build.js --mode=dev
 
+# Security audit (warns but doesn't fail build)
+RUN npm audit --audit-level=moderate || true
+
 # Build the production bundle
 RUN npm run build
 
@@ -63,5 +66,9 @@ COPY --from=builder /app/public/dataProvider.js /usr/share/nginx/html/
 COPY --from=builder /app/public/dataLayer.js /usr/share/nginx/html/
 
 EXPOSE 80
+
+# Run as non-root user
+RUN chown -R nginx:nginx /usr/share/nginx/html
+USER nginx
 
 CMD ["nginx", "-g", "daemon off;"]

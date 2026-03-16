@@ -34,4 +34,8 @@ EXPOSE 7860
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
     CMD curl -f http://localhost:7860/health || exit 1
 
+# Run as non-root user
+RUN useradd -m -u 1000 flux && chown -R flux:flux /app
+USER 1000
+
 CMD ["python3", "flux_server.py"]

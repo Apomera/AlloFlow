@@ -86,6 +86,11 @@ def speech():
     if not text:
         return jsonify({"error": "No input text provided"}), 400
 
+    # Input length validation: prevent memory exhaustion
+    MAX_INPUT_LENGTH = 5000
+    if len(text) > MAX_INPUT_LENGTH:
+        return jsonify({"error": f"Input exceeds {MAX_INPUT_LENGTH} character limit"}), 400
+
     # Resolve voice
     edge_voice = VOICE_MAP.get(voice_id, "en-US-AvaNeural")
 

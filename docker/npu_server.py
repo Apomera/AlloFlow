@@ -169,6 +169,14 @@ def chat_completions():
     max_tok = data.get("max_tokens", 512)
     temp = data.get("temperature", 0.7)
 
+    # Input length validation: prevent token exhaustion
+    MAX_TOTAL_TOKENS = 8192
+    total_chars = sum(len(m.get("content", "")) for m in msgs)
+    if total_chars > MAX_TOTAL_TOKENS:
+        return jsonify({"error": f"Input exceeds {MAX_TOTAL_TOKENS} token limit"}), 400
+    if max_tok > 4096:
+        max_tok = 4096
+
     # Hot-swap model if requested
     req_model = data.get("model", "")
     if req_model and req_model in MODELS and req_model != _active_id:
