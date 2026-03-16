@@ -2316,6 +2316,14 @@
                 desc: 'Train a virtual mouse using operant conditioning! Learn ABA fundamentals: reinforcement, shaping, extinction, and schedules of reinforcement.',
                 color: 'amber', ready: true
               },
+
+              { id: '_cat_Economics', icon: '', label: '💰 Social Studies & Economics', desc: '', color: 'slate', category: true },
+              {
+                id: 'economicsLab', icon: '💰', label: 'Economics Lab',
+                desc: 'Supply & demand curves, personal finance life sim, stock market trading, macro economics dashboard, and lemonade stand entrepreneur sim.',
+                color: 'emerald', ready: true
+              },
+
               { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
               { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true }
             ];
@@ -39545,7 +39553,7 @@
           }
 
           // ── Action dwell times (ticks an action persists) ──
-          var ACTION_DWELL = { explore: 2, groom: 3, sniff: 2, approachLever: 2, pressLever: 2, turnLeft: 2, turnRight: 2, halfTurn: 3, rearUp: 2, freeze: 3, spin: 3, touchWall: 2 };
+          var ACTION_DWELL = { explore: 4, groom: 5, sniff: 3, approachLever: 4, pressLever: 3, turnLeft: 3, turnRight: 3, halfTurn: 4, rearUp: 3, freeze: 5, spin: 4, touchWall: 3 };
 
           // ── Advance simulation by one tick ──
           function advanceTick() {
@@ -39777,7 +39785,7 @@
           }
 
           // ── Smooth mouse interpolation ──
-          var lerpRate = 0.12;
+          var lerpRate = 0.06;
           var dxLerp = blTargetX - blMouseX;
           var dyLerp = blTargetY - blMouseY;
           if (Math.abs(dxLerp) > 0.5 || Math.abs(dyLerp) > 0.5) {
@@ -39786,7 +39794,7 @@
           }
 
           // ── Auto-advance timer (speed-adjusted) ──
-          var tickDelay = blSpeed === 3 ? 500 : blSpeed === 2 ? 900 : 1500;
+          var tickDelay = blSpeed === 3 ? 700 : blSpeed === 2 ? 1300 : 2100;
           if (blPhase === 'running' && !blPaused) {
             setTimeout(function () { advanceTick(); }, tickDelay);
           }
