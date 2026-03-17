@@ -145,6 +145,50 @@
       // t (translation function) — pulled from props with a safe fallback
       var t = props.t || function (k) { return k; };
 
+      // ── STEM Lab Global Sound Effect Helper ──
+      var _stemAudioCtx = null;
+      function stemBeep(freq, dur, vol) {
+        try {
+          if (!_stemAudioCtx) _stemAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          var osc = _stemAudioCtx.createOscillator();
+          var gain = _stemAudioCtx.createGain();
+          osc.connect(gain); gain.connect(_stemAudioCtx.destination);
+          osc.frequency.value = freq; osc.type = 'sine';
+          gain.gain.value = vol || 0.12;
+          gain.gain.exponentialRampToValueAtTime(0.001, _stemAudioCtx.currentTime + (dur || 0.15));
+          osc.start(); osc.stop(_stemAudioCtx.currentTime + (dur || 0.15));
+        } catch (e) { }
+      }
+      function stemCelebrate() {
+        stemBeep(523, 0.15, 0.14); // C5
+        setTimeout(function () { stemBeep(659, 0.15, 0.14); }, 100); // E5
+        setTimeout(function () { stemBeep(784, 0.25, 0.16); }, 200); // G5
+      }
+
+      // ── Accessibility: respect reduced-motion ──
+      var _reduceMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // ── Floating +XP Popup State ──
+      var _stemXpPopups = React.useRef([]);
+      var _stemXpPopupCounter = React.useRef(0);
+      var [_xpPopupTick, _setXpPopupTick] = React.useState(0);
+      // XP badge pulse state
+      var [_xpBadgePulse, _setXpBadgePulse] = React.useState(false);
+
+      // ── Inject XP CSS Keyframes ──
+      React.useEffect(function () {
+        if (document.getElementById('stem-xp-keyframes')) return;
+        var s = document.createElement('style');
+        s.id = 'stem-xp-keyframes';
+        s.textContent = [
+          '@keyframes stemXpShimmer { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }',
+          '@keyframes stemXpBadgePulse { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }',
+          '@keyframes stemXpFloat { 0% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-38px); } }'
+        ].join('\n');
+        document.head.appendChild(s);
+        return function () { var el = document.getElementById('stem-xp-keyframes'); if (el) el.remove(); };
+      }, []);
+
       // ── STEM Lab XP System (per-activity cap: 100 XP) ──
       var stemXpData = (labToolData && labToolData._stemXP) || {};
       function awardStemXP(activityId, points, reason) {
@@ -171,7 +215,25 @@
           return Object.assign({}, prev, { _stemXP: xpState });
         });
         if (addToast) addToast(t('stem.common.u2b50') + _awardedPts + ' XP: ' + (reason || 'STEM activity') + '!', 'success');
-        announceToSR('Earned ' + _awardedPts + ' XP for ' + (reason || 'STEM activity'));
+        // Screen-reader announcement via ARIA live region
+        try { var _sr = document.getElementById('stem-sr-live'); if (!_sr) { _sr = document.createElement('div'); _sr.id = 'stem-sr-live'; _sr.setAttribute('aria-live', 'polite'); _sr.setAttribute('role', 'status'); Object.assign(_sr.style, { position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0 0 0 0)' }); document.body.appendChild(_sr); } _sr.textContent = 'Earned ' + _awardedPts + ' XP for ' + (reason || 'STEM activity'); } catch (e) { }
+        // ── XP Chime (ascending two-note) ──
+        stemBeep(523, 0.08, 0.10); // C5
+        setTimeout(function () { stemBeep(659, 0.12, 0.10); }, 80); // E5
+        // ── Floating +XP Popup ──
+        if (!_reduceMotion) {
+          _stemXpPopupCounter.current += 1;
+          var popupId = _stemXpPopupCounter.current;
+          _stemXpPopups.current = _stemXpPopups.current.concat([{ id: popupId, pts: _awardedPts, ts: Date.now() }]);
+          _setXpPopupTick(function (t) { return t + 1; });
+          setTimeout(function () {
+            _stemXpPopups.current = _stemXpPopups.current.filter(function (p) { return p.id !== popupId; });
+            _setXpPopupTick(function (t) { return t + 1; });
+          }, 1400);
+        }
+        // ── Badge Pulse ──
+        _setXpBadgePulse(true);
+        setTimeout(function () { _setXpBadgePulse(false); }, 600);
       }
       function getStemXP(activityId) {
         return (stemXpData[activityId] && stemXpData[activityId].earned) || 0;
@@ -1567,9 +1629,35 @@
       }, /*#__PURE__*/React.createElement("div", {
         className: "flex items-center gap-3"
       }, React.createElement("div", {
-        className: "flex items-center gap-1.5 bg-white/15 backdrop-blur rounded-full px-3 py-1 text-xs font-bold",
+        className: "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-black relative",
+        style: {
+          background: 'linear-gradient(135deg, #f59e0b, #eab308, #f59e0b)',
+          backgroundSize: '200% 200%',
+          animation: _xpBadgePulse ? 'stemXpBadgePulse 0.6s ease-out' : 'stemXpShimmer 3s ease-in-out infinite',
+          boxShadow: _xpBadgePulse ? '0 0 16px rgba(245,158,11,0.6), 0 0 4px rgba(245,158,11,0.3)' : '0 2px 8px rgba(0,0,0,0.2)',
+          color: '#1e293b',
+          transition: 'box-shadow 0.3s ease'
+        },
         title: t('stem.solver.total_stem_lab_xp_earned')
-      }, React.createElement("span", null, "⭐"), React.createElement("span", null, totalStemXP + " XP")),
+      },
+        React.createElement("span", { style: { filter: 'drop-shadow(0 0 3px rgba(255,200,0,0.8))', fontSize: '14px' } }, "\u2B50"),
+        React.createElement("span", { style: { textShadow: '0 1px 2px rgba(0,0,0,0.15)' } }, totalStemXP + " XP"),
+        // Floating +XP popups
+        _stemXpPopups.current.map(function (p) {
+          return React.createElement("div", {
+            key: p.id,
+            className: "stemXpFloatPopup",
+            style: {
+              position: 'absolute', top: '-8px', left: '50%', transform: 'translateX(-50%)',
+              pointerEvents: 'none', zIndex: 99999,
+              animation: 'stemXpFloat 1.3s ease-out forwards',
+              fontWeight: 900, fontSize: '14px', color: '#f59e0b',
+              textShadow: '0 0 8px rgba(245,158,11,0.6), 0 1px 3px rgba(0,0,0,0.3)',
+              whiteSpace: 'nowrap'
+            }
+          }, "+" + p.pts + " XP");
+        })
+      ),
         React.createElement("div", {
           className: "hidden md:flex items-center gap-1 bg-white/10 backdrop-blur rounded-full px-2.5 py-1 text-[9px] font-medium text-white/70",
           title: "Keyboard shortcuts: Esc = close, Alt+1/2 = switch tabs, Alt+B = back to tools, Tab = navigate, Arrow keys = orbit 3D views"
@@ -1967,38 +2055,76 @@
             addToast(t('stem.fluency.stem_assessment_saved_to_resources') + assessmentBlocks.length + ' blocks)', 'success');
           },
           className: "py-3 px-5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
-        }, "\uD83D\uDCBE Save to Resources"), React.createElement("div", { className: "mt-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4" },
-          React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-            React.createElement("span", { className: "text-lg" }, "\u2B50"),
-            React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "STEM Lab XP Progress"),
-            React.createElement("span", { className: "ml-auto text-xs font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full" }, totalStemXP + " Total XP")
+        }, "\uD83D\uDCBE Save to Resources"), React.createElement("div", { className: "mt-4 rounded-xl border border-amber-200 p-4", style: { background: 'linear-gradient(135deg, #fffbeb, #fef3c7, #fffbeb)' } },
+          React.createElement("div", { className: "flex items-center gap-2 mb-3" },
+            React.createElement("span", { style: { fontSize: '20px', filter: 'drop-shadow(0 0 4px rgba(255,200,0,0.7))' } }, "\u2B50"),
+            React.createElement("h4", { className: "text-sm font-black text-amber-800" }, "STEM Lab XP Progress"),
+            React.createElement("span", { className: "ml-auto text-xs font-black text-amber-700 px-2.5 py-1 rounded-full", style: { background: 'linear-gradient(135deg, #f59e0b, #eab308)', color: '#1e293b', boxShadow: '0 2px 6px rgba(245,158,11,0.3)' } }, totalStemXP + " Total XP")
           ),
-          React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2 text-[10px]" },
-            [
-              { id: 'galaxy_quiz', label: '\uD83C\uDF0C Galaxy Quiz', icon: '\uD83C\uDF0C' },
-              { id: 'galaxy_explore', label: '\u2B50 Galaxy Discovery', icon: '\u2B50' },
-              { id: 'solar_quiz', label: '\uD83C\uDF0D Solar System', icon: '\uD83C\uDF0D' },
-              { id: 'universe_explore', label: '\uD83C\uDF20 Universe', icon: '\uD83C\uDF20' },
-              { id: 'cell_quiz', label: '\uD83D\uDD2C Cell Lab', icon: '\uD83D\uDD2C' },
-              { id: 'rocks_quiz', label: '\uD83E\uDEA8 Rocks', icon: '\uD83E\uDEA8' }
-            ].map(function (act) {
-              var earned = getStemXP(act.id);
-              var pct = Math.min(100, earned);
-              return React.createElement("div", { key: act.id, className: "bg-white rounded-lg p-2 border border-amber-100" },
-                React.createElement("div", { className: "flex items-center gap-1 mb-1" },
-                  React.createElement("span", null, act.icon),
-                  React.createElement("span", { className: "font-bold text-slate-700" }, act.label)
+          // Total progress bar
+          (function () {
+            var _xpActivities = [
+              { id: 'behaviorLab', label: 'Behavior Lab', icon: '\uD83D\uDC2D' },
+              { id: 'aquarium', label: 'Aquarium', icon: '\uD83D\uDC20' },
+              { id: 'wave-match', label: 'Waves', icon: '\uD83C\uDF0A' },
+              { id: 'galaxy_quiz', label: 'Galaxy', icon: '\uD83C\uDF0C' },
+              { id: 'galaxy_explore', label: 'Discovery', icon: '\u2B50' },
+              { id: 'physicsQuiz', label: 'Physics', icon: '\uD83C\uDFAF' },
+              { id: 'chemBalance', label: 'Chemistry', icon: '\uD83E\uDDEA' },
+              { id: 'circuit', label: 'Circuits', icon: '\u26A1' },
+              { id: 'codingPlayground', label: 'Coding', icon: '\uD83D\uDCBB' },
+              { id: 'algebraCAS', label: 'Algebra', icon: '\uD83D\uDCD0' },
+              { id: 'dissection', label: 'Dissection', icon: '\uD83D\uDD2C' },
+              { id: 'universe_explore', label: 'Universe', icon: '\uD83C\uDF20' },
+              { id: 'fractionChallenge', label: 'Fractions', icon: '\uD83D\uDD22' },
+              { id: 'companion_planting_corn', label: 'Garden', icon: '\uD83C\uDF31' }
+            ];
+            var _maxXP = _xpActivities.length * 100;
+            var _totalPct = _maxXP > 0 ? Math.min(100, (totalStemXP / _maxXP) * 100) : 0;
+            return React.createElement(React.Fragment, null,
+              // Total progress bar
+              React.createElement("div", { className: "mb-3" },
+                React.createElement("div", { className: "flex justify-between items-center mb-1" },
+                  React.createElement("span", { className: "text-[10px] font-bold text-amber-700 uppercase" }, "Overall Progress"),
+                  React.createElement("span", { className: "text-[10px] font-black text-amber-600" }, totalStemXP + " / " + _maxXP + " XP (" + Math.round(_totalPct) + "%)")  
                 ),
-                React.createElement("div", { className: "w-full h-1.5 bg-amber-100 rounded-full overflow-hidden" },
-                  React.createElement("div", { className: "h-full rounded-full transition-all duration-500", style: { width: pct + '%', background: pct >= 100 ? 'linear-gradient(90deg, #f59e0b, #10b981)' : 'linear-gradient(90deg, #f59e0b, #fbbf24)' } })
-                ),
-                React.createElement("div", { className: "flex justify-between mt-0.5" },
-                  React.createElement("span", { className: "text-amber-600" }, earned + "/100 XP"),
-                  pct >= 100 && React.createElement("span", { className: "text-green-600 font-bold" }, "\u2714 MAX")
+                React.createElement("div", { className: "w-full h-3 bg-amber-100 rounded-full overflow-hidden", style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' } },
+                  React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: {
+                    width: _totalPct + '%',
+                    background: _totalPct >= 100 ? 'linear-gradient(90deg, #10b981, #34d399)' : 'linear-gradient(90deg, #f59e0b, #eab308, #f59e0b)',
+                    backgroundSize: '200% 100%',
+                    animation: 'stemXpShimmer 2s ease-in-out infinite',
+                    boxShadow: '0 0 8px rgba(245,158,11,0.4)'
+                  } })
                 )
-              );
-            })
-          )
+              ),
+              // Activity grid
+              React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-[10px]" },
+                _xpActivities.map(function (act) {
+                  var earned = getStemXP(act.id);
+                  var pct = Math.min(100, earned);
+                  var isMaxed = pct >= 100;
+                  return React.createElement("div", { key: act.id, className: "bg-white rounded-lg p-2 border transition-all duration-200 hover:shadow-md", style: { borderColor: isMaxed ? '#10b981' : '#fde68a' } },
+                    React.createElement("div", { className: "flex items-center gap-1 mb-1" },
+                      React.createElement("span", { style: { fontSize: '12px' } }, act.icon),
+                      React.createElement("span", { className: "font-bold truncate", style: { color: isMaxed ? '#059669' : '#334155', fontSize: '10px' } }, act.label)
+                    ),
+                    React.createElement("div", { className: "w-full h-1.5 rounded-full overflow-hidden", style: { background: '#fef3c7', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.06)' } },
+                      React.createElement("div", { className: "h-full rounded-full transition-all duration-500", style: {
+                        width: pct + '%',
+                        background: isMaxed ? 'linear-gradient(90deg, #10b981, #34d399)' : 'linear-gradient(90deg, #f59e0b, #fbbf24)',
+                        boxShadow: isMaxed ? '0 0 4px rgba(16,185,129,0.4)' : 'none'
+                      } })
+                    ),
+                    React.createElement("div", { className: "flex justify-between mt-0.5" },
+                      React.createElement("span", { style: { color: isMaxed ? '#059669' : '#d97706', fontWeight: 700 } }, earned + "/100"),
+                      isMaxed && React.createElement("span", { style: { color: '#059669', fontWeight: 900, fontSize: '9px' } }, "\u2714 MAX")
+                    )
+                  );
+                })
+              )
+            );
+          })()
         ),
           toolSnapshots.length > 0 && /*#__PURE__*/React.createElement("div", {
             className: "mt-4 pt-4 border-t border-slate-200"
