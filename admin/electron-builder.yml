@@ -30,7 +30,9 @@ directories:
 files:
   - "main.js"
   - "preload.js"
+  - "gpu-detection.js"
   - "src/**/*"
+  - "docker/**/*"
   - "build/**/*"
   - "node_modules/**/*"
 
@@ -49,9 +51,11 @@ nsis:
   # Uninstaller options
   allowElevation: true
   perMachine: true  # Install for all users (requires admin)
-  installerIcon: "assets/icon.ico"
-  uninstallerIcon: "assets/icon.ico"
-  include: "build/installer.nsh"  # Custom uninstall script
+  # TODO: Add icon files (assets/icon.ico)
+  # installerIcon: "assets/icon.ico"
+  # uninstallerIcon: "assets/icon.ico"
+  # TODO: Create custom installer script (build/installer.nsh)
+  # include: "build/installer.nsh"
   # Uninstaller will appear in Windows "Programs and Features"
   displayLanguageSelector: true
   menuCategory: true

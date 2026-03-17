@@ -403,6 +403,45 @@ ipcMain.handle('setup:validate-cluster-token', async (event, primaryIp, token) =
   }
 });
 
+ipcMain.handle('setup:configure-firewall', async (event, port = 8000) => {
+  try {
+    if (process.platform !== 'win32') {
+      return { success: false, error: 'Firewall configuration is only available on Windows' };
+    }
+    
+    console.log(`Configuring Windows firewall for port ${port}...`);
+    
+    // Use netsh to add firewall rule for AlloFlow
+    return new Promise((resolve) => {
+      const ruleName = 'AlloFlow-Student-Access';
+      const cmd = `netsh advfirewall firewall add rule name="${ruleName}" dir=in action=allow protocol=tcp localport=${port} remoteip=localsubnet`;
+      
+      exec(cmd, { shell: 'powershell.exe' }, (error, stdout, stderr) => {
+        if (error) {
+          // Rule might already exist, treat as success
+          console.warn('Firewall rule setup warning:', error.message);
+          if (error.message.includes('already exists') || error.message.includes('Обнаружена ошибка')) {
+            resolve({ success: true, message: 'Firewall rule already configured' });
+          } else {
+            resolve({ success: false, error: error.message });
+          }
+        } else {
+          console.log('Firewall rule created successfully');
+          resolve({ 
+            success: true, 
+            message: `Firewall rule "${ruleName}" created for port ${port}`,
+            ruleName,
+            port
+          });
+        }
+      });
+    });
+  } catch (err) {
+    console.error('Firewall configuration error:', err.message);
+    return { success: false, error: err.message };
+  }
+});
+
 ipcMain.handle('setup:run', async (event, config) => {
   try {
     const dockerRoot = path.join(__dirname, '..');
@@ -434,6 +473,23 @@ DEPLOYMENT_MODE=${config.deploymentMode}
 ${config.deploymentMode === 'join-cluster' ? `CLUSTER_PRIMARY_IP=${config.clusterPrimaryIp}\nCLUSTER_TOKEN=${config.clusterToken}` : ''}
 `.trim();
     fs.writeFileSync(envPath, envContent);
+    
+    // Step 2.5: Configure Windows firewall (if on Windows)
+    if (process.platform === 'win32') {
+      mainWindow.webContents.send('setup:progress', { step: 'Configuring firewall for network access...', progress: 8 });
+      const fwResult = await new Promise((resolve) => {
+        const ruleName = 'AlloFlow-Student-Access';
+        const cmd = `netsh advfirewall firewall add rule name="${ruleName}" dir=in action=allow protocol=tcp localport=8000 remoteip=localsubnet`;
+        exec(cmd, { shell: 'powershell.exe' }, (error) => {
+          if (error && !error.message.includes('already exists')) {
+            console.warn('Firewall configuration warning:', error.message);
+          } else {
+            console.log('Firewall configured successfully');
+          }
+          resolve(true);
+        });
+      });
+    }
     
     // Step 3: Pull Docker images (send progress updates)
     mainWindow.webContents.send('setup:progress', { step: 'Pulling Docker images...', progress: 10 });

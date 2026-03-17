@@ -26,6 +26,7 @@ contextBridge.exposeInMainWorld('alloAPI', {
   detectGPU: () => ipcRenderer.invoke('setup:detect-gpu'),
   getServerIP: () => ipcRenderer.invoke('setup:get-server-ip'),
   validateClusterToken: (primaryIp, token) => ipcRenderer.invoke('setup:validate-cluster-token', primaryIp, token),
+  configureFirewall: (port) => ipcRenderer.invoke('setup:configure-firewall', port),
   runSetup: (config) => ipcRenderer.invoke('setup:run', config),
   
   // Setup progress events

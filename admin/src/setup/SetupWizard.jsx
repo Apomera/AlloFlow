@@ -678,27 +678,79 @@ export default function SetupWizard({ onComplete }) {
     <div className="setup-step">
       <h2>Network Configuration</h2>
       <p style={{ marginBottom: '2rem', color: 'var(--color-text-muted)' }}>
-        Configure how students and teachers will access AlloFlow.
+        Configure how students and teachers will access AlloFlow on your network.
       </p>
 
       <div style={{ display: 'grid', gap: '1.5rem' }}>
+        <div style={{
+          padding: '1.5rem',
+          backgroundColor: 'rgba(16, 185, 129, 0.05)',
+          borderRadius: '8px',
+          border: '2px solid rgba(16, 185, 129, 0.3)'
+        }}>
+          <h4 style={{ marginTop: 0, marginBottom: '0.75rem', color: 'var(--color-success)' }}>📍 Local Network IP</h4>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <code style={{ 
+              flex: 1, 
+              padding: '0.5rem', 
+              backgroundColor: 'var(--color-bg)',
+              borderRadius: '4px',
+              fontFamily: 'monospace',
+              fontSize: '0.875rem',
+              userSelect: 'all'
+            }}>
+              http://{config.serverIp}:8000
+            </code>
+            <button 
+              className="btn" 
+              onClick={() => {
+                navigator.clipboard.writeText(`http://${config.serverIp}:8000`);
+              }}
+              style={{ minWidth: 'auto' }}
+            >
+              Copy
+            </button>
+          </div>
+          <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0 }}>
+            ✓ This is your server's local network address. Share this URL with students/teachers on your network.
+          </p>
+        </div>
+
         <div>
           <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>
-            Server IP Address
+            Custom Domain or Hostname (Optional)
           </label>
           <input
             type="text"
-            value={config.serverIp}
-            onChange={(e) => setConfig({ ...config, serverIp: e.target.value })}
+            placeholder="e.g., alloflow.school.local or alloflow.home"
+            value={config.domain}
+            onChange={(e) => setConfig({ ...config, domain: e.target.value })}
             style={{ width: '100%' }}
           />
           <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
-            Auto-detected from your network. Students will access: http://{config.serverIp}:8000
+            Set up a custom domain later through Settings → Network → NGINX. Requires DNS or local host file entries.
           </p>
         </div>
 
         <div style={{
-          padding: '1.5rem',
+          padding: '1rem',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderRadius: '6px',
+          fontSize: '0.875rem'
+        }}>
+          <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--color-primary)' }}>
+            🔓 Network Access & Firewall
+          </div>
+          <ul style={{ margin: 0, paddingLeft: '1.25rem', color: 'var(--color-text-muted)' }}>
+            <li><strong>Firewall:</strong> Port 8000 will be opened automatically during setup (Windows firewall rules configured)</li>
+            <li><strong>Access:</strong> Any device on your network can reach http://{config.serverIp || '[ip]'}:8000</li>
+            <li><strong>Data:</strong> All traffic stays within your local network unless HTTPS is configured</li>
+            <li><strong>Domain:</strong> Add a custom domain later in Settings → Network</li>
+          </ul>
+        </div>
+
+        <div style={{
+          padding: '1rem',
           backgroundColor: 'var(--color-bg)',
           borderRadius: '8px',
           border: '1px solid var(--color-border)'
