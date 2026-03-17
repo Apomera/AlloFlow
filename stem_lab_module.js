@@ -174,6 +174,9 @@
       // XP badge pulse state
       var [_xpBadgePulse, _setXpBadgePulse] = React.useState(false);
 
+      // Life Skills Lab Global State
+      var [stemState, setStemState] = React.useState({});
+
       // ── Inject XP CSS Keyframes ──
       React.useEffect(function () {
         if (document.getElementById('stem-xp-keyframes')) return;
@@ -13195,16 +13198,16 @@
 
           // Canvas animated projectile
           const canvasRef = function (canvasEl) {
-            if (!canvasEl) {
-              if (canvasRef._lastCanvas && canvasRef._lastCanvas._physAnim) {
-                cancelAnimationFrame(canvasRef._lastCanvas._physAnim);
-                // _physInit stays true — state persists on canvas element
-                canvasRef._lastCanvas = null;
+            if (!canvasEl) return;
+            if (canvasEl._physInit) {
+              if (!canvasEl._physAnimActive && canvasEl._drawFunc) {
+                canvasEl._physAnimActive = true;
+                canvasEl._physAnim = requestAnimationFrame(canvasEl._drawFunc);
               }
               return;
             }
-            if (canvasEl._physInit) return;
             canvasEl._physInit = true;
+            canvasEl._physAnimActive = true;
             canvasRef._lastCanvas = canvasEl;
             var cW = canvasEl.width = canvasEl.offsetWidth * 2;
             var cH = canvasEl.height = canvasEl.offsetHeight * 2;
@@ -13245,6 +13248,10 @@
             canvasEl._launch = launch;
 
             function draw() {
+              if (!canvasEl.isConnected) {
+                canvasEl._physAnimActive = false;
+                return;
+              }
               tick++;
               ctx.clearRect(0, 0, cW, cH);
 
@@ -13722,6 +13729,7 @@
               canvasEl._launched = launched; canvasEl._impactParticles = impactParticles; canvasEl._landingMarkers = landingMarkers;
               canvasEl._physAnim = requestAnimationFrame(draw);
             }
+            canvasEl._drawFunc = draw;
             canvasEl._physAnim = requestAnimationFrame(draw);
           };
 

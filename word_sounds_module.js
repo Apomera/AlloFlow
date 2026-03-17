@@ -7219,6 +7219,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 currentWordSoundsWord,
               );
             }
+            */
             updateMasteryStats(
               wordSoundsActivity,
               isCorrect,
