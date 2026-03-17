@@ -1,4 +1,8 @@
 {
+    "functions": {
+        "source": "functions",
+        "runtime": "nodejs20"
+    },
     "hosting": {
         "public": "build",
         "ignore": [
@@ -7,6 +11,10 @@
             "**/node_modules/**"
         ],
         "rewrites": [
+            {
+                "source": "/api/searchProxy",
+                "function": "searchProxy"
+            },
             {
                 "source": "**",
                 "destination": "/index.html"

@@ -23909,7 +23909,6 @@
                 ctx.beginPath(); ctx.moveTo(cx - W * 0.22, cy - H * 0.12);
                 ctx.quadraticCurveTo(cx - W * 0.35, cy - H * 0.20, cx - W * 0.40, cy - H * 0.16);
                 ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-              }
               // Walking legs (4 pairs)
               for (var wl = 0; wl < 4; wl++) {
                 var wlx = cx - W * 0.08 + wl * W * 0.06;
@@ -23966,7 +23965,8 @@
                 }
                 ctx.globalAlpha = 1;
               }
-              else if (spec.bodyShape === 'eye') {
+
+              } else if (spec.bodyShape === 'eye') {
                 // Sheep eye — cross-section
                 ctx.beginPath(); ctx.arc(cx, cy, W * 0.30, 0, Math.PI * 2);
                 ctx.fillStyle = '#f1f5f9'; ctx.fill(); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 3; ctx.stroke();
@@ -27224,10 +27224,11 @@
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDFA8 Art & Design Studio"),
-              React.createElement("span", { className: "px-2 py-0.5 bg-pink-100 text-pink-700 text-[10px] font-bold rounded-full" }, "CREATIVE")
+              React.createElement("span", { className: "px-2 py-0.5 bg-pink-100 text-pink-700 text-[10px] font-bold rounded-full" }, "CREATIVE"),
+              React.createElement("button", { onClick: function () { setStemLabTool('archStudio'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-300 hover:from-amber-200 hover:to-orange-200 transition-all shadow-sm", title: "Launch 3D Architecture Studio" }, "\uD83C\uDFD7\uFE0F 3D Builder \u2192")
             ),
             React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-200" },
-              [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: 'Color Wheel' }, { id: 'mixer', icon: '\uD83E\uDDEA', label: 'Color Mixer' }, { id: 'pixel', icon: '\uD83D\uDDBC', label: 'Pixel Art' }, { id: 'symmetry', icon: '\u2728', label: 'Symmetry' }, { id: 'contrast', icon: '\u267F', label: 'Contrast' }].map(function (tb) {
+              [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: 'Color Wheel' }, { id: 'mixer', icon: '\uD83E\uDDEA', label: 'Color Mixer' }, { id: 'pixel', icon: '\uD83D\uDDBC', label: 'Pixel Art' }, { id: 'symmetry', icon: '\u2728', label: 'Symmetry' }, { id: 'spirograph', icon: '\uD83C\uDF00', label: 'Spirograph' }, { id: 'generative', icon: '\uD83C\uDF86', label: 'Generative' }, { id: 'spinArt', icon: '\uD83C\uDF00', label: 'Spin Art' }, { id: 'stringArt', icon: '\uD83D\uDD78', label: 'String Art' }, { id: 'opArt', icon: '\uD83D\uDC41', label: 'Op Art' }, { id: 'tessellation', icon: '\uD83D\uDD37', label: 'Tessellation' }, { id: 'fractal', icon: '\uD83D\uDD2E', label: 'Fractals' }, { id: 'gradient', icon: '\uD83C\uDF08', label: 'Gradient' }, { id: 'stereogram', icon: '\uD83D\uDC53', label: 'Stereogram' }, { id: 'contrast', icon: '\u267F', label: 'Contrast' }].map(function (tb) {
                 return React.createElement("button", { key: tb.id, onClick: function () { upd('tab', tb.id); }, className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === tb.id ? 'bg-white shadow-md text-pink-700' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50') }, tb.icon + ' ' + tb.label);
               })
             ),
@@ -27332,6 +27333,10 @@
                 }),
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-3" }, "Brush:"),
                 React.createElement("input", { type: "range", min: 1, max: 10, value: d.brushSize || 3, onChange: function (e) { upd('brushSize', parseInt(e.target.value)); }, className: "w-20 accent-pink-600" }),
+                React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Mode:"),
+                React.createElement("button", { onClick: function () { upd('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.symBrushMode || 'solid') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83D\uDD8C Solid"),
+                React.createElement("button", { onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.symBrushMode || 'solid') === 'rainbow' ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83C\uDF08 Rainbow"),
+                React.createElement("button", { onClick: function () { upd('symMirrorOnly', !(d.symMirrorOnly)); upd('symmetryClear', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.symMirrorOnly ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, d.symMirrorOnly ? '\uD83E\uDE9E Mirror \u2714' : '\uD83E\uDE9E Mirror'),
                 React.createElement("button", { onClick: function () { upd('symmetryClear', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
                 React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG")
               ),
@@ -27352,7 +27357,20 @@
                   })()
                 )
               ),
-              React.createElement("canvas", { id: 'symmetryCanvas', ref: symmetryRef, width: 512, height: 512, key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block mt-3", style: { maxWidth: '100%', background: '#0f172a' } })
+              React.createElement("canvas", { id: 'symmetryCanvas', ref: symmetryRef, width: 512, height: 512, key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0) + '-' + (d.symMirrorOnly ? 'm' : 'r'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block mt-3", style: { maxWidth: '100%', background: '#0f172a' } }),
+              React.createElement("div", { className: "mt-3 bg-gradient-to-br from-violet-50 to-pink-50 rounded-xl p-4 border border-violet-200" },
+                React.createElement("button", { onClick: function () { upd('showSymInfo', !d.showSymInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-violet-700" },
+                  React.createElement("span", null, "\uD83D\uDD2E Learn About Symmetry"),
+                  React.createElement("span", null, d.showSymInfo ? '\u25B2' : '\u25BC')
+                ),
+                d.showSymInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
+                  React.createElement("p", null, "\uD83C\uDF3B ", React.createElement("strong", null, "Radial symmetry"), " repeats a pattern around a central point. In ", React.createElement("strong", null, "nature"), ", starfish (5-fold), snowflakes (6-fold), and flowers show this everywhere."),
+                  React.createElement("p", null, "\uD83D\uDD73 ", React.createElement("strong", null, "4-fold:"), " Tile patterns, quilts, floor mosaics. ", React.createElement("strong", null, "6-fold:"), " Snowflakes, honeycombs, Islamic star patterns. ", React.createElement("strong", null, "8-fold:"), " Mandala art, rose windows in cathedrals."),
+                  React.createElement("p", null, "\uD83C\uDFDB ", React.createElement("strong", null, "Cultural connections:"), " Islamic geometric art uses radial symmetry extensively. Celtic knots, Navajo textiles, and Japanese family crests (\u201Cmon\u201D) all rely on rotational symmetry."),
+                  React.createElement("p", null, "\uD83E\uDE9E ", React.createElement("strong", null, "Mirror mode"), " uses bilateral (reflection) symmetry \u2014 the kind found in faces, butterflies, and leaves. It\u2019s the most common symmetry in the animal kingdom."),
+                  React.createElement("p", null, "\uD83C\uDF08 ", React.createElement("strong", null, "Rainbow brush"), " cycles through the color spectrum as you draw, creating gradient-like mandala effects automatically.")
+                )
+              )
             ),
             tab === 'contrast' && React.createElement("div", { className: "space-y-4" },
               React.createElement("div", { className: "grid grid-cols-2 gap-4" },
@@ -27387,6 +27405,1517 @@
                   React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAALarge ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800') }, (passAALarge ? '\u2705' : '\u274C') + ' AA Large'),
                   React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAA ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800') }, (passAA ? '\u2705' : '\u274C') + ' AA Normal'),
                   React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAAA ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800') }, (passAAA ? '\u2705' : '\u274C') + ' AAA')
+                )
+              )
+            ),
+            // ═══ SPIROGRAPH TAB ═══
+            tab === 'spirograph' && React.createElement("div", { className: "space-y-3" },
+              React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+                React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl p-4 border border-indigo-200" },
+                    React.createElement("h4", { className: "text-xs font-bold text-indigo-700 mb-3" }, "\uD83C\uDF00 Spirograph Controls"),
+                    [{ k: 'spiroR', label: 'Outer Radius', min: 40, max: 200, def: 120 },
+                     { k: 'spiror', label: 'Inner Radius', min: 10, max: 100, def: 45 },
+                     { k: 'spirop', label: 'Pen Offset', min: 5, max: 120, def: 55 },
+                     { k: 'spiroSpeed', label: 'Draw Speed', min: 1, max: 20, def: 8 }].map(function (s) {
+                      var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
+                      return React.createElement("div", { key: s.k, className: "mb-2" },
+                        React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('spiroReset', Date.now()); }, className: "w-full accent-indigo-600" })
+                      );
+                    }),
+                    React.createElement("div", { className: "flex gap-2 mt-3" },
+                      React.createElement("button", { onClick: function () { upd('spiroReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('spiroCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spirograph-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG"),
+                      React.createElement("button", { onClick: function () { upd('spiroRainbow', !(d.spiroRainbow)); upd('spiroReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.spiroRainbow ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, d.spiroRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
+                    ),
+                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
+                      React.createElement("span", { className: "text-[10px] font-bold text-indigo-500 mr-1" }, "Presets:"),
+                      [{ label: 'Star', R: 120, r: 45, p: 55 }, { label: 'Flower', R: 150, r: 50, p: 25 }, { label: 'Lace', R: 100, r: 73, p: 80 }, { label: 'Atom', R: 180, r: 25, p: 90 }, { label: 'Spiral', R: 140, r: 91, p: 60 }].map(function (pr) {
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('spiroR', pr.R); upd('spiror', pr.r); upd('spirop', pr.p); upd('spiroReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 transition-all" }, pr.label);
+                      })
+                    )
+                  ),
+                  React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-fuchsia-50 rounded-xl p-3 border border-violet-200" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-violet-700 mb-1" }, "\uD83D\uDCDA Math Connection"),
+                    React.createElement("p", { className: "text-[10px] text-slate-600 leading-relaxed" }, "Spirographs draw ", React.createElement("strong", null, "hypotrochoid curves"), " \u2014 the path traced by a point on a small circle rolling inside a larger one. The pattern depends on the ", React.createElement("strong", null, "GCD"), " (greatest common divisor) of the two radii. When R/r is a simple fraction, you get fewer petals; complex ratios create intricate, never-repeating paths.")
+                  )
+                ),
+                React.createElement("canvas", { id: 'spiroCanvas', key: 'spiro-' + (d.spiroReset || 0), width: 512, height: 512, className: "rounded-xl border-2 border-indigo-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0f172a' },
+                  ref: function (canvas) {
+                    if (!canvas) return;
+                    if (canvas._spiroInit) return;
+                    canvas._spiroInit = true;
+                    var ctx = canvas.getContext('2d');
+                    var W = canvas.width, H = canvas.height;
+                    var cx = W / 2, cy = H / 2;
+                    var R = typeof d.spiroR === 'number' ? d.spiroR : 120;
+                    var r = typeof d.spiror === 'number' ? d.spiror : 45;
+                    var p = typeof d.spirop === 'number' ? d.spirop : 55;
+                    var speed = typeof d.spiroSpeed === 'number' ? d.spiroSpeed : 8;
+                    var rainbow = d.spiroRainbow;
+                    var baseHue = d.hue || 0;
+                    var baseSat = d.sat || 100;
+                    var baseLit = d.lit || 50;
+                    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+                    var t = 0;
+                    var diff = R - r;
+                    var ratio = diff / r;
+                    var totalRevolutions = r / (function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); })(R, r);
+                    var maxT = totalRevolutions * Math.PI * 2;
+                    var prevX = cx + diff * Math.cos(0) + p * Math.cos(0 * ratio);
+                    var prevY = cy + diff * Math.sin(0) + p * Math.sin(0 * ratio);
+                    ctx.lineWidth = 1.5;
+                    ctx.lineCap = 'round';
+                    function drawStep() {
+                      if (t >= maxT) return;
+                      for (var si = 0; si < speed; si++) {
+                        t += 0.02;
+                        if (t > maxT) t = maxT;
+                        var x = cx + diff * Math.cos(t) + p * Math.cos(t * ratio);
+                        var y = cy + diff * Math.sin(t) + p * Math.sin(t * ratio);
+                        var hue = rainbow ? Math.round((t / maxT) * 360) % 360 : baseHue;
+                        ctx.strokeStyle = 'hsl(' + hue + ',' + baseSat + '%,' + baseLit + '%)';
+                        ctx.beginPath(); ctx.moveTo(prevX, prevY); ctx.lineTo(x, y); ctx.stroke();
+                        prevX = x; prevY = y;
+                      }
+                      canvas._spiroAnim = requestAnimationFrame(drawStep);
+                    }
+                    drawStep();
+                  }
+                })
+              )
+            ),
+            // ═══ GENERATIVE ART TAB ═══
+            tab === 'generative' && React.createElement("div", { className: "space-y-3" },
+              React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
+                React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\uD83C\uDF86 Style:"),
+                [{ id: 'flow', icon: '\uD83C\uDF0A', label: 'Flow Field' }, { id: 'rain', icon: '\uD83C\uDF27', label: 'Particle Rain' }, { id: 'stars', icon: '\u2728', label: 'Starfield' }, { id: 'aurora', icon: '\uD83C\uDF0C', label: 'Aurora' }].map(function (s) {
+                  return React.createElement("button", { key: s.id, onClick: function () { upd('genStyle', s.id); upd('genReset', Date.now()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.genStyle || 'flow') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-fuchsia-50') }, s.icon + ' ' + s.label);
+                }),
+                React.createElement("button", { onClick: function () { upd('genPaused', !d.genPaused); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.genPaused ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, d.genPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
+                React.createElement("button", { onClick: function () { upd('genReset', Date.now()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                React.createElement("button", { onClick: function () { var c = document.getElementById('genCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'generative-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+              ),
+              React.createElement("div", { className: "flex gap-2 mb-2" },
+                React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, "Density:"),
+                React.createElement("input", { type: "range", min: 20, max: 300, value: d.genDensity || 100, onChange: function (e) { upd('genDensity', parseInt(e.target.value)); upd('genReset', Date.now()); }, className: "w-32 accent-fuchsia-600" }),
+                React.createElement("span", { className: "text-[10px] text-slate-400" }, (d.genDensity || 100) + ' particles')
+              ),
+              React.createElement("canvas", { id: 'genCanvas', key: 'gen-' + (d.genStyle || 'flow') + '-' + (d.genReset || 0), width: 640, height: 480, className: "rounded-xl border-2 border-fuchsia-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', background: '#0a0a1a' },
+                ref: function (canvas) {
+                  if (!canvas) return;
+                  if (canvas._genInit) return;
+                  canvas._genInit = true;
+                  var ctx = canvas.getContext('2d');
+                  var W = canvas.width, H = canvas.height;
+                  var style = d.genStyle || 'flow';
+                  var density = d.genDensity || 100;
+                  var baseHue = d.hue || 0;
+                  var particles = [];
+                  var mouseX = -1, mouseY = -1;
+                  // Simplex-like noise (simple hash-based)
+                  function noise2D(x, y) {
+                    var n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+                    return n - Math.floor(n);
+                  }
+                  // Init particles
+                  for (var i = 0; i < density; i++) {
+                    particles.push({
+                      x: Math.random() * W, y: Math.random() * H,
+                      vx: 0, vy: 0,
+                      life: Math.random() * 200 + 100,
+                      maxLife: 300,
+                      hue: (baseHue + Math.random() * 60) % 360,
+                      size: 1 + Math.random() * 2
+                    });
+                  }
+                  ctx.fillStyle = '#0a0a1a'; ctx.fillRect(0, 0, W, H);
+                  var tick = 0;
+                  var paused = false;
+                  // Check pause state via data attribute
+                  canvas.setAttribute('data-paused', d.genPaused ? '1' : '0');
+                  canvas.onmousedown = canvas.ontouchstart = function (e) {
+                    var rect = canvas.getBoundingClientRect();
+                    mouseX = ((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) * (W / rect.width);
+                    mouseY = ((e.touches ? e.touches[0].clientY : e.clientY) - rect.top) * (H / rect.height);
+                    // Burst particles from click
+                    for (var bi = 0; bi < 30; bi++) {
+                      var angle = Math.random() * Math.PI * 2;
+                      var speed = 1 + Math.random() * 3;
+                      particles.push({
+                        x: mouseX, y: mouseY,
+                        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+                        life: 150 + Math.random() * 100, maxLife: 250,
+                        hue: (baseHue + Math.random() * 120) % 360,
+                        size: 1 + Math.random() * 3
+                      });
+                    }
+                  };
+                  canvas.onmousemove = canvas.ontouchmove = function (e) {
+                    var rect = canvas.getBoundingClientRect();
+                    mouseX = ((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) * (W / rect.width);
+                    mouseY = ((e.touches ? e.touches[0].clientY : e.clientY) - rect.top) * (H / rect.height);
+                  };
+                  function animate() {
+                    if (canvas.getAttribute('data-paused') === '1') {
+                      canvas._genAnim = requestAnimationFrame(animate);
+                      return;
+                    }
+                    tick++;
+                    // Fade trail
+                    ctx.fillStyle = 'rgba(10,10,26,0.04)';
+                    ctx.fillRect(0, 0, W, H);
+                    for (var i = particles.length - 1; i >= 0; i--) {
+                      var p = particles[i];
+                      p.life--;
+                      if (p.life <= 0) { particles.splice(i, 1); continue; }
+                      var alpha = Math.min(1, p.life / 50);
+                      if (style === 'flow') {
+                        var angle = noise2D(p.x * 0.005, p.y * 0.005 + tick * 0.001) * Math.PI * 4;
+                        p.vx += Math.cos(angle) * 0.3; p.vy += Math.sin(angle) * 0.3;
+                        p.vx *= 0.96; p.vy *= 0.96;
+                      } else if (style === 'rain') {
+                        p.vy += 0.05;
+                        p.vx += (Math.random() - 0.5) * 0.1;
+                        if (p.y > H) { p.y = 0; p.x = Math.random() * W; p.vy = 0; p.life = p.maxLife; }
+                      } else if (style === 'stars') {
+                        var scx = W / 2, scy = H / 2;
+                        var sdx = p.x - scx, sdy = p.y - scy;
+                        var sdist = Math.sqrt(sdx * sdx + sdy * sdy) + 0.01;
+                        p.vx += sdx / sdist * 0.1; p.vy += sdy / sdist * 0.1;
+                        if (sdist > Math.max(W, H) * 0.7) { p.x = scx + (Math.random() - 0.5) * 20; p.y = scy + (Math.random() - 0.5) * 20; p.vx = 0; p.vy = 0; p.life = p.maxLife; }
+                      } else if (style === 'aurora') {
+                        p.vx += Math.sin(p.y * 0.01 + tick * 0.02) * 0.2;
+                        p.vy += (Math.random() - 0.5) * 0.05 - 0.02;
+                        if (p.y < 0 || p.x < 0 || p.x > W) { p.x = Math.random() * W; p.y = H * 0.7 + Math.random() * H * 0.3; p.vx = 0; p.vy = 0; p.life = p.maxLife; }
+                        p.hue = (120 + Math.sin(p.x * 0.01) * 60 + tick * 0.5) % 360;
+                      }
+                      p.x += p.vx; p.y += p.vy;
+                      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                      ctx.fillStyle = 'hsla(' + p.hue + ',90%,60%,' + (alpha * 0.8) + ')';
+                      ctx.fill();
+                      // Glow effect
+                      if (p.size > 1.5) {
+                        ctx.beginPath(); ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+                        ctx.fillStyle = 'hsla(' + p.hue + ',80%,50%,' + (alpha * 0.08) + ')';
+                        ctx.fill();
+                      }
+                    }
+                    // Replenish particles
+                    while (particles.length < density * 0.7) {
+                      particles.push({
+                        x: style === 'stars' ? W / 2 + (Math.random() - 0.5) * 20 : Math.random() * W,
+                        y: style === 'rain' ? 0 : style === 'aurora' ? H * 0.7 + Math.random() * H * 0.3 : Math.random() * H,
+                        vx: 0, vy: 0,
+                        life: 200 + Math.random() * 100, maxLife: 300,
+                        hue: (baseHue + Math.random() * 60) % 360,
+                        size: 1 + Math.random() * 2
+                      });
+                    }
+                    canvas._genAnim = requestAnimationFrame(animate);
+                  }
+                  animate();
+                }
+              }),
+              React.createElement("p", { className: "text-[10px] text-center text-slate-400 italic mt-1" }, "\uD83D\uDC46 Click or drag on the canvas to create particle bursts")
+            ),
+            // ═══ SPIN ART TAB ═══
+            tab === 'spinArt' && React.createElement("div", { className: "space-y-3" },
+              React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
+                React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\uD83C\uDF00 RPM:"),
+                React.createElement("input", { type: "range", min: 20, max: 300, value: d.spinRPM || 120, onChange: function (e) { upd('spinRPM', parseInt(e.target.value)); }, className: "w-28 accent-orange-600" }),
+                React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, (d.spinRPM || 120) + ' rpm'),
+                React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Brush:"),
+                React.createElement("input", { type: "range", min: 2, max: 20, value: d.spinBrush || 6, onChange: function (e) { upd('spinBrush', parseInt(e.target.value)); }, className: "w-20 accent-orange-600" }),
+                React.createElement("button", { onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
+                React.createElement("button", { onClick: function () { upd('spinDark', !d.spinDark); upd('spinReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-200') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
+                React.createElement("button", { onClick: function () { upd('spinReset', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                React.createElement("button", { onClick: function () { var c = document.getElementById('spinCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spin-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+              ),
+              React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-200" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
+                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, "\uD83C\uDFA8 Palettes"),
+                  [{ id: 'retro', label: '\uD83D\uDD79 Retro' }, { id: 'nature', label: '\uD83C\uDF3F Nature' }, { id: 'warm', label: '\uD83D\uDD25 Warm' }, { id: 'cool', label: '\u2744 Cool' }, { id: 'neon', label: '\uD83D\uDCA5 Neon' }].map(function (pal) {
+                    return React.createElement("button", { key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-orange-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-orange-50') }, pal.label);
+                  })
+                ),
+                React.createElement("div", { className: "flex gap-1 flex-wrap" },
+                  (function () {
+                    var palettes = { retro: [[0,85,45],[30,90,55],[55,90,55],[120,60,40],[200,70,50],[240,60,35],[280,70,45],[0,0,15],[0,0,85],[30,20,70]], nature: [[85,50,35],[100,40,45],[120,55,30],[140,60,40],[45,70,45],[30,60,35],[20,50,30],[195,50,50],[210,40,60],[40,30,70]], warm: [[0,80,50],[10,85,55],[20,90,55],[35,95,55],[45,90,55],[350,70,45],[15,70,40],[40,80,65],[5,60,35],[25,50,70]], cool: [[195,70,50],[210,65,55],[225,60,50],[240,55,45],[180,50,40],[200,80,60],[170,45,50],[260,50,55],[190,40,65],[220,30,70]], neon: [[330,100,55],[300,100,55],[280,100,60],[200,100,55],[170,100,50],[120,100,45],[60,100,50],[30,100,55],[0,100,50],[45,100,55]] };
+                    var activePal = palettes[d.activePalette || 'retro'] || palettes.retro;
+                    return activePal.map(function (c, i) {
+                      return React.createElement("button", { key: i, onClick: function () { upd('hue', c[0]); upd('sat', c[1]); upd('lit', c[2]); }, className: "rounded-md border-2 transition-all hover:scale-110", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: (d.hue === c[0] && d.sat === c[1] && d.lit === c[2]) ? '#ea580c' : 'rgba(255,255,255,0.6)', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
+                    });
+                  })()
+                )
+              ),
+              React.createElement("canvas", { id: 'spinCanvas', key: 'spin-' + (d.spinReset || 0), width: 512, height: 512, className: "rounded-full border-4 border-orange-300 shadow-lg cursor-crosshair mx-auto block mt-3", style: { maxWidth: '100%', background: d.spinDark ? '#0f172a' : '#fefefe' },
+                ref: function (canvas) {
+                  if (!canvas) return;
+                  if (canvas._spinInit) return;
+                  canvas._spinInit = true;
+                  var ctx = canvas.getContext('2d');
+                  var W = canvas.width, H = canvas.height;
+                  var cx = W / 2, cy = H / 2;
+                  var rpm = d.spinRPM || 120;
+                  var brushSize = d.spinBrush || 6;
+                  var splatter = d.spinSplatter || false;
+                  var isDark = d.spinDark || false;
+                  var baseHue = d.hue || 0, baseSat = d.sat || 100, baseLit = d.lit || 50;
+                  ctx.fillStyle = isDark ? '#0f172a' : '#fefefe';
+                  ctx.fillRect(0, 0, W, H);
+                  var angle = 0;
+                  var drips = [];
+                  var mouseDown = false, mouseX = cx, mouseY = cy;
+                  canvas.onmousedown = canvas.ontouchstart = function (e) {
+                    mouseDown = true;
+                    var rect = canvas.getBoundingClientRect();
+                    mouseX = ((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) * (W / rect.width);
+                    mouseY = ((e.touches ? e.touches[0].clientY : e.clientY) - rect.top) * (H / rect.height);
+                  };
+                  canvas.onmousemove = canvas.ontouchmove = function (e) {
+                    var rect = canvas.getBoundingClientRect();
+                    mouseX = ((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) * (W / rect.width);
+                    mouseY = ((e.touches ? e.touches[0].clientY : e.clientY) - rect.top) * (H / rect.height);
+                  };
+                  canvas.onmouseup = canvas.ontouchend = function () { mouseDown = false; };
+                  canvas.onmouseleave = function () { mouseDown = false; };
+                  function spawnDrip(x, y) {
+                    var count = splatter ? 5 + Math.floor(Math.random() * 8) : 1;
+                    for (var i = 0; i < count; i++) {
+                      var ox = splatter ? (Math.random() - 0.5) * 30 : 0;
+                      var oy = splatter ? (Math.random() - 0.5) * 30 : 0;
+                      drips.push({ x: x + ox, y: y + oy, vx: 0, vy: 0, life: 200 + Math.random() * 150, size: splatter ? 1 + Math.random() * brushSize : brushSize * 0.6, hue: baseHue + (splatter ? Math.random() * 30 - 15 : 0) });
+                    }
+                  }
+                  function animate() {
+                    var radPerFrame = (rpm / 60) * (Math.PI * 2) / 60;
+                    angle += radPerFrame;
+                    if (mouseDown) spawnDrip(mouseX, mouseY);
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.rotate(angle);
+                    ctx.translate(-cx, -cy);
+                    for (var i = drips.length - 1; i >= 0; i--) {
+                      var dr = drips[i];
+                      dr.life--;
+                      if (dr.life <= 0) { drips.splice(i, 1); continue; }
+                      var dx = dr.x - cx, dy = dr.y - cy;
+                      var dist = Math.sqrt(dx * dx + dy * dy);
+                      if (dist > 1) {
+                        var centrifugal = rpm * 0.00015;
+                        dr.vx += (dx / dist) * centrifugal * dist;
+                        dr.vy += (dy / dist) * centrifugal * dist;
+                      }
+                      dr.vx *= 0.98; dr.vy *= 0.98;
+                      dr.x += dr.vx; dr.y += dr.vy;
+                      var alpha = Math.min(1, dr.life / 60);
+                      ctx.globalAlpha = alpha * 0.85;
+                      ctx.beginPath();
+                      ctx.arc(dr.x, dr.y, dr.size, 0, Math.PI * 2);
+                      ctx.fillStyle = 'hsl(' + Math.round(dr.hue) + ',' + baseSat + '%,' + baseLit + '%)';
+                      ctx.fill();
+                      if (dist > W * 0.48) { drips.splice(i, 1); }
+                    }
+                    ctx.restore();
+                    canvas._spinAnim = requestAnimationFrame(animate);
+                  }
+                  animate();
+                }
+              }),
+              React.createElement("p", { className: "text-[10px] text-center text-slate-400 italic mt-1" }, "\uD83D\uDC46 Click and drag to drip paint on the spinning canvas"),
+              React.createElement("div", { className: "mt-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200" },
+                React.createElement("button", { onClick: function () { upd('showSpinInfo', !d.showSpinInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-orange-700" },
+                  React.createElement("span", null, "\uD83C\uDF00 Physics of Spin Art"),
+                  React.createElement("span", null, d.showSpinInfo ? '\u25B2' : '\u25BC')
+                ),
+                d.showSpinInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
+                  React.createElement("p", null, "\uD83C\uDF00 ", React.createElement("strong", null, "Centrifugal effect:"), " In a spinning reference frame, objects experience an outward pseudo-force proportional to their distance from the center and the square of angular velocity (\u03C9\u00B2r)."),
+                  React.createElement("p", null, "\uD83D\uDCA7 ", React.createElement("strong", null, "Paint behavior:"), " Real spin art uses centripetal acceleration to spread paint. Thinner paint flies outward faster; thicker paint creates shorter, more controlled trails."),
+                  React.createElement("p", null, "\uD83C\uDFA8 ", React.createElement("strong", null, "Why it\u2019s beautiful:"), " The combination of rotational motion and paint viscosity creates natural spirals and interference patterns. No two spin paintings are ever alike \u2014 it\u2019s a form of ", React.createElement("strong", null, "chaotic art"), ".")
+                )
+              )
+            ),
+            // ═══ STRING ART TAB ═══
+            tab === 'stringArt' && React.createElement("div", { className: "space-y-3" },
+              React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+                React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: "bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200" },
+                    React.createElement("h4", { className: "text-xs font-bold text-rose-700 mb-3" }, "\uD83D\uDD78 String Art Controls"),
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-rose-600 block mb-1" }, "Shape"),
+                      React.createElement("div", { className: "flex gap-1" },
+                        [{ id: 'circle', label: '\u25CB Circle' }, { id: 'square', label: '\u25A1 Square' }, { id: 'triangle', label: '\u25B3 Triangle' }, { id: 'star', label: '\u2606 Star' }].map(function (s) {
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('strShape', s.id); upd('strReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.strShape || 'circle') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-rose-50') }, s.label);
+                        })
+                      )
+                    ),
+                    [{ k: 'strNails', label: 'Nail Count', min: 20, max: 200, def: 80 },
+                     { k: 'strMult', label: 'Multiplier', min: 2, max: 99, def: 2 },
+                     { k: 'strOpacity', label: 'Thread Opacity %', min: 5, max: 100, def: 30 }].map(function (s) {
+                      var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
+                      return React.createElement("div", { key: s.k, className: "mb-2" },
+                        React.createElement("label", { className: "text-[10px] font-bold text-rose-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('strReset', Date.now()); }, className: "w-full accent-rose-600" })
+                      );
+                    }),
+                    React.createElement("div", { className: "flex gap-2 mt-3" },
+                      React.createElement("button", { onClick: function () { upd('strReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('stringCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'string-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG"),
+                      React.createElement("button", { onClick: function () { upd('strRainbow', !(d.strRainbow)); upd('strReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.strRainbow ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, d.strRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
+                    ),
+                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
+                      React.createElement("span", { className: "text-[10px] font-bold text-rose-500 mr-1" }, "Presets:"),
+                      [{ label: 'Cardioid', nails: 100, mult: 2 }, { label: 'Nephroid', nails: 100, mult: 3 }, { label: 'Star Burst', nails: 72, mult: 37 }, { label: 'Lace', nails: 150, mult: 71 }, { label: 'Weave', nails: 60, mult: 23 }].map(function (pr) {
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('strNails', pr.nails); upd('strMult', pr.mult); upd('strReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 transition-all" }, pr.label);
+                      })
+                    )
+                  ),
+                  React.createElement("div", { className: "bg-gradient-to-br from-pink-50 to-fuchsia-50 rounded-xl p-3 border border-pink-200" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-pink-700 mb-1" }, "\uD83D\uDCDA Math Connection"),
+                    React.createElement("p", { className: "text-[10px] text-slate-600 leading-relaxed" }, "String art creates ", React.createElement("strong", null, "envelope curves"), " from straight lines. With a circle and multiplier of 2, you get a ", React.createElement("strong", null, "cardioid"), " \u2014 the heart-shaped curve seen in coffee cups. Multiplier 3 makes a ", React.createElement("strong", null, "nephroid"), ". Higher multipliers create intricate patterns governed by ", React.createElement("strong", null, "modular arithmetic"), ": nail N connects to nail (N \u00D7 M) mod total.")
+                  )
+                ),
+                React.createElement("canvas", { id: 'stringCanvas', key: 'str-' + (d.strReset || 0), width: 512, height: 512, className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0f172a' },
+                  ref: function (canvas) {
+                    if (!canvas) return;
+                    if (canvas._strInit) return;
+                    canvas._strInit = true;
+                    var ctx = canvas.getContext('2d');
+                    var W = canvas.width, H = canvas.height;
+                    var cx = W / 2, cy = H / 2;
+                    var R = Math.min(W, H) * 0.42;
+                    var nails = typeof d.strNails === 'number' ? d.strNails : 80;
+                    var mult = typeof d.strMult === 'number' ? d.strMult : 2;
+                    var opacity = typeof d.strOpacity === 'number' ? d.strOpacity : 30;
+                    var rainbow = d.strRainbow;
+                    var shape = d.strShape || 'circle';
+                    var baseHue = d.hue || 0;
+                    var baseSat = d.sat || 100;
+                    var baseLit = d.lit || 50;
+                    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+                    // Compute nail positions based on shape
+                    var nailPos = [];
+                    for (var i = 0; i < nails; i++) {
+                      var t = i / nails;
+                      if (shape === 'circle') {
+                        var ang = t * Math.PI * 2 - Math.PI / 2;
+                        nailPos.push([cx + Math.cos(ang) * R, cy + Math.sin(ang) * R]);
+                      } else if (shape === 'square') {
+                        var side = Math.floor(t * 4) % 4;
+                        var frac = (t * 4) % 1;
+                        var half = R;
+                        if (side === 0) nailPos.push([cx - half + frac * 2 * half, cy - half]);
+                        else if (side === 1) nailPos.push([cx + half, cy - half + frac * 2 * half]);
+                        else if (side === 2) nailPos.push([cx + half - frac * 2 * half, cy + half]);
+                        else nailPos.push([cx - half, cy + half - frac * 2 * half]);
+                      } else if (shape === 'triangle') {
+                        var side2 = Math.floor(t * 3) % 3;
+                        var frac2 = (t * 3) % 1;
+                        var triR = R;
+                        var pts = [[cx, cy - triR], [cx + triR * Math.cos(Math.PI / 6), cy + triR * Math.sin(Math.PI / 6)], [cx - triR * Math.cos(Math.PI / 6), cy + triR * Math.sin(Math.PI / 6)]];
+                        var p1 = pts[side2], p2 = pts[(side2 + 1) % 3];
+                        nailPos.push([p1[0] + (p2[0] - p1[0]) * frac2, p1[1] + (p2[1] - p1[1]) * frac2]);
+                      } else if (shape === 'star') {
+                        var starPts = 5;
+                        var segTotal = starPts * 2;
+                        var seg = Math.floor(t * segTotal) % segTotal;
+                        var frac3 = (t * segTotal) % 1;
+                        var outerR = R, innerR = R * 0.4;
+                        var allPts = [];
+                        for (var si = 0; si < starPts; si++) {
+                          var oAng = (si / starPts) * Math.PI * 2 - Math.PI / 2;
+                          var iAng = ((si + 0.5) / starPts) * Math.PI * 2 - Math.PI / 2;
+                          allPts.push([cx + Math.cos(oAng) * outerR, cy + Math.sin(oAng) * outerR]);
+                          allPts.push([cx + Math.cos(iAng) * innerR, cy + Math.sin(iAng) * innerR]);
+                        }
+                        var sp1 = allPts[seg], sp2 = allPts[(seg + 1) % allPts.length];
+                        nailPos.push([sp1[0] + (sp2[0] - sp1[0]) * frac3, sp1[1] + (sp2[1] - sp1[1]) * frac3]);
+                      }
+                    }
+                    // Draw nail dots
+                    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                    nailPos.forEach(function (np) { ctx.beginPath(); ctx.arc(np[0], np[1], 1.5, 0, Math.PI * 2); ctx.fill(); });
+                    // Animate strings
+                    var lineIdx = 0;
+                    ctx.lineWidth = 1;
+                    ctx.lineCap = 'round';
+                    function drawStep() {
+                      if (lineIdx >= nails) return;
+                      var batchSize = Math.max(1, Math.floor(nails / 80));
+                      for (var b = 0; b < batchSize && lineIdx < nails; b++, lineIdx++) {
+                        var from = nailPos[lineIdx];
+                        var toIdx = (lineIdx * mult) % nails;
+                        var to = nailPos[toIdx];
+                        var hue = rainbow ? Math.round((lineIdx / nails) * 360) % 360 : baseHue;
+                        ctx.strokeStyle = 'hsla(' + hue + ',' + baseSat + '%,' + baseLit + '%,' + (opacity / 100) + ')';
+                        ctx.beginPath(); ctx.moveTo(from[0], from[1]); ctx.lineTo(to[0], to[1]); ctx.stroke();
+                      }
+                      canvas._strAnim = requestAnimationFrame(drawStep);
+                    }
+                    drawStep();
+                  }
+                })
+              )
+            ),
+            // ═══ OP ART TAB ═══
+            tab === 'opArt' && React.createElement("div", { className: "space-y-3" },
+              React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+                React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: "bg-gradient-to-br from-fuchsia-50 to-purple-50 rounded-xl p-4 border border-fuchsia-200" },
+                    React.createElement("h4", { className: "text-xs font-bold text-fuchsia-700 mb-3" }, "\uD83D\uDC41 Op Art Controls"),
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-fuchsia-600 block mb-1" }, "Style"),
+                      React.createElement("div", { className: "flex gap-1" },
+                        [{ id: 'concentric', label: '\u25CE Rings' }, { id: 'checkerboard', label: '\u2593 Checker' }, { id: 'moire', label: '\u2261 Moir\u00E9' }, { id: 'vibrating', label: '\u2248 Vibrate' }].map(function (s) {
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('opStyle', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.opStyle || 'concentric') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-fuchsia-50') }, s.label);
+                        })
+                      )
+                    ),
+                    [{ k: 'opSpeed', label: 'Speed', min: 1, max: 20, def: 5 },
+                     { k: 'opDensity', label: 'Density', min: 3, max: 60, def: 20 },
+                     { k: 'opHueA', label: 'Color A Hue', min: 0, max: 360, def: 0 },
+                     { k: 'opHueB', label: 'Color B Hue', min: 0, max: 360, def: 180 }].map(function (s) {
+                      var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
+                      return React.createElement("div", { key: s.k, className: "mb-2" },
+                        React.createElement("label", { className: "text-[10px] font-bold text-fuchsia-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-fuchsia-600" })
+                      );
+                    }),
+                    React.createElement("div", { className: "flex gap-2 mt-3" },
+                      React.createElement("button", { onClick: function () { upd('opPaused', !(d.opPaused)); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.opPaused ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100' : 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100') }, d.opPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('opArtCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'op-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+                    ),
+                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
+                      React.createElement("span", { className: "text-[10px] font-bold text-fuchsia-500 mr-1" }, "Presets:"),
+                      [{ label: 'Classic B&W', style: 'concentric', hA: 0, hB: 0, density: 25, speed: 4 },
+                       { label: 'Neon Pulse', style: 'concentric', hA: 280, hB: 160, density: 15, speed: 8 },
+                       { label: 'Spiral Vortex', style: 'moire', hA: 200, hB: 30, density: 40, speed: 6 },
+                       { label: 'Wave Grid', style: 'checkerboard', hA: 10, hB: 190, density: 20, speed: 5 }].map(function (pr) {
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('opStyle', pr.style); upd('opHueA', pr.hA); upd('opHueB', pr.hB); upd('opDensity', pr.density); upd('opSpeed', pr.speed); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-fuchsia-600 border border-fuchsia-200 hover:bg-fuchsia-50 transition-all" }, pr.label);
+                      })
+                    )
+                  ),
+                  React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-3 border border-purple-200" },
+                    React.createElement("button", { onClick: function () { upd('showOpInfo', !d.showOpInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-purple-700" },
+                      React.createElement("span", null, "\uD83E\uDDE0 The Science of Op Art"),
+                      React.createElement("span", null, d.showOpInfo ? '\u25B2' : '\u25BC')
+                    ),
+                    d.showOpInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
+                      React.createElement("p", null, "\uD83D\uDC41 ", React.createElement("strong", null, "Op Art"), " (Optical Art) emerged in the 1960s, pioneered by ", React.createElement("strong", null, "Bridget Riley"), " and ", React.createElement("strong", null, "Victor Vasarely"), ". It exploits the mechanics of human vision to create illusions of movement, vibration, and depth on flat surfaces."),
+                      React.createElement("p", null, "\u2728 ", React.createElement("strong", null, "Moir\u00E9 patterns"), " appear when two regular grids overlap at slight angles. Your brain can\u2019t resolve the conflicting patterns, creating phantom curves and waves. This same effect causes the \u201Cscreen door\u201D shimmer on some fabrics."),
+                      React.createElement("p", null, "\uD83C\uDF08 ", React.createElement("strong", null, "Vibrating colors"), " occur when highly saturated complementary colors sit side by side. Your eye\u2019s color receptors compete, creating a buzzing, unstable edge\u2014this is called ", React.createElement("strong", null, "chromatic vibration"), "."),
+                      React.createElement("p", null, "\uD83E\uDDE0 ", React.createElement("strong", null, "Persistence of vision"), " and ", React.createElement("strong", null, "lateral inhibition"), " in the retina are the main perceptual mechanisms. Concentric ring patterns trigger involuntary eye saccades, making the artwork seem to breathe and pulse.")
+                    )
+                  )
+                ),
+                React.createElement("canvas", { id: 'opArtCanvas', width: 512, height: 512, className: "rounded-xl border-2 border-fuchsia-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0a0a0a' },
+                  ref: function (canvas) {
+                    if (!canvas) return;
+                    if (canvas._opAnim) cancelAnimationFrame(canvas._opAnim);
+                    var ctx = canvas.getContext('2d');
+                    var W = canvas.width, H = canvas.height;
+                    var cx = W / 2, cy = H / 2;
+                    var tick = 0;
+                    var style = d.opStyle || 'concentric';
+                    var speed = typeof d.opSpeed === 'number' ? d.opSpeed : 5;
+                    var density = typeof d.opDensity === 'number' ? d.opDensity : 20;
+                    var hueA = typeof d.opHueA === 'number' ? d.opHueA : 0;
+                    var hueB = typeof d.opHueB === 'number' ? d.opHueB : 180;
+                    var paused = d.opPaused;
+                    var isMonochrome = (hueA === 0 && hueB === 0);
+                    var colA = isMonochrome ? '#000000' : 'hsl(' + hueA + ',85%,50%)';
+                    var colB = isMonochrome ? '#ffffff' : 'hsl(' + hueB + ',85%,50%)';
+
+                    function drawFrame() {
+                      if (!paused) tick++;
+                      ctx.clearRect(0, 0, W, H);
+
+                      if (style === 'concentric') {
+                        var maxR = Math.sqrt(cx * cx + cy * cy);
+                        var ringWidth = maxR / density;
+                        var offset = (tick * speed * 0.3) % (ringWidth * 2);
+                        for (var r = maxR + ringWidth; r > 0; r -= ringWidth) {
+                          var rr = r - offset;
+                          if (rr < 0) rr += ringWidth * 2;
+                          ctx.beginPath();
+                          ctx.arc(cx, cy, Math.abs(rr), 0, Math.PI * 2);
+                          ctx.fillStyle = (Math.round(r / ringWidth) % 2 === 0) ? colA : colB;
+                          ctx.fill();
+                        }
+                        // Add subtle rotation warp
+                        ctx.save();
+                        ctx.globalCompositeOperation = 'overlay';
+                        ctx.globalAlpha = 0.08;
+                        var warpAngle = tick * speed * 0.005;
+                        for (var wr = 0; wr < maxR; wr += ringWidth * 1.5) {
+                          ctx.beginPath();
+                          ctx.ellipse(cx, cy, wr, wr * (0.9 + Math.sin(warpAngle + wr * 0.01) * 0.1), warpAngle, 0, Math.PI * 2);
+                          ctx.strokeStyle = colA; ctx.lineWidth = 2; ctx.stroke();
+                        }
+                        ctx.restore();
+
+                      } else if (style === 'checkerboard') {
+                        var cellSize = Math.max(8, Math.round(W / density));
+                        var t = tick * speed * 0.02;
+                        for (var gx = 0; gx < W; gx += cellSize) {
+                          for (var gy = 0; gy < H; gy += cellSize) {
+                            var dx = gx - cx, dy = gy - cy;
+                            var dist = Math.sqrt(dx * dx + dy * dy);
+                            var warp = Math.sin(dist * 0.015 - t) * cellSize * 0.4;
+                            var wx = gx + warp * (dx / (dist || 1));
+                            var wy = gy + warp * (dy / (dist || 1));
+                            var col = Math.floor(gx / cellSize);
+                            var row = Math.floor(gy / cellSize);
+                            ctx.fillStyle = ((col + row) % 2 === 0) ? colA : colB;
+                            ctx.fillRect(wx, wy, cellSize, cellSize);
+                          }
+                        }
+
+                      } else if (style === 'moire') {
+                        var spacing = Math.max(3, Math.round(200 / density));
+                        var t2 = tick * speed * 0.003;
+                        ctx.fillStyle = isMonochrome ? '#000' : 'hsl(' + hueA + ',30%,10%)';
+                        ctx.fillRect(0, 0, W, H);
+                        ctx.lineWidth = 1.5;
+                        // Layer 1 — horizontal lines
+                        ctx.strokeStyle = colB;
+                        ctx.globalAlpha = 0.7;
+                        for (var ly = -H; ly < H * 2; ly += spacing) {
+                          ctx.beginPath();
+                          ctx.moveTo(0, ly);
+                          ctx.lineTo(W, ly);
+                          ctx.stroke();
+                        }
+                        // Layer 2 — rotated lines
+                        ctx.save();
+                        ctx.translate(cx, cy);
+                        ctx.rotate(t2);
+                        ctx.strokeStyle = colA;
+                        for (var ly2 = -W * 2; ly2 < W * 2; ly2 += spacing) {
+                          ctx.beginPath();
+                          ctx.moveTo(-W, ly2);
+                          ctx.lineTo(W, ly2);
+                          ctx.stroke();
+                        }
+                        ctx.restore();
+                        ctx.globalAlpha = 1;
+
+                      } else if (style === 'vibrating') {
+                        var stripeW = Math.max(4, Math.round(W / density));
+                        var t3 = tick * speed * 0.04;
+                        for (var vx = 0; vx < W; vx += stripeW) {
+                          var wave = Math.sin(vx * 0.03 + t3) * stripeW * 0.3;
+                          var idx = Math.floor(vx / stripeW);
+                          ctx.fillStyle = (idx % 2 === 0) ? colA : colB;
+                          ctx.beginPath();
+                          ctx.moveTo(vx + wave, 0);
+                          ctx.lineTo(vx + stripeW + wave, 0);
+                          for (var vy = 0; vy < H; vy += 4) {
+                            var localWave = Math.sin(vy * 0.02 + t3 + vx * 0.01) * stripeW * 0.25;
+                            ctx.lineTo(vx + stripeW + localWave, vy);
+                          }
+                          ctx.lineTo(vx + stripeW, H);
+                          ctx.lineTo(vx, H);
+                          for (var vy2 = H; vy2 > 0; vy2 -= 4) {
+                            var localWave2 = Math.sin(vy2 * 0.02 + t3 + vx * 0.01) * stripeW * 0.25;
+                            ctx.lineTo(vx + localWave2, vy2);
+                          }
+                          ctx.closePath();
+                          ctx.fill();
+                        }
+                      }
+
+                      canvas._opAnim = requestAnimationFrame(drawFrame);
+                    }
+                    drawFrame();
+                  }
+                })
+              )
+            ),
+            // ═══ TESSELLATION TAB ═══
+            tab === 'tessellation' && React.createElement("div", { className: "space-y-3" },
+              React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+                React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: "bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-4 border border-teal-200" },
+                    React.createElement("h4", { className: "text-xs font-bold text-teal-700 mb-3" }, "\uD83D\uDD37 Tessellation Controls"),
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-teal-600 block mb-1" }, "Base Shape"),
+                      React.createElement("div", { className: "flex gap-1" },
+                        [{ id: 'triangle', label: '\u25B3 Triangle' }, { id: 'square', label: '\u25A1 Square' }, { id: 'hexagon', label: '\u2B21 Hexagon' }].map(function (s) {
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('tessShape', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.tessShape || 'hexagon') === s.id ? 'bg-teal-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-teal-50') }, s.label);
+                        })
+                      )
+                    ),
+                    [{ k: 'tessGrid', label: 'Grid Size', min: 2, max: 20, def: 6 },
+                     { k: 'tessRotation', label: 'Rotation \u00B0', min: 0, max: 360, def: 0 },
+                     { k: 'tessWarpAmt', label: 'Escher Warp', min: 0, max: 50, def: 0 }].map(function (s) {
+                      var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
+                      return React.createElement("div", { key: s.k, className: "mb-2" },
+                        React.createElement("label", { className: "text-[10px] font-bold text-teal-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-teal-600" })
+                      );
+                    }),
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-teal-600 block mb-1" }, "Color Scheme"),
+                      React.createElement("div", { className: "flex gap-1 flex-wrap" },
+                        [{ id: 'rainbow', label: '\uD83C\uDF08 Rainbow' }, { id: 'warm', label: '\uD83D\uDD25 Warm' }, { id: 'cool', label: '\u2744 Cool' }, { id: 'mono', label: '\u25AB Mono' }, { id: 'custom', label: '\uD83C\uDFA8 Custom' }].map(function (s) {
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('tessScheme', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.tessScheme || 'rainbow') === s.id ? 'bg-teal-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-teal-50') }, s.label);
+                        })
+                      )
+                    ),
+                    React.createElement("div", { className: "flex gap-2 mt-3" },
+                      React.createElement("button", { onClick: function () { upd('tessClickData', {}); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear Colors"),
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('tessCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'tessellation-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+                    ),
+                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
+                      React.createElement("span", { className: "text-[10px] font-bold text-teal-500 mr-1" }, "Presets:"),
+                      [{ label: 'Honeycomb', shape: 'hexagon', grid: 6, rot: 0, warp: 0, scheme: 'warm' },
+                       { label: 'Pinwheel', shape: 'triangle', grid: 8, rot: 30, warp: 0, scheme: 'rainbow' },
+                       { label: 'Islamic Star', shape: 'hexagon', grid: 5, rot: 15, warp: 10, scheme: 'cool' },
+                       { label: 'Escher Fish', shape: 'square', grid: 6, rot: 0, warp: 35, scheme: 'rainbow' }].map(function (pr) {
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('tessShape', pr.shape); upd('tessGrid', pr.grid); upd('tessRotation', pr.rot); upd('tessWarpAmt', pr.warp); upd('tessScheme', pr.scheme); upd('tessClickData', {}); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-teal-600 border border-teal-200 hover:bg-teal-50 transition-all" }, pr.label);
+                      })
+                    )
+                  ),
+                  React.createElement("div", { className: "bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-3 border border-cyan-200" },
+                    React.createElement("button", { onClick: function () { upd('showTessInfo', !d.showTessInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-cyan-700" },
+                      React.createElement("span", null, "\uD83D\uDCCF The Math of Tessellations"),
+                      React.createElement("span", null, d.showTessInfo ? '\u25B2' : '\u25BC')
+                    ),
+                    d.showTessInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
+                      React.createElement("p", null, "\uD83D\uDD37 A ", React.createElement("strong", null, "tessellation"), " (or tiling) covers a plane with shapes that fit together without gaps or overlaps. Only three regular polygons tile by themselves: ", React.createElement("strong", null, "equilateral triangles"), " (60\u00B0 \u00D7 6 = 360\u00B0), ", React.createElement("strong", null, "squares"), " (90\u00B0 \u00D7 4 = 360\u00B0), and ", React.createElement("strong", null, "regular hexagons"), " (120\u00B0 \u00D7 3 = 360\u00B0)."),
+                      React.createElement("p", null, "\uD83C\uDFA8 ", React.createElement("strong", null, "M.C. Escher"), " (1898\u20131972) transformed simple tilings into art by warping tile edges. His technique: deform one side of a shape and copy the deformation to the opposite side, so tiles still fit together perfectly. This is the basis of the ", React.createElement("strong", null, "Escher Warp"), " slider."),
+                      React.createElement("p", null, "\uD83C\uDFDB ", React.createElement("strong", null, "Islamic geometric art"), " uses tessellations extensively\u2014combining stars, hexagons, and interlocking patterns seen in mosques like the Alhambra. These patterns follow strict mathematical rules while creating breathtaking visual complexity."),
+                      React.createElement("p", null, "\uD83D\uDCCA ", React.createElement("strong", null, "Transformations:"), " Tessellations use three key operations\u2014", React.createElement("strong", null, "translation"), " (slide), ", React.createElement("strong", null, "rotation"), " (turn), and ", React.createElement("strong", null, "reflection"), " (flip). Every tessellation can be classified by which of these 17 'wallpaper groups' it belongs to.")
+                    )
+                  ),
+                  React.createElement("p", { className: "text-[10px] text-center text-slate-400 italic" }, "\uD83D\uDC46 Click tiles to cycle their colors")
+                ),
+                React.createElement("canvas", { id: 'tessCanvas', width: 512, height: 512, className: "rounded-xl border-2 border-teal-200 shadow-lg mx-auto block cursor-pointer", style: { maxWidth: '100%', background: '#0f172a' },
+                  key: 'tess-' + (d.tessShape || 'hexagon') + '-' + (d.tessGrid || 6) + '-' + (d.tessRotation || 0) + '-' + (d.tessWarpAmt || 0) + '-' + (d.tessScheme || 'rainbow'),
+                  ref: function (canvas) {
+                    if (!canvas) return;
+                    if (canvas._tessInit) return;
+                    canvas._tessInit = true;
+                    var ctx = canvas.getContext('2d');
+                    var W = canvas.width, H = canvas.height;
+                    var shape = d.tessShape || 'hexagon';
+                    var gridSize = typeof d.tessGrid === 'number' ? d.tessGrid : 6;
+                    var rotation = (typeof d.tessRotation === 'number' ? d.tessRotation : 0) * Math.PI / 180;
+                    var warpAmt = typeof d.tessWarpAmt === 'number' ? d.tessWarpAmt : 0;
+                    var scheme = d.tessScheme || 'rainbow';
+                    var clickData = d.tessClickData || {};
+
+                    // Color palettes
+                    var palettes = {
+                      rainbow: function (i, total) { return 'hsl(' + Math.round((i / Math.max(total, 1)) * 360) + ',75%,55%)'; },
+                      warm: function (i, total) { return 'hsl(' + Math.round((i / Math.max(total, 1)) * 60) + ',80%,' + (40 + (i % 3) * 10) + '%)'; },
+                      cool: function (i, total) { return 'hsl(' + (180 + Math.round((i / Math.max(total, 1)) * 80)) + ',70%,' + (40 + (i % 3) * 10) + '%)'; },
+                      mono: function (i, total) { return 'hsl(210,' + (10 + (i % 4) * 8) + '%,' + (30 + (i / Math.max(total, 1)) * 40) + '%)'; },
+                      custom: function (i) { return 'hsl(' + ((i * 137.508) % 360) + ',65%,55%)'; }
+                    };
+                    var colorFn = palettes[scheme] || palettes.rainbow;
+                    var clickCyclePalette = ['hsl(0,80%,55%)', 'hsl(30,90%,55%)', 'hsl(55,90%,55%)', 'hsl(120,60%,45%)', 'hsl(200,75%,50%)', 'hsl(270,70%,55%)', 'hsl(320,80%,55%)', 'hsl(0,0%,90%)'];
+
+                    // Store tile polygons for click detection
+                    var tilePolys = [];
+
+                    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+                    ctx.save();
+                    ctx.translate(W / 2, H / 2);
+                    ctx.rotate(rotation);
+                    ctx.translate(-W / 2, -H / 2);
+
+                    var tileIdx = 0;
+
+                    function warpEdge(x1, y1, x2, y2, amt) {
+                      if (amt <= 0) return [[x1, y1], [x2, y2]];
+                      var pts = [[x1, y1]];
+                      var steps = 6;
+                      for (var s = 1; s < steps; s++) {
+                        var t = s / steps;
+                        var mx = x1 + (x2 - x1) * t;
+                        var my = y1 + (y2 - y1) * t;
+                        var dx = -(y2 - y1), dy = (x2 - x1);
+                        var len = Math.sqrt(dx * dx + dy * dy) || 1;
+                        var offset = Math.sin(t * Math.PI * 2) * amt * 0.3;
+                        pts.push([mx + (dx / len) * offset, my + (dy / len) * offset]);
+                      }
+                      pts.push([x2, y2]);
+                      return pts;
+                    }
+
+                    function drawTile(vertices, fillColor, idx) {
+                      var wPts = [];
+                      for (var vi = 0; vi < vertices.length; vi++) {
+                        var next = (vi + 1) % vertices.length;
+                        var edgePts = warpEdge(vertices[vi][0], vertices[vi][1], vertices[next][0], vertices[next][1], warpAmt);
+                        for (var ep = 0; ep < edgePts.length - (vi < vertices.length - 1 ? 1 : 0); ep++) {
+                          wPts.push(edgePts[ep]);
+                        }
+                      }
+                      var keyStr = Math.round(vertices[0][0]) + '_' + Math.round(vertices[0][1]);
+                      var useColor = clickData[keyStr] !== undefined ? clickCyclePalette[clickData[keyStr] % clickCyclePalette.length] : fillColor;
+                      ctx.beginPath();
+                      ctx.moveTo(wPts[0][0], wPts[0][1]);
+                      for (var wp = 1; wp < wPts.length; wp++) { ctx.lineTo(wPts[wp][0], wPts[wp][1]); }
+                      ctx.closePath();
+                      ctx.fillStyle = useColor;
+                      ctx.fill();
+                      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+                      ctx.lineWidth = 1;
+                      ctx.stroke();
+                      tilePolys.push({ vertices: vertices, key: keyStr, idx: idx });
+                    }
+
+                    if (shape === 'hexagon') {
+                      var hexR = W / (gridSize * 1.8);
+                      var hexH = hexR * Math.sqrt(3);
+                      var startX = -hexR * 2;
+                      var startY = -hexH;
+                      for (var row = 0; row < gridSize + 3; row++) {
+                        for (var col = 0; col < gridSize + 3; col++) {
+                          var hx = startX + col * hexR * 1.5;
+                          var hy = startY + row * hexH + (col % 2 === 1 ? hexH / 2 : 0);
+                          var verts = [];
+                          for (var a = 0; a < 6; a++) {
+                            var ang = (a * 60 - 30) * Math.PI / 180;
+                            verts.push([hx + Math.cos(ang) * hexR, hy + Math.sin(ang) * hexR]);
+                          }
+                          drawTile(verts, colorFn(tileIdx, (gridSize + 3) * (gridSize + 3)), tileIdx);
+                          tileIdx++;
+                        }
+                      }
+                    } else if (shape === 'square') {
+                      var sqSize = W / gridSize;
+                      for (var row2 = -1; row2 < gridSize + 1; row2++) {
+                        for (var col2 = -1; col2 < gridSize + 1; col2++) {
+                          var sx = col2 * sqSize;
+                          var sy = row2 * sqSize;
+                          var verts2 = [[sx, sy], [sx + sqSize, sy], [sx + sqSize, sy + sqSize], [sx, sy + sqSize]];
+                          drawTile(verts2, colorFn(tileIdx, (gridSize + 2) * (gridSize + 2)), tileIdx);
+                          tileIdx++;
+                        }
+                      }
+                    } else if (shape === 'triangle') {
+                      var triH2 = W / gridSize;
+                      var triW = triH2 * 2 / Math.sqrt(3);
+                      for (var row3 = -1; row3 < gridSize + 2; row3++) {
+                        for (var col3 = -2; col3 < gridSize * 2 + 2; col3++) {
+                          var isUp = (col3 + row3) % 2 === 0;
+                          var tx = col3 * triW / 2;
+                          var ty = row3 * triH2;
+                          var verts3;
+                          if (isUp) {
+                            verts3 = [[tx, ty + triH2], [tx + triW / 2, ty], [tx + triW, ty + triH2]];
+                          } else {
+                            verts3 = [[tx, ty], [tx + triW, ty], [tx + triW / 2, ty + triH2]];
+                          }
+                          drawTile(verts3, colorFn(tileIdx, (gridSize + 3) * (gridSize * 2 + 4)), tileIdx);
+                          tileIdx++;
+                        }
+                      }
+                    }
+                    ctx.restore();
+
+                    // Click handler for cycling tile colors
+                    canvas.onclick = function (e) {
+                      var rect = canvas.getBoundingClientRect();
+                      var mx = (e.clientX - rect.left) * (W / rect.width);
+                      var my = (e.clientY - rect.top) * (H / rect.height);
+                      // Transform click point by inverse rotation
+                      var cos = Math.cos(-rotation), sin = Math.sin(-rotation);
+                      var cx2 = W / 2, cy2 = H / 2;
+                      var dx = mx - cx2, dy = my - cy2;
+                      var rx = cx2 + dx * cos - dy * sin;
+                      var ry = cy2 + dx * sin + dy * cos;
+                      // Find clicked tile
+                      for (var ti = tilePolys.length - 1; ti >= 0; ti--) {
+                        var poly = tilePolys[ti];
+                        var inside = false;
+                        var vs = poly.vertices;
+                        for (var pi = 0, pj = vs.length - 1; pi < vs.length; pj = pi++) {
+                          if (((vs[pi][1] > ry) !== (vs[pj][1] > ry)) && (rx < (vs[pj][0] - vs[pi][0]) * (ry - vs[pi][1]) / (vs[pj][1] - vs[pi][1]) + vs[pi][0])) {
+                            inside = !inside;
+                          }
+                        }
+                        if (inside) {
+                          var newClick = Object.assign({}, clickData);
+                          newClick[poly.key] = ((newClick[poly.key] || 0) + 1) % clickCyclePalette.length;
+                          upd('tessClickData', newClick);
+                          break;
+                        }
+                      }
+                    };
+                  }
+                })
+              )
+            ),
+            // ═══ FRACTAL EXPLORER TAB ═══
+            tab === 'fractal' && React.createElement("div", { className: "space-y-3" },
+              React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+                React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-4 border border-violet-200" },
+                    React.createElement("h4", { className: "text-xs font-bold text-violet-700 mb-3" }, "\uD83D\uDD2E Fractal Explorer"),
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-violet-600 block mb-1" }, "Fractal Type"),
+                      React.createElement("div", { className: "flex gap-1" },
+                        [{ id: 'mandelbrot', label: '\uD83C\uDF00 Mandelbrot' }, { id: 'julia', label: '\u2728 Julia' }, { id: 'burningShip', label: '\uD83D\uDD25 Burning Ship' }, { id: 'sierpinski', label: '\u25B3 Sierpinski' }].map(function (s) {
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('fractalType', s.id); upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.fractalType || 'mandelbrot') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-violet-50') }, s.label);
+                        })
+                      )
+                    ),
+                    [{ k: 'fractalIter', label: 'Max Iterations', min: 50, max: 500, def: 200 },
+                     { k: 'fractalZoom', label: 'Zoom', min: 1, max: 500, def: 1 }].map(function (s) {
+                      var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
+                      return React.createElement("div", { key: s.k, className: "mb-2" },
+                        React.createElement("label", { className: "text-[10px] font-bold text-violet-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('fractalReset', Date.now()); }, className: "w-full accent-violet-600" })
+                      );
+                    }),
+                    (d.fractalType || 'mandelbrot') === 'julia' && React.createElement("div", { className: "space-y-2 mt-2 p-2 bg-violet-50 rounded-lg border border-violet-200" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-violet-500" }, "Julia Constant (c)"),
+                      [{ k: 'juliaReal', label: 'c real', min: -200, max: 200, def: -70 },
+                       { k: 'juliaImag', label: 'c imaginary', min: -200, max: 200, def: 27 }].map(function (s) {
+                        var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
+                        return React.createElement("div", { key: s.k },
+                          React.createElement("label", { className: "text-[10px] font-bold text-violet-600" }, s.label + ': ' + (val / 100).toFixed(2)),
+                          React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('fractalReset', Date.now()); }, className: "w-full accent-violet-500" })
+                        );
+                      })
+                    ),
+                    React.createElement("div", { className: "mb-3 mt-2" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-violet-600 block mb-1" }, "Color Scheme"),
+                      React.createElement("div", { className: "flex gap-1 flex-wrap" },
+                        [{ id: 'classic', label: '\uD83C\uDF08 Classic' }, { id: 'fire', label: '\uD83D\uDD25 Fire' }, { id: 'ocean', label: '\uD83C\uDF0A Ocean' }, { id: 'psychedelic', label: '\uD83D\uDC9C Psychedelic' }, { id: 'grayscale', label: '\u25AB Grayscale' }].map(function (s) {
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('fractalColor', s.id); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.fractalColor || 'classic') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-violet-50') }, s.label);
+                        })
+                      )
+                    ),
+                    React.createElement("div", { className: "flex gap-2 mt-3" },
+                      React.createElement("button", { onClick: function () { upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\u21BA Reset View"),
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('fractalCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'fractal-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+                    ),
+                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
+                      React.createElement("span", { className: "text-[10px] font-bold text-violet-500 mr-1" }, "Presets:"),
+                      [{ label: 'Seahorse Valley', type: 'mandelbrot', panX: 74, panY: -20, zoom: 120, iter: 350 },
+                       { label: 'Elephant Valley', type: 'mandelbrot', panX: 36, panY: -4, zoom: 80, iter: 300 },
+                       { label: 'Lightning', type: 'julia', panX: 0, panY: 0, zoom: 1, iter: 250, jr: -12, ji: 75 },
+                       { label: 'Spiral Arm', type: 'julia', panX: 0, panY: 0, zoom: 1, iter: 300, jr: 28, ji: 1 }].map(function (pr) {
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('fractalType', pr.type); upd('fractalPanX', pr.panX); upd('fractalPanY', pr.panY); upd('fractalZoom', pr.zoom); upd('fractalIter', pr.iter); if (pr.jr !== undefined) { upd('juliaReal', pr.jr); upd('juliaImag', pr.ji); } upd('fractalReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-violet-600 border border-violet-200 hover:bg-violet-50 transition-all" }, pr.label);
+                      })
+                    )
+                  ),
+                  React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-3 border border-purple-200" },
+                    React.createElement("button", { onClick: function () { upd('showFractalInfo', !d.showFractalInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-purple-700" },
+                      React.createElement("span", null, "\uD83D\uDD2C The Math of Fractals"),
+                      React.createElement("span", null, d.showFractalInfo ? '\u25B2' : '\u25BC')
+                    ),
+                    d.showFractalInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
+                      React.createElement("p", null, "\uD83C\uDF00 ", React.createElement("strong", null, "The Mandelbrot set"), " is generated by iterating z = z\u00B2 + c for every point c in the complex plane. Points where |z| stays bounded (never exceeds 2) are 'in' the set. The boundary reveals ", React.createElement("strong", null, "infinite complexity"), " at every scale."),
+                      React.createElement("p", null, "\u2728 ", React.createElement("strong", null, "Julia sets"), " use the same formula but fix c and vary the starting z. Each Mandelbrot point generates a unique Julia set \u2014 points inside the Mandelbrot produce connected Julias; outside points produce dust-like 'Fatou sets'."),
+                      React.createElement("p", null, "\uD83D\uDD25 The ", React.createElement("strong", null, "Burning Ship"), " fractal modifies the iteration to z = (|Re(z)| + i|Im(z)|)\u00B2 + c, creating an asymmetric shape resembling a flaming vessel. It was discovered by Michael Michelitsch and Otto R\u00F6ssler in 1992."),
+                      React.createElement("p", null, "\u25B3 The ", React.createElement("strong", null, "Sierpinski Triangle"), " is built by the 'chaos game': pick a random point, then repeatedly jump halfway toward a randomly chosen vertex. Remarkably, this random process produces a perfectly self-similar fractal."),
+                      React.createElement("p", null, "\uD83E\uDDE0 ", React.createElement("strong", null, "Benoit Mandelbrot"), " (1924\u20132010) coined the word 'fractal' from Latin 'fractus' (broken). He showed that coastlines, mountains, blood vessels, and stock markets all exhibit fractal geometry \u2014 ", React.createElement("strong", null, "nature is fractal"), ".")
+                    )
+                  )
+                ),
+                React.createElement("canvas", { id: 'fractalCanvas', width: 512, height: 512, className: "rounded-xl border-2 border-violet-200 shadow-lg mx-auto block cursor-crosshair", style: { maxWidth: '100%', background: '#0a0a1a' },
+                  key: 'frac-' + (d.fractalType || 'mandelbrot') + '-' + (d.fractalReset || 0),
+                  ref: function (canvas) {
+                    if (!canvas) return;
+                    if (canvas._fracInit) return;
+                    canvas._fracInit = true;
+                    var ctx = canvas.getContext('2d');
+                    var W = canvas.width, H = canvas.height;
+                    var type = d.fractalType || 'mandelbrot';
+                    var maxIter = typeof d.fractalIter === 'number' ? d.fractalIter : 200;
+                    var zoom = typeof d.fractalZoom === 'number' ? d.fractalZoom : 1;
+                    var panX = typeof d.fractalPanX === 'number' ? d.fractalPanX : 0;
+                    var panY = typeof d.fractalPanY === 'number' ? d.fractalPanY : 0;
+                    var colorScheme = d.fractalColor || 'classic';
+                    var juliaR = typeof d.juliaReal === 'number' ? d.juliaReal / 100 : -0.7;
+                    var juliaI = typeof d.juliaImag === 'number' ? d.juliaImag / 100 : 0.27;
+
+                    function getColor(iter, max) {
+                      if (iter === max) return [0, 0, 0];
+                      var t = iter / max;
+                      if (colorScheme === 'fire') return [Math.min(255, Math.round(t * 3 * 255)), Math.round(t * t * 255), Math.round(t * t * t * 200)];
+                      if (colorScheme === 'ocean') return [Math.round(t * t * 80), Math.round(t * 180), Math.min(255, Math.round(t * 1.5 * 255))];
+                      if (colorScheme === 'psychedelic') {
+                        var h = (t * 360 * 3) % 360;
+                        var s = 0.9, l = 0.5;
+                        var c = (1 - Math.abs(2 * l - 1)) * s;
+                        var x = c * (1 - Math.abs((h / 60) % 2 - 1));
+                        var m = l - c / 2;
+                        var r1, g1, b1;
+                        if (h < 60) { r1 = c; g1 = x; b1 = 0; } else if (h < 120) { r1 = x; g1 = c; b1 = 0; }
+                        else if (h < 180) { r1 = 0; g1 = c; b1 = x; } else if (h < 240) { r1 = 0; g1 = x; b1 = c; }
+                        else if (h < 300) { r1 = x; g1 = 0; b1 = c; } else { r1 = c; g1 = 0; b1 = x; }
+                        return [Math.round((r1 + m) * 255), Math.round((g1 + m) * 255), Math.round((b1 + m) * 255)];
+                      }
+                      if (colorScheme === 'grayscale') { var v = Math.round(t * 255); return [v, v, v]; }
+                      // classic rainbow
+                      var h2 = (t * 360 * 2) % 360;
+                      var c2 = 1 * 0.8; var x2 = c2 * (1 - Math.abs((h2 / 60) % 2 - 1)); var m2 = 0.1;
+                      var r2, g2, b2;
+                      if (h2 < 60) { r2 = c2; g2 = x2; b2 = 0; } else if (h2 < 120) { r2 = x2; g2 = c2; b2 = 0; }
+                      else if (h2 < 180) { r2 = 0; g2 = c2; b2 = x2; } else if (h2 < 240) { r2 = 0; g2 = x2; b2 = c2; }
+                      else if (h2 < 300) { r2 = x2; g2 = 0; b2 = c2; } else { r2 = c2; g2 = 0; b2 = x2; }
+                      return [Math.round((r2 + m2) * 255), Math.round((g2 + m2) * 255), Math.round((b2 + m2) * 255)];
+                    }
+
+                    if (type === 'sierpinski') {
+                      // Chaos game Sierpinski
+                      ctx.fillStyle = '#0a0a1a'; ctx.fillRect(0, 0, W, H);
+                      var verts = [[W / 2, 20], [20, H - 20], [W - 20, H - 20]];
+                      var px = Math.random() * W, py = Math.random() * H;
+                      var si = 0, total = 100000;
+                      var batchSize = 500;
+                      function drawSierpBatch() {
+                        for (var b = 0; b < batchSize && si < total; b++, si++) {
+                          var vi = Math.floor(Math.random() * 3);
+                          px = (px + verts[vi][0]) / 2;
+                          py = (py + verts[vi][1]) / 2;
+                          if (si > 10) {
+                            var t = si / total;
+                            var col = getColor(Math.round(t * maxIter * 0.5), maxIter);
+                            ctx.fillStyle = 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0.7)';
+                            ctx.fillRect(px, py, 1.2, 1.2);
+                          }
+                        }
+                        if (si < total) canvas._fracAnim = requestAnimationFrame(drawSierpBatch);
+                      }
+                      drawSierpBatch();
+                    } else {
+                      // Mandelbrot / Julia / Burning Ship — pixel-by-pixel via ImageData
+                      var imgData = ctx.createImageData(W, H);
+                      var data = imgData.data;
+                      // Render in chunks for responsiveness
+                      var rowsDone = 0;
+                      var centerX = type === 'mandelbrot' ? -0.5 : type === 'burningShip' ? -0.4 : 0;
+                      var centerY = type === 'burningShip' ? -0.5 : 0;
+                      var scale = 3.0 / (zoom * Math.min(W, H));
+                      var offsetX = (panX / 100) * 2;
+                      var offsetY = (panY / 100) * 2;
+
+                      function renderChunk() {
+                        var endRow = Math.min(rowsDone + 16, H);
+                        for (var py2 = rowsDone; py2 < endRow; py2++) {
+                          for (var px2 = 0; px2 < W; px2++) {
+                            var x0 = (px2 - W / 2) * scale + centerX - offsetX;
+                            var y0 = (py2 - H / 2) * scale + centerY - offsetY;
+                            var zr, zi, cr, ci, iter = 0;
+
+                            if (type === 'julia') {
+                              zr = x0; zi = y0; cr = juliaR; ci = juliaI;
+                            } else {
+                              zr = 0; zi = 0; cr = x0; ci = y0;
+                            }
+
+                            while (iter < maxIter && zr * zr + zi * zi < 4) {
+                              if (type === 'burningShip') {
+                                var tr = Math.abs(zr), ti = Math.abs(zi);
+                                var newR = tr * tr - ti * ti + cr;
+                                zi = 2 * tr * ti + ci;
+                                zr = newR;
+                              } else {
+                                var newR2 = zr * zr - zi * zi + cr;
+                                zi = 2 * zr * zi + ci;
+                                zr = newR2;
+                              }
+                              iter++;
+                            }
+
+                            // Smooth coloring
+                            var smoothIter = iter;
+                            if (iter < maxIter) {
+                              var log_zn = Math.log(zr * zr + zi * zi) / 2;
+                              var nu = Math.log(log_zn / Math.log(2)) / Math.log(2);
+                              if (isFinite(nu)) smoothIter = iter + 1 - nu;
+                            }
+
+                            var col = getColor(smoothIter, maxIter);
+                            var idx = (py2 * W + px2) * 4;
+                            data[idx] = col[0]; data[idx + 1] = col[1]; data[idx + 2] = col[2]; data[idx + 3] = 255;
+                          }
+                        }
+                        ctx.putImageData(imgData, 0, 0, 0, rowsDone, W, endRow - rowsDone);
+                        rowsDone = endRow;
+                        if (rowsDone < H) canvas._fracAnim = requestAnimationFrame(renderChunk);
+                      }
+                      renderChunk();
+                    }
+
+                    // Click-to-zoom
+                    canvas.ondblclick = function (e) {
+                      var rect = canvas.getBoundingClientRect();
+                      var mx = (e.clientX - rect.left) * (W / rect.width);
+                      var my = (e.clientY - rect.top) * (H / rect.height);
+                      var newPanX = Math.round(((W / 2 - mx) / W) * 100 + panX);
+                      var newPanY = Math.round(((H / 2 - my) / H) * 100 + panY);
+                      var newZoom = Math.min(500, Math.round(zoom * 2));
+                      upd('fractalPanX', newPanX); upd('fractalPanY', newPanY); upd('fractalZoom', newZoom); upd('fractalReset', Date.now());
+                    };
+                    // Scroll-to-zoom
+                    canvas.onwheel = function (e) {
+                      e.preventDefault();
+                      var factor = e.deltaY < 0 ? 1.3 : 0.77;
+                      var newZoom2 = Math.max(1, Math.min(500, Math.round(zoom * factor)));
+                      upd('fractalZoom', newZoom2); upd('fractalReset', Date.now());
+                    };
+                  }
+                })
+              ),
+              React.createElement("p", { className: "text-[10px] text-center text-slate-400 italic mt-1" }, "\uD83D\uDC46 Double-click to zoom in \u2022 Scroll-wheel to zoom in/out")
+            ),
+            // ═══ GRADIENT LAB TAB ═══
+            tab === 'gradient' && React.createElement("div", { className: "space-y-3" },
+              React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+                React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: "bg-gradient-to-br from-rose-50 to-orange-50 rounded-xl p-4 border border-rose-200" },
+                    React.createElement("h4", { className: "text-xs font-bold text-rose-700 mb-3" }, "\uD83C\uDF08 Gradient Lab"),
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-rose-600 block mb-1" }, "Gradient Type"),
+                      React.createElement("div", { className: "flex gap-1" },
+                        [{ id: 'linear', label: '\u2194 Linear' }, { id: 'radial', label: '\u25CE Radial' }, { id: 'conic', label: '\uD83C\uDF00 Conic' }].map(function (s) {
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('gradType', s.id); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all " + ((d.gradType || 'linear') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-rose-50') }, s.label);
+                        })
+                      )
+                    ),
+                    (d.gradType || 'linear') === 'linear' && React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-rose-600 block mb-0.5" }, "Angle: " + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + '\u00B0'),
+                      React.createElement("input", { type: "range", min: 0, max: 360, value: typeof d.gradAngle === 'number' ? d.gradAngle : 90, onChange: function (e) { upd('gradAngle', parseInt(e.target.value)); }, className: "w-full accent-rose-600" })
+                    ),
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-rose-600 block mb-1" }, "Blend Mode"),
+                      React.createElement("div", { className: "flex gap-1" },
+                        [{ id: 'smooth', label: 'Smooth' }, { id: 'hard', label: 'Hard Edge' }].map(function (s) {
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('gradBlend', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.gradBlend || 'smooth') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-rose-50') }, s.label);
+                        })
+                      )
+                    ),
+                    // Color stops editor
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("div", { className: "flex items-center justify-between mb-1" },
+                        React.createElement("label", { className: "text-[10px] font-bold text-rose-600" }, "Color Stops"),
+                        React.createElement("button", { onClick: function () {
+                          var stops = d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
+                          if (stops.length < 8) {
+                            var newPos = 50;
+                            stops = stops.concat([{ hue: Math.round(Math.random() * 360), pos: newPos }]);
+                            stops.sort(function (a, b) { return a.pos - b.pos; });
+                            upd('gradStops', stops);
+                          }
+                        }, className: "px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 hover:bg-rose-200" }, "+ Add Stop")
+                      ),
+                      (function () {
+                        var stops = d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
+                        return stops.map(function (stop, idx) {
+                          return React.createElement("div", { key: idx, className: "flex items-center gap-2 mb-1.5" },
+                            React.createElement("div", { style: { width: 20, height: 20, borderRadius: 4, background: 'hsl(' + stop.hue + ',85%,55%)', border: '2px solid white', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', flexShrink: 0 } }),
+                            React.createElement("div", { className: "flex-1" },
+                              React.createElement("input", { type: "range", min: 0, max: 360, value: stop.hue, onChange: function (e) {
+                                var newStops = (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).slice();
+                                newStops[idx] = Object.assign({}, newStops[idx], { hue: parseInt(e.target.value) });
+                                upd('gradStops', newStops);
+                              }, className: "w-full accent-rose-500", title: "Hue: " + stop.hue })
+                            ),
+                            React.createElement("div", { style: { width: 60, flexShrink: 0 } },
+                              React.createElement("input", { type: "range", min: 0, max: 100, value: stop.pos, onChange: function (e) {
+                                var newStops2 = (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).slice();
+                                newStops2[idx] = Object.assign({}, newStops2[idx], { pos: parseInt(e.target.value) });
+                                newStops2.sort(function (a, b) { return a.pos - b.pos; });
+                                upd('gradStops', newStops2);
+                              }, className: "w-full accent-orange-500", title: "Position: " + stop.pos + "%" })
+                            ),
+                            React.createElement("span", { className: "text-[9px] text-slate-400 w-8 text-right flex-shrink-0" }, stop.pos + '%'),
+                            stops.length > 2 && React.createElement("button", { onClick: function () {
+                              var newStops3 = (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).slice();
+                              newStops3.splice(idx, 1);
+                              upd('gradStops', newStops3);
+                            }, className: "text-[10px] font-bold text-red-400 hover:text-red-600 flex-shrink-0 px-1" }, "\u00D7")
+                          );
+                        });
+                      })()
+                    ),
+                    React.createElement("div", { className: "flex gap-2 mt-3" },
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('gradientCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'gradient-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+                    ),
+                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
+                      React.createElement("span", { className: "text-[10px] font-bold text-rose-500 mr-1" }, "Presets:"),
+                      [{ label: 'Sunset', stops: [{ hue: 270, pos: 0 }, { hue: 330, pos: 30 }, { hue: 20, pos: 60 }, { hue: 45, pos: 100 }], type: 'linear', angle: 180 },
+                       { label: 'Northern Lights', stops: [{ hue: 160, pos: 0 }, { hue: 120, pos: 35 }, { hue: 180, pos: 65 }, { hue: 280, pos: 100 }], type: 'linear', angle: 0 },
+                       { label: 'Vaporwave', stops: [{ hue: 300, pos: 0 }, { hue: 270, pos: 40 }, { hue: 190, pos: 70 }, { hue: 330, pos: 100 }], type: 'radial', angle: 90 },
+                       { label: 'Golden Hour', stops: [{ hue: 40, pos: 0 }, { hue: 25, pos: 50 }, { hue: 10, pos: 100 }], type: 'linear', angle: 135 },
+                       { label: 'Deep Space', stops: [{ hue: 260, pos: 0 }, { hue: 230, pos: 30 }, { hue: 200, pos: 60 }, { hue: 280, pos: 80 }, { hue: 0, pos: 100 }], type: 'radial', angle: 90 }].map(function (pr) {
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('gradStops', pr.stops); upd('gradType', pr.type); upd('gradAngle', pr.angle); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 transition-all" }, pr.label);
+                      })
+                    )
+                  ),
+                  // CSS output
+                  React.createElement("div", { className: "bg-slate-900 rounded-xl p-3 border border-slate-700" },
+                    React.createElement("div", { className: "flex items-center justify-between mb-1" },
+                      React.createElement("span", { className: "text-[10px] font-bold text-slate-400" }, "\uD83D\uDCCB CSS Output"),
+                      React.createElement("button", { onClick: function () {
+                        var stops = d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
+                        var stopsStr = stops.map(function (s) { return 'hsl(' + s.hue + ', 85%, 55%) ' + s.pos + '%'; }).join(', ');
+                        var css;
+                        if ((d.gradType || 'linear') === 'radial') css = 'background: radial-gradient(circle, ' + stopsStr + ');';
+                        else if (d.gradType === 'conic') css = 'background: conic-gradient(from 0deg, ' + stopsStr + ');';
+                        else css = 'background: linear-gradient(' + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + 'deg, ' + stopsStr + ');';
+                        navigator.clipboard.writeText(css).then(function () { if (typeof addToast === 'function') addToast('\u2705 CSS copied!', 'success'); });
+                      }, className: "px-2 py-0.5 rounded text-[9px] font-bold bg-slate-700 text-slate-300 hover:bg-slate-600" }, "\uD83D\uDCCB Copy")
+                    ),
+                    React.createElement("code", { className: "text-[10px] text-green-400 font-mono leading-relaxed block whitespace-pre-wrap" }, (function () {
+                      var stops = d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
+                      var stopsStr = stops.map(function (s) { return 'hsl(' + s.hue + ', 85%, 55%) ' + s.pos + '%'; }).join(',\n  ');
+                      if ((d.gradType || 'linear') === 'radial') return 'radial-gradient(\n  circle,\n  ' + stopsStr + '\n)';
+                      if (d.gradType === 'conic') return 'conic-gradient(\n  from 0deg,\n  ' + stopsStr + '\n)';
+                      return 'linear-gradient(\n  ' + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + 'deg,\n  ' + stopsStr + '\n)';
+                    })())
+                  ),
+                  React.createElement("div", { className: "bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-3 border border-orange-200" },
+                    React.createElement("button", { onClick: function () { upd('showGradInfo', !d.showGradInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-orange-700" },
+                      React.createElement("span", null, "\uD83C\uDFA8 The Science of Gradients"),
+                      React.createElement("span", null, d.showGradInfo ? '\u25B2' : '\u25BC')
+                    ),
+                    d.showGradInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
+                      React.createElement("p", null, "\uD83C\uDF08 Screens create gradients by mixing ", React.createElement("strong", null, "RGB sub-pixels"), ". Each pixel blends red, green, and blue light at different intensities. A gradient smoothly interpolates these values across space."),
+                      React.createElement("p", null, "\uD83C\uDFA8 ", React.createElement("strong", null, "HSL interpolation"), " produces more perceptually uniform gradients than RGB. Going from red to blue in RGB passes through muddy grays; in HSL, it sweeps through vivid purples \u2014 the way a painter would mix."),
+                      React.createElement("p", null, "\uD83C\uDF05 ", React.createElement("strong", null, "Real-world gradients"), " are everywhere: sunsets (Rayleigh scattering separates wavelengths), rainbows (refraction sorts light by frequency), and ocean depths (water absorbs red first, leaving deep blue)."),
+                      React.createElement("p", null, "\uD83D\uDCCA ", React.createElement("strong", null, "Conic gradients"), " sweep color around a center point like a color wheel. They\u2019re used in pie charts, loading spinners, and data visualizations. CSS only added conic-gradient support in 2020!"),
+                      React.createElement("p", null, "\uD83D\uDEE0 ", React.createElement("strong", null, "Designers"), " use gradients to create depth, direct attention, and evoke emotion. Warm-to-cool gradients suggest depth (atmospheric perspective); light-to-dark suggests volume (chiaroscuro).")
+                    )
+                  )
+                ),
+                React.createElement("canvas", { id: 'gradientCanvas', width: 512, height: 512, className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#1e1e2e' },
+                  key: 'grad-' + (d.gradType || 'linear') + '-' + (d.gradAngle || 90) + '-' + (d.gradBlend || 'smooth') + '-' + JSON.stringify(d.gradStops || []),
+                  ref: function (canvas) {
+                    if (!canvas) return;
+                    if (canvas._gradInit) return;
+                    canvas._gradInit = true;
+                    var ctx = canvas.getContext('2d');
+                    var W = canvas.width, H = canvas.height;
+                    var type = d.gradType || 'linear';
+                    var angle = typeof d.gradAngle === 'number' ? d.gradAngle : 90;
+                    var blend = d.gradBlend || 'smooth';
+                    var stops = d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
+
+                    if (blend === 'hard') {
+                      // Hard-edge gradient — fill bands
+                      if (type === 'linear') {
+                        var rad = angle * Math.PI / 180;
+                        var cos = Math.cos(rad), sin = Math.sin(rad);
+                        for (var py = 0; py < H; py++) {
+                          for (var px = 0; px < W; px++) {
+                            var t = ((px - W / 2) * cos + (py - H / 2) * sin) / (Math.max(W, H) * 0.5) * 0.5 + 0.5;
+                            t = Math.max(0, Math.min(1, t));
+                            var pos = t * 100;
+                            var stopIdx = 0;
+                            for (var si = 0; si < stops.length - 1; si++) {
+                              if (pos >= stops[si].pos) stopIdx = si;
+                            }
+                            ctx.fillStyle = 'hsl(' + stops[stopIdx].hue + ',85%,55%)';
+                            ctx.fillRect(px, py, 1, 1);
+                          }
+                        }
+                      } else if (type === 'conic') {
+                        var cx2 = W / 2, cy2 = H / 2;
+                        for (var py2 = 0; py2 < H; py2++) {
+                          for (var px2 = 0; px2 < W; px2++) {
+                            var ang = (Math.atan2(py2 - cy2, px2 - cx2) * 180 / Math.PI + 360 + 90) % 360;
+                            var pos2 = ang / 360 * 100;
+                            var si2 = 0;
+                            for (var k = 0; k < stops.length - 1; k++) { if (pos2 >= stops[k].pos) si2 = k; }
+                            ctx.fillStyle = 'hsl(' + stops[si2].hue + ',85%,55%)';
+                            ctx.fillRect(px2, py2, 1, 1);
+                          }
+                        }
+                      } else {
+                        var cx3 = W / 2, cy3 = H / 2;
+                        var maxR = Math.sqrt(cx3 * cx3 + cy3 * cy3);
+                        for (var py3 = 0; py3 < H; py3++) {
+                          for (var px3 = 0; px3 < W; px3++) {
+                            var dist = Math.sqrt((px3 - cx3) * (px3 - cx3) + (py3 - cy3) * (py3 - cy3));
+                            var pos3 = (dist / maxR) * 100;
+                            var si3 = 0;
+                            for (var k2 = 0; k2 < stops.length - 1; k2++) { if (pos3 >= stops[k2].pos) si3 = k2; }
+                            ctx.fillStyle = 'hsl(' + stops[si3].hue + ',85%,55%)';
+                            ctx.fillRect(px3, py3, 1, 1);
+                          }
+                        }
+                      }
+                    } else {
+                      // Smooth gradient using Canvas API
+                      if (type === 'linear') {
+                        var rad2 = angle * Math.PI / 180;
+                        var len = Math.max(W, H);
+                        var x1 = W / 2 - Math.cos(rad2) * len / 2;
+                        var y1 = H / 2 - Math.sin(rad2) * len / 2;
+                        var x2 = W / 2 + Math.cos(rad2) * len / 2;
+                        var y2 = H / 2 + Math.sin(rad2) * len / 2;
+                        var grad = ctx.createLinearGradient(x1, y1, x2, y2);
+                        stops.forEach(function (s) { grad.addColorStop(Math.max(0, Math.min(1, s.pos / 100)), 'hsl(' + s.hue + ',85%,55%)'); });
+                        ctx.fillStyle = grad;
+                        ctx.fillRect(0, 0, W, H);
+                      } else if (type === 'radial') {
+                        var grad2 = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
+                        stops.forEach(function (s) { grad2.addColorStop(Math.max(0, Math.min(1, s.pos / 100)), 'hsl(' + s.hue + ',85%,55%)'); });
+                        ctx.fillStyle = grad2;
+                        ctx.fillRect(0, 0, W, H);
+                      } else {
+                        // Conic — render pixel-by-pixel for smooth interpolation
+                        var cx4 = W / 2, cy4 = H / 2;
+                        var imgData = ctx.createImageData(W, H);
+                        var pxData = imgData.data;
+                        function hslToRgb(h, s, l) {
+                          h = h / 360; s = s / 100; l = l / 100;
+                          var r3, g3, b3;
+                          if (s === 0) { r3 = g3 = b3 = l; } else {
+                            var hue2rgb = function (p, q, t) { if (t < 0) t += 1; if (t > 1) t -= 1; if (t < 1/6) return p + (q - p) * 6 * t; if (t < 1/2) return q; if (t < 2/3) return p + (q - p) * (2/3 - t) * 6; return p; };
+                            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                            var p = 2 * l - q;
+                            r3 = hue2rgb(p, q, h + 1/3); g3 = hue2rgb(p, q, h); b3 = hue2rgb(p, q, h - 1/3);
+                          }
+                          return [Math.round(r3 * 255), Math.round(g3 * 255), Math.round(b3 * 255)];
+                        }
+                        for (var py4 = 0; py4 < H; py4++) {
+                          for (var px4 = 0; px4 < W; px4++) {
+                            var ang2 = (Math.atan2(py4 - cy4, px4 - cx4) * 180 / Math.PI + 360 + 90) % 360;
+                            var pos4 = ang2 / 360 * 100;
+                            // Interpolate between stops
+                            var s1 = stops[0], s2 = stops[stops.length - 1];
+                            for (var k3 = 0; k3 < stops.length - 1; k3++) {
+                              if (pos4 >= stops[k3].pos && pos4 <= stops[k3 + 1].pos) { s1 = stops[k3]; s2 = stops[k3 + 1]; break; }
+                            }
+                            var range = s2.pos - s1.pos || 1;
+                            var t4 = (pos4 - s1.pos) / range;
+                            var h1 = s1.hue, h2 = s2.hue;
+                            var hDiff = h2 - h1; if (Math.abs(hDiff) > 180) { if (hDiff > 0) h1 += 360; else h2 += 360; }
+                            var interpH = ((h1 + (h2 - h1) * t4) + 360) % 360;
+                            var rgb = hslToRgb(interpH, 85, 55);
+                            var idx = (py4 * W + px4) * 4;
+                            pxData[idx] = rgb[0]; pxData[idx + 1] = rgb[1]; pxData[idx + 2] = rgb[2]; pxData[idx + 3] = 255;
+                          }
+                        }
+                        ctx.putImageData(imgData, 0, 0);
+                      }
+                    }
+
+                    // Decorative border glow
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'destination-over';
+                    ctx.fillStyle = '#1e1e2e';
+                    ctx.fillRect(0, 0, W, H);
+                    ctx.restore();
+                  }
+                })
+              )
+            ),
+            // ═══ STEREOGRAM GENERATOR TAB ═══
+            tab === 'stereogram' && React.createElement("div", { className: "space-y-3" },
+              React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+                React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: "bg-gradient-to-br from-cyan-50 to-teal-50 rounded-xl p-4 border border-cyan-200" },
+                    React.createElement("h4", { className: "text-xs font-bold text-cyan-700 mb-3" }, "\uD83D\uDC53 Stereogram Generator"),
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-cyan-600 block mb-1" }, "Depth Brush"),
+                      React.createElement("div", { className: "flex gap-1" },
+                        [{ id: 'near', label: '\u2B1C Near' }, { id: 'mid', label: '\uD83D\uDD18 Mid' }, { id: 'far', label: '\u2B1B Far' }, { id: 'erase', label: '\uD83E\uDDFD Erase' }].map(function (s) {
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('stereoDepth', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoDepth || 'near') === s.id ? 'bg-cyan-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-cyan-50') }, s.label);
+                        })
+                      )
+                    ),
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-cyan-600 block mb-0.5" }, "Brush Size: " + (typeof d.stereoBrush === 'number' ? d.stereoBrush : 20)),
+                      React.createElement("input", { type: "range", min: 5, max: 60, value: typeof d.stereoBrush === 'number' ? d.stereoBrush : 20, onChange: function (e) { upd('stereoBrush', parseInt(e.target.value)); }, className: "w-full accent-cyan-600" })
+                    ),
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-cyan-600 block mb-1" }, "Pattern Type"),
+                      React.createElement("div", { className: "flex gap-1" },
+                        [{ id: 'bw', label: '\u26AB B&W' }, { id: 'color', label: '\uD83C\uDFA8 Color' }, { id: 'noise', label: '\uD83D\uDCFA Noise' }].map(function (s) {
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('stereoPattern', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-cyan-50') }, s.label);
+                        })
+                      )
+                    ),
+                    [{ k: 'stereoStrength', label: 'Depth Strength', min: 5, max: 30, def: 15 },
+                     { k: 'stereoDensity', label: 'Pattern Width', min: 60, max: 150, def: 100 }].map(function (s) {
+                      var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
+                      return React.createElement("div", { key: s.k, className: "mb-2" },
+                        React.createElement("label", { className: "text-[10px] font-bold text-cyan-600 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-cyan-600" })
+                      );
+                    }),
+                    React.createElement("div", { className: "flex gap-2 mt-3" },
+                      React.createElement("button", { onClick: function () { upd('stereoGen', Date.now()); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:from-cyan-600 hover:to-teal-600 shadow-md transition-all" }, "\uD83D\uDC53 Generate"),
+                      React.createElement("button", { onClick: function () { upd('stereoClear', Date.now()); upd('stereoPreset', null); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear")
+                    ),
+                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
+                      React.createElement("span", { className: "text-[10px] font-bold text-cyan-500 mr-1" }, "Presets:"),
+                      [{ label: 'Sphere', id: 'sphere' }, { label: 'Pyramid', id: 'pyramid' }, { label: 'Heart', id: 'heart' }, { label: 'HI Text', id: 'text' }, { label: 'Rings', id: 'rings' }].map(function (pr) {
+                        return React.createElement("button", { key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-cyan-600 border border-cyan-200 hover:bg-cyan-50 transition-all" }, pr.label);
+                      })
+                    ),
+                    React.createElement("button", { onClick: function () { var c = document.getElementById('stereoCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'stereogram-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "w-full mt-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export Stereogram")
+                  ),
+                  React.createElement("div", null,
+                    React.createElement("p", { className: "text-[10px] font-bold text-cyan-600 mb-1" }, "\uD83C\uDFA8 Depth Map Canvas"),
+                    React.createElement("p", { className: "text-[10px] text-slate-400 mb-1" }, "White = pops out \u2022 Gray = middle \u2022 Black = far"),
+                    React.createElement("canvas", { id: 'depthMapCanvas', width: 400, height: 400,
+                      key: 'dm-' + (d.stereoClear || 0),
+                      className: "rounded-xl border-2 border-cyan-200 shadow-lg cursor-crosshair block", style: { maxWidth: '100%', background: '#000000' },
+                      ref: function (canvas) {
+                        if (!canvas) return;
+                        var ctx = canvas.getContext('2d');
+                        var W = canvas.width, H = canvas.height;
+                        if (!canvas._dmInit) {
+                          canvas._dmInit = true;
+                          ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, W, H);
+                          var preset = d.stereoPreset;
+                          if (preset === 'sphere') {
+                            var grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.min(W,H)*0.35);
+                            grad.addColorStop(0, '#ffffff'); grad.addColorStop(0.7, '#888888'); grad.addColorStop(1, '#000000');
+                            ctx.beginPath(); ctx.arc(W/2, H/2, Math.min(W,H)*0.35, 0, Math.PI*2); ctx.fillStyle = grad; ctx.fill();
+                          } else if (preset === 'pyramid') {
+                            ctx.beginPath(); ctx.moveTo(W/2, H*0.15); ctx.lineTo(W*0.2, H*0.85); ctx.lineTo(W*0.8, H*0.85); ctx.closePath();
+                            var pgr = ctx.createLinearGradient(W/2, H*0.15, W/2, H*0.85);
+                            pgr.addColorStop(0, '#ffffff'); pgr.addColorStop(1, '#555555'); ctx.fillStyle = pgr; ctx.fill();
+                          } else if (preset === 'heart') {
+                            ctx.save(); ctx.translate(W/2, H*0.45);
+                            var sc = Math.min(W,H) * 0.012; ctx.scale(sc, -sc);
+                            ctx.beginPath();
+                            for (var ht = 0; ht <= Math.PI * 2; ht += 0.01) {
+                              var hx = 16 * Math.pow(Math.sin(ht), 3);
+                              var hy = 13 * Math.cos(ht) - 5 * Math.cos(2*ht) - 2 * Math.cos(3*ht) - Math.cos(4*ht);
+                              if (ht === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+                            }
+                            ctx.closePath(); ctx.restore(); ctx.fillStyle = '#ffffff'; ctx.fill();
+                          } else if (preset === 'text') {
+                            ctx.fillStyle = '#ffffff'; ctx.font = 'bold ' + Math.round(H * 0.45) + 'px Arial';
+                            ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('HI', W/2, H/2);
+                          } else if (preset === 'rings') {
+                            for (var ri = 3; ri > 0; ri--) {
+                              var rr = ri * Math.min(W,H) * 0.12;
+                              var brt = Math.round((4 - ri) / 3 * 255);
+                              ctx.beginPath(); ctx.arc(W/2, H/2, rr, 0, Math.PI*2);
+                              ctx.lineWidth = 20; ctx.strokeStyle = 'rgb(' + brt + ',' + brt + ',' + brt + ')'; ctx.stroke();
+                            }
+                          }
+                        }
+                        var depthLevel = d.stereoDepth || 'near';
+                        var brushSz = typeof d.stereoBrush === 'number' ? d.stereoBrush : 20;
+                        var depthColors = { near: '#ffffff', mid: '#999999', far: '#333333', erase: '#000000' };
+                        var painting = false;
+                        function getP(e) {
+                          var rect = canvas.getBoundingClientRect();
+                          var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                          var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                          return { x: ex * (W / rect.width), y: ey * (H / rect.height) };
+                        }
+                        function doBrush(pos) {
+                          ctx.beginPath(); ctx.arc(pos.x, pos.y, brushSz, 0, Math.PI * 2);
+                          ctx.fillStyle = depthColors[depthLevel]; ctx.fill();
+                        }
+                        canvas.onmousedown = canvas.ontouchstart = function (e) { e.preventDefault(); painting = true; doBrush(getP(e)); };
+                        canvas.onmousemove = canvas.ontouchmove = function (e) { if (painting) doBrush(getP(e)); };
+                        canvas.onmouseup = canvas.ontouchend = function () { painting = false; };
+                        canvas.onmouseleave = function () { painting = false; };
+                      }
+                    })
+                  ),
+                  React.createElement("div", { className: "bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-3 border border-teal-200" },
+                    React.createElement("button", { onClick: function () { upd('showStereoInfo', !d.showStereoInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-teal-700" },
+                      React.createElement("span", null, "\uD83E\uDDE0 The Science of Stereograms"),
+                      React.createElement("span", null, d.showStereoInfo ? '\u25B2' : '\u25BC')
+                    ),
+                    d.showStereoInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
+                      React.createElement("p", null, "\uD83D\uDC40 ", React.createElement("strong", null, "Your eyes are ~6 cm apart"), ", so each sees the world from a slightly different angle. Your brain fuses these two views to perceive ", React.createElement("strong", null, "depth"), " \u2014 this is called ", React.createElement("strong", null, "stereopsis"), "."),
+                      React.createElement("p", null, "\uD83D\uDC53 ", React.createElement("strong", null, "Autostereograms"), " (Magic Eye\u2122 images) hide 3D shapes in a repeating pattern. The trick: where the hidden object is \u2018close,\u2019 the pattern repeats with a ", React.createElement("strong", null, "shorter period"), "; where it\u2019s \u2018far,\u2019 the period is longer. Your brain decodes these period differences as depth."),
+                      React.createElement("p", null, "\uD83D\uDCDA ", React.createElement("strong", null, "Magic Eye books"), " (1993\u201394) by Tom Baccei and Cheri Smith sold over 25 million copies worldwide. The underlying autostereogram technique was pioneered by Dr. Christopher Tyler in 1979."),
+                      React.createElement("p", null, "\uD83E\uDDE0 To see the image: hold your face close to the screen, relax your eyes as if looking \u2018through\u2019 the image at a distant wall, then slowly pull back. The 3D shape will \u2018pop\u2019 into view. This is called ", React.createElement("strong", null, "wall-eyed (parallel) viewing"), "."),
+                      React.createElement("p", null, "\u26A0 About ", React.createElement("strong", null, "5\u201310% of people"), " have difficulty seeing stereograms due to conditions like amblyopia (lazy eye), strabismus (crossed eyes), or other binocular vision differences. This is completely normal!")
+                    )
+                  )
+                ),
+                React.createElement("div", { className: "space-y-2" },
+                  React.createElement("p", { className: "text-xs font-bold text-teal-700" }, "\uD83D\uDC53 Stereogram Output"),
+                  React.createElement("p", { className: "text-[10px] text-slate-400 mb-1" }, "Relax your eyes and look \u2018through\u2019 the image to see 3D"),
+                  React.createElement("canvas", { id: 'stereoCanvas', width: 512, height: 512,
+                    key: 'stereo-' + (d.stereoGen || 0),
+                    className: "rounded-xl border-2 border-teal-200 shadow-lg block", style: { maxWidth: '100%', background: '#111' },
+                    ref: function (canvas) {
+                      if (!canvas) return;
+                      if (canvas._stereoInit) return;
+                      canvas._stereoInit = true;
+                      var ctx = canvas.getContext('2d');
+                      var W = canvas.width, H = canvas.height;
+                      var patternType = d.stereoPattern || 'bw';
+                      var patternWidth = typeof d.stereoDensity === 'number' ? d.stereoDensity : 100;
+                      var maxShift = typeof d.stereoStrength === 'number' ? d.stereoStrength : 15;
+                      var dmCanvas = document.getElementById('depthMapCanvas');
+                      if (!dmCanvas) {
+                        ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0, 0, W, H);
+                        ctx.fillStyle = '#444'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+                        ctx.fillText('Draw on the depth map, then click Generate', W/2, H/2);
+                        return;
+                      }
+                      var dmCtx = dmCanvas.getContext('2d');
+                      var dmData = dmCtx.getImageData(0, 0, dmCanvas.width, dmCanvas.height).data;
+                      var dmW = dmCanvas.width, dmH = dmCanvas.height;
+                      function makeRng(seed) {
+                        var s = seed; return function () { s = (s * 1664525 + 1013904223) & 0x7FFFFFFF; return s / 0x7FFFFFFF; };
+                      }
+                      var imgData = ctx.createImageData(W, H);
+                      var data = imgData.data;
+                      var rowsDone = 0;
+                      function renderChunk() {
+                        var endRow = Math.min(rowsDone + 32, H);
+                        for (var y = rowsDone; y < endRow; y++) {
+                          var rng = makeRng(y * 7919 + 12345);
+                          var row = new Uint8Array(W * 3);
+                          for (var x = 0; x < W; x++) {
+                            if (x < patternWidth) {
+                              if (patternType === 'bw') { var c = rng() > 0.5 ? 230 : 25; row[x*3] = c; row[x*3+1] = c; row[x*3+2] = c; }
+                              else if (patternType === 'color') { row[x*3] = Math.floor(rng()*200)+55; row[x*3+1] = Math.floor(rng()*200)+55; row[x*3+2] = Math.floor(rng()*200)+55; }
+                              else { var v = Math.floor(rng() * 220) + 20; row[x*3] = v; row[x*3+1] = v; row[x*3+2] = v; }
+                            } else {
+                              var dx = Math.floor(x * dmW / W), dy = Math.floor(y * dmH / H);
+                              var di = (dy * dmW + dx) * 4;
+                              var depth = dmData[di] / 255;
+                              var shift = Math.round(depth * maxShift);
+                              var srcX = x - patternWidth + shift;
+                              if (srcX >= 0) { row[x*3] = row[srcX*3]; row[x*3+1] = row[srcX*3+1]; row[x*3+2] = row[srcX*3+2]; }
+                              else {
+                                if (patternType === 'bw') { var c2 = rng() > 0.5 ? 230 : 25; row[x*3] = c2; row[x*3+1] = c2; row[x*3+2] = c2; }
+                                else if (patternType === 'color') { row[x*3] = Math.floor(rng()*200)+55; row[x*3+1] = Math.floor(rng()*200)+55; row[x*3+2] = Math.floor(rng()*200)+55; }
+                                else { var v2 = Math.floor(rng()*220)+20; row[x*3] = v2; row[x*3+1] = v2; row[x*3+2] = v2; }
+                              }
+                            }
+                          }
+                          for (var x2 = 0; x2 < W; x2++) {
+                            var idx = (y * W + x2) * 4;
+                            data[idx] = row[x2*3]; data[idx+1] = row[x2*3+1]; data[idx+2] = row[x2*3+2]; data[idx+3] = 255;
+                          }
+                        }
+                        ctx.putImageData(imgData, 0, 0, 0, rowsDone, W, endRow - rowsDone);
+                        rowsDone = endRow;
+                        if (rowsDone < H) canvas._stereoAnim = requestAnimationFrame(renderChunk);
+                      }
+                      renderChunk();
+                    }
+                  }),
+                  React.createElement("div", { className: "bg-amber-50 rounded-xl p-3 border border-amber-200 mt-2" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-amber-700 mb-1" }, "\uD83D\uDCA1 How to View"),
+                    React.createElement("ol", { className: "text-[10px] text-slate-600 leading-relaxed list-decimal ml-4 space-y-0.5" },
+                      React.createElement("li", null, "Hold your face close to the screen"),
+                      React.createElement("li", null, "Relax your eyes \u2014 try to look \u2018through\u2019 the image at a wall behind it"),
+                      React.createElement("li", null, "Slowly move back. A 3D shape will emerge!"),
+                      React.createElement("li", null, "Tip: the two guide dots above should appear as three when your eyes are set correctly")
+                    )
+                  )
                 )
               )
             ),
