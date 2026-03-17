@@ -66,4 +66,40 @@ contextBridge.exposeInMainWorld('alloAPI', {
     ipcRenderer.invoke('cluster:cleanup-dead-nodes', clusterId),
   removeNode: (clusterId, nodeId) =>
     ipcRenderer.invoke('cluster:remove-node', clusterId, nodeId),
+
+  // Package Builder API
+  buildPackage: (options) =>
+    ipcRenderer.invoke('builder:build-package', options),
+  isBuilding: () =>
+    ipcRenderer.invoke('builder:is-building'),
+  getAvailableBuilds: () =>
+    ipcRenderer.invoke('builder:get-available-builds'),
+  cleanBuilds: () =>
+    ipcRenderer.invoke('builder:clean-builds'),
+  getBuildLog: () =>
+    ipcRenderer.invoke('builder:get-build-log'),
+
+  // Builder progress events
+  onBuildProgress: (callback) =>
+    ipcRenderer.on('builder:progress', (event, data) => callback(data)),
+
+  // GPU Detection & Docker Setup API
+  detectGPU: () =>
+    ipcRenderer.invoke('setup:detect-gpu'),
+  setupDocker: () =>
+    ipcRenderer.invoke('docker-setup:run'),
+  startServices: () =>
+    ipcRenderer.invoke('docker:start-services'),
+  stopServices: () =>
+    ipcRenderer.invoke('docker:stop-services'),
+  
+  // GPU events
+  onGPUDetected: (callback) =>
+    ipcRenderer.on('docker:gpu-detected', (event, data) => callback(data)),
+  onDockerSetupComplete: (callback) =>
+    ipcRenderer.on('docker:setup-complete', (event, data) => callback(data)),
+  onServicesStarted: (callback) =>
+    ipcRenderer.on('docker:services-started', (event, data) => callback(data)),
+  onServicesStopped: (callback) =>
+    ipcRenderer.on('docker:services-stopped', (event, data) => callback(data)),
 });

@@ -1,0 +1,43 @@
+{
+  "name": "alloflow-client",
+  "version": "0.2.0",
+  "description": "AlloFlow minimal client for students and teachers",
+  "main": "main.js",
+  "homepage": "./",
+  "author": "AlloFlow Team",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "concurrently \"npm run react-start\" \"wait-on http://localhost:3000 && electron .\"",
+    "react-start": "react-scripts start",
+    "react-build": "react-scripts build",
+    "prebuild": "npm run react-build",
+    "build": "electron-builder --publish never",
+    "build:student": "npm run build -- --config.productName='AlloFlow Student' -c.extraMetadata.role=student",
+    "build:teacher": "npm run build -- --config.productName='AlloFlow Teacher' -c.extraMetadata.role=teacher",
+    "build:win": "electron-builder --win --publish never",
+    "build:mac": "electron-builder --mac --publish never"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.3",
+    "electron-log": "^5.4.3",
+    "axios": "^1.6.2"
+  },
+  "devDependencies": {
+    "electron": "^27.3.11",
+    "electron-builder": "^24.13.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "^5.0.1",
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.0.1"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not op_mini all"
+  ]
+}

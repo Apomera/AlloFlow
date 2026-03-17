@@ -9,6 +9,13 @@ const log = require('electron-log');
 // Clustering service - load as CommonJS
 const ClusteringService = require('./src/services/clusteringService.js');
 
+// Package builder service - load as CommonJS
+const ClientPackageBuilder = require('./src/services/packageBuilderService.js');
+
+// GPU Detection system - unified across all apps
+const { GPUDetector, detectGPU, generateEnvFile } = require('../gpu-detection.js');
+const { DockerGPUSetup } = require('./docker/docker-gpu-setup.js');
+
 // Configure logging for auto-updater
 log.transports.file.level = 'info';
 autoUpdater.logger = log;
@@ -25,6 +32,12 @@ let dockerProcess = null;
 // Auto-update state
 let updateAvailable = false;
 let updateDownloaded = false;
+
+// Package builder instance
+let packageBuilder = new ClientPackageBuilder(
+  path.join(__dirname, '../../client'),
+  path.join(__dirname, '..')
+);
 
 const createWindow = () => {
   mainWindow = new BrowserWindow({
@@ -250,40 +263,98 @@ ipcMain.handle('setup:install-docker', async (event) => {
 
 ipcMain.handle('setup:detect-gpu', async (event) => {
   try {
-    // Check for NVIDIA GPU
-    try {
-      await execAsync('nvidia-smi');
-      console.log('NVIDIA GPU detected');
-      return 'nvidia';
-    } catch (e) {
-      // NVIDIA not found, check AMD
-    }
+    // Use the unified GPU detection system
+    const gpu = detectGPU();
     
-    // Check for AMD GPU (ROCm)
-    try {
-      await execAsync('rocm-smi');
-      console.log('AMD GPU detected');
-      return 'amd';
-    } catch (e) {
-      // AMD not found
-    }
+    console.log(`GPU Detected: ${gpu.type} (${gpu.driver})`);
+    console.log(`Details: ${gpu.details}`);
     
-    // Check via system info (fallback for Windows/macOS)
-    const platform = process.platform;
-    if (platform === 'win32') {
-      const { stdout } = await execAsync('wmic path win32_VideoController get name');
-      if (stdout.toLowerCase().includes('nvidia')) return 'nvidia';
-      if (stdout.toLowerCase().includes('amd') || stdout.toLowerCase().includes('radeon')) return 'amd';
-    } else if (platform === 'darwin') {
-      const { stdout } = await execAsync('system_profiler SPDisplaysDataType');
-      if (stdout.toLowerCase().includes('amd') || stdout.toLowerCase().includes('radeon')) return 'amd';
-    }
-    
-    console.log('No GPU detected');
-    return null;
+    // Store in UI-friendly format
+    return {
+      type: gpu.type,
+      driver: gpu.driver,
+      model: gpu.model || 'Unknown',
+      vram: gpu.vram || 'Unknown',
+      supported: gpu.supported,
+      details: gpu.details,
+    };
   } catch (err) {
     console.error('GPU detection error:', err.message);
-    return null;
+    return {
+      type: 'CPU',
+      driver: 'none',
+      supported: false,
+      details: 'No GPU detected, will use CPU fallback',
+    };
+  }
+});
+
+ipcMain.handle('docker-setup:run', async (event) => {
+  try {
+    // Generate GPU-specific Docker configuration
+    const setup = new DockerGPUSetup();
+    setup.run();  // Generates docker-compose.override.yml + .env.gpu
+    
+    const gpu = detectGPU();
+    return {
+      success: true,
+      gpu: {
+        type: gpu.type,
+        driver: gpu.driver,
+        details: gpu.details,
+      },
+      message: `Docker configuration generated for ${gpu.type}. Ready to start services.`,
+    };
+  } catch (err) {
+    console.error('Docker setup error:', err.message);
+    return {
+      success: false,
+      error: err.message,
+    };
+  }
+});
+
+ipcMain.handle('docker:start-services', async (event) => {
+  try {
+    const dockerDir = path.join(__dirname, '../docker');
+    
+    // Start services using universal docker-compose + auto-generated overrides
+    const result = await execAsync(
+      'docker compose -f docker-compose.universal.yml up -d',
+      { cwd: dockerDir }
+    );
+    
+    console.log('Docker services started');
+    return {
+      success: true,
+      stdout: result.stdout,
+    };
+  } catch (err) {
+    console.error('Docker start error:', err.message);
+    return {
+      success: false,
+      error: err.message,
+    };
+  }
+});
+
+ipcMain.handle('docker:stop-services', async (event) => {
+  try {
+    const dockerDir = path.join(__dirname, '../docker');
+    
+    await execAsync(
+      'docker compose -f docker-compose.universal.yml down',
+      { cwd: dockerDir }
+    );
+    
+    console.log('Docker services stopped');
+    return { success: true };
+  } catch (err) {
+    console.error('Docker stop error:', err.message);
+    return {
+      success: false,
+      error: err.message,
+    };
   }
 });
 
@@ -661,6 +732,57 @@ ipcMain.handle('cluster:remove-node', async (event, clusterId, nodeId) => {
     log.error('Error removing node:', err);
     return { success: false, error: err.message };
   }
+});
+
+// ============================================================================
+// PACKAGE BUILDER IPC HANDLERS
+// ============================================================================
+
+ipcMain.handle('builder:build-package', async (event, options) => {
+  try {
+    mainWindow.webContents.on('message', (data) => {
+      event.sender.send('builder:progress', data);
+    });
+
+    const result = await packageBuilder.buildClientPackage({
+      ...options,
+      onProgress: (progress) => {
+        mainWindow.webContents.send('builder:progress', progress);
+      }
+    });
+
+    return { success: true, data: result };
+  } catch (err) {
+    log.error('Error building package:', err);
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('builder:is-building', () => {
+  return packageBuilder.isBuildInProgress();
+});
+
+ipcMain.handle('builder:get-available-builds', () => {
+  try {
+    return { success: true, data: packageBuilder.getAvailableBuilds() };
+  } catch (err) {
+    log.error('Error getting available builds:', err);
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('builder:clean-builds', () => {
+  try {
+    const result = packageBuilder.cleanBuilds();
+    return { success: true, data: result };
+  } catch (err) {
+    log.error('Error cleaning builds:', err);
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('builder:get-build-log', () => {
+  return packageBuilder.getBuildLog();
 });
 
 // ============================================================================
