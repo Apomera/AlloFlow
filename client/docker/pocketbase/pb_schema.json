@@ -1,0 +1,140 @@
+[
+  {
+    "name": "sessions",
+    "type": "base",
+    "schema": [
+      { "name": "app_id", "type": "text", "required": true },
+      { "name": "code", "type": "text", "required": true },
+      { "name": "mode", "type": "text" },
+      { "name": "content", "type": "json" },
+      { "name": "quizState", "type": "json" },
+      { "name": "escapeRoomState", "type": "json" },
+      { "name": "roster", "type": "json" },
+      { "name": "bridgePayload", "type": "json" },
+      { "name": "bridgeChat", "type": "json" },
+      { "name": "metadata", "type": "json" }
+    ],
+    "indexes": [
+      "CREATE INDEX idx_sessions_code ON sessions (code)",
+      "CREATE INDEX idx_sessions_app ON sessions (app_id)"
+    ]
+  },
+  {
+    "name": "teacher_history",
+    "type": "base",
+    "schema": [
+      { "name": "app_id", "type": "text", "required": true },
+      { "name": "user_id", "type": "text", "required": true },
+      { "name": "entries", "type": "json" }
+    ],
+    "indexes": [
+      "CREATE UNIQUE INDEX idx_th_user ON teacher_history (app_id, user_id)"
+    ]
+  },
+  {
+    "name": "session_assets",
+    "type": "base",
+    "schema": [
+      { "name": "app_id", "type": "text", "required": true },
+      { "name": "asset_id", "type": "text", "required": true },
+      { "name": "data", "type": "json" }
+    ],
+    "indexes": [
+      "CREATE INDEX idx_sa_app ON session_assets (app_id)"
+    ]
+  },
+  {
+    "name": "student_progress",
+    "type": "base",
+    "schema": [
+      { "name": "session_code", "type": "text", "required": true },
+      { "name": "student_id", "type": "text", "required": true },
+      { "name": "progress_data", "type": "json" }
+    ],
+    "indexes": [
+      "CREATE INDEX idx_sp_session ON student_progress (session_code)"
+    ]
+  },
+  {
+    "name": "images",
+    "type": "base",
+    "schema": [
+      { "name": "app_id", "type": "text" },
+      { "name": "prompt", "type": "text" },
+      { "name": "image_data", "type": "text" }
+    ],
+    "indexes": [
+      "CREATE INDEX idx_img_app ON images (app_id)"
+    ]
+  },
+  {
+    "name": "cluster_nodes",
+    "type": "base",
+    "schema": [
+      { "name": "node_id", "type": "text", "required": true },
+      { "name": "cluster_id", "type": "text", "required": true },
+      { "name": "ip_address", "type": "text", "required": true },
+      { "name": "port", "type": "number", "required": true },
+      { "name": "role", "type": "text", "required": true },
+      { "name": "status", "type": "text", "required": true },
+      { "name": "gpu_type", "type": "text" },
+      { "name": "gpu_count", "type": "number" },
+      { "name": "vram_gb", "type": "number" },
+      { "name": "cpu_cores", "type": "number" },
+      { "name": "memory_gb", "type": "number" },
+      { "name": "models_deployed", "type": "json" },
+      { "name": "last_heartbeat", "type": "text" },
+      { "name": "version", "type": "text" },
+      { "name": "metadata", "type": "json" }
+    ],
+    "indexes": [
+      "CREATE INDEX idx_cluster_nodes_cluster ON cluster_nodes (cluster_id)",
+      "CREATE INDEX idx_cluster_nodes_node ON cluster_nodes (node_id)",
+      "CREATE UNIQUE INDEX idx_cluster_nodes_unique ON cluster_nodes (cluster_id, node_id)",
+      "CREATE INDEX idx_cluster_nodes_status ON cluster_nodes (status)"
+    ]
+  },
+  {
+    "name": "cluster_tokens",
+    "type": "base",
+    "schema": [
+      { "name": "cluster_id", "type": "text", "required": true },
+      { "name": "token", "type": "text", "required": true },
+      { "name": "node_name", "type": "text", "required": true },
+      { "name": "role", "type": "text", "required": true },
+      { "name": "expires_at", "type": "text", "required": true },
+      { "name": "created_by", "type": "text" },
+      { "name": "used", "type": "bool", "required": true },
+      { "name": "used_at", "type": "text" },
+      { "name": "used_by_ip", "type": "text" },
+      { "name": "metadata", "type": "json" }
+    ],
+    "indexes": [
+      "CREATE INDEX idx_cluster_token_cluster ON cluster_tokens (cluster_id)",
+      "CREATE UNIQUE INDEX idx_cluster_token_value ON cluster_tokens (token)",
+      "CREATE INDEX idx_cluster_token_expires ON cluster_tokens (expires_at)"
+    ]
+  },
+  {
+    "name": "cluster_config",
+    "type": "base",
+    "schema": [
+      { "name": "cluster_id", "type": "text", "required": true },
+      { "name": "primary_ip", "type": "text", "required": true },
+      { "name": "primary_port", "type": "number", "required": true },
+      { "name": "load_balancer_strategy", "type": "text", "required": true },
+      { "name": "heartbeat_interval_seconds", "type": "number", "required": true },
+      { "name": "node_timeout_seconds", "type": "number", "required": true },
+      { "name": "max_retry_attempts", "type": "number", "required": true },
+      { "name": "enable_auto_failover", "type": "bool", "required": true },
+      { "name": "enable_auto_scaling", "type": "bool", "required": true },
+      { "name": "min_nodes", "type": "number" },
+      { "name": "max_nodes", "type": "number" },
+      { "name": "nginx_config", "type": "text" },
+      { "name": "metadata", "type": "json" }
+    ],
+    "indexes": [
+      "CREATE UNIQUE INDEX idx_cluster_config_id ON cluster_config (cluster_id)"
+    ]
+  }
+]

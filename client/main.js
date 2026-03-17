@@ -11,8 +11,8 @@ log.transports.file.level = 'info';
 autoUpdater.logger = log;
 
 // GPU Detection system - unified across all apps
-const { GPUDetector, detectGPU, generateEnvFile } = require('../gpu-detection.js');
-const { DockerGPUSetup } = require('../docker/docker-gpu-setup.js');
+const { GPUDetector, detectGPU, generateEnvFile } = require('./gpu-detection.js');
+const { DockerGPUSetup } = require('./docker/docker-gpu-setup.js');
 
 const execAsync = promisify(exec);
 
@@ -223,7 +223,7 @@ ipcMain.handle('docker-setup:run', async (event) => {
 
 ipcMain.handle('docker:start-services', async (event) => {
   try {
-    const dockerDir = path.join(__dirname, '..', 'docker');
+    const dockerDir = path.join(__dirname, './docker');
     const result = await execAsync(
       'docker compose -f docker-compose.universal.yml up -d',
       { cwd: dockerDir }
@@ -237,7 +237,7 @@ ipcMain.handle('docker:start-services', async (event) => {
 
 ipcMain.handle('docker:stop-services', async (event) => {
   try {
-    const dockerDir = path.join(__dirname, '..', 'docker');
+    const dockerDir = path.join(__dirname, './docker');
     const result = await execAsync(
       'docker compose -f docker-compose.universal.yml down',
       { cwd: dockerDir }

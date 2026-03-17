@@ -5,6 +5,9 @@ productName: "AlloFlow Admin"
 extraMetadata:
   main: "main.js"
 
+# Files to include in packaging
+# Service files in src/ are required by main.js via require()
+
 directories:
   buildResources: "assets"
   output: "dist"
@@ -27,6 +30,7 @@ directories:
 files:
   - "main.js"
   - "preload.js"
+  - "src/**/*"
   - "build/**/*"
   - "node_modules/**/*"
 

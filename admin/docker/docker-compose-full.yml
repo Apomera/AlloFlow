@@ -1,0 +1,272 @@
+# ══════════════════════════════════════════════════════════════════
+#  AlloFlow Homeschool — Full Local Deployment (100% Offline, Zero Cloud)
+#  
+#  Hardware Requirements:
+#    • NVIDIA GPU: 8GB+ VRAM (RTX 3060, RTX 4060 Ti, RTX 4080, A100, Jetson Orin, etc.)
+#    • System RAM: 16-32 GB (more is faster)
+#    • CPU: 6+ cores recommended (but works on older CPUs)
+#    • Storage: 200GB+ for models (Ollama + Flux models)
+#    • Always-on: PC, NAS, cloud GPU instance, or Jetson
+#
+#  Required Software:
+#    • Docker Desktop with NVIDIA Container Toolkit
+#      (See: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
+#
+#  Services:
+#    PocketBase (DB)    → port 8090   (database — LOCAL)
+#    Ollama (LLM)       → port 11434  (text generation — LOCAL, GPU)
+#    Flux (Image Gen)   → port 7860   (image generation — LOCAL, GPU)
+#    SearXNG (Search)   → port 8888   (web search — LOCAL, anonymous)
+#    Piper TTS (Speech) → port 10200  (text-to-speech — LOCAL, offline)
+#
+#  Key Features:
+#    ✅ 100% data privacy (never touches cloud)
+#    ✅ Works completely offline
+#    ✅ GPU-accelerated text + image generation
+#    ✅ Fast image generation (Flux.1-schnell)
+#    ✅ Anonymous web search
+#    ✅ Multiple voice TTS
+#
+#  Usage:
+#    docker compose -f docker-compose-full.yml up -d
+#    docker compose -f docker-compose-full.yml logs -f flux
+#    docker compose -f docker-compose-full.yml ps
+#
+#  First Run:
+#    1. Services start (~2-5 min for containers)
+#    2. Flux auto-pulls model on first image request (~20GB, ~15-30 min on fast internet)
+#    3. Parents launch Homeschool app and select "Full Local Mode"
+# ══════════════════════════════════════════════════════════════════
+
+version: "3.8"
+
+services:
+  # ── Local Database (PocketBase — data stays at home) ───────
+  pocketbase:
+    image: ghcr.io/muchobien/pocketbase:latest
+    container_name: alloflow-homeschool-full-pocketbase
+    ports:
+      - "127.0.0.1:8090:8090"
+    volumes:
+      - pocketbase_full_data:/pb/pb_data
+      - ./pocketbase/pb_migrations:/pb/pb_migrations
+    restart: unless-stopped
+    networks:
+      - homeschool-full-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/api/health"]
+      interval: 15s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    environment:
+      - POCKETBASE_INITIAL_USER_NAME=parent@homeschool.local
+      - POCKETBASE_INITIAL_USER_PASSWORD=changeme
+
+  # ── LLM Backend (GPU-accelerated Mistral via Ollama) ──────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: alloflow-homeschool-full-ollama
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama_full_data:/root/.ollama
+    networks:
+      - homeschool-full-backend
+    restart: unless-stopped
+    environment:
+      - OLLAMA_MODELS=/root/.ollama/models
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all  # Use all available GPUs
+              capabilities: [gpu]
+
+  # ── Image Generation (Flux.1-schnell) — GPU REQUIRED ───────
+  flux:
+    build:
+      context: ./flux-server
+      dockerfile: Dockerfile
+    container_name: alloflow-homeschool-full-flux
+    ports:
+      - "127.0.0.1:7860:7860"
+    networks:
+      - homeschool-full-backend
+    environment:
+      - FLUX_MODEL=black-forest-labs/FLUX.1-schnell
+      - PORT=7860
+      - MAX_IMAGE_SIZE=1024
+      - HF_HOME=/models
+      # For slower GPUs, use smaller model:
+      # - FLUX_MODEL=black-forest-labs/FLUX.1-snapshots
+    volumes:
+      - flux_full_models:/models
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 120s
+      retries: 3
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1  # Flux needs dedicated GPU (or share with Ollama)
+              capabilities: [gpu]
+
+  # ── Text-to-Speech (Piper — offline, 40+ languages) ────────
+  piper:
+    image: rhasspy/wyoming-piper:latest
+    container_name: alloflow-homeschool-full-piper
+    ports:
+      - "127.0.0.1:10200:10200"
+    volumes:
+      - piper_full_data:/data
+    networks:
+      - homeschool-full-backend
+    command: >
+      --voice en_US-amy-medium
+      --data-dir /data
+      --download-dir /data
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10200/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+
+  # ── Web Search (SearXNG — privacy-first, no tracking) ──────
+  searxng:
+    image: searxng/searxng:latest
+    container_name: alloflow-homeschool-full-searxng
+    ports:
+      - "127.0.0.1:8888:8080"
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8888
+      - SEARXNG_SECRET_KEY=ChangeMeToARandomString_Min32Chars!
+    volumes:
+      - searxng_full_data:/etc/searxng
+    networks:
+      - homeschool-full-backend
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+
+volumes:
+  pocketbase_full_data:
+    driver: local
+  ollama_full_data:
+    driver: local
+  flux_full_models:
+    driver: local
+  piper_full_data:
+    driver: local
+  searxng_full_data:
+    driver: local
+
+networks:
+  homeschool-full-network:
+    driver: bridge
+  homeschool-full-backend:
+    driver: bridge
+    internal: false
+
+# ══════════════════════════════════════════════════════════════════
+# Setup Instructions:
+# 
+# 1. Install NVIDIA Container Toolkit (required for GPU):
+#    https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html
+#
+# 2. Verify GPU detection:
+#    docker run --rm --gpus all ubuntu nvidia-smi
+#    (Should show your GPU info)
+#
+# 3. Place this file in: ~/AlloFlow/docker/docker-compose-full.yml
+#
+# 4. Start all services:
+#    cd ~/AlloFlow/docker
+#    docker compose -f docker-compose-full.yml up -d
+#
+# 5. Verify all services running and GPU detected:
+#    docker compose -f docker-compose-full.yml ps
+#    docker logs alloflow-homeschool-full-flux | grep -i gpu
+#
+# 6. First model downloads (happens automatically):
+#    • Flux model: ~20GB (15-30 min on fast internet)
+#    • Ollama Mistral: ~4GB (5-10 min)
+#    Watch progress: docker logs -f alloflow-homeschool-full-flux
+#
+# 7. In AlloFlow Homeschool app:
+#    Settings → Server & Sync → Select "Full Local Mode"
+#    (App auto-detects all services on localhost)
+#
+# 8. To stop services:
+#    docker compose -f docker-compose-full.yml down
+#
+# 9. To backup data:
+#    docker compose -f docker-compose-full.yml exec pocketbase tar czf backup.tar.gz pb_data/
+#    docker cp alloflow-homeschool-full-pocketbase:/pb/backup.tar.gz ~/backup.tar.gz
+#
+# 10. For slower GPUs (RTX 3060, Jetson):
+#    Uncomment alternate FLUX_MODEL line above
+#    Flux generates images slightly slower but uses less VRAM
+#
+# ══════════════════════════════════════════════════════════════════
+
+# GPU Hardware Requirements:
+#
+# Minimum (8GB VRAM):
+#   - RTX 3060 (8GB) — $250-350
+#   - RTX 4060 Ti (8GB) — $300-400
+#   - A40 (48GB, overkill) — Used $1500+
+#
+# Recommended (12GB+ VRAM):
+#   - RTX 4080 (16GB) — $1100-1300
+#   - RTX 6000 Ada (48GB) — Enterprise (~$5000+)
+#   - NVIDIA Jetson AGX Orin (12GB) — $699 + power/cooling
+#
+# Budget Option:
+#   - Rent GPU on Vast.ai: $0.20-1.00/hour (~$5/month for casual use)
+#   - Used RTX 3080 (10GB): $400-600 on eBay
+#
+# ══════════════════════════════════════════════════════════════════

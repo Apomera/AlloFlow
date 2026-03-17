@@ -1,0 +1,19 @@
+# SearXNG settings for AlloFlow
+# Enables JSON API for programmatic access from local AI backends
+
+use_default_settings: true
+
+server:
+  secret_key: "${SEARXNG_SECRET_KEY}"
+  limiter: false
+
+search:
+  safe_search: 2
+  autocomplete: ""
+  default_lang: "en"
+  formats:
+    - html
+    - json
+
+ui:
+  static_use_hash: true

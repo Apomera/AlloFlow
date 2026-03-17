@@ -13,7 +13,7 @@ const ClusteringService = require('./src/services/clusteringService.js');
 const ClientPackageBuilder = require('./src/services/packageBuilderService.js');
 
 // GPU Detection system - unified across all apps
-const { GPUDetector, detectGPU, generateEnvFile } = require('../gpu-detection.js');
+const { GPUDetector, detectGPU, generateEnvFile } = require('./gpu-detection.js');
 const { DockerGPUSetup } = require('./docker/docker-gpu-setup.js');
 
 // Configure logging for auto-updater
@@ -316,7 +316,7 @@ ipcMain.handle('docker-setup:run', async (event) => {
 
 ipcMain.handle('docker:start-services', async (event) => {
   try {
-    const dockerDir = path.join(__dirname, '../docker');
+    const dockerDir = path.join(__dirname, './docker');
     
     // Start services using universal docker-compose + auto-generated overrides
     const result = await execAsync(
@@ -340,7 +340,7 @@ ipcMain.handle('docker:start-services', async (event) => {
 
 ipcMain.handle('docker:stop-services', async (event) => {
   try {
-    const dockerDir = path.join(__dirname, '../docker');
+    const dockerDir = path.join(__dirname, './docker');
     
     await execAsync(
       'docker compose -f docker-compose.universal.yml down',
