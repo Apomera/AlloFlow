@@ -5801,6 +5801,9 @@
             var ccDashQ = stemState.ccDashQ != null ? stemState.ccDashQ : 0;
             var ccDashAnswer = stemState.ccDashAnswer;
             var ccDashFb = stemState.ccDashFb;
+            var ccSelOil = stemState.ccSelOil; // selected oil grade for detail panel
+            var ccSelMaint = stemState.ccSelMaint; // selected maintenance item for DIY tips
+            var ccCarTab = stemState.ccCarTab || 'oil'; // car care sub-section nav
 
             // Oil viscosity data
             var oilGrades = [
@@ -5872,6 +5875,7 @@
             var plumbPipeQ = stemState.plumbPipeQ != null ? stemState.plumbPipeQ : 0;
             var plumbPipeFb = stemState.plumbPipeFb;
             var plumbPipeAnswer = stemState.plumbPipeAnswer;
+            var plumbSelPart = stemState.plumbSelPart; // clicked toilet part for expand detail
             var whType = stemState.whType || 'tank';
             var whGallons = stemState.whGallons || 50;
             var whPeople = stemState.whPeople || 3;
@@ -5936,6 +5940,122 @@
             var homeTab = stemState.homeTab || 'hvac';
             var hsMerv = stemState.hsMerv || 8;
             var hsPsi = stemState.hsPsi || 55;
+            var hsSelPanel = stemState.hsSelPanel; // selected panel item for expand
+            var hsPanelQ = stemState.hsPanelQ != null ? stemState.hsPanelQ : 0;
+            var hsPanelFb = stemState.hsPanelFb;
+            var hsPanelAnswer = stemState.hsPanelAnswer;
+
+            // ────── WATER QUALITY (Plumbing tab) ──────
+            var wqHardness = stemState.wqHardness || 10; // grains per gallon
+            var wqHardLabel = wqHardness < 1 ? 'Soft' : wqHardness < 3.5 ? 'Slightly Hard' : wqHardness < 7 ? 'Moderately Hard' : wqHardness < 10.5 ? 'Hard' : wqHardness < 15 ? 'Very Hard' : 'Extremely Hard';
+            var wqHardColor = wqHardness < 3.5 ? 'emerald' : wqHardness < 7 ? 'sky' : wqHardness < 10.5 ? 'amber' : 'red';
+            var wqEffects = [];
+            if (wqHardness < 3.5) wqEffects.push('Soap lathers easily', 'No mineral buildup', 'Appliances last longer');
+            else if (wqHardness < 7) wqEffects.push('Minor soap scum', 'Slight scale in kettles', 'Generally manageable');
+            else if (wqHardness < 10.5) wqEffects.push('Noticeable soap scum on fixtures', 'Scale builds in water heater (reduces efficiency)', 'Laundry feels stiff');
+            else wqEffects.push('Heavy mineral deposits on everything', 'Water heater efficiency drops 25-40%', 'Pipes can clog with scale over time', 'Skin and hair feel dry/itchy after showering');
+            var wqScaleRate = Math.round(wqHardness * 0.8 * 10) / 10; // lbs/year in water heater
+            var wqSofteners = [
+              { name: 'Ion-Exchange (Salt)', cost: '$400-800', annual: '$100-200/yr salt', removes: 'Calcium, Magnesium', pros: 'Most effective. Truly removes minerals.', cons: 'Adds sodium to water. Needs salt refills. Drain water high in sodium.', icon: '\uD83E\uDDC2' },
+              { name: 'Salt-Free Conditioner', cost: '$300-600', annual: '$0/yr', removes: 'Does NOT remove minerals', pros: 'No salt, no maintenance, no waste water.', cons: 'Doesn\'t actually soften — prevents scale only. Hard water still causes soap issues.', icon: '\uD83D\uDCA7' },
+              { name: 'Reverse Osmosis', cost: '$200-500', annual: '$50-100/yr filters', removes: 'Everything: minerals, chemicals, bacteria', pros: 'Purest water possible. Great for drinking.', cons: 'Wastes 3-4 gallons per 1 gallon produced. Only practical for drinking water, not whole-house.', icon: '\uD83E\uDDEB' },
+              { name: 'Magnetic/Electronic', cost: '$30-200', annual: '$5/yr electricity', removes: 'Disputed effectiveness', pros: 'Cheapest. No maintenance. Easy install.', cons: 'Scientific evidence is weak. Most plumbers don\'t recommend. May reduce scale slightly.', icon: '\uD83E\uDDF2' }
+            ];
+
+            // ────── WATER USAGE (Plumbing tab) ──────
+            var wuShowerMin = stemState.wuShowerMin || 8;
+            var wuShowers = stemState.wuShowers || 1;
+            var wuFlushes = stemState.wuFlushes || 5;
+            var wuLowFlow = stemState.wuLowFlow || false;
+            var wuDishwasher = stemState.wuDishwasher || 0;
+            var wuLaundry = stemState.wuLaundry || 0;
+            var wuFaucetMin = stemState.wuFaucetMin || 10;
+            var showerGPM = wuLowFlow ? 1.5 : 2.5;
+            var toiletGPF = wuLowFlow ? 1.28 : 3.5;
+            var wuShowerGal = Math.round(wuShowerMin * showerGPM * wuShowers * 10) / 10;
+            var wuToiletGal = Math.round(wuFlushes * toiletGPF * 10) / 10;
+            var wuDishGal = wuDishwasher * (wuLowFlow ? 4 : 6);
+            var wuLaundryGal = wuLaundry * (wuLowFlow ? 15 : 40);
+            var wuFaucetGal = Math.round(wuFaucetMin * (wuLowFlow ? 1.0 : 2.2) * 10) / 10;
+            var wuTotalGal = Math.round((wuShowerGal + wuToiletGal + wuDishGal + wuLaundryGal + wuFaucetGal) * 10) / 10;
+            var wuMonthlyGal = Math.round(wuTotalGal * 30);
+            var wuCostPerGal = 0.005; // ~$5 per 1000 gallons
+            var wuMonthlyCost = Math.round(wuMonthlyGal * wuCostPerGal * 100) / 100;
+            var wuNatAvg = 82; // gallons per person per day
+
+            // ────── ENERGY AUDIT (Home Systems tab) ──────
+            var eaAppliances = [
+              { name: 'Central A/C', watts: 3500, icon: '\u2744\uFE0F', defaultHrs: 8, category: 'hvac', tip: 'Every degree you raise the thermostat saves ~3% on cooling costs.' },
+              { name: 'Furnace Blower', watts: 500, icon: '\uD83D\uDD25', defaultHrs: 8, category: 'hvac', tip: 'Change filters monthly — dirty filters make the blower work harder.' },
+              { name: 'Refrigerator', watts: 150, icon: '\uD83E\uDDCA', defaultHrs: 24, category: 'kitchen', tip: 'Runs 24/7. A 10-year-old fridge uses 2x the energy of a new Energy Star model.' },
+              { name: 'Dishwasher', watts: 1800, icon: '\uD83E\uDD7D', defaultHrs: 1, category: 'kitchen', tip: 'Run only when full. Skip heated dry — open the door instead.' },
+              { name: 'Oven/Range', watts: 2500, icon: '\uD83C\uDF73', defaultHrs: 1, category: 'kitchen', tip: 'Microwaves use 80% less energy for reheating than a full oven.' },
+              { name: 'Clothes Dryer', watts: 3000, icon: '\uD83E\uDDFA', defaultHrs: 1, category: 'laundry', tip: 'Clean the lint trap every load. A clogged dryer uses 30% more energy.' },
+              { name: 'Washing Machine', watts: 500, icon: '\uD83E\uDDFC', defaultHrs: 1, category: 'laundry', tip: 'Wash in cold water — 90% of a washer\'s energy goes to heating water.' },
+              { name: 'TV (55" LED)', watts: 100, icon: '\uD83D\uDCFA', defaultHrs: 5, category: 'entertainment', tip: 'A 55" LED uses 1/3 the energy of an equivalent plasma TV.' },
+              { name: 'Gaming Console', watts: 200, icon: '\uD83C\uDFAE', defaultHrs: 3, category: 'entertainment', tip: 'Enable auto-sleep. Consoles in standby still draw 5-10W.' },
+              { name: 'Desktop Computer', watts: 300, icon: '\uD83D\uDCBB', defaultHrs: 6, category: 'office', tip: 'Use sleep mode. A sleeping PC uses ~5W vs 300W active.' },
+              { name: 'LED Lights (10 bulbs)', watts: 100, icon: '\uD83D\uDCA1', defaultHrs: 6, category: 'lighting', tip: 'LEDs use 75% less energy than incandescent. One LED bulb saves ~$7/yr.' },
+              { name: 'Water Heater (elec)', watts: 4500, icon: '\uD83D\uDEB4', defaultHrs: 3, category: 'water', tip: 'Set to 120°F, not 140°F. Each 10° reduction saves 3-5% energy.' },
+              { name: 'Phone Charger', watts: 5, icon: '\uD83D\uDCF1', defaultHrs: 8, category: 'phantom', tip: 'Phantom load: chargers plugged in with no phone still draw ~0.5W.' },
+              { name: 'Cable Box/DVR', watts: 35, icon: '\uD83D\uDCE1', defaultHrs: 24, category: 'phantom', tip: 'DVRs use almost as much power OFF as ON. Consider a smart power strip.' }
+            ];
+            var eaHrs = stemState.eaHrs || {};
+            var eaEnabled = stemState.eaEnabled || {};
+            var eaCostPerKwh = stemState.eaCostPerKwh || 0.13; // $/kWh national avg
+            var eaItems = eaAppliances.map(function (a) {
+              var hrs = eaHrs[a.name] != null ? eaHrs[a.name] : a.defaultHrs;
+              var on = eaEnabled[a.name] !== false;
+              var dailyKwh = on ? (a.watts * hrs / 1000) : 0;
+              var monthlyCost = Math.round(dailyKwh * 30 * eaCostPerKwh * 100) / 100;
+              return { name: a.name, watts: a.watts, icon: a.icon, hours: hrs, on: on, dailyKwh: Math.round(dailyKwh * 100) / 100, monthlyCost: monthlyCost, tip: a.tip, category: a.category };
+            });
+            var eaTotalDaily = Math.round(eaItems.reduce(function (s, i) { return s + i.dailyKwh; }, 0) * 100) / 100;
+            var eaTotalMonthly = Math.round(eaTotalDaily * 30 * eaCostPerKwh * 100) / 100;
+            var eaTop3 = eaItems.slice().sort(function (a, b) { return b.monthlyCost - a.monthlyCost; }).slice(0, 3);
+
+            // ────── FIRE SAFETY (Home Systems tab) ──────
+            var fsFloors = stemState.fsFloors || 2;
+            var fsBedrooms = stemState.fsBedrooms || 3;
+            var fsHasGarage = stemState.fsHasGarage !== false;
+            var fsHasBasement = stemState.fsHasBasement || false;
+            var fsQuizQ = stemState.fsQuizQ != null ? stemState.fsQuizQ : 0;
+            var fsQuizFb = stemState.fsQuizFb;
+            var fsQuizAnswer = stemState.fsQuizAnswer;
+            var fsDetectorsNeeded = fsBedrooms + fsFloors + (fsHasGarage ? 1 : 0) + (fsHasBasement ? 1 : 0) + 1; // bedrooms + hallways per floor + garage + basement + kitchen-adjacent
+            var fsCONeeded = fsFloors + (fsHasGarage ? 1 : 0) + (fsHasBasement ? 1 : 0);
+            var fsQuizzes = [
+              { q: 'Where should you place a smoke detector in relation to the kitchen?', answer: '10+ feet away from cooking appliances', explain: 'Too close causes false alarms from cooking smoke. 10 feet minimum. Use a photoelectric detector near kitchens — they\'re less sensitive to cooking particles.', choices: ['Inside the kitchen', '10+ feet away from cooking appliances', 'Only in the hallway upstairs', 'In the garage'] },
+              { q: 'A smoke detector is chirping every 30 seconds. What does this usually mean?', answer: 'Battery needs replacing', explain: 'A regular chirp = low battery. Continuous alarm = actual smoke/fire. Replace batteries annually, or get 10-year sealed lithium models.', choices: ['There is a fire', 'Battery needs replacing', 'The unit is broken', 'Carbon monoxide detected'] },
+              { q: 'What type of smoke detector is better for detecting slow, smoldering fires?', answer: 'Photoelectric', explain: 'Photoelectric detectors use light beams — better for smoldering fires (upholstery, wiring). Ionization detectors respond faster to flaming fires. Best practice: use BOTH or dual-sensor models.', choices: ['Ionization', 'Photoelectric', 'Carbon monoxide', 'Heat detector'] },
+              { q: 'How often should smoke detectors be fully replaced?', answer: 'Every 10 years', explain: 'Smoke detectors have radioactive elements (Americium-241 in ionization types) or optical sensors that degrade. After 10 years, reliability drops significantly. Check the manufacture date on the back.', choices: ['Every 2 years', 'Every 5 years', 'Every 10 years', 'Only when they stop working'] },
+              { q: 'Where should CO (carbon monoxide) detectors be placed?', answer: 'On every floor, near sleeping areas', explain: 'CO is slightly lighter than air and mixes evenly. Place on every level, within 15 feet of sleeping areas. CO is odorless and colorless — the detector is your only warning.', choices: ['Only in the basement', 'In the kitchen', 'On every floor, near sleeping areas', 'Only near the furnace'] }
+            ];
+            var fsCurrentQ = fsQuizzes[fsQuizQ % fsQuizzes.length];
+
+            // ────── INSULATION R-VALUE (Home Systems tab) ──────
+            var insZone = stemState.insZone || 4; // climate zones 1-7
+            var insWallType = stemState.insWallType || 'wood';
+            var insZoneData = [
+              { zone: 1, label: 'Hot-Humid (Miami, Hawaii)', atticR: 30, wallR: 13, floorR: 0, color: '#ef4444' },
+              { zone: 2, label: 'Hot-Dry (Phoenix, Houston)', atticR: 38, wallR: 13, floorR: 13, color: '#f97316' },
+              { zone: 3, label: 'Warm (Atlanta, Dallas)', atticR: 38, wallR: 13, floorR: 19, color: '#eab308' },
+              { zone: 4, label: 'Mixed (DC, Seattle, Nashville)', atticR: 49, wallR: 13, floorR: 19, color: '#22c55e' },
+              { zone: 5, label: 'Cool (Chicago, Denver, Boston)', atticR: 49, wallR: 20, floorR: 25, color: '#3b82f6' },
+              { zone: 6, label: 'Cold (Minneapolis, Burlington)', atticR: 60, wallR: 20, floorR: 25, color: '#6366f1' },
+              { zone: 7, label: 'Very Cold (Fairbanks, Duluth)', atticR: 60, wallR: 21, floorR: 30, color: '#8b5cf6' }
+            ];
+            var insCurrentZone = insZoneData.find(function (z) { return z.zone === insZone; }) || insZoneData[3];
+            var insTypes = [
+              { name: 'Fiberglass Batts', rPerInch: 3.2, cost: 0.50, pros: 'Cheapest, easy DIY install', cons: 'Loses R-value if compressed or wet', icon: '\uD83E\uDDF6' },
+              { name: 'Blown Cellulose', rPerInch: 3.5, cost: 0.80, pros: 'Great for retrofitting attics, fills gaps', cons: 'Can settle over time, needs dry environment', icon: '\uD83C\uDF43' },
+              { name: 'Spray Foam (Open)', rPerInch: 3.7, cost: 1.50, pros: 'Air-seals and insulates in one step', cons: 'Professional install required, more expensive', icon: '\uD83E\uDEE7' },
+              { name: 'Spray Foam (Closed)', rPerInch: 6.5, cost: 2.50, pros: 'Highest R/inch, moisture barrier, structural', cons: 'Most expensive, pro install only', icon: '\uD83E\uDDF1' },
+              { name: 'Rigid Foam Board', rPerInch: 5.0, cost: 1.20, pros: 'Great for basements and exterior walls', cons: 'Must be covered (fire code), not flexible', icon: '\uD83D\uDFE6' }
+            ];
+            var insThicknessNeeded = insTypes.map(function (t) {
+              return { name: t.name, icon: t.icon, atticInches: Math.round(insCurrentZone.atticR / t.rPerInch * 10) / 10, wallInches: Math.round(insCurrentZone.wallR / t.rPerInch * 10) / 10, costPerSqFt: t.cost, rPerInch: t.rPerInch };
+            });
 
             // MERV rating data
             var mervData = [
@@ -5971,6 +6091,16 @@
               { name: 'Tandem Breaker', amps: '2x15A or 2x20A', desc: 'Two breakers in one slot. Used when the panel is full. Not all panels support these.', icon: '\u26AB', category: 'special' }
             ];
 
+            // Electrical panel quiz scenarios
+            var panelQuizzes = [
+              { q: 'You\'re installing a bathroom outlet near the sink. What type of breaker is REQUIRED?', answer: 'GFCI Breaker', explain: 'GFCI breakers are required in all wet areas: bathrooms, kitchens, garages, and outdoors. They detect current leaks and trip in milliseconds to prevent shock.', choices: ['Standard 15A', 'GFCI Breaker', 'AFCI Breaker', 'Tandem Breaker'] },
+              { q: 'Your clothes dryer needs its own circuit. What voltage and breaker type does it require?', answer: 'Double-Pole (30A)', explain: 'Clothes dryers need 240V power, which requires a double-pole 30A breaker using TWO slots.', choices: ['Standard 15A', 'Standard 20A', 'Double-Pole (30A)', 'GFCI Breaker'] },
+              { q: 'A bedroom circuit keeps tripping. The breaker has a purple TEST button. What type is it?', answer: 'AFCI Breaker', explain: 'AFCI breakers detect dangerous electrical arcs from damaged wires. Required in bedrooms since 2002.', choices: ['Standard 15A', 'GFCI Breaker', 'AFCI Breaker', 'Main Breaker'] },
+              { q: 'You want to install an EV charger (Level 2). What breaker size do you need?', answer: 'Double-Pole (50A)', explain: 'Level 2 EV chargers need a 50A/240V circuit with heavy 6-gauge wiring and a double-pole breaker.', choices: ['Standard 20A', 'Double-Pole (30A)', 'Double-Pole (50A)', 'Tandem Breaker'] },
+              { q: 'Your panel is completely full but you need one more circuit. What can help?', answer: 'Tandem Breaker', explain: 'Tandem breakers fit two circuits into one slot. Not all panels support them - check for CTL limitations.', choices: ['Double-Pole (30A)', 'Main Breaker', 'Tandem Breaker', 'GFCI Breaker'] },
+              { q: 'There\'s a burning smell from behind the panel. What should you do FIRST?', answer: 'Main Breaker', explain: 'TURN OFF THE MAIN BREAKER immediately! A burning smell means overheating. Then call an electrician.', choices: ['Standard 15A', 'GFCI Breaker', 'Main Breaker', 'Tandem Breaker'] }
+            ];
+            var panelCurrentQ = panelQuizzes[hsPanelQ % panelQuizzes.length];
 
             // â•â•â•â•â•â•â•â•â•â•â•â•â•â• RENDER â•â•â•â•â•â•â•â•â•â•â•â•â•â•
             return React.createElement("div", { className: "max-w-4xl mx-auto space-y-4" },
@@ -6665,7 +6795,7 @@
                   ),
                   // Plumbing sub-nav
                   React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
-                    [{ id: 'toilet', label: '\uD83D\uDEBD Toilet' }, { id: 'pipe', label: '\uD83E\uDEA0 Pipes' }, { id: 'heater', label: '\uD83D\uDD25 Water Heater' }, { id: 'paint', label: '\uD83C\uDFA8 Paint Calc' }].map(function (s) {
+                    [{ id: 'toilet', label: '\uD83D\uDEBD Toilet' }, { id: 'pipe', label: '\uD83E\uDEA0 Pipes' }, { id: 'heater', label: '\uD83D\uDD25 Water Heater' }, { id: 'paint', label: '\uD83C\uDFA8 Paint' }, { id: 'quality', label: '\uD83E\uDDEB Water Quality' }, { id: 'usage', label: '\uD83D\uDCA7 Daily Usage' }].map(function (s) {
                       return React.createElement("button", { key: s.id, onClick: function () { upd('plumbTab', s.id); },
                         className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (plumbTab === s.id ? 'bg-sky-500 text-white' : 'bg-white text-sky-600 border border-sky-200 hover:bg-sky-50')
                       }, s.label);
@@ -6676,15 +6806,27 @@
                     React.createElement("h4", { className: "text-xs font-bold text-sky-700 uppercase" }, "\uD83D\uDEBD How a Toilet Works"),
                     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" },
                       toiletParts.map(function (p) {
-                        return React.createElement("div", { key: p.name, className: "flex items-start gap-2 p-3 bg-white rounded-xl border border-slate-200" },
+                        var isSel = plumbSelPart === p.name;
+                        return React.createElement("button", { key: p.name, onClick: function () { upd('plumbSelPart', isSel ? null : p.name); },
+                          className: "flex items-start gap-2 p-3 rounded-xl border-2 text-left transition-all " + (isSel ? 'bg-sky-50 border-sky-400 shadow-md' : 'bg-white border-slate-200 hover:border-sky-300 hover:bg-sky-50/50') },
                           React.createElement("span", { className: "text-lg" }, p.icon),
                           React.createElement("div", null,
-                            React.createElement("p", { className: "text-xs font-bold text-slate-700" }, p.name),
-                            React.createElement("p", { className: "text-[10px] text-slate-500" }, p.desc)
+                            React.createElement("p", { className: "text-xs font-bold " + (isSel ? 'text-sky-700' : 'text-slate-700') }, p.name),
+                            React.createElement("p", { className: "text-[10px] " + (isSel ? 'text-sky-600' : 'text-slate-500') }, p.desc),
+                            isSel && React.createElement("p", { className: "text-[10px] text-sky-500 font-bold mt-1 italic" }, "\uD83D\uDCA1 Tip: " + (
+                              p.name === 'Fill Valve' ? 'If water keeps running, this is usually the culprit. ~$8 fix.' :
+                              p.name === 'Flapper' ? 'Most common leak cause. Add food coloring to tank — if bowl turns color, replace flapper (~$5).' :
+                              p.name === 'Float' ? 'Adjust the float to set water level about 1 inch below overflow tube.' :
+                              p.name === 'Flush Valve' ? 'Check the seal where it meets the tank. Worn seals cause slow leaks.' :
+                              p.name === 'Wax Ring' ? 'If toilet rocks or smells, the wax ring likely needs replacing. ~$10 part but messy job.' :
+                              p.name === 'Supply Line' ? 'Replace braided steel lines every 5-8 years. Burst supply lines cause major water damage.' :
+                              'Regular inspection prevents costly repairs.'
+                            ))
                           )
                         );
                       })
                     ),
+
                     // Diagnosis Quiz
                     React.createElement("div", { className: "bg-sky-50 rounded-xl p-4 border border-sky-200" },
                       React.createElement("p", { className: "text-xs font-bold text-sky-700 mb-2" }, "\uD83D\uDD0D Diagnose the Problem:"),
@@ -6835,6 +6977,168 @@
                         React.createElement("p", { className: "text-sm font-black text-emerald-600" }, "$" + paintCostBudget + " \u2013 $" + paintCostPremium)
                       )
                     )
+                  ),
+                  // Water Quality / Hardness Guide
+                  plumbTab === 'quality' && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("h4", { className: "text-xs font-bold text-sky-700 uppercase" }, "\uD83E\uDDEB Water Quality & Hardness Guide"),
+                    React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, "Water hardness is measured in GPG (Grains Per Gallon). Hard water contains dissolved calcium and magnesium from rock."),
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "Water Hardness: " + wqHardness + " GPG \u2014 " + wqHardLabel),
+                      React.createElement("input", { type: "range", min: 0, max: 25, step: 0.5, value: wqHardness, onChange: function (e) { upd('wqHardness', parseFloat(e.target.value)); },
+                        className: "w-full h-2 bg-gradient-to-r from-emerald-200 via-amber-200 to-red-300 rounded-full appearance-none cursor-pointer mt-1" })
+                    ),
+                    // Hardness gauge SVG
+                    React.createElement("div", { className: "flex justify-center mb-2" },
+                      React.createElement("svg", { width: 220, height: 130, viewBox: "0 0 220 130" },
+                        // background arcs
+                        [{ start: 0, end: 14, color: '#10b981' }, { start: 14, end: 28, color: '#38bdf8' }, { start: 28, end: 42, color: '#f59e0b' }, { start: 42, end: 56, color: '#ef4444' }].map(function (seg, idx) {
+                          var r = 90; var cx = 110; var cy = 110;
+                          var a1 = Math.PI + (seg.start / 56) * Math.PI;
+                          var a2 = Math.PI + (seg.end / 56) * Math.PI;
+                          var x1 = cx + r * Math.cos(a1); var y1 = cy + r * Math.sin(a1);
+                          var x2 = cx + r * Math.cos(a2); var y2 = cy + r * Math.sin(a2);
+                          return React.createElement("path", { key: idx, d: "M " + x1 + " " + y1 + " A " + r + " " + r + " 0 0 1 " + x2 + " " + y2, stroke: seg.color, strokeWidth: 16, fill: "none", strokeLinecap: "round", opacity: 0.3 });
+                        }),
+                        // needle
+                        (function () {
+                          var angle = Math.PI + Math.min(wqHardness / 25, 1) * Math.PI;
+                          var nx = 110 + 70 * Math.cos(angle); var ny = 110 + 70 * Math.sin(angle);
+                          return React.createElement("line", { x1: 110, y1: 110, x2: nx, y2: ny, stroke: "#1e293b", strokeWidth: 3, strokeLinecap: "round", style: { transition: 'all 0.5s ease' } });
+                        })(),
+                        React.createElement("circle", { cx: 110, cy: 110, r: 5, fill: "#1e293b" }),
+                        React.createElement("text", { x: 110, y: 95, textAnchor: "middle", fontSize: 16, fontWeight: 900, fill: wqHardColor === 'emerald' ? '#059669' : wqHardColor === 'sky' ? '#0284c7' : wqHardColor === 'amber' ? '#d97706' : '#dc2626' }, wqHardness + " GPG"),
+                        React.createElement("text", { x: 110, y: 80, textAnchor: "middle", fontSize: 10, fontWeight: 700, fill: "#64748b" }, wqHardLabel)
+                      )
+                    ),
+                    // Effects
+                    React.createElement("div", { className: "bg-" + wqHardColor + "-50 rounded-xl p-3 border border-" + wqHardColor + "-200" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-" + wqHardColor + "-700 mb-1" }, "\uD83D\uDD0D Effects at " + wqHardness + " GPG:"),
+                      React.createElement("ul", { className: "text-[10px] text-" + wqHardColor + "-600 space-y-0.5" },
+                        wqEffects.map(function (e, i) { return React.createElement("li", { key: i }, "\u2022 " + e); })
+                      ),
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mt-2" }, "\u2696\uFE0F Estimated scale buildup in water heater: ~" + wqScaleRate + " lbs/year")
+                    ),
+                    // Softener comparison
+                    React.createElement("div", { className: "space-y-2" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Treatment Options Compared:"),
+                      wqSofteners.map(function (s) {
+                        return React.createElement("div", { key: s.name, className: "bg-white rounded-xl p-3 border border-slate-200" },
+                          React.createElement("div", { className: "flex items-center gap-2 mb-1" },
+                            React.createElement("span", { className: "text-lg" }, s.icon),
+                            React.createElement("span", { className: "text-xs font-bold text-slate-700" }, s.name),
+                            React.createElement("span", { className: "ml-auto text-[10px] font-bold text-sky-600" }, s.cost)
+                          ),
+                          React.createElement("div", { className: "grid grid-cols-2 gap-2 text-[10px]" },
+                            React.createElement("div", null,
+                              React.createElement("span", { className: "font-bold text-emerald-600" }, "\u2705 "), s.pros
+                            ),
+                            React.createElement("div", null,
+                              React.createElement("span", { className: "font-bold text-red-500" }, "\u26A0\uFE0F "), s.cons
+                            )
+                          ),
+                          React.createElement("p", { className: "text-[9px] text-slate-400 mt-1" }, "Annual cost: " + s.annual + " | Removes: " + s.removes)
+                        );
+                      })
+                    ),
+                    React.createElement("div", { className: "bg-sky-50 rounded-lg p-2 border border-sky-200" },
+                      React.createElement("p", { className: "text-[10px] text-sky-700" }, "\uD83E\uDD13 ", React.createElement("strong", null, "Chemistry Note:"), " Hard water is caused by dissolved CaCO\u2083 (calcium carbonate) and MgCO\u2083 (magnesium carbonate). Ion-exchange softeners swap Ca\u00B2\u207A/Mg\u00B2\u207A ions for Na\u207A (sodium) ions.")
+                    )
+                  ),
+                  // Water Usage Calculator
+                  plumbTab === 'usage' && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("h4", { className: "text-xs font-bold text-sky-700 uppercase" }, "\uD83D\uDCA7 Daily Water Usage Calculator"),
+                    React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, "Track how much water you use daily. The U.S. average is 82 gallons per person per day!"),
+                    // Low-flow toggle
+                    React.createElement("div", { className: "flex items-center gap-3 mb-2" },
+                      React.createElement("button", { onClick: function () { upd('wuLowFlow', !wuLowFlow); },
+                        className: "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all " + (wuLowFlow ? 'bg-emerald-500 text-white' : 'bg-white text-slate-600 border border-slate-200') },
+                        wuLowFlow ? '\u2705 Low-Flow Fixtures ON' : '\uD83D\uDCA7 Standard Fixtures'),
+                      React.createElement("span", { className: "text-[9px] text-slate-400" }, wuLowFlow ? "Using WaterSense\u00AE rates (saves ~40%)" : "Using standard fixture rates")
+                    ),
+                    // Input grid
+                    React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3" },
+                      React.createElement("div", null,
+                        React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "\uD83D\uDEBF Shower (min/day)"),
+                        React.createElement("input", { type: "number", min: 0, max: 60, value: wuShowerMin, onChange: function (e) { upd('wuShowerMin', Math.max(0, parseInt(e.target.value) || 0)); },
+                          className: "w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-sky-400 outline-none mt-1" }),
+                        React.createElement("p", { className: "text-[9px] text-slate-400 mt-0.5" }, showerGPM + " GPM \u00D7 " + wuShowerMin + " min = " + wuShowerGal + " gal")
+                      ),
+                      React.createElement("div", null,
+                        React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "\uD83D\uDEBF # Showers"),
+                        React.createElement("input", { type: "number", min: 0, max: 10, value: wuShowers, onChange: function (e) { upd('wuShowers', Math.max(0, parseInt(e.target.value) || 0)); },
+                          className: "w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-sky-400 outline-none mt-1" })
+                      ),
+                      React.createElement("div", null,
+                        React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "\uD83D\uDEBD Flushes/day"),
+                        React.createElement("input", { type: "number", min: 0, max: 20, value: wuFlushes, onChange: function (e) { upd('wuFlushes', Math.max(0, parseInt(e.target.value) || 0)); },
+                          className: "w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-sky-400 outline-none mt-1" }),
+                        React.createElement("p", { className: "text-[9px] text-slate-400 mt-0.5" }, toiletGPF + " gal/flush \u00D7 " + wuFlushes + " = " + wuToiletGal + " gal")
+                      ),
+                      React.createElement("div", null,
+                        React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "\uD83E\uDD7D Dishwasher loads"),
+                        React.createElement("input", { type: "number", min: 0, max: 5, value: wuDishwasher, onChange: function (e) { upd('wuDishwasher', Math.max(0, parseInt(e.target.value) || 0)); },
+                          className: "w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-sky-400 outline-none mt-1" })
+                      ),
+                      React.createElement("div", null,
+                        React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "\uD83E\uDDFA Laundry loads"),
+                        React.createElement("input", { type: "number", min: 0, max: 5, value: wuLaundry, onChange: function (e) { upd('wuLaundry', Math.max(0, parseInt(e.target.value) || 0)); },
+                          className: "w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-sky-400 outline-none mt-1" })
+                      ),
+                      React.createElement("div", null,
+                        React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "\uD83D\uDEB0 Faucet (min/day)"),
+                        React.createElement("input", { type: "number", min: 0, max: 60, value: wuFaucetMin, onChange: function (e) { upd('wuFaucetMin', Math.max(0, parseInt(e.target.value) || 0)); },
+                          className: "w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-sky-400 outline-none mt-1" })
+                      )
+                    ),
+                    // Usage breakdown bars
+                    React.createElement("div", { className: "space-y-1.5 mb-3" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Daily Breakdown:"),
+                      [{ label: 'Showers', gal: wuShowerGal, color: 'bg-sky-400' }, { label: 'Toilets', gal: wuToiletGal, color: 'bg-amber-400' }, { label: 'Dishwasher', gal: wuDishGal, color: 'bg-emerald-400' }, { label: 'Laundry', gal: wuLaundryGal, color: 'bg-purple-400' }, { label: 'Faucets', gal: wuFaucetGal, color: 'bg-pink-400' }].map(function (item) {
+                        var pct = wuTotalGal > 0 ? Math.round(item.gal / wuTotalGal * 100) : 0;
+                        return React.createElement("div", { key: item.label, className: "flex items-center gap-2" },
+                          React.createElement("span", { className: "text-[9px] font-bold w-16 text-right text-slate-500" }, item.label),
+                          React.createElement("div", { className: "flex-1 bg-slate-100 rounded-full h-4 overflow-hidden" },
+                            React.createElement("div", { style: { width: Math.max(pct, 1) + '%', transition: 'width 0.5s ease' }, className: "h-full rounded-full " + item.color + " flex items-center justify-end pr-1" },
+                              pct > 10 ? React.createElement("span", { className: "text-[8px] font-bold text-white" }, item.gal + " gal") : null
+                            )
+                          ),
+                          React.createElement("span", { className: "text-[9px] font-bold w-14 text-slate-500" }, item.gal + " gal")
+                        );
+                      })
+                    ),
+                    // Summary cards
+                    React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3" },
+                      React.createElement("div", { className: "text-center p-3 rounded-xl border-2 " + (wuTotalGal > wuNatAvg ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200') },
+                        React.createElement("p", { className: "text-[10px] font-bold " + (wuTotalGal > wuNatAvg ? 'text-red-500' : 'text-emerald-500') }, "Your Daily"),
+                        React.createElement("p", { className: "text-2xl font-black " + (wuTotalGal > wuNatAvg ? 'text-red-600' : 'text-emerald-600') }, wuTotalGal),
+                        React.createElement("p", { className: "text-[9px] text-slate-400" }, "gallons")
+                      ),
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-sky-50 border border-sky-200" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-sky-500" }, "Nat'l Average"),
+                        React.createElement("p", { className: "text-2xl font-black text-sky-600" }, wuNatAvg),
+                        React.createElement("p", { className: "text-[9px] text-slate-400" }, "gal/person/day")
+                      ),
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-slate-50 border" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500" }, "Monthly Use"),
+                        React.createElement("p", { className: "text-lg font-black text-slate-700" }, wuMonthlyGal.toLocaleString()),
+                        React.createElement("p", { className: "text-[9px] text-slate-400" }, "gallons")
+                      ),
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-emerald-50 border border-emerald-200" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-emerald-500" }, "Est. Monthly Cost"),
+                        React.createElement("p", { className: "text-lg font-black text-emerald-600" }, "$" + wuMonthlyCost.toFixed(2)),
+                        React.createElement("p", { className: "text-[9px] text-slate-400" }, "@ $5/1000 gal")
+                      )
+                    ),
+                    // Conservation tips
+                    React.createElement("div", { className: "bg-sky-50 rounded-lg p-3 border border-sky-200" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-sky-700 mb-1" }, "\uD83D\uDCA1 Top Conservation Tips:"),
+                      React.createElement("ul", { className: "text-[10px] text-sky-600 space-y-0.5" },
+                        React.createElement("li", null, "\u2022 A 5-min shower (low-flow) uses 7.5 gal vs 12.5 gal standard — saves 1,825 gal/year"),
+                        React.createElement("li", null, "\u2022 Fix leaky faucets: 1 drip/sec = 3,000 gallons/year wasted"),
+                        React.createElement("li", null, "\u2022 Low-flow toilets (1.28 GPF) save ~13,000 gal/year vs old 3.5 GPF models"),
+                        React.createElement("li", null, "\u2022 Full dishwasher loads use LESS water than hand-washing")
+                      )
+                    )
                   )
                 ),
 
@@ -6845,7 +7149,7 @@
                   ),
                   // Home sub-nav
                   React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
-                    [{ id: 'hvac', label: '\uD83C\uDF2C\uFE0F HVAC Filters' }, { id: 'water', label: '\uD83D\uDCA7 Water Pressure' }, { id: 'panel', label: '\u26A1 Electrical Panel' }].map(function (s) {
+                    [{ id: 'hvac', label: '\uD83C\uDF2C\uFE0F HVAC' }, { id: 'water', label: '\uD83D\uDCA7 Pressure' }, { id: 'panel', label: '\u26A1 Panel' }, { id: 'energy', label: '\uD83D\uDD0C Energy Audit' }, { id: 'fire', label: '\uD83D\uDD25 Fire Safety' }, { id: 'insulation', label: '\uD83C\uDFE0 Insulation' }].map(function (s) {
                       return React.createElement("button", { key: s.id, onClick: function () { upd('homeTab', s.id); },
                         className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (homeTab === s.id ? 'bg-purple-500 text-white' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50')
                       }, s.label);
@@ -6906,9 +7210,38 @@
                       React.createElement("input", { type: "range", min: 10, max: 120, value: hsPsi, onChange: function (e) { upd('hsPsi', parseInt(e.target.value)); },
                         className: "w-full mt-1", style: { accentColor: '#9333ea' } })
                     ),
-                    React.createElement("div", { className: "text-center p-4 rounded-xl bg-" + psiColor + "-50 border-2 border-" + psiColor + "-200 mb-3" },
-                      React.createElement("p", { className: "text-3xl font-black text-" + psiColor + "-600" }, hsPsi + " PSI"),
-                      React.createElement("p", { className: "text-sm font-bold text-" + psiColor + "-500" }, psiStatus)
+                    // SVG Pressure Gauge
+                    React.createElement("div", { className: "flex justify-center mb-3" },
+                      React.createElement("svg", { viewBox: "0 0 200 120", width: "240", height: "150", className: "drop-shadow-lg" },
+                        // Background arc
+                        React.createElement("path", { d: "M 20 100 A 80 80 0 0 1 180 100", fill: "none", stroke: "#e2e8f0", strokeWidth: "12", strokeLinecap: "round" }),
+                        // Red low zone (0-40 PSI)
+                        React.createElement("path", { d: "M 20 100 A 80 80 0 0 1 " + (100 + 80 * Math.cos(Math.PI - (40/120) * Math.PI)) + " " + (100 - 80 * Math.sin(Math.PI - (40/120) * Math.PI)), fill: "none", stroke: "#fca5a5", strokeWidth: "12", strokeLinecap: "round" }),
+                        // Green normal zone (40-60 PSI)
+                        React.createElement("path", { d: "M " + (100 + 80 * Math.cos(Math.PI - (40/120) * Math.PI)) + " " + (100 - 80 * Math.sin(Math.PI - (40/120) * Math.PI)) + " A 80 80 0 0 1 " + (100 + 80 * Math.cos(Math.PI - (60/120) * Math.PI)) + " " + (100 - 80 * Math.sin(Math.PI - (60/120) * Math.PI)), fill: "none", stroke: "#6ee7b7", strokeWidth: "12", strokeLinecap: "round" }),
+                        // Amber high zone (60-80 PSI)
+                        React.createElement("path", { d: "M " + (100 + 80 * Math.cos(Math.PI - (60/120) * Math.PI)) + " " + (100 - 80 * Math.sin(Math.PI - (60/120) * Math.PI)) + " A 80 80 0 0 1 " + (100 + 80 * Math.cos(Math.PI - (80/120) * Math.PI)) + " " + (100 - 80 * Math.sin(Math.PI - (80/120) * Math.PI)), fill: "none", stroke: "#fcd34d", strokeWidth: "12", strokeLinecap: "round" }),
+                        // Red danger zone (80-120 PSI)
+                        React.createElement("path", { d: "M " + (100 + 80 * Math.cos(Math.PI - (80/120) * Math.PI)) + " " + (100 - 80 * Math.sin(Math.PI - (80/120) * Math.PI)) + " A 80 80 0 0 1 180 100", fill: "none", stroke: "#f87171", strokeWidth: "12", strokeLinecap: "round" }),
+                        // Needle
+                        (function () {
+                          var angle = Math.PI - (Math.min(120, Math.max(0, hsPsi)) / 120) * Math.PI;
+                          var nx = 100 + 65 * Math.cos(angle);
+                          var ny = 100 - 65 * Math.sin(angle);
+                          return React.createElement("line", { x1: "100", y1: "100", x2: nx.toFixed(1), y2: ny.toFixed(1), stroke: "#334155", strokeWidth: "3", strokeLinecap: "round", style: { transition: 'all 0.3s ease' } });
+                        })(),
+                        // Center dot
+                        React.createElement("circle", { cx: "100", cy: "100", r: "5", fill: "#334155" }),
+                        // PSI text
+                        React.createElement("text", { x: "100", y: "92", textAnchor: "middle", className: "text-lg font-black", fill: hsPsi < 30 || hsPsi > 80 ? '#ef4444' : hsPsi <= 60 ? '#10b981' : '#f59e0b', style: { fontSize: '18px', fontWeight: 900 } }, hsPsi + " PSI"),
+                        // Labels
+                        React.createElement("text", { x: "20", y: "115", textAnchor: "middle", style: { fontSize: '8px', fill: '#94a3b8' } }, "0"),
+                        React.createElement("text", { x: "180", y: "115", textAnchor: "middle", style: { fontSize: '8px', fill: '#94a3b8' } }, "120"),
+                        React.createElement("text", { x: "100", y: "14", textAnchor: "middle", style: { fontSize: '8px', fill: '#94a3b8' } }, "60")
+                      )
+                    ),
+                    React.createElement("div", { className: "text-center p-3 rounded-xl bg-" + psiColor + "-50 border-2 border-" + psiColor + "-200 mb-3" },
+                      React.createElement("p", { className: "text-sm font-bold text-" + psiColor + "-600" }, psiStatus)
                     ),
                     React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
                       React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-2" }, "Effects at " + hsPsi + " PSI:"),
@@ -6958,6 +7291,31 @@
                         );
                       })
                     ),
+                    // Panel Breaker Quiz
+                    React.createElement("div", { className: "bg-purple-50 rounded-xl p-4 border border-purple-200" },
+                      React.createElement("p", { className: "text-xs font-bold text-purple-700 mb-2" }, "\uD83D\uDD0D Breaker Scenario Quiz:"),
+                      React.createElement("p", { className: "text-sm text-slate-700 font-medium mb-3" }, "\"" + panelCurrentQ.q + "\""),
+                      React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
+                        panelCurrentQ.choices.map(function (ch) {
+                          var sel = hsPanelAnswer === ch;
+                          var rev = hsPanelFb != null;
+                          var isRight = ch === panelCurrentQ.answer;
+                          var cls = rev
+                            ? (isRight ? 'border-green-500 bg-green-50 text-green-700' : (sel ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-400'))
+                            : (sel ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-slate-200 bg-white text-slate-600 hover:border-purple-300');
+                          return React.createElement("button", { key: ch, disabled: rev, onClick: function () { upd('hsPanelAnswer', ch); upd('hsPanelFb', null); },
+                            className: "p-2 rounded-xl border-2 text-xs font-bold transition-all " + cls }, ch);
+                        })
+                      ),
+                      hsPanelAnswer != null && !hsPanelFb && React.createElement("button", { onClick: function () {
+                        var ok = hsPanelAnswer === panelCurrentQ.answer;
+                        upd('hsPanelFb', ok ? '\u2705 Correct! ' + panelCurrentQ.explain : '\u274C Not quite. ' + panelCurrentQ.explain);
+                        if (ok && typeof awardStemXP === 'function') awardStemXP('lifeSkills', 15, 'panel breaker quiz');
+                      }, className: "w-full px-3 py-1.5 bg-purple-500 text-white font-bold rounded-lg text-xs hover:bg-purple-600 transition-all" }, "Submit"),
+                      hsPanelFb && React.createElement("div", { className: "rounded-lg p-2 text-[10px] font-medium mt-2 " + (hsPanelFb.startsWith('\u2705') ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') }, hsPanelFb),
+                      hsPanelFb && React.createElement("button", { onClick: function () { upd('hsPanelQ', (hsPanelQ + 1) % panelQuizzes.length); upd('hsPanelAnswer', null); upd('hsPanelFb', null); },
+                        className: "w-full px-3 py-1.5 bg-purple-500 text-white font-bold rounded-lg text-xs mt-2 hover:bg-purple-600 transition-all" }, "\u27A1\uFE0F Next Scenario")
+                    ),
                     React.createElement("div", { className: "bg-red-50 rounded-lg p-3 border border-red-200" },
                       React.createElement("p", { className: "text-[10px] font-bold text-red-700" }, "\u26A0\uFE0F When to Call an Electrician:"),
                       React.createElement("ul", { className: "text-[10px] text-red-600 mt-1 space-y-0.5" },
@@ -6967,6 +7325,253 @@
                         React.createElement("li", null, "\u2022 Adding a new 240V circuit (dryer, EV charger)"),
                         React.createElement("li", null, "\u2022 Panel upgrade needed (100A \u2192 200A for modern loads)")
                       )
+                    )
+                  ),
+                  // Energy Audit Tool
+                  homeTab === 'energy' && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("h4", { className: "text-xs font-bold text-purple-700 uppercase" }, "\uD83D\uDD0C Home Energy Audit"),
+                    React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, "Enter how many hours per day each appliance runs. See which ones cost the most!"),
+                    // Appliance grid
+                    React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3" },
+                      eaAppliances.map(function (ap, idx) {
+                        return React.createElement("div", { key: ap.name, className: "bg-white rounded-xl p-2 border border-slate-200" },
+                          React.createElement("div", { className: "flex items-center gap-1 mb-1" },
+                            React.createElement("span", { className: "text-sm" }, ap.icon),
+                            React.createElement("span", { className: "text-[10px] font-bold text-slate-700 truncate" }, ap.name)
+                          ),
+                          React.createElement("div", { className: "flex items-center gap-1" },
+                            React.createElement("input", { type: "range", min: 0, max: 24, step: 0.5, value: eaHours[idx],
+                              onChange: function (e) {
+                                var nh = eaHours.slice();
+                                nh[idx] = parseFloat(e.target.value);
+                                upd('eaHours', nh);
+                              },
+                              className: "flex-1 h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer" }),
+                            React.createElement("span", { className: "text-[9px] font-bold text-purple-600 w-8 text-right" }, eaHours[idx] + "h")
+                          ),
+                          React.createElement("p", { className: "text-[8px] text-slate-400 mt-0.5" }, ap.watts + "W \u2022 " + eaMonthlyKWh[idx] + " kWh/mo \u2022 $" + eaMonthlyCost[idx])
+                        );
+                      })
+                    ),
+                    // Pie chart
+                    React.createElement("div", { className: "flex justify-center mb-3" },
+                      React.createElement("svg", { width: 180, height: 180, viewBox: "0 0 180 180" },
+                        (function () {
+                          var elems = [];
+                          var total = eaTotalKWh;
+                          if (total === 0) {
+                            elems.push(React.createElement("circle", { key: "empty", cx: 90, cy: 90, r: 80, fill: "none", stroke: "#e2e8f0", strokeWidth: 20 }));
+                          } else {
+                            var colors = ['#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6366f1', '#14b8a6', '#84cc16', '#f97316', '#a855f7', '#0ea5e9', '#22d3ee', '#64748b'];
+                            var angle = -Math.PI / 2;
+                            eaAppliances.forEach(function (ap, idx) {
+                              if (eaMonthlyKWh[idx] === 0) return;
+                              var slice = (eaMonthlyKWh[idx] / total) * 2 * Math.PI;
+                              var x1 = 90 + 70 * Math.cos(angle);
+                              var y1 = 90 + 70 * Math.sin(angle);
+                              var x2 = 90 + 70 * Math.cos(angle + slice);
+                              var y2 = 90 + 70 * Math.sin(angle + slice);
+                              var lg = slice > Math.PI ? 1 : 0;
+                              elems.push(React.createElement("path", {
+                                key: idx,
+                                d: "M 90 90 L " + x1 + " " + y1 + " A 70 70 0 " + lg + " 1 " + x2 + " " + y2 + " Z",
+                                fill: colors[idx % colors.length], opacity: 0.75
+                              }));
+                              angle += slice;
+                            });
+                          }
+                          elems.push(React.createElement("circle", { key: "center", cx: 90, cy: 90, r: 35, fill: "white" }));
+                          elems.push(React.createElement("text", { key: "kwh", x: 90, y: 87, textAnchor: "middle", fontSize: 14, fontWeight: 900, fill: "#7c3aed" }, eaTotalKWh + " kWh"));
+                          elems.push(React.createElement("text", { key: "cost", x: 90, y: 102, textAnchor: "middle", fontSize: 10, fontWeight: 700, fill: "#64748b" }, "$" + eaTotalCost + "/mo"));
+                          return elems;
+                        })()
+                      )
+                    ),
+                    // Top consumers
+                    React.createElement("div", { className: "space-y-1.5" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Top 3 Energy Consumers:"),
+                      eaTop3.map(function (t, i) {
+                        var pct = eaTotalKWh > 0 ? Math.round(t.kwh / eaTotalKWh * 100) : 0;
+                        return React.createElement("div", { key: t.name, className: "flex items-center gap-2" },
+                          React.createElement("span", { className: "text-sm" }, t.icon),
+                          React.createElement("span", { className: "text-[10px] font-bold text-slate-700 w-24 truncate" }, t.name),
+                          React.createElement("div", { className: "flex-1 bg-slate-100 rounded-full h-3 overflow-hidden" },
+                            React.createElement("div", { style: { width: pct + '%', transition: 'width 0.5s ease' }, className: "h-full rounded-full bg-purple-400" })
+                          ),
+                          React.createElement("span", { className: "text-[9px] font-bold text-purple-600 w-20 text-right" }, t.kwh + " kWh ($" + t.cost + ")")
+                        );
+                      })
+                    ),
+                    // Summary
+                    React.createElement("div", { className: "grid grid-cols-3 gap-3" },
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-purple-50 border border-purple-200" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-purple-500" }, "Monthly kWh"),
+                        React.createElement("p", { className: "text-xl font-black text-purple-600" }, eaTotalKWh),
+                        React.createElement("p", { className: "text-[9px] text-slate-400" }, "kilowatt-hours")
+                      ),
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-emerald-50 border border-emerald-200" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-emerald-500" }, "Monthly Cost"),
+                        React.createElement("p", { className: "text-xl font-black text-emerald-600" }, "$" + eaTotalCost),
+                        React.createElement("p", { className: "text-[9px] text-slate-400" }, "@ $0.13/kWh")
+                      ),
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-sky-50 border border-sky-200" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-sky-500" }, "Annual Cost"),
+                        React.createElement("p", { className: "text-xl font-black text-sky-600" }, "$" + (parseFloat(eaTotalCost) * 12).toFixed(0)),
+                        React.createElement("p", { className: "text-[9px] text-slate-400" }, "projected")
+                      )
+                    ),
+                    React.createElement("div", { className: "bg-purple-50 rounded-lg p-2 border border-purple-200" },
+                      React.createElement("p", { className: "text-[10px] text-purple-700" }, "\uD83E\uDD13 ", React.createElement("strong", null, "Energy = Power \u00D7 Time."), " A 100W bulb running 10h uses 1 kWh. At $0.13/kWh, that costs 13\u00A2. LED bulbs use ~15W for the same light \u2014 over 80% savings!")
+                    )
+                  ),
+                  // Fire Safety Quiz
+                  homeTab === 'fire' && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("h4", { className: "text-xs font-bold text-purple-700 uppercase" }, "\uD83D\uDD25 Fire Safety Knowledge Check"),
+                    React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, "Test your fire safety knowledge! Click Start to begin or continue the quiz."),
+                    // Progress bar
+                    React.createElement("div", { className: "flex items-center gap-2 mb-3" },
+                      React.createElement("div", { className: "flex-1 bg-slate-100 rounded-full h-2 overflow-hidden" },
+                        React.createElement("div", { style: { width: Math.round(fsProgress * 100) + '%', transition: 'width 0.5s ease' }, className: "h-full rounded-full bg-gradient-to-r from-orange-400 to-red-500" })
+                      ),
+                      React.createElement("span", { className: "text-[9px] font-bold text-slate-500" }, "Q" + (fsIdx + 1) + "/" + fsQuizData.length)
+                    ),
+                    // Current question
+                    !fsComplete && React.createElement("div", { className: "bg-white rounded-xl p-4 border-2 border-orange-200" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-orange-500 mb-1" }, "SCENARIO " + (fsIdx + 1)),
+                      React.createElement("p", { className: "text-sm text-slate-700 font-medium mb-3" }, fsQuizData[fsIdx].q),
+                      React.createElement("div", { className: "space-y-2" },
+                        fsQuizData[fsIdx].options.map(function (opt) {
+                          var picked = fsCurrentPick === opt;
+                          var revealed = fsFeedback !== '';
+                          var isCorrect = opt === fsQuizData[fsIdx].answer;
+                          var cls = revealed
+                            ? (isCorrect ? 'border-green-500 bg-green-50 text-green-700' : (picked ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-400'))
+                            : (picked ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-slate-200 bg-white text-slate-600 hover:border-orange-300');
+                          return React.createElement("button", { key: opt, disabled: revealed, onClick: function () { upd('fsCurrentPick', opt); upd('fsFeedback', ''); },
+                            className: "w-full text-left p-2.5 rounded-xl border-2 text-xs font-bold transition-all " + cls }, opt);
+                        })
+                      ),
+                      fsCurrentPick && fsFeedback === '' && React.createElement("button", { onClick: function () {
+                        var correct = fsCurrentPick === fsQuizData[fsIdx].answer;
+                        var newScore = fsScore + (correct ? 1 : 0);
+                        upd('fsScore', newScore);
+                        upd('fsFeedback', correct ? '\u2705 Correct! ' + fsQuizData[fsIdx].explain : '\u274C Incorrect. ' + fsQuizData[fsIdx].explain);
+                        if (correct && typeof awardStemXP === 'function') awardStemXP('lifeSkills', 12, 'fire safety quiz');
+                      }, className: "w-full px-3 py-2 bg-orange-500 text-white font-bold rounded-lg text-xs mt-3 hover:bg-orange-600 transition-all" }, "Check Answer"),
+                      fsFeedback !== '' && React.createElement("div", { className: "rounded-lg p-2 text-[10px] font-medium mt-2 " + (fsFeedback.startsWith('\u2705') ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') }, fsFeedback),
+                      fsFeedback !== '' && React.createElement("button", { onClick: function () {
+                        if (fsIdx + 1 >= fsQuizData.length) { upd('fsComplete', true); } else { upd('fsIdx', fsIdx + 1); }
+                        upd('fsCurrentPick', null); upd('fsFeedback', '');
+                      }, className: "w-full px-3 py-2 bg-orange-500 text-white font-bold rounded-lg text-xs mt-2 hover:bg-orange-600 transition-all" },
+                        fsIdx + 1 >= fsQuizData.length ? "\uD83C\uDFC1 See Results" : "\u27A1\uFE0F Next Question")
+                    ),
+                    // Results
+                    fsComplete && React.createElement("div", { className: "text-center p-4 rounded-xl border-2 " + (fsGrade === 'A' ? 'bg-emerald-50 border-emerald-300' : fsGrade === 'B' ? 'bg-sky-50 border-sky-300' : fsGrade === 'C' ? 'bg-amber-50 border-amber-300' : 'bg-red-50 border-red-300') },
+                      React.createElement("p", { className: "text-4xl mb-2" }, fsGrade === 'A' ? '\uD83C\uDF1F' : fsGrade === 'B' ? '\uD83D\uDC4D' : fsGrade === 'C' ? '\u26A0\uFE0F' : '\uD83D\uDEA8'),
+                      React.createElement("p", { className: "text-2xl font-black " + (fsGrade === 'A' ? 'text-emerald-600' : fsGrade === 'B' ? 'text-sky-600' : fsGrade === 'C' ? 'text-amber-600' : 'text-red-600') }, fsScore + "/" + fsQuizData.length),
+                      React.createElement("p", { className: "text-xs font-bold text-slate-500 mt-1" }, fsGrade === 'A' ? 'Fire Safety Expert! You know your stuff.' : fsGrade === 'B' ? 'Good Knowledge! Review a few areas.' : fsGrade === 'C' ? 'Needs Improvement. Study fire safety basics.' : 'Critical! Please review home fire safety immediately.'),
+                      React.createElement("button", { onClick: function () { upd('fsIdx', 0); upd('fsScore', 0); upd('fsCurrentPick', null); upd('fsFeedback', ''); upd('fsComplete', false); },
+                        className: "px-4 py-2 bg-orange-500 text-white font-bold rounded-lg text-xs mt-3 hover:bg-orange-600 transition-all" }, "\uD83D\uDD04 Retake Quiz")
+                    ),
+                    // Quick tips
+                    React.createElement("div", { className: "bg-red-50 rounded-lg p-3 border border-red-200" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-red-700 mb-1" }, "\uD83D\uDCA1 Fire Safety Essentials:"),
+                      React.createElement("ul", { className: "text-[10px] text-red-600 space-y-0.5" },
+                        React.createElement("li", null, "\u2022 Test smoke alarms monthly; replace batteries yearly"),
+                        React.createElement("li", null, "\u2022 Keep fire extinguisher in kitchen (ABC type) \u2014 learn PASS: Pull, Aim, Squeeze, Sweep"),
+                        React.createElement("li", null, "\u2022 Never use water on grease fire \u2014 smother with lid or use Class B extinguisher"),
+                        React.createElement("li", null, "\u2022 Have 2 escape routes from every room; practice family escape plan")
+                      )
+                    )
+                  ),
+                  // Insulation R-Value Guide
+                  homeTab === 'insulation' && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("h4", { className: "text-xs font-bold text-purple-700 uppercase" }, "\uD83C\uDFE0 Insulation R-Value Guide"),
+                    React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, "R-value measures thermal resistance. Higher = better insulation. Requirements vary by climate zone."),
+                    // Climate zone selector
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "\uD83C\uDF0D Climate Zone:"),
+                      React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-1" },
+                        insClimateZones.map(function (z) {
+                          return React.createElement("button", { key: z.zone, onClick: function () { upd('insZone', z.zone); },
+                            className: "px-2 py-1 rounded-lg text-[9px] font-bold transition-all " + (insZone === z.zone ? 'bg-purple-500 text-white' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50') },
+                            "Zone " + z.zone + " " + z.label);
+                        })
+                      )
+                    ),
+                    // Current zone info
+                    React.createElement("div", { className: "bg-purple-50 rounded-xl p-3 border border-purple-200 mb-3" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-purple-700" }, "\uD83C\uDF21\uFE0F Zone " + insCurrentZone.zone + " \u2014 " + insCurrentZone.label),
+                      React.createElement("p", { className: "text-[10px] text-purple-600" }, insCurrentZone.desc),
+                      React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2" },
+                        React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
+                          React.createElement("p", { className: "text-[9px] text-slate-400" }, "Attic"),
+                          React.createElement("p", { className: "text-sm font-black text-purple-600" }, "R-" + insCurrentZone.attic)
+                        ),
+                        React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
+                          React.createElement("p", { className: "text-[9px] text-slate-400" }, "Walls"),
+                          React.createElement("p", { className: "text-sm font-black text-purple-600" }, "R-" + insCurrentZone.walls)
+                        ),
+                        React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
+                          React.createElement("p", { className: "text-[9px] text-slate-400" }, "Floor"),
+                          React.createElement("p", { className: "text-sm font-black text-purple-600" }, "R-" + insCurrentZone.floor)
+                        )
+                      )
+                    ),
+                    // Insulation types comparison
+                    React.createElement("div", { className: "space-y-2" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Insulation Types Compared:"),
+                      insTypes.map(function (t) {
+                        return React.createElement("div", { key: t.name, className: "bg-white rounded-xl p-3 border border-slate-200" },
+                          React.createElement("div", { className: "flex items-center gap-2 mb-1" },
+                            React.createElement("span", { className: "text-sm" }, t.icon),
+                            React.createElement("span", { className: "text-xs font-bold text-slate-700" }, t.name),
+                            React.createElement("span", { className: "ml-auto text-[10px] font-bold text-purple-600" }, "R-" + t.rPerInch + "/inch")
+                          ),
+                          React.createElement("div", { className: "flex items-center gap-2 mb-1" },
+                            React.createElement("div", { className: "flex-1 bg-slate-100 rounded-full h-2 overflow-hidden" },
+                              React.createElement("div", { style: { width: Math.round(t.rPerInch / 7 * 100) + '%' }, className: "h-full rounded-full bg-purple-400" })
+                            ),
+                            React.createElement("span", { className: "text-[9px] font-bold text-slate-500" }, t.costSqFt + "/sqft")
+                          ),
+                          React.createElement("p", { className: "text-[10px] text-slate-500" }, t.best)
+                        );
+                      })
+                    ),
+                    // Quick calculator
+                    React.createElement("div", { className: "bg-white rounded-xl p-3 border border-purple-200" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-purple-700 mb-2" }, "\uD83E\uDDEE Quick Cost Estimator"),
+                      React.createElement("div", { className: "grid grid-cols-2 gap-3 mb-2" },
+                        React.createElement("div", null,
+                          React.createElement("label", { className: "text-[9px] font-bold text-slate-500" }, "Area (sq ft)"),
+                          React.createElement("input", { type: "number", min: 0, value: insSqFt, onChange: function (e) { upd('insSqFt', Math.max(0, parseInt(e.target.value) || 0)); },
+                            className: "w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-purple-400 outline-none mt-1" })
+                        ),
+                        React.createElement("div", null,
+                          React.createElement("label", { className: "text-[9px] font-bold text-slate-500" }, "Insulation Type"),
+                          React.createElement("select", { value: insSelected, onChange: function (e) { upd('insSelected', e.target.value); },
+                            className: "w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-purple-400 outline-none mt-1" },
+                            insTypes.map(function (t) { return React.createElement("option", { key: t.name, value: t.name }, t.name); })
+                          )
+                        )
+                      ),
+                      insSqFt > 0 && React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2" },
+                        React.createElement("div", { className: "text-center p-2 rounded-lg bg-purple-50" },
+                          React.createElement("p", { className: "text-[9px] text-slate-400" }, "Material Cost"),
+                          React.createElement("p", { className: "text-sm font-black text-purple-600" }, "$" + insEstCost)
+                        ),
+                        React.createElement("div", { className: "text-center p-2 rounded-lg bg-emerald-50" },
+                          React.createElement("p", { className: "text-[9px] text-slate-400" }, "Annual Savings"),
+                          React.createElement("p", { className: "text-sm font-black text-emerald-600" }, "$" + insAnnualSavings)
+                        ),
+                        React.createElement("div", { className: "text-center p-2 rounded-lg bg-sky-50" },
+                          React.createElement("p", { className: "text-[9px] text-slate-400" }, "Payback Period"),
+                          React.createElement("p", { className: "text-sm font-black text-sky-600" }, insPayback + " yrs")
+                        )
+                      )
+                    ),
+                    React.createElement("div", { className: "bg-purple-50 rounded-lg p-2 border border-purple-200" },
+                      React.createElement("p", { className: "text-[10px] text-purple-700" }, "\uD83E\uDD13 ", React.createElement("strong", null, "Physics Note:"), " R-value = thickness \u00F7 thermal conductivity (k). Materials with low k (like trapped air pockets in fiberglass) resist heat flow better. Spray foam's closed cells trap gas with even lower k than air!")
                     )
                   )
                 )
