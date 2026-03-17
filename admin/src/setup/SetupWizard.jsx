@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Check, AlertCircle, Server, Users, Download } from 'lucide-react';
+import { Check, AlertCircle, Server, Users, Download, Eye, EyeOff } from 'lucide-react';
 
 export default function SetupWizard({ onComplete }) {
   const [step, setStep] = useState(1);
+  const [showApiKey, setShowApiKey] = useState({});
   const [config, setConfig] = useState({
     deploymentMode: 'new', // 'new' | 'join-cluster'
     clusterPrimaryIp: '',
@@ -10,8 +11,13 @@ export default function SetupWizard({ onComplete }) {
     dockerInstalled: false,
     dockerInstalling: false,
     aiBackend: 'local', // 'local' | 'cloud' | 'hybrid'
-    cloudProvider: 'gemini',
-    apiKeys: { gemini: '', openai: '', claude: '' },
+    cloudProvider: 'gemini', // 'gemini' | 'openai' | 'claude'
+    apiKeys: { 
+      gemini: '', 
+      openai: '', 
+      claude: '',
+      wolfram: ''
+    },
     serverIp: '',
     domain: '',
     enableSSL: false,
@@ -19,7 +25,7 @@ export default function SetupWizard({ onComplete }) {
     gpuDetecting: false,
     models: {
       text: ['deepseek-r1:1.5b', 'phi3.5'],
-      image: true,
+      image: false,
       tts: true
     },
     adminEmail: '',
@@ -30,8 +36,10 @@ export default function SetupWizard({ onComplete }) {
   });
 
   useEffect(() => {
-    // Check Docker on mount
-    checkDocker();
+    // Check Docker on mount (only for local/hybrid mode)
+    if (config.aiBackend !== 'cloud') {
+      checkDocker();
+    }
     // Auto-fill server IP
     if (window.alloAPI) {
       window.alloAPI.getServerIP().then(ip => {
@@ -55,8 +63,8 @@ export default function SetupWizard({ onComplete }) {
   }, []);
 
   useEffect(() => {
-    // Auto-detect GPU when reaching step 3
-    if (step === 3 && !config.gpuType && !config.gpuDetecting) {
+    // Auto-detect GPU when reaching step 3 (only for local/hybrid)
+    if (step === 3 && config.aiBackend !== 'cloud' && !config.gpuType && !config.gpuDetecting) {
       detectGPU();
     }
   }, [step]);
@@ -101,6 +109,31 @@ export default function SetupWizard({ onComplete }) {
     }
   };
 
+  const getNextStep = () => {
+    // Determine next step based on current step and AI backend choice
+    if (step === 4) {
+      // After AI Mode selection
+      if (config.aiBackend === 'cloud') {
+        return 5; // Go directly to API keys
+      } else if (config.aiBackend === 'local') {
+        return 2; // Go to Docker check (skip API keys)
+      } else {
+        return 5; // Hybrid: go to API keys
+      }
+    }
+    return step + 1;
+  };
+
+  const getPreviousStep = () => {
+    if (step === 2 && config.aiBackend === 'cloud') {
+      return 4; // From API keys back to AI mode
+    }
+    if (step === 3 && config.aiBackend === 'cloud') {
+      return 2; // From GPU (not shown for cloud) back to API keys
+    }
+    return step - 1;
+  };
+
   const startInstallation = async () => {
     setConfig(prev => ({ ...prev, installing: true, installProgress: 0 }));
     
@@ -120,13 +153,21 @@ export default function SetupWizard({ onComplete }) {
   const renderStep = () => {
     switch(step) {
       case 1: return renderDeploymentMode();
-      case 2: return config.deploymentMode === 'join-cluster' ? renderClusterJoin() : renderDockerCheck();
-      case 3: return renderGPUDetection();
+      case 2: 
+        if (config.deploymentMode === 'join-cluster') {
+          return renderClusterJoin();
+        } else if (config.aiBackend === 'cloud') {
+          return renderAPIKeys();
+        } else {
+          return renderDockerCheck();
+        }
+      case 3: return config.aiBackend === 'cloud' ? renderNetworkConfig() : renderGPUDetection();
       case 4: return renderAIMode();
-      case 5: return renderNetworkConfig();
-      case 6: return renderModelSelection();
-      case 7: return renderAdminAccount();
-      case 8: return renderInstallation();
+      case 5: return renderAPIKeys();
+      case 6: return renderNetworkConfig();
+      case 7: return renderModelSelection();
+      case 8: return renderAdminAccount();
+      case 9: return renderInstallation();
       default: return null;
     }
   };
@@ -203,7 +244,7 @@ export default function SetupWizard({ onComplete }) {
       </div>
 
       <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
-        <button className="btn btn-primary" onClick={() => setStep(2)}>
+        <button className="btn btn-primary" onClick={() => setStep(4)}>
           Continue →
         </button>
       </div>
@@ -349,7 +390,7 @@ export default function SetupWizard({ onComplete }) {
       )}
 
       <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between' }}>
-        <button className="btn" onClick={() => setStep(1)}>
+        <button className="btn" onClick={() => setStep(getPreviousStep())}>
           ← Back
         </button>
         <button
@@ -399,7 +440,7 @@ export default function SetupWizard({ onComplete }) {
             <AlertCircle size={48} style={{ color: 'var(--color-warning)', marginBottom: '1rem' }} />
             <h3 style={{ color: 'var(--color-warning)', marginBottom: '0.5rem' }}>No GPU detected</h3>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '1rem' }}>
-              Image generation will use CPU (slower) or fallback to cloud API
+              Image generation will use CPU (slower, ~30s per 512x512 image)
             </p>
             <button className="btn btn-primary" onClick={detectGPU}>
               Re-scan for GPU
@@ -428,10 +469,10 @@ export default function SetupWizard({ onComplete }) {
       )}
 
       <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between' }}>
-        <button className="btn" onClick={() => setStep(2)}>
+        <button className="btn" onClick={() => setStep(getPreviousStep())}>
           ← Back
         </button>
-        <button className="btn btn-primary" onClick={() => setStep(4)}>
+        <button className="btn btn-primary" onClick={() => setStep(6)}>
           Continue →
         </button>
       </div>
@@ -445,9 +486,7 @@ export default function SetupWizard({ onComplete }) {
         Choose how you want to run AI models. You can change this later.
       </p>
 
-      {/* Content from AIConfig.jsx backend selection */}
       <div style={{ display: 'grid', gap: '1rem' }}>
-        {/* Local, Cloud, Hybrid radio buttons - simplified version */}
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', backgroundColor: config.aiBackend === 'local' ? 'rgba(59, 130, 246, 0.1)' : 'var(--color-bg)', borderRadius: '8px', border: `2px solid ${config.aiBackend === 'local' ? 'var(--color-primary)' : 'var(--color-border)'}`, cursor: 'pointer' }}>
           <input
             type="radio"
@@ -460,7 +499,8 @@ export default function SetupWizard({ onComplete }) {
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>💻 Local AI Only</div>
             <div style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
-              Fully offline, no API keys required. Best for privacy and data security</div>
+              Fully offline, no API keys required. Best for privacy and data security. Requires Docker and model downloads.
+            </div>
           </div>
         </label>
 
@@ -474,9 +514,9 @@ export default function SetupWizard({ onComplete }) {
             style={{ width: '18px', height: '18px' }}
           />
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>☁️ Cloud AI</div>
+            <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>☁️ Cloud AI Only</div>
             <div style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
-              Use Gemini/OpenAI/Claude APIs. No local setup required (requires API keys)
+              Use Gemini/OpenAI/Claude APIs. No local setup required. Requires API keys and internet connection.
             </div>
           </div>
         </label>
@@ -493,17 +533,141 @@ export default function SetupWizard({ onComplete }) {
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>🔀 Hybrid Mode</div>
             <div style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
-              Local first, cloud fallback. Smart routing when local is overloaded
+              Local first, cloud fallback. Uses local models when available, falls back to cloud APIs when needed. Requires both Docker and API keys.
             </div>
           </div>
         </label>
       </div>
 
       <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between' }}>
-        <button className="btn" onClick={() => setStep(3)}>
+        <button className="btn" onClick={() => setStep(1)}>
           ← Back
         </button>
-        <button className="btn btn-primary" onClick={() => setStep(5)}>
+        <button className="btn btn-primary" onClick={() => setStep(getNextStep())}>
+          Continue →
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderAPIKeys = () => (
+    <div className="setup-step">
+      <h2>Cloud AI API Keys</h2>
+      <p style={{ marginBottom: '2rem', color: 'var(--color-text-muted)' }}>
+        {config.aiBackend === 'hybrid' 
+          ? 'Configure API keys for cloud fallback when local models are overloaded.'
+          : 'Configure API keys for cloud-based AI features.'}
+      </p>
+
+      <div style={{ display: 'grid', gap: '1.5rem' }}>
+        <div style={{
+          padding: '1rem',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderRadius: '6px',
+          fontSize: '0.875rem'
+        }}>
+          <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>💡 Get free API keys:</div>
+          <ul style={{ margin: 0, paddingLeft: '1.25rem', color: 'var(--color-text-muted)' }}>
+            <li><strong>Gemini:</strong> Free tier at http://aistudio.google.com</li>
+            <li><strong>OpenAI:</strong> Free trial at http://platform.openai.com</li>
+            <li><strong>Claude:</strong> Free tier at http://console.anthropic.com</li>
+          </ul>
+        </div>
+
+        <div>
+          <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>
+            Google Gemini API Key
+          </label>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <input
+              type={showApiKey.gemini ? 'text' : 'password'}
+              placeholder="AIzaSy..."
+              value={config.apiKeys.gemini}
+              onChange={(e) => setConfig({ ...config, apiKeys: { ...config.apiKeys, gemini: e.target.value } })}
+              style={{ flex: 1, fontFamily: 'monospace' }}
+            />
+            <button
+              className="btn"
+              onClick={() => setShowApiKey(prev => ({ ...prev, gemini: !prev.gemini }))}
+              style={{ minWidth: 'auto' }}
+            >
+              {showApiKey.gemini ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+          <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
+            Optional for quiz generation and content analysis
+          </p>
+        </div>
+
+        <div>
+          <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>
+            OpenAI API Key
+          </label>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <input
+              type={showApiKey.openai ? 'text' : 'password'}
+              placeholder="sk-..."
+              value={config.apiKeys.openai}
+              onChange={(e) => setConfig({ ...config, apiKeys: { ...config.apiKeys, openai: e.target.value } })}
+              style={{ flex: 1, fontFamily: 'monospace' }}
+            />
+            <button
+              className="btn"
+              onClick={() => setShowApiKey(prev => ({ ...prev, openai: !prev.openai }))}
+              style={{ minWidth: 'auto' }}
+            >
+              {showApiKey.openai ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+          <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
+            Optional for GPT-based lessons and tutoring
+          </p>
+        </div>
+
+        <div>
+          <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>
+            Anthropic Claude API Key
+          </label>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <input
+              type={showApiKey.claude ? 'text' : 'password'}
+              placeholder="sk-ant-..."
+              value={config.apiKeys.claude}
+              onChange={(e) => setConfig({ ...config, apiKeys: { ...config.apiKeys, claude: e.target.value } })}
+              style={{ flex: 1, fontFamily: 'monospace' }}
+            />
+            <button
+              className="btn"
+              onClick={() => setShowApiKey(prev => ({ ...prev, claude: !prev.claude }))}
+              style={{ minWidth: 'auto' }}
+            >
+              {showApiKey.claude ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+          <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
+            Optional for advanced reasoning and analysis
+          </p>
+        </div>
+      </div>
+
+      <div style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderRadius: '6px', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+        ℹ️ You can add more API keys later in the AI Config tab. At least one is recommended for image generation and advanced features.
+      </div>
+
+      <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between' }}>
+        <button className="btn" onClick={() => setStep(getPreviousStep())}>
+          ← Back
+        </button>
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            if (config.aiBackend === 'cloud') {
+              setStep(6); // Skip Docker for cloud-only
+            } else {
+              setStep(2); // Go to Docker check for hybrid
+            }
+          }}
+        >
           Continue →
         </button>
       </div>
@@ -558,10 +722,10 @@ export default function SetupWizard({ onComplete }) {
       </div>
 
       <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between' }}>
-        <button className="btn" onClick={() => setStep(4)}>
+        <button className="btn" onClick={() => setStep(getPreviousStep())}>
           ← Back
         </button>
-        <button className="btn btn-primary" onClick={() => setStep(6)}>
+        <button className="btn btn-primary" onClick={() => setStep(7)}>
           Continue →
         </button>
       </div>
@@ -570,82 +734,136 @@ export default function SetupWizard({ onComplete }) {
 
   const renderModelSelection = () => (
     <div className="setup-step">
-      <h2>Model Downloads</h2>
+      <h2>Model Configuration</h2>
       <p style={{ marginBottom: '2rem', color: 'var(--color-text-muted)' }}>
-        Select which AI models to install. You can add more later.
+        {config.aiBackend === 'cloud' 
+          ? 'Configure which cloud AI providers to use for different functions.'
+          : 'Select which AI models to install locally. These will be downloaded and run on your server.'}
       </p>
 
-      {/* Model selection UI - simplified */}
       <div style={{ display: 'grid', gap: '1rem' }}>
-        <div style={{ padding: '1rem', backgroundColor: 'var(--color-bg)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
-          <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Text Generation (required)</h4>
-          <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>
-            Used for lessons, quizzes, and AI conversations
-          </p>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <input type="checkbox" checked readOnly />
-            <span>DeepSeek R1 1.5B (2GB) - Fast</span>
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <input type="checkbox" checked readOnly />
-            <span>Phi 3.5 (2.5GB) - Accurate</span>
-          </label>
-        </div>
+        {config.aiBackend !== 'cloud' && (
+          <>
+            <div style={{ padding: '1rem', backgroundColor: 'var(--color-bg)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
+              <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Text Generation Models (required)</h4>
+              <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>
+                Used for lessons, quizzes, and AI conversations
+              </p>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <input type="checkbox" checked readOnly />
+                <span>DeepSeek R1 1.5B (2GB) - Fast for inference</span>
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <input type="checkbox" checked readOnly />
+                <span>Phi 3.5 (2.5GB) - Accurate for reasoning</span>
+              </label>
+              <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.75rem', margin: 0 }}>
+                💾 Total: 4.5GB • ⏱️ Installation: 5-10 minutes
+              </p>
+            </div>
 
-        <div style={{ padding: '1rem', backgroundColor: 'var(--color-bg)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
-          <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>
-            Image Generation {config.gpuType ? '(GPU-accelerated)' : '(CPU fallback)'}
-          </h4>
-          <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>
-            Used for illustrations, diagrams, and visual learning
-          </p>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <input
-              type="checkbox"
-              checked={config.models.image}
-              onChange={(e) => setConfig({
-                ...config,
-                models: { ...config.models, image: e.target.checked }
-              })}
-            />
-            <span>
-              Flux Schnell (5GB) - {config.gpuType ? config.gpuType.toUpperCase() + ' accelerated' : 'Optional'}
-            </span>
-          </label>
-        </div>
+            <div style={{ padding: '1rem', backgroundColor: 'var(--color-bg)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
+              <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>
+                Image Generation {config.gpuType ? `(${config.gpuType.toUpperCase()} Accelerated)` : '(CPU)'}
+              </h4>
+              <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>
+                Used for illustrations, diagrams, and visual learning
+              </p>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <input
+                  type="checkbox"
+                  checked={config.models.image}
+                  onChange={(e) => setConfig({
+                    ...config,
+                    models: { ...config.models, image: e.target.checked }
+                  })}
+                />
+                <span>
+                  Flux Schnell (5GB)
+                  {config.gpuType 
+                    ? ` - GPU: ~2s per image` 
+                    : ` - CPU: ~30s per image (slow)`}
+                </span>
+              </label>
+              <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.5rem', margin: 0 }}>
+                💾 {config.models.image ? '5GB additional' : 'Skipped'} • {config.gpuType ? '⚡ GPU-accelerated' : '⏱️ Slower on CPU'}
+              </p>
+            </div>
 
-        <div style={{ padding: '1rem', backgroundColor: 'var(--color-bg)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
-          <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Text-to-Speech</h4>
-          <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>
-            Used for reading passages aloud and phonics practice
-          </p>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <input type="checkbox" checked readOnly />
-            <span>Edge TTS (built-in, free)</span>
-          </label>
-        </div>
-      </div>
+            <div style={{ padding: '1rem', backgroundColor: 'var(--color-bg)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
+              <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Text-to-Speech</h4>
+              <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>
+                Used for reading passages aloud and phonics practice
+              </p>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <input type="checkbox" checked readOnly />
+                <span>Edge TTS (built-in, free, 50+ languages)</span>
+              </label>
+              <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.5rem', margin: 0 }}>
+                💾 Included • Multiple voices and accents
+              </p>
+            </div>
 
-      <div style={{
-        marginTop: '1.5rem',
-        padding: '1rem',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        borderRadius: '6px',
-        fontSize: '0.875rem'
-      }}>
-        <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--color-primary)' }}>
-          📥 Total download: ~{config.models.image ? '9.5GB' : '4.5GB'}
-        </div>
-        <p style={{ margin: 0, color: 'var(--color-text-muted)' }}>
-          Estimated time: 5-15 minutes depending on internet speed
-        </p>
+            <div style={{
+              marginTop: '1rem',
+              padding: '1rem',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              borderRadius: '6px',
+              fontSize: '0.875rem'
+            }}>
+              <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--color-primary)' }}>
+                📥 Total download estimate: {config.models.image ? '~9.5GB' : '~4.5GB'}
+              </div>
+              <p style={{ margin: 0, color: 'var(--color-text-muted)' }}>
+                ⏱️ Installation time: {config.models.image ? '10-20 minutes' : '5-10 minutes'} (depends on internet speed)
+              </p>
+            </div>
+          </>
+        )}
+
+        {config.aiBackend === 'cloud' && (
+          <div style={{
+            padding: '1.5rem',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderRadius: '8px',
+            border: '1px solid var(--color-success)',
+            fontSize: '0.875rem'
+          }}>
+            <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--color-success)' }}>
+              ✓ Cloud-Only Mode Active
+            </div>
+            <p style={{ color: 'var(--color-text-muted)', margin: 0, marginBottom: '0.5rem' }}>
+              No local models needed. All AI requests will use cloud APIs. You can customize your API provider preferences in the AI Config tab after setup.
+            </p>
+            <p style={{ color: 'var(--color-text-muted)', margin: 0 }}>
+              Internet connection required for all features.
+            </p>
+          </div>
+        )}
+
+        {config.aiBackend === 'hybrid' && (
+          <div style={{
+            padding: '1.5rem',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            borderRadius: '8px',
+            border: '1px solid var(--color-warning)',
+            fontSize: '0.875rem'
+          }}>
+            <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--color-warning)' }}>
+              🔀 Hybrid Mode Active
+            </div>
+            <p style={{ color: 'var(--color-text-muted)', margin: 0 }}>
+              Local models will be installed for faster offline responses. Cloud APIs provide fallback when local is busy or for advanced features.
+            </p>
+          </div>
+        )}
       </div>
 
       <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between' }}>
-        <button className="btn" onClick={() => setStep(5)}>
+        <button className="btn" onClick={() => setStep(getPreviousStep())}>
           ← Back
         </button>
-        <button className="btn btn-primary" onClick={() => setStep(7)}>
+        <button className="btn btn-primary" onClick={() => setStep(8)}>
           Continue →
         </button>
       </div>
@@ -684,16 +902,19 @@ export default function SetupWizard({ onComplete }) {
             onChange={(e) => setConfig({ ...config, adminPassword: e.target.value })}
             style={{ width: '100%' }}
           />
+          <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
+            Use a strong password. Store it securely.
+          </p>
         </div>
       </div>
 
       <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between' }}>
-        <button className="btn" onClick={() => setStep(6)}>
+        <button className="btn" onClick={() => setStep(getPreviousStep())}>
           ← Back
         </button>
         <button
           className="btn btn-primary"
-          onClick={() => setStep(8)}
+          onClick={() => setStep(9)}
           disabled={!config.adminEmail || !config.adminPassword || config.adminPassword.length < 8}
         >
           Continue →
@@ -725,19 +946,27 @@ export default function SetupWizard({ onComplete }) {
                 <span style={{ color: 'var(--color-text-muted)' }}>AI Backend:</span>
                 <strong>{config.aiBackend === 'local' ? 'Local Only' : config.aiBackend === 'cloud' ? 'Cloud Only' : 'Hybrid'}</strong>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--color-text-muted)' }}>GPU:</span>
-                <strong>{config.gpuType ? config.gpuType.toUpperCase() : 'None (CPU)'}</strong>
-              </div>
+              {config.aiBackend !== 'cloud' && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>GPU:</span>
+                  <strong>{config.gpuType ? config.gpuType.toUpperCase() : 'None (CPU)'}</strong>
+                </div>
+              )}
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--color-text-muted)' }}>Server IP:</span>
                 <strong>{config.serverIp}</strong>
               </div>
+              {config.aiBackend !== 'local' && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>API Keys:</span>
+                  <strong>{Object.values(config.apiKeys).filter(k => k).length} configured</strong>
+                </div>
+              )}
             </div>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <button className="btn" onClick={() => setStep(7)}>
+            <button className="btn" onClick={() => setStep(getPreviousStep())}>
               ← Back
             </button>
             <button
@@ -783,7 +1012,7 @@ export default function SetupWizard({ onComplete }) {
           </div>
 
           <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', textAlign: 'center' }}>
-            This may take 5-15 minutes. Please don't close this window.
+            This may take 10-25 minutes depending on your selection. Please don't close this window.
           </p>
         </>
       )}
@@ -794,14 +1023,25 @@ export default function SetupWizard({ onComplete }) {
     <div className="setup-wizard">
       <div className="setup-progress">
         <div className="setup-steps">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
-            <div
-              key={s}
-              className={`setup-step-indicator ${s < step ? 'completed' : s === step ? 'active' : ''}`}
-            >
-              {s < step ? <Check size={16} /> : s}
-            </div>
-          ))}
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(s => {
+            const isVisible = config.deploymentMode === 'join-cluster' 
+              ? s <= 2 
+              : config.aiBackend === 'cloud'
+                ? s <= 8 && s !== 3 && s !== 7 && s !== 5 // Skip GPU, skip full models step, but keep API keys
+                : true;
+            
+            if (!isVisible) return null;
+
+            return (
+              <div
+                key={s}
+                className={`setup-step-indicator ${s < step ? 'completed' : s === step ? 'active' : ''}`}
+                title={['Mode', 'Docker/API/Cluster', 'GPU/Network', 'AI Backend', 'API Keys', 'Network', 'Models', 'Account', 'Install'][s-1]}
+              >
+                {s < step ? <Check size={16} /> : s}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -823,17 +1063,21 @@ export default function SetupWizard({ onComplete }) {
         .setup-steps {
           display: flex;
           gap: 0.5rem;
-          max-width: 600px;
+          max-width: 100%;
           margin: 0 auto;
+          justify-content: center;
+          flex-wrap: wrap;
         }
         .setup-step-indicator {
           flex: 1;
+          min-width: 40px;
           height: 40px;
           display: flex;
           align-items: center;
           justify-content: center;
           border-radius: 6px;
           font-weight: 600;
+          font-size: 0.75rem;
           background: var(--color-bg);
           color: var(--color-text-muted);
         }
@@ -848,25 +1092,24 @@ export default function SetupWizard({ onComplete }) {
         .setup-content {
           flex: 1;
           overflow-y: auto;
-          padding: 3rem;
+          padding: 2rem 4rem;
+          max-width: 800px;
+          margin: 0 auto;
+          width: 100%;
+          box-sizing: border-box;
         }
         .setup-step {
-          max-width: 700px;
-          margin: 0 auto;
+          animation: slideIn 0.3s ease-out;
         }
-        .setup-step h2 {
-          margin-top: 0;
-          margin-bottom: 0.5rem;
-        }
-        .setup-step input[type="text"],
-        .setup-step input[type="email"],
-        .setup-step input[type="password"] {
-          padding: 0.75rem;
-          border: 1px solid var(--color-border);
-          border-radius: 6px;
-          background: var(--color-bg);
-          color: var(--color-text);
-          font-size: 1rem;
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
         .spin {
           animation: spin 1s linear infinite;
@@ -874,6 +1117,14 @@ export default function SetupWizard({ onComplete }) {
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+        @media (max-width: 768px) {
+          .setup-progress {
+            padding: 1rem 2rem;
+          }
+          .setup-content {
+            padding: 1rem 2rem;
+          }
         }
       `}</style>
     </div>
