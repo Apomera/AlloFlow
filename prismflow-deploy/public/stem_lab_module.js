@@ -1,4 +1,4 @@
-// stem_lab_module.js — v2.3.0 (a11y enhancements)
+﻿// stem_lab_module.js — v2.3.0 (a11y enhancements)
 (function () {
   if (window.AlloModules && window.AlloModules.StemLab) { console.log('[CDN] StemLab already loaded, skipping duplicate'); } else {
     // stem_lab_module.js
@@ -2091,6 +2091,11 @@
                 ready: true
               },
               {
+                id: 'moneyMath', icon: '💵', label: 'Money Math',
+                desc: 'Coins, bills, making change, grocery store sim, money word problems, and currency exchange. Multi-currency with USD, EUR, GBP & more.',
+                color: 'emerald', ready: true
+              },
+              {
                 // @tool coordinate
                 id: 'coordinate',
                 icon: '📍',
@@ -2322,6 +2327,11 @@
                 id: 'economicsLab', icon: '💰', label: 'Economics Lab',
                 desc: 'Supply & demand curves, personal finance life sim, stock market trading, macro economics dashboard, and lemonade stand entrepreneur sim.',
                 color: 'emerald', ready: true
+              },
+              {
+                id: 'lifeSkills', icon: '\uD83E\uDDED', label: 'Life Skills Lab',
+                desc: 'Tax & paycheck calculator, data literacy, decision matrix, contract reader, health insurance navigator, and applied science for daily life.',
+                color: 'cyan', ready: true
               },
 
               { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
@@ -3708,7 +3718,2148 @@
             return /*#__PURE__*/React.createElement("div", {
               className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200"
             }, headerEl, /*#__PURE__*/React.createElement("p", { className: "text-sm text-slate-400 text-center" }, "Select a tool above to get started."));
-          })(), stemLabTab === 'explore' && stemLabTool === 'coordinate' && (() => {
+          })(), stemLabTab === 'explore' && stemLabTool === 'moneyMath' && (() => {
+            // ══════════════════════════════════════════════════════
+            // MONEY MATH — Financial Literacy Manipulatives
+            // ══════════════════════════════════════════════════════
+            const d = labToolData.moneyMath || {};
+            const upd = (key, val) => setLabToolData(prev => ({ ...prev, moneyMath: { ...prev.moneyMath, [key]: val } }));
+
+            const tab = d.tab || 'coins';
+            const grade = d.grade || 'elementary';
+            const currency = d.currency || 'USD';
+
+            // ── Currency definitions ──
+            const CURRENCIES = {
+              USD: { symbol: '$', name: 'US Dollar', code: 'USD', flag: '\uD83C\uDDFA\uD83C\uDDF8',
+                coins: [
+                  { name: 'Penny', value: 0.01, color: '#b87333', size: 28, label: '1\u00A2' },
+                  { name: 'Nickel', value: 0.05, color: '#C0C0C0', size: 32, label: '5\u00A2' },
+                  { name: 'Dime', value: 0.10, color: '#C0C0C0', size: 26, label: '10\u00A2' },
+                  { name: 'Quarter', value: 0.25, color: '#C0C0C0', size: 36, label: '25\u00A2' },
+                  { name: 'Half Dollar', value: 0.50, color: '#C0C0C0', size: 40, label: '50\u00A2' },
+                  { name: 'Dollar Coin', value: 1.00, color: '#FFD700', size: 38, label: '$1' }
+                ],
+                bills: [
+                  { name: '$1 Bill', value: 1, color: '#85bb65' },
+                  { name: '$5 Bill', value: 5, color: '#85bb65' },
+                  { name: '$10 Bill', value: 10, color: '#85bb65' },
+                  { name: '$20 Bill', value: 20, color: '#85bb65' },
+                  { name: '$50 Bill', value: 50, color: '#85bb65' },
+                  { name: '$100 Bill', value: 100, color: '#85bb65' }
+                ]
+              },
+              EUR: { symbol: '\u20AC', name: 'Euro', code: 'EUR', flag: '\uD83C\uDDEA\uD83C\uDDFA',
+                coins: [
+                  { name: '1 Cent', value: 0.01, color: '#b87333', size: 24, label: '1c' },
+                  { name: '2 Cent', value: 0.02, color: '#b87333', size: 26, label: '2c' },
+                  { name: '5 Cent', value: 0.05, color: '#b87333', size: 28, label: '5c' },
+                  { name: '10 Cent', value: 0.10, color: '#FFD700', size: 28, label: '10c' },
+                  { name: '20 Cent', value: 0.20, color: '#FFD700', size: 30, label: '20c' },
+                  { name: '50 Cent', value: 0.50, color: '#FFD700', size: 32, label: '50c' },
+                  { name: '\u20AC1', value: 1.00, color: '#C0C0C0', size: 34, label: '\u20AC1' },
+                  { name: '\u20AC2', value: 2.00, color: '#C0C0C0', size: 36, label: '\u20AC2' }
+                ],
+                bills: [
+                  { name: '\u20AC5', value: 5, color: '#808080' }, { name: '\u20AC10', value: 10, color: '#D2691E' },
+                  { name: '\u20AC20', value: 20, color: '#4169E1' }, { name: '\u20AC50', value: 50, color: '#FF8C00' },
+                  { name: '\u20AC100', value: 100, color: '#228B22' }, { name: '\u20AC200', value: 200, color: '#DAA520' }
+                ]
+              },
+              GBP: { symbol: '\u00A3', name: 'British Pound', code: 'GBP', flag: '\uD83C\uDDEC\uD83C\uDDE7',
+                coins: [
+                  { name: '1p', value: 0.01, color: '#b87333', size: 26, label: '1p' },
+                  { name: '2p', value: 0.02, color: '#b87333', size: 30, label: '2p' },
+                  { name: '5p', value: 0.05, color: '#C0C0C0', size: 24, label: '5p' },
+                  { name: '10p', value: 0.10, color: '#C0C0C0', size: 28, label: '10p' },
+                  { name: '20p', value: 0.20, color: '#C0C0C0', size: 28, label: '20p' },
+                  { name: '50p', value: 0.50, color: '#C0C0C0', size: 32, label: '50p' },
+                  { name: '\u00A31', value: 1.00, color: '#FFD700', size: 30, label: '\u00A31' },
+                  { name: '\u00A32', value: 2.00, color: '#C0C0C0', size: 34, label: '\u00A32' }
+                ],
+                bills: [
+                  { name: '\u00A35', value: 5, color: '#4BB5C1' }, { name: '\u00A310', value: 10, color: '#D2691E' },
+                  { name: '\u00A320', value: 20, color: '#8B008B' }, { name: '\u00A350', value: 50, color: '#DC143C' }
+                ]
+              },
+              CAD: { symbol: 'C$', name: 'Canadian Dollar', code: 'CAD', flag: '\uD83C\uDDE8\uD83C\uDDE6',
+                coins: [
+                  { name: '1\u00A2', value: 0.01, color: '#b87333', size: 26, label: '1\u00A2' },
+                  { name: '5\u00A2', value: 0.05, color: '#C0C0C0', size: 28, label: '5\u00A2' },
+                  { name: '10\u00A2', value: 0.10, color: '#C0C0C0', size: 26, label: '10\u00A2' },
+                  { name: '25\u00A2', value: 0.25, color: '#C0C0C0', size: 30, label: '25\u00A2' },
+                  { name: 'Loonie', value: 1.00, color: '#FFD700', size: 34, label: '$1' },
+                  { name: 'Toonie', value: 2.00, color: '#C0C0C0', size: 36, label: '$2' }
+                ],
+                bills: [
+                  { name: 'C$5', value: 5, color: '#4169E1' }, { name: 'C$10', value: 10, color: '#8B008B' },
+                  { name: 'C$20', value: 20, color: '#228B22' }, { name: 'C$50', value: 50, color: '#DC143C' },
+                  { name: 'C$100', value: 100, color: '#DAA520' }
+                ]
+              },
+              JPY: { symbol: '\u00A5', name: 'Japanese Yen', code: 'JPY', flag: '\uD83C\uDDEF\uD83C\uDDF5',
+                coins: [
+                  { name: '1\u5186', value: 1, color: '#C0C0C0', size: 26, label: '\u00A51' },
+                  { name: '5\u5186', value: 5, color: '#DAA520', size: 28, label: '\u00A55' },
+                  { name: '10\u5186', value: 10, color: '#b87333', size: 30, label: '\u00A510' },
+                  { name: '50\u5186', value: 50, color: '#C0C0C0', size: 28, label: '\u00A550' },
+                  { name: '100\u5186', value: 100, color: '#C0C0C0', size: 30, label: '\u00A5100' },
+                  { name: '500\u5186', value: 500, color: '#FFD700', size: 34, label: '\u00A5500' }
+                ],
+                bills: [
+                  { name: '\u00A51,000', value: 1000, color: '#4169E1' },
+                  { name: '\u00A55,000', value: 5000, color: '#8B008B' },
+                  { name: '\u00A510,000', value: 10000, color: '#DAA520' }
+                ]
+              },
+              MXN: { symbol: 'MX$', name: 'Mexican Peso', code: 'MXN', flag: '\uD83C\uDDF2\uD83C\uDDFD',
+                coins: [
+                  { name: '10\u00A2', value: 0.10, color: '#C0C0C0', size: 22, label: '10c' },
+                  { name: '20\u00A2', value: 0.20, color: '#C0C0C0', size: 24, label: '20c' },
+                  { name: '50\u00A2', value: 0.50, color: '#C0C0C0', size: 26, label: '50c' },
+                  { name: '$1', value: 1, color: '#C0C0C0', size: 28, label: '$1' },
+                  { name: '$2', value: 2, color: '#C0C0C0', size: 28, label: '$2' },
+                  { name: '$5', value: 5, color: '#C0C0C0', size: 30, label: '$5' },
+                  { name: '$10', value: 10, color: '#C0C0C0', size: 34, label: '$10' },
+                  { name: '$20', value: 20, color: '#C0C0C0', size: 36, label: '$20' }
+                ],
+                bills: [
+                  { name: 'MX$20', value: 20, color: '#4169E1' }, { name: 'MX$50', value: 50, color: '#DC143C' },
+                  { name: 'MX$100', value: 100, color: '#228B22' }, { name: 'MX$200', value: 200, color: '#DAA520' },
+                  { name: 'MX$500', value: 500, color: '#8B008B' }, { name: 'MX$1000', value: 1000, color: '#808080' }
+                ]
+              },
+              AUD: { symbol: 'A$', name: 'Australian Dollar', code: 'AUD', flag: '\uD83C\uDDE6\uD83C\uDDFA',
+                coins: [
+                  { name: '5\u00A2', value: 0.05, color: '#C0C0C0', size: 26, label: '5c' },
+                  { name: '10\u00A2', value: 0.10, color: '#C0C0C0', size: 28, label: '10c' },
+                  { name: '20\u00A2', value: 0.20, color: '#C0C0C0', size: 32, label: '20c' },
+                  { name: '50\u00A2', value: 0.50, color: '#C0C0C0', size: 38, label: '50c' },
+                  { name: 'A$1', value: 1.00, color: '#FFD700', size: 32, label: '$1' },
+                  { name: 'A$2', value: 2.00, color: '#FFD700', size: 28, label: '$2' }
+                ],
+                bills: [
+                  { name: 'A$5', value: 5, color: '#aa76c5' }, { name: 'A$10', value: 10, color: '#4169E1' },
+                  { name: 'A$20', value: 20, color: '#DC143C' }, { name: 'A$50', value: 50, color: '#DAA520' },
+                  { name: 'A$100', value: 100, color: '#228B22' }
+                ]
+              },
+              INR: { symbol: '\u20B9', name: 'Indian Rupee', code: 'INR', flag: '\uD83C\uDDEE\uD83C\uDDF3',
+                coins: [
+                  { name: '\u20B91', value: 1, color: '#C0C0C0', size: 28, label: '\u20B91' },
+                  { name: '\u20B92', value: 2, color: '#C0C0C0', size: 30, label: '\u20B92' },
+                  { name: '\u20B95', value: 5, color: '#C0C0C0', size: 30, label: '\u20B95' },
+                  { name: '\u20B910', value: 10, color: '#C0C0C0', size: 34, label: '\u20B910' },
+                  { name: '\u20B920', value: 20, color: '#FFD700', size: 34, label: '\u20B920' }
+                ],
+                bills: [
+                  { name: '\u20B910', value: 10, color: '#D2691E' }, { name: '\u20B920', value: 20, color: '#228B22' },
+                  { name: '\u20B950', value: 50, color: '#3CB371' }, { name: '\u20B9100', value: 100, color: '#4169E1' },
+                  { name: '\u20B9200', value: 200, color: '#FF8C00' }, { name: '\u20B9500', value: 500, color: '#808080' },
+                  { name: '\u20B92000', value: 2000, color: '#DC143C' }
+                ]
+              }
+            };
+
+            const cur = CURRENCIES[currency] || CURRENCIES.USD;
+            const isJPY = currency === 'JPY';
+            const fmt = (v) => isJPY ? (cur.symbol + Math.round(v).toLocaleString()) : (cur.symbol + v.toFixed(2));
+
+            // ── Approximate exchange rates (for educational use) ──
+            const RATES = { USD: 1, EUR: 0.92, GBP: 0.79, CAD: 1.36, JPY: 149.5, MXN: 17.1, AUD: 1.54, INR: 83.1 };
+            const convert = (amount, from, to) => amount / RATES[from] * RATES[to];
+
+            // ── Grade-specific config ──
+            const GRADE_CONFIG = {
+              elementary: { label: '\uD83C\uDFEB Elementary (K\u20135)', maxPrice: 10, coinsOnly: false, includePercent: false, includeTax: false, maxItems: 4, wordProblemLevel: 'simple' },
+              middle: { label: '\uD83C\uDFEB Middle (6\u20138)', maxPrice: 50, coinsOnly: false, includePercent: true, includeTax: false, maxItems: 6, wordProblemLevel: 'moderate' },
+              high: { label: '\uD83C\uDFEB High School (9\u201312)', maxPrice: 200, coinsOnly: false, includePercent: true, includeTax: true, maxItems: 8, wordProblemLevel: 'advanced' },
+              college: { label: '\uD83C\uDFEB College', maxPrice: 1000, coinsOnly: false, includePercent: true, includeTax: true, maxItems: 10, wordProblemLevel: 'expert' }
+            };
+            const gc = GRADE_CONFIG[grade] || GRADE_CONFIG.elementary;
+
+            // ── Board state for coin counting ──
+            var placed = d.placed || [];
+            var boardTotal = placed.reduce(function (s, p) { return s + p.value; }, 0);
+
+            // ── Making Change state ──
+            var changePrice = typeof d.changePrice === 'number' ? d.changePrice : 0;
+            var changePaid = typeof d.changePaid === 'number' ? d.changePaid : 0;
+            var changeAnswer = typeof d.changeAnswer === 'number' ? d.changeAnswer : null;
+            var changeFeedback = d.changeFeedback || null;
+
+            // ── Store state ──
+            var cart = d.cart || [];
+            var cartTotal = cart.reduce(function (s, item) { return s + item.price * (item.qty || 1); }, 0);
+            var taxRate = gc.includeTax ? 0.08 : 0;
+            var cartTax = cartTotal * taxRate;
+            var cartGrand = cartTotal + cartTax;
+
+            // ── Generate store items based on grade ──
+            var storeItems = d.storeItems;
+            if (!storeItems) {
+              var baseItems = [
+                { name: '\uD83C\uDF4E Apple', price: 0.75, cat: 'Produce' },
+                { name: '\uD83C\uDF4C Banana', price: 0.50, cat: 'Produce' },
+                { name: '\uD83E\uDD5B Milk', price: 3.49, cat: 'Dairy' },
+                { name: '\uD83C\uDF5E Bread', price: 2.99, cat: 'Bakery' },
+                { name: '\uD83E\uDDC0 Cheese', price: 4.50, cat: 'Dairy' },
+                { name: '\uD83C\uDF6B Chocolate', price: 1.25, cat: 'Snacks' },
+                { name: '\uD83C\uDF7C Juice Box', price: 0.99, cat: 'Drinks' },
+                { name: '\uD83E\uDD5C Peanut Butter', price: 3.75, cat: 'Pantry' },
+                { name: '\uD83C\uDF63 Sushi Pack', price: 7.99, cat: 'Prepared' },
+                { name: '\uD83E\uDD5A Eggs (dozen)', price: 3.29, cat: 'Dairy' },
+                { name: '\uD83C\uDF55 Frozen Pizza', price: 5.49, cat: 'Frozen' },
+                { name: '\uD83E\uDD66 Broccoli', price: 1.79, cat: 'Produce' }
+              ];
+              storeItems = baseItems.filter(function (item) { return item.price <= gc.maxPrice; });
+              upd('storeItems', storeItems);
+            }
+
+            // ── Generate change problem ──
+            var genChangeProblem = function () {
+              var maxVal = gc.maxPrice;
+              var price = isJPY ? (Math.floor(Math.random() * (maxVal * 0.8)) + 10) : (Math.floor(Math.random() * maxVal * 100) / 100 + 0.25);
+              price = isJPY ? Math.round(price / 10) * 10 : Math.round(price * 100) / 100;
+              var overpay = isJPY ? [100, 500, 1000, 5000, 10000] : [1, 5, 10, 20, 50, 100];
+              var paid = overpay.find(function (v) { return v >= price; }) || overpay[overpay.length - 1];
+              if (paid < price) paid = Math.ceil(price / 10) * 10;
+              upd('changePrice', price);
+              upd('changePaid', paid);
+              upd('changeAnswer', null);
+              upd('changeFeedback', null);
+            };
+
+            // ── Exchange rate problem generator ──
+            var genExchangeProblem = function () {
+              var codes = Object.keys(CURRENCIES);
+              var from = codes[Math.floor(Math.random() * codes.length)];
+              var to = codes[Math.floor(Math.random() * codes.length)];
+              while (to === from) to = codes[Math.floor(Math.random() * codes.length)];
+              var amount = grade === 'elementary' ? (Math.floor(Math.random() * 9) + 1) * 10 :
+                           grade === 'middle' ? Math.floor(Math.random() * 450) + 50 :
+                           Math.floor(Math.random() * 4500) + 500;
+              var correctAnswer = Math.round(convert(amount, from, to) * 100) / 100;
+              upd('exchFrom', from); upd('exchTo', to); upd('exchAmount', amount);
+              upd('exchCorrect', correctAnswer); upd('exchAnswer', null); upd('exchFeedback', null);
+            };
+
+            // ── Word problem via AI ──
+            var genWordProblem = function () {
+              upd('wpLoading', true); upd('wpProblem', null); upd('wpAnswer', null); upd('wpFeedback', null);
+              var levelText = gc.wordProblemLevel;
+              var taxNote = gc.includeTax ? ' Include sales tax problems (8% rate).' : '';
+              var percentNote = gc.includePercent ? ' Include percentage, discount, and tip calculations.' : '';
+              var currNote = 'Use ' + cur.name + ' (' + cur.symbol + ').';
+              var convNote = Object.keys(CURRENCIES).length > 1 ? ' Occasionally include currency conversion between two currencies from: USD, EUR, GBP, CAD, JPY, MXN, AUD, INR. Use approximate exchange rates.' : '';
+              var prompt = 'Generate ONE money math word problem for a ' + levelText + ' level student. ' + currNote + taxNote + percentNote + convNote +
+                '\n\nReturn ONLY valid JSON with NO markdown:\n{"problem":"...","hint":"...","answer":number,"explanation":"step-by-step solution","category":"one of: counting|change|shopping|percent|tax|tip|conversion|budgeting"}';
+              if (typeof callGemini === 'function') {
+                callGemini(prompt, { temperature: 0.9, maxTokens: 500 }).then(function (resp) {
+                  try {
+                    var cleaned = (resp || '').replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+                    var parsed = JSON.parse(cleaned);
+                    upd('wpProblem', parsed); upd('wpLoading', false);
+                  } catch (e) { upd('wpLoading', false); if (typeof addToast === 'function') addToast('Could not parse word problem. Try again!', 'warning'); }
+                }).catch(function () { upd('wpLoading', false); if (typeof addToast === 'function') addToast('AI unavailable \u2014 try again later.', 'error'); });
+              } else { upd('wpLoading', false); }
+            };
+
+            // ── Tip & Discount problem generator ──
+            var genTipProblem = function () {
+              var bill = isJPY ? (Math.floor(Math.random() * 80 + 10) * 100) : (Math.floor(Math.random() * (gc.maxPrice * 0.8) * 100) / 100 + 5);
+              bill = isJPY ? bill : Math.round(bill * 100) / 100;
+              var tipPcts = [10, 15, 18, 20, 25];
+              var tipPct = tipPcts[Math.floor(Math.random() * tipPcts.length)];
+              var diners = Math.floor(Math.random() * 5) + 2;
+              upd('tipBill', bill); upd('tipPct', tipPct); upd('tipDiners', diners);
+              upd('tipAnswer', null); upd('tipFeedback', null); upd('tipMode', 'tip');
+            };
+            var genDiscountProblem = function () {
+              var original = isJPY ? (Math.floor(Math.random() * 90 + 10) * 100) : (Math.round((Math.random() * gc.maxPrice * 0.9 + 5) * 100) / 100);
+              var discounts = [10, 15, 20, 25, 30, 40, 50, 75];
+              var disc = discounts[Math.floor(Math.random() * discounts.length)];
+              var hasCoupon = Math.random() > 0.5 && gc.includePercent;
+              var couponAmt = hasCoupon ? (isJPY ? [100, 200, 500][Math.floor(Math.random() * 3)] : [0.50, 1, 2, 5][Math.floor(Math.random() * 4)]) : 0;
+              upd('discOriginal', original); upd('discPercent', disc); upd('discCoupon', couponAmt);
+              upd('discAnswer', null); upd('discFeedback', null); upd('tipMode', 'discount');
+            };
+
+            // ── Budget planner state ──
+            var budgetIncome = typeof d.budgetIncome === 'number' ? d.budgetIncome : (isJPY ? 300000 : (grade === 'elementary' ? 100 : grade === 'middle' ? 500 : grade === 'high' ? 1500 : 4000));
+            var budgetCats = d.budgetCats || [
+              { name: '\uD83C\uDFE0 Housing', pct: 30, color: '#3b82f6' },
+              { name: '\uD83C\uDF5E Food', pct: 20, color: '#10b981' },
+              { name: '\uD83D\uDE97 Transport', pct: 15, color: '#f59e0b' },
+              { name: '\uD83D\uDCDA Education', pct: 10, color: '#8b5cf6' },
+              { name: '\uD83C\uDFAE Entertainment', pct: 10, color: '#ec4899' },
+              { name: '\uD83D\uDCB0 Savings', pct: 10, color: '#06b6d4' },
+              { name: '\u2764\uFE0F Other', pct: 5, color: '#6b7280' }
+            ];
+            var budgetUsed = budgetCats.reduce(function (s, c) { return s + c.pct; }, 0);
+
+            // ── Fewest coins challenge ──
+            var genFewestCoinsChallenge = function () {
+              var maxC = isJPY ? 5000 : gc.maxPrice;
+              var target = isJPY ? (Math.floor(Math.random() * 49 + 1) * 100 + Math.floor(Math.random() * 10) * 10) : (Math.round((Math.random() * maxC + 0.10) * 100) / 100);
+              // Greedy algorithm for fewest coins+bills
+              var allDenoms = cur.bills.map(function (b) { return b.value; }).concat(cur.coins.map(function (c) { return c.value; })).sort(function (a, b) { return b - a; });
+              var remaining = Math.round(target * 100);
+              var count = 0;
+              allDenoms.forEach(function (dv) {
+                var dCents = Math.round(dv * 100);
+                while (remaining >= dCents) { remaining -= dCents; count++; }
+              });
+              upd('fcTarget', target); upd('fcOptimal', count); upd('fcAnswer', null); upd('fcFeedback', null);
+              upd('fcPlaced', []);
+            };
+
+            // ── Unit pricing problem ──
+            var genUnitPriceProblem = function () {
+              var items = [
+                { name: '\uD83C\uDF4E Apples', unit: 'lb' }, { name: '\uD83C\uDF4C Bananas', unit: 'lb' },
+                { name: '\uD83E\uDD5B Milk', unit: 'gallon' }, { name: '\uD83E\uDDC3 Juice', unit: 'oz' },
+                { name: '\uD83C\uDF5E Bread', unit: 'loaf' }, { name: '\uD83C\uDF6B Cereal', unit: 'oz' },
+                { name: '\uD83E\uDDFB Paper Towels', unit: 'roll' }, { name: '\u2615 Coffee', unit: 'oz' }
+              ];
+              var item = items[Math.floor(Math.random() * items.length)];
+              var qtyA = Math.floor(Math.random() * 5) + 1;
+              var priceA = Math.round((Math.random() * 8 + 1) * 100) / 100;
+              var qtyB = qtyA + Math.floor(Math.random() * 5) + 1;
+              var betterDeal = Math.random() > 0.5;
+              var unitPriceA = priceA / qtyA;
+              var priceB = betterDeal ? Math.round(unitPriceA * qtyB * (0.7 + Math.random() * 0.25) * 100) / 100 : Math.round(unitPriceA * qtyB * (1.05 + Math.random() * 0.3) * 100) / 100;
+              upd('upItem', item); upd('upA', { qty: qtyA, price: priceA }); upd('upB', { qty: qtyB, price: priceB });
+              upd('upAnswer', null); upd('upFeedback', null);
+            };
+
+            // ── Personal Finance state ──
+            var finSub = d.finSub || 'compound';
+            // Compound interest defaults
+            var ciPrincipal = typeof d.ciPrincipal === 'number' ? d.ciPrincipal : 1000;
+            var ciRate = typeof d.ciRate === 'number' ? d.ciRate : 7;
+            var ciYears = typeof d.ciYears === 'number' ? d.ciYears : 10;
+            var ciFreq = d.ciFreq || 'yearly';
+            var freqMap = { daily: 365, monthly: 12, quarterly: 4, yearly: 1 };
+            var ciN = freqMap[ciFreq] || 1;
+            // Compound interest calculation
+            var ciCompound = ciPrincipal * Math.pow(1 + (ciRate / 100) / ciN, ciN * ciYears);
+            var ciSimple = ciPrincipal * (1 + (ciRate / 100) * ciYears);
+            var ciCompoundInterest = ciCompound - ciPrincipal;
+            var ciSimpleInterest = ciSimple - ciPrincipal;
+            // Growth table (year-by-year)
+            var ciTable = [];
+            for (var yr = 0; yr <= Math.min(ciYears, 50); yr++) {
+              ciTable.push({ year: yr, compound: ciPrincipal * Math.pow(1 + (ciRate / 100) / ciN, ciN * yr), simple: ciPrincipal * (1 + (ciRate / 100) * yr) });
+            }
+
+            // Retirement defaults
+            var retAge = typeof d.retAge === 'number' ? d.retAge : 22;
+            var retRetireAge = typeof d.retRetireAge === 'number' ? d.retRetireAge : 65;
+            var retMonthly = typeof d.retMonthly === 'number' ? d.retMonthly : 200;
+            var retMatch = typeof d.retMatch === 'number' ? d.retMatch : 50;
+            var retMatchCap = typeof d.retMatchCap === 'number' ? d.retMatchCap : 6;
+            var retReturn = typeof d.retReturn === 'number' ? d.retReturn : 7;
+            // Retirement calculation
+            var calcRetirement = function (startAge, monthly, matchPct, matchCap, annualReturn) {
+              var years = retRetireAge - startAge;
+              if (years <= 0) return { total: 0, contributed: 0, growth: 0, yearly: [] };
+              var r = annualReturn / 100 / 12;
+              var totalContrib = 0;
+              var balance = 0;
+              var yearly = [{ age: startAge, balance: 0 }];
+              for (var m = 0; m < years * 12; m++) {
+                var employeeContrib = monthly;
+                var salaryGuess = monthly * 12 / (matchCap / 100 || 1);
+                var employerContrib = Math.min(monthly, salaryGuess * matchCap / 100) * (matchPct / 100);
+                var contrib = employeeContrib + employerContrib;
+                totalContrib += contrib;
+                balance = (balance + contrib) * (1 + r);
+                if ((m + 1) % 12 === 0) yearly.push({ age: startAge + Math.floor((m + 1) / 12), balance: balance });
+              }
+              return { total: balance, contributed: totalContrib, growth: balance - totalContrib, yearly: yearly };
+            };
+            var retResult = calcRetirement(retAge, retMonthly, retMatch, retMatchCap, retReturn);
+            var retLateResult = calcRetirement(retAge + 10, retMonthly, retMatch, retMatchCap, retReturn);
+
+            // Loan calculator defaults
+            var loanAmt = typeof d.loanAmt === 'number' ? d.loanAmt : 25000;
+            var loanRate = typeof d.loanRate === 'number' ? d.loanRate : 5;
+            var loanTerm = typeof d.loanTerm === 'number' ? d.loanTerm : 60;
+            var loanType = d.loanType || 'auto';
+            var loanPresets = {
+              auto: { label: '\uD83D\uDE97 Auto Loan', amt: 25000, rate: 5, term: 60 },
+              student: { label: '\uD83C\uDF93 Student Loan', amt: 35000, rate: 5.5, term: 120 },
+              mortgage: { label: '\uD83C\uDFE0 Mortgage', amt: 250000, rate: 6.5, term: 360 },
+              credit: { label: '\uD83D\uDCB3 Credit Card', amt: 5000, rate: 22, term: 60 }
+            };
+            // Monthly payment = P * [r(1+r)^n] / [(1+r)^n - 1]
+            var loanR = loanRate / 100 / 12;
+            var loanMonthly = loanR > 0 ? loanAmt * (loanR * Math.pow(1 + loanR, loanTerm)) / (Math.pow(1 + loanR, loanTerm) - 1) : loanAmt / loanTerm;
+            var loanTotalPaid = loanMonthly * loanTerm;
+            var loanTotalInterest = loanTotalPaid - loanAmt;
+            // Amortization highlights
+            var loanAmort = [];
+            var loanBal = loanAmt;
+            for (var mo = 1; mo <= loanTerm; mo++) {
+              var intPmt = loanBal * loanR;
+              var prinPmt = loanMonthly - intPmt;
+              loanBal = Math.max(0, loanBal - prinPmt);
+              if (mo === 1 || mo === Math.floor(loanTerm / 4) || mo === Math.floor(loanTerm / 2) || mo === Math.floor(loanTerm * 3 / 4) || mo === loanTerm) {
+                loanAmort.push({ month: mo, payment: loanMonthly, interest: intPmt, principal: prinPmt, balance: loanBal });
+              }
+            }
+
+            // Savings goal defaults
+            var sgGoal = d.sgGoal || 'car';
+            var sgGoals = {
+              car: { label: '\uD83D\uDE97 Car', target: 15000, emoji: '\uD83D\uDE97' },
+              college: { label: '\uD83C\uDF93 College Fund', target: 50000, emoji: '\uD83C\uDF93' },
+              house: { label: '\uD83C\uDFE0 House Down Payment', target: 60000, emoji: '\uD83C\uDFE0' },
+              emergency: { label: '\uD83D\uDEE1\uFE0F Emergency Fund', target: 10000, emoji: '\uD83D\uDEE1\uFE0F' },
+              vacation: { label: '\u2708\uFE0F Vacation', target: 3000, emoji: '\u2708\uFE0F' },
+              custom: { label: '\u2B50 Custom Goal', target: 5000, emoji: '\u2B50' }
+            };
+            var sgTarget = typeof d.sgTarget === 'number' ? d.sgTarget : sgGoals[sgGoal].target;
+            var sgMonths = typeof d.sgMonths === 'number' ? d.sgMonths : 24;
+            var sgHave = typeof d.sgHave === 'number' ? d.sgHave : 0;
+            var sgRate = typeof d.sgRate === 'number' ? d.sgRate : 2;
+            var sgRemaining = Math.max(0, sgTarget - sgHave);
+            // With interest: FV = PMT * [((1+r)^n - 1) / r], solve for PMT
+            var sgR = sgRate / 100 / 12;
+            var sgMonthlyNeeded = sgR > 0 ? sgRemaining / ((Math.pow(1 + sgR, sgMonths) - 1) / sgR) : sgRemaining / sgMonths;
+            var sgWeeklyNeeded = sgMonthlyNeeded * 12 / 52;
+            var sgDailyNeeded = sgMonthlyNeeded * 12 / 365;
+
+            // ── TABS ──
+            var tabs = [
+              { id: 'coins', label: '\uD83E\uDE99 Coins & Bills', icon: '\uD83E\uDE99' },
+              { id: 'change', label: '\uD83D\uDCB5 Making Change', icon: '\uD83D\uDCB5' },
+              { id: 'tips', label: '\uD83D\uDCB3 Tips & Discounts', icon: '\uD83D\uDCB3' },
+              { id: 'store', label: '\uD83D\uDED2 Grocery Store', icon: '\uD83D\uDED2' },
+              { id: 'budget', label: '\uD83D\uDCCA Budget', icon: '\uD83D\uDCCA' },
+              { id: 'challenges', label: '\uD83C\uDFC6 Challenges', icon: '\uD83C\uDFC6' },
+              { id: 'word', label: '\uD83D\uDCDD Word Problems', icon: '\uD83D\uDCDD' },
+              { id: 'exchange', label: '\uD83C\uDF0D Currency Exchange', icon: '\uD83C\uDF0D' },
+              { id: 'finance', label: '\uD83D\uDCB0 Personal Finance', icon: '\uD83D\uDCB0' }
+            ];
+
+            return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto animate-in fade-in duration-200" },
+              // ── HEADER ──
+              React.createElement("div", { className: "bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 rounded-2xl p-5 text-white shadow-xl" },
+                React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-3" },
+                  React.createElement("div", null,
+                    React.createElement("h2", { className: "text-xl font-black flex items-center gap-2" }, "\uD83D\uDCB5 Money Math"),
+                    React.createElement("p", { className: "text-emerald-100 text-xs mt-1" }, "Master coins, bills, change, budgeting & currency exchange")
+                  ),
+                  React.createElement("div", { className: "flex gap-2 flex-wrap" },
+                    // Grade selector
+                    React.createElement("select", { value: grade, onChange: function (e) { upd('grade', e.target.value); upd('storeItems', null); upd('cart', []); },
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white/20 text-white border border-white/30 backdrop-blur-sm outline-none cursor-pointer"
+                    }, Object.entries(GRADE_CONFIG).map(function (entry) {
+                      return React.createElement("option", { key: entry[0], value: entry[0], style: { color: '#1e293b' } }, entry[1].label);
+                    })),
+                    // Currency selector
+                    React.createElement("select", { value: currency, onChange: function (e) { upd('currency', e.target.value); upd('placed', []); upd('storeItems', null); upd('cart', []); },
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white/20 text-white border border-white/30 backdrop-blur-sm outline-none cursor-pointer"
+                    }, Object.keys(CURRENCIES).map(function (code) {
+                      return React.createElement("option", { key: code, value: code, style: { color: '#1e293b' } }, CURRENCIES[code].flag + ' ' + code + ' (' + CURRENCIES[code].symbol + ')');
+                    }))
+                  )
+                )
+              ),
+
+              // ── TAB BAR ──
+              React.createElement("div", { className: "flex gap-1 bg-slate-100 rounded-xl p-1" },
+                tabs.map(function (t) {
+                  return React.createElement("button", { key: t.id, onClick: function () { upd('tab', t.id); },
+                    className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === t.id ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50')
+                  }, t.label);
+                })
+              ),
+
+              // ═══ COINS & BILLS TAB ═══
+              tab === 'coins' && React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" },
+                // Coin palette
+                React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200" },
+                  React.createElement("h3", { className: "text-sm font-bold text-amber-800 mb-3" }, "\uD83E\uDE99 " + cur.flag + " " + cur.name + " Coins"),
+                  React.createElement("p", { className: "text-[10px] text-amber-600 mb-3" }, "Click coins to add them to your counting board."),
+                  React.createElement("div", { className: "flex flex-wrap gap-3 justify-center" },
+                    cur.coins.map(function (coin, ci) {
+                      return React.createElement("button", { key: ci, onClick: function () {
+                          upd('placed', [].concat(placed, [{ name: coin.name, value: coin.value, id: Date.now() + '-' + ci }]));
+                        },
+                        className: "flex flex-col items-center gap-1 group transition-transform hover:scale-110",
+                        title: coin.name + ' = ' + fmt(coin.value)
+                      },
+                        React.createElement("div", { style: {
+                          width: coin.size + 'px', height: coin.size + 'px', borderRadius: '50%',
+                          background: 'radial-gradient(circle at 35% 35%, ' + coin.color + ', ' + coin.color + 'cc)',
+                          border: '2px solid rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: Math.max(9, coin.size / 3.5) + 'px', fontWeight: 'bold', color: '#333',
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.4)',
+                          cursor: 'pointer', transition: 'all 0.15s'
+                        } }, coin.label),
+                        React.createElement("span", { className: "text-[9px] font-bold text-amber-700" }, coin.name)
+                      );
+                    })
+                  ),
+                  // Bill palette
+                  React.createElement("h3", { className: "text-sm font-bold text-green-800 mt-4 mb-3" }, "\uD83D\uDCB5 " + cur.name + " Bills"),
+                  React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" },
+                    cur.bills.map(function (bill, bi) {
+                      return React.createElement("button", { key: bi, onClick: function () {
+                          upd('placed', [].concat(placed, [{ name: bill.name, value: bill.value, id: Date.now() + '-b' + bi }]));
+                        },
+                        className: "group transition-transform hover:scale-105"
+                      },
+                        React.createElement("div", { style: {
+                          width: '72px', height: '32px', borderRadius: '4px',
+                          background: 'linear-gradient(135deg, ' + bill.color + ', ' + bill.color + 'aa)',
+                          border: '1px solid rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '11px', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.15)', cursor: 'pointer'
+                        } }, bill.name)
+                      );
+                    })
+                  )
+                ),
+                // Counting board
+                React.createElement("div", { className: "bg-gradient-to-br from-slate-50 to-white rounded-xl p-4 border border-slate-200" },
+                  React.createElement("div", { className: "flex items-center justify-between mb-3" },
+                    React.createElement("h3", { className: "text-sm font-bold text-slate-700" }, "\uD83E\uDDEE Counting Board"),
+                    React.createElement("div", { className: "flex items-center gap-2" },
+                      React.createElement("span", { className: "text-lg font-black text-emerald-600" }, fmt(boardTotal)),
+                      placed.length > 0 && React.createElement("button", { onClick: function () { upd('placed', []); },
+                        className: "text-[10px] text-red-400 hover:text-red-600 font-bold"
+                      }, "\u2715 Clear")
+                    )
+                  ),
+                  placed.length === 0
+                    ? React.createElement("div", { className: "text-center py-8 text-slate-300" },
+                        React.createElement("div", { className: "text-4xl mb-2" }, "\uD83E\uDE99"),
+                        React.createElement("p", { className: "text-xs" }, "Click coins or bills to add them here")
+                      )
+                    : React.createElement("div", { className: "flex flex-wrap gap-1.5 min-h-[100px]" },
+                        placed.map(function (p, pi) {
+                          var isBill = p.value >= (isJPY ? 1000 : 1) && !p.name.toLowerCase().includes('coin') && !p.name.toLowerCase().includes('penny') && !p.name.toLowerCase().includes('cent') && !p.name.toLowerCase().includes('dime') && !p.name.toLowerCase().includes('nickel') && !p.name.toLowerCase().includes('quarter') && !p.name.toLowerCase().includes('loonie') && !p.name.toLowerCase().includes('toonie');
+                          return React.createElement("button", { key: p.id || pi, onClick: function () {
+                              upd('placed', placed.filter(function (_, idx) { return idx !== pi; }));
+                            }, title: 'Remove ' + p.name,
+                            className: "transition-all hover:scale-110 hover:opacity-70 cursor-pointer"
+                          },
+                            isBill
+                              ? React.createElement("div", { style: { width: '56px', height: '24px', borderRadius: '3px', background: '#85bb65', border: '1px solid rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold', color: '#fff' } }, fmt(p.value))
+                              : React.createElement("div", { style: { width: '28px', height: '28px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, #C0C0C0, #999)', border: '1px solid rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 'bold', color: '#333' } }, fmt(p.value))
+                          );
+                        })
+                      ),
+                  placed.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200" },
+                    React.createElement("div", { className: "flex justify-between text-xs" },
+                      React.createElement("span", { className: "text-slate-500" }, placed.length + " items on board"),
+                      React.createElement("span", { className: "font-bold text-emerald-600" }, "Total: " + fmt(boardTotal))
+                    )
+                  )
+                )
+              ),
+
+              // ═══ MAKING CHANGE TAB ═══
+              tab === 'change' && React.createElement("div", { className: "bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-200" },
+                React.createElement("h3", { className: "text-base font-bold text-blue-800 mb-4" }, "\uD83D\uDCB5 Making Change Practice"),
+                !changePrice
+                  ? React.createElement("div", { className: "text-center py-8" },
+                      React.createElement("p", { className: "text-slate-500 text-sm mb-4" }, "Generate a problem to practice making change with " + cur.flag + " " + cur.name),
+                      React.createElement("button", { onClick: genChangeProblem,
+                        className: "px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-all shadow-lg text-sm"
+                      }, "\u2728 Generate Problem")
+                    )
+                  : React.createElement("div", { className: "space-y-4" },
+                      React.createElement("div", { className: "bg-white rounded-xl p-4 shadow-sm border border-blue-100" },
+                        React.createElement("div", { className: "grid grid-cols-3 gap-4 text-center" },
+                          React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Price"),
+                            React.createElement("p", { className: "text-2xl font-black text-red-500" }, fmt(changePrice))
+                          ),
+                          React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Customer Pays"),
+                            React.createElement("p", { className: "text-2xl font-black text-blue-500" }, fmt(changePaid))
+                          ),
+                          React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Change Due"),
+                            React.createElement("p", { className: "text-2xl font-black text-emerald-600" }, "?")
+                          )
+                        )
+                      ),
+                      React.createElement("div", { className: "flex items-center gap-3" },
+                        React.createElement("label", { className: "text-sm font-bold text-slate-600" }, "Your answer:"),
+                        React.createElement("input", { type: "number", step: isJPY ? "1" : "0.01", placeholder: cur.symbol + "...",
+                          value: changeAnswer !== null ? changeAnswer : '',
+                          onChange: function (e) { upd('changeAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); },
+                          className: "px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold w-32 focus:ring-2 focus:ring-blue-400 outline-none"
+                        }),
+                        React.createElement("button", { onClick: function () {
+                            var correct = Math.round((changePaid - changePrice) * 100) / 100;
+                            var userAns = Math.round((changeAnswer || 0) * 100) / 100;
+                            var isRight = Math.abs(userAns - correct) < 0.005;
+                            upd('changeFeedback', isRight ? { ok: true, msg: '\u2705 Correct! ' + fmt(changePaid) + ' \u2212 ' + fmt(changePrice) + ' = ' + fmt(correct) } : { ok: false, msg: '\u274C Not quite. ' + fmt(changePaid) + ' \u2212 ' + fmt(changePrice) + ' = ' + fmt(correct) });
+                            if (isRight && typeof addXP === 'function') addXP(15, 'Money Math: Making change');
+                          },
+                          className: "px-5 py-2 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-all text-sm"
+                        }, "\u2714 Check")
+                      ),
+                      changeFeedback && React.createElement("p", { className: "text-sm font-bold " + (changeFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, changeFeedback.msg),
+                      React.createElement("button", { onClick: genChangeProblem,
+                        className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs"
+                      }, "\u21BB Next Problem")
+                    )
+              ),
+
+              // ═══ GROCERY STORE TAB ═══
+              tab === 'store' && React.createElement("div", { className: "space-y-4" },
+                React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4" },
+                  // Store shelves
+                  React.createElement("div", { className: "md:col-span-2 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200" },
+                    React.createElement("h3", { className: "text-sm font-bold text-orange-800 mb-3" }, "\uD83D\uDED2 " + cur.flag + " Store Shelves"),
+                    React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2" },
+                      (storeItems || []).map(function (item, ii) {
+                        return React.createElement("button", { key: ii, onClick: function () {
+                            var existing = cart.findIndex(function (c) { return c.name === item.name; });
+                            if (existing >= 0) {
+                              var newCart = cart.map(function (c, idx) { return idx === existing ? Object.assign({}, c, { qty: (c.qty || 1) + 1 }) : c; });
+                              upd('cart', newCart);
+                            } else {
+                              upd('cart', [].concat(cart, [{ name: item.name, price: item.price, qty: 1 }]));
+                            }
+                            if (typeof addToast === 'function') addToast('Added ' + item.name + ' to cart!', 'success');
+                          },
+                          className: "p-3 bg-white rounded-xl border border-orange-100 hover:border-orange-300 hover:shadow-md transition-all text-left group"
+                        },
+                          React.createElement("div", { className: "text-2xl mb-1" }, item.name.split(' ')[0]),
+                          React.createElement("p", { className: "text-xs font-bold text-slate-700 truncate" }, item.name.substring(item.name.indexOf(' ') + 1)),
+                          React.createElement("p", { className: "text-sm font-black text-emerald-600" }, fmt(item.price)),
+                          React.createElement("span", { className: "text-[9px] text-orange-400 group-hover:text-orange-600 font-bold" }, "+ Add to cart")
+                        );
+                      })
+                    )
+                  ),
+                  // Cart
+                  React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-200" },
+                    React.createElement("h3", { className: "text-sm font-bold text-emerald-800 mb-2" }, "\uD83D\uDED2 Your Cart"),
+                    cart.length === 0
+                      ? React.createElement("p", { className: "text-xs text-slate-400 text-center py-4" }, "Cart is empty. Click items to add!")
+                      : React.createElement("div", { className: "space-y-1.5" },
+                          cart.map(function (item, ci) {
+                            return React.createElement("div", { key: ci, className: "flex items-center justify-between bg-white rounded-lg px-2 py-1.5 border border-emerald-100" },
+                              React.createElement("span", { className: "text-xs font-medium text-slate-700 flex-1 truncate" }, (item.qty > 1 ? item.qty + 'x ' : '') + item.name),
+                              React.createElement("span", { className: "text-xs font-bold text-emerald-600 ml-2" }, fmt(item.price * (item.qty || 1))),
+                              React.createElement("button", { onClick: function () {
+                                  if (item.qty > 1) { upd('cart', cart.map(function (c, idx) { return idx === ci ? Object.assign({}, c, { qty: c.qty - 1 }) : c; })); }
+                                  else { upd('cart', cart.filter(function (_, idx) { return idx !== ci; })); }
+                                }, className: "ml-1 text-red-300 hover:text-red-500 text-xs font-bold"
+                              }, "\u2715")
+                            );
+                          })
+                        ),
+                    cart.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-emerald-200 space-y-1" },
+                      React.createElement("div", { className: "flex justify-between text-xs" },
+                        React.createElement("span", { className: "text-slate-500" }, "Subtotal"),
+                        React.createElement("span", { className: "font-bold" }, fmt(cartTotal))
+                      ),
+                      gc.includeTax && React.createElement("div", { className: "flex justify-between text-xs" },
+                        React.createElement("span", { className: "text-slate-500" }, "Tax (8%)"),
+                        React.createElement("span", { className: "font-bold text-orange-500" }, fmt(cartTax))
+                      ),
+                      React.createElement("div", { className: "flex justify-between text-sm font-black" },
+                        React.createElement("span", { className: "text-slate-700" }, "Total"),
+                        React.createElement("span", { className: "text-emerald-600" }, fmt(cartGrand))
+                      ),
+                      React.createElement("button", { onClick: function () {
+                        if (typeof addXP === 'function') addXP(20, 'Money Math: Completed a grocery purchase');
+                        if (typeof addToast === 'function') addToast('\uD83C\uDF89 Purchase complete! Total: ' + fmt(cartGrand), 'success');
+                        upd('cart', []);
+                      }, className: "w-full mt-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-green-600 transition-all text-sm shadow-md" }, "\uD83D\uDCB3 Checkout"),
+                      React.createElement("button", { onClick: function () { upd('cart', []); }, className: "w-full px-3 py-1.5 text-xs text-red-400 hover:text-red-600 font-bold" }, "Clear Cart")
+                    )
+                  )
+                )
+              ),
+
+              // ═══ WORD PROBLEMS TAB ═══
+              tab === 'word' && React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-5 border border-violet-200" },
+                React.createElement("h3", { className: "text-base font-bold text-violet-800 mb-2" }, "\uD83D\uDCDD Money Word Problems"),
+                React.createElement("p", { className: "text-xs text-violet-500 mb-4" }, "AI-generated problems at " + gc.label + " level using " + cur.flag + " " + cur.name),
+                !d.wpProblem && !d.wpLoading
+                  ? React.createElement("div", { className: "text-center py-8" },
+                      React.createElement("button", { onClick: genWordProblem,
+                        className: "px-6 py-3 bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold rounded-xl hover:from-violet-600 hover:to-purple-600 transition-all shadow-lg text-sm"
+                      }, "\u2728 Generate Word Problem")
+                    )
+                  : d.wpLoading
+                    ? React.createElement("div", { className: "text-center py-8" },
+                        React.createElement("div", { className: "animate-spin text-3xl mb-2" }, "\u2699\uFE0F"),
+                        React.createElement("p", { className: "text-xs text-violet-500 font-bold" }, "Generating problem...")
+                      )
+                    : React.createElement("div", { className: "space-y-4" },
+                        React.createElement("div", { className: "bg-white rounded-xl p-4 shadow-sm border border-violet-100" },
+                          d.wpProblem.category && React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[9px] font-bold bg-violet-100 text-violet-600 mb-2" }, d.wpProblem.category.toUpperCase()),
+                          React.createElement("p", { className: "text-sm text-slate-700 leading-relaxed" }, d.wpProblem.problem)
+                        ),
+                        d.wpProblem.hint && React.createElement("button", { onClick: function () { upd('wpShowHint', !d.wpShowHint); },
+                          className: "text-xs font-bold text-amber-500 hover:text-amber-700"
+                        }, d.wpShowHint ? '\uD83D\uDCA1 Hide Hint' : '\uD83D\uDCA1 Show Hint'),
+                        d.wpShowHint && React.createElement("p", { className: "text-xs text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200" }, d.wpProblem.hint),
+                        React.createElement("div", { className: "flex items-center gap-3" },
+                          React.createElement("input", { type: "number", step: isJPY ? "1" : "0.01", placeholder: "Your answer...",
+                            value: d.wpAnswer !== null && d.wpAnswer !== undefined ? d.wpAnswer : '',
+                            onChange: function (e) { upd('wpAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); },
+                            className: "px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold w-36 focus:ring-2 focus:ring-violet-400 outline-none"
+                          }),
+                          React.createElement("button", { onClick: function () {
+                              var correct = d.wpProblem.answer;
+                              var userAns = d.wpAnswer;
+                              var isRight = typeof correct === 'number' && typeof userAns === 'number' && Math.abs(userAns - correct) < (correct * 0.02 + 0.01);
+                              upd('wpFeedback', isRight ? { ok: true, msg: '\u2705 Correct!' } : { ok: false, msg: '\u274C The answer is ' + (typeof correct === 'number' ? fmt(correct) : correct) });
+                              if (isRight && typeof addXP === 'function') addXP(25, 'Money Math: Word problem solved');
+                            },
+                            className: "px-5 py-2 bg-violet-500 text-white font-bold rounded-xl hover:bg-violet-600 transition-all text-sm"
+                          }, "\u2714 Check")
+                        ),
+                        d.wpFeedback && React.createElement("p", { className: "text-sm font-bold " + (d.wpFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.wpFeedback.msg),
+                        d.wpFeedback && !d.wpFeedback.ok && d.wpProblem.explanation && React.createElement("div", { className: "bg-slate-50 rounded-xl p-3 border border-slate-200" },
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-1" }, "Solution"),
+                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed whitespace-pre-line" }, d.wpProblem.explanation)
+                        ),
+                        React.createElement("button", { onClick: genWordProblem,
+                          className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs"
+                        }, "\u21BB New Problem")
+                      )
+              ),
+
+              // ═══ CURRENCY EXCHANGE TAB ═══
+              tab === 'exchange' && React.createElement("div", { className: "bg-gradient-to-br from-sky-50 to-cyan-50 rounded-xl p-5 border border-sky-200" },
+                React.createElement("h3", { className: "text-base font-bold text-sky-800 mb-2" }, "\uD83C\uDF0D Currency Exchange"),
+                React.createElement("p", { className: "text-xs text-sky-500 mb-4" }, "Practice converting between world currencies (approximate rates)"),
+                // Exchange rate reference
+                React.createElement("div", { className: "bg-white rounded-xl p-3 border border-sky-100 mb-4" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-sky-400 uppercase mb-2" }, "Reference Rates (vs 1 USD)"),
+                  React.createElement("div", { className: "flex flex-wrap gap-2" },
+                    Object.entries(CURRENCIES).map(function (entry) {
+                      return React.createElement("span", { key: entry[0], className: "text-[10px] font-bold px-2 py-1 rounded-full " + (entry[0] === currency ? 'bg-sky-200 text-sky-800' : 'bg-slate-100 text-slate-600') },
+                        entry[1].flag + ' ' + entry[0] + ' = ' + RATES[entry[0]].toFixed(entry[0] === 'JPY' || entry[0] === 'INR' ? 1 : 2)
+                      );
+                    })
+                  )
+                ),
+                // Problem area
+                !d.exchFrom
+                  ? React.createElement("div", { className: "text-center py-6" },
+                      React.createElement("button", { onClick: genExchangeProblem,
+                        className: "px-6 py-3 bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-bold rounded-xl hover:from-sky-600 hover:to-cyan-600 transition-all shadow-lg text-sm"
+                      }, "\u2728 Generate Conversion Problem")
+                    )
+                  : React.createElement("div", { className: "space-y-4" },
+                      React.createElement("div", { className: "bg-white rounded-xl p-4 shadow-sm border border-sky-100 text-center" },
+                        React.createElement("p", { className: "text-sm text-slate-600 mb-2" }, "Convert:"),
+                        React.createElement("div", { className: "flex items-center justify-center gap-3 flex-wrap" },
+                          React.createElement("div", { className: "bg-sky-100 rounded-xl px-4 py-2" },
+                            React.createElement("p", { className: "text-2xl font-black text-sky-700" }, CURRENCIES[d.exchFrom].symbol + (d.exchAmount || 0).toLocaleString()),
+                            React.createElement("p", { className: "text-xs text-sky-500" }, CURRENCIES[d.exchFrom].flag + ' ' + d.exchFrom)
+                          ),
+                          React.createElement("span", { className: "text-xl text-slate-400 font-bold" }, "\u2192"),
+                          React.createElement("div", { className: "bg-emerald-100 rounded-xl px-4 py-2" },
+                            React.createElement("p", { className: "text-2xl font-black text-emerald-700" }, CURRENCIES[d.exchTo].symbol + '?'),
+                            React.createElement("p", { className: "text-xs text-emerald-500" }, CURRENCIES[d.exchTo].flag + ' ' + d.exchTo)
+                          )
+                        )
+                      ),
+                      React.createElement("div", { className: "flex items-center gap-3" },
+                        React.createElement("input", { type: "number", step: "0.01", placeholder: CURRENCIES[d.exchTo].symbol + "...",
+                          value: d.exchAnswer !== null && d.exchAnswer !== undefined ? d.exchAnswer : '',
+                          onChange: function (e) { upd('exchAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); },
+                          className: "px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold w-40 focus:ring-2 focus:ring-sky-400 outline-none"
+                        }),
+                        React.createElement("button", { onClick: function () {
+                            var correct = d.exchCorrect;
+                            var userAns = d.exchAnswer;
+                            var tolerance = Math.abs(correct) * 0.05 + 0.01;
+                            var isRight = typeof userAns === 'number' && Math.abs(userAns - correct) < tolerance;
+                            upd('exchFeedback', isRight
+                              ? { ok: true, msg: '\u2705 Correct! ' + CURRENCIES[d.exchFrom].symbol + (d.exchAmount).toLocaleString() + ' ' + d.exchFrom + ' \u2248 ' + CURRENCIES[d.exchTo].symbol + correct.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' ' + d.exchTo }
+                              : { ok: false, msg: '\u274C The answer is approximately ' + CURRENCIES[d.exchTo].symbol + correct.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' ' + d.exchTo }
+                            );
+                            if (isRight && typeof addXP === 'function') addXP(20, 'Money Math: Currency conversion');
+                          },
+                          className: "px-5 py-2 bg-sky-500 text-white font-bold rounded-xl hover:bg-sky-600 transition-all text-sm"
+                        }, "\u2714 Check")
+                      ),
+                      d.exchFeedback && React.createElement("p", { className: "text-sm font-bold " + (d.exchFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.exchFeedback.msg),
+                      React.createElement("button", { onClick: genExchangeProblem,
+                        className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs"
+                      }, "\u21BB Next Problem")
+                    )
+              ),
+
+              // ═══ TIPS & DISCOUNTS TAB ═══
+              tab === 'tips' && React.createElement("div", { className: "space-y-4" },
+                React.createElement("div", { className: "bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-5 border border-pink-200" },
+                  React.createElement("h3", { className: "text-base font-bold text-pink-800 mb-3" }, "\uD83D\uDCB3 Tips & Discounts"),
+                  React.createElement("div", { className: "flex gap-2 mb-4" },
+                    React.createElement("button", { onClick: genTipProblem, className: "flex-1 px-4 py-2 rounded-xl text-xs font-bold transition-all " + ((d.tipMode || 'tip') === 'tip' ? 'bg-pink-600 text-white shadow-md' : 'bg-white text-pink-600 border border-pink-200 hover:bg-pink-50') }, "\uD83C\uDF7D Tip Calculator"),
+                    React.createElement("button", { onClick: genDiscountProblem, className: "flex-1 px-4 py-2 rounded-xl text-xs font-bold transition-all " + (d.tipMode === 'discount' ? 'bg-pink-600 text-white shadow-md' : 'bg-white text-pink-600 border border-pink-200 hover:bg-pink-50') }, "\uD83C\uDFF7\uFE0F Discount Shopping")
+                  ),
+                  // Tip mode
+                  (d.tipMode || 'tip') === 'tip' && (!d.tipBill
+                    ? React.createElement("div", { className: "text-center py-6" },
+                        React.createElement("p", { className: "text-sm text-slate-500 mb-3" }, "Practice calculating restaurant tips and splitting bills"),
+                        React.createElement("button", { onClick: genTipProblem, className: "px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all shadow-lg text-sm" }, "\u2728 Generate Tip Problem")
+                      )
+                    : React.createElement("div", { className: "space-y-4" },
+                        React.createElement("div", { className: "bg-white rounded-xl p-4 shadow-sm border border-pink-100" },
+                          React.createElement("div", { className: "grid grid-cols-3 gap-3 text-center" },
+                            React.createElement("div", null, React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Bill Total"), React.createElement("p", { className: "text-xl font-black text-pink-600" }, fmt(d.tipBill))),
+                            React.createElement("div", null, React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Tip %"), React.createElement("p", { className: "text-xl font-black text-amber-500" }, d.tipPct + '%')),
+                            React.createElement("div", null, React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Diners"), React.createElement("p", { className: "text-xl font-black text-blue-500" }, d.tipDiners))
+                          ),
+                          React.createElement("p", { className: "text-xs text-center text-slate-500 mt-3" }, "How much does each person pay (bill + tip, split " + d.tipDiners + " ways)?")
+                        ),
+                        React.createElement("div", { className: "flex items-center gap-3" },
+                          React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: 'Per person...',
+                            value: d.tipAnswer != null ? d.tipAnswer : '', onChange: function (e) { upd('tipAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); },
+                            className: "px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold w-36 focus:ring-2 focus:ring-pink-400 outline-none"
+                          }),
+                          React.createElement("button", { onClick: function () {
+                              var tipAmt = d.tipBill * (d.tipPct / 100);
+                              var totalWithTip = d.tipBill + tipAmt;
+                              var perPerson = Math.round(totalWithTip / d.tipDiners * 100) / 100;
+                              var isRight = typeof d.tipAnswer === 'number' && Math.abs(d.tipAnswer - perPerson) < 0.02;
+                              upd('tipFeedback', isRight
+                                ? { ok: true, msg: '\u2705 Correct! Tip: ' + fmt(tipAmt) + ' \u2192 Total: ' + fmt(totalWithTip) + ' \u00F7 ' + d.tipDiners + ' = ' + fmt(perPerson) + '/person' }
+                                : { ok: false, msg: '\u274C Tip: ' + fmt(tipAmt) + ' \u2192 Total: ' + fmt(totalWithTip) + ' \u00F7 ' + d.tipDiners + ' = ' + fmt(perPerson) + '/person' }
+                              );
+                              if (isRight && typeof addXP === 'function') addXP(15, 'Money Math: Tip calculation');
+                            }, className: "px-5 py-2 bg-pink-500 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm"
+                          }, "\u2714 Check")
+                        ),
+                        d.tipFeedback && React.createElement("p", { className: "text-sm font-bold " + (d.tipFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.tipFeedback.msg),
+                        React.createElement("button", { onClick: genTipProblem, className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs" }, "\u21BB Next Problem")
+                      )
+                  ),
+                  // Discount mode
+                  d.tipMode === 'discount' && (!d.discOriginal
+                    ? React.createElement("div", { className: "text-center py-6" },
+                        React.createElement("p", { className: "text-sm text-slate-500 mb-3" }, "Calculate sale prices with percentage discounts" + (gc.includePercent ? ' and coupons' : '')),
+                        React.createElement("button", { onClick: genDiscountProblem, className: "px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all shadow-lg text-sm" }, "\u2728 Generate Discount Problem")
+                      )
+                    : React.createElement("div", { className: "space-y-4" },
+                        React.createElement("div", { className: "bg-white rounded-xl p-4 shadow-sm border border-pink-100" },
+                          React.createElement("div", { className: "text-center" },
+                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Original Price"),
+                            React.createElement("p", { className: "text-2xl font-black text-slate-400 line-through" }, fmt(d.discOriginal)),
+                            React.createElement("div", { className: "flex items-center justify-center gap-2 mt-2" },
+                              React.createElement("span", { className: "px-3 py-1 bg-red-100 text-red-600 text-sm font-black rounded-full" }, d.discPercent + '% OFF'),
+                              d.discCoupon > 0 && React.createElement("span", { className: "px-3 py-1 bg-amber-100 text-amber-600 text-sm font-black rounded-full" }, '+ ' + fmt(d.discCoupon) + ' coupon')
+                            ),
+                            React.createElement("p", { className: "text-xs text-slate-500 mt-2" }, "What is the final price" + (d.discCoupon > 0 ? ' after discount AND coupon' : '') + '?')
+                          )
+                        ),
+                        React.createElement("div", { className: "flex items-center gap-3" },
+                          React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: 'Sale price...',
+                            value: d.discAnswer != null ? d.discAnswer : '', onChange: function (e) { upd('discAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); },
+                            className: "px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold w-36 focus:ring-2 focus:ring-pink-400 outline-none"
+                          }),
+                          React.createElement("button", { onClick: function () {
+                              var discounted = d.discOriginal * (1 - d.discPercent / 100);
+                              var final_ = Math.round((discounted - (d.discCoupon || 0)) * 100) / 100;
+                              if (final_ < 0) final_ = 0;
+                              var isRight = typeof d.discAnswer === 'number' && Math.abs(d.discAnswer - final_) < 0.02;
+                              upd('discFeedback', isRight
+                                ? { ok: true, msg: '\u2705 Correct! ' + fmt(d.discOriginal) + ' \u2212 ' + d.discPercent + '% = ' + fmt(discounted) + (d.discCoupon > 0 ? ' \u2212 ' + fmt(d.discCoupon) + ' coupon' : '') + ' = ' + fmt(final_) }
+                                : { ok: false, msg: '\u274C The sale price is ' + fmt(final_) + '. (' + fmt(d.discOriginal) + ' \u00D7 ' + (100 - d.discPercent) + '%)' + (d.discCoupon > 0 ? ' \u2212 ' + fmt(d.discCoupon) : '') }
+                              );
+                              if (isRight && typeof addXP === 'function') addXP(15, 'Money Math: Discount calculation');
+                            }, className: "px-5 py-2 bg-pink-500 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm"
+                          }, "\u2714 Check")
+                        ),
+                        d.discFeedback && React.createElement("p", { className: "text-sm font-bold " + (d.discFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.discFeedback.msg),
+                        React.createElement("button", { onClick: genDiscountProblem, className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs" }, "\u21BB Next Problem")
+                      )
+                  )
+                )
+              ),
+
+              // ═══ BUDGET PLANNER TAB ═══
+              tab === 'budget' && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-5 border border-indigo-200" },
+                React.createElement("h3", { className: "text-base font-bold text-indigo-800 mb-2" }, "\uD83D\uDCCA Budget Planner"),
+                React.createElement("p", { className: "text-xs text-indigo-500 mb-4" }, "Allocate your monthly income across spending categories"),
+                // Income input
+                React.createElement("div", { className: "flex items-center gap-3 mb-4" },
+                  React.createElement("label", { className: "text-sm font-bold text-slate-600" }, "Monthly Income:"),
+                  React.createElement("input", { type: "number", value: budgetIncome,
+                    onChange: function (e) { upd('budgetIncome', parseFloat(e.target.value) || 0); },
+                    className: "px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold w-40 focus:ring-2 focus:ring-indigo-400 outline-none"
+                  }),
+                  React.createElement("span", { className: "text-xs font-bold " + (budgetUsed === 100 ? 'text-emerald-600' : budgetUsed > 100 ? 'text-red-500' : 'text-amber-500') }, budgetUsed + '% allocated' + (budgetUsed !== 100 ? ' (' + (100 - budgetUsed) + '% remaining)' : ' \u2714'))
+                ),
+                // Category sliders
+                React.createElement("div", { className: "space-y-2 mb-4" },
+                  budgetCats.map(function (cat, ci) {
+                    var amount = budgetIncome * (cat.pct / 100);
+                    return React.createElement("div", { key: ci, className: "bg-white rounded-lg p-3 border border-slate-100" },
+                      React.createElement("div", { className: "flex items-center justify-between mb-1" },
+                        React.createElement("span", { className: "text-xs font-bold text-slate-700" }, cat.name),
+                        React.createElement("div", { className: "flex items-center gap-2" },
+                          React.createElement("span", { className: "text-xs font-black", style: { color: cat.color } }, cat.pct + '%'),
+                          React.createElement("span", { className: "text-xs font-bold text-slate-500" }, fmt(amount))
+                        )
+                      ),
+                      React.createElement("input", { type: "range", min: 0, max: 50, value: cat.pct,
+                        onChange: function (e) {
+                          var newCats = budgetCats.map(function (c, idx) { return idx === ci ? Object.assign({}, c, { pct: parseInt(e.target.value) }) : c; });
+                          upd('budgetCats', newCats);
+                        },
+                        className: "w-full h-2 rounded-full appearance-none cursor-pointer",
+                        style: { accentColor: cat.color }
+                      }),
+                      React.createElement("div", { className: "h-2 rounded-full mt-1 overflow-hidden bg-slate-100" },
+                        React.createElement("div", { style: { width: cat.pct + '%', height: '100%', background: cat.color, borderRadius: '9999px', transition: 'width 0.2s' } })
+                      )
+                    );
+                  })
+                ),
+                // Budget summary
+                React.createElement("div", { className: "bg-white rounded-xl p-4 border border-indigo-100" },
+                  React.createElement("p", { className: "text-xs font-bold text-slate-500 uppercase mb-2" }, "Budget Summary"),
+                  React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
+                    budgetCats.map(function (cat, ci) {
+                      return React.createElement("div", { key: ci, className: "text-center p-2 rounded-lg", style: { background: cat.color + '15' } },
+                        React.createElement("p", { className: "text-lg" }, cat.name.split(' ')[0]),
+                        React.createElement("p", { className: "text-xs font-black", style: { color: cat.color } }, fmt(budgetIncome * cat.pct / 100)),
+                        React.createElement("p", { className: "text-[9px] text-slate-400" }, cat.pct + '%')
+                      );
+                    })
+                  ),
+                  budgetUsed > 100 && React.createElement("p", { className: "text-xs font-bold text-red-500 text-center mt-3" }, "\u26A0\uFE0F Over budget by " + (budgetUsed - 100) + '%! Reduce some categories.'),
+                  budgetUsed === 100 && React.createElement("p", { className: "text-xs font-bold text-emerald-500 text-center mt-3" }, "\u2705 Perfectly balanced budget!")
+                )
+              ),
+
+              // ═══ CHALLENGES TAB ═══
+              tab === 'challenges' && React.createElement("div", { className: "space-y-4" },
+                React.createElement("h3", { className: "text-base font-bold text-amber-800 mb-2" }, "\uD83C\uDFC6 Money Challenges"),
+                // Fewest Coins challenge
+                React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200" },
+                  React.createElement("div", { className: "flex items-center justify-between mb-3" },
+                    React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "\uD83E\uDE99 Fewest Coins & Bills Challenge"),
+                    React.createElement("button", { onClick: genFewestCoinsChallenge, className: "px-3 py-1.5 bg-amber-500 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition-all" }, !d.fcTarget ? '\u2728 Start' : '\u21BB New')
+                  ),
+                  d.fcTarget && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("div", { className: "bg-white rounded-xl p-4 text-center border border-amber-100" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Make this amount with the FEWEST coins & bills"),
+                      React.createElement("p", { className: "text-3xl font-black text-amber-600" }, fmt(d.fcTarget)),
+                      React.createElement("p", { className: "text-[10px] text-slate-400 mt-1" }, "Optimal solution uses " + d.fcOptimal + " pieces")
+                    ),
+                    // Quick denomination buttons
+                    React.createElement("div", { className: "flex flex-wrap gap-1 justify-center" },
+                      cur.bills.slice().reverse().concat(cur.coins.slice().reverse()).map(function (item, idx) {
+                        return React.createElement("button", { key: idx, onClick: function () {
+                          upd('fcPlaced', [].concat(d.fcPlaced || [], [item.value]));
+                        }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white border border-amber-200 hover:bg-amber-50 transition-all" }, (item.name || fmt(item.value)));
+                      })
+                    ),
+                    // Placed items
+                    (d.fcPlaced || []).length > 0 && React.createElement("div", { className: "bg-white rounded-lg p-3 border border-slate-200" },
+                      React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                        React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "Your selection: " + (d.fcPlaced || []).length + " pieces"),
+                        React.createElement("span", { className: "text-sm font-black text-emerald-600" }, fmt((d.fcPlaced || []).reduce(function (s, v) { return s + v; }, 0)))
+                      ),
+                      React.createElement("div", { className: "flex flex-wrap gap-1 mb-2" },
+                        (d.fcPlaced || []).map(function (v, pi) {
+                          return React.createElement("button", { key: pi, onClick: function () {
+                            upd('fcPlaced', (d.fcPlaced || []).filter(function (_, idx) { return idx !== pi; }));
+                          }, className: "px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-[10px] font-bold hover:bg-red-100 hover:text-red-600 transition-all" }, fmt(v) + ' \u2715');
+                        })
+                      ),
+                      React.createElement("div", { className: "flex gap-2" },
+                        React.createElement("button", { onClick: function () {
+                          var total = (d.fcPlaced || []).reduce(function (s, v) { return s + v; }, 0);
+                          var totalRound = Math.round(total * 100);
+                          var targetRound = Math.round(d.fcTarget * 100);
+                          var pieces = (d.fcPlaced || []).length;
+                          if (totalRound !== targetRound) { upd('fcFeedback', { ok: false, msg: '\u274C Total is ' + fmt(total) + ' but target is ' + fmt(d.fcTarget) }); }
+                          else if (pieces <= d.fcOptimal) {
+                            upd('fcFeedback', { ok: true, msg: '\u2705 Perfect! ' + pieces + ' pieces \u2014 optimal solution!' });
+                            if (typeof addXP === 'function') addXP(25, 'Money Math: Fewest coins challenge (optimal!)');
+                          } else {
+                            upd('fcFeedback', { ok: false, msg: '\u2705 Right amount, but ' + pieces + ' pieces. Can you do it in ' + d.fcOptimal + '?' });
+                            if (typeof addXP === 'function') addXP(10, 'Money Math: Fewest coins challenge');
+                          }
+                        }, className: "flex-1 px-4 py-2 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-xs" }, "\u2714 Check"),
+                        React.createElement("button", { onClick: function () { upd('fcPlaced', []); }, className: "px-4 py-2 bg-slate-100 text-slate-500 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs" }, "\u21BA Reset")
+                      ),
+                      d.fcFeedback && React.createElement("p", { className: "text-xs font-bold mt-2 " + (d.fcFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.fcFeedback.msg)
+                    )
+                  )
+                ),
+
+                // Unit Pricing challenge
+                React.createElement("div", { className: "bg-gradient-to-br from-teal-50 to-emerald-50 rounded-xl p-4 border border-teal-200" },
+                  React.createElement("div", { className: "flex items-center justify-between mb-3" },
+                    React.createElement("h4", { className: "text-sm font-bold text-teal-800" }, "\uD83D\uDED2 Best Deal: Unit Pricing"),
+                    React.createElement("button", { onClick: genUnitPriceProblem, className: "px-3 py-1.5 bg-teal-500 text-white text-xs font-bold rounded-lg hover:bg-teal-600 transition-all" }, !d.upItem ? '\u2728 Start' : '\u21BB New')
+                  ),
+                  d.upItem && d.upA && d.upB && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("p", { className: "text-xs text-slate-500 text-center" }, "Which is the better deal for " + d.upItem.name + "?"),
+                    React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+                      React.createElement("button", { onClick: function () { upd('upAnswer', 'A'); },
+                        className: "p-4 rounded-xl border-2 text-center transition-all hover:scale-[1.02] " + (d.upAnswer === 'A' ? 'border-teal-500 bg-teal-50 shadow-md' : 'border-slate-200 bg-white hover:border-teal-300')
+                      },
+                        React.createElement("p", { className: "text-2xl mb-1" }, d.upItem.name.split(' ')[0]),
+                        React.createElement("p", { className: "text-lg font-black text-teal-700" }, fmt(d.upA.price)),
+                        React.createElement("p", { className: "text-xs text-slate-500" }, d.upA.qty + ' ' + d.upItem.unit + (d.upA.qty > 1 ? 's' : '')),
+                        React.createElement("p", { className: "text-[10px] text-slate-400 mt-1" }, 'Option A')
+                      ),
+                      React.createElement("button", { onClick: function () { upd('upAnswer', 'B'); },
+                        className: "p-4 rounded-xl border-2 text-center transition-all hover:scale-[1.02] " + (d.upAnswer === 'B' ? 'border-teal-500 bg-teal-50 shadow-md' : 'border-slate-200 bg-white hover:border-teal-300')
+                      },
+                        React.createElement("p", { className: "text-2xl mb-1" }, d.upItem.name.split(' ')[0]),
+                        React.createElement("p", { className: "text-lg font-black text-teal-700" }, fmt(d.upB.price)),
+                        React.createElement("p", { className: "text-xs text-slate-500" }, d.upB.qty + ' ' + d.upItem.unit + (d.upB.qty > 1 ? 's' : '')),
+                        React.createElement("p", { className: "text-[10px] text-slate-400 mt-1" }, 'Option B')
+                      )
+                    ),
+                    d.upAnswer && React.createElement("button", { onClick: function () {
+                      var unitA = d.upA.price / d.upA.qty;
+                      var unitB = d.upB.price / d.upB.qty;
+                      var correct = unitA <= unitB ? 'A' : 'B';
+                      var isRight = d.upAnswer === correct;
+                      upd('upFeedback', isRight
+                        ? { ok: true, msg: '\u2705 Correct! Option A: ' + fmt(unitA) + '/' + d.upItem.unit + ' vs Option B: ' + fmt(unitB) + '/' + d.upItem.unit }
+                        : { ok: false, msg: '\u274C Option ' + correct + ' is cheaper. A: ' + fmt(unitA) + '/' + d.upItem.unit + ' vs B: ' + fmt(unitB) + '/' + d.upItem.unit }
+                      );
+                      if (isRight && typeof addXP === 'function') addXP(15, 'Money Math: Unit pricing');
+                    }, className: "w-full px-4 py-2 bg-teal-500 text-white font-bold rounded-xl hover:bg-teal-600 transition-all text-sm" }, "\u2714 Check My Answer"),
+                    d.upFeedback && React.createElement("p", { className: "text-xs font-bold " + (d.upFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.upFeedback.msg)
+                  )
+                ),
+
+                // Score tracker
+                React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-3 border border-violet-200 text-center" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-violet-500" }, "\uD83C\uDFC6 Complete challenges across all tabs to earn XP and build real-world money skills!")
+                )
+              ),
+
+              // ═══ PERSONAL FINANCE TAB ═══
+              tab === 'finance' && React.createElement("div", { className: "space-y-4" },
+                // Sub-tab navigation
+                React.createElement("div", { className: "flex flex-wrap gap-2 mb-2" },
+                  [{ id: 'compound', label: '\uD83D\uDCC8 Compound Interest' }, { id: 'retire', label: '\uD83C\uDFD6\uFE0F Retirement' }, { id: 'loans', label: '\uD83C\uDFE6 Loans & Debt' }, { id: 'goals', label: '\uD83C\uDFAF Savings Goals' }].map(function (s) {
+                    return React.createElement("button", { key: s.id, onClick: function () { upd('finSub', s.id); },
+                      className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (finSub === s.id ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-white text-slate-600 border border-slate-200 hover:bg-blue-50')
+                    }, s.label);
+                  })
+                ),
+
+                // ── Compound Interest ──
+                finSub === 'compound' && React.createElement("div", { className: "bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-200" },
+                  React.createElement("h3", { className: "text-base font-bold text-blue-800 mb-1" }, "\uD83D\uDCC8 Compound Interest Visualizer"),
+                  React.createElement("p", { className: "text-xs text-blue-500 mb-4" }, "See how your money grows \u2014 simple vs compound interest"),
+                  // Controls
+                  React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4" },
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Principal"),
+                      React.createElement("input", { type: "number", value: ciPrincipal, onChange: function (e) { upd('ciPrincipal', Math.max(0, parseFloat(e.target.value) || 0)); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Annual Rate %"),
+                      React.createElement("input", { type: "number", step: "0.5", value: ciRate, onChange: function (e) { upd('ciRate', Math.max(0, parseFloat(e.target.value) || 0)); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Years"),
+                      React.createElement("input", { type: "number", value: ciYears, onChange: function (e) { upd('ciYears', Math.min(50, Math.max(1, parseInt(e.target.value) || 1))); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Compounding"),
+                      React.createElement("select", { value: ciFreq, onChange: function (e) { upd('ciFreq', e.target.value); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" },
+                        React.createElement("option", { value: "yearly" }, "Yearly"),
+                        React.createElement("option", { value: "quarterly" }, "Quarterly"),
+                        React.createElement("option", { value: "monthly" }, "Monthly"),
+                        React.createElement("option", { value: "daily" }, "Daily")
+                      )
+                    )
+                  ),
+                  // Results summary
+                  React.createElement("div", { className: "grid grid-cols-2 gap-3 mb-4" },
+                    React.createElement("div", { className: "bg-white rounded-xl p-4 border border-blue-100 text-center" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Compound Interest"),
+                      React.createElement("p", { className: "text-2xl font-black text-blue-600" }, cur.symbol + Math.round(ciCompound).toLocaleString()),
+                      React.createElement("p", { className: "text-xs text-emerald-500 font-bold" }, "+" + cur.symbol + Math.round(ciCompoundInterest).toLocaleString() + " earned")
+                    ),
+                    React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-100 text-center" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Simple Interest"),
+                      React.createElement("p", { className: "text-2xl font-black text-slate-500" }, cur.symbol + Math.round(ciSimple).toLocaleString()),
+                      React.createElement("p", { className: "text-xs text-slate-400 font-bold" }, "+" + cur.symbol + Math.round(ciSimpleInterest).toLocaleString() + " earned")
+                    )
+                  ),
+                  React.createElement("p", { className: "text-xs font-bold text-center " + (ciCompoundInterest > ciSimpleInterest * 1.1 ? 'text-emerald-600' : 'text-slate-500'), style: { marginBottom: 8 } },
+                    "\uD83D\uDCA1 Compound earns " + cur.symbol + Math.round(ciCompoundInterest - ciSimpleInterest).toLocaleString() + " MORE than simple interest!"
+                  ),
+                  // Growth table
+                  React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden" },
+                    React.createElement("table", { className: "w-full text-xs" },
+                      React.createElement("thead", null,
+                        React.createElement("tr", { className: "bg-slate-50" },
+                          React.createElement("th", { className: "px-3 py-2 text-left font-bold text-slate-500" }, "Year"),
+                          React.createElement("th", { className: "px-3 py-2 text-right font-bold text-blue-600" }, "Compound"),
+                          React.createElement("th", { className: "px-3 py-2 text-right font-bold text-slate-400" }, "Simple"),
+                          React.createElement("th", { className: "px-3 py-2 text-right font-bold text-emerald-500" }, "Advantage")
+                        )
+                      ),
+                      React.createElement("tbody", null,
+                        ciTable.filter(function (r) { return r.year === 0 || r.year === 1 || r.year % Math.max(1, Math.floor(ciYears / 8)) === 0 || r.year === ciYears; }).map(function (r, ri) {
+                          return React.createElement("tr", { key: ri, className: ri % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                            React.createElement("td", { className: "px-3 py-1.5 font-bold text-slate-600" }, r.year),
+                            React.createElement("td", { className: "px-3 py-1.5 text-right font-bold text-blue-600" }, cur.symbol + Math.round(r.compound).toLocaleString()),
+                            React.createElement("td", { className: "px-3 py-1.5 text-right text-slate-400" }, cur.symbol + Math.round(r.simple).toLocaleString()),
+                            React.createElement("td", { className: "px-3 py-1.5 text-right font-bold text-emerald-500" }, "+" + cur.symbol + Math.round(r.compound - r.simple).toLocaleString())
+                          );
+                        })
+                      )
+                    )
+                  )
+                ),
+
+                // ── Retirement Planner ──
+                finSub === 'retire' && React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-5 border border-violet-200" },
+                  React.createElement("h3", { className: "text-base font-bold text-violet-800 mb-1" }, "\uD83C\uDFD6\uFE0F Retirement Savings Planner"),
+                  React.createElement("p", { className: "text-xs text-violet-500 mb-4" }, "See why starting early makes a massive difference"),
+                  // Controls
+                  React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4" },
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Start Age"),
+                      React.createElement("input", { type: "range", min: 18, max: 55, value: retAge, onChange: function (e) { upd('retAge', parseInt(e.target.value)); },
+                        className: "w-full mt-1", style: { accentColor: '#7c3aed' } }),
+                      React.createElement("p", { className: "text-xs font-bold text-center text-violet-600" }, retAge + " years old")
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Monthly Contribution"),
+                      React.createElement("input", { type: "number", value: retMonthly, onChange: function (e) { upd('retMonthly', Math.max(0, parseFloat(e.target.value) || 0)); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-violet-400 outline-none mt-1" })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Employer Match %"),
+                      React.createElement("input", { type: "number", value: retMatch, onChange: function (e) { upd('retMatch', Math.max(0, parseFloat(e.target.value) || 0)); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-violet-400 outline-none mt-1" })
+                    )
+                  ),
+                  // Two-scenario comparison
+                  React.createElement("div", { className: "grid grid-cols-2 gap-3 mb-4" },
+                    React.createElement("div", { className: "bg-white rounded-xl p-4 border-2 border-violet-300 text-center" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-violet-400 uppercase" }, "Start at " + retAge),
+                      React.createElement("p", { className: "text-2xl font-black text-violet-600" }, cur.symbol + Math.round(retResult.total).toLocaleString()),
+                      React.createElement("p", { className: "text-[10px] text-slate-500" }, "Contributed: " + cur.symbol + Math.round(retResult.contributed).toLocaleString()),
+                      React.createElement("p", { className: "text-[10px] font-bold text-emerald-500" }, "Growth: " + cur.symbol + Math.round(retResult.growth).toLocaleString())
+                    ),
+                    React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200 text-center opacity-75" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Start at " + (retAge + 10)),
+                      React.createElement("p", { className: "text-2xl font-black text-slate-500" }, cur.symbol + Math.round(retLateResult.total).toLocaleString()),
+                      React.createElement("p", { className: "text-[10px] text-slate-500" }, "Contributed: " + cur.symbol + Math.round(retLateResult.contributed).toLocaleString()),
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-400" }, "Growth: " + cur.symbol + Math.round(retLateResult.growth).toLocaleString())
+                    )
+                  ),
+                  retResult.total > retLateResult.total && React.createElement("div", { className: "bg-violet-100 rounded-xl p-3 text-center border border-violet-200" },
+                    React.createElement("p", { className: "text-xs font-bold text-violet-700" },
+                      "\uD83D\uDCA1 Starting 10 years earlier = " + cur.symbol + Math.round(retResult.total - retLateResult.total).toLocaleString() + " MORE at retirement!"),
+                    React.createElement("p", { className: "text-[10px] text-violet-500 mt-1" }, "That's " + Math.round((retResult.total / Math.max(1, retLateResult.total) - 1) * 100) + "% more money \u2014 and you only contributed " + cur.symbol + Math.round(retResult.contributed - retLateResult.contributed).toLocaleString() + " extra.")
+                  ),
+                  // Milestone table
+                  React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden mt-4" },
+                    React.createElement("table", { className: "w-full text-xs" },
+                      React.createElement("thead", null,
+                        React.createElement("tr", { className: "bg-slate-50" },
+                          React.createElement("th", { className: "px-3 py-2 text-left font-bold text-slate-500" }, "Age"),
+                          React.createElement("th", { className: "px-3 py-2 text-right font-bold text-violet-600" }, "Early Start"),
+                          React.createElement("th", { className: "px-3 py-2 text-right font-bold text-slate-400" }, "Late Start")
+                        )
+                      ),
+                      React.createElement("tbody", null,
+                        retResult.yearly.filter(function (r) { return r.age === retAge || r.age % 5 === 0 || r.age === retRetireAge; }).map(function (r, ri) {
+                          var late = retLateResult.yearly.find(function (l) { return l.age === r.age; });
+                          return React.createElement("tr", { key: ri, className: ri % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                            React.createElement("td", { className: "px-3 py-1.5 font-bold text-slate-600" }, r.age),
+                            React.createElement("td", { className: "px-3 py-1.5 text-right font-bold text-violet-600" }, cur.symbol + Math.round(r.balance).toLocaleString()),
+                            React.createElement("td", { className: "px-3 py-1.5 text-right text-slate-400" }, late ? cur.symbol + Math.round(late.balance).toLocaleString() : '\u2014')
+                          );
+                        })
+                      )
+                    )
+                  )
+                ),
+
+                // ── Loan & Debt Calculator ──
+                finSub === 'loans' && React.createElement("div", { className: "bg-gradient-to-br from-rose-50 to-red-50 rounded-xl p-5 border border-rose-200" },
+                  React.createElement("h3", { className: "text-base font-bold text-rose-800 mb-1" }, "\uD83C\uDFE6 Loan & Debt Calculator"),
+                  React.createElement("p", { className: "text-xs text-rose-500 mb-4" }, "Understand what loans really cost \u2014 the total interest is eye-opening"),
+                  // Loan type presets
+                  React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" },
+                    Object.keys(loanPresets).map(function (k) {
+                      return React.createElement("button", { key: k, onClick: function () {
+                        upd('loanType', k); upd('loanAmt', loanPresets[k].amt); upd('loanRate', loanPresets[k].rate); upd('loanTerm', loanPresets[k].term);
+                      }, className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (loanType === k ? 'bg-rose-500 text-white shadow-md' : 'bg-white text-rose-600 border border-rose-200 hover:bg-rose-50') }, loanPresets[k].label);
+                    })
+                  ),
+                  // Controls
+                  React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-4" },
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Loan Amount"),
+                      React.createElement("input", { type: "number", value: loanAmt, onChange: function (e) { upd('loanAmt', Math.max(0, parseFloat(e.target.value) || 0)); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-rose-400 outline-none mt-1" })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Interest Rate %"),
+                      React.createElement("input", { type: "number", step: "0.25", value: loanRate, onChange: function (e) { upd('loanRate', Math.max(0, parseFloat(e.target.value) || 0)); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-rose-400 outline-none mt-1" })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Term (months)"),
+                      React.createElement("input", { type: "number", value: loanTerm, onChange: function (e) { upd('loanTerm', Math.max(1, parseInt(e.target.value) || 1)); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-rose-400 outline-none mt-1" })
+                    )
+                  ),
+                  // Results
+                  React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-4" },
+                    React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-rose-100" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Monthly Payment"),
+                      React.createElement("p", { className: "text-xl font-black text-rose-600" }, cur.symbol + Math.round(loanMonthly).toLocaleString())
+                    ),
+                    React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-red-200" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Total Interest"),
+                      React.createElement("p", { className: "text-xl font-black text-red-500" }, cur.symbol + Math.round(loanTotalInterest).toLocaleString()),
+                      React.createElement("p", { className: "text-[9px] text-red-400" }, "That's " + Math.round(loanTotalInterest / loanAmt * 100) + "% of the loan!")
+                    ),
+                    React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-slate-100" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Total Paid"),
+                      React.createElement("p", { className: "text-xl font-black text-slate-600" }, cur.symbol + Math.round(loanTotalPaid).toLocaleString())
+                    )
+                  ),
+                  // Visual bar
+                  React.createElement("div", { className: "mb-4" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-1" }, "What you're really paying:"),
+                    React.createElement("div", { className: "h-6 rounded-full overflow-hidden flex" },
+                      React.createElement("div", { style: { width: Math.round(loanAmt / loanTotalPaid * 100) + '%', background: 'linear-gradient(90deg, #3b82f6, #6366f1)' }, className: "h-full flex items-center justify-center text-[9px] text-white font-bold" }, "Principal"),
+                      React.createElement("div", { style: { width: Math.round(loanTotalInterest / loanTotalPaid * 100) + '%', background: 'linear-gradient(90deg, #ef4444, #dc2626)' }, className: "h-full flex items-center justify-center text-[9px] text-white font-bold" }, "Interest")
+                    )
+                  ),
+                  // Amortization highlights
+                  React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden" },
+                    React.createElement("table", { className: "w-full text-xs" },
+                      React.createElement("thead", null,
+                        React.createElement("tr", { className: "bg-slate-50" },
+                          React.createElement("th", { className: "px-2 py-2 text-left font-bold text-slate-500" }, "Month"),
+                          React.createElement("th", { className: "px-2 py-2 text-right font-bold text-slate-500" }, "Payment"),
+                          React.createElement("th", { className: "px-2 py-2 text-right font-bold text-blue-500" }, "Principal"),
+                          React.createElement("th", { className: "px-2 py-2 text-right font-bold text-red-500" }, "Interest"),
+                          React.createElement("th", { className: "px-2 py-2 text-right font-bold text-slate-500" }, "Balance")
+                        )
+                      ),
+                      React.createElement("tbody", null,
+                        loanAmort.map(function (r, ri) {
+                          return React.createElement("tr", { key: ri, className: ri % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                            React.createElement("td", { className: "px-2 py-1.5 font-bold text-slate-600" }, r.month),
+                            React.createElement("td", { className: "px-2 py-1.5 text-right text-slate-600" }, cur.symbol + Math.round(r.payment).toLocaleString()),
+                            React.createElement("td", { className: "px-2 py-1.5 text-right text-blue-600 font-bold" }, cur.symbol + Math.round(r.principal).toLocaleString()),
+                            React.createElement("td", { className: "px-2 py-1.5 text-right text-red-500" }, cur.symbol + Math.round(r.interest).toLocaleString()),
+                            React.createElement("td", { className: "px-2 py-1.5 text-right text-slate-500" }, cur.symbol + Math.round(r.balance).toLocaleString())
+                          );
+                        })
+                      )
+                    )
+                  )
+                ),
+
+                // ── Savings Goals ──
+                finSub === 'goals' && React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-5 border border-emerald-200" },
+                  React.createElement("h3", { className: "text-base font-bold text-emerald-800 mb-1" }, "\uD83C\uDFAF Savings Goal Planner"),
+                  React.createElement("p", { className: "text-xs text-emerald-500 mb-4" }, "Pick a goal and see exactly how much to save each day, week, or month"),
+                  // Goal picker
+                  React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" },
+                    Object.keys(sgGoals).map(function (k) {
+                      return React.createElement("button", { key: k, onClick: function () {
+                        upd('sgGoal', k); upd('sgTarget', sgGoals[k].target); upd('sgHave', 0);
+                      }, className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (sgGoal === k ? 'bg-emerald-500 text-white shadow-md' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50') }, sgGoals[k].label);
+                    })
+                  ),
+                  // Controls
+                  React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4" },
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Target Amount"),
+                      React.createElement("input", { type: "number", value: sgTarget, onChange: function (e) { upd('sgTarget', Math.max(0, parseFloat(e.target.value) || 0)); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Already Saved"),
+                      React.createElement("input", { type: "number", value: sgHave, onChange: function (e) { upd('sgHave', Math.max(0, parseFloat(e.target.value) || 0)); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Timeline (months)"),
+                      React.createElement("input", { type: "number", value: sgMonths, onChange: function (e) { upd('sgMonths', Math.max(1, parseInt(e.target.value) || 1)); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Savings Rate %"),
+                      React.createElement("input", { type: "number", step: "0.5", value: sgRate, onChange: function (e) { upd('sgRate', Math.max(0, parseFloat(e.target.value) || 0)); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
+                    )
+                  ),
+                  // Progress bar
+                  React.createElement("div", { className: "mb-4" },
+                    React.createElement("div", { className: "flex items-center justify-between mb-1" },
+                      React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, "Progress"),
+                      React.createElement("span", { className: "text-[10px] font-bold text-emerald-600" }, Math.min(100, Math.round(sgHave / sgTarget * 100)) + "%")
+                    ),
+                    React.createElement("div", { className: "h-4 bg-slate-100 rounded-full overflow-hidden" },
+                      React.createElement("div", { style: { width: Math.min(100, sgHave / sgTarget * 100) + '%', transition: 'width 0.3s' }, className: "h-full bg-gradient-to-r from-emerald-400 to-green-500 rounded-full" })
+                    )
+                  ),
+                  // Results
+                  React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-4" },
+                    React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Per Day"),
+                      React.createElement("p", { className: "text-lg font-black text-emerald-600" }, cur.symbol + (Math.round(sgDailyNeeded * 100) / 100).toFixed(2)),
+                      React.createElement("p", { className: "text-[9px] text-slate-400" }, "\u2248 skip a coffee")
+                    ),
+                    React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border-2 border-emerald-300" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Per Week"),
+                      React.createElement("p", { className: "text-lg font-black text-emerald-600" }, cur.symbol + Math.round(sgWeeklyNeeded).toLocaleString())
+                    ),
+                    React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Per Month"),
+                      React.createElement("p", { className: "text-lg font-black text-emerald-600" }, cur.symbol + Math.round(sgMonthlyNeeded).toLocaleString())
+                    )
+                  ),
+                  // "What if" scenarios
+                  React.createElement("div", { className: "bg-white rounded-xl p-4 border border-emerald-100" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-2" }, "\uD83D\uDCA1 What If Scenarios"),
+                    React.createElement("div", { className: "space-y-2" },
+                      React.createElement("p", { className: "text-xs text-slate-600" }, "\u2022 Save " + cur.symbol + "5 more/week? Reach goal in ", React.createElement("strong", { className: "text-emerald-600" }, Math.max(1, Math.round(sgRemaining / ((sgWeeklyNeeded + 5) * 52 / 12))) + " months"), " instead of " + sgMonths),
+                      React.createElement("p", { className: "text-xs text-slate-600" }, "\u2022 Save " + cur.symbol + "10 more/week? Reach goal in ", React.createElement("strong", { className: "text-emerald-600" }, Math.max(1, Math.round(sgRemaining / ((sgWeeklyNeeded + 10) * 52 / 12))) + " months")),
+                      React.createElement("p", { className: "text-xs text-slate-600" }, "\u2022 Double your savings? Reach goal in ", React.createElement("strong", { className: "text-emerald-600" }, Math.max(1, Math.round(sgMonths / 2)) + " months"))
+                    )
+                  )
+                )
+              ),
+
+              // ── Educational Footer ──
+              React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3 border border-emerald-200 text-center" },
+                React.createElement("p", { className: "text-[10px] text-emerald-600" }, "\uD83C\uDF1F ", React.createElement("strong", null, "Financial literacy"), " is one of the most important life skills. Practice with real-world scenarios to build confidence with money!"),
+                React.createElement("p", { className: "text-[9px] text-slate-400 mt-1" }, "Exchange rates are approximate and for educational purposes only.")
+              )
+            );
+          })(), stemLabTab === 'explore' && stemLabTool === 'lifeSkills' && (function () {
+            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            //  ðŸ§­ L I F E   S K I L L S   L A B
+            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+            var upd = function (k, v) { setStemState(function (p) { var n = Object.assign({}, p); n[k] = v; return n; }); };
+
+            // â”€â”€ Sub-tab nav â”€â”€
+            var tab = stemState.lsTab || 'paycheck';
+
+            // â”€â”€â”€â”€â”€â”€ TAB 1: PAYCHECK & TAX â”€â”€â”€â”€â”€â”€
+            var payRate = stemState.payRate || 15;
+            var payHours = stemState.payHours || 30;
+            var payFreq = stemState.payFreq || 'biweekly';
+            var payState = stemState.payState || 'none';
+            var payFiling = stemState.payFiling || 'single';
+
+            var freqMult = { weekly: 52, biweekly: 26, monthly: 12 }[payFreq] || 26;
+            var grossPer = payRate * payHours * (payFreq === 'biweekly' ? 2 : payFreq === 'monthly' ? (52 / 12) : 1);
+            var grossAnnual = payRate * payHours * 52;
+
+            // 2024 federal brackets simplified
+            var fedBrackets = payFiling === 'single' ?
+              [{ limit: 11600, rate: 0.10 }, { limit: 47150, rate: 0.12 }, { limit: 100525, rate: 0.22 }, { limit: 191950, rate: 0.24 }, { limit: 243725, rate: 0.32 }, { limit: 609350, rate: 0.35 }, { limit: Infinity, rate: 0.37 }] :
+              [{ limit: 23200, rate: 0.10 }, { limit: 94300, rate: 0.12 }, { limit: 201050, rate: 0.22 }, { limit: 383900, rate: 0.24 }, { limit: 487450, rate: 0.32 }, { limit: 731200, rate: 0.35 }, { limit: Infinity, rate: 0.37 }];
+
+            var fedTax = 0; var remaining = grossAnnual; var prev = 0;
+            var bracketBreakdown = [];
+            for (var bi = 0; bi < fedBrackets.length && remaining > 0; bi++) {
+              var taxable = Math.min(remaining, fedBrackets[bi].limit - prev);
+              var tax = taxable * fedBrackets[bi].rate;
+              fedTax += tax;
+              if (taxable > 0) bracketBreakdown.push({ rate: Math.round(fedBrackets[bi].rate * 100), amount: taxable, tax: tax });
+              remaining -= taxable;
+              prev = fedBrackets[bi].limit;
+            }
+
+            // FICA (Social Security 6.2% up to $168,600 + Medicare 1.45%)
+            var ssTax = Math.min(grossAnnual, 168600) * 0.062;
+            var medicareTax = grossAnnual * 0.0145;
+            var ficaTotal = ssTax + medicareTax;
+
+            // State taxes (simplified flat rates for common states)
+            var stateTaxRates = { none: 0, CA: 0.055, NY: 0.055, TX: 0, FL: 0, WA: 0, IL: 0.0495, PA: 0.0307, OH: 0.035, ME: 0.055, MA: 0.05, NJ: 0.04 };
+            var stateTax = grossAnnual * (stateTaxRates[payState] || 0);
+
+            var totalTax = fedTax + ficaTotal + stateTax;
+            var netAnnual = grossAnnual - totalTax;
+            var netPer = netAnnual / freqMult;
+            var effectiveRate = grossAnnual > 0 ? (totalTax / grossAnnual * 100) : 0;
+
+            // â”€â”€â”€â”€â”€â”€ TAB 2: DATA LITERACY â”€â”€â”€â”€â”€â”€
+            var dlScenario = stemState.dlScenario || 0;
+            var dlAnswer = stemState.dlAnswer || null;
+            var dlRevealed = stemState.dlRevealed || false;
+            var dlScore = stemState.dlScore || 0;
+
+            var dlScenarios = [
+              {
+                title: 'The Misleading Y-Axis',
+                desc: 'A news site shows a bar chart of crime rates. The Y-axis starts at 950 instead of 0, making a 2% increase look like a 50% jump.',
+                question: 'What technique makes this graph misleading?',
+                options: ['Truncated Y-axis', 'Cherry-picked data', 'Correlation not causation', '3D distortion'],
+                correct: 0,
+                explain: 'Starting the Y-axis at a non-zero value (truncation) exaggerates small differences. Always check where the axis starts!'
+              },
+              {
+                title: 'Ice Cream & Drowning',
+                desc: 'A study shows that ice cream sales and drowning deaths both increase in summer. Someone concludes: "Ice cream causes drowning!"',
+                question: 'What logical fallacy is this?',
+                options: ['Cherry-picked data', 'Survivorship bias', 'Correlation \u2260 causation', 'Appeal to authority'],
+                correct: 2,
+                explain: 'Both are caused by a third variable: hot weather. Correlation (two things happening together) does not mean one causes the other.'
+              },
+              {
+                title: 'The Vanishing Baseline',
+                desc: 'A company shows revenue "doubled" from $1M to $2M between 2023-2024. They omit that revenue was $3M in 2022 and crashed.',
+                question: 'What technique is being used?',
+                options: ['Truncated axis', 'Cherry-picked time range', 'Misleading percentage', 'Survivorship bias'],
+                correct: 1,
+                explain: 'By choosing a specific start date (after a crash), they hide the bigger picture. Always ask: what does the FULL timeline look like?'
+              },
+              {
+                title: 'The Percentage Trick',
+                desc: '"Our supplement reduced colds by 50%!" Actual data: 4 out of 100 people got colds in placebo group, vs 2 out of 100 in supplement group.',
+                question: 'Why is "50% reduction" misleading here?',
+                options: ['Small sample size', 'Relative vs absolute risk', 'P-hacking', 'Publication bias'],
+                correct: 1,
+                explain: 'The RELATIVE reduction is 50% (4\u21922), but the ABSOLUTE reduction is only 2 percentage points (4%\u21922%). Always check absolute numbers!'
+              },
+              {
+                title: 'Survivor CEOs',
+                desc: 'An article profiles 10 billionaire CEOs who dropped out of college and concludes: "College is unnecessary for success!"',
+                question: 'What bias is at play?',
+                options: ['Confirmation bias', 'Survivorship bias', 'Anchoring', 'False dichotomy'],
+                correct: 1,
+                explain: 'We only hear about the rare successes \u2014 not the millions who dropped out and didn\'t become billionaires. This is survivorship bias.'
+              },
+              {
+                title: '3D Pie Distortion',
+                desc: 'A 3D pie chart shows market share. The front slice (30%) appears larger than the back slice (35%) due to perspective.',
+                question: 'What makes this visualization misleading?',
+                options: ['Wrong data', '3D perspective distortion', 'Missing labels', 'Wrong chart type'],
+                correct: 1,
+                explain: '3D effects distort the perceived size of slices. Front slices look bigger, back slices look smaller. Flat 2D charts are always more accurate.'
+              }
+            ];
+            var dlCurrent = dlScenarios[dlScenario % dlScenarios.length];
+
+            // â”€â”€â”€â”€â”€â”€ TAB 3: DECISION MATRIX â”€â”€â”€â”€â”€â”€
+            var dmOptions = stemState.dmOptions || ['Option A', 'Option B', 'Option C'];
+            var dmCriteria = stemState.dmCriteria || [
+              { name: 'Cost', weight: 3 },
+              { name: 'Quality', weight: 4 },
+              { name: 'Time', weight: 2 }
+            ];
+            var dmScores = stemState.dmScores || {};
+
+            // Compute weighted totals
+            var dmTotals = dmOptions.map(function (opt, oi) {
+              var total = 0;
+              dmCriteria.forEach(function (c, ci) {
+                var key = oi + '-' + ci;
+                var score = (dmScores[key] || 3);
+                total += score * c.weight;
+              });
+              return { option: opt, total: total, index: oi };
+            });
+            var dmMaxTotal = Math.max.apply(null, dmTotals.map(function (d) { return d.total; }));
+            dmTotals.sort(function (a, b) { return b.total - a.total; });
+
+            // â”€â”€â”€â”€â”€â”€ TAB 4: CONTRACT READER â”€â”€â”€â”€â”€â”€
+            var crLevel = stemState.crLevel || 0;
+            var crFound = stemState.crFound || [];
+            var crRevealed = stemState.crRevealed || false;
+
+            var crContracts = [
+              {
+                title: '\uD83D\uDCF1 Phone Plan Agreement',
+                text: 'Monthly service: $45/month for unlimited talk & text with 5GB data. After 5GB, speeds reduced to 128kbps. Contract length: 24 months. Early termination fee: $200 per remaining month. Device payment: $0 down, $35/month for 24 months (retail value: $799). Activation fee: $35 (one-time). Taxes and regulatory fees apply (estimated $7-12/month).',
+                traps: [
+                  { id: 'term', hint: 'Early termination fee', explain: '$200 PER REMAINING MONTH. If you cancel after 6 months, that\'s $200 \u00D7 18 = $3,600!' },
+                  { id: 'data', hint: 'Data throttling', explain: '"Unlimited" data but after 5GB, 128kbps is basically unusable. That\'s NOT truly unlimited.' },
+                  { id: 'device', hint: 'Device total cost', explain: '$35/month \u00D7 24 = $840 for a phone worth $799. You\'re paying $41 in hidden interest.' },
+                  { id: 'fees', hint: 'Hidden monthly fees', explain: 'The "$45/month" plan actually costs $87-92/month when you add device + taxes + fees.' }
+                ]
+              },
+              {
+                title: '\uD83C\uDFE0 Apartment Lease',
+                text: 'Monthly rent: $1,200. Security deposit: $1,200 (non-refundable cleaning fee of $250 deducted upon move-out). Lease term: 12 months, auto-renews at market rate. Late fee: $50 + $10/day after 5th of month. Tenant responsible for all repairs under $100. Pet deposit: $300 + $50/month pet rent. Landlord may enter with 24-hour notice for "maintenance and inspections."',
+                traps: [
+                  { id: 'deposit', hint: 'Non-refundable portion', explain: '$250 "cleaning fee" is automatically deducted \u2014 you\'ll never get your full deposit back.' },
+                  { id: 'renew', hint: 'Auto-renewal clause', explain: 'Auto-renews at "market rate" \u2014 could be a huge increase with no cap.' },
+                  { id: 'late', hint: 'Escalating late fee', explain: '$50 + $10/day means being 15 days late = $150 penalty.' },
+                  { id: 'repairs', hint: 'Repair responsibility', explain: 'Under $100 repairs on YOU means clogged drains, broken blinds, etc. come out of your pocket.' }
+                ]
+              },
+              {
+                title: '\uD83C\uDFCB\uFE0F Gym Membership',
+                text: 'Monthly fee: $29.99. Annual maintenance fee: $49.99 (charged in February). Enrollment fee: $0 (limited time!). Cancellation requires 30-day written notice sent by certified mail. Personal training sessions: first free, then auto-enrolled at $60/session, 2x/week. Membership may be transferred to collections after 60 days overdue. "Freeze" fee: $10/month.',
+                traps: [
+                  { id: 'annual', hint: 'Hidden annual fee', explain: '$49.99 "maintenance fee" on top of monthly \u2014 your real cost is $34.16/month.' },
+                  { id: 'cancel', hint: 'Cancellation difficulty', explain: 'CERTIFIED MAIL only? Most gyms make cancellation intentionally difficult.' },
+                  { id: 'training', hint: 'Auto-enrollment', explain: 'After one "free" session, you\'re auto-enrolled at $120/WEEK ($480/month!) in training.' },
+                  { id: 'freeze', hint: 'Freeze still costs money', explain: 'Even "pausing" costs $10/month. You\'re still paying for something you don\'t use.' }
+                ]
+              }
+            ];
+            var crCurrent = crContracts[crLevel % crContracts.length];
+
+            // â”€â”€â”€â”€â”€â”€ TAB 5: HEALTH INSURANCE â”€â”€â”€â”€â”€â”€
+            var hiPlanA = stemState.hiPlanA || { premium: 250, deductible: 1500, copay: 30, coinsurance: 20, oop: 6000 };
+            var hiPlanB = stemState.hiPlanB || { premium: 450, deductible: 500, copay: 15, coinsurance: 10, oop: 3000 };
+            var hiUsage = stemState.hiUsage || 'low'; // low, medium, high
+
+            var usageScenarios = { low: { visits: 2, bills: 500 }, medium: { visits: 6, bills: 3000 }, high: { visits: 12, bills: 15000 } };
+            var hiScene = usageScenarios[hiUsage];
+
+            var calcPlanCost = function (plan, scene) {
+              var annualPremium = plan.premium * 12;
+              var totalBills = scene.bills + scene.visits * 150; // $150 per visit avg
+              var afterDeductible = Math.max(0, totalBills - plan.deductible);
+              var yourCoinsurance = afterDeductible * (plan.coinsurance / 100);
+              var copays = scene.visits * plan.copay;
+              var outOfPocket = Math.min(plan.oop, plan.deductible + yourCoinsurance + copays);
+              return { annualPremium: annualPremium, outOfPocket: outOfPocket, total: annualPremium + outOfPocket };
+            };
+            var hiCostA = calcPlanCost(hiPlanA, hiScene);
+            var hiCostB = calcPlanCost(hiPlanB, hiScene);
+            var hiBetter = hiCostA.total < hiCostB.total ? 'A' : 'B';
+
+            // â”€â”€â”€â”€â”€â”€ TAB 6: APPLIED SCIENCE â”€â”€â”€â”€â”€â”€
+            var asTab = stemState.asTab || 'tire';
+
+            // Tire pressure: PV = nRT (Gay-Lussac's Law for constant volume: P1/T1 = P2/T2)
+            var asTireP1 = stemState.asTireP1 || 35; // PSI at fill
+            var asTireT1 = stemState.asTireT1 || 70; // Fill temp Â°F
+            var asTireT2 = stemState.asTireT2 || 20; // Current temp Â°F
+            var t1K = (asTireT1 - 32) * 5 / 9 + 273.15;
+            var t2K = (asTireT2 - 32) * 5 / 9 + 273.15;
+            var asTireP2 = asTireP1 * t2K / t1K;
+            var tireDrop = asTireP1 - asTireP2;
+
+            // Insulation: R-value & heat loss Q = A * Î”T / R
+            var asWallArea = stemState.asWallArea || 200; // sq ft
+            var asRValue = stemState.asRValue || 13; // R-value
+            var asTempIn = stemState.asTempIn || 70;
+            var asTempOut = stemState.asTempOut || 20;
+            var asHeatLoss = asWallArea * (asTempIn - asTempOut) / asRValue; // BTU/hr
+            var asHeatLossDay = asHeatLoss * 24;
+            var rValues = [
+              { material: 'Single-pane glass', r: 1, color: 'red' },
+              { material: 'Double-pane glass', r: 2, color: 'orange' },
+              { material: 'Brick (4")', r: 4, color: 'amber' },
+              { material: 'Fiberglass batt (3.5")', r: 13, color: 'emerald' },
+              { material: 'Spray foam (3.5")', r: 21, color: 'green' },
+              { material: 'Vacuum insulated panel', r: 40, color: 'cyan' }
+            ];
+
+            // Cooking chemistry
+            var asCookTemp = stemState.asCookTemp || 350;
+            var cookReactions = [
+              { name: 'Water evaporates', tempF: 212, desc: 'H\u2082O molecules gain enough kinetic energy to escape liquid phase. Phase transition: liquid \u2192 gas.', icon: '\uD83D\uDCA7' },
+              { name: 'Sugar caramelizes', tempF: 320, desc: 'Sucrose molecules break down and recombine into hundreds of new compounds, creating brown color and complex flavors.', icon: '\uD83C\uDF6F' },
+              { name: 'Maillard reaction', tempF: 280, desc: 'Amino acids + reducing sugars \u2192 melanoidins (brown crust). This is NOT caramelization \u2014 requires proteins!', icon: '\uD83E\uDD69' },
+              { name: 'Gluten forms', tempF: 75, desc: 'Glutenin + gliadin proteins cross-link when hydrated, forming elastic gluten networks. This gives bread its chew!', icon: '\uD83C\uDF5E' },
+              { name: 'Yeast dies', tempF: 140, desc: 'Above 140\u00B0F, yeast cells\' proteins denature. Enzyme activity ceases. No more CO\u2082 = no more rising.', icon: '\u2620\uFE0F' },
+              { name: 'Protein denatures', tempF: 160, desc: 'Heat unfolds protein tertiary structure. Collagen \u2192 gelatin (slow cooking), albumin coagulates (egg whites solidify).', icon: '\uD83E\uDD5A' },
+              { name: 'Acrylamide forms', tempF: 400, desc: 'Asparagine + sugars at high heat \u2192 acrylamide (potential carcinogen). Why you shouldn\'t burn toast!', icon: '\u26A0\uFE0F' }
+            ];
+            var activeReactions = cookReactions.filter(function (r) { return asCookTemp >= r.tempF; });
+
+            // â”€â”€ Electrical: Ohm's law â”€â”€
+            var asVolts = stemState.asVolts || 120;
+            var asAmps = stemState.asAmps || 15;
+            var asWatts = asVolts * asAmps;
+            var commonDevices = [
+              { name: 'LED bulb', watts: 10 }, { name: 'Laptop', watts: 65 }, { name: 'TV (55")', watts: 100 },
+              { name: 'Microwave', watts: 1100 }, { name: 'Hair dryer', watts: 1500 }, { name: 'Space heater', watts: 1500 },
+              { name: 'Oven', watts: 2500 }, { name: 'Clothes dryer', watts: 5000 }
+            ];
+            var asRunning = stemState.asRunning || ['Microwave'];
+            var totalLoad = 0;
+            asRunning.forEach(function (name) {
+              var dev = commonDevices.find(function (d) { return d.name === name; });
+              if (dev) totalLoad += dev.watts;
+            });
+            var circuitUsage = totalLoad / asWatts * 100;
+            var willTrip = circuitUsage > 100;
+
+
+            // â•â•â•â•â•â•â•â•â•â•â•â•â•â• RENDER â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            return React.createElement("div", { className: "max-w-4xl mx-auto space-y-4" },
+              // Header
+              React.createElement("div", { className: "bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 rounded-2xl p-5 text-white shadow-lg" },
+                React.createElement("h2", { className: "text-2xl font-black flex items-center gap-2" }, "\uD83E\uDDED Life Skills Lab"),
+                React.createElement("p", { className: "text-sm opacity-90 mt-1" }, "Essential knowledge for adulting \u2014 taxes, data literacy, critical thinking, and the science of everyday life")
+              ),
+              // Tab bar
+              React.createElement("div", { className: "flex flex-wrap gap-2" },
+                [{ id: 'paycheck', label: '\uD83E\uDDFE Paycheck & Tax' }, { id: 'data', label: '\uD83D\uDCCA Data Literacy' }, { id: 'decision', label: '\uD83E\uDDE0 Decisions' }, { id: 'contract', label: '\uD83D\uDCDD Contracts' }, { id: 'health', label: '\uD83C\uDFE5 Insurance' }, { id: 'science', label: '\uD83D\uDD2C Applied Science' }].map(function (t) {
+                  return React.createElement("button", { key: t.id, onClick: function () { upd('lsTab', t.id); },
+                    className: "px-3 py-2 rounded-xl text-xs font-bold transition-all " + (tab === t.id ? 'bg-gradient-to-r from-cyan-600 to-teal-600 text-white shadow-lg scale-105' : 'bg-white text-slate-600 border border-slate-200 hover:bg-cyan-50 hover:border-cyan-300')
+                  }, t.label);
+                })
+              ),
+
+              // â•â•â• TAB 1: PAYCHECK â•â•â•
+              tab === 'paycheck' && React.createElement("div", { className: "bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border border-green-200" },
+                React.createElement("h3", { className: "text-base font-bold text-green-800 mb-1" }, "\uD83E\uDDFE Paycheck & Tax Calculator"),
+                React.createElement("p", { className: "text-xs text-green-600 mb-4" }, "See what happens between your gross pay and your bank account"),
+                // Controls
+                React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4" },
+                  React.createElement("div", null,
+                    React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Hourly Rate"),
+                    React.createElement("input", { type: "number", step: "0.5", value: payRate, onChange: function (e) { upd('payRate', Math.max(0, parseFloat(e.target.value) || 0)); },
+                      className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-green-400 outline-none mt-1" })
+                  ),
+                  React.createElement("div", null,
+                    React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Hours/Week"),
+                    React.createElement("input", { type: "number", value: payHours, onChange: function (e) { upd('payHours', Math.max(0, parseFloat(e.target.value) || 0)); },
+                      className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-green-400 outline-none mt-1" })
+                  ),
+                  React.createElement("div", null,
+                    React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Pay Period"),
+                    React.createElement("select", { value: payFreq, onChange: function (e) { upd('payFreq', e.target.value); },
+                      className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-green-400 outline-none mt-1" },
+                      React.createElement("option", { value: "weekly" }, "Weekly"),
+                      React.createElement("option", { value: "biweekly" }, "Bi-weekly"),
+                      React.createElement("option", { value: "monthly" }, "Monthly")
+                    )
+                  ),
+                  React.createElement("div", null,
+                    React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "State"),
+                    React.createElement("select", { value: payState, onChange: function (e) { upd('payState', e.target.value); },
+                      className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-green-400 outline-none mt-1" },
+                      React.createElement("option", { value: "none" }, "No State Tax"), React.createElement("option", { value: "CA" }, "California"), React.createElement("option", { value: "NY" }, "New York"),
+                      React.createElement("option", { value: "TX" }, "Texas (0%)"), React.createElement("option", { value: "FL" }, "Florida (0%)"), React.createElement("option", { value: "WA" }, "Washington (0%)"),
+                      React.createElement("option", { value: "ME" }, "Maine"), React.createElement("option", { value: "MA" }, "Massachusetts"), React.createElement("option", { value: "IL" }, "Illinois"),
+                      React.createElement("option", { value: "PA" }, "Pennsylvania"), React.createElement("option", { value: "NJ" }, "New Jersey"), React.createElement("option", { value: "OH" }, "Ohio")
+                    )
+                  ),
+                  React.createElement("div", null,
+                    React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Filing"),
+                    React.createElement("select", { value: payFiling, onChange: function (e) { upd('payFiling', e.target.value); },
+                      className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-green-400 outline-none mt-1" },
+                      React.createElement("option", { value: "single" }, "Single"),
+                      React.createElement("option", { value: "married" }, "Married")
+                    )
+                  )
+                ),
+                // Paycheck result cards
+                React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-4" },
+                  React.createElement("div", { className: "bg-white rounded-xl p-4 text-center border-2 border-green-300" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Gross (" + payFreq + ")"),
+                    React.createElement("p", { className: "text-2xl font-black text-green-600" }, "$" + Math.round(grossPer).toLocaleString())
+                  ),
+                  React.createElement("div", { className: "bg-white rounded-xl p-4 text-center border-2 border-red-200" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Taxes Taken"),
+                    React.createElement("p", { className: "text-2xl font-black text-red-500" }, "-$" + Math.round(totalTax / freqMult).toLocaleString()),
+                    React.createElement("p", { className: "text-[9px] text-red-400" }, Math.round(effectiveRate) + "% effective rate")
+                  ),
+                  React.createElement("div", { className: "bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 text-center border-2 border-emerald-400" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Take Home"),
+                    React.createElement("p", { className: "text-2xl font-black text-emerald-600" }, "$" + Math.round(netPer).toLocaleString()),
+                    React.createElement("p", { className: "text-[9px] text-emerald-500 font-bold" }, "$" + Math.round(netAnnual).toLocaleString() + "/year")
+                  )
+                ),
+                // Visual breakdown bar
+                React.createElement("div", { className: "mb-3" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-1" }, "Where every dollar goes:"),
+                  React.createElement("div", { className: "h-6 rounded-full overflow-hidden flex" },
+                    React.createElement("div", { style: { width: Math.round((grossAnnual - totalTax) / grossAnnual * 100) + '%', background: 'linear-gradient(90deg, #10b981, #059669)' }, className: "h-full flex items-center justify-center text-[8px] text-white font-bold" }, "Take Home"),
+                    React.createElement("div", { style: { width: Math.round(fedTax / grossAnnual * 100) + '%', background: '#ef4444' }, className: "h-full flex items-center justify-center text-[8px] text-white font-bold" }, "Fed"),
+                    React.createElement("div", { style: { width: Math.round(ficaTotal / grossAnnual * 100) + '%', background: '#f97316' }, className: "h-full flex items-center justify-center text-[8px] text-white font-bold" }, "FICA"),
+                    stateTax > 0 && React.createElement("div", { style: { width: Math.round(stateTax / grossAnnual * 100) + '%', background: '#a855f7' }, className: "h-full flex items-center justify-center text-[8px] text-white font-bold" }, "State")
+                  )
+                ),
+                // Bracket breakdown table
+                React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-500 px-3 pt-2" }, "\uD83D\uDCCA Federal Tax Brackets (your income fills each bracket):"),
+                  React.createElement("table", { className: "w-full text-xs" },
+                    React.createElement("thead", null,
+                      React.createElement("tr", { className: "bg-slate-50" },
+                        React.createElement("th", { className: "px-3 py-2 text-left font-bold text-slate-500" }, "Rate"),
+                        React.createElement("th", { className: "px-3 py-2 text-right font-bold text-slate-500" }, "Taxable"),
+                        React.createElement("th", { className: "px-3 py-2 text-right font-bold text-red-500" }, "Tax Owed")
+                      )
+                    ),
+                    React.createElement("tbody", null,
+                      bracketBreakdown.map(function (b, i) {
+                        return React.createElement("tr", { key: i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                          React.createElement("td", { className: "px-3 py-1.5 font-bold text-slate-600" }, b.rate + "%"),
+                          React.createElement("td", { className: "px-3 py-1.5 text-right text-slate-600" }, "$" + Math.round(b.amount).toLocaleString()),
+                          React.createElement("td", { className: "px-3 py-1.5 text-right font-bold text-red-500" }, "$" + Math.round(b.tax).toLocaleString())
+                        );
+                      }),
+                      React.createElement("tr", { className: "bg-orange-50 border-t border-orange-200" },
+                        React.createElement("td", { className: "px-3 py-1.5 font-bold text-orange-600", colSpan: 2 }, "FICA (SS 6.2% + Medicare 1.45%)"),
+                        React.createElement("td", { className: "px-3 py-1.5 text-right font-bold text-orange-500" }, "$" + Math.round(ficaTotal).toLocaleString())
+                      ),
+                      stateTax > 0 && React.createElement("tr", { className: "bg-purple-50 border-t border-purple-200" },
+                        React.createElement("td", { className: "px-3 py-1.5 font-bold text-purple-600", colSpan: 2 }, "State Tax (" + payState + ")"),
+                        React.createElement("td", { className: "px-3 py-1.5 text-right font-bold text-purple-500" }, "$" + Math.round(stateTax).toLocaleString())
+                      )
+                    )
+                  )
+                ),
+                React.createElement("p", { className: "text-[10px] text-center text-slate-400 mt-2" }, "\uD83D\uDCA1 This is a simplified estimate. Real paychecks also deduct health insurance, 401(k), etc.")
+              ),
+
+              // â•â•â• TAB 2: DATA LITERACY â•â•â•
+              tab === 'data' && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-5 border border-indigo-200" },
+                React.createElement("h3", { className: "text-base font-bold text-indigo-800 mb-1" }, "\uD83D\uDCCA Data Literacy & Media Analysis"),
+                React.createElement("p", { className: "text-xs text-indigo-500 mb-4" }, "Can you spot the deception? " + (dlScore > 0 ? '\uD83C\uDFC6 Score: ' + dlScore + '/' + dlScenarios.length : '')),
+                // Scenario card
+                React.createElement("div", { className: "bg-white rounded-xl p-5 border border-indigo-100 mb-4" },
+                  React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                    React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-600 rounded-lg text-[10px] font-bold" }, "Scenario " + (dlScenario + 1) + " of " + dlScenarios.length),
+                    React.createElement("span", { className: "text-[10px] text-slate-400" }, dlCurrent.title)
+                  ),
+                  React.createElement("p", { className: "text-sm text-slate-700 mb-4 leading-relaxed" }, dlCurrent.desc),
+                  React.createElement("p", { className: "text-xs font-bold text-slate-600 mb-2" }, dlCurrent.question),
+                  // Options
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                    dlCurrent.options.map(function (opt, oi) {
+                      var isCorrect = oi === dlCurrent.correct;
+                      var isSelected = dlAnswer === oi;
+                      var revealed = dlRevealed;
+                      return React.createElement("button", { key: oi, onClick: function () {
+                        if (!dlRevealed) {
+                          upd('dlAnswer', oi);
+                          upd('dlRevealed', true);
+                          if (oi === dlCurrent.correct) upd('dlScore', dlScore + 1);
+                        }
+                      }, className: "px-3 py-2 rounded-xl text-xs font-bold text-left transition-all border-2 " +
+                        (revealed && isCorrect ? 'border-emerald-400 bg-emerald-50 text-emerald-700' :
+                         revealed && isSelected && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
+                         'border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:bg-indigo-50')
+                      }, (revealed && isCorrect ? '\u2705 ' : revealed && isSelected && !isCorrect ? '\u274C ' : '') + opt);
+                    })
+                  )
+                ),
+                // Explanation
+                dlRevealed && React.createElement("div", { className: "bg-indigo-100 rounded-xl p-4 border border-indigo-200 mb-4" },
+                  React.createElement("p", { className: "text-xs font-bold text-indigo-700 mb-1" }, dlAnswer === dlCurrent.correct ? '\uD83C\uDF89 Correct!' : '\uD83E\uDD14 Not quite...'),
+                  React.createElement("p", { className: "text-xs text-indigo-600" }, dlCurrent.explain)
+                ),
+                // Navigation
+                React.createElement("div", { className: "flex gap-2 justify-center" },
+                  React.createElement("button", { onClick: function () {
+                    var next = (dlScenario + 1) % dlScenarios.length;
+                    upd('dlScenario', next); upd('dlAnswer', null); upd('dlRevealed', false);
+                    if (next === 0) upd('dlScore', 0);
+                  }, className: "px-4 py-2 bg-indigo-500 text-white rounded-xl text-xs font-bold hover:bg-indigo-600 transition-colors" },
+                    dlScenario < dlScenarios.length - 1 ? 'Next Scenario \u2192' : '\uD83D\uDD04 Start Over'
+                  )
+                )
+              ),
+
+
+              // â•â•â• TAB 3: DECISION MATRIX â•â•â•
+              tab === 'decision' && React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-5 border border-amber-200" },
+                React.createElement("h3", { className: "text-base font-bold text-amber-800 mb-1" }, "\uD83E\uDDE0 Decision Matrix"),
+                React.createElement("p", { className: "text-xs text-amber-600 mb-4" }, "Make better decisions by scoring options against weighted criteria"),
+                // Options input
+                React.createElement("div", { className: "mb-3" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-1" }, "Your Options (click to edit)"),
+                  React.createElement("div", { className: "flex flex-wrap gap-2" },
+                    dmOptions.map(function (opt, oi) {
+                      return React.createElement("input", { key: oi, value: opt, onChange: function (e) {
+                        var newOpts = dmOptions.slice(); newOpts[oi] = e.target.value; upd('dmOptions', newOpts);
+                      }, className: "px-3 py-1.5 border border-amber-200 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" });
+                    }),
+                    dmOptions.length < 5 && React.createElement("button", { onClick: function () { upd('dmOptions', dmOptions.concat(['Option ' + String.fromCharCode(65 + dmOptions.length)])); },
+                      className: "px-3 py-1.5 border-2 border-dashed border-amber-300 rounded-lg text-xs font-bold text-amber-500 hover:bg-amber-50" }, "+")
+                  )
+                ),
+                // Criteria input
+                React.createElement("div", { className: "mb-3" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-1" }, "Criteria & Weights (1=low, 5=critical)"),
+                  React.createElement("div", { className: "space-y-2" },
+                    dmCriteria.map(function (c, ci) {
+                      return React.createElement("div", { key: ci, className: "flex items-center gap-2" },
+                        React.createElement("input", { value: c.name, onChange: function (e) {
+                          var nc = dmCriteria.slice(); nc[ci] = Object.assign({}, nc[ci], { name: e.target.value }); upd('dmCriteria', nc);
+                        }, className: "px-2 py-1 border border-slate-200 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" }),
+                        React.createElement("input", { type: "range", min: 1, max: 5, value: c.weight, onChange: function (e) {
+                          var nc = dmCriteria.slice(); nc[ci] = Object.assign({}, nc[ci], { weight: parseInt(e.target.value) }); upd('dmCriteria', nc);
+                        }, className: "flex-1", style: { accentColor: '#f59e0b' } }),
+                        React.createElement("span", { className: "text-xs font-black text-amber-600 w-6 text-center" }, c.weight),
+                        dmCriteria.length > 2 && React.createElement("button", { onClick: function () {
+                          upd('dmCriteria', dmCriteria.filter(function (_, i) { return i !== ci; }));
+                        }, className: "text-red-400 hover:text-red-600 text-xs" }, "\u2716")
+                      );
+                    }),
+                    dmCriteria.length < 7 && React.createElement("button", { onClick: function () {
+                      upd('dmCriteria', dmCriteria.concat([{ name: 'Criteria ' + (dmCriteria.length + 1), weight: 3 }]));
+                    }, className: "text-[10px] text-amber-500 font-bold hover:text-amber-700" }, "+ Add Criteria")
+                  )
+                ),
+                // Scoring matrix
+                React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 overflow-x-auto mb-4" },
+                  React.createElement("table", { className: "w-full text-xs" },
+                    React.createElement("thead", null,
+                      React.createElement("tr", { className: "bg-slate-50" },
+                        React.createElement("th", { className: "px-3 py-2 text-left font-bold text-slate-500" }, "Criteria (weight)"),
+                        dmOptions.map(function (opt, oi) {
+                          return React.createElement("th", { key: oi, className: "px-3 py-2 text-center font-bold text-amber-600" }, opt);
+                        })
+                      )
+                    ),
+                    React.createElement("tbody", null,
+                      dmCriteria.map(function (c, ci) {
+                        return React.createElement("tr", { key: ci, className: ci % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                          React.createElement("td", { className: "px-3 py-1.5 font-bold text-slate-600" }, c.name + " (\u00D7" + c.weight + ")"),
+                          dmOptions.map(function (opt, oi) {
+                            var key = oi + '-' + ci;
+                            var score = dmScores[key] || 3;
+                            return React.createElement("td", { key: oi, className: "px-3 py-1.5 text-center" },
+                              React.createElement("select", { value: score, onChange: function (e) {
+                                var ns = Object.assign({}, dmScores); ns[key] = parseInt(e.target.value); upd('dmScores', ns);
+                              }, className: "px-2 py-1 border border-slate-200 rounded text-xs font-bold w-16 text-center" },
+                                [1, 2, 3, 4, 5].map(function (v) { return React.createElement("option", { key: v, value: v }, v); })
+                              )
+                            );
+                          })
+                        );
+                      })
+                    )
+                  )
+                ),
+                // Results
+                React.createElement("div", { className: "space-y-2" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "\uD83C\uDFC6 Results (weighted scores)"),
+                  dmTotals.map(function (d, di) {
+                    var pct = dmMaxTotal > 0 ? d.total / dmMaxTotal * 100 : 0;
+                    return React.createElement("div", { key: di, className: "flex items-center gap-3" },
+                      React.createElement("span", { className: "text-xs font-bold w-20 text-right " + (di === 0 ? 'text-amber-600' : 'text-slate-500') }, d.option),
+                      React.createElement("div", { className: "flex-1 bg-slate-100 rounded-full h-6 overflow-hidden" },
+                        React.createElement("div", { style: { width: pct + '%', transition: 'width 0.3s' },
+                          className: "h-full rounded-full flex items-center justify-end pr-2 text-[10px] text-white font-bold " + (di === 0 ? 'bg-gradient-to-r from-amber-400 to-yellow-500' : 'bg-slate-300') },
+                          d.total
+                        )
+                      ),
+                      di === 0 && React.createElement("span", { className: "text-xs" }, "\uD83E\uDD47")
+                    );
+                  })
+                )
+              ),
+
+              // â•â•â• TAB 4: CONTRACT READER â•â•â•
+              tab === 'contract' && React.createElement("div", { className: "bg-gradient-to-br from-orange-50 to-rose-50 rounded-xl p-5 border border-orange-200" },
+                React.createElement("h3", { className: "text-base font-bold text-orange-800 mb-1" }, "\uD83D\uDCDD Contract & Fine Print Reader"),
+                React.createElement("p", { className: "text-xs text-orange-600 mb-1" }, "Can you spot ALL the traps? Find " + crCurrent.traps.length + " hidden fees/gotchas."),
+                React.createElement("p", { className: "text-xs font-bold text-orange-500 mb-4" }, crCurrent.title + " \u2014 Found: " + crFound.length + "/" + crCurrent.traps.length),
+                // Contract text
+                React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200 mb-4 text-sm text-slate-700 leading-relaxed font-serif" },
+                  crCurrent.text
+                ),
+                // Trap finder buttons
+                React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-4" },
+                  crCurrent.traps.map(function (trap) {
+                    var found = crFound.indexOf(trap.id) !== -1;
+                    return React.createElement("button", { key: trap.id, onClick: function () {
+                      if (!found) upd('crFound', crFound.concat([trap.id]));
+                    }, className: "px-3 py-2 rounded-xl text-xs font-bold text-left transition-all border-2 " +
+                      (found ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-orange-200 bg-white text-orange-600 hover:border-orange-400 hover:bg-orange-50')
+                    }, found ? '\u2705 ' + trap.hint : '\uD83D\uDD0D ' + trap.hint);
+                  })
+                ),
+                // Explanations for found traps
+                crFound.length > 0 && React.createElement("div", { className: "space-y-2 mb-4" },
+                  crCurrent.traps.filter(function (t) { return crFound.indexOf(t.id) !== -1; }).map(function (trap) {
+                    return React.createElement("div", { key: trap.id, className: "bg-orange-100 rounded-xl p-3 border border-orange-200" },
+                      React.createElement("p", { className: "text-xs font-bold text-orange-700" }, "\u26A0\uFE0F " + trap.hint),
+                      React.createElement("p", { className: "text-xs text-orange-600 mt-1" }, trap.explain)
+                    );
+                  })
+                ),
+                // Reveal all & next
+                React.createElement("div", { className: "flex gap-2 justify-center" },
+                  !crRevealed && crFound.length < crCurrent.traps.length && React.createElement("button", { onClick: function () {
+                    upd('crRevealed', true);
+                    upd('crFound', crCurrent.traps.map(function (t) { return t.id; }));
+                  }, className: "px-3 py-2 bg-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-300" }, "Reveal All"),
+                  React.createElement("button", { onClick: function () {
+                    upd('crLevel', crLevel + 1); upd('crFound', []); upd('crRevealed', false);
+                  }, className: "px-4 py-2 bg-orange-500 text-white rounded-xl text-xs font-bold hover:bg-orange-600 transition-colors" },
+                    crLevel < crContracts.length - 1 ? 'Next Contract \u2192' : '\uD83D\uDD04 Start Over')
+                )
+              ),
+
+              // â•â•â• TAB 5: HEALTH INSURANCE â•â•â•
+              tab === 'health' && React.createElement("div", { className: "bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl p-5 border border-sky-200" },
+                React.createElement("h3", { className: "text-base font-bold text-sky-800 mb-1" }, "\uD83C\uDFE5 Health Insurance Navigator"),
+                React.createElement("p", { className: "text-xs text-sky-600 mb-4" }, "Compare two plans \u2014 the cheapest premium isn't always the best deal"),
+                // Usage scenario selector
+                React.createElement("div", { className: "flex gap-2 mb-4 justify-center" },
+                  [{ id: 'low', label: '\uD83D\uDE4B Healthy (2 visits)', color: 'emerald' }, { id: 'medium', label: '\uD83E\uDE7A Moderate (6 visits)', color: 'amber' }, { id: 'high', label: '\uD83C\uDFE5 Heavy (12 visits)', color: 'rose' }].map(function (u) {
+                    return React.createElement("button", { key: u.id, onClick: function () { upd('hiUsage', u.id); },
+                      className: "px-3 py-2 rounded-xl text-xs font-bold transition-all " + (hiUsage === u.id ? 'bg-sky-500 text-white shadow-md' : 'bg-white text-sky-600 border border-sky-200 hover:bg-sky-50')
+                    }, u.label);
+                  })
+                ),
+                // Plan cards side-by-side
+                React.createElement("div", { className: "grid grid-cols-2 gap-4 mb-4" },
+                  [{ plan: hiPlanA, label: 'Plan A', cost: hiCostA, key: 'hiPlanA', color: 'blue' }, { plan: hiPlanB, label: 'Plan B', cost: hiCostB, key: 'hiPlanB', color: 'violet' }].map(function (p) {
+                    var isBetter = (p.label === 'Plan A' && hiBetter === 'A') || (p.label === 'Plan B' && hiBetter === 'B');
+                    return React.createElement("div", { key: p.label, className: "bg-white rounded-xl p-4 border-2 " + (isBetter ? 'border-emerald-400' : 'border-slate-200') },
+                      isBetter && React.createElement("span", { className: "text-[9px] font-bold bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full" }, "\u2B50 Best Value"),
+                      React.createElement("p", { className: "text-sm font-bold text-slate-700 mt-1" }, p.label),
+                      React.createElement("div", { className: "space-y-2 mt-2" },
+                        [{ label: 'Monthly Premium', val: p.plan.premium, field: 'premium' }, { label: 'Deductible', val: p.plan.deductible, field: 'deductible' }, { label: 'Copay', val: p.plan.copay, field: 'copay' }, { label: 'Coinsurance %', val: p.plan.coinsurance, field: 'coinsurance' }, { label: 'Max Out-of-Pocket', val: p.plan.oop, field: 'oop' }].map(function (f) {
+                          return React.createElement("div", { key: f.field, className: "flex items-center justify-between" },
+                            React.createElement("span", { className: "text-[10px] text-slate-500" }, f.label),
+                            React.createElement("input", { type: "number", value: f.val, onChange: function (e) {
+                              var np = Object.assign({}, p.plan); np[f.field] = Math.max(0, parseFloat(e.target.value) || 0); upd(p.key, np);
+                            }, className: "w-16 text-right px-1 py-0.5 border border-slate-200 rounded text-xs font-bold focus:ring-1 focus:ring-sky-400 outline-none" })
+                          );
+                        })
+                      ),
+                      React.createElement("hr", { className: "my-2 border-slate-100" }),
+                      React.createElement("div", { className: "text-center" },
+                        React.createElement("p", { className: "text-[9px] text-slate-400" }, "Annual Premiums: $" + p.cost.annualPremium.toLocaleString()),
+                        React.createElement("p", { className: "text-[9px] text-slate-400" }, "Out-of-Pocket: $" + p.cost.outOfPocket.toLocaleString()),
+                        React.createElement("p", { className: "text-lg font-black " + (isBetter ? 'text-emerald-600' : 'text-slate-500') }, "Total: $" + p.cost.total.toLocaleString())
+                      )
+                    );
+                  })
+                ),
+                // Vocab explainer
+                React.createElement("div", { className: "bg-sky-100 rounded-xl p-4 border border-sky-200" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-sky-700 mb-2" }, "\uD83D\uDCD6 Key Terms:"),
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2 text-[10px]" },
+                    React.createElement("p", { className: "text-sky-600" }, React.createElement("strong", null, "Premium"), " \u2014 Monthly bill you pay no matter what"),
+                    React.createElement("p", { className: "text-sky-600" }, React.createElement("strong", null, "Deductible"), " \u2014 What you pay before insurance kicks in"),
+                    React.createElement("p", { className: "text-sky-600" }, React.createElement("strong", null, "Copay"), " \u2014 Flat fee per doctor visit"),
+                    React.createElement("p", { className: "text-sky-600" }, React.createElement("strong", null, "Coinsurance"), " \u2014 % you pay after deductible is met"),
+                    React.createElement("p", { className: "text-sky-600" }, React.createElement("strong", null, "Out-of-Pocket Max"), " \u2014 The MOST you'll pay in a year (safety net)"),
+                    React.createElement("p", { className: "text-sky-600" }, React.createElement("strong", null, "In-Network"), " \u2014 Doctors/hospitals your plan has deals with (cheaper)")
+                  )
+                )
+              ),
+
+              // â•â•â• TAB 6: APPLIED SCIENCE â•â•â•
+              tab === 'science' && React.createElement("div", { className: "bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-5 border border-teal-200" },
+                React.createElement("h3", { className: "text-base font-bold text-teal-800 mb-1" }, "\uD83D\uDD2C Applied Science for Daily Life"),
+                React.createElement("p", { className: "text-xs text-teal-600 mb-4" }, "The physics and chemistry hiding in everyday activities"),
+                // Science sub-tabs
+                React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" },
+                  [{ id: 'tire', label: '\uD83D\uDE97 Gas Laws & Tires' }, { id: 'insulation', label: '\uD83C\uDFE0 Heat & Insulation' }, { id: 'cook', label: '\uD83C\uDF73 Cooking Chemistry' }, { id: 'circuit', label: '\u26A1 Circuits & Wattage' }].map(function (s) {
+                    return React.createElement("button", { key: s.id, onClick: function () { upd('asTab', s.id); },
+                      className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (asTab === s.id ? 'bg-teal-500 text-white shadow-md' : 'bg-white text-teal-600 border border-teal-200 hover:bg-teal-50')
+                    }, s.label);
+                  })
+                ),
+
+                // â”€â”€ Tire / Gas Laws â”€â”€
+                asTab === 'tire' && React.createElement("div", { className: "space-y-4" },
+                  React.createElement("div", { className: "bg-teal-100 rounded-xl p-3 border border-teal-200 text-xs text-teal-700" },
+                    React.createElement("strong", null, "Gay-Lussac's Law:"), " At constant volume, P\u2081/T\u2081 = P\u2082/T\u2082. Temperature MUST be in Kelvin!"
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-3 gap-3" },
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Fill Pressure (PSI)"),
+                      React.createElement("input", { type: "number", value: asTireP1, onChange: function (e) { upd('asTireP1', Math.max(1, parseFloat(e.target.value) || 1)); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-teal-400 outline-none mt-1" })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Fill Temp (\u00B0F)"),
+                      React.createElement("input", { type: "number", value: asTireT1, onChange: function (e) { upd('asTireT1', parseFloat(e.target.value) || 0); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-teal-400 outline-none mt-1" })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Current Temp (\u00B0F)"),
+                      React.createElement("input", { type: "number", value: asTireT2, onChange: function (e) { upd('asTireT2', parseFloat(e.target.value) || 0); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-teal-400 outline-none mt-1" })
+                    )
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+                    React.createElement("div", { className: "bg-white rounded-xl p-4 text-center border border-teal-200" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Predicted Pressure"),
+                      React.createElement("p", { className: "text-2xl font-black " + (asTireP2 < 30 ? 'text-red-500' : 'text-teal-600') }, (Math.round(asTireP2 * 10) / 10) + " PSI"),
+                      React.createElement("p", { className: "text-[10px] " + (tireDrop > 0 ? 'text-red-400' : 'text-emerald-400') + " font-bold" },
+                        (tireDrop > 0 ? '\u2B07\uFE0F ' : '\u2B06\uFE0F ') + Math.abs(Math.round(tireDrop * 10) / 10) + " PSI change")
+                    ),
+                    React.createElement("div", { className: "bg-white rounded-xl p-4 text-center border border-slate-200" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "The Math"),
+                      React.createElement("p", { className: "text-xs text-slate-600 font-mono mt-1" },
+                        asTireP1 + " \u00D7 (" + Math.round(t2K) + "K / " + Math.round(t1K) + "K)"),
+                      React.createElement("p", { className: "text-xs text-slate-600 font-mono" }, "= " + (Math.round(asTireP2 * 10) / 10) + " PSI"),
+                      React.createElement("p", { className: "text-[9px] text-slate-400 mt-1" }, "Rule of thumb: ~1 PSI per 10\u00B0F change")
+                    )
+                  )
+                ),
+
+                // â”€â”€ Insulation â”€â”€
+                asTab === 'insulation' && React.createElement("div", { className: "space-y-4" },
+                  React.createElement("div", { className: "bg-teal-100 rounded-xl p-3 border border-teal-200 text-xs text-teal-700" },
+                    React.createElement("strong", null, "Heat Transfer:"), " Q = Area \u00D7 \u0394T / R-value (BTU/hr). Higher R-value = less heat loss = lower bills."
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3" },
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Wall Area (sq ft)"),
+                      React.createElement("input", { type: "number", value: asWallArea, onChange: function (e) { upd('asWallArea', Math.max(1, parseFloat(e.target.value) || 1)); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-teal-400 outline-none mt-1" })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "R-Value"),
+                      React.createElement("input", { type: "number", value: asRValue, onChange: function (e) { upd('asRValue', Math.max(0.5, parseFloat(e.target.value) || 1)); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-teal-400 outline-none mt-1" })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Inside Temp (\u00B0F)"),
+                      React.createElement("input", { type: "number", value: asTempIn, onChange: function (e) { upd('asTempIn', parseFloat(e.target.value) || 0); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-teal-400 outline-none mt-1" })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Outside Temp (\u00B0F)"),
+                      React.createElement("input", { type: "number", value: asTempOut, onChange: function (e) { upd('asTempOut', parseFloat(e.target.value) || 0); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-teal-400 outline-none mt-1" })
+                    )
+                  ),
+                  React.createElement("div", { className: "bg-white rounded-xl p-4 border border-teal-200 text-center" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Heat Loss Through Wall"),
+                    React.createElement("p", { className: "text-2xl font-black text-teal-600" }, Math.round(asHeatLoss).toLocaleString() + " BTU/hr"),
+                    React.createElement("p", { className: "text-xs text-slate-500" }, Math.round(asHeatLossDay).toLocaleString() + " BTU/day")
+                  ),
+                  // R-value comparison
+                  React.createElement("div", { className: "space-y-2" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "R-Value Comparison (same wall, different materials):"),
+                    rValues.map(function (rv) {
+                      var loss = asWallArea * (asTempIn - asTempOut) / rv.r;
+                      var pct = asHeatLoss > 0 ? loss / (asWallArea * (asTempIn - asTempOut) / 1) * 100 : 0;
+                      return React.createElement("div", { key: rv.material, className: "flex items-center gap-2" },
+                        React.createElement("span", { className: "text-[10px] font-bold w-32 text-right text-slate-600" }, rv.material),
+                        React.createElement("div", { className: "flex-1 bg-slate-100 rounded-full h-4 overflow-hidden" },
+                          React.createElement("div", { style: { width: Math.min(100, pct) + '%' },
+                            className: "h-full rounded-full bg-" + rv.color + "-400" })
+                        ),
+                        React.createElement("span", { className: "text-[10px] font-bold text-slate-500 w-20" }, Math.round(loss) + " BTU/hr")
+                      );
+                    })
+                  )
+                ),
+
+                // â”€â”€ Cooking Chemistry â”€â”€
+                asTab === 'cook' && React.createElement("div", { className: "space-y-4" },
+                  React.createElement("div", { className: "bg-teal-100 rounded-xl p-3 border border-teal-200 text-xs text-teal-700" },
+                    React.createElement("strong", null, "Kitchen = Chemistry Lab!"), " Drag the temperature to see which chemical reactions are happening in your food."
+                  ),
+                  React.createElement("div", null,
+                    React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Cooking Temperature: " + asCookTemp + "\u00B0F (" + Math.round((asCookTemp - 32) * 5 / 9) + "\u00B0C)"),
+                    React.createElement("input", { type: "range", min: 32, max: 500, value: asCookTemp, onChange: function (e) { upd('asCookTemp', parseInt(e.target.value)); },
+                      className: "w-full mt-1", style: { accentColor: '#14b8a6' } })
+                  ),
+                  React.createElement("div", { className: "space-y-2" },
+                    cookReactions.map(function (r) {
+                      var active = asCookTemp >= r.tempF;
+                      return React.createElement("div", { key: r.name, className: "flex items-start gap-3 p-3 rounded-xl transition-all " + (active ? 'bg-white border-2 border-teal-300 shadow-sm' : 'bg-slate-50 border border-slate-200 opacity-50') },
+                        React.createElement("span", { className: "text-lg" }, r.icon),
+                        React.createElement("div", { className: "flex-1" },
+                          React.createElement("div", { className: "flex items-center gap-2" },
+                            React.createElement("p", { className: "text-xs font-bold " + (active ? 'text-teal-700' : 'text-slate-400') }, r.name),
+                            React.createElement("span", { className: "text-[9px] px-1.5 py-0.5 rounded " + (active ? 'bg-teal-100 text-teal-600' : 'bg-slate-100 text-slate-400') }, r.tempF + "\u00B0F")
+                          ),
+                          active && React.createElement("p", { className: "text-[10px] text-slate-600 mt-1" }, r.desc)
+                        ),
+                        React.createElement("span", { className: "text-xs" }, active ? '\u2705' : '\u26AA')
+                      );
+                    })
+                  )
+                ),
+
+                // â”€â”€ Electrical Circuits â”€â”€
+                asTab === 'circuit' && React.createElement("div", { className: "space-y-4" },
+                  React.createElement("div", { className: "bg-teal-100 rounded-xl p-3 border border-teal-200 text-xs text-teal-700" },
+                    React.createElement("strong", null, "Ohm's Law:"), " Power (W) = Voltage (V) \u00D7 Current (A). A 15A breaker at 120V = 1,800W max per circuit."
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-2 gap-3 mb-3" },
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Voltage"),
+                      React.createElement("select", { value: asVolts, onChange: function (e) { upd('asVolts', parseInt(e.target.value)); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-teal-400 outline-none mt-1" },
+                        React.createElement("option", { value: 120 }, "120V (standard)"),
+                        React.createElement("option", { value: 240 }, "240V (dryer/range)")
+                      )
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Breaker (Amps)"),
+                      React.createElement("select", { value: asAmps, onChange: function (e) { upd('asAmps', parseInt(e.target.value)); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-teal-400 outline-none mt-1" },
+                        React.createElement("option", { value: 15 }, "15A (most rooms)"),
+                        React.createElement("option", { value: 20 }, "20A (kitchen/bath)"),
+                        React.createElement("option", { value: 30 }, "30A (dryer)"),
+                        React.createElement("option", { value: 50 }, "50A (range)")
+                      )
+                    )
+                  ),
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-2" }, "Click devices to add to circuit (" + asVolts + "V \u00D7 " + asAmps + "A = " + asWatts + "W capacity):"),
+                  React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
+                    commonDevices.map(function (dev) {
+                      var isOn = asRunning.indexOf(dev.name) !== -1;
+                      return React.createElement("button", { key: dev.name, onClick: function () {
+                        if (isOn) {
+                          upd('asRunning', asRunning.filter(function (n) { return n !== dev.name; }));
+                        } else {
+                          upd('asRunning', asRunning.concat([dev.name]));
+                        }
+                      }, className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all border-2 " +
+                        (isOn ? 'border-teal-400 bg-teal-50 text-teal-700' : 'border-slate-200 bg-white text-slate-500 hover:border-teal-300')
+                      }, (isOn ? '\u26A1 ' : '') + dev.name + " (" + dev.watts + "W)");
+                    })
+                  ),
+                  // Load indicator
+                  React.createElement("div", { className: "bg-white rounded-xl p-4 border-2 " + (willTrip ? 'border-red-400' : 'border-slate-200') },
+                    React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                      React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, "Circuit Load"),
+                      React.createElement("span", { className: "text-xs font-black " + (willTrip ? 'text-red-500' : circuitUsage > 80 ? 'text-amber-500' : 'text-emerald-500') },
+                        totalLoad + "W / " + asWatts + "W (" + Math.round(circuitUsage) + "%)")
+                    ),
+                    React.createElement("div", { className: "h-6 bg-slate-100 rounded-full overflow-hidden" },
+                      React.createElement("div", { style: { width: Math.min(100, circuitUsage) + '%', transition: 'width 0.3s' },
+                        className: "h-full rounded-full " + (willTrip ? 'bg-gradient-to-r from-red-400 to-red-600 animate-pulse' : circuitUsage > 80 ? 'bg-gradient-to-r from-amber-400 to-orange-500' : 'bg-gradient-to-r from-emerald-400 to-teal-500') })
+                    ),
+                    willTrip && React.createElement("p", { className: "text-xs font-bold text-red-500 text-center mt-2 animate-pulse" },
+                      "\u26A0\uFE0F BREAKER TRIPPED! Total load (" + totalLoad + "W) exceeds circuit capacity (" + asWatts + "W)")
+                  )
+                )
+              ),
+
+              // â”€â”€ Footer â”€â”€
+              React.createElement("div", { className: "bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl p-3 border border-cyan-200 text-center" },
+                React.createElement("p", { className: "text-[10px] text-cyan-600" }, "\uD83E\uDDED ", React.createElement("strong", null, "Life skills"), " aren't just \u201Cadulting\u201D \u2014 they're applied science, critical thinking, and informed decision-making!"),
+                React.createElement("p", { className: "text-[9px] text-slate-400 mt-1" }, "Tax calculations are simplified estimates for educational purposes.")
+              )
+            );
+          })(),
+
+           })(), stemLabTab === 'explore' && stemLabTool === 'coordinate' && (() => {
             const gridW = 400,
               gridH = 400;
             const range = gridRange.max - gridRange.min;
@@ -27228,7 +29379,7 @@
               React.createElement("button", { onClick: function () { setStemLabTool('archStudio'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-300 hover:from-amber-200 hover:to-orange-200 transition-all shadow-sm", title: "Launch 3D Architecture Studio" }, "\uD83C\uDFD7\uFE0F 3D Builder \u2192")
             ),
             React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-200" },
-              [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: 'Color Wheel' }, { id: 'mixer', icon: '\uD83E\uDDEA', label: 'Color Mixer' }, { id: 'pixel', icon: '\uD83D\uDDBC', label: 'Pixel Art' }, { id: 'symmetry', icon: '\u2728', label: 'Symmetry' }, { id: 'spirograph', icon: '\uD83C\uDF00', label: 'Spirograph' }, { id: 'generative', icon: '\uD83C\uDF86', label: 'Generative' }, { id: 'spinArt', icon: '\uD83C\uDF00', label: 'Spin Art' }, { id: 'stringArt', icon: '\uD83D\uDD78', label: 'String Art' }, { id: 'opArt', icon: '\uD83D\uDC41', label: 'Op Art' }, { id: 'tessellation', icon: '\uD83D\uDD37', label: 'Tessellation' }, { id: 'fractal', icon: '\uD83D\uDD2E', label: 'Fractals' }, { id: 'gradient', icon: '\uD83C\uDF08', label: 'Gradient' }, { id: 'stereogram', icon: '\uD83D\uDC53', label: 'Stereogram' }, { id: 'contrast', icon: '\u267F', label: 'Contrast' }].map(function (tb) {
+              [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: 'Color Wheel' }, { id: 'mixer', icon: '\uD83E\uDDEA', label: 'Color Mixer' }, { id: 'pixel', icon: '\uD83D\uDDBC', label: 'Pixel Art' }, { id: 'symmetry', icon: '\u2728', label: 'Symmetry' }, { id: 'spirograph', icon: '\uD83C\uDF00', label: 'Spirograph' }, { id: 'generative', icon: '\uD83C\uDF86', label: 'Generative' }, { id: 'spinArt', icon: '\uD83C\uDF00', label: 'Spin Art' }, { id: 'stringArt', icon: '\uD83D\uDD78', label: 'String Art' }, { id: 'opArt', icon: '\uD83D\uDC41', label: 'Op Art' }, { id: 'tessellation', icon: '\uD83D\uDD37', label: 'Tessellation' }, { id: 'fractal', icon: '\uD83D\uDD2E', label: 'Fractals' }, { id: 'gradient', icon: '\uD83C\uDF08', label: 'Gradient' }, { id: 'stereogram', icon: '\uD83D\uDC53', label: 'Stereogram' }, { id: 'life', icon: '\uD83E\uDDEC', label: 'Game of Life' }, { id: 'contrast', icon: '\u267F', label: 'Contrast' }].map(function (tb) {
                 return React.createElement("button", { key: tb.id, onClick: function () { upd('tab', tb.id); }, className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === tb.id ? 'bg-white shadow-md text-pink-700' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50') }, tb.icon + ' ' + tb.label);
               })
             ),
@@ -28918,6 +31069,283 @@
                   )
                 )
               )
+            ),
+            // ═══ GAME OF LIFE TAB ═══
+            tab === 'life' && React.createElement("div", { className: "space-y-3" },
+              React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+                React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-lime-50 rounded-xl p-4 border border-emerald-200" },
+                    React.createElement("h4", { className: "text-xs font-bold text-emerald-700 mb-3" }, "\uD83E\uDDEC Conway's Game of Life"),
+                    // Simulation controls
+                    React.createElement("div", { className: "flex gap-1 mb-3" },
+                      React.createElement("button", { onClick: function () { upd('lifeRunning', !(d.lifeRunning)); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black transition-all " + (d.lifeRunning ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-600 hover:to-green-600 shadow-md') }, d.lifeRunning ? '\u23F8 Pause' : '\u25B6 Run'),
+                      React.createElement("button", { onClick: function () { upd('lifeStep', (d.lifeStep || 0) + 1); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200", disabled: d.lifeRunning }, '\u23ED Step'),
+                      React.createElement("button", { onClick: function () { upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); upd('lifePop', 0); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, '\uD83D\uDDD1 Clear')
+                    ),
+                    // Stats
+                    React.createElement("div", { className: "flex gap-3 mb-3 text-[10px] font-bold" },
+                      React.createElement("span", { className: "px-2 py-1 rounded-full bg-emerald-100 text-emerald-700" }, '\uD83D\uDD04 Gen: ' + (d.lifeGen || 0)),
+                      React.createElement("span", { className: "px-2 py-1 rounded-full bg-lime-100 text-lime-700" }, '\uD83E\uDDA0 Pop: ' + (d.lifePop || 0))
+                    ),
+                    // Speed
+                    React.createElement("div", { className: "mb-2" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-emerald-600 block mb-0.5" }, 'Speed: ' + (typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10) + ' fps'),
+                      React.createElement("input", { type: "range", min: 1, max: 30, value: typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10, onChange: function (e) { upd('lifeSpeed', parseInt(e.target.value)); }, className: "w-full accent-emerald-600" })
+                    ),
+                    // Grid size
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-emerald-600 block mb-1" }, 'Grid Size'),
+                      React.createElement("div", { className: "flex gap-1" },
+                        [{ id: 40, label: '40\u00D740' }, { id: 60, label: '60\u00D760' }, { id: 80, label: '80\u00D780' }, { id: 120, label: '120\u00D7120' }].map(function (s) {
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('lifeSize', s.id); upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.lifeSize || 60) === s.id ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, s.label);
+                        })
+                      )
+                    ),
+                    // Draw tool
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-emerald-600 block mb-1" }, 'Draw Tool'),
+                      React.createElement("div", { className: "flex gap-1" },
+                        [{ id: 'draw', label: '\u270F Draw' }, { id: 'erase', label: '\uD83E\uDDFD Erase' }].map(function (s) {
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('lifeTool', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.lifeTool || 'draw') === s.id ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, s.label);
+                        })
+                      )
+                    ),
+                    // Wrap toggle
+                    React.createElement("div", { className: "flex items-center gap-2 mb-3" },
+                      React.createElement("button", { onClick: function () { upd('lifeWrap', d.lifeWrap === false ? true : d.lifeWrap === true ? false : true); }, className: "px-3 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.lifeWrap !== false ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, (d.lifeWrap !== false ? '\u2705' : '\u2B1C') + ' Wrap Edges'),
+                      React.createElement("button", { onClick: function () {
+                        var sz = d.lifeSize || 60;
+                        var newGrid = {};
+                        for (var ry = 0; ry < sz; ry++) for (var rx = 0; rx < sz; rx++) { if (Math.random() < 0.3) newGrid[rx + ',' + ry] = 1; }
+                        upd('lifeGrid', newGrid); upd('lifeSeed', Date.now()); upd('lifeGen', 0);
+                      }, className: "px-3 py-1 rounded-lg text-[10px] font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200" }, '\uD83C\uDFB2 Random')
+                    ),
+                    // Color
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-emerald-600 block mb-1" }, 'Cell Color'),
+                      React.createElement("div", { className: "flex gap-1" },
+                        [{ id: 'green', label: '\uD83D\uDFE2', hue: 140 }, { id: 'cyan', label: '\uD83D\uDD35', hue: 190 }, { id: 'gold', label: '\uD83D\uDFE1', hue: 45 }, { id: 'pink', label: '\uD83D\uDFE3', hue: 320 }, { id: 'white', label: '\u26AA', hue: -1 }].map(function (c) {
+                          return React.createElement("button", { key: c.id, onClick: function () { upd('lifeHue', c.hue); }, className: "flex-1 px-2 py-1 rounded-lg text-sm transition-all " + ((d.lifeHue || 140) === c.hue ? 'bg-slate-200 ring-2 ring-emerald-400' : 'bg-slate-50 hover:bg-slate-100') }, c.label);
+                        })
+                      )
+                    ),
+                    // Export
+                    React.createElement("button", { onClick: function () { var c = document.getElementById('lifeCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'game-of-life-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "w-full px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, '\uD83D\uDCE5 Export PNG'),
+                    // Presets
+                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
+                      React.createElement("span", { className: "text-[10px] font-bold text-emerald-500 mr-1" }, 'Presets:'),
+                      [{ label: 'Glider', id: 'glider' }, { label: 'Glider Gun', id: 'gliderGun' }, { label: 'Pulsar', id: 'pulsar' }, { label: 'Spaceship', id: 'spaceship' }, { label: 'R-pentomino', id: 'rpent' }, { label: 'Acorn', id: 'acorn' }, { label: 'Diehard', id: 'diehard' }].map(function (pr) {
+                        return React.createElement("button", { key: pr.id, onClick: function () { upd('lifePreset', pr.id); upd('lifeClear', Date.now()); upd('lifeGen', 0); upd('lifeRunning', true); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50 transition-all" }, pr.label);
+                      })
+                    )
+                  ),
+                  // Educational panel
+                  React.createElement("div", { className: "bg-gradient-to-br from-lime-50 to-green-50 rounded-xl p-3 border border-lime-200" },
+                    React.createElement("button", { onClick: function () { upd('showLifeInfo', !d.showLifeInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-lime-700" },
+                      React.createElement("span", null, '\uD83E\uDDE0 The Science of Cellular Automata'),
+                      React.createElement("span", null, d.showLifeInfo ? '\u25B2' : '\u25BC')
+                    ),
+                    d.showLifeInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
+                      React.createElement("p", null, '\uD83E\uDDEC ', React.createElement("strong", null, "Conway\'s Game of Life"), ' was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity \u2014 it\'s actually ', React.createElement("strong", null, "Turing complete"), ', meaning it can compute anything a real computer can.'),
+                      React.createElement("p", null, '\uD83D\uDCCF ', React.createElement("strong", null, "The 4 rules:"), ' (1) Any live cell with 2\u20133 neighbors survives. (2) Any dead cell with exactly 3 neighbors becomes alive. (3) All other cells die or stay dead. That\'s it \u2014 all complexity emerges from these simple rules.'),
+                      React.createElement("p", null, '\uD83D\uDE80 ', React.createElement("strong", null, "Gliders"), ' are patterns that move across the grid. The ', React.createElement("strong", null, "Gosper Glider Gun"), ' (1970) was the first pattern proven to grow without bound, shooting gliders endlessly. Bill Gosper won a $50 prize from Conway for discovering it.'),
+                      React.createElement("p", null, '\uD83C\uDF0D ', React.createElement("strong", null, "Emergence:"), ' The Game of Life demonstrates how complex, seemingly \u201Cintelligent\u201D behavior can arise from very simple rules with no central controller. This same principle appears in ant colonies, flocking birds, brain neurons, and even market economies.'),
+                      React.createElement("p", null, '\u26A1 ', React.createElement("strong", null, "Self-replication:"), ' In 2010, Andrew Wade built a pattern called \u201CGemini\u201D that creates a complete copy of itself and then destroys the original \u2014 true self-replication from simple rules. In 2013, Dave Greene built a universal constructor.')
+                    )
+                  ),
+                  React.createElement("p", { className: "text-[10px] text-center text-slate-400 italic" }, '\uD83D\uDC46 Click or drag to draw cells \u2022 Hit Run to simulate')
+                ),
+                // Canvas
+                React.createElement("canvas", { id: 'lifeCanvas', width: 600, height: 600,
+                  key: 'life-' + (d.lifeClear || 0) + '-' + (d.lifeSize || 60),
+                  className: "rounded-xl border-2 border-emerald-200 shadow-lg mx-auto block cursor-crosshair", style: { maxWidth: '100%', background: '#0a0f0a' },
+                  ref: function (canvas) {
+                    if (!canvas) return;
+                    if (canvas._lifeInit) return;
+                    canvas._lifeInit = true;
+                    var ctx = canvas.getContext('2d');
+                    var W = canvas.width, H = canvas.height;
+                    var gridSize = d.lifeSize || 60;
+                    var cellW = W / gridSize, cellH = H / gridSize;
+                    var grid = d.lifeGrid || {};
+                    var wrap = d.lifeWrap !== false;
+                    var generation = d.lifeGen || 0;
+                    var running = false;
+                    var speed = typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10;
+                    var hue = typeof d.lifeHue === 'number' ? d.lifeHue : 140;
+                    var lastFrameTime = 0;
+
+                    // Load preset if set
+                    var preset = d.lifePreset;
+                    if (preset) {
+                      upd('lifePreset', null);
+                      grid = {};
+                      var cx = Math.floor(gridSize / 2), cy = Math.floor(gridSize / 2);
+                      var cells = [];
+                      if (preset === 'glider') cells = [[0,0],[1,1],[2,1],[0,2],[1,2]];
+                      else if (preset === 'gliderGun') cells = [[24,0],[22,1],[24,1],[12,2],[13,2],[20,2],[21,2],[34,2],[35,2],[11,3],[15,3],[20,3],[21,3],[34,3],[35,3],[0,4],[1,4],[10,4],[16,4],[20,4],[21,4],[0,5],[1,5],[10,5],[14,5],[16,5],[17,5],[22,5],[24,5],[10,6],[16,6],[24,6],[11,7],[15,7],[12,8],[13,8]];
+                      else if (preset === 'pulsar') {
+                        var pRows = [[2,3,4,8,9,10],[0,5,7,12],[0,5,7,12],[0,5,7,12],[2,3,4,8,9,10]];
+                        pRows.forEach(function (cols, ri) {
+                          cols.forEach(function (c) {
+                            cells.push([c - 6, ri - 6 + 1]);
+                            cells.push([c - 6, -(ri - 6 + 1)]);
+                          });
+                        });
+                      }
+                      else if (preset === 'spaceship') cells = [[1,0],[4,0],[0,1],[0,2],[4,2],[0,3],[1,3],[2,3],[3,3]];
+                      else if (preset === 'rpent') cells = [[1,0],[2,0],[0,1],[1,1],[1,2]];
+                      else if (preset === 'acorn') cells = [[1,0],[3,1],[0,2],[1,2],[4,2],[5,2],[6,2]];
+                      else if (preset === 'diehard') cells = [[6,0],[0,1],[1,1],[1,2],[5,2],[6,2],[7,2]];
+                      cells.forEach(function (c) {
+                        var gx = cx + c[0], gy = cy + c[1];
+                        if (gx >= 0 && gx < gridSize && gy >= 0 && gy < gridSize) grid[gx + ',' + gy] = 1;
+                      });
+                      upd('lifeGrid', Object.assign({}, grid));
+                    }
+
+                    function countNeighbors(x, y) {
+                      var count = 0;
+                      for (var dy = -1; dy <= 1; dy++) {
+                        for (var dx = -1; dx <= 1; dx++) {
+                          if (dx === 0 && dy === 0) continue;
+                          var nx = x + dx, ny = y + dy;
+                          if (wrap) { nx = (nx + gridSize) % gridSize; ny = (ny + gridSize) % gridSize; }
+                          else if (nx < 0 || nx >= gridSize || ny < 0 || ny >= gridSize) continue;
+                          if (grid[nx + ',' + ny]) count++;
+                        }
+                      }
+                      return count;
+                    }
+
+                    function step() {
+                      var newGrid = {};
+                      var checked = {};
+                      var keys = Object.keys(grid);
+                      // Check all live cells and their neighbors
+                      keys.forEach(function (key) {
+                        var parts = key.split(',');
+                        var x = parseInt(parts[0]), y = parseInt(parts[1]);
+                        for (var dy = -1; dy <= 1; dy++) {
+                          for (var dx = -1; dx <= 1; dx++) {
+                            var nx = x + dx, ny = y + dy;
+                            if (wrap) { nx = (nx + gridSize) % gridSize; ny = (ny + gridSize) % gridSize; }
+                            else if (nx < 0 || nx >= gridSize || ny < 0 || ny >= gridSize) continue;
+                            var nk = nx + ',' + ny;
+                            if (checked[nk]) continue;
+                            checked[nk] = true;
+                            var alive = !!grid[nk];
+                            var neighbors = countNeighbors(nx, ny);
+                            if (alive && (neighbors === 2 || neighbors === 3)) newGrid[nk] = 1;
+                            else if (!alive && neighbors === 3) newGrid[nk] = 1;
+                          }
+                        }
+                      });
+                      grid = newGrid;
+                      generation++;
+                      upd('lifeGrid', Object.assign({}, grid));
+                      upd('lifeGen', generation);
+                      upd('lifePop', Object.keys(grid).length);
+                    }
+
+                    function drawGrid() {
+                      ctx.fillStyle = '#0a0f0a'; ctx.fillRect(0, 0, W, H);
+                      // Grid lines
+                      ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 0.5;
+                      if (gridSize <= 80) {
+                        for (var gx = 0; gx <= gridSize; gx++) { ctx.beginPath(); ctx.moveTo(gx * cellW, 0); ctx.lineTo(gx * cellW, H); ctx.stroke(); }
+                        for (var gy = 0; gy <= gridSize; gy++) { ctx.beginPath(); ctx.moveTo(0, gy * cellH); ctx.lineTo(W, gy * cellH); ctx.stroke(); }
+                      }
+                      // Cells
+                      var keys = Object.keys(grid);
+                      keys.forEach(function (key) {
+                        var parts = key.split(',');
+                        var x = parseInt(parts[0]), y = parseInt(parts[1]);
+                        var neighbors = countNeighbors(x, y);
+                        if (hue === -1) {
+                          ctx.fillStyle = 'rgba(240,240,240,' + (0.7 + neighbors * 0.04) + ')';
+                        } else {
+                          var bright = 45 + neighbors * 5;
+                          ctx.fillStyle = 'hsl(' + hue + ',80%,' + bright + '%)';
+                        }
+                        ctx.fillRect(x * cellW + 0.5, y * cellH + 0.5, cellW - 1, cellH - 1);
+                        // Glow for active cells
+                        if (neighbors >= 2 && neighbors <= 3) {
+                          ctx.fillStyle = hue === -1 ? 'rgba(255,255,255,0.08)' : 'hsla(' + hue + ',80%,60%,0.1)';
+                          ctx.fillRect(x * cellW - 1, y * cellH - 1, cellW + 2, cellH + 2);
+                        }
+                      });
+                    }
+
+                    // Drawing interaction
+                    var painting = false;
+                    function getCell(e) {
+                      var rect = canvas.getBoundingClientRect();
+                      var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                      var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                      var gx = Math.floor(ex * (W / rect.width) / cellW);
+                      var gy = Math.floor(ey * (H / rect.height) / cellH);
+                      return { x: gx, y: gy };
+                    }
+                    function paintCell(e) {
+                      var c = getCell(e);
+                      if (c.x >= 0 && c.x < gridSize && c.y >= 0 && c.y < gridSize) {
+                        var key = c.x + ',' + c.y;
+                        if ((d.lifeTool || 'draw') === 'erase') delete grid[key];
+                        else grid[key] = 1;
+                        upd('lifeGrid', Object.assign({}, grid));
+                        upd('lifePop', Object.keys(grid).length);
+                        drawGrid();
+                      }
+                    }
+                    canvas.onmousedown = canvas.ontouchstart = function (e) { e.preventDefault(); painting = true; paintCell(e); };
+                    canvas.onmousemove = canvas.ontouchmove = function (e) { if (painting) paintCell(e); };
+                    canvas.onmouseup = canvas.ontouchend = function () { painting = false; };
+                    canvas.onmouseleave = function () { painting = false; };
+
+                    // Animation loop
+                    function animate(timestamp) {
+                      // Read dynamic state from data attributes
+                      running = canvas.getAttribute('data-running') === '1';
+                      speed = parseInt(canvas.getAttribute('data-speed') || '10');
+                      wrap = canvas.getAttribute('data-wrap') !== '0';
+                      hue = parseInt(canvas.getAttribute('data-hue') || '140');
+                      var doStep = canvas.getAttribute('data-step');
+                      if (doStep && doStep !== canvas._lastStep) {
+                        canvas._lastStep = doStep;
+                        step();
+                      }
+                      var interval = 1000 / speed;
+                      if (running && timestamp - lastFrameTime >= interval) {
+                        lastFrameTime = timestamp;
+                        step();
+                      }
+                      drawGrid();
+                      canvas._lifeAnim = requestAnimationFrame(animate);
+                    }
+                    // Set initial data attributes
+                    canvas.setAttribute('data-running', d.lifeRunning ? '1' : '0');
+                    canvas.setAttribute('data-speed', String(typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10));
+                    canvas.setAttribute('data-wrap', d.lifeWrap === false ? '0' : '1');
+                    canvas.setAttribute('data-hue', String(typeof d.lifeHue === 'number' ? d.lifeHue : 140));
+                    canvas.setAttribute('data-step', String(d.lifeStep || 0));
+                    canvas._lastStep = String(d.lifeStep || 0);
+                    drawGrid();
+                    animate(0);
+                  }
+                })
+              ),
+              // Data attribute sync
+              React.createElement("div", { ref: function () {
+                var c = document.getElementById('lifeCanvas');
+                if (c) {
+                  c.setAttribute('data-running', d.lifeRunning ? '1' : '0');
+                  c.setAttribute('data-speed', String(typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10));
+                  c.setAttribute('data-wrap', d.lifeWrap === false ? '0' : '1');
+                  c.setAttribute('data-hue', String(typeof d.lifeHue === 'number' ? d.lifeHue : 140));
+                  c.setAttribute('data-step', String(d.lifeStep || 0));
+                }
+              }, style: { display: 'none' } })
             ),
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'art-' + Date.now(), tool: 'artStudio', label: 'Art Studio', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Art snapshot saved!', 'success'); }, className: "mt-4 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 rounded-full hover:from-pink-600 hover:to-rose-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           );

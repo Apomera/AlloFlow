@@ -1,6 +1,6 @@
 # AlloFlow Architecture Guide
 
-*Last Updated: 2026-03-11*
+*Last Updated: 2026-03-17*
 
 ## Product Architecture: The 8 Core Pillars
 
@@ -24,9 +24,10 @@ AlloFlow is built on eight pillars that define its position in the EdTech landsc
 ### Monolith + Modular Hub-and-Spoke
 
 ```
-AlloFlowANTI.txt (App.jsx)     ← Core monolith (~67K lines)
+AlloFlowANTI.txt (App.jsx)     ← Core monolith (~71K lines)
 ├── word_sounds_module.js       ← Extracted module (~24K lines)
-├── stem_lab_module.js          ← Extracted module (~24K lines)
+├── stem_lab_module.js          ← Extracted module (~43K lines, 47 tools)
+├── report_writer_module.js     ← Extracted module (Clinical Reasoning Suite)
 ├── help_strings.js             ← Tour/help content
 ├── ui_strings.js               ← i18n strings (100+ languages)
 └── audio_bank.json             ← Pre-recorded phoneme audio
@@ -50,74 +51,78 @@ The file contains `// @section NAME` comment markers at every major component bo
 
 | Marker | Line | What It Covers |
 |---|---|---|
-| `@section GLOBAL_MUTE` | ~175 | GlobalMuteButton |
-| `@section LARGE_FILE_HANDLER` | ~199 | LargeFileHandler + modal |
-| `@section SAFETY_CHECKER` | ~547 | SafetyContentChecker |
-| `@section WORD_SOUNDS_STRINGS` | ~649 | i18n strings block |
-| `@section PHONEME_DATA` | ~829 | Audio banks, IPA maps, word families |
-| `@section VISUAL_PANEL` | ~1309 | VisualPanelGrid (comics) |
-| `@section WORD_SOUNDS_GENERATOR` | ~2542 | Main Word Sounds component |
-| `@section WORD_SOUNDS_REVIEW` | ~3356 | Session review panel |
-| `@section STUDENT_ANALYTICS` | ~4260 | RTI probes & analytics |
-| `@section STUDENT_SUBMIT` | ~9867 | Student submission modal |
-| `@section SPEECH_BUBBLE` | ~10112 | Allobot speech bubble |
-| `@section ALLOBOT` | ~10335 | Embodied tour agent |
-| `@section MISSION_REPORT` | ~12527 | Quest summary card |
-| `@section STUDENT_QUIZ` | ~12634 | Live quiz overlay |
-| `@section DRAFT_FEEDBACK` | ~12959 | Draft feedback UI |
-| `@section TEACHER_GATE` | ~13160 | Teacher verification |
-| `@section ADVENTURE_SYSTEMS` | ~13459 | Ambience, effects, climax |
-| `@section INTERACTIVE_GAMES` | ~14398 | Confetti, Memory, Matching, etc. |
-| `@section ADVENTURE_UI` | ~17835 | Inventory, dice, shop |
-| `@section CHARTS` | ~18699 | Charts & progress tracking |
-| `@section ESCAPE_ROOM` | ~18830 | Escape Room student overlay |
-| `@section ESCAPE_ROOM_TEACHER` | ~19451 | Escape Room teacher controls |
-| `@section LIVE_QUIZ` | ~19619 | Live quiz broadcast |
-| `@section LEARNER_PROGRESS` | ~20446 | Learning journey view |
-| `@section TEACHER_DASHBOARD` | ~20940 | Main teacher dashboard |
-| `@section QUICKSTART_WIZARD` | ~22095 | Onboarding wizard |
-| `@section IMMERSIVE_READER` | ~23185 | Speed reader tools |
-| `@section CAST_LOBBY` | ~23326 | Multi-device casting |
-| `@section BILINGUAL_RENDERER` | ~32038 | Bilingual field display |
+| `@section GLOBAL_MUTE` | ~394 | GlobalMuteButton |
+| `@section LARGE_FILE_HANDLER` | ~419 | LargeFileHandler + modal |
+| `@section SAFETY_CHECKER` | ~768 | SafetyContentChecker |
+| `@section WORD_SOUNDS_STRINGS` | ~871 | i18n strings block |
+| `@section PHONEME_DATA` | ~1052 | Audio banks, IPA maps, word families |
+| `@section VISUAL_PANEL` | ~3124 | VisualPanelGrid (comics) |
+| `@section WORD_SOUNDS_GENERATOR` | ~4358 | Main Word Sounds component |
+| `@section WORD_SOUNDS_REVIEW` | ~5173 | Session review panel |
+| `@section STUDENT_ANALYTICS` | ~6078 | RTI probes & analytics |
+| `@section STUDENT_SUBMIT` | ~11772 | Student submission modal |
+| `@section SPEECH_BUBBLE` | ~12018 | Allobot speech bubble |
+| `@section ALLOBOT` | ~12242 | Embodied tour agent |
+| `@section MISSION_REPORT` | ~14552 | Quest summary card |
+| `@section STUDENT_QUIZ` | ~14660 | Live quiz overlay |
+| `@section DRAFT_FEEDBACK` | ~14986 | Draft feedback UI |
+| `@section TEACHER_GATE` | ~15188 | Teacher verification |
+| `@section ADVENTURE_SYSTEMS` | ~15553 | Ambience, effects, climax |
+| `@section INTERACTIVE_GAMES` | ~16428 | Confetti, Memory, Matching, etc. |
+| `@section ADVENTURE_UI` | ~19866 | Inventory, dice, shop |
+| `@section CHARTS` | ~20731 | Charts & progress tracking |
+| `@section ESCAPE_ROOM` | ~20863 | Escape Room student overlay |
+| `@section ESCAPE_ROOM_TEACHER` | ~21485 | Escape Room teacher controls |
+| `@section LIVE_QUIZ` | ~21654 | Live quiz broadcast |
+| `@section LEARNER_PROGRESS` | ~22482 | Learning journey view |
+| `@section TEACHER_DASHBOARD` | ~22977 | Main teacher dashboard |
+| `@section QUICKSTART_WIZARD` | ~24154 | Onboarding wizard |
+| `@section IMMERSIVE_READER` | ~25266 | Speed reader tools |
+| `@section CAST_LOBBY` | ~25408 | Multi-device casting |
+| `@section BILINGUAL_RENDERER` | ~34289 | Bilingual field display |
 
-### `@tool` Markers in stem_lab_module.js
+### Tool Inventory in stem_lab_module.js (47 tools)
 
-Each STEM Lab tool IIFE is marked with `// @tool TOOL_ID`:
+All tools are registered in the `_allStemTools` array (~L2050) and have corresponding `stemLabTool === 'id'` IIFE render blocks. Some older tools have `// @tool ID` comment markers; newer tools do not.
 
-| Category | Tool ID | Marker |
-|---|---|---|
-| Math Fundamentals | `volume`, `numberline`, `areamodel`, `fractionViz`, `base10` | `// @tool volume` etc. |
-| Advanced Math | `coordinate`, `protractor`, `multtable`, `funcGrapher` | `// @tool coordinate` etc. |
-| Life & Earth Science | `cell`, `solarSystem`, `galaxy`, `rocks`, `waterCycle`, `ecosystem` | `// @tool cell` etc. |
-| Physics & Chemistry | `wave`, `circuit`, `chemBalance`, `physics`, `dataPlot` | `// @tool wave` etc. |
-| Arts & Music | `musicSynth` | `// @tool musicSynth` |
+| Category | Tool IDs |
+|---|---|
+| Math Fundamentals | `volume`, `numberline`, `areamodel`, `fractionViz`, `base10`, `geoSandbox`, `archStudio`, `multtable` |
+| Advanced Math | `coordinate`, `protractor`, `funcGrapher`, `inequality`, `calculus`, `algebraCAS`, `graphCalc`, `probability`, `unitConvert` |
+| Life & Earth Science | `cell`, `solarSystem`, `galaxy`, `universe`, `rocks`, `waterCycle`, `rockCycle`, `ecosystem`, `companionPlanting`, `aquarium`, `decomposer`, `anatomy`, `dissection`, `brainAtlas`, `molecule` |
+| Physics & Chemistry | `wave`, `circuit`, `chemBalance`, `punnett`, `physics`, `dataPlot`, `dataStudio` |
+| Computer Science | `codingPlayground` |
+| Arts & Music | `musicSynth`, `artStudio` |
+| Behavioral Science | `behaviorLab` |
+| Social Studies & Economics | `economicsLab` |
+| Strategy Games | `spaceColony` |
 
 ### Existing `#region` Blocks
 
 Coarser section boundaries remain from the original structure:
 
-| Region | Start | End |
-|---|---|---|
-| CONFIGURATION & SETUP | L66 | L546 |
-| LOCALIZATION STRINGS | L8832 | L8893 |
-| HELPERS & UTILITIES | L8894 | L9696 |
-| CONTEXTS & PROVIDERS | L9697 | L9737 |
-| UI COMPONENTS | L9738 | L24060 |
-| MAIN APPLICATION | L24061 | L67672 |
-| APP EXPORT | L67673 | L67699 |
+| Region | Start |
+|---|---|
+| CONFIGURATION & SETUP | L242 |
+| LOCALIZATION STRINGS | L10732 |
+| HELPERS & UTILITIES | L10794 |
+| CONTEXTS & PROVIDERS | L11602 |
+| UI COMPONENTS | L11643 |
+| MAIN APPLICATION | L26168 |
+| APP EXPORT | L70832 |
 
 ---
 
 ## Encoding & Tooling Notes
 
-### File Characteristics (as of 2026-03-07)
+### File Characteristics (as of 2026-03-17)
 
 | Property | AlloFlowANTI.txt | stem_lab_module.js |
 |---|---|---|
-| Size | ~4.3 MB / ~67.9K lines | ~1.8 MB / ~23.6K lines |
+| Size | ~4.45 MB / ~70.9K lines | ~3.27 MB / ~43.1K lines |
 | Line endings | CRLF (pure) | CRLF (pure) |
 | BOM | None | None |
-| Non-ASCII | ~6,282 bytes (emoji) | ~13,935 bytes (emoji) |
+| Non-ASCII | Emoji throughout | Emoji throughout |
 | Control bytes | **0** (fixed 2026-03-04) | 0 |
 
 ### Tool Reliability
@@ -228,7 +233,7 @@ const apiKey = typeof __firebase_config !== 'undefined'
 | `flash` | `gemini-3-flash-preview` | `gemini-3-flash-preview` |
 | `tts` | `gemini-3-flash-preview` | `gemini-2.5-flash-preview-tts` |
 | `vision` | `gemini-3-flash-preview` | `gemini-3-flash-preview` |
-| `image` | `gemini-2.5-flash-image` | `gemini-3.1-flash-image-preview` |
+| `image` | `gemini-2.5-flash-image-preview` | `gemini-3.1-flash-image-preview` |
 | `safety` | `gemini-2.5-flash-lite` | `gemini-2.5-flash-lite` |
 | `quality` | `gemini-2.5-pro` | `gemini-3.1-pro-preview` |
 
