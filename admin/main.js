@@ -55,7 +55,7 @@ const createWindow = () => {
 
   const startURL = isDev
     ? 'http://localhost:3000'
-    : `file://${path.join(__dirname, '../build/index.html')}`;
+    : `file://${path.join(__dirname, 'build/index.html')}`;
 
   mainWindow.loadURL(startURL);
 
@@ -158,11 +158,11 @@ ipcMain.handle('docker:compose-down', async (event) => {
 ipcMain.handle('system:read-env', async (event) => {
   try {
     const envPath = path.join(__dirname, '../.env');
-    const env = fs.readFileSync(envPath, 'utf8');
-    return env;
+    const content = fs.readFileSync(envPath, 'utf8');
+    return { success: true, content };
   } catch (err) {
     console.error('Error reading .env:', err.message);
-    return '';
+    return { success: false, content: '' };
   }
 });
 

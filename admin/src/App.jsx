@@ -29,10 +29,13 @@ export default function App() {
     // Check if setup is complete
     const checkSetup = async () => {
       try {
-        // Check if setup-complete.lock exists by trying to read env
+        // Check if .env has SERVER_IP configuration
         const env = await window.alloAPI.readEnv();
-        setSetupComplete(env.success && env.content.includes('SERVER_IP'));
+        const isSetupComplete = env?.success && env?.content && env.content.includes('SERVER_IP');
+        console.log('[Setup Check]', { envSuccess: env?.success, hasServerIP: env?.content?.includes('SERVER_IP'), isSetupComplete });
+        setSetupComplete(isSetupComplete);
       } catch (err) {
+        console.error('[Setup Check Error]', err);
         // If there's an error, assume setup is not complete
         setSetupComplete(false);
       }
