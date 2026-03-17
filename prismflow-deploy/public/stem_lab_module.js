@@ -5793,6 +5793,184 @@
             var circuitUsage = totalLoad / asWatts * 100;
             var willTrip = circuitUsage > 100;
 
+            // ────── CAR CARE SCIENCE ──────
+            var ccOilTemp = stemState.ccOilTemp != null ? stemState.ccOilTemp : 70;
+            var ccTread = stemState.ccTread != null ? stemState.ccTread : 6;
+            var ccBattTemp = stemState.ccBattTemp != null ? stemState.ccBattTemp : 70;
+            var ccMileage = stemState.ccMileage || 30000;
+            var ccDashQ = stemState.ccDashQ != null ? stemState.ccDashQ : 0;
+            var ccDashAnswer = stemState.ccDashAnswer;
+            var ccDashFb = stemState.ccDashFb;
+
+            // Oil viscosity data
+            var oilGrades = [
+              { grade: '0W-20', minF: -40, maxF: 68, desc: 'Ultra-thin. Great fuel economy. Required by most modern engines.', use: 'Newer cars (2010+), hybrids' },
+              { grade: '5W-20', minF: -31, maxF: 68, desc: 'Thin oil for modern engines. Good cold-start protection.', use: 'Most modern sedans & SUVs' },
+              { grade: '5W-30', minF: -31, maxF: 95, desc: 'Most popular grade. Wide temperature range.', use: 'All-purpose, most common grade' },
+              { grade: '10W-30', minF: -13, maxF: 95, desc: 'Slightly thicker cold pour. Good for moderate climates.', use: 'Trucks, older engines, warm climates' },
+              { grade: '10W-40', minF: -13, maxF: 104, desc: 'Higher hot viscosity. Resists thinning at high temps.', use: 'Heavy-duty, hot climates, older engines' },
+              { grade: '15W-40', minF: 5, maxF: 122, desc: 'Thick oil for maximum protection. Poor cold flow.', use: 'Diesel trucks, commercial equipment' }
+            ];
+            var ccRecommended = oilGrades.filter(function (g) { return ccOilTemp >= g.minF && ccOilTemp <= g.maxF; });
+
+            // Tire tread data (new tire = 10/32", legal min = 2/32")
+            var treadMax = 10; // 32nds of inch
+            var treadMin = 2;
+            var treadLife = Math.max(0, Math.round((ccTread - treadMin) / (treadMax - treadMin) * 100));
+            var treadStopDry = 120 + Math.round((treadMax - ccTread) * 8); // feet at 60mph
+            var treadStopWet = 180 + Math.round((treadMax - ccTread) * 25);
+            var treadStatus = ccTread <= 2 ? 'REPLACE NOW' : ccTread <= 4 ? 'Replace Soon' : ccTread <= 6 ? 'Fair' : 'Good';
+            var treadColor = ccTread <= 2 ? 'red' : ccTread <= 4 ? 'amber' : ccTread <= 6 ? 'yellow' : 'emerald';
+
+            // Battery CCA (Cold Cranking Amps) - capacity drops with temperature
+            var ccaBattery = 600; // rated CCA
+            var ccaCurrent = ccBattTemp >= 80 ? ccaBattery :
+              ccBattTemp >= 32 ? Math.round(ccaBattery * (0.65 + 0.35 * (ccBattTemp - 32) / 48)) :
+              Math.round(ccaBattery * Math.max(0.2, 0.65 - (32 - ccBattTemp) * 0.01));
+            var ccaNeeded = 250; // average CCA needed to start
+            var ccaWillStart = ccaCurrent >= ccaNeeded;
+
+            // Maintenance schedule
+            var maintSchedule = [
+              { miles: 5000, service: 'Oil change', cost: 45, icon: '\uD83D\uDEE2\uFE0F' },
+              { miles: 7500, service: 'Tire rotation', cost: 25, icon: '\uD83D\uDD04' },
+              { miles: 15000, service: 'Cabin air filter', cost: 30, icon: '\uD83C\uDF2C\uFE0F' },
+              { miles: 20000, service: 'Engine air filter', cost: 25, icon: '\u2699\uFE0F' },
+              { miles: 30000, service: 'Brake inspection', cost: 50, icon: '\uD83D\uDED1' },
+              { miles: 30000, service: 'Transmission fluid', cost: 120, icon: '\u2699\uFE0F' },
+              { miles: 50000, service: 'Spark plugs', cost: 150, icon: '\u26A1' },
+              { miles: 60000, service: 'Brake pads', cost: 250, icon: '\uD83D\uDED1' },
+              { miles: 60000, service: 'Coolant flush', cost: 100, icon: '\uD83D\uDCA7' },
+              { miles: 75000, service: 'Timing belt/chain', cost: 500, icon: '\u23F1\uFE0F' },
+              { miles: 100000, service: 'Battery replacement', cost: 180, icon: '\uD83D\uDD0B' }
+            ];
+            var upcomingMaint = maintSchedule.filter(function (m) {
+              var nextDue = Math.ceil(ccMileage / m.miles) * m.miles;
+              return nextDue - ccMileage <= 10000;
+            }).map(function (m) {
+              var nextDue = Math.ceil(ccMileage / m.miles) * m.miles;
+              return { service: m.service, cost: m.cost, icon: m.icon, dueAt: nextDue, milesUntil: nextDue - ccMileage };
+            }).sort(function (a, b) { return a.milesUntil - b.milesUntil; });
+
+            // Dashboard warning lights quiz
+            var dashLights = [
+              { icon: '\uD83D\uDEE2\uFE0F', name: 'Check Engine', urgency: 'high', desc: 'Engine or emissions issue. Could be minor (gas cap) or major (catalytic converter). Get scanned ASAP.', choices: ['Check Engine', 'Low Oil', 'Battery', 'Transmission'] },
+              { icon: '\uD83C\uDF21\uFE0F', name: 'Temperature Warning', urgency: 'critical', desc: 'Engine overheating! PULL OVER IMMEDIATELY. Driving further can warp the head gasket ($2,000+ repair).', choices: ['A/C Problem', 'Temperature Warning', 'Oil Pressure', 'Coolant Level'] },
+              { icon: '\uD83D\uDD0B', name: 'Battery/Charging', urgency: 'high', desc: 'Alternator not charging the battery. Car will die soon. Drive directly to a shop.', choices: ['Hybrid System', 'Battery/Charging', 'Electrical Short', 'Starter Motor'] },
+              { icon: '\u26A0\uFE0F', name: 'ABS Warning', urgency: 'medium', desc: 'Anti-lock braking disabled. Normal brakes still work but wheels can lock on slippery roads.', choices: ['Traction Control', 'Transmission', 'ABS Warning', 'Cruise Control'] },
+              { icon: '\uD83D\uDCA7', name: 'Low Oil Pressure', urgency: 'critical', desc: 'Oil not circulating! Engine can seize in minutes. STOP DRIVING. Check oil level immediately.', choices: ['Washer Fluid', 'Low Oil Pressure', 'Coolant', 'Fuel Filter'] },
+              { icon: '\uD83D\uDED1', name: 'Brake System', urgency: 'high', desc: 'Brake fluid low or brake system malfunction. Could also mean parking brake is on. Check immediately.', choices: ['Brake System', 'Tire Pressure', 'Stability Control', 'Power Steering'] },
+              { icon: '\uD83D\uDE97', name: 'TPMS (Tire Pressure)', urgency: 'medium', desc: 'One or more tires are under-inflated. Check all 4 tires with a gauge. Under-inflation wastes gas and wears tires.', choices: ['Alignment', 'Suspension', 'TPMS (Tire Pressure)', 'All-Wheel Drive'] },
+              { icon: '\u2B50', name: 'Airbag Warning', urgency: 'high', desc: 'Airbag system malfunction — airbags may not deploy in a crash. Get it checked immediately.', choices: ['Seatbelt Reminder', 'Airbag Warning', 'Security System', 'Lane Departure'] }
+            ];
+            var ccCurrentDash = dashLights[ccDashQ % dashLights.length];
+
+            // ────── PLUMBING & HOME REPAIR ──────
+            var plumbTab = stemState.plumbTab || 'toilet';
+            var plumbToiletQ = stemState.plumbToiletQ != null ? stemState.plumbToiletQ : 0;
+            var plumbToiletFb = stemState.plumbToiletFb;
+            var plumbPipeQ = stemState.plumbPipeQ != null ? stemState.plumbPipeQ : 0;
+            var plumbPipeFb = stemState.plumbPipeFb;
+            var plumbPipeAnswer = stemState.plumbPipeAnswer;
+            var whType = stemState.whType || 'tank';
+            var whGallons = stemState.whGallons || 50;
+            var whPeople = stemState.whPeople || 3;
+            var paintL = stemState.paintL || 12;
+            var paintW = stemState.paintW || 10;
+            var paintH = stemState.paintH || 8;
+            var paintCoats = stemState.paintCoats || 2;
+            var paintWindows = stemState.paintWindows || 2;
+            var paintDoors = stemState.paintDoors || 1;
+
+            // Toilet parts data
+            var toiletParts = [
+              { name: 'Fill Valve', desc: 'Refills the tank after flushing. Opens when water level drops, closes at a set level. A hissing sound often means this needs replacement.', icon: '\uD83D\uDEB0' },
+              { name: 'Flapper', desc: 'Rubber seal at the bottom of the tank. Lifts when you flush, letting water rush into the bowl. #1 cause of running toilets when it warps or gets mineral buildup.', icon: '\uD83D\uDD34' },
+              { name: 'Overflow Tube', desc: 'Safety drain that prevents the tank from overflowing if the fill valve malfunctions. Water level should be 1" below its top.', icon: '\uD83D\uDCCF' },
+              { name: 'Handle & Chain', desc: 'The flush lever lifts the flapper via a chain. Too much slack = weak flush. Too tight = flapper can\'t seal, causing running.', icon: '\uD83D\uDD17' },
+              { name: 'Wax Ring', desc: 'Seals the toilet base to the drain pipe. If water leaks around the base, this needs replacement. Lasts 20-30 years normally.', icon: '\uD83D\uDFE1' },
+              { name: 'Shut-off Valve', desc: 'Located on the wall behind the toilet. Turn clockwise to stop water flow. ALWAYS know where this is before attempting any repair!', icon: '\uD83D\uDEBF' }
+            ];
+
+            // Toilet diagnosis quiz
+            var toiletProblems = [
+              { symptom: 'Toilet runs constantly, making a hissing sound', answer: 'Fill Valve', explain: 'The fill valve isn\'t shutting off. It may be stuck, worn, or the float is set too high. Cost to fix: $10-20 DIY.' },
+              { symptom: 'Toilet runs intermittently — you hear it refill every few minutes ("phantom flush")', answer: 'Flapper', explain: 'The flapper is leaking, slowly draining the tank. The fill valve kicks on to refill. Replace the flapper for $5.' },
+              { symptom: 'Weak flush — water swirls but doesn\'t clear the bowl', answer: 'Handle & Chain', explain: 'Chain may have too much slack so the flapper doesn\'t lift fully. Adjust chain length so there\'s about 1/2" slack.' },
+              { symptom: 'Water leaking around the base of the toilet on the floor', answer: 'Wax Ring', explain: 'The wax ring seal has failed. You\'ll need to remove the toilet and replace the wax ring. Cost: $5-15 for the ring, but labor-intensive.' },
+              { symptom: 'Water overflowing from the tank into the bowl', answer: 'Overflow Tube', explain: 'Water level is too high. Adjust the fill valve float downward so water stops 1" below the overflow tube top.' }
+            ];
+            var toiletCurrent = toiletProblems[plumbToiletQ % toiletProblems.length];
+
+            // Pipe material guide
+            var pipeScenarios = [
+              { scenario: 'Indoor cold water supply lines for a bathroom renovation', answer: 'PEX', explain: 'PEX (cross-linked polyethylene) is flexible, freeze-resistant, easy to install, and doesn\'t corrode. Best for indoor supply lines.', choices: ['PVC', 'PEX', 'Copper', 'Cast Iron'] },
+              { scenario: 'Kitchen drain under the sink', answer: 'PVC', explain: 'PVC (polyvinyl chloride) is lightweight, cheap, and won\'t corrode. Standard for drain, waste, and vent (DWV) lines.', choices: ['PEX', 'PVC', 'Galvanized Steel', 'Copper'] },
+              { scenario: 'Main sewer line from house to street', answer: 'PVC', explain: 'Modern main sewer lines use 4" PVC. It\'s durable, smooth (fewer clogs), and doesn\'t corrode like old clay or cast iron.', choices: ['PEX', 'Copper', 'PVC', 'Galvanized Steel'] },
+              { scenario: 'Natural gas supply line from meter to stove', answer: 'Black Steel', explain: 'Black steel (or CSST flex line) is required for gas. PVC and PEX melt! Only licensed plumbers should install gas lines.', choices: ['PVC', 'PEX', 'Black Steel', 'Copper'] },
+              { scenario: 'Outdoor sprinkler system in a region with freezing winters', answer: 'PEX', explain: 'PEX can expand slightly when water freezes, making it more freeze-resistant than rigid PVC or copper.', choices: ['Copper', 'PVC', 'Cast Iron', 'PEX'] },
+              { scenario: 'Hot water supply line from water heater', answer: 'Copper', explain: 'Copper handles high temperatures well and is durable. PEX also works for hot water (up to 200°F). Both are acceptable.', choices: ['PVC', 'Cast Iron', 'Copper', 'Galvanized Steel'] }
+            ];
+            var pipeCurrent = pipeScenarios[plumbPipeQ % pipeScenarios.length];
+
+            // Water heater calculator
+            var whTankCost = whGallons <= 40 ? 450 : whGallons <= 50 ? 550 : 700;
+            var whTankMonthly = Math.round(whPeople * 12 + whGallons * 0.3);
+            var whTankAnnual = whTankMonthly * 12;
+            var whTanklessUpfront = 2500;
+            var whTanklessMonthly = Math.round(whPeople * 9);
+            var whTanklessAnnual = whTanklessMonthly * 12;
+            var whPayback = whTankAnnual > whTanklessAnnual ? Math.round((whTanklessUpfront - whTankCost) / (whTankAnnual - whTanklessAnnual) * 10) / 10 : 99;
+
+            // Paint calculator
+            var paintWallArea = 2 * (paintL + paintW) * paintH;
+            var paintWindowArea = paintWindows * 15; // avg window ~15 sq ft
+            var paintDoorArea = paintDoors * 21; // avg door ~21 sq ft
+            var paintNetArea = Math.max(0, paintWallArea - paintWindowArea - paintDoorArea);
+            var paintSqFtPerGallon = 350;
+            var paintGallons = Math.ceil(paintNetArea * paintCoats / paintSqFtPerGallon);
+            var paintCostBudget = paintGallons * 30;
+            var paintCostPremium = paintGallons * 55;
+
+            // ────── HOME SYSTEMS ──────
+            var homeTab = stemState.homeTab || 'hvac';
+            var hsMerv = stemState.hsMerv || 8;
+            var hsPsi = stemState.hsPsi || 55;
+
+            // MERV rating data
+            var mervData = [
+              { merv: 1, eff: 20, catches: 'Large particles: dust mites, pollen, spray paint', cost: 2, restrict: 'Very Low', life: '30 days', rec: 'Minimum — protects HVAC only' },
+              { merv: 4, eff: 35, catches: '+ carpet fibers, dust, mold spores', cost: 4, restrict: 'Low', life: '60 days', rec: 'Basic residential' },
+              { merv: 8, eff: 70, catches: '+ pet dander, fine dust, cement dust', cost: 8, restrict: 'Medium', life: '90 days', rec: 'Better residential — most popular' },
+              { merv: 11, eff: 85, catches: '+ Legionella, lead dust, humidifier dust', cost: 15, restrict: 'Medium-High', life: '90 days', rec: 'Superior residential, allergy relief' },
+              { merv: 13, eff: 90, catches: '+ bacteria, smoke particles, sneeze droplets', cost: 25, restrict: 'High', life: '90 days', rec: 'Hospital-grade, max for most HVAC' },
+              { merv: 16, eff: 95, catches: '+ virus carriers, carbon dust, sea salt', cost: 45, restrict: 'Very High', life: '90 days', rec: 'Clean rooms, surgery suites only' }
+            ];
+            var mervCurrent = mervData.reduce(function (best, m) { return m.merv <= hsMerv ? m : best; }, mervData[0]);
+            var mervAnnualCost = Math.round(mervCurrent.cost * (365 / parseInt(mervCurrent.life)));
+
+            // Water pressure data
+            var psiStatus = hsPsi < 30 ? 'Too Low' : hsPsi < 40 ? 'Low' : hsPsi <= 60 ? 'Normal' : hsPsi <= 80 ? 'High' : 'Dangerously High';
+            var psiColor = hsPsi < 30 ? 'red' : hsPsi < 40 ? 'amber' : hsPsi <= 60 ? 'emerald' : hsPsi <= 80 ? 'amber' : 'red';
+            var psiEffects = [];
+            if (hsPsi < 30) psiEffects.push('Showers barely trickle', 'Dishwasher may not fill', 'Sprinklers won\'t reach');
+            if (hsPsi >= 30 && hsPsi < 40) psiEffects.push('Weak shower pressure', 'Upper floors may lose pressure', 'Irrigation struggles');
+            if (hsPsi >= 40 && hsPsi <= 60) psiEffects.push('Comfortable shower pressure', 'All fixtures work well', 'Appliances fill properly');
+            if (hsPsi > 60 && hsPsi <= 80) psiEffects.push('Strong pressure', 'Faucets may splash', 'Consider a pressure regulator');
+            if (hsPsi > 80) psiEffects.push('Pipe joints can leak or burst', 'Appliance valves wear out faster', 'Water hammer (banging pipes)', 'MUST install pressure regulator');
+
+            // Electrical panel knowledge
+            var panelItems = [
+              { name: 'Main Breaker', amps: '100-200A', desc: 'Master switch — kills ALL power. Usually the big one at the top. Your home\'s total capacity.', icon: '\uD83D\uDD34', category: 'main' },
+              { name: 'Standard Breaker (15A)', amps: '15A / 120V', desc: 'Bedrooms, living rooms, general outlets. Max 1,800W per circuit. Most common type.', icon: '\u26AA', category: 'standard' },
+              { name: 'Standard Breaker (20A)', amps: '20A / 120V', desc: 'Kitchen, bathroom, laundry, garage. Max 2,400W. Required where water is present.', icon: '\u26AA', category: 'standard' },
+              { name: 'Double-Pole (30A)', amps: '30A / 240V', desc: 'Clothes dryer, central A/C. Uses TWO slots in panel. 240V = hot + hot (not neutral).', icon: '\uD83D\uDFE0', category: 'large' },
+              { name: 'Double-Pole (50A)', amps: '50A / 240V', desc: 'Electric range/oven, EV charger. Requires heavy-gauge wiring (6 AWG).', icon: '\uD83D\uDFE0', category: 'large' },
+              { name: 'GFCI Breaker', amps: '15-20A', desc: 'Ground-Fault Circuit Interrupter. Detects current leaking to ground (shock hazard). Required in wet areas: bathroom, kitchen, outdoor, garage.', icon: '\uD83D\uDFE2', category: 'safety' },
+              { name: 'AFCI Breaker', amps: '15-20A', desc: 'Arc-Fault Circuit Interrupter. Detects electrical arcs (fire hazard from damaged wires). Required in bedrooms since 2002.', icon: '\uD83D\uDFE3', category: 'safety' },
+              { name: 'Tandem Breaker', amps: '2x15A or 2x20A', desc: 'Two breakers in one slot. Used when the panel is full. Not all panels support these.', icon: '\u26AB', category: 'special' }
+            ];
+
 
             // â•â•â•â•â•â•â•â•â•â•â•â•â•â• RENDER â•â•â•â•â•â•â•â•â•â•â•â•â•â•
             return React.createElement("div", { className: "max-w-4xl mx-auto space-y-4" },
@@ -6154,7 +6332,7 @@
                 React.createElement("p", { className: "text-xs text-teal-600 mb-4" }, "The physics and chemistry hiding in everyday activities"),
                 // Science sub-tabs
                 React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" },
-                  [{ id: 'tire', label: '\uD83D\uDE97 Gas Laws & Tires' }, { id: 'insulation', label: '\uD83C\uDFE0 Heat & Insulation' }, { id: 'cook', label: '\uD83C\uDF73 Cooking Chemistry' }, { id: 'circuit', label: '\u26A1 Circuits & Wattage' }].map(function (s) {
+                  [{ id: 'tire', label: '\uD83D\uDE97 Gas Laws & Tires' }, { id: 'insulation', label: '\uD83C\uDFE0 Heat & Insulation' }, { id: 'cook', label: '\uD83C\uDF73 Cooking Chemistry' }, { id: 'circuit', label: '\u26A1 Circuits & Wattage' }, { id: 'car', label: '\uD83D\uDD27 Car Care' }, { id: 'plumbing', label: '\uD83E\uDEA0 Plumbing' }, { id: 'home', label: '\uD83C\uDFE0 Home Systems' }].map(function (s) {
                     return React.createElement("button", { key: s.id, onClick: function () { upd('asTab', s.id); },
                       className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (asTab === s.id ? 'bg-teal-500 text-white shadow-md' : 'bg-white text-teal-600 border border-teal-200 hover:bg-teal-50')
                     }, s.label);
@@ -6331,6 +6509,465 @@
                     ),
                     willTrip && React.createElement("p", { className: "text-xs font-bold text-red-500 text-center mt-2 animate-pulse" },
                       "\u26A0\uFE0F BREAKER TRIPPED! Total load (" + totalLoad + "W) exceeds circuit capacity (" + asWatts + "W)")
+                  )
+                ),
+
+                // ── Car Care Science ──
+                asTab === 'car' && React.createElement("div", { className: "space-y-4" },
+                  React.createElement("div", { className: "bg-orange-100 rounded-xl p-3 border border-orange-200 text-xs text-orange-700" },
+                    React.createElement("strong", null, "Car Care = Applied Science!"), " Understanding your vehicle saves money and keeps you safe."
+                  ),
+                  // Oil Viscosity Explorer
+                  React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200" },
+                    React.createElement("h4", { className: "text-xs font-bold text-orange-700 uppercase mb-2" }, "\uD83D\uDEE2\uFE0F Oil Viscosity Explorer"),
+                    React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, "\u201C5W-30\u201D = viscosity at Winter (cold) temp \u2192 viscosity at Operating (hot) temp. The W number matters for cold starts!"),
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "Your Climate Temperature: " + ccOilTemp + "\u00B0F (" + Math.round((ccOilTemp - 32) * 5 / 9) + "\u00B0C)"),
+                      React.createElement("input", { type: "range", min: -40, max: 120, value: ccOilTemp, onChange: function (e) { upd('ccOilTemp', parseInt(e.target.value)); },
+                        className: "w-full mt-1", style: { accentColor: '#ea580c' } })
+                    ),
+                    React.createElement("div", { className: "space-y-2" },
+                      oilGrades.map(function (g) {
+                        var ok = ccOilTemp >= g.minF && ccOilTemp <= g.maxF;
+                        return React.createElement("div", { key: g.grade, className: "flex items-start gap-3 p-2 rounded-lg transition-all " + (ok ? 'bg-orange-50 border border-orange-200' : 'bg-slate-50 border border-slate-100 opacity-40') },
+                          React.createElement("span", { className: "text-sm font-black w-16 " + (ok ? 'text-orange-600' : 'text-slate-400') }, g.grade),
+                          React.createElement("div", { className: "flex-1" },
+                            React.createElement("p", { className: "text-[10px] text-slate-600" }, g.desc),
+                            React.createElement("p", { className: "text-[9px] text-slate-400" }, "Range: " + g.minF + "\u00B0F to " + g.maxF + "\u00B0F \u2022 " + g.use)
+                          ),
+                          React.createElement("span", { className: "text-xs" }, ok ? '\u2705' : '\u26AA')
+                        );
+                      })
+                    ),
+                    ccRecommended.length > 0 && React.createElement("div", { className: "mt-2 bg-orange-50 rounded-lg p-2 border border-orange-200" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-orange-700" }, "\u2705 Recommended for " + ccOilTemp + "\u00B0F: " + ccRecommended.map(function (g) { return g.grade; }).join(', '))
+                    )
+                  ),
+                  // Tire Tread Health
+                  React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200" },
+                    React.createElement("h4", { className: "text-xs font-bold text-orange-700 uppercase mb-2" }, "\uD83D\uDEB8 Tire Tread Health"),
+                    React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, "New tire = 10/32\". Legal minimum = 2/32\". The penny test: put a penny in the groove \u2014 if you see all of Lincoln's head, tires are worn."),
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "Tread Depth: " + ccTread + "/32\""),
+                      React.createElement("input", { type: "range", min: 0, max: 10, value: ccTread, onChange: function (e) { upd('ccTread', parseInt(e.target.value)); },
+                        className: "w-full mt-1", style: { accentColor: '#ea580c' } })
+                    ),
+                    React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3" },
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-" + treadColor + "-50 border border-" + treadColor + "-200" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500" }, "Status"),
+                        React.createElement("p", { className: "text-sm font-black text-" + treadColor + "-600" }, treadStatus)
+                      ),
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-slate-50 border border-slate-200" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500" }, "Tread Life"),
+                        React.createElement("p", { className: "text-sm font-black text-slate-700" }, treadLife + "%")
+                      ),
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-slate-50 border border-slate-200" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500" }, "Stop (Dry)"),
+                        React.createElement("p", { className: "text-sm font-black text-slate-700" }, treadStopDry + " ft")
+                      ),
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-blue-50 border border-blue-200" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-blue-500" }, "Stop (Wet)"),
+                        React.createElement("p", { className: "text-sm font-black text-blue-700" }, treadStopWet + " ft")
+                      )
+                    )
+                  ),
+                  // Battery CCA
+                  React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200" },
+                    React.createElement("h4", { className: "text-xs font-bold text-orange-700 uppercase mb-2" }, "\uD83D\uDD0B Battery & Cold Cranking Amps"),
+                    React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, "Battery capacity drops dramatically in cold weather. CCA (Cold Cranking Amps) = how much power available to start the engine."),
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "Outside Temperature: " + ccBattTemp + "\u00B0F (" + Math.round((ccBattTemp - 32) * 5 / 9) + "\u00B0C)"),
+                      React.createElement("input", { type: "range", min: -20, max: 110, value: ccBattTemp, onChange: function (e) { upd('ccBattTemp', parseInt(e.target.value)); },
+                        className: "w-full mt-1", style: { accentColor: '#ea580c' } })
+                    ),
+                    React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-3" },
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-slate-50 border" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500" }, "Rated CCA"),
+                        React.createElement("p", { className: "text-lg font-black text-slate-700" }, ccaBattery + "A")
+                      ),
+                      React.createElement("div", { className: "text-center p-3 rounded-xl " + (ccaWillStart ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200') },
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500" }, "Available CCA"),
+                        React.createElement("p", { className: "text-lg font-black " + (ccaWillStart ? 'text-emerald-600' : 'text-red-500') }, ccaCurrent + "A")
+                      ),
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-slate-50 border" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500" }, "Needed to Start"),
+                        React.createElement("p", { className: "text-lg font-black text-slate-700" }, ccaNeeded + "A")
+                      )
+                    ),
+                    React.createElement("div", { className: "h-4 bg-slate-100 rounded-full overflow-hidden" },
+                      React.createElement("div", { style: { width: Math.min(100, ccaCurrent / ccaBattery * 100) + '%', transition: 'width 0.3s' },
+                        className: "h-full rounded-full " + (ccaWillStart ? 'bg-gradient-to-r from-emerald-400 to-teal-500' : 'bg-gradient-to-r from-red-400 to-red-600 animate-pulse') })
+                    ),
+                    !ccaWillStart && React.createElement("p", { className: "text-xs font-bold text-red-500 text-center mt-2" }, "\u26A0\uFE0F Battery may not start! Only " + ccaCurrent + "A available vs " + ccaNeeded + "A needed. Consider a battery warmer or replacement.")
+                  ),
+                  // Maintenance Schedule
+                  React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200" },
+                    React.createElement("h4", { className: "text-xs font-bold text-orange-700 uppercase mb-2" }, "\uD83D\uDCC5 Maintenance Schedule"),
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "Current Mileage"),
+                      React.createElement("input", { type: "number", value: ccMileage, step: 1000, onChange: function (e) { upd('ccMileage', Math.max(0, parseInt(e.target.value) || 0)); },
+                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-orange-400 outline-none mt-1" })
+                    ),
+                    React.createElement("div", { className: "space-y-2" },
+                      upcomingMaint.length === 0 && React.createElement("p", { className: "text-xs text-slate-400 italic" }, "No services due in the next 10,000 miles!"),
+                      upcomingMaint.map(function (m, i) {
+                        var urgency = m.milesUntil <= 1000 ? 'border-red-200 bg-red-50' : m.milesUntil <= 5000 ? 'border-amber-200 bg-amber-50' : 'border-slate-200 bg-slate-50';
+                        return React.createElement("div", { key: i, className: "flex items-center gap-3 p-2 rounded-lg border " + urgency },
+                          React.createElement("span", { className: "text-lg" }, m.icon),
+                          React.createElement("div", { className: "flex-1" },
+                            React.createElement("p", { className: "text-xs font-bold text-slate-700" }, m.service),
+                            React.createElement("p", { className: "text-[10px] text-slate-500" }, "Due at " + m.dueAt.toLocaleString() + " miles (" + m.milesUntil.toLocaleString() + " miles away)")
+                          ),
+                          React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "~$" + m.cost)
+                        );
+                      })
+                    ),
+                    upcomingMaint.length > 0 && React.createElement("div", { className: "mt-2 bg-orange-50 rounded-lg p-2 border border-orange-200" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-orange-700" }, "\uD83D\uDCB0 Estimated upcoming cost: $" + upcomingMaint.reduce(function (sum, m) { return sum + m.cost; }, 0))
+                    )
+                  ),
+                  // Dashboard Warning Light Quiz
+                  React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200" },
+                    React.createElement("h4", { className: "text-xs font-bold text-orange-700 uppercase mb-2" }, "\u26A0\uFE0F Dashboard Light Quiz"),
+                    React.createElement("p", { className: "text-[10px] text-slate-500 mb-3" }, "Can you identify what each warning light means?"),
+                    React.createElement("div", { className: "text-center mb-3" },
+                      React.createElement("span", { className: "text-5xl" }, ccCurrentDash.icon),
+                      React.createElement("p", { className: "text-xs text-slate-400 mt-1" }, "Urgency: " + ccCurrentDash.urgency.toUpperCase())
+                    ),
+                    React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-3" },
+                      ccCurrentDash.choices.map(function (ch, ci) {
+                        var sel = ccDashAnswer === ci;
+                        var rev = ccDashFb != null;
+                        var isRight = ch === ccCurrentDash.name;
+                        var cls = rev
+                          ? (isRight ? 'border-green-500 bg-green-50 text-green-700' : (sel ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-400'))
+                          : (sel ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-slate-200 bg-white text-slate-600 hover:border-orange-300');
+                        return React.createElement("button", { key: ci, disabled: rev, onClick: function () { upd('ccDashAnswer', ci); upd('ccDashFb', null); },
+                          className: "p-2 rounded-xl border-2 text-xs font-bold transition-all " + cls
+                        }, ch);
+                      })
+                    ),
+                    ccDashAnswer != null && !ccDashFb && React.createElement("button", { onClick: function () {
+                      var ok = ccCurrentDash.choices[ccDashAnswer] === ccCurrentDash.name;
+                      upd('ccDashFb', ok ? '\u2705 Correct! ' + ccCurrentDash.desc : '\u274C Not quite. ' + ccCurrentDash.desc);
+                      if (ok && typeof awardStemXP === 'function') awardStemXP('lifeSkills', 15, 'dashboard quiz');
+                    }, className: "w-full px-3 py-2 bg-orange-500 text-white font-bold rounded-xl text-xs hover:bg-orange-600 transition-all" }, "Submit"),
+                    ccDashFb && React.createElement("div", { className: "rounded-lg p-2 text-[10px] font-medium " + (ccDashFb.startsWith('\u2705') ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') }, ccDashFb),
+                    ccDashFb && React.createElement("button", { onClick: function () { upd('ccDashQ', (ccDashQ + 1) % dashLights.length); upd('ccDashAnswer', null); upd('ccDashFb', null); },
+                      className: "w-full px-3 py-2 bg-orange-500 text-white font-bold rounded-xl text-xs hover:bg-orange-600 transition-all mt-2" }, "\u27A1\uFE0F Next Light")
+                  )
+                ),
+
+                // ── Plumbing & Home Repair ──
+                asTab === 'plumbing' && React.createElement("div", { className: "space-y-4" },
+                  React.createElement("div", { className: "bg-sky-100 rounded-xl p-3 border border-sky-200 text-xs text-sky-700" },
+                    React.createElement("strong", null, "Plumbing = Fluid Dynamics!"), " Understanding water pressure, drainage, and pipe materials saves thousands in repairs."
+                  ),
+                  // Plumbing sub-nav
+                  React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
+                    [{ id: 'toilet', label: '\uD83D\uDEBD Toilet' }, { id: 'pipe', label: '\uD83E\uDEA0 Pipes' }, { id: 'heater', label: '\uD83D\uDD25 Water Heater' }, { id: 'paint', label: '\uD83C\uDFA8 Paint Calc' }].map(function (s) {
+                      return React.createElement("button", { key: s.id, onClick: function () { upd('plumbTab', s.id); },
+                        className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (plumbTab === s.id ? 'bg-sky-500 text-white' : 'bg-white text-sky-600 border border-sky-200 hover:bg-sky-50')
+                      }, s.label);
+                    })
+                  ),
+                  // How a Toilet Works
+                  plumbTab === 'toilet' && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("h4", { className: "text-xs font-bold text-sky-700 uppercase" }, "\uD83D\uDEBD How a Toilet Works"),
+                    React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" },
+                      toiletParts.map(function (p) {
+                        return React.createElement("div", { key: p.name, className: "flex items-start gap-2 p-3 bg-white rounded-xl border border-slate-200" },
+                          React.createElement("span", { className: "text-lg" }, p.icon),
+                          React.createElement("div", null,
+                            React.createElement("p", { className: "text-xs font-bold text-slate-700" }, p.name),
+                            React.createElement("p", { className: "text-[10px] text-slate-500" }, p.desc)
+                          )
+                        );
+                      })
+                    ),
+                    // Diagnosis Quiz
+                    React.createElement("div", { className: "bg-sky-50 rounded-xl p-4 border border-sky-200" },
+                      React.createElement("p", { className: "text-xs font-bold text-sky-700 mb-2" }, "\uD83D\uDD0D Diagnose the Problem:"),
+                      React.createElement("p", { className: "text-sm text-slate-700 font-medium mb-3" }, "\"" + toiletCurrent.symptom + "\""),
+                      React.createElement("div", { className: "flex flex-wrap gap-2 mb-2" },
+                        toiletParts.map(function (p) {
+                          var sel = plumbToiletFb && plumbToiletFb.answer === p.name;
+                          var rev = plumbToiletFb != null;
+                          var isRight = p.name === toiletCurrent.answer;
+                          var cls = rev
+                            ? (isRight ? 'border-green-500 bg-green-50 text-green-700' : (sel ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-400'))
+                            : 'border-slate-200 bg-white text-slate-600 hover:border-sky-300 hover:bg-sky-50';
+                          return React.createElement("button", { key: p.name, disabled: rev, onClick: function () {
+                            var ok = p.name === toiletCurrent.answer;
+                            upd('plumbToiletFb', { answer: p.name, ok: ok, msg: ok ? '\u2705 Correct! ' + toiletCurrent.explain : '\u274C Not quite. ' + toiletCurrent.explain });
+                            if (ok && typeof awardStemXP === 'function') awardStemXP('lifeSkills', 15, 'toilet diagnosis');
+                          }, className: "px-3 py-1.5 rounded-lg border-2 text-[10px] font-bold transition-all " + cls }, p.icon + ' ' + p.name);
+                        })
+                      ),
+                      plumbToiletFb && React.createElement("div", { className: "rounded-lg p-2 text-[10px] font-medium mt-2 " + (plumbToiletFb.ok ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') }, plumbToiletFb.msg),
+                      plumbToiletFb && React.createElement("button", { onClick: function () { upd('plumbToiletQ', (plumbToiletQ + 1) % toiletProblems.length); upd('plumbToiletFb', null); },
+                        className: "w-full px-3 py-1.5 bg-sky-500 text-white font-bold rounded-lg text-xs mt-2 hover:bg-sky-600 transition-all" }, "\u27A1\uFE0F Next Problem")
+                    )
+                  ),
+                  // Pipe Material Guide
+                  plumbTab === 'pipe' && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("h4", { className: "text-xs font-bold text-sky-700 uppercase" }, "\uD83E\uDEA0 Pipe Material Selector"),
+                    React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, "Different situations need different pipes. Can you pick the right material?"),
+                    React.createElement("div", { className: "bg-sky-50 rounded-xl p-4 border border-sky-200" },
+                      React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "Scenario:"),
+                      React.createElement("p", { className: "text-sm text-slate-700 font-medium mb-3" }, pipeCurrent.scenario),
+                      React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
+                        pipeCurrent.choices.map(function (ch, ci) {
+                          var sel = plumbPipeAnswer === ci;
+                          var rev = plumbPipeFb != null;
+                          var isRight = ch === pipeCurrent.answer;
+                          var cls = rev
+                            ? (isRight ? 'border-green-500 bg-green-50 text-green-700' : (sel ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-400'))
+                            : (sel ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 bg-white text-slate-600 hover:border-sky-300');
+                          return React.createElement("button", { key: ci, disabled: rev, onClick: function () { upd('plumbPipeAnswer', ci); upd('plumbPipeFb', null); },
+                            className: "p-2 rounded-xl border-2 text-xs font-bold transition-all " + cls }, ch);
+                        })
+                      ),
+                      plumbPipeAnswer != null && !plumbPipeFb && React.createElement("button", { onClick: function () {
+                        var ok = pipeCurrent.choices[plumbPipeAnswer] === pipeCurrent.answer;
+                        upd('plumbPipeFb', ok ? '\u2705 Correct! ' + pipeCurrent.explain : '\u274C Not quite. ' + pipeCurrent.explain);
+                        if (ok && typeof awardStemXP === 'function') awardStemXP('lifeSkills', 15, 'pipe material quiz');
+                      }, className: "w-full px-3 py-1.5 bg-sky-500 text-white font-bold rounded-lg text-xs hover:bg-sky-600 transition-all" }, "Submit"),
+                      plumbPipeFb && React.createElement("div", { className: "rounded-lg p-2 text-[10px] font-medium mt-2 " + (plumbPipeFb.startsWith('\u2705') ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') }, plumbPipeFb),
+                      plumbPipeFb && React.createElement("button", { onClick: function () { upd('plumbPipeQ', (plumbPipeQ + 1) % pipeScenarios.length); upd('plumbPipeAnswer', null); upd('plumbPipeFb', null); },
+                        className: "w-full px-3 py-1.5 bg-sky-500 text-white font-bold rounded-lg text-xs mt-2 hover:bg-sky-600 transition-all" }, "\u27A1\uFE0F Next Scenario")
+                    )
+                  ),
+                  // Water Heater Calculator
+                  plumbTab === 'heater' && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("h4", { className: "text-xs font-bold text-sky-700 uppercase" }, "\uD83D\uDD25 Tank vs Tankless Water Heater"),
+                    React.createElement("div", { className: "grid grid-cols-2 gap-3 mb-3" },
+                      React.createElement("div", null,
+                        React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Tank Size (gallons)"),
+                        React.createElement("select", { value: whGallons, onChange: function (e) { upd('whGallons', parseInt(e.target.value)); },
+                          className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-sky-400 outline-none mt-1" },
+                          React.createElement("option", { value: 30 }, "30 gal (small)"),
+                          React.createElement("option", { value: 40 }, "40 gal (1-2 people)"),
+                          React.createElement("option", { value: 50 }, "50 gal (2-3 people)"),
+                          React.createElement("option", { value: 65 }, "65 gal (3-4 people)"),
+                          React.createElement("option", { value: 80 }, "80 gal (5+ people)")
+                        )
+                      ),
+                      React.createElement("div", null,
+                        React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "People in Household"),
+                        React.createElement("input", { type: "number", min: 1, max: 8, value: whPeople, onChange: function (e) { upd('whPeople', Math.max(1, Math.min(8, parseInt(e.target.value) || 1))); },
+                          className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-sky-400 outline-none mt-1" })
+                      )
+                    ),
+                    React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+                      React.createElement("div", { className: "bg-blue-50 rounded-xl p-4 border border-blue-200" },
+                        React.createElement("h5", { className: "text-xs font-bold text-blue-700 mb-2" }, "\uD83C\uDFF7\uFE0F Tank (Traditional)"),
+                        React.createElement("p", { className: "text-xl font-black text-blue-600" }, "$" + whTankMonthly + "/mo"),
+                        React.createElement("p", { className: "text-[10px] text-blue-500" }, "$" + whTankAnnual + "/year energy"),
+                        React.createElement("p", { className: "text-[10px] text-slate-500" }, "Upfront: ~$" + whTankCost),
+                        React.createElement("p", { className: "text-[10px] text-slate-400" }, "Lifespan: 8-12 years")
+                      ),
+                      React.createElement("div", { className: "bg-orange-50 rounded-xl p-4 border border-orange-200" },
+                        React.createElement("h5", { className: "text-xs font-bold text-orange-700 mb-2" }, "\u26A1 Tankless (On-Demand)"),
+                        React.createElement("p", { className: "text-xl font-black text-orange-600" }, "$" + whTanklessMonthly + "/mo"),
+                        React.createElement("p", { className: "text-[10px] text-orange-500" }, "$" + whTanklessAnnual + "/year energy"),
+                        React.createElement("p", { className: "text-[10px] text-slate-500" }, "Upfront: ~$" + whTanklessUpfront),
+                        React.createElement("p", { className: "text-[10px] text-slate-400" }, "Lifespan: 15-20 years")
+                      )
+                    ),
+                    React.createElement("div", { className: "bg-emerald-50 rounded-lg p-3 border border-emerald-200" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-emerald-700" }, "\uD83D\uDCCA ", whPayback < 50 ? 'Tankless breaks even in ~' + whPayback + ' years. ' + (whPayback <= 5 ? 'Strong investment!' : whPayback <= 10 ? 'Worth considering.' : 'Long payback period.') : 'Tank is more cost-effective for this scenario.')
+                    )
+                  ),
+                  // Paint Calculator
+                  plumbTab === 'paint' && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("h4", { className: "text-xs font-bold text-sky-700 uppercase" }, "\uD83C\uDFA8 Room Paint Calculator"),
+                    React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, "One gallon covers ~350 sq ft. Always buy a little extra for touch-ups!"),
+                    React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-5 gap-3 mb-3" },
+                      React.createElement("div", null,
+                        React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "Length (ft)"),
+                        React.createElement("input", { type: "number", value: paintL, onChange: function (e) { upd('paintL', Math.max(1, parseFloat(e.target.value) || 1)); },
+                          className: "w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-sky-400 outline-none mt-1" })
+                      ),
+                      React.createElement("div", null,
+                        React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "Width (ft)"),
+                        React.createElement("input", { type: "number", value: paintW, onChange: function (e) { upd('paintW', Math.max(1, parseFloat(e.target.value) || 1)); },
+                          className: "w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-sky-400 outline-none mt-1" })
+                      ),
+                      React.createElement("div", null,
+                        React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "Height (ft)"),
+                        React.createElement("input", { type: "number", value: paintH, onChange: function (e) { upd('paintH', Math.max(1, parseFloat(e.target.value) || 1)); },
+                          className: "w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-sky-400 outline-none mt-1" })
+                      ),
+                      React.createElement("div", null,
+                        React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "Windows"),
+                        React.createElement("input", { type: "number", min: 0, value: paintWindows, onChange: function (e) { upd('paintWindows', Math.max(0, parseInt(e.target.value) || 0)); },
+                          className: "w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-sky-400 outline-none mt-1" })
+                      ),
+                      React.createElement("div", null,
+                        React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "Doors"),
+                        React.createElement("input", { type: "number", min: 0, value: paintDoors, onChange: function (e) { upd('paintDoors', Math.max(0, parseInt(e.target.value) || 0)); },
+                          className: "w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-sky-400 outline-none mt-1" })
+                      )
+                    ),
+                    React.createElement("div", { className: "flex items-center gap-3 mb-2" },
+                      React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, "Coats:"),
+                      [1, 2, 3].map(function (c) {
+                        return React.createElement("button", { key: c, onClick: function () { upd('paintCoats', c); },
+                          className: "px-3 py-1 rounded-lg text-xs font-bold " + (paintCoats === c ? 'bg-sky-500 text-white' : 'bg-white text-slate-600 border border-slate-200') }, c + (c === 1 ? ' coat' : ' coats'));
+                      })
+                    ),
+                    React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3" },
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-slate-50 border" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500" }, "Wall Area"),
+                        React.createElement("p", { className: "text-lg font-black text-slate-700" }, paintWallArea + " ft\u00B2")
+                      ),
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-slate-50 border" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500" }, "Paintable Area"),
+                        React.createElement("p", { className: "text-lg font-black text-slate-700" }, paintNetArea + " ft\u00B2")
+                      ),
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-sky-50 border border-sky-200" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-sky-500" }, "Gallons Needed"),
+                        React.createElement("p", { className: "text-2xl font-black text-sky-600" }, paintGallons)
+                      ),
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-emerald-50 border border-emerald-200" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-emerald-500" }, "Cost Range"),
+                        React.createElement("p", { className: "text-sm font-black text-emerald-600" }, "$" + paintCostBudget + " \u2013 $" + paintCostPremium)
+                      )
+                    )
+                  )
+                ),
+
+                // ── Home Systems ──
+                asTab === 'home' && React.createElement("div", { className: "space-y-4" },
+                  React.createElement("div", { className: "bg-purple-100 rounded-xl p-3 border border-purple-200 text-xs text-purple-700" },
+                    React.createElement("strong", null, "Home Systems = Engineering!"), " Understanding HVAC, electrical, and water systems helps you maintain them wisely."
+                  ),
+                  // Home sub-nav
+                  React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
+                    [{ id: 'hvac', label: '\uD83C\uDF2C\uFE0F HVAC Filters' }, { id: 'water', label: '\uD83D\uDCA7 Water Pressure' }, { id: 'panel', label: '\u26A1 Electrical Panel' }].map(function (s) {
+                      return React.createElement("button", { key: s.id, onClick: function () { upd('homeTab', s.id); },
+                        className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (homeTab === s.id ? 'bg-purple-500 text-white' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50')
+                      }, s.label);
+                    })
+                  ),
+                  // HVAC Filter Analyzer
+                  homeTab === 'hvac' && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("h4", { className: "text-xs font-bold text-purple-700 uppercase" }, "\uD83C\uDF2C\uFE0F HVAC Filter Analyzer (MERV Ratings)"),
+                    React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, "MERV = Minimum Efficiency Reporting Value. Higher MERV = better filtration but more airflow restriction."),
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "MERV Rating: " + hsMerv),
+                      React.createElement("input", { type: "range", min: 1, max: 16, value: hsMerv, onChange: function (e) { upd('hsMerv', parseInt(e.target.value)); },
+                        className: "w-full mt-1", style: { accentColor: '#9333ea' } })
+                    ),
+                    React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3" },
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-purple-50 border border-purple-200" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-purple-500" }, "Filtration"),
+                        React.createElement("p", { className: "text-xl font-black text-purple-600" }, mervCurrent.eff + "%")
+                      ),
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-slate-50 border" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500" }, "Restriction"),
+                        React.createElement("p", { className: "text-sm font-black text-slate-700" }, mervCurrent.restrict)
+                      ),
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-slate-50 border" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500" }, "Filter Cost"),
+                        React.createElement("p", { className: "text-sm font-black text-slate-700" }, "~$" + mervCurrent.cost + " each")
+                      ),
+                      React.createElement("div", { className: "text-center p-3 rounded-xl bg-emerald-50 border border-emerald-200" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-emerald-500" }, "Annual Cost"),
+                        React.createElement("p", { className: "text-sm font-black text-emerald-600" }, "~$" + mervAnnualCost + "/yr")
+                      )
+                    ),
+                    React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-1" }, "What MERV " + mervCurrent.merv + " catches:"),
+                      React.createElement("p", { className: "text-xs text-slate-600" }, mervCurrent.catches),
+                      React.createElement("p", { className: "text-[10px] text-purple-600 mt-1 font-bold" }, "\uD83D\uDCA1 " + mervCurrent.rec)
+                    ),
+                    React.createElement("div", { className: "space-y-1.5" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "All MERV Levels:"),
+                      mervData.map(function (m) {
+                        var active = m.merv <= hsMerv;
+                        return React.createElement("div", { key: m.merv, className: "flex items-center gap-2" },
+                          React.createElement("span", { className: "text-[9px] font-bold w-12 text-right " + (active ? 'text-purple-600' : 'text-slate-400') }, "MERV " + m.merv),
+                          React.createElement("div", { className: "flex-1 bg-slate-100 rounded-full h-3 overflow-hidden" },
+                            React.createElement("div", { style: { width: m.eff + '%' }, className: "h-full rounded-full " + (active ? 'bg-purple-400' : 'bg-slate-300') })
+                          ),
+                          React.createElement("span", { className: "text-[9px] font-bold w-8 " + (active ? 'text-purple-600' : 'text-slate-400') }, m.eff + "%")
+                        );
+                      })
+                    )
+                  ),
+                  // Water Pressure
+                  homeTab === 'water' && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("h4", { className: "text-xs font-bold text-purple-700 uppercase" }, "\uD83D\uDCA7 Water Pressure Simulator"),
+                    React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, "Normal residential pressure: 40-60 PSI. Too low = weak fixtures. Too high = pipe damage."),
+                    React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "Water Pressure: " + hsPsi + " PSI"),
+                      React.createElement("input", { type: "range", min: 10, max: 120, value: hsPsi, onChange: function (e) { upd('hsPsi', parseInt(e.target.value)); },
+                        className: "w-full mt-1", style: { accentColor: '#9333ea' } })
+                    ),
+                    React.createElement("div", { className: "text-center p-4 rounded-xl bg-" + psiColor + "-50 border-2 border-" + psiColor + "-200 mb-3" },
+                      React.createElement("p", { className: "text-3xl font-black text-" + psiColor + "-600" }, hsPsi + " PSI"),
+                      React.createElement("p", { className: "text-sm font-bold text-" + psiColor + "-500" }, psiStatus)
+                    ),
+                    React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-2" }, "Effects at " + hsPsi + " PSI:"),
+                      React.createElement("div", { className: "space-y-1" },
+                        psiEffects.map(function (e, i) {
+                          return React.createElement("p", { key: i, className: "text-xs text-slate-600" }, "\u2022 " + e);
+                        })
+                      )
+                    ),
+                    React.createElement("div", { className: "grid grid-cols-3 gap-2" },
+                      React.createElement("div", { className: "text-center p-2 rounded-lg " + (hsPsi < 40 ? 'bg-red-50 border border-red-200' : 'bg-slate-50 border') },
+                        React.createElement("p", { className: "text-[9px] font-bold text-slate-500" }, "Low (<40)"),
+                        React.createElement("p", { className: "text-[10px] text-slate-600" }, "Install booster pump")
+                      ),
+                      React.createElement("div", { className: "text-center p-2 rounded-lg " + (hsPsi >= 40 && hsPsi <= 60 ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50 border') },
+                        React.createElement("p", { className: "text-[9px] font-bold text-slate-500" }, "Normal (40-60)"),
+                        React.createElement("p", { className: "text-[10px] text-slate-600" }, "No action needed")
+                      ),
+                      React.createElement("div", { className: "text-center p-2 rounded-lg " + (hsPsi > 60 ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50 border') },
+                        React.createElement("p", { className: "text-[9px] font-bold text-slate-500" }, "High (>60)"),
+                        React.createElement("p", { className: "text-[10px] text-slate-600" }, "Install pressure regulator")
+                      )
+                    )
+                  ),
+                  // Electrical Panel Guide
+                  homeTab === 'panel' && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("h4", { className: "text-xs font-bold text-purple-700 uppercase" }, "\u26A1 Know Your Electrical Panel"),
+                    React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, "Your panel distributes power to every circuit. Understanding it helps you troubleshoot safely."),
+                    React.createElement("div", { className: "space-y-2" },
+                      ['main', 'standard', 'large', 'safety', 'special'].map(function (cat) {
+                        var items = panelItems.filter(function (p) { return p.category === cat; });
+                        var catLabel = cat === 'main' ? 'Main' : cat === 'standard' ? 'Standard Circuits' : cat === 'large' ? 'High-Power (240V)' : cat === 'safety' ? 'Safety Breakers' : 'Special';
+                        return React.createElement("div", { key: cat },
+                          React.createElement("p", { className: "text-[9px] font-bold text-purple-500 uppercase mb-1" }, catLabel),
+                          items.map(function (p) {
+                            return React.createElement("div", { key: p.name, className: "flex items-start gap-2 p-2 mb-1 bg-white rounded-lg border border-slate-200" },
+                              React.createElement("span", { className: "text-sm" }, p.icon),
+                              React.createElement("div", { className: "flex-1" },
+                                React.createElement("div", { className: "flex items-center gap-2" },
+                                  React.createElement("p", { className: "text-xs font-bold text-slate-700" }, p.name),
+                                  React.createElement("span", { className: "text-[9px] px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded font-bold" }, p.amps)
+                                ),
+                                React.createElement("p", { className: "text-[10px] text-slate-500" }, p.desc)
+                              )
+                            );
+                          })
+                        );
+                      })
+                    ),
+                    React.createElement("div", { className: "bg-red-50 rounded-lg p-3 border border-red-200" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-red-700" }, "\u26A0\uFE0F When to Call an Electrician:"),
+                      React.createElement("ul", { className: "text-[10px] text-red-600 mt-1 space-y-0.5" },
+                        React.createElement("li", null, "\u2022 Breaker trips repeatedly (may indicate wiring fault)"),
+                        React.createElement("li", null, "\u2022 Burning smell from panel or outlets"),
+                        React.createElement("li", null, "\u2022 Warm or discolored outlet covers"),
+                        React.createElement("li", null, "\u2022 Adding a new 240V circuit (dryer, EV charger)"),
+                        React.createElement("li", null, "\u2022 Panel upgrade needed (100A \u2192 200A for modern loads)")
+                      )
+                    )
                   )
                 )
               ),
