@@ -2620,6 +2620,7 @@
                   correct: prev.correct + (isRect ? 1 : 0),
                   total: prev.total + 1
                 }));
+                if (isRect && typeof awardStemXP === 'function') awardStemXP('volume', 5, 'prism build');
               } else if (cubeBuilderChallenge.type === 'volume') {
                 const ok = vol === cubeBuilderChallenge.answer;
                 announceToSR(ok ? 'Correct!' : 'Incorrect, try again');
@@ -2634,6 +2635,7 @@
                   correct: prev.correct + (ok ? 1 : 0),
                   total: prev.total + 1
                 }));
+                if (ok && typeof awardStemXP === 'function') awardStemXP('volume', 5, 'volume quiz');
               }
             };
             const isSlider = cubeBuilderMode === 'slider';
@@ -3320,6 +3322,7 @@
                     correct: prev.correct + (ok ? 1 : 0),
                     total: prev.total + 1
                   }));
+                  if (ok && typeof awardStemXP === 'function') awardStemXP('volume', 5, 'cube volume');
                 }
               },
               placeholder: t('stem.area.volume'),
@@ -3347,6 +3350,7 @@
                   correct: prev.correct + (ok ? 1 : 0),
                   total: prev.total + 1
                 }));
+                if (ok && typeof awardStemXP === 'function') awardStemXP('volume', 5, 'cube volume');
               },
               disabled: !cubeAnswer,
               className: "px-4 py-2 bg-amber-500 text-white font-bold rounded-lg text-sm disabled:opacity-40"
@@ -3366,12 +3370,12 @@
               type: "number",
               value: (labToolData && labToolData._builderVolAnswer) || '',
               onChange: e => setLabToolData(prev => Object.assign({}, prev, { _builderVolAnswer: e.target.value })),
-              onKeyDown: e => { if (e.key === 'Enter' && (labToolData && labToolData._builderVolAnswer)) { const ans = parseInt(labToolData._builderVolAnswer); const ok = cubeBuilderChallenge.shape === 'L-Block' ? ans === cubeBuilderChallenge.answer : (ans === cubePositions.size && cubePositions.size > 0); announceToSR(ok ? 'Correct!' : 'Incorrect, try again'); setCubeBuilderFeedback(ok ? { correct: true, msg: '✅ Correct! Volume = ' + (cubeBuilderChallenge.shape === 'L-Block' ? cubeBuilderChallenge.answer : cubePositions.size) + ' cubic units' } : { correct: false, msg: '❌ Not quite — try counting the cubes again.' }); setExploreScore(prev => ({ correct: prev.correct + (ok ? 1 : 0), total: prev.total + 1 })); } },
+              onKeyDown: e => { if (e.key === 'Enter' && (labToolData && labToolData._builderVolAnswer)) { const ans = parseInt(labToolData._builderVolAnswer); const ok = cubeBuilderChallenge.shape === 'L-Block' ? ans === cubeBuilderChallenge.answer : (ans === cubePositions.size && cubePositions.size > 0); announceToSR(ok ? 'Correct!' : 'Incorrect, try again'); setCubeBuilderFeedback(ok ? { correct: true, msg: '✅ Correct! Volume = ' + (cubeBuilderChallenge.shape === 'L-Block' ? cubeBuilderChallenge.answer : cubePositions.size) + ' cubic units' } : { correct: false, msg: '❌ Not quite — try counting the cubes again.' }); setExploreScore(prev => ({ correct: prev.correct + (ok ? 1 : 0), total: prev.total + 1 })); if (ok && typeof awardStemXP === 'function') awardStemXP('volume', 5, 'builder volume'); } },
               placeholder: "Volume?",
               className: "w-24 px-3 py-2 border border-indigo-300 rounded-lg text-sm font-mono",
               'aria-label': 'Enter volume'
             }), /*#__PURE__*/React.createElement("button", {
-              onClick: () => { if (cubeBuilderChallenge.type === 'volume') { const ans = parseInt((labToolData && labToolData._builderVolAnswer) || '0'); const ok = cubeBuilderChallenge.shape === 'L-Block' ? ans === cubeBuilderChallenge.answer : (ans === cubePositions.size && cubePositions.size > 0); announceToSR(ok ? 'Correct!' : 'Incorrect, try again'); setCubeBuilderFeedback(ok ? { correct: true, msg: '✅ Correct! Volume = ' + (cubeBuilderChallenge.shape === 'L-Block' ? cubeBuilderChallenge.answer : cubePositions.size) + ' cubic units' } : { correct: false, msg: '❌ Not quite — try counting the cubes again.' }); setExploreScore(prev => ({ correct: prev.correct + (ok ? 1 : 0), total: prev.total + 1 })); } else { checkBuildChallenge(); } },
+              onClick: () => { if (cubeBuilderChallenge.type === 'volume') { const ans = parseInt((labToolData && labToolData._builderVolAnswer) || '0'); const ok = cubeBuilderChallenge.shape === 'L-Block' ? ans === cubeBuilderChallenge.answer : (ans === cubePositions.size && cubePositions.size > 0); announceToSR(ok ? 'Correct!' : 'Incorrect, try again'); setCubeBuilderFeedback(ok ? { correct: true, msg: '✅ Correct! Volume = ' + (cubeBuilderChallenge.shape === 'L-Block' ? cubeBuilderChallenge.answer : cubePositions.size) + ' cubic units' } : { correct: false, msg: '❌ Not quite — try counting the cubes again.' }); setExploreScore(prev => ({ correct: prev.correct + (ok ? 1 : 0), total: prev.total + 1 })); if (ok && typeof awardStemXP === 'function') awardStemXP('volume', 5, 'builder volume'); } else { checkBuildChallenge(); } },
               className: "px-4 py-2 bg-indigo-500 text-white font-bold rounded-lg text-sm hover:bg-indigo-600 transition-all shadow-md"
             }, "\u2714 Check")), cubeBuilderFeedback && /*#__PURE__*/React.createElement("p", {
               className: "text-sm font-bold mt-2 " + (cubeBuilderFeedback.correct ? "text-green-600" : "text-red-600")
@@ -3436,6 +3440,7 @@
                   _question: 'Represent ' + base10Challenge.target + ' using base-10 blocks'
                 });
                 setExploreScore(prev => ({ correct: prev.correct + (ok ? 1 : 0), total: prev.total + 1 }));
+                if (ok && typeof awardStemXP === 'function') awardStemXP('base10', 5, 'base-10 blocks');
               };
               // Regrouping helpers — group 10 of lower → 1 of higher, with animation flash
               const doRegroup = (fromPlace, toPlace) => {
@@ -3655,6 +3660,7 @@
                 const fb = ok ? { correct: true, msg: '\u2705 Correct! ' + abacusChallenge.target.toLocaleString() } : { correct: false, msg: '\u274C Shows ' + abacusTotal.toLocaleString() + ', target is ' + abacusChallenge.target.toLocaleString() };
                 setLabToolData(prev => Object.assign({}, prev, { _abacusFeedback: fb }));
                 setExploreScore(prev => ({ correct: prev.correct + (ok ? 1 : 0), total: prev.total + 1 }));
+                if (ok && typeof awardStemXP === 'function') awardStemXP('base10', 5, 'abacus');
               };
 
               return /*#__PURE__*/React.createElement("div", {
@@ -3863,6 +3869,7 @@
             const tab = d.tab || 'coins';
             const grade = d.grade || 'elementary';
             const currency = d.currency || 'USD';
+            const challengeMode = !!d.challengeMode;
 
             // ── Currency definitions ──
             const CURRENCIES = {
@@ -4168,7 +4175,94 @@
               upd('upAnswer', null); upd('upFeedback', null);
             };
 
-            // ── Personal Finance state ──
+            // ── Estimation Challenge generators ──
+            var genEstimateTotal = function () {
+              var n = Math.floor(Math.random() * 4) + 3; // 3-6 items
+              var items = [];
+              var possibleNames = ['\uD83C\uDF4E Apple', '\uD83C\uDF4C Banana', '\uD83E\uDD5B Milk', '\uD83C\uDF5E Bread', '\uD83E\uDDC0 Cheese', '\uD83C\uDF6B Chocolate', '\uD83C\uDF7C Juice', '\uD83E\uDD5C PB', '\uD83C\uDF55 Pizza', '\uD83E\uDD66 Broccoli', '\u2615 Coffee', '\uD83C\uDF6A Cookies'];
+              var used = {};
+              for (var i = 0; i < n; i++) {
+                var idx; do { idx = Math.floor(Math.random() * possibleNames.length); } while (used[idx]);
+                used[idx] = true;
+                var price = Math.round((Math.random() * gc.maxPrice * 0.3 + 0.5) * 100) / 100;
+                var qty = Math.floor(Math.random() * 3) + 1;
+                items.push({ name: possibleNames[idx], price: price, qty: qty });
+              }
+              var total = items.reduce(function (s, it) { return s + it.price * it.qty; }, 0);
+              upd('estItems', items); upd('estTotal', Math.round(total * 100) / 100);
+              upd('estAnswer', null); upd('estFb', null);
+            };
+
+            var genChangeCheck = function () {
+              var price = isJPY ? (Math.floor(Math.random() * 40 + 5) * 100) : (Math.round((Math.random() * gc.maxPrice * 0.7 + 1) * 100) / 100);
+              var overpay = isJPY ? [1000, 5000, 10000] : [5, 10, 20, 50, 100];
+              var paid = overpay.find(function (v) { return v >= price; }) || overpay[overpay.length - 1];
+              var correctChange = Math.round((paid - price) * 100) / 100;
+              var isWrong = Math.random() > 0.5;
+              var proposedChange = isWrong ? Math.round((correctChange + (Math.random() > 0.5 ? 1 : -1) * (isJPY ? [10, 50, 100][Math.floor(Math.random() * 3)] : [0.25, 0.50, 1][Math.floor(Math.random() * 3)])) * 100) / 100 : correctChange;
+              if (proposedChange < 0) proposedChange = correctChange;
+              upd('ccPrice', price); upd('ccPaid', paid); upd('ccProposed', proposedChange);
+              upd('ccCorrectAmt', correctChange); upd('ccIsWrong', proposedChange !== correctChange);
+              upd('ccAnswer', null); upd('ccFb', null);
+            };
+
+            var genCouponStack = function () {
+              var original = isJPY ? (Math.floor(Math.random() * 90 + 10) * 100) : (Math.round((Math.random() * gc.maxPrice * 0.8 + 5) * 100) / 100);
+              var discounts = [];
+              var numDisc = Math.floor(Math.random() * 2) + 2; // 2-3 discounts
+              var pctOptions = [10, 15, 20, 25, 30];
+              var flatOptions = isJPY ? [100, 200, 500] : [0.50, 1, 2, 3, 5];
+              for (var j = 0; j < numDisc; j++) {
+                if (Math.random() > 0.4) { discounts.push({ type: 'pct', val: pctOptions[Math.floor(Math.random() * pctOptions.length)] }); }
+                else { discounts.push({ type: 'flat', val: flatOptions[Math.floor(Math.random() * flatOptions.length)] }); }
+              }
+              // Apply discounts sequentially
+              var finalPrice = original;
+              discounts.forEach(function (disc) {
+                if (disc.type === 'pct') finalPrice = finalPrice * (1 - disc.val / 100);
+                else finalPrice = Math.max(0, finalPrice - disc.val);
+              });
+              finalPrice = Math.round(finalPrice * 100) / 100;
+              upd('csOriginal', original); upd('csDiscounts', discounts); upd('csFinal', finalPrice);
+              upd('csAnswer', null); upd('csFb', null);
+            };
+
+            // ── Structured word problem generator (offline) ──
+            var STRUCT_PROBLEMS = [
+              { template: 'You buy {q1} {item1} at {p1} each and {q2} {item2} at {p2} each. What is the total cost?', fields: ['total'], compute: function (v) { return [{ val: v.q1 * v.p1 + v.q2 * v.p2, label: 'Total' }]; }, gen: function () { var q1 = Math.floor(Math.random() * 5) + 1; var q2 = Math.floor(Math.random() * 4) + 1; var p1 = Math.round((Math.random() * 4 + 0.5) * 100) / 100; var p2 = Math.round((Math.random() * 3 + 0.25) * 100) / 100; return { q1: q1, q2: q2, p1: p1, p2: p2, item1: ['\uD83C\uDF4E apples', '\uD83C\uDF4C bananas', '\uD83E\uDD5A eggs'][Math.floor(Math.random() * 3)], item2: ['\uD83C\uDF5E loaves of bread', '\uD83E\uDD5B cartons of milk', '\uD83C\uDF6B candy bars'][Math.floor(Math.random() * 3)] }; } },
+              { template: 'A shirt costs {original}. It\'s on sale for {pct}% off. What do you pay?', fields: ['salePrice'], compute: function (v) { return [{ val: Math.round(v.original * (1 - v.pct / 100) * 100) / 100, label: 'Sale Price' }]; }, gen: function () { return { original: Math.round((Math.random() * 40 + 10) * 100) / 100, pct: [10, 15, 20, 25, 30, 40, 50][Math.floor(Math.random() * 7)] }; } },
+              { template: 'You have {have}. You want to buy something that costs {want}. How much more do you need?', fields: ['need'], compute: function (v) { return [{ val: Math.round(Math.max(0, v.want - v.have) * 100) / 100, label: 'Amount Needed' }]; }, gen: function () { var want = Math.round((Math.random() * 20 + 5) * 100) / 100; return { have: Math.round((Math.random() * want * 0.8) * 100) / 100, want: want }; } },
+              { template: 'Dinner costs {bill}. You want to leave a {tipPct}% tip. What is the tip amount? What is the total with tip?', fields: ['tip', 'total'], compute: function (v) { var tip = Math.round(v.bill * v.tipPct / 100 * 100) / 100; return [{ val: tip, label: 'Tip' }, { val: Math.round((v.bill + tip) * 100) / 100, label: 'Total' }]; }, gen: function () { return { bill: Math.round((Math.random() * 60 + 10) * 100) / 100, tipPct: [10, 15, 18, 20, 25][Math.floor(Math.random() * 5)] }; } },
+              { template: 'You earn {hourly}/hour and work {hours} hours. After {taxPct}% tax, what is your take-home pay?', fields: ['gross', 'takeHome'], compute: function (v) { var gross = Math.round(v.hourly * v.hours * 100) / 100; return [{ val: gross, label: 'Gross Pay' }, { val: Math.round(gross * (1 - v.taxPct / 100) * 100) / 100, label: 'Take-Home' }]; }, gen: function () { return { hourly: [8, 10, 12, 15, 20][Math.floor(Math.random() * 5)], hours: Math.floor(Math.random() * 30) + 10, taxPct: [10, 15, 20, 22, 25][Math.floor(Math.random() * 5)] }; } },
+              { template: '{friends} friends split a {bill} bill equally. How much does each person pay?', fields: ['each'], compute: function (v) { return [{ val: Math.round(v.bill / v.friends * 100) / 100, label: 'Each Pays' }]; }, gen: function () { var friends = Math.floor(Math.random() * 5) + 2; return { friends: friends, bill: Math.round(friends * (Math.random() * 15 + 5) * 100) / 100 }; } }
+            ];
+            var genStructuredProblem = function () {
+              var prob = STRUCT_PROBLEMS[Math.floor(Math.random() * STRUCT_PROBLEMS.length)];
+              var vals = prob.gen();
+              var text = prob.template;
+              Object.keys(vals).forEach(function (k) {
+                var display = typeof vals[k] === 'number' ? fmt(vals[k]) : vals[k];
+                text = text.replace('{' + k + '}', display);
+              });
+              var answers = prob.compute(vals);
+              upd('spText', text); upd('spAnswers', answers);
+              upd('spUserAnswers', answers.map(function () { return null; }));
+              upd('spFb', null);
+            };
+
+            // ── Personal Finance quiz generator ──
+            var FIN_QUIZZES = [
+              { q: 'If you invest $1,000 at 7% annual compound interest for 10 years, approximately how much will you have?', choices: ['$1,700', '$1,967', '$2,500', '$3,000'], correct: 1, explanation: '$1,000 \u00D7 (1.07)\u00B9\u2070 \u2248 $1,967. Compound interest grows exponentially over time.' },
+              { q: 'Which costs more total: a $20,000 loan at 5% for 5 years, or at 3% for 10 years?', choices: ['5% for 5 years', '3% for 10 years', 'They cost the same', 'Can\'t determine'], correct: 1, explanation: 'At 5%/5yr: ~$2,645 interest. At 3%/10yr: ~$3,174 interest. Lower rate but longer term costs more in total interest.' },
+              { q: 'Starting to invest $200/month at age 25 vs. age 35 (retire at 65, 7% return). How much more does the early starter have?', choices: ['About $50,000 more', 'About $130,000 more', 'About $260,000 more', 'More than $300,000 more'], correct: 2, explanation: 'Age 25: ~$262K. Age 35: ~$122K. That\'s ~$140K difference! Time is the most powerful factor in investing.' },
+              { q: 'You have $500 in credit card debt at 22% APR. Paying $25/month, roughly how long to pay off?', choices: ['About 1 year', 'About 2 years', 'About 5 years', 'Never (minimum too low)'], correct: 1, explanation: 'At $25/month and 22% APR, it takes about 24 months and you pay ~$95 in interest. High-interest debt is expensive!' },
+              { q: 'The "Rule of 72" estimates how long to double your money. At 6% interest, roughly how many years?', choices: ['6 years', '8 years', '10 years', '12 years'], correct: 3, explanation: '72 \u00F7 6 = 12 years. The Rule of 72: divide 72 by your interest rate to estimate doubling time.' },
+              { q: 'An emergency fund should ideally cover how many months of expenses?', choices: ['1-2 months', '3-6 months', '12 months', '24 months'], correct: 1, explanation: 'Financial advisors recommend 3-6 months of expenses. This covers most unexpected events like job loss or medical emergencies.' }
+            ];
+            var genFinQuiz = function () {
+              var idx = Math.floor(Math.random() * FIN_QUIZZES.length);
+              upd('fqIdx', idx); upd('fqAnswer', null); upd('fqFb', null);
+            };
             var finSub = d.finSub || 'compound';
             // Compound interest defaults
             var ciPrincipal = typeof d.ciPrincipal === 'number' ? d.ciPrincipal : 1000;
@@ -4287,7 +4381,11 @@
                     React.createElement("h2", { className: "text-xl font-black flex items-center gap-2" }, "\uD83D\uDCB5 Money Math"),
                     React.createElement("p", { className: "text-emerald-100 text-xs mt-1" }, "Master coins, bills, change, budgeting & currency exchange")
                   ),
-                  React.createElement("div", { className: "flex gap-2 flex-wrap" },
+                  React.createElement("div", { className: "flex gap-2 flex-wrap items-center" },
+                    // Challenge Mode toggle
+                    React.createElement("button", { onClick: function () { upd('challengeMode', !d.challengeMode); upd('coinGuess', null); upd('coinGuessFb', null); upd('cartGuessSubtotal', null); upd('cartGuessTax', null); upd('cartGuessTotal', null); upd('cartCheckoutFb', null); },
+                      className: "px-3 py-1.5 rounded-lg text-xs font-black transition-all " + (d.challengeMode ? 'bg-amber-400 text-amber-900 ring-2 ring-amber-200 shadow-lg' : 'bg-white/20 text-white border border-white/30 hover:bg-white/30')
+                    }, d.challengeMode ? '\uD83C\uDFAF Challenge ON' : '\uD83C\uDFAF Challenge Mode'),
                     // Grade selector
                     React.createElement("select", { value: grade, onChange: function (e) { upd('grade', e.target.value); upd('storeItems', null); upd('cart', []); },
                       className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white/20 text-white border border-white/30 backdrop-blur-sm outline-none cursor-pointer"
@@ -4364,8 +4462,10 @@
                   React.createElement("div", { className: "flex items-center justify-between mb-3" },
                     React.createElement("h3", { className: "text-sm font-bold text-slate-700" }, "\uD83E\uDDEE Counting Board"),
                     React.createElement("div", { className: "flex items-center gap-2" },
-                      React.createElement("span", { className: "text-lg font-black text-emerald-600" }, fmt(boardTotal)),
-                      placed.length > 0 && React.createElement("button", { onClick: function () { upd('placed', []); },
+                      challengeMode
+                        ? React.createElement("span", { className: "text-lg font-black text-amber-500" }, '\uD83C\uDFAF ?')
+                        : React.createElement("span", { className: "text-lg font-black text-emerald-600" }, fmt(boardTotal)),
+                      placed.length > 0 && React.createElement("button", { onClick: function () { upd('placed', []); upd('coinGuess', null); upd('coinGuessFb', null); },
                         className: "text-[10px] text-red-400 hover:text-red-600 font-bold"
                       }, "\u2715 Clear")
                     )
@@ -4373,23 +4473,39 @@
                   placed.length === 0
                     ? React.createElement("div", { className: "text-center py-8 text-slate-300" },
                         React.createElement("div", { className: "text-4xl mb-2" }, "\uD83E\uDE99"),
-                        React.createElement("p", { className: "text-xs" }, "Click coins or bills to add them here")
+                        React.createElement("p", { className: "text-xs" }, challengeMode ? 'Add coins/bills, then guess the total!' : 'Click coins or bills to add them here')
                       )
                     : React.createElement("div", { className: "flex flex-wrap gap-1.5 min-h-[100px]" },
                         placed.map(function (p, pi) {
                           var isBill = p.value >= (isJPY ? 1000 : 1) && !p.name.toLowerCase().includes('coin') && !p.name.toLowerCase().includes('penny') && !p.name.toLowerCase().includes('cent') && !p.name.toLowerCase().includes('dime') && !p.name.toLowerCase().includes('nickel') && !p.name.toLowerCase().includes('quarter') && !p.name.toLowerCase().includes('loonie') && !p.name.toLowerCase().includes('toonie');
                           return React.createElement("button", { key: p.id || pi, onClick: function () {
                               upd('placed', placed.filter(function (_, idx) { return idx !== pi; }));
+                              upd('coinGuess', null); upd('coinGuessFb', null);
                             }, title: 'Remove ' + p.name,
                             className: "transition-all hover:scale-110 hover:opacity-70 cursor-pointer"
                           },
                             isBill
-                              ? React.createElement("div", { style: { width: '56px', height: '24px', borderRadius: '3px', background: '#85bb65', border: '1px solid rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold', color: '#fff' } }, fmt(p.value))
-                              : React.createElement("div", { style: { width: '28px', height: '28px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, #C0C0C0, #999)', border: '1px solid rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 'bold', color: '#333' } }, fmt(p.value))
+                              ? React.createElement("div", { style: { width: '56px', height: '24px', borderRadius: '3px', background: '#85bb65', border: '1px solid rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold', color: '#fff' } }, challengeMode ? p.name : fmt(p.value))
+                              : React.createElement("div", { style: { width: '28px', height: '28px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, #C0C0C0, #999)', border: '1px solid rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 'bold', color: '#333' } }, challengeMode ? p.name.substring(0, 3) : fmt(p.value))
                           );
                         })
                       ),
-                  placed.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200" },
+                  // Challenge Mode: guess the total
+                  challengeMode && placed.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-amber-200 bg-amber-50 rounded-lg p-3" },
+                    React.createElement("p", { className: "text-xs font-bold text-amber-700 mb-2" }, '\uD83C\uDFAF What\'s the total? Add up all the coins and bills!'),
+                    React.createElement("div", { className: "flex items-center gap-2" },
+                      React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.coinGuess != null ? d.coinGuess : '', onChange: function (e) { upd('coinGuess', e.target.value === '' ? null : parseFloat(e.target.value)); }, className: "px-3 py-2 border border-amber-300 rounded-lg text-sm font-bold w-32 focus:ring-2 focus:ring-amber-400 outline-none" }),
+                      React.createElement("button", { onClick: function () {
+                        var guess = d.coinGuess; var actual = boardTotal;
+                        var isRight = typeof guess === 'number' && Math.abs(guess - actual) < (isJPY ? 0.5 : 0.005);
+                        upd('coinGuessFb', isRight ? { ok: true, msg: '\u2705 Correct! Total is ' + fmt(actual) + '!' } : { ok: false, msg: '\u274C Not quite. The total is ' + fmt(actual) + '. You guessed ' + fmt(guess || 0) + '.' });
+                        if (isRight && typeof awardStemXP === 'function') awardStemXP('moneyMath', 10, 'coin counting challenge');
+                      }, disabled: d.coinGuess == null, className: "px-4 py-2 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 transition-all text-xs disabled:opacity-40" }, '\u2714 Check')
+                    ),
+                    d.coinGuessFb && React.createElement("p", { className: "text-xs font-bold mt-2 " + (d.coinGuessFb.ok ? 'text-green-600' : 'text-red-500') }, d.coinGuessFb.msg)
+                  ),
+                  // Normal mode: show total
+                  !challengeMode && placed.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200" },
                     React.createElement("div", { className: "flex justify-between text-xs" },
                       React.createElement("span", { className: "text-slate-500" }, placed.length + " items on board"),
                       React.createElement("span", { className: "font-bold text-emerald-600" }, "Total: " + fmt(boardTotal))
@@ -4438,6 +4554,7 @@
                             var isRight = Math.abs(userAns - correct) < 0.005;
                             upd('changeFeedback', isRight ? { ok: true, msg: '\u2705 Correct! ' + fmt(changePaid) + ' \u2212 ' + fmt(changePrice) + ' = ' + fmt(correct) } : { ok: false, msg: '\u274C Not quite. ' + fmt(changePaid) + ' \u2212 ' + fmt(changePrice) + ' = ' + fmt(correct) });
                             if (isRight && typeof addXP === 'function') addXP(15, 'Money Math: Making change');
+                            if (isRight && typeof awardStemXP === 'function') awardStemXP('moneyMath', 5, 'making change');
                           },
                           className: "px-5 py-2 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-all text-sm"
                         }, "\u2714 Check")
@@ -4486,16 +4603,57 @@
                           cart.map(function (item, ci) {
                             return React.createElement("div", { key: ci, className: "flex items-center justify-between bg-white rounded-lg px-2 py-1.5 border border-emerald-100" },
                               React.createElement("span", { className: "text-xs font-medium text-slate-700 flex-1 truncate" }, (item.qty > 1 ? item.qty + 'x ' : '') + item.name),
-                              React.createElement("span", { className: "text-xs font-bold text-emerald-600 ml-2" }, fmt(item.price * (item.qty || 1))),
+                              challengeMode
+                                ? React.createElement("span", { className: "text-xs font-bold text-amber-500 ml-2" }, fmt(item.price) + '/ea')
+                                : React.createElement("span", { className: "text-xs font-bold text-emerald-600 ml-2" }, fmt(item.price * (item.qty || 1))),
                               React.createElement("button", { onClick: function () {
                                   if (item.qty > 1) { upd('cart', cart.map(function (c, idx) { return idx === ci ? Object.assign({}, c, { qty: c.qty - 1 }) : c; })); }
                                   else { upd('cart', cart.filter(function (_, idx) { return idx !== ci; })); }
+                                  upd('cartCheckoutFb', null);
                                 }, className: "ml-1 text-red-300 hover:text-red-500 text-xs font-bold"
                               }, "\u2715")
                             );
                           })
                         ),
-                    cart.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-emerald-200 space-y-1" },
+                    // ── Challenge Mode: Mental Math Checkout ──
+                    challengeMode && cart.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-amber-200 space-y-2" },
+                      React.createElement("p", { className: "text-xs font-bold text-amber-700" }, '\uD83C\uDFAF Add up the items yourself! ' + (gc.includeTax ? 'Don\u2019t forget 8% tax!' : '')),
+                      React.createElement("div", { className: "space-y-1.5" },
+                        React.createElement("div", { className: "flex items-center gap-2" },
+                          React.createElement("label", { className: "text-xs text-slate-600 w-20" }, "Subtotal:"),
+                          React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.cartGuessSubtotal != null ? d.cartGuessSubtotal : '', onChange: function (e) { upd('cartGuessSubtotal', e.target.value === '' ? null : parseFloat(e.target.value)); upd('cartCheckoutFb', null); }, className: "px-2 py-1.5 border border-amber-300 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" })
+                        ),
+                        gc.includeTax && React.createElement("div", { className: "flex items-center gap-2" },
+                          React.createElement("label", { className: "text-xs text-slate-600 w-20" }, "Tax (8%):"),
+                          React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.cartGuessTax != null ? d.cartGuessTax : '', onChange: function (e) { upd('cartGuessTax', e.target.value === '' ? null : parseFloat(e.target.value)); upd('cartCheckoutFb', null); }, className: "px-2 py-1.5 border border-amber-300 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" })
+                        ),
+                        React.createElement("div", { className: "flex items-center gap-2" },
+                          React.createElement("label", { className: "text-xs font-bold text-slate-700 w-20" }, "Grand Total:"),
+                          React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.cartGuessTotal != null ? d.cartGuessTotal : '', onChange: function (e) { upd('cartGuessTotal', e.target.value === '' ? null : parseFloat(e.target.value)); upd('cartCheckoutFb', null); }, className: "px-2 py-1.5 border border-amber-300 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" })
+                        )
+                      ),
+                      React.createElement("button", { onClick: function () {
+                        var subGuess = d.cartGuessTotal;
+                        if (subGuess == null) return;
+                        var tol = isJPY ? 0.5 : 0.015;
+                        var subOk = d.cartGuessSubtotal != null && Math.abs(d.cartGuessSubtotal - cartTotal) < tol + cartTotal * 0.005;
+                        var taxOk = !gc.includeTax || (d.cartGuessTax != null && Math.abs(d.cartGuessTax - cartTax) < tol + cartTax * 0.01);
+                        var totalOk = Math.abs(subGuess - cartGrand) < tol + cartGrand * 0.005;
+                        var allOk = subOk && taxOk && totalOk;
+                        var msg = allOk
+                          ? '\u2705 Perfect! Subtotal: ' + fmt(cartTotal) + (gc.includeTax ? ', Tax: ' + fmt(cartTax) : '') + ', Total: ' + fmt(cartGrand) + ' \u2014 +15 XP!'
+                          : '\u274C Not quite. Subtotal: ' + fmt(cartTotal) + (gc.includeTax ? ', Tax: ' + fmt(cartTax) : '') + ', Grand Total: ' + fmt(cartGrand);
+                        upd('cartCheckoutFb', { ok: allOk, msg: msg });
+                        if (allOk) {
+                          if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 15, 'grocery mental math');
+                          if (typeof addXP === 'function') addXP(25, 'Money Math: Mental math grocery checkout');
+                        }
+                      }, disabled: d.cartGuessTotal == null, className: "w-full px-4 py-2 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm shadow-md disabled:opacity-40" }, '\uD83E\uDDE0 Check My Math'),
+                      d.cartCheckoutFb && React.createElement("p", { className: "text-xs font-bold " + (d.cartCheckoutFb.ok ? 'text-green-600' : 'text-red-500') }, d.cartCheckoutFb.msg),
+                      React.createElement("button", { onClick: function () { upd('cart', []); upd('cartGuessSubtotal', null); upd('cartGuessTax', null); upd('cartGuessTotal', null); upd('cartCheckoutFb', null); }, className: "w-full px-3 py-1.5 text-xs text-red-400 hover:text-red-600 font-bold" }, "Clear Cart")
+                    ),
+                    // ── Normal Mode: Show totals ──
+                    !challengeMode && cart.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-emerald-200 space-y-1" },
                       React.createElement("div", { className: "flex justify-between text-xs" },
                         React.createElement("span", { className: "text-slate-500" }, "Subtotal"),
                         React.createElement("span", { className: "font-bold" }, fmt(cartTotal))
@@ -4623,6 +4781,7 @@
                               : { ok: false, msg: '\u274C The answer is approximately ' + CURRENCIES[d.exchTo].symbol + correct.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' ' + d.exchTo }
                             );
                             if (isRight && typeof addXP === 'function') addXP(20, 'Money Math: Currency conversion');
+                            if (isRight && typeof awardStemXP === 'function') awardStemXP('moneyMath', 5, 'currency conversion');
                           },
                           className: "px-5 py-2 bg-sky-500 text-white font-bold rounded-xl hover:bg-sky-600 transition-all text-sm"
                         }, "\u2714 Check")
@@ -4877,6 +5036,157 @@
                   )
                 ),
 
+                // ── Estimate the Total ──
+                React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-4 border border-indigo-200" },
+                  React.createElement("div", { className: "flex items-center justify-between mb-3" },
+                    React.createElement("h4", { className: "text-sm font-bold text-indigo-800" }, "\uD83E\uDDFE Estimate the Total"),
+                    React.createElement("button", { onClick: genEstimateTotal, className: "px-3 py-1.5 bg-indigo-500 text-white text-xs font-bold rounded-lg hover:bg-indigo-600 transition-all" }, !d.estItems ? '\u2728 Start' : '\u21BB New')
+                  ),
+                  d.estItems && React.createElement("div", { className: "space-y-2" },
+                    React.createElement("div", { className: "bg-white rounded-lg border border-indigo-100 p-3 space-y-1" },
+                      d.estItems.map(function (it, i) {
+                        return React.createElement("div", { key: i, className: "flex justify-between text-xs" },
+                          React.createElement("span", null, it.name + (it.qty > 1 ? ' x' + it.qty : '')),
+                          React.createElement("span", { className: "font-bold" }, fmt(it.price) + '/ea')
+                        );
+                      }),
+                      React.createElement("div", { className: "border-t border-dashed border-indigo-200 pt-1 mt-1" },
+                        React.createElement("p", { className: "text-xs text-indigo-600 font-bold text-center" }, "What is the total?")
+                      )
+                    ),
+                    React.createElement("div", { className: "flex items-center gap-2" },
+                      React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.estAnswer != null ? d.estAnswer : '', onChange: function (e) { upd('estAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('estFb', null); }, className: "flex-1 px-3 py-2 border border-indigo-300 rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-400 outline-none" }),
+                      React.createElement("button", { onClick: function () {
+                        if (d.estAnswer == null) return;
+                        var tol = isJPY ? 0.5 : 0.015;
+                        var ok = Math.abs(d.estAnswer - d.estTotal) < tol + d.estTotal * 0.005;
+                        upd('estFb', ok ? { ok: true, msg: '\u2705 Correct! Total is ' + fmt(d.estTotal) + ' \u2014 +10 XP!' } : { ok: false, msg: '\u274C Not quite. The total is ' + fmt(d.estTotal) });
+                        if (ok) {
+                          if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 10, 'estimate total');
+                          if (typeof addXP === 'function') addXP(10, 'Money Math: Receipt estimation');
+                        }
+                      }, className: "px-4 py-2 bg-indigo-500 text-white font-bold rounded-lg hover:bg-indigo-600 transition-all text-sm" }, "\u2714")
+                    ),
+                    d.estFb && React.createElement("p", { className: "text-xs font-bold " + (d.estFb.ok ? 'text-green-600' : 'text-red-500') }, d.estFb.msg)
+                  )
+                ),
+
+                // ── Change Check ──
+                React.createElement("div", { className: "bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200" },
+                  React.createElement("div", { className: "flex items-center justify-between mb-3" },
+                    React.createElement("h4", { className: "text-sm font-bold text-rose-800" }, "\uD83E\uDDD0 Check the Change"),
+                    React.createElement("button", { onClick: genChangeCheck, className: "px-3 py-1.5 bg-rose-500 text-white text-xs font-bold rounded-lg hover:bg-rose-600 transition-all" }, d.ccPrice == null ? '\u2728 Start' : '\u21BB New')
+                  ),
+                  d.ccPrice != null && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("div", { className: "bg-white rounded-lg border border-rose-100 p-4 text-center space-y-1" },
+                      React.createElement("p", { className: "text-xs text-slate-500" }, "Item costs: " + React.createElement("span", { className: "font-black text-slate-700" }, fmt(d.ccPrice)) + " | Paid: " + React.createElement("span", { className: "font-black text-slate-700" }, fmt(d.ccPaid))),
+                      React.createElement("p", { className: "text-xs text-slate-500" }, "Item costs:"),
+                      React.createElement("p", { className: "text-lg font-black text-rose-700" }, fmt(d.ccPrice)),
+                      React.createElement("p", { className: "text-xs text-slate-500 mt-1" }, "Paid with:"),
+                      React.createElement("p", { className: "text-lg font-black text-slate-700" }, fmt(d.ccPaid)),
+                      React.createElement("p", { className: "text-xs text-slate-500 mt-2" }, "Cashier gives you:"),
+                      React.createElement("p", { className: "text-2xl font-black text-amber-600" }, fmt(d.ccProposed)),
+                      React.createElement("p", { className: "text-xs font-bold text-rose-600 mt-2" }, "Is this the right change? \uD83E\uDD14")
+                    ),
+                    React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                      React.createElement("button", { onClick: function () { upd('ccAnswer', true); upd('ccFb', null); }, className: "py-2 rounded-xl font-bold text-sm transition-all " + (d.ccAnswer === true ? 'bg-green-500 text-white shadow-md' : 'bg-white border border-green-300 text-green-600 hover:bg-green-50') }, "\u2705 Correct!"),
+                      React.createElement("button", { onClick: function () { upd('ccAnswer', false); upd('ccFb', null); }, className: "py-2 rounded-xl font-bold text-sm transition-all " + (d.ccAnswer === false ? 'bg-red-500 text-white shadow-md' : 'bg-white border border-red-300 text-red-600 hover:bg-red-50') }, "\u274C Wrong!")
+                    ),
+                    d.ccAnswer != null && React.createElement("button", { onClick: function () {
+                      var userSaysCorrect = d.ccAnswer;
+                      var actuallyCorrect = !d.ccIsWrong;
+                      var correct = userSaysCorrect === actuallyCorrect;
+                      upd('ccFb', correct
+                        ? { ok: true, msg: '\u2705 Right! Change should be ' + fmt(d.ccCorrectAmt) + '. ' + (d.ccIsWrong ? 'The cashier was off!' : 'The cashier was correct.') + ' +12 XP!' }
+                        : { ok: false, msg: '\u274C Nope. Correct change is ' + fmt(d.ccCorrectAmt) + '. The cashier gave ' + fmt(d.ccProposed) + '.' }
+                      );
+                      if (correct) {
+                        if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 12, 'change check');
+                        if (typeof addXP === 'function') addXP(12, 'Money Math: Change verification');
+                      }
+                    }, className: "w-full px-4 py-2 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 transition-all text-sm" }, "\u2714 Submit"),
+                    d.ccFb && React.createElement("p", { className: "text-xs font-bold " + (d.ccFb.ok ? 'text-green-600' : 'text-red-500') }, d.ccFb.msg)
+                  )
+                ),
+
+                // ── Coupon Stack ──
+                React.createElement("div", { className: "bg-gradient-to-br from-fuchsia-50 to-purple-50 rounded-xl p-4 border border-fuchsia-200" },
+                  React.createElement("div", { className: "flex items-center justify-between mb-3" },
+                    React.createElement("h4", { className: "text-sm font-bold text-fuchsia-800" }, "\uD83C\uDFF7 Coupon Stack"),
+                    React.createElement("button", { onClick: genCouponStack, className: "px-3 py-1.5 bg-fuchsia-500 text-white text-xs font-bold rounded-lg hover:bg-fuchsia-600 transition-all" }, d.csOriginal == null ? '\u2728 Start' : '\u21BB New')
+                  ),
+                  d.csOriginal != null && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("div", { className: "bg-white rounded-lg border border-fuchsia-100 p-4 space-y-2" },
+                      React.createElement("p", { className: "text-xs text-slate-500 text-center" }, "Original price:"),
+                      React.createElement("p", { className: "text-2xl font-black text-fuchsia-700 text-center" }, fmt(d.csOriginal)),
+                      React.createElement("p", { className: "text-xs text-slate-500 text-center mt-2" }, "Apply these discounts in order:"),
+                      d.csDiscounts.map(function (disc, i) {
+                        return React.createElement("div", { key: i, className: "flex items-center justify-center gap-2 text-sm" },
+                          React.createElement("span", { className: "text-lg" }, ['\uD83C\uDFF7\uFE0F', '\u2702\uFE0F', '\uD83C\uDF81'][i] || '\uD83C\uDFF7\uFE0F'),
+                          React.createElement("span", { className: "font-bold text-fuchsia-600" }, disc.type === 'pct' ? disc.val + '% off' : fmt(disc.val) + ' off')
+                        );
+                      })
+                    ),
+                    React.createElement("div", { className: "flex items-center gap-2" },
+                      React.createElement("label", { className: "text-xs font-bold text-slate-600" }, "Final price:"),
+                      React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.csAnswer != null ? d.csAnswer : '', onChange: function (e) { upd('csAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('csFb', null); }, className: "flex-1 px-3 py-2 border border-fuchsia-300 rounded-lg text-sm font-bold focus:ring-2 focus:ring-fuchsia-400 outline-none" }),
+                      React.createElement("button", { onClick: function () {
+                        if (d.csAnswer == null) return;
+                        var tol = isJPY ? 0.5 : 0.02;
+                        var ok = Math.abs(d.csAnswer - d.csFinal) < tol + d.csFinal * 0.01;
+                        upd('csFb', ok ? { ok: true, msg: '\u2705 Perfect! Final price: ' + fmt(d.csFinal) + ' \u2014 +15 XP!' } : { ok: false, msg: '\u274C Not quite. Final price is ' + fmt(d.csFinal) + '. Discounts apply sequentially!' });
+                        if (ok) {
+                          if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 15, 'coupon stack');
+                          if (typeof addXP === 'function') addXP(15, 'Money Math: Coupon stacking');
+                        }
+                      }, className: "px-4 py-2 bg-fuchsia-500 text-white font-bold rounded-lg hover:bg-fuchsia-600 transition-all text-sm" }, "\u2714")
+                    ),
+                    d.csFb && React.createElement("p", { className: "text-xs font-bold " + (d.csFb.ok ? 'text-green-600' : 'text-red-500') }, d.csFb.msg)
+                  )
+                ),
+
+                // ── Structured Word Problems ──
+                React.createElement("div", { className: "bg-gradient-to-br from-cyan-50 to-sky-50 rounded-xl p-4 border border-cyan-200" },
+                  React.createElement("div", { className: "flex items-center justify-between mb-3" },
+                    React.createElement("h4", { className: "text-sm font-bold text-cyan-800" }, "\uD83D\uDCDD Word Problems"),
+                    React.createElement("button", { onClick: genStructuredProblem, className: "px-3 py-1.5 bg-cyan-500 text-white text-xs font-bold rounded-lg hover:bg-cyan-600 transition-all" }, !d.spText ? '\u2728 Start' : '\u21BB New')
+                  ),
+                  d.spText && d.spAnswers && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("div", { className: "bg-white rounded-lg border border-cyan-100 p-4" },
+                      React.createElement("p", { className: "text-sm text-slate-700 leading-relaxed" }, d.spText)
+                    ),
+                    React.createElement("div", { className: "space-y-2" },
+                      d.spAnswers.map(function (ans, i) {
+                        return React.createElement("div", { key: i, className: "flex items-center gap-2" },
+                          React.createElement("label", { className: "text-xs font-bold text-cyan-700 w-24" }, ans.label + ':'),
+                          React.createElement("input", { type: "number", step: '0.01', placeholder: '$...', value: d.spUserAnswers && d.spUserAnswers[i] != null ? d.spUserAnswers[i] : '', onChange: function (e) {
+                            var arr = (d.spUserAnswers || []).slice();
+                            arr[i] = e.target.value === '' ? null : parseFloat(e.target.value);
+                            upd('spUserAnswers', arr); upd('spFb', null);
+                          }, className: "flex-1 px-3 py-2 border border-cyan-300 rounded-lg text-sm font-bold focus:ring-2 focus:ring-cyan-400 outline-none" })
+                        );
+                      })
+                    ),
+                    React.createElement("button", { onClick: function () {
+                      var ua = d.spUserAnswers || [];
+                      var allOk = true;
+                      d.spAnswers.forEach(function (ans, i) {
+                        if (ua[i] == null || Math.abs(ua[i] - ans.val) > 0.02 + ans.val * 0.005) allOk = false;
+                      });
+                      var detail = d.spAnswers.map(function (a) { return a.label + ': ' + fmt(a.val); }).join(', ');
+                      upd('spFb', allOk
+                        ? { ok: true, msg: '\u2705 Correct! ' + detail + ' \u2014 +15 XP!' }
+                        : { ok: false, msg: '\u274C Not quite. ' + detail }
+                      );
+                      if (allOk) {
+                        if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 15, 'word problem');
+                        if (typeof addXP === 'function') addXP(15, 'Money Math: Word problem');
+                      }
+                    }, className: "w-full px-4 py-2 bg-cyan-500 text-white font-bold rounded-xl hover:bg-cyan-600 transition-all text-sm" }, "\u2714 Check My Answers"),
+                    d.spFb && React.createElement("p", { className: "text-xs font-bold " + (d.spFb.ok ? 'text-green-600' : 'text-red-500') }, d.spFb.msg)
+                  )
+                ),
+
                 // Score tracker
                 React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-3 border border-violet-200 text-center" },
                   React.createElement("p", { className: "text-[10px] font-bold text-violet-500" }, "\uD83C\uDFC6 Complete challenges across all tabs to earn XP and build real-world money skills!")
@@ -4887,7 +5197,7 @@
               tab === 'finance' && React.createElement("div", { className: "space-y-4" },
                 // Sub-tab navigation
                 React.createElement("div", { className: "flex flex-wrap gap-2 mb-2" },
-                  [{ id: 'compound', label: '\uD83D\uDCC8 Compound Interest' }, { id: 'retire', label: '\uD83C\uDFD6\uFE0F Retirement' }, { id: 'loans', label: '\uD83C\uDFE6 Loans & Debt' }, { id: 'goals', label: '\uD83C\uDFAF Savings Goals' }].map(function (s) {
+                  [{ id: 'compound', label: '\uD83D\uDCC8 Compound Interest' }, { id: 'retire', label: '\uD83C\uDFD6\uFE0F Retirement' }, { id: 'loans', label: '\uD83C\uDFE6 Loans & Debt' }, { id: 'goals', label: '\uD83C\uDFAF Savings Goals' }, { id: 'quiz', label: '\uD83E\uDDE0 Fin. Quiz' }].map(function (s) {
                     return React.createElement("button", { key: s.id, onClick: function () { upd('finSub', s.id); },
                       className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (finSub === s.id ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-white text-slate-600 border border-slate-200 hover:bg-blue-50')
                     }, s.label);
@@ -5185,6 +5495,45 @@
                       React.createElement("p", { className: "text-xs text-slate-600" }, "\u2022 Double your savings? Reach goal in ", React.createElement("strong", { className: "text-emerald-600" }, Math.max(1, Math.round(sgMonths / 2)) + " months"))
                     )
                   )
+                ),
+
+                // ── Financial Literacy Quiz ──
+                finSub === 'quiz' && React.createElement("div", { className: "bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl p-5 border border-yellow-200 space-y-4" },
+                  React.createElement("div", { className: "flex items-center justify-between" },
+                    React.createElement("h3", { className: "text-base font-bold text-amber-800" }, "\uD83E\uDDE0 Financial Literacy Quiz"),
+                    React.createElement("button", { onClick: genFinQuiz, className: "px-3 py-1.5 bg-amber-500 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition-all" }, d.fqIdx == null ? '\u2728 Start Quiz' : '\u21BB Next Question')
+                  ),
+                  d.fqIdx != null && (function () {
+                    var fq = FIN_QUIZZES[d.fqIdx];
+                    return React.createElement("div", { className: "space-y-3" },
+                      React.createElement("div", { className: "bg-white rounded-lg border border-amber-100 p-4" },
+                        React.createElement("p", { className: "text-sm text-slate-700 font-medium leading-relaxed" }, fq.q)
+                      ),
+                      React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" },
+                        fq.choices.map(function (ch, ci) {
+                          var selected = d.fqAnswer === ci;
+                          var revealed = d.fqFb != null;
+                          var isCorrect = ci === fq.correct;
+                          var btnClass = revealed
+                            ? (isCorrect ? 'border-green-500 bg-green-50 text-green-700' : (selected ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-400'))
+                            : (selected ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-md' : 'border-slate-200 bg-white text-slate-600 hover:border-amber-300 hover:bg-amber-50');
+                          return React.createElement("button", { key: ci, disabled: revealed, onClick: function () { upd('fqAnswer', ci); upd('fqFb', null); },
+                            className: "p-3 rounded-xl border-2 text-sm font-bold text-left transition-all " + btnClass
+                          }, String.fromCharCode(65 + ci) + '. ' + ch);
+                        })
+                      ),
+                      d.fqAnswer != null && !d.fqFb && React.createElement("button", { onClick: function () {
+                        var ok = d.fqAnswer === fq.correct;
+                        upd('fqFb', ok ? { ok: true, msg: '\u2705 Correct! ' + fq.explanation } : { ok: false, msg: '\u274C Not quite. ' + fq.explanation });
+                        if (ok) {
+                          if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 20, 'finance quiz');
+                          if (typeof addXP === 'function') addXP(20, 'Money Math: Financial literacy quiz');
+                        }
+                      }, className: "w-full px-4 py-2 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm" }, "\u2714 Submit Answer"),
+                      d.fqFb && React.createElement("div", { className: "rounded-lg p-3 text-xs font-medium leading-relaxed " + (d.fqFb.ok ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') }, d.fqFb.msg),
+                      d.fqFb && React.createElement("button", { onClick: genFinQuiz, className: "w-full px-4 py-2 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm" }, "\u27A1\uFE0F Next Question")
+                    );
+                  })()
                 )
               ),
 
@@ -6071,6 +6420,7 @@
                   correct: prev.correct + (ok ? 1 : 0),
                   total: prev.total + 1
                 }));
+                if (ok && typeof awardStemXP === 'function') awardStemXP('coordinate', 5, 'plot point');
               } else if (gridChallenge.type === 'slope') {
                 const cs = gridChallenge.slopeData;
                 const riseAns = parseInt((gridFeedback && gridFeedback.riseAnswer) || '');
@@ -6098,6 +6448,7 @@
                   msg: msg
                 }));
                 setExploreScore(prev => ({ correct: prev.correct + (allCorrect ? 1 : 0), total: prev.total + 1 }));
+                if (allCorrect && typeof awardStemXP === 'function') awardStemXP('coordinate', 5, 'slope calc');
               }
             };
             return /*#__PURE__*/React.createElement("div", {
@@ -6332,6 +6683,7 @@
                   correct: prev.correct + (ok ? 1 : 0),
                   total: prev.total + 1
                 }));
+                if (ok && typeof awardStemXP === 'function') awardStemXP('protractor', 5, 'create angle');
               } else if (angleChallenge.type === 'classify') {
                 const correctClass = classifyAngle(angleChallenge.target);
                 const ok = classifyAngle(angleValue) === correctClass;
@@ -6347,6 +6699,7 @@
                   correct: prev.correct + (ok ? 1 : 0),
                   total: prev.total + 1
                 }));
+                if (ok && typeof awardStemXP === 'function') awardStemXP('protractor', 5, 'classify angle');
               }
             };
             return /*#__PURE__*/React.createElement("div", {
@@ -6564,6 +6917,7 @@
                 correct: prev.correct + (ok ? 1 : 0),
                 total: prev.total + 1
               }));
+              if (ok && typeof awardStemXP === 'function') awardStemXP('multtable', 5, 'multiplication');
               // Update Speed Run score if active
               if (_mt.active) {
                 _mtUpd({ score: _mt.score + (ok ? 1 : 0), total: _mt.total + 1 });
@@ -7048,6 +7402,7 @@
                   correct: prev.correct + (ok ? 1 : 0),
                   total: prev.total + 1
                 }));
+                if (ok && typeof awardStemXP === 'function') awardStemXP('numberline', 5, 'number line');
               }
             },
             placeholder: t('explore.your_answer'),
@@ -7080,6 +7435,7 @@
                 correct: prev.correct + (ok ? 1 : 0),
                 total: prev.total + 1
               }));
+              if (ok && typeof awardStemXP === 'function') awardStemXP('numberline', 5, 'number line');
             },
             className: "px-4 py-2 bg-blue-600 text-white font-bold rounded-lg text-sm hover:bg-blue-700"
           }, "Check")), nlFeedback && /*#__PURE__*/React.createElement("p", {
@@ -7243,6 +7599,7 @@
                   correct: prev.correct + (ans === areaChallenge.answer ? 1 : 0),
                   total: prev.total + 1
                 }));
+                if (ans === areaChallenge.answer && typeof awardStemXP === 'function') awardStemXP('multtable', 5, 'area model');
               }
             },
             placeholder: t('explore.product_placeholder'),
@@ -7265,6 +7622,7 @@
                 correct: prev.correct + (ans === areaChallenge.answer ? 1 : 0),
                 total: prev.total + 1
               }));
+              if (ans === areaChallenge.answer && typeof awardStemXP === 'function') awardStemXP('multtable', 5, 'area model');
             },
             className: "px-4 py-2 bg-amber-600 text-white font-bold rounded-lg text-sm hover:bg-amber-700"
           }, "Check")), areaFeedback && /*#__PURE__*/React.createElement("p", {
@@ -31455,19 +31813,20 @@
             // ═══ GAME OF LIFE TAB ═══
             tab === 'life' && React.createElement("div", { className: "space-y-3" },
               React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
-                React.createElement("div", { className: "space-y-3" },
+                React.createElement("div", { className: "space-y-3", style: { maxHeight: '85vh', overflowY: 'auto' } },
                   React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-lime-50 rounded-xl p-4 border border-emerald-200" },
                     React.createElement("h4", { className: "text-xs font-bold text-emerald-700 mb-3" }, "\uD83E\uDDEC Conway's Game of Life"),
                     // Simulation controls
                     React.createElement("div", { className: "flex gap-1 mb-3" },
                       React.createElement("button", { onClick: function () { upd('lifeRunning', !(d.lifeRunning)); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black transition-all " + (d.lifeRunning ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-600 hover:to-green-600 shadow-md') }, d.lifeRunning ? '\u23F8 Pause' : '\u25B6 Run'),
                       React.createElement("button", { onClick: function () { upd('lifeStep', (d.lifeStep || 0) + 1); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200", disabled: d.lifeRunning }, '\u23ED Step'),
-                      React.createElement("button", { onClick: function () { upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); upd('lifePop', 0); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, '\uD83D\uDDD1 Clear')
+                      React.createElement("button", { onClick: function () { upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); upd('lifePop', 0); upd('lifeChallengeStatus', null); upd('lifeChallengeMsg', null); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, '\uD83D\uDDD1 Clear')
                     ),
                     // Stats
                     React.createElement("div", { className: "flex gap-3 mb-3 text-[10px] font-bold" },
                       React.createElement("span", { className: "px-2 py-1 rounded-full bg-emerald-100 text-emerald-700" }, '\uD83D\uDD04 Gen: ' + (d.lifeGen || 0)),
-                      React.createElement("span", { className: "px-2 py-1 rounded-full bg-lime-100 text-lime-700" }, '\uD83E\uDDA0 Pop: ' + (d.lifePop || 0))
+                      React.createElement("span", { className: "px-2 py-1 rounded-full bg-lime-100 text-lime-700" }, '\uD83E\uDDA0 Pop: ' + (d.lifePop || 0)),
+                      (d.lifeMaxPop > 0) && React.createElement("span", { className: "px-2 py-1 rounded-full bg-amber-100 text-amber-700" }, '\uD83D\uDCC8 Max: ' + d.lifeMaxPop)
                     ),
                     // Speed
                     React.createElement("div", { className: "mb-2" },
@@ -31492,7 +31851,7 @@
                         })
                       )
                     ),
-                    // Wrap toggle
+                    // Wrap toggle + Random
                     React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                       React.createElement("button", { onClick: function () { upd('lifeWrap', d.lifeWrap === false ? true : d.lifeWrap === true ? false : true); }, className: "px-3 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.lifeWrap !== false ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, (d.lifeWrap !== false ? '\u2705' : '\u2B1C') + ' Wrap Edges'),
                       React.createElement("button", { onClick: function () {
@@ -31502,8 +31861,18 @@
                         upd('lifeGrid', newGrid); upd('lifeSeed', Date.now()); upd('lifeGen', 0);
                       }, className: "px-3 py-1 rounded-lg text-[10px] font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200" }, '\uD83C\uDFB2 Random')
                     ),
-                    // Color
+                    // ─── Visualization Mode ───
                     React.createElement("div", { className: "mb-3" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-emerald-600 block mb-1" }, '\uD83D\uDD0D Visualization'),
+                      React.createElement("div", { className: "flex gap-1" },
+                        [{ id: 'normal', label: '\uD83D\uDFE2 Normal' }, { id: 'heatmap', label: '\uD83C\uDF21 Age Map' }, { id: 'xray', label: '\uD83D\uDD2C X-Ray' }].map(function (v) {
+                          return React.createElement("button", { key: v.id, onClick: function () { upd('lifeVizMode', v.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.lifeVizMode || 'normal') === v.id ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, v.label);
+                        })
+                      ),
+                      React.createElement("p", { className: "text-[9px] text-slate-400 mt-1 italic" }, (d.lifeVizMode || 'normal') === 'heatmap' ? '\uD83C\uDF21 Bright = newborn, dark = old survivors' : (d.lifeVizMode || 'normal') === 'xray' ? '\uD83D\uDD2C Numbers show neighbor count \u2014 see WHY cells live/die' : 'Standard cell coloring')
+                    ),
+                    // Cell Color (only in normal mode)
+                    (d.lifeVizMode || 'normal') === 'normal' && React.createElement("div", { className: "mb-3" },
                       React.createElement("label", { className: "text-[10px] font-bold text-emerald-600 block mb-1" }, 'Cell Color'),
                       React.createElement("div", { className: "flex gap-1" },
                         [{ id: 'green', label: '\uD83D\uDFE2', hue: 140 }, { id: 'cyan', label: '\uD83D\uDD35', hue: 190 }, { id: 'gold', label: '\uD83D\uDFE1', hue: 45 }, { id: 'pink', label: '\uD83D\uDFE3', hue: 320 }, { id: 'white', label: '\u26AA', hue: -1 }].map(function (c) {
@@ -31513,12 +31882,108 @@
                     ),
                     // Export
                     React.createElement("button", { onClick: function () { var c = document.getElementById('lifeCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'game-of-life-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "w-full px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, '\uD83D\uDCE5 Export PNG'),
-                    // Presets
-                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
-                      React.createElement("span", { className: "text-[10px] font-bold text-emerald-500 mr-1" }, 'Presets:'),
-                      [{ label: 'Glider', id: 'glider' }, { label: 'Glider Gun', id: 'gliderGun' }, { label: 'Pulsar', id: 'pulsar' }, { label: 'Spaceship', id: 'spaceship' }, { label: 'R-pentomino', id: 'rpent' }, { label: 'Acorn', id: 'acorn' }, { label: 'Diehard', id: 'diehard' }].map(function (pr) {
-                        return React.createElement("button", { key: pr.id, onClick: function () { upd('lifePreset', pr.id); upd('lifeClear', Date.now()); upd('lifeGen', 0); upd('lifeRunning', true); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50 transition-all" }, pr.label);
+                    // ─── Expanded Preset Library ───
+                    React.createElement("div", { className: "mt-3" },
+                      React.createElement("span", { className: "text-[10px] font-bold text-emerald-500 block mb-1" }, '\uD83D\uDCDA Pattern Library'),
+                      [
+                        { cat: 'Still Lifes', emoji: '\uD83E\uDDF1', items: [
+                          { label: 'Block', id: 'block', desc: 'Simplest still life \u2014 4 cells in a square' },
+                          { label: 'Beehive', id: 'beehive', desc: '6-cell still life shaped like a hexagon' },
+                          { label: 'Loaf', id: 'loaf', desc: '7-cell asymmetric still life' },
+                          { label: 'Boat', id: 'boat', desc: '5-cell still life' }
+                        ]},
+                        { cat: 'Oscillators', emoji: '\uD83D\uDD04', items: [
+                          { label: 'Blinker', id: 'blinker', desc: 'Period 2 \u2014 the simplest oscillator' },
+                          { label: 'Toad', id: 'toad', desc: 'Period 2 \u2014 6 cells that shift back and forth' },
+                          { label: 'Beacon', id: 'beacon', desc: 'Period 2 \u2014 two blocks that blink' },
+                          { label: 'Pulsar', id: 'pulsar', desc: 'Period 3 \u2014 beautiful rotational symmetry' }
+                        ]},
+                        { cat: 'Spaceships', emoji: '\uD83D\uDE80', items: [
+                          { label: 'Glider', id: 'glider', desc: 'Moves diagonally \u2014 discovered 1970' },
+                          { label: 'LWSS', id: 'lwss', desc: 'Lightweight spaceship \u2014 moves horizontally' },
+                          { label: 'MWSS', id: 'mwss', desc: 'Middleweight spaceship \u2014 9 cells' },
+                          { label: 'HWSS', id: 'hwss', desc: 'Heavyweight spaceship \u2014 largest basic ship' }
+                        ]},
+                        { cat: 'Methuselahs', emoji: '\uD83C\uDF0B', items: [
+                          { label: 'R-pentomino', id: 'rpent', desc: '5 cells \u2192 1103 generations to stabilize!' },
+                          { label: 'Acorn', id: 'acorn', desc: '7 cells \u2192 takes 5206 generations!' },
+                          { label: 'Diehard', id: 'diehard', desc: '7 cells \u2192 dies completely at gen 130' },
+                          { label: 'Pi-heptomino', id: 'pihept', desc: '7 cells \u2192 stabilizes at gen 173' }
+                        ]},
+                        { cat: 'Guns', emoji: '\u2694\uFE0F', items: [
+                          { label: 'Gosper Gun', id: 'gliderGun', desc: 'First gun found \u2014 shoots gliders endlessly' }
+                        ]}
+                      ].map(function (cat) {
+                        return React.createElement("div", { key: cat.cat, className: "mb-2" },
+                          React.createElement("p", { className: "text-[9px] font-bold text-slate-500 mb-0.5" }, cat.emoji + ' ' + cat.cat),
+                          React.createElement("div", { className: "flex gap-1 flex-wrap" },
+                            cat.items.map(function (pr) {
+                              return React.createElement("button", { key: pr.id, onClick: function () { upd('lifePreset', pr.id); upd('lifeClear', Date.now()); upd('lifeGen', 0); upd('lifeMaxPop', 0); var stillLifes = { block:1, beehive:1, loaf:1, boat:1 }; upd('lifeRunning', !stillLifes[pr.id]); }, className: "px-2 py-0.5 rounded text-[9px] font-bold bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50 transition-all", title: pr.desc }, pr.label);
+                            })
+                          )
+                        );
                       })
+                    )
+                  ),
+                  // ─── Rule Editor Card ───
+                  React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-3 border border-purple-200" },
+                    React.createElement("h4", { className: "text-[10px] font-bold text-purple-700 mb-2" }, '\uD83E\uDDEC Rule Editor (B/S Notation)'),
+                    React.createElement("p", { className: "text-[9px] text-slate-500 mb-2" }, 'Change the rules! B = counts that birth a cell. S = counts that keep it alive.'),
+                    React.createElement("div", { className: "flex gap-2 mb-2" },
+                      React.createElement("div", { className: "flex-1" },
+                        React.createElement("label", { className: "text-[9px] font-bold text-purple-600 block" }, 'Birth (B)'),
+                        React.createElement("input", { type: "text", value: d.lifeRuleB || '3', onChange: function (e) { upd('lifeRuleB', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-200 rounded-lg", placeholder: '3' })
+                      ),
+                      React.createElement("div", { className: "flex-1" },
+                        React.createElement("label", { className: "text-[9px] font-bold text-purple-600 block" }, 'Survival (S)'),
+                        React.createElement("input", { type: "text", value: d.lifeRuleS || '23', onChange: function (e) { upd('lifeRuleS', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-200 rounded-lg", placeholder: '23' })
+                      )
+                    ),
+                    React.createElement("div", { className: "flex gap-1 flex-wrap" },
+                      React.createElement("span", { className: "text-[9px] font-bold text-purple-500 mr-1" }, 'Try:'),
+                      [
+                        { label: 'Conway B3/S23', b: '3', s: '23', desc: 'The classic \u2014 balanced growth' },
+                        { label: 'Seeds B2/S', b: '2', s: '', desc: 'Explosive! Every cell dies immediately' },
+                        { label: 'Highlife B36/S23', b: '36', s: '23', desc: 'Like Conway but has a replicator!' },
+                        { label: 'Day&Night B3678/S34678', b: '3678', s: '34678', desc: 'Symmetric \u2014 dead/alive are interchangeable' },
+                        { label: 'Diamoeba B35678/S5678', b: '35678', s: '5678', desc: 'Creates diamond-shaped amoebas' }
+                      ].map(function (rp) {
+                        return React.createElement("button", { key: rp.label, onClick: function () { upd('lifeRuleB', rp.b); upd('lifeRuleS', rp.s); }, className: "px-2 py-0.5 rounded text-[9px] font-bold bg-white text-purple-600 border border-purple-200 hover:bg-purple-50 transition-all", title: rp.desc }, rp.label);
+                      })
+                    ),
+                    React.createElement("p", { className: "text-[9px] text-slate-400 mt-1 italic" }, 'Currently: B' + (d.lifeRuleB || '3') + '/S' + (d.lifeRuleS || '23') + ((d.lifeRuleB || '3') === '3' && (d.lifeRuleS || '23') === '23' ? ' (Conway\'s classic rules)' : ' (custom rules)'))
+                  ),
+                  // ─── Pattern Challenges Card ───
+                  React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-3 border border-amber-200" },
+                    React.createElement("h4", { className: "text-[10px] font-bold text-amber-700 mb-2" }, '\uD83C\uDFAF Pattern Challenges (+10 XP each)'),
+                    React.createElement("div", { className: "flex gap-1 flex-wrap mb-2" },
+                      [
+                        { id: 'still', label: '\uD83E\uDDF1 Still Life', desc: 'Draw a pattern that stays perfectly unchanged after 1 step' },
+                        { id: 'oscillator', label: '\uD83D\uDD04 Oscillator', desc: 'Draw a pattern that repeats itself (comes back to initial state)' },
+                        { id: 'extinction', label: '\uD83D\uDC80 Extinction', desc: 'Draw a pattern that completely dies out' },
+                        { id: 'methuselah', label: '\uD83C\uDF0B Methuselah', desc: 'Use \u22645 cells to create a pattern that survives 50+ generations' },
+                        { id: 'maxpop', label: '\uD83D\uDCC8 Pop Boom', desc: 'Use exactly 5 cells \u2014 maximize population within 50 generations!' }
+                      ].map(function (ch) {
+                        var isActive = d.lifeChallenge === ch.id;
+                        return React.createElement("button", { key: ch.id, onClick: function () {
+                          upd('lifeChallenge', isActive ? null : ch.id);
+                          upd('lifeChallengeStatus', isActive ? null : 'active');
+                          upd('lifeChallengeMsg', isActive ? null : ch.desc);
+                          upd('lifeMaxPop', 0);
+                          if (!isActive) { upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); upd('lifePop', 0); }
+                        }, className: "px-2 py-1 rounded-lg text-[9px] font-bold transition-all " + (isActive ? 'bg-amber-500 text-white ring-2 ring-amber-300' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-50'), title: ch.desc }, ch.label);
+                      })
+                    ),
+                    d.lifeChallenge && d.lifeChallengeStatus === 'active' && React.createElement("div", { className: "space-y-1" },
+                      React.createElement("p", { className: "text-[10px] text-amber-600 italic" }, d.lifeChallengeMsg || ''),
+                      React.createElement("p", { className: "text-[9px] text-slate-500" }, 'Draw your pattern, then press \u25B6 Run to test!'),
+                      (d.lifeChallenge === 'methuselah' || d.lifeChallenge === 'maxpop') && React.createElement("p", { className: "text-[9px] font-bold " + ((d.lifePop || 0) > 5 ? 'text-red-500' : 'text-green-600') }, 'Cells placed: ' + (d.lifePop || 0) + '/5')
+                    ),
+                    d.lifeChallengeStatus === 'success' && React.createElement("div", { className: "mt-1 px-3 py-2 bg-green-100 rounded-lg border border-green-300" },
+                      React.createElement("p", { className: "text-sm font-bold text-green-600" }, '\u2705 ' + (d.lifeChallengeMsg || 'Challenge complete! +10 XP'))
+                    ),
+                    d.lifeChallengeStatus === 'fail' && React.createElement("div", { className: "mt-1 px-3 py-2 bg-red-50 rounded-lg border border-red-200" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-red-500" }, '\u274C ' + (d.lifeChallengeMsg || 'Not quite \u2014 try again!'))
                     )
                   ),
                   // Educational panel
@@ -31529,193 +31994,448 @@
                     ),
                     d.showLifeInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
                       React.createElement("p", null, '\uD83E\uDDEC ', React.createElement("strong", null, "Conway\'s Game of Life"), ' was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity \u2014 it\'s actually ', React.createElement("strong", null, "Turing complete"), ', meaning it can compute anything a real computer can.'),
-                      React.createElement("p", null, '\uD83D\uDCCF ', React.createElement("strong", null, "The 4 rules:"), ' (1) Any live cell with 2\u20133 neighbors survives. (2) Any dead cell with exactly 3 neighbors becomes alive. (3) All other cells die or stay dead. That\'s it \u2014 all complexity emerges from these simple rules.'),
-                      React.createElement("p", null, '\uD83D\uDE80 ', React.createElement("strong", null, "Gliders"), ' are patterns that move across the grid. The ', React.createElement("strong", null, "Gosper Glider Gun"), ' (1970) was the first pattern proven to grow without bound, shooting gliders endlessly. Bill Gosper won a $50 prize from Conway for discovering it.'),
+                      React.createElement("div", { className: "bg-white rounded-lg p-2 border border-lime-200" },
+                        React.createElement("p", { className: "font-bold text-lime-700 mb-1" }, '\uD83D\uDCCF The Rules:'),
+                        React.createElement("ol", { className: "list-decimal ml-4 space-y-0.5" },
+                          React.createElement("li", null, React.createElement("strong", null, "Survival:"), ' A live cell with 2\u20133 neighbors stays alive'),
+                          React.createElement("li", null, React.createElement("strong", null, "Birth:"), ' A dead cell with exactly 3 neighbors becomes alive'),
+                          React.createElement("li", null, React.createElement("strong", null, "Death:"), ' All other live cells die (loneliness or overcrowding)')
+                        ),
+                        React.createElement("p", { className: "text-[10px] italic mt-1 text-slate-400" }, 'Use \uD83D\uDD2C X-Ray mode to see neighbor counts and understand why each cell lives or dies!')
+                      ),
+                      React.createElement("div", { className: "bg-white rounded-lg p-2 border border-lime-200" },
+                        React.createElement("p", { className: "font-bold text-lime-700 mb-1" }, '\uD83D\uDCDA Pattern Types:'),
+                        React.createElement("ul", { className: "list-disc ml-4 space-y-0.5" },
+                          React.createElement("li", null, React.createElement("strong", null, "Still Lifes"), ' \u2014 patterns that never change (every cell has 2\u20133 neighbors)'),
+                          React.createElement("li", null, React.createElement("strong", null, "Oscillators"), ' \u2014 patterns that cycle through states and repeat'),
+                          React.createElement("li", null, React.createElement("strong", null, "Spaceships"), ' \u2014 patterns that move across the grid'),
+                          React.createElement("li", null, React.createElement("strong", null, "Methuselahs"), ' \u2014 small patterns that take very long to stabilize'),
+                          React.createElement("li", null, React.createElement("strong", null, "Guns"), ' \u2014 patterns that emit spaceships forever')
+                        )
+                      ),
+                      React.createElement("p", null, '\uD83D\uDE80 ', React.createElement("strong", null, "Gliders"), ' are patterns that move across the grid. The ', React.createElement("strong", null, "Gosper Glider Gun"), ' (1970) was the first pattern proven to grow without bound.'),
                       React.createElement("p", null, '\uD83C\uDF0D ', React.createElement("strong", null, "Emergence:"), ' The Game of Life demonstrates how complex, seemingly \u201Cintelligent\u201D behavior can arise from very simple rules with no central controller. This same principle appears in ant colonies, flocking birds, brain neurons, and even market economies.'),
-                      React.createElement("p", null, '\u26A1 ', React.createElement("strong", null, "Self-replication:"), ' In 2010, Andrew Wade built a pattern called \u201CGemini\u201D that creates a complete copy of itself and then destroys the original \u2014 true self-replication from simple rules. In 2013, Dave Greene built a universal constructor.')
+                      React.createElement("p", null, '\u26A1 ', React.createElement("strong", null, "Self-replication:"), ' In 2010, Andrew Wade built a pattern called \u201CGemini\u201D that creates a complete copy of itself and then destroys the original \u2014 true self-replication from simple rules.')
                     )
                   ),
-                  React.createElement("p", { className: "text-[10px] text-center text-slate-400 italic" }, '\uD83D\uDC46 Click or drag to draw cells \u2022 Hit Run to simulate')
+                  React.createElement("p", { className: "text-[10px] text-center text-slate-400 italic" }, '\uD83D\uDC46 Click/drag to draw \u2022 \u25B6 Run to simulate \u2022 \uD83D\uDD2C X-Ray to learn')
                 ),
-                // Canvas
-                React.createElement("canvas", { id: 'lifeCanvas', width: 600, height: 600,
-                  key: 'life-' + (d.lifeClear || 0) + '-' + (d.lifeSize || 60),
-                  className: "rounded-xl border-2 border-emerald-200 shadow-lg mx-auto block cursor-crosshair", style: { maxWidth: '100%', background: '#0a0f0a' },
-                  ref: function (canvas) {
-                    if (!canvas) return;
-                    if (canvas._lifeInit) return;
-                    canvas._lifeInit = true;
-                    var ctx = canvas.getContext('2d');
-                    var W = canvas.width, H = canvas.height;
-                    var gridSize = d.lifeSize || 60;
-                    var cellW = W / gridSize, cellH = H / gridSize;
-                    var grid = d.lifeGrid || {};
-                    var wrap = d.lifeWrap !== false;
-                    var generation = d.lifeGen || 0;
-                    var running = false;
-                    var speed = typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10;
-                    var hue = typeof d.lifeHue === 'number' ? d.lifeHue : 140;
-                    var lastFrameTime = 0;
+                // ─── RIGHT COLUMN: Canvas + Sparkline ───
+                React.createElement("div", { className: "space-y-2" },
+                  React.createElement("canvas", { id: 'lifeCanvas', width: 600, height: 600,
+                    key: 'life-' + (d.lifeClear || 0) + '-' + (d.lifeSize || 60),
+                    className: "rounded-xl border-2 border-emerald-200 shadow-lg mx-auto block cursor-crosshair", style: { maxWidth: '100%', background: '#0a0f0a' },
+                    ref: function (canvas) {
+                      if (!canvas) return;
+                      if (canvas._lifeInit) return;
+                      canvas._lifeInit = true;
+                      var ctx = canvas.getContext('2d');
+                      var W = canvas.width, H = canvas.height;
+                      var gridSize = d.lifeSize || 60;
+                      var cellW = W / gridSize, cellH = H / gridSize;
+                      var grid = d.lifeGrid || {};
+                      var ageGrid = {};
+                      var wrap = d.lifeWrap !== false;
+                      var generation = d.lifeGen || 0;
+                      var running = false;
+                      var speed = typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10;
+                      var hue = typeof d.lifeHue === 'number' ? d.lifeHue : 140;
+                      var vizMode = 'normal';
+                      var lastFrameTime = 0;
+                      var popHistory = [];
+                      var birthSet = { 3: true };
+                      var survivalSet = { 2: true, 3: true };
+                      var challengeInitGridStr = null;
+                      var challengeInitPop = 0;
+                      var maxPopSeen = 0;
 
-                    // Load preset if set
-                    var preset = d.lifePreset;
-                    if (preset) {
-                      upd('lifePreset', null);
-                      grid = {};
-                      var cx = Math.floor(gridSize / 2), cy = Math.floor(gridSize / 2);
-                      var cells = [];
-                      if (preset === 'glider') cells = [[0,0],[1,1],[2,1],[0,2],[1,2]];
-                      else if (preset === 'gliderGun') cells = [[24,0],[22,1],[24,1],[12,2],[13,2],[20,2],[21,2],[34,2],[35,2],[11,3],[15,3],[20,3],[21,3],[34,3],[35,3],[0,4],[1,4],[10,4],[16,4],[20,4],[21,4],[0,5],[1,5],[10,5],[14,5],[16,5],[17,5],[22,5],[24,5],[10,6],[16,6],[24,6],[11,7],[15,7],[12,8],[13,8]];
-                      else if (preset === 'pulsar') {
-                        var pRows = [[2,3,4,8,9,10],[0,5,7,12],[0,5,7,12],[0,5,7,12],[2,3,4,8,9,10]];
-                        pRows.forEach(function (cols, ri) {
-                          cols.forEach(function (c) {
-                            cells.push([c - 6, ri - 6 + 1]);
-                            cells.push([c - 6, -(ri - 6 + 1)]);
+                      // Initialize ages
+                      Object.keys(grid).forEach(function (k) { ageGrid[k] = 1; });
+
+                      // Load preset
+                      var preset = d.lifePreset;
+                      if (preset) {
+                        upd('lifePreset', null);
+                        grid = {};
+                        ageGrid = {};
+                        var cx = Math.floor(gridSize / 2), cy = Math.floor(gridSize / 2);
+                        var cells = [];
+                        if (preset === 'glider') cells = [[0,0],[1,1],[2,1],[0,2],[1,2]];
+                        else if (preset === 'gliderGun') cells = [[24,0],[22,1],[24,1],[12,2],[13,2],[20,2],[21,2],[34,2],[35,2],[11,3],[15,3],[20,3],[21,3],[34,3],[35,3],[0,4],[1,4],[10,4],[16,4],[20,4],[21,4],[0,5],[1,5],[10,5],[14,5],[16,5],[17,5],[22,5],[24,5],[10,6],[16,6],[24,6],[11,7],[15,7],[12,8],[13,8]];
+                        else if (preset === 'pulsar') {
+                          var pRows = [[2,3,4,8,9,10],[0,5,7,12],[0,5,7,12],[0,5,7,12],[2,3,4,8,9,10]];
+                          pRows.forEach(function (cols, ri) {
+                            cols.forEach(function (c) {
+                              cells.push([c - 6, ri - 6 + 1]);
+                              cells.push([c - 6, -(ri - 6 + 1)]);
+                            });
                           });
-                        });
-                      }
-                      else if (preset === 'spaceship') cells = [[1,0],[4,0],[0,1],[0,2],[4,2],[0,3],[1,3],[2,3],[3,3]];
-                      else if (preset === 'rpent') cells = [[1,0],[2,0],[0,1],[1,1],[1,2]];
-                      else if (preset === 'acorn') cells = [[1,0],[3,1],[0,2],[1,2],[4,2],[5,2],[6,2]];
-                      else if (preset === 'diehard') cells = [[6,0],[0,1],[1,1],[1,2],[5,2],[6,2],[7,2]];
-                      cells.forEach(function (c) {
-                        var gx = cx + c[0], gy = cy + c[1];
-                        if (gx >= 0 && gx < gridSize && gy >= 0 && gy < gridSize) grid[gx + ',' + gy] = 1;
-                      });
-                      upd('lifeGrid', Object.assign({}, grid));
-                    }
-
-                    function countNeighbors(x, y) {
-                      var count = 0;
-                      for (var dy = -1; dy <= 1; dy++) {
-                        for (var dx = -1; dx <= 1; dx++) {
-                          if (dx === 0 && dy === 0) continue;
-                          var nx = x + dx, ny = y + dy;
-                          if (wrap) { nx = (nx + gridSize) % gridSize; ny = (ny + gridSize) % gridSize; }
-                          else if (nx < 0 || nx >= gridSize || ny < 0 || ny >= gridSize) continue;
-                          if (grid[nx + ',' + ny]) count++;
                         }
+                        else if (preset === 'spaceship') cells = [[1,0],[4,0],[0,1],[0,2],[4,2],[0,3],[1,3],[2,3],[3,3]];
+                        else if (preset === 'rpent') cells = [[1,0],[2,0],[0,1],[1,1],[1,2]];
+                        else if (preset === 'acorn') cells = [[1,0],[3,1],[0,2],[1,2],[4,2],[5,2],[6,2]];
+                        else if (preset === 'diehard') cells = [[6,0],[0,1],[1,1],[1,2],[5,2],[6,2],[7,2]];
+                        // New presets
+                        else if (preset === 'block') cells = [[0,0],[1,0],[0,1],[1,1]];
+                        else if (preset === 'beehive') cells = [[1,0],[2,0],[0,1],[3,1],[1,2],[2,2]];
+                        else if (preset === 'loaf') cells = [[1,0],[2,0],[0,1],[3,1],[1,2],[3,2],[2,3]];
+                        else if (preset === 'boat') cells = [[0,0],[1,0],[0,1],[2,1],[1,2]];
+                        else if (preset === 'blinker') cells = [[0,0],[1,0],[2,0]];
+                        else if (preset === 'toad') cells = [[1,0],[2,0],[3,0],[0,1],[1,1],[2,1]];
+                        else if (preset === 'beacon') cells = [[0,0],[1,0],[0,1],[1,1],[2,2],[3,2],[2,3],[3,3]];
+                        else if (preset === 'lwss') cells = [[1,0],[4,0],[0,1],[0,2],[4,2],[0,3],[1,3],[2,3],[3,3]];
+                        else if (preset === 'mwss') cells = [[2,0],[0,1],[4,1],[5,2],[0,2],[5,3],[0,3],[1,4],[2,4],[3,4],[4,4],[5,4]];
+                        else if (preset === 'hwss') cells = [[2,0],[3,0],[0,1],[5,1],[6,2],[0,2],[6,3],[0,3],[1,4],[2,4],[3,4],[4,4],[5,4],[6,4]];
+                        else if (preset === 'pihept') cells = [[0,0],[1,0],[2,0],[0,1],[2,1],[0,2],[2,2]];
+                        cells.forEach(function (c) {
+                          var gx = cx + c[0], gy = cy + c[1];
+                          if (gx >= 0 && gx < gridSize && gy >= 0 && gy < gridSize) { grid[gx + ',' + gy] = 1; ageGrid[gx + ',' + gy] = 1; }
+                        });
+                        upd('lifeGrid', Object.assign({}, grid));
+                        upd('lifePop', Object.keys(grid).length);
                       }
-                      return count;
-                    }
 
-                    function step() {
-                      var newGrid = {};
-                      var checked = {};
-                      var keys = Object.keys(grid);
-                      // Check all live cells and their neighbors
-                      keys.forEach(function (key) {
-                        var parts = key.split(',');
-                        var x = parseInt(parts[0]), y = parseInt(parts[1]);
+                      function parseRuleSet(str) {
+                        var set = {};
+                        for (var i = 0; i < str.length; i++) {
+                          var n = parseInt(str[i]);
+                          if (!isNaN(n) && n >= 0 && n <= 8) set[n] = true;
+                        }
+                        return set;
+                      }
+
+                      function countNeighbors(x, y) {
+                        var count = 0;
                         for (var dy = -1; dy <= 1; dy++) {
                           for (var dx = -1; dx <= 1; dx++) {
+                            if (dx === 0 && dy === 0) continue;
                             var nx = x + dx, ny = y + dy;
                             if (wrap) { nx = (nx + gridSize) % gridSize; ny = (ny + gridSize) % gridSize; }
                             else if (nx < 0 || nx >= gridSize || ny < 0 || ny >= gridSize) continue;
-                            var nk = nx + ',' + ny;
-                            if (checked[nk]) continue;
-                            checked[nk] = true;
-                            var alive = !!grid[nk];
-                            var neighbors = countNeighbors(nx, ny);
-                            if (alive && (neighbors === 2 || neighbors === 3)) newGrid[nk] = 1;
-                            else if (!alive && neighbors === 3) newGrid[nk] = 1;
+                            if (grid[nx + ',' + ny]) count++;
                           }
                         }
-                      });
-                      grid = newGrid;
-                      generation++;
-                      upd('lifeGrid', Object.assign({}, grid));
-                      upd('lifeGen', generation);
-                      upd('lifePop', Object.keys(grid).length);
-                    }
-
-                    function drawGrid() {
-                      ctx.fillStyle = '#0a0f0a'; ctx.fillRect(0, 0, W, H);
-                      // Grid lines
-                      ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 0.5;
-                      if (gridSize <= 80) {
-                        for (var gx = 0; gx <= gridSize; gx++) { ctx.beginPath(); ctx.moveTo(gx * cellW, 0); ctx.lineTo(gx * cellW, H); ctx.stroke(); }
-                        for (var gy = 0; gy <= gridSize; gy++) { ctx.beginPath(); ctx.moveTo(0, gy * cellH); ctx.lineTo(W, gy * cellH); ctx.stroke(); }
+                        return count;
                       }
-                      // Cells
-                      var keys = Object.keys(grid);
-                      keys.forEach(function (key) {
-                        var parts = key.split(',');
-                        var x = parseInt(parts[0]), y = parseInt(parts[1]);
-                        var neighbors = countNeighbors(x, y);
-                        if (hue === -1) {
-                          ctx.fillStyle = 'rgba(240,240,240,' + (0.7 + neighbors * 0.04) + ')';
-                        } else {
-                          var bright = 45 + neighbors * 5;
-                          ctx.fillStyle = 'hsl(' + hue + ',80%,' + bright + '%)';
-                        }
-                        ctx.fillRect(x * cellW + 0.5, y * cellH + 0.5, cellW - 1, cellH - 1);
-                        // Glow for active cells
-                        if (neighbors >= 2 && neighbors <= 3) {
-                          ctx.fillStyle = hue === -1 ? 'rgba(255,255,255,0.08)' : 'hsla(' + hue + ',80%,60%,0.1)';
-                          ctx.fillRect(x * cellW - 1, y * cellH - 1, cellW + 2, cellH + 2);
-                        }
-                      });
-                    }
 
-                    // Drawing interaction
-                    var painting = false;
-                    function getCell(e) {
-                      var rect = canvas.getBoundingClientRect();
-                      var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-                      var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-                      var gx = Math.floor(ex * (W / rect.width) / cellW);
-                      var gy = Math.floor(ey * (H / rect.height) / cellH);
-                      return { x: gx, y: gy };
-                    }
-                    function paintCell(e) {
-                      var c = getCell(e);
-                      if (c.x >= 0 && c.x < gridSize && c.y >= 0 && c.y < gridSize) {
-                        var key = c.x + ',' + c.y;
-                        if ((d.lifeTool || 'draw') === 'erase') delete grid[key];
-                        else grid[key] = 1;
+                      function gridToString() {
+                        return Object.keys(grid).sort().join('|');
+                      }
+
+                      function step() {
+                        var newGrid = {};
+                        var newAgeGrid = {};
+                        var checked = {};
+                        var keys = Object.keys(grid);
+                        keys.forEach(function (key) {
+                          var parts = key.split(',');
+                          var x = parseInt(parts[0]), y = parseInt(parts[1]);
+                          for (var dy = -1; dy <= 1; dy++) {
+                            for (var dx = -1; dx <= 1; dx++) {
+                              var nx = x + dx, ny = y + dy;
+                              if (wrap) { nx = (nx + gridSize) % gridSize; ny = (ny + gridSize) % gridSize; }
+                              else if (nx < 0 || nx >= gridSize || ny < 0 || ny >= gridSize) continue;
+                              var nk = nx + ',' + ny;
+                              if (checked[nk]) continue;
+                              checked[nk] = true;
+                              var alive = !!grid[nk];
+                              var neighbors = countNeighbors(nx, ny);
+                              if (alive && survivalSet[neighbors]) {
+                                newGrid[nk] = 1;
+                                newAgeGrid[nk] = (ageGrid[nk] || 1) + 1;
+                              } else if (!alive && birthSet[neighbors]) {
+                                newGrid[nk] = 1;
+                                newAgeGrid[nk] = 1;
+                              }
+                            }
+                          }
+                        });
+                        grid = newGrid;
+                        ageGrid = newAgeGrid;
+                        generation++;
+                        var pop = Object.keys(grid).length;
+                        popHistory.push(pop);
+                        if (popHistory.length > 300) popHistory.shift();
+                        if (pop > maxPopSeen) maxPopSeen = pop;
                         upd('lifeGrid', Object.assign({}, grid));
-                        upd('lifePop', Object.keys(grid).length);
-                        drawGrid();
-                      }
-                    }
-                    canvas.onmousedown = canvas.ontouchstart = function (e) { e.preventDefault(); painting = true; paintCell(e); };
-                    canvas.onmousemove = canvas.ontouchmove = function (e) { if (painting) paintCell(e); };
-                    canvas.onmouseup = canvas.ontouchend = function () { painting = false; };
-                    canvas.onmouseleave = function () { painting = false; };
+                        upd('lifeGen', generation);
+                        upd('lifePop', pop);
+                        upd('lifeMaxPop', maxPopSeen);
 
-                    // Animation loop
-                    function animate(timestamp) {
-                      // Read dynamic state from data attributes
-                      running = canvas.getAttribute('data-running') === '1';
-                      speed = parseInt(canvas.getAttribute('data-speed') || '10');
-                      wrap = canvas.getAttribute('data-wrap') !== '0';
-                      hue = parseInt(canvas.getAttribute('data-hue') || '140');
-                      var doStep = canvas.getAttribute('data-step');
-                      if (doStep && doStep !== canvas._lastStep) {
-                        canvas._lastStep = doStep;
-                        step();
+                        // ─── Challenge detection ───
+                        var challenge = canvas.getAttribute('data-challenge');
+                        var cStatus = canvas.getAttribute('data-challengestatus');
+                        if (challenge && cStatus === 'active') {
+                          if (!challengeInitGridStr) {
+                            // Capture initial state (this is actually 1 gen after start, but close enough for still-life)
+                          }
+                          if (challenge === 'still' && generation === 1) {
+                            // For still life: we need to compare gen-0 with gen-1
+                            // We captured challengeInitGridStr before the first step
+                            var currentStr = gridToString();
+                            if (challengeInitGridStr && currentStr === challengeInitGridStr && pop > 0) {
+                              upd('lifeChallengeStatus', 'success');
+                              upd('lifeChallengeMsg', 'You built a still life! It never changes. +10 XP');
+                              upd('lifeRunning', false);
+                              if (typeof awardStemXP === 'function') awardStemXP('life', 10, 'still life challenge');
+                            } else if (pop > 0) {
+                              upd('lifeChallengeStatus', 'fail');
+                              upd('lifeChallengeMsg', 'Pattern changed after 1 step \u2014 not a still life. Try a 2\u00D72 block!');
+                              upd('lifeRunning', false);
+                            } else {
+                              upd('lifeChallengeStatus', 'fail');
+                              upd('lifeChallengeMsg', 'Pattern died! A still life must survive unchanged.');
+                              upd('lifeRunning', false);
+                            }
+                          }
+                          if (challenge === 'oscillator') {
+                            var currentStr = gridToString();
+                            if (generation >= 2 && challengeInitGridStr && currentStr === challengeInitGridStr && pop > 0) {
+                              upd('lifeChallengeStatus', 'success');
+                              upd('lifeChallengeMsg', 'Oscillator found! Period ' + generation + '. It repeats forever. +10 XP');
+                              upd('lifeRunning', false);
+                              if (typeof awardStemXP === 'function') awardStemXP('life', 10, 'oscillator challenge');
+                            } else if (generation > 30) {
+                              upd('lifeChallengeStatus', 'fail');
+                              upd('lifeChallengeMsg', 'No repeat found in 30 steps. Try a Blinker (3 cells in a row)!');
+                              upd('lifeRunning', false);
+                            }
+                          }
+                          if (challenge === 'extinction' && pop === 0) {
+                            upd('lifeChallengeStatus', 'success');
+                            upd('lifeChallengeMsg', 'Total extinction at gen ' + generation + '! Everything died. +10 XP');
+                            upd('lifeRunning', false);
+                            if (typeof awardStemXP === 'function') awardStemXP('life', 10, 'extinction challenge');
+                          }
+                          if (challenge === 'extinction' && generation > 200 && pop > 0) {
+                            upd('lifeChallengeStatus', 'fail');
+                            upd('lifeChallengeMsg', 'Still alive after 200 gens. Try a simpler pattern!');
+                            upd('lifeRunning', false);
+                          }
+                          if (challenge === 'methuselah' && challengeInitPop <= 5 && challengeInitPop > 0 && generation >= 50 && pop > 0) {
+                            upd('lifeChallengeStatus', 'success');
+                            upd('lifeChallengeMsg', 'Methuselah! ' + challengeInitPop + ' cells survived ' + generation + ' gens (pop: ' + pop + '). +10 XP');
+                            upd('lifeRunning', false);
+                            if (typeof awardStemXP === 'function') awardStemXP('life', 10, 'methuselah challenge');
+                          }
+                          if (challenge === 'methuselah' && challengeInitPop > 5) {
+                            upd('lifeChallengeStatus', 'fail');
+                            upd('lifeChallengeMsg', 'Too many cells! Use \u22645 cells to start.');
+                            upd('lifeRunning', false);
+                          }
+                          if (challenge === 'maxpop' && generation >= 50) {
+                            upd('lifeChallengeStatus', 'success');
+                            upd('lifeChallengeMsg', 'Started with ' + challengeInitPop + ' cells \u2192 max population reached: ' + maxPopSeen + '! +10 XP');
+                            upd('lifeRunning', false);
+                            if (typeof awardStemXP === 'function') awardStemXP('life', 10, 'population boom challenge');
+                          }
+                        }
                       }
-                      var interval = 1000 / speed;
-                      if (running && timestamp - lastFrameTime >= interval) {
-                        lastFrameTime = timestamp;
-                        step();
+
+                      function drawGrid() {
+                        ctx.fillStyle = '#0a0f0a'; ctx.fillRect(0, 0, W, H);
+                        // Grid lines
+                        ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 0.5;
+                        if (gridSize <= 80) {
+                          for (var gx = 0; gx <= gridSize; gx++) { ctx.beginPath(); ctx.moveTo(gx * cellW, 0); ctx.lineTo(gx * cellW, H); ctx.stroke(); }
+                          for (var gy = 0; gy <= gridSize; gy++) { ctx.beginPath(); ctx.moveTo(0, gy * cellH); ctx.lineTo(W, gy * cellH); ctx.stroke(); }
+                        }
+                        // Cells
+                        var keys = Object.keys(grid);
+                        keys.forEach(function (key) {
+                          var parts = key.split(',');
+                          var x = parseInt(parts[0]), y = parseInt(parts[1]);
+                          var neighbors = countNeighbors(x, y);
+                          var age = ageGrid[key] || 1;
+
+                          if (vizMode === 'heatmap') {
+                            // Heat map: bright yellow for new, deep blue/purple for old
+                            var norm = Math.min(age / 50, 1);
+                            var r = Math.round(255 * (1 - norm * 0.7));
+                            var g = Math.round(255 * (1 - norm));
+                            var b = Math.round(80 + norm * 175);
+                            ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+                          } else if (vizMode === 'xray') {
+                            // X-ray: color by neighbor count
+                            var xColors = ['#1e293b','#334155','#ef4444','#f97316','#eab308','#22c55e','#22c55e','#ef4444','#dc2626'];
+                            ctx.fillStyle = xColors[neighbors] || '#fff';
+                          } else {
+                            if (hue === -1) {
+                              ctx.fillStyle = 'rgba(240,240,240,' + (0.7 + neighbors * 0.04) + ')';
+                            } else {
+                              var bright = 45 + neighbors * 5;
+                              ctx.fillStyle = 'hsl(' + hue + ',80%,' + bright + '%)';
+                            }
+                          }
+                          ctx.fillRect(x * cellW + 0.5, y * cellH + 0.5, cellW - 1, cellH - 1);
+                          // Glow
+                          if (vizMode === 'normal' && neighbors >= 2 && neighbors <= 3) {
+                            ctx.fillStyle = hue === -1 ? 'rgba(255,255,255,0.08)' : 'hsla(' + hue + ',80%,60%,0.1)';
+                            ctx.fillRect(x * cellW - 1, y * cellH - 1, cellW + 2, cellH + 2);
+                          }
+                        });
+
+                        // X-ray: draw neighbor counts for dead cells adjacent to live cells
+                        if (vizMode === 'xray' && gridSize <= 80) {
+                          ctx.font = Math.max(8, Math.floor(cellW * 0.6)) + 'px monospace';
+                          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                          var deadChecked = {};
+                          keys.forEach(function (key) {
+                            var parts = key.split(',');
+                            var x = parseInt(parts[0]), y = parseInt(parts[1]);
+                            // Draw count on the live cell
+                            var n = countNeighbors(x, y);
+                            var willSurvive = survivalSet[n];
+                            ctx.fillStyle = willSurvive ? '#22ff22' : '#ff4444';
+                            ctx.fillText(String(n), x * cellW + cellW / 2, y * cellH + cellH / 2);
+                            // Check dead neighbors
+                            for (var dy = -1; dy <= 1; dy++) {
+                              for (var dx = -1; dx <= 1; dx++) {
+                                if (dx === 0 && dy === 0) continue;
+                                var nx = x + dx, ny = y + dy;
+                                if (wrap) { nx = (nx + gridSize) % gridSize; ny = (ny + gridSize) % gridSize; }
+                                else if (nx < 0 || nx >= gridSize || ny < 0 || ny >= gridSize) continue;
+                                var dk = nx + ',' + ny;
+                                if (grid[dk] || deadChecked[dk]) continue;
+                                deadChecked[dk] = true;
+                                var dn = countNeighbors(nx, ny);
+                                if (dn > 0) {
+                                  var willBirth = birthSet[dn];
+                                  ctx.fillStyle = willBirth ? 'rgba(34,255,34,0.5)' : 'rgba(100,100,100,0.3)';
+                                  ctx.fillText(String(dn), nx * cellW + cellW / 2, ny * cellH + cellH / 2);
+                                }
+                              }
+                            }
+                          });
+                        }
+
+                        // Heat map legend
+                        if (vizMode === 'heatmap') {
+                          ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                          ctx.fillRect(W - 75, 5, 70, 16);
+                          ctx.font = '9px sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+                          ctx.fillStyle = '#fbbf24'; ctx.fillText('New', W - 72, 8);
+                          ctx.fillStyle = '#6366f1'; ctx.fillText('\u2192 Old', W - 42, 8);
+                        }
+                        // X-ray legend
+                        if (vizMode === 'xray') {
+                          ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                          ctx.fillRect(4, 4, 160, 36);
+                          ctx.font = '9px sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+                          ctx.fillStyle = '#22ff22'; ctx.fillText('\u2714 green = will survive/born', 8, 7);
+                          ctx.fillStyle = '#ff4444'; ctx.fillText('\u2718 red = will die', 8, 20);
+                        }
                       }
+
+                      // Drawing interaction
+                      var painting = false;
+                      function getCell(e) {
+                        var rect = canvas.getBoundingClientRect();
+                        var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                        var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                        var gx = Math.floor(ex * (W / rect.width) / cellW);
+                        var gy = Math.floor(ey * (H / rect.height) / cellH);
+                        return { x: gx, y: gy };
+                      }
+                      function paintCell(e) {
+                        var c = getCell(e);
+                        if (c.x >= 0 && c.x < gridSize && c.y >= 0 && c.y < gridSize) {
+                          var key = c.x + ',' + c.y;
+                          if ((d.lifeTool || 'draw') === 'erase') { delete grid[key]; delete ageGrid[key]; }
+                          else { grid[key] = 1; ageGrid[key] = 1; }
+                          upd('lifeGrid', Object.assign({}, grid));
+                          upd('lifePop', Object.keys(grid).length);
+                          drawGrid();
+                        }
+                      }
+                      canvas.onmousedown = canvas.ontouchstart = function (e) { e.preventDefault(); painting = true; paintCell(e); };
+                      canvas.onmousemove = canvas.ontouchmove = function (e) { if (painting) paintCell(e); };
+                      canvas.onmouseup = canvas.ontouchend = function () { painting = false; };
+                      canvas.onmouseleave = function () { painting = false; };
+
+                      // Sparkline drawing
+                      function drawSparkline() {
+                        var sc = document.getElementById('lifeSparkline');
+                        if (!sc) return;
+                        var sctx = sc.getContext('2d');
+                        var sw = sc.width, sh = sc.height;
+                        sctx.fillStyle = '#0d120d'; sctx.fillRect(0, 0, sw, sh);
+                        if (popHistory.length < 2) return;
+                        var maxP = Math.max.apply(null, popHistory);
+                        if (maxP <= 0) maxP = 1;
+                        sctx.strokeStyle = '#22c55e'; sctx.lineWidth = 1.5;
+                        sctx.beginPath();
+                        for (var i = 0; i < popHistory.length; i++) {
+                          var px = (i / (popHistory.length - 1)) * sw;
+                          var py = sh - (popHistory[i] / maxP) * (sh - 8) - 4;
+                          if (i === 0) sctx.moveTo(px, py); else sctx.lineTo(px, py);
+                        }
+                        sctx.stroke();
+                        // Fill under curve
+                        sctx.lineTo(sw, sh); sctx.lineTo(0, sh); sctx.closePath();
+                        sctx.fillStyle = 'rgba(34,197,94,0.1)'; sctx.fill();
+                        // Labels
+                        sctx.font = '9px sans-serif'; sctx.textAlign = 'right'; sctx.textBaseline = 'top';
+                        sctx.fillStyle = '#4ade80';
+                        sctx.fillText(String(maxP), sw - 4, 2);
+                        sctx.fillText('Pop', sw - 4, 12);
+                      }
+
+                      // Animation loop
+                      function animate(timestamp) {
+                        running = canvas.getAttribute('data-running') === '1';
+                        speed = parseInt(canvas.getAttribute('data-speed') || '10');
+                        wrap = canvas.getAttribute('data-wrap') !== '0';
+                        hue = parseInt(canvas.getAttribute('data-hue') || '140');
+                        vizMode = canvas.getAttribute('data-vizmode') || 'normal';
+                        // Read custom rules
+                        var ruleB = canvas.getAttribute('data-ruleb') || '3';
+                        var ruleS = canvas.getAttribute('data-rules') || '23';
+                        birthSet = parseRuleSet(ruleB);
+                        survivalSet = parseRuleSet(ruleS);
+                        var doStep = canvas.getAttribute('data-step');
+                        // Capture challenge initial state before first step
+                        var challenge = canvas.getAttribute('data-challenge');
+                        if (challenge && !challengeInitGridStr && (running || (doStep && doStep !== canvas._lastStep))) {
+                          challengeInitGridStr = gridToString();
+                          challengeInitPop = Object.keys(grid).length;
+                        }
+                        if (doStep && doStep !== canvas._lastStep) {
+                          canvas._lastStep = doStep;
+                          step();
+                        }
+                        var interval = 1000 / speed;
+                        if (running && timestamp - lastFrameTime >= interval) {
+                          lastFrameTime = timestamp;
+                          step();
+                        }
+                        drawGrid();
+                        drawSparkline();
+                        canvas._lifeAnim = requestAnimationFrame(animate);
+                      }
+                      // Set initial data attributes
+                      canvas.setAttribute('data-running', d.lifeRunning ? '1' : '0');
+                      canvas.setAttribute('data-speed', String(typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10));
+                      canvas.setAttribute('data-wrap', d.lifeWrap === false ? '0' : '1');
+                      canvas.setAttribute('data-hue', String(typeof d.lifeHue === 'number' ? d.lifeHue : 140));
+                      canvas.setAttribute('data-step', String(d.lifeStep || 0));
+                      canvas.setAttribute('data-vizmode', d.lifeVizMode || 'normal');
+                      canvas.setAttribute('data-ruleb', d.lifeRuleB || '3');
+                      canvas.setAttribute('data-rules', d.lifeRuleS || '23');
+                      canvas.setAttribute('data-challenge', d.lifeChallenge || '');
+                      canvas.setAttribute('data-challengestatus', d.lifeChallengeStatus || '');
+                      canvas._lastStep = String(d.lifeStep || 0);
                       drawGrid();
-                      canvas._lifeAnim = requestAnimationFrame(animate);
+                      animate(0);
                     }
-                    // Set initial data attributes
-                    canvas.setAttribute('data-running', d.lifeRunning ? '1' : '0');
-                    canvas.setAttribute('data-speed', String(typeof d.lifeSpeed === 'number' ? d.lifeSpeed : 10));
-                    canvas.setAttribute('data-wrap', d.lifeWrap === false ? '0' : '1');
-                    canvas.setAttribute('data-hue', String(typeof d.lifeHue === 'number' ? d.lifeHue : 140));
-                    canvas.setAttribute('data-step', String(d.lifeStep || 0));
-                    canvas._lastStep = String(d.lifeStep || 0);
-                    drawGrid();
-                    animate(0);
-                  }
-                })
+                  }),
+                  // Population Sparkline
+                  React.createElement("canvas", { id: 'lifeSparkline', width: 600, height: 60,
+                    key: 'lifeSpark-' + (d.lifeClear || 0),
+                    className: "rounded-lg border border-emerald-200 mx-auto block", style: { maxWidth: '100%', background: '#0d120d' }
+                  }),
+                  React.createElement("p", { className: "text-[9px] text-center text-slate-400" }, '\uD83D\uDCC8 Population over time')
+                )
               ),
               // Data attribute sync
               React.createElement("div", { ref: function () {
@@ -31726,9 +32446,15 @@
                   c.setAttribute('data-wrap', d.lifeWrap === false ? '0' : '1');
                   c.setAttribute('data-hue', String(typeof d.lifeHue === 'number' ? d.lifeHue : 140));
                   c.setAttribute('data-step', String(d.lifeStep || 0));
+                  c.setAttribute('data-vizmode', d.lifeVizMode || 'normal');
+                  c.setAttribute('data-ruleb', d.lifeRuleB || '3');
+                  c.setAttribute('data-rules', d.lifeRuleS || '23');
+                  c.setAttribute('data-challenge', d.lifeChallenge || '');
+                  c.setAttribute('data-challengestatus', d.lifeChallengeStatus || '');
                 }
               }, style: { display: 'none' } })
             ),
+
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'art-' + Date.now(), tool: 'artStudio', label: 'Art Studio', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Art snapshot saved!', 'success'); }, className: "mt-4 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 rounded-full hover:from-pink-600 hover:to-rose-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           );
         })(),
