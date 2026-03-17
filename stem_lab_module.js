@@ -4032,31 +4032,134 @@
 
             // ── Store state ──
             var cart = d.cart || [];
-            var cartTotal = cart.reduce(function (s, item) { return s + item.price * (item.qty || 1); }, 0);
+            var cartTotal = cart.reduce(function (s, item) {
+              if (item.pricePer && item.pricePer !== 'each') return s + item.price * (item.weight || 1);
+              return s + item.price * (item.qty || 1);
+            }, 0);
             var taxRate = gc.includeTax ? 0.08 : 0;
             var cartTax = cartTotal * taxRate;
             var cartGrand = cartTotal + cartTax;
+            var storeCat = d.storeCat || 'All';
+            var recipeMode = d.recipeMode || false;
+            var activeRecipe = d.activeRecipe || null;
+            var recipeServings = d.recipeServings || 4;
 
             // ── Generate store items based on grade ──
             var storeItems = d.storeItems;
             if (!storeItems) {
               var baseItems = [
-                { name: '\uD83C\uDF4E Apple', price: 0.75, cat: 'Produce' },
-                { name: '\uD83C\uDF4C Banana', price: 0.50, cat: 'Produce' },
-                { name: '\uD83E\uDD5B Milk', price: 3.49, cat: 'Dairy' },
-                { name: '\uD83C\uDF5E Bread', price: 2.99, cat: 'Bakery' },
-                { name: '\uD83E\uDDC0 Cheese', price: 4.50, cat: 'Dairy' },
-                { name: '\uD83C\uDF6B Chocolate', price: 1.25, cat: 'Snacks' },
-                { name: '\uD83C\uDF7C Juice Box', price: 0.99, cat: 'Drinks' },
-                { name: '\uD83E\uDD5C Peanut Butter', price: 3.75, cat: 'Pantry' },
-                { name: '\uD83C\uDF63 Sushi Pack', price: 7.99, cat: 'Prepared' },
-                { name: '\uD83E\uDD5A Eggs (dozen)', price: 3.29, cat: 'Dairy' },
-                { name: '\uD83C\uDF55 Frozen Pizza', price: 5.49, cat: 'Frozen' },
-                { name: '\uD83E\uDD66 Broccoli', price: 1.79, cat: 'Produce' }
+                // 🥬 Produce — per-pound
+                { name: '\uD83C\uDF4E Apples', price: 1.49, cat: 'Produce', pricePer: 'lb' },
+                { name: '\uD83C\uDF4C Bananas', price: 0.59, cat: 'Produce', pricePer: 'lb' },
+                { name: '\uD83C\uDF47 Grapes', price: 2.49, cat: 'Produce', pricePer: 'lb' },
+                { name: '\uD83E\uDD6C Lettuce', price: 1.99, cat: 'Produce', pricePer: 'each' },
+                { name: '\uD83C\uDF45 Tomatoes', price: 1.79, cat: 'Produce', pricePer: 'lb' },
+                { name: '\uD83E\uDDC5 Onions', price: 1.29, cat: 'Produce', pricePer: 'lb' },
+                { name: '\uD83E\uDD54 Potatoes', price: 0.99, cat: 'Produce', pricePer: 'lb' },
+                { name: '\uD83E\uDD51 Avocados', price: 1.25, cat: 'Produce', pricePer: 'each' },
+                { name: '\uD83E\uDD66 Broccoli', price: 1.99, cat: 'Produce', pricePer: 'lb' },
+                { name: '\uD83E\uDD55 Carrots', price: 1.29, cat: 'Produce', pricePer: 'lb' },
+                { name: '\uD83C\uDF4B Lemons', price: 0.69, cat: 'Produce', pricePer: 'each' },
+                { name: '\uD83AB Garlic', price: 0.75, cat: 'Produce', pricePer: 'each' },
+                // 🥩 Meat & Fish — per-pound
+                { name: '\uD83C\uDF57 Chicken Breast', price: 3.99, cat: 'Meat', pricePer: 'lb' },
+                { name: '\uD83E\uDD69 Ground Beef', price: 5.49, cat: 'Meat', pricePer: 'lb' },
+                { name: '\uD83D\uDC1F Salmon Fillet', price: 9.99, cat: 'Meat', pricePer: 'lb' },
+                { name: '\uD83E\uDD53 Bacon (1 lb)', price: 6.49, cat: 'Meat', pricePer: 'each' },
+                { name: '\uD83C\uDF56 Pork Chops', price: 4.49, cat: 'Meat', pricePer: 'lb' },
+                // 🧀 Dairy
+                { name: '\uD83E\uDD5B Milk (gal)', price: 3.49, cat: 'Dairy', pricePer: 'each' },
+                { name: '\uD83E\uDDC0 Cheddar Cheese', price: 4.99, cat: 'Dairy', pricePer: 'each' },
+                { name: '\uD83E\uDDC8 Butter', price: 3.99, cat: 'Dairy', pricePer: 'each' },
+                { name: '\uD83E\uDD5B Yogurt', price: 1.25, cat: 'Dairy', pricePer: 'each' },
+                { name: '\uD83E\uDD5A Eggs (dozen)', price: 3.29, cat: 'Dairy', pricePer: 'each' },
+                { name: '\uD83E\uDD5B Heavy Cream', price: 4.29, cat: 'Dairy', pricePer: 'each' },
+                // 🍞 Bakery
+                { name: '\uD83C\uDF5E Bread', price: 2.99, cat: 'Bakery', pricePer: 'each' },
+                { name: '\uD83E\uDD6F Bagels (6pk)', price: 3.49, cat: 'Bakery', pricePer: 'each' },
+                { name: '\uD83C\uDF2F Tortillas (10pk)', price: 2.79, cat: 'Bakery', pricePer: 'each' },
+                // 🥫 Pantry
+                { name: '\uD83C\uDF5A Rice (2 lb)', price: 2.99, cat: 'Pantry', pricePer: 'each' },
+                { name: '\uD83C\uDF5D Pasta (1 lb)', price: 1.49, cat: 'Pantry', pricePer: 'each' },
+                { name: '\uD83E\uDD6B Canned Beans', price: 1.09, cat: 'Pantry', pricePer: 'each' },
+                { name: '\uD83C\uDF6F Sugar (4 lb)', price: 3.49, cat: 'Pantry', pricePer: 'each' },
+                { name: '\uD83C\uDF3E Flour (5 lb)', price: 3.99, cat: 'Pantry', pricePer: 'each' },
+                { name: '\uD83E\uDED2 Olive Oil', price: 6.99, cat: 'Pantry', pricePer: 'each' },
+                { name: '\uD83E\uDD5C Peanut Butter', price: 3.75, cat: 'Pantry', pricePer: 'each' },
+                { name: '\uD83C\uDF45 Pasta Sauce', price: 2.49, cat: 'Pantry', pricePer: 'each' },
+                // 🧊 Frozen
+                { name: '\uD83C\uDF55 Frozen Pizza', price: 5.49, cat: 'Frozen', pricePer: 'each' },
+                { name: '\uD83C\uDF66 Ice Cream', price: 4.99, cat: 'Frozen', pricePer: 'each' },
+                { name: '\uD83E\uDD66 Frozen Veggies', price: 2.49, cat: 'Frozen', pricePer: 'each' },
+                // 🥤 Drinks
+                { name: '\uD83E\uDDC3 Orange Juice', price: 3.99, cat: 'Drinks', pricePer: 'each' },
+                { name: '\uD83E\uDD64 Soda (2L)', price: 1.99, cat: 'Drinks', pricePer: 'each' },
+                { name: '\uD83D\uDCA7 Water (24pk)', price: 4.99, cat: 'Drinks', pricePer: 'each' },
+                { name: '\u2615 Coffee (12oz)', price: 7.99, cat: 'Drinks', pricePer: 'each' },
+                // 🍫 Snacks
+                { name: '\uD83C\uDF6B Chocolate Bar', price: 1.25, cat: 'Snacks', pricePer: 'each' },
+                { name: '\uD83C\uDF5F Chips', price: 3.49, cat: 'Snacks', pricePer: 'each' },
+                { name: '\uD83E\uDD5C Granola Bars', price: 4.29, cat: 'Snacks', pricePer: 'each' },
+                { name: '\uD83C\uDF7F Popcorn', price: 2.99, cat: 'Snacks', pricePer: 'each' }
               ];
               storeItems = baseItems.filter(function (item) { return item.price <= gc.maxPrice; });
               upd('storeItems', storeItems);
             }
+            var storeCats = ['All'];
+            storeItems.forEach(function (it) { if (storeCats.indexOf(it.cat) === -1) storeCats.push(it.cat); });
+            var filteredStoreItems = storeCat === 'All' ? storeItems : storeItems.filter(function (it) { return it.cat === storeCat; });
+
+            // ── Recipe data (middle+ grades) ──
+            var RECIPES = [
+              { name: '\uD83C\uDF5D Spaghetti Bolognese', icon: '\uD83C\uDF5D', serves: 4, ingredients: [
+                { item: 'Pasta (1 lb)', qty: 1, unit: 'box' }, { item: 'Ground Beef', qty: 1.5, unit: 'lb' },
+                { item: 'Pasta Sauce', qty: 1, unit: 'jar' }, { item: 'Onions', qty: 0.5, unit: 'lb' },
+                { item: 'Garlic', qty: 2, unit: 'cloves' }, { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' }
+              ]},
+              { name: '\uD83C\uDF2E Tacos', icon: '\uD83C\uDF2E', serves: 4, ingredients: [
+                { item: 'Ground Beef', qty: 1, unit: 'lb' }, { item: 'Tortillas (10pk)', qty: 1, unit: 'pkg' },
+                { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' }, { item: 'Lettuce', qty: 1, unit: 'head' },
+                { item: 'Tomatoes', qty: 0.5, unit: 'lb' }, { item: 'Onions', qty: 0.25, unit: 'lb' }
+              ]},
+              { name: '\uD83C\uDF73 Pancakes', icon: '\uD83C\uDF73', serves: 4, ingredients: [
+                { item: 'Flour (5 lb)', qty: 1, unit: 'bag' }, { item: 'Eggs (dozen)', qty: 1, unit: 'dozen' },
+                { item: 'Milk (gal)', qty: 1, unit: 'gal' }, { item: 'Butter', qty: 1, unit: 'stick' },
+                { item: 'Sugar (4 lb)', qty: 1, unit: 'bag' }
+              ]},
+              { name: '\uD83E\uDD57 Caesar Salad', icon: '\uD83E\uDD57', serves: 4, ingredients: [
+                { item: 'Lettuce', qty: 2, unit: 'heads' }, { item: 'Chicken Breast', qty: 1.5, unit: 'lb' },
+                { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' }, { item: 'Bread', qty: 1, unit: 'loaf' },
+                { item: 'Lemons', qty: 2, unit: 'each' }, { item: 'Olive Oil', qty: 1, unit: 'bottle' }
+              ]},
+              { name: '\uD83C\uDF5C Chicken Stir-Fry', icon: '\uD83C\uDF5C', serves: 4, ingredients: [
+                { item: 'Chicken Breast', qty: 2, unit: 'lb' }, { item: 'Broccoli', qty: 1, unit: 'lb' },
+                { item: 'Carrots', qty: 0.5, unit: 'lb' }, { item: 'Rice (2 lb)', qty: 1, unit: 'bag' },
+                { item: 'Onions', qty: 0.5, unit: 'lb' }, { item: 'Garlic', qty: 2, unit: 'cloves' },
+                { item: 'Olive Oil', qty: 1, unit: 'bottle' }
+              ]},
+              { name: '\uD83E\uDD6A Grilled Cheese', icon: '\uD83E\uDD6A', serves: 4, ingredients: [
+                { item: 'Bread', qty: 1, unit: 'loaf' }, { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' },
+                { item: 'Butter', qty: 1, unit: 'stick' }, { item: 'Tomatoes', qty: 0.5, unit: 'lb' }
+              ]}
+            ];
+            var selectedRecipe = activeRecipe != null ? RECIPES[activeRecipe] : null;
+            // Scale recipe ingredients by servings
+            var recipeScale = selectedRecipe ? recipeServings / selectedRecipe.serves : 1;
+            var scaledIngredients = selectedRecipe ? selectedRecipe.ingredients.map(function (ing) {
+              return { item: ing.item, qty: Math.round(ing.qty * recipeScale * 100) / 100, unit: ing.unit };
+            }) : [];
+            // Check if cart satisfies recipe
+            var checkRecipeCart = function () {
+              if (!selectedRecipe) return null;
+              var missing = []; var matched = 0;
+              scaledIngredients.forEach(function (ing) {
+                var inCart = cart.find(function (c) {
+                  return c.name.indexOf(ing.item) >= 0 || ing.item.indexOf(c.name.replace(/^[^\s]+\s/, '')) >= 0;
+                });
+                if (inCart) { matched++; } else { missing.push(ing.item); }
+              });
+              return { matched: matched, total: scaledIngredients.length, missing: missing, complete: matched >= scaledIngredients.length };
+            };
 
             // ── Generate change problem ──
             var genChangeProblem = function () {
@@ -4250,6 +4353,33 @@
               upd('spFb', null);
             };
 
+            // ── Coin Drop minigame state & generator ──
+            var cdTarget = typeof d.cdTarget === 'number' ? d.cdTarget : 0;
+            var cdDropped = d.cdDropped || [];
+            var cdTotal = cdDropped.reduce(function (s, c) { return s + c; }, 0);
+            var cdRound = Math.round(cdTotal * 100) / 100;
+            var cdStreak = d.cdStreak || 0;
+            var cdFb = d.cdFb || null;
+            var cdTimer = d.cdTimer || null;
+            var cdStartTime = d.cdStartTime || null;
+            var COIN_DENOMS = grade === 'elementary'
+              ? [{ val: 0.01, label: '1¢', emoji: '🟤', color: '#CD7F32', size: 28 }, { val: 0.05, label: '5¢', emoji: '⚪', color: '#A8A9AD', size: 30 }, { val: 0.10, label: '10¢', emoji: '⚪', color: '#C0C0C0', size: 29 }, { val: 0.25, label: '25¢', emoji: '🪙', color: '#FFD700', size: 32 }, { val: 1.00, label: '$1', emoji: '💵', color: '#4CAF50', size: 38 }]
+              : grade === 'middle'
+              ? [{ val: 0.05, label: '5¢', emoji: '⚪', color: '#A8A9AD', size: 28 }, { val: 0.10, label: '10¢', emoji: '⚪', color: '#C0C0C0', size: 29 }, { val: 0.25, label: '25¢', emoji: '🪙', color: '#FFD700', size: 30 }, { val: 1.00, label: '$1', emoji: '💵', color: '#4CAF50', size: 36 }, { val: 5.00, label: '$5', emoji: '💵', color: '#2196F3', size: 38 }, { val: 10.00, label: '$10', emoji: '💵', color: '#FF9800', size: 40 }, { val: 20.00, label: '$20', emoji: '💵', color: '#9C27B0', size: 42 }]
+              : [{ val: 0.10, label: '10¢', emoji: '⚪', color: '#C0C0C0', size: 28 }, { val: 0.25, label: '25¢', emoji: '🪙', color: '#FFD700', size: 30 }, { val: 1.00, label: '$1', emoji: '💵', color: '#4CAF50', size: 34 }, { val: 5.00, label: '$5', emoji: '💵', color: '#2196F3', size: 36 }, { val: 10.00, label: '$10', emoji: '💵', color: '#FF9800', size: 38 }, { val: 20.00, label: '$20', emoji: '💵', color: '#9C27B0', size: 40 }, { val: 50.00, label: '$50', emoji: '💵', color: '#00BCD4', size: 42 }, { val: 100.00, label: '$100', emoji: '💵', color: '#F44336', size: 44 }];
+            var genCoinDrop = function () {
+              var minT, maxT;
+              if (grade === 'elementary') { minT = 0.25; maxT = 5.00; }
+              else if (grade === 'middle') { minT = 1.00; maxT = 25.00; }
+              else { minT = 5.00; maxT = 100.00; }
+              var target = Math.round((Math.random() * (maxT - minT) + minT) * 100) / 100;
+              // Round to nearest .05 for cleaner values
+              target = Math.round(target * 20) / 20;
+              upd('cdTarget', target); upd('cdDropped', []); upd('cdFb', null);
+              upd('cdAnimDrop', null);
+              if (challengeMode) upd('cdStartTime', Date.now());
+            };
+
             // ── Personal Finance quiz generator ──
             var FIN_QUIZZES = [
               { q: 'If you invest $1,000 at 7% annual compound interest for 10 years, approximately how much will you have?', choices: ['$1,700', '$1,967', '$2,500', '$3,000'], correct: 1, explanation: '$1,000 \u00D7 (1.07)\u00B9\u2070 \u2248 $1,967. Compound interest grows exponentially over time.' },
@@ -4367,7 +4497,7 @@
               { id: 'tips', label: '\uD83D\uDCB3 Tips & Discounts', icon: '\uD83D\uDCB3' },
               { id: 'store', label: '\uD83D\uDED2 Grocery Store', icon: '\uD83D\uDED2' },
               { id: 'budget', label: '\uD83D\uDCCA Budget', icon: '\uD83D\uDCCA' },
-              { id: 'challenges', label: '\uD83C\uDFC6 Challenges', icon: '\uD83C\uDFC6' },
+              { id: 'cents', label: '\uD83E\uDE99 Common Cents', icon: '\uD83E\uDE99' },
               { id: 'word', label: '\uD83D\uDCDD Word Problems', icon: '\uD83D\uDCDD' },
               { id: 'exchange', label: '\uD83C\uDF0D Currency Exchange', icon: '\uD83C\uDF0D' },
               { id: 'finance', label: '\uD83D\uDCB0 Personal Finance', icon: '\uD83D\uDCB0' }
@@ -4568,48 +4698,157 @@
 
               // ═══ GROCERY STORE TAB ═══
               tab === 'store' && React.createElement("div", { className: "space-y-4" },
+                // ── Header row: Recipe Mode toggle (middle+) ──
+                grade !== 'elementary' && React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2" },
+                  React.createElement("button", { onClick: function () { upd('recipeMode', !recipeMode); upd('activeRecipe', null); },
+                    className: "px-3 py-1.5 rounded-lg text-xs font-black transition-all " + (recipeMode ? 'bg-purple-500 text-white ring-2 ring-purple-300 shadow-lg' : 'bg-white text-purple-600 border border-purple-300 hover:bg-purple-50')
+                  }, recipeMode ? '\uD83D\uDCCB Recipe Mode ON' : '\uD83D\uDCCB Recipe Mode')
+                ),
+
+                // ── Recipe Panel (when active) ──
+                recipeMode && React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-fuchsia-50 rounded-xl p-4 border border-purple-200" },
+                  React.createElement("h4", { className: "text-sm font-bold text-purple-800 mb-3" }, "\uD83D\uDCCB Select a Recipe"),
+                  // Recipe selector
+                  React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3" },
+                    RECIPES.map(function (r, ri) {
+                      return React.createElement("button", { key: ri, onClick: function () { upd('activeRecipe', activeRecipe === ri ? null : ri); upd('recipeFb', null); },
+                        className: "p-2 rounded-xl text-center transition-all border-2 " + (activeRecipe === ri ? 'border-purple-500 bg-purple-100 shadow-md' : 'border-slate-200 bg-white hover:border-purple-300')
+                      },
+                        React.createElement("span", { className: "text-2xl" }, r.icon),
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-700 mt-0.5" }, r.name.replace(/^[^\s]+\s/, ''))
+                      );
+                    })
+                  ),
+                  // Servings slider + Ingredient list
+                  selectedRecipe && React.createElement("div", { className: "space-y-3" },
+                    React.createElement("div", { className: "flex items-center gap-3 bg-white rounded-lg p-3 border border-purple-100" },
+                      React.createElement("label", { className: "text-xs font-bold text-purple-700" }, "\uD83C\uDF7D Servings:"),
+                      React.createElement("input", { type: "range", min: 1, max: 12, value: recipeServings, onChange: function (e) { upd('recipeServings', parseInt(e.target.value)); },
+                        className: "flex-1 accent-purple-500" }),
+                      React.createElement("span", { className: "text-sm font-black text-purple-600 min-w-[2rem] text-center" }, recipeServings)
+                    ),
+                    React.createElement("div", { className: "bg-white rounded-lg p-3 border border-purple-100 space-y-1.5" },
+                      React.createElement("p", { className: "text-xs font-bold text-purple-700 mb-1" }, "\uD83D\uDCDD Shopping List for " + recipeServings + " servings:"),
+                      scaledIngredients.map(function (ing, ii) {
+                        var inCart = cart.find(function (c) { return c.name.indexOf(ing.item) >= 0 || ing.item.indexOf(c.name.replace(/^[^\s]+\s/, '')) >= 0; });
+                        return React.createElement("div", { key: ii, className: "flex items-center gap-2 text-xs" },
+                          React.createElement("span", { className: "text-base" }, inCart ? '\u2705' : '\u2B1C'),
+                          React.createElement("span", { className: inCart ? 'text-green-700 font-bold line-through' : 'text-slate-700 font-medium' },
+                            ing.qty + ' ' + ing.unit + ' ' + ing.item
+                          )
+                        );
+                      })
+                    ),
+                    React.createElement("div", { className: "flex gap-2" },
+                      React.createElement("button", { onClick: function () {
+                        var result = checkRecipeCart();
+                        if (!result) return;
+                        if (result.complete) {
+                          upd('recipeFb', { ok: true, msg: '\u2705 All ' + result.total + ' ingredients found! Total: ' + fmt(cartGrand) + ' \u2014 +25 XP!' });
+                          if (typeof addXP === 'function') addXP(25, 'Money Math: Recipe shopping complete');
+                          if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 25, 'recipe shopping');
+                        } else {
+                          upd('recipeFb', { ok: false, msg: '\u274C Missing ' + result.missing.length + ' item(s): ' + result.missing.join(', ') });
+                        }
+                      }, className: "flex-1 px-4 py-2 bg-purple-500 text-white font-bold rounded-xl hover:bg-purple-600 transition-all text-sm shadow-md" }, "\u2714 Check Recipe Cart"),
+                      React.createElement("button", { onClick: function () { upd('cart', []); upd('recipeFb', null); }, className: "px-3 py-2 text-xs text-red-400 hover:text-red-600 font-bold" }, "Clear")
+                    ),
+                    d.recipeFb && React.createElement("p", { className: "text-xs font-bold " + (d.recipeFb.ok ? 'text-green-600' : 'text-red-500') }, d.recipeFb.msg)
+                  )
+                ),
+
+                // ── Category filter pills ──
+                React.createElement("div", { className: "flex flex-wrap gap-1" },
+                  storeCats.map(function (cat) {
+                    var catIcons = { All: '\uD83C\uDFEA', Produce: '\uD83E\uDD6C', Meat: '\uD83E\uDD69', Dairy: '\uD83E\uDDC0', Bakery: '\uD83C\uDF5E', Pantry: '\uD83E\uDD6B', Frozen: '\uD83E\uDDCA', Drinks: '\uD83E\uDD64', Snacks: '\uD83C\uDF6B' };
+                    return React.createElement("button", { key: cat, onClick: function () { upd('storeCat', cat); },
+                      className: "px-2 py-1 rounded-full text-[10px] font-bold transition-all " + (storeCat === cat ? 'bg-orange-500 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-orange-50')
+                    }, (catIcons[cat] || '\uD83C\uDFEA') + ' ' + cat);
+                  })
+                ),
+
                 React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4" },
                   // Store shelves
                   React.createElement("div", { className: "md:col-span-2 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200" },
-                    React.createElement("h3", { className: "text-sm font-bold text-orange-800 mb-3" }, "\uD83D\uDED2 " + cur.flag + " Store Shelves"),
-                    React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2" },
-                      (storeItems || []).map(function (item, ii) {
-                        return React.createElement("button", { key: ii, onClick: function () {
-                            var existing = cart.findIndex(function (c) { return c.name === item.name; });
-                            if (existing >= 0) {
-                              var newCart = cart.map(function (c, idx) { return idx === existing ? Object.assign({}, c, { qty: (c.qty || 1) + 1 }) : c; });
-                              upd('cart', newCart);
-                            } else {
-                              upd('cart', [].concat(cart, [{ name: item.name, price: item.price, qty: 1 }]));
-                            }
-                            if (typeof addToast === 'function') addToast('Added ' + item.name + ' to cart!', 'success');
+                    React.createElement("div", { className: "flex items-center justify-between mb-3" },
+                      React.createElement("h3", { className: "text-sm font-bold text-orange-800" }, "\uD83D\uDED2 " + cur.flag + " Store Shelves"),
+                      React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, filteredStoreItems.length + " items")
+                    ),
+                    React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[480px] overflow-y-auto pr-1" },
+                      filteredStoreItems.map(function (item, ii) {
+                        var isWeighed = item.pricePer && item.pricePer !== 'each';
+                        var isAdding = d.weightItemIdx === ii && isWeighed;
+                        return React.createElement("div", { key: ii, className: "relative" },
+                          React.createElement("button", { onClick: function () {
+                              if (isWeighed) {
+                                upd('weightItemIdx', isAdding ? null : ii);
+                                upd('weightInput', 1);
+                              } else {
+                                var existing = cart.findIndex(function (c) { return c.name === item.name; });
+                                if (existing >= 0) {
+                                  var newCart = cart.map(function (c, idx) { return idx === existing ? Object.assign({}, c, { qty: (c.qty || 1) + 1 }) : c; });
+                                  upd('cart', newCart);
+                                } else {
+                                  upd('cart', [].concat(cart, [{ name: item.name, price: item.price, qty: 1, pricePer: 'each' }]));
+                                }
+                                if (typeof addToast === 'function') addToast('Added ' + item.name + ' to cart!', 'success');
+                              }
+                            },
+                            className: "w-full p-3 bg-white rounded-xl border text-left group transition-all " + (isAdding ? 'border-orange-400 ring-2 ring-orange-200 shadow-md' : 'border-orange-100 hover:border-orange-300 hover:shadow-md')
                           },
-                          className: "p-3 bg-white rounded-xl border border-orange-100 hover:border-orange-300 hover:shadow-md transition-all text-left group"
-                        },
-                          React.createElement("div", { className: "text-2xl mb-1" }, item.name.split(' ')[0]),
-                          React.createElement("p", { className: "text-xs font-bold text-slate-700 truncate" }, item.name.substring(item.name.indexOf(' ') + 1)),
-                          React.createElement("p", { className: "text-sm font-black text-emerald-600" }, fmt(item.price)),
-                          React.createElement("span", { className: "text-[9px] text-orange-400 group-hover:text-orange-600 font-bold" }, "+ Add to cart")
+                            React.createElement("div", { className: "text-2xl mb-1" }, item.name.split(' ')[0]),
+                            React.createElement("p", { className: "text-xs font-bold text-slate-700 truncate" }, item.name.substring(item.name.indexOf(' ') + 1)),
+                            React.createElement("div", { className: "flex items-baseline gap-1" },
+                              React.createElement("span", { className: "text-sm font-black text-emerald-600" }, fmt(item.price)),
+                              isWeighed && React.createElement("span", { className: "text-[9px] text-orange-500 font-bold" }, "/" + item.pricePer)
+                            ),
+                            React.createElement("span", { className: "text-[9px] font-bold " + (isWeighed ? 'text-orange-500' : 'text-orange-400 group-hover:text-orange-600') }, isWeighed ? '\u2696 Enter weight' : '+ Add to cart')
+                          ),
+                          // Weight entry popup for per-lb items
+                          isAdding && React.createElement("div", { className: "absolute z-20 left-0 right-0 -bottom-2 translate-y-full bg-white rounded-xl p-3 shadow-xl border-2 border-orange-300 space-y-2" },
+                            React.createElement("p", { className: "text-[10px] font-bold text-orange-700 text-center" }, "How many " + item.pricePer + "s?"),
+                            React.createElement("div", { className: "flex items-center gap-1.5" },
+                              React.createElement("button", { onClick: function () { upd('weightInput', Math.max(0.25, (d.weightInput || 1) - 0.25)); }, className: "px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "\u2212"),
+                              React.createElement("input", { type: "number", step: "0.25", min: "0.25", value: d.weightInput || 1, onChange: function (e) { upd('weightInput', parseFloat(e.target.value) || 0.25); }, className: "w-14 text-center px-1 py-1 border border-orange-300 rounded-lg text-xs font-bold focus:ring-2 focus:ring-orange-400 outline-none" }),
+                              React.createElement("button", { onClick: function () { upd('weightInput', (d.weightInput || 1) + 0.25); }, className: "px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "+"),
+                              React.createElement("span", { className: "text-[10px] text-slate-500 font-bold" }, item.pricePer)
+                            ),
+                            React.createElement("p", { className: "text-xs font-bold text-center text-emerald-600" }, "= " + fmt(item.price * (d.weightInput || 1))),
+                            React.createElement("button", { onClick: function () {
+                              var w = d.weightInput || 1;
+                              upd('cart', [].concat(cart, [{ name: item.name, price: item.price, weight: w, pricePer: item.pricePer, qty: 1 }]));
+                              upd('weightItemIdx', null);
+                              if (typeof addToast === 'function') addToast('Added ' + w + ' ' + item.pricePer + ' ' + item.name + '!', 'success');
+                            }, className: "w-full px-3 py-1.5 bg-orange-500 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-all" }, "\uD83D\uDED2 Add to Cart")
+                          )
                         );
                       })
                     )
                   ),
                   // Cart
                   React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-200" },
-                    React.createElement("h3", { className: "text-sm font-bold text-emerald-800 mb-2" }, "\uD83D\uDED2 Your Cart"),
+                    React.createElement("h3", { className: "text-sm font-bold text-emerald-800 mb-2" }, "\uD83D\uDED2 Your Cart (" + cart.length + ")"),
                     cart.length === 0
-                      ? React.createElement("p", { className: "text-xs text-slate-400 text-center py-4" }, "Cart is empty. Click items to add!")
-                      : React.createElement("div", { className: "space-y-1.5" },
+                      ? React.createElement("p", { className: "text-xs text-slate-400 text-center py-4" }, recipeMode && selectedRecipe ? "Shop for the recipe ingredients!" : "Cart is empty. Click items to add!")
+                      : React.createElement("div", { className: "space-y-1.5 max-h-[320px] overflow-y-auto" },
                           cart.map(function (item, ci) {
+                            var isWeighted = item.pricePer && item.pricePer !== 'each';
+                            var lineTotal = isWeighted ? item.price * (item.weight || 1) : item.price * (item.qty || 1);
+                            var qtyLabel = isWeighted
+                              ? (item.weight || 1) + ' ' + item.pricePer + ' @ ' + fmt(item.price) + '/' + item.pricePer
+                              : (item.qty > 1 ? item.qty + 'x ' : '');
                             return React.createElement("div", { key: ci, className: "flex items-center justify-between bg-white rounded-lg px-2 py-1.5 border border-emerald-100" },
-                              React.createElement("span", { className: "text-xs font-medium text-slate-700 flex-1 truncate" }, (item.qty > 1 ? item.qty + 'x ' : '') + item.name),
+                              React.createElement("div", { className: "flex-1 min-w-0" },
+                                React.createElement("p", { className: "text-xs font-medium text-slate-700 truncate" }, (isWeighted ? '' : qtyLabel) + item.name),
+                                isWeighted && React.createElement("p", { className: "text-[10px] text-slate-400" }, qtyLabel)
+                              ),
                               challengeMode
-                                ? React.createElement("span", { className: "text-xs font-bold text-amber-500 ml-2" }, fmt(item.price) + '/ea')
-                                : React.createElement("span", { className: "text-xs font-bold text-emerald-600 ml-2" }, fmt(item.price * (item.qty || 1))),
+                                ? React.createElement("span", { className: "text-xs font-bold text-amber-500 ml-2 whitespace-nowrap" }, isWeighted ? fmt(item.price) + '/' + item.pricePer : fmt(item.price) + '/ea')
+                                : React.createElement("span", { className: "text-xs font-bold text-emerald-600 ml-2 whitespace-nowrap" }, fmt(lineTotal)),
                               React.createElement("button", { onClick: function () {
-                                  if (item.qty > 1) { upd('cart', cart.map(function (c, idx) { return idx === ci ? Object.assign({}, c, { qty: c.qty - 1 }) : c; })); }
+                                  if (!isWeighted && item.qty > 1) { upd('cart', cart.map(function (c, idx) { return idx === ci ? Object.assign({}, c, { qty: c.qty - 1 }) : c; })); }
                                   else { upd('cart', cart.filter(function (_, idx) { return idx !== ci; })); }
-                                  upd('cartCheckoutFb', null);
+                                  upd('cartCheckoutFb', null); upd('recipeFb', null);
                                 }, className: "ml-1 text-red-300 hover:text-red-500 text-xs font-bold"
                               }, "\u2715")
                             );
@@ -4938,8 +5177,8 @@
               ),
 
               // ═══ CHALLENGES TAB ═══
-              tab === 'challenges' && React.createElement("div", { className: "space-y-4" },
-                React.createElement("h3", { className: "text-base font-bold text-amber-800 mb-2" }, "\uD83C\uDFC6 Money Challenges"),
+              tab === 'cents' && React.createElement("div", { className: "space-y-4" },
+                React.createElement("h3", { className: "text-base font-bold text-amber-800 mb-2" }, "\uD83E\uDE99 Common Cents"),
                 // Fewest Coins challenge
                 React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200" },
                   React.createElement("div", { className: "flex items-center justify-between mb-3" },
@@ -5184,6 +5423,96 @@
                       }
                     }, className: "w-full px-4 py-2 bg-cyan-500 text-white font-bold rounded-xl hover:bg-cyan-600 transition-all text-sm" }, "\u2714 Check My Answers"),
                     d.spFb && React.createElement("p", { className: "text-xs font-bold " + (d.spFb.ok ? 'text-green-600' : 'text-red-500') }, d.spFb.msg)
+                  )
+                ),
+
+                // ── 🪙 Coin Drop Minigame ──
+                React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200" },
+                  React.createElement("div", { className: "flex items-center justify-between mb-3" },
+                    React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "\uD83E\uDE99 Coin Drop"),
+                    React.createElement("div", { className: "flex items-center gap-2" },
+                      cdStreak > 0 && React.createElement("span", { className: "px-2 py-0.5 bg-amber-100 rounded-full text-[10px] font-black text-amber-700" }, '\uD83D\uDD25 ' + cdStreak + ' streak'),
+                      React.createElement("button", { onClick: genCoinDrop, className: "px-3 py-1.5 bg-amber-500 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition-all shadow-sm" }, cdTarget === 0 ? '\u2728 Start' : '\u21BB New')
+                    )
+                  ),
+                  cdTarget > 0 && React.createElement("div", { className: "space-y-3" },
+                    // Target display
+                    React.createElement("div", { className: "bg-white rounded-xl p-4 border border-amber-100 text-center" },
+                      React.createElement("p", { className: "text-[10px] text-slate-500 font-bold uppercase tracking-wider" }, "\uD83C\uDFAF Target Amount"),
+                      React.createElement("p", { className: "text-3xl font-black text-amber-600 mt-1" }, fmt(cdTarget)),
+                      challengeMode && cdStartTime && React.createElement("p", { className: "text-[10px] text-slate-400 mt-1" }, '\u23F1 Timer running...')
+                    ),
+                    // Piggy bank visual area
+                    React.createElement("div", { className: "relative bg-gradient-to-b from-amber-100 to-amber-200 rounded-xl p-3 min-h-[120px] overflow-hidden border border-amber-300" },
+                      // Fill level indicator
+                      React.createElement("div", { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: Math.min(100, (cdRound / cdTarget) * 100) + '%', background: 'linear-gradient(to top, #f59e0b33, #fbbf2433)', transition: 'height 0.3s ease', borderRadius: '0 0 12px 12px' } }),
+                      // Dropped coins display
+                      React.createElement("div", { className: "relative z-10 flex flex-wrap gap-1 justify-center items-end min-h-[80px]" },
+                        cdDropped.map(function (val, di) {
+                          var coin = COIN_DENOMS.find(function (c) { return c.val === val; }) || COIN_DENOMS[0];
+                          var isNew = di === cdDropped.length - 1 && d.cdAnimDrop;
+                          return React.createElement("div", { key: di,
+                            className: "inline-flex items-center justify-center rounded-full font-black text-white text-[9px] shadow-md" + (isNew ? ' animate-bounce' : ''),
+                            style: { width: coin.size * 0.7 + 'px', height: coin.size * 0.7 + 'px', backgroundColor: coin.color, fontSize: '9px', lineHeight: '1' }
+                          }, coin.label);
+                        })
+                      ),
+                      cdDropped.length === 0 && React.createElement("p", { className: "text-center text-xs text-amber-400 font-bold py-6 relative z-10" }, '\uD83D\uDC37 Drop coins here!')
+                    ),
+                    // Running total
+                    React.createElement("div", { className: "flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-amber-100" },
+                      React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "Your total:"),
+                      React.createElement("span", { className: "text-lg font-black " + (cdRound === cdTarget ? 'text-green-600' : cdRound > cdTarget ? 'text-red-500' : 'text-amber-600') }, fmt(cdRound)),
+                      React.createElement("span", { className: "text-xs text-slate-400" }, (cdTarget - cdRound > 0 ? fmt(cdTarget - cdRound) + ' to go' : cdRound === cdTarget ? '\u2705 Perfect!' : '\u274C Over!'))
+                    ),
+                    // Clickable coin/bill tokens
+                    React.createElement("div", { className: "flex flex-wrap gap-1.5 justify-center" },
+                      COIN_DENOMS.map(function (coin) {
+                        var wouldOvershoot = cdRound + coin.val > cdTarget + 0.001;
+                        return React.createElement("button", { key: coin.label, onClick: function () {
+                            if (cdFb) return; // Already solved
+                            var newDropped = cdDropped.concat([coin.val]);
+                            var newTotal = Math.round((cdRound + coin.val) * 100) / 100;
+                            upd('cdDropped', newDropped);
+                            upd('cdAnimDrop', true);
+                            setTimeout(function () { upd('cdAnimDrop', false); }, 400);
+                            if (newTotal === cdTarget) {
+                              var timeMsg = '';
+                              if (challengeMode && cdStartTime) {
+                                var elapsed = Math.round((Date.now() - cdStartTime) / 1000);
+                                timeMsg = ' in ' + elapsed + 's';
+                              }
+                              upd('cdStreak', cdStreak + 1);
+                              var bonusXP = 10 + Math.min(cdStreak * 2, 10);
+                              upd('cdFb', { ok: true, msg: '\uD83C\uDF89 Perfect! ' + fmt(cdTarget) + ' in ' + newDropped.length + ' coins' + timeMsg + '! +' + bonusXP + ' XP' });
+                              if (typeof awardStemXP === 'function') awardStemXP('moneyMath', bonusXP, 'coin drop');
+                              if (typeof addXP === 'function') addXP(bonusXP, 'Money Math: Coin Drop');
+                            } else if (newTotal > cdTarget) {
+                              upd('cdStreak', 0);
+                              upd('cdFb', { ok: false, msg: '\u274C Too much! You put in ' + fmt(newTotal) + ' but needed ' + fmt(cdTarget) + '. Try again!' });
+                            }
+                          },
+                          disabled: !!cdFb,
+                          className: "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all border-2 " + (wouldOvershoot && !cdFb ? 'border-red-200 bg-red-50 opacity-60' : 'border-amber-200 bg-white hover:border-amber-400 hover:shadow-md hover:scale-105') + (cdFb ? ' opacity-50 cursor-not-allowed' : '')
+                        },
+                          React.createElement("div", {
+                            className: "flex items-center justify-center rounded-full font-black text-white text-[10px]",
+                            style: { width: coin.size + 'px', height: coin.size + 'px', backgroundColor: coin.color }
+                          }, coin.label),
+                          React.createElement("span", { className: "text-[9px] font-bold text-slate-500" }, fmt(coin.val))
+                        );
+                      })
+                    ),
+                    // Undo button
+                    cdDropped.length > 0 && !cdFb && React.createElement("button", { onClick: function () {
+                      var newDropped = cdDropped.slice(0, -1);
+                      upd('cdDropped', newDropped);
+                    }, className: "w-full px-3 py-1 text-xs text-slate-400 hover:text-slate-600 font-bold text-center" }, '\u21A9 Undo last coin'),
+                    // Feedback
+                    cdFb && React.createElement("div", { className: "space-y-2" },
+                      React.createElement("p", { className: "text-xs font-bold text-center " + (cdFb.ok ? 'text-green-600' : 'text-red-500') }, cdFb.msg),
+                      React.createElement("button", { onClick: genCoinDrop, className: "w-full px-4 py-2 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm shadow-md" }, '\u27A1 Next Round')
+                    )
                   )
                 ),
 
@@ -6037,25 +6366,123 @@
             var insZone = stemState.insZone || 4; // climate zones 1-7
             var insWallType = stemState.insWallType || 'wood';
             var insZoneData = [
-              { zone: 1, label: 'Hot-Humid (Miami, Hawaii)', atticR: 30, wallR: 13, floorR: 0, color: '#ef4444' },
-              { zone: 2, label: 'Hot-Dry (Phoenix, Houston)', atticR: 38, wallR: 13, floorR: 13, color: '#f97316' },
-              { zone: 3, label: 'Warm (Atlanta, Dallas)', atticR: 38, wallR: 13, floorR: 19, color: '#eab308' },
-              { zone: 4, label: 'Mixed (DC, Seattle, Nashville)', atticR: 49, wallR: 13, floorR: 19, color: '#22c55e' },
-              { zone: 5, label: 'Cool (Chicago, Denver, Boston)', atticR: 49, wallR: 20, floorR: 25, color: '#3b82f6' },
-              { zone: 6, label: 'Cold (Minneapolis, Burlington)', atticR: 60, wallR: 20, floorR: 25, color: '#6366f1' },
-              { zone: 7, label: 'Very Cold (Fairbanks, Duluth)', atticR: 60, wallR: 21, floorR: 30, color: '#8b5cf6' }
+              { zone: 1, label: 'Hot-Humid (Miami, Hawaii)', atticR: 30, wallR: 13, floorR: 0, color: '#ef4444', desc: 'Cooling-dominated climate. Focus on radiant barriers and ceiling insulation to block solar heat gain.' },
+              { zone: 2, label: 'Hot-Dry (Phoenix, Houston)', atticR: 38, wallR: 13, floorR: 13, color: '#f97316', desc: 'Hot days, cool nights. Thermal mass and attic insulation are key to comfort.' },
+              { zone: 3, label: 'Warm (Atlanta, Dallas)', atticR: 38, wallR: 13, floorR: 19, color: '#eab308', desc: 'Mixed cooling/heating. Balance attic R-value and floor insulation for year-round comfort.' },
+              { zone: 4, label: 'Mixed (DC, Seattle, Nashville)', atticR: 49, wallR: 13, floorR: 19, color: '#22c55e', desc: 'Equal heating and cooling loads. Air sealing + insulation upgrades have the highest ROI here.' },
+              { zone: 5, label: 'Cool (Chicago, Denver, Boston)', atticR: 49, wallR: 20, floorR: 25, color: '#3b82f6', desc: 'Heating-dominated. Wall cavity insulation and attic coverage are critical to reduce heating bills.' },
+              { zone: 6, label: 'Cold (Minneapolis, Burlington)', atticR: 60, wallR: 20, floorR: 25, color: '#6366f1', desc: 'Long, harsh winters. Continuous exterior insulation and vapor barriers prevent ice dams and heat loss.' },
+              { zone: 7, label: 'Very Cold (Fairbanks, Duluth)', atticR: 60, wallR: 21, floorR: 30, color: '#8b5cf6', desc: 'Extreme cold. Triple-pane windows, R-60 attics, and airtight construction are essential.' }
             ];
             var insCurrentZone = insZoneData.find(function (z) { return z.zone === insZone; }) || insZoneData[3];
             var insTypes = [
-              { name: 'Fiberglass Batts', rPerInch: 3.2, cost: 0.50, pros: 'Cheapest, easy DIY install', cons: 'Loses R-value if compressed or wet', icon: '\uD83E\uDDF6' },
-              { name: 'Blown Cellulose', rPerInch: 3.5, cost: 0.80, pros: 'Great for retrofitting attics, fills gaps', cons: 'Can settle over time, needs dry environment', icon: '\uD83C\uDF43' },
-              { name: 'Spray Foam (Open)', rPerInch: 3.7, cost: 1.50, pros: 'Air-seals and insulates in one step', cons: 'Professional install required, more expensive', icon: '\uD83E\uDEE7' },
-              { name: 'Spray Foam (Closed)', rPerInch: 6.5, cost: 2.50, pros: 'Highest R/inch, moisture barrier, structural', cons: 'Most expensive, pro install only', icon: '\uD83E\uDDF1' },
-              { name: 'Rigid Foam Board', rPerInch: 5.0, cost: 1.20, pros: 'Great for basements and exterior walls', cons: 'Must be covered (fire code), not flexible', icon: '\uD83D\uDFE6' }
+              { name: 'Fiberglass Batts', rPerInch: 3.2, cost: 0.50, costSqFt: '$0.50', best: 'Cheapest option, easy DIY install in open bays', pros: 'Cheapest, easy DIY install', cons: 'Loses R-value if compressed or wet', icon: '\uD83E\uDDF6' },
+              { name: 'Blown Cellulose', rPerInch: 3.5, cost: 0.80, costSqFt: '$0.80', best: 'Great for retrofitting attics and filling gaps', pros: 'Great for retrofitting attics, fills gaps', cons: 'Can settle over time, needs dry environment', icon: '\uD83C\uDF43' },
+              { name: 'Spray Foam (Open)', rPerInch: 3.7, cost: 1.50, costSqFt: '$1.50', best: 'Air-seals and insulates walls in one step', pros: 'Air-seals and insulates in one step', cons: 'Professional install required, more expensive', icon: '\uD83E\uDEE7' },
+              { name: 'Spray Foam (Closed)', rPerInch: 6.5, cost: 2.50, costSqFt: '$2.50', best: 'Best R/inch and doubles as moisture barrier', pros: 'Highest R/inch, moisture barrier, structural', cons: 'Most expensive, pro install only', icon: '\uD83E\uDDF1' },
+              { name: 'Rigid Foam Board', rPerInch: 5.0, cost: 1.20, costSqFt: '$1.20', best: 'Ideal for basements and continuous exterior', pros: 'Great for basements and exterior walls', cons: 'Must be covered (fire code), not flexible', icon: '\uD83D\uDFE6' }
             ];
             var insThicknessNeeded = insTypes.map(function (t) {
               return { name: t.name, icon: t.icon, atticInches: Math.round(insCurrentZone.atticR / t.rPerInch * 10) / 10, wallInches: Math.round(insCurrentZone.wallR / t.rPerInch * 10) / 10, costPerSqFt: t.cost, rPerInch: t.rPerInch };
             });
+            var insSqFt = stemState.insSqFt || 0;
+            var insSelected = stemState.insSelected || 'Fiberglass Batts';
+            var insSelectedType = insTypes.find(function (t) { return t.name === insSelected; }) || insTypes[0];
+            var insEstCost = insSqFt > 0 ? Math.round(insSqFt * insSelectedType.cost) : 0;
+            var insAnnualSavings = insSqFt > 0 ? Math.round(insSqFt * 0.08 * insSelectedType.rPerInch) : 0;
+            var insPayback = insAnnualSavings > 0 ? Math.round(insEstCost / insAnnualSavings * 10) / 10 : 0;
+
+            // ────── HEATING SOURCES COMPARISON (Home Systems tab) ──────
+            var htSrcFuel = stemState.htSrcFuel || 'gas';
+            var htSrcSystems = [
+              { id: 'gas', name: 'Gas Furnace', icon: '\uD83D\uDD25', fuel: 'Natural Gas', afue: 96, installCost: 4500, annualFuel: 750, lifespan: 20, co2Lbs: 6400, pros: 'Most common, fast heating, lower fuel cost', cons: 'Requires gas line, combustion byproducts' },
+              { id: 'electric', name: 'Electric Furnace', icon: '\u26A1', fuel: 'Electricity', afue: 100, installCost: 3000, annualFuel: 1800, lifespan: 20, co2Lbs: 7200, pros: 'No combustion, safer, lower install cost', cons: 'Very expensive to operate, high electric bills' },
+              { id: 'oil', name: 'Oil Furnace', icon: '\uD83D\uDEE2\uFE0F', fuel: 'Heating Oil', afue: 87, installCost: 5500, annualFuel: 1600, lifespan: 25, co2Lbs: 8200, pros: 'Burns very hot, good for extreme cold', cons: 'Needs oil tank & deliveries, higher emissions' },
+              { id: 'propane', name: 'Propane Furnace', icon: '\uD83E\uDDEA', fuel: 'Propane (LPG)', afue: 95, installCost: 5000, annualFuel: 1400, lifespan: 20, co2Lbs: 5800, pros: 'Works without gas lines, clean-burning', cons: 'Requires propane tank, fuel price volatile' },
+              { id: 'boiler', name: 'Boiler (Hydronic)', icon: '\u2668\uFE0F', fuel: 'Gas/Oil', afue: 92, installCost: 7500, annualFuel: 900, lifespan: 30, co2Lbs: 5500, pros: 'Even radiant heat, quiet, no duct loss', cons: 'Expensive install, slow to heat up, no AC' }
+            ];
+            var htSrcSelected = htSrcSystems.find(function (s) { return s.id === htSrcFuel; }) || htSrcSystems[0];
+            var htSrc15yr = htSrcSystems.map(function (s) {
+              return { id: s.id, name: s.name, icon: s.icon, total: s.installCost + (s.annualFuel * 15), install: s.installCost, fuel15: s.annualFuel * 15 };
+            }).sort(function (a, b) { return a.total - b.total; });
+            var htSrcCheapest = htSrc15yr[0].id;
+
+            // ────── HEAT PUMP GUIDE (Home Systems tab) ──────
+            var hpType = stemState.hpType || 'air';
+            var hpClimate = stemState.hpClimate != null ? stemState.hpClimate : 3;
+            var hpTypes = [
+              { id: 'air', name: 'Air-Source Heat Pump', icon: '\uD83C\uDF2C\uFE0F', copHeat: 3.0, copCool: 4.0, installCost: 5500, annualCost: 850, bestClimate: '1\u20134', lifespan: 15, pros: 'Heats AND cools, 300% efficient, lowest operating cost', cons: 'Efficiency drops below 25\u00B0F, may need backup heat', desc: 'Extracts heat from outdoor air. Works like an AC in reverse.' },
+              { id: 'ground', name: 'Ground-Source (Geothermal)', icon: '\uD83C\uDF0D', copHeat: 4.5, copCool: 5.5, installCost: 25000, annualCost: 500, bestClimate: 'All zones', lifespan: 25, pros: 'Highest efficiency, works in any climate, 25+ yr life', cons: 'Very high upfront cost, requires yard excavation', desc: 'Uses underground loops where temp is constant 50\u201355\u00B0F year-round.' },
+              { id: 'minisplit', name: 'Ductless Mini-Split', icon: '\u2744\uFE0F', copHeat: 3.5, copCool: 4.5, installCost: 4000, annualCost: 700, bestClimate: '1\u20135', lifespan: 20, pros: 'No ductwork needed, zone control, very quiet', cons: 'Only heats/cools individual rooms, needs unit per zone', desc: 'Wall-mounted indoor units connected to outdoor compressor. Great for additions or homes without ducts.' },
+              { id: 'hybrid', name: 'Hybrid (Dual Fuel)', icon: '\uD83D\uDD04', copHeat: 3.0, copCool: 4.0, installCost: 7500, annualCost: 650, bestClimate: '3\u20137', lifespan: 18, pros: 'Switches to gas backup in extreme cold, best of both', cons: 'Higher install cost, needs gas line + heat pump', desc: 'Heat pump above 35\u00B0F, switches to gas furnace below. Optimal efficiency year-round.' }
+            ];
+            var hpSelected = hpTypes.find(function (t) { return t.id === hpType; }) || hpTypes[0];
+            var hpClimateLabels = ['Hot (Miami)', 'Warm (Atlanta)', 'Mixed (DC)', 'Cool (Chicago)', 'Cold (Minneapolis)'];
+            var hpCOPAtClimate = function (baseCOP, zone) {
+              var factors = [1.1, 1.05, 1.0, 0.85, 0.65];
+              return Math.round(baseCOP * (factors[zone] || 1.0) * 10) / 10;
+            };
+            var hpEffCOP = hpCOPAtClimate(hpSelected.copHeat, hpClimate);
+            var hpGasFurnaceAnnual = 750;
+            var hpSavingsVsGas = hpGasFurnaceAnnual - hpSelected.annualCost;
+            var hpPayback = hpSavingsVsGas > 0 ? Math.round((hpSelected.installCost - 4500) / hpSavingsVsGas * 10) / 10 : 0;
+            // Heat pump sizing calculator variables (for heatpump tab render)
+            var hpSqft = stemState.hpSqft || 2000;
+            var hpInsulation = stemState.hpInsulation || 'avg';
+            var hpInsFactor = hpInsulation === 'poor' ? 1.3 : hpInsulation === 'good' ? 0.8 : 1.0;
+            var hpClimateFactor = (stemState.hpClimate === 'cold' || hpClimate >= 4) ? 35 : (stemState.hpClimate === 'mild' || hpClimate <= 1) ? 20 : 28;
+            var hpBTU = Math.round(hpSqft * hpClimateFactor * hpInsFactor);
+            var hpTons = Math.round(hpBTU / 12000 * 10) / 10;
+            var hpTypeLookup = { standard: { cop: 3.0, install: 5500 }, cold: { cop: 2.5, install: 7000 }, geo: { cop: 4.5, install: 25000 }, mini: { cop: 3.8, install: 4000 } };
+            var hpTypeKey = stemState.hpType || 'standard';
+            var hpTypeInfo = hpTypeLookup[hpTypeKey] || hpTypeLookup.standard;
+            var hpCOP = hpTypeInfo.cop;
+            var hpInstall = hpTypeInfo.install;
+            var hpElecRate = 0.13;
+            var hpAnnual = Math.round(hpBTU / (hpCOP * 3412) * 8760 * 0.4 * hpElecRate);
+            var hpGasRef = Math.round(hpBTU / (0.96 * 100000) * 8760 * 0.4 * 1.20);
+            var hpSavings = hpGasRef - hpAnnual;
+            var hpCO2Saved = Math.round((hpGasRef * 11.7 - hpAnnual * 0.92) > 0 ? (hpGasRef * 11.7 - hpAnnual * 0.92) : 0);
+
+            // ────── SOLAR VS GAS INVESTMENT CALC (Home Systems tab) ──────
+            var solPanels = stemState.solPanels != null ? stemState.solPanels : 20;
+            var solElecRate = stemState.solElecRate != null ? stemState.solElecRate : 0.13;
+            var solGasRate = stemState.solGasRate != null ? stemState.solGasRate : 1.20;
+            var solSunHours = stemState.solSunHours != null ? stemState.solSunHours : 5;
+            var solPanelWatts = 400;
+            var solEfficiency = 0.85;
+            var solFederalITC = 0.30;
+            var solCostPerWatt = 2.80;
+            var solSystemKW = solPanels * solPanelWatts / 1000;
+            var solDailyKWh = Math.round(solSystemKW * solSunHours * solEfficiency * 10) / 10;
+            var solAnnualKWh = Math.round(solDailyKWh * 365);
+            var solAnnualSavingsElec = Math.round(solAnnualKWh * solElecRate);
+            var solSystemCost = Math.round(solSystemKW * 1000 * solCostPerWatt);
+            var solITCCredit = Math.round(solSystemCost * solFederalITC);
+            var solNetCost = solSystemCost - solITCCredit;
+            var solPaybackYrs = solAnnualSavingsElec > 0 ? Math.round(solNetCost / solAnnualSavingsElec * 10) / 10 : 0;
+            var sol25yrSavings = Math.round(solAnnualSavingsElec * 25 - solNetCost);
+            var solCO2OffsetLbs = Math.round(solAnnualKWh * 0.92);
+            var solGasAnnualCost = Math.round(800 * solGasRate);
+            var solTreeEquiv = Math.round(solCO2OffsetLbs / 48);
+
+            // ────── SOLAR vs GAS WATER HEATER (Home Systems solar tab) ──────
+            var sgHousehold = stemState.sgHousehold || 4;
+            var sgSun = stemState.sgSun || 'med';
+            var sgSunFactor = sgSun === 'high' ? 0.80 : sgSun === 'low' ? 0.45 : 0.60;
+            var sgGallonsDay = sgHousehold * 20;
+            var sgSolarInstall = 5500;
+            var sgSolarAnnual = Math.round(sgGallonsDay * 365 * 8.33 * 40 / 3412 * (1 - sgSunFactor) * 0.13);
+            var sgSolar10 = sgSolarInstall + sgSolarAnnual * 10;
+            var sgSolar20 = sgSolarInstall + sgSolarAnnual * 20;
+            var sgSolarCO2 = Math.round(sgSolarAnnual / 0.13 * 0.92);
+            var sgGasInstall = 1200;
+            var sgGasAnnual = Math.round(sgGallonsDay * 365 * 8.33 * 40 / 100000 * 1.20);
+            var sgGas10 = sgGasInstall + sgGasAnnual * 10;
+            var sgGas20 = sgGasInstall + sgGasAnnual * 20;
+            var sgGasCO2 = Math.round(sgGasAnnual / 1.20 * 11.7);
+            var sgSaving20 = sgGas20 - sgSolar20;
+            var sgBreakEven = (sgGasAnnual - sgSolarAnnual) > 0 ? Math.round((sgSolarInstall - sgGasInstall) / (sgGasAnnual - sgSolarAnnual) * 10) / 10 : 'N/A';
 
             // MERV rating data
             var mervData = [
@@ -7149,7 +7576,7 @@
                   ),
                   // Home sub-nav
                   React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
-                    [{ id: 'hvac', label: '\uD83C\uDF2C\uFE0F HVAC' }, { id: 'water', label: '\uD83D\uDCA7 Pressure' }, { id: 'panel', label: '\u26A1 Panel' }, { id: 'energy', label: '\uD83D\uDD0C Energy Audit' }, { id: 'fire', label: '\uD83D\uDD25 Fire Safety' }, { id: 'insulation', label: '\uD83C\uDFE0 Insulation' }].map(function (s) {
+                    [{ id: 'hvac', label: '\uD83C\uDF2C\uFE0F HVAC' }, { id: 'water', label: '\uD83D\uDCA7 Pressure' }, { id: 'panel', label: '\u26A1 Panel' }, { id: 'energy', label: '\uD83D\uDD0C Energy Audit' }, { id: 'fire', label: '\uD83D\uDD25 Fire Safety' }, { id: 'insulation', label: '\uD83C\uDFE0 Insulation' }, { id: 'heating', label: '\uD83D\uDD25 Heating' }, { id: 'heatpump', label: '\u2668\uFE0F Heat Pump' }, { id: 'solar', label: '\u2600\uFE0F Solar vs Gas' }].map(function (s) {
                       return React.createElement("button", { key: s.id, onClick: function () { upd('homeTab', s.id); },
                         className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (homeTab === s.id ? 'bg-purple-500 text-white' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50')
                       }, s.label);
@@ -7492,7 +7919,7 @@
                     React.createElement("div", { className: "mb-3" },
                       React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "\uD83C\uDF0D Climate Zone:"),
                       React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-1" },
-                        insClimateZones.map(function (z) {
+                        insZoneData.map(function (z) {
                           return React.createElement("button", { key: z.zone, onClick: function () { upd('insZone', z.zone); },
                             className: "px-2 py-1 rounded-lg text-[9px] font-bold transition-all " + (insZone === z.zone ? 'bg-purple-500 text-white' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50') },
                             "Zone " + z.zone + " " + z.label);
@@ -7506,15 +7933,15 @@
                       React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2" },
                         React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
                           React.createElement("p", { className: "text-[9px] text-slate-400" }, "Attic"),
-                          React.createElement("p", { className: "text-sm font-black text-purple-600" }, "R-" + insCurrentZone.attic)
+                          React.createElement("p", { className: "text-sm font-black text-purple-600" }, "R-" + insCurrentZone.atticR)
                         ),
                         React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
                           React.createElement("p", { className: "text-[9px] text-slate-400" }, "Walls"),
-                          React.createElement("p", { className: "text-sm font-black text-purple-600" }, "R-" + insCurrentZone.walls)
+                          React.createElement("p", { className: "text-sm font-black text-purple-600" }, "R-" + insCurrentZone.wallR)
                         ),
                         React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
                           React.createElement("p", { className: "text-[9px] text-slate-400" }, "Floor"),
-                          React.createElement("p", { className: "text-sm font-black text-purple-600" }, "R-" + insCurrentZone.floor)
+                          React.createElement("p", { className: "text-sm font-black text-purple-600" }, "R-" + insCurrentZone.floorR)
                         )
                       )
                     ),
@@ -7574,6 +8001,274 @@
                       React.createElement("p", { className: "text-[10px] text-purple-700" }, "\uD83E\uDD13 ", React.createElement("strong", null, "Physics Note:"), " R-value = thickness \u00F7 thermal conductivity (k). Materials with low k (like trapped air pockets in fiberglass) resist heat flow better. Spray foam's closed cells trap gas with even lower k than air!")
                     )
                   )
+                )
+              ),
+
+              // ────── HEATING SOURCES COMPARISON ──────
+              homeTab === 'heating' && React.createElement("div", { className: "space-y-3" },
+                React.createElement("h4", { className: "text-xs font-bold text-purple-700 uppercase" }, "\uD83D\uDD25 Heating Sources Comparison"),
+                React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, "Compare common home heating systems by efficiency, cost, and environmental impact. AFUE = Annual Fuel Utilization Efficiency."),
+                React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
+                  htSrcSystems.map(function (s) {
+                    return React.createElement("button", { key: s.id, onClick: function () { upd('htSrcFuel', s.id); },
+                      className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (htSrcFuel === s.id ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-orange-600 border border-orange-200 hover:bg-orange-50')
+                    }, s.icon + " " + s.name);
+                  })
+                ),
+                React.createElement("div", { className: "bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-3 border border-orange-200 mb-3" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("span", { className: "text-2xl" }, htSrcSelected.icon),
+                    React.createElement("div", null,
+                      React.createElement("p", { className: "text-xs font-bold text-orange-700" }, htSrcSelected.name),
+                      React.createElement("p", { className: "text-[10px] text-orange-500" }, "Fuel: " + htSrcSelected.fuel + " \u2022 Lifespan: " + htSrcSelected.lifespan + " years")
+                    )
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2" },
+                    React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
+                      React.createElement("p", { className: "text-[9px] text-slate-400" }, "AFUE"),
+                      React.createElement("p", { className: "text-lg font-black text-orange-600" }, htSrcSelected.afue + "%")
+                    ),
+                    React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
+                      React.createElement("p", { className: "text-[9px] text-slate-400" }, "Install Cost"),
+                      React.createElement("p", { className: "text-lg font-black text-green-600" }, "$" + htSrcSelected.installCost.toLocaleString())
+                    ),
+                    React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
+                      React.createElement("p", { className: "text-[9px] text-slate-400" }, "Annual Fuel"),
+                      React.createElement("p", { className: "text-lg font-black text-red-500" }, "$" + htSrcSelected.annualFuel.toLocaleString())
+                    ),
+                    React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
+                      React.createElement("p", { className: "text-[9px] text-slate-400" }, "CO\u2082/Year"),
+                      React.createElement("p", { className: "text-lg font-black text-slate-600" }, htSrcSelected.co2Lbs.toLocaleString() + " lbs")
+                    )
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                    React.createElement("div", { className: "bg-green-50 rounded-lg p-2 border border-green-200" },
+                      React.createElement("p", { className: "text-[9px] font-bold text-green-600" }, "\u2705 Pros"),
+                      React.createElement("p", { className: "text-[10px] text-green-700" }, htSrcSelected.pros)
+                    ),
+                    React.createElement("div", { className: "bg-red-50 rounded-lg p-2 border border-red-200" },
+                      React.createElement("p", { className: "text-[9px] font-bold text-red-500" }, "\u26A0\uFE0F Cons"),
+                      React.createElement("p", { className: "text-[10px] text-red-600" }, htSrcSelected.cons)
+                    )
+                  )
+                ),
+                React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200 mb-3" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-600 mb-2 uppercase" }, "15-Year Total Cost of Ownership"),
+                  htSrc15yr.map(function (s) {
+                    var maxCost = htSrc15yr[htSrc15yr.length - 1].total;
+                    var pct = Math.round(s.total / maxCost * 100);
+                    return React.createElement("div", { key: s.id, className: "mb-2" },
+                      React.createElement("div", { className: "flex items-center justify-between mb-0.5" },
+                        React.createElement("span", { className: "text-[10px] font-bold " + (s.id === htSrcCheapest ? 'text-green-600' : 'text-slate-600') }, s.icon + " " + s.name + (s.id === htSrcCheapest ? ' \u2B50 Best Value' : '')),
+                        React.createElement("span", { className: "text-[10px] font-bold " + (s.id === htSrcCheapest ? 'text-green-600' : 'text-slate-500') }, "$" + s.total.toLocaleString())
+                      ),
+                      React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-3" },
+                        React.createElement("div", { className: "h-3 rounded-full transition-all", style: { width: pct + "%", background: s.id === htSrcCheapest ? 'linear-gradient(90deg, #22c55e, #16a34a)' : 'linear-gradient(90deg, #f97316, #ef4444)' } })
+                      )
+                    );
+                  })
+                ),
+                React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200 mb-3" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-600 mb-2 uppercase" }, "\uD83C\uDF0D Annual CO\u2082 Emissions (lbs)"),
+                  React.createElement("div", { className: "grid grid-cols-5 gap-1" },
+                    htSrcSystems.map(function (s) {
+                      var maxCO2 = 8200;
+                      var pct = Math.round(s.co2Lbs / maxCO2 * 100);
+                      return React.createElement("div", { key: s.id, className: "text-center" },
+                        React.createElement("div", { className: "mx-auto w-6 bg-slate-100 rounded-t-full relative", style: { height: '60px' } },
+                          React.createElement("div", { className: "absolute bottom-0 w-full rounded-t-full", style: { height: pct + "%", background: s.co2Lbs < 6000 ? '#22c55e' : s.co2Lbs < 7000 ? '#eab308' : '#ef4444' } })
+                        ),
+                        React.createElement("p", { className: "text-[8px] font-bold text-slate-500 mt-1" }, s.icon),
+                        React.createElement("p", { className: "text-[8px] text-slate-400" }, (s.co2Lbs / 1000).toFixed(1) + "k")
+                      );
+                    })
+                  )
+                ),
+                React.createElement("div", { className: "bg-purple-50 rounded-lg p-2 border border-purple-200" },
+                  React.createElement("p", { className: "text-[10px] text-purple-700" }, "\uD83E\uDD13 ", React.createElement("strong", null, "Engineering Note:"), " AFUE measures how much fuel becomes usable heat. A 96% AFUE gas furnace converts 96\u00A2 of every dollar of gas into heat. Electric furnaces are 100% AFUE but electricity costs ~3x more per BTU than gas, making them expensive despite perfect efficiency.")
+                )
+              ),
+
+              // ────── HEAT PUMP SIZING ──────
+              homeTab === 'heatpump' && React.createElement("div", { className: "space-y-3" },
+                React.createElement("h4", { className: "text-xs font-bold text-purple-700 uppercase" }, "\u2668\uFE0F Heat Pump Sizing Calculator"),
+                React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, "Size a heat pump for your home. COP (Coefficient of Performance) shows how many units of heat you get per unit of electricity."),
+                React.createElement("div", { className: "grid grid-cols-2 gap-3 mb-3" },
+                  React.createElement("div", null,
+                    React.createElement("label", { className: "text-[10px] font-bold text-slate-600 block mb-1" }, "Home Size (sq ft)"),
+                    React.createElement("input", { type: "number", value: hpSqft, onChange: function (e) { upd('hpSqft', Number(e.target.value)); }, className: "w-full border rounded-lg px-2 py-1 text-xs" })
+                  ),
+                  React.createElement("div", null,
+                    React.createElement("label", { className: "text-[10px] font-bold text-slate-600 block mb-1" }, "Climate Zone"),
+                    React.createElement("select", { value: hpClimate, onChange: function (e) { upd('hpClimate', e.target.value); }, className: "w-full border rounded-lg px-2 py-1 text-xs" },
+                      React.createElement("option", { value: "mild" }, "Mild (Southeast, Pacific)"),
+                      React.createElement("option", { value: "moderate" }, "Moderate (Mid-Atlantic)"),
+                      React.createElement("option", { value: "cold" }, "Cold (Northeast, Midwest)")
+                    )
+                  ),
+                  React.createElement("div", null,
+                    React.createElement("label", { className: "text-[10px] font-bold text-slate-600 block mb-1" }, "Insulation Quality"),
+                    React.createElement("select", { value: hpInsulation, onChange: function (e) { upd('hpInsulation', e.target.value); }, className: "w-full border rounded-lg px-2 py-1 text-xs" },
+                      React.createElement("option", { value: "poor" }, "Poor (old, no upgrades)"),
+                      React.createElement("option", { value: "avg" }, "Average"),
+                      React.createElement("option", { value: "good" }, "Good (well-sealed)")
+                    )
+                  ),
+                  React.createElement("div", null,
+                    React.createElement("label", { className: "text-[10px] font-bold text-slate-600 block mb-1" }, "System Type"),
+                    React.createElement("select", { value: hpType, onChange: function (e) { upd('hpType', e.target.value); }, className: "w-full border rounded-lg px-2 py-1 text-xs" },
+                      React.createElement("option", { value: "standard" }, "Standard Air-Source"),
+                      React.createElement("option", { value: "cold" }, "Cold-Climate Air-Source"),
+                      React.createElement("option", { value: "geo" }, "Geothermal (Ground-Source)"),
+                      React.createElement("option", { value: "mini" }, "Ductless Mini-Split")
+                    )
+                  )
+                ),
+                React.createElement("div", { className: "bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl p-3 border border-teal-200 mb-3" },
+                  React.createElement("p", { className: "text-xs font-bold text-teal-700 mb-2" }, "\uD83D\uDCCA Sizing Results"),
+                  React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2" },
+                    React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
+                      React.createElement("p", { className: "text-[9px] text-slate-400" }, "BTU/hr Needed"),
+                      React.createElement("p", { className: "text-lg font-black text-teal-600" }, hpBTU.toLocaleString())
+                    ),
+                    React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
+                      React.createElement("p", { className: "text-[9px] text-slate-400" }, "Tonnage"),
+                      React.createElement("p", { className: "text-lg font-black text-blue-600" }, hpTons + " ton")
+                    ),
+                    React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
+                      React.createElement("p", { className: "text-[9px] text-slate-400" }, "COP"),
+                      React.createElement("p", { className: "text-lg font-black text-green-600" }, hpCOP)
+                    ),
+                    React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
+                      React.createElement("p", { className: "text-[9px] text-slate-400" }, "Est. Install"),
+                      React.createElement("p", { className: "text-lg font-black text-amber-600" }, "$" + hpInstall.toLocaleString())
+                    )
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-3 gap-2" },
+                    React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
+                      React.createElement("p", { className: "text-[9px] text-slate-400" }, "Annual Cost"),
+                      React.createElement("p", { className: "text-sm font-black text-red-500" }, "$" + hpAnnual.toLocaleString())
+                    ),
+                    React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
+                      React.createElement("p", { className: "text-[9px] text-slate-400" }, "vs Gas Furnace"),
+                      React.createElement("p", { className: "text-sm font-black " + (hpSavings > 0 ? 'text-green-600' : 'text-red-500') }, (hpSavings > 0 ? 'Save ' : 'Extra ') + "$" + Math.abs(hpSavings).toLocaleString() + "/yr")
+                    ),
+                    React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
+                      React.createElement("p", { className: "text-[9px] text-slate-400" }, "CO\u2082 Saved/yr"),
+                      React.createElement("p", { className: "text-sm font-black text-green-600" }, hpCO2Saved.toLocaleString() + " lbs")
+                    )
+                  )
+                ),
+                React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200 mb-3" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-600 mb-2 uppercase" }, "COP by System Type (higher = more efficient)"),
+                  [{ label: 'Standard Air-Source', cop: 3.0, color: '#0ea5e9' }, { label: 'Cold-Climate Air', cop: 2.5, color: '#6366f1' }, { label: 'Geothermal', cop: 4.5, color: '#22c55e' }, { label: 'Ductless Mini-Split', cop: 3.8, color: '#f59e0b' }, { label: 'Gas Furnace (ref)', cop: 0.96, color: '#ef4444' }].map(function (s) {
+                    var pct = Math.round(s.cop / 4.5 * 100);
+                    return React.createElement("div", { key: s.label, className: "mb-2" },
+                      React.createElement("div", { className: "flex justify-between mb-0.5" },
+                        React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, s.label),
+                        React.createElement("span", { className: "text-[10px] font-bold", style: { color: s.color } }, s.cop + "x")
+                      ),
+                      React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-3" },
+                        React.createElement("div", { className: "h-3 rounded-full", style: { width: pct + "%", background: s.color } })
+                      )
+                    );
+                  })
+                ),
+                React.createElement("div", { className: "bg-purple-50 rounded-lg p-2 border border-purple-200" },
+                  React.createElement("p", { className: "text-[10px] text-purple-700" }, "\uD83E\uDD13 ", React.createElement("strong", null, "Thermodynamics Note:"), " Heat pumps don't create heat \u2014 they move it using the refrigeration cycle (same as your fridge, but reversed). A COP of 3.0 means for every 1 kWh of electricity, you get 3 kWh of heat. That's 300% efficient! Gas furnaces max out at ~96%.")
+                )
+              ),
+
+              // ────── SOLAR vs GAS ──────
+              homeTab === 'solar' && React.createElement("div", { className: "space-y-3" },
+                React.createElement("h4", { className: "text-xs font-bold text-purple-700 uppercase" }, "\u2600\uFE0F Solar vs. Gas Water Heater"),
+                React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, "Compare solar thermal and gas water heaters over time. Solar has higher upfront cost but lower ongoing expenses."),
+                React.createElement("div", { className: "grid grid-cols-2 gap-3 mb-3" },
+                  React.createElement("div", null,
+                    React.createElement("label", { className: "text-[10px] font-bold text-slate-600 block mb-1" }, "Household Size"),
+                    React.createElement("select", { value: sgHousehold, onChange: function (e) { upd('sgHousehold', Number(e.target.value)); }, className: "w-full border rounded-lg px-2 py-1 text-xs" },
+                      React.createElement("option", { value: 2 }, "2 people"),
+                      React.createElement("option", { value: 3 }, "3 people"),
+                      React.createElement("option", { value: 4 }, "4 people"),
+                      React.createElement("option", { value: 5 }, "5 people"),
+                      React.createElement("option", { value: 6 }, "6 people")
+                    )
+                  ),
+                  React.createElement("div", null,
+                    React.createElement("label", { className: "text-[10px] font-bold text-slate-600 block mb-1" }, "Sun Exposure"),
+                    React.createElement("select", { value: sgSun, onChange: function (e) { upd('sgSun', e.target.value); }, className: "w-full border rounded-lg px-2 py-1 text-xs" },
+                      React.createElement("option", { value: "high" }, "High (Southwest, FL)"),
+                      React.createElement("option", { value: "med" }, "Medium (Mid-Latitude)"),
+                      React.createElement("option", { value: "low" }, "Low (Pacific NW, NE)")
+                    )
+                  )
+                ),
+                React.createElement("div", { className: "grid grid-cols-2 gap-3 mb-3" },
+                  React.createElement("div", { className: "bg-gradient-to-b from-yellow-50 to-amber-50 rounded-xl p-3 border border-yellow-300" },
+                    React.createElement("p", { className: "text-xs font-bold text-yellow-700 mb-2" }, "\u2600\uFE0F Solar Thermal"),
+                    React.createElement("div", { className: "space-y-1" },
+                      React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[10px] text-slate-500" }, "Install"), React.createElement("span", { className: "text-[10px] font-bold text-yellow-700" }, "$" + sgSolarInstall.toLocaleString())),
+                      React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[10px] text-slate-500" }, "Annual Cost"), React.createElement("span", { className: "text-[10px] font-bold text-yellow-700" }, "$" + sgSolarAnnual)),
+                      React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[10px] text-slate-500" }, "10-yr Total"), React.createElement("span", { className: "text-[10px] font-bold text-yellow-700" }, "$" + sgSolar10.toLocaleString())),
+                      React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[10px] text-slate-500" }, "20-yr Total"), React.createElement("span", { className: "text-[10px] font-bold text-yellow-700" }, "$" + sgSolar20.toLocaleString())),
+                      React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[10px] text-slate-500" }, "CO\u2082/yr"), React.createElement("span", { className: "text-[10px] font-bold text-green-600" }, sgSolarCO2.toLocaleString() + " lbs"))
+                    )
+                  ),
+                  React.createElement("div", { className: "bg-gradient-to-b from-blue-50 to-slate-50 rounded-xl p-3 border border-blue-300" },
+                    React.createElement("p", { className: "text-xs font-bold text-blue-700 mb-2" }, "\uD83D\uDD25 Gas Tank"),
+                    React.createElement("div", { className: "space-y-1" },
+                      React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[10px] text-slate-500" }, "Install"), React.createElement("span", { className: "text-[10px] font-bold text-blue-700" }, "$" + sgGasInstall.toLocaleString())),
+                      React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[10px] text-slate-500" }, "Annual Cost"), React.createElement("span", { className: "text-[10px] font-bold text-blue-700" }, "$" + sgGasAnnual)),
+                      React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[10px] text-slate-500" }, "10-yr Total"), React.createElement("span", { className: "text-[10px] font-bold text-blue-700" }, "$" + sgGas10.toLocaleString())),
+                      React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[10px] text-slate-500" }, "20-yr Total"), React.createElement("span", { className: "text-[10px] font-bold text-blue-700" }, "$" + sgGas20.toLocaleString())),
+                      React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[10px] text-slate-500" }, "CO\u2082/yr"), React.createElement("span", { className: "text-[10px] font-bold text-red-500" }, sgGasCO2.toLocaleString() + " lbs"))
+                    )
+                  )
+                ),
+                React.createElement("div", { className: "bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-3 border border-green-200 mb-3" },
+                  React.createElement("p", { className: "text-xs font-bold text-green-700 mb-2" }, "\uD83C\uDFC6 Verdict"),
+                  React.createElement("div", { className: "grid grid-cols-3 gap-2" },
+                    React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
+                      React.createElement("p", { className: "text-[9px] text-slate-400" }, "Break-Even"),
+                      React.createElement("p", { className: "text-lg font-black text-green-600" }, sgBreakEven + " yrs")
+                    ),
+                    React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
+                      React.createElement("p", { className: "text-[9px] text-slate-400" }, "20-yr Savings"),
+                      React.createElement("p", { className: "text-lg font-black " + (sgSaving20 > 0 ? 'text-green-600' : 'text-red-500') }, (sgSaving20 > 0 ? '' : '-') + "$" + Math.abs(sgSaving20).toLocaleString())
+                    ),
+                    React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
+                      React.createElement("p", { className: "text-[9px] text-slate-400" }, "CO\u2082 Saved/yr"),
+                      React.createElement("p", { className: "text-lg font-black text-green-600" }, (sgGasCO2 - sgSolarCO2).toLocaleString() + " lbs")
+                    )
+                  )
+                ),
+                React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200 mb-3" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-600 mb-2 uppercase" }, "Cumulative Cost Over 20 Years"),
+                  [0, 5, 10, 15, 20].map(function (yr) {
+                    var solarCum = sgSolarInstall + sgSolarAnnual * yr;
+                    var gasCum = sgGasInstall + sgGasAnnual * yr;
+                    var maxVal = Math.max(sgSolarInstall + sgSolarAnnual * 20, sgGasInstall + sgGasAnnual * 20);
+                    return React.createElement("div", { key: yr, className: "flex items-center gap-2 mb-1.5" },
+                      React.createElement("span", { className: "text-[9px] font-bold text-slate-400 w-8 text-right" }, "Yr " + yr),
+                      React.createElement("div", { className: "flex-1" },
+                        React.createElement("div", { className: "flex items-center gap-1 mb-0.5" },
+                          React.createElement("div", { className: "h-2.5 rounded-full bg-yellow-400", style: { width: Math.round(solarCum / maxVal * 100) + "%" } }),
+                          React.createElement("span", { className: "text-[8px] text-yellow-600 font-bold" }, "$" + solarCum.toLocaleString())
+                        ),
+                        React.createElement("div", { className: "flex items-center gap-1" },
+                          React.createElement("div", { className: "h-2.5 rounded-full bg-blue-400", style: { width: Math.round(gasCum / maxVal * 100) + "%" } }),
+                          React.createElement("span", { className: "text-[8px] text-blue-600 font-bold" }, "$" + gasCum.toLocaleString())
+                        )
+                      )
+                    );
+                  }),
+                  React.createElement("div", { className: "flex gap-4 mt-2 justify-center" },
+                    React.createElement("div", { className: "flex items-center gap-1" }, React.createElement("div", { className: "w-3 h-2 rounded bg-yellow-400" }), React.createElement("span", { className: "text-[9px] text-slate-500" }, "Solar")),
+                    React.createElement("div", { className: "flex items-center gap-1" }, React.createElement("div", { className: "w-3 h-2 rounded bg-blue-400" }), React.createElement("span", { className: "text-[9px] text-slate-500" }, "Gas"))
+                  )
+                ),
+                React.createElement("div", { className: "bg-purple-50 rounded-lg p-2 border border-purple-200" },
+                  React.createElement("p", { className: "text-[10px] text-purple-700" }, "\uD83E\uDD13 ", React.createElement("strong", null, "Physics Note:"), " Solar thermal collectors absorb sunlight as infrared radiation and transfer it to a heat-transfer fluid (glycol). Even on cloudy days, diffuse radiation still heats water \u2014 just less efficiently (~40% vs ~80% on sunny days). The 30% federal tax credit (IRA) drastically shortens payback time.")
                 )
               ),
 
