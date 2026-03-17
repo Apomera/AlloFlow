@@ -363,15 +363,35 @@ ipcMain.handle('setup:get-server-ip', async (event) => {
     const os = require('os');
     const nets = os.networkInterfaces();
     
-    // Find first non-internal IPv4 address
+    // Helper function to check if IP is private/internal (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
+    const isPrivateIP = (ip) => {
+      return /^192\.168\.\d+\.\d+$/.test(ip) ||
+             /^10\.\d+\.\d+\.\d+$/.test(ip) ||
+             /^172\.(1[6-9]|2[0-9]|3[01])\.\d+\.\d+$/.test(ip);
+    };
+    
+    // First priority: find private IPv4 address (for local network access)
     for (const name of Object.keys(nets)) {
       for (const net of nets[name]) {
-        if (net.family === 'IPv4' && !net.internal) {
+        if (net.family === 'IPv4' && !net.internal && isPrivateIP(net.address)) {
+          console.log(`Found private IP: ${net.address} on interface ${name}`);
           return net.address;
         }
       }
     }
     
+    // Fallback: find any non-internal IPv4 (e.g., if for some reason only public IP available)
+    for (const name of Object.keys(nets)) {
+      for (const net of nets[name]) {
+        if (net.family === 'IPv4' && !net.internal) {
+          console.log(`Found external IP: ${net.address} on interface ${name}`);
+          return net.address;
+        }
+      }
+    }
+    
+    // Last resort: localhost
+    console.log('No network interface found, using localhost');
     return '127.0.0.1';
   } catch (err) {
     console.error('IP detection error:', err.message);
