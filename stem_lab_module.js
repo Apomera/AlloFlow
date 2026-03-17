@@ -1,4 +1,4 @@
-﻿// stem_lab_module.js — v2.3.0 (a11y enhancements)
+// stem_lab_module.js — v2.3.0 (a11y enhancements)
 (function () {
   if (window.AlloModules && window.AlloModules.StemLab) { console.log('[CDN] StemLab already loaded, skipping duplicate'); } else {
     // stem_lab_module.js
@@ -5859,7 +5859,7 @@
             );
           })(),
 
-           })(), stemLabTab === 'explore' && stemLabTool === 'coordinate' && (() => {
+           stemLabTab === 'explore' && stemLabTool === 'coordinate' && (() => {
             const gridW = 400,
               gridH = 400;
             const range = gridRange.max - gridRange.min;
@@ -43716,6 +43716,14 @@
               funFact: '🏫 Teachers use DRO all the time — "If no one calls out for 5 minutes, the class earns a point!" It reduces unwanted behavior without punishment.',
               vocab: ['DRO', 'Differential Reinforcement', 'Interval', 'Target Behavior Reduction'],
               contingency: { a: 'Timer running', b: 'Any behavior EXCEPT lever', c: '🍕 Food (DRO interval met!)' }
+            },
+            {
+              id: 9, title: 'Pavlov\'s Bell', concept: 'Classical Conditioning', target: null, goal: 0,
+              intro: 'Classical conditioning pairs a neutral stimulus (bell) with an unconditioned stimulus (food) that naturally causes a response (salivation). After repeated pairings the bell ALONE triggers salivation! Phase 1: Ring the bell — nothing happens. Phase 2: Pair bell + food 5 times. Phase 3: Ring bell alone and watch for the conditioned response!',
+              termDef: 'Classical Conditioning: A learning process where a neutral stimulus (CS) is repeatedly paired with an unconditioned stimulus (US) until the CS alone elicits a conditioned response (CR).',
+              funFact: '🐶 Ivan Pavlov discovered classical conditioning accidentally while studying dog digestion in the 1890s. The dogs began salivating at the sight of lab coats because they associated them with food!',
+              vocab: ['US (Unconditioned Stimulus)', 'UR (Unconditioned Response)', 'CS (Conditioned Stimulus)', 'CR (Conditioned Response)', 'Acquisition', 'Extinction'],
+              contingency: { a: '🔔 Bell (CS)', b: 'Paired with food (US)', c: '🤤 Salivation (CR)' }
             }
           ];
 
@@ -43727,7 +43735,8 @@
             4: { q: 'In an FR-3 schedule, when is reinforcement delivered?', opts: ['After every response', 'After every 3rd response', 'After random responses', 'After 3 minutes'], correct: 1, explain: 'Fixed Ratio (FR-3) delivers reinforcement after every 3rd response — a fixed number of responses.' },
             5: { q: 'What does SD (discriminative stimulus) signal?', opts: ['Punishment is coming', 'Reinforcement is available', 'Extinction has started', 'The session is over'], correct: 1, explain: 'An SD signals that reinforcement is available for a specific behavior. It "sets the occasion" for that behavior.' },
             7: { q: 'In a behavior chain, what serves as the SD for the next step?', opts: ['The reinforcer', 'The completion of the previous step', 'A timer', 'The first behavior'], correct: 1, explain: 'In a behavior chain, completing each step produces the discriminative stimulus (SD) for the next step in the sequence.' },
-            8: { q: 'What does DRO reinforce?', opts: ['The target behavior', 'The absence of a specific behavior', 'Only aggressive behaviors', 'Random behaviors'], correct: 1, explain: 'DRO (Differential Reinforcement of Other behavior) delivers reinforcement when a specified behavior does NOT occur for a set interval.' }
+            8: { q: 'What does DRO reinforce?', opts: ['The target behavior', 'The absence of a specific behavior', 'Only aggressive behaviors', 'Random behaviors'], correct: 1, explain: 'DRO (Differential Reinforcement of Other behavior) delivers reinforcement when a specified behavior does NOT occur for a set interval.' },
+            9: { q: 'In classical conditioning, what is the conditioned stimulus (CS)?', opts: ['The food that causes salivation', 'The salivation response', 'A neutral stimulus paired with the US', 'The lab equipment'], correct: 2, explain: 'The CS starts as a neutral stimulus (like a bell) that gains the ability to elicit a response only after being repeatedly paired with the US (food).' }
           };
 
           // ── Chain sequence for Level 7 ──
@@ -43788,6 +43797,17 @@
           var blTargetX = d.blTargetX || blMouseX;
           var blTargetY = d.blTargetY || blMouseY;
           var blActionDwell = d.blActionDwell || 0;
+          // Delta-based proximity shaping
+          var blPosHistory = d.blPosHistory || [];
+          var blProxDelta = d.blProxDelta || 0;
+          // Classical conditioning (Level 9)
+          var blCcPhase = d.blCcPhase || 'baseline'; // baseline, pairing, test, extinction
+          var blAssocStrength = d.blAssocStrength || 0; // 0-100
+          var blPairCount = d.blPairCount || 0;
+          var blBellRinging = d.blBellRinging || false;
+          var blSalivating = d.blSalivating || false;
+          var blCcExtTrials = d.blCcExtTrials || 0;
+          var blBellTime = d.blBellTime || 0;
 
           // ── Sound effects (Web Audio API) ──
           var _blAudioCtx = null;
@@ -43836,7 +43856,7 @@
           };
 
           // ── Level accent colors ──
-          var LEVEL_COLORS = { 1: '#f59e0b', 2: '#8b5cf6', 3: '#ef4444', 4: '#3b82f6', 5: '#22c55e', 6: '#ec4899', 7: '#a855f7', 8: '#06b6d4' };
+          var LEVEL_COLORS = { 1: '#f59e0b', 2: '#8b5cf6', 3: '#ef4444', 4: '#3b82f6', 5: '#22c55e', 6: '#ec4899', 7: '#a855f7', 8: '#06b6d4', 9: '#e11d48' };
           var lvlAccent = LEVEL_COLORS[blLevel] || '#f59e0b';
 
           // ── Behavior Engine: Select next action based on weights ──
@@ -44001,11 +44021,30 @@
                 break;
             }
 
-            // Level 1 shaping: reinforcing approachLever gently boosts pressLever
-            if (blLevel === 1 && action === 'approachLever' && blReinforcements > 0) {
-              var w2 = Object.assign({}, blWeights);
-              if (w2.pressLever < 8) w2.pressLever = Math.min(8, (w2.pressLever || 3) + 0.5);
-              upd('blWeights', w2);
+            // ── Delta-based proximity shaping ──
+            // Track rolling position history (last 5 positions)
+            var newPosHist = (d.blPosHistory || []).concat([{ x: newX, y: newY }]);
+            if (newPosHist.length > 5) newPosHist = newPosHist.slice(-5);
+            upd('blPosHistory', newPosHist);
+
+            // Compute proximity delta: how much closer is mouse to lever vs 3 ticks ago?
+            var LEVER_X = 340, LEVER_Y = 210;
+            if (newPosHist.length >= 3) {
+              var oldPos = newPosHist[newPosHist.length - 3];
+              var oldDist = Math.sqrt(Math.pow(oldPos.x - LEVER_X, 2) + Math.pow(oldPos.y - LEVER_Y, 2));
+              var newDist = Math.sqrt(Math.pow(newX - LEVER_X, 2) + Math.pow(newY - LEVER_Y, 2));
+              var proxDelta = oldDist - newDist; // positive = getting closer
+              upd('blProxDelta', Math.round(proxDelta * 10) / 10);
+
+              // Apply shaping on levels 1, 2, and 6 (sandbox) — any proximity gain counts
+              if ((blLevel === 1 || blLevel === 2 || blLevel === 6) && proxDelta > 5) {
+                var w2 = Object.assign({}, newWeights);
+                // Proportional boost: bigger approach = bigger reinforcement
+                var boost = proxDelta > 15 ? 0.6 : 0.3;
+                w2.approachLever = Math.min(40, (w2.approachLever || 10) + boost);
+                w2.pressLever = Math.min(12, (w2.pressLever || 3) + boost * 0.5);
+                newWeights = w2;
+              }
             }
 
             // Update cumulative record for target behavior
@@ -44110,6 +44149,23 @@
                 } else {
                   upd('blDroTimer', newDroTimer);
                 }
+              }
+            }
+
+            // Level 9: Classical conditioning automatic salivation decay
+            if (blLevel === 9 && blPhase === 'running') {
+              // Auto-clear bell after 3 ticks
+              if (blBellRinging && blBellTime > 0 && (Date.now() - blBellTime) > 2000) {
+                upd('blBellRinging', false);
+              }
+              // Auto-clear salivation
+              if (blSalivating && (Date.now() - (d.blSalivateTime || 0)) > 2500) {
+                upd('blSalivating', false);
+              }
+              // In test/extinction phase: if bell is ringing and assocStrength > 30, auto-salivate (CR)
+              if (blBellRinging && blAssocStrength > 30 && (blCcPhase === 'test' || blCcPhase === 'extinction')) {
+                upd('blSalivating', true);
+                upd('blSalivateTime', Date.now());
               }
             }
 
@@ -44748,8 +44804,7 @@
                   React.createElement("p", { className: "text-xs text-slate-300 italic" }, currentLevel.termDef)
                 ),
                 currentLevel.goal > 0 && React.createElement("p", { className: "text-xs text-amber-400 font-bold" },
-                  "\uD83C\uDFAF Goal: " + (blLevel === 3 ? "Reinforce 5 lever presses, then stop and observe!" : "Get " + currentLevel.goal + " " + (currentLevel.target || 'target') + " responses!")
-                )
+                  "\uD83C\uDFAF Goal: " + (blLevel === 3 ? "Reinforce 5 lever presses, then stop and observe!" : "Get " + currentLevel.goal + " " + (currentLevel.target || 'target') + " responses!"))
               ),
               // Start button
               React.createElement("button", {
@@ -44767,6 +44822,14 @@
                   upd('blExtinctionPhase', false);
                   upd('blScheduleCount', 0);
                   upd('blLightColor', 'green');
+                  // Reset classical conditioning state (Level 9)
+                  upd('blCcPhase', 'baseline');
+                  upd('blAssocStrength', 0);
+                  upd('blPairCount', 0);
+                  upd('blBellRinging', false);
+                  upd('blSalivating', false);
+                  upd('blCcExtTrials', 0);
+                  upd('blBellTime', 0);
                 },
                 className: "w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold text-base shadow-lg shadow-amber-500/30 hover:from-amber-600 hover:to-orange-600 transition-all hover:scale-[1.02]"
               }, "\uD83D\uDE80 Start Experiment")
@@ -45006,10 +45069,15 @@
             React.createElement("div", { className: "flex gap-2 flex-wrap items-center" },
               // Deliver Food button (pulsing when target active)
               // Level 8: disable manual food (DRO is automatic)
+              // Level 9: disable manual food (CC uses bell/food pairing)
               blLevel === 8 ? React.createElement("div", {
                 className: "flex-1 py-2.5 rounded-xl text-center text-cyan-300 font-bold text-xs",
                 style: { background: 'rgba(8,145,178,0.2)', border: '1px solid rgba(6,182,212,0.3)', borderRadius: 12 }
-              }, "\u23F1 Automatic (DRO) — food delivered when timer completes") :
+              }, "\u23F1 Automatic (DRO) \u2014 food delivered when timer completes") :
+              blLevel === 9 ? React.createElement("div", {
+                className: "flex-1 py-2.5 rounded-xl text-center text-rose-300 font-bold text-xs",
+                style: { background: 'rgba(225,29,72,0.15)', border: '1px solid rgba(225,29,72,0.3)', borderRadius: 12 }
+              }, "\uD83D\uDD14 Use the Classical Conditioning panel below") :
                 React.createElement("button", {
                   onClick: function () {
                     if (blLevel === 3 && blExtinctionPhase) {
@@ -45110,6 +45178,185 @@
                 React.createElement("p", { className: "text-[10px] text-cyan-300/60 italic" },
                   blDroTimer === 0 ? 'Timer started — no lever presses needed!' : 'Keep waiting...')
               )
+            ),
+
+            // ── Level 9: Classical Conditioning Panel ──
+            blLevel === 9 && blPhase === 'running' && React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px 14px', border: '1px solid rgba(225,29,72,0.35)' }, glass)
+            },
+              React.createElement("p", { className: "text-[10px] text-rose-400 font-bold mb-2 uppercase tracking-wider" }, "\uD83D\uDD14 Classical Conditioning"),
+              // Phase indicator
+              React.createElement("div", { className: "flex items-center gap-1.5 mb-3 flex-wrap" },
+                ['baseline', 'pairing', 'test', 'extinction'].map(function (ph) {
+                  var isActive = blCcPhase === ph;
+                  var phLabels = { baseline: '1\uFE0F\u20E3 Baseline', pairing: '2\uFE0F\u20E3 Pairing', test: '3\uFE0F\u20E3 Test', extinction: '4\uFE0F\u20E3 Extinction' };
+                  return React.createElement("span", {
+                    key: ph,
+                    style: {
+                      fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 8,
+                      background: isActive ? 'rgba(225,29,72,0.35)' : 'rgba(30,41,59,0.5)',
+                      color: isActive ? '#fda4af' : '#64748b',
+                      border: '1px solid ' + (isActive ? 'rgba(225,29,72,0.5)' : 'rgba(71,85,105,0.3)')
+                    }
+                  }, phLabels[ph] || ph);
+                })
+              ),
+              // Association strength meter
+              React.createElement("div", { className: "mb-3" },
+                React.createElement("div", { className: "flex justify-between mb-1" },
+                  React.createElement("span", { style: { fontSize: 9, color: '#94a3b8', fontWeight: 600 } }, 'Association Strength'),
+                  React.createElement("span", { style: { fontSize: 9, color: blAssocStrength > 60 ? '#fda4af' : '#94a3b8', fontWeight: 700 } }, blAssocStrength + '%')
+                ),
+                React.createElement("div", {
+                  style: { height: 12, borderRadius: 6, overflow: 'hidden', background: 'rgba(30,41,59,0.8)', border: '1px solid rgba(225,29,72,0.2)' }
+                },
+                  React.createElement("div", {
+                    style: {
+                      width: blAssocStrength + '%', height: '100%', borderRadius: 6,
+                      background: blAssocStrength > 60 ? 'linear-gradient(90deg, #e11d48, #fb7185)' : 'linear-gradient(90deg, #475569, #94a3b8)',
+                      transition: 'width 0.5s ease, background 0.5s ease'
+                    }
+                  })
+                )
+              ),
+              // Visual feedback row: bell + salivation
+              React.createElement("div", { className: "flex items-center justify-center gap-4 mb-3" },
+                React.createElement("span", {
+                  style: {
+                    fontSize: 28, transition: 'transform 0.3s ease',
+                    transform: blBellRinging ? 'rotate(-15deg) scale(1.3)' : 'rotate(0) scale(1)',
+                    filter: blBellRinging ? 'drop-shadow(0 0 8px rgba(225,29,72,0.6))' : 'none'
+                  }
+                }, "\uD83D\uDD14"),
+                blBellRinging && React.createElement("span", {
+                  style: { fontSize: 11, color: '#fda4af', fontWeight: 700, letterSpacing: 2 }
+                }, "RING!"),
+                React.createElement("span", {
+                  style: {
+                    fontSize: 28, transition: 'transform 0.3s ease, opacity 0.3s ease',
+                    transform: blSalivating ? 'scale(1.3)' : 'scale(1)',
+                    opacity: blSalivating ? 1 : 0.3
+                  }
+                }, "\uD83E\uDD24"),
+                blSalivating && React.createElement("span", {
+                  style: { fontSize: 11, color: '#86efac', fontWeight: 700 }
+                }, "CR!")
+              ),
+              // Action buttons
+              React.createElement("div", { className: "flex gap-2" },
+                // Ring Bell button
+                React.createElement("button", {
+                  onClick: function () {
+                    upd('blBellRinging', true);
+                    upd('blBellTime', Date.now());
+                    blBeep(1200, 0.3, 0.25); // bell sound
+                    var bellLog = blAbcLog.slice();
+                    if (blCcPhase === 'baseline') {
+                      bellLog.unshift({ tick: blTick, a: '\uD83D\uDD14 Bell (neutral)', b: 'Dog hears bell', c: 'No salivation (no association yet)', t: Date.now() });
+                      upd('blAbcLog', bellLog.slice(0, 50));
+                      if (addToast) addToast('\uD83D\uDD14 Bell rings... no response! (neutral stimulus)', 'info');
+                      // After 2 baseline trials, auto-advance to pairing
+                      if (blPairCount >= 1) {
+                        upd('blCcPhase', 'pairing');
+                        upd('blPairCount', 0);
+                        if (addToast) addToast('\u27A1\uFE0F Moving to Pairing Phase! Now pair the bell WITH food.', 'info');
+                      } else {
+                        upd('blPairCount', blPairCount + 1);
+                      }
+                    } else if (blCcPhase === 'test') {
+                      // Test phase: bell alone — if association > 30, CR occurs
+                      if (blAssocStrength > 30) {
+                        upd('blSalivating', true);
+                        upd('blSalivateTime', Date.now());
+                        bellLog.unshift({ tick: blTick, a: '\uD83D\uDD14 Bell (CS)', b: 'Dog hears bell alone', c: '\uD83E\uDD24 Salivation! (CR — conditioned response!)', t: Date.now() });
+                        upd('blAbcLog', bellLog.slice(0, 50));
+                        upd('blLevelScore', blLevelScore + 1);
+                        blBeep(880, 0.15, 0.2);
+                        if (addToast) addToast('\uD83E\uDD24 The dog salivates to the bell alone! Classical conditioning!', 'success');
+                        if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 3, 'Classical conditioning CR observed');
+                        // After observing 2 CRs, offer extinction
+                        if (blLevelScore >= 2) {
+                          upd('blCcPhase', 'extinction');
+                          upd('blCcExtTrials', 0);
+                          if (addToast) addToast('\u27A1\uFE0F Moving to Extinction Phase! Ring bell without food to weaken the association.', 'info');
+                        }
+                      } else {
+                        bellLog.unshift({ tick: blTick, a: '\uD83D\uDD14 Bell (CS)', b: 'Dog hears bell alone', c: 'Weak/no salivation (association too low)', t: Date.now() });
+                        upd('blAbcLog', bellLog.slice(0, 50));
+                        if (addToast) addToast('\uD83D\uDD14 Weak response... association not strong enough. Go back and pair more!', 'warning');
+                        upd('blCcPhase', 'pairing');
+                      }
+                    } else if (blCcPhase === 'extinction') {
+                      // Extinction: bell alone weakens association
+                      var newAssoc = Math.max(0, blAssocStrength - 20);
+                      upd('blAssocStrength', newAssoc);
+                      upd('blCcExtTrials', blCcExtTrials + 1);
+                      if (newAssoc > 30) {
+                        upd('blSalivating', true);
+                        upd('blSalivateTime', Date.now());
+                      }
+                      bellLog.unshift({ tick: blTick, a: '\uD83D\uDD14 Bell alone (extinction)', b: 'No food follows', c: 'Association weakening (' + newAssoc + '%)', t: Date.now() });
+                      upd('blAbcLog', bellLog.slice(0, 50));
+                      if (newAssoc <= 10) {
+                        if (addToast) addToast('\u2705 Association extinguished! The bell no longer causes salivation.', 'success');
+                        // Complete the level
+                        upd('blPhase', 'complete');
+                        if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 15, 'Completed Level 9: Classical Conditioning');
+                        if (addToast) addToast('\uD83C\uDF89 Level 9 Complete! Classical Conditioning mastered!', 'success');
+                        var newCompleted9 = blCompletedLevels.indexOf(9) < 0 ? blCompletedLevels.concat([9]) : blCompletedLevels;
+                        upd('blCompletedLevels', newCompleted9);
+                      } else {
+                        if (addToast) addToast('\uD83D\uDD14 Bell without food... association weakening (' + newAssoc + '%)', 'info');
+                      }
+                    }
+                  },
+                  disabled: blCcPhase === 'pairing',
+                  className: "flex-1 py-2 rounded-xl font-bold text-xs transition-all " +
+                    (blCcPhase !== 'pairing' ? "bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md hover:from-rose-700 hover:to-pink-700 hover:scale-[1.02]" : "bg-slate-700 text-slate-500 cursor-not-allowed")
+                }, "\uD83D\uDD14 Ring Bell" + (blCcPhase === 'baseline' ? ' (Baseline)' : blCcPhase === 'test' ? ' (Test CR)' : blCcPhase === 'extinction' ? ' (Extinction)' : '')),
+                // Pair Bell + Food button (only in pairing phase)
+                React.createElement("button", {
+                  onClick: function () {
+                    if (blCcPhase !== 'pairing') {
+                      if (addToast) addToast('\u26A0\uFE0F Pairing is only available in the Pairing phase!', 'warning');
+                      return;
+                    }
+                    upd('blBellRinging', true);
+                    upd('blBellTime', Date.now());
+                    upd('blFoodVisible', true);
+                    upd('blFoodTime', Date.now());
+                    upd('blSalivating', true);
+                    upd('blSalivateTime', Date.now());
+                    var newPairCount = blPairCount + 1;
+                    var newAssocP = Math.min(100, blAssocStrength + 18);
+                    upd('blPairCount', newPairCount);
+                    upd('blAssocStrength', newAssocP);
+                    blBeep(1200, 0.3, 0.25); // bell
+                    setTimeout(function () { blBeep(500, 0.2, 0.15); }, 300); // food
+                    setTimeout(function () { upd('blFoodVisible', false); }, 1500);
+                    var pairLog = blAbcLog.slice();
+                    pairLog.unshift({ tick: blTick, a: '\uD83D\uDD14 Bell + \uD83C\uDF55 Food (US)', b: 'Dog eats food', c: '\uD83E\uDD24 Salivation (UR) — Pair ' + newPairCount + '/5', t: Date.now() });
+                    upd('blAbcLog', pairLog.slice(0, 50));
+                    if (addToast) addToast('\uD83D\uDD14 + \uD83C\uDF55 Pair ' + newPairCount + '/5 — association building (' + newAssocP + '%)', 'success');
+                    if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 1, 'CS-US pairing trial');
+                    // After 5 pairings, advance to test phase
+                    if (newPairCount >= 5) {
+                      upd('blCcPhase', 'test');
+                      upd('blLevelScore', 0);
+                      if (addToast) addToast('\u27A1\uFE0F Moving to Test Phase! Ring the bell ALONE to test for the conditioned response.', 'info');
+                    }
+                  },
+                  disabled: blCcPhase !== 'pairing',
+                  className: "flex-1 py-2 rounded-xl font-bold text-xs transition-all " +
+                    (blCcPhase === 'pairing' ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md hover:from-amber-600 hover:to-yellow-600 hover:scale-[1.02]" : "bg-slate-700 text-slate-500 cursor-not-allowed")
+                }, "\uD83D\uDD14+\uD83C\uDF55 Pair (" + blPairCount + "/5)")
+              ),
+              // Phase instructions
+              React.createElement("p", { className: "text-[10px] text-slate-500 text-center mt-2 italic" },
+                blCcPhase === 'baseline' ? 'Ring the bell to observe: no response yet (neutral stimulus)' :
+                blCcPhase === 'pairing' ? 'Pair the bell with food 5 times to build the association!' :
+                blCcPhase === 'test' ? 'Ring the bell ALONE — does the dog salivate? (Conditioned Response)' :
+                blCcPhase === 'extinction' ? 'Ring the bell WITHOUT food to weaken the association' : '')
             ),
 
             // ── Current action + stats ──
