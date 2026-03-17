@@ -4161,6 +4161,140 @@
               return { matched: matched, total: scaledIngredients.length, missing: missing, complete: matched >= scaledIngredients.length };
             };
 
+            // ── ⚡ Power Outage Cashier Rush ──
+            var crActive = d.crActive || false;
+            var crCustomer = d.crCustomer || null;
+            var crAnswer = d.crAnswer != null ? d.crAnswer : '';
+            var crFb = d.crFb || null;
+            var crWave = d.crWave || 1;
+            var crScore = d.crScore || 0;
+            var crServed = d.crServed || 0;
+            var crStartTime = d.crStartTime || null;
+            var crHistory = d.crHistory || [];
+            var crBest = d.crBest || 0;
+            var crPatiencePct = d.crPatiencePct != null ? d.crPatiencePct : 100;
+            var crIntro = d.crIntro != null ? d.crIntro : true;
+            var crGameOver = d.crGameOver || false;
+            var crPatienceTimer = d.crPatienceTimer || null;
+
+            var CR_CUSTOMERS = [
+              { name: 'Mrs. Johnson', emoji: '\uD83D\uDC69\u200D\uD83C\uDFEB' },
+              { name: 'Coach Miller', emoji: '\uD83E\uDDD1\u200D\uD83C\uDFEB' },
+              { name: 'Grandma Rose', emoji: '\uD83D\uDC75' },
+              { name: 'Officer Davis', emoji: '\uD83D\uDC6E' },
+              { name: 'Dr. Patel', emoji: '\uD83D\uDC69\u200D\u2695\uFE0F' },
+              { name: 'Mr. Garcia', emoji: '\uD83D\uDC68\u200D\uD83C\uDF73' },
+              { name: 'Nurse Kim', emoji: '\uD83D\uDC69\u200D\u2695\uFE0F' },
+              { name: 'Farmer Jim', emoji: '\uD83E\uDDD1\u200D\uD83C\uDF3E' },
+              { name: 'Teen Tyler', emoji: '\uD83E\uDDD2' },
+              { name: 'Chef Anna', emoji: '\uD83D\uDC69\u200D\uD83C\uDF73' },
+              { name: 'Pastor Brown', emoji: '\uD83E\uDDD1' },
+              { name: 'Ms. Rivera', emoji: '\uD83D\uDC69\u200D\uD83D\uDCBC' },
+              { name: 'Old Man Pete', emoji: '\uD83D\uDC74' },
+              { name: 'Firefighter Sam', emoji: '\uD83E\uDDD1\u200D\uD83D\uDE92' },
+              { name: 'Little Timmy', emoji: '\uD83D\uDC66' },
+              { name: 'Librarian Wells', emoji: '\uD83E\uDDD1\u200D\uD83D\uDCBB' }
+            ];
+
+            var genCashierRound = function () {
+              // Items per wave: wave 1 = 2-3, wave 2 = 3-4, wave 3+ = 4-6
+              var minItems = crWave <= 1 ? 2 : crWave <= 2 ? 3 : 4;
+              var maxItems = crWave <= 1 ? 3 : crWave <= 2 ? 4 : 6;
+              var numItems = Math.floor(Math.random() * (maxItems - minItems + 1)) + minItems;
+              var items = [];
+              var usedIndices = [];
+              for (var ci = 0; ci < numItems; ci++) {
+                var idx;
+                do { idx = Math.floor(Math.random() * storeItems.length); } while (usedIndices.indexOf(idx) >= 0);
+                usedIndices.push(idx);
+                var si = storeItems[idx];
+                var qty, weight;
+                if (si.pricePer === 'lb') {
+                  weight = [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3][Math.floor(Math.random() * 8)];
+                  qty = 1;
+                  items.push({ name: si.name, price: si.price, qty: 1, weight: weight, pricePer: 'lb' });
+                } else {
+                  qty = Math.floor(Math.random() * 3) + 1;
+                  items.push({ name: si.name, price: si.price, qty: qty, weight: null, pricePer: 'each' });
+                }
+              }
+              // Tax for middle/high waves 2+
+              var includeTax = grade !== 'elementary' && crWave >= 2;
+              // Coupon for wave 3+ (high school only)
+              var coupon = null;
+              if (grade === 'high' && crWave >= 3 && Math.random() > 0.4) {
+                var couponTypes = [
+                  { type: 'pct', val: [10, 15, 20][Math.floor(Math.random() * 3)], label: '' },
+                  { type: 'flat', val: [1, 2, 3, 5][Math.floor(Math.random() * 4)], label: '' }
+                ];
+                coupon = couponTypes[Math.floor(Math.random() * 2)];
+                coupon.label = coupon.type === 'pct' ? (coupon.val + '% off') : (fmt(coupon.val) + ' off');
+              }
+              // Calculate correct total
+              var subtotal = 0;
+              items.forEach(function (it) {
+                if (it.weight) subtotal += Math.round(it.price * it.weight * 100) / 100;
+                else subtotal += it.price * it.qty;
+              });
+              subtotal = Math.round(subtotal * 100) / 100;
+              var afterCoupon = subtotal;
+              if (coupon) {
+                if (coupon.type === 'pct') afterCoupon = Math.round(subtotal * (1 - coupon.val / 100) * 100) / 100;
+                else afterCoupon = Math.round(Math.max(0, subtotal - coupon.val) * 100) / 100;
+              }
+              var tax = includeTax ? Math.round(afterCoupon * taxRate * 100) / 100 : 0;
+              var total = Math.round((afterCoupon + tax) * 100) / 100;
+              // Pick customer
+              var cust = CR_CUSTOMERS[Math.floor(Math.random() * CR_CUSTOMERS.length)];
+              upd('crCustomer', { name: cust.name, emoji: cust.emoji, items: items, hasTax: includeTax, coupon: coupon, subtotal: subtotal, correctTotal: total, taxAmt: tax, afterCoupon: afterCoupon });
+              upd('crAnswer', ''); upd('crFb', null);
+              upd('crStartTime', Date.now());
+              upd('crPatiencePct', 100); upd('crGameOver', false);
+            };
+
+            var startCashierRush = function () {
+              upd('crActive', true); upd('crIntro', true);
+              upd('crWave', 1); upd('crScore', 0); upd('crServed', 0);
+              upd('crHistory', []); upd('crFb', null); upd('crCustomer', null);
+              upd('crPatiencePct', 100); upd('crGameOver', false);
+            };
+
+            var submitCashierAnswer = function () {
+              if (!crCustomer || crFb) return;
+              var playerVal = parseFloat(crAnswer);
+              if (isNaN(playerVal)) return;
+              var correct = crCustomer.correctTotal;
+              var error = Math.abs(playerVal - correct);
+              var accuracyScore = Math.max(0, Math.round(70 * (1 - error / Math.max(correct, 0.01))));
+              var elapsed = crStartTime ? Math.round((Date.now() - crStartTime) / 1000) : 99;
+              var maxTime = Math.max(15, 45 - (crWave - 1) * 5);
+              var speedScore = Math.max(0, Math.round(30 * (1 - elapsed / maxTime)));
+              var roundScore = accuracyScore + speedScore;
+              var perfect = error < 0.02;
+              var newServed = crServed + 1;
+              var newScore = crScore + roundScore;
+              var newHistory = crHistory.concat([{ score: roundScore, time: elapsed, accuracy: accuracyScore, speed: speedScore, perfect: perfect }]);
+              var newBest = Math.max(crBest, roundScore);
+              // Advance wave every 3 customers
+              var newWave = crWave;
+              if (newServed % 3 === 0) newWave = crWave + 1;
+              upd('crServed', newServed); upd('crScore', newScore);
+              upd('crHistory', newHistory); upd('crBest', newBest);
+              upd('crWave', newWave);
+              // XP
+              var xpEarned = Math.round(roundScore / 10);
+              if (xpEarned > 0) {
+                if (typeof awardStemXP === 'function') awardStemXP('moneyMath', xpEarned, 'cashier rush');
+                if (typeof addXP === 'function') addXP(xpEarned, 'Money Math: Cashier Rush');
+              }
+              var fbMsg = perfect
+                ? '\u2705 Perfect! ' + fmt(correct) + ' \u2014 ' + roundScore + '/100 (' + elapsed + 's) +' + xpEarned + ' XP!'
+                : error < correct * 0.05
+                ? '\uD83D\uDFE1 Close! Answer: ' + fmt(correct) + ', you said ' + fmt(playerVal) + ' \u2014 ' + roundScore + '/100 +' + xpEarned + ' XP'
+                : '\u274C Off! The total was ' + fmt(correct) + ', you said ' + fmt(playerVal) + ' \u2014 ' + roundScore + '/100';
+              upd('crFb', { ok: perfect, close: error < correct * 0.05, msg: fbMsg, score: roundScore, accuracy: accuracyScore, speed: speedScore, elapsed: elapsed, correct: correct });
+            };
+
             // ── Generate change problem ──
             var genChangeProblem = function () {
               var maxVal = gc.maxPrice;
@@ -4698,7 +4832,167 @@
 
               // ═══ GROCERY STORE TAB ═══
               tab === 'store' && React.createElement("div", { className: "space-y-4" },
-                // ── Header row: Recipe Mode toggle (middle+) ──
+                
+                // ── ⚡ Cashier Rush Header ──
+                React.createElement("div", { className: "flex items-center justify-between bg-zinc-900 text-white rounded-xl p-3 shadow-md border border-zinc-700 mx-1 mt-1" },
+                  React.createElement("div", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-2xl" }, "\u26A1"),
+                    React.createElement("div", null,
+                      React.createElement("h3", { className: "text-sm font-black text-amber-500 leading-tight" }, "Power Outage Cashier Rush"),
+                      React.createElement("p", { className: "text-[10px] text-zinc-400 font-bold" }, "Registers are down! Calculate by hand!")
+                    )
+                  ),
+                  React.createElement("button", { onClick: function() { if (crActive) { upd('crActive', false); } else { startCashierRush(); } },
+                    className: "px-4 py-2 rounded-lg text-xs font-black transition-all shadow-sm " + (crActive ? "bg-zinc-800 hover:bg-zinc-700 text-red-400 border border-red-900" : "bg-amber-500 hover:bg-amber-400 text-zinc-900")
+                  }, crActive ? "Close" : "Start Shift")
+                ),
+
+                crActive ? React.createElement("div", { className: "bg-zinc-900 rounded-2xl p-4 border border-zinc-700 shadow-2xl relative overflow-hidden" },
+                  // Background grid effect
+                  React.createElement("div", { className: "absolute inset-0 opacity-10 pointer-events-none" },
+                    React.createElement("div", { className: "w-full h-full", style: { backgroundImage: 'radial-gradient(#fbbf24 1px, transparent 1px)', backgroundSize: '16px 16px' } })
+                  ),
+                  
+                  crIntro ? React.createElement("div", { className: "relative z-10 text-center py-6" },
+                    React.createElement("div", { className: "text-5xl mb-4 animate-pulse origin-bottom" }, "\uD83D\uDD26"),
+                    React.createElement("h2", { className: "text-xl font-black text-amber-400 mb-2 uppercase tracking-wide" }, "Code Black: Power Outage!"),
+                    React.createElement("p", { className: "text-sm text-zinc-300 mb-6 max-w-sm mx-auto" },
+                      "The registers are completely dead. Food is starting to spoil. We need you to manually calculate customer totals as fast as you can. ",
+                      React.createElement("span", { className: "text-amber-400 font-bold" }, "Speed and accuracy"), " are everything right now."
+                    ),
+                    grade !== 'elementary' ? React.createElement("div", { className: "mb-6 inline-block bg-zinc-800 rounded-lg px-4 py-2 border border-zinc-700 text-left" },
+                      React.createElement("p", { className: "text-xs text-zinc-400 mb-1" }, "\u26A0\uFE0F Management notes:"),
+                      React.createElement("ul", { className: "text-xs text-zinc-300 list-disc list-inside space-y-1" },
+                        React.createElement("li", null, "Watch out for per-lb items"),
+                        React.createElement("li", null, "Waves 2+: Add " + (taxRate*100) + "% Sales Tax"),
+                        grade === 'high' ? React.createElement("li", null, "Waves 3+: Apply customer coupons FIRST, before tax") : null
+                      )
+                    ) : null,
+                    React.createElement("div", { className: "text-center" }, 
+                      React.createElement("button", { onClick: function() { upd('crIntro', false); genCashierRound(); },
+                        className: "px-8 py-3 bg-amber-500 text-zinc-900 font-black text-lg rounded-xl hover:bg-amber-400 hover:scale-105 transition-all shadow-[0_0_15px_rgba(251,191,36,0.5)]"
+                      }, "I'm Ready \u2192")
+                    )
+                  ) : null,
+
+                  !crIntro && !crGameOver && crCustomer ? React.createElement("div", { className: "relative z-10 space-y-4" },
+                    // Top stats row
+                    React.createElement("div", { className: "flex justify-between items-end" },
+                      React.createElement("div", null,
+                        React.createElement("p", { className: "text-amber-500 font-black text-xs uppercase tracking-widest" }, "Wave " + crWave),
+                        React.createElement("p", { className: "text-zinc-400 text-[10px] font-bold" }, crServed + " Customers Served")
+                      ),
+                      React.createElement("div", { className: "text-right" },
+                        React.createElement("p", { className: "text-[10px] text-zinc-400 font-bold uppercase" }, "Session Score"),
+                        React.createElement("p", { className: "text-amber-400 font-black text-xl leading-none" }, crScore),
+                        crBest > 0 && React.createElement("p", { className: "text-[9px] text-emerald-400 font-bold" }, "Best Round: " + crBest)
+                      )
+                    ),
+                    
+                    // Customer Card
+                    React.createElement("div", { className: "bg-zinc-800 rounded-xl p-4 shadow-lg border border-zinc-700 relative overflow-hidden" },
+                      crFb ? React.createElement("div", { className: "absolute inset-0 bg-black/60 z-10 flex items-center justify-center animate-in fade-in" },
+                        React.createElement("div", { className: "text-center" },
+                          React.createElement("div", { className: "text-5xl mb-2" }, crFb.ok ? "\uD83C\uDF89" : crFb.close ? "\uD83D\uDFE1" : "\u274C"),
+                          React.createElement("p", { className: "text-zinc-200 font-bold text-center mb-1 text-base bg-zinc-900/80 px-4 py-2 rounded-lg" }, crFb.msg)
+                        )
+                      ) : null,
+
+                      // Patience Bar
+                      React.createElement("div", { className: "h-1 w-full bg-zinc-700 mb-4 rounded-full overflow-hidden" },
+                        React.createElement("div", { className: "h-full transition-all duration-100", style: { width: crPatiencePct + '%', backgroundColor: crPatiencePct > 50 ? '#34d399' : crPatiencePct > 20 ? '#fbbf24' : '#ef4444' } })
+                      ),
+                      React.createElement("div", { className: "flex items-center gap-3 mb-4 relative z-0" },
+                        React.createElement("div", { className: "w-12 h-12 rounded-full bg-zinc-700 flex items-center justify-center text-3xl shadow-inner border border-zinc-600" }, crCustomer.emoji),
+                        React.createElement("div", null,
+                          React.createElement("p", { className: "text-zinc-200 font-bold text-sm" }, crCustomer.name),
+                          React.createElement("p", { className: "text-zinc-500 text-[10px] font-bold" }, "Waiting for total...")
+                        )
+                      ),
+                      
+                      // Receipt / Basket
+                      React.createElement("div", { className: "bg-[#fffbc8] text-zinc-800 p-4 rounded-sm shadow-inner font-mono text-sm relative z-0" },
+                        // jagged top
+                        React.createElement("div", { className: "absolute top-0 left-0 w-full h-2 bg-zinc-800", style: { maskImage: 'radial-gradient(circle at 4px 0px, transparent 4px, black 4.5px)', maskSize: '8px 8px', maskRepeat: 'repeat-x' } }),
+                        React.createElement("div", { className: "text-center pb-2 border-b-2 border-dashed border-zinc-400 mb-2 mt-1 opacity-80" },
+                          React.createElement("p", { className: "font-bold text-xs flex justify-center items-center gap-1" }, React.createElement("span", null, "\u26A1"), React.createElement("span", null, "ALLOFOOD MKT"), React.createElement("span", null, "\u26A1")),
+                          React.createElement("p", { className: "text-[9px]" }, "SYSTEM OFFLINE")
+                        ),
+                        
+                        crCustomer.items.map(function(it, i) {
+                          return React.createElement("div", { key: i, className: "flex justify-between mb-1 text-xs" },
+                            React.createElement("div", { className: "flex-1" },
+                              React.createElement("span", { className: "font-bold" }, it.name),
+                              React.createElement("div", { className: "text-[10px] text-zinc-600 pl-1" }, 
+                                it.weight ? (it.weight + " lb @ " + fmt(it.price) + "/lb") :
+                                it.qty > 1 ? (it.qty + " @ " + fmt(it.price) + " ea") : ""
+                              )
+                            ),
+                            React.createElement("span", { className: "font-bold" }, "$" + (it.weight ? (it.price * it.weight).toFixed(2) : (it.price * it.qty).toFixed(2)))
+                          );
+                        }),
+                        
+                        grade !== 'elementary' ? React.createElement("div", { className: "mt-2 pt-2 border-t border-dashed border-zinc-400 text-xs flex justify-between text-zinc-600" },
+                          React.createElement("span", null, "Subtotal"), React.createElement("span", null, "$" + crCustomer.subtotal.toFixed(2))
+                        ) : null,
+                        
+                        crCustomer.coupon ? React.createElement("div", { className: "flex justify-between text-red-600 font-bold text-xs mt-1" },
+                          React.createElement("span", null, "COUPON: " + crCustomer.coupon.label),
+                          React.createElement("span", null, "-$" + (crCustomer.subtotal - crCustomer.afterCoupon).toFixed(2))
+                        ) : null,
+                        
+                        crCustomer.hasTax ? React.createElement("div", { className: "flex justify-between text-zinc-600 text-xs mt-1" },
+                          React.createElement("span", null, "Tax (" + (taxRate*100) + "%)"), React.createElement("span", null, crFb ? ("$" + crCustomer.taxAmt.toFixed(2)) : "???")
+                        ) : null
+                      )
+                    ),
+
+                    // Input / Feedback Area
+                    crFb ? React.createElement("div", { className: "animate-in slide-in-from-bottom flex flex-col items-center mt-2" },
+                      React.createElement("div", { className: "flex gap-2 my-2 text-xs w-full justify-center" },
+                        React.createElement("div", { className: "text-center bg-zinc-800 rounded-lg px-2 py-2 border border-zinc-700 shadow-inner w-20" }, React.createElement("p", { className: "text-zinc-500 text-[9px] uppercase font-bold" }, "Accuracy"), React.createElement("p", { className: "text-emerald-400 font-black text-lg leading-tight" }, "+" + crFb.accuracy)),
+                        React.createElement("div", { className: "text-center bg-zinc-800 rounded-lg px-2 py-2 border border-zinc-700 shadow-inner w-20" }, React.createElement("p", { className: "text-zinc-500 text-[9px] uppercase font-bold" }, "Speed"), React.createElement("p", { className: "text-sky-400 font-black text-lg leading-tight" }, "+" + crFb.speed)),
+                        React.createElement("div", { className: "text-center bg-zinc-800 rounded-lg px-2 py-2 border border-amber-900/50 shadow-inner w-20" }, React.createElement("p", { className: "text-amber-500/70 text-[9px] uppercase font-bold" }, "Total"), React.createElement("p", { className: "text-amber-400 font-black text-lg leading-tight" }, "+" + crFb.score))
+                      ),
+                      React.createElement("button", { onClick: genCashierRound, className: "w-full py-4 bg-amber-500 text-zinc-900 font-black rounded-xl hover:bg-amber-400 hover:scale-105 transition-all text-sm shadow-[0_0_15px_rgba(251,191,36,0.3)] mt-2" }, "Next Customer \u2192")
+                    ) :
+                    React.createElement("div", { className: "flex gap-2 relative z-20 mt-2" },
+                      React.createElement("div", { className: "relative flex-1" },
+                        React.createElement("span", { className: "absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-black text-xl" }, "$"),
+                        React.createElement("input", {
+                          type: "number", step: "0.01",
+                          value: crAnswer,
+                          onChange: function(e) { upd('crAnswer', e.target.value); },
+                          onKeyDown: function(e) { if(e.key === 'Enter') submitCashierAnswer(); },
+                          placeholder: "Total...", autoFocus: true,
+                          className: "w-full pl-8 pr-4 py-4 bg-zinc-800 border-2 border-zinc-600 rounded-xl text-zinc-100 font-mono text-xl font-bold focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all shadow-inner"
+                        })
+                      ),
+                      React.createElement("button", { onClick: submitCashierAnswer, disabled: !crAnswer,
+                        className: "px-6 bg-emerald-500 text-white font-black rounded-xl hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md text-lg active:scale-95"
+                      }, "ENTER")
+                    )
+                  ) : null,
+
+                  crGameOver ? React.createElement("div", { className: "relative z-10 text-center py-6" },
+                    React.createElement("div", { className: "text-5xl mb-4" }, "\uD83D\uDD14"),
+                    React.createElement("h2", { className: "text-2xl font-black text-red-500 mb-2 uppercase tracking-wide drop-shadow-md" }, "Shift Over!"),
+                    React.createElement("p", { className: "text-sm text-zinc-300 mb-6 max-w-sm mx-auto" },
+                      "You ran out of time! Still, you served ", React.createElement("span", { className: "text-amber-400 font-bold" }, crServed), " customers."
+                    ),
+                    React.createElement("div", { className: "bg-zinc-800/80 rounded-2xl p-6 border border-zinc-600 mb-8 inline-block shadow-xl shadow-black/50" },
+                      React.createElement("p", { className: "text-[10px] text-zinc-400 font-bold uppercase mb-1 tracking-widest gap-2" }, "Final Score"),
+                      React.createElement("p", { className: "text-5xl font-black text-amber-500 drop-shadow-md" }, crScore),
+                      crBest > 0 && crScore >= crBest && crScore > 0 ? React.createElement("p", { className: "text-xs text-emerald-400 font-bold mt-2 animate-pulse" }, "\uD83C\uDFC6 NEW HIGH SCORE!") : null
+                    ),
+                    React.createElement("div", { className: "flex flex-col items-center space-y-3 w-full" }, 
+                      React.createElement("button", { onClick: startCashierRush, className: "px-8 py-3 bg-amber-500 text-zinc-900 font-black text-lg rounded-xl hover:bg-amber-400 transition-all shadow-[0_0_15px_rgba(251,191,36,0.5)] w-full max-w-[280px]" }, "Play Again \u21BB"),
+                      React.createElement("button", { onClick: function() { upd('crActive', false); }, className: "px-8 py-3 bg-transparent text-zinc-400 font-black text-sm rounded-xl hover:text-white hover:bg-zinc-800 transition-all w-full max-w-[280px] border border-zinc-700" }, "Exit Emergency")
+                    )
+                  ) : null
+
+                ) : React.createElement(React.Fragment, null,
+                  // ── Header row: Recipe Mode toggle (middle+) ──
                 grade !== 'elementary' && React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2" },
                   React.createElement("button", { onClick: function () { upd('recipeMode', !recipeMode); upd('activeRecipe', null); },
                     className: "px-3 py-1.5 rounded-lg text-xs font-black transition-all " + (recipeMode ? 'bg-purple-500 text-white ring-2 ring-purple-300 shadow-lg' : 'bg-white text-purple-600 border border-purple-300 hover:bg-purple-50')
@@ -4965,6 +5259,7 @@
                           className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs"
                         }, "\u21BB New Problem")
                       )
+                  )
               ),
 
               // ═══ CURRENCY EXCHANGE TAB ═══
