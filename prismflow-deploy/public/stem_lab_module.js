@@ -16719,6 +16719,42 @@
                         var atmosLabel = sel.atmosphere || 'No data';
                         var gravLabel = sel.gravity || '?';
                         var featList = (sel.notableFeatures || []).slice(0, 3).map(function (f) { return '<div style="color:#94a3b8;font-size:9px;padding-left:8px">\u2022 ' + f + '</div>'; }).join('');
+                        // ── Fullscreen Toggle ──
+                        var fsToggle = document.createElement('button');
+                        fsToggle.style.cssText = 'position:absolute;top:8px;right:64px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border-radius:8px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#38bdf8;font-size:24px;border:1px solid rgba(56,189,248,0.3);cursor:pointer;z-index:15;transition:background 0.2s';
+                        fsToggle.innerHTML = '\u26F6';
+                        fsToggle.title = "Toggle Fullscreen";
+                        fsToggle.onmouseover = function() { this.style.background = 'rgba(56,189,248,0.3)'; };
+                        fsToggle.onmouseout = function() { this.style.background = 'rgba(0,0,0,0.6)'; };
+                        fsToggle.onclick = function() {
+                          var container = canvasEl.parentElement;
+                          if (!document.fullscreenElement) {
+                            if (container.requestFullscreen) { container.requestFullscreen(); }
+                            else if (container.mozRequestFullScreen) { container.mozRequestFullScreen(); }
+                            else if (container.webkitRequestFullscreen) { container.webkitRequestFullscreen(); }
+                            else if (container.msRequestFullscreen) { container.msRequestFullscreen(); }
+                            fsToggle.innerHTML = '\xDF'; // shrink icon approximation
+                          } else {
+                            if (document.exitFullscreen) { document.exitFullscreen(); }
+                            else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
+                            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+                            else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+                            fsToggle.innerHTML = '\u26F6'; // expand icon
+                          }
+                        };
+                        canvasEl.parentElement.appendChild(fsToggle);
+
+                        // Handling true fullscreen resize dynamically
+                        document.addEventListener('fullscreenchange', function() {
+                          if (!renderer || !camera) return;
+                          var isFS = !!document.fullscreenElement;
+                          var w = isFS ? window.innerWidth : 900;
+                          var h = isFS ? window.innerHeight : 600;
+                          camera.aspect = w / h;
+                          camera.updateProjectionMatrix();
+                          renderer.setSize(w, h);
+                        });
+
                         // Live telemetry spans (updated each frame)
                         var hudStaticHTML =
                           '<div style="font-weight:bold;font-size:12px;margin-bottom:6px;color:#7dd3fc;letter-spacing:1px" id="hud-mode">' + modeLabel + '</div>' +
@@ -16993,17 +17029,10 @@
                           }
                         });
 
-                        // ── Trail Line (path history) ──
+                        // ── Trail Line (path history) - REMOVED ──
                         var trailPositions = []; var trailLine = null; var trailMaxPoints = 500;
                         function updateTrail() {
-                          trailPositions.push(new THREE.Vector3(playerPos.x, isGas ? playerPos.y - 0.3 : 0.15, playerPos.z));
-                          if (trailPositions.length > trailMaxPoints) trailPositions.shift();
-                          if (trailLine) scene.remove(trailLine);
-                          if (trailPositions.length > 1) {
-                            var geo = new THREE.BufferGeometry().setFromPoints(trailPositions);
-                            trailLine = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.5 }));
-                            scene.add(trailLine);
-                          }
+                          // Removed: User found the breadcrumb trail confusing as a "goal line".
                         }
 
                         // ── Navigation Challenge System (N key) ──
@@ -17012,21 +17041,22 @@
                         navCard.style.cssText = 'position:absolute;bottom:56px;left:8px;background:rgba(0,0,0,0.88);backdrop-filter:blur(10px);border-radius:12px;padding:14px 18px;color:#fff;font-family:sans-serif;font-size:11px;pointer-events:none;z-index:12;border:1px solid rgba(167,139,250,0.4);max-width:280px;opacity:0;transition:opacity 0.4s;display:none';
                         canvasEl.parentElement.appendChild(navCard);
                         var NAV_CHALLENGES = [
-                          { type: 'cardinal', prompt: 'Navigate 20 meters NORTH from your current position.', dx: 0, dz: -2, skill: 'Spatial Awareness', badge: '\uD83E\uDDED' },
-                          { type: 'cardinal', prompt: 'Navigate 30 meters EAST from your current position.', dx: 3, dz: 0, skill: 'Dead Reckoning', badge: '\uD83E\uDDED' },
-                          { type: 'coord', prompt: 'Navigate to coordinates (150, -80) on the grid.', tx: 15, tz: -8, skill: 'Cartesian Navigation', badge: '\uD83D\uDCCD' },
-                          { type: 'coord', prompt: 'Navigate to coordinates (-120, 200) on the grid.', tx: -12, tz: 20, skill: 'Coordinate Systems', badge: '\uD83D\uDCCD' },
-                          { type: 'coord', prompt: 'Navigate to coordinates (250, 180) on the grid.', tx: 25, tz: 18, skill: 'Grid Navigation', badge: '\uD83D\uDCCD' },
+                          { type: 'math_coord', cx: 120, cz: -160, mX: '60 \u00D7 2', mZ: '-80 \u00D7 2', prompt: 'Navigate to target coordinates. X = 60 \u00D7 2, Z = -80 \u00D7 2. (Grid is /10)', skill: 'Cartesian Math', badge: '\uD83D\uDCCD' },
+                          { type: 'math_coord', cx: -150, cz: 200, mX: '-300 \u00F7 2', mZ: '100 \u00D7 2', prompt: 'Navigate to target coordinates. X = -300 \u00F7 2, Z = 100 \u00D7 2. (Grid is /10)', skill: 'Cartesian Math', badge: '\uD83D\uDCCD' },
+                          { type: 'math_coord', cx: 250, cz: 80, mX: '125 + 125', mZ: '160 \u00F7 2', prompt: 'Navigate to target coordinates. X = 125 + 125, Z = 160 \u00F7 2. (Grid is /10)', skill: 'Cartesian Math', badge: '\uD83D\uDCCD' },
+                          { type: 'math_coord', cx: 0, cz: -300, mX: '150 - 150', mZ: '-150 \u00D7 2', prompt: 'Navigate to target coordinates. X = 150 - 150, Z = -150 \u00D7 2. (Grid is /10)', skill: 'Cartesian Math', badge: '\uD83D\uDCCD' },
+                          { type: 'math_coord', cx: -220, cz: -180, mX: '-110 \u00D7 2', mZ: '-90 \u00D7 2', prompt: 'Navigate to target coordinates. X = -110 \u00D7 2, Z = -90 \u00D7 2. (Grid is /10)', skill: 'Cartesian Math', badge: '\uD83D\uDCCD' },
                           { type: 'distance', prompt: 'A relay beacon is 35m away at heading 045\u00B0 (NE). Calculate and navigate to its position.', bearing: 45, dist: 3.5, skill: 'Trigonometry & Bearing', badge: '\uD83D\uDCE1' },
-                          { type: 'distance', prompt: 'Mission control reports a sample site 50m away at heading 270\u00B0 (W). Navigate there.', bearing: 270, dist: 5, skill: 'Vector Navigation', badge: '\uD83D\uDCE1' },
-                          { type: 'distance', prompt: 'Emergency cache located 40m away at heading 180\u00B0 (S). Calculate coordinates and retrieve it.', bearing: 180, dist: 4, skill: 'Emergency Navigation', badge: '\u26A1' },
+                          { type: 'distance', prompt: 'Mission control reports a sample site 50m away at heading 270\u00B0 (W). Navigate there.', bearing: 270, dist: 5, skill: 'Vector Navigation', badge: '\uD83D\uDCE1' }
                         ];
                         var navChallengeIdx = 0, navCompletedCount = 0;
+                        var navGoalLine = null;
                         function startNavChallenge() {
                           var ch = NAV_CHALLENGES[navChallengeIdx % NAV_CHALLENGES.length];
                           navChallengeActive = true;
                           if (ch.type === 'cardinal') { navTargetX = playerPos.x + ch.dx; navTargetZ = playerPos.z + ch.dz; }
                           else if (ch.type === 'coord') { navTargetX = ch.tx; navTargetZ = ch.tz; }
+                          else if (ch.type === 'math_coord') { navTargetX = ch.cx / 10; navTargetZ = ch.cz / 10; }
                           else if (ch.type === 'distance') { var rad = ch.bearing * Math.PI / 180; navTargetX = playerPos.x + Math.sin(rad) * ch.dist; navTargetZ = playerPos.z - Math.cos(rad) * ch.dist; }
                           // Place target beacon
                           if (navTargetMesh) scene.remove(navTargetMesh);
@@ -17035,6 +17065,15 @@
                           navTargetMesh = new THREE.Mesh(beamGeo, beamMat);
                           navTargetMesh.position.set(navTargetX, isGas ? 4 : 4, navTargetZ);
                           scene.add(navTargetMesh);
+
+                          // Draw Direct Goal Line
+                          if (navGoalLine) scene.remove(navGoalLine);
+                          var pts = [new THREE.Vector3(playerPos.x, isGas ? playerPos.y - 0.5 : 0.5, playerPos.z), new THREE.Vector3(navTargetX, isGas ? 4 : 0.5, navTargetZ)];
+                          var lineGeo = new THREE.BufferGeometry().setFromPoints(pts);
+                          navGoalLine = new THREE.Line(lineGeo, new THREE.LineDashedMaterial({ color: 0xa78bfa, dashSize: 0.5, gapSize: 0.5, transparent: true, opacity: 0.8 }));
+                          navGoalLine.computeLineDistances();
+                          scene.add(navGoalLine);
+
                           // Show challenge card
                           navCard.innerHTML = '<div style="font-weight:bold;font-size:13px;color:#a78bfa;margin-bottom:6px">\uD83E\uDDED NAVIGATION CHALLENGE</div>' +
                             '<div style="color:#e2e8f0;margin-bottom:6px;line-height:1.5">' + ch.prompt + '</div>' +
@@ -17049,6 +17088,7 @@
                         function cancelNavChallenge() {
                           navChallengeActive = false;
                           if (navTargetMesh) { scene.remove(navTargetMesh); navTargetMesh = null; }
+                          if (navGoalLine) { scene.remove(navGoalLine); navGoalLine = null; }
                           navCard.style.opacity = '0'; setTimeout(function () { navCard.style.display = 'none'; }, 400);
                         }
                         function checkNavCompletion() {
@@ -17069,7 +17109,11 @@
                             if (typeof awardStemXP === 'function') awardStemXP('solarSystem', 15);
                             navChallengeActive = false;
                             if (navTargetMesh) { navTargetMesh.material.color.setHex(0x34d399); navTargetMesh.material.opacity = 0.7; }
-                            setTimeout(function () { if (navTargetMesh) { scene.remove(navTargetMesh); navTargetMesh = null; } }, 3000);
+                            if (navGoalLine) { navGoalLine.material.color.setHex(0x34d399); }
+                            setTimeout(function () { 
+                              if (navTargetMesh) { scene.remove(navTargetMesh); navTargetMesh = null; } 
+                              if (navGoalLine) { scene.remove(navGoalLine); navGoalLine = null; }
+                            }, 3000);
                           }
                         }
 
@@ -17272,6 +17316,13 @@
                             if (posEl) posEl.textContent = (playerPos.x * 10).toFixed(1) + ', ' + (playerPos.z * 10).toFixed(1);
                             if (odoEl) odoEl.textContent = odometer > 1000 ? (odometer / 1000).toFixed(1) + ' km' : Math.round(odometer) + ' m';
                             if (dscEl) dscEl.textContent = Object.keys(discoveredPOIs).length + ' / ' + totalPOIs;
+                          }
+
+                          // ── Update Goal Line Dynamic Vertex ──
+                          if (navChallengeActive && navGoalLine) {
+                            var pts = [new THREE.Vector3(playerPos.x, isGas ? playerPos.y - 0.5 : 0.5, playerPos.z), new THREE.Vector3(navTargetX, isGas ? 4 : 0.5, navTargetZ)];
+                            navGoalLine.geometry.setFromPoints(pts);
+                            navGoalLine.computeLineDistances();
                           }
 
                           // ── POI proximity detection (every 10 frames) ──
