@@ -165,8 +165,7 @@
         setTimeout(function () { stemBeep(784, 0.25, 0.16); }, 200); // G5
       }
 
-      // ── Accessibility: respect reduced-motion ──
-      var _reduceMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      // _reduceMotion declared below (L~460) — single source of truth
 
       // ── Floating +XP Popup State ──
       var _stemXpPopups = React.useRef([]);
@@ -215,8 +214,7 @@
           return Object.assign({}, prev, { _stemXP: xpState });
         });
         if (addToast) addToast(t('stem.common.u2b50') + _awardedPts + ' XP: ' + (reason || 'STEM activity') + '!', 'success');
-        // Screen-reader announcement via ARIA live region
-        try { var _sr = document.getElementById('stem-sr-live'); if (!_sr) { _sr = document.createElement('div'); _sr.id = 'stem-sr-live'; _sr.setAttribute('aria-live', 'polite'); _sr.setAttribute('role', 'status'); Object.assign(_sr.style, { position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0 0 0 0)' }); document.body.appendChild(_sr); } _sr.textContent = 'Earned ' + _awardedPts + ' XP for ' + (reason || 'STEM activity'); } catch (e) { }
+        announceToSR('Earned ' + _awardedPts + ' XP for ' + (reason || 'STEM activity'));
         // ── XP Chime (ascending two-note) ──
         stemBeep(523, 0.08, 0.10); // C5
         setTimeout(function () { stemBeep(659, 0.12, 0.10); }, 80); // E5
@@ -2066,18 +2064,28 @@
             var _xpActivities = [
               { id: 'behaviorLab', label: 'Behavior Lab', icon: '\uD83D\uDC2D' },
               { id: 'aquarium', label: 'Aquarium', icon: '\uD83D\uDC20' },
+              { id: 'ocean', label: 'Ocean', icon: '\uD83D\uDC0B' },
               { id: 'wave-match', label: 'Waves', icon: '\uD83C\uDF0A' },
+              { id: 'wave-quiz', label: 'Wave Quiz', icon: '\uD83C\uDFB6' },
               { id: 'galaxy_quiz', label: 'Galaxy', icon: '\uD83C\uDF0C' },
               { id: 'galaxy_explore', label: 'Discovery', icon: '\u2B50' },
+              { id: 'universe_explore', label: 'Universe', icon: '\uD83C\uDF20' },
+              { id: 'solarSystem', label: 'Solar System', icon: '\u2600\uFE0F' },
               { id: 'physicsQuiz', label: 'Physics', icon: '\uD83C\uDFAF' },
               { id: 'chemBalance', label: 'Chemistry', icon: '\uD83E\uDDEA' },
               { id: 'circuit', label: 'Circuits', icon: '\u26A1' },
+              { id: 'inequality', label: 'Inequalities', icon: '\u2696\uFE0F' },
+              { id: 'molecule', label: 'Molecules', icon: '\uD83E\uDDEC' },
               { id: 'codingPlayground', label: 'Coding', icon: '\uD83D\uDCBB' },
               { id: 'algebraCAS', label: 'Algebra', icon: '\uD83D\uDCD0' },
               { id: 'dissection', label: 'Dissection', icon: '\uD83D\uDD2C' },
-              { id: 'universe_explore', label: 'Universe', icon: '\uD83C\uDF20' },
               { id: 'fractionChallenge', label: 'Fractions', icon: '\uD83D\uDD22' },
-              { id: 'companion_planting_corn', label: 'Garden', icon: '\uD83C\uDF31' }
+              { id: 'companion_planting_corn', label: 'Three Sisters', icon: '\uD83C\uDF3D' },
+              { id: 'companion_planting_beans', label: 'Bean Planting', icon: '\uD83E\uDED8' },
+              { id: 'companion_planting_squash', label: 'Squash', icon: '\uD83C\uDF83' },
+              { id: 'companion_planting_grow', label: 'Growing', icon: '\uD83C\uDF31' },
+              { id: 'companion_planting_harvest', label: 'Harvest', icon: '\uD83C\uDF3E' },
+              { id: 'companion_planting_quiz', label: 'Garden Quiz', icon: '\uD83D\uDCDD' }
             ];
             var _maxXP = _xpActivities.length * 100;
             var _totalPct = _maxXP > 0 ? Math.min(100, (totalStemXP / _maxXP) * 100) : 0;
@@ -11644,11 +11652,15 @@
           const isOpen = hasOpenSwitch;
           const W = 440, H = 200;
 
-          // Electron animation tick
+          // Electron animation tick (proper useEffect with cleanup)
           var tick = d.tick || 0;
-          React.useEffect && setTimeout(function () {
-            upd('tick', (tick + 1) % 400);
-          }, 60);
+          React.useEffect(function () {
+            if (current < 0.001 || isShort) return;
+            var _tickTimer = setTimeout(function () {
+              upd('tick', (tick + 1) % 400);
+            }, 60);
+            return function () { clearTimeout(_tickTimer); };
+          }, [tick, current, isShort]);
 
           // Electron dots along the wire path
           var electronDots = [];
