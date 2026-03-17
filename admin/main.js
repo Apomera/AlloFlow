@@ -6,6 +6,9 @@ const { promisify } = require('util');
 const { autoUpdater } = require('electron-updater');
 const log = require('electron-log');
 
+// Clustering service - load as CommonJS
+const ClusteringService = require('./src/services/clusteringService.js');
+
 // Configure logging for auto-updater
 log.transports.file.level = 'info';
 autoUpdater.logger = log;
@@ -544,6 +547,118 @@ ipcMain.handle('update:configure', async (event, config) => {
     return { success: true };
   } catch (err) {
     log.error('Error configuring updates:', err);
+    return { success: false, error: err.message };
+  }
+});
+
+// ============================================================================
+// CLUSTERING IPC HANDLERS
+// ============================================================================
+
+ipcMain.handle('cluster:generate-token', async (event, clusterId, nodeName, role) => {
+  try {
+    const pbUrl = process.env.POCKETBASE_URL || 'http://localhost:8090';
+    const clustering = new ClusteringService(pbUrl);
+    const result = await clustering.generateClusterToken(clusterId, nodeName, role || 'worker');
+    return { success: true, data: result };
+  } catch (err) {
+    log.error('Error generating cluster token:', err);
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('cluster:register-node', async (event, token, nodeIp, nodePort, hardwareInfo) => {
+  try {
+    const pbUrl = process.env.POCKETBASE_URL || 'http://localhost:8090';
+    const clustering = new ClusteringService(pbUrl);
+    const result = await clustering.registerNode(token, nodeIp, nodePort, hardwareInfo);
+    return { success: true, data: result };
+  } catch (err) {
+    log.error('Error registering node:', err);
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('cluster:get-nodes', async (event, clusterId) => {
+  try {
+    const pbUrl = process.env.POCKETBASE_URL || 'http://localhost:8090';
+    const clustering = new ClusteringService(pbUrl);
+    const nodes = await clustering.getClusterNodes(clusterId);
+    return { success: true, data: nodes };
+  } catch (err) {
+    log.error('Error fetching cluster nodes:', err);
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('cluster:get-config', async (event, clusterId) => {
+  try {
+    const pbUrl = process.env.POCKETBASE_URL || 'http://localhost:8090';
+    const clustering = new ClusteringService(pbUrl);
+    const config = await clustering.getClusterConfig(clusterId);
+    return { success: true, data: config };
+  } catch (err) {
+    log.error('Error fetching cluster config:', err);
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('cluster:update-config', async (event, clusterId, configUpdate) => {
+  try {
+    const pbUrl = process.env.POCKETBASE_URL || 'http://localhost:8090';
+    const clustering = new ClusteringService(pbUrl);
+    const config = await clustering.updateClusterConfig(clusterId, configUpdate);
+    return { success: true, data: config };
+  } catch (err) {
+    log.error('Error updating cluster config:', err);
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('cluster:generate-nginx-config', async (event, clusterId) => {
+  try {
+    const pbUrl = process.env.POCKETBASE_URL || 'http://localhost:8090';
+    const clustering = new ClusteringService(pbUrl);
+    const nginxConfig = await clustering.generateNginxConfig(clusterId);
+    return { success: true, data: nginxConfig };
+  } catch (err) {
+    log.error('Error generating nginx config:', err);
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('cluster:record-heartbeat', async (event, nodeId, clusterId, status, metrics) => {
+  try {
+    const pbUrl = process.env.POCKETBASE_URL || 'http://localhost:8090';
+    const clustering = new ClusteringService(pbUrl);
+    const result = await clustering.recordHeartbeat(nodeId, clusterId, status, metrics);
+    return { success: true, data: result };
+  } catch (err) {
+    log.error('Error recording heartbeat:', err);
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('cluster:cleanup-dead-nodes', async (event, clusterId) => {
+  try {
+    const pbUrl = process.env.POCKETBASE_URL || 'http://localhost:8090';
+    const clustering = new ClusteringService(pbUrl);
+    const result = await clustering.cleanupDeadNodes(clusterId);
+    return { success: true, data: result };
+  } catch (err) {
+    log.error('Error cleaning up dead nodes:', err);
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('cluster:remove-node', async (event, clusterId, nodeId) => {
+  try {
+    const pbUrl = process.env.POCKETBASE_URL || 'http://localhost:8090';
+    const clustering = new ClusteringService(pbUrl);
+    const result = await clustering.removeNode(clusterId, nodeId);
+    return { success: true, data: result };
+  } catch (err) {
+    log.error('Error removing node:', err);
     return { success: false, error: err.message };
   }
 });

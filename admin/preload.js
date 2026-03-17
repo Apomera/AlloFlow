@@ -46,4 +46,24 @@ contextBridge.exposeInMainWorld('alloAPI', {
   onUpdateDownloadProgress: (callback) => ipcRenderer.on('update:download-progress', (event, data) => callback(data)),
   onUpdateDownloaded: (callback) => ipcRenderer.on('update:downloaded', (event, data) => callback(data)),
   onUpdateError: (callback) => ipcRenderer.on('update:error', (event, data) => callback(data)),
+
+  // Clustering API
+  generateClusterToken: (clusterId, nodeName, role) => 
+    ipcRenderer.invoke('cluster:generate-token', clusterId, nodeName, role),
+  registerNode: (token, nodeIp, nodePort, hardwareInfo) =>
+    ipcRenderer.invoke('cluster:register-node', token, nodeIp, nodePort, hardwareInfo),
+  getClusterNodes: (clusterId) =>
+    ipcRenderer.invoke('cluster:get-nodes', clusterId),
+  getClusterConfig: (clusterId) =>
+    ipcRenderer.invoke('cluster:get-config', clusterId),
+  updateClusterConfig: (clusterId, configUpdate) =>
+    ipcRenderer.invoke('cluster:update-config', clusterId, configUpdate),
+  generateNginxConfig: (clusterId) =>
+    ipcRenderer.invoke('cluster:generate-nginx-config', clusterId),
+  recordHeartbeat: (nodeId, clusterId, status, metrics) =>
+    ipcRenderer.invoke('cluster:record-heartbeat', nodeId, clusterId, status, metrics),
+  cleanupDeadNodes: (clusterId) =>
+    ipcRenderer.invoke('cluster:cleanup-dead-nodes', clusterId),
+  removeNode: (clusterId, nodeId) =>
+    ipcRenderer.invoke('cluster:remove-node', clusterId, nodeId),
 });
