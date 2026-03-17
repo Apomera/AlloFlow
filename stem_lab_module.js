@@ -2074,6 +2074,7 @@
               { id: 'physicsQuiz', label: 'Physics', icon: '\uD83C\uDFAF' },
               { id: 'chemBalance', label: 'Chemistry', icon: '\uD83E\uDDEA' },
               { id: 'circuit', label: 'Circuits', icon: '\u26A1' },
+              { id: 'calculus', label: 'Calculus', icon: '\u222B' },
               { id: 'inequality', label: 'Inequalities', icon: '\u2696\uFE0F' },
               { id: 'molecule', label: 'Molecules', icon: '\uD83E\uDDEC' },
               { id: 'codingPlayground', label: 'Coding', icon: '\uD83D\uDCBB' },
@@ -7491,6 +7492,249 @@
                 }, p.label);
               })
             ),
+            // ══════════════════════════════════════════════════
+            // ── Calculus Challenge Engine (4 modes + XP) ──
+            // ══════════════════════════════════════════════════
+            (() => {
+              var cq = d.calcQuiz || null;
+              var cScore = d.calcScore || 0;
+              var cStreak = d.calcStreak || 0;
+              var cMode = d.calcChallengeMode || 'estimate';
+              var cHint = d.calcHint || '';
+
+              var CALC_CHALLENGES = [
+                { id: 'estimate', label: '\uD83C\uDFAF Estimate \u222B', color: 'red' },
+                { id: 'method',  label: '\u26A1 Best Method', color: 'amber' },
+                { id: 'minN',    label: '\uD83D\uDD22 Min n', color: 'blue' },
+                { id: 'exact',   label: '\u270F\uFE0F Exact \u222B', color: 'emerald' }
+              ];
+
+              // ── Generator: Estimate the Integral ──
+              function makeEstimateQuiz() {
+                var qa = [1, -1, 2, -2, 0][Math.floor(Math.random() * 5)];
+                var qb = [0, 1, 2, -1, -2, 3][Math.floor(Math.random() * 6)];
+                var qc = [0, 1, 2, 3, -1][Math.floor(Math.random() * 5)];
+                var qxMin = 0;
+                var qxMax = [1, 2, 3][Math.floor(Math.random() * 3)];
+                var qExact = (qa / 3) * (Math.pow(qxMax, 3) - Math.pow(qxMin, 3)) + (qb / 2) * (Math.pow(qxMax, 2) - Math.pow(qxMin, 2)) + qc * (qxMax - qxMin);
+                qExact = Math.round(qExact * 100) / 100;
+                var opts = [qExact];
+                while (opts.length < 4) {
+                  var off = (Math.floor(Math.random() * 5) + 1) * (Math.random() < 0.5 ? 1 : -1);
+                  var wrong = Math.round((qExact + off) * 100) / 100;
+                  if (opts.indexOf(wrong) < 0 && wrong !== qExact) opts.push(wrong);
+                }
+                opts.sort(function (a, b) { return a - b; });
+                var eqStr = (qa !== 0 ? qa + 'x\u00B2' : '') + (qb !== 0 ? (qb > 0 && qa !== 0 ? '+' : '') + qb + 'x' : '') + (qc !== 0 ? (qc > 0 && (qa !== 0 || qb !== 0) ? '+' : '') + qc : '');
+                if (!eqStr) eqStr = '0';
+                return { mode: 'estimate', a: qa, b: qb, c: qc, xMin: qxMin, xMax: qxMax, answer: qExact, opts: opts, answered: false, question: '\u222B\u2080' + '\u207B'.repeat(0) + qxMax + ' (' + eqStr + ') dx = ?' };
+              }
+
+              // ── Generator: Which Method Is Best? ──
+              function makeMethodQuiz() {
+                var qa = [1, -1, 2][Math.floor(Math.random() * 3)];
+                var qb = [0, 1, -1][Math.floor(Math.random() * 3)];
+                var qc = [0, 1, 2][Math.floor(Math.random() * 3)];
+                var qxMin = 0, qxMax = [2, 3][Math.floor(Math.random() * 2)];
+                var qn = [4, 6, 8][Math.floor(Math.random() * 3)];
+                var qExact = (qa / 3) * (Math.pow(qxMax, 3) - Math.pow(qxMin, 3)) + (qb / 2) * (Math.pow(qxMax, 2) - Math.pow(qxMin, 2)) + qc * (qxMax - qxMin);
+                var methods = ['left', 'right', 'midpoint', 'trapezoid', 'simpson'];
+                var errors = {};
+                methods.forEach(function (m) {
+                  var qdx = (qxMax - qxMin) / qn;
+                  var qarea = 0;
+                  if (m === 'trapezoid') {
+                    for (var i = 0; i < qn; i++) { var xi = qxMin + i * qdx; qarea += (qa * xi * xi + qb * xi + qc + qa * (xi + qdx) * (xi + qdx) + qb * (xi + qdx) + qc) / 2 * qdx; }
+                  } else if (m === 'simpson' && qn % 2 === 0) {
+                    for (var i = 0; i < qn; i += 2) { var xi = qxMin + i * qdx; var f0 = qa * xi * xi + qb * xi + qc; var f1 = qa * (xi + qdx) * (xi + qdx) + qb * (xi + qdx) + qc; var f2 = qa * (xi + 2 * qdx) * (xi + 2 * qdx) + qb * (xi + 2 * qdx) + qc; qarea += (f0 + 4 * f1 + f2) * qdx / 3; }
+                  } else {
+                    for (var i = 0; i < qn; i++) { var xi = qxMin + i * qdx; var xSample = m === 'left' ? xi : m === 'right' ? xi + qdx : xi + qdx / 2; qarea += (qa * xSample * xSample + qb * xSample + qc) * qdx; }
+                  }
+                  errors[m] = Math.abs(qarea - qExact);
+                });
+                var best = methods.reduce(function (a, b) { return errors[a] < errors[b] ? a : b; });
+                var labels = { left: 'Left Riemann', right: 'Right Riemann', midpoint: 'Midpoint', trapezoid: 'Trapezoidal', simpson: "Simpson's" };
+                return { mode: 'method', a: qa, b: qb, c: qc, xMin: qxMin, xMax: qxMax, n: qn, answer: best, answerLabel: labels[best], opts: methods.map(function (m) { return { id: m, label: labels[m] }; }), errors: errors, answered: false, question: 'At n=' + qn + ', which method gives the smallest error?' };
+              }
+
+              // ── Generator: Minimum n ──
+              function makeMinNQuiz() {
+                var qa = [1, -1, 2][Math.floor(Math.random() * 3)];
+                var qb = [0, 1, 2][Math.floor(Math.random() * 3)];
+                var qc = [0, 1][Math.floor(Math.random() * 2)];
+                var qxMin = 0, qxMax = [2, 3][Math.floor(Math.random() * 2)];
+                var threshold = [0.5, 0.1, 0.05][Math.floor(Math.random() * 3)];
+                var qExact = (qa / 3) * (Math.pow(qxMax, 3) - Math.pow(qxMin, 3)) + (qb / 2) * (Math.pow(qxMax, 2) - Math.pow(qxMin, 2)) + qc * (qxMax - qxMin);
+                // Find the actual minimum n for left Riemann
+                var minN = 2;
+                for (var tn = 2; tn <= 100; tn++) {
+                  var tdx = (qxMax - qxMin) / tn; var tarea = 0;
+                  for (var ti = 0; ti < tn; ti++) { var txi = qxMin + ti * tdx; tarea += (qa * txi * txi + qb * txi + qc) * tdx; }
+                  if (Math.abs(tarea - qExact) < threshold) { minN = tn; break; }
+                }
+                if (minN > 50) { minN = 50; threshold = 0.5; } // safety cap
+                var opts = [minN];
+                var candidates = [minN - 4, minN - 2, minN + 2, minN + 4, minN + 6, minN * 2].filter(function (v) { return v >= 2 && v <= 100 && v !== minN; });
+                while (opts.length < 4 && candidates.length > 0) { var ci = Math.floor(Math.random() * candidates.length); opts.push(candidates.splice(ci, 1)[0]); }
+                opts.sort(function (a, b) { return a - b; });
+                return { mode: 'minN', a: qa, b: qb, c: qc, xMin: qxMin, xMax: qxMax, answer: minN, threshold: threshold, opts: opts, answered: false, question: 'Using Left Riemann sums, what is the smallest n where error < ' + threshold + '?' };
+              }
+
+              // ── Generator: Exact Integral (free-form typed) ──
+              function makeExactQuiz() {
+                var qa = [0, 1, -1, 2][Math.floor(Math.random() * 4)];
+                var qb = [0, 1, 2, 3, -1][Math.floor(Math.random() * 5)];
+                var qc = [0, 1, 2, -1][Math.floor(Math.random() * 4)];
+                var qxMin = 0;
+                var qxMax = [1, 2, 3][Math.floor(Math.random() * 3)];
+                var qExact = (qa / 3) * (Math.pow(qxMax, 3) - Math.pow(qxMin, 3)) + (qb / 2) * (Math.pow(qxMax, 2) - Math.pow(qxMin, 2)) + qc * (qxMax - qxMin);
+                qExact = Math.round(qExact * 1000) / 1000;
+                var eqStr = (qa !== 0 ? qa + 'x\u00B2' : '') + (qb !== 0 ? (qb > 0 && qa !== 0 ? '+' : '') + qb + 'x' : '') + (qc !== 0 ? (qc > 0 && (qa !== 0 || qb !== 0) ? '+' : '') + qc : '');
+                if (!eqStr) eqStr = '0';
+                var hintParts = [];
+                if (qa !== 0) hintParts.push(qa + 'x\u00B3/3');
+                if (qb !== 0) hintParts.push(qb + 'x\u00B2/2');
+                if (qc !== 0) hintParts.push(qc + 'x');
+                var antiDerivStr = hintParts.join(' + ') || '0';
+                return { mode: 'exact', a: qa, b: qb, c: qc, xMin: qxMin, xMax: qxMax, answer: qExact, answered: false, question: 'Using the power rule, compute \u222B\u2080' + qxMax + ' (' + eqStr + ') dx exactly.', hint: 'Anti-derivative: F(x) = ' + antiDerivStr + '. Evaluate F(' + qxMax + ') \u2212 F(' + qxMin + ').' };
+              }
+
+              function startCalcChallenge() {
+                var q;
+                if (cMode === 'method') q = makeMethodQuiz();
+                else if (cMode === 'minN') q = makeMinNQuiz();
+                else if (cMode === 'exact') q = makeExactQuiz();
+                else q = makeEstimateQuiz();
+                upd('calcQuiz', q); upd('calcHint', '');
+                // Load the function into the visualizer so students can see it
+                upd('a', q.a); upd('b', q.b); upd('c', q.c);
+                if (q.xMin !== undefined) upd('xMin', q.xMin);
+                if (q.xMax !== undefined) upd('xMax', q.xMax);
+                if (q.n !== undefined) upd('n', q.n);
+              }
+
+              function checkCalcAnswer(chosen) {
+                var correct = false;
+                if (cMode === 'method') { correct = chosen === cq.answer; }
+                else if (cMode === 'minN') { correct = chosen <= cq.answer + 2 && chosen >= cq.answer; } // accept close
+                else if (cMode === 'exact') { correct = Math.abs(parseFloat(chosen) - cq.answer) < 0.05; }
+                else { correct = chosen === cq.answer; }
+                upd('calcQuiz', Object.assign({}, cq, { answered: true, chosen: chosen, correct: correct }));
+                upd('calcScore', cScore + (correct ? 1 : 0));
+                var newStreak = correct ? cStreak + 1 : 0;
+                upd('calcStreak', newStreak);
+                if (correct) {
+                  if (typeof awardStemXP === 'function') awardStemXP('calculus', 5, cMode + ' challenge');
+                  announceToSR('Correct! Earned 5 XP');
+                  addToast('\u2705 Correct! +5 XP', 'success');
+                  if (newStreak >= 3) { if (typeof stemCelebrate === 'function') stemCelebrate(); if (typeof awardStemXP === 'function') awardStemXP('calculus', 5, '3-streak bonus'); addToast('\uD83D\uDD25 ' + newStreak + '-streak! +5 bonus XP', 'success'); }
+                  setTimeout(function () { startCalcChallenge(); }, 2000);
+                } else {
+                  announceToSR('Incorrect. The answer was ' + cq.answer);
+                  // Show hint
+                  if (cq.hint) { upd('calcHint', cq.hint); }
+                  else if (cMode === 'method') { upd('calcHint', 'The best method was ' + cq.answerLabel + '. Simpson\u2019s rule is often most accurate for polynomials!'); }
+                  else if (cMode === 'minN') { upd('calcHint', 'The minimum n was ' + cq.answer + '. More subdivisions = smaller error.'); }
+                  else { upd('calcHint', 'The answer was ' + cq.answer + '. Try computing the anti-derivative using the power rule!'); }
+                  // AI hint if available
+                  if (typeof stemAIHint === 'function') {
+                    stemAIHint('calculus', cq.question, String(chosen), String(cq.answer), function (aiResp) { upd('calcHint', aiResp); });
+                  }
+                  addToast('\u274C Not quite \u2014 see the hint below', 'error');
+                }
+              }
+
+              return React.createElement("div", { className: "border-t-2 border-red-200 pt-4 mt-4" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                  React.createElement("span", { style: { fontSize: '18px' } }, "\uD83C\uDFAF"),
+                  React.createElement("h4", { className: "text-sm font-black text-red-800" }, "Calculus Challenges"),
+                  cScore > 0 && React.createElement("span", { className: "ml-auto text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200" }, '\u2B50 ' + cScore + ' | \uD83D\uDD25 ' + cStreak)
+                ),
+                // Mode selector
+                React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+                  CALC_CHALLENGES.map(function (cm) {
+                    var isActive = cMode === cm.id;
+                    return React.createElement("button", {
+                      key: cm.id,
+                      onClick: function () { upd('calcChallengeMode', cm.id); upd('calcQuiz', null); upd('calcHint', ''); },
+                      className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-' + cm.color + '-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'),
+                      'aria-label': cm.label + ' challenge mode'
+                    }, cm.label);
+                  })
+                ),
+                // Start button
+                React.createElement("button", {
+                  onClick: startCalcChallenge,
+                  className: "px-4 py-2 rounded-lg text-xs font-bold mb-3 transition-all " + (cq ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-red-600 text-white hover:bg-red-700 shadow-md'),
+                  'aria-label': cq ? 'Generate new challenge' : 'Start challenge'
+                }, cq ? '\uD83D\uDD04 New Challenge' : '\uD83D\uDE80 Start Challenge'),
+
+                // Question card (multiple choice modes: estimate, method, minN)
+                cq && !cq.answered && cMode !== 'exact' && React.createElement("div", { className: "bg-red-50 rounded-xl p-4 border border-red-200 animate-in fade-in" },
+                  React.createElement("p", { className: "text-sm font-bold text-red-800 mb-3" }, cq.question),
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                    (cMode === 'method' ? cq.opts : cq.opts).map(function (opt) {
+                      var optVal = cMode === 'method' ? opt.id : opt;
+                      var optLabel = cMode === 'method' ? opt.label : (cMode === 'minN' ? 'n = ' + opt : String(opt));
+                      return React.createElement("button", {
+                        key: String(optVal),
+                        onClick: function () { checkCalcAnswer(optVal); },
+                        className: "px-3 py-2 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-red-400 hover:bg-red-50 transition-all",
+                        'aria-label': 'Answer: ' + optLabel
+                      }, optLabel);
+                    })
+                  )
+                ),
+
+                // Question card (free-form: exact mode)
+                cq && !cq.answered && cMode === 'exact' && React.createElement("div", { className: "bg-emerald-50 rounded-xl p-4 border border-emerald-200 animate-in fade-in" },
+                  React.createElement("p", { className: "text-sm font-bold text-emerald-800 mb-1" }, cq.question),
+                  React.createElement("p", { className: "text-[10px] text-emerald-600 mb-3 italic" }, "Use the power rule: \u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1) + C"),
+                  React.createElement("div", { className: "flex items-center gap-2" },
+                    React.createElement("input", {
+                      type: "number", step: "any",
+                      value: d._calcExactInput || '',
+                      onChange: function (e) { upd('_calcExactInput', e.target.value); },
+                      onKeyDown: function (e) { if (e.key === 'Enter' && d._calcExactInput) checkCalcAnswer(d._calcExactInput); },
+                      placeholder: "Type your answer\u2026",
+                      className: "flex-1 px-3 py-2 rounded-lg border-2 border-emerald-300 text-sm font-bold text-emerald-800 bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none",
+                      'aria-label': 'Type your answer for the exact integral'
+                    }),
+                    React.createElement("button", {
+                      onClick: function () { if (d._calcExactInput) checkCalcAnswer(d._calcExactInput); },
+                      className: "px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all shadow-md",
+                      'aria-label': 'Submit answer'
+                    }, "Check \u2192")
+                  )
+                ),
+
+                // Result card
+                cq && cq.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold mb-2 " + (cq.correct ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
+                  cq.correct ? '\u2705 Correct! The answer is ' + cq.answer : '\u274C The correct answer was ' + cq.answer,
+                  cq.correct && cStreak >= 3 && React.createElement("span", { className: "ml-2 text-amber-600" }, '\uD83D\uDD25 ' + cStreak + '-streak!')
+                ),
+
+                // Hint card (shown on wrong answer)
+                cHint && React.createElement("div", { className: "bg-amber-50 rounded-xl p-3 border border-amber-200 mt-2 text-xs text-amber-800" },
+                  React.createElement("span", { className: "font-bold" }, "\uD83D\uDCA1 Hint: "),
+                  cHint
+                ),
+
+                // Method comparison table (shown after method quiz answered)
+                cq && cq.answered && cMode === 'method' && cq.errors && React.createElement("div", { className: "mt-2 bg-slate-50 rounded-lg p-2 border" },
+                  React.createElement("p", { className: "text-[9px] font-bold text-slate-500 uppercase mb-1" }, "Error Comparison (n=" + cq.n + ")"),
+                  React.createElement("div", { className: "grid grid-cols-5 gap-1 text-center" },
+                    ['left', 'right', 'midpoint', 'trapezoid', 'simpson'].map(function (m) {
+                      var isBest = m === cq.answer;
+                      return React.createElement("div", { key: m, className: "px-1 py-1 rounded text-[9px] font-bold " + (isBest ? 'bg-emerald-100 text-emerald-700 border border-emerald-300' : 'bg-white text-slate-500 border') },
+                        React.createElement("div", null, m === 'simpson' ? "Simp" : m.charAt(0).toUpperCase() + m.slice(1, 4)),
+                        React.createElement("div", { className: "text-[8px]" }, cq.errors[m].toFixed(4))
+                      );
+                    })
+                  )
+                )
+              );
+            })(),
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'calc-' + Date.now(), tool: 'calculus', label: '\u222B[' + d.xMin + ',' + d.xMax + '] n=' + d.n, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           )
         })(),
