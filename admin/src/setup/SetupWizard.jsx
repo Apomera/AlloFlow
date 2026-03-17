@@ -36,6 +36,17 @@ export default function SetupWizard({ onComplete }) {
   });
 
   useEffect(() => {
+    // Log the current state for debugging
+    console.log('SetupWizard step changed to:', step);
+    console.log('Current config:', {
+      deploymentMode: config.deploymentMode,
+      aiBackend: config.aiBackend,
+      serverIp: config.serverIp,
+      gpuType: config.gpuType
+    });
+  }, [step, config.deploymentMode, config.aiBackend]);
+
+  useEffect(() => {
     // Check Docker on mount (only for local/hybrid mode)
     if (config.aiBackend !== 'cloud') {
       checkDocker();
@@ -43,7 +54,12 @@ export default function SetupWizard({ onComplete }) {
     // Auto-fill server IP
     if (window.alloAPI) {
       window.alloAPI.getServerIP().then(ip => {
-        if (ip) setConfig(prev => ({ ...prev, serverIp: ip }));
+        if (ip) {
+          console.log('Set server IP:', ip);
+          setConfig(prev => ({ ...prev, serverIp: ip }));
+        }
+      }).catch(err => {
+        console.error('Failed to get server IP:', err);
       });
       
       // Listen for setup progress updates
@@ -1098,7 +1114,20 @@ export default function SetupWizard({ onComplete }) {
       </div>
 
       <div className="setup-content">
-        {renderStep()}
+        {(() => {
+          const content = renderStep();
+          console.log('SetupWizard: Rendering step', step, 'config:', config);
+          if (!content) {
+            return (
+              <div className="setup-step" style={{ textAlign: 'center', color: 'var(--color-error)' }}>
+                <h2>⚠️ Error</h2>
+                <p>Step {step} not found. Config: {JSON.stringify({deploymentMode: config.deploymentMode, aiBackend: config.aiBackend})}</p>
+                <button className="btn" onClick={() => setStep(1)}>← Return to Start</button>
+              </div>
+            );
+          }
+          return content;
+        })()}
       </div>
 
       <style>{`
