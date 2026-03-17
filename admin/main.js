@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, globalShortcut } = require('electron');
 const path = require('path');
 const { spawn, exec, execFile } = require('child_process');
 const fs = require('fs');
@@ -63,7 +63,27 @@ const createWindow = () => {
     mainWindow.webContents.openDevTools();
   }
 
+  // Register keyboard shortcut to open DevTools (Ctrl+Shift+I or F12)
+  globalShortcut.register('Control+Shift+I', () => {
+    if (mainWindow.webContents.isDevToolsOpened()) {
+      mainWindow.webContents.closeDevTools();
+    } else {
+      mainWindow.webContents.openDevTools();
+    }
+  });
+
+  globalShortcut.register('F12', () => {
+    if (mainWindow.webContents.isDevToolsOpened()) {
+      mainWindow.webContents.closeDevTools();
+    } else {
+      mainWindow.webContents.openDevTools();
+    }
+  });
+
   mainWindow.on('closed', () => {
+    // Unregister shortcuts
+    globalShortcut.unregister('Control+Shift+I');
+    globalShortcut.unregister('F12');
     mainWindow = null;
   });
 };
