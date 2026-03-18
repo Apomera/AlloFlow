@@ -1884,76 +1884,7 @@
               className:
                 "flex flex-col items-center gap-8 animate-in slide-in-from-right duration-500",
             },
-            /*#__PURE__*/ React.createElement(
-              "div",
-              {
-                className:
-                  "bg-orange-100 p-6 rounded-3xl flex items-center gap-6 shadow-sm border-2 border-orange-200",
-              },
-              /*#__PURE__*/ React.createElement(
-                "button",
-                {
-                  "aria-label": t("common.volume"),
-                  onClick: () => onPlayAudio(data.word),
-                  disabled: isAudioBusy,
-                  className: `w-20 h-20 rounded-2xl bg-white flex items-center justify-center shadow-lg focus:ring-4 focus:ring-orange-300 focus:outline-none hover:scale-105 transition-all ${isAudioBusy ? "text-orange-300 cursor-wait" : "text-orange-500"}`,
-                },
-                isAudioBusy
-                  ? /*#__PURE__*/ React.createElement("div", {
-                    className:
-                      "animate-spin h-8 w-8 border-3 border-orange-400 border-t-transparent rounded-full",
-                  })
-                  : /*#__PURE__*/ React.createElement(Volume2, { size: 32 }),
-              ),
-              /*#__PURE__*/ React.createElement(
-                "div",
-                null,
-                /*#__PURE__*/ React.createElement(
-                  "span",
-                  {
-                    className:
-                      "text-sm font-bold text-orange-600 uppercase tracking-wider",
-                  },
-                  ts("word_sounds.target_word") || "Target Word",
-                ),
-                /*#__PURE__*/ React.createElement(
-                  "h3",
-                  { className: "text-4xl font-black text-slate-800" },
-                  showLetterHints ? data.word : "???",
-                ),
-              ),
-            ),
 
-            /*#__PURE__*/ React.createElement(
-              "h3",
-              { className: "text-xl font-bold text-slate-600" },
-              ts("word_sounds.rhyming_q"),
-            ),
-            /*#__PURE__*/ React.createElement(
-              "button",
-              {
-                onClick: async () => {
-                  if (playingIndex !== null || isAudioBusy) return;
-                  try {
-                    const opts = data.options || [];
-                    for (let i = 0; i < opts.length; i++) {
-                      setPlayingIndex(i);
-                      const audioPromise = onPlayAudio(opts[i], true);
-                      const minDelay = new Promise((r) => setTimeout(r, 550));
-                      await Promise.all([audioPromise, minDelay]);
-                    }
-                    setPlayingIndex(null);
-                  } catch (e) {
-                    warnLog("Unhandled error in anon_playAllOptions:", e);
-                    setPlayingIndex(null);
-                  }
-                },
-                disabled: playingIndex !== null || isAudioBusy,
-                className: `mx-auto flex items-center gap-2 px-4 py-2 mb-2 rounded-full font-medium text-sm shadow-sm transition-colors ${playingIndex !== null || isAudioBusy ? "bg-slate-200 text-slate-400 cursor-not-allowed opacity-60" : "bg-orange-100 hover:bg-orange-200 text-orange-700"}`,
-              },
-              /*#__PURE__*/ React.createElement(PlayCircle, { size: 18 }),
-              ts("word_sounds.play_all_options"),
-            ),
             /*#__PURE__*/ React.createElement(
               "div",
               { className: "grid grid-cols-2 gap-4 w-full max-w-lg" },
@@ -2331,7 +2262,14 @@
                       await new Promise((r) => setTimeout(r, 200));
                     }
                   };
-                  playAllOptions();
+                  // Wait for instruction audio to finish before auto-playing options
+                  const onInstrDone = () => { playAllOptions(); };
+                  window.addEventListener('wordSoundsInstructionDone', onInstrDone, { once: true });
+                  // Safety fallback: if no instruction event fires within 5s, play anyway
+                  const safetyTimer = setTimeout(() => {
+                    window.removeEventListener('wordSoundsInstructionDone', onInstrDone);
+                    playAllOptions();
+                  }, 5000);
                 }
               }
             }, [data.options, data.distractors]);
@@ -6715,6 +6653,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   typeof window.__ALLO_INSTRUCTION_AUDIO !== "undefined" &&
                   window.__ALLO_INSTRUCTION_AUDIO[letterNameKey]
                 ) {
+                  // Use letter NAME audio (letter_a, letter_b, etc.)
                   await handleAudio(window.__ALLO_INSTRUCTION_AUDIO[letterNameKey]);
                 } else if (
                   typeof LETTER_NAME_AUDIO !== "undefined" &&
@@ -6882,6 +6821,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             } else if (instructionText && !isPlayingAudio) {
               await handleAudio(instructionText);
             }
+            // Signal that instruction audio is done (used by WordFamiliesView / Sound Sort)
+            try { window.dispatchEvent(new Event('wordSoundsInstructionDone')); } catch(e) {}
             if (cancelled || audioCancelledRef.current) return;
             if (
               wordSoundsActivity === "blending" &&
@@ -9676,41 +9617,6 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       title: `Sound ${idx + 1}`,
                     }),
                     ),
-                  ),
-                ),
-                  /*#__PURE__*/ React.createElement(
-                  "div",
-                  { className: "text-center space-y-2" },
-                    /*#__PURE__*/ React.createElement(
-                    "button",
-                    {
-                      "aria-label": t("common.volume"),
-                      onClick: async () => {
-                        try {
-                          const phonemes = wordSoundsPhonemes?.phonemes || [];
-                          for (let i = 0; i < phonemes.length; i++) {
-                            if (!isMountedRef.current) return;
-                            await handleAudio(phonemes[i]);
-                            await new Promise((r) => setTimeout(r, 400));
-                          }
-                        } catch (e) {
-                          warnLog("Unhandled error in anon_phonemePlay:", e);
-                        }
-                      },
-                      disabled: isPlayingAudio,
-                      className:
-                        "mx-auto flex items-center gap-2 px-5 py-2.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-full font-bold text-sm transition-all hover:scale-105 shadow-sm",
-                    },
-                    isPlayingAudio
-                      ? /*#__PURE__*/ React.createElement("div", {
-                        className:
-                          "animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full",
-                      })
-                      : /*#__PURE__*/ React.createElement(Volume2, {
-                        size: 18,
-                      }),
-                    ts("word_sounds.blending_replay_sounds") ||
-                    "ð Replay Sounds",
                   ),
                 ),
                 useMicInput
