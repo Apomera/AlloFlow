@@ -226,14 +226,15 @@
             h('span', {
                 className: 'border-b border-dotted border-indigo-400 text-indigo-700 cursor-help transition-colors hover:text-indigo-900 hover:border-indigo-600'
             }, children || term),
-            show && h('div', {
+            show && h('span', {
                 className: 'absolute z-[999] bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-3 bg-slate-900 text-white rounded-xl shadow-xl text-xs leading-relaxed pointer-events-none animate-in fade-in',
-                style: { animationDuration: '150ms' }
+                style: { animationDuration: '150ms', display: 'block' }
             },
-                h('div', { className: 'font-bold text-indigo-300 text-[11px] mb-1' }, `${term} — ${entry.affirming}`),
-                h('div', { className: 'text-slate-200' }, entry.def),
-                h('div', {
-                    className: 'absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-slate-900'
+                h('span', { className: 'font-bold text-indigo-300 text-[11px] mb-1', style: { display: 'block' } }, `${term} — ${entry.affirming}`),
+                h('span', { className: 'text-slate-200', style: { display: 'block' } }, entry.def),
+                h('span', {
+                    className: 'absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-slate-900',
+                    style: { display: 'block' }
                 })
             )
         );
