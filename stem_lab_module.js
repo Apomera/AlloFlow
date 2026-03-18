@@ -34014,8 +34014,8 @@
                     React.createElement("div", { className: "mb-3" },
                       React.createElement("label", { className: "text-[10px] font-bold text-cyan-600 block mb-1" }, "Pattern Type"),
                       React.createElement("div", { className: "flex gap-1" },
-                        [{ id: 'bw', label: '\u26AB B&W' }, { id: 'color', label: '\uD83C\uDFA8 Color' }, { id: 'noise', label: '\uD83D\uDCFA Noise' }].map(function (s) {
-                          return React.createElement("button", { key: s.id, onClick: function () { upd('stereoPattern', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-cyan-50') }, s.label);
+                        [{ id: 'bw', label: '\u26AB B&W' }, { id: 'color', label: '\uD83C\uDFA8 Color' }, { id: 'noise', label: '\uD83D\uDCFA Noise' }, { id: 'ai', label: '\u2728 AI' }].map(function (s) {
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('stereoPattern', s.id); if(s.id === 'ai' && !d.stereoAiPatternImg) { if(typeof addToast === 'function') addToast('Please generate an AI Pattern first!', 'warning'); } }, className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-cyan-50') }, s.label);
                         })
                       )
                     ),
@@ -34027,8 +34027,77 @@
                         React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-cyan-600" })
                       );
                     }),
-                    React.createElement("div", { className: "flex gap-2 mt-3" },
-                      React.createElement("button", { onClick: function () { upd('stereoGen', Date.now()); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:from-cyan-600 hover:to-teal-600 shadow-md transition-all" }, "\uD83D\uDC53 Generate"),
+                    
+                    // --- AI GENERATION ---
+                    callImagen && React.createElement("div", { className: "mt-4 bg-gradient-to-br from-indigo-50 to-blue-50 p-3 rounded-lg border border-indigo-200" },
+                      React.createElement("div", { className: "flex justify-between items-center mb-2" },
+                        React.createElement("label", { className: "text-[10px] font-bold text-indigo-700" }, "\u2728 AI Stereogram Creator"),
+                        d.stereoAiGen && React.createElement("span", { className: "text-[9px] text-indigo-500 animate-pulse font-bold" }, "Generating " + d.stereoAiGen + "...")
+                      ),
+                      React.createElement("textarea", { 
+                        value: d.stereoAiStr || '', 
+                        onChange: function(e) { upd('stereoAiStr', e.target.value); },
+                        placeholder: "Describe an object for a depth map or a texture for a pattern...",
+                        className: "w-full text-xs p-2 rounded border border-indigo-200 focus:ring-2 focus:ring-indigo-400 mb-2 h-16 resize-none",
+                        disabled: !!d.stereoAiGen
+                      }),
+                      React.createElement("div", { className: "flex gap-2" },
+                        React.createElement("button", { 
+                          onClick: function() {
+                            if (!d.stereoAiStr) return;
+                            upd('stereoAiGen', 'Depth Map');
+                            callImagen('A smooth, high-quality, continuous 3D grayscale depth map of: ' + d.stereoAiStr + '. The closest parts must be pure white, and the furthest background pure black. No text, no floating artifacts. Fill the entire square frame.', 400)
+                              .then(function(base64) {
+                                var img = new Image();
+                                img.onload = function() {
+                                  var cvs = document.getElementById('depthMapCanvas');
+                                  if(cvs) {
+                                    var ztx = cvs.getContext('2d');
+                                    ztx.clearRect(0, 0, cvs.width, cvs.height);
+                                    ztx.drawImage(img, 0, 0, cvs.width, cvs.height);
+                                  }
+                                  upd('stereoAiGen', null);
+                                  if(typeof addToast === 'function') addToast('\u2728 Depth map generated!', 'success');
+                                };
+                                img.src = base64;
+                              }).catch(function(e) {
+                                upd('stereoAiGen', null);
+                                if(typeof addToast === 'function') addToast('AI Error: ' + e.message, 'error');
+                              });
+                          },
+                          disabled: !!d.stereoAiGen || !d.stereoAiStr,
+                          className: "flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-sm"
+                        }, "\u2B1C Generate Depth Map"),
+                        React.createElement("button", { 
+                          onClick: function() {
+                            if (!d.stereoAiStr) return;
+                            upd('stereoAiGen', 'Pattern');
+                            callImagen('A beautiful, abstract, seamless repeating pattern tile texture of: ' + d.stereoAiStr + '. No text, no borders.', 100)
+                              .then(function(base64) {
+                                var img = new Image();
+                                img.onload = function() {
+                                  // Store in state to use during render logic
+                                  var c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+                                  c.getContext('2d').drawImage(img, 0, 0);
+                                  upd('stereoAiPatternImg', { width: img.width, height: img.height, data: c.getContext('2d').getImageData(0,0,img.width,img.height).data });
+                                  upd('stereoAiGen', null);
+                                  upd('stereoPattern', 'ai');
+                                  if(typeof addToast === 'function') addToast('\u2728 AI Pattern loaded and selected!', 'success');
+                                };
+                                img.src = base64;
+                              }).catch(function(e) {
+                                upd('stereoAiGen', null);
+                                if(typeof addToast === 'function') addToast('AI Error: ' + e.message, 'error');
+                              });
+                          },
+                          disabled: !!d.stereoAiGen || !d.stereoAiStr,
+                          className: "flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-all shadow-sm"
+                        }, "\uD83C\uDFA8 Generate AI Base Tile")
+                      )
+                    ),
+                    
+                    React.createElement("div", { className: "flex gap-2 mt-4" },
+                      React.createElement("button", { onClick: function () { upd('stereoGen', Date.now()); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:from-cyan-600 hover:to-teal-600 shadow-md transition-all" }, "\uD83D\uDC53 Render Stereogram"),
                       React.createElement("button", { onClick: function () { upd('stereoClear', Date.now()); upd('stereoPreset', null); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear")
                     ),
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
@@ -34158,6 +34227,11 @@
                             if (x < patternWidth) {
                               if (patternType === 'bw') { var c = rng() > 0.5 ? 230 : 25; row[x*3] = c; row[x*3+1] = c; row[x*3+2] = c; }
                               else if (patternType === 'color') { row[x*3] = Math.floor(rng()*200)+55; row[x*3+1] = Math.floor(rng()*200)+55; row[x*3+2] = Math.floor(rng()*200)+55; }
+                              else if (patternType === 'ai' && d.stereoAiPatternImg) {
+                                var pw = d.stereoAiPatternImg.width, ph = d.stereoAiPatternImg.height;
+                                var pIdx = ((y % ph) * pw + (x % pw)) * 4;
+                                row[x*3] = d.stereoAiPatternImg.data[pIdx]; row[x*3+1] = d.stereoAiPatternImg.data[pIdx+1]; row[x*3+2] = d.stereoAiPatternImg.data[pIdx+2];
+                              }
                               else { var v = Math.floor(rng() * 220) + 20; row[x*3] = v; row[x*3+1] = v; row[x*3+2] = v; }
                             } else {
                               var dx = Math.floor(x * dmW / W), dy = Math.floor(y * dmH / H);
@@ -34169,6 +34243,11 @@
                               else {
                                 if (patternType === 'bw') { var c2 = rng() > 0.5 ? 230 : 25; row[x*3] = c2; row[x*3+1] = c2; row[x*3+2] = c2; }
                                 else if (patternType === 'color') { row[x*3] = Math.floor(rng()*200)+55; row[x*3+1] = Math.floor(rng()*200)+55; row[x*3+2] = Math.floor(rng()*200)+55; }
+                                else if (patternType === 'ai' && d.stereoAiPatternImg) {
+                                  var pw2 = d.stereoAiPatternImg.width, ph2 = d.stereoAiPatternImg.height;
+                                  var pIdx2 = ((y % ph2) * pw2 + (x % pw2)) * 4;
+                                  row[x*3] = d.stereoAiPatternImg.data[pIdx2]; row[x*3+1] = d.stereoAiPatternImg.data[pIdx2+1]; row[x*3+2] = d.stereoAiPatternImg.data[pIdx2+2];
+                                }
                                 else { var v2 = Math.floor(rng()*220)+20; row[x*3] = v2; row[x*3+1] = v2; row[x*3+2] = v2; }
                               }
                             }
