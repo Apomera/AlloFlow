@@ -226,14 +226,15 @@
             h('span', {
                 className: 'border-b border-dotted border-indigo-400 text-indigo-700 cursor-help transition-colors hover:text-indigo-900 hover:border-indigo-600'
             }, children || term),
-            show && h('div', {
+            show && h('span', {
                 className: 'absolute z-[999] bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-3 bg-slate-900 text-white rounded-xl shadow-xl text-xs leading-relaxed pointer-events-none animate-in fade-in',
-                style: { animationDuration: '150ms' }
+                style: { animationDuration: '150ms', display: 'block' }
             },
-                h('div', { className: 'font-bold text-indigo-300 text-[11px] mb-1' }, `${term} — ${entry.affirming}`),
-                h('div', { className: 'text-slate-200' }, entry.def),
-                h('div', {
-                    className: 'absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-slate-900'
+                h('span', { className: 'font-bold text-indigo-300 text-[11px] mb-1', style: { display: 'block' } }, `${term} — ${entry.affirming}`),
+                h('span', { className: 'text-slate-200', style: { display: 'block' } }, entry.def),
+                h('span', {
+                    className: 'absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-slate-900',
+                    style: { display: 'block' }
                 })
             )
         );
@@ -2728,10 +2729,10 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                         html += `<h1>📊 BehaviorLens Portfolio</h1><div class="subtitle">Student: <strong>${student}</strong> | Generated: ${now}</div>`;
                         // Summary stats
                         const avgInt = filteredAbc.length > 0 ? (filteredAbc.reduce((s, e) => s + (e.intensity || 0), 0) / filteredAbc.length).toFixed(1) : '—';
-                        html += `<div class="stat-row"><div class="stat"><div class="stat-value">${filteredAbc.length}</div><div class="stat-label">ABC Entries</div></div><div class="stat"><div class="stat-value">${filteredObs.length}</div><div class="stat-label">Observations</div></div><div class="stat"><div class="stat-value">${avgInt}</div><div class="stat-label">Avg Intensity</div></div></div>`;
+                        html += `<div class="stat-row"><div class="stat"><div class="stat-value">${filteredAbc.length}</div><div class="stat-label">${t('bl.abc_entries') || 'ABC Entries'}</div></div><div class="stat"><div class="stat-value">${filteredObs.length}</div><div class="stat-label">${t('bl.observations') || 'Observations'}</div></div><div class="stat"><div class="stat-value">${avgInt}</div><div class="stat-label">${t('bl.avg_intensity') || 'Avg Intensity'}</div></div></div>`;
                         // ABC table
                         if (filteredAbc.length > 0) {
-                            html += '<h2>📋 ABC Data Log</h2><table><tr><th>#</th><th>Date</th><th>Antecedent</th><th>Behavior</th><th>Consequence</th><th>Setting</th><th>Int.</th></tr>';
+                            html += `<h2>📋 ABC Data Log</h2><table><tr><th>#</th><th>Date</th><th>${t('bl.antecedent') || 'Antecedent'}</th><th>${t('bl.behavior') || 'Behavior'}</th><th>${t('bl.consequence') || 'Consequence'}</th><th>${t('bl.setting') || 'Setting'}</th><th>Int.</th></tr>`;
                             filteredAbc.forEach((e, i) => {
                                 html += `<tr><td>${i + 1}</td><td>${fmtDate(e.timestamp)}</td><td>${e.antecedent || '—'}</td><td>${e.behavior || '—'}</td><td>${e.consequence || '—'}</td><td>${e.setting || '—'}</td><td>${e.intensity || '—'}</td></tr>`;
                             });
@@ -2739,7 +2740,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                         }
                         // Observation sessions
                         if (filteredObs.length > 0) {
-                            html += '<h2>🔍 Observation Sessions</h2><table><tr><th>#</th><th>Date</th><th>Method</th><th>Duration</th><th>Result</th></tr>';
+                            html += `<h2>🔍 Observation Sessions</h2><table><tr><th>#</th><th>Date</th><th>${t('bl.method') || 'Method'}</th><th>${t('bl.duration') || 'Duration'}</th><th>${t('bl.result') || 'Result'}</th></tr>`;
                             filteredObs.forEach((s, i) => {
                                 const detail = s.method === 'frequency' ? `${s.data?.count || 0} (${s.data?.rate || 0}/min)` : s.method === 'interval' ? `${s.data?.occurredCount || 0}/${s.data?.totalIntervals || 0} intervals` : s.method === 'duration' ? `${s.data?.totalDuration || 0}s` : '—';
                                 html += `<tr><td>${i + 1}</td><td>${fmtDate(s.timestamp)}</td><td>${s.method || '—'}</td><td>${fmtDuration(s.duration)}</td><td>${detail}</td></tr>`;
@@ -6927,16 +6928,16 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
                 <p style="font-size:11px;color:#64748b;">Student Codename: <strong>${studentName || '_______________'}</strong></p>
                 ${sections.map(s => `<h2>${s.title}</h2><p>${s.content.replace(/\n/g, '<br>')}</p>`).join('')}
                 <div class="sig-block">
-                    <p style="font-size:13px;font-weight:bold;">Consent Options</p>
+                    <p style="font-size:13px;font-weight:bold;">{t('bl.consent_options') || 'Consent Options'}</p>
                     <div class="checkbox-line">I consent to the exchange of behavioral data as described above.</div>
                     <div class="checkbox-line">I consent to AI-powered analysis of my child's behavioral data (optional).</div>
                     <div class="checkbox-line">I decline AI-powered analysis but consent to manual data exchange only.</div>
                     <div class="sig-line"></div>
-                    <div class="sig-label">Parent/Guardian Signature</div>
+                    <div class="sig-label">{t('bl.parent_guardian_signature') || 'Parent/Guardian Signature'}</div>
                     <div class="sig-line" style="width:30%;"></div>
                     <div class="sig-label">Date</div>
                     <div class="sig-line"></div>
-                    <div class="sig-label">Parent/Guardian Printed Name</div>
+                    <div class="sig-label">{t('bl.parent_guardian_name') || 'Parent/Guardian Printed Name'}</div>
                 </div>
                 </body></html>`;
             const win = window.open('', '_blank');
@@ -7610,12 +7611,580 @@ Generate 10 entries and 2 observations. Include a mix of challenging behaviors A
         );
     };
 
+    // ─── Data Quality Utility ────────────────────────────────────────────
+    const computeDataQuality = (entries) => {
+        if (!entries || entries.length === 0) return { score: 0, grade: 'none', color: 'slate', dimensions: [] };
+        const now = new Date();
+        // 1. Volume (20%)
+        const volScore = Math.min(1, entries.length / 10);
+        // 2. Recency (20%)
+        const dates = entries.map(e => new Date(e.date || e.timestamp || 0));
+        const mostRecent = Math.max(...dates);
+        const daysSince = (now - mostRecent) / (1000 * 60 * 60 * 24);
+        const recScore = daysSince <= 7 ? 1 : daysSince <= 14 ? 0.5 : 0;
+        // 3. Setting Diversity (20%)
+        const uniqueAnt = new Set(entries.map(e => (e.antecedent || '').trim().toLowerCase()).filter(Boolean));
+        const divScore = Math.min(1, uniqueAnt.size / 3);
+        // 4. Completeness (20%)
+        const complete = entries.filter(e => e.antecedent && e.behavior && e.consequence).length;
+        const compScore = entries.length > 0 ? complete / entries.length : 0;
+        // 5. Temporal Spread (20%)
+        const uniqueDays = new Set(entries.map(e => e.date || (e.timestamp ? new Date(e.timestamp).toISOString().split('T')[0] : '')).filter(Boolean));
+        const spreadScore = Math.min(1, uniqueDays.size / 3);
+
+        const total = Math.round((volScore + recScore + divScore + compScore + spreadScore) * 20);
+        const grade = total >= 80 ? 'strong' : total >= 50 ? 'fair' : 'poor';
+        const color = grade === 'strong' ? 'emerald' : grade === 'fair' ? 'amber' : 'red';
+
+        return {
+            score: total,
+            grade,
+            color,
+            dimensions: [
+                { label: 'Volume', value: Math.round(volScore * 100), tip: volScore < 1 ? `Add ${Math.max(0, 10 - entries.length)} more entries (need 10+)` : 'Great volume of data!' },
+                { label: 'Recency', value: Math.round(recScore * 100), tip: recScore < 1 ? `Last entry was ${Math.round(daysSince)} days ago — add fresh data` : 'Data is current!' },
+                { label: 'Diversity', value: Math.round(divScore * 100), tip: divScore < 1 ? `Only ${uniqueAnt.size} antecedent type${uniqueAnt.size !== 1 ? 's' : ''} — collect across 3+ settings` : 'Good setting diversity!' },
+                { label: 'Completeness', value: Math.round(compScore * 100), tip: compScore < 1 ? `${entries.length - complete} entries are missing A, B, or C fields` : 'All entries fully complete!' },
+                { label: 'Temporal Spread', value: Math.round(spreadScore * 100), tip: spreadScore < 1 ? `Data from only ${uniqueDays.size} day${uniqueDays.size !== 1 ? 's' : ''} — spread across 3+ days` : 'Good temporal coverage!' },
+            ]
+        };
+    };
+
+    // ─── DataQualityBadge ────────────────────────────────────────────────
+    const DataQualityBadge = ({ abcEntries, t }) => {
+        const [expanded, setExpanded] = useState(false);
+        const quality = computeDataQuality(abcEntries);
+        if (quality.grade === 'none') return null;
+
+        const ringColors = { emerald: 'border-emerald-400 bg-emerald-50 text-emerald-700', amber: 'border-amber-400 bg-amber-50 text-amber-700', red: 'border-red-400 bg-red-50 text-red-700' };
+        const ringIcons = { strong: '🟢', fair: '🟡', poor: '🔴' };
+        const barColors = { emerald: 'bg-emerald-500', amber: 'bg-amber-500', red: 'bg-red-500' };
+
+        return h('div', { className: 'relative' },
+            h('button', {
+                onClick: () => setExpanded(v => !v),
+                className: `flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border-2 transition-all ${ringColors[quality.color]}`,
+                title: `Data Quality: ${quality.grade} (${quality.score}%)`
+            }, ringIcons[quality.grade], ` ${quality.score}%`),
+            expanded && h('div', {
+                className: 'absolute right-0 top-9 z-50 bg-white border border-slate-200 rounded-xl shadow-2xl p-4 min-w-[280px] animate-in fade-in',
+                onClick: e => e.stopPropagation()
+            },
+                h('div', { className: 'flex items-center justify-between mb-3' },
+                    h('div', { className: 'text-sm font-black text-slate-800' }, '📊 Data Quality Scorecard'),
+                    h('button', { onClick: () => setExpanded(false), className: 'text-slate-300 hover:text-slate-500 text-lg' }, '×')
+                ),
+                h('div', { className: `text-center py-3 rounded-xl mb-3 ${quality.color === 'emerald' ? 'bg-emerald-50' : quality.color === 'amber' ? 'bg-amber-50' : 'bg-red-50'}` },
+                    h('div', { className: 'text-3xl font-black ' + (quality.color === 'emerald' ? 'text-emerald-600' : quality.color === 'amber' ? 'text-amber-600' : 'text-red-600') }, `${quality.score}%`),
+                    h('div', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, quality.grade + ' dataset')
+                ),
+                h('div', { className: 'space-y-2.5' },
+                    quality.dimensions.map((dim, i) =>
+                        h('div', { key: i },
+                            h('div', { className: 'flex justify-between text-[10px] font-bold mb-0.5' },
+                                h('span', { className: 'text-slate-600' }, dim.label),
+                                h('span', { className: dim.value >= 80 ? 'text-emerald-600' : dim.value >= 50 ? 'text-amber-600' : 'text-red-500' }, `${dim.value}%`)
+                            ),
+                            h('div', { className: 'w-full bg-slate-100 rounded-full h-1.5 overflow-hidden' },
+                                h('div', { className: `h-full rounded-full transition-all duration-500 ${dim.value >= 80 ? barColors.emerald : dim.value >= 50 ? barColors.amber : barColors.red}`, style: { width: `${dim.value}%` } })
+                            ),
+                            dim.value < 100 && h('div', { className: 'text-[9px] text-slate-400 mt-0.5 italic' }, `💡 ${dim.tip}`)
+                        )
+                    )
+                )
+            )
+        );
+    };
+
+    // ─── NextStepRecommender ────────────────────────────────────────────
+    const NextStepRecommender = ({ abcEntries, aiAnalysis, observationSessions, sessionHistory, selectedStudent, onOpenTool, t }) => {
+        const [dismissed, setDismissed] = useState(false);
+        if (dismissed) return null;
+
+        const FBA_STEPS = [
+            { id: 1, check: () => !selectedStudent, label: 'Select a Student', desc: 'Choose or create a student profile to begin collecting data', tool: null, icon: '👤' },
+            { id: 2, check: () => abcEntries.length === 0, label: 'Record ABC Data', desc: 'Start documenting Antecedent-Behavior-Consequence observations', tool: 'abc', icon: '📋' },
+            { id: 3, check: () => abcEntries.length > 0 && abcEntries.length < 5, label: 'Collect More Data', desc: `You have ${abcEntries.length} entries — aim for 5+ across different days for reliable patterns`, tool: 'abc', icon: '📝' },
+            { id: 4, check: () => abcEntries.length >= 5 && !aiAnalysis, label: 'Run AI Pattern Analysis', desc: 'You have enough data! Let AI identify behavior patterns and potential functions', tool: 'analysis', icon: '🧠' },
+            { id: 5, check: () => !!aiAnalysis && observationSessions.length === 0, label: 'Build a Hypothesis', desc: 'Create a visual hypothesis diagram linking triggers, behaviors, and consequences', tool: 'hypothesis', icon: '🔗' },
+            { id: 6, check: () => !!aiAnalysis && sessionHistory.length === 0, label: 'Track Intervention Sessions', desc: 'Start tracking data on your intervention to measure effectiveness', tool: 'sessiontracker', icon: '📈' },
+            { id: 7, check: () => sessionHistory.length > 0, label: 'Generate a Progress Report', desc: '🎉 Full FBA cycle data collected! Create a professional progress report', tool: 'progressreport', icon: '📄' },
+        ];
+
+        const currentStep = FBA_STEPS.find(s => s.check());
+        if (!currentStep) return null;
+
+        const progress = Math.round(((currentStep.id - 1) / (FBA_STEPS.length - 1)) * 100);
+        const stepColors = currentStep.id <= 2 ? 'from-indigo-500 to-blue-600' : currentStep.id <= 4 ? 'from-purple-500 to-violet-600' : currentStep.id <= 6 ? 'from-emerald-500 to-teal-600' : 'from-amber-500 to-orange-500';
+
+        return h('div', { className: `bg-gradient-to-r ${stepColors} rounded-xl p-4 text-white shadow-lg relative overflow-hidden` },
+            h('div', { className: 'absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2' }),
+            h('button', {
+                onClick: () => setDismissed(true),
+                className: 'absolute top-2 right-2 text-white/40 hover:text-white/80 text-sm z-10'
+            }, '✕'),
+            h('div', { className: 'flex items-center gap-3 mb-3' },
+                h('div', { className: 'w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-2xl' }, currentStep.icon),
+                h('div', null,
+                    h('div', { className: 'text-[10px] font-bold text-white/60 uppercase tracking-wider' }, `🧭 Step ${currentStep.id} of ${FBA_STEPS.length}`),
+                    h('div', { className: 'text-sm font-black' }, currentStep.label)
+                )
+            ),
+            h('p', { className: 'text-xs text-white/80 mb-3' }, currentStep.desc),
+            h('div', { className: 'flex items-center gap-3' },
+                currentStep.tool && onOpenTool && h('button', {
+                    onClick: () => onOpenTool(currentStep.tool),
+                    className: 'px-4 py-1.5 bg-white text-slate-800 rounded-lg text-xs font-black hover:bg-white/90 transition-all shadow-sm'
+                }, '→ Open Tool'),
+                h('div', { className: 'flex-1' },
+                    h('div', { className: 'w-full bg-white/20 rounded-full h-1.5 overflow-hidden' },
+                        h('div', { className: 'h-full bg-white/80 rounded-full transition-all duration-700', style: { width: `${progress}%` } })
+                    ),
+                    h('div', { className: 'text-[9px] text-white/50 mt-1 text-right' }, `${progress}% through FBA workflow`)
+                )
+            )
+        );
+    };
+
+    // ─── BehaviorHeatmap ────────────────────────────────────────────────
+    const BehaviorHeatmap = ({ abcEntries, onOpenTool, t, addToast, mini }) => {
+        const [hoveredCell, setHoveredCell] = useState(null);
+
+        // Build 4-week calendar grid (Mon-Fri, 4 rows)
+        const now = new Date();
+        const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+        const weeks = 4;
+        const cells = [];
+
+        for (let w = weeks - 1; w >= 0; w--) {
+            for (let d = 0; d < 5; d++) {
+                const date = new Date(now);
+                // Rewind to current week's Monday, then offset
+                const currentDay = now.getDay() || 7; // Sun=7
+                date.setDate(now.getDate() - (currentDay - 1) - (w * 7) + d);
+                const dateStr = date.toISOString().split('T')[0];
+                const dayEntries = abcEntries.filter(e => e.date === dateStr);
+                const count = dayEntries.length;
+                const functions = {};
+                dayEntries.forEach(e => {
+                    const fn = e.perceivedFunction || 'Unknown';
+                    functions[fn] = (functions[fn] || 0) + 1;
+                });
+                cells.push({ date, dateStr, count, functions, weekIdx: weeks - 1 - w, dayIdx: d });
+            }
+        }
+
+        const maxCount = Math.max(1, ...cells.map(c => c.count));
+        const getColor = (count) => {
+            if (count === 0) return '#f1f5f9'; // slate-100
+            const intensity = count / maxCount;
+            if (intensity <= 0.25) return '#fef3c7'; // amber-100
+            if (intensity <= 0.5) return '#fbbf24';  // amber-400
+            if (intensity <= 0.75) return '#f97316'; // orange-500
+            return '#ef4444'; // red-500
+        };
+
+        const cellSize = mini ? 16 : 28;
+        const gap = mini ? 2 : 4;
+        const labelW = mini ? 24 : 36;
+        const svgW = labelW + (cellSize + gap) * 5;
+        const svgH = (mini ? 14 : 20) + (cellSize + gap) * weeks;
+
+        return h('div', { className: mini ? '' : 'max-w-2xl mx-auto space-y-4' },
+            !mini && h('div', { className: 'text-center py-3' },
+                h('div', { className: 'text-4xl mb-2' }, '📅'),
+                h('h2', { className: 'text-lg font-black text-slate-800' }, 'Behavior Timeline Heatmap'),
+                h('p', { className: 'text-xs text-slate-500 mt-1' }, 'Incident density across the past 4 school weeks')
+            ),
+            // Legend
+            !mini && h('div', { className: 'flex items-center justify-center gap-4 text-[10px] text-slate-500' },
+                h('span', null, 'Less'),
+                ['#f1f5f9', '#fef3c7', '#fbbf24', '#f97316', '#ef4444'].map((c, i) =>
+                    h('div', { key: i, className: 'w-4 h-4 rounded-sm border border-slate-200', style: { backgroundColor: c } })
+                ),
+                h('span', null, 'More')
+            ),
+            // SVG Grid
+            h('div', { className: 'flex justify-center relative' },
+                h('svg', { width: svgW, height: svgH, className: 'select-none' },
+                    // Day labels
+                    !mini && dayNames.map((name, i) =>
+                        h('text', {
+                            key: 'dl-' + i,
+                            x: labelW + i * (cellSize + gap) + cellSize / 2,
+                            y: 12,
+                            textAnchor: 'middle',
+                            className: 'text-[9px] fill-slate-400 font-bold'
+                        }, name)
+                    ),
+                    // Cells
+                    cells.map((cell, i) => {
+                        const x = labelW + cell.dayIdx * (cellSize + gap);
+                        const y = (mini ? 0 : 18) + cell.weekIdx * (cellSize + gap);
+                        return h('g', { key: i },
+                            h('rect', {
+                                x, y,
+                                width: cellSize,
+                                height: cellSize,
+                                rx: mini ? 2 : 4,
+                                fill: getColor(cell.count),
+                                stroke: hoveredCell === i ? '#6366f1' : '#e2e8f0',
+                                strokeWidth: hoveredCell === i ? 2 : 1,
+                                style: { cursor: cell.count > 0 ? 'pointer' : 'default', transition: 'all 0.15s' },
+                                onMouseEnter: () => setHoveredCell(i),
+                                onMouseLeave: () => setHoveredCell(null),
+                                onClick: () => { if (cell.count > 0 && onOpenTool) onOpenTool('scatterplot'); }
+                            }),
+                            !mini && cell.count > 0 && h('text', {
+                                x: x + cellSize / 2,
+                                y: y + cellSize / 2 + 4,
+                                textAnchor: 'middle',
+                                className: `font-black ${cell.count >= maxCount * 0.5 ? 'fill-white' : 'fill-slate-600'}`,
+                                style: { fontSize: '10px', pointerEvents: 'none' }
+                            }, cell.count)
+                        );
+                    }),
+                    // Week labels
+                    !mini && Array.from({ length: weeks }, (_, w) =>
+                        h('text', {
+                            key: 'wl-' + w,
+                            x: 0,
+                            y: 18 + w * (cellSize + gap) + cellSize / 2 + 4,
+                            className: 'text-[9px] fill-slate-400 font-bold'
+                        }, `W${w + 1}`)
+                    )
+                ),
+                // Tooltip
+                hoveredCell !== null && cells[hoveredCell] && h('div', {
+                    className: 'absolute z-50 bg-slate-800 text-white rounded-lg px-3 py-2 text-[10px] shadow-xl pointer-events-none whitespace-nowrap',
+                    style: {
+                        left: `${labelW + cells[hoveredCell].dayIdx * (cellSize + gap) + cellSize / 2}px`,
+                        top: `${(mini ? 0 : 18) + cells[hoveredCell].weekIdx * (cellSize + gap) - 8}px`,
+                        transform: 'translate(-50%, -100%)'
+                    }
+                },
+                    h('div', { className: 'font-bold' }, cells[hoveredCell].date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })),
+                    h('div', null, `${cells[hoveredCell].count} incident${cells[hoveredCell].count !== 1 ? 's' : ''}`),
+                    Object.entries(cells[hoveredCell].functions).length > 0 &&
+                        h('div', { className: 'text-slate-300 mt-0.5' },
+                            Object.entries(cells[hoveredCell].functions).map(([fn, ct]) => `${ct} ${fn}`).join(', ')
+                        )
+                )
+            ),
+            // Summary stats (non-mini)
+            !mini && h('div', { className: 'grid grid-cols-3 gap-3 mt-4' },
+                h('div', { className: 'bg-slate-50 rounded-xl p-3 text-center border border-slate-200' },
+                    h('div', { className: 'text-2xl font-black text-slate-700' }, cells.reduce((s, c) => s + c.count, 0)),
+                    h('div', { className: 'text-[10px] text-slate-500 font-bold' }, 'Total Incidents')
+                ),
+                h('div', { className: 'bg-red-50 rounded-xl p-3 text-center border border-red-200' },
+                    h('div', { className: 'text-2xl font-black text-red-600' },
+                        (() => { const peak = cells.reduce((max, c) => c.count > max.count ? c : max, cells[0]); return peak.count > 0 ? dayNames[peak.dayIdx] : '—'; })()
+                    ),
+                    h('div', { className: 'text-[10px] text-slate-500 font-bold' }, 'Peak Day')
+                ),
+                h('div', { className: 'bg-emerald-50 rounded-xl p-3 text-center border border-emerald-200' },
+                    h('div', { className: 'text-2xl font-black text-emerald-600' }, cells.filter(c => c.count === 0).length),
+                    h('div', { className: 'text-[10px] text-slate-500 font-bold' }, 'Zero-Incident Days')
+                )
+            )
+        );
+    };
+
+    // ─── SkillTracker & Mentorship ──────────────────────────────────────
+    const SkillTracker = ({ t, addToast, onOpenTool }) => {
+        const DOMAINS = [
+            { id: 'data', label: 'Data Collection', icon: '📋', color: 'indigo',
+              skills: [
+                { id: 'abc_basics', label: 'ABC Recording Fundamentals', xp: 10, tool: 'abc', desc: 'Record at least 3 ABC entries with complete A-B-C fields' },
+                { id: 'obs_session', label: 'Live Observation Session', xp: 15, tool: 'observation', desc: 'Complete a timed observation using frequency or duration recording' },
+                { id: 'interval_rec', label: 'Interval Recording', xp: 15, tool: 'interval', desc: 'Run a partial or whole-interval recording session' },
+                { id: 'nlabc_convert', label: 'Natural Language → ABC', xp: 10, tool: 'nlabc', desc: 'Convert narrative notes into structured ABC entries using AI' },
+                { id: 'voice_entry', label: 'Voice Data Entry', xp: 20, tool: 'voiceabc', desc: 'Use voice-to-ABC to capture data hands-free' },
+                { id: 'ioa_check', label: 'IOA Reliability Check', xp: 25, tool: 'ioacalc', desc: 'Calculate inter-observer agreement for your data' },
+              ] },
+            { id: 'analysis', label: 'Behavior Analysis', icon: '🧠', color: 'purple',
+              skills: [
+                { id: 'ai_analysis', label: 'AI Pattern Analysis', xp: 15, tool: 'analysis', desc: 'Run AI analysis on 3+ ABC entries to identify patterns' },
+                { id: 'hypothesis_gen', label: 'Generate Hypothesis Diagram', xp: 20, tool: 'hypothesis', desc: 'Create a visual hypothesis linking antecedents, behaviors, and consequences' },
+                { id: 'cond_prob', label: 'Conditional Probability', xp: 25, tool: 'condprob', desc: 'Validate hypotheses with foreground vs background probability' },
+                { id: 'trend_review', label: 'Trend Dashboard Review', xp: 10, tool: 'trends', desc: 'Review behavior trends over time using the dashboard' },
+                { id: 'scatter_analysis', label: 'Scatterplot Time Analysis', xp: 20, tool: 'scatterplot', desc: 'Identify temporal behavior patterns using scatterplot' },
+              ] },
+            { id: 'intervention', label: 'Intervention Design', icon: '🎯', color: 'emerald',
+              skills: [
+                { id: 'smart_goals', label: 'Write SMART Goals', xp: 15, tool: 'goals', desc: 'Build measurable behavior goals using the SMART framework' },
+                { id: 'bip_create', label: 'Create a BIP', xp: 25, tool: 'bipgen', desc: 'Generate a Behavior Intervention Plan from ABC data' },
+                { id: 'replace_beh', label: 'Replacement Behavior Selection', xp: 20, tool: 'competingpathways', desc: 'Map competing pathways to identify functionally equivalent replacements' },
+                { id: 'fct_plan', label: 'FCT Planning', xp: 25, tool: 'fcttemplate', desc: 'Plan a Functional Communication Training intervention' },
+                { id: 'dr_strategy', label: 'DR Strategy Selection', xp: 20, tool: 'drstrategy', desc: 'Choose the right differential reinforcement strategy' },
+              ] },
+            { id: 'assessment', label: 'Assessment Methods', icon: '📊', color: 'amber',
+              skills: [
+                { id: 'pref_assess', label: 'Preference Assessment', xp: 15, tool: 'prefassess', desc: 'Run a systematic reinforcer identification protocol' },
+                { id: 'task_analysis', label: 'Task Analysis', xp: 15, tool: 'taskanalysis', desc: 'Break a skill into teachable steps with chaining' },
+                { id: 'effect_size', label: 'Effect Size Calculation', xp: 25, tool: 'effectsize', desc: 'Calculate Tau-U or NAP to quantify intervention effectiveness' },
+                { id: 'social_val', label: 'Social Validity Measures', xp: 20, tool: 'socialvalidity', desc: 'Administer TARF or IRP-15 for treatment acceptability' },
+                { id: 'cantdo_assess', label: "Can't Do / Won't Do Assessment", xp: 15, tool: 'cantdowontdo', desc: 'Differentiate skill deficits from performance deficits' },
+              ] },
+            { id: 'ethics', label: 'Professional Ethics', icon: '⚖️', color: 'rose',
+              skills: [
+                { id: 'bias_reflect', label: 'Bias Reflection', xp: 15, tool: 'biascheck', desc: 'Complete a bias reflection on your data collection practices' },
+                { id: 'cultural_ctx', label: 'Cultural Context Review', xp: 15, tool: 'cultural', desc: 'Examine cultural factors influencing behavior interpretation' },
+                { id: 'ferpa_consent', label: 'FERPA Consent Management', xp: 10, tool: 'consent', desc: 'Set up and manage data sharing consent records' },
+                { id: 'treat_integrity', label: 'Treatment Integrity Tracking', xp: 20, tool: 'treatintegrity', desc: 'Document fidelity of intervention implementation' },
+                { id: 'restorative_conv', label: 'Restorative Conversation', xp: 15, tool: 'restorative', desc: 'Practice restorative dialogue techniques' },
+              ] },
+            { id: 'reporting', label: 'Report Writing', icon: '📄', color: 'sky',
+              skills: [
+                { id: 'progress_report', label: 'Progress Report', xp: 15, tool: 'progressreport', desc: 'Generate an AI-assisted progress report' },
+                { id: 'iep_goals', label: 'IEP Goal Generation', xp: 20, tool: 'iepgoals', desc: 'Create present levels, goals, and accommodations' },
+                { id: 'bcba_handoff', label: 'BCBA Handoff Package', xp: 25, tool: 'bcbahandoff', desc: 'Prepare a complete data package for specialist referral' },
+                { id: 'print_report', label: 'Print-Ready Report', xp: 15, tool: 'printreport', desc: 'Generate a professional print-ready document' },
+              ] },
+        ];
+
+        const LEVELS = [
+            { name: 'Novice', minXP: 0, icon: '🌱', color: 'slate' },
+            { name: 'Explorer', minXP: 50, icon: '🧭', color: 'blue' },
+            { name: 'Apprentice', minXP: 150, icon: '📘', color: 'indigo' },
+            { name: 'Competent', minXP: 300, icon: '⭐', color: 'amber' },
+            { name: 'Practitioner', minXP: 500, icon: '🏅', color: 'emerald' },
+        ];
+
+        const BADGES = [
+            { id: 'first_data', label: 'First Data Point', icon: '📝', desc: 'Complete your first skill', req: 1 },
+            { id: 'explorer', label: 'Domain Explorer', icon: '🗺️', desc: 'Complete a skill in 3 different domains', req: 3 },
+            { id: 'data_master', label: 'Data Collection Master', icon: '📋', desc: 'Complete all Data Collection skills', domain: 'data' },
+            { id: 'analyst', label: 'Behavior Analyst', icon: '🧠', desc: 'Complete all Behavior Analysis skills', domain: 'analysis' },
+            { id: 'half_way', label: 'Halfway There', icon: '🎯', desc: 'Complete 50% of all skills', req: 0.5 },
+            { id: 'completionist', label: 'BehaviorLens Practitioner', icon: '🏆', desc: 'Complete all skills across all domains', req: 1.0 },
+        ];
+
+        // Load/save progress
+        const storageKey = 'bl_skill_tracker';
+        const [completed, setCompleted] = useState(() => {
+            try { return JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch { return []; }
+        });
+        const [expandedDomain, setExpandedDomain] = useState(null);
+        const [showBadges, setShowBadges] = useState(false);
+
+        useEffect(() => {
+            try { localStorage.setItem(storageKey, JSON.stringify(completed)); } catch {}
+        }, [completed]);
+
+        const toggleSkill = (skillId) => {
+            setCompleted(prev => {
+                const next = prev.includes(skillId) ? prev.filter(s => s !== skillId) : [...prev, skillId];
+                if (!prev.includes(skillId) && addToast) addToast(`✅ Skill completed! +XP earned`, 'success');
+                return next;
+            });
+        };
+
+        const totalXP = DOMAINS.reduce((sum, d) => sum + d.skills.filter(s => completed.includes(s.id)).reduce((s2, sk) => s2 + sk.xp, 0), 0);
+        const totalSkills = DOMAINS.reduce((s, d) => s + d.skills.length, 0);
+        const completedCount = completed.length;
+        const currentLevel = [...LEVELS].reverse().find(l => totalXP >= l.minXP) || LEVELS[0];
+        const nextLevel = LEVELS[LEVELS.indexOf(currentLevel) + 1];
+        const progressToNext = nextLevel ? Math.min(100, ((totalXP - currentLevel.minXP) / (nextLevel.minXP - currentLevel.minXP)) * 100) : 100;
+
+        const earnedBadges = BADGES.filter(b => {
+            if (b.domain) return DOMAINS.find(d => d.id === b.domain)?.skills.every(s => completed.includes(s.id));
+            if (b.req <= 1 && b.req > 0 && b.id !== 'first_data') return completedCount >= totalSkills * b.req;
+            if (b.id === 'first_data') return completedCount >= 1;
+            if (b.id === 'explorer') {
+                const domainsWithCompletion = DOMAINS.filter(d => d.skills.some(s => completed.includes(s.id)));
+                return domainsWithCompletion.length >= 3;
+            }
+            return false;
+        });
+
+        const domainColors = { indigo: 'border-indigo-300 bg-indigo-50', purple: 'border-purple-300 bg-purple-50', emerald: 'border-emerald-300 bg-emerald-50', amber: 'border-amber-300 bg-amber-50', rose: 'border-rose-300 bg-rose-50', sky: 'border-sky-300 bg-sky-50' };
+        const domainAccents = { indigo: 'text-indigo-700', purple: 'text-purple-700', emerald: 'text-emerald-700', amber: 'text-amber-700', rose: 'text-rose-700', sky: 'text-sky-700' };
+        const domainBgs = { indigo: 'bg-indigo-500', purple: 'bg-purple-500', emerald: 'bg-emerald-500', amber: 'bg-amber-500', rose: 'bg-rose-500', sky: 'bg-sky-500' };
+
+        return h('div', { className: 'max-w-3xl mx-auto space-y-6' },
+            // Header
+            h('div', { className: 'text-center py-4' },
+                h('div', { className: 'text-5xl mb-3' }, '🏅'),
+                h('h2', { className: 'text-xl font-black text-slate-800' }, 'Skill Tracker & Mentorship'),
+                h('p', { className: 'text-sm text-slate-500 mt-1 max-w-md mx-auto' }, 'Track your ABA competency growth — complete challenges, earn badges, and level up from Novice to Practitioner')
+            ),
+            // Level & XP Dashboard
+            h('div', { className: 'bg-gradient-to-br from-indigo-600 via-purple-600 to-violet-700 rounded-2xl p-6 text-white shadow-xl' },
+                h('div', { className: 'flex items-center justify-between mb-4' },
+                    h('div', { className: 'flex items-center gap-3' },
+                        h('div', { className: 'w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl' }, currentLevel.icon),
+                        h('div', null,
+                            h('div', { className: 'text-xs font-bold text-indigo-200 uppercase tracking-wider' }, 'Current Level'),
+                            h('div', { className: 'text-2xl font-black' }, currentLevel.name)
+                        )
+                    ),
+                    h('div', { className: 'text-right' },
+                        h('div', { className: 'text-3xl font-black' }, totalXP),
+                        h('div', { className: 'text-xs text-indigo-200 font-bold' }, 'Total XP')
+                    )
+                ),
+                // Progress bar to next level
+                nextLevel && h('div', null,
+                    h('div', { className: 'flex justify-between text-[10px] text-indigo-200 font-bold mb-1' },
+                        h('span', null, `${currentLevel.icon} ${currentLevel.name}`),
+                        h('span', null, `${nextLevel.icon} ${nextLevel.name} (${nextLevel.minXP} XP)`)
+                    ),
+                    h('div', { className: 'w-full bg-white/20 rounded-full h-3 overflow-hidden' },
+                        h('div', { className: 'h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full transition-all duration-500', style: { width: `${progressToNext}%` } })
+                    )
+                ),
+                // Stats row
+                h('div', { className: 'grid grid-cols-3 gap-3 mt-4' },
+                    h('div', { className: 'bg-white/10 rounded-xl p-3 text-center' },
+                        h('div', { className: 'text-2xl font-black' }, completedCount),
+                        h('div', { className: 'text-[10px] text-indigo-200 font-bold' }, 'Skills Done')
+                    ),
+                    h('div', { className: 'bg-white/10 rounded-xl p-3 text-center' },
+                        h('div', { className: 'text-2xl font-black' }, totalSkills - completedCount),
+                        h('div', { className: 'text-[10px] text-indigo-200 font-bold' }, 'Remaining')
+                    ),
+                    h('div', { className: 'bg-white/10 rounded-xl p-3 text-center' },
+                        h('div', { className: 'text-2xl font-black' }, earnedBadges.length),
+                        h('div', { className: 'text-[10px] text-indigo-200 font-bold' }, 'Badges')
+                    )
+                )
+            ),
+            // Badges Section
+            h('div', { className: 'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden' },
+                h('button', {
+                    onClick: () => setShowBadges(v => !v),
+                    className: 'w-full flex items-center justify-between px-5 py-3 bg-slate-50 hover:bg-slate-100 transition-all text-left'
+                },
+                    h('div', { className: 'flex items-center gap-2' },
+                        h('span', { className: 'text-lg' }, '🏆'),
+                        h('span', { className: 'text-sm font-black text-slate-700' }, 'Badges & Achievements'),
+                        h('span', { className: 'ml-2 px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full' }, `${earnedBadges.length}/${BADGES.length}`)
+                    ),
+                    h('span', { className: 'text-slate-400 text-sm transition-transform ' + (showBadges ? 'rotate-180' : '') }, '▾')
+                ),
+                showBadges && h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-3 p-4' },
+                    BADGES.map(badge => {
+                        const earned = earnedBadges.some(eb => eb.id === badge.id);
+                        return h('div', {
+                            key: badge.id,
+                            className: `rounded-xl border-2 p-4 text-center transition-all ${earned ? 'border-amber-300 bg-amber-50 shadow-sm' : 'border-slate-200 bg-slate-50 opacity-50'}`
+                        },
+                            h('div', { className: 'text-3xl mb-2' }, earned ? badge.icon : '🔒'),
+                            h('div', { className: `text-xs font-black ${earned ? 'text-amber-700' : 'text-slate-400'}` }, badge.label),
+                            h('div', { className: 'text-[10px] text-slate-400 mt-1' }, badge.desc)
+                        );
+                    })
+                )
+            ),
+            // Domain Skill Trees
+            h('div', { className: 'space-y-3' },
+                DOMAINS.map(domain => {
+                    const domainCompleted = domain.skills.filter(s => completed.includes(s.id)).length;
+                    const domainTotal = domain.skills.length;
+                    const domainPct = Math.round((domainCompleted / domainTotal) * 100);
+                    const isOpen = expandedDomain === domain.id;
+                    return h('div', { key: domain.id, className: `rounded-xl border-2 overflow-hidden transition-all ${domainColors[domain.color]}` },
+                        h('button', {
+                            onClick: () => setExpandedDomain(isOpen ? null : domain.id),
+                            className: 'w-full flex items-center justify-between px-5 py-4 text-left hover:opacity-90 transition-all'
+                        },
+                            h('div', { className: 'flex items-center gap-3' },
+                                h('div', { className: `w-10 h-10 rounded-xl ${domainBgs[domain.color]} text-white flex items-center justify-center text-xl` }, domain.icon),
+                                h('div', null,
+                                    h('div', { className: `text-sm font-black ${domainAccents[domain.color]}` }, domain.label),
+                                    h('div', { className: 'text-[10px] text-slate-500 font-bold' }, `${domainCompleted}/${domainTotal} skills · ${domainPct}%`)
+                                )
+                            ),
+                            h('div', { className: 'flex items-center gap-3' },
+                                h('div', { className: 'w-24 bg-white/60 rounded-full h-2.5 overflow-hidden' },
+                                    h('div', { className: `h-full ${domainBgs[domain.color]} rounded-full transition-all duration-500`, style: { width: `${domainPct}%` } })
+                                ),
+                                domainCompleted === domainTotal && h('span', { className: 'text-lg' }, '✅'),
+                                h('span', { className: 'text-slate-400 text-sm transition-transform ' + (isOpen ? 'rotate-180' : '') }, '▾')
+                            )
+                        ),
+                        isOpen && h('div', { className: 'px-4 pb-4 space-y-2' },
+                            domain.skills.map(skill => {
+                                const isDone = completed.includes(skill.id);
+                                return h('div', {
+                                    key: skill.id,
+                                    className: `flex items-center gap-3 p-3 rounded-xl border transition-all ${isDone ? 'bg-white/80 border-emerald-200' : 'bg-white/50 border-slate-200 hover:border-slate-300'}`
+                                },
+                                    h('button', {
+                                        onClick: () => toggleSkill(skill.id),
+                                        className: `w-7 h-7 rounded-lg border-2 flex items-center justify-center text-sm font-bold transition-all shrink-0 ${isDone ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 hover:border-indigo-400 text-transparent hover:text-indigo-300'}`
+                                    }, isDone ? '✓' : ''),
+                                    h('div', { className: 'flex-1 min-w-0' },
+                                        h('div', { className: `text-xs font-black ${isDone ? 'text-emerald-700 line-through' : 'text-slate-700'}` }, skill.label),
+                                        h('div', { className: 'text-[10px] text-slate-400 truncate' }, skill.desc)
+                                    ),
+                                    h('div', { className: 'flex items-center gap-2 shrink-0' },
+                                        h('span', { className: `text-[10px] font-black px-2 py-0.5 rounded-full ${isDone ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'}` }, `+${skill.xp} XP`),
+                                        !isDone && skill.tool && onOpenTool && h('button', {
+                                            onClick: (e) => { e.stopPropagation(); onOpenTool(skill.tool); },
+                                            className: 'px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[10px] font-bold hover:bg-indigo-200 transition-all',
+                                            title: 'Open this tool'
+                                        }, '→ Open Tool')
+                                    )
+                                );
+                            })
+                        )
+                    );
+                })
+            ),
+            // Reset button
+            h('div', { className: 'text-center pt-2' },
+                h('button', {
+                    onClick: () => { if (confirm('Reset all skill progress? This cannot be undone.')) { setCompleted([]); if (addToast) addToast('Skill progress reset', 'info'); } },
+                    className: 'text-[10px] text-slate-300 hover:text-red-400 transition-colors'
+                }, '↺ Reset All Progress')
+            )
+        );
+    };
+
     // ─── GuidedWorkflowHub ──────────────────────────────────────────────
     // Multi-track guided workflow system with sub-steps, auto-completion, and AI recommendations
     const GuidedWorkflowHub = ({ setActivePanel, abcEntries, observationSessions, aiAnalysis, callGemini, alloBotRef, workflowTrack, setWorkflowTrack, workflowSubSteps, setWorkflowSubSteps, t, addToast }) => {
         const [expandedStep, setExpandedStep] = useState(null);
         const [aiRec, setAiRec] = useState('');
         const [aiRecLoading, setAiRecLoading] = useState(false);
+        const [scenarioOpen, setScenarioOpen] = useState(null); // step ID with open scenario
+        const [scenarioAnswer, setScenarioAnswer] = useState({});  // { stepId: chosenIdx }
+        const [scenarioReflection, setScenarioReflection] = useState({}); // { stepId: string }
+        const [scenarioReflLoading, setScenarioReflLoading] = useState(false);
+
+        // ── Scenario bank — realistic classroom situations keyed by step prefix ──
+        const SCENARIOS = {
+            fba_1: { title: 'Scenario: Defining the Behavior', situation: 'A teacher says: "Marcus is always being aggressive during math." You need to help them write a measurable behavior definition.',
+                options: ['\"Marcus is aggressive and disruptive during class.\"', '\"Marcus pushes or hits peers when given independent math worksheets, averaging 2-3 incidents per class period.\"', '\"Marcus has anger management issues during academic periods.\"', '\"Marcus doesn\'t like math and acts out.\"'],
+                correct: 1, explain: 'Option B is observable (pushes/hits), measurable (2-3 per period), and specifies the condition (independent math worksheets). The others use subjective or vague language.' },
+            fba_2: { title: 'Scenario: Planning Baseline Data Collection', situation: 'You have one ABC entry from a Friday afternoon. Your principal asks if you have enough data to proceed with intervention. What do you recommend?',
+                options: ['Proceed — one detailed entry is sufficient.', 'Collect at least 3-5 more sessions across different days and settings before analyzing patterns.', 'Wait until the student has a major incident to collect more data.', 'Ask the parent to collect data at home first.'],
+                correct: 1, explain: 'Reliable patterns require multiple data points across days and settings. One Friday afternoon entry may reflect end-of-week fatigue, not a true pattern.' },
+            fba_3: { title: 'Scenario: Interpreting Patterns', situation: 'AI analysis shows Marcus pushes peers most often during (A) transition to independent work, (B) when told to put away preferred activity, and (C) immediately before lunch. What pattern do you notice?',
+                options: ['All incidents are random and unpredictable.', 'The behavior is primarily attention-motivated.', 'Two of three triggers involve being asked to stop a preferred activity or do something non-preferred — suggesting an escape function.', 'Marcus is hungry before lunch, so the function is tangible (food).'],
+                correct: 2, explain: 'Transitions away from preferred activities and toward demands both suggest escape/avoidance. The pre-lunch timing could also be escape from the academic period preceding lunch.' },
+            fba_4: { title: 'Scenario: Multiple Functions', situation: 'Data shows Priya calls out during whole-group instruction (teacher responds each time) AND leaves her seat during independent work (teacher sends her to the hallway). What might be happening?',
+                options: ['Both behaviors serve the same function.', 'Calling out may serve an attention function (gets teacher response), while seat-leaving may serve escape (gets removed from work).', 'Neither behavior has a clear function — more data is needed.', 'Priya is choosing to be non-compliant on purpose.'],
+                correct: 1, explain: 'The calling out → teacher response pattern suggests attention. Seat-leaving → removed from work suggests escape. A single student can display different behaviors serving different functions.' },
+            fba_5: { title: 'Scenario: Choosing Replacement Behaviors', situation: 'Jayden throws materials to escape writing tasks (escape function confirmed). Which replacement behavior would you teach?',
+                options: ['Teach Jayden to sit quietly and wait.', 'Remove all writing tasks from Jayden\'s schedule.', 'Teach Jayden to use a \"break card\" or raise hand to request a 2-minute break.', 'Give Jayden a stress ball to squeeze instead of throwing.'],
+                correct: 2, explain: 'A break card serves the SAME function (escape) but in a socially acceptable way. It\'s functionally equivalent, easier to perform, and still gives the student agency. The stress ball addresses sensory needs, not the escape function.' },
+            fba_6: { title: 'Scenario: Making Data-Based Decisions', situation: 'After 3 weeks of intervention, Jayden\'s material-throwing decreased from 5x/day to 3x/day. Break card use increased from 0 to 4x/day. The team wants to make changes. What do you recommend?',
+                options: ['The intervention isn\'t working — abandon it and try something completely different.', 'The trend is positive (40% reduction + break card adoption). Continue for 2 more weeks before major changes, but consider a schedule for fading break frequency.', 'The student is using the break card too much — restrict it.', 'Move immediately to Tier 3 intensive support.'],
+                correct: 1, explain: 'A 40% reduction in 3 weeks with adoption of the replacement behavior is a positive trend. Allow more time for the intervention to take full effect before making changes. Restricting the break card would undermine the support.' },
+            bip_1: { title: 'Scenario: Confirming Function', situation: 'A paraeducator says "I think he does it for attention — he always looks at me first." But ABC data shows the behavior happens in 8 of 10 instances when an academic demand is presented, and the consequence is usually work removal. How do you proceed?',
+                options: ['Trust the paraeducator\'s professional observation — they know the student best.', 'Acknowledge the paraeducator\'s observation AND review the data together. The "looking" may be a precursor, but the contingency (demand → behavior → removal) suggests escape is the maintaining function.', 'Reject the paraeducator\'s input entirely — data trumps opinion.', 'Conclude the function is both attention and escape equally.'],
+                correct: 1, explain: 'Good practice honors both perspectives. The looking behavior may be a precursor, but the functional relationship (antecedent demand → consequence removal) points to escape. Data and observation TOGETHER tell the fullest story.' },
+            bip_2: { title: 'Scenario: Planning Replacement Behaviors', situation: 'Amara screams when denied iPad access (tangible function). You need a functionally equivalent replacement. What do you choose?',
+                options: ['Teach Amara to wait silently for the iPad.', 'Teach Amara to use a visual request card: "Can I have iPad in 5 minutes?" with a timer.', 'Remove the iPad from the classroom entirely.', 'Give Amara unlimited iPad access to prevent screaming.'],
+                correct: 1, explain: 'The visual request card serves the same tangible function — it provides a path to accessing the iPad — while being socially appropriate and teaching delayed gratification with a visual timer.' },
+            rti_1: { title: 'Scenario: Universal Screening', situation: 'You\'re conducting a Tier 1 classroom scan. Three students had 2 office referrals this month. The class average is 0.3 referrals. How do you identify who needs Tier 2 support?',
+                options: ['All students with any referrals go to Tier 2.', 'Students with referrals 1.5× above the class average (i.e., above 0.45) move to Tier 2 consideration. These three students qualify and should be discussed by the team.', 'Only the student with the most referrals needs Tier 2.', 'Wait another month to see if the pattern continues.'],
+                correct: 1, explain: 'Using a quantitative threshold (1.5× the class average) provides an objective, defensible screening criterion. All three students exceed this threshold and warrant team discussion.' },
+        };
 
         // ── Track definitions ──
         const TRACKS = {
@@ -7993,7 +8562,97 @@ Based on this progress, recommend the ONE most important next action. Be specifi
                             h('button', {
                                 onClick: () => setActivePanel(step.tool),
                                 className: `w-full py-2.5 bg-gradient-to-r ${track.gradient} text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all shadow-sm active:scale-[0.98]`
-                            }, `→ Open ${step.toolName}`)
+                            }, `→ Open ${step.toolName}`),
+                            // ── Scenario Practice Card ──
+                            (() => {
+                                const sc = SCENARIOS[step.id];
+                                if (!sc) return null;
+                                const isOpen = scenarioOpen === step.id;
+                                const answered = scenarioAnswer[step.id] !== undefined;
+                                const isCorrect = scenarioAnswer[step.id] === sc.correct;
+                                const handleScenarioReflect = async () => {
+                                    if (!callGemini) return;
+                                    setScenarioReflLoading(true);
+                                    try {
+                                        const userChoice = sc.options[scenarioAnswer[step.id]] || 'none';
+                                        const correctChoice = sc.options[sc.correct];
+                                        const prompt = `You are AlloBot, an affirming ABA/behavior analysis coach. A user just completed a practice scenario in a guided workflow.
+
+Scenario: ${sc.situation}
+User chose: "${userChoice}" (${isCorrect ? 'CORRECT' : 'INCORRECT'})
+Correct answer: "${correctChoice}"
+Explanation: ${sc.explain}
+
+Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their reasoning and extend their thinking with a follow-up consideration. If incorrect, gently explain why and connect it to real-world practice. Use warm, encouraging language. End with one practical takeaway they can use in their classroom tomorrow.`;
+                                        const result = await callGemini(prompt, true);
+                                        setScenarioReflection(prev => ({ ...prev, [step.id]: result }));
+                                        if (alloBotRef?.current?.speak) {
+                                            try { alloBotRef.current.speak((result || '').slice(0, 180)); } catch (_) {}
+                                        }
+                                    } catch (err) { warnLog('Scenario reflection failed:', err); }
+                                    finally { setScenarioReflLoading(false); }
+                                };
+                                return h('div', { className: 'mt-2' },
+                                    h('button', {
+                                        onClick: () => setScenarioOpen(isOpen ? null : step.id),
+                                        className: `w-full flex items-center justify-between px-3 py-2.5 rounded-xl border-2 transition-all ${isOpen ? 'border-violet-300 bg-violet-50' : 'border-dashed border-violet-200 bg-white hover:border-violet-300'}`
+                                    },
+                                        h('div', { className: 'flex items-center gap-2' },
+                                            h('span', { className: 'text-base' }, '🎭'),
+                                            h('span', { className: 'text-xs font-black text-violet-700' }, 'Practice Scenario'),
+                                            answered && h('span', { className: `text-[10px] font-bold px-2 py-0.5 rounded-full ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}` }, isCorrect ? '✅ Correct' : '🔄 Try Again')
+                                        ),
+                                        h('span', { className: `text-violet-400 text-sm transition-transform ${isOpen ? 'rotate-180' : ''}` }, '▾')
+                                    ),
+                                    isOpen && h('div', { className: 'mt-2 bg-white rounded-xl border border-violet-200 p-4 space-y-3 shadow-sm' },
+                                        h('h4', { className: 'text-xs font-black text-violet-800' }, sc.title),
+                                        h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-100' },
+                                            h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, sc.situation)
+                                        ),
+                                        h('div', { className: 'space-y-2' },
+                                            sc.options.map((opt, idx) => {
+                                                const chosen = scenarioAnswer[step.id] === idx;
+                                                const showResult = answered;
+                                                const isRight = idx === sc.correct;
+                                                return h('button', {
+                                                    key: idx,
+                                                    onClick: () => {
+                                                        if (!answered) {
+                                                            setScenarioAnswer(prev => ({ ...prev, [step.id]: idx }));
+                                                            if (idx === sc.correct && addToast) addToast('Excellent clinical reasoning! ✅', 'success');
+                                                            else if (addToast) addToast('Not quite — review the explanation below.', 'warning');
+                                                        }
+                                                    },
+                                                    disabled: answered,
+                                                    className: `w-full text-left px-3 py-2.5 rounded-lg text-xs border-2 transition-all ${showResult ? (isRight ? 'bg-green-50 border-green-300 text-green-800' : chosen ? 'bg-red-50 border-red-300 text-red-700' : 'bg-slate-50 border-slate-100 text-slate-400') : 'bg-white border-slate-200 hover:border-violet-300 text-slate-700 cursor-pointer'}`
+                                                }, h('span', { className: 'font-medium' }, `${String.fromCharCode(65 + idx)}. `), opt);
+                                            })
+                                        ),
+                                        answered && h('div', { className: `rounded-lg p-3 border text-xs leading-relaxed ${isCorrect ? 'bg-green-50 border-green-200 text-green-800' : 'bg-amber-50 border-amber-200 text-amber-800'}` },
+                                            h('span', { className: 'font-bold' }, isCorrect ? '🎯 Correct! ' : '💡 Explanation: '),
+                                            sc.explain
+                                        ),
+                                        answered && callGemini && h('div', { className: 'space-y-2' },
+                                            !scenarioReflection[step.id] && h('button', {
+                                                onClick: handleScenarioReflect,
+                                                disabled: scenarioReflLoading,
+                                                className: 'w-full py-2 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-lg text-[10px] font-bold hover:opacity-90 disabled:opacity-50 transition-all'
+                                            }, scenarioReflLoading ? '⏳ Generating reflection...' : '🤖 Get AI Coaching Reflection'),
+                                            scenarioReflection[step.id] && h('div', { className: 'bg-purple-50 rounded-lg border border-purple-200 p-3' },
+                                                h('div', { className: 'flex items-center gap-1.5 mb-1.5' },
+                                                    h('span', { className: 'text-sm' }, '🤖'),
+                                                    h('span', { className: 'text-[10px] font-black text-purple-700' }, 'AlloBot Coaching')
+                                                ),
+                                                h('p', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-wrap' }, scenarioReflection[step.id])
+                                            )
+                                        ),
+                                        answered && !isCorrect && h('button', {
+                                            onClick: () => { setScenarioAnswer(prev => { const n = { ...prev }; delete n[step.id]; return n; }); setScenarioReflection(prev => { const n = { ...prev }; delete n[step.id]; return n; }); },
+                                            className: 'text-[10px] text-violet-500 hover:text-violet-700 font-bold'
+                                        }, '🔄 Try Again')
+                                    )
+                                );
+                            })()
                         )
                     );
                 })
@@ -11957,6 +12616,46 @@ Respond helpfully and concisely as AlloBot:`;
                     { title: (t('behavior_lens.raw.why_function_matters') || 'Why Function Matters'), content: 'The same behavior (hitting) can serve different functions for different students. Without knowing the function, interventions are likely to fail or make things worse.' },
                 ],
                 quiz: { q: 'A student screams when asked to do math. Work is then removed. What is the likely function?', options: ['Attention', 'Sensory', 'Escape', 'Tangible'], answer: 2 }
+            },
+            observation: {
+                sections: [
+                    { title: (t('behavior_lens.raw.choosing_an_observation_method') || 'Choosing an Observation Method'), content: 'There are four core ways to measure behavior, each suited to different situations. Frequency counting tracks how often a behavior happens — ideal for discrete, countable actions like hand-raising or leaving the seat. Duration recording measures how long a behavior lasts from start to finish — useful for sustained behaviors like tantrums or on-task engagement. The best method depends on what you want to know: \"How often?\" → frequency. \"How long?\" → duration.' },
+                    { title: (t('behavior_lens.raw.interval_and_latency_recording') || 'Interval & Latency Recording'), content: 'Interval recording divides observation time into equal segments (e.g., every 30 seconds) and notes whether a behavior occurred within each interval. This works well in busy classrooms where continuous counting is impractical. Latency recording measures the time between a prompt and the student\'s response — helpful when you need to understand how quickly a student transitions or follows directions. Both methods give a fair snapshot without requiring constant attention.' },
+                    { title: (t('behavior_lens.raw.collecting_data_with_care') || 'Collecting Data with Care'), content: 'Remember: data collection is about understanding a student, not surveilling them. Keep notes objective (\"left seat 3 times\") rather than judgmental (\"was defiant\"). Record as soon as possible after observing. Be consistent with timing and settings so your data tells an honest story. And always ask: \"Am I capturing what matters to help this student succeed?\"' },
+                ],
+                quiz: { q: 'A student\'s tantrum lasts varying lengths of time. Which observation method would be most useful?', options: ['Frequency counting', 'Duration recording', 'Interval recording', 'Latency recording'], answer: 1 }
+            },
+            reinforcement: {
+                sections: [
+                    { title: (t('behavior_lens.raw.what_is_reinforcement_really') || 'What is Reinforcement, Really?'), content: 'At its core, reinforcement is anything that makes a behavior more likely to happen again. It\'s not a reward \"given\" by adults — it\'s defined by its effect on the student. If a student receives praise and then volunteers more, that praise was reinforcement. If the praise has no effect, it wasn\'t reinforcement for that student. This distinction matters: we need to discover what is genuinely motivating for each individual, not assume.' },
+                    { title: (t('behavior_lens.raw.schedules_of_reinforcement') || 'Schedules of Reinforcement'), content: 'Fixed Ratio (FR): Reinforce after a set number of responses (e.g., every 3rd correct answer). Variable Ratio (VR): Reinforce after an unpredictable number of responses — this creates the most sustained engagement. Fixed Interval (FI): Reinforce after a set time period. Variable Interval (VI): Reinforce at unpredictable time intervals. When teaching a NEW skill, reinforce every time (continuous schedule). As the skill builds, gradually thin to a variable schedule so motivation is maintained naturally.' },
+                    { title: (t('behavior_lens.raw.differential_reinforcement') || 'Differential Reinforcement: The Affirming Approach'), content: 'DRA (Differential Reinforcement of Alternative behavior) means reinforcing a specific positive alternative. DRO (Differential Reinforcement of Other behavior) means reinforcing the ABSENCE of a challenging behavior during a time window — celebrating calm moments. DRI (Differential Reinforcement of Incompatible behavior) means reinforcing something physically incompatible with the problem behavior. These strategies focus on building what we WANT to see rather than punishing what we don\'t. That shift in mindset — from \"stop doing that\" to \"let me help you do this instead\" — is the heart of affirming ABA.' },
+                ],
+                quiz: { q: 'Which reinforcement approach focuses on celebrating calm moments when the challenging behavior is NOT occurring?', options: ['DRA (Alternative)', 'DRI (Incompatible)', 'DRO (Other)', 'Fixed Ratio'], answer: 2 }
+            },
+            replacement: {
+                sections: [
+                    { title: (t('behavior_lens.raw.what_is_a_replacement_behavior') || 'What is a Replacement Behavior?'), content: 'A replacement behavior is a new skill that serves the SAME function as the challenging behavior but in a more socially appropriate way. If a student screams to escape work (escape function), a replacement might be teaching them to use a \"break card\" or say \"I need help.\" The key insight: the student\'s need is valid — they need a better way to communicate it. We\'re not eliminating the need; we\'re teaching a more effective path to meeting it.' },
+                    { title: (t('behavior_lens.raw.choosing_effective_replacements') || 'Choosing Effective Replacements'), content: 'An effective replacement behavior must be: (1) Functionally equivalent — it gets the student the same outcome. (2) Equally or MORE efficient — it should be easier and faster than the challenging behavior. (3) Already in the student\'s repertoire or quickly teachable. If the replacement behavior is harder than the challenging behavior, the student will default to what works. Meet the student where they are and build from there.' },
+                    { title: (t('behavior_lens.raw.teaching_not_just_expecting') || 'Teaching, Not Just Expecting'), content: 'We can\'t expect students to use skills they haven\'t been taught. Replacement behaviors need explicit instruction: model the skill, practice it when the student is calm, role-play scenarios, and provide immediate reinforcement when the student uses it. Think of it like teaching any academic skill — you wouldn\'t expect a student to read without instruction. Behavioral skills deserve the same patience and scaffolding.' },
+                ],
+                quiz: { q: 'What is the MOST important quality of an effective replacement behavior?', options: ['It must be quiet', 'It must serve the same function as the challenging behavior', 'It must be adult-directed', 'It must eliminate the original behavior immediately'], answer: 1 }
+            },
+            collaboration: {
+                sections: [
+                    { title: (t('behavior_lens.raw.building_team_based_support') || 'Building Team-Based Support'), content: 'Effective behavior support is never a solo endeavor. Teachers, paraprofessionals, counselors, families, and — when available — Board Certified Behavior Analysts (BCBAs) all bring unique perspectives. Each team member sees different contexts: the classroom teacher sees academic triggers, the lunch aide sees social dynamics, and families see the student in their most comfortable environment. Sharing observations across settings gives the fullest picture.' },
+                    { title: (t('behavior_lens.raw.when_to_consult_specialists') || 'When to Consult Specialists'), content: 'Consider reaching out to a BCBA or behavior specialist when: (1) You\'ve collected data and the function isn\'t clear. (2) Interventions aren\'t showing progress after 2-4 weeks. (3) Safety is a concern. (4) You need help designing a more intensive plan. (5) You want someone to do a reliability check on your data collection. There is no shame in asking for support — it\'s a sign of professionalism and care for the student.' },
+                    { title: (t('behavior_lens.raw.partnering_with_families') || 'Partnering with Families'), content: 'Families are experts on their child. When sharing behavioral data, lead with strengths: \"Here\'s what\'s going well, and here\'s where we\'re focusing next.\" Use plain language, not clinical jargon. Share data visually when possible — graphs and charts help families see patterns. Ask families what works at home. Their strategies may reveal reinforcers or calming techniques that transfer to school. Always approach families as partners, never as the \"problem.\"' },
+                ],
+                quiz: { q: 'When should you consider consulting a BCBA or behavior specialist?', options: ['Only after exhausting all your own ideas over 6+ months', 'When safety is a concern or data isn\'t clarifying the function', 'Never — teachers should handle behavior independently', 'Only when administration orders it'], answer: 1 }
+            },
+            ethics: {
+                sections: [
+                    { title: (t('behavior_lens.raw.bias_and_behavior') || 'Bias and Behavior: Looking Inward First'), content: 'Research consistently shows that students of color, students with disabilities, and students experiencing poverty are referred for behavioral intervention at disproportionate rates. Before recording a behavior, pause and ask: \"Am I observing this because it\'s genuinely impacting learning, or because it doesn\'t match my cultural expectations?\" A student avoiding eye contact may be showing respect in their culture, not defiance. A student who moves constantly may have sensory needs, not a behavior problem. Self-awareness is the first ethical obligation.' },
+                    { title: (t('behavior_lens.raw.person_first_always') || 'Person-First, Always'), content: 'Language shapes perception. Say \"a student who demonstrates difficulty with transitions\" instead of \"a non-compliant student.\" Say \"a student whose behavior communicates an unmet need\" instead of \"a behavior problem.\" This isn\'t political correctness — it\'s accuracy. The behavior is not the student. The behavior is information about what the student needs. When we use deficit-based language, we risk seeing the student as the problem instead of the environment, instruction, or support gap as the problem.' },
+                    { title: (t('behavior_lens.raw.restorative_over_punitive') || 'Restorative Over Punitive'), content: 'Traditional discipline (suspension, detention, loss of privileges) removes the student from the learning environment — the very place where we want them to build skills. Restorative approaches ask different questions: \"What happened? Who was affected? What needs to happen to make it right?\" These approaches maintain the student\'s dignity, preserve relationships, and — critically — teach the social-emotional skills that punitive approaches assume the student already has but is choosing not to use.' },
+                ],
+                quiz: { q: 'What should you ask YOURSELF before recording a behavioral concern?', options: ['\"How do I punish this effectively?\"', '\"Am I observing this because it impacts learning, or because it doesn\'t match my expectations?\"', '\"Which category of disability does this behavior suggest?\"', '\"Who else has complained about this student?\"'], answer: 1 }
             },
         };
 
@@ -19512,7 +20211,7 @@ Format as a numbered list. Be concise but specific.`;
         // ─── Build SVG chart as HTML string ─────────────────────────────
         const buildChartSVG = () => {
             const data = analytics.dailyData;
-            if (data.length === 0) return '<p style="color:#94a3b8;text-align:center;padding:40px;">No data available for chart</p>';
+            if (data.length === 0) return `<p style="color:#94a3b8;text-align:center;padding:40px;">${t('bl.no_chart_data') || 'No data available for chart'}</p>`;
             const W = 680, H = 280, PAD = 50;
             const maxCount = Math.max(...data.map(d => d.count), 1);
             const chartW = W - PAD * 2, chartH = H - PAD * 2;
@@ -19544,9 +20243,9 @@ Format as a numbered list. Be concise but specific.`;
             });
             // Axis labels
             svg += `<text x="${W / 2}" y="${H - 0}" text-anchor="middle" fill="#64748b" font-size="11" font-weight="bold">Date</text>`;
-            svg += `<text x="12" y="${H / 2}" text-anchor="middle" fill="#64748b" font-size="11" font-weight="bold" transform="rotate(-90, 12, ${H / 2})">Frequency</text>`;
+            svg += `<text x="12" y="${H / 2}" text-anchor="middle" fill="#64748b" font-size="11" font-weight="bold" transform="rotate(-90, 12, ${H / 2})">{t('bl.frequency') || 'Frequency'}</text>`;
             // Legend
-            svg += `<circle cx="${PAD + 10}" cy="${PAD - 12}" r="4" fill="#6366f1"/><text x="${PAD + 18}" y="${PAD - 8}" fill="#64748b" font-size="9">Daily Count</text>`;
+            svg += `<circle cx="${PAD + 10}" cy="${PAD - 12}" r="4" fill="#6366f1"/><text x="${PAD + 18}" y="${PAD - 8}" fill="#64748b" font-size="9">{t('bl.daily_count') || 'Daily Count'}</text>`;
             if (analytics.trend) {
                 svg += `<line x1="${PAD + 110}" y1="${PAD - 12}" x2="${PAD + 130}" y2="${PAD - 12}" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,2"/>`;
                 const dir = analytics.trend.slope > 0.1 ? '↑ Increasing' : analytics.trend.slope < -0.1 ? '↓ Decreasing' : '→ Stable';
@@ -19560,7 +20259,7 @@ Format as a numbered list. Be concise but specific.`;
         const buildFreqTable = (items, label) => {
             if (items.length === 0) return '';
             let html = `<table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:12px;">`;
-            html += `<tr style="background:#f1f5f9;"><th style="text-align:left;padding:6px 10px;border-bottom:2px solid #e2e8f0;">${label}</th><th style="text-align:right;padding:6px 10px;border-bottom:2px solid #e2e8f0;">Count</th><th style="text-align:right;padding:6px 10px;border-bottom:2px solid #e2e8f0;">%</th></tr>`;
+            html += `<tr style="background:#f1f5f9;"><th style="text-align:left;padding:6px 10px;border-bottom:2px solid #e2e8f0;">${label}</th><th style="text-align:right;padding:6px 10px;border-bottom:2px solid #e2e8f0;">{t('bl.count') || 'Count'}</th><th style="text-align:right;padding:6px 10px;border-bottom:2px solid #e2e8f0;">%</th></tr>`;
             const total = items.reduce((s, [, c]) => s + c, 0);
             items.forEach(([name, count]) => {
                 const pct = ((count / total) * 100).toFixed(1);
@@ -19631,7 +20330,7 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
                 html += `<div class="cover-header">
                     <div style="font-size:28px;margin-bottom:8px;">📊</div>
                     <h1>${audienceLabel}</h1>
-                    <div class="subtitle">BehaviorLens Progress Documentation</div>
+                    <div class="subtitle">{t('bl.progress_documentation') || 'BehaviorLens Progress Documentation'}</div>
                     <div class="cover-meta">
                         <span>👤 <strong>${student}</strong></span>
                         <span>📅 ${dateStr}</span>
@@ -19667,25 +20366,25 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
             if (sections.abcSummary) {
                 html += `<h2>📋 Behavioral Data Summary</h2>`;
                 html += `<div class="stat-grid">
-                    <div class="stat-card"><div class="val">${analytics.totalEntries}</div><div class="lbl">ABC Entries</div></div>
-                    <div class="stat-card"><div class="val">${analytics.avgIntensity}</div><div class="lbl">Avg Intensity</div></div>
-                    <div class="stat-card"><div class="val">${analytics.dailyData.length}</div><div class="lbl">Days Observed</div></div>
-                    <div class="stat-card"><div class="val">${trendLabel}</div><div class="lbl">Overall Trend</div></div>
+                    <div class="stat-card"><div class="val">${analytics.totalEntries}</div><div class="lbl">{t('bl.abc_entries') || 'ABC Entries'}</div></div>
+                    <div class="stat-card"><div class="val">${analytics.avgIntensity}</div><div class="lbl">{t('bl.avg_intensity') || 'Avg Intensity'}</div></div>
+                    <div class="stat-card"><div class="val">${analytics.dailyData.length}</div><div class="lbl">{t('bl.days_observed') || 'Days Observed'}</div></div>
+                    <div class="stat-card"><div class="val">${trendLabel}</div><div class="lbl">{t('bl.overall_trend') || 'Overall Trend'}</div></div>
                 </div>`;
                 if (analytics.topBehaviors.length > 0) {
-                    html += `<h3>Target Behaviors by Frequency</h3>`;
+                    html += `<h3>{t('bl.target_behaviors_frequency') || 'Target Behaviors by Frequency'}</h3>`;
                     html += buildFreqTable(analytics.topBehaviors, 'Behavior');
                 }
                 if (audience !== 'parent' && analytics.topAntecedents.length > 0) {
-                    html += `<h3>Common Antecedents</h3>`;
+                    html += `<h3>{t('bl.common_antecedents') || 'Common Antecedents'}</h3>`;
                     html += buildFreqTable(analytics.topAntecedents, 'Antecedent');
                 }
                 if (audience !== 'parent' && analytics.topConsequences.length > 0) {
-                    html += `<h3>Common Consequences</h3>`;
+                    html += `<h3>{t('bl.common_consequences') || 'Common Consequences'}</h3>`;
                     html += buildFreqTable(analytics.topConsequences, 'Consequence');
                 }
                 if (analytics.topSettings.length > 0) {
-                    html += `<h3>Settings</h3>`;
+                    html += `<h3>{t('bl.settings_label') || 'Settings'}</h3>`;
                     html += buildFreqTable(analytics.topSettings, 'Setting');
                 }
             }
@@ -19704,10 +20403,10 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
             if (sections.observations && analytics.totalSessions > 0) {
                 html += `<h2>🔬 Observation Sessions</h2>`;
                 html += `<div class="stat-grid">
-                    <div class="stat-card"><div class="val">${analytics.totalSessions}</div><div class="lbl">Total Sessions</div></div>
-                    <div class="stat-card"><div class="val">${analytics.freqSessions.length}</div><div class="lbl">Frequency</div></div>
-                    <div class="stat-card"><div class="val">${analytics.intervalSessions.length}</div><div class="lbl">Interval</div></div>
-                    <div class="stat-card"><div class="val">${analytics.durationSessions.length}</div><div class="lbl">Duration</div></div>
+                    <div class="stat-card"><div class="val">${analytics.totalSessions}</div><div class="lbl">{t('bl.total_sessions') || 'Total Sessions'}</div></div>
+                    <div class="stat-card"><div class="val">${analytics.freqSessions.length}</div><div class="lbl">{t('bl.frequency') || 'Frequency'}</div></div>
+                    <div class="stat-card"><div class="val">${analytics.intervalSessions.length}</div><div class="lbl">{t('bl.interval') || 'Interval'}</div></div>
+                    <div class="stat-card"><div class="val">${analytics.durationSessions.length}</div><div class="lbl">{t('bl.duration') || 'Duration'}</div></div>
                 </div>`;
                 if (analytics.freqSessions.length > 0) {
                     const avgRate = (analytics.freqSessions.reduce((s, ses) => s + (ses.data?.rate || 0), 0) / analytics.freqSessions.length).toFixed(1);
@@ -19723,14 +20422,14 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
             if (sections.aiAnalysis && aiAnalysis) {
                 html += `<h2>🧠 Functional Behavior Analysis</h2>`;
                 html += `<div class="stat-grid" style="grid-template-columns:1fr 1fr;">
-                    <div class="stat-card"><div class="val">${aiAnalysis.hypothesizedFunction || '—'}</div><div class="lbl">Hypothesized Function</div></div>
-                    <div class="stat-card"><div class="val">${aiAnalysis.confidence || '—'}%</div><div class="lbl">Confidence Level</div></div>
+                    <div class="stat-card"><div class="val">${aiAnalysis.hypothesizedFunction || '—'}</div><div class="lbl">{t('bl.hypothesized_function') || 'Hypothesized Function'}</div></div>
+                    <div class="stat-card"><div class="val">${aiAnalysis.confidence || '—'}%</div><div class="lbl">{t('bl.confidence_level') || 'Confidence Level'}</div></div>
                 </div>`;
                 if (aiAnalysis.summary) {
                     html += `<p style="margin-top:8px;">${aiAnalysis.summary}</p>`;
                 }
                 if (audience === 'clinical' && aiAnalysis.patterns) {
-                    html += `<h3>Identified Patterns</h3><ul style="font-size:12px;padding-left:20px;">`;
+                    html += `<h3>{t('bl.identified_patterns') || 'Identified Patterns'}</h3><ul style="font-size:12px;padding-left:20px;">`;
                     (Array.isArray(aiAnalysis.patterns) ? aiAnalysis.patterns : [aiAnalysis.patterns]).forEach(p => {
                         html += `<li style="margin-bottom:4px;">${typeof p === 'string' ? p : JSON.stringify(p)}</li>`;
                     });
@@ -21435,7 +22134,7 @@ Analyze this data and return ONLY valid JSON:
                     lines.push(`  ${i + 1}. [${e.date || ''}] A: ${e.antecedent || ''} | B: ${e.behavior || ''} | C: ${e.consequence || ''} | Setting: ${e.setting || ''} | Intensity: ${e.intensity || ''}`);
                 });
             }
-            if (['sessiontracker', 'abagraph', 'cumrecord', 'effectsize', 'trends', 'progressreport'].includes(panelId)) {
+            if (['sessiontracker', 'abagraph', 'cumrecord', 'effectsize', 'trends', 'progressreport', 'printreport'].includes(panelId)) {
                 lines.push('', `Session History (${sessionHistory.length}):`);
                 sessionHistory.forEach((s, i) => {
                     lines.push(`  ${i + 1}. [${s.date || ''}] Behavior: ${s.behavior || ''} | Count: ${s.count ?? ''} | Rate: ${s.rate ?? ''} | Phase: ${s.phase || ''}`);
@@ -22206,9 +22905,9 @@ Analyze this data and return ONLY valid JSON:
                     color: 'blue',
                 },
                 {
-                    id: 'progressreport',
+                    id: 'printreport',
                     icon: '📄',
-                    title: (t('behavior_lens.raw.progress_report') || 'Progress Report'),
+                    title: (t('behavior_lens.raw.print_report') || 'Print-Ready Report'),
                     desc: 'Generate a professional, print-ready progress report with inline charts, AI recommendations, and audience-specific language',
                     color: 'teal',
                 },
@@ -22243,6 +22942,22 @@ Analyze this data and return ONLY valid JSON:
                     desc: t('behavior_lens.hub.replacementbehavior_desc') || 'Track teaching trials and monitor acquisition of replacement behaviors',
                     color: 'lime',
                     badge: null,
+                },
+                {
+                    id: 'skilltracker',
+                    icon: '🏅',
+                    title: 'Skill Tracker & Mentorship',
+                    desc: 'Track your ABA competency growth across domains — earn badges, complete challenges, and level up from Novice to Practitioner',
+                    color: 'violet',
+                    badge: '🆕 New',
+                },
+                {
+                    id: 'heatmap',
+                    icon: '📅',
+                    title: 'Behavior Timeline Heatmap',
+                    desc: 'Visualize incident patterns across 4 school weeks in a color-coded calendar grid with drill-down',
+                    color: 'orange',
+                    badge: '🆕 New',
                 },
             ].filter(tool => !isParentMode || parentTools.includes(tool.id));
 
@@ -22526,6 +23241,8 @@ Analyze this data and return ONLY valid JSON:
                         export: 'utilities', record: 'utilities', abaguide: 'utilities', sandbox: 'utilities', glossary: 'utilities', fbaworkflow: 'utilities', counseling: 'utilities', teamnotes: 'utilities', pdpath: 'utilities', abaquiz: 'utilities', functionquiz: 'utilities', casestudy: 'utilities', bcbahandoff: 'analysis', riskscreen: 'planning', sessiontracker: 'collection', abagraph: 'analysis', scdmanager: 'analysis', drstrategy: 'planning', bipgen: 'planning', fcttemplate: 'planning',
                         nlabc: 'data', iepgoals: 'planning', caseload: 'analysis', mtss: 'planning', progressreport: 'planning', effectsize: 'analysis', obscoach: 'utilities',
                         ioacalc: 'data', taskanalysis: 'data', dtt: 'data', prefassess: 'data', scatterplot: 'analysis', latency: 'data', socialvalidity: 'analysis', maintenance: 'planning', cumrecord: 'analysis', condprob: 'analysis', treatintegrity: 'planning',
+                        skilltracker: 'utilities',
+                        heatmap: 'analysis',
                     };
                     const categories = [
                         { key: 'data', label: '📋 Data Collection', icon: '📋' },
@@ -22641,6 +23358,42 @@ Analyze this data and return ONLY valid JSON:
                                     onClick: () => { dismissWelcome(); handleToolOpen('pdpath'); },
                                     className: 'flex items-center gap-1.5 text-[11px] text-indigo-200 hover:text-white transition-colors font-medium'
                                 }, h('span', null, '🎓'), t('behavior_lens.ui.or_explore_the_pd_learning_path') || 'Or explore the PD Learning Path →')
+                            ),
+                            // Quick-Start Onboarding Pathways
+                            h('div', { className: 'mt-4 pt-4 border-t border-white/20' },
+                                h('div', { className: 'text-[10px] font-black text-indigo-200 uppercase tracking-wider mb-3' }, '🚀 Quick-Start Pathways'),
+                                h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
+                                    h('button', {
+                                        onClick: () => { dismissWelcome(); loadDemoStudent(); },
+                                        className: 'group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-left hover:bg-white/20 transition-all'
+                                    },
+                                        h('div', { className: 'flex items-center gap-2 mb-1' },
+                                            h('span', { className: 'text-lg' }, '⚡'),
+                                            h('span', { className: 'text-xs font-black text-white' }, '5-Min Quick Start')
+                                        ),
+                                        h('p', { className: 'text-[10px] text-indigo-200' }, 'Load sandbox data and explore ABC, AI Analysis, and Trend Dashboard instantly')
+                                    ),
+                                    h('button', {
+                                        onClick: () => { dismissWelcome(); handleToolOpen('fbaworkflow'); },
+                                        className: 'group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-left hover:bg-white/20 transition-all'
+                                    },
+                                        h('div', { className: 'flex items-center gap-2 mb-1' },
+                                            h('span', { className: 'text-lg' }, '🧭'),
+                                            h('span', { className: 'text-xs font-black text-white' }, 'Guided FBA Workflow')
+                                        ),
+                                        h('p', { className: 'text-[10px] text-indigo-200' }, 'Step-by-step FBA process with scenario practice and AI coaching')
+                                    ),
+                                    h('button', {
+                                        onClick: () => { dismissWelcome(); handleToolOpen('skilltracker'); },
+                                        className: 'group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-left hover:bg-white/20 transition-all'
+                                    },
+                                        h('div', { className: 'flex items-center gap-2 mb-1' },
+                                            h('span', { className: 'text-lg' }, '🏅'),
+                                            h('span', { className: 'text-xs font-black text-white' }, 'Skill Tracker Journey')
+                                        ),
+                                        h('p', { className: 'text-[10px] text-indigo-200' }, 'Track your growth from Novice to Practitioner with guided challenges')
+                                    )
+                                )
                             )
                         ),
                         // ── Search Bar ──
@@ -22755,6 +23508,28 @@ Analyze this data and return ONLY valid JSON:
                                     h('div', { className: 'text-[9px] text-slate-500 font-bold' }, t('behavior_lens.hub.avg_intensity') || 'Avg Intensity')
                                 )
                             )
+                        ),
+
+                        // ── Next Step Recommender ──
+                        selectedStudent && h(NextStepRecommender, {
+                            abcEntries, aiAnalysis, observationSessions, sessionHistory,
+                            selectedStudent, t,
+                            onOpenTool: (toolId) => handleToolOpen(toolId)
+                        }),
+
+                        // ── Mini Heatmap (inline in hub) ──
+                        selectedStudent && abcEntries.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3' },
+                            h('div', { className: 'flex items-center justify-between mb-2' },
+                                h('div', { className: 'flex items-center gap-2' },
+                                    h('span', { className: 'text-sm' }, '📅'),
+                                    h('span', { className: 'text-[10px] font-black text-slate-600 uppercase tracking-wider' }, '4-Week Activity')
+                                ),
+                                h('button', {
+                                    onClick: () => handleToolOpen('heatmap'),
+                                    className: 'text-[10px] text-indigo-500 font-bold hover:text-indigo-700 transition-colors'
+                                }, 'View Full →')
+                            ),
+                            h(BehaviorHeatmap, { abcEntries, mini: true, onOpenTool: (toolId) => handleToolOpen(toolId), t, addToast })
                         ),
 
                         // ── Smart Recommendations ──
@@ -22985,11 +23760,15 @@ Analyze this data and return ONLY valid JSON:
                                     antecedentmod: DualLabel(t('behavior_lens.hub.antecedentmod_title') || 'Antecedent Modification Planner'),
                                     sessionnotes: t('behavior_lens.hub.sessionnotes_title') || 'Session Notes',
                                     alloBotChat: t('behavior_lens.allobot_chat.title') || 'Ask AlloBot',
+                                    skilltracker: 'Skill Tracker & Mentorship',
+                                    heatmap: 'Behavior Timeline Heatmap',
                                 })[activePanel] || ''
                             )
                         )
                     ),
                     h('div', { className: 'flex items-center gap-2' },
+                        // Data Quality Badge
+                        selectedStudent && abcEntries.length > 0 && h(DataQualityBadge, { abcEntries, t }),
                         // Cloud Sync Status Badge
                         !isCanvasEnv && h('div', {
                             className: `flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all ${
@@ -23592,6 +24371,14 @@ Analyze this data and return ONLY valid JSON:
                     callGemini: callGeminiWithContext, addToast, t
                 }),
                 activePanel === 'practicum' && h(VirtualPracticum, { t, addToast, callGemini: callGeminiWithContext }),
+                activePanel === 'skilltracker' && h(SkillTracker, {
+                    t, addToast,
+                    onOpenTool: (toolId) => { setActivePanel(toolId); }
+                }),
+                activePanel === 'heatmap' && h(BehaviorHeatmap, {
+                    abcEntries, t, addToast,
+                    onOpenTool: (toolId) => { setActivePanel(toolId); }
+                }),
                 activePanel === 'wizard' && h(ToolSelectionWizard, {
                     onClose: () => openPanel('hub'),
                     onSelectTool: (toolId) => openPanel(toolId),

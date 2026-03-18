@@ -1,0 +1,118 @@
+﻿diff --git a/stem_lab_module.js b/stem_lab_module.js
+index d4f481e..310e2ab 100644
+--- a/stem_lab_module.js
++++ b/stem_lab_module.js
+@@ -26286,13 +26286,43 @@
+             slider: { override: 'Basking behavior critical for thermoregulation and vitamin D synthesis. Can brumate (hibernate) underwater for months.', locomotion: 'Powerful rear leg kicks propel through water. On land, uses all four legs in a characteristic waddle.' }
+           };
+ 
++          // ΓöÇΓöÇ Per-species display sizes (proportional to real-world size) ΓöÇΓöÇ
++          var SPECIES_DISPLAY_SIZE = {
++            // Freshwater
++            neon: { w: 30, h: 22, emoji: 18 }, guppy: { w: 32, h: 24, emoji: 20 },
++            cory: { w: 38, h: 28, emoji: 22 }, angel: { w: 52, h: 44, emoji: 28 },
++            platy: { w: 32, h: 24, emoji: 20 }, molly: { w: 40, h: 30, emoji: 22 },
++            // Planted
++            cardinal: { w: 30, h: 22, emoji: 18 }, rummy: { w: 30, h: 22, emoji: 18 },
++            oto: { w: 28, h: 20, emoji: 18 }, shrimp: { w: 24, h: 18, emoji: 16 },
++            betta: { w: 48, h: 36, emoji: 26 },
++            // Reef
++            clown: { w: 42, h: 32, emoji: 24 }, tang: { w: 56, h: 40, emoji: 30 },
++            goby: { w: 36, h: 26, emoji: 22 }, anemone: { w: 50, h: 50, emoji: 32 },
++            // Predator
++            oscar: { w: 72, h: 52, emoji: 38 }, pike: { w: 64, h: 44, emoji: 34 },
++            pleco: { w: 68, h: 46, emoji: 36 },
++            // Turtle
++            slider: { w: 70, h: 55, emoji: 40 }, goldfish: { w: 48, h: 36, emoji: 28 },
++            // Invert
++            cleaner: { w: 28, h: 20, emoji: 18 }, urchin: { w: 34, h: 34, emoji: 24 },
++            crab: { w: 30, h: 24, emoji: 20 }, starfish: { w: 42, h: 42, emoji: 30 },
++            // Cold Water
++            rockfish: { w: 58, h: 42, emoji: 32 }, seastar: { w: 50, h: 50, emoji: 36 },
++            kelp: { w: 24, h: 60, emoji: 28 },
++            // Brackish
++            archer: { w: 50, h: 36, emoji: 28 }, puffer: { w: 44, h: 38, emoji: 26 },
++            mudskip: { w: 42, h: 30, emoji: 24 }
++          };
++
+           // ΓöÇΓöÇ Tank SVG mini-renderer ΓÇö uses close-up body plan SVGs as miniatures in the tank ΓöÇΓöÇ
+           var getTankSvg = function (speciesId) {
+             var bodyKey = SPECIES_BODY_MAP[speciesId];
+             var plan = bodyKey && BODY_PLANS[bodyKey];
+             if (!plan || !plan.svg) return null;
+             var color = SPECIES_COLORS[speciesId] || null;
+-            return plan.svg(60, 40, color);
++            var ds = SPECIES_DISPLAY_SIZE[speciesId] || { w: 52, h: 38 };
++            return plan.svg(ds.w, ds.h, color);
+           };
+ 
+           // ΓöÇΓöÇ Anatomy viewer state ΓöÇΓöÇ
+@@ -26321,10 +26351,10 @@
+           var SPECIES_BY_TANK = {
+             freshwater: [
+               { id: 'neon', name: 'Neon Tetra', icon: '≡ƒÉƒ', load: 1, minTank: 10, tempRange: [72, 80], pHRange: [6.0, 7.5], compat: ['guppy', 'cory', 'platy'], diet: 'Micro-omnivore ΓÇö brine shrimp, daphnia, and crushed flake food', habitat: 'Shaded blackwater streams in the Amazon basin among submerged roots and leaf litter', fact: 'Their iridescent stripe is made of guanine crystals.' },
+-              { id: 'guppy', name: 'Guppy', icon: '≡ƒÉƒ', load: 1, minTank: 5, tempRange: [72, 82], pHRange: [6.8, 7.8], compat: ['neon', 'cory', 'platy', 'molly'], diet: 'Omnivore ΓÇö algae, mosquito larvae, micro-worms, and flake food', habitat: 'Warm, slow-moving streams and pools in Trinidad, Venezuela, and northeast Brazil', fact: 'Males display vibrant colors to attract females.' },
++              { id: 'guppy', name: 'Guppy', icon: '≡ƒÉá', load: 1, minTank: 5, tempRange: [72, 82], pHRange: [6.8, 7.8], compat: ['neon', 'cory', 'platy', 'molly'], diet: 'Omnivore ΓÇö algae, mosquito larvae, micro-worms, and flake food', habitat: 'Warm, slow-moving streams and pools in Trinidad, Venezuela, and northeast Brazil', fact: 'Males display vibrant colors to attract females.' },
+               { id: 'cory', name: 'Corydoras', icon: '≡ƒÉí', load: 2, minTank: 15, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['neon', 'guppy', 'platy', 'angel'], diet: 'Bottom-feeder ΓÇö sinking pellets, bloodworms, and organic detritus from the substrate', habitat: 'Sandy-bottomed, slow-flowing tributaries of the Amazon and Orinoco basins', fact: 'They breathe air by darting to the surface!' },
+               { id: 'angel', name: 'Angelfish', icon: '≡ƒÉá', load: 4, minTank: 20, tempRange: [76, 84], pHRange: [6.0, 7.5], compat: ['cory'], diet: 'Predatory omnivore ΓÇö small fish, insects, worms, and vegetable matter', habitat: 'Deep, quiet, vegetated floodplains and slow tributaries of the central Amazon', fact: 'Angelfish are cichlids ΓÇö they guard their eggs fiercely.' },
+-              { id: 'platy', name: 'Platy', icon: '≡ƒÉƒ', load: 1, minTank: 10, tempRange: [70, 80], pHRange: [7.0, 8.2], compat: ['neon', 'guppy', 'cory', 'molly'], diet: 'Omnivore ΓÇö algae, blanched vegetables, and small invertebrates', habitat: 'Warm, spring-fed streams and drainage ditches in southern Mexico and Guatemala', fact: 'Platys are livebearers ΓÇö they give birth to free-swimming fry.' },
++              { id: 'platy', name: 'Platy', icon: '≡ƒÉá', load: 1, minTank: 10, tempRange: [70, 80], pHRange: [7.0, 8.2], compat: ['neon', 'guppy', 'cory', 'molly'], diet: 'Omnivore ΓÇö algae, blanched vegetables, and small invertebrates', habitat: 'Warm, spring-fed streams and drainage ditches in southern Mexico and Guatemala', fact: 'Platys are livebearers ΓÇö they give birth to free-swimming fry.' },
+               { id: 'molly', name: 'Molly', icon: '≡ƒÉƒ', load: 2, minTank: 15, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['guppy', 'platy'], diet: 'Herbivore-leaning omnivore ΓÇö algae films, spirulina, and occasional insect larvae', habitat: 'Brackish coastal lagoons, mangrove swamps, and freshwater streams from Mexico to Colombia', fact: 'Mollies can survive in both fresh and saltwater!' }
+             ],
+             planted: [
+@@ -26336,18 +26366,18 @@
+             ],
+             reef: [
+               { id: 'clown', name: 'Clownfish', icon: '≡ƒÉá', load: 3, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['tang', 'goby', 'anemone'], diet: 'Omnivore ΓÇö algae, zooplankton, and leftover scraps from its host anemone', habitat: 'Shelters among venomous tentacles of Heteractis anemones on Indo-Pacific reefs', fact: 'All clownfish are born male ΓÇö the dominant one becomes female!' },
+-              { id: 'tang', name: 'Blue Tang', icon: '≡ƒÉƒ', load: 5, minTank: 55, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'goby'], diet: 'Herbivore ΓÇö filamentous algae and seaweed, essential for reef health', habitat: 'Coral-rich outer reef slopes and lagoons throughout the Indo-Pacific', fact: 'Blue tangs can "play dead" when stressed, lying on their side.' },
++              { id: 'tang', name: 'Blue Tang', icon: '≡ƒÉá', load: 5, minTank: 55, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'goby'], diet: 'Herbivore ΓÇö filamentous algae and seaweed, essential for reef health', habitat: 'Coral-rich outer reef slopes and lagoons throughout the Indo-Pacific', fact: 'Blue tangs can "play dead" when stressed, lying on their side.' },
+               { id: 'goby', name: 'Watchman Goby', icon: '≡ƒÉí', load: 2, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'tang', 'anemone'], diet: 'Micro-predator ΓÇö copepods, mysis shrimp, and sand-dwelling invertebrates', habitat: 'Sandy rubble zones adjacent to coral reefs, often sharing a burrow with a pistol shrimp', fact: 'Gobies form symbiotic partnerships with pistol shrimp.' },
+               { id: 'anemone', name: 'Sea Anemone', icon: '≡ƒ¬╕', load: 3, minTank: 30, tempRange: [76, 82], pHRange: [8.1, 8.4], compat: ['clown', 'goby'], diet: 'Carnivore ΓÇö captures small fish and shrimp with nematocyst-armed tentacles; also hosts photosynthetic zooxanthellae', habitat: 'Well-lit, current-swept sections of tropical reefs in the Indo-Pacific', fact: 'Anemones can live over 100 years in the right conditions.' }
+             ],
+             predator: [
+               { id: 'oscar', name: 'Oscar', icon: '≡ƒÉá', load: 10, minTank: 55, tempRange: [74, 81], pHRange: [6.0, 8.0], compat: ['pleco'], diet: 'Carnivore ΓÇö crayfish, insects, small fish, and earthworms', habitat: 'Slow-moving, white-water rivers and flooded forests of the Amazon, Orinoco, and Paran├í basins', fact: 'Oscars recognize their owners and can learn tricks.' },
+-              { id: 'pike', name: 'Pike Cichlid', icon: '≡ƒÉƒ', load: 8, minTank: 55, tempRange: [75, 82], pHRange: [6.0, 7.5], compat: ['pleco'], diet: 'Aggressive piscivore ΓÇö ambushes fish, large insects, and crustaceans', habitat: 'Submerged logs and undercut banks in fast-flowing Amazonian creeks', fact: 'Pike cichlids are ambush predators that strike in milliseconds.' },
++              { id: 'pike', name: 'Pike Cichlid', icon: '≡ƒÉí', load: 8, minTank: 55, tempRange: [75, 82], pHRange: [6.0, 7.5], compat: ['pleco'], diet: 'Aggressive piscivore ΓÇö ambushes fish, large insects, and crustaceans', habitat: 'Submerged logs and undercut banks in fast-flowing Amazonian creeks', fact: 'Pike cichlids are ambush predators that strike in milliseconds.' },
+               { id: 'pleco', name: 'Plecostomus', icon: '≡ƒÉí', load: 6, minTank: 40, tempRange: [72, 82], pHRange: [6.5, 7.5], compat: ['oscar', 'pike'], diet: 'Omnivorous grazer ΓÇö rasps algae and biofilm off rocks; also eats driftwood and sinking wafers', habitat: 'Rocky rapids and submerged driftwood in tropical South American rivers', fact: 'Some plecos can grow over 2 feet long!' }
+             ],
+             turtle: [
+               { id: 'slider', name: 'Red-Eared Slider', icon: '≡ƒÉó', load: 15, minTank: 40, tempRange: [75, 85], pHRange: [6.5, 8.0], compat: ['goldfish'], diet: 'Omnivore ΓÇö aquatic plants, snails, insects, and commercial turtle pellets; diet shifts to more vegetation with age', habitat: 'Calm ponds, lakes, and slow streams with muddy bottoms and basking logs in the southern United States', fact: 'They can hold their breath for over 30 minutes!' },
+-              { id: 'goldfish', name: 'Feeder Goldfish', icon: '≡ƒÉƒ', load: 3, minTank: 20, tempRange: [65, 75], pHRange: [7.0, 8.4], compat: ['slider'], diet: 'Omnivore ΓÇö algae, aquatic plants, detritus, small invertebrates, and prepared pellets', habitat: 'Cool, slow-moving freshwater ponds and rivers; originally domesticated from wild carp in East Asia', fact: 'Goldfish can live 20+ years with proper care.' }
++              { id: 'goldfish', name: 'Feeder Goldfish', icon: '≡ƒÉá', load: 3, minTank: 20, tempRange: [65, 75], pHRange: [7.0, 8.4], compat: ['slider'], diet: 'Omnivore ΓÇö algae, aquatic plants, detritus, small invertebrates, and prepared pellets', habitat: 'Cool, slow-moving freshwater ponds and rivers; originally domesticated from wild carp in East Asia', fact: 'Goldfish can live 20+ years with proper care.' }
+             ],
+             invert: [
+               { id: 'cleaner', name: 'Cleaner Shrimp', icon: '≡ƒªÉ', load: 1, minTank: 10, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['urchin', 'crab', 'starfish'], diet: 'Ectoparasite feeder ΓÇö removes parasites, dead skin, and mucus from visiting reef fish', habitat: 'Coral ledges and reef crevices throughout the Indo-Pacific where it establishes cleaning stations', fact: 'They set up cleaning stations where fish line up to be groomed!' },
+@@ -26356,12 +26386,12 @@
+               { id: 'starfish', name: 'Sea Star', icon: 'Γ¡É', load: 3, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'crab'], diet: 'Predator ΓÇö everts its stomach to digest mussels, clams, and oysters externally', habitat: 'Rocky intertidal zones to deep reef slopes in nearly every ocean', fact: 'Sea stars can regenerate lost arms ΓÇö and sometimes an entire body from one arm.' }
+             ],
+             coldwater: [
+-              { id: 'rockfish', name: 'Rockfish', icon: '≡ƒÉƒ', load: 5, minTank: 55, tempRange: [50, 60], pHRange: [7.8, 8.4], compat: ['seastar', 'kelp'], diet: 'Ambush predator ΓÇö small fish, shrimp, and planktonic crustaceans near rocky structure', habitat: 'Deep rocky reefs and kelp forests along the Pacific coast of North America', fact: 'Some rockfish live over 200 years!' },
++              { id: 'rockfish', name: 'Rockfish', icon: '≡ƒÉí', load: 5, minTank: 55, tempRange: [50, 60], pHRange: [7.8, 8.4], compat: ['seastar', 'kelp'], diet: 'Ambush predator ΓÇö small fish, shrimp, and planktonic crustaceans near rocky structure', habitat: 'Deep rocky reefs and kelp forests along the Pacific coast of North America', fact: 'Some rockfish live over 200 years!' },
+               { id: 'seastar', name: 'Sunflower Star', icon: 'Γ¡É', load: 4, minTank: 40, tempRange: [48, 58], pHRange: [7.8, 8.4], compat: ['rockfish', 'kelp'], diet: 'Voracious predator ΓÇö sea urchins, clams, snails, and other sea stars', habitat: 'Kelp forests and rocky reefs from Alaska to Baja California, critical for controlling urchin populations', fact: 'Sunflower stars have up to 24 arms and can move 1 meter per minute.' },
+               { id: 'kelp', name: 'Giant Kelp', icon: '≡ƒî┐', load: 1, minTank: 30, tempRange: [50, 65], pHRange: [7.5, 8.5], compat: ['rockfish', 'seastar'], diet: 'Photosynthetic autotroph ΓÇö converts sunlight, COΓéé, and dissolved nutrients into biomass', habitat: 'Cool, nutrient-rich, sunlit coastal waters from 6-30m depth along temperate coastlines', fact: 'Giant kelp can grow up to 2 feet per day!' }
+             ],
+             brackish: [
+-              { id: 'archer', name: 'Archerfish', icon: '≡ƒÉƒ', load: 3, minTank: 20, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['puffer', 'mudskip'], diet: 'Insectivore ΓÇö shoots down terrestrial insects with precisely aimed jets of water', habitat: 'Mangrove-lined estuaries, brackish creeks, and river mouths across Southeast Asia and northern Australia', fact: 'Archerfish shoot jets of water to knock insects off branches!' },
++              { id: 'archer', name: 'Archerfish', icon: '≡ƒÉá', load: 3, minTank: 20, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['puffer', 'mudskip'], diet: 'Insectivore ΓÇö shoots down terrestrial insects with precisely aimed jets of water', habitat: 'Mangrove-lined estuaries, brackish creeks, and river mouths across Southeast Asia and northern Australia', fact: 'Archerfish shoot jets of water to knock insects off branches!' },
+               { id: 'puffer', name: 'Figure-8 Puffer', icon: '≡ƒÉí', load: 4, minTank: 15, tempRange: [72, 79], pHRange: [7.5, 8.5], compat: ['archer'], diet: 'Molluscivore ΓÇö crunches snails, clams, and crustacean shells to keep its fused beak trimmed', habitat: 'Brackish river deltas and coastal mangroves of Southeast Asia, especially in Thailand and Borneo', fact: 'Puffers need to crunch hard-shelled food to keep their beaks trimmed.' },
+               { id: 'mudskip', name: 'Mudskipper', icon: '≡ƒÉ╕', load: 3, minTank: 20, tempRange: [75, 86], pHRange: [7.0, 8.5], compat: ['archer'], diet: 'Opportunistic omnivore ΓÇö insects, small crabs, algae, and detritus from mudflats', habitat: 'Intertidal mudflats and mangrove forests of the Indo-Pacific, spending much of its time on land', fact: 'Mudskippers are fish that can walk on land and breathe air!' }
+             ]
+@@ -27808,6 +27838,7 @@
+                   tankFish.map(function (fId, idx) {
+                     var sp = species.find(function (s) { return s.id === fId; });
+                     var animInfo = SPECIES_ANIM[fId] || null;
++                    var ds = SPECIES_DISPLAY_SIZE[fId] || { w: 52, h: 38, emoji: 28 };
+                     // Y-positioning based on zone
+                     var yPos;
+                     if (animInfo && animInfo.yZone === 'bottom') {
+@@ -27841,8 +27872,8 @@
+                       style: {
+                         position: 'absolute', top: yPos + 'px', left: xPos + '%',
+                         cursor: 'pointer', zIndex: 6, userSelect: 'none',
+-                        width: svgHtml ? '52px' : 'auto', height: svgHtml ? '38px' : 'auto',
+-                        fontSize: svgHtml ? undefined : '28px',
++                        width: svgHtml ? (ds.w + 'px') : 'auto', height: svgHtml ? (ds.h + 'px') : 'auto',
++                        fontSize: svgHtml ? undefined : (ds.emoji + 'px'),
+                         transform: direction < 0 ? 'scaleX(-1)' : 'none',
+                         animation: swimAnim + ' ' + swimDuration + 's ease-in-out ' + swimDelay + 's infinite alternate' + (svgHtml ? ', aquaBodySway ' + swayDuration + 's ease-in-out ' + swayDelay + 's infinite' : ''),
+                         filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.25))' + (isSick ? ' saturate(0.6) brightness(0.85)' : ''),

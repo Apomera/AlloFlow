@@ -1,0 +1,44 @@
+﻿
+> alloflow@0.9.0 build
+> react-scripts build
+
+node.exe : (node:10928) 
+[DEP0176] 
+DeprecationWarning: 
+fs.F_OK is deprecated, 
+use fs.constants.F_OK 
+instead
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: ((  
+  node:10928) [D...ts.F   
+ _OK instead:String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+(Use `node 
+--trace-deprecation ...` 
+to show where the warning 
+was created)
+Creating an optimized production build...
+Failed to compile.
+
+SyntaxError: C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\src\App.jsx: Unexpected token (37222:12)
+[0m [90m 37220 |[39m                   }
+ [90m 37221 |[39m               }
+[31m[1m>[22m[39m[90m 37222 |[39m           } [36melse[39m {
+ [90m       |[39m             [31m[1m^[22m[39m
+ [90m 37223 |[39m               text [33m=[39m rawText[33m;[39m
+ [90m 37224 |[39m           }
+ [90m 37225 |[39m       } [36melse[39m {[0m
+
+

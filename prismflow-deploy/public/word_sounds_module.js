@@ -1884,6 +1884,45 @@
               className:
                 "flex flex-col items-center gap-8 animate-in slide-in-from-right duration-500",
             },
+            /*#__PURE__*/ React.createElement(
+              "div",
+              {
+                className:
+                  "bg-orange-100 p-6 rounded-3xl flex items-center gap-6 shadow-sm border-2 border-orange-200",
+              },
+              /*#__PURE__*/ React.createElement(
+                "button",
+                {
+                  "aria-label": t("common.volume"),
+                  onClick: () => onPlayAudio(data.word),
+                  disabled: isAudioBusy,
+                  className: `w-20 h-20 rounded-2xl bg-white flex items-center justify-center shadow-lg focus:ring-4 focus:ring-orange-300 focus:outline-none hover:scale-105 transition-all ${isAudioBusy ? "text-orange-300 cursor-wait" : "text-orange-500"}`,
+                },
+                isAudioBusy
+                  ? /*#__PURE__*/ React.createElement("div", {
+                    className:
+                      "animate-spin h-8 w-8 border-3 border-orange-400 border-t-transparent rounded-full",
+                  })
+                  : /*#__PURE__*/ React.createElement(Volume2, { size: 32 }),
+              ),
+              /*#__PURE__*/ React.createElement(
+                "div",
+                null,
+                /*#__PURE__*/ React.createElement(
+                  "span",
+                  {
+                    className:
+                      "text-sm font-bold text-orange-600 uppercase tracking-wider",
+                  },
+                  ts("word_sounds.target_word") || "Target Word",
+                ),
+                /*#__PURE__*/ React.createElement(
+                  "h3",
+                  { className: "text-4xl font-black text-slate-800" },
+                  showLetterHints ? data.word : "???",
+                ),
+              ),
+            ),
 
             /*#__PURE__*/ React.createElement(
               "h3",
@@ -7219,6 +7258,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 currentWordSoundsWord,
               );
             }
+            */
             updateMasteryStats(
               wordSoundsActivity,
               isCorrect,
