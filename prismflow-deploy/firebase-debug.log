@@ -1,0 +1,21 @@
+[debug] [2026-03-18T01:09:45.630Z] ----------------------------------------------------------------------
+[debug] [2026-03-18T01:09:45.640Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\cabba\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting
+[debug] [2026-03-18T01:09:45.640Z] CLI Version:   14.26.0
+[debug] [2026-03-18T01:09:45.640Z] Platform:      win32
+[debug] [2026-03-18T01:09:45.640Z] Node Version:  v24.11.1
+[debug] [2026-03-18T01:09:45.640Z] Time:          Tue Mar 17 2026 21:09:45 GMT-0400 (Eastern Daylight Time)
+[debug] [2026-03-18T01:09:45.640Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-03-18T01:09:45.822Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-18T01:09:45.823Z] > authorizing via signed-in user (cabbagezilla@gmail.com)
+[debug] [2026-03-18T01:09:45.823Z] [iam] checking project prismflow-911fe for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-03-18T01:09:45.824Z] Checked if tokens are valid: true, expires at: 1773797288690
+[debug] [2026-03-18T01:09:45.824Z] Checked if tokens are valid: true, expires at: 1773797288690
+[debug] [2026-03-18T01:09:45.824Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/prismflow-911fe:testIamPermissions [none]
+[debug] [2026-03-18T01:09:45.824Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/prismflow-911fe:testIamPermissions x-goog-quota-user=projects/prismflow-911fe
+[debug] [2026-03-18T01:09:45.824Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/prismflow-911fe:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-03-18T01:09:46.190Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/prismflow-911fe:testIamPermissions 200
+[debug] [2026-03-18T01:09:46.190Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/prismflow-911fe:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-03-18T01:09:46.191Z] Checked if tokens are valid: true, expires at: 1773797288690
+[debug] [2026-03-18T01:09:46.191Z] Checked if tokens are valid: true, expires at: 1773797288690
+[debug] [2026-03-18T01:09:46.191Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/prismflow-911fe [none]
