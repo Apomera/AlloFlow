@@ -32339,6 +32339,10 @@
             var drawing = false;
             var brushSize = d.brushSize || 3;
             var brushColor = 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)';
+            // Store previous point for continuous line drawing
+            if (canvas._prevX === undefined) canvas._prevX = null;
+            if (canvas._prevY === undefined) canvas._prevY = null;
+
             if (!canvas._symInit) {
               canvas._symInit = true;
               ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
@@ -32350,28 +32354,94 @@
                 ctx.stroke();
               }
             }
-            function drawSymmetric(ex, ey) {
+
+            // In rainbow mode, pick a color based on distance from center or time; otherwise use selected
+            var mode = d.symBrushMode || 'rainbow'; 
+            var mirrorOnly = d.symMirrorOnly || false;
+
+            function drawSymmetric(ex, ey, isStart) {
               var dx = ex - cx, dy = ey - cy, dist = Math.sqrt(dx * dx + dy * dy);
               var baseAngle = Math.atan2(dy, dx);
-              for (var i = 0; i < folds; i++) {
-                var angle = baseAngle + (i / folds) * Math.PI * 2;
-                ctx.beginPath(); ctx.arc(cx + Math.cos(angle) * dist, cy + Math.sin(angle) * dist, brushSize, 0, Math.PI * 2);
-                ctx.fillStyle = brushColor; ctx.fill();
-                var mirrorAngle = -baseAngle + (i / folds) * Math.PI * 2;
-                ctx.beginPath(); ctx.arc(cx + Math.cos(mirrorAngle) * dist, cy + Math.sin(mirrorAngle) * dist, brushSize, 0, Math.PI * 2);
-                ctx.fillStyle = brushColor; ctx.fill();
+              
+              var drawColor = brushColor;
+              if (mode === 'rainbow') {
+                drawColor = 'hsl(' + ((Date.now() / 10) % 360) + ', 100%, 50%)';
               }
+
+              ctx.lineWidth = brushSize * 2; // match stroke width to circle diam
+              ctx.lineCap = 'round';
+              ctx.lineJoin = 'round';
+              ctx.strokeStyle = drawColor;
+              ctx.fillStyle = drawColor;
+
+              // If it's the very first dot of a stroke, just draw a dot
+              if (isStart || canvas._prevX === null || canvas._prevY === null) {
+                for (var i = 0; i < folds; i++) {
+                  var angle = baseAngle + (i / folds) * Math.PI * 2;
+                  ctx.beginPath(); ctx.arc(cx + Math.cos(angle) * dist, cy + Math.sin(angle) * dist, brushSize, 0, Math.PI * 2);
+                  ctx.fill();
+                  if (mirrorOnly) {
+                    var mirrorAngle = -baseAngle + (i / folds) * Math.PI * 2;
+                    ctx.beginPath(); ctx.arc(cx + Math.cos(mirrorAngle) * dist, cy + Math.sin(mirrorAngle) * dist, brushSize, 0, Math.PI * 2);
+                    ctx.fill();
+                  }
+                }
+              } else {
+                 // Draw continuous lines from previous points to current
+                 var px = canvas._prevX - cx, py = canvas._prevY - cy;
+                 var prevDist = Math.sqrt(px * px + py * py);
+                 var prevBaseAngle = Math.atan2(py, px);
+                 
+                 for (var j = 0; j < folds; j++) {
+                    var curAngle = baseAngle + (j / folds) * Math.PI * 2;
+                    var pAngle = prevBaseAngle + (j / folds) * Math.PI * 2;
+                    ctx.beginPath();
+                    ctx.moveTo(cx + Math.cos(pAngle) * prevDist, cy + Math.sin(pAngle) * prevDist);
+                    ctx.lineTo(cx + Math.cos(curAngle) * dist, cy + Math.sin(curAngle) * dist);
+                    ctx.stroke();
+
+                    if (mirrorOnly) {
+                       var mCurAngle = -baseAngle + (j / folds) * Math.PI * 2;
+                       var mPAngle = -prevBaseAngle + (j / folds) * Math.PI * 2;
+                       ctx.beginPath();
+                       ctx.moveTo(cx + Math.cos(mPAngle) * prevDist, cy + Math.sin(mPAngle) * prevDist);
+                       ctx.lineTo(cx + Math.cos(mCurAngle) * dist, cy + Math.sin(mCurAngle) * dist);
+                       ctx.stroke();
+                    }
+                 }
+              }
+              // Save prev coords
+              canvas._prevX = ex;
+              canvas._prevY = ey;
             }
-            function handleDraw(e) {
+
+            function handleDraw(e, isStart) {
               var rect = canvas.getBoundingClientRect();
               var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
               var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-              drawSymmetric(ex * (W / rect.width), ey * (H / rect.height));
+              drawSymmetric(ex * (W / rect.width), ey * (H / rect.height), isStart);
             }
-            canvas.onmousedown = canvas.ontouchstart = function (e) { drawing = true; handleDraw(e); };
-            canvas.onmousemove = canvas.ontouchmove = function (e) { if (drawing) handleDraw(e); };
-            canvas.onmouseup = canvas.ontouchend = function () { drawing = false; };
-            canvas.onmouseleave = function () { drawing = false; };
+
+            canvas.onmousedown = canvas.ontouchstart = function (e) { 
+               e.preventDefault(); 
+               drawing = true; 
+               canvas._prevX = null; canvas._prevY = null;
+               handleDraw(e, true); 
+            };
+            canvas.onmousemove = canvas.ontouchmove = function (e) { 
+               if (drawing) {
+                 e.preventDefault();
+                 handleDraw(e, false); 
+               }
+            };
+            canvas.onmouseup = canvas.ontouchend = function () { 
+               drawing = false; 
+               canvas._prevX = null; canvas._prevY = null;
+            };
+            canvas.onmouseleave = function () { 
+               drawing = false; 
+               canvas._prevX = null; canvas._prevY = null;
+            };
           };
 
           // WCAG contrast helpers
@@ -32401,6 +32471,29 @@
           var l1c = luminance(fgH, fgS, fgL), l2c = luminance(bgH, bgS, bgL);
           var contrastRatio = (Math.max(l1c, l2c) + 0.05) / (Math.min(l1c, l2c) + 0.05);
           var passAA = contrastRatio >= 4.5, passAAA = contrastRatio >= 7, passAALarge = contrastRatio >= 3;
+
+          // Helper to toggle fullscreen for specific tool containers
+          const toggleFullscreen = (elementId) => {
+            var el = document.getElementById(elementId);
+            if (!el) return;
+            if (!document.fullscreenElement) {
+              if (el.requestFullscreen) {
+                el.requestFullscreen().catch(err => console.warn("Fullscreen failed: ", err));
+              } else if (el.webkitRequestFullscreen) { /* Safari */
+                el.webkitRequestFullscreen();
+              } else if (el.msRequestFullscreen) { /* IE11 */
+                el.msRequestFullscreen();
+              }
+            } else {
+              if (document.exitFullscreen) {
+                document.exitFullscreen();
+              } else if (document.webkitExitFullscreen) { /* Safari */
+                document.webkitExitFullscreen();
+              } else if (document.msExitFullscreen) { /* IE11 */
+                document.msExitFullscreen();
+              }
+            }
+          };
 
           return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
@@ -32516,14 +32609,16 @@
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-3" }, "Brush:"),
                 React.createElement("input", { type: "range", min: 1, max: 10, value: d.brushSize || 3, onChange: function (e) { upd('brushSize', parseInt(e.target.value)); }, className: "w-20 accent-pink-600" }),
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Mode:"),
-                React.createElement("button", { onClick: function () { upd('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.symBrushMode || 'solid') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83D\uDD8C Solid"),
-                React.createElement("button", { onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.symBrushMode || 'solid') === 'rainbow' ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83C\uDF08 Rainbow"),
+                React.createElement("button", { onClick: function () { upd('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83D\uDD8C Solid"),
+                React.createElement("button", { onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'rainbow' ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83C\uDF08 Rainbow"),
                 React.createElement("button", { onClick: function () { upd('symMirrorOnly', !(d.symMirrorOnly)); upd('symmetryClear', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.symMirrorOnly ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, d.symMirrorOnly ? '\uD83E\uDE9E Mirror \u2714' : '\uD83E\uDE9E Mirror'),
                 React.createElement("button", { onClick: function () { upd('symmetryClear', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
-                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG")
+                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG"),
+                React.createElement("button", { onClick: function () { toggleFullscreen('symmetryCanvasContainer'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all" }, "\uD83D\uDD0D Fullscreen")
               ),
-              React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-200" },
-                React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
+              React.createElement("div", { id: 'symmetryCanvasContainer', className: "bg-slate-900 rounded-xl p-2 relative flex flex-col items-center justify-center w-full" },
+                React.createElement("div", { className: "bg-slate-800/80 rounded-xl p-2 border border-slate-700 w-full mb-3" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
                   React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, "\uD83C\uDFA8 Palettes"),
                   [{ id: 'retro', label: '\uD83D\uDD79 Retro' }, { id: 'nature', label: '\uD83C\uDF3F Nature' }, { id: 'warm', label: '\uD83D\uDD25 Warm' }, { id: 'cool', label: '\u2744 Cool' }, { id: 'neon', label: '\uD83D\uDCA5 Neon' }].map(function (pal) {
                     return React.createElement("button", { key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-pink-50') }, pal.label);
@@ -32539,7 +32634,8 @@
                   })()
                 )
               ),
-              React.createElement("canvas", { id: 'symmetryCanvas', ref: symmetryRef, width: 512, height: 512, key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0) + '-' + (d.symMirrorOnly ? 'm' : 'r'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block mt-3", style: { maxWidth: '100%', background: '#0f172a' } }),
+              React.createElement("canvas", { id: 'symmetryCanvas', ref: symmetryRef, width: 512, height: 512, key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0) + '-' + (d.symMirrorOnly ? 'm' : 'r'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block mt-3 flex-shrink-0", style: { maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', background: '#0f172a' } })
+              ), // end symmetryCanvasContainer
               React.createElement("div", { className: "mt-3 bg-gradient-to-br from-violet-50 to-pink-50 rounded-xl p-4 border border-violet-200" },
                 React.createElement("button", { onClick: function () { upd('showSymInfo', !d.showSymInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-violet-700" },
                   React.createElement("span", null, "\uD83D\uDD2E Learn About Symmetry"),
@@ -34101,12 +34197,14 @@
                 )
               )
             ),
-            // ═══ GAME OF LIFE TAB ═══
             tab === 'life' && React.createElement("div", { className: "space-y-3" },
               React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
                 React.createElement("div", { className: "space-y-3", style: { maxHeight: '85vh', overflowY: 'auto' } },
                   React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-lime-50 rounded-xl p-4 border border-emerald-200" },
-                    React.createElement("h4", { className: "text-xs font-bold text-emerald-700 mb-3" }, "\uD83E\uDDEC Conway's Game of Life"),
+                    React.createElement("div", { className: "flex justify-between items-start mb-3" },
+                      React.createElement("h4", { className: "text-xs font-bold text-emerald-700" }, "\uD83E\uDDEC Conway's Game of Life"),
+                      React.createElement("button", { onClick: function () { toggleFullscreen('lifeCanvasContainer'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all shadow-sm" }, "\uD83D\uDD0D Fullscreen Mode")
+                    ),
                     // Simulation controls
                     React.createElement("div", { className: "flex gap-1 mb-3" },
                       React.createElement("button", { onClick: function () { upd('lifeRunning', !(d.lifeRunning)); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black transition-all " + (d.lifeRunning ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-600 hover:to-green-600 shadow-md') }, d.lifeRunning ? '\u23F8 Pause' : '\u25B6 Run'),
@@ -34277,13 +34375,13 @@
                       React.createElement("p", { className: "text-[10px] font-bold text-red-500" }, '\u274C ' + (d.lifeChallengeMsg || 'Not quite \u2014 try again!'))
                     )
                   ),
-                  // Educational panel
+                  // Educational panel (Moved Up)
                   React.createElement("div", { className: "bg-gradient-to-br from-lime-50 to-green-50 rounded-xl p-3 border border-lime-200" },
-                    React.createElement("button", { onClick: function () { upd('showLifeInfo', !d.showLifeInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-lime-700" },
+                    React.createElement("button", { onClick: function () { upd('showLifeInfo', d.showLifeInfo === undefined ? false : !d.showLifeInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-lime-700" },
                       React.createElement("span", null, '\uD83E\uDDE0 The Science of Cellular Automata'),
-                      React.createElement("span", null, d.showLifeInfo ? '\u25B2' : '\u25BC')
+                      React.createElement("span", null, (d.showLifeInfo !== false) ? '\u25B2' : '\u25BC')
                     ),
-                    d.showLifeInfo && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
+                    (d.showLifeInfo !== false) && React.createElement("div", { className: "mt-3 space-y-2 text-xs text-slate-600 leading-relaxed" },
                       React.createElement("p", null, '\uD83E\uDDEC ', React.createElement("strong", null, "Conway\'s Game of Life"), ' was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity \u2014 it\'s actually ', React.createElement("strong", null, "Turing complete"), ', meaning it can compute anything a real computer can.'),
                       React.createElement("div", { className: "bg-white rounded-lg p-2 border border-lime-200" },
                         React.createElement("p", { className: "font-bold text-lime-700 mb-1" }, '\uD83D\uDCCF The Rules:'),
@@ -34312,10 +34410,10 @@
                   React.createElement("p", { className: "text-[10px] text-center text-slate-400 italic" }, '\uD83D\uDC46 Click/drag to draw \u2022 \u25B6 Run to simulate \u2022 \uD83D\uDD2C X-Ray to learn')
                 ),
                 // ─── RIGHT COLUMN: Canvas + Sparkline ───
-                React.createElement("div", { className: "space-y-2" },
+                React.createElement("div", { id: "lifeCanvasContainer", className: "space-y-2 bg-slate-900 aspect-square flex flex-col items-center justify-center p-2 rounded-xl" },
                   React.createElement("canvas", { id: 'lifeCanvas', width: 600, height: 600,
                     key: 'life-' + (d.lifeClear || 0) + '-' + (d.lifeSize || 60),
-                    className: "rounded-xl border-2 border-emerald-200 shadow-lg mx-auto block cursor-crosshair", style: { maxWidth: '100%', background: '#0a0f0a' },
+                    className: "rounded-xl border-2 border-emerald-200 shadow-lg mx-auto block cursor-crosshair flex-shrink-0", style: { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', background: '#0a0f0a' },
                     ref: function (canvas) {
                       if (!canvas) return;
                       if (canvas._lifeInit) return;
