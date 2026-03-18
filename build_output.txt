@@ -2,43 +2,49 @@
 > alloflow@0.9.0 build
 > react-scripts build
 
-node.exe : (node:10928) 
+node.exe : 
+(node:25516) 
 [DEP0176] 
 DeprecationWarning: 
-fs.F_OK is deprecated, 
-use fs.constants.F_OK 
+fs.F_OK is 
+deprecated, use 
+fs.constants.F_OK 
 instead
 At line:1 char:1
-+ & "C:\Program 
-Files\nodejs/node.exe" 
++ & "C:\Program Files\
+nodejs/node.exe" 
 "C:\Program 
-Files\nodejs/node_mo ...
-+ ~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo        
-      : NotSpecified: ((  
-  node:10928) [D...ts.F   
- _OK instead:String) [    
-], RemoteException
-    + FullyQualifiedError 
-   Id : NativeCommandErr  
-  or
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: ((node:2551   
+ 6) [D...ts.F_OK i    
+nstead:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
  
 (Use `node 
---trace-deprecation ...` 
-to show where the warning 
-was created)
+--trace-deprecation 
+...` to show where 
+the warning was 
+created)
 Creating an optimized production build...
 Failed to compile.
 
-SyntaxError: C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\src\App.jsx: Unexpected token (37222:12)
-[0m [90m 37220 |[39m                   }
- [90m 37221 |[39m               }
-[31m[1m>[22m[39m[90m 37222 |[39m           } [36melse[39m {
- [90m       |[39m             [31m[1m^[22m[39m
- [90m 37223 |[39m               text [33m=[39m rawText[33m;[39m
- [90m 37224 |[39m           }
- [90m 37225 |[39m       } [36melse[39m {[0m
+SyntaxError: C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\src\App.jsx: Unexpected token (36481:19)
+[0m [90m 36479 |[39m                           warnLog([32m`[CitationRecovery] Could not find match for ${lost.marker} (best score: ${bestScore})`[39m)[33m;[39m
+ [90m 36480 |[39m                       }
+[31m[1m>[22m[39m[90m 36481 |[39m                   })[33m;[39m
+ [90m       |[39m                    [31m[1m^[22m[39m
+ [90m 36482 |[39m                   result [33m=[39m sentences[33m.[39mjoin([32m' '[39m)[33m;[39m
+ [90m 36483 |[39m               }
+ [90m 36484 |[39m           }[0m
 
 
