@@ -495,7 +495,7 @@
         try {
           var _toSave = {};
           // @tool waterCycle
-          ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'geometryProver', '_tutorialSeen'].forEach(function (k) {
+          ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'geometryProver', 'epidemicSim', '_tutorialSeen'].forEach(function (k) {
             if (labToolData[k]) _toSave[k] = labToolData[k];
           });
           localStorage.setItem('alloflow_stemlab_v2', JSON.stringify(_toSave));
@@ -2093,7 +2093,8 @@
               { id: 'companion_planting_grow', label: 'Growing', icon: '\uD83C\uDF31' },
               { id: 'companion_planting_harvest', label: 'Harvest', icon: '\uD83C\uDF3E' },
               { id: 'companion_planting_quiz', label: 'Garden Quiz', icon: '\uD83D\uDCDD' },
-              { id: 'dataStudio', label: 'Statistics', icon: '\uD83D\uDCCA' }
+              { id: 'dataStudio', label: 'Statistics', icon: '\uD83D\uDCCA' },
+              { id: 'epidemicSim', label: 'Epidemics', icon: '\uD83E\uDDA0' }
             ];
             var _maxXP = _xpActivities.length * 100;
             var _totalPct = _maxXP > 0 ? Math.min(100, (totalStemXP / _maxXP) * 100) : 0;
@@ -2479,7 +2480,10 @@
 
               { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
               { id: 'geometryProver', icon: '\uD83D\uDCD0', label: 'Geometry Prover', desc: 'Interactive Euclidean proofs \u2014 drag points, see angle relationships update live.', color: 'violet', ready: true },
-              { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true }
+              { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
+
+              { id: '_cat_PublicHealth', icon: '', label: '\uD83C\uDFE5 Public Health', desc: '', color: 'slate', category: true },
+              { id: 'epidemicSim', icon: '\uD83E\uDDA0', label: 'Epidemic Simulator', desc: 'SIR model \u2014 adjust R\u2080, vaccination rate, and see how epidemics spread. Explore herd immunity and flatten the curve.', color: 'rose', ready: true }
             ];
 
             // ── STEM Tool Registry (AI-facing metadata for STEM Stations) ──
@@ -2532,7 +2536,8 @@
               { id: 'economicsLab', name: 'Economics Lab', subjects: ['economics','social-studies','math'], grades: [6,7,8,9,10,11,12], tags: ['supply-demand','finance','stock-market','entrepreneurship'], keywords: ['supply and demand','personal finance','stock trading','lemonade stand'] },
               { id: 'lifeSkills', name: 'Life Skills Lab', subjects: ['life-skills','economics','health'], grades: [7,8,9,10,11,12], tags: ['taxes','data-literacy','decision-making','insurance','contracts'], keywords: ['tax calculator','paycheck','health insurance','decision matrix','data literacy'] },
               { id: 'geometryProver', name: 'Geometry Prover', subjects: ['math','geometry'], grades: [6,7,8,9,10], tags: ['proofs','angles','triangles','parallel-lines','euclidean'], keywords: ['theorem','vertical angles','supplementary','congruent','transversal','triangle angle sum'], description: 'Interactive Euclidean proofs \u2014 drag points, see angle relationships update live' },
-              { id: 'spaceColony', name: 'Kepler Colony', subjects: ['science','strategy','math'], grades: [5,6,7,8,9,10], tags: ['colonization','resource-management','turn-based','cooperative'], keywords: ['alien planet','colony survival','cooperative strategy','science unlocks'] }
+              { id: 'spaceColony', name: 'Kepler Colony', subjects: ['science','strategy','math'], grades: [5,6,7,8,9,10], tags: ['colonization','resource-management','turn-based','cooperative'], keywords: ['alien planet','colony survival','cooperative strategy','science unlocks'] },
+              { id: 'epidemicSim', name: 'Epidemic Simulator', subjects: ['biology','math','health','public-health'], grades: [6,7,8,9,10,11,12], tags: ['SIR-model','epidemic','R0','herd-immunity','vaccination','exponential-growth'], keywords: ['epidemic','pandemic','SIR model','basic reproduction number','herd immunity','vaccination rate','flatten the curve','exponential growth'] }
             ];
             window.STEM_TOOL_REGISTRY = STEM_TOOL_REGISTRY;
 
@@ -51417,6 +51422,699 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
           );
         })(),
 
+        // ═══════════════════════════════════════════════════════════════
+        // ██  EPIDEMIC SIMULATOR — SIR Model Visualization            ██
+        // ═══════════════════════════════════════════════════════════════
+        stemLabTab === 'explore' && stemLabTool === 'epidemicSim' && (function () {
+          var d = (labToolData && labToolData.epidemicSim) || {};
+          var upd = function (k, v) {
+            setLabToolData(function (p) {
+              var es = Object.assign({}, (p && p.epidemicSim) || {});
+              es[k] = v;
+              return Object.assign({}, p, { epidemicSim: es });
+            });
+          };
+          var updMulti = function (obj) {
+            setLabToolData(function (p) {
+              var es = Object.assign({}, (p && p.epidemicSim) || {}, obj);
+              return Object.assign({}, p, { epidemicSim: es });
+            });
+          };
+
+          // ── Glass style ──
+          var glass = { backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' };
+
+          // ── Parameters with defaults ──
+          var R0 = d.R0 != null ? d.R0 : 2.5;
+          var vaccRate = d.vaccRate != null ? d.vaccRate : 0;
+          var infectPeriod = d.infectPeriod != null ? d.infectPeriod : 10;
+          var popSize = d.popSize != null ? d.popSize : 100000;
+          var simDays = 300;
+
+          // ── Derived values ──
+          var gamma = 1 / infectPeriod;
+          var beta = R0 * gamma;
+          var effectiveR0 = R0 * (1 - vaccRate / 100);
+          var herdThreshold = R0 > 1 ? (1 - 1 / R0) * 100 : 0;
+          var herdThresholdEff = effectiveR0 > 1 ? (1 - 1 / effectiveR0) * 100 : 0;
+
+          // ── SIR Solver (Euler method, dt=0.5) ──
+          var dt = 0.5;
+          var N = popSize;
+          var S0 = N * (1 - vaccRate / 100);
+          var I0 = Math.max(1, Math.round(N * 0.0001));
+          var R_0 = N * (vaccRate / 100);
+          S0 = S0 - I0;
+
+          var sirData = [];
+          var S = S0, I = I0, R = R_0;
+          var peakI = 0, peakDay = 0, totalInfected = 0;
+          for (var day = 0; day <= simDays; day += dt) {
+            if (Math.round(day * 2) % 2 === 0) {
+              var pctS = (S / N) * 100;
+              var pctI = (I / N) * 100;
+              var pctR = (R / N) * 100;
+              sirData.push({ day: day, S: pctS, I: pctI, R: pctR, rawS: S, rawI: I, rawR: R });
+              if (I > peakI) { peakI = I; peakDay = Math.round(day); }
+            }
+            var dS = -beta * S * I / N;
+            var dI = beta * S * I / N - gamma * I;
+            var dR = gamma * I;
+            S = Math.max(0, S + dS * dt);
+            I = Math.max(0, I + dI * dt);
+            R = Math.min(N, R + dR * dt);
+          }
+          totalInfected = Math.round(N - S);
+
+          // ── Award XP on first run ──
+          if (!d._firstRun) {
+            upd('_firstRun', true);
+            awardStemXP('epidemicSim', 5, 'First simulation');
+          }
+
+          // ── Presets ──
+          var presets = [
+            { id: 'covid', label: 'COVID-19', icon: '🦠', R0: 2.5, period: 10, desc: 'SARS-CoV-2 (original strain)', color: '#f87171' },
+            { id: 'measles', label: 'Measles', icon: '🔴', R0: 15, period: 8, desc: 'Extremely contagious airborne', color: '#ef4444' },
+            { id: 'flu', label: 'Seasonal Flu', icon: '🤧', R0: 1.3, period: 5, desc: 'Influenza A/B typical season', color: '#60a5fa' },
+            { id: 'ebola', label: 'Ebola', icon: '☣️', R0: 2.0, period: 12, desc: 'EVD — high fatality, lower spread', color: '#a855f7' }
+          ];
+
+          // ── SVG Chart Dimensions ──
+          var svgW = 700, svgH = 280;
+          var pad = { top: 20, right: 20, bottom: 35, left: 48 };
+          var chartW = svgW - pad.left - pad.right;
+          var chartH = svgH - pad.top - pad.bottom;
+          var xScale = function (v) { return pad.left + (v / simDays) * chartW; };
+          var yScale = function (v) { return pad.top + chartH - (v / 100) * chartH; };
+
+          // Build SVG paths
+          var pathS = '', pathI = '', pathR = '';
+          sirData.forEach(function (pt, i) {
+            var cmd = i === 0 ? 'M' : 'L';
+            pathS += cmd + xScale(pt.day).toFixed(1) + ',' + yScale(pt.S).toFixed(1);
+            pathI += cmd + xScale(pt.day).toFixed(1) + ',' + yScale(pt.I).toFixed(1);
+            pathR += cmd + xScale(pt.day).toFixed(1) + ',' + yScale(pt.R).toFixed(1);
+          });
+
+          // Hover state
+          var hoverDay = d._hoverDay;
+          var hoverPt = hoverDay != null ? sirData.find(function (p) { return Math.round(p.day) === Math.round(hoverDay); }) : null;
+
+          // ── Particle Sim State ──
+          var particlePlaying = d._particlePlaying || false;
+          var particleSpeed = d._particleSpeed || 1;
+
+          // ── Particle Animation Canvas Effect ──
+          // We manage particles through a window ref to avoid re-creating on every render
+          if (!window._epiParticles) {
+            window._epiParticles = { initialized: false, particles: [], animId: null, tick: 0 };
+          }
+          var _epiP = window._epiParticles;
+
+          function initParticles(canvasId) {
+            var cv = document.getElementById(canvasId);
+            if (!cv) return;
+            var W = cv.width, H = cv.height;
+            var count = Math.min(300, Math.max(80, Math.round(popSize / 500)));
+            var vaccCount = Math.round(count * vaccRate / 100);
+            var particles = [];
+            for (var i = 0; i < count; i++) {
+              var status = i === 0 ? 'I' : (i <= vaccCount ? 'R' : 'S');
+              particles.push({
+                x: Math.random() * W,
+                y: Math.random() * H,
+                vx: (Math.random() - 0.5) * 1.5,
+                vy: (Math.random() - 0.5) * 1.5,
+                status: status,
+                infectedAt: status === 'I' ? 0 : -1,
+                r: 3
+              });
+            }
+            _epiP.particles = particles;
+            _epiP.tick = 0;
+            _epiP.initialized = true;
+          }
+
+          function stepParticles(cv) {
+            if (!cv || _epiP.particles.length === 0) return;
+            var W = cv.width, H = cv.height;
+            var ctx = cv.getContext('2d');
+            var pts = _epiP.particles;
+            var recoveryTicks = infectPeriod * 10;
+            var infectionRadius = 12;
+            var infectionProb = Math.min(0.12, beta * 0.02);
+
+            _epiP.tick++;
+            // Move
+            pts.forEach(function (p) {
+              p.x += p.vx * particleSpeed;
+              p.y += p.vy * particleSpeed;
+              if (p.x < 0 || p.x > W) p.vx *= -1;
+              if (p.y < 0 || p.y > H) p.vy *= -1;
+              p.x = Math.max(0, Math.min(W, p.x));
+              p.y = Math.max(0, Math.min(H, p.y));
+              // Recovery
+              if (p.status === 'I' && p.infectedAt > 0 && (_epiP.tick - p.infectedAt) > recoveryTicks) {
+                p.status = 'R';
+              }
+            });
+            // Infection
+            var infected = pts.filter(function (p) { return p.status === 'I'; });
+            var susceptible = pts.filter(function (p) { return p.status === 'S'; });
+            infected.forEach(function (ip) {
+              susceptible.forEach(function (sp) {
+                var dx = ip.x - sp.x, dy = ip.y - sp.y;
+                if (dx * dx + dy * dy < infectionRadius * infectionRadius) {
+                  if (Math.random() < infectionProb) {
+                    sp.status = 'I';
+                    sp.infectedAt = _epiP.tick;
+                  }
+                }
+              });
+            });
+            // Draw
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, W, H);
+            // Grid dots
+            ctx.fillStyle = 'rgba(51,65,85,0.3)';
+            for (var gx = 0; gx < W; gx += 20) {
+              for (var gy = 0; gy < H; gy += 20) {
+                ctx.fillRect(gx, gy, 1, 1);
+              }
+            }
+            var colors = { S: '#38bdf8', I: '#f87171', R: '#4ade80' };
+            var glows = { S: 'rgba(56,189,248,0.3)', I: 'rgba(248,113,113,0.4)', R: 'rgba(74,222,128,0.25)' };
+            pts.forEach(function (p) {
+              // Glow
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, p.r + 4, 0, Math.PI * 2);
+              ctx.fillStyle = glows[p.status];
+              ctx.fill();
+              // Dot
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+              ctx.fillStyle = colors[p.status];
+              ctx.fill();
+            });
+            // Counts overlay
+            var sCount = pts.filter(function (p) { return p.status === 'S'; }).length;
+            var iCount = pts.filter(function (p) { return p.status === 'I'; }).length;
+            var rCount = pts.filter(function (p) { return p.status === 'R'; }).length;
+            ctx.font = 'bold 10px monospace';
+            ctx.fillStyle = '#38bdf8'; ctx.fillText('S:' + sCount, 8, 16);
+            ctx.fillStyle = '#f87171'; ctx.fillText('I:' + iCount, 60, 16);
+            ctx.fillStyle = '#4ade80'; ctx.fillText('R:' + rCount, 112, 16);
+          }
+
+          // Format large numbers
+          function fmtNum(n) {
+            if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+            if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+            return String(Math.round(n));
+          }
+
+          // R0 danger color
+          function r0Color(v) {
+            if (v < 1) return '#4ade80';
+            if (v < 2) return '#fbbf24';
+            if (v < 5) return '#f97316';
+            return '#ef4444';
+          }
+
+          // ── Render ──
+          return React.createElement("div", {
+            className: "flex flex-col gap-4 p-4 max-w-5xl mx-auto",
+            style: { minHeight: '70vh' }
+          },
+            // ── Header ──
+            React.createElement("div", {
+              className: "flex items-center gap-3 mb-1"
+            },
+              React.createElement("span", { className: "text-3xl" }, "\uD83E\uDDA0"),
+              React.createElement("div", null,
+                React.createElement("h2", { className: "text-xl font-black text-white tracking-tight" }, "Epidemic Simulator"),
+                React.createElement("p", { className: "text-xs text-slate-400 font-medium" }, "SIR Model \u2014 Explore how diseases spread through populations")
+              )
+            ),
+
+            // ── Preset Buttons ──
+            React.createElement("div", {
+              className: "flex flex-wrap gap-2"
+            },
+              presets.map(function (p) {
+                var isActive = d._preset === p.id;
+                return React.createElement("button", {
+                  key: p.id,
+                  onClick: function () {
+                    updMulti({ R0: p.R0, infectPeriod: p.period, _preset: p.id, _particlePlaying: false });
+                    // Reset particles
+                    if (window._epiParticles) { window._epiParticles.initialized = false; if (window._epiParticles.animId) { cancelAnimationFrame(window._epiParticles.animId); window._epiParticles.animId = null; } }
+                    awardStemXP('epidemicSim', 3, 'Preset: ' + p.label);
+                    announceToSR('Loaded ' + p.label + ' preset');
+                  },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
+                    (isActive
+                      ? "bg-gradient-to-r from-red-500/30 to-orange-500/30 text-white border border-red-400/50 shadow-lg shadow-red-500/10"
+                      : "bg-slate-800/60 text-slate-300 border border-slate-700/50 hover:bg-slate-700/60 hover:border-slate-500/50")
+                }, p.icon, " ", p.label);
+              })
+            ),
+
+            // ── Main Grid: Controls + Chart ──
+            React.createElement("div", {
+              className: "grid grid-cols-1 lg:grid-cols-3 gap-4"
+            },
+              // ── Left: Parameter Controls ──
+              React.createElement("div", {
+                className: "lg:col-span-1 flex flex-col gap-3"
+              },
+                // R0 Slider
+                React.createElement("div", {
+                  style: Object.assign({ background: 'rgba(15,23,42,0.7)', borderRadius: 14, padding: '14px', border: '1px solid rgba(248,113,113,0.2)' }, glass)
+                },
+                  React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                    React.createElement("span", { className: "text-[10px] text-slate-400 font-bold uppercase tracking-wider" }, "\uD83E\uDDA0 Basic Reproduction Number"),
+                    React.createElement("span", {
+                      className: "text-sm font-black px-2 py-0.5 rounded-full",
+                      style: { color: r0Color(R0), background: r0Color(R0) + '20' }
+                    }, "R\u2080 = ", R0.toFixed(1))
+                  ),
+                  React.createElement("input", {
+                    type: "range", min: "0.5", max: "12", step: "0.1",
+                    value: R0,
+                    onChange: function (e) { upd('R0', parseFloat(e.target.value)); upd('_preset', null); },
+                    className: "w-full h-2 rounded-full appearance-none cursor-pointer",
+                    style: { background: 'linear-gradient(to right, #4ade80, #fbbf24 25%, #f97316 50%, #ef4444)' },
+                    'aria-label': 'R-naught slider'
+                  }),
+                  React.createElement("div", { className: "flex justify-between text-[9px] text-slate-500 mt-1" },
+                    React.createElement("span", null, "0.5 (dies out)"),
+                    React.createElement("span", null, "12 (measles)")
+                  ),
+                  React.createElement("p", { className: "text-[9px] text-slate-500 mt-1.5 leading-relaxed" },
+                    R0 < 1 ? "\u2705 Epidemic dies out \u2014 each person infects less than 1 other" :
+                    R0 < 2 ? "\u26A0\uFE0F Slow epidemic \u2014 spreads but controllable" :
+                    R0 < 5 ? "\uD83D\uDD25 Fast epidemic \u2014 aggressive interventions needed" :
+                    "\uD83D\uDCA5 Explosive spread \u2014 nearly everyone gets infected without vaccination"
+                  )
+                ),
+
+                // Vaccination Rate Slider
+                React.createElement("div", {
+                  style: Object.assign({ background: 'rgba(15,23,42,0.7)', borderRadius: 14, padding: '14px', border: '1px solid rgba(74,222,128,0.2)' }, glass)
+                },
+                  React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                    React.createElement("span", { className: "text-[10px] text-slate-400 font-bold uppercase tracking-wider" }, "\uD83D\uDC89 Vaccination Rate"),
+                    React.createElement("span", {
+                      className: "text-sm font-black",
+                      style: { color: vaccRate >= herdThreshold && herdThreshold > 0 ? '#4ade80' : '#fbbf24' }
+                    }, vaccRate, "%")
+                  ),
+                  React.createElement("input", {
+                    type: "range", min: "0", max: "95", step: "1",
+                    value: vaccRate,
+                    onChange: function (e) {
+                      var val = parseInt(e.target.value);
+                      upd('vaccRate', val);
+                      upd('_preset', null);
+                      // Award XP for reaching herd immunity
+                      if (val >= herdThreshold && herdThreshold > 0 && !d._herdAchieved) {
+                        upd('_herdAchieved', true);
+                        awardStemXP('epidemicSim', 5, 'Achieved herd immunity');
+                        if (addToast) addToast('\uD83C\uDF89 Herd immunity achieved! The population is protected.', 'success');
+                      }
+                    },
+                    className: "w-full h-2 rounded-full appearance-none cursor-pointer",
+                    style: { background: 'linear-gradient(to right, #334155, #4ade80)' },
+                    'aria-label': 'Vaccination rate slider'
+                  }),
+                  React.createElement("div", { className: "flex justify-between text-[9px] text-slate-500 mt-1" },
+                    React.createElement("span", null, "0% (none)"),
+                    React.createElement("span", null, "95% (mass)")
+                  ),
+                  herdThreshold > 0 && React.createElement("p", { className: "text-[9px] mt-1.5 leading-relaxed " + (vaccRate >= herdThreshold ? 'text-emerald-400' : 'text-amber-400') },
+                    vaccRate >= herdThreshold
+                      ? "\u2705 Above herd immunity threshold (" + herdThreshold.toFixed(0) + "%) \u2014 epidemic cannot sustain!"
+                      : "\uD83C\uDFAF Herd immunity needs " + herdThreshold.toFixed(0) + "% vaccinated (need " + Math.max(0, Math.round(herdThreshold - vaccRate)) + "% more)"
+                  )
+                ),
+
+                // Infectious Period Slider
+                React.createElement("div", {
+                  style: Object.assign({ background: 'rgba(15,23,42,0.7)', borderRadius: 14, padding: '14px', border: '1px solid rgba(251,191,36,0.2)' }, glass)
+                },
+                  React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                    React.createElement("span", { className: "text-[10px] text-slate-400 font-bold uppercase tracking-wider" }, "\u23F1\uFE0F Infectious Period"),
+                    React.createElement("span", { className: "text-sm font-black text-amber-400" }, infectPeriod, " days")
+                  ),
+                  React.createElement("input", {
+                    type: "range", min: "2", max: "30", step: "1",
+                    value: infectPeriod,
+                    onChange: function (e) { upd('infectPeriod', parseInt(e.target.value)); upd('_preset', null); },
+                    className: "w-full h-2 rounded-full appearance-none cursor-pointer",
+                    style: { background: 'linear-gradient(to right, #334155, #fbbf24)' },
+                    'aria-label': 'Infectious period slider'
+                  }),
+                  React.createElement("div", { className: "flex justify-between text-[9px] text-slate-500 mt-1" },
+                    React.createElement("span", null, "2 days"),
+                    React.createElement("span", null, "30 days")
+                  )
+                ),
+
+                // Population Slider
+                React.createElement("div", {
+                  style: Object.assign({ background: 'rgba(15,23,42,0.7)', borderRadius: 14, padding: '14px', border: '1px solid rgba(139,92,246,0.2)' }, glass)
+                },
+                  React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                    React.createElement("span", { className: "text-[10px] text-slate-400 font-bold uppercase tracking-wider" }, "\uD83D\uDC65 Population"),
+                    React.createElement("span", { className: "text-sm font-black text-violet-400" }, fmtNum(popSize))
+                  ),
+                  React.createElement("input", {
+                    type: "range", min: "3", max: "7", step: "0.1",
+                    value: Math.log10(popSize),
+                    onChange: function (e) { upd('popSize', Math.round(Math.pow(10, parseFloat(e.target.value)))); upd('_preset', null); },
+                    className: "w-full h-2 rounded-full appearance-none cursor-pointer",
+                    style: { background: 'linear-gradient(to right, #334155, #a78bfa)' },
+                    'aria-label': 'Population size slider'
+                  }),
+                  React.createElement("div", { className: "flex justify-between text-[9px] text-slate-500 mt-1" },
+                    React.createElement("span", null, "1K"),
+                    React.createElement("span", null, "10M")
+                  )
+                )
+              ),
+
+              // ── Right: SVG Chart + Stats ──
+              React.createElement("div", {
+                className: "lg:col-span-2 flex flex-col gap-4"
+              },
+                // SVG Chart
+                React.createElement("div", {
+                  style: Object.assign({ background: 'rgba(15,23,42,0.7)', borderRadius: 14, padding: '16px', border: '1px solid rgba(56,189,248,0.15)' }, glass)
+                },
+                  React.createElement("div", { className: "flex items-center justify-between mb-3" },
+                    React.createElement("p", { className: "text-[10px] text-slate-400 font-bold uppercase tracking-wider" }, "\uD83D\uDCC8 SIR Epidemic Curves"),
+                    React.createElement("div", { className: "flex items-center gap-3 text-[9px] font-bold" },
+                      React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#38bdf8' } }), "Susceptible"),
+                      React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#f87171' } }), "Infected"),
+                      React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#4ade80' } }), "Recovered")
+                    )
+                  ),
+                  React.createElement("svg", {
+                    viewBox: '0 0 ' + svgW + ' ' + svgH,
+                    style: { width: '100%', height: 'auto', maxHeight: 300 },
+                    onMouseMove: function (e) {
+                      var rect = e.currentTarget.getBoundingClientRect();
+                      var x = (e.clientX - rect.left) / rect.width * svgW;
+                      var dayVal = Math.max(0, Math.min(simDays, ((x - pad.left) / chartW) * simDays));
+                      upd('_hoverDay', Math.round(dayVal));
+                    },
+                    onMouseLeave: function () { upd('_hoverDay', null); },
+                    'aria-label': 'SIR epidemic curve chart'
+                  },
+                    // Background
+                    React.createElement("rect", { x: 0, y: 0, width: svgW, height: svgH, fill: '#0f172a', rx: 8 }),
+                    // Grid lines
+                    [0, 25, 50, 75, 100].map(function (v) {
+                      return React.createElement("g", { key: 'grid-' + v },
+                        React.createElement("line", {
+                          x1: pad.left, x2: svgW - pad.right,
+                          y1: yScale(v), y2: yScale(v),
+                          stroke: 'rgba(51,65,85,0.5)', strokeWidth: 0.5,
+                          strokeDasharray: v === 0 || v === 100 ? 'none' : '3,3'
+                        }),
+                        React.createElement("text", {
+                          x: pad.left - 6, y: yScale(v) + 3,
+                          fill: '#64748b', fontSize: 9, textAnchor: 'end', fontFamily: 'monospace'
+                        }, v + '%')
+                      );
+                    }),
+                    // X-axis labels
+                    [0, 50, 100, 150, 200, 250, 300].map(function (v) {
+                      return React.createElement("text", {
+                        key: 'xlab-' + v,
+                        x: xScale(v), y: svgH - 8,
+                        fill: '#64748b', fontSize: 9, textAnchor: 'middle', fontFamily: 'monospace'
+                      }, 'Day ' + v);
+                    }),
+                    // Herd immunity threshold line
+                    herdThreshold > 0 && vaccRate < herdThreshold && React.createElement("g", null,
+                      React.createElement("line", {
+                        x1: pad.left, x2: svgW - pad.right,
+                        y1: yScale(100 - herdThreshold), y2: yScale(100 - herdThreshold),
+                        stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '6,4', opacity: 0.6
+                      }),
+                      React.createElement("text", {
+                        x: svgW - pad.right - 2, y: yScale(100 - herdThreshold) - 4,
+                        fill: '#fbbf24', fontSize: 8, textAnchor: 'end', fontFamily: 'monospace', opacity: 0.8
+                      }, 'Herd immunity: ' + herdThreshold.toFixed(0) + '%')
+                    ),
+                    // ── Area fills (gradient-like with opacity) ──
+                    React.createElement("path", {
+                      d: pathS + 'L' + xScale(simDays).toFixed(1) + ',' + yScale(0).toFixed(1) + 'L' + xScale(0).toFixed(1) + ',' + yScale(0).toFixed(1) + 'Z',
+                      fill: 'rgba(56,189,248,0.08)'
+                    }),
+                    React.createElement("path", {
+                      d: pathI + 'L' + xScale(simDays).toFixed(1) + ',' + yScale(0).toFixed(1) + 'L' + xScale(0).toFixed(1) + ',' + yScale(0).toFixed(1) + 'Z',
+                      fill: 'rgba(248,113,113,0.1)'
+                    }),
+                    React.createElement("path", {
+                      d: pathR + 'L' + xScale(simDays).toFixed(1) + ',' + yScale(0).toFixed(1) + 'L' + xScale(0).toFixed(1) + ',' + yScale(0).toFixed(1) + 'Z',
+                      fill: 'rgba(74,222,128,0.06)'
+                    }),
+                    // ── Curves ──
+                    React.createElement("path", { d: pathS, fill: 'none', stroke: '#38bdf8', strokeWidth: 2.5, strokeLinejoin: 'round' }),
+                    React.createElement("path", { d: pathI, fill: 'none', stroke: '#f87171', strokeWidth: 2.5, strokeLinejoin: 'round' }),
+                    React.createElement("path", { d: pathR, fill: 'none', stroke: '#4ade80', strokeWidth: 2.5, strokeLinejoin: 'round' }),
+                    // ── Hover crosshair ──
+                    hoverPt && React.createElement("g", null,
+                      React.createElement("line", {
+                        x1: xScale(hoverPt.day), x2: xScale(hoverPt.day),
+                        y1: pad.top, y2: pad.top + chartH,
+                        stroke: 'rgba(226,232,240,0.3)', strokeWidth: 1, strokeDasharray: '3,3'
+                      }),
+                      // Dots on curves
+                      React.createElement("circle", { cx: xScale(hoverPt.day), cy: yScale(hoverPt.S), r: 4, fill: '#38bdf8', stroke: '#fff', strokeWidth: 1.5 }),
+                      React.createElement("circle", { cx: xScale(hoverPt.day), cy: yScale(hoverPt.I), r: 4, fill: '#f87171', stroke: '#fff', strokeWidth: 1.5 }),
+                      React.createElement("circle", { cx: xScale(hoverPt.day), cy: yScale(hoverPt.R), r: 4, fill: '#4ade80', stroke: '#fff', strokeWidth: 1.5 }),
+                      // Tooltip
+                      React.createElement("rect", {
+                        x: Math.min(xScale(hoverPt.day) + 10, svgW - 165),
+                        y: Math.max(pad.top, yScale(hoverPt.S) - 50),
+                        width: 150, height: 54, rx: 6,
+                        fill: 'rgba(15,23,42,0.92)', stroke: 'rgba(100,116,139,0.3)', strokeWidth: 1
+                      }),
+                      React.createElement("text", {
+                        x: Math.min(xScale(hoverPt.day) + 18, svgW - 157),
+                        y: Math.max(pad.top + 14, yScale(hoverPt.S) - 36),
+                        fill: '#e2e8f0', fontSize: 10, fontWeight: 'bold', fontFamily: 'monospace'
+                      }, 'Day ' + Math.round(hoverPt.day)),
+                      React.createElement("text", {
+                        x: Math.min(xScale(hoverPt.day) + 18, svgW - 157),
+                        y: Math.max(pad.top + 28, yScale(hoverPt.S) - 22),
+                        fill: '#38bdf8', fontSize: 9, fontFamily: 'monospace'
+                      }, 'S: ' + hoverPt.S.toFixed(1) + '% (' + fmtNum(hoverPt.rawS) + ')'),
+                      React.createElement("text", {
+                        x: Math.min(xScale(hoverPt.day) + 18, svgW - 157),
+                        y: Math.max(pad.top + 40, yScale(hoverPt.S) - 10),
+                        fill: '#f87171', fontSize: 9, fontFamily: 'monospace'
+                      }, 'I: ' + hoverPt.I.toFixed(1) + '% (' + fmtNum(hoverPt.rawI) + ')'),
+                      React.createElement("text", {
+                        x: Math.min(xScale(hoverPt.day) + 18, svgW - 157),
+                        y: Math.max(pad.top + 52, yScale(hoverPt.S) + 2),
+                        fill: '#4ade80', fontSize: 9, fontFamily: 'monospace'
+                      }, 'R: ' + hoverPt.R.toFixed(1) + '% (' + fmtNum(hoverPt.rawR) + ')')
+                    ),
+                    // X axis label
+                    React.createElement("text", {
+                      x: svgW / 2, y: svgH - 1,
+                      fill: '#94a3b8', fontSize: 10, textAnchor: 'middle', fontWeight: 'bold'
+                    }, 'Time (days)'),
+                    // Y axis label
+                    React.createElement("text", {
+                      x: 10, y: svgH / 2,
+                      fill: '#94a3b8', fontSize: 10, textAnchor: 'middle', fontWeight: 'bold',
+                      transform: 'rotate(-90, 10, ' + (svgH / 2) + ')'
+                    }, '% of Population')
+                  )
+                ),
+
+                // ── Stats Panel ──
+                React.createElement("div", {
+                  className: "grid grid-cols-2 sm:grid-cols-4 gap-2"
+                },
+                  // Peak Infected
+                  React.createElement("div", {
+                    style: Object.assign({ background: 'rgba(248,113,113,0.08)', borderRadius: 12, padding: '12px', border: '1px solid rgba(248,113,113,0.2)' }, glass)
+                  },
+                    React.createElement("p", { className: "text-[9px] text-red-400/70 font-bold uppercase tracking-wider mb-1" }, "\uD83D\uDCC8 Peak Infected"),
+                    React.createElement("p", { className: "text-lg font-black text-red-400" }, fmtNum(peakI)),
+                    React.createElement("p", { className: "text-[9px] text-slate-500" }, "Day ", peakDay)
+                  ),
+                  // Total Infected
+                  React.createElement("div", {
+                    style: Object.assign({ background: 'rgba(251,191,36,0.08)', borderRadius: 12, padding: '12px', border: '1px solid rgba(251,191,36,0.2)' }, glass)
+                  },
+                    React.createElement("p", { className: "text-[9px] text-amber-400/70 font-bold uppercase tracking-wider mb-1" }, "\uD83E\uDDA0 Total Infected"),
+                    React.createElement("p", { className: "text-lg font-black text-amber-400" }, fmtNum(totalInfected)),
+                    React.createElement("p", { className: "text-[9px] text-slate-500" }, (totalInfected / N * 100).toFixed(1), "% of pop")
+                  ),
+                  // Effective R0
+                  React.createElement("div", {
+                    style: Object.assign({ background: 'rgba(139,92,246,0.08)', borderRadius: 12, padding: '12px', border: '1px solid rgba(139,92,246,0.2)' }, glass)
+                  },
+                    React.createElement("p", { className: "text-[9px] text-violet-400/70 font-bold uppercase tracking-wider mb-1" }, "\uD83D\uDCCA Effective R\u2080"),
+                    React.createElement("p", {
+                      className: "text-lg font-black",
+                      style: { color: r0Color(effectiveR0) }
+                    }, effectiveR0.toFixed(2)),
+                    React.createElement("p", { className: "text-[9px] text-slate-500" }, effectiveR0 < 1 ? 'Epidemic controlled' : 'Still spreading')
+                  ),
+                  // Herd Immunity Threshold
+                  React.createElement("div", {
+                    style: Object.assign({ background: 'rgba(74,222,128,0.08)', borderRadius: 12, padding: '12px', border: '1px solid rgba(74,222,128,0.2)' }, glass)
+                  },
+                    React.createElement("p", { className: "text-[9px] text-emerald-400/70 font-bold uppercase tracking-wider mb-1" }, "\uD83D\uDEE1\uFE0F Herd Threshold"),
+                    React.createElement("p", { className: "text-lg font-black text-emerald-400" }, herdThreshold > 0 ? herdThreshold.toFixed(0) + '%' : 'N/A'),
+                    React.createElement("p", { className: "text-[9px] text-slate-500" }, herdThreshold > 0 ? ('1 \u2212 1/R\u2080 = ' + (herdThreshold / 100).toFixed(2)) : 'R\u2080 < 1')
+                  )
+                )
+              )
+            ),
+
+            // ── Particle Simulation Canvas ──
+            React.createElement("div", {
+              style: Object.assign({ background: 'rgba(15,23,42,0.7)', borderRadius: 14, padding: '16px', border: '1px solid rgba(139,92,246,0.15)' }, glass)
+            },
+              React.createElement("div", { className: "flex items-center justify-between mb-3" },
+                React.createElement("p", { className: "text-[10px] text-slate-400 font-bold uppercase tracking-wider" }, "\uD83E\uDDEB Particle Simulation"),
+                React.createElement("div", { className: "flex items-center gap-2" },
+                  React.createElement("button", {
+                    onClick: function () {
+                      var cv = document.getElementById('epi-particle-canvas');
+                      if (!_epiP.initialized) initParticles('epi-particle-canvas');
+                      var newState = !particlePlaying;
+                      upd('_particlePlaying', newState);
+                      if (newState) {
+                        // Start animation loop
+                        function animate() {
+                          if (!window._epiParticles || !window._epiParticles.initialized) return;
+                          stepParticles(document.getElementById('epi-particle-canvas'));
+                          window._epiParticles.animId = requestAnimationFrame(animate);
+                        }
+                        animate();
+                      } else {
+                        if (_epiP.animId) { cancelAnimationFrame(_epiP.animId); _epiP.animId = null; }
+                      }
+                    },
+                    className: "px-3 py-1 rounded-lg text-xs font-bold transition-all " +
+                      (particlePlaying
+                        ? "bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30"
+                        : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30")
+                  }, particlePlaying ? "\u23F8 Pause" : "\u25B6 Play"),
+                  React.createElement("button", {
+                    onClick: function () {
+                      if (_epiP.animId) { cancelAnimationFrame(_epiP.animId); _epiP.animId = null; }
+                      _epiP.initialized = false;
+                      upd('_particlePlaying', false);
+                      initParticles('epi-particle-canvas');
+                      stepParticles(document.getElementById('epi-particle-canvas'));
+                    },
+                    className: "px-3 py-1 rounded-lg text-xs font-bold bg-slate-700/50 text-slate-300 border border-slate-600/50 hover:bg-slate-600/50 transition-all"
+                  }, "\u21BB Reset"),
+                  React.createElement("label", { className: "flex items-center gap-1 text-[9px] text-slate-400 font-bold" },
+                    "Speed:",
+                    React.createElement("input", {
+                      type: "range", min: "0.3", max: "3", step: "0.1",
+                      value: particleSpeed,
+                      onChange: function (e) { upd('_particleSpeed', parseFloat(e.target.value)); },
+                      className: "w-16 h-1.5 rounded-full appearance-none cursor-pointer",
+                      style: { background: '#334155' },
+                      'aria-label': 'Particle speed'
+                    })
+                  )
+                )
+              ),
+              React.createElement("canvas", {
+                id: "epi-particle-canvas",
+                width: 700,
+                height: 200,
+                style: { width: '100%', height: 200, borderRadius: 10, background: '#0f172a' },
+                'data-epidemic-particles': 'true'
+              }),
+              React.createElement("div", { className: "flex items-center gap-4 mt-2 justify-center" },
+                React.createElement("span", { className: "flex items-center gap-1 text-[9px] font-bold" },
+                  React.createElement("span", { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#38bdf8' } }),
+                  React.createElement("span", { className: "text-sky-400" }, "Susceptible")
+                ),
+                React.createElement("span", { className: "flex items-center gap-1 text-[9px] font-bold" },
+                  React.createElement("span", { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#f87171' } }),
+                  React.createElement("span", { className: "text-red-400" }, "Infected")
+                ),
+                React.createElement("span", { className: "flex items-center gap-1 text-[9px] font-bold" },
+                  React.createElement("span", { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#4ade80' } }),
+                  React.createElement("span", { className: "text-emerald-400" }, "Recovered")
+                )
+              )
+            ),
+
+            // ── Educational Info Panel ──
+            React.createElement("div", {
+              className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
+            },
+              // SIR Model Equations
+              React.createElement("div", {
+                style: Object.assign({ background: 'rgba(15,23,42,0.7)', borderRadius: 14, padding: '14px', border: '1px solid rgba(56,189,248,0.15)' }, glass)
+              },
+                React.createElement("p", { className: "text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2" }, "\uD83D\uDCDD SIR Model Equations"),
+                React.createElement("div", { className: "space-y-1.5 font-mono text-xs" },
+                  React.createElement("p", { className: "text-sky-400" }, "dS/dt = \u2212\u03B2\u00B7S\u00B7I / N"),
+                  React.createElement("p", { className: "text-red-400" }, "dI/dt = \u03B2\u00B7S\u00B7I / N \u2212 \u03B3\u00B7I"),
+                  React.createElement("p", { className: "text-emerald-400" }, "dR/dt = \u03B3\u00B7I")
+                ),
+                React.createElement("div", { className: "mt-2 text-[9px] text-slate-500 space-y-0.5" },
+                  React.createElement("p", null, "\u03B2 = R\u2080 \u00D7 \u03B3 = ", beta.toFixed(4), " (transmission rate)"),
+                  React.createElement("p", null, "\u03B3 = 1/", infectPeriod, " = ", gamma.toFixed(4), " (recovery rate)"),
+                  React.createElement("p", null, "N = ", fmtNum(N), " (total population)")
+                )
+              ),
+              // Key Concepts
+              React.createElement("div", {
+                style: Object.assign({ background: 'rgba(15,23,42,0.7)', borderRadius: 14, padding: '14px', border: '1px solid rgba(74,222,128,0.15)' }, glass)
+              },
+                React.createElement("p", { className: "text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2" }, "\uD83D\uDCA1 Key Concepts"),
+                React.createElement("div", { className: "space-y-2 text-[10px] text-slate-300 leading-relaxed" },
+                  React.createElement("p", null,
+                    React.createElement("span", { className: "font-bold text-red-400" }, "R\u2080 (Basic Reproduction Number)"),
+                    " \u2014 Average number of people one infected person will spread the disease to in a fully susceptible population."
+                  ),
+                  React.createElement("p", null,
+                    React.createElement("span", { className: "font-bold text-emerald-400" }, "Herd Immunity"),
+                    " \u2014 When enough people are immune (vaccinated or recovered), the disease can\u2019t sustain transmission. Threshold = 1 \u2212 1/R\u2080."
+                  ),
+                  React.createElement("p", null,
+                    React.createElement("span", { className: "font-bold text-amber-400" }, "Flattening the Curve"),
+                    " \u2014 Reducing R\u2080 through interventions (masks, distancing) lowers the peak, buying time for healthcare systems."
+                  )
+                )
+              )
+            ),
+
+            // ── Snapshot Button ──
+            React.createElement("div", { className: "flex justify-end" },
+              React.createElement("button", {
+                onClick: function () {
+                  if (typeof setToolSnapshots === 'function') {
+                    setToolSnapshots(function (prev) { return prev.concat([{ id: 'epi-' + Date.now(), tool: 'epidemicSim', label: 'Epidemic Simulator', data: Object.assign({}, d), timestamp: Date.now() }]); });
+                    if (addToast) addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
+                  }
+                },
+                className: "px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-red-500 to-orange-600 rounded-full hover:from-red-600 hover:to-orange-700 shadow-md hover:shadow-lg transition-all"
+              }, "\uD83D\uDCF8 Snapshot")
+            )
+          );
+        })(),
 
 
 
