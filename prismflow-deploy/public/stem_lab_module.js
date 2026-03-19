@@ -495,7 +495,7 @@
         try {
           var _toSave = {};
           // @tool waterCycle
-          ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', '_tutorialSeen'].forEach(function (k) {
+          ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'geometryProver', '_tutorialSeen'].forEach(function (k) {
             if (labToolData[k]) _toSave[k] = labToolData[k];
           });
           localStorage.setItem('alloflow_stemlab_v2', JSON.stringify(_toSave));
@@ -2178,6 +2178,7 @@
               if (snap.tool === 'base10' && snap.data) setBase10Value(snap.data);
               if (snap.tool === 'coordinate' && snap.data) setGridPoints(snap.data.points || []);
               if (snap.tool === 'protractor' && snap.data) setAngleValue(snap.data.angle || 45);
+              if (snap.tool === 'geometryProver' && snap.data) { setLabToolData(function(prev) { return Object.assign({}, prev, { geometryProver: Object.assign({}, prev.geometryProver || {}, { points: snap.data.points || [], segments: snap.data.segments || [] }) }); }); }
             },
             className: "text-[10px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors"
           }, "\u21A9 Load"), /*#__PURE__*/React.createElement("button", {
@@ -2476,6 +2477,7 @@
               },
 
               { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
+              { id: 'geometryProver', icon: '\uD83D\uDCD0', label: 'Geometry Prover', desc: 'Interactive Euclidean proofs \u2014 drag points, see angle relationships update live.', color: 'violet', ready: true },
               { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true }
             ];
 
@@ -2489,6 +2491,7 @@
               { id: 'moneyMath', name: 'Money Math', subjects: ['math','economics','life-skills'], grades: [1,2,3,4,5,6,7,8], tags: ['coins','bills','change','currency','budgeting'], keywords: ['making change','counting money','currency exchange','personal finance'] },
               { id: 'coordinate', name: 'Coordinate Grid', subjects: ['math','geometry'], grades: [4,5,6,7,8], tags: ['coordinates','graphing','plotting','quadrants'], keywords: ['ordered pairs','x-axis','y-axis','coordinate plane'] },
               { id: 'protractor', name: 'Angle Explorer', subjects: ['math','geometry'], grades: [3,4,5,6,7], tags: ['angles','acute','obtuse','reflex','measurement'], keywords: ['protractor','angle measurement','classify angles','degrees'] },
+
               { id: 'geoSandbox', name: 'Geometry Sandbox', subjects: ['math','geometry','engineering'], grades: [5,6,7,8,9,10], tags: ['3D-shapes','properties','STL','construction'], keywords: ['3D geometry','shape builder','3D printing','mesh export'] },
               { id: 'multtable', name: 'Multiplication Table', subjects: ['math'], grades: [2,3,4,5,6], tags: ['multiplication','facts','skip-counting','patterns'], keywords: ['times table','multiplication facts','math fluency'] },
               { id: 'funcGrapher', name: 'Function Grapher', subjects: ['algebra','math'], grades: [7,8,9,10,11,12], tags: ['linear','quadratic','trigonometric','graphing'], keywords: ['slope','y-intercept','parabola','sine','cosine'] },
@@ -2527,6 +2530,7 @@
               { id: 'behaviorLab', name: 'Behavior Shaping Lab', subjects: ['psychology','behavioral-science'], grades: [7,8,9,10,11,12], tags: ['operant-conditioning','reinforcement','shaping','ABA'], keywords: ['behavior shaping','reinforcement','extinction','schedules of reinforcement'] },
               { id: 'economicsLab', name: 'Economics Lab', subjects: ['economics','social-studies','math'], grades: [6,7,8,9,10,11,12], tags: ['supply-demand','finance','stock-market','entrepreneurship'], keywords: ['supply and demand','personal finance','stock trading','lemonade stand'] },
               { id: 'lifeSkills', name: 'Life Skills Lab', subjects: ['life-skills','economics','health'], grades: [7,8,9,10,11,12], tags: ['taxes','data-literacy','decision-making','insurance','contracts'], keywords: ['tax calculator','paycheck','health insurance','decision matrix','data literacy'] },
+              { id: 'geometryProver', name: 'Geometry Prover', subjects: ['math','geometry'], grades: [6,7,8,9,10], tags: ['proofs','angles','triangles','parallel-lines','euclidean'], keywords: ['theorem','vertical angles','supplementary','congruent','transversal','triangle angle sum'], description: 'Interactive Euclidean proofs \u2014 drag points, see angle relationships update live' },
               { id: 'spaceColony', name: 'Kepler Colony', subjects: ['science','strategy','math'], grades: [5,6,7,8,9,10], tags: ['colonization','resource-management','turn-based','cooperative'], keywords: ['alien planet','colony survival','cooperative strategy','science unlocks'] }
             ];
             window.STEM_TOOL_REGISTRY = STEM_TOOL_REGISTRY;
@@ -9213,7 +9217,574 @@
             }, "\u2714 Check")), angleFeedback && /*#__PURE__*/React.createElement("p", {
               className: 'text-sm font-bold mt-2 ' + (angleFeedback.correct ? 'text-green-600' : 'text-red-600')
             }, angleFeedback.msg)));
-          })(), stemLabTab === 'explore' && stemLabTool === 'multtable' && (() => {
+          })(),
+          // ═══════════════════════════════════════════════════════════
+          // 📐 Geometry Prover — Interactive Euclidean Proofs
+          // ═══════════════════════════════════════════════════════════
+          stemLabTab === 'explore' && stemLabTool === 'geometryProver' && (() => {
+            // ── Geometry Prover state via labToolData ──
+            const gp = (labToolData && labToolData.geometryProver) || {};
+            const gpUpd = (key, val) => setLabToolData(prev => ({ ...prev, geometryProver: { ...(prev.geometryProver || {}), [key]: val } }));
+            const gpMode = gp.mode || 'freeform'; // freeform | triangle | parallel | bisector
+            const gpPoints = gp.points || [];
+            const gpSegments = gp.segments || [];
+            const gpDragging = gp.dragging; // index of point being dragged
+            const gpConnecting = gp.connecting; // index of first point in segment draw
+            const gpChallenge = gp.challenge || null;
+            const gpFeedback = gp.feedback || null;
+            const gpShowLabels = gp.showLabels !== false;
+
+            // ── Math helpers ──
+            const dist = (a, b) => Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
+            const angleBetween = (p1, vertex, p2) => {
+              const a1 = Math.atan2(p1.y - vertex.y, p1.x - vertex.x);
+              const a2 = Math.atan2(p2.y - vertex.y, p2.x - vertex.x);
+              let deg = (a1 - a2) * 180 / Math.PI;
+              if (deg < 0) deg += 360;
+              if (deg > 180) deg = 360 - deg;
+              return Math.round(deg * 10) / 10;
+            };
+            const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+            const labelFor = i => String.fromCharCode(65 + (i % 26));
+
+            // ── SVG constants ──
+            const W = 500, H = 420;
+            const gridStep = 25;
+
+            // ── Find all angles at each vertex ──
+            const findAnglesAtVertex = (vIdx) => {
+              const v = gpPoints[vIdx];
+              if (!v) return [];
+              const connected = gpSegments
+                .filter(s => s.from === vIdx || s.to === vIdx)
+                .map(s => s.from === vIdx ? s.to : s.from)
+                .filter((idx, i, arr) => arr.indexOf(idx) === i);
+              if (connected.length < 2) return [];
+              const angles = [];
+              for (let i = 0; i < connected.length; i++) {
+                for (let j = i + 1; j < connected.length; j++) {
+                  const a = angleBetween(gpPoints[connected[i]], v, gpPoints[connected[j]]);
+                  angles.push({ p1: connected[i], vertex: vIdx, p2: connected[j], angle: a });
+                }
+              }
+              return angles;
+            };
+
+            // ── Collect all angles ──
+            const allAngles = [];
+            for (let vi = 0; vi < gpPoints.length; vi++) {
+              findAnglesAtVertex(vi).forEach(a => allAngles.push(a));
+            }
+
+            // ── Detect theorems ──
+            const theorems = [];
+            // Triangle angle sum
+            if (gpPoints.length >= 3 && gpSegments.length >= 3) {
+              // Find 3-cycles (triangles)
+              for (let i = 0; i < gpPoints.length; i++) {
+                for (let j = i + 1; j < gpPoints.length; j++) {
+                  for (let k = j + 1; k < gpPoints.length; k++) {
+                    const hasIJ = gpSegments.some(s => (s.from === i && s.to === j) || (s.from === j && s.to === i));
+                    const hasJK = gpSegments.some(s => (s.from === j && s.to === k) || (s.from === k && s.to === j));
+                    const hasIK = gpSegments.some(s => (s.from === i && s.to === k) || (s.from === k && s.to === i));
+                    if (hasIJ && hasJK && hasIK) {
+                      const a1 = angleBetween(gpPoints[j], gpPoints[i], gpPoints[k]);
+                      const a2 = angleBetween(gpPoints[i], gpPoints[j], gpPoints[k]);
+                      const a3 = angleBetween(gpPoints[i], gpPoints[k], gpPoints[j]);
+                      const sum = a1 + a2 + a3;
+                      theorems.push({
+                        type: 'triangle_sum',
+                        label: '\u25B3 Triangle Angle Sum',
+                        desc: '\u2220' + labelFor(i) + ' + \u2220' + labelFor(j) + ' + \u2220' + labelFor(k) + ' = ' + sum.toFixed(1) + '\u00B0',
+                        valid: Math.abs(sum - 180) < 2,
+                        icon: '\u25B3',
+                        detail: a1.toFixed(1) + '\u00B0 + ' + a2.toFixed(1) + '\u00B0 + ' + a3.toFixed(1) + '\u00B0 = ' + sum.toFixed(1) + '\u00B0'
+                      });
+                      // Isosceles check
+                      const d1 = dist(gpPoints[i], gpPoints[j]);
+                      const d2 = dist(gpPoints[j], gpPoints[k]);
+                      const d3 = dist(gpPoints[i], gpPoints[k]);
+                      const tol = 5;
+                      if (Math.abs(d1 - d2) < tol || Math.abs(d2 - d3) < tol || Math.abs(d1 - d3) < tol) {
+                        let eqSides = '', eqAngles = '';
+                        if (Math.abs(d1 - d2) < tol) { eqSides = labelFor(i)+labelFor(j) + ' \u2248 ' + labelFor(j)+labelFor(k); eqAngles = '\u2220' + labelFor(k) + ' \u2248 \u2220' + labelFor(i); }
+                        else if (Math.abs(d2 - d3) < tol) { eqSides = labelFor(j)+labelFor(k) + ' \u2248 ' + labelFor(i)+labelFor(k); eqAngles = '\u2220' + labelFor(i) + ' \u2248 \u2220' + labelFor(j); }
+                        else { eqSides = labelFor(i)+labelFor(j) + ' \u2248 ' + labelFor(i)+labelFor(k); eqAngles = '\u2220' + labelFor(j) + ' \u2248 \u2220' + labelFor(k); }
+                        theorems.push({
+                          type: 'isosceles',
+                          label: '\u25B3 Isosceles Triangle',
+                          desc: eqSides + ' \u2192 ' + eqAngles,
+                          valid: true,
+                          icon: '\u25B2',
+                          detail: 'If two sides are equal, their opposite angles are equal.'
+                        });
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            // Supplementary angles (two angles sharing vertex on a line summing to ~180)
+            allAngles.forEach(a => {
+              if (Math.abs(a.angle - 180) < 3) {
+                theorems.push({
+                  type: 'straight',
+                  label: '\u2500 Straight Angle',
+                  desc: '\u2220' + labelFor(a.p1) + labelFor(a.vertex) + labelFor(a.p2) + ' = ' + a.angle.toFixed(1) + '\u00B0',
+                  valid: true,
+                  icon: '\u2500',
+                  detail: 'Points are collinear \u2014 angle = 180\u00B0'
+                });
+              }
+            });
+            // Vertical angles
+            if (gpSegments.length >= 2) {
+              for (let si = 0; si < gpSegments.length; si++) {
+                for (let sj = si + 1; sj < gpSegments.length; sj++) {
+                  const s1 = gpSegments[si], s2 = gpSegments[sj];
+                  // Check if they share a vertex
+                  let shared = -1;
+                  if (s1.from === s2.from || s1.from === s2.to) shared = s1.from;
+                  else if (s1.to === s2.from || s1.to === s2.to) shared = s1.to;
+                  if (shared >= 0) {
+                    const ends1 = s1.from === shared ? s1.to : s1.from;
+                    const ends2 = s2.from === shared ? s2.to : s2.from;
+                    const ang = angleBetween(gpPoints[ends1], gpPoints[shared], gpPoints[ends2]);
+                    const suppAng = 180 - ang;
+                    if (ang > 5 && ang < 175) {
+                      theorems.push({
+                        type: 'vertical',
+                        label: '\u2716 Vertical Angles',
+                        desc: '\u2220' + labelFor(ends1) + labelFor(shared) + labelFor(ends2) + ' = ' + ang.toFixed(1) + '\u00B0, supplement = ' + suppAng.toFixed(1) + '\u00B0',
+                        valid: true,
+                        icon: '\u2716',
+                        detail: 'Vertical angles are congruent; adjacent angles are supplementary.'
+                      });
+                    }
+                  }
+                }
+              }
+            }
+
+            // ── Mode presets ──
+            const loadTriangle = () => {
+              const pts = [
+                { x: 150, y: 340 },
+                { x: 350, y: 340 },
+                { x: 250, y: 120 }
+              ];
+              const segs = [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 2, to: 0 }];
+              gpUpd('points', pts);
+              gpUpd('segments', segs);
+              gpUpd('mode', 'triangle');
+              gpUpd('connecting', null);
+              gpUpd('feedback', null);
+              gpUpd('challenge', null);
+            };
+
+            const loadParallel = () => {
+              // Two horizontal parallel lines with a transversal
+              const pts = [
+                { x: 80, y: 140 },   // A - top-left
+                { x: 420, y: 140 },   // B - top-right
+                { x: 80, y: 320 },    // C - bottom-left
+                { x: 420, y: 320 },   // D - bottom-right
+                { x: 190, y: 50 },    // E - transversal top
+                { x: 310, y: 410 }    // F - transversal bottom
+              ];
+              const segs = [
+                { from: 0, to: 1 }, // top parallel
+                { from: 2, to: 3 }, // bottom parallel
+                { from: 4, to: 5 }  // transversal
+              ];
+              gpUpd('points', pts);
+              gpUpd('segments', segs);
+              gpUpd('mode', 'parallel');
+              gpUpd('connecting', null);
+              gpUpd('feedback', null);
+              gpUpd('challenge', null);
+            };
+
+            const loadBisector = () => {
+              const pts = [
+                { x: 250, y: 350 },  // vertex
+                { x: 400, y: 200 },  // ray 1
+                { x: 100, y: 200 },  // ray 2
+                { x: 250, y: 120 }   // bisector point
+              ];
+              const segs = [
+                { from: 0, to: 1 },
+                { from: 0, to: 2 },
+                { from: 0, to: 3 }
+              ];
+              gpUpd('points', pts);
+              gpUpd('segments', segs);
+              gpUpd('mode', 'bisector');
+              gpUpd('connecting', null);
+              gpUpd('feedback', null);
+              gpUpd('challenge', null);
+            };
+
+            // ── Challenge system ──
+            const generateChallenge = () => {
+              const types = ['triangle_sum', 'vertical', 'missing_angle'];
+              const type = types[Math.floor(Math.random() * types.length)];
+              if (type === 'triangle_sum') {
+                loadTriangle();
+                gpUpd('challenge', { type: 'triangle_sum', question: 'What do the three angles of this triangle sum to?', answer: '180' });
+              } else if (type === 'vertical') {
+                const a1 = 30 + Math.floor(Math.random() * 120);
+                gpUpd('points', [
+                  { x: 250, y: 210 },
+                  { x: 250 + 150 * Math.cos(a1 * Math.PI / 180), y: 210 - 150 * Math.sin(a1 * Math.PI / 180) },
+                  { x: 250 - 150 * Math.cos(a1 * Math.PI / 180), y: 210 + 150 * Math.sin(a1 * Math.PI / 180) },
+                  { x: 400, y: 210 },
+                  { x: 100, y: 210 }
+                ]);
+                gpUpd('segments', [{ from: 1, to: 2 }, { from: 3, to: 4 }]);
+                gpUpd('mode', 'freeform');
+                gpUpd('challenge', { type: 'vertical', question: 'If one angle is ' + a1 + '\u00B0, what is the vertical angle?', answer: String(a1) });
+              } else {
+                const a1 = 30 + Math.floor(Math.random() * 50);
+                const a2 = 40 + Math.floor(Math.random() * 60);
+                const a3 = 180 - a1 - a2;
+                loadTriangle();
+                gpUpd('challenge', { type: 'missing_angle', question: 'If two angles are ' + a1 + '\u00B0 and ' + a2 + '\u00B0, what is the third?', answer: String(a3), a1: a1, a2: a2 });
+              }
+              gpUpd('feedback', null);
+            };
+
+            const checkChallenge = () => {
+              if (!gpChallenge) return;
+              const userAns = (gp.challengeAnswer || '').trim();
+              const ok = userAns === gpChallenge.answer || Math.abs(parseFloat(userAns) - parseFloat(gpChallenge.answer)) < 1;
+              gpUpd('feedback', {
+                correct: ok,
+                msg: ok ? '\u2705 Correct! ' + gpChallenge.answer + '\u00B0' : '\u274C The answer is ' + gpChallenge.answer + '\u00B0'
+              });
+              setExploreScore(prev => ({ correct: prev.correct + (ok ? 1 : 0), total: prev.total + 1 }));
+              if (ok && typeof awardStemXP === 'function') awardStemXP('geometryProver', 5, gpChallenge.type + ' proof');
+            };
+
+            // ── Mouse handlers ──
+            const handleCanvasMouseDown = (e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const mx = e.clientX - rect.left;
+              const my = e.clientY - rect.top;
+
+              // Check if clicking on an existing point
+              for (let i = 0; i < gpPoints.length; i++) {
+                if (dist({ x: mx, y: my }, gpPoints[i]) < 12) {
+                  if (gpConnecting !== null && gpConnecting !== undefined && gpConnecting !== i) {
+                    // Complete segment
+                    const newSegs = [...gpSegments, { from: gpConnecting, to: i }];
+                    gpUpd('segments', newSegs);
+                    gpUpd('connecting', null);
+                    return;
+                  }
+                  // Start drag
+                  gpUpd('dragging', i);
+                  return;
+                }
+              }
+              // Place new point
+              const newPt = { x: Math.round(mx / gridStep) * gridStep, y: Math.round(my / gridStep) * gridStep };
+              const newPts = [...gpPoints, newPt];
+              gpUpd('points', newPts);
+              // If connecting, complete segment to new point
+              if (gpConnecting !== null && gpConnecting !== undefined) {
+                const newSegs = [...gpSegments, { from: gpConnecting, to: newPts.length - 1 }];
+                gpUpd('segments', newSegs);
+                gpUpd('connecting', null);
+              }
+            };
+
+            const handleCanvasMouseMove = (e) => {
+              if (gpDragging === null || gpDragging === undefined) return;
+              const rect = e.currentTarget.getBoundingClientRect();
+              const mx = Math.max(10, Math.min(W - 10, e.clientX - rect.left));
+              const my = Math.max(10, Math.min(H - 10, e.clientY - rect.top));
+              const updated = gpPoints.map((p, i) => i === gpDragging ? { x: mx, y: my } : p);
+              gpUpd('points', updated);
+            };
+
+            const handleCanvasMouseUp = () => {
+              if (gpDragging !== null && gpDragging !== undefined) {
+                gpUpd('dragging', null);
+              }
+            };
+
+            // ── Render ──
+            return React.createElement("div", { className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200" },
+              // ── Header ──
+              React.createElement("div", { className: "flex items-center gap-3 mb-2" },
+                React.createElement("button", {
+                  onClick: () => setStemLabTool(null),
+                  className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors",
+                  'aria-label': 'Back to tools'
+                }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("h3", { className: "text-lg font-bold text-violet-800" }, "\uD83D\uDCD0 Geometry Prover"),
+                React.createElement("div", { className: "flex items-center gap-2 ml-2" },
+                  React.createElement("div", { className: "text-xs font-bold text-emerald-600" }, exploreScore.correct, "/", exploreScore.total),
+                  React.createElement("button", {
+                    onClick: () => {
+                      const snap = { id: 'snap-' + Date.now(), tool: 'geometryProver', label: 'Proof: ' + gpPoints.length + ' pts', data: { points: [...gpPoints], segments: [...gpSegments], theorems: theorems.map(t => t.label) }, timestamp: Date.now() };
+                      setToolSnapshots(prev => [...prev, snap]);
+                      addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
+                    },
+                    className: "text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5 transition-all"
+                  }, "\uD83D\uDCF8 Snapshot")
+                )
+              ),
+
+              // ── Construction mode selector ──
+              React.createElement("div", { className: "flex gap-1.5 flex-wrap" },
+                [
+                  { id: 'freeform', label: '\u270F\uFE0F Freeform', color: 'violet' },
+                  { id: 'triangle', label: '\u25B3 Triangle', color: 'blue' },
+                  { id: 'parallel', label: '\u2225 Parallel Lines', color: 'teal' },
+                  { id: 'bisector', label: '\u2221 Bisector', color: 'amber' }
+                ].map(m => React.createElement("button", {
+                  key: m.id,
+                  onClick: () => {
+                    if (m.id === 'triangle') loadTriangle();
+                    else if (m.id === 'parallel') loadParallel();
+                    else if (m.id === 'bisector') loadBisector();
+                    else { gpUpd('mode', 'freeform'); gpUpd('points', []); gpUpd('segments', []); gpUpd('connecting', null); gpUpd('feedback', null); gpUpd('challenge', null); }
+                  },
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (gpMode === m.id ? 'bg-' + m.color + '-600 text-white shadow-md' : 'bg-' + m.color + '-50 text-' + m.color + '-700 hover:bg-' + m.color + '-100 border border-' + m.color + '-200')
+                }, m.label))
+              ),
+
+              // ── SVG Canvas ──
+              React.createElement("div", { className: "bg-white rounded-xl border-2 border-violet-200 p-2 flex justify-center" },
+                React.createElement("svg", {
+                  width: W, height: H,
+                  className: "cursor-crosshair select-none",
+                  style: { background: '#faf5ff' },
+                  onMouseDown: handleCanvasMouseDown,
+                  onMouseMove: handleCanvasMouseMove,
+                  onMouseUp: handleCanvasMouseUp,
+                  onMouseLeave: handleCanvasMouseUp
+                },
+                  // Grid
+                  Array.from({ length: Math.floor(W / gridStep) + 1 }).map((_, i) =>
+                    React.createElement('line', { key: 'gv' + i, x1: i * gridStep, y1: 0, x2: i * gridStep, y2: H, stroke: '#ede9fe', strokeWidth: 0.5 })
+                  ),
+                  Array.from({ length: Math.floor(H / gridStep) + 1 }).map((_, i) =>
+                    React.createElement('line', { key: 'gh' + i, x1: 0, y1: i * gridStep, x2: W, y2: i * gridStep, stroke: '#ede9fe', strokeWidth: 0.5 })
+                  ),
+
+                  // Segments
+                  gpSegments.map((seg, si) => {
+                    const p1 = gpPoints[seg.from], p2 = gpPoints[seg.to];
+                    if (!p1 || !p2) return null;
+                    const d = dist(p1, p2);
+                    const mid = midpoint(p1, p2);
+                    return React.createElement(React.Fragment, { key: 'seg' + si },
+                      React.createElement('line', { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, stroke: '#6d28d9', strokeWidth: 2.5, strokeLinecap: 'round' }),
+                      gpShowLabels && React.createElement('rect', { x: mid.x - 18, y: mid.y - 9, width: 36, height: 16, rx: 4, fill: '#f5f3ff', stroke: '#c4b5fd', strokeWidth: 0.5 }),
+                      gpShowLabels && React.createElement('text', { x: mid.x, y: mid.y + 4, textAnchor: 'middle', style: { fontSize: '9px', fontWeight: 'bold', fill: '#6d28d9' } }, d.toFixed(0) + 'px')
+                    );
+                  }),
+
+                  // Angle arcs
+                  allAngles.filter(a => a.angle > 2 && a.angle < 178).map((a, ai) => {
+                    const v = gpPoints[a.vertex];
+                    const p1 = gpPoints[a.p1];
+                    const p2 = gpPoints[a.p2];
+                    if (!v || !p1 || !p2) return null;
+                    const arcR = 28;
+                    const a1 = Math.atan2(p1.y - v.y, p1.x - v.x);
+                    const a2 = Math.atan2(p2.y - v.y, p2.x - v.x);
+                    // Determine sweep direction
+                    let startAngle = a1, endAngle = a2;
+                    let diff = endAngle - startAngle;
+                    if (diff < 0) diff += 2 * Math.PI;
+                    if (diff > Math.PI) { startAngle = a2; endAngle = a1; diff = 2 * Math.PI - diff; }
+                    const sx = v.x + arcR * Math.cos(startAngle);
+                    const sy = v.y + arcR * Math.sin(startAngle);
+                    const ex = v.x + arcR * Math.cos(endAngle);
+                    const ey = v.y + arcR * Math.sin(endAngle);
+                    const largeArc = diff > Math.PI ? 1 : 0;
+                    const midAngle = startAngle + diff / 2;
+                    const labelR = arcR + 14;
+                    const lx = v.x + labelR * Math.cos(midAngle);
+                    const ly = v.y + labelR * Math.sin(midAngle);
+                    const isRight = Math.abs(a.angle - 90) < 2;
+                    return React.createElement(React.Fragment, { key: 'arc' + ai },
+                      isRight ? React.createElement('rect', {
+                        x: v.x + 6 * Math.cos(midAngle) - 6, y: v.y + 6 * Math.sin(midAngle) - 6,
+                        width: 12, height: 12, fill: 'none', stroke: '#7c3aed', strokeWidth: 1.5,
+                        transform: 'rotate(' + (midAngle * 180 / Math.PI) + ' ' + (v.x + 6 * Math.cos(midAngle)) + ' ' + (v.y + 6 * Math.sin(midAngle)) + ')'
+                      }) : React.createElement('path', {
+                        d: 'M ' + sx + ' ' + sy + ' A ' + arcR + ' ' + arcR + ' 0 ' + largeArc + ' 1 ' + ex + ' ' + ey,
+                        fill: 'hsla(270,80%,60%,0.12)', stroke: '#8b5cf6', strokeWidth: 1.5
+                      }),
+                      gpShowLabels && React.createElement('text', {
+                        x: lx, y: ly + 3, textAnchor: 'middle',
+                        style: { fontSize: '10px', fontWeight: 'bold', fill: isRight ? '#059669' : '#7c3aed' }
+                      }, a.angle.toFixed(1) + '\u00B0')
+                    );
+                  }),
+
+                  // Points
+                  gpPoints.map((p, i) => React.createElement(React.Fragment, { key: 'pt' + i },
+                    React.createElement('circle', {
+                      cx: p.x, cy: p.y, r: gpDragging === i ? 9 : 7,
+                      fill: gpConnecting === i ? '#6366f1' : gpDragging === i ? '#a78bfa' : '#7c3aed',
+                      stroke: '#fff', strokeWidth: 2.5,
+                      className: 'cursor-grab',
+                      style: { transition: 'r 0.15s ease' }
+                    }),
+                    React.createElement('text', {
+                      x: p.x + 12, y: p.y - 10,
+                      style: { fontSize: '13px', fontWeight: 'bold', fill: '#4c1d95' }
+                    }, labelFor(i))
+                  )),
+
+                  // Connecting helper line
+                  gpConnecting !== null && gpConnecting !== undefined && gpPoints[gpConnecting] &&
+                    React.createElement('line', {
+                      x1: gpPoints[gpConnecting].x, y1: gpPoints[gpConnecting].y,
+                      x2: gpPoints[gpConnecting].x + 1, y2: gpPoints[gpConnecting].y + 1,
+                      stroke: '#a78bfa', strokeWidth: 1.5, strokeDasharray: '4,3', opacity: 0.6
+                    }),
+
+                  // Empty state instruction
+                  gpPoints.length === 0 && React.createElement('text', {
+                    x: W / 2, y: H / 2, textAnchor: 'middle',
+                    style: { fontSize: '14px', fill: '#a78bfa', fontWeight: '600' }
+                  }, 'Click to place points \u2022 Right-click to connect')
+                )
+              ),
+
+              // ── Action buttons ──
+              React.createElement("div", { className: "flex gap-2 flex-wrap" },
+                React.createElement("button", {
+                  onClick: () => {
+                    if (gpPoints.length >= 2) {
+                      const lastIdx = gpPoints.length - 1;
+                      // Connect last two points if no segment exists
+                      if (!gpSegments.some(s => (s.from === lastIdx - 1 && s.to === lastIdx) || (s.from === lastIdx && s.to === lastIdx - 1))) {
+                        gpUpd('segments', [...gpSegments, { from: lastIdx - 1, to: lastIdx }]);
+                      }
+                    }
+                  },
+                  disabled: gpPoints.length < 2,
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg bg-violet-100 text-violet-700 hover:bg-violet-200 border border-violet-200 transition-all disabled:opacity-40"
+                }, "\uD83D\uDD17 Connect Last Two"),
+                React.createElement("button", {
+                  onClick: () => {
+                    if (gpConnecting !== null && gpConnecting !== undefined) {
+                      gpUpd('connecting', null);
+                    } else if (gpPoints.length > 0) {
+                      gpUpd('connecting', gpPoints.length - 1);
+                    }
+                  },
+                  disabled: gpPoints.length < 1,
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (gpConnecting !== null && gpConnecting !== undefined ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200') + " disabled:opacity-40"
+                }, gpConnecting !== null && gpConnecting !== undefined ? "\u2714 Connecting from " + labelFor(gpConnecting) : "\u2197\uFE0F Draw Segment"),
+                React.createElement("button", {
+                  onClick: () => gpUpd('showLabels', !gpShowLabels),
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (gpShowLabels ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 border border-slate-200')
+                }, gpShowLabels ? "\uD83D\uDCCF Labels ON" : "\uD83D\uDCCF Labels"),
+                React.createElement("button", {
+                  onClick: () => {
+                    if (gpPoints.length > 0) {
+                      const newPts = gpPoints.slice(0, -1);
+                      const removed = gpPoints.length - 1;
+                      const newSegs = gpSegments.filter(s => s.from !== removed && s.to !== removed);
+                      gpUpd('points', newPts);
+                      gpUpd('segments', newSegs);
+                      gpUpd('connecting', null);
+                    }
+                  },
+                  disabled: gpPoints.length < 1,
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-all disabled:opacity-40"
+                }, "\u232B Undo Point"),
+                React.createElement("button", {
+                  onClick: () => { gpUpd('points', []); gpUpd('segments', []); gpUpd('connecting', null); gpUpd('feedback', null); gpUpd('challenge', null); gpUpd('challengeAnswer', ''); },
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 transition-all"
+                }, "\u21BA Clear All")
+              ),
+
+              // ── Theorem Detection Panel ──
+              theorems.length > 0 && React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-3 border border-violet-200" },
+                React.createElement("p", { className: "text-xs font-bold text-violet-700 uppercase mb-2" }, "\uD83D\uDD0D Detected Theorems"),
+                React.createElement("div", { className: "space-y-2" },
+                  theorems.map((th, ti) => React.createElement("div", {
+                    key: ti,
+                    className: "flex items-start gap-2 bg-white rounded-lg p-2.5 border " + (th.valid ? 'border-emerald-200' : 'border-amber-200')
+                  },
+                    React.createElement("span", { className: "text-lg" }, th.icon),
+                    React.createElement("div", { className: "flex-1" },
+                      React.createElement("p", { className: "text-xs font-bold " + (th.valid ? 'text-emerald-700' : 'text-amber-700') }, th.label),
+                      React.createElement("p", { className: "text-[11px] text-slate-600 font-mono" }, th.desc),
+                      React.createElement("p", { className: "text-[10px] text-slate-400 mt-0.5 italic" }, th.detail)
+                    ),
+                    React.createElement("span", { className: "text-xs font-bold " + (th.valid ? 'text-emerald-500' : 'text-amber-500') }, th.valid ? '\u2713 Verified' : '\u2248 Approx')
+                  ))
+                )
+              ),
+
+              // ── Live Measurements Stats ──
+              gpPoints.length >= 2 && React.createElement("div", { className: "grid grid-cols-3 gap-3" },
+                React.createElement("div", { className: "bg-white rounded-xl p-3 border border-violet-100 text-center" },
+                  React.createElement("div", { className: "text-xs font-bold text-violet-600 uppercase mb-1" }, "Points"),
+                  React.createElement("div", { className: "text-2xl font-bold text-violet-800" }, gpPoints.length)
+                ),
+                React.createElement("div", { className: "bg-white rounded-xl p-3 border border-violet-100 text-center" },
+                  React.createElement("div", { className: "text-xs font-bold text-violet-600 uppercase mb-1" }, "Segments"),
+                  React.createElement("div", { className: "text-2xl font-bold text-violet-800" }, gpSegments.length)
+                ),
+                React.createElement("div", { className: "bg-white rounded-xl p-3 border border-violet-100 text-center" },
+                  React.createElement("div", { className: "text-xs font-bold text-violet-600 uppercase mb-1" }, "Theorems"),
+                  React.createElement("div", { className: "text-2xl font-bold text-violet-800" }, theorems.length)
+                )
+              ),
+
+              // ── Challenge Section ──
+              React.createElement("div", { className: "flex gap-2" },
+                React.createElement("button", {
+                  onClick: generateChallenge,
+                  className: "flex-1 py-2 bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold rounded-lg text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md"
+                }, "\uD83C\uDFAF Proof Challenge"),
+                React.createElement("button", {
+                  onClick: () => { gpUpd('challenge', null); gpUpd('feedback', null); gpUpd('challengeAnswer', ''); },
+                  disabled: !gpChallenge,
+                  className: "px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all disabled:opacity-40"
+                }, "\u21BA Reset")
+              ),
+
+              // Challenge UI
+              gpChallenge && React.createElement("div", { className: "bg-violet-50 rounded-lg p-3 border border-violet-200" },
+                React.createElement("p", { className: "text-sm font-bold text-violet-800 mb-2" }, "\uD83C\uDFAF ", gpChallenge.question),
+                React.createElement("div", { className: "flex gap-2 items-center" },
+                  React.createElement("input", {
+                    type: "text",
+                    value: gp.challengeAnswer || '',
+                    onChange: e => gpUpd('challengeAnswer', e.target.value),
+                    onKeyDown: e => { if (e.key === 'Enter') checkChallenge(); },
+                    placeholder: "Your answer (\u00B0)",
+                    className: "flex-1 px-3 py-2 border-2 border-violet-300 rounded-lg text-sm font-bold text-center focus:border-violet-500 outline-none"
+                  }),
+                  React.createElement("button", {
+                    onClick: checkChallenge,
+                    className: "px-4 py-2 bg-violet-500 text-white font-bold rounded-lg text-sm hover:bg-violet-600 transition-all"
+                  }, "\u2714 Check")
+                ),
+                gpFeedback && React.createElement("p", { className: 'text-sm font-bold mt-2 ' + (gpFeedback.correct ? 'text-green-600' : 'text-red-600') }, gpFeedback.msg)
+              ),
+
+              // ── Educational footer ──
+              React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-3 border border-violet-200 text-center" },
+                React.createElement("p", { className: "text-[10px] text-violet-600" }, "\uD83E\uDDED ", React.createElement("strong", null, "Euclidean Geometry"), " \u2014 drag points to explore how angles and lengths change. Watch the theorem panel to discover geometric relationships!"),
+                React.createElement("p", { className: "text-[9px] text-slate-400 mt-1" }, "Place points \u2022 Draw segments \u2022 Drag to explore \u2022 Discover theorems")
+              )
+            );
+          })(),
+           stemLabTab === 'explore' && stemLabTool === 'multtable' && (() => {
             const maxNum = 12;
             // Speed Run timer state (stored in labToolData to avoid stale closures)
             var _mt = labToolData._multTimer || { active: false, endTime: 0, score: 0, total: 0, timeLeft: 120 };
