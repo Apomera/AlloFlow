@@ -126,28 +126,136 @@ class GPUDetector {
 
   /**
    * Detect AMD GPU on Windows
-   * Checks registry and amd gpu tool
+   * Uses multiple detection methods for robustness
    */
   detectAMDWindows() {
     try {
       if (this.platform !== 'win32') return null;
 
-      // Try AMD ROCm on Windows
-      const output = execSync('wmic path win32_videocontroller get name', {
-        timeout: 5000,
-        stdio: 'pipe',
-      }).toString();
+      // Method 1: PowerShell WMI query for comprehensive GPU info
+      try {
+        const psCmd = `Get-WmiObject Win32_PnPDevice -Filter "Name LIKE '%AMD%' OR Name LIKE '%Radeon%' OR Name LIKE '%9070%' OR Name LIKE '%9080%' OR Name LIKE '%7900%' OR Name LIKE '%RDNA%'" | Select-Object -First 1`;
+        const output = execSync(`powershell.exe -Command "${psCmd}"`, {
+          timeout: 5000,
+          stdio: 'pipe',
+        }).toString();
 
-      if (output.includes('AMD') || output.includes('Radeon')) {
-        return {
-          type: 'AMD',
-          driver: 'rocm',
-          supported: true,
-          details: 'AMD GPU detected on Windows. Using ROCm driver.',
-          dockerConfig: this.getDockerConfigAMD(),
-        };
+        if (output && output.length > 50) {
+          console.log('AMD GPU detected via PowerShell PnP:', output.substring(0, 200));
+          return {
+            type: 'AMD',
+            driver: 'rocm',
+            supported: true,
+            details: 'AMD GPU detected on Windows. Using ROCm driver.',
+            dockerConfig: this.getDockerConfigAMD(),
+          };
+        }
+      } catch (e) {
+        console.log('PowerShell PnP detection failed:', e.message);
       }
+
+      // Method 2: wmic video controller query with more fields
+      try {
+        const output = execSync('wmic path win32_videocontroller get name,description,status,deviceid /format:list', {
+          timeout: 5000,
+          stdio: 'pipe',
+        }).toString().toUpperCase();
+
+        const amdIndicators = ['AMD', 'RADEON', '9070', '9080', '7900', '7800', 'RDNA', 'NAVI'];
+        if (amdIndicators.some(indicator => output.includes(indicator))) {
+          console.log('AMD GPU detected via wmic (detailed):', output.substring(0, 300));
+          return {
+            type: 'AMD',
+            driver: 'rocm',
+            supported: true,
+            details: 'AMD GPU detected on Windows. Using ROCm driver.',
+            dockerConfig: this.getDockerConfigAMD(),
+          };
+        }
+      } catch (e) {
+        console.log('wmic detailed check failed:', e.message);
+      }
+
+      // Method 3: Device Manager registry (PCI\VEN_1002 is AMD vendor ID)
+      try {
+        const output = execSync('reg query "HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Enum\\\\PCI" /f "1002" /s', {
+          timeout: 5000,
+          stdio: 'pipe',
+        }).toString();
+
+        if (output && output.includes('1002')) {
+          console.log('AMD GPU detected via registry (vendor ID 1002)');
+          return {
+            type: 'AMD',
+            driver: 'rocm',
+            supported: true,
+            details: 'AMD GPU detected on Windows (PCI vendor ID 1002). Using ROCm driver.',
+            dockerConfig: this.getDockerConfigAMD(),
+          };
+        }
+      } catch (e) {
+        console.log('PCI vendor ID registry check failed:', e.message);
+      }
+
+      // Method 4: AMD display driver registry
+      try {
+        const output = execSync('reg query "HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Services" /s /f "amd" /d', {
+          timeout: 5000,
+          stdio: 'pipe',
+        }).toString();
+
+        if (output && (output.includes('amdkmdap') || output.includes('amdvdd'))) {
+          console.log('AMD GPU detected via driver registry');
+          return {
+            type: 'AMD',
+            driver: 'rocm',
+            supported: true,
+            details: 'AMD GPU detected via driver registry. Using ROCm driver.',
+            dockerConfig: this.getDockerConfigAMD(),
+          };
+        }
+      } catch (e) {
+        console.log('AMD driver registry check failed:', e.message);
+      }
+
+      // Method 5: Check for AMD driver files
+      try {
+        const driverPaths = [
+          'C:\\\\Program Files\\\\AMD\\\\CNext',
+          'C:\\\\Program Files (x86)\\\\AMD\\\\CNext',
+          'C:\\\\Program Files\\\\NVIDIA\\\\NVIS',
+          'C:\\\\Windows\\\\System32\\\\drivers\\\\amd*',
+        ];
+
+        for (const driverPath of driverPaths) {
+          try {
+            const output = execSync(`cmd /c dir "${driverPath}" 2>nul`, {
+              timeout: 3000,
+              stdio: 'pipe',
+            }).toString();
+            
+            if (output && output.length > 20) {
+              console.log(`AMD detected via driver path: ${driverPath}`);
+              return {
+                type: 'AMD',
+                driver: 'rocm',
+                supported: true,
+                details: 'AMD GPU detected (AMD software found). Using ROCm driver.',
+                dockerConfig: this.getDockerConfigAMD(),
+              };
+            }
+          } catch (e) {
+            // Continue to next path
+          }
+        }
+      } catch (e) {
+        console.log('Driver file detection failed:', e.message);
+      }
+
+      console.log('AMD GPU not detected via any method');
+      return null;
     } catch (e) {
+      console.log('AMD Windows detection error:', e.message);
       return null;
     }
   }

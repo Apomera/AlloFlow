@@ -38,8 +38,6 @@
 #    3. Parents launch Homeschool app and select "Full Local Mode"
 # ══════════════════════════════════════════════════════════════════
 
-version: "3.8"
-
 services:
   # ── Local Database (PocketBase — data stays at home) ───────
   pocketbase:

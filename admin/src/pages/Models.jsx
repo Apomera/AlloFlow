@@ -1,29 +1,113 @@
-import React, { useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 
 const MODEL_PACKS = [
   {
     name: 'School Pack',
     description: 'DeepSeek R1 1.5B + Phi 3.5 + Qwen 2.5 3B (~4GB)',
     models: ['deepseek-r1:1.5b', 'phi3.5', 'qwen:3b'],
-    size: '4GB',
-    downloaded: true
+    size: '4GB'
   },
   {
     name: 'Extended Pack',
-    description: 'Mistral, Llama 2, CrewAI (~8GB)',
-    models: ['mistral', 'llama2', 'crewai'],
-    size: '8GB',
-    downloaded: false
+    description: 'Mistral, Llama 2 (~8GB)',
+    models: ['mistral', 'llama2'],
+    size: '8GB'
   }
 ];
 
 export default function Models() {
   const [downloading, setDownloading] = useState(null);
+  const [lastError, setLastError] = useState(null);
+  const [installedModels, setInstalledModels] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleDownload = (packName) => {
+  useEffect(() => {
+    loadInstalledModels();
+    const interval = setInterval(loadInstalledModels, 30000); // Refresh every 30s
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadInstalledModels = async () => {
+    try {
+      const result = await window.alloAPI.listModels();
+      if (result.success) {
+        setInstalledModels(result.models || []);
+      } else {
+        console.error('Failed to load models:', result.error);
+      }
+    } catch (err) {
+      console.error('Error loading models:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isModelInstalled = (modelName) => {
+    return installedModels.some(installed => 
+      installed.toLowerCase().includes(modelName.split(':')[0].toLowerCase())
+    );
+  };
+
+  const isPackDownloaded = (packModels) => {
+    return packModels.every(model => isModelInstalled(model));
+  };
+
+  const handleDownloadPack = async (packName, models) => {
     setDownloading(packName);
-    setTimeout(() => setDownloading(null), 2000);
+    setLastError(null);
+    
+    try {
+      for (const model of models) {
+        // Skip if already installed
+        if (isModelInstalled(model)) {
+          console.log(`Model ${model} already installed, skipping`);
+          continue;
+        }
+
+        console.log(`Pulling model: ${model}`);
+        const result = await window.alloAPI.pullModel(model);
+        
+        if (!result.success) {
+          setLastError(`Failed to pull ${model}: ${result.error}`);
+          console.error(`Error pulling ${model}:`, result.error);
+          // Continue with next model instead of stopping
+          continue;
+        }
+        
+        console.log(`Successfully pulled ${model}`);
+      }
+      
+      // Reload installed models
+      await loadInstalledModels();
+      alert(`Model pack "${packName}" download complete!`);
+    } catch (err) {
+      setLastError(`Error downloading pack: ${err.message}`);
+      alert(`Error downloading pack: ${err.message}`);
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  const handleDownloadFlux = async () => {
+    setDownloading('flux');
+    setLastError(null);
+    
+    try {
+      const result = await window.alloAPI.pullModel('flux-schnell');
+      
+      if (result.success) {
+        await loadInstalledModels();
+        alert('Flux model downloaded successfully!');
+      } else {
+        setLastError(`Failed to download Flux: ${result.error}`);
+        alert(`Error downloading Flux: ${result.error}`);
+      }
+    } catch (err) {
+      setLastError(`Error downloading Flux: ${err.message}`);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setDownloading(null);
+    }
   };
 
   return (
@@ -32,6 +116,19 @@ export default function Models() {
         <h2>AI Models</h2>
         <p>Manage Ollama LLM models and Flux image generation</p>
       </div>
+
+      {lastError && (
+        <div style={{
+          padding: '1rem',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          borderLeft: '4px solid var(--color-error)',
+          borderRadius: '4px',
+          marginBottom: '1rem',
+          color: 'var(--color-error)'
+        }}>
+          ⚠ {lastError}
+        </div>
+      )}
 
       {/* LLM Models */}
       <div className="card">
@@ -55,13 +152,14 @@ export default function Models() {
                   <div key={model} style={{
                     fontSize: '0.8rem',
                     padding: '0.25rem 0.5rem',
-                    backgroundColor: 'var(--color-border)',
+                    backgroundColor: isModelInstalled(model) ? 'rgba(16, 185, 129, 0.1)' : 'var(--color-border)',
                     borderRadius: '3px',
                     display: 'inline-block',
                     marginRight: '0.5rem',
-                    marginBottom: '0.25rem'
+                    marginBottom: '0.25rem',
+                    color: isModelInstalled(model) ? 'var(--color-success)' : 'inherit'
                   }}>
-                    {model}
+                    {isModelInstalled(model) ? '✓ ' : ''}{model}
                   </div>
                 ))}
               </div>
@@ -69,7 +167,7 @@ export default function Models() {
                 <span style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
                   {pack.size}
                 </span>
-                {pack.downloaded ? (
+                {isPackDownloaded(pack.models) ? (
                   <span style={{
                     fontSize: '0.8rem',
                     color: 'var(--color-success)',
@@ -80,7 +178,7 @@ export default function Models() {
                 ) : (
                   <button 
                     className="btn btn-small btn-primary"
-                    onClick={() => handleDownload(pack.name)}
+                    onClick={() => handleDownloadPack(pack.name, pack.models)}
                     disabled={downloading === pack.name}
                   >
                     {downloading === pack.name ? '⏳ Downloading...' : '⬇ Download'}
@@ -111,52 +209,63 @@ export default function Models() {
             </p>
             <div style={{
               fontSize: '0.875rem',
-              color: 'var(--color-warning)',
+              color: isModelInstalled('flux-schnell') ? 'var(--color-success)' : 'var(--color-warning)',
               marginTop: '0.5rem'
             }}>
-              ⚠ Requires NVIDIA GPU with 8GB+ VRAM
+              {isModelInstalled('flux-schnell') 
+                ? '✓ Installed' 
+                : '⚠ Requires NVIDIA GPU with 8GB+ VRAM'}
             </div>
           </div>
-          <button className="btn btn-primary">
-            <span style={{ marginRight: '0.5rem' }}>⬇</span> Download Flux Model
-          </button>
+          {!isModelInstalled('flux-schnell') && (
+            <button 
+              className="btn btn-primary"
+              onClick={handleDownloadFlux}
+              disabled={downloading === 'flux'}
+            >
+              <span style={{ marginRight: '0.5rem' }}>⬇</span> 
+              {downloading === 'flux' ? 'Downloading Flux...' : 'Download Flux Model'}
+            </button>
+          )}
         </div>
       </div>
 
       {/* Downloaded models list */}
       <div className="card">
         <div className="card-header">
-          <h3>Installed Models</h3>
+          <h3>Installed Models ({installedModels.length})</h3>
         </div>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{
-            width: '100%',
-            fontSize: '0.95rem'
-          }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
-                <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600 }}>Model</th>
-                <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600 }}>Size</th>
-                <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600 }}>Downloaded</th>
-                <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600 }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {['deepseek-r1:1.5b', 'phi3.5', 'qwen:3b'].map(model => (
-                <tr key={model} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                  <td style={{ padding: '0.75rem' }}>{model}</td>
-                  <td style={{ padding: '0.75rem' }}>~1.5GB</td>
-                  <td style={{ padding: '0.75rem', color: 'var(--color-success)' }}>✓</td>
-                  <td style={{ padding: '0.75rem' }}>
-                    <button className="btn btn-small btn-error">
-                      <Trash2 size={14} />
-                    </button>
-                  </td>
+        {loading ? (
+          <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+            Loading models...
+          </div>
+        ) : installedModels.length === 0 ? (
+          <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+            No models installed yet. Download a pack above to get started.
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{
+              width: '100%',
+              fontSize: '0.95rem'
+            }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
+                  <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600 }}>Model</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600 }}>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {installedModels.map(model => (
+                  <tr key={model} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                    <td style={{ padding: '0.75rem' }}>{model}</td>
+                    <td style={{ padding: '0.75rem', color: 'var(--color-success)' }}>✓ Installed</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

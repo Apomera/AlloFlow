@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, AlertCircle, CheckCircle, X, RefreshCw } from 'lucide-react';
+import { Download, AlertCircle, CheckCircle, X } from 'lucide-react';
 
 export default function UpdateNotification() {
   const [updateState, setUpdateState] = useState({
@@ -81,21 +81,6 @@ export default function UpdateNotification() {
       }));
     });
   }, []);
-
-  const handleCheckForUpdates = async () => {
-    if (!window.alloAPI) return;
-    
-    setUpdateState(prev => ({ ...prev, checking: true, error: null }));
-    const result = await window.alloAPI.checkForUpdates();
-    
-    if (result.error) {
-      setUpdateState(prev => ({
-        ...prev,
-        checking: false,
-        error: result.error
-      }));
-    }
-  };
 
   const handleDownload = async () => {
     if (!window.alloAPI) return;

@@ -19,8 +19,6 @@
 #    Set FLUX_MODEL to a smaller model if VRAM is limited.
 # ══════════════════════════════════════════════════════════════════
 
-version: "3.8"
-
 services:
   # ── Local Database (PocketBase — replaces Firebase) ─────────
   pocketbase:

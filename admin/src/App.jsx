@@ -7,6 +7,7 @@ import Cluster from './pages/Cluster';
 import AIConfig from './pages/AIConfig';
 import Security from './pages/Security';
 import Deploy from './pages/Deploy';
+import Settings from './pages/Settings';
 import SetupWizard from './setup/SetupWizard';
 import UpdateNotification from './components/UpdateNotification';
 
@@ -17,6 +18,7 @@ const TABS = [
   { id: 'cluster', label: '🌐 Cluster', component: Cluster },
   { id: 'ai', label: '🧠 AI Config', component: AIConfig },
   { id: 'security', label: '🔒 Security', component: Security },
+  { id: 'settings', label: '⚙️ Settings', component: Settings },
   { id: 'deploy', label: '📦 Deploy', component: Deploy },
 ];
 
@@ -29,8 +31,17 @@ export default function App() {
     // Check if setup is complete
     const checkSetup = async () => {
       try {
-        // Check if .env has SERVER_IP configuration
-        const env = await window.alloAPI.readEnv();
+        // Check for setup-complete.lock file first (more reliable)
+        const hasSetupLock = await window.alloAPI.checkSetupComplete?.() || false;
+        
+        if (hasSetupLock) {
+          console.log('[Setup Check] Found setup-complete.lock file');
+          setSetupComplete(true);
+          return;
+        }
+        
+        // Fallback: Check if .env has SERVER_IP configuration
+        const env = await window.alloAPI.readEnv?.();
         const isSetupComplete = env?.success && env?.content && env.content.includes('SERVER_IP');
         console.log('[Setup Check]', { envSuccess: env?.success, hasServerIP: env?.content?.includes('SERVER_IP'), isSetupComplete });
         setSetupComplete(isSetupComplete);
@@ -103,7 +114,7 @@ export default function App() {
       </nav>
 
       <main className="content">
-        <ActiveComponent />
+        <ActiveComponent onNavigateTab={setActiveTab} />
       </main>
 
       <footer className="footer">

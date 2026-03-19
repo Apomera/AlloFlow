@@ -1,25 +1,115 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Copy, Eye, EyeOff } from 'lucide-react';
 
 export default function Security() {
   const [showKey, setShowKey] = useState(false);
-  const [corsOrigins, setCorsOrigins] = useState(['http://localhost', 'https://localhost']);
+  const [corsOrigins, setCorsOrigins] = useState([]);
   const [newOrigin, setNewOrigin] = useState('');
+  const [apiKeyFingerprint, setApiKeyFingerprint] = useState('Loading...');
+  const [certStatus, setCertStatus] = useState('Loading...');
+  const [certGeneratedAt, setCertGeneratedAt] = useState('');
+  const [apiKeyRotatedAt, setApiKeyRotatedAt] = useState('');
+  const [loading, setLoading] = useState({});
+  const [unsavedChanges, setUnsavedChanges] = useState(false);
+
+  // Load security config on mount
+  useEffect(() => {
+    const loadSecurityConfig = async () => {
+      if (window.alloAPI) {
+        try {
+          const result = await window.alloAPI.getSecurityConfig();
+          if (result.success && result.config) {
+            setCorsOrigins(result.config.corsOrigins || []);
+            setApiKeyFingerprint(result.config.apiKeyFingerprint || '***');
+            setCertStatus(result.config.certificateStatus || 'Self-signed');
+            setCertGeneratedAt(result.config.certificateGeneratedAt 
+              ? new Date(result.config.certificateGeneratedAt).toLocaleString() 
+              : 'Unknown');
+            setApiKeyRotatedAt(result.config.apiKeyRotatedAt
+              ? new Date(result.config.apiKeyRotatedAt).toLocaleString()
+              : 'Unknown');
+          }
+        } catch (err) {
+          console.error('Error loading security config:', err);
+        }
+      }
+    };
+
+    loadSecurityConfig();
+  }, []);
 
   const handleAddOrigin = () => {
     if (newOrigin && !corsOrigins.includes(newOrigin)) {
       setCorsOrigins([...corsOrigins, newOrigin]);
       setNewOrigin('');
+      setUnsavedChanges(true);
     }
   };
 
   const handleRemoveOrigin = (origin) => {
     setCorsOrigins(corsOrigins.filter(o => o !== origin));
+    setUnsavedChanges(true);
+  };
+
+  const handleSaveCORSConfig = async () => {
+    if (!window.alloAPI) return;
+    setLoading(prev => ({ ...prev, cors: true }));
+    try {
+      const result = await window.alloAPI.saveCORSConfig(corsOrigins);
+      if (result.success) {
+        alert('CORS configuration saved successfully');
+        setUnsavedChanges(false);
+      } else {
+        alert(`Error saving CORS config: ${result.error}`);
+      }
+    } catch (err) {
+      alert(`Failed to save CORS config: ${err.message}`);
+    } finally {
+      setLoading(prev => ({ ...prev, cors: false }));
+    }
+  };
+
+  const handleRegenerateCertificate = async () => {
+    if (!window.alloAPI) return;
+    setLoading(prev => ({ ...prev, cert: true }));
+    try {
+      const result = await window.alloAPI.regenerateCertificate();
+      if (result.success) {
+        setCertStatus(result.status || 'Self-signed (regenerated)');
+        setCertGeneratedAt(result.generatedAt || 'Just now');
+        alert('Certificate regenerated successfully');
+      } else {
+        alert(`Error regenerating certificate: ${result.error}`);
+      }
+    } catch (err) {
+      alert(`Failed to regenerate certificate: ${err.message}`);
+    } finally {
+      setLoading(prev => ({ ...prev, cert: false }));
+    }
+  };
+
+  const handleRotateAPIKey = async () => {
+    if (!window.alloAPI) return;
+    setLoading(prev => ({ ...prev, key: true }));
+    try {
+      const result = await window.alloAPI.rotateAPIKey();
+      if (result.success) {
+        setApiKeyFingerprint(result.fingerprint || '***');
+        setApiKeyRotatedAt(result.rotatedAt || 'Just now');
+        alert('API key rotated successfully. Update any registered nodes with the new key.');
+      } else {
+        alert(`Error rotating API key: ${result.error}`);
+      }
+    } catch (err) {
+      alert(`Failed to rotate API key: ${err.message}`);
+    } finally {
+      setLoading(prev => ({ ...prev, key: false }));
+    }
   };
 
   const handleCopyKey = () => {
-    navigator.clipboard.writeText('sk-1234567890abcdef1234567890abcdef');
-    alert('API key copied!');
+    navigator.clipboard.writeText(apiKeyFingerprint);
+    alert('API key fingerprint copied!');
   };
 
   return (
@@ -45,15 +135,21 @@ export default function Security() {
               textAlign: 'center'
             }}>
               <div style={{ color: 'var(--color-warning)', fontWeight: 600, marginBottom: '0.5rem' }}>
-                ⚠ Self-signed (for LAN use)
+                ⚠ {certStatus}
               </div>
               <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
-                Expires: Never (dev cert)
+                Generated: {certGeneratedAt}
               </p>
             </div>
           </div>
           <div>
-            <button className="btn btn-primary">🔄 Regenerate Certificate</button>
+            <button 
+              className="btn btn-primary"
+              onClick={handleRegenerateCertificate}
+              disabled={loading.cert}
+            >
+              {loading.cert ? '⏳ Regenerating...' : '🔄 Regenerate Certificate'}
+            </button>
           </div>
         </div>
       </div>
@@ -76,7 +172,7 @@ export default function Security() {
             fontSize: '0.85rem'
           }}>
             <span style={{ flex: 1, userSelect: 'none' }}>
-              {showKey ? 'sk-1234567890abcdef1234567890abcdef' : '••••••••••••••••••••••••••••••••'}
+              {showKey ? apiKeyFingerprint : '••••••••••••••••••••••••••••••••'}
             </span>
             <button 
               className="btn btn-small"
@@ -93,9 +189,15 @@ export default function Security() {
               <Copy size={14} />
             </button>
           </div>
-          <button className="btn btn-warning">🔄 Rotate Key</button>
+          <button 
+            className="btn btn-warning"
+            onClick={handleRotateAPIKey}
+            disabled={loading.key}
+          >
+            {loading.key ? '⏳ Rotating...' : '🔄 Rotate Key'}
+          </button>
           <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
-            Use this key when registering new nodes to the cluster
+            Last rotated: {apiKeyRotatedAt} · Use this key when registering new nodes to the cluster
           </p>
         </div>
       </div>
@@ -104,6 +206,7 @@ export default function Security() {
       <div className="card">
         <div className="card-header">
           <h3>CORS Origins (Allowed Domains)</h3>
+          {unsavedChanges && <span style={{ color: 'var(--color-warning)', fontSize: '0.875rem' }}>⚠ Unsaved changes</span>}
         </div>
         <div>
           <div style={{ marginBottom: '1rem' }}>
@@ -147,6 +250,29 @@ export default function Security() {
               ))}
             </div>
           </div>
+          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+            <button 
+              className="btn btn-success"
+              onClick={handleSaveCORSConfig}
+              disabled={!unsavedChanges || loading.cors}
+            >
+              {loading.cors ? '💾 Saving...' : '💾 Save CORS Configuration'}
+            </button>
+            {unsavedChanges && (
+              <button 
+                className="btn btn-secondary"
+                onClick={async () => {
+                  const result = await window.alloAPI.getSecurityConfig();
+                  if (result.success && result.config) {
+                    setCorsOrigins(result.config.corsOrigins || []);
+                  }
+                  setUnsavedChanges(false);
+                }}
+              >
+                ↶ Discard Changes
+              </button>
+            )}
+          </div>
           <p style={{
             fontSize: '0.875rem',
             color: 'var(--color-text-muted)',
@@ -170,17 +296,17 @@ export default function Security() {
             <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
               Admin Email
             </label>
-            <input type="email" defaultValue="admin@alloflow.local" />
+            <input type="email" defaultValue="admin@alloflow.local" readOnly />
           </div>
           <div style={{ marginTop: '0.75rem' }}>
             <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
               Admin Password
             </label>
-            <input type="password" defaultValue="••••••••" />
+            <input type="password" defaultValue="••••••••" readOnly />
           </div>
-          <button className="btn btn-warning" style={{ marginTop: '1rem' }}>
-            🔄 Reset Admin Password
-          </button>
+          <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginTop: '0.75rem' }}>
+            Note: Reset functionality is available through the PocketBase admin panel at the URL above.
+          </p>
         </div>
       </div>
     </div>

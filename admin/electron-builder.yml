@@ -32,9 +32,12 @@ files:
   - "preload.js"
   - "gpu-detection.js"
   - "src/**/*"
-  - "docker/**/*"
   - "build/**/*"
   - "node_modules/**/*"
+
+extraResources:
+  - from: "../docker"
+    to: "docker"
 
 win:
   target:
@@ -48,14 +51,11 @@ nsis:
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: "AlloFlow Admin"
-  # Uninstaller options
   allowElevation: true
-  perMachine: true  # Install for all users (requires admin)
+  perMachine: true
   # TODO: Add icon files (assets/icon.ico)
   # installerIcon: "assets/icon.ico"
   # uninstallerIcon: "assets/icon.ico"
-  # TODO: Create custom installer script (build/installer.nsh)
-  # include: "build/installer.nsh"
   # Uninstaller will appear in Windows "Programs and Features"
   displayLanguageSelector: true
   menuCategory: true

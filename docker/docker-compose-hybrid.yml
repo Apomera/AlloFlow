@@ -27,8 +27,6 @@
 #    3. Parents launch Homeschool app and select "Hybrid Mode"
 # ══════════════════════════════════════════════════════════════════
 
-version: "3.8"
-
 services:
   # ── Local Database (PocketBase — data stays at home) ───────
   pocketbase:

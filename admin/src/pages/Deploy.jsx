@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Settings, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Download, Settings, Trash2 } from 'lucide-react';
 
 export default function Deploy() {
   const [role, setRole] = useState('student');

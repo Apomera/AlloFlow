@@ -12,8 +12,22 @@ contextBridge.exposeInMainWorld('alloAPI', {
   startStack: () => ipcRenderer.invoke('docker:compose-up'),
   stopStack: () => ipcRenderer.invoke('docker:compose-down'),
   
-  // Configuration
-  readEnv: () => ipcRenderer.invoke('system:read-env'),
+  // Models
+  listModels: () => ipcRenderer.invoke('models:list'),
+  pullModel: (modelName) => ipcRenderer.invoke('models:pull', modelName),
+  
+  // System Metrics
+  getSystemMetrics: () => ipcRenderer.invoke('system:get-metrics'),
+  
+  // System Configuration
+  getSystemConfig: () => ipcRenderer.invoke('system:read-config'),
+  saveSystemConfig: (config) => ipcRenderer.invoke('system:write-config', config),
+  
+  // Security Configuration
+  getSecurityConfig: () => ipcRenderer.invoke('security:read-config'),
+  saveCORSConfig: (corsOrigins) => ipcRenderer.invoke('security:save-cors-config', corsOrigins),
+  rotateAPIKey: () => ipcRenderer.invoke('security:rotate-api-key'),
+  regenerateCertificate: () => ipcRenderer.invoke('security:regenerate-certificate'),
   writeEnv: (content) => ipcRenderer.invoke('system:write-env', content),
   
   // AI Configuration
@@ -22,6 +36,8 @@ contextBridge.exposeInMainWorld('alloAPI', {
   
   // Setup Wizard
   checkDocker: () => ipcRenderer.invoke('setup:check-docker'),
+  checkAdmin: () => ipcRenderer.invoke('setup:check-admin'),
+  checkSetupComplete: () => ipcRenderer.invoke('setup:check-complete'),
   installDocker: () => ipcRenderer.invoke('setup:install-docker'),
   detectGPU: () => ipcRenderer.invoke('setup:detect-gpu'),
   getServerIP: () => ipcRenderer.invoke('setup:get-server-ip'),

@@ -58,7 +58,6 @@ class DockerGPUSetup {
    */
   getBaseOverride() {
     return {
-      version: '3.8',
       services: {
         pocketbase: {},
         ollama: {},

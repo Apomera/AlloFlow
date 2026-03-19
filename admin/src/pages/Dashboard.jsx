@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, Server, HardDrive, Cpu, BarChart3 } from 'lucide-react';
 
-export default function Dashboard() {
+export default function Dashboard({ onNavigateTab }) {
   const [health, setHealth] = useState('loading');
   const [services, setServices] = useState([]);
-  const uptime = '12h 34m'; // Real uptime would come from Docker API
+  const [metrics, setMetrics] = useState(null);
+  const [actionLoading, setActionLoading] = useState(null);
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -16,27 +17,103 @@ export default function Dashboard() {
 
     const loadServices = async () => {
       if (window.alloAPI) {
-        const svcs = await window.alloAPI.getServices();
-        setServices(svcs || []);
+        try {
+          const result = await window.alloAPI.getServices();
+          if (result.success) {
+            setServices(result.containers || []);
+          } else {
+            setServices([]);
+          }
+        } catch (err) {
+          setServices([]);
+        }
+      }
+    };
+
+    const loadMetrics = async () => {
+      if (window.alloAPI) {
+        try {
+          const result = await window.alloAPI.getSystemMetrics();
+          if (result.success) {
+            setMetrics(result);
+          }
+        } catch (err) {
+          console.error('Error loading metrics:', err);
+        }
       }
     };
 
     checkHealth();
     loadServices();
+    loadMetrics();
 
     const interval = setInterval(() => {
       checkHealth();
       loadServices();
+      loadMetrics();
     }, 10000); // Refresh every 10s
 
     return () => clearInterval(interval);
   }, []);
+
+  const handleRestartStack = async () => {
+    if (!window.alloAPI) return;
+    setActionLoading('restart');
+    try {
+      const result = await window.alloAPI.startStack();
+      if (result.success) {
+        alert('Docker stack restarted successfully');
+        // Reload services after restart
+        const services = await window.alloAPI.getServices();
+        if (services.success) {
+          setServices(services.containers || []);
+        }
+      } else {
+        alert(`Error restarting stack: ${result.error}`);
+      }
+    } catch (err) {
+      alert(`Failed to restart stack: ${err.message}`);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleViewLogs = async () => {
+    if (!window.alloAPI) return;
+    setActionLoading('logs');
+    try {
+      const result = await window.alloAPI.getServiceLogs('docker-compose');
+      if (result.success) {
+        // Open logs in a modal or new window
+        const logsWindow = window.open('', '', 'width=800,height=600');
+        logsWindow.document.write('<pre style="font-family: monospace; white-space: pre-wrap; word-break: break-word; padding: 10px;">' + 
+          (result.logs || 'No logs available').substring(0, 10000) + '</pre>');
+      } else {
+        alert(`Error retrieving logs: ${result.error}`);
+      }
+    } catch (err) {
+      alert(`Failed to get logs: ${err.message}`);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleSystemSettings = async () => {
+    // Navigate to Settings tab
+    if (onNavigateTab) {
+      onNavigateTab('settings');
+    }
+  };
 
   const runningCount = services.filter(s => s.status === 'running').length;
   const healthColor =
     health === 'healthy' ? 'var(--color-success)' :
     health === 'offline' ? 'var(--color-error)' :
     'var(--color-warning)';
+
+  const uptime = metrics?.uptime || 'Loading...';
+  const cpuUsage = metrics?.cpuUsage || 0;
+  const diskUsage = metrics?.diskUsage || 0;
 
   return (
     <div className="page">
@@ -160,7 +237,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* System resources (placeholder for real metrics) */}
+      {/* System resources - real metrics */}
       <div className="grid grid-2">
         <div className="card">
           <div className="card-header">
@@ -174,7 +251,7 @@ export default function Dashboard() {
               fontWeight: 'bold',
               color: 'var(--color-primary)'
             }}>
-              45%
+              {cpuUsage}%
             </div>
             <div style={{
               marginTop: '1rem',
@@ -185,13 +262,13 @@ export default function Dashboard() {
             }}>
               <div style={{
                 height: '100%',
-                width: '45%',
-                backgroundColor: 'var(--color-primary)',
+                width: `${cpuUsage}%`,
+                backgroundColor: cpuUsage > 80 ? 'var(--color-error)' : 'var(--color-primary)',
                 transition: 'width 0.3s'
               }} />
             </div>
             <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
-              4 cores
+              System-wide average
             </p>
           </div>
         </div>
@@ -208,7 +285,7 @@ export default function Dashboard() {
               fontWeight: 'bold',
               color: 'var(--color-primary)'
             }}>
-              28%
+              {diskUsage}%
             </div>
             <div style={{
               marginTop: '1rem',
@@ -219,13 +296,13 @@ export default function Dashboard() {
             }}>
               <div style={{
                 height: '100%',
-                width: '28%',
-                backgroundColor: 'var(--color-primary)',
+                width: `${diskUsage}%`,
+                backgroundColor: diskUsage > 90 ? 'var(--color-error)' : 'var(--color-primary)',
                 transition: 'width 0.3s'
               }} />
             </div>
             <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
-              ~280 GB of 1 TB
+              C: drive usage
             </p>
           </div>
         </div>
@@ -238,9 +315,26 @@ export default function Dashboard() {
           </h3>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button className="btn btn-primary">Restart Docker Stack</button>
-          <button className="btn btn-warning">View Full Logs</button>
-          <button className="btn btn-primary">System Settings</button>
+          <button 
+            className="btn btn-primary"
+            onClick={handleRestartStack}
+            disabled={actionLoading === 'restart'}
+          >
+            {actionLoading === 'restart' ? '🔄 Restarting...' : '🔄 Restart Docker Stack'}
+          </button>
+          <button 
+            className="btn btn-warning"
+            onClick={handleViewLogs}
+            disabled={actionLoading === 'logs'}
+          >
+            {actionLoading === 'logs' ? '📋 Loading...' : '📋 View Full Logs'}
+          </button>
+          <button 
+            className="btn btn-primary"
+            onClick={handleSystemSettings}
+          >
+            ⚙️ System Settings
+          </button>
         </div>
       </div>
     </div>

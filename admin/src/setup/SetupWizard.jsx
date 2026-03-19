@@ -4,6 +4,7 @@ import { Check, AlertCircle, Server, Users, Download, Eye, EyeOff } from 'lucide
 export default function SetupWizard({ onComplete }) {
   const [step, setStep] = useState(1);
   const [showApiKey, setShowApiKey] = useState({});
+  const [hasAdminPrivileges, setHasAdminPrivileges] = useState(null); // null = checking, true/false = result
   const [config, setConfig] = useState({
     deploymentMode: 'new', // 'new' | 'join-cluster'
     clusterPrimaryIp: '',
@@ -28,8 +29,6 @@ export default function SetupWizard({ onComplete }) {
       image: false,
       tts: true
     },
-    adminEmail: '',
-    adminPassword: '',
     installing: false,
     installProgress: 0,
     installStep: ''
@@ -51,6 +50,18 @@ export default function SetupWizard({ onComplete }) {
     if (config.aiBackend !== 'cloud') {
       checkDocker();
     }
+    
+    // Check admin privileges on mount
+    if (window.alloAPI) {
+      window.alloAPI.checkAdmin().then(isAdmin => {
+        setHasAdminPrivileges(isAdmin);
+        console.log('Admin privileges:', isAdmin);
+      }).catch(err => {
+        console.error('Failed to check admin privileges:', err);
+        setHasAdminPrivileges(false);
+      });
+    }
+    
     // Auto-fill server IP
     if (window.alloAPI) {
       window.alloAPI.getServerIP().then(ip => {
@@ -118,7 +129,7 @@ export default function SetupWizard({ onComplete }) {
     if (window.alloAPI) {
       const result = await window.alloAPI.validateClusterToken(config.clusterPrimaryIp, config.clusterToken);
       if (result.valid) {
-        setStep(8); // Skip to final installation
+        setStep(9); // Skip to final installation
       } else {
         alert(`Cannot connect to cluster: ${result.error}`);
       }
@@ -141,6 +152,9 @@ export default function SetupWizard({ onComplete }) {
   };
 
   const getPreviousStep = () => {
+    if (step === 9) {
+      return 7; // From Ready to Install back to Model Selection
+    }
     if (step === 2 && config.aiBackend === 'cloud') {
       return 4; // From API keys back to AI mode
     }
@@ -182,7 +196,6 @@ export default function SetupWizard({ onComplete }) {
       case 5: return renderAPIKeys();
       case 6: return renderNetworkConfig();
       case 7: return renderModelSelection();
-      case 8: return renderAdminAccount();
       case 9: return renderInstallation();
       default: return null;
     }
@@ -194,6 +207,62 @@ export default function SetupWizard({ onComplete }) {
       <p style={{ marginBottom: '2rem', color: 'var(--color-text-muted)' }}>
         Let's get your AlloFlow server configured in just a few steps.
       </p>
+
+      {/* Admin status notice */}
+      {hasAdminPrivileges === null && (
+        <div style={{ 
+          marginBottom: '2rem', 
+          padding: '1rem',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderLeft: '4px solid rgb(59, 130, 246)',
+          borderRadius: '4px',
+          fontSize: '0.875rem',
+          color: 'var(--color-text)'
+        }}>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <span style={{ fontSize: '1.25rem' }}>⏳</span>
+            <div>Checking admin privileges...</div>
+          </div>
+        </div>
+      )}
+      
+      {hasAdminPrivileges === false && (
+        <div style={{ 
+          marginBottom: '2rem', 
+          padding: '1rem',
+          backgroundColor: 'rgba(251, 146, 60, 0.1)',
+          borderLeft: '4px solid rgb(251, 146, 60)',
+          borderRadius: '4px',
+          fontSize: '0.875rem',
+          color: 'var(--color-text)'
+        }}>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+            <AlertCircle size={18} style={{ marginTop: '0.125rem', flexShrink: 0, color: 'rgb(251, 146, 60)' }} />
+            <div>
+              <strong>Administrator privileges required:</strong> For complete setup including network firewall access, please close this and right-click the installer, then select "Run as administrator". This ensures students can connect to the AI server.
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {hasAdminPrivileges === true && (
+        <div style={{ 
+          marginBottom: '2rem', 
+          padding: '1rem',
+          backgroundColor: 'rgba(34, 197, 94, 0.1)',
+          borderLeft: '4px solid rgb(34, 197, 94)',
+          borderRadius: '4px',
+          fontSize: '0.875rem',
+          color: 'var(--color-text)'
+        }}>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <Check size={18} style={{ color: 'rgb(34, 197, 94)' }} />
+            <div>
+              <strong>Administrator privileges confirmed:</strong> Network firewall will be automatically configured for student network access.
+            </div>
+          </div>
+        </div>
+      )}
 
       <div style={{ display: 'grid', gap: '1rem' }}>
         <label
@@ -443,12 +512,14 @@ export default function SetupWizard({ onComplete }) {
           <>
             <Check size={48} style={{ color: 'var(--color-success)', marginBottom: '1rem' }} />
             <h3 style={{ color: 'var(--color-success)', marginBottom: '0.5rem' }}>
-              {config.gpuType === 'nvidia' ? 'NVIDIA GPU Detected' : 'AMD GPU Detected'}
+              {config.gpuType === 'nvidia' ? 'NVIDIA GPU Detected' : config.gpuType === 'amd' ? 'AMD GPU Detected' : 'GPU Detected'}
             </h3>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
               {config.gpuType === 'nvidia' 
                 ? 'Using CUDA for accelerated image generation with Flux'
-                : 'Using ROCm for accelerated image generation with Flux'}
+                : config.gpuType === 'amd'
+                ? 'Using ROCm for accelerated image generation with Flux'
+                : 'Using GPU acceleration for image generation'}
             </p>
           </>
         ) : (
@@ -832,7 +903,7 @@ export default function SetupWizard({ onComplete }) {
 
             <div style={{ padding: '1rem', backgroundColor: 'var(--color-bg)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
               <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>
-                Image Generation {config.gpuType ? `(${config.gpuType.toUpperCase()} Accelerated)` : '(CPU)'}
+                Image Generation {config.gpuType && typeof config.gpuType === 'string' ? `(${config.gpuType.toUpperCase()} Accelerated)` : '(CPU)'}
               </h4>
               <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>
                 Used for illustrations, diagrams, and visual learning
@@ -931,60 +1002,7 @@ export default function SetupWizard({ onComplete }) {
         <button className="btn" onClick={() => setStep(getPreviousStep())}>
           ← Back
         </button>
-        <button className="btn btn-primary" onClick={() => setStep(8)}>
-          Continue →
-        </button>
-      </div>
-    </div>
-  );
-
-  const renderAdminAccount = () => (
-    <div className="setup-step">
-      <h2>Create Admin Account</h2>
-      <p style={{ marginBottom: '2rem', color: 'var(--color-text-muted)' }}>
-        This account will manage the admin center and cluster.
-      </p>
-
-      <div style={{ display: 'grid', gap: '1.5rem' }}>
-        <div>
-          <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>
-            Email Address
-          </label>
-          <input
-            type="email"
-            placeholder="admin@yourschool.edu"
-            value={config.adminEmail}
-            onChange={(e) => setConfig({ ...config, adminEmail: e.target.value })}
-            style={{ width: '100%' }}
-          />
-        </div>
-
-        <div>
-          <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>
-            Password
-          </label>
-          <input
-            type="password"
-            placeholder="Minimum 8 characters"
-            value={config.adminPassword}
-            onChange={(e) => setConfig({ ...config, adminPassword: e.target.value })}
-            style={{ width: '100%' }}
-          />
-          <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
-            Use a strong password. Store it securely.
-          </p>
-        </div>
-      </div>
-
-      <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between' }}>
-        <button className="btn" onClick={() => setStep(getPreviousStep())}>
-          ← Back
-        </button>
-        <button
-          className="btn btn-primary"
-          onClick={() => setStep(9)}
-          disabled={!config.adminEmail || !config.adminPassword || config.adminPassword.length < 8}
-        >
+        <button className="btn btn-primary" onClick={() => setStep(9)}>
           Continue →
         </button>
       </div>
@@ -1089,30 +1107,6 @@ export default function SetupWizard({ onComplete }) {
 
   return (
     <div className="setup-wizard">
-      <div className="setup-progress">
-        <div className="setup-steps">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(s => {
-            const isVisible = config.deploymentMode === 'join-cluster' 
-              ? s <= 2 
-              : config.aiBackend === 'cloud'
-                ? s <= 8 && s !== 3 && s !== 7 && s !== 5 // Skip GPU, skip full models step, but keep API keys
-                : true;
-            
-            if (!isVisible) return null;
-
-            return (
-              <div
-                key={s}
-                className={`setup-step-indicator ${s < step ? 'completed' : s === step ? 'active' : ''}`}
-                title={['Mode', 'Docker/API/Cluster', 'GPU/Network', 'AI Backend', 'API Keys', 'Network', 'Models', 'Account', 'Install'][s-1]}
-              >
-                {s < step ? <Check size={16} /> : s}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
       <div className="setup-content">
         {(() => {
           const content = renderStep();
@@ -1136,40 +1130,6 @@ export default function SetupWizard({ onComplete }) {
           display: flex;
           flex-direction: column;
         }
-        .setup-progress {
-          padding: 2rem 4rem;
-          background: var(--color-surface);
-          border-bottom: 1px solid var(--color-border);
-        }
-        .setup-steps {
-          display: flex;
-          gap: 0.5rem;
-          max-width: 100%;
-          margin: 0 auto;
-          justify-content: center;
-          flex-wrap: wrap;
-        }
-        .setup-step-indicator {
-          flex: 1;
-          min-width: 40px;
-          height: 40px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 6px;
-          font-weight: 600;
-          font-size: 0.75rem;
-          background: var(--color-bg);
-          color: var(--color-text-muted);
-        }
-        .setup-step-indicator.active {
-          background: var(--color-primary);
-          color: white;
-        }
-        .setup-step-indicator.completed {
-          background: var(--color-success);
-          color: white;
-        }
         .setup-content {
           flex: 1;
           overflow-y: auto;
@@ -1178,8 +1138,12 @@ export default function SetupWizard({ onComplete }) {
           margin: 0 auto;
           width: 100%;
           box-sizing: border-box;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         .setup-step {
+          width: 100%;
           animation: slideIn 0.3s ease-out;
         }
         @keyframes slideIn {
@@ -1200,9 +1164,6 @@ export default function SetupWizard({ onComplete }) {
           to { transform: rotate(360deg); }
         }
         @media (max-width: 768px) {
-          .setup-progress {
-            padding: 1rem 2rem;
-          }
           .setup-content {
             padding: 1rem 2rem;
           }
