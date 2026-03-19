@@ -2092,7 +2092,8 @@
               { id: 'companion_planting_squash', label: 'Squash', icon: '\uD83C\uDF83' },
               { id: 'companion_planting_grow', label: 'Growing', icon: '\uD83C\uDF31' },
               { id: 'companion_planting_harvest', label: 'Harvest', icon: '\uD83C\uDF3E' },
-              { id: 'companion_planting_quiz', label: 'Garden Quiz', icon: '\uD83D\uDCDD' }
+              { id: 'companion_planting_quiz', label: 'Garden Quiz', icon: '\uD83D\uDCDD' },
+              { id: 'dataStudio', label: 'Statistics', icon: '\uD83D\uDCCA' }
             ];
             var _maxXP = _xpActivities.length * 100;
             var _totalPct = _maxXP > 0 ? Math.min(100, (totalStemXP / _maxXP) * 100) : 0;
@@ -2418,11 +2419,11 @@
                 // @tool dataPlot
                 id: 'dataPlot', icon: '📊', label: t('stem.tools_menu.data_plotter'),
                 desc: t('stem.tools_menu.plot_data_points_fit_trend'),
-                color: 'teal', ready: true
+                color: 'teal', ready: false
               },
               {
-                id: 'dataStudio', icon: '📉', label: 'Data Studio',
-                desc: 'Bar charts, pie charts, line graphs & histograms. Import CSV data or enter your own. Statistical analysis included.',
+                id: 'dataStudio', icon: '📊', label: 'Statistics Lab',
+                desc: 'Bar, pie, line, box plot, dot plot & regression charts. Import CSV, explore real datasets, and earn XP with statistical analysis.',
                 color: 'cyan', ready: true
               },
 
@@ -2521,8 +2522,8 @@
               { id: 'chemBalance', name: 'Equation Balancer', subjects: ['chemistry'], grades: [7,8,9,10,11,12], tags: ['chemical-equations','balancing','stoichiometry','reactions'], keywords: ['balance equation','chemical reaction','coefficients','stoichiometry'] },
               { id: 'punnett', name: 'Punnett Square', subjects: ['biology','genetics'], grades: [7,8,9,10,11,12], tags: ['genetics','alleles','genotype','phenotype','inheritance'], keywords: ['Punnett square','alleles','dominant','recessive','genetic cross'] },
               { id: 'physics', name: 'Physics Simulator', subjects: ['physics'], grades: [7,8,9,10,11,12], tags: ['projectile','velocity','trajectory','vectors','motion'], keywords: ['projectile motion','velocity','acceleration','trajectory','force'] },
-              { id: 'dataPlot', name: 'Data Plotter', subjects: ['math','science','statistics'], grades: [5,6,7,8,9,10], tags: ['scatter-plot','trend-line','data','regression'], keywords: ['data points','scatter plot','line of best fit','trend analysis'] },
-              { id: 'dataStudio', name: 'Data Studio', subjects: ['math','statistics'], grades: [3,4,5,6,7,8,9,10], tags: ['bar-chart','pie-chart','histogram','CSV','statistics'], keywords: ['bar graph','pie chart','data analysis','mean median mode','CSV import'] },
+              { id: 'dataPlot', name: 'Data Plotter (merged into Statistics Lab)', subjects: ['math','science','statistics'], grades: [5,6,7,8,9,10], tags: ['scatter-plot','trend-line','data','regression'], keywords: ['data points','scatter plot','line of best fit','trend analysis'], merged: 'dataStudio' },
+              { id: 'dataStudio', name: 'Statistics Lab', subjects: ['math','statistics','science'], grades: [3,4,5,6,7,8,9,10,11,12], tags: ['bar-chart','pie-chart','histogram','CSV','statistics','box-plot','dot-plot','regression','scatter-plot'], keywords: ['bar graph','pie chart','data analysis','mean median mode','CSV import','box plot','dot plot','regression','R squared','standard deviation','IQR'] },
               { id: 'codingPlayground', name: 'Coding Playground', subjects: ['computer-science','math'], grades: [3,4,5,6,7,8,9,10], tags: ['coding','blocks','turtle-graphics','loops','conditionals'], keywords: ['block coding','turtle graphics','programming','loops','sequencing'] },
               { id: 'musicSynth', name: 'Music Synthesizer', subjects: ['music','physics','arts'], grades: [3,4,5,6,7,8,9,10,11,12], tags: ['piano','beats','waveform','sound','synthesis'], keywords: ['piano keyboard','beat maker','sound waves','music theory'] },
               { id: 'artStudio', name: 'Art & Design Studio', subjects: ['art','design'], grades: [3,4,5,6,7,8,9,10,11,12], tags: ['color-theory','pixel-art','symmetry','accessibility','design'], keywords: ['color mixing','pixel art','symmetry pattern','contrast checker'] },
@@ -39407,6 +39408,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               if (rows.length > 0) {
                 updDS('dataRows', rows);
                 if (addToast) addToast('Imported ' + rows.length + ' data points!', 'success');
+                if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 5, 'CSV import');
               }
             } catch (e) {
               if (addToast) addToast('CSV import failed. Use format: Label, Value', 'warning');
@@ -39430,6 +39432,24 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
           var maxVal = Math.max.apply(null, values.concat([1]));
           var minVal = Math.min.apply(null, values.concat([0]));
           var stdDev = values.length > 0 ? Math.sqrt(values.reduce(function (s, v) { return s + Math.pow(v - mean, 2); }, 0) / values.length) : 0;
+          // Mode
+          var modeVal = '-';
+          if (values.length > 0) {
+            var freq = {}; values.forEach(function (v) { freq[v] = (freq[v] || 0) + 1; });
+            var maxFreq = Math.max.apply(null, Object.values(freq));
+            var modes = Object.keys(freq).filter(function (k) { return freq[k] === maxFreq; }).map(Number);
+            modeVal = maxFreq === 1 ? 'None' : modes.join(', ');
+          }
+          // Quartiles
+          var q1 = 0, q3 = 0, iqr = 0;
+          if (sorted.length >= 4) {
+            var lh = sorted.slice(0, Math.floor(sorted.length / 2));
+            var uh = sorted.slice(Math.ceil(sorted.length / 2));
+            q1 = lh.length % 2 ? lh[Math.floor(lh.length / 2)] : (lh[lh.length / 2 - 1] + lh[lh.length / 2]) / 2;
+            q3 = uh.length % 2 ? uh[Math.floor(uh.length / 2)] : (uh[uh.length / 2 - 1] + uh[uh.length / 2]) / 2;
+            iqr = q3 - q1;
+          } else if (sorted.length > 0) { q1 = sorted[0]; q3 = sorted[sorted.length - 1]; iqr = q3 - q1; }
+          var range = maxVal - minVal;
 
           // Linear regression for trendline
           function calcTrendline(rows) {
@@ -39458,7 +39478,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
           var _svgBg = isDark || isContrast ? '#1e293b' : '#ffffff';
 
           // SVG dimensions
-          var W = 440, H = 280, pad = 45;
+          var W = 440, H = 320, pad = 50;
+          var chartTop = 45; // extra top margin so title doesn't overlap data
 
           return React.createElement("div", { className: "p-4 space-y-4", style: { color: _text } },
             // Header
@@ -39486,7 +39507,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               CHART_TYPES.map(function (ct) {
                 return React.createElement("button", {
                   key: ct.id,
-                  onClick: function () { updDS('chartType', ct.id); },
+                  onClick: function () { if (ct.id !== chartType) { updDS('chartType', ct.id); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, ct.label + ' explored'); } },
                   className: "flex-1 p-2 rounded-xl text-center transition-all",
                   style: { background: chartType === ct.id ? _btnBg : _card, color: chartType === ct.id ? '#fff' : _text, border: '1px solid ' + (chartType === ct.id ? _accent : _border) }
                 },
@@ -39517,13 +39538,13 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                   var gap = (W - 2 * pad) / displayRows.length;
                   return React.createElement("g", null,
                     // Y axis
-                    React.createElement("line", { x1: pad, y1: 25, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                    React.createElement("line", { x1: pad, y1: chartTop, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
                     // X axis
                     React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
                     // Y labels
                     [0, 0.25, 0.5, 0.75, 1].map(function (frac, i) {
                       var yVal = Math.round(maxVal * frac);
-                      var yPos = (H - pad) - frac * (H - pad - 28);
+                      var yPos = (H - pad) - frac * (H - pad - chartTop);
                       return React.createElement("g", { key: 'yl' + i },
                         React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '9px', fill: _muted } }, yVal),
                         React.createElement("line", { x1: pad, y1: yPos, x2: W - 10, y2: yPos, stroke: _muted, strokeWidth: 0.2, strokeDasharray: "3 3" })
@@ -39531,7 +39552,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                     }),
                     // Bars
                     displayRows.map(function (row, i) {
-                      var barH = maxVal > 0 ? (row.value / maxVal) * (H - pad - 28) : 0;
+                      var barH = maxVal > 0 ? (row.value / maxVal) * (H - pad - chartTop) : 0;
                       var x = pad + i * gap + (gap - barW) / 2;
                       var y = (H - pad) - barH;
                       return React.createElement("g", { key: 'bar' + i },
@@ -39581,11 +39602,11 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 // ── Line Graph ──
                 chartType === 'line' && displayRows.length > 0 && (() => {
-                  var rangeY = maxVal - minVal || 1;
+                  var rangeYLine = maxVal - minVal || 1;
                   var gap = displayRows.length > 1 ? (W - 2 * pad) / (displayRows.length - 1) : 0;
                   var pts = displayRows.map(function (row, i) {
                     var x = displayRows.length === 1 ? W / 2 : pad + i * gap;
-                    var y = (H - pad) - ((row.value - minVal) / rangeY) * (H - pad - 28);
+                    var y = (H - pad) - ((row.value - minVal) / rangeYLine) * (H - pad - chartTop);
                     return { x: x, y: y, label: row.label, value: row.value };
                   });
                   var pathD = pts.map(function (p, i) { return (i === 0 ? 'M' : 'L') + ' ' + p.x + ' ' + p.y; }).join(' ');
@@ -39596,18 +39617,18 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                   if (showTrendline && displayRows.length >= 2) {
                     var tl = calcTrendline(displayRows);
                     if (tl) {
-                      var tlY0 = (H - pad) - ((tl.intercept - minVal) / rangeY) * (H - pad - 28);
-                      var tlY1 = (H - pad) - (((tl.slope * (displayRows.length - 1) + tl.intercept) - minVal) / rangeY) * (H - pad - 28);
+                      var tlY0 = (H - pad) - ((tl.intercept - minVal) / rangeYLine) * (H - pad - chartTop);
+                      var tlY1 = (H - pad) - (((tl.slope * (displayRows.length - 1) + tl.intercept) - minVal) / rangeYLine) * (H - pad - chartTop);
                       trendEls.push(React.createElement("line", { key: 'tl', x1: pad, y1: tlY0, x2: pad + (displayRows.length - 1) * gap, y2: tlY1, stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '6 3', opacity: 0.7 }));
                       trendEls.push(React.createElement("text", { key: 'tl-label', x: W - 12, y: tlY1 - 5, textAnchor: "end", style: { fontSize: '7px', fontWeight: 'bold', fill: '#ef4444' } }, 'y=' + tl.slope.toFixed(1) + 'x+' + tl.intercept.toFixed(1)));
                     }
                   }
                   return React.createElement("g", null,
-                    React.createElement("line", { x1: pad, y1: 25, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                    React.createElement("line", { x1: pad, y1: chartTop, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
                     React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
                     [0, 0.25, 0.5, 0.75, 1].map(function (frac, i) {
-                      var yVal = (minVal + rangeY * frac).toFixed(0);
-                      var yPos = (H - pad) - frac * (H - pad - 28);
+                      var yVal = (minVal + rangeYLine * frac).toFixed(0);
+                      var yPos = (H - pad) - frac * (H - pad - chartTop);
                       return React.createElement("text", { key: 'lyl' + i, x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '9px', fill: _muted } }, yVal);
                     }),
                     React.createElement("path", { d: areaD, fill: _accent, opacity: 0.08 }),
@@ -39750,7 +39771,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               PRESETS.map(function (p, i) {
                 return React.createElement("button", {
                   key: i,
-                  onClick: function () { updDS('dataRows', p.data); updDS('chartTitle', p.title); },
+                  onClick: function () { updDS('dataRows', p.data); updDS('chartTitle', p.title); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, 'Preset: ' + p.title); },
                   className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all hover:scale-105",
                   style: { background: _card, border: '1px solid ' + _border, color: _accent }
                 }, p.label);
