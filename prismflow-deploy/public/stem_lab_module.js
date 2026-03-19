@@ -46447,6 +46447,16 @@
           var showTemplates = d.showTemplates || false;
           var tutorialDismissed = d.tutorialDismissed || false;
 
+          // ── Robot Grid Mode State ──
+          var playgroundMode = d.playgroundMode || 'turtle';
+          var robotGrid = d.robotGrid || null;
+          var robotPos = d.robotPos || { x: 0, y: 0, dir: 0 }; // dir: 0=up,1=right,2=down,3=left
+          var robotBlocks = d.robotBlocks || [];
+          var robotRunning = d.robotRunning || false;
+          var robotChallengeIdx = d.robotChallengeIdx != null ? d.robotChallengeIdx : -1;
+          var robotCompleted = d.robotCompleted || [];
+          var robotTrail = d.robotTrail || [];
+
           // ── Block definitions ──
           var BLOCK_TYPES = [
             { type: 'forward', label: '🐢 Move Forward', param: 'distance', defaultVal: 50, unit: 'px', color: '#6366f1' },
@@ -46493,6 +46503,265 @@
             { name: 'Octagon', icon: '🛑', desc: 'A regular octagon', blocks: [{ type: 'color', color: '#dc2626' }, { type: 'width', width: 3 }, { type: 'repeat', times: 8, children: [{ type: 'forward', distance: 50 }, { type: 'right', degrees: 45 }] }] },
             { name: 'Windmill', icon: '🎡', desc: 'A spinning windmill', blocks: [{ type: 'color', color: '#7c3aed' }, { type: 'repeat', times: 12, children: [{ type: 'forward', distance: 80 }, { type: 'backward', distance: 80 }, { type: 'right', degrees: 30 }] }] }
           ];
+
+          // ══════════════════════════════════════════════════
+          // ── ROBOT GRID MODE — Blocks, Challenges, Engine ──
+          // ══════════════════════════════════════════════════
+
+          var ROBOT_BLOCKS = [
+            { type: 'moveForward', label: '🤖 Move Forward', color: '#6366f1', desc: 'Move robot one cell forward' },
+            { type: 'turnRight', label: '↩️ Turn Right', color: '#f59e0b', desc: 'Rotate 90° clockwise' },
+            { type: 'turnLeft', label: '↪️ Turn Left', color: '#f59e0b', desc: 'Rotate 90° counter-clockwise' },
+            { type: 'repeatR', label: '🔄 Repeat', color: '#8b5cf6', desc: 'Repeat commands N times', param: 'times', defaultVal: 3 },
+            { type: 'ifWall', label: '🧱 If Wall Ahead', color: '#ef4444', desc: 'Check if a wall is in front' },
+            { type: 'ifGem', label: '💎 If On Gem', color: '#22c55e', desc: 'Check if standing on a gem' },
+            { type: 'collectGem', label: '💎 Collect Gem', color: '#14b8a6', desc: 'Pick up the gem at current position' },
+            { type: 'paintCell', label: '🎨 Paint Cell', color: '#ec4899', desc: 'Paint the current cell' },
+            { type: 'whileNotGoal', label: '🏁 While Not At Goal', color: '#d946ef', desc: 'Repeat until reaching the goal' }
+          ];
+
+          // Grid generator — creates level maps
+          function generateGrid(size, walls, gems, goalPos, startPos) {
+            var grid = [];
+            for (var gy = 0; gy < size; gy++) {
+              var row = [];
+              for (var gx = 0; gx < size; gx++) {
+                row.push({ wall: false, gem: false, goal: false, painted: false, start: false });
+              }
+              grid.push(row);
+            }
+            if (walls) walls.forEach(function(w) { if (grid[w[1]] && grid[w[1]][w[0]]) grid[w[1]][w[0]].wall = true; });
+            if (gems) gems.forEach(function(g) { if (grid[g[1]] && grid[g[1]][g[0]]) grid[g[1]][g[0]].gem = true; });
+            if (goalPos && grid[goalPos[1]] && grid[goalPos[1]][goalPos[0]]) grid[goalPos[1]][goalPos[0]].goal = true;
+            if (startPos && grid[startPos[1]] && grid[startPos[1]][startPos[0]]) grid[startPos[1]][startPos[0]].start = true;
+            return grid;
+          }
+
+          var ROBOT_CHALLENGES = [
+            {
+              id: 'r1', title: '1. First Steps', desc: 'Move the robot forward 3 spaces to reach the goal!',
+              concept: 'Sequencing', hint: 'Add 3 "Move Forward" blocks.',
+              size: 5, start: [0, 2], startDir: 1, goal: [3, 2], walls: [], gems: [],
+              check: function(rp, trail, grid) { return rp.x === 3 && rp.y === 2; }
+            },
+            {
+              id: 'r2', title: '2. Turn the Corner', desc: 'Navigate around the corner to reach the goal.',
+              concept: 'Sequencing', hint: 'Move forward, then turn, then move forward again.',
+              size: 5, start: [0, 0], startDir: 2, goal: [2, 2], walls: [[1, 1], [2, 0], [2, 1]], gems: [],
+              check: function(rp) { return rp.x === 2 && rp.y === 2; }
+            },
+            {
+              id: 'r3', title: '3. Repeat Yourself', desc: 'Use a Repeat block to reach the goal efficiently.',
+              concept: 'Loops', hint: 'Use "Repeat 4" with "Move Forward" inside.',
+              size: 6, start: [0, 3], startDir: 1, goal: [4, 3], walls: [], gems: [],
+              check: function(rp) { return rp.x === 4 && rp.y === 3; }
+            },
+            {
+              id: 'r4', title: '4. Gem Collector', desc: 'Move through the path and collect all 3 gems!',
+              concept: 'Sequencing + Actions', hint: 'Move to each gem and use "Collect Gem" on each one.',
+              size: 5, start: [0, 2], startDir: 1, goal: [4, 2], walls: [[1, 1], [1, 3], [3, 1], [3, 3]], gems: [[1, 2], [2, 2], [3, 2]],
+              check: function(rp, trail, grid) {
+                var allCollected = true;
+                for (var gy = 0; gy < grid.length; gy++) for (var gx = 0; gx < grid[0].length; gx++) { if (grid[gy][gx].gem) allCollected = false; }
+                return allCollected && rp.x === 4 && rp.y === 2;
+              }
+            },
+            {
+              id: 'r5', title: '5. Wall Detective', desc: 'Use "If Wall Ahead" to navigate a maze with turns!',
+              concept: 'Conditionals', hint: 'Combine "While Not At Goal" with "If Wall Ahead" → Turn Right, else → Move Forward.',
+              size: 6, start: [0, 0], startDir: 1, goal: [5, 5],
+              walls: [[2, 0], [2, 1], [2, 2], [4, 2], [4, 3], [4, 4], [1, 4], [2, 4], [0, 2], [0, 3]],
+              gems: [],
+              check: function(rp) { return rp.x === 5 && rp.y === 5; }
+            },
+            {
+              id: 'r6', title: '6. Painter Bot', desc: 'Paint all the unpainted cells in the row!',
+              concept: 'Loops + Actions', hint: 'Use Repeat with "Move Forward" and "Paint Cell".',
+              size: 5, start: [0, 2], startDir: 1, goal: [4, 2], walls: [], gems: [],
+              check: function(rp, trail, grid) {
+                for (var px = 0; px <= 4; px++) { if (!grid[2][px].painted) return false; }
+                return rp.x === 4 && rp.y === 2;
+              }
+            },
+            {
+              id: 'r7', title: '7. Spiral Maze', desc: 'Navigate the spiral maze using loops and conditionals!',
+              concept: 'Conditionals + Loops', hint: 'Try "While Not At Goal": If Wall → Turn Right, else → Move Forward.',
+              size: 7, start: [0, 0], startDir: 2, goal: [3, 3],
+              walls: [[2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6],
+                      [0, 6], [1, 6], [2, 6], [3, 6], [4, 6], [5, 6],
+                      [0, 2], [1, 2], [2, 2], [3, 2], [4, 2], [4, 3], [4, 4],
+                      [2, 4], [1, 4], [0, 4]],
+              gems: [[3, 1], [5, 3], [3, 5], [1, 3]],
+              check: function(rp) { return rp.x === 3 && rp.y === 3; }
+            },
+            {
+              id: 'r8', title: '8. Gem Sweep', desc: 'Collect ALL gems and reach the goal! Use everything you learned.',
+              concept: 'Algorithm Design', hint: 'Plan your path carefully. You may need nested loops!',
+              size: 6, start: [0, 0], startDir: 1, goal: [5, 5],
+              walls: [[2, 1], [3, 1], [1, 3], [2, 3], [4, 3], [3, 5]],
+              gems: [[1, 0], [4, 0], [0, 2], [5, 2], [3, 4], [2, 5]],
+              check: function(rp, trail, grid) {
+                for (var gy = 0; gy < grid.length; gy++) for (var gx = 0; gx < grid[0].length; gx++) { if (grid[gy][gx].gem) return false; }
+                return rp.x === 5 && rp.y === 5;
+              }
+            }
+          ];
+
+          // ── Robot Execution Engine ──
+          function executeRobotBlocks(rBlocks, startPos, startDir, grid, cb) {
+            var pos = { x: startPos[0], y: startPos[1], dir: startDir };
+            var gridCopy = JSON.parse(JSON.stringify(grid));
+            var trail = [{ x: pos.x, y: pos.y }];
+            var maxSteps = 500;
+            var stepCount = 0;
+
+            var DX = [0, 1, 0, -1]; // up, right, down, left
+            var DY = [-1, 0, 1, 0];
+            var size = gridCopy.length;
+
+            function isWallAhead(p) {
+              var nx = p.x + DX[p.dir], ny = p.y + DY[p.dir];
+              if (nx < 0 || ny < 0 || nx >= size || ny >= size) return true;
+              return gridCopy[ny][nx].wall;
+            }
+
+            function flattenRobot(bArr) {
+              var flat = [];
+              for (var j = 0; j < bArr.length; j++) {
+                var blk = bArr[j];
+                if (blk.type === 'repeatR') {
+                  var times = blk.times || 3;
+                  for (var r = 0; r < times; r++) {
+                    flat = flat.concat(flattenRobot(blk.children || []));
+                  }
+                } else if (blk.type === 'whileNotGoal') {
+                  // Expand up to maxSteps iterations
+                  for (var w = 0; w < maxSteps; w++) {
+                    flat = flat.concat(flattenRobot(blk.children || []));
+                    flat.push({ type: '_checkGoal' });
+                  }
+                } else if (blk.type === 'ifWall') {
+                  flat.push(blk); // defer evaluation
+                } else if (blk.type === 'ifGem') {
+                  flat.push(blk);
+                } else {
+                  flat.push(blk);
+                }
+              }
+              return flat;
+            }
+
+            var flat = flattenRobot(rBlocks);
+            var idx = 0;
+            var reachedGoal = false;
+
+            function step() {
+              stepCount++;
+              if (stepCount > maxSteps || idx >= flat.length || reachedGoal) {
+                cb(pos, trail, gridCopy, reachedGoal);
+                return;
+              }
+              var b = flat[idx];
+              if (b.type === '_checkGoal') {
+                if (gridCopy[pos.y] && gridCopy[pos.y][pos.x] && gridCopy[pos.y][pos.x].goal) {
+                  reachedGoal = true;
+                  cb(pos, trail, gridCopy, true);
+                  return;
+                }
+              } else if (b.type === 'moveForward') {
+                var nx = pos.x + DX[pos.dir], ny = pos.y + DY[pos.dir];
+                if (nx >= 0 && ny >= 0 && nx < size && ny < size && !gridCopy[ny][nx].wall) {
+                  pos.x = nx; pos.y = ny;
+                  trail.push({ x: pos.x, y: pos.y });
+                }
+              } else if (b.type === 'turnRight') {
+                pos.dir = (pos.dir + 1) % 4;
+              } else if (b.type === 'turnLeft') {
+                pos.dir = (pos.dir + 3) % 4;
+              } else if (b.type === 'collectGem') {
+                if (gridCopy[pos.y] && gridCopy[pos.y][pos.x]) gridCopy[pos.y][pos.x].gem = false;
+              } else if (b.type === 'paintCell') {
+                if (gridCopy[pos.y] && gridCopy[pos.y][pos.x]) gridCopy[pos.y][pos.x].painted = true;
+              } else if (b.type === 'ifWall') {
+                var wallAhead = isWallAhead(pos);
+                var branch = wallAhead ? (b.children || []) : (b.elseChildren || []);
+                var branchFlat = flattenRobot(branch);
+                var before = flat.slice(0, idx + 1);
+                var after = flat.slice(idx + 1);
+                flat = before.concat(branchFlat).concat(after);
+              } else if (b.type === 'ifGem') {
+                var onGem = gridCopy[pos.y] && gridCopy[pos.y][pos.x] && gridCopy[pos.y][pos.x].gem;
+                var branch2 = onGem ? (b.children || []) : (b.elseChildren || []);
+                var branchFlat2 = flattenRobot(branch2);
+                var before2 = flat.slice(0, idx + 1);
+                var after2 = flat.slice(idx + 1);
+                flat = before2.concat(branchFlat2).concat(after2);
+              }
+              // Update state for animation
+              updMulti({ robotPos: Object.assign({}, pos), robotTrail: trail.slice(), robotGrid: gridCopy, robotRunning: true });
+              idx++;
+              setTimeout(step, 250);
+            }
+            step();
+          }
+
+          function handleRobotRun() {
+            var ch = robotChallengeIdx >= 0 && robotChallengeIdx < ROBOT_CHALLENGES.length ? ROBOT_CHALLENGES[robotChallengeIdx] : null;
+            if (!ch) return;
+            var grid = generateGrid(ch.size, ch.walls, ch.gems, ch.goal, ch.start);
+            updMulti({ robotGrid: grid, robotPos: { x: ch.start[0], y: ch.start[1], dir: ch.startDir }, robotTrail: [{ x: ch.start[0], y: ch.start[1] }], robotRunning: true });
+            setTimeout(function () {
+              executeRobotBlocks(robotBlocks, ch.start, ch.startDir, grid, function (finalPos, trail, finalGrid, goalReached) {
+                updMulti({ robotPos: finalPos, robotTrail: trail, robotGrid: finalGrid, robotRunning: false });
+                if (ch.check(finalPos, trail, finalGrid)) {
+                  if (robotCompleted.indexOf(ch.id) < 0) {
+                    upd('robotCompleted', robotCompleted.concat([ch.id]));
+                    awardStemXP('codingPlayground', 20, 'Robot Challenge: ' + ch.title);
+                    if (addToast) addToast('\uD83E\uDD16 Robot Challenge "' + ch.title + '" complete! +20 XP', 'success');
+                  }
+                } else {
+                  if (addToast) addToast('\uD83E\uDD14 Not quite! Check your logic and try again.', 'warning');
+                }
+              });
+            }, 100);
+          }
+
+          function addRobotBlock(type) {
+            var def = ROBOT_BLOCKS.find(function(b) { return b.type === type; });
+            var newBlock = { type: type };
+            if (type === 'repeatR') { newBlock.times = 3; newBlock.children = []; }
+            if (type === 'ifWall' || type === 'ifGem') { newBlock.children = []; newBlock.elseChildren = []; }
+            if (type === 'whileNotGoal') { newBlock.children = []; }
+            upd('robotBlocks', robotBlocks.concat([newBlock]));
+          }
+
+          function removeRobotBlock(idx) {
+            upd('robotBlocks', robotBlocks.filter(function(_, i) { return i !== idx; }));
+          }
+
+          function addRobotChildBlock(parentIdx, type, isElse) {
+            var def = ROBOT_BLOCKS.find(function(b) { return b.type === type; });
+            var newBlock = { type: type };
+            if (type === 'repeatR') { newBlock.times = 3; newBlock.children = []; }
+            if (type === 'ifWall' || type === 'ifGem') { newBlock.children = []; newBlock.elseChildren = []; }
+            if (type === 'whileNotGoal') { newBlock.children = []; }
+            var updated = robotBlocks.map(function(b, i) {
+              if (i === parentIdx && (b.type === 'repeatR' || b.type === 'ifWall' || b.type === 'ifGem' || b.type === 'whileNotGoal')) {
+                var nb = Object.assign({}, b);
+                if (isElse) { nb.elseChildren = (nb.elseChildren || []).concat([newBlock]); }
+                else { nb.children = (nb.children || []).concat([newBlock]); }
+                return nb;
+              }
+              return b;
+            });
+            upd('robotBlocks', updated);
+          }
+
+          function loadRobotChallenge(idx) {
+            var ch = ROBOT_CHALLENGES[idx];
+            var grid = generateGrid(ch.size, ch.walls, ch.gems, ch.goal, ch.start);
+            updMulti({ robotChallengeIdx: idx, robotBlocks: [], robotGrid: grid, robotPos: { x: ch.start[0], y: ch.start[1], dir: ch.startDir }, robotTrail: [{ x: ch.start[0], y: ch.start[1] }], robotRunning: false });
+          }
 
           // ── Helper: analyze drawn lines for challenge checking ──
           function getEndpoints(lines) {
@@ -47086,13 +47355,25 @@
               className: "col-span-2 flex items-center gap-3 p-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg"
             },
               React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-white/20 rounded-lg transition-all", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 20, className: "text-white" })),
-              React.createElement("span", { className: "text-2xl" }, "🖥️"),
+              React.createElement("span", { className: "text-2xl" }, playgroundMode === 'robot' ? "\uD83E\uDD16" : "\uD83D\uDDA5\uFE0F"),
               React.createElement("div", { className: "flex-1" },
                 React.createElement("h2", { className: "text-white font-bold text-lg" }, "Coding Playground"),
                 React.createElement("p", { className: "text-indigo-200 text-xs" },
-                  challengeIdx >= 0 ? '🎯 ' + CHALLENGES[challengeIdx].title + ' — ' + CHALLENGES[challengeIdx].desc :
-                    'Build programs with blocks or code. The turtle draws your creation!'
+                  playgroundMode === 'robot' ? (robotChallengeIdx >= 0 ? '\uD83C\uDFAF ' + ROBOT_CHALLENGES[robotChallengeIdx].title + ' — ' + ROBOT_CHALLENGES[robotChallengeIdx].desc : 'Program a robot to navigate mazes, collect gems, and solve puzzles!') :
+                  (challengeIdx >= 0 ? '\uD83C\uDFAF ' + CHALLENGES[challengeIdx].title + ' — ' + CHALLENGES[challengeIdx].desc :
+                    'Build programs with blocks or code. The turtle draws your creation!')
                 )
+              ),
+              // Playground Mode Tabs (Turtle / Robot)
+              React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-white/20 mr-2" },
+                [{ key: 'turtle', icon: '\uD83D\uDC22', label: 'Turtle' }, { key: 'robot', icon: '\uD83E\uDD16', label: 'Robot' }].map(function(tab) {
+                  return React.createElement("button", {
+                    key: tab.key,
+                    onClick: function() { upd('playgroundMode', tab.key); },
+                    className: "px-3 py-1.5 text-xs font-bold transition-all " +
+                      (playgroundMode === tab.key ? "bg-white text-indigo-700" : "bg-white/10 text-white/70 hover:bg-white/20")
+                  }, tab.icon + " " + tab.label);
+                })
               ),
               // Mode toggle
               React.createElement("button", {
@@ -47146,8 +47427,260 @@
               }, "❓")
             ),
 
-            // ── Left panel: Toolbox + Program ──
-            React.createElement("div", { className: "coding-toolbox flex flex-col gap-3 max-h-[600px] overflow-y-auto" },
+            // ══════════════════════════
+            // ROBOT GRID MODE UI
+            // ══════════════════════════
+            playgroundMode === 'robot' && React.createElement("div", { className: "col-span-2 grid gap-4", style: { gridTemplateColumns: "200px 1fr 260px" } },
+              // Robot Toolbox
+              React.createElement("div", { className: "coding-toolbox bg-slate-800/80 backdrop-blur-sm rounded-xl p-3 border border-slate-700/60 shadow-lg", style: { maxHeight: '500px', overflowY: 'auto' } },
+                React.createElement("h3", { className: "text-xs font-bold text-slate-400 uppercase tracking-wider mb-2" }, "\uD83E\uDD16 Robot Commands"),
+                React.createElement("div", { className: "space-y-1" },
+                  ROBOT_BLOCKS.map(function(rb) {
+                    return React.createElement("button", {
+                      key: rb.type,
+                      onClick: function() { addRobotBlock(rb.type); },
+                      disabled: robotRunning,
+                      className: "w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-bold text-white transition-all hover:scale-[1.02] hover:brightness-110",
+                      style: { backgroundColor: rb.color }
+                    },
+                      React.createElement("span", null, rb.label.split(' ')[0]),
+                      React.createElement("span", { className: "flex-1 text-left" }, rb.label.split(' ').slice(1).join(' ')),
+                      React.createElement("span", { className: "text-[9px] opacity-60" }, "+")
+                    );
+                  })
+                ),
+                React.createElement("div", { className: "mt-3 p-2 rounded-lg bg-slate-700/50 border border-slate-600/30" },
+                  React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed" },
+                    "\uD83D\uDCA1 Drag commands into your program. Use If/While blocks for smart navigation!"
+                  )
+                )
+              ),
+              // Robot Grid Canvas + Program
+              React.createElement("div", { className: "flex flex-col gap-3" },
+                // Grid Canvas
+                React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-emerald-500/30 bg-[#0f172a]", style: { height: '380px' } },
+                  React.createElement("canvas", {
+                    "data-robot-canvas": "true",
+                    style: { width: '100%', height: '100%', display: 'block' },
+                    ref: function(cvEl) {
+                      if (!cvEl) return;
+                      var ctx = cvEl.getContext('2d');
+                      var W = cvEl.offsetWidth || 500, H = cvEl.offsetHeight || 380;
+                      cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2);
+                      var grid = robotGrid;
+                      if (!grid || grid.length === 0) {
+                        ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+                        ctx.fillStyle = '#475569'; ctx.font = '14px sans-serif';
+                        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                        ctx.fillText('Select a challenge to begin!', W / 2, H / 2);
+                        return;
+                      }
+                      var size = grid.length;
+                      var cellW = Math.min(W, H) * 0.85 / size;
+                      var offX = (W - cellW * size) / 2;
+                      var offY = (H - cellW * size) / 2;
+                      ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+                      for (var gy = 0; gy < size; gy++) {
+                        for (var gx = 0; gx < size; gx++) {
+                          var cell = grid[gy][gx];
+                          var cx = offX + gx * cellW, cy = offY + gy * cellW;
+                          if (cell.wall) { ctx.fillStyle = '#374151'; }
+                          else if (cell.painted) { ctx.fillStyle = '#1e3a5f'; }
+                          else if (cell.goal) { ctx.fillStyle = '#064e3b'; }
+                          else { ctx.fillStyle = '#1e293b'; }
+                          ctx.fillRect(cx + 1, cy + 1, cellW - 2, cellW - 2);
+                          ctx.strokeStyle = '#334155'; ctx.lineWidth = 0.5;
+                          ctx.strokeRect(cx + 1, cy + 1, cellW - 2, cellW - 2);
+                          if (cell.wall) {
+                            ctx.fillStyle = '#4b5563';
+                            for (var bx = 0; bx < 3; bx++) for (var by = 0; by < 3; by++) {
+                              ctx.fillRect(cx + 3 + bx * (cellW / 3 - 1), cy + 3 + by * (cellW / 3 - 1), cellW / 3 - 3, cellW / 3 - 3);
+                            }
+                          }
+                          if (cell.gem) {
+                            ctx.fillStyle = '#34d399'; ctx.font = 'bold ' + (cellW * 0.45) + 'px sans-serif';
+                            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                            ctx.fillText('\u2666', cx + cellW / 2, cy + cellW / 2);
+                          }
+                          if (cell.goal && !cell.wall) {
+                            ctx.fillStyle = '#10b981'; ctx.font = 'bold ' + (cellW * 0.4) + 'px sans-serif';
+                            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                            ctx.fillText('\uD83C\uDFC1', cx + cellW / 2, cy + cellW / 2);
+                          }
+                        }
+                      }
+                      if (robotTrail.length > 1) {
+                        ctx.strokeStyle = 'rgba(99,102,241,0.4)'; ctx.lineWidth = 3; ctx.lineJoin = 'round';
+                        ctx.beginPath();
+                        ctx.moveTo(offX + robotTrail[0].x * cellW + cellW / 2, offY + robotTrail[0].y * cellW + cellW / 2);
+                        for (var ti = 1; ti < robotTrail.length; ti++) {
+                          ctx.lineTo(offX + robotTrail[ti].x * cellW + cellW / 2, offY + robotTrail[ti].y * cellW + cellW / 2);
+                        }
+                        ctx.stroke();
+                      }
+                      var rx = offX + robotPos.x * cellW + cellW / 2;
+                      var ry = offY + robotPos.y * cellW + cellW / 2;
+                      var rr = cellW * 0.35;
+                      ctx.fillStyle = '#6366f1'; ctx.beginPath(); ctx.arc(rx, ry, rr, 0, Math.PI * 2); ctx.fill();
+                      ctx.strokeStyle = '#818cf8'; ctx.lineWidth = 2; ctx.stroke();
+                      var arrowDirs = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+                      var ad = arrowDirs[robotPos.dir];
+                      ctx.fillStyle = '#fff'; ctx.beginPath();
+                      ctx.moveTo(rx + ad[0] * rr * 0.9, ry + ad[1] * rr * 0.9);
+                      ctx.lineTo(rx + ad[0] * rr * 0.3 - ad[1] * rr * 0.5, ry + ad[1] * rr * 0.3 + ad[0] * rr * 0.5);
+                      ctx.lineTo(rx + ad[0] * rr * 0.3 + ad[1] * rr * 0.5, ry + ad[1] * rr * 0.3 - ad[0] * rr * 0.5);
+                      ctx.fill();
+                      ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(4, 4, 140, 24);
+                      ctx.fillStyle = '#94a3b8'; ctx.font = '10px monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+                      ctx.fillText('Pos: (' + robotPos.x + ',' + robotPos.y + ')  Dir: ' + ['\u2191','\u2192','\u2193','\u2190'][robotPos.dir], 8, 8);
+                    }
+                  })
+                ),
+                // Robot Program
+                React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-slate-700/50", style: { maxHeight: '200px', overflowY: 'auto' } },
+                  React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                    React.createElement("h3", { className: "text-xs font-bold text-slate-400 uppercase tracking-wider" }, "\uD83D\uDCDD Program (" + robotBlocks.length + ")"),
+                    React.createElement("div", { className: "flex gap-1" },
+                      React.createElement("button", {
+                        onClick: function() { upd('robotBlocks', []); },
+                        disabled: robotBlocks.length === 0,
+                        className: "px-2 py-1 rounded text-[10px] font-bold text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
+                      }, "\uD83D\uDDD1 Clear"),
+                      React.createElement("button", {
+                        onClick: function() {
+                          if (robotChallengeIdx >= 0) {
+                            var ch = ROBOT_CHALLENGES[robotChallengeIdx];
+                            var grid = generateGrid(ch.size, ch.walls, ch.gems, ch.goal, ch.start);
+                            updMulti({ robotGrid: grid, robotPos: { x: ch.start[0], y: ch.start[1], dir: ch.startDir }, robotTrail: [{ x: ch.start[0], y: ch.start[1] }], robotRunning: false });
+                          }
+                        },
+                        className: "px-2 py-1 rounded text-[10px] font-bold text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
+                      }, "\u21BA Reset"),
+                      React.createElement("button", {
+                        onClick: handleRobotRun,
+                        disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
+                        className: "px-3 py-1 rounded text-[10px] font-bold transition-all " +
+                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-500 text-white hover:bg-emerald-400" : "bg-slate-700 text-slate-500 cursor-not-allowed")
+                      }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run")
+                    )
+                  ),
+                  robotBlocks.length === 0 ?
+                    React.createElement("p", { className: "text-[10px] text-slate-500 text-center py-3 italic" }, "Click commands from the toolbox to build your program!") :
+                    React.createElement("div", { className: "space-y-1" },
+                      robotBlocks.map(function(b, bi) {
+                        var bdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === b.type; });
+                        return React.createElement("div", { key: bi },
+                          React.createElement("div", { className: "flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-bold text-white", style: { backgroundColor: bdef ? bdef.color : '#64748b' } },
+                            React.createElement("span", { className: "flex-1" }, bdef ? bdef.label : b.type),
+                            b.type === 'repeatR' && React.createElement("input", {
+                              type: "number", min: 1, max: 20, value: b.times || 3,
+                              onChange: function(e) { var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { return Object.assign({}, rb2, { times: parseInt(e.target.value) || 3 }); } return rb2; }); upd('robotBlocks', updated); },
+                              className: "w-10 px-1 py-0.5 bg-white/20 rounded text-[10px] text-white text-center border-0 outline-none"
+                            }),
+                            React.createElement("button", {
+                              onClick: function() { removeRobotBlock(bi); },
+                              className: "text-white/60 hover:text-white text-xs px-1"
+                            }, "\u2715")
+                          ),
+                          (b.type === 'repeatR' || b.type === 'ifWall' || b.type === 'ifGem' || b.type === 'whileNotGoal') &&
+                            React.createElement("div", { className: "ml-4 mt-1 space-y-1 border-l-2 pl-2", style: { borderColor: bdef ? bdef.color + '60' : '#475569' } },
+                              (b.children || []).map(function(child, ci) {
+                                var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
+                                return React.createElement("div", { key: ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold text-white", style: { backgroundColor: cdef ? cdef.color : '#475569' } },
+                                  React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
+                                  React.createElement("button", { onClick: function() {
+                                    var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.children = (nb.children || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
+                                    upd('robotBlocks', updated);
+                                  }, className: "text-white/60 hover:text-white text-[10px]" }, "\u2715")
+                                );
+                              }),
+                              React.createElement("div", { className: "flex gap-1 flex-wrap" },
+                                ROBOT_BLOCKS.filter(function(rb) { return ['moveForward','turnRight','turnLeft','collectGem','paintCell'].indexOf(rb.type) >= 0; }).map(function(rb) {
+                                  return React.createElement("button", {
+                                    key: rb.type,
+                                    onClick: function() { addRobotChildBlock(bi, rb.type, false); },
+                                    className: "px-1.5 py-0.5 rounded text-[9px] font-bold text-white/80 hover:text-white transition-all",
+                                    style: { backgroundColor: rb.color + '80' }
+                                  }, "+ " + rb.label.split(' ').slice(1).join(' '));
+                                })
+                              ),
+                              (b.type === 'ifWall' || b.type === 'ifGem') && React.createElement("div", null,
+                                React.createElement("div", { className: "text-[9px] font-bold text-slate-500 mt-1" }, "ELSE:"),
+                                (b.elseChildren || []).map(function(child, ci) {
+                                  var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
+                                  return React.createElement("div", { key: 'e' + ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold text-white mt-1", style: { backgroundColor: cdef ? cdef.color : '#475569' } },
+                                    React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
+                                    React.createElement("button", { onClick: function() {
+                                      var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.elseChildren = (nb.elseChildren || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
+                                      upd('robotBlocks', updated);
+                                    }, className: "text-white/60 hover:text-white text-[10px]" }, "\u2715")
+                                  );
+                                }),
+                                React.createElement("div", { className: "flex gap-1 flex-wrap mt-1" },
+                                  ROBOT_BLOCKS.filter(function(rb) { return ['moveForward','turnRight','turnLeft','collectGem','paintCell'].indexOf(rb.type) >= 0; }).map(function(rb) {
+                                    return React.createElement("button", {
+                                      key: 'e' + rb.type,
+                                      onClick: function() { addRobotChildBlock(bi, rb.type, true); },
+                                      className: "px-1.5 py-0.5 rounded text-[9px] font-bold text-white/80 hover:text-white transition-all",
+                                      style: { backgroundColor: rb.color + '60' }
+                                    }, "+ " + rb.label.split(' ').slice(1).join(' '));
+                                  })
+                                )
+                              )
+                            )
+                        );
+                      })
+                    )
+                )
+              ),
+              // Right sidebar — Robot Challenges
+              React.createElement("div", { className: "bg-slate-800/60 backdrop-blur-sm rounded-xl p-3 border border-slate-700/50", style: { maxHeight: '600px', overflowY: 'auto' } },
+                React.createElement("h3", { className: "text-xs font-bold text-slate-400 uppercase tracking-wider mb-2" }, "\uD83C\uDFAF Robot Challenges"),
+                React.createElement("div", { className: "space-y-1.5" },
+                  ROBOT_CHALLENGES.map(function(ch, ci) {
+                    var done = robotCompleted.indexOf(ch.id) >= 0;
+                    var active = robotChallengeIdx === ci;
+                    return React.createElement("button", {
+                      key: ch.id,
+                      onClick: function() { loadRobotChallenge(ci); },
+                      className: "w-full text-left p-2.5 rounded-lg border transition-all " +
+                        (active ? "bg-indigo-900/60 border-indigo-400/50 shadow-md" : done ? "bg-emerald-900/30 border-emerald-500/30" : "bg-slate-700/30 border-slate-600/30 hover:border-slate-500/50")
+                    },
+                      React.createElement("div", { className: "flex items-center gap-2" },
+                        React.createElement("span", { className: "text-sm" }, done ? "\u2705" : active ? "\u25B6\uFE0F" : "\u2B1C"),
+                        React.createElement("div", { className: "flex-1 min-w-0" },
+                          React.createElement("div", { className: "text-xs font-bold " + (done ? "text-emerald-300" : active ? "text-indigo-300" : "text-slate-300") }, ch.title),
+                          React.createElement("div", { className: "text-[10px] " + (done ? "text-emerald-400/60" : "text-slate-500") + " truncate" }, ch.desc)
+                        ),
+                        React.createElement("span", { className: "text-[9px] px-1.5 py-0.5 rounded-full border " +
+                          (ch.concept === 'Sequencing' ? "border-blue-500/40 text-blue-400 bg-blue-500/10" :
+                           ch.concept === 'Loops' ? "border-purple-500/40 text-purple-400 bg-purple-500/10" :
+                           ch.concept.indexOf('Conditional') >= 0 ? "border-red-500/40 text-red-400 bg-red-500/10" :
+                           "border-amber-500/40 text-amber-400 bg-amber-500/10")
+                        }, ch.concept)
+                      ),
+                      active && ch.hint && React.createElement("div", { className: "mt-2 text-[10px] text-indigo-300/70 bg-indigo-900/40 rounded-lg p-2 border border-indigo-500/20" }, "\uD83D\uDCA1 " + ch.hint)
+                    );
+                  })
+                ),
+                React.createElement("div", { className: "mt-3 p-2 rounded-lg bg-slate-700/50 border border-slate-600/30" },
+                  React.createElement("div", { className: "flex items-center justify-between text-[10px]" },
+                    React.createElement("span", { className: "text-slate-400 font-bold" }, "Progress"),
+                    React.createElement("span", { className: "text-emerald-400 font-bold" }, robotCompleted.length + "/" + ROBOT_CHALLENGES.length)
+                  ),
+                  React.createElement("div", { className: "w-full h-1.5 bg-slate-700 rounded-full mt-1 overflow-hidden" },
+                    React.createElement("div", { className: "h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all", style: { width: (robotCompleted.length / ROBOT_CHALLENGES.length * 100) + '%' } })
+                  )
+                ),
+                React.createElement("div", { className: "mt-3 p-2 rounded-lg bg-gradient-to-r from-violet-900/30 to-indigo-900/30 border border-violet-500/20" },
+                  React.createElement("p", { className: "text-[9px] text-violet-300 font-bold" }, "\uD83C\uDF93 CS Standards"),
+                  React.createElement("p", { className: "text-[9px] text-violet-400/70 mt-0.5" }, "CSTA K-12 \u2022 ISTE CT \u2022 Sequencing, Loops, Conditionals, Algorithms")
+                )
+              )
+            ),
+
+            // ── Left panel: Toolbox + Program (TURTLE MODE) ──
+            playgroundMode === 'turtle' && React.createElement("div", { className: "coding-toolbox flex flex-col gap-3 max-h-[600px] overflow-y-auto" },
               // Toolbox
               React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700" },
                 React.createElement("h3", { className: "text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2" }, "🧰 Toolbox"),
@@ -47324,8 +47857,8 @@
               )
             ),
 
-            // ── Right panel: Canvas + Controls ──
-            React.createElement("div", { className: "flex flex-col gap-3" },
+            // ── Right panel: Canvas + Controls (TURTLE MODE) ──
+            playgroundMode === 'turtle' && React.createElement("div", { className: "flex flex-col gap-3" },
               // Canvas
               React.createElement("div", { className: "bg-slate-900 rounded-xl p-2 border border-slate-700 shadow-inner" },
                 React.createElement("canvas", {
@@ -47373,7 +47906,8 @@
                 }, '📊 ' + runHistory.length + ' run' + (runHistory.length !== 1 ? 's' : '') + ' • ' + drawnLines.length + ' lines drawn')
               ),
 
-              // ── Challenges panel ──
+              // ── Challenges panel (TURTLE MODE) ──
+            playgroundMode === 'turtle' &&
               React.createElement("div", { className: "coding-challenges bg-slate-800 rounded-xl p-3 border border-slate-700" },
                 React.createElement("h3", { className: "text-xs font-bold text-amber-300 uppercase tracking-wider mb-2" },
                   "🏆 Challenges (" + completed.length + "/" + CHALLENGES.length + ")"
