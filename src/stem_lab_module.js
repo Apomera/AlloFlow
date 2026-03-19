@@ -15815,6 +15815,153 @@
                       React.createElement("div", { className: "flex flex-wrap gap-1" },
                         relatedCompounds.map((comp, i) => React.createElement("button", { key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[10px] font-bold text-emerald-700 border border-emerald-200 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")"))
                       )
+                    ),
+                    // ─── BOHR MODEL ATOM VISUALIZATION ───
+                    React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200/50" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2" }, "\u269B\uFE0F Bohr Model"),
+                      React.createElement("div", { className: "flex items-start gap-3" },
+                        React.createElement("canvas", { width: 220, height: 220,
+                          className: "rounded-xl border border-slate-200 bg-slate-900 flex-shrink-0",
+                          key: 'bohr-' + d.selectedElement.n,
+                          ref: function(canvas) {
+                            if (!canvas) return;
+                            var el = d.selectedElement;
+                            var atomicNum = el.n;
+                            var massNum = Math.round(el.mass || (atomicNum * 2.15));
+                            var protons = atomicNum;
+                            var neutrons = massNum - protons;
+                            if (neutrons < 0) neutrons = 0;
+                            var electrons = atomicNum;
+                            // Shell configuration: 2, 8, 18, 32, 32, 18, 8
+                            var shellCapacity = [2, 8, 18, 32, 32, 18, 8];
+                            var shells = [];
+                            var remaining = electrons;
+                            for (var si = 0; si < shellCapacity.length && remaining > 0; si++) {
+                              var count = Math.min(remaining, shellCapacity[si]);
+                              shells.push(count);
+                              remaining -= count;
+                            }
+                            var ctx = canvas.getContext('2d');
+                            var W = canvas.width, H = canvas.height;
+                            var cx = W / 2, cy = H / 2;
+                            var maxR = Math.min(W, H) / 2 - 8;
+                            var nShells = shells.length;
+                            var nucleusR = Math.max(8, Math.min(22, 6 + protons * 0.15));
+                            var shellColors = ['#60a5fa', '#34d399', '#fbbf24', '#f87171', '#a78bfa', '#fb923c', '#38bdf8'];
+                            var angle = 0;
+                            var animId = null;
+                            function draw() {
+                              ctx.clearRect(0, 0, W, H);
+                              // Draw shells (concentric rings)
+                              for (var s = 0; s < nShells; s++) {
+                                var r = nucleusR + 12 + (maxR - nucleusR - 12) * ((s + 1) / (nShells + 0.5));
+                                ctx.beginPath();
+                                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                                ctx.strokeStyle = 'rgba(148,163,184,0.25)';
+                                ctx.lineWidth = 1;
+                                ctx.stroke();
+                              }
+                              // Draw nucleus
+                              var nucGrad = ctx.createRadialGradient(cx - 2, cy - 2, 0, cx, cy, nucleusR);
+                              nucGrad.addColorStop(0, '#ff6b6b');
+                              nucGrad.addColorStop(0.6, '#e74c3c');
+                              nucGrad.addColorStop(1, '#c0392b');
+                              ctx.beginPath();
+                              ctx.arc(cx, cy, nucleusR, 0, Math.PI * 2);
+                              ctx.fillStyle = nucGrad;
+                              ctx.fill();
+                              // Nucleus spots (protons red, neutrons blue)
+                              if (protons <= 20) {
+                                var nucItems = [];
+                                for (var pi = 0; pi < Math.min(protons, 10); pi++) nucItems.push('p');
+                                for (var ni = 0; ni < Math.min(neutrons, 10); ni++) nucItems.push('n');
+                                var golden = 2.399963;
+                                for (var qi = 0; qi < nucItems.length; qi++) {
+                                  var fr = Math.sqrt(qi / nucItems.length) * (nucleusR * 0.7);
+                                  var fa = qi * golden;
+                                  var fx = cx + Math.cos(fa) * fr;
+                                  var fy = cy + Math.sin(fa) * fr;
+                                  ctx.beginPath();
+                                  ctx.arc(fx, fy, Math.max(1.5, nucleusR * 0.15), 0, Math.PI * 2);
+                                  ctx.fillStyle = nucItems[qi] === 'p' ? '#ffaaaa' : '#aaaaff';
+                                  ctx.fill();
+                                }
+                              }
+                              // Nucleus label
+                              ctx.fillStyle = '#ffffff';
+                              ctx.font = 'bold ' + Math.max(7, Math.min(11, nucleusR * 0.7)) + 'px sans-serif';
+                              ctx.textAlign = 'center';
+                              ctx.textBaseline = 'middle';
+                              if (protons <= 4) {
+                                ctx.fillText(protons + 'p', cx, cy - 2);
+                                ctx.fillText(neutrons + 'n', cx, cy + 7);
+                              }
+                              // Draw electrons orbiting
+                              for (var s2 = 0; s2 < nShells; s2++) {
+                                var r2 = nucleusR + 12 + (maxR - nucleusR - 12) * ((s2 + 1) / (nShells + 0.5));
+                                var eCount = shells[s2];
+                                var speed = (0.3 + s2 * 0.15) * (s2 % 2 === 0 ? 1 : -1);
+                                var eColor = shellColors[s2 % shellColors.length];
+                                for (var ei = 0; ei < eCount; ei++) {
+                                  var eAngle = angle * speed + (ei / eCount) * Math.PI * 2;
+                                  var ex = cx + Math.cos(eAngle) * r2;
+                                  var ey = cy + Math.sin(eAngle) * r2;
+                                  // Glow
+                                  ctx.beginPath();
+                                  ctx.arc(ex, ey, 5, 0, Math.PI * 2);
+                                  ctx.fillStyle = eColor + '44';
+                                  ctx.fill();
+                                  // Electron dot
+                                  ctx.beginPath();
+                                  ctx.arc(ex, ey, 3, 0, Math.PI * 2);
+                                  ctx.fillStyle = eColor;
+                                  ctx.fill();
+                                }
+                              }
+                              // Symbol label at top
+                              ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                              ctx.font = 'bold 10px sans-serif';
+                              ctx.textAlign = 'center';
+                              ctx.fillText(el.s + ' (' + atomicNum + ')', cx, 14);
+                              angle += 0.015;
+                              animId = requestAnimationFrame(draw);
+                            }
+                            draw();
+                            // Cleanup on unmount
+                            canvas._bohrCleanup = function() { if (animId) cancelAnimationFrame(animId); };
+                            var observer = new MutationObserver(function(mutations) {
+                              mutations.forEach(function(m) {
+                                m.removedNodes.forEach(function(node) {
+                                  if (node === canvas || (node.contains && node.contains(canvas))) {
+                                    if (canvas._bohrCleanup) canvas._bohrCleanup();
+                                    observer.disconnect();
+                                  }
+                                });
+                              });
+                            });
+                            if (canvas.parentNode && canvas.parentNode.parentNode) {
+                              observer.observe(canvas.parentNode.parentNode, { childList: true, subtree: true });
+                            }
+                          }
+                        }),
+                        React.createElement("div", { className: "text-[10px] text-slate-600 space-y-1 leading-relaxed" },
+                          React.createElement("p", null, React.createElement("strong", { className: "text-slate-700" }, "Protons: "), "" + d.selectedElement.n),
+                          React.createElement("p", null, React.createElement("strong", { className: "text-slate-700" }, "Electrons: "), "" + d.selectedElement.n),
+                          React.createElement("p", null, React.createElement("strong", { className: "text-slate-700" }, "Shells: "), (function() {
+                            var e = d.selectedElement.n;
+                            var sc = [2, 8, 18, 32, 32, 18, 8];
+                            var sh = [];
+                            var rem = e;
+                            for (var i = 0; i < sc.length && rem > 0; i++) {
+                              var c = Math.min(rem, sc[i]);
+                              sh.push(c);
+                              rem -= c;
+                            }
+                            return sh.join('-');
+                          })()),
+                          React.createElement("p", { className: "text-[9px] text-slate-400 italic mt-1" }, "\u26A1 Electrons orbit the nucleus in energy levels called \"shells.\" Inner shells fill first before outer ones begin.")
+                        )
+                      )
                     )
                   )
                 );
@@ -15885,6 +16032,296 @@
           )
         })(),
 
+
+        // ═══════════════════════════════════════════════════════
+        // MATERIAL DECOMPOSER + CHEMISTRY I SPY
+        // ═══════════════════════════════════════════════════════
+        stemLabTab === 'explore' && stemLabTool === 'decomposer' && (() => {
+          const d = labToolData.decomposer || {};
+          const upd = (key, val) => setLabToolData(prev => ({ ...prev, decomposer: { ...prev.decomposer, [key]: val } }));
+          const dMode = d.decompMode || 'decompose'; // 'decompose' | 'ispy'
+
+          // ── Material Decomposition Data ──
+          const MATERIALS = [
+            { name: 'Water', emoji: '💧', formula: 'H₂O', elements: [{ sym: 'H', count: 2, color: '#60a5fa' }, { sym: 'O', count: 1, color: '#ef4444' }], fact: 'Two hydrogen atoms bond with one oxygen atom. Water covers 71% of Earth!' },
+            { name: 'Table Salt', emoji: '🧂', formula: 'NaCl', elements: [{ sym: 'Na', count: 1, color: '#a855f7' }, { sym: 'Cl', count: 1, color: '#22c55e' }], fact: 'Sodium and chlorine — two dangerous elements that combine into something we eat every day!' },
+            { name: 'Rust', emoji: '🟤', formula: 'Fe₂O₃', elements: [{ sym: 'Fe', count: 2, color: '#fb923c' }, { sym: 'O', count: 3, color: '#ef4444' }], fact: 'Iron reacts with oxygen and water over time. That reddish-brown flake is iron oxide!' },
+            { name: 'Baking Soda', emoji: '🧁', formula: 'NaHCO₃', elements: [{ sym: 'Na', count: 1, color: '#a855f7' }, { sym: 'H', count: 1, color: '#60a5fa' }, { sym: 'C', count: 1, color: '#1e293b' }, { sym: 'O', count: 3, color: '#ef4444' }], fact: 'Sodium bicarbonate releases CO₂ gas when mixed with acid — that\'s why cakes rise!' },
+            { name: 'Sugar', emoji: '🍬', formula: 'C₁₂H₂₂O₁₁', elements: [{ sym: 'C', count: 12, color: '#1e293b' }, { sym: 'H', count: 22, color: '#60a5fa' }, { sym: 'O', count: 11, color: '#ef4444' }], fact: 'One sugar molecule has 45 atoms! All from just carbon, hydrogen and oxygen.' },
+            { name: 'Quartz / Glass', emoji: '🪟', formula: 'SiO₂', elements: [{ sym: 'Si', count: 1, color: '#34d399' }, { sym: 'O', count: 2, color: '#ef4444' }], fact: 'Silicon dioxide — the same compound in sand, glass, and quartz crystals!' },
+            { name: 'Vinegar (Acetic Acid)', emoji: '🫙', formula: 'CH₃COOH', elements: [{ sym: 'C', count: 2, color: '#1e293b' }, { sym: 'H', count: 4, color: '#60a5fa' }, { sym: 'O', count: 2, color: '#ef4444' }], fact: 'The sour taste comes from the H⁺ ion released by the carboxyl group (-COOH).' },
+            { name: 'Limestone / Chalk', emoji: '🪨', formula: 'CaCO₃', elements: [{ sym: 'Ca', count: 1, color: '#fbbf24' }, { sym: 'C', count: 1, color: '#1e293b' }, { sym: 'O', count: 3, color: '#ef4444' }], fact: 'Calcium carbonate forms seashells, cliffs, and even antacid tablets!' },
+            { name: 'Ammonia', emoji: '🧪', formula: 'NH₃', elements: [{ sym: 'N', count: 1, color: '#3b82f6' }, { sym: 'H', count: 3, color: '#60a5fa' }], fact: 'Nitrogen + hydrogen. Used in fertilizers and cleaning products. Very pungent smell!' },
+            { name: 'Carbon Dioxide', emoji: '☁️', formula: 'CO₂', elements: [{ sym: 'C', count: 1, color: '#1e293b' }, { sym: 'O', count: 2, color: '#ef4444' }], fact: 'You exhale this! Plants absorb it for photosynthesis. Also makes soda fizzy.' },
+          ];
+
+          // ── "I Spy" Scene Data ──
+          const I_SPY_SCENES = [
+            {
+              id: 'kitchen', name: '🍳 Kitchen', desc: 'A busy kitchen full of chemistry!',
+              objects: [
+                { name: 'Salt Shaker', emoji: '🧂', compound: 'NaCl', elements: ['Na', 'Cl'], fact: 'Table salt is sodium chloride — an ionic crystal!' },
+                { name: 'Aluminum Foil', emoji: '🫕', compound: 'Al', elements: ['Al'], fact: 'Pure aluminum — the most abundant metal in Earth\'s crust!' },
+                { name: 'Cast Iron Pan', emoji: '🍳', compound: 'Fe', elements: ['Fe'], fact: 'Iron is the most used metal on Earth. Your blood contains it too!' },
+                { name: 'Baking Soda', emoji: '🧁', compound: 'NaHCO₃', elements: ['Na', 'H', 'C', 'O'], fact: 'Sodium bicarbonate releases CO₂ when heated — that\'s why cakes rise!' },
+                { name: 'Glass Cup', emoji: '🥛', compound: 'SiO₂', elements: ['Si', 'O'], fact: 'Glass is made from silicon dioxide — the same stuff as sand!' },
+                { name: 'Copper Pot', emoji: '🫕', compound: 'Cu', elements: ['Cu'], fact: 'Copper conducts heat beautifully — that\'s why chefs love copper pans!' },
+                { name: 'Water Faucet', emoji: '🚰', compound: 'H₂O', elements: ['H', 'O'], fact: 'Every water molecule has 2 hydrogen atoms and 1 oxygen atom.' },
+                { name: 'Steel Knife', emoji: '🔪', compound: 'Fe+C', elements: ['Fe', 'C'], fact: 'Steel is iron with a tiny bit of carbon — makes it much harder!' },
+                { name: 'Sugar Bowl', emoji: '🍬', compound: 'C₁₂H₂₂O₁₁', elements: ['C', 'H', 'O'], fact: 'One sugar molecule has 45 atoms! Carbon, hydrogen, and oxygen.' },
+              ]
+            },
+            {
+              id: 'bathroom', name: '🛁 Bathroom', desc: 'Chemistry hides in every corner!',
+              objects: [
+                { name: 'Toothpaste', emoji: '🪥', compound: 'NaF', elements: ['Na', 'F'], fact: 'Sodium fluoride strengthens tooth enamel and prevents cavities!' },
+                { name: 'Rusty Faucet', emoji: '🚿', compound: 'Fe₂O₃', elements: ['Fe', 'O'], fact: 'Rust is iron oxide — iron reacting with oxygen and water over time.' },
+                { name: 'Bleach Bottle', emoji: '🧴', compound: 'NaOCl', elements: ['Na', 'O', 'Cl'], fact: 'Sodium hypochlorite is a powerful oxidizer that kills bacteria!' },
+                { name: 'Mirror', emoji: '🪞', compound: 'Ag+SiO₂', elements: ['Ag', 'Si', 'O'], fact: 'A thin layer of silver behind glass creates a reflective surface!' },
+                { name: 'Water Drops', emoji: '💧', compound: 'H₂O', elements: ['H', 'O'], fact: 'Water is the universal solvent — it dissolves more substances than any other liquid.' },
+                { name: 'Soap Bar', emoji: '🧼', compound: 'C₁₇H₃₅COONa', elements: ['C', 'H', 'O', 'Na'], fact: 'Soap is a sodium salt of fatty acids. It grabs grease at one end and water at the other!' },
+                { name: 'Porcelain Sink', emoji: '🚽', compound: 'SiO₂+Al₂O₃', elements: ['Si', 'O', 'Al'], fact: 'Porcelain is made from silica and alumina, fired at extreme temperatures!' },
+                { name: 'Copper Pipe', emoji: '🔧', compound: 'Cu', elements: ['Cu'], fact: 'Copper is naturally antimicrobial — it kills germs on contact!' },
+                { name: 'Baking Soda Box', emoji: '📦', compound: 'NaHCO₃', elements: ['Na', 'H', 'C', 'O'], fact: 'Baking soda absorbs odors by neutralizing acidic and basic molecules.' },
+              ]
+            },
+            {
+              id: 'construction', name: '🏗️ Construction Site', desc: 'Building materials are full of chemistry!',
+              objects: [
+                { name: 'Concrete Block', emoji: '🧱', compound: 'CaCO₃+SiO₂', elements: ['Ca', 'C', 'O', 'Si'], fact: 'Concrete is a mix of calcium compounds and silicates — incredibly strong!' },
+                { name: 'Steel Beam', emoji: '🏗️', compound: 'Fe+C', elements: ['Fe', 'C'], fact: 'Steel beams contain iron with ~2% carbon for incredible tensile strength.' },
+                { name: 'Copper Wiring', emoji: '🔌', compound: 'Cu', elements: ['Cu'], fact: 'Copper is the second-best electrical conductor after silver!' },
+                { name: 'Glass Window', emoji: '🪟', compound: 'SiO₂', elements: ['Si', 'O'], fact: 'Window glass is mostly silicon dioxide heated to 1700°C and cooled.' },
+                { name: 'Sand Pile', emoji: '⏳', compound: 'SiO₂', elements: ['Si', 'O'], fact: 'Sand is tiny grains of quartz (silicon dioxide) weathered from rocks over millennia.' },
+                { name: 'Limestone', emoji: '🪨', compound: 'CaCO₃', elements: ['Ca', 'C', 'O'], fact: 'Limestone is calcium carbonate — formed from ancient sea creatures!' },
+                { name: 'PVC Pipe', emoji: '🔧', compound: 'C₂H₃Cl', elements: ['C', 'H', 'Cl'], fact: 'Polyvinyl chloride is a plastic polymer made from carbon, hydrogen, and chlorine.' },
+                { name: 'Aluminum Siding', emoji: '🏠', compound: 'Al', elements: ['Al'], fact: 'Aluminum doesn\'t rust — it forms a thin oxide layer that protects it!' },
+                { name: 'Gypsum Board', emoji: '📋', compound: 'CaSO₄', elements: ['Ca', 'S', 'O'], fact: 'Drywall is hydrated calcium sulfate — it\'s actually a mineral crystal!' },
+              ]
+            },
+            {
+              id: 'nature', name: '🌳 Nature', desc: 'The natural world runs on chemistry!',
+              objects: [
+                { name: 'Pond Water', emoji: '🏞️', compound: 'H₂O', elements: ['H', 'O'], fact: 'Fresh water makes up only 2.5% of all water on Earth!' },
+                { name: 'Rusty Fence', emoji: '🚧', compound: 'Fe₂O₃', elements: ['Fe', 'O'], fact: 'Iron left outside slowly converts to iron oxide as it reacts with moisture.' },
+                { name: 'Limestone Rock', emoji: '🪨', compound: 'CaCO₃', elements: ['Ca', 'C', 'O'], fact: 'Limestone dissolves in rainwater (slightly acidic) to form caves!' },
+                { name: 'Plant Leaf', emoji: '🍃', compound: 'C₆H₁₂O₆', elements: ['C', 'H', 'O'], fact: 'Leaves produce glucose (sugar) from CO₂ and water using sunlight!' },
+                { name: 'Campfire', emoji: '🔥', compound: 'CH₄→CO₂', elements: ['C', 'H', 'O'], fact: 'Combustion converts carbon compounds + oxygen → CO₂ + H₂O + energy!' },
+                { name: 'Seashell', emoji: '🐚', compound: 'CaCO₃', elements: ['Ca', 'C', 'O'], fact: 'Shells are built from calcium carbonate extracted from seawater!' },
+                { name: 'Quartz Crystal', emoji: '💎', compound: 'SiO₂', elements: ['Si', 'O'], fact: 'Quartz is pure crystallized silicon dioxide — piezoelectric too!' },
+                { name: 'Salt Flat', emoji: '🏜️', compound: 'NaCl', elements: ['Na', 'Cl'], fact: 'Salt flats form when saline lakes evaporate, leaving behind crystallized NaCl.' },
+                { name: 'Morning Dew', emoji: '💦', compound: 'H₂O', elements: ['H', 'O'], fact: 'Dew forms when air cools below its dew point and water vapor condenses.' },
+              ]
+            },
+            {
+              id: 'lab', name: '🔬 Science Lab', desc: 'Where chemistry comes alive!',
+              objects: [
+                { name: 'Beaker of HCl', emoji: '🧪', compound: 'HCl', elements: ['H', 'Cl'], fact: 'Hydrochloric acid — your stomach naturally produces this to digest food!' },
+                { name: 'Sulfuric Acid', emoji: '⚗️', compound: 'H₂SO₄', elements: ['H', 'S', 'O'], fact: 'The most-produced industrial chemical in the world. Used in batteries!' },
+                { name: 'pH Strips', emoji: '📊', compound: 'Dye+Paper', elements: ['C', 'H', 'O', 'N'], fact: 'pH indicators are organic dyes that change color based on H⁺ concentration.' },
+                { name: 'Bunsen Burner', emoji: '🔥', compound: 'CH₄', elements: ['C', 'H'], fact: 'Methane (natural gas) burns with a clean blue flame at ~1000°C.' },
+                { name: 'Test Tube Rack', emoji: '🧫', compound: 'SiO₂', elements: ['Si', 'O'], fact: 'Lab glassware is borosilicate glass — resistant to thermal shock!' },
+                { name: 'Copper Sulfate', emoji: '🔵', compound: 'CuSO₄', elements: ['Cu', 'S', 'O'], fact: 'Beautiful blue crystals. Used to test for water and as a fungicide.' },
+                { name: 'Sodium Metal', emoji: '⚡', compound: 'Na', elements: ['Na'], fact: 'Pure sodium is so reactive it explodes on contact with water!' },
+                { name: 'Iron Filings', emoji: '🧲', compound: 'Fe', elements: ['Fe'], fact: 'Iron particles that align with magnetic fields — revealing invisible force lines!' },
+                { name: 'Calcium Chip', emoji: '🥛', compound: 'Ca', elements: ['Ca'], fact: 'Calcium is essential for bones and teeth. It also reacts with water!' },
+              ]
+            },
+          ];
+
+          // I Spy game logic helpers
+          const scene = d.ispyScene ? I_SPY_SCENES.find(s => s.id === d.ispyScene) : null;
+          const targetEl = d.ispyTarget || null;
+          const found = d.ispyFound || [];
+          const wrong = d.ispyWrong || [];
+          const score = d.ispyScore || 0;
+          const streak = d.ispyStreak || 0;
+
+          function startISpyRound(sceneId) {
+            const sc = I_SPY_SCENES.find(s => s.id === sceneId);
+            if (!sc) return;
+            // Gather all unique elements in this scene
+            const allEls = [...new Set(sc.objects.flatMap(o => o.elements))];
+            const target = allEls[Math.floor(Math.random() * allEls.length)];
+            upd('ispyScene', sceneId);
+            upd('ispyTarget', target);
+            upd('ispyFound', []);
+            upd('ispyWrong', []);
+            upd('ispyRoundComplete', false);
+          }
+
+          function handleISpyClick(obj, idx) {
+            if (found.includes(idx) || d.ispyRoundComplete) return;
+            const hasTarget = obj.elements.includes(targetEl);
+            if (hasTarget) {
+              const newFound = [...found, idx];
+              upd('ispyFound', newFound);
+              upd('ispyScore', score + 10 + streak * 2);
+              upd('ispyStreak', streak + 1);
+              addToast('✅ ' + obj.name + ' contains ' + targetEl + '! ' + obj.fact, 'success');
+              if (typeof awardStemXP === 'function') awardStemXP('chemistry', 10, 'I Spy: found ' + targetEl + ' in ' + obj.name);
+              // Check if all correct objects found
+              const totalCorrect = scene.objects.filter(o => o.elements.includes(targetEl)).length;
+              if (newFound.length >= totalCorrect) {
+                upd('ispyRoundComplete', true);
+                addToast('🎉 Amazing! You found all ' + totalCorrect + ' objects with ' + targetEl + '!', 'success');
+              }
+            } else {
+              upd('ispyWrong', [...wrong, idx]);
+              upd('ispyStreak', 0);
+              addToast('❌ ' + obj.name + ' doesn\'t contain ' + targetEl + '. It\'s made of ' + obj.compound + '.', 'error');
+              setTimeout(() => { upd('ispyWrong', (d.ispyWrong || []).filter(i => i !== idx)); }, 1200);
+            }
+          }
+
+          const totalCorrectInScene = scene ? scene.objects.filter(o => o.elements.includes(targetEl)).length : 0;
+
+          return React.createElement("div", { className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200" },
+            // Header
+            React.createElement("div", { className: "flex items-center gap-3 mb-1" },
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("h3", { className: "text-lg font-bold text-lime-800" }, "🧫 Material Decomposer")
+            ),
+            // Mode Toggle
+            React.createElement("div", { className: "flex gap-1 bg-slate-100 p-1 rounded-xl" },
+              [['decompose', '⚗️ Decompose'], ['ispy', '🔍 I Spy']].map(([m, label]) =>
+                React.createElement("button", {
+                  key: m, onClick: () => upd('decompMode', m),
+                  className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (dMode === m ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700')
+                }, label)
+              )
+            ),
+
+            // ── DECOMPOSE MODE ──
+            dMode === 'decompose' && React.createElement("div", { className: "space-y-3" },
+              React.createElement("p", { className: "text-xs text-slate-500" }, "Tap a material to break it down into its chemical elements."),
+              React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2" },
+                MATERIALS.map((mat, i) => {
+                  const isOpen = d.openMaterial === i;
+                  return React.createElement("div", { key: i },
+                    React.createElement("button", {
+                      onClick: () => upd('openMaterial', isOpen ? null : i),
+                      className: "w-full p-3 rounded-xl border-2 text-left transition-all hover:shadow-md " + (isOpen ? 'border-lime-400 bg-lime-50 shadow-md scale-[1.02]' : 'border-slate-200 bg-white hover:border-lime-300')
+                    },
+                      React.createElement("div", { className: "text-2xl mb-1" }, mat.emoji),
+                      React.createElement("p", { className: "text-xs font-bold text-slate-800 leading-tight" }, mat.name),
+                      React.createElement("p", { className: "text-[10px] text-slate-400 font-mono" }, mat.formula)
+                    ),
+                    isOpen && React.createElement("div", { className: "mt-1 p-3 bg-lime-50 rounded-xl border border-lime-200 animate-in slide-in-from-top-2 duration-200" },
+                      React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2 justify-center" },
+                        mat.elements.map((el, ei) => React.createElement("div", { key: ei, className: "flex items-center gap-1 px-2 py-1 rounded-lg border bg-white shadow-sm" },
+                          React.createElement("span", { className: "w-6 h-6 rounded-md flex items-center justify-center text-white text-[10px] font-bold", style: { backgroundColor: el.color } }, el.sym),
+                          el.count > 1 && React.createElement("span", { className: "text-xs font-black text-slate-600" }, "×" + el.count)
+                        ))
+                      ),
+                      React.createElement("p", { className: "text-[10px] text-lime-700 italic text-center" }, "💡 " + mat.fact)
+                    )
+                  );
+                })
+              )
+            ),
+
+            // ── I SPY MODE ──
+            dMode === 'ispy' && React.createElement("div", { className: "space-y-3" },
+              // Score bar
+              (score > 0 || streak > 0) && React.createElement("div", { className: "flex items-center justify-between bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl px-3 py-2 border border-amber-200" },
+                React.createElement("span", { className: "text-xs font-bold text-amber-700" }, "⭐ Score: " + score),
+                streak > 1 && React.createElement("span", { className: "text-xs font-bold text-orange-600" }, "🔥 Streak: " + streak)
+              ),
+
+              // Scene selector (if no active round)
+              !scene && React.createElement("div", null,
+                React.createElement("p", { className: "text-xs text-slate-500 mb-2" }, "🔍 Explore a scene and find hidden chemistry! Pick a location:"),
+                React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2" },
+                  I_SPY_SCENES.map(sc => React.createElement("button", {
+                    key: sc.id,
+                    onClick: () => startISpyRound(sc.id),
+                    className: "p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-emerald-400 hover:shadow-lg transition-all text-center group"
+                  },
+                    React.createElement("div", { className: "text-3xl mb-1 group-hover:scale-110 transition-transform" }, sc.name.slice(0, 2)),
+                    React.createElement("p", { className: "text-sm font-bold text-slate-700" }, sc.name.slice(2).trim()),
+                    React.createElement("p", { className: "text-[10px] text-slate-400" }, sc.desc)
+                  ))
+                )
+              ),
+
+              // Active round
+              scene && React.createElement("div", { className: "space-y-3" },
+                // Scene header + target
+                React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3 border border-emerald-200" },
+                  React.createElement("div", { className: "flex items-center justify-between mb-1" },
+                    React.createElement("span", { className: "text-sm font-bold text-emerald-800" }, scene.name),
+                    React.createElement("button", {
+                      onClick: () => { upd('ispyScene', null); upd('ispyTarget', null); upd('ispyFound', []); upd('ispyWrong', []); upd('ispyRoundComplete', false); },
+                      className: "text-xs text-slate-400 hover:text-slate-600 px-2 py-1 rounded-lg hover:bg-white/60 transition-all"
+                    }, "✕ Exit Scene")
+                  ),
+                  React.createElement("p", { className: "text-sm font-bold text-emerald-700" },
+                    "🔍 Find all objects containing ", React.createElement("span", { className: "px-2 py-0.5 bg-emerald-600 text-white rounded-lg text-sm" }, targetEl), "!"
+                  ),
+                  React.createElement("div", { className: "flex items-center gap-2 mt-2" },
+                    React.createElement("div", { className: "flex-1 h-2 bg-emerald-100 rounded-full overflow-hidden" },
+                      React.createElement("div", { className: "h-full bg-emerald-500 rounded-full transition-all duration-500", style: { width: (totalCorrectInScene > 0 ? (found.length / totalCorrectInScene * 100) : 0) + '%' } })
+                    ),
+                    React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "Found " + found.length + "/" + totalCorrectInScene)
+                  )
+                ),
+
+                // Object grid
+                React.createElement("div", { className: "grid grid-cols-3 gap-2" },
+                  scene.objects.map((obj, idx) => {
+                    const isFound = found.includes(idx);
+                    const isWrong = wrong.includes(idx);
+                    const isCorrectObj = obj.elements.includes(targetEl);
+                    const isRevealed = isFound || (d.ispyRoundComplete && isCorrectObj);
+                    return React.createElement("button", {
+                      key: idx,
+                      onClick: () => handleISpyClick(obj, idx),
+                      disabled: isFound || d.ispyRoundComplete,
+                      className: "p-3 rounded-xl border-2 text-center transition-all duration-300 " +
+                        (isFound ? 'border-emerald-400 bg-emerald-50 scale-[0.97]' :
+                         isWrong ? 'border-red-400 bg-red-50 animate-pulse' :
+                         d.ispyRoundComplete && !isCorrectObj ? 'border-slate-200 bg-slate-50 opacity-50' :
+                         'border-slate-200 bg-white hover:border-indigo-300 hover:shadow-md hover:scale-[1.03] cursor-pointer')
+                    },
+                      React.createElement("div", { className: "text-2xl mb-1 " + (isWrong ? 'animate-bounce' : '') }, obj.emoji),
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-700 leading-tight" }, obj.name),
+                      isRevealed && React.createElement("div", { className: "mt-1.5 animate-in fade-in zoom-in duration-300" },
+                        React.createElement("p", { className: "text-[9px] font-mono font-bold " + (isCorrectObj ? 'text-emerald-600' : 'text-slate-400') }, obj.compound),
+                        React.createElement("div", { className: "flex flex-wrap gap-0.5 justify-center mt-1" },
+                          obj.elements.map((el, ei) => React.createElement("span", {
+                            key: ei,
+                            className: "px-1.5 py-0.5 rounded text-[8px] font-bold " + (el === targetEl ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600')
+                          }, el))
+                        ),
+                        isFound && React.createElement("p", { className: "text-[8px] text-emerald-600 italic mt-1 leading-tight" }, obj.fact)
+                      )
+                    );
+                  })
+                ),
+
+                // Round complete celebration
+                d.ispyRoundComplete && React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-4 border-2 border-amber-300 text-center animate-in zoom-in duration-300" },
+                  React.createElement("p", { className: "text-2xl mb-1" }, "🎉🧪"),
+                  React.createElement("p", { className: "text-lg font-black text-amber-800" }, "Round Complete!"),
+                  React.createElement("p", { className: "text-sm text-amber-600 mb-3" }, "You found all objects containing " + targetEl + " in the " + scene.name.slice(2).trim() + "!"),
+                  React.createElement("div", { className: "flex gap-2 justify-center" },
+                    React.createElement("button", {
+                      onClick: () => startISpyRound(scene.id),
+                      className: "px-4 py-2 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-all text-sm"
+                    }, "🔄 New Element"),
+                    React.createElement("button", {
+                      onClick: () => { upd('ispyScene', null); upd('ispyTarget', null); upd('ispyFound', []); upd('ispyWrong', []); upd('ispyRoundComplete', false); },
+                      className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-sm"
+                    }, "🗺️ Change Scene")
+                  )
+                )
+              )
+            ),
+            // Snapshot button
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'dc-' + Date.now(), tool: 'decomposer', label: dMode === 'ispy' ? 'I Spy: ' + (scene ? scene.name : '—') : 'Decomposer', data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+          );
+        })(),
 
 
         // ═══════════════════════════════════════════════════════
@@ -34287,7 +34724,8 @@
                         return React.createElement("button", { key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-cyan-600 border border-cyan-200 hover:bg-cyan-50 transition-all" }, pr.label);
                       })
                     ),
-                    React.createElement("button", { onClick: function () { var c = document.getElementById('stereoCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'stereogram-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "w-full mt-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export Stereogram")
+                    React.createElement("button", { onClick: function () { var c = document.getElementById('stereoCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'stereogram-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "w-full mt-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export Stereogram"),
+                    React.createElement("button", { onClick: function () { var c = document.getElementById('depthMapCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-map-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\u2B07\uFE0F Depth map saved!', 'success'); }, className: "w-full mt-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100 transition-all" }, "\u2B07\uFE0F Save Depth Map")
                   ),
                   React.createElement("div", null,
                     React.createElement("p", { className: "text-[10px] font-bold text-cyan-600 mb-1" }, "\uD83C\uDFA8 Depth Map Canvas"),

@@ -140,7 +140,9 @@
         callGemini,
         callTTS,
         callImagen,
-        callGeminiVision
+        callGeminiVision,
+        activeStation,
+        setActiveStation
       } = props;
       // t (translation function) — pulled from props with a safe fallback
       var t = props.t || function (k) { return k; };
@@ -205,7 +207,8 @@
           if (awarded <= 0) return prev;
           actData.earned += awarded;
           actData.log = (actData.log || []).concat([{
-            pts: awarded, reason: reason || 'Activity', ts: Date.now()
+            pts: awarded, reason: reason || 'Activity', ts: Date.now(),
+            stationId: (activeStation && activeStation.id) || null
           }]);
           xpState[activityId] = actData;
           // Total XP across all activities
@@ -2475,16 +2478,88 @@
               { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
               { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true }
             ];
-            // ── Tool search filter ──
+
+            // ── STEM Tool Registry (AI-facing metadata for STEM Stations) ──
+            var STEM_TOOL_REGISTRY = [
+              { id: 'volume', name: '3D Volume Explorer', subjects: ['math','geometry'], grades: [3,4,5,6,7,8], tags: ['volume','prism','cubes','3D','surface-area'], keywords: ['rectangular prism','unit cubes','volume formula','layers'] },
+              { id: 'numberline', name: 'Number Line', subjects: ['math'], grades: [1,2,3,4,5,6], tags: ['addition','subtraction','fractions','decimals','integers'], keywords: ['number line','draggable markers','skip counting'] },
+              { id: 'areamodel', name: 'Area Model', subjects: ['math'], grades: [2,3,4,5,6], tags: ['multiplication','division','partial-products','arrays'], keywords: ['area model','rows','columns','visual multiplication'] },
+              { id: 'fractionViz', name: 'Fraction Lab', subjects: ['math'], grades: [2,3,4,5,6,7], tags: ['fractions','comparing','equivalent','mixed-numbers'], keywords: ['fraction circles','fraction bars','compare fractions','equivalent fractions'] },
+              { id: 'base10', name: 'Math Manipulatives', subjects: ['math'], grades: [1,2,3,4,5,6], tags: ['place-value','counting','base-10','abacus','slide-rule'], keywords: ['base ten blocks','hundreds chart','place value','regrouping'] },
+              { id: 'moneyMath', name: 'Money Math', subjects: ['math','economics','life-skills'], grades: [1,2,3,4,5,6,7,8], tags: ['coins','bills','change','currency','budgeting'], keywords: ['making change','counting money','currency exchange','personal finance'] },
+              { id: 'coordinate', name: 'Coordinate Grid', subjects: ['math','geometry'], grades: [4,5,6,7,8], tags: ['coordinates','graphing','plotting','quadrants'], keywords: ['ordered pairs','x-axis','y-axis','coordinate plane'] },
+              { id: 'protractor', name: 'Angle Explorer', subjects: ['math','geometry'], grades: [3,4,5,6,7], tags: ['angles','acute','obtuse','reflex','measurement'], keywords: ['protractor','angle measurement','classify angles','degrees'] },
+              { id: 'geoSandbox', name: 'Geometry Sandbox', subjects: ['math','geometry','engineering'], grades: [5,6,7,8,9,10], tags: ['3D-shapes','properties','STL','construction'], keywords: ['3D geometry','shape builder','3D printing','mesh export'] },
+              { id: 'multtable', name: 'Multiplication Table', subjects: ['math'], grades: [2,3,4,5,6], tags: ['multiplication','facts','skip-counting','patterns'], keywords: ['times table','multiplication facts','math fluency'] },
+              { id: 'funcGrapher', name: 'Function Grapher', subjects: ['algebra','math'], grades: [7,8,9,10,11,12], tags: ['linear','quadratic','trigonometric','graphing'], keywords: ['slope','y-intercept','parabola','sine','cosine'] },
+              { id: 'inequality', name: 'Inequality Grapher', subjects: ['algebra','math'], grades: [6,7,8,9,10], tags: ['inequalities','number-line','shading','compound'], keywords: ['greater than','less than','inequality','solution set'] },
+              { id: 'calculus', name: 'Calculus Visualizer', subjects: ['calculus','math'], grades: [10,11,12], tags: ['riemann-sums','derivatives','integrals','area-under-curve'], keywords: ['derivative','tangent line','integral','limits'] },
+              { id: 'algebraCAS', name: 'Algebra Solver', subjects: ['algebra','math'], grades: [7,8,9,10,11,12], tags: ['equations','factoring','simplification','step-by-step'], keywords: ['solve equation','factor polynomial','simplify expression','algebraic rules'] },
+              { id: 'graphCalc', name: 'Graphing Calculator', subjects: ['algebra','calculus','math'], grades: [7,8,9,10,11,12], tags: ['calculator','functions','data','equations'], keywords: ['graphing calculator','plot functions','equation solver','data analysis'] },
+              { id: 'probability', name: 'Probability Lab', subjects: ['math','statistics'], grades: [3,4,5,6,7,8], tags: ['probability','dice','coins','spinners','outcomes'], keywords: ['coin flip','dice roll','experimental probability','theoretical probability'] },
+              { id: 'unitConvert', name: 'Unit Converter', subjects: ['math','science'], grades: [3,4,5,6,7,8,9,10], tags: ['metric','imperial','conversion','measurement'], keywords: ['unit conversion','meters to feet','kilograms to pounds','volume conversion'] },
+              { id: 'cell', name: 'Cell Explorer', subjects: ['biology','life-science'], grades: [5,6,7,8,9,10], tags: ['organelles','mitosis','photosynthesis','membrane','microscope'], keywords: ['plant cell','animal cell','nucleus','chloroplast','cell membrane'] },
+              { id: 'solarSystem', name: 'Solar System', subjects: ['astronomy','earth-science','physics'], grades: [3,4,5,6,7,8,9,10], tags: ['planets','orbits','space','solar-system'], keywords: ['planet facts','orbit','gravity','solar system','moon'] },
+              { id: 'galaxy', name: 'Galaxy Explorer', subjects: ['astronomy','physics'], grades: [6,7,8,9,10,11,12], tags: ['stars','nebulae','black-holes','milky-way','3D'], keywords: ['galaxy','star types','Milky Way','nebula','black hole'] },
+              { id: 'universe', name: 'Universe Timelapse', subjects: ['astronomy','physics','earth-science'], grades: [6,7,8,9,10,11,12], tags: ['big-bang','cosmic-history','timeline','evolution'], keywords: ['Big Bang','cosmic microwave background','star formation','cosmic history'] },
+              { id: 'rocks', name: 'Rocks & Minerals', subjects: ['earth-science','geology'], grades: [3,4,5,6,7,8], tags: ['rock-cycle','minerals','igneous','sedimentary','metamorphic'], keywords: ['rock identification','mineral properties','hardness','rock cycle'] },
+              { id: 'waterCycle', name: 'Water Cycle', subjects: ['earth-science'], grades: [3,4,5,6,7,8], tags: ['evaporation','condensation','precipitation','collection'], keywords: ['water cycle','evaporation','cloud formation','rainfall'] },
+              { id: 'rockCycle', name: 'Rock Cycle', subjects: ['earth-science','geology'], grades: [4,5,6,7,8], tags: ['igneous','sedimentary','metamorphic','transformation'], keywords: ['rock cycle','weathering','erosion','magma','sediment'] },
+              { id: 'ecosystem', name: 'Ecosystem Simulator', subjects: ['biology','ecology'], grades: [5,6,7,8,9,10], tags: ['predator-prey','population','food-web','lotka-volterra'], keywords: ['ecosystem','predator','prey','population dynamics','food chain'] },
+              { id: 'companionPlanting', name: 'Companion Planting Lab', subjects: ['biology','agriculture','ecology'], grades: [4,5,6,7,8,9,10], tags: ['milpa','three-sisters','nitrogen','symbiosis','soil'], keywords: ['companion planting','corn beans squash','nitrogen cycle','soil chemistry'] },
+              { id: 'aquarium', name: 'Aquaculture & Ocean Lab', subjects: ['biology','ecology','marine-science'], grades: [5,6,7,8,9,10], tags: ['aquarium','marine','fishing','water-chemistry','species'], keywords: ['aquaculture','sustainable fishing','marine ecosystem','water quality'] },
+              { id: 'decomposer', name: 'Decomposer Lab', subjects: ['biology','chemistry'], grades: [4,5,6,7,8], tags: ['decomposition','elements','matter','breakdown'], keywords: ['decomposition','breaking down materials','elements','matter'] },
+              { id: 'anatomy', name: 'Human Anatomy', subjects: ['biology','health','anatomy'], grades: [5,6,7,8,9,10,11,12], tags: ['body-systems','skeletal','muscular','circulatory','nervous'], keywords: ['human body','organs','skeleton','muscles','heart','brain'] },
+              { id: 'dissection', name: 'Dissection Lab', subjects: ['biology','anatomy'], grades: [6,7,8,9,10], tags: ['frog','dissection','organs','virtual-lab'], keywords: ['virtual dissection','frog anatomy','organs','muscles','skeleton'] },
+              { id: 'brainAtlas', name: 'Brain Atlas', subjects: ['biology','neuroscience','psychology'], grades: [7,8,9,10,11,12], tags: ['brain','lobes','cerebral','clinical','neurons'], keywords: ['brain regions','frontal lobe','cerebral cortex','neuroscience'] },
+              { id: 'molecule', name: 'Molecule Builder', subjects: ['chemistry'], grades: [6,7,8,9,10,11,12], tags: ['atoms','bonds','molecular-geometry','3D'], keywords: ['molecule','chemical bond','molecular structure','atoms'] },
+              { id: 'wave', name: 'Wave Simulator', subjects: ['physics'], grades: [6,7,8,9,10,11,12], tags: ['frequency','amplitude','wavelength','interference','sound'], keywords: ['wave','frequency','amplitude','interference pattern','sound wave'] },
+              { id: 'circuit', name: 'Circuit Builder', subjects: ['physics','engineering'], grades: [4,5,6,7,8,9,10], tags: ['circuits','resistors','batteries','voltage','current'], keywords: ['electric circuit','Ohms law','voltage','resistor','series parallel'] },
+              { id: 'chemBalance', name: 'Equation Balancer', subjects: ['chemistry'], grades: [7,8,9,10,11,12], tags: ['chemical-equations','balancing','stoichiometry','reactions'], keywords: ['balance equation','chemical reaction','coefficients','stoichiometry'] },
+              { id: 'punnett', name: 'Punnett Square', subjects: ['biology','genetics'], grades: [7,8,9,10,11,12], tags: ['genetics','alleles','genotype','phenotype','inheritance'], keywords: ['Punnett square','alleles','dominant','recessive','genetic cross'] },
+              { id: 'physics', name: 'Physics Simulator', subjects: ['physics'], grades: [7,8,9,10,11,12], tags: ['projectile','velocity','trajectory','vectors','motion'], keywords: ['projectile motion','velocity','acceleration','trajectory','force'] },
+              { id: 'dataPlot', name: 'Data Plotter', subjects: ['math','science','statistics'], grades: [5,6,7,8,9,10], tags: ['scatter-plot','trend-line','data','regression'], keywords: ['data points','scatter plot','line of best fit','trend analysis'] },
+              { id: 'dataStudio', name: 'Data Studio', subjects: ['math','statistics'], grades: [3,4,5,6,7,8,9,10], tags: ['bar-chart','pie-chart','histogram','CSV','statistics'], keywords: ['bar graph','pie chart','data analysis','mean median mode','CSV import'] },
+              { id: 'codingPlayground', name: 'Coding Playground', subjects: ['computer-science','math'], grades: [3,4,5,6,7,8,9,10], tags: ['coding','blocks','turtle-graphics','loops','conditionals'], keywords: ['block coding','turtle graphics','programming','loops','sequencing'] },
+              { id: 'musicSynth', name: 'Music Synthesizer', subjects: ['music','physics','arts'], grades: [3,4,5,6,7,8,9,10,11,12], tags: ['piano','beats','waveform','sound','synthesis'], keywords: ['piano keyboard','beat maker','sound waves','music theory'] },
+              { id: 'artStudio', name: 'Art & Design Studio', subjects: ['art','design'], grades: [3,4,5,6,7,8,9,10,11,12], tags: ['color-theory','pixel-art','symmetry','accessibility','design'], keywords: ['color mixing','pixel art','symmetry pattern','contrast checker'] },
+              { id: 'archStudio', name: 'Architecture Studio', subjects: ['engineering','math','art'], grades: [5,6,7,8,9,10,11,12], tags: ['3D-building','blocks','arches','STL','construction'], keywords: ['architecture','3D building','snap grid','structural design','3D print'] },
+              { id: 'behaviorLab', name: 'Behavior Shaping Lab', subjects: ['psychology','behavioral-science'], grades: [7,8,9,10,11,12], tags: ['operant-conditioning','reinforcement','shaping','ABA'], keywords: ['behavior shaping','reinforcement','extinction','schedules of reinforcement'] },
+              { id: 'economicsLab', name: 'Economics Lab', subjects: ['economics','social-studies','math'], grades: [6,7,8,9,10,11,12], tags: ['supply-demand','finance','stock-market','entrepreneurship'], keywords: ['supply and demand','personal finance','stock trading','lemonade stand'] },
+              { id: 'lifeSkills', name: 'Life Skills Lab', subjects: ['life-skills','economics','health'], grades: [7,8,9,10,11,12], tags: ['taxes','data-literacy','decision-making','insurance','contracts'], keywords: ['tax calculator','paycheck','health insurance','decision matrix','data literacy'] },
+              { id: 'spaceColony', name: 'Kepler Colony', subjects: ['science','strategy','math'], grades: [5,6,7,8,9,10], tags: ['colonization','resource-management','turn-based','cooperative'], keywords: ['alien planet','colony survival','cooperative strategy','science unlocks'] }
+            ];
+            window.STEM_TOOL_REGISTRY = STEM_TOOL_REGISTRY;
+
+            // ── Station gating: filter tools when activeStation is set ──
+            var _stationFiltered = activeStation
+              ? _allStemTools.filter(function (t) {
+                  return t.category || (activeStation.tools && activeStation.tools.indexOf(t.id) !== -1);
+                })
+              : _allStemTools;
+
+            // Remove orphan category headers after station filter
+            if (activeStation) {
+              _stationFiltered = _stationFiltered.filter(function (tool, i, arr) {
+                if (!tool.category) return true;
+                for (var j = i + 1; j < arr.length; j++) {
+                  if (arr[j].category) return false;
+                  return true;
+                }
+                return false;
+              });
+            }
+
+            // ── Tool search filter (applied on top of station filter) ──
             var _searchLower = _stemToolSearch.toLowerCase().trim();
-            var _filteredTools = _searchLower ? _allStemTools.filter(function (tool) {
+            var _filteredTools = _searchLower ? _stationFiltered.filter(function (tool) {
               if (tool.category) {
                 // Keep category if ANY tool in it matches
                 return true;
               }
               return (tool.label || '').toLowerCase().indexOf(_searchLower) !== -1 ||
                 (tool.desc || '').toLowerCase().indexOf(_searchLower) !== -1;
-            }) : _allStemTools;
+            }) : _stationFiltered;
             // Remove orphan category headers (categories with no matching tools after them)
             if (_searchLower) {
               _filteredTools = _filteredTools.filter(function (tool, i, arr) {
@@ -2501,6 +2576,30 @@
             return /*#__PURE__*/React.createElement("div", {
               className: "max-w-3xl mx-auto animate-in fade-in duration-200"
             },
+          // Station Mode banner
+          activeStation && /*#__PURE__*/React.createElement("div", {
+            className: "mb-4 p-4 rounded-2xl border-2 border-emerald-300 bg-gradient-to-r from-emerald-50 to-teal-50",
+            role: "status",
+            'aria-label': 'Station Mode: ' + (activeStation.name || 'STEM Station')
+          },
+            /*#__PURE__*/React.createElement("div", { className: "flex items-center justify-between mb-1" },
+              /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2" },
+                /*#__PURE__*/React.createElement("span", { className: "text-lg" }, "\uD83D\uDCCD"),
+                /*#__PURE__*/React.createElement("h3", { className: "font-black text-emerald-900 text-base" }, activeStation.name || 'STEM Station'),
+                /*#__PURE__*/React.createElement("span", {
+                  className: "bg-emerald-200 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded-full"
+                }, (activeStation.tools ? activeStation.tools.length : 0) + ' tool' + ((activeStation.tools && activeStation.tools.length !== 1) ? 's' : ''))
+              ),
+              /*#__PURE__*/React.createElement("button", {
+                onClick: function () { if (setActiveStation) setActiveStation(null); },
+                className: "flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-red-600 bg-white hover:bg-red-50 border border-emerald-300 hover:border-red-300 px-3 py-1.5 rounded-full transition-all",
+                'aria-label': 'Exit Station Mode'
+              }, "\u2715 Exit Station")
+            ),
+            activeStation.teacherNote && /*#__PURE__*/React.createElement("p", {
+              className: "text-sm text-emerald-700 italic mt-1 pl-7"
+            }, "\u201C" + activeStation.teacherNote + "\u201D")
+          ),
           // Search input
           /*#__PURE__*/React.createElement("div", { className: "mb-4 relative" },
             /*#__PURE__*/React.createElement("input", {
@@ -15437,7 +15536,9 @@
             { name: 'KNO₃ (Potassium Nitrate)', atoms: [{ el: 'K', x: 100, y: 150, color: '#f87171' }, { el: 'N', x: 200, y: 130, color: '#3b82f6' }, { el: 'O', x: 160, y: 190, color: '#ef4444' }, { el: 'O', x: 240, y: 190, color: '#ef4444' }, { el: 'O', x: 200, y: 70, color: '#ef4444' }], bonds: [[0,2],[1,2],[1,3],[1,4]], formula: 'KNO₃' },
             { name: 'CuSO₄ (Copper Sulfate)', atoms: [{ el: 'Cu', x: 100, y: 150, color: '#fb923c' }, { el: 'S', x: 200, y: 140, color: '#facc15' }, { el: 'O', x: 160, y: 80, color: '#ef4444' }, { el: 'O', x: 260, y: 90, color: '#ef4444' }, { el: 'O', x: 260, y: 200, color: '#ef4444' }, { el: 'O', x: 140, y: 200, color: '#ef4444' }], bonds: [[0,5],[1,2],[1,3],[1,4],[1,5]], formula: 'CuSO₄' },
           ];
-          return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+
+            
+return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
             // Header
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
@@ -15814,6 +15915,153 @@
                       React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1" }, "\u2697\uFE0F Craftable in Compound Creator (" + relatedCompounds.length + ")"),
                       React.createElement("div", { className: "flex flex-wrap gap-1" },
                         relatedCompounds.map((comp, i) => React.createElement("button", { key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[10px] font-bold text-emerald-700 border border-emerald-200 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")"))
+                      )
+                    ),
+                    // ─── BOHR MODEL ATOM VISUALIZATION ───
+                    React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200/50" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2" }, "\u269B\uFE0F Bohr Model"),
+                      React.createElement("div", { className: "flex items-start gap-3" },
+                        React.createElement("canvas", { width: 220, height: 220,
+                          className: "rounded-xl border border-slate-200 bg-slate-900 flex-shrink-0",
+                          key: 'bohr-' + d.selectedElement.n,
+                          ref: function(canvas) {
+                            if (!canvas) return;
+                            var el = d.selectedElement;
+                            var atomicNum = el.n;
+                            var massNum = Math.round(el.mass || (atomicNum * 2.15));
+                            var protons = atomicNum;
+                            var neutrons = massNum - protons;
+                            if (neutrons < 0) neutrons = 0;
+                            var electrons = atomicNum;
+                            // Shell configuration: 2, 8, 18, 32, 32, 18, 8
+                            var shellCapacity = [2, 8, 18, 32, 32, 18, 8];
+                            var shells = [];
+                            var remaining = electrons;
+                            for (var si = 0; si < shellCapacity.length && remaining > 0; si++) {
+                              var count = Math.min(remaining, shellCapacity[si]);
+                              shells.push(count);
+                              remaining -= count;
+                            }
+                            var ctx = canvas.getContext('2d');
+                            var W = canvas.width, H = canvas.height;
+                            var cx = W / 2, cy = H / 2;
+                            var maxR = Math.min(W, H) / 2 - 8;
+                            var nShells = shells.length;
+                            var nucleusR = Math.max(8, Math.min(22, 6 + protons * 0.15));
+                            var shellColors = ['#60a5fa', '#34d399', '#fbbf24', '#f87171', '#a78bfa', '#fb923c', '#38bdf8'];
+                            var angle = 0;
+                            var animId = null;
+                            function draw() {
+                              ctx.clearRect(0, 0, W, H);
+                              // Draw shells (concentric rings)
+                              for (var s = 0; s < nShells; s++) {
+                                var r = nucleusR + 12 + (maxR - nucleusR - 12) * ((s + 1) / (nShells + 0.5));
+                                ctx.beginPath();
+                                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                                ctx.strokeStyle = 'rgba(148,163,184,0.25)';
+                                ctx.lineWidth = 1;
+                                ctx.stroke();
+                              }
+                              // Draw nucleus
+                              var nucGrad = ctx.createRadialGradient(cx - 2, cy - 2, 0, cx, cy, nucleusR);
+                              nucGrad.addColorStop(0, '#ff6b6b');
+                              nucGrad.addColorStop(0.6, '#e74c3c');
+                              nucGrad.addColorStop(1, '#c0392b');
+                              ctx.beginPath();
+                              ctx.arc(cx, cy, nucleusR, 0, Math.PI * 2);
+                              ctx.fillStyle = nucGrad;
+                              ctx.fill();
+                              // Nucleus spots (protons red, neutrons blue)
+                              if (protons <= 20) {
+                                var nucItems = [];
+                                for (var pi = 0; pi < Math.min(protons, 10); pi++) nucItems.push('p');
+                                for (var ni = 0; ni < Math.min(neutrons, 10); ni++) nucItems.push('n');
+                                var golden = 2.399963;
+                                for (var qi = 0; qi < nucItems.length; qi++) {
+                                  var fr = Math.sqrt(qi / nucItems.length) * (nucleusR * 0.7);
+                                  var fa = qi * golden;
+                                  var fx = cx + Math.cos(fa) * fr;
+                                  var fy = cy + Math.sin(fa) * fr;
+                                  ctx.beginPath();
+                                  ctx.arc(fx, fy, Math.max(1.5, nucleusR * 0.15), 0, Math.PI * 2);
+                                  ctx.fillStyle = nucItems[qi] === 'p' ? '#ffaaaa' : '#aaaaff';
+                                  ctx.fill();
+                                }
+                              }
+                              // Nucleus label
+                              ctx.fillStyle = '#ffffff';
+                              ctx.font = 'bold ' + Math.max(7, Math.min(11, nucleusR * 0.7)) + 'px sans-serif';
+                              ctx.textAlign = 'center';
+                              ctx.textBaseline = 'middle';
+                              if (protons <= 4) {
+                                ctx.fillText(protons + 'p', cx, cy - 2);
+                                ctx.fillText(neutrons + 'n', cx, cy + 7);
+                              }
+                              // Draw electrons orbiting
+                              for (var s2 = 0; s2 < nShells; s2++) {
+                                var r2 = nucleusR + 12 + (maxR - nucleusR - 12) * ((s2 + 1) / (nShells + 0.5));
+                                var eCount = shells[s2];
+                                var speed = (0.3 + s2 * 0.15) * (s2 % 2 === 0 ? 1 : -1);
+                                var eColor = shellColors[s2 % shellColors.length];
+                                for (var ei = 0; ei < eCount; ei++) {
+                                  var eAngle = angle * speed + (ei / eCount) * Math.PI * 2;
+                                  var ex = cx + Math.cos(eAngle) * r2;
+                                  var ey = cy + Math.sin(eAngle) * r2;
+                                  // Glow
+                                  ctx.beginPath();
+                                  ctx.arc(ex, ey, 5, 0, Math.PI * 2);
+                                  ctx.fillStyle = eColor + '44';
+                                  ctx.fill();
+                                  // Electron dot
+                                  ctx.beginPath();
+                                  ctx.arc(ex, ey, 3, 0, Math.PI * 2);
+                                  ctx.fillStyle = eColor;
+                                  ctx.fill();
+                                }
+                              }
+                              // Symbol label at top
+                              ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                              ctx.font = 'bold 10px sans-serif';
+                              ctx.textAlign = 'center';
+                              ctx.fillText(el.s + ' (' + atomicNum + ')', cx, 14);
+                              angle += 0.015;
+                              animId = requestAnimationFrame(draw);
+                            }
+                            draw();
+                            // Cleanup on unmount
+                            canvas._bohrCleanup = function() { if (animId) cancelAnimationFrame(animId); };
+                            var observer = new MutationObserver(function(mutations) {
+                              mutations.forEach(function(m) {
+                                m.removedNodes.forEach(function(node) {
+                                  if (node === canvas || (node.contains && node.contains(canvas))) {
+                                    if (canvas._bohrCleanup) canvas._bohrCleanup();
+                                    observer.disconnect();
+                                  }
+                                });
+                              });
+                            });
+                            if (canvas.parentNode && canvas.parentNode.parentNode) {
+                              observer.observe(canvas.parentNode.parentNode, { childList: true, subtree: true });
+                            }
+                          }
+                        }),
+                        React.createElement("div", { className: "text-[10px] text-slate-600 space-y-1 leading-relaxed" },
+                          React.createElement("p", null, React.createElement("strong", { className: "text-slate-700" }, "Protons: "), "" + d.selectedElement.n),
+                          React.createElement("p", null, React.createElement("strong", { className: "text-slate-700" }, "Electrons: "), "" + d.selectedElement.n),
+                          React.createElement("p", null, React.createElement("strong", { className: "text-slate-700" }, "Shells: "), (function() {
+                            var e = d.selectedElement.n;
+                            var sc = [2, 8, 18, 32, 32, 18, 8];
+                            var sh = [];
+                            var rem = e;
+                            for (var i = 0; i < sc.length && rem > 0; i++) {
+                              var c = Math.min(rem, sc[i]);
+                              sh.push(c);
+                              rem -= c;
+                            }
+                            return sh.join('-');
+                          })()),
+                          React.createElement("p", { className: "text-[9px] text-slate-400 italic mt-1" }, "\u26A1 Electrons orbit the nucleus in energy levels called \"shells.\" Inner shells fill first before outer ones begin.")
+                        )
                       )
                     )
                   )
@@ -23913,22 +24161,22 @@
         // ═══════════════════════════════════════════════════════
 
         (function _musicSynth() { var _isMusicSynth = stemLabTab === 'explore' && stemLabTool === 'musicSynth'; if (!_isMusicSynth) {
-            // Placeholder hooks — must match exact active-path sequence (verified L19411–19953)
-            React.useEffect(function(){}, []);  // 1 – waveform draw loop
-            React.useEffect(function(){}, []);  // 2 – sequencer playback
+            // Placeholder hooks — dep array sizes MUST match active-path hooks exactly
+            React.useEffect(function(){}, [undefined, undefined, undefined, undefined]);  // 1 – chord/harmony kbd  → [synthTab, d.omniChordRoot, d.omniChordType, d.omniVoice]
+            React.useEffect(function(){}, [undefined]);  // 2 – MIDI controller  → [d.omniVoice]
             React.useRef(null);                 // 3 – beat-painter FX ref
-            React.useEffect(function(){}, []);  // 4 – beat-painter cleanup
-            React.useEffect(function(){}, []);  // 5 – chord helper
-            React.useRef(null);                 // 6 – recording ref
-            React.useRef(null);                 // 7 – recording chunks ref
-            React.useRef(null);                 // 8 – recording stream ref
-            React.useEffect(function(){}, []);  // 9 – recording toggle
-            React.useRef(null);                 // 10 – sequencer step ref
-            React.useRef(null);                 // 11 – metronome ref
-            React.useEffect(function(){}, []);  // 12 – metronome tick
-            React.useEffect(function(){}, []);  // 13 – metronome cleanup
-            React.useEffect(function(){}, []);  // 14 – arpeggiator
-            React.useEffect(function(){}, []);  // 15 – particle cleanup
+            React.useEffect(function(){}, [undefined, undefined, undefined]);  // 4 – beat-painter FX params  → [d.bpReverb, d.bpDelay, d.bpFilterCut]
+            React.useEffect(function(){}, []);  // 5 – beat share URL load  → []
+            React.useRef(null);                 // 6 – bp canvas ref
+            React.useRef(null);                 // 7 – bp anim ref
+            React.useRef(null);                 // 8 – bp analyser ref
+            React.useEffect(function(){}, [undefined, undefined]);  // 9 – bp waveform viz  → [d.seqPlaying, synthTab]
+            React.useRef(null);                 // 10 – sequencer timer ref
+            React.useRef(null);                 // 11 – sequencer step ref
+            React.useEffect(function(){}, []);  // 12 – sequencer cleanup  → []
+            React.useEffect(function(){}, [undefined]);  // 13 – BPM change restart  → [d.seqBPM]
+            React.useEffect(function(){}, [undefined]);  // 14 – kit auto-load  → [synthTab]
+            React.useEffect(function(){}, [undefined, undefined]);  // 15 – pad kbd shortcuts  → [synthTab, d.activeKit]
             return null;
           }
           const d = labToolData.musicSynth;
@@ -32676,6 +32924,321 @@
             }
           };
 
+          // ═══ ANIMATED STEREOGRAM HELPERS ═══
+            var _stereoAnimRef = { timer: null, frames: [] };
+            function _sirdsRenderSync(W, H, dmData, dmW, dmH, pType, pWidth, maxShift, aiPat) {
+              var offscreen = document.createElement('canvas'); offscreen.width = W; offscreen.height = H;
+              var ctx = offscreen.getContext('2d');
+              function makeRng(seed) { var s = seed; return function() { s = (s * 1664525 + 1013904223) & 0x7FFFFFFF; return s / 0x7FFFFFFF; }; }
+              var imgData = ctx.createImageData(W, H); var data = imgData.data;
+              for (var y = 0; y < H; y++) {
+                var rng = makeRng(y * 7919 + 12345);
+                var row = new Uint8Array(W * 3);
+                for (var x = 0; x < W; x++) {
+                  if (x < pWidth) {
+                    if (pType === 'bw') { var c = rng() > 0.5 ? 230 : 25; row[x*3]=c; row[x*3+1]=c; row[x*3+2]=c; }
+                    else if (pType === 'color') { row[x*3]=Math.floor(rng()*200)+55; row[x*3+1]=Math.floor(rng()*200)+55; row[x*3+2]=Math.floor(rng()*200)+55; }
+                    else if (pType === 'ai' && aiPat) { var pw=aiPat.width,ph=aiPat.height,pI=((y%ph)*pw+(x%pw))*4; row[x*3]=aiPat.data[pI]; row[x*3+1]=aiPat.data[pI+1]; row[x*3+2]=aiPat.data[pI+2]; }
+                    else { var v=Math.floor(rng()*220)+20; row[x*3]=v; row[x*3+1]=v; row[x*3+2]=v; }
+                  } else {
+                    var dx=Math.floor(x*dmW/W), dy=Math.floor(y*dmH/H), di=(dy*dmW+dx)*4;
+                    var depth=dmData[di]/255, shift=Math.round(depth*maxShift), srcX=x-pWidth+shift;
+                    if (srcX >= 0) { row[x*3]=row[srcX*3]; row[x*3+1]=row[srcX*3+1]; row[x*3+2]=row[srcX*3+2]; }
+                    else {
+                      if (pType === 'bw') { var c2=rng()>0.5?230:25; row[x*3]=c2; row[x*3+1]=c2; row[x*3+2]=c2; }
+                      else if (pType === 'color') { row[x*3]=Math.floor(rng()*200)+55; row[x*3+1]=Math.floor(rng()*200)+55; row[x*3+2]=Math.floor(rng()*200)+55; }
+                      else if (pType === 'ai' && aiPat) { var pw2=aiPat.width,ph2=aiPat.height,pI2=((y%ph2)*pw2+(x%pw2))*4; row[x*3]=aiPat.data[pI2]; row[x*3+1]=aiPat.data[pI2+1]; row[x*3+2]=aiPat.data[pI2+2]; }
+                      else { var v2=Math.floor(rng()*220)+20; row[x*3]=v2; row[x*3+1]=v2; row[x*3+2]=v2; }
+                    }
+                  }
+                }
+                for (var x2=0; x2<W; x2++) { var idx=(y*W+x2)*4; data[idx]=row[x2*3]; data[idx+1]=row[x2*3+1]; data[idx+2]=row[x2*3+2]; data[idx+3]=255; }
+              }
+              ctx.putImageData(imgData, 0, 0);
+              return offscreen;
+            }
+            function _genAnimDepth(presetId, frameIdx, totalFrames, W, H) {
+              var c = document.createElement('canvas'); c.width = W; c.height = H;
+              var ctx = c.getContext('2d');
+              ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+              var t = frameIdx / totalFrames;
+              if (presetId === 'pulseSphere') {
+                var rBase = Math.abs(0.15 + 0.25 * (0.5 + 0.5 * Math.sin(t * Math.PI * 2)));
+                var r = Math.max(4, Math.abs(Math.round(Math.min(W, H) * rBase)));
+                var gradR = Math.max(4, r);
+                if (!isFinite(gradR) || gradR <= 0) gradR = 4;
+                var grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, gradR);
+                grad.addColorStop(0, '#ffffff'); grad.addColorStop(0.7, '#888'); grad.addColorStop(1, '#000');
+                ctx.beginPath(); ctx.arc(W/2, H/2, Math.max(1, r), 0, Math.PI*2); ctx.fillStyle = grad; ctx.fill();
+              } else if (presetId === 'spinCube') {
+                var angle = t * Math.PI * 2, cos = Math.cos(angle), sin = Math.sin(angle);
+                var sz = Math.min(W, H) * 0.25, cx = W/2, cy = H/2;
+                var verts = [[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]];
+                var faces = [[0,1,2,3],[4,5,6,7],[0,1,5,4],[2,3,7,6],[0,3,7,4],[1,2,6,5]];
+                var proj = verts.map(function(v) { var rx=v[0]*cos-v[2]*sin, rz=v[0]*sin+v[2]*cos; return {x:cx+rx*sz, y:cy+v[1]*sz, z:(rz+1)/2}; });
+                // Sort faces by average z (painter's algorithm)
+                var sortedFaces = faces.slice().sort(function(a,b) {
+                  var za = a.reduce(function(s,i){return s+proj[i].z;},0)/a.length;
+                  var zb = b.reduce(function(s,i){return s+proj[i].z;},0)/b.length;
+                  return za - zb;
+                });
+                sortedFaces.forEach(function(face) {
+                  var avgZ = face.reduce(function(s,i){return s+proj[i].z;},0)/face.length;
+                  var brt = Math.round(avgZ * 255);
+                  ctx.beginPath(); ctx.moveTo(proj[face[0]].x, proj[face[0]].y);
+                  for (var fi=1; fi<face.length; fi++) ctx.lineTo(proj[face[fi]].x, proj[face[fi]].y);
+                  ctx.closePath(); ctx.fillStyle = 'rgb('+brt+','+brt+','+brt+')'; ctx.fill();
+                });
+              } else if (presetId === 'waveRipple') {
+                var imgData = ctx.createImageData(W, H); var data = imgData.data;
+                var phase = t * Math.PI * 2;
+                for (var y=0; y<H; y++) for (var x=0; x<W; x++) {
+                  var dx2=x-W/2, dy2=y-H/2, dist=Math.sqrt(dx2*dx2+dy2*dy2)/(Math.min(W,H)*0.15);
+                  var val=Math.max(0,Math.min(255,Math.round((Math.sin(dist-phase)*0.5+0.5)*255*Math.max(0,1-dist/5))));
+                  var idx2=(y*W+x)*4; data[idx2]=val; data[idx2+1]=val; data[idx2+2]=val; data[idx2+3]=255;
+                }
+                ctx.putImageData(imgData, 0, 0);
+              } else if (presetId === 'morphHeart') {
+                var sc = Math.min(W,H) * (0.009 + 0.004 * Math.sin(t * Math.PI * 2));
+                ctx.save(); ctx.translate(W/2, H*0.45); ctx.scale(sc, -sc);
+                ctx.beginPath();
+                for (var ht=0; ht<=Math.PI*2; ht+=0.01) {
+                  var hx=16*Math.pow(Math.sin(ht),3), hy=13*Math.cos(ht)-5*Math.cos(2*ht)-2*Math.cos(3*ht)-Math.cos(4*ht);
+                  if (ht===0) ctx.moveTo(hx,hy); else ctx.lineTo(hx,hy);
+                }
+                ctx.closePath(); ctx.restore();
+                var hGrad = ctx.createRadialGradient(W/2, H*0.45, 0, W/2, H*0.45, Math.min(W,H)*0.4);
+                hGrad.addColorStop(0, '#fff'); hGrad.addColorStop(0.8, '#aaa'); hGrad.addColorStop(1, '#000');
+                ctx.fillStyle = hGrad; ctx.fill();
+              } else if (presetId === 'floatText') {
+                var dep = Math.round(128 + 127 * Math.sin(t * Math.PI * 2));
+                ctx.fillStyle = 'rgb('+dep+','+dep+','+dep+')';
+                ctx.font = 'bold ' + Math.round(H * 0.4) + 'px Arial';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('3D', W/2, H/2);
+              }
+              return ctx.getImageData(0, 0, W, H);
+            }
+            function _renderAnimFrames(nFrames, presetId, pType, pWidth, maxShift, aiPat, onProgress, onDone) {
+              var W = 512, H = 512, dmW = 400, dmH = 400;
+              var frames = []; var i = 0;
+              function step() {
+                if (i >= nFrames) { onDone(frames); return; }
+                var dmImgData = _genAnimDepth(presetId, i, nFrames, dmW, dmH);
+                var f = _sirdsRenderSync(W, H, dmImgData.data, dmW, dmH, pType, pWidth, maxShift, aiPat);
+                frames.push(f);
+                i++;
+                if (onProgress) onProgress(i, nFrames);
+                requestAnimationFrame(step);
+              }
+              requestAnimationFrame(step);
+            }
+            function _stopStereoAnim() {
+              if (_stereoAnimRef.timer) { clearInterval(_stereoAnimRef.timer); _stereoAnimRef.timer = null; }
+            }
+            function _playStereoAnim(canvasId, fps, upd2) {
+              _stopStereoAnim();
+              var frames = _stereoAnimRef.frames;
+              if (!frames || frames.length === 0) return;
+              var c = document.getElementById(canvasId);
+              if (!c) return;
+              var ctx = c.getContext('2d');
+              var idx = 0;
+              _stereoAnimRef.timer = setInterval(function() {
+                ctx.drawImage(frames[idx], 0, 0);
+                idx = (idx + 1) % frames.length;
+                if (upd2) upd2('stereoAnimIndex', idx);
+              }, 1000 / fps);
+            }
+            function _exportStereoGif(frames, fps) {
+              if (!frames || frames.length === 0) return;
+              // Build animated GIF using minimal encoder
+              var W = frames[0].width, H = frames[0].height;
+              var delay = Math.round(100 / fps); // centiseconds
+              // Quantize each frame to 256 colors and build GIF
+              var parts = [];
+              // GIF89a Header
+              parts.push(new Uint8Array([0x47,0x49,0x46,0x38,0x39,0x61]));
+              // Logical Screen Descriptor
+              var lsd = new Uint8Array(7);
+              lsd[0] = W & 0xFF; lsd[1] = (W >> 8) & 0xFF;
+              lsd[2] = H & 0xFF; lsd[3] = (H >> 8) & 0xFF;
+              lsd[4] = 0xF7; // GCT flag, 256 colors (2^(7+1)=256)
+              lsd[5] = 0; lsd[6] = 0;
+              parts.push(lsd);
+              // Global Color Table (256 entries = 768 bytes) - web-safe palette
+              var gct = new Uint8Array(768);
+              for (var ci = 0; ci < 256; ci++) {
+                // Simple 6x6x6 cube + 40 grays
+                if (ci < 216) {
+                  gct[ci*3] = Math.floor(ci/36) * 51;
+                  gct[ci*3+1] = (Math.floor(ci/6) % 6) * 51;
+                  gct[ci*3+2] = (ci % 6) * 51;
+                } else {
+                  var gv = Math.round((ci - 216) / 39 * 255);
+                  gct[ci*3] = gv; gct[ci*3+1] = gv; gct[ci*3+2] = gv;
+                }
+              }
+              parts.push(gct);
+              // Netscape looping extension
+              parts.push(new Uint8Array([0x21,0xFF,0x0B,
+                0x4E,0x45,0x54,0x53,0x43,0x41,0x50,0x45,0x32,0x2E,0x30,
+                0x03,0x01,0x00,0x00,0x00]));
+              function nearestColor(r,g,b) {
+                // Map to 6x6x6 cube
+                var ri = Math.round(r/255*5), gi = Math.round(g/255*5), bi = Math.round(b/255*5);
+                return ri*36 + gi*6 + bi;
+              }
+              // LZW Minimum Code Size
+              var minCodeSize = 8;
+              function lzwEncode(indexStream) {
+                var clearCode = 1 << minCodeSize;
+                var eoiCode = clearCode + 1;
+                var codeSize = minCodeSize + 1;
+                var nextCode = eoiCode + 1;
+                var dict = {};
+                for (var di = 0; di < clearCode; di++) dict[String(di)] = di;
+                var out = [];
+                var bitBuf = 0, bitCount = 0;
+                function writeBits(code, size) {
+                  bitBuf |= (code << bitCount);
+                  bitCount += size;
+                  while (bitCount >= 8) { out.push(bitBuf & 0xFF); bitBuf >>= 8; bitCount -= 8; }
+                }
+                writeBits(clearCode, codeSize);
+                var cur = String(indexStream[0]);
+                for (var si = 1; si < indexStream.length; si++) {
+                  var next = String(indexStream[si]);
+                  var combined = cur + ',' + next;
+                  if (dict[combined] !== undefined) {
+                    cur = combined;
+                  } else {
+                    writeBits(dict[cur], codeSize);
+                    if (nextCode < 4096) {
+                      dict[combined] = nextCode++;
+                      if (nextCode > (1 << codeSize) && codeSize < 12) codeSize++;
+                    } else {
+                      writeBits(clearCode, codeSize);
+                      dict = {};
+                      for (var dj = 0; dj < clearCode; dj++) dict[String(dj)] = dj;
+                      nextCode = eoiCode + 1;
+                      codeSize = minCodeSize + 1;
+                    }
+                    cur = next;
+                  }
+                }
+                writeBits(dict[cur], codeSize);
+                writeBits(eoiCode, codeSize);
+                if (bitCount > 0) out.push(bitBuf & 0xFF);
+                return new Uint8Array(out);
+              }
+              for (var fi = 0; fi < frames.length; fi++) {
+                // Graphic Control Extension
+                var gce = new Uint8Array([0x21,0xF9,0x04,0x00, delay & 0xFF, (delay >> 8) & 0xFF, 0x00, 0x00]);
+                parts.push(gce);
+                // Image Descriptor
+                var imgDesc = new Uint8Array(10);
+                imgDesc[0] = 0x2C; // separator
+                imgDesc[1] = 0; imgDesc[2] = 0; imgDesc[3] = 0; imgDesc[4] = 0; // x,y
+                imgDesc[5] = W & 0xFF; imgDesc[6] = (W >> 8) & 0xFF;
+                imgDesc[7] = H & 0xFF; imgDesc[8] = (H >> 8) & 0xFF;
+                imgDesc[9] = 0; // no local color table
+                parts.push(imgDesc);
+                // Get pixel data
+                var fCtx = frames[fi].getContext('2d');
+                var fData = fCtx.getImageData(0, 0, W, H).data;
+                // Quantize
+                var indices = new Uint8Array(W * H);
+                for (var pi = 0; pi < W * H; pi++) {
+                  indices[pi] = nearestColor(fData[pi*4], fData[pi*4+1], fData[pi*4+2]);
+                }
+                // LZW encode
+                parts.push(new Uint8Array([minCodeSize]));
+                var lzwData = lzwEncode(indices);
+                // Sub-blocks (max 255 bytes each)
+                var pos = 0;
+                while (pos < lzwData.length) {
+                  var chunkLen = Math.min(255, lzwData.length - pos);
+                  parts.push(new Uint8Array([chunkLen]));
+                  parts.push(lzwData.slice(pos, pos + chunkLen));
+                  pos += chunkLen;
+                }
+                parts.push(new Uint8Array([0x00])); // block terminator
+              }
+              // Trailer
+              parts.push(new Uint8Array([0x3B]));
+              // Assemble
+              var totalLen = parts.reduce(function(s,p){return s+p.length;}, 0);
+              var result = new Uint8Array(totalLen);
+              var offset = 0;
+              parts.forEach(function(p) { result.set(p, offset); offset += p.length; });
+              var blob = new Blob([result], { type: 'image/gif' });
+              var link = document.createElement('a');
+              link.download = 'stereogram-anim-' + Date.now() + '.gif';
+              link.href = URL.createObjectURL(blob);
+              link.click();
+              URL.revokeObjectURL(link.href);
+              if (typeof addToast === 'function') addToast('\uD83C\uDFAC Animated GIF exported!', 'success');
+            }
+
+            // ═══ CUSTOM ANIMATION HELPERS ═══
+            function _genTransformDepth(sourceImgData, W, H, transformType, frameIdx, totalFrames) {
+              var c = document.createElement('canvas'); c.width = W; c.height = H;
+              var ctx = c.getContext('2d');
+              ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+              var t = frameIdx / totalFrames;
+              // Put source into a temp canvas so we can drawImage with transforms
+              var src = document.createElement('canvas'); src.width = W; src.height = H;
+              var sCtx = src.getContext('2d');
+              var sImg = sCtx.createImageData(W, H);
+              var sData = sourceImgData.data || sourceImgData;
+              for (var i = 0; i < sImg.data.length; i++) sImg.data[i] = sData[i];
+              sCtx.putImageData(sImg, 0, 0);
+              ctx.save();
+              ctx.translate(W / 2, H / 2);
+              if (transformType === 'zoom') {
+                var scale = 0.6 + 0.8 * (0.5 + 0.5 * Math.sin(t * Math.PI * 2));
+                ctx.scale(scale, scale);
+              } else if (transformType === 'rotate') {
+                ctx.rotate(t * Math.PI * 2);
+              } else if (transformType === 'bounce') {
+                var bounceY = Math.abs(Math.sin(t * Math.PI * 2)) * H * 0.25;
+                ctx.translate(0, -bounceY);
+                var bounceScale = 0.8 + 0.2 * Math.abs(Math.sin(t * Math.PI * 2));
+                ctx.scale(bounceScale, bounceScale);
+              } else if (transformType === 'slide') {
+                var slideX = Math.sin(t * Math.PI * 2) * W * 0.3;
+                ctx.translate(slideX, 0);
+              }
+              ctx.drawImage(src, -W / 2, -H / 2, W, H);
+              ctx.restore();
+              return ctx.getImageData(0, 0, W, H);
+            }
+
+            function _interpolateDepthMaps(maps, frameIdx, totalFrames) {
+              if (!maps || maps.length === 0) return null;
+              if (maps.length === 1) return maps[0];
+              var segCount = maps.length;
+              var pos = (frameIdx / totalFrames) * segCount;
+              var idx0 = Math.floor(pos) % maps.length;
+              var idx1 = (idx0 + 1) % maps.length;
+              var frac = pos - Math.floor(pos);
+              var m0 = maps[idx0], m1 = maps[idx1];
+              var W = m0.width, H = m0.height;
+              var c = document.createElement('canvas'); c.width = W; c.height = H;
+              var ctx = c.getContext('2d');
+              var out = ctx.createImageData(W, H);
+              var d0 = m0.data, d1 = m1.data, od = out.data;
+              for (var i = 0; i < od.length; i += 4) {
+                od[i]     = Math.round(d0[i]     * (1 - frac) + d1[i]     * frac);
+                od[i + 1] = Math.round(d0[i + 1] * (1 - frac) + d1[i + 1] * frac);
+                od[i + 2] = Math.round(d0[i + 2] * (1 - frac) + d1[i + 2] * frac);
+                od[i + 3] = 255;
+              }
+              ctx.putImageData(out, 0, 0);
+              return out;
+            }
+
+
           return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
@@ -34174,8 +34737,15 @@
                 })
               )
             ),
+
+
             // ═══ STEREOGRAM GENERATOR TAB ═══
             tab === 'stereogram' && React.createElement("div", { className: "space-y-3" },
+              React.createElement("div", { className: "flex gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200 mb-2" },
+                React.createElement("button", { onClick: function() { _stopStereoAnim(); upd('stereoAnimMode', 'static'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'static' ? 'bg-white shadow-md text-cyan-700' : 'text-slate-500 hover:text-slate-700') }, "\uD83D\uDCF8 Static"),
+                React.createElement("button", { onClick: function() { upd('stereoAnimMode', 'animate'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'animate' ? 'bg-white shadow-md text-purple-700' : 'text-slate-500 hover:text-slate-700') }, "\uD83C\uDFAC Animate")
+              ),
+              (d.stereoAnimMode || 'static') === 'static' &&
               React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
                 React.createElement("div", { className: "space-y-3" },
                   React.createElement("div", { className: "bg-gradient-to-br from-cyan-50 to-teal-50 rounded-xl p-4 border border-cyan-200" },
@@ -34354,6 +34924,9 @@
                       }
                     })
                   ),
+                  React.createElement("div", { className: "flex gap-2 mt-2" },
+                    React.createElement("button", { onClick: function () { var c = document.getElementById('depthMapCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-map-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Depth map saved as PNG!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-200 hover:from-indigo-100 hover:to-purple-100 transition-all" }, "\u2B07\uFE0F Save Depth Map PNG")
+                  ),
                   React.createElement("div", { className: "bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-3 border border-teal-200" },
                     React.createElement("button", { onClick: function () { upd('showStereoInfo', !d.showStereoInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-teal-700" },
                       React.createElement("span", null, "\uD83E\uDDE0 The Science of Stereograms"),
@@ -34457,6 +35030,463 @@
                 )
               )
             ),
+              (d.stereoAnimMode || 'static') === 'animate' && React.createElement("div", { className: "space-y-3" },
+                React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200" },
+                  React.createElement("h4", { className: "text-xs font-bold text-purple-700 mb-3" }, "\uD83C\uDFAC Animated Stereogram Studio"),
+                  React.createElement("p", { className: "text-[10px] text-slate-500 mb-3" }, "Create animated 3D stereograms from presets, custom drawings, uploaded images, transforms, or AI-generated depth maps!"),
+
+                  // ═══ SOURCE MODE SELECTOR ═══
+                  React.createElement("div", { className: "mb-3" },
+                    React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDCE1 Animation Source"),
+                    React.createElement("div", { className: "grid grid-cols-5 gap-1" },
+                      [{ id: 'preset', icon: '\u2728', label: 'Preset' }, { id: 'draw', icon: '\u270F\uFE0F', label: 'Draw' }, { id: 'upload', icon: '\uD83D\uDCC2', label: 'Upload' }, { id: 'transform', icon: '\uD83D\uDD04', label: 'Transform' }, { id: 'ai', icon: '\uD83E\uDD16', label: 'AI Depth' }].map(function(s) {
+                        return React.createElement("button", { key: s.id, onClick: function() { upd('stereoAnimSource', s.id); },
+                          className: "px-2 py-2 rounded-lg text-[10px] font-bold transition-all text-center " + ((d.stereoAnimSource || 'preset') === s.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50')
+                        }, s.icon + ' ' + s.label);
+                      })
+                    )
+                  ),
+
+                  // ═══ PRESET SOURCE (existing behavior) ═══
+                  (d.stereoAnimSource || 'preset') === 'preset' && React.createElement("div", { className: "mb-3" },
+                    React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-1" }, "\u2728 Animation Presets"),
+                    React.createElement("div", { className: "grid grid-cols-5 gap-1" },
+                      [{ id: 'pulseSphere', icon: '\uD83D\uDCAB', label: 'Pulse' }, { id: 'spinCube', icon: '\uD83D\uDD04', label: 'Spin Cube' }, { id: 'waveRipple', icon: '\uD83C\uDF0A', label: 'Wave' }, { id: 'morphHeart', icon: '\uD83D\uDC93', label: 'Heart' }, { id: 'floatText', icon: '\u2702\uFE0F', label: '3D Text' }].map(function(p) {
+                        return React.createElement("button", { key: p.id, onClick: function() { upd('stereoAnimPreset', p.id); },
+                          className: "px-2 py-2 rounded-lg text-[10px] font-bold transition-all text-center " + (d.stereoAnimPreset === p.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50')
+                        }, p.icon + ' ' + p.label);
+                      })
+                    )
+                  ),
+
+                  // ═══ CUSTOM DRAW SOURCE ═══
+                  (d.stereoAnimSource) === 'draw' && React.createElement("div", { className: "mb-3 space-y-2" },
+                    React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block" }, "\u270F\uFE0F Draw Depth Keyframes"),
+                    React.createElement("p", { className: "text-[10px] text-slate-400" }, "Draw a depth map, capture it as a keyframe, then draw the next. The animation will interpolate between them."),
+                    React.createElement("div", { className: "flex gap-1 mb-2" },
+                      [{ id: 'near', label: '\u2B1C Near', c: '#ffffff' }, { id: 'mid', label: '\uD83D\uDD18 Mid', c: '#888888' }, { id: 'far', label: '\u2B1B Far', c: '#222222' }, { id: 'erase', label: '\uD83E\uDDFD Erase', c: '#000000' }].map(function(s2) {
+                        return React.createElement("button", { key: s2.id, onClick: function() { upd('stereoAnimDrawBrush', s2.id); },
+                          className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoAnimDrawBrush || 'near') === s2.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, s2.label);
+                      })
+                    ),
+                    React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-purple-600" }, "Brush: " + (d.stereoAnimDrawSize || 20)),
+                      React.createElement("input", { type: "range", min: 5, max: 60, value: d.stereoAnimDrawSize || 20, onChange: function(e) { upd('stereoAnimDrawSize', parseInt(e.target.value)); }, className: "flex-1 accent-purple-600" })
+                    ),
+                    React.createElement("canvas", { id: 'stereoAnimDrawCanvas', width: 400, height: 400,
+                      key: 'anim-draw-' + (d.stereoAnimDrawClear || 0),
+                      className: "rounded-xl border-2 border-purple-200 shadow-lg cursor-crosshair block mx-auto", style: { maxWidth: '100%', background: '#000' },
+                      ref: function(canvas) {
+                        if (!canvas) return;
+                        if (canvas._drawInit) return;
+                        canvas._drawInit = true;
+                        var ctx = canvas.getContext('2d');
+                        var W = canvas.width, H = canvas.height;
+                        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+                        var drawing = false;
+                        function getColor() {
+                          var b = d.stereoAnimDrawBrush || 'near';
+                          if (b === 'near') return '#ffffff';
+                          if (b === 'mid') return '#888888';
+                          if (b === 'far') return '#222222';
+                          return '#000000';
+                        }
+                        function paint(e, isStart) {
+                          var rect = canvas.getBoundingClientRect();
+                          var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                          var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                          var sx = ex * (W / rect.width), sy = ey * (H / rect.height);
+                          var size = d.stereoAnimDrawSize || 20;
+                          ctx.beginPath(); ctx.arc(sx, sy, size, 0, Math.PI * 2);
+                          ctx.fillStyle = getColor(); ctx.fill();
+                        }
+                        canvas.onmousedown = canvas.ontouchstart = function(e) { e.preventDefault(); drawing = true; paint(e, true); };
+                        canvas.onmousemove = canvas.ontouchmove = function(e) { if (drawing) { e.preventDefault(); paint(e, false); } };
+                        canvas.onmouseup = canvas.ontouchend = function() { drawing = false; };
+                        canvas.onmouseleave = function() { drawing = false; };
+                      }
+                    }),
+                    React.createElement("div", { className: "flex gap-2 mt-2" },
+                      React.createElement("button", { onClick: function() {
+                        var c = document.getElementById('stereoAnimDrawCanvas');
+                        if (!c) return;
+                        var imgData = c.getContext('2d').getImageData(0, 0, c.width, c.height);
+                        var kf = d.stereoAnimKeyframes ? d.stereoAnimKeyframes.slice() : [];
+                        kf.push({ width: c.width, height: c.height, data: Array.from(imgData.data) });
+                        upd('stereoAnimKeyframes', kf);
+                        if (typeof addToast === 'function') addToast('\uD83D\uDCF8 Keyframe ' + kf.length + ' captured!', 'success');
+                      }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 shadow-sm" }, "\uD83D\uDCF8 Capture Keyframe"),
+                      React.createElement("button", { onClick: function() {
+                        var c = document.getElementById('stereoAnimDrawCanvas');
+                        if (c) { var ctx = c.getContext('2d'); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, c.width, c.height); }
+                      }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200" }, "\uD83D\uDDD1 Clear Canvas"),
+                      React.createElement("button", { onClick: function() { upd('stereoAnimKeyframes', []); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\u274C Clear All Frames"),
+                      React.createElement("button", { onClick: function() { var c = document.getElementById('stereoAnimDrawCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-drawing-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Drawing saved as PNG!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-200 hover:from-indigo-100 hover:to-purple-100 transition-all" }, "\u2B07\uFE0F Save Drawing PNG"),
+                      (d.stereoAnimKeyframes && d.stereoAnimKeyframes.length >= 2) && React.createElement("button", { onClick: function() {
+                        var kfs = d.stereoAnimKeyframes;
+                        if (!kfs || kfs.length < 2) { if (typeof addToast === 'function') addToast('Need at least 2 keyframes for GIF!', 'warning'); return; }
+                        if (typeof addToast === 'function') addToast('\u23F3 Building depth map GIF...', 'info');
+                        var totalFrames = 24;
+                        var canvasFrames = [];
+                        var tempCanvas = document.createElement('canvas'); tempCanvas.width = kfs[0].width; tempCanvas.height = kfs[0].height;
+                        var tempCtx = tempCanvas.getContext('2d');
+                        for (var fi = 0; fi < totalFrames; fi++) {
+                          var interpData = _interpolateDepthMaps(
+                            kfs.map(function(kf) { var id = tempCtx.createImageData(kf.width, kf.height); for (var p = 0; p < kf.data.length; p++) id.data[p] = kf.data[p]; return id; }),
+                            fi, totalFrames
+                          );
+                          tempCtx.putImageData(interpData, 0, 0);
+                          canvasFrames.push(tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height));
+                        }
+                        _exportStereoGif(canvasFrames, 8);
+                      }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border border-emerald-200 hover:from-emerald-100 hover:to-teal-100 transition-all" }, "\uD83C\uDFAC Export Depth GIF")
+                    ),
+                    (d.stereoAnimKeyframes && d.stereoAnimKeyframes.length > 0) && React.createElement("div", { className: "mt-2" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-purple-600 mb-1" }, "\uD83C\uDFAC Keyframes: " + d.stereoAnimKeyframes.length),
+                      React.createElement("div", { className: "flex gap-1 flex-wrap" },
+                        d.stereoAnimKeyframes.map(function(kf, idx) {
+                          return React.createElement("div", { key: idx, className: "relative" },
+                            React.createElement("canvas", { width: 60, height: 60, className: "rounded border border-purple-200", ref: function(c) {
+                              if (!c) return;
+                              var ctx = c.getContext('2d');
+                              var imgData = ctx.createImageData(kf.width, kf.height);
+                              for (var i = 0; i < kf.data.length; i++) imgData.data[i] = kf.data[i];
+                              var temp = document.createElement('canvas'); temp.width = kf.width; temp.height = kf.height;
+                              temp.getContext('2d').putImageData(imgData, 0, 0);
+                              ctx.drawImage(temp, 0, 0, 60, 60);
+                            } }),
+                            React.createElement("button", { onClick: function() {
+                              var kfs = d.stereoAnimKeyframes.slice(); kfs.splice(idx, 1); upd('stereoAnimKeyframes', kfs);
+                            }, className: "absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[8px] font-bold flex items-center justify-center hover:bg-red-600", style: { lineHeight: '1' } }, "\u00D7")
+                          );
+                        })
+                      )
+                    )
+                  ),
+
+                  // ═══ UPLOAD IMAGE SOURCE ═══
+                  (d.stereoAnimSource) === 'upload' && React.createElement("div", { className: "mb-3 space-y-2" },
+                    React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block" }, "\uD83D\uDCC2 Upload Depth Map Image"),
+                    React.createElement("p", { className: "text-[10px] text-slate-400" }, "Upload a grayscale image (white = near, black = far). It will be animated using the selected transform."),
+                    React.createElement("input", { type: "file", accept: "image/png,image/jpeg,image/webp",
+                      className: "text-xs file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200",
+                      onChange: function(e) {
+                        var file = e.target.files && e.target.files[0];
+                        if (!file) return;
+                        var reader = new FileReader();
+                        reader.onload = function(ev) {
+                          var img = new Image();
+                          img.onload = function() {
+                            var c = document.createElement('canvas'); c.width = 400; c.height = 400;
+                            var ctx = c.getContext('2d');
+                            ctx.drawImage(img, 0, 0, 400, 400);
+                            var imgData = ctx.getImageData(0, 0, 400, 400);
+                            upd('stereoAnimUploadedDepth', { width: 400, height: 400, data: Array.from(imgData.data) });
+                            if (typeof addToast === 'function') addToast('\uD83D\uDCF8 Depth map uploaded!', 'success');
+                          };
+                          img.src = ev.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }),
+                    d.stereoAnimUploadedDepth && React.createElement("div", { className: "mt-2 flex items-center gap-2" },
+                      React.createElement("canvas", { width: 80, height: 80, className: "rounded border border-purple-200", ref: function(c) {
+                        if (!c || !d.stereoAnimUploadedDepth) return;
+                        var ctx = c.getContext('2d');
+                        var ud = d.stereoAnimUploadedDepth;
+                        var imgData = ctx.createImageData(ud.width, ud.height);
+                        for (var i = 0; i < ud.data.length; i++) imgData.data[i] = ud.data[i];
+                        var temp = document.createElement('canvas'); temp.width = ud.width; temp.height = ud.height;
+                        temp.getContext('2d').putImageData(imgData, 0, 0);
+                        ctx.drawImage(temp, 0, 0, 80, 80);
+                      } }),
+                      React.createElement("span", { className: "text-[10px] text-green-600 font-bold" }, "\u2705 Depth map loaded (400\u00D7400)")
+                    ),
+                    React.createElement("div", { className: "mt-2" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDD04 Transform Type"),
+                      React.createElement("div", { className: "flex gap-1" },
+                        [{ id: 'zoom', label: '\uD83D\uDD0D Zoom' }, { id: 'rotate', label: '\uD83D\uDD04 Rotate' }, { id: 'bounce', label: '\u26A1 Bounce' }, { id: 'slide', label: '\u21C6 Slide' }].map(function(t) {
+                          return React.createElement("button", { key: t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
+                            className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, t.label);
+                        })
+                      )
+                    )
+                  ),
+
+                  // ═══ TRANSFORM SOURCE (uses static depth map) ═══
+                  (d.stereoAnimSource) === 'transform' && React.createElement("div", { className: "mb-3 space-y-2" },
+                    React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block" }, "\uD83D\uDD04 Transform Depth Map"),
+                    React.createElement("p", { className: "text-[10px] text-slate-400" }, "Animates the depth map from the Static tab using a chosen transform effect. Switch to Static mode first to draw your depth map."),
+                    React.createElement("div", { className: "mt-2" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDD04 Transform Type"),
+                      React.createElement("div", { className: "flex gap-1" },
+                        [{ id: 'zoom', label: '\uD83D\uDD0D Zoom' }, { id: 'rotate', label: '\uD83D\uDD04 Rotate' }, { id: 'bounce', label: '\u26A1 Bounce' }, { id: 'slide', label: '\u21C6 Slide' }].map(function(t) {
+                          return React.createElement("button", { key: t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
+                            className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, t.label);
+                        })
+                      )
+                    ),
+                    React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 mt-2 border border-amber-200" },
+                      React.createElement("p", { className: "text-[10px] text-amber-700" }, "\uD83D\uDCA1 Tip: Draw a depth map in the Static tab first, then come back here to animate it with a transform.")
+                    )
+                  ),
+
+                  // ═══ AI DEPTH SOURCE ═══
+                  (d.stereoAnimSource) === 'ai' && React.createElement("div", { className: "mb-3 space-y-2" },
+                    React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block" }, "\uD83E\uDD16 AI-Generated Depth Map"),
+                    React.createElement("p", { className: "text-[10px] text-slate-400" }, "Describe a 3D scene and AI will generate a depth map, then animate it with a transform."),
+                    callImagen ? React.createElement("div", null,
+                      React.createElement("textarea", {
+                        value: d.stereoAnimAiPrompt || '',
+                        onChange: function(e) { upd('stereoAnimAiPrompt', e.target.value); },
+                        placeholder: "e.g. A glowing crystal orb floating in space...",
+                        className: "w-full text-xs p-2 rounded border border-purple-200 focus:ring-2 focus:ring-purple-400 mb-2 h-16 resize-none",
+                        disabled: !!d.stereoAnimAiGenerating
+                      }),
+                      React.createElement("button", {
+                        onClick: function() {
+                          if (!d.stereoAnimAiPrompt) return;
+                          upd('stereoAnimAiGenerating', true);
+                          callImagen('A smooth, high-quality, continuous 3D grayscale depth map of: ' + d.stereoAnimAiPrompt + '. The closest parts must be pure white, and the furthest background pure black. No text, no floating artifacts. Fill the entire square frame.', 400)
+                            .then(function(base64) {
+                              var img = new Image();
+                              img.onload = function() {
+                                var c = document.createElement('canvas'); c.width = 400; c.height = 400;
+                                c.getContext('2d').drawImage(img, 0, 0, 400, 400);
+                                var imgData = c.getContext('2d').getImageData(0, 0, 400, 400);
+                                upd('stereoAnimAiDepth', { width: 400, height: 400, data: Array.from(imgData.data) });
+                                upd('stereoAnimAiGenerating', false);
+                                if (typeof addToast === 'function') addToast('\u2728 AI depth map generated!', 'success');
+                              };
+                              img.src = base64;
+                            }).catch(function(e) {
+                              upd('stereoAnimAiGenerating', false);
+                              if (typeof addToast === 'function') addToast('AI Error: ' + e.message, 'error');
+                            });
+                        },
+                        disabled: !!d.stereoAnimAiGenerating || !d.stereoAnimAiPrompt,
+                        className: "w-full px-3 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 disabled:opacity-50 shadow-sm transition-all mb-2"
+                      }, d.stereoAnimAiGenerating ? '\u23F3 Generating...' : '\uD83E\uDD16 Generate AI Depth Map'),
+                      d.stereoAnimAiDepth && React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                        React.createElement("canvas", { width: 80, height: 80, className: "rounded border border-purple-200", ref: function(c) {
+                          if (!c || !d.stereoAnimAiDepth) return;
+                          var ctx = c.getContext('2d');
+                          var ad = d.stereoAnimAiDepth;
+                          var imgData = ctx.createImageData(ad.width, ad.height);
+                          for (var i = 0; i < ad.data.length; i++) imgData.data[i] = ad.data[i];
+                          var temp = document.createElement('canvas'); temp.width = ad.width; temp.height = ad.height;
+                          temp.getContext('2d').putImageData(imgData, 0, 0);
+                          ctx.drawImage(temp, 0, 0, 80, 80);
+                        } }),
+                        React.createElement("span", { className: "text-[10px] text-green-600 font-bold" }, "\u2705 AI depth map ready!")
+                      ),
+                      React.createElement("div", { className: "mt-2" },
+                        React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDD04 Transform Type"),
+                        React.createElement("div", { className: "flex gap-1" },
+                          [{ id: 'zoom', label: '\uD83D\uDD0D Zoom' }, { id: 'rotate', label: '\uD83D\uDD04 Rotate' }, { id: 'bounce', label: '\u26A1 Bounce' }, { id: 'slide', label: '\u21C6 Slide' }].map(function(t) {
+                            return React.createElement("button", { key: t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
+                              className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, t.label);
+                          })
+                        )
+                      )
+                    ) : React.createElement("div", { className: "bg-amber-50 rounded-lg p-3 border border-amber-200" },
+                      React.createElement("p", { className: "text-[10px] text-amber-700 font-bold" }, "\u26A0\uFE0F AI image generation is not available. Use the Preset, Draw, Upload, or Transform modes instead.")
+                    )
+                  ),
+
+                  // ═══ COMMON CONTROLS (frames, speed, pattern, strength) ═══
+                  React.createElement("div", { className: "grid grid-cols-2 gap-3 mb-3" },
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-0.5" }, "Frames: " + (d.stereoAnimFrameCount || 12)),
+                      React.createElement("input", { type: "range", min: 6, max: 24, value: d.stereoAnimFrameCount || 12, onChange: function(e) { upd('stereoAnimFrameCount', parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-0.5" }, "Speed: " + (d.stereoAnimSpeed || 8) + " FPS"),
+                      React.createElement("input", { type: "range", min: 2, max: 15, value: d.stereoAnimSpeed || 8, onChange: function(e) { upd('stereoAnimSpeed', parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
+                    )
+                  ),
+                  React.createElement("div", { className: "mb-3" },
+                    React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-1" }, "Pattern Type"),
+                    React.createElement("div", { className: "flex gap-1" },
+                      [{ id: 'bw', label: '\u26AB B&W' }, { id: 'color', label: '\uD83C\uDFA8 Color' }, { id: 'noise', label: '\uD83D\uDCFA Noise' }].map(function(s) {
+                        return React.createElement("button", { key: s.id, onClick: function() { upd('stereoPattern', s.id); },
+                          className: "flex-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, s.label);
+                      })
+                    )
+                  ),
+                  [{ k: 'stereoStrength', label: 'Depth Strength', min: 5, max: 30, def: 15 },
+                   { k: 'stereoDensity', label: 'Pattern Width', min: 60, max: 150, def: 100 }].map(function(s) {
+                    var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
+                    return React.createElement("div", { key: s.k, className: "mb-2" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-0.5" }, s.label + ': ' + val),
+                      React.createElement("input", { type: "range", min: s.min, max: s.max, value: val, onChange: function(e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-purple-600" })
+                    );
+                  }),
+
+                  // ═══ RENDER BUTTON (branches by source) ═══
+                  React.createElement("div", { className: "flex gap-2 mt-3" },
+                    React.createElement("button", {
+                      onClick: function() {
+                        var source = d.stereoAnimSource || 'preset';
+                        var nF = d.stereoAnimFrameCount || 12;
+                        var pType = d.stereoPattern || 'bw';
+                        var pWidth = typeof d.stereoDensity === 'number' ? d.stereoDensity : 100;
+                        var maxShift = typeof d.stereoStrength === 'number' ? d.stereoStrength : 15;
+                        var aiPat = d.stereoAiPatternImg || null;
+
+                        // Validation
+                        if (source === 'preset' && !d.stereoAnimPreset) { if (typeof addToast === 'function') addToast('Pick an animation preset first!', 'warning'); return; }
+                        if (source === 'draw' && (!d.stereoAnimKeyframes || d.stereoAnimKeyframes.length < 2)) { if (typeof addToast === 'function') addToast('Capture at least 2 keyframes!', 'warning'); return; }
+                        if (source === 'upload' && !d.stereoAnimUploadedDepth) { if (typeof addToast === 'function') addToast('Upload a depth map image first!', 'warning'); return; }
+                        if (source === 'ai' && !d.stereoAnimAiDepth) { if (typeof addToast === 'function') addToast('Generate an AI depth map first!', 'warning'); return; }
+
+                        _stopStereoAnim();
+                        upd('stereoAnimRendering', true);
+                        upd('stereoAnimProgress', 0);
+
+                        if (source === 'preset') {
+                          // Existing preset rendering
+                          _renderAnimFrames(nF, d.stereoAnimPreset, pType, pWidth, maxShift, aiPat,
+                            function(done, total) { upd('stereoAnimProgress', Math.round(done/total*100)); },
+                            function(frames) {
+                              _stereoAnimRef.frames = frames;
+                              upd('stereoAnimRendering', false); upd('stereoAnimProgress', 100); upd('stereoAnimHasFrames', true);
+                              if (typeof addToast === 'function') addToast('\uD83C\uDFAC ' + frames.length + ' frames rendered!', 'success');
+                              upd('stereoAnimPlaying', true);
+                              _playStereoAnim('stereoAnimCanvas', d.stereoAnimSpeed || 8, upd);
+                            }
+                          );
+                        } else {
+                          // Custom source rendering
+                          var W = 512, H = 512, dmW = 400, dmH = 400;
+                          var frames = []; var fi = 0;
+
+                          function getDepthForFrame(frameIdx) {
+                            if (source === 'draw') {
+                              // Interpolate between keyframes
+                              var kfs = d.stereoAnimKeyframes;
+                              var maps = kfs.map(function(kf) {
+                                var c2 = document.createElement('canvas'); c2.width = kf.width; c2.height = kf.height;
+                                var ctx2 = c2.getContext('2d');
+                                var id2 = ctx2.createImageData(kf.width, kf.height);
+                                for (var j = 0; j < kf.data.length; j++) id2.data[j] = kf.data[j];
+                                ctx2.putImageData(id2, 0, 0);
+                                return ctx2.getImageData(0, 0, kf.width, kf.height);
+                              });
+                              return _interpolateDepthMaps(maps, frameIdx, nF);
+                            } else {
+                              // Upload, Transform, AI — use _genTransformDepth
+                              var srcData;
+                              if (source === 'upload') {
+                                srcData = d.stereoAnimUploadedDepth;
+                              } else if (source === 'ai') {
+                                srcData = d.stereoAnimAiDepth;
+                              } else {
+                                // transform — read from static depth map canvas
+                                var dmc = document.getElementById('depthMapCanvas');
+                                if (dmc) {
+                                  srcData = dmc.getContext('2d').getImageData(0, 0, dmc.width, dmc.height);
+                                } else {
+                                  // Fallback: blank
+                                  var fc = document.createElement('canvas'); fc.width = dmW; fc.height = dmH;
+                                  var fctx = fc.getContext('2d'); fctx.fillStyle = '#000'; fctx.fillRect(0, 0, dmW, dmH);
+                                  srcData = fctx.getImageData(0, 0, dmW, dmH);
+                                }
+                              }
+                              var srcImg;
+                              if (srcData.data instanceof Uint8ClampedArray) {
+                                srcImg = srcData;
+                              } else {
+                                // Convert from Array to ImageData
+                                var tc = document.createElement('canvas'); tc.width = srcData.width; tc.height = srcData.height;
+                                var tctx = tc.getContext('2d');
+                                var tid = tctx.createImageData(srcData.width, srcData.height);
+                                for (var ti = 0; ti < srcData.data.length; ti++) tid.data[ti] = srcData.data[ti];
+                                tctx.putImageData(tid, 0, 0);
+                                srcImg = tctx.getImageData(0, 0, srcData.width, srcData.height);
+                              }
+                              return _genTransformDepth(srcImg, dmW, dmH, d.stereoAnimTransform || 'zoom', frameIdx, nF);
+                            }
+                          }
+
+                          function renderStep() {
+                            if (fi >= nF) {
+                              _stereoAnimRef.frames = frames;
+                              upd('stereoAnimRendering', false); upd('stereoAnimProgress', 100); upd('stereoAnimHasFrames', true);
+                              if (typeof addToast === 'function') addToast('\uD83C\uDFAC ' + frames.length + ' frames rendered!', 'success');
+                              upd('stereoAnimPlaying', true);
+                              _playStereoAnim('stereoAnimCanvas', d.stereoAnimSpeed || 8, upd);
+                              return;
+                            }
+                            var depthData = getDepthForFrame(fi);
+                            var f = _sirdsRenderSync(W, H, depthData.data, dmW, dmH, pType, pWidth, maxShift, aiPat);
+                            frames.push(f);
+                            fi++;
+                            upd('stereoAnimProgress', Math.round(fi / nF * 100));
+                            requestAnimationFrame(renderStep);
+                          }
+                          requestAnimationFrame(renderStep);
+                        }
+                      },
+                      disabled: !!d.stereoAnimRendering,
+                      className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-600 hover:to-indigo-600 disabled:opacity-50 shadow-md transition-all"
+                    }, d.stereoAnimRendering ? ('\u23F3 Rendering... ' + (d.stereoAnimProgress || 0) + '%') : '\uD83C\uDFAC Render Animation'),
+                    React.createElement("button", {
+                      onClick: function() { _stopStereoAnim(); _stereoAnimRef.frames = []; upd('stereoAnimHasFrames', false); upd('stereoAnimPlaying', false); upd('stereoAnimProgress', 0); },
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100"
+                    }, "\u23F9 Reset")
+                  ),
+                  d.stereoAnimRendering && React.createElement("div", { className: "mt-2 h-2 bg-purple-100 rounded-full overflow-hidden" },
+                    React.createElement("div", { style: { width: (d.stereoAnimProgress || 0) + '%', transition: 'width 0.3s' }, className: "h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full" })
+                  )
+                ),
+
+                React.createElement("div", { className: "bg-white rounded-xl p-4 border border-purple-200 shadow-sm" },
+                  React.createElement("div", { className: "flex justify-between items-center mb-2" },
+                    React.createElement("p", { className: "text-xs font-bold text-purple-700" }, "\uD83D\uDC53 Animated Stereogram Output"),
+                    d.stereoAnimHasFrames && React.createElement("span", { className: "text-[10px] font-bold px-2 py-0.5 rounded-full " + (d.stereoAnimPlaying ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500') }, d.stereoAnimPlaying ? '\u25B6 Playing' : '\u23F8 Paused')
+                  ),
+                  React.createElement("p", { className: "text-[10px] text-slate-400 mb-2" }, "Relax your eyes and look \u2018through\u2019 the animation to see 3D shapes move"),
+                  React.createElement("canvas", { id: 'stereoAnimCanvas', width: 512, height: 512,
+                    className: "rounded-xl border-2 border-purple-200 shadow-lg block", style: { maxWidth: '100%', background: '#111' },
+                    ref: function(canvas) {
+                      if (!canvas) return;
+                      if (canvas._animInit) return;
+                      canvas._animInit = true;
+                      var ctx = canvas.getContext('2d');
+                      ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0, 0, 512, 512);
+                      ctx.fillStyle = '#555'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+                      ctx.fillText('Pick a source and click Render Animation', 256, 256);
+                    }
+                  }),
+                  d.stereoAnimHasFrames && React.createElement("div", { className: "flex gap-2 mt-3" },
+                    React.createElement("button", {
+                      onClick: function() {
+                        if (d.stereoAnimPlaying) { _stopStereoAnim(); upd('stereoAnimPlaying', false); }
+                        else { _playStereoAnim('stereoAnimCanvas', d.stereoAnimSpeed || 8, upd); upd('stereoAnimPlaying', true); }
+                      },
+                      className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + (d.stereoAnimPlaying ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 shadow-md')
+                    }, d.stereoAnimPlaying ? '\u23F8 Pause' : '\u25B6 Play'),
+                    React.createElement("button", {
+                      onClick: function() {
+                        _stopStereoAnim();
+                        upd('stereoAnimPlaying', false);
+                        _exportStereoGif(_stereoAnimRef.frames, d.stereoAnimSpeed || 8);
+                      },
+                      className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+                    }, "\uD83D\uDCE5 Export GIF")
+                  ),
+                  React.createElement("div", { className: "bg-amber-50 rounded-xl p-3 border border-amber-200 mt-3" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-amber-700 mb-1" }, "\uD83D\uDCA1 Tips for Animated Stereograms"),
+                    React.createElement("ul", { className: "text-[10px] text-slate-600 leading-relaxed list-disc ml-4 space-y-0.5" },
+                      React.createElement("li", null, "Lock your eyes into the 3D view before clicking Play"),
+                      React.createElement("li", null, "Slower speeds (4\u20136 FPS) are easier to maintain focus"),
+                      React.createElement("li", null, "Pulse and Heart presets are the easiest to see in motion"),
+                      React.createElement("li", null, "The exported GIF can be printed frame-by-frame as a flipbook!")
+                    )
+                  )
+                )
+              ),
             tab === 'life' && React.createElement("div", { className: "space-y-3" },
               React.createElement("div", { className: "grid grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
                 React.createElement("div", { className: "space-y-3", style: { maxHeight: '85vh', overflowY: 'auto' } },
