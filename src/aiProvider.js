@@ -592,7 +592,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * 
      * In Canvas mode, falls back to browser speechSynthesis.
      * On Gemini, uses Gemini TTS API.
-     * On local backends, routes: Kokoro (8 langs) → Piper (40+) → browser fallback.
+     * On local backends, routes: Kokoro (8 langs) → Edge TTS (40+) → browser fallback.
      * 
      * @param {string} text
      * @param {Object} [opts]
@@ -719,10 +719,10 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _openaiTTS(text, voice, speed) {
-        // TTS tiering: Kokoro (high quality) → Piper (wide language) → browser fallback
+        // TTS tiering: Kokoro (high quality) → Edge TTS (wide language) → browser fallback
         const ttsEndpoints = [
             'http://localhost:8880/v1/audio/speech',  // Kokoro (high quality, 8 langs)
-            'http://localhost:5500/v1/audio/speech',  // Piper (40+ langs, OpenAI-compat)
+            'http://localhost:5500/v1/audio/speech',  // Edge TTS (40+ langs, OpenAI-compat)
         ];
 
         // Cache check

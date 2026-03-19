@@ -1,0 +1,301 @@
+583: K: ["segmentation", "blending", "isolation"],
+584: 1: ["segmentation", "blending", "isolation", "spelling", "orf"],
+585: 2: ["segmentation", "blending", "rhyming", "spelling", "orf"],
+793: counting: "afterCompletion",
+794: isolation: "progressive",
+795: blending: "afterCompletion",
+807: counting: "hidden",
+808: isolation: "hidden",
+809: blending: "hidden",
+845: counting: "how_many_sounds",
+846: blending: "listen_to_sounds",
+922: const [attempts, setAttempts] = React.useState(0);
+932: const [highlightedBlendIndex, setHighlightedBlendIndex] =
+934: const [blendingProgress, setBlendingProgress] = React.useState(0);
+935: const [blendingOptions, setBlendingOptions] = React.useState([]);
+936: const blendingOptionsRef = React.useRef([]);
+938: blendingOptionsRef.current = blendingOptions;
+939: }, [blendingOptions]);
+941: const [isolationState, setIsolationState] = React.useState(null);
+942: const isolationStateRef = React.useRef(null);
+943: React.useEffect(() => { isolationStateRef.current = isolationState; }, [isolationState]);
+950: const isolationPositionRef = React.useRef(null);
+951: const lastWordForIsolation = React.useRef(null);
+954: const lastWordForBlending = React.useRef(null);
+994: attempted: 0,
+1000: stats.attempted >= minItems &&
+1010: attempted: 0,
+1018: attempted: current.attempted + 1,
+1502: warnLog("TTS attempt 1 failed for word:", text, e?.message);
+1517: warnLog("⚠️ All Gemini TTS attempts exhausted for word:", text, "- skipping audio (no browser TTS fa
+1530: const playBlending = React.useCallback(async () => {
+1534: setBlendingProgress(0);
+1537: setBlendingProgress(i + 1);
+1541: setBlendingProgress((wordSoundsPhonemes.phonemes?.length || 0) + 1);
+1567: warnLog("Blending playback error:", err);
+1608: if (activity === "isolation") {
+1711: window.__ALLO_ISOLATION_AUDIO[ordinal];
+1868: const RhymeView = React.memo(
+2937: id: "counting",
+2938: label: ts("word_sounds.activity_counting"),
+2940: description: ts("word_sounds.counting_desc"),
+2944: id: "isolation",
+2945: label: ts("word_sounds.activity_isolation"),
+2947: description: ts("word_sounds.isolation_desc"),
+2951: id: "blending",
+2952: label: ts("word_sounds.activity_blending"),
+2954: description: ts("word_sounds.blending_desc"),
+3158: "Items Attempted",
+3245: "Items Attempted",
+3403: blendingDistractors: term.blendingDistractors,
+3448: const hasBlend =
+3458: if (hasBlend) complexity += 2;
+3841: history.filter((h) => h.activity === "isolation" && h.correct)
+3847: id: "counting_pro",
+3849: history.filter((h) => h.activity === "counting" && h.correct)
+3851: name: "Counting Pro",
+3927: wordSoundsActivity === "blending" &&
+3928: data.blendingDistractors &&
+3929: setBlendingOptions
+3934: data.blendingDistractors
+3943: const BLEND_FALLBACK_POOL = ["dog","cat","sun","bed","map","pig","run","hop","net","cup","hat","log"
+3945: const shuffledPool = fisherYatesShuffle([...BLEND_FALLBACK_POOL]);
+3952: setBlendingOptions(opts);
+4229: const blendingDistractors = [];
+4315: blendingDistractors.length < 5
+4317: blendingDistractors.push(w);
+4331: blendingDistractors: blendingDistractors,
+4367: const repairBlendingDistractors = async () => {
+4368: if (wordSoundsActivity === "blending" && wordSoundsPhonemes) {
+4376: if (lastWordForBlending.current !== targetToCheck) {
+4377: setBlendingOptions && setBlendingOptions([]);
+4378: debugLog("🔄 Word changed, clearing stale blending options");
+4381: lastWordForBlending.current === targetToCheck &&
+4382: blendingOptions.length > 0
+4386: lastWordForBlending.current = targetToCheck;
+4387: let rawDistractors = wordSoundsPhonemes?.blendingDistractors || [];
+4447: warnLog("Blending repair failed", repairErr);
+4456: setBlendingOptions &&
+4457: setBlendingOptions(fisherYatesShuffle(uniqueFinalOptions));
+4459: "✅ Blending options set (Unique & Filtered):",
+4464: repairBlendingDistractors();
+4575: ...(wordEntry.blendingDistractors || []),
+4677: "blendingDistractors": ["word1", "word2", "word3", "word4", "word5", "word6", "word7", "word8"],
+4701: for (let attempt = 1; attempt <= 3; attempt++) {
+4703: if (attempt > 1)
+4705: `🔄 Gemini Retry Attempt ${attempt} for "${targetWord}"...`,
+4707: const temp = attempt === 1 ? 0.3 : 0.6;
+4716: if (attempt < 3)
+4717: await new Promise((r) => setTimeout(r, 1000 * attempt));
+4722: `❌ Gemini failed after 3 attempts for "${targetWord}"`,
+4818: const safeBlendingDistractors = filterDistractors(phonemeData?.blendingDistractors);
+4826: ...safeBlendingDistractors,
+4883: let retryAttempt = 1;
+4884: retryAttempt <= 3 && phonemeCount === 0;
+4885: retryAttempt++
+4888: `🔄 Gemini retry ${retryAttempt}/3 for "${targetWord}"...`,
+4896: temperature: 0.2 + retryAttempt * 0.1,
+4906: `✅ Retry ${retryAttempt} succeeded:`,
+4913: `⚠️ Retry ${retryAttempt} failed:`,
+5228: "🗑️ DELETE: Attempting to remove word at index:",
+5324: blendingDistractors: phonemeData.blendingDistractors || [],
+5469: for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+5471: if (attempt > 0) {
+5472: const backoffMs = 1000 * Math.pow(2, attempt);
+5474: `⏳ Retry ${attempt + 1}/${MAX_RETRIES} for "${word}" after ${backoffMs}ms...`,
+5484: if (is401 && attempt < MAX_RETRIES - 1) {
+5676: ["segmentation", "blending"].includes(wordSoundsActivity) &&
+5882: if (wordSoundsActivity !== "isolation" || !wordSoundsPhonemes) {
+5883: if (isolationState) setIsolationState(null);
+5887: const isNewWord = lastWordForIsolation.current !== currentWord;
+5890: isolationState &&
+5891: isolationState.word === currentWord &&
+5892: isolationState.correctSound &&
+5893: isolationState.isoOptions?.length > 0
+5896: "✅ Using pre-generated isolation options:",
+5897: isolationState.isoOptions,
+5899: lastWordForIsolation.current = currentWord;
+5902: if (!isNewWord && isolationState?.isoOptions?.length > 0) {
+5907: "⚠️ Generating new isolation options (fallback - not pre-generated)",
+5909: lastWordForIsolation.current = currentWord;
+5912: isolationPositionRef.current = positionIndex;
+5914: typeof isolationPositionRef.current === "number"
+5915: ? isolationPositionRef.current
+6081: setIsolationState({
+6098: if (wordSoundsActivity !== "isolation") return;
+6101: if (lastWordForIsolation.current?.toLowerCase() === currentWordSoundsWord?.toLowerCase())
+6106: if (lastWordForIsolation.current?.toLowerCase() === currentWordSoundsWord?.toLowerCase()) return;
+6108: "🔧 Auto-recovery: isolationState stuck for 3s, forcing re-sync for:",
+6130: setIsolationState({
+6140: }, [currentWordSoundsWord, isolationState?.word, wordSoundsActivity]);
+6150: if (wordSoundsActivity === "blending") {
+6151: await playBlending();
+6154: let isoSnap = isolationStateRef.current;
+6156: wordSoundsActivity === "isolation" &&
+6159: // Wait for isolation options to be generated on first item
+6163: isoSnap = isolationStateRef.current;
+6168: wordSoundsActivity === "isolation" &&
+6216: playBlending,
+6245: setAttempts(0);
+6250: setBlendingProgress(0);
+6392: activityId === "blending" &&
+6393: preloadedWord.blendingDistractors
+6395: const distractors = preloadedWord.blendingDistractors.slice(
+6399: setBlendingOptions(
+6402: lastWordForBlending.current = targetWord;
+6404: "📋 [Eager] Set blending options from preloaded:",
+6600: counting: "inst_counting",
+6601: blending: "inst_blending",
+6623: } else if (wordSoundsActivity === "isolation") {
+6624: // Wait for isolationState to become available (may not be set yet on first item)
+6625: let isoWaitState = isolationState || isolationStateRef.current;
+6630: isoWaitState = isolationStateRef.current;
+6660: typeof window.__ALLO_ISOLATION_AUDIO !== "undefined" &&
+6661: window.__ALLO_ISOLATION_AUDIO[posKey]
+6663: instructionAudioSrc = window.__ALLO_ISOLATION_AUDIO[posKey];
+6684: instructionText = ts('word_sounds.isolation_prompt') || "What sound is in this word?";
+6872: wordSoundsActivity === "blending" &&
+6877: await playBlending();
+6878: let effectiveBlendingOptions = blendingOptionsRef.current;
+6880: !effectiveBlendingOptions ||
+6881: effectiveBlendingOptions.length === 0
+6883: for (let waitAttempt = 0; waitAttempt < 10; waitAttempt++) {
+6887: blendingOptionsRef.current &&
+6888: blendingOptionsRef.current.length > 0
+6890: effectiveBlendingOptions = blendingOptionsRef.current;
+6896: effectiveBlendingOptions &&
+6897: effectiveBlendingOptions.length > 0
+6900: effectiveBlendingOptions.map((o) =>
+6908: for (let i = 0; i < effectiveBlendingOptions.length; i++) {
+6910: setHighlightedBlendIndex(i);
+6911: await handleAudio(effectiveBlendingOptions[i]);
+6915: setHighlightedBlendIndex(null);
+6927: // Wait for rhyme options to be populated (same pattern as isolation)
+6947: if (wordSoundsActivity === "isolation" && currentWordSoundsWord) {
+6951: if (isolationState?.isoOptions?.length > 0) {
+6954: isolationState.isoOptions.map((o) =>
+6960: i < (isolationState?.isoOptions?.length || 0);
+6965: await handleAudio(isolationState.isoOptions[i]);
+6972: if (wordSoundsActivity === "counting" && currentWordSoundsWord) {
+7053: if (!isCorrect && attempts < 2 && !isProbeMode) {
+7054: const newAttempts = attempts + 1;
+7055: setAttempts(newAttempts);
+7057: if (newAttempts === 1) {
+7084: () => wordSoundsActivity === "blending" ? playBlending() : handleAudio(currentWordSoundsWord),
+7092: wordSoundsActivity === "blending" ? playBlending() : handleAudio(currentWordSoundsWord);
+7144: setAttempts(0);
+7146: ? attempts > 0
+7197: const baseXP = attempts > 0 ? 5 : 10;
+7199: attempts > 0 ? 0 : Math.min(newStreak * 2, 20);
+7329: attempted: 0,
+7335: actStats.attempted > 0 && queueRemaining.length === 0;
+7337: (actStats.attempted >= MIN_PRACTICE && newStreak >= 3) ||
+7351: "counting",
+7352: "isolation",
+7353: "blending",
+7688: ["segmentation", "blending"].includes(wordSoundsActivity) &&
+7691: if (lastWordForBlending.current !== targetWord) {
+7699: lastWordForBlending.current = targetWord;
+7701: wordSoundsActivity === "blending" &&
+7702: phonemeData?.blendingDistractors
+7705: phonemeData.blendingDistractors.slice(0, 5);
+7710: setBlendingOptions(options);
+7712: "📋 Set blending options from preloaded:",
+7718: "⏩ Blending/segmentation state already set for:",
+7723: if (wordSoundsActivity === "isolation") {
+7724: if (bufferedWord.isolationOptions) {
+7725: lastWordForIsolation.current = targetWord;
+7726: isolationPositionRef.current =
+7727: bufferedWord.isolationOptions.currentPosition;
+7728: setIsolationState(bufferedWord.isolationOptions);
+7729: } else if (lastWordForIsolation.current !== targetWord) {
+7731: "🔧 Generating isolation state for:",
+7820: isolationPositionRef.current = position;
+7821: lastWordForIsolation.current = targetWord;
+7822: setIsolationState(generatedState);
+7908: wordSoundsActivity === "blending" &&
+7909: preloadedMatch.blendingDistractors
+7912: preloadedMatch.blendingDistractors.slice(0, 5);
+7917: setBlendingOptions(options);
+7918: lastWordForBlending.current = targetWord;
+7920: "📋 [Fallback] Set blending options:",
+7955: wordSoundsActivity === "isolation" &&
+7956: lastWordForIsolation.current !== targetWord
+7959: "🔧 [Fallback] Generating isolation state for:",
+8035: isolationPositionRef.current = iso_position;
+8036: lastWordForIsolation.current = targetWord;
+8037: setIsolationState({
+8392: } else if (wordSoundsActivity === "isolation") {
+8393: setIsolationState((prev) => ({
+8398: debugLog("✏️ Teacher set correct isolation answer to:", newValue);
+8400: } else if (wordSoundsActivity === "blending") {
+8402: debugLog("✏️ Teacher set correct blending answer to:", newValue);
+8446: } else if (wordSoundsActivity === "isolation") {
+8447: const newOptions = [...(isolationState?.isoOptions || [])];
+8449: setIsolationState((prev) => ({ ...prev, isoOptions: newOptions }));
+8459: wordSoundsActivity === "blending"
+8983: wordSoundsActivity !== "counting" &&
+9000: wordSoundsActivity === "blending"
+9001: ? playBlending()
+9019: wordSoundsActivity === "blending"
+9020: ? playBlending()
+9078: wordSoundsActivity !== "counting" &&
+9097: counting: "inst_counting",
+9098: blending: "inst_blending",
+9109: wordSoundsActivity === "isolation" &&
+9110: typeof window.__ALLO_ISOLATION_AUDIO !== "undefined"
+9125: ordinals[isolationState?.currentPosition || 0] ||
+9127: if (window.__ALLO_ISOLATION_AUDIO[posKey]) {
+9128: handleAudio(window.__ALLO_ISOLATION_AUDIO[posKey]);
+9130: handleAudio(ts("word_sounds.isolation_prompt"));
+9286: case "isolation": {
+9292: } = isolationState || {};
+9294: !isolationState ||
+9304: "⚠️ Isolation state mismatch:",
+9351: isolationState?.image ||
+9380: case "blending": {
+9607: wordSoundsActivity === "blending" &&
+9635: key: `blend-ph-${idx}`,
+9677: ts("word_sounds.blending_replay_sounds") ||
+9709: : blendingOptions.length > 0 &&
+9720: i < blendingOptions.length;
+9724: await handleAudio(blendingOptions[i]);
+9732: "Unhandled error in anon_blendingPlay:",
+9757: (blendingOptions || []).map((word, idx) =>
+9761: key: `blend-edit-${idx}`,
+9764: const newOpts = [...blendingOptions];
+9766: setBlendingOptions(newOpts);
+9775: key: `blend-option-${idx}`,
+9776: className: `relative group transition-all duration-300 ${playingOptionIndex === idx || highlightedBl
+10328: const attempts =
+10332: if (attempts >= 2) {
+10338: } else if (attempts >= 1) {
+10508: /*#__PURE__*/ React.createElement(RhymeView, {
+10613: const hasBlend = /^[bcdfghjklmnpqrstvwxyz]{2,}/i.test(targetWord);
+10615: wordLen <= 3 && !hasBlend
+10617: : wordLen <= 4 || hasBlend
+10810: case "counting": {
+10881: ? ts("word_sounds.counting_drop")
+10918: "11+",
+11255: r.attempts > 1 &&
+11260: r.attempts,
+11774: width: `${Math.min(100, ((masteryStats[wordSoundsActivity]?.attempted || 0) / (lessonPlanConfig.acti
+11787: masteryStats[wordSoundsActivity]?.attempted || 0,
+12716: labelChallengeAttempts: 0,
+12791: attempts: entries.length,
+12808: stats.labelChallengeAttempts = scores.length;
+12883: "Use fill-in-blank mode to build vocabulary before attempting from-scratch labeling",
+15945: if (w.isolationOptions)
+15946: segIsoEntry.isolationOptions = w.isolationOptions;
+15958: blendingDisplay: w.display,
+15961: if (w.distractors) probeEntry.blendingDistractors = w.distractors;
+19016: "Attempted",
+19425: "Attempted",
+22079: s.attempts,
+22081: s.attempts !== 1 ? "s" : "",
+22128: s.attempts > 1 &&
+22170: selectedStudent.stats.labelChallengeAttempts,
+22171: " attempt",
+22172: selectedStudent.stats.labelChallengeAttempts !== 1
+22229: selectedStudent.stats.labelChallengeAttempts,
+22234: "Attempts",

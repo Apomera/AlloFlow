@@ -1,0 +1,48 @@
+﻿ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+Testing _extractSearchQuery against actual prompt formats
+ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+
+
+ΓöÇΓöÇ Test: Resource Discovery (basic) ΓöÇΓöÇ
+  Γ£à Extracted via resources about: "photosynthesis"
+  Result: "photosynthesis"
+
+ΓöÇΓöÇ Test: Resource Discovery (with grade) ΓöÇΓöÇ
+  Γ£à Extracted via resources about: "the water cycle 5th grade educational resource"
+  Result: "the water cycle 5th grade educational resource"
+
+ΓöÇΓöÇ Test: Standards Lookup (goal) ΓöÇΓöÇ
+  Γ£à Extracted via LearningGoal: "Students will understand fractions and decimals"
+  Result: "Students will understand fractions and decimals"
+
+ΓöÇΓöÇ Test: Standards Lookup (query/skill) ΓöÇΓöÇ
+  Γ£à Extracted via UserQuery/Skill: "multiplication of two-digit numbers"
+  Result: "multiplication of two-digit numbers"
+
+ΓöÇΓöÇ Test: Content Verification ΓöÇΓöÇ
+  Γ£à Extracted via first-sentence: ""The mitochondria is the powerhouse of the cell"
+  Result: ""The mitochondria is the powerhouse of the cell"
+
+ΓöÇΓöÇ Test: Research Brief ΓöÇΓöÇ
+  Γ£à Extracted via Topic:"...": "Ancient Egyptian civilization"
+  Result: "Ancient Egyptian civilization"
+
+ΓöÇΓöÇ Test: Persona Generation ΓöÇΓöÇ
+  Γ£à Extracted via content about: "The American Revolution"
+  Result: "The American Revolution"
+
+ΓöÇΓöÇ Test: URL Search ΓöÇΓöÇ
+  Γ£à Extracted via resources about: "solar system planets"
+  Result: "solar system planets"
+
+ΓöÇΓöÇ Test: Simple research topic ΓöÇΓöÇ
+  Γ£à Extracted via Topic:"...": "climate change effects on ecosystems"
+  Result: "climate change effects on ecosystems"
+
+ΓöÇΓöÇ Test: Academic Standard search ΓöÇΓöÇ
+  Γ£à Extracted via Standard: "NGSS MS-PS1-2 Matter and Its Interactions"
+  Result: "NGSS MS-PS1-2 Matter and Its Interactions"
+
+ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+Results: 10 passed, 0 failed out of 10
+ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
