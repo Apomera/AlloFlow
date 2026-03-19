@@ -2256,11 +2256,7 @@
                 desc: 'Build 3D shapes, measure properties, and export STL files for 3D printing.',
                 color: 'sky', ready: true
               },
-              {
-                id: 'archStudio', icon: '\uD83C\uDFD7\uFE0F', label: 'Architecture Studio',
-                desc: '3D building with blocks, columns, arches, and ramps. Snap to grid, measure, and export STL.',
-                color: 'amber', ready: true
-              },
+
               {
                 // @tool multtable
                 id: 'multtable',
@@ -2451,7 +2447,11 @@
                 desc: 'Explore color theory, mix colors, draw pixel art, create symmetry patterns, and check accessibility contrast.',
                 color: 'rose', ready: true
               },
-
+              {
+                id: 'archStudio', icon: '\uD83C\uDFD7\uFE0F', label: 'Architecture Studio',
+                desc: '3D building with blocks, columns, arches, and ramps. Snap to grid, measure, and export STL.',
+                color: 'amber', ready: true
+              },
 
               { id: '_cat_BehavioralScience', icon: '', label: '\uD83E\uDDE0 Behavioral Science', desc: '', color: 'slate', category: true },
               {
@@ -16389,6 +16389,129 @@
                     })
                   )
                 ),
+                // ── 2D Planet Surface Canvas ──
+                React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 shadow-xl", style: { height: '350px', borderColor: sel.color + '60' } },
+                  React.createElement("canvas", {
+                    "data-surface-canvas": "true",
+                    style: { width: '100%', height: '100%', display: 'block' },
+                    ref: function (cvEl) {
+                      if (!cvEl || cvEl._surfInit === sel.name) return;
+                      cvEl._surfInit = sel.name;
+                      var ctx = cvEl.getContext('2d');
+                      var W = cvEl.offsetWidth || 600, H = cvEl.offsetHeight || 350;
+                      cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2);
+                      var isGas = sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant';
+                      var tick = 0;
+                      function drawPlanet() {
+                        tick++;
+                        ctx.clearRect(0, 0, W, H);
+                        // Space background
+                        var bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+                        bgGrad.addColorStop(0, '#020210');
+                        bgGrad.addColorStop(1, '#0a0a2e');
+                        ctx.fillStyle = bgGrad;
+                        ctx.fillRect(0, 0, W, H);
+                        // Stars
+                        for (var si = 0; si < 120; si++) {
+                          var sx = ((si * 137 + 29) % W);
+                          var sy = ((si * 211 + 17) % H);
+                          var sb = 0.15 + 0.25 * Math.sin(tick * 0.015 + si * 0.7);
+                          ctx.globalAlpha = sb;
+                          ctx.fillStyle = '#fff';
+                          ctx.beginPath();
+                          ctx.arc(sx, sy, si % 3 === 0 ? 1.5 : 0.8, 0, Math.PI * 2);
+                          ctx.fill();
+                        }
+                        ctx.globalAlpha = 1;
+                        // Planet
+                        var cx = W * 0.5, cy = H * 0.5;
+                        var planetR = Math.min(W, H) * 0.38;
+                        // Atmosphere glow
+                        var glowGrad = ctx.createRadialGradient(cx, cy, planetR * 0.9, cx, cy, planetR * 1.4);
+                        glowGrad.addColorStop(0, sel.color + '40');
+                        glowGrad.addColorStop(1, 'transparent');
+                        ctx.fillStyle = glowGrad;
+                        ctx.fillRect(0, 0, W, H);
+                        // Planet body
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, planetR, 0, Math.PI * 2);
+                        ctx.clip();
+                        // Base gradient
+                        var bodyGrad = ctx.createLinearGradient(cx - planetR, cy - planetR, cx + planetR, cy + planetR);
+                        bodyGrad.addColorStop(0, sel.color);
+                        var darkerColor = sel.color.length >= 7 ? '#' + Math.max(0, parseInt(sel.color.slice(1, 3), 16) - 60).toString(16).padStart(2, '0') + Math.max(0, parseInt(sel.color.slice(3, 5), 16) - 60).toString(16).padStart(2, '0') + Math.max(0, parseInt(sel.color.slice(5, 7), 16) - 60).toString(16).padStart(2, '0') : sel.color;
+                        bodyGrad.addColorStop(1, darkerColor);
+                        ctx.fillStyle = bodyGrad;
+                        ctx.fillRect(cx - planetR, cy - planetR, planetR * 2, planetR * 2);
+                        // Surface features (bands for gas, craters for rocky)
+                        if (isGas) {
+                          for (var bi = 0; bi < 8; bi++) {
+                            var by = cy - planetR + (bi + 0.5) * (planetR * 2 / 8);
+                            var wave = Math.sin(tick * 0.01 + bi * 1.5) * 4;
+                            ctx.fillStyle = 'rgba(255,255,255,' + (0.04 + 0.03 * Math.sin(bi * 2.1)) + ')';
+                            ctx.fillRect(cx - planetR, by + wave - 6, planetR * 2, 12);
+                          }
+                          // Storm spot
+                          ctx.fillStyle = 'rgba(200,100,50,0.25)';
+                          var spotX = cx + Math.cos(tick * 0.005) * planetR * 0.3;
+                          var spotY = cy + planetR * 0.15;
+                          ctx.beginPath();
+                          ctx.ellipse(spotX, spotY, planetR * 0.18, planetR * 0.09, 0.1, 0, Math.PI * 2);
+                          ctx.fill();
+                        } else {
+                          // Rocky planet: craters
+                          for (var ci = 0; ci < 15; ci++) {
+                            var crx = cx + ((ci * 97 + 31) % Math.floor(planetR * 1.6)) - planetR * 0.8;
+                            var cry = cy + ((ci * 73 + 17) % Math.floor(planetR * 1.4)) - planetR * 0.7;
+                            var crr = 3 + (ci % 5) * 4;
+                            if (Math.sqrt((crx - cx) * (crx - cx) + (cry - cy) * (cry - cy)) + crr < planetR) {
+                              ctx.fillStyle = 'rgba(0,0,0,0.08)';
+                              ctx.beginPath();
+                              ctx.arc(crx, cry, crr, 0, Math.PI * 2);
+                              ctx.fill();
+                              ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+                              ctx.lineWidth = 0.5;
+                              ctx.beginPath();
+                              ctx.arc(crx - 1, cry - 1, crr, 0, Math.PI * 2);
+                              ctx.stroke();
+                            }
+                          }
+                        }
+                        // Lighting: shadow on right side
+                        var shadowGrad = ctx.createLinearGradient(cx - planetR, cy, cx + planetR, cy);
+                        shadowGrad.addColorStop(0, 'rgba(0,0,0,0)');
+                        shadowGrad.addColorStop(0.6, 'rgba(0,0,0,0)');
+                        shadowGrad.addColorStop(1, 'rgba(0,0,0,0.5)');
+                        ctx.fillStyle = shadowGrad;
+                        ctx.fillRect(cx - planetR, cy - planetR, planetR * 2, planetR * 2);
+                        // Specular highlight
+                        var specGrad = ctx.createRadialGradient(cx - planetR * 0.3, cy - planetR * 0.3, 0, cx - planetR * 0.3, cy - planetR * 0.3, planetR * 0.8);
+                        specGrad.addColorStop(0, 'rgba(255,255,255,0.15)');
+                        specGrad.addColorStop(1, 'rgba(255,255,255,0)');
+                        ctx.fillStyle = specGrad;
+                        ctx.fillRect(cx - planetR, cy - planetR, planetR * 2, planetR * 2);
+                        ctx.restore();
+                        // Planet name label
+                        ctx.fillStyle = '#fff';
+                        ctx.font = 'bold 14px system-ui, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(sel.emoji + ' ' + sel.name, cx, H - 20);
+                        ctx.font = '10px system-ui, sans-serif';
+                        ctx.fillStyle = '#94a3b8';
+                        ctx.fillText(sel.diameter + ' \u2022 ' + (sel.gravity || '?'), cx, H - 6);
+                        requestAnimationFrame(drawPlanet);
+                      }
+                      drawPlanet();
+                      var ro = new ResizeObserver(function () {
+                        W = cvEl.offsetWidth || 600; H = cvEl.offsetHeight || 350;
+                        cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2);
+                      });
+                      ro.observe(cvEl);
+                    }
+                  })
+                ),
+
                 React.createElement("button", {
                   onClick: function () { upd('viewTab', 'drone'); },
                   className: "w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg transition-all hover:scale-[1.01]"
@@ -16396,7 +16519,7 @@
               ),
 
               // ── ROVER / PROBE TAB (Three.js First-Person) ──
-              (d.viewTab) === 'drone' && React.createElement("div", null,
+              (d.viewTab) === 'drone' && React.createElement("div", { id: "drone-fullscreen-container" },
                 React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-purple-300 shadow-lg", style: { height: '450px' } },
                   React.createElement("canvas", {
                     "data-drone-canvas": "true",
@@ -16735,7 +16858,7 @@
                         fsToggle.onmouseover = function() { this.style.background = 'rgba(56,189,248,0.3)'; };
                         fsToggle.onmouseout = function() { this.style.background = 'rgba(0,0,0,0.6)'; };
                         fsToggle.onclick = function() {
-                          var container = canvasEl.parentElement;
+                          var container = document.getElementById('drone-fullscreen-container') || canvasEl.parentElement;
                           if (!document.fullscreenElement) {
                             if (container.requestFullscreen) { container.requestFullscreen(); }
                             else if (container.mozRequestFullScreen) { container.mozRequestFullScreen(); }
@@ -16756,8 +16879,8 @@
                         document.addEventListener('fullscreenchange', function() {
                           if (!renderer || !camera) return;
                           var isFS = !!document.fullscreenElement;
-                          var w = isFS ? window.innerWidth : 900;
-                          var h = isFS ? window.innerHeight : 600;
+                          var w = isFS ? window.innerWidth : (canvasEl.clientWidth || 900);
+                          var h = isFS ? window.innerHeight : (canvasEl.clientHeight || 600);
                           camera.aspect = w / h;
                           camera.updateProjectionMatrix();
                           renderer.setSize(w, h);
@@ -18373,10 +18496,13 @@
             // ══════════════════════════════════════════════
             // ── Star Lifespan Simulation Mode ──
             // ══════════════════════════════════════════════
-            !d.quizMode && simMode === 'star' && React.createElement("div", { className: "space-y-4 animate-in fade-in duration-300" },
+            !d.quizMode && simMode === 'star' && React.createElement("div", { className: "animate-in fade-in duration-300", style: { display: "flex", gap: "16px", alignItems: "flex-start" } },
+
+              // ── RIGHT COLUMN: Star Visualization (sticky) ──
+              React.createElement("div", { style: { flex: "1 1 58%", position: "sticky", top: "16px", display: "flex", flexDirection: "column", gap: "16px", order: 2 } },
 
               // ── Animated Star Canvas ──
-              React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210]", style: { height: '200px' } },
+              React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210] shadow-2xl shadow-indigo-500/10", style: { height: '450px', minHeight: '450px' } },
                 React.createElement("canvas", {
                   "data-star-life-canvas": "true",
                   ref: function (cvEl) {
@@ -18477,7 +18603,11 @@
                   },
                   style: { width: '100%', height: '100%' }
                 })
-              ),
+              )
+              ), // end right column
+
+              // ── LEFT COLUMN: Controls & Timeline ──
+              React.createElement("div", { style: { flex: "0 0 42%", maxHeight: "85vh", overflowY: "auto", display: "flex", flexDirection: "column", gap: "16px", order: 1 } },
 
               // ── Mass Selector Hero ──
               React.createElement("div", { className: "bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-2xl border-2 border-indigo-400/40 p-5 shadow-xl" },
@@ -18694,8 +18824,10 @@
                 )
               ),
 
+              ), // end left column
+
               // ── Snapshot ──
-              React.createElement("div", { className: "flex justify-end" },
+              React.createElement("div", { className: "flex justify-end", style: { width: "100%", order: 3 } },
                 React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: 'Star Life: ' + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Star life snapshot saved!', 'success'); }, className: "px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
               )
             ),
@@ -28033,7 +28165,7 @@
                   { id: 'pharynx', name: 'Pharynx', x: 0.50, y: 0.12, fn: 'Muscular pump (segments 1-5). Sucks in soil and organic matter.', clinical: 'Earthworms eat their own weight in soil daily, aerating tons of soil per acre.' },
                   { id: 'crop', name: 'Crop', x: 0.50, y: 0.28, fn: 'Thin-walled storage chamber (segments 15-16). Temporary food storage.', clinical: 'Similar function to a bird\'s crop \u2014 convergent evolution of food storage.' },
                   { id: 'gizzard', name: 'Gizzard', x: 0.50, y: 0.33, fn: 'Thick muscular grinder (segments 17-18). Uses sand grains to crush food. No teeth.', clinical: 'Like a bird\'s gizzard \u2014 independent evolution of grit-grinding organs.' },
-                  { id: t('stem.dissection.intestine_label'), name: 'Intestine', x: 0.50, y: 0.55, fn: 'Straight tube with typhlosole (dorsal fold increasing surface area). Digestion and absorption.', clinical: 'Typhlosole is a simple version of intestinal villi \u2014 same principle, different solution.' },
+                  { id: 'intestine', name: 'Intestine', x: 0.50, y: 0.55, fn: 'Straight tube with typhlosole (dorsal fold increasing surface area). Digestion and absorption.', clinical: 'Typhlosole is a simple version of intestinal villi \u2014 same principle, different solution.' },
                   { id: 'aortic_arches', name: 'Aortic Arches (5 Hearts)', x: 0.48, y: 0.22, fn: '5 pairs of contractile vessels (segments 7-11). Pump blood in closed circulatory system.', clinical: 'Often called "5 hearts" \u2014 actually muscular blood vessels. Among first studied for closed circulation.' },
                   { id: 'nephridia', name: 'Nephridia', x: 0.55, y: 0.48, fn: 'Paired excretory organs per segment. Filter coelomic fluid. Equivalent of kidneys.', clinical: 'Segmentally repeated kidneys \u2014 unique annelid design with one pair per segment.' },
                   { id: 'seminal_v', name: 'Seminal Vesicles', x: 0.45, y: 0.20, fn: 'White organs (segments 9-12). Store sperm. Earthworms are hermaphrodites but cross-fertilize.', clinical: 'Despite being hermaphrodites, self-fertilization is rare \u2014 they mate with partners.' }
@@ -36760,8 +36892,8 @@
                   )
                 ),
 
-                // Measurements
-                React.createElement('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
+                // Measurements (hidden during challenge mode to prevent cheating)
+                !gd.challengeMode && React.createElement('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
                   React.createElement('div', { className: 'text-xs font-bold text-slate-400 uppercase tracking-wider mb-2' }, '\uD83D\uDCCF Measurements'),
                   React.createElement('div', { className: 'space-y-1.5' },
                     React.createElement('div', { className: 'flex justify-between text-xs' },
@@ -36820,10 +36952,10 @@
             ),
 
             // === CHALLENGE MODE PANEL ===
-            gd.challengeMode && challenge && React.createElement('div', { className: 'bg-gradient-to-br from-amber-900/30 to-orange-900/20 backdrop-blur-md rounded-xl border border-amber-600/40 p-4 space-y-3' },
+            gd.challengeMode && challenge && React.createElement('div', { className: 'bg-gradient-to-br from-amber-900/80 to-orange-900/60 backdrop-blur-md rounded-xl border-2 border-amber-500/60 p-4 space-y-3 shadow-lg shadow-amber-900/30' },
               // Challenge header with score
               React.createElement('div', { className: 'flex items-center justify-between' },
-                React.createElement('h3', { className: 'text-sm font-bold text-amber-300 flex items-center gap-2' }, '\uD83C\uDFAF Geometry Challenge'),
+                React.createElement('h3', { className: 'text-base font-black text-amber-200 flex items-center gap-2' }, '\uD83C\uDFAF Geometry Challenge'),
                 React.createElement('div', { className: 'flex items-center gap-3' },
                   React.createElement('span', { className: 'text-xs font-bold text-emerald-400' }, '\u2705 ' + challengeScore.correct),
                   React.createElement('span', { className: 'text-xs text-slate-400' }, '/'),
@@ -36832,12 +36964,12 @@
                 )
               ),
               // Shape info + question
-              React.createElement('div', { className: 'bg-slate-800/50 rounded-lg p-3 space-y-2' },
+              React.createElement('div', { className: 'bg-slate-800/80 rounded-lg p-3 space-y-2 border border-slate-600/50' },
                 React.createElement('div', { className: 'flex items-center gap-2' },
                   React.createElement('span', { className: 'text-xs font-bold text-sky-400 bg-sky-500/20 px-2 py-0.5 rounded-full' }, challenge.shapeName),
                   React.createElement('span', { className: 'text-xs text-slate-400 font-mono' }, challenge.dimDesc)
                 ),
-                React.createElement('p', { className: 'text-sm font-bold text-white' }, challenge.question + (challenge.unit ? ' (' + challenge.unit + ')' : ''))
+                React.createElement('p', { className: 'text-base font-black text-white' }, challenge.question + (challenge.unit ? ' (' + challenge.unit + ')' : ''))
               ),
               // Answer input + check button
               !challengeResult && React.createElement('div', { className: 'flex gap-2' },
@@ -36847,7 +36979,7 @@
                   onChange: e => upd('challengeAnswer', e.target.value),
                   onKeyDown: e => { if (e.key === 'Enter') checkChallengeAnswer(); },
                   placeholder: challenge.type === 'identify' ? 'Type the shape name...' : 'Enter your answer...',
-                  className: 'flex-1 px-3 py-2 bg-slate-700/60 border border-slate-600/50 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30',
+                  className: 'flex-1 px-4 py-3 bg-slate-900 border-2 border-amber-500/40 rounded-xl text-base text-white font-bold placeholder-slate-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30',
                   step: 'any'
                 }),
                 React.createElement('button', {
@@ -36874,7 +37006,7 @@
                 }, '\u27A1 Next Challenge')
               ),
               // Hint for numeric challenges
-              !challengeResult && ['volume','surfaceArea','lateralArea'].indexOf(challenge.type) >= 0 && React.createElement('div', { className: 'text-[10px] text-slate-500 italic' },
+              !challengeResult && ['volume','surfaceArea','lateralArea'].indexOf(challenge.type) >= 0 && React.createElement('div', { className: 'text-xs text-amber-300/70 italic bg-amber-900/20 rounded-lg p-2' },
                 '\uD83D\uDCA1 Tip: Your answer must be within 5% of the exact value. Use \u03C0 \u2248 3.14159'
               )
             ),
@@ -37121,6 +37253,30 @@
                         m.icon + ' ' + m.label
                       );
                     })
+                  )
+                ),
+                // ── Custom Color Palette (for Paint mode) ──
+                React.createElement('div', null,
+                  React.createElement('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 } }, '\uD83C\uDFA8 Custom Color'),
+                  React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                    ['#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#14b8a6','#06b6d4','#3b82f6','#6366f1','#8b5cf6','#a855f7','#ec4899','#f43f5e','#f8fafc','#94a3b8','#64748b','#1e293b'].map(function (c) {
+                      return React.createElement('button', {
+                        key: c,
+                        onClick: function () { upd('activeColor', c); },
+                        title: c,
+                        style: {
+                          width: 22, height: 22, borderRadius: 6, background: c, cursor: 'pointer',
+                          border: activeColor === c ? '3px solid #fff' : '1px solid rgba(255,255,255,.2)',
+                          boxShadow: activeColor === c ? '0 0 8px ' + c + '88' : 'none',
+                          transform: activeColor === c ? 'scale(1.15)' : 'scale(1)',
+                          transition: 'all 0.15s ease'
+                        }
+                      });
+                    })
+                  ),
+                  React.createElement('div', { style: { marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 } },
+                    React.createElement('span', { style: { width: 16, height: 16, borderRadius: 4, background: activeColor, display: 'inline-block', border: '1px solid rgba(255,255,255,.3)' } }),
+                    React.createElement('span', { style: { fontSize: 10, color: '#94a3b8' } }, 'Active: ' + activeColor)
                   )
                 )
               ),
