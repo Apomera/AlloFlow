@@ -46447,7 +46447,7 @@
 
             econTab === 'stockMarket' && React.createElement('div', { className: 'mt-4' },
               // AI Market Setup (if no companies yet)
-              !smCompanies ? React.createElement('div', { className: 'text-center py-8' },
+              (!smCompanies || smCompanies.length === 0) ? React.createElement('div', { className: 'text-center py-8' },
                 React.createElement('div', { className: 'text-5xl mb-4' }, '\uD83D\uDCC8'),
                 React.createElement('h3', { className: 'text-lg font-bold text-slate-800 mb-2' }, 'Create Your Market'),
                 React.createElement('p', { className: 'text-xs text-slate-500 mb-4 max-w-sm mx-auto' }, 'Describe what kind of market you want to trade in. AI will generate 5 fictional companies with realistic financials.'),
@@ -46487,7 +46487,7 @@
                 }, d.smLoading ? '\u23F3 AI generating companies...' : '\uD83D\uDE80 Open Market')
               ) :
                 // Company selector (only when companies exist)
-                smCompanies && React.createElement('div', null,
+                smCompanies && smCompanies.length > 0 && React.createElement('div', null,
                   React.createElement('div', { className: 'flex gap-2 mb-3' },
                     smCompanies.map(function (c, ci) {
                       return React.createElement('button', {
@@ -49200,7 +49200,8 @@
             ctx.translate(mx, my);
             // Spin rotation: rotate entire mouse during spin action
             if (blMouseAction === 'spin') {
-              var spinProgress = ((Date.now() % (tickDelay || 1500)) / (tickDelay || 1500));
+              var _spinDelay = (d.blSpeed || 1) === 3 ? 1200 : (d.blSpeed || 1) === 2 ? 2200 : 3200;
+              var spinProgress = ((Date.now() % _spinDelay) / _spinDelay);
               ctx.rotate(spinProgress * Math.PI * 2);
             }
             ctx.scale(breathScale, breathScale);
