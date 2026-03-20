@@ -1,0 +1,40 @@
+dissection tool starts: 29155
+first wheel ref after dissection: 33663: const wheelRef = function (canvas) {
+first zoom ref after dissection: 29503: // Apply zoom + pan transform
+
+=== ECONOMICS LAB ===
+L47262: var smNews = d.smNews || null;
+
+=== BEHAVIOR LAB ===
+L50096: // ── changeVar inline editor ──
+L50097: b.type === 'changeVar' && React.createElement("span", { className: "flex items-center gap-0.5" },
+L50098: React.createElement("input", {
+L50099: type: "text", value: b.varName || 'size',
+L50100: onChange: function (e) { updateBlockParam(idx, 'varName', e.target.value || 'size'); },
+L50101: className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+L50102: placeholder: "name"
+L50103: }),
+L50104: React.createElement("span", { className: "text-[10px] text-white/60" }, "+="),
+L50105: React.createElement("input", {
+L50106: type: "number", value: b.varDelta != null ? b.varDelta : 10,
+L50107: onChange: function (e) { updateBlockParam(idx, 'varDelta', parseFloat(e.target.value) || 0); },
+L50108: className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+L50109: style: { appearance: 'textfield' }
+L50110: })
+L50111: ),
+...
+L50666: var boost = proxDelta > 15 ? 0.6 : 0.3;
+L50667: w2.approachLever = Math.min(40, (w2.approachLever || 10) + boost);
+L50668: w2.pressLever = Math.min(12, (w2.pressLever || 3) + boost * 0.5);
+L50669: newWeights = w2;
+L50670: }
+L50671: }
+L50673: // Update cumulative record for target behavior
+L50674: var targetAction = currentLevel.target || 'pressLever';
+L50675: var cumCount = blCumRecord.length > 0 ? blCumRecord[blCumRecord.length - 1].cum : 0;
+L50676: if (action === targetAction) {
+
+brainwave found: 0
+Brainwave found: 0
+
+Geology timeline: 53890

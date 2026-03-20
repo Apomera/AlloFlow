@@ -1,0 +1,52 @@
+=== ECONOMICS pfIncome/pfSavings ===
+L47445: var remaining = Math.max(0, pfIncome - totalExp);
+L47470: ctx.fillText('Monthly Income: $' + pfIncome.toLocaleString(), W * 0.55, 40);
+L47471: ctx.font = '13px Inter, system-ui'; ctx.fillStyle = totalExp > pfIncome ? '#ef4444' : '#22c55e';
+L47472: ctx.fillText('Total Expenses: $' + totalExp.toLocaleString() + (totalExp > pfIncome ? ' \u26A0 OVER BUDGET' : ' \u2713 W
+L47474: ctx.fillText('Savings Rate: ' + (pfSavings / pfIncome * 100).toFixed(1) + '%', W * 0.55, 85);
+L47442: { name: 'Savings', val: pfSavings, color: '#22c55e' }
+L47474: ctx.fillText('Savings Rate: ' + (pfSavings / pfIncome * 100).toFixed(1) + '%', W * 0.55, 85);
+
+=== DISSECTION CANVAS HANDLERS ===
+L31686: onWheel: function (e) {
+L29504: var zoom = d.canvasZoom || 1;
+L31344: upd('canvasZoom', 1); upd('canvasPanX', 0); upd('canvasPanY', 0);
+L31372: var _z = d.canvasZoom || 1, _px = d.canvasPanX || 0, _py = d.canvasPanY || 0;
+L31424: var _z = d.canvasZoom || 1, _px = d.canvasPanX || 0, _py = d.canvasPanY || 0;
+L31430: canvas.style.cursor = hit ? 'pointer' : (canvas._isPanning ? 'grabbing' : ((d.canvasZoom || 1) > 1 ? 'grab' : 'crosshair
+L31666: if ((d.canvasZoom || 1) > 1.01 && !d.annotateMode && !d.rulerMode) {
+L31680: canvas.style.cursor = (d.canvasZoom || 1) > 1.01 ? 'grab' : 'crosshair';
+L31692: var z = d.canvasZoom || 1;
+L31698: upd('canvasZoom', z);
+L31707: onClick: function () { var z = Math.max(0.7, (d.canvasZoom || 1) * 0.9); if (Math.abs(z - 1) < 0.03) z = 1; if (z === 1)
+L31711: React.createElement("span", { className: "text-xs font-semibold text-slate-600 min-w-[48px] text-center select-none" }, 
+L31713: onClick: function () { var z = Math.min(2.5, (d.canvasZoom || 1) * 1.1); if (Math.abs(z - 1) < 0.03) z = 1; upd('canvasZ
+L31717: ((d.canvasZoom && d.canvasZoom !== 1) || d.canvasPanX || d.canvasPanY) && React.createElement("button", {
+L31718: onClick: function () { upd('canvasZoom', 1); upd('canvasPanX', 0); upd('canvasPanY', 0); },
+L31693: var factor = e.deltaY > 0 ? 0.97 : 1.03;
+
+=== BEHAVIOR LAB RENDER PHASE ===
+
+=== Around L50670 (broader) ===
+L50651: upd('blPosHistory', newPosHist);
+L50660: upd('blProxDelta', Math.round(proxDelta * 10) / 10);
+L50678: upd('blLastTargetTick', newTick);
+L50691: upd('blChainStep', curChainStep);
+L50700: upd('blChainStep', 0);
+
+=== upd at L50103 ===
+L50099: type: "text", value: b.varName || 'size',
+L50100: onChange: function (e) { updateBlockParam(idx, 'varName', e.target.value || 'size'); },
+L50101: className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+L50102: placeholder: "name"
+L50103: }),
+L50104: React.createElement("span", { className: "text-[10px] text-white/60" }, "+="),
+L50105: React.createElement("input", {
+L50106: type: "number", value: b.varDelta != null ? b.varDelta : 10,
+L50107: onChange: function (e) { updateBlockParam(idx, 'varDelta', parseFloat(e.target.value) || 0); },
+L50108: className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+L50109: style: { appearance: 'textfield' }
+
+=== L50670 context ===
+L50670: "}"
+L50671: "}"

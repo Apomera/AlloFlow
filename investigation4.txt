@@ -1,0 +1,19 @@
+=== advanceTick calls ===
+L50573: function advanceTick() {
+L50849: setTimeout(function () { advanceTick(); }, tickDelay);
+
+=== BL setInterval/setTimeout tick ===
+L50528: setTimeout(function () { upd('blFoodVisible', false); }, 1200);
+L50766: setTimeout(function () { upd('blFoodVisible', false); }, 1200);
+L50849: setTimeout(function () { advanceTick(); }, tickDelay);
+L51361: // ── Render canvases via setTimeout (no hooks in conditional IIFE) ──
+L51362: setTimeout(function () {
+
+=== BL mouse anim ===
+
+=== Earthquake Lab ===
+earthquakeLab starts: 0
+earthquakeV2 starts: 0
+epidemicSim starts: 52109
+plateTectonics starts: 53354
+anatomy starts: 28139
