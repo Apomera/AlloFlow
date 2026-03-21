@@ -4,6 +4,32 @@
 // Usage: Add <script src="stem_tool_dna.js"></script> after stem_lab_module.js
 // ═══════════════════════════════════════════════════════
 
+// ═══ Defensive StemLab guard ═══
+// Ensure window.StemLab is available before registering tools.
+// If stem_lab_module.js hasn't loaded yet, create the registry stub.
+window.StemLab = window.StemLab || {
+  _registry: {},
+  _order: [],
+  registerTool: function(id, config) {
+    config.id = id;
+    config.ready = config.ready !== false;
+    this._registry[id] = config;
+    if (this._order.indexOf(id) === -1) this._order.push(id);
+    console.log('[StemLab] Registered tool: ' + id);
+  },
+  getRegisteredTools: function() {
+    var self = this;
+    return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean);
+  },
+  isRegistered: function(id) { return !!this._registry[id]; },
+  renderTool: function(id, ctx) {
+    var tool = this._registry[id];
+    if (!tool || !tool.render) return null;
+    try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
+  }
+};
+// ═══ End Guard ═══
+
 (function() {
   'use strict';
 

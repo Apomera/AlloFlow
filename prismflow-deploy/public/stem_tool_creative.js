@@ -4,6 +4,32 @@
 // Auto-extracted (Phase 2 modularization)
 // ═══════════════════════════════════════════
 
+// ═══ Defensive StemLab guard ═══
+// Ensure window.StemLab is available before registering tools.
+// If stem_lab_module.js hasn't loaded yet, create the registry stub.
+window.StemLab = window.StemLab || {
+  _registry: {},
+  _order: [],
+  registerTool: function(id, config) {
+    config.id = id;
+    config.ready = config.ready !== false;
+    this._registry[id] = config;
+    if (this._order.indexOf(id) === -1) this._order.push(id);
+    console.log('[StemLab] Registered tool: ' + id);
+  },
+  getRegisteredTools: function() {
+    var self = this;
+    return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean);
+  },
+  isRegistered: function(id) { return !!this._registry[id]; },
+  renderTool: function(id, ctx) {
+    var tool = this._registry[id];
+    if (!tool || !tool.render) return null;
+    try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
+  }
+};
+// ═══ End Guard ═══
+
 (function() {
   'use strict';
 
@@ -9503,9 +9529,17 @@ var d = (labToolData && labToolData._dataStudio) || {};
             }
 
             return parse();
+
+          }
+
+
+
+          // ── Main UI ──
+          // (Tool render returns from within the IIFE)
+          return null;
       })();
     }
   });
 
-  console.log('[StemLab] stem_tool_creative.js loaded — 4 tools');
+  console.log('[StemLab] stem_tool_creative.js loaded \u2014 4 tools');
 })();
