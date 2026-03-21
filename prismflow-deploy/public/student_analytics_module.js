@@ -22,6 +22,53 @@
   var useMemo = React.useMemo;
   var memo = React.memo;
 
+  // ── External dependency shims ──────────────────────────────────
+  // Utility functions from App.jsx
+  var safeGetItem = window.safeGetItem || function(key) {
+    try { return localStorage.getItem(key); } catch(e) { return null; }
+  };
+  var safeSetItem = window.safeSetItem || function(key, val) {
+    try { localStorage.setItem(key, val); } catch(e) {}
+  };
+  var warnLog = window.warnLog || function() {
+    console.warn.apply(console, arguments);
+  };
+
+  // Bot reference (used for alloBotRef.current.speak())
+  var alloBotRef = window.alloBotRef || { current: null };
+
+  // Safety content checker
+  var SafetyContentChecker = window.SafetyContentChecker || {
+    check: function() { return []; },
+    categoryLabel: function(cat) { return cat || 'Unknown'; }
+  };
+
+  // Grade-subtest batteries constant
+  var GRADE_SUBTEST_BATTERIES = window.GRADE_SUBTEST_BATTERIES || {
+    'K':   ['segmentation', 'blending', 'isolation'],
+    '1':   ['segmentation', 'blending', 'isolation', 'spelling', 'orf'],
+    '2':   ['segmentation', 'blending', 'rhyming', 'spelling', 'orf'],
+    '3-5': ['segmentation', 'rhyming', 'spelling', 'orf']
+  };
+
+  // Lucide icons (loaded globally via CDN)
+  var lucide = window.lucide || {};
+  var AlertCircle = lucide.AlertCircle || function() { return null; };
+  var BarChart2 = lucide.BarChart2 || function() { return null; };
+  var BarChart3 = lucide.BarChart3 || function() { return null; };
+  var ChevronLeft = lucide.ChevronLeft || function() { return null; };
+  var ClipboardList = lucide.ClipboardList || function() { return null; };
+  var Cloud = lucide.Cloud || function() { return null; };
+  var Download = lucide.Download || function() { return null; };
+  var Printer = lucide.Printer || function() { return null; };
+  var Settings = lucide.Settings || function() { return null; };
+  var ShieldCheck = lucide.ShieldCheck || function() { return null; };
+  var Trash2 = lucide.Trash2 || function() { return null; };
+  var Upload = lucide.Upload || function() { return null; };
+  var Users = lucide.Users || function() { return null; };
+  var Wifi = lucide.Wifi || function() { return null; };
+  // ── End dependency shims ───────────────────────────────────────
+
   // @section STUDENT_ANALYTICS — RTI probes and student analytics
   const StudentAnalyticsPanel = React.memo(({
     isOpen,
