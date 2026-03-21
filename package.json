@@ -1,5 +1,9 @@
 {
   "dependencies": {
     "acorn": "^8.16.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.28.6",
+    "@babel/plugin-transform-react-jsx": "^7.28.6"
   }
 }
