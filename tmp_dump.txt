@@ -1,0 +1,17 @@
+m">
+                                    Loading Math Fluency module...
+                                </div>
+                            );
+                            return <MathFluencyComponent
+                                gradeLevel={gradeLevel}
+                                t={t}
+                                addToast={addToast}
+                                storageDB={storageDB}
+                                handleScoreUpdate={handleScoreUpdate}
+                                onProbeComplete={(entry) => setHistory(prev => [...prev, entry])}
+                            />;
+                        })()}}
+{mathMode === 'Volume Builder' && (() => {
+                            const volume = cubeDims.l * cubeDims.w * cubeDims.h;
+                            const surfaceArea = 2 * (cubeDims.l * cubeDims.w + cubeDims.l * cubeDims.h + cubeDims.w * cubeDims.h);
+                            const cubeUnit = Math.max(18, Math.min(36, 240 / Math.max(cubeDims.l, cubeDims.w, cubeDi
