@@ -17138,6 +17138,7 @@ Keep it under 150 words.`);
         var _ap2 = useState(false), aiProcessing2 = _ap2[0], setAiProcessing2 = _ap2[1];
         var _cp2 = useState(null), ioaComparison2 = _cp2[0], setIoaComparison2 = _cp2[1];
         var _ca = useState(null), aiVsAiComparison = _ca[0], setAiVsAiComparison = _ca[1];
+        var _sd = useState(''), subjectDescription = _sd[0], setSubjectDescription = _sd[1];
         var ioaFileRef = useRef(null);
 
         var IOA_METHODS_LIST = [
@@ -17267,11 +17268,13 @@ Keep it under 150 words.`);
             reader.onload = function() {
                 var base64Data = reader.result;
                 var sampDesc = IOA_SAMPLING.find(function(s) { return s.id === samplingMethod; });
+                var subjectLine = (studentName || 'Subject') + (subjectDescription.trim() ? ' — VISUAL IDENTIFICATION: ' + subjectDescription.trim() : '');
                 var prompt = 'You are an expert behavior analyst (BCBA) conducting behavioral observation coding from ' + mediaType + '.\n\n' +
                     'RECORDING METHOD: ' + (sampDesc ? sampDesc.label + ' — ' + sampDesc.desc : samplingMethod) + '\n' +
                     'INTERVAL LENGTH: ' + aiIntervalSec + ' seconds\n' +
                     'TARGET BEHAVIOR(S): ' + targetBehaviors.trim() + '\n' +
-                    'STUDENT/SUBJECT: ' + (studentName || 'Subject') + '\n\n' +
+                    'STUDENT/SUBJECT: ' + subjectLine + '\n' +
+                    'IMPORTANT: Focus ONLY on the identified subject. If multiple people are visible, carefully distinguish the target individual using the description above. Do NOT code behaviors of other individuals.\n\n' +
                     'INSTRUCTIONS:\n' +
                     '1. Analyze the ' + mediaType + ' in sequential ' + aiIntervalSec + '-second intervals\n' +
                     '2. For each interval, code whether the target behavior occurred based on the recording method\n' +
@@ -17327,7 +17330,8 @@ Keep it under 150 words.`);
                     'RECORDING METHOD: ' + (sampDesc2 ? sampDesc2.label + ' — ' + sampDesc2.desc : samplingMethod) + '\n' +
                     'INTERVAL LENGTH: ' + aiIntervalSec + ' seconds\n' +
                     'TARGET BEHAVIOR(S): ' + targetBehaviors.trim() + '\n' +
-                    'STUDENT/SUBJECT: ' + (studentName || 'Subject') + '\n\n' +
+                    'STUDENT/SUBJECT: ' + ((studentName || 'Subject') + (subjectDescription.trim() ? ' — VISUAL IDENTIFICATION: ' + subjectDescription.trim() : '')) + '\n' +
+                    'IMPORTANT: Focus ONLY on the identified subject. Do NOT code behaviors of other individuals.\n\n' +
                     'INSTRUCTIONS:\n' +
                     '1. Watch/listen to the entire ' + mediaType + ' carefully and divide into ' + aiIntervalSec + '-second intervals\n' +
                     '2. For each interval, independently determine if the target behavior occurred\n' +
@@ -17548,7 +17552,40 @@ Keep it under 150 words.`);
                         h('div', { className: 'w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-black' }, '1'),
                         h('h3', { className: 'text-sm font-black text-slate-800' }, 'Define Target Behavior(s)')
                     ),
-                    h('textarea', { value: targetBehaviors, onChange: function(e) { setTargetBehaviors(e.target.value); }, 'aria-label': 'Target behaviors', placeholder: 'Describe the target behavior operationally, e.g.:\n- Out-of-seat: buttocks leave the seat surface\n- Verbal disruption: audible vocalization not directed at task', rows: 3, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none resize-none' })
+                    h('textarea', { value: targetBehaviors, onChange: function(e) { setTargetBehaviors(e.target.value); }, 'aria-label': 'Target behaviors', placeholder: 'Describe the target behavior operationally, e.g.:\n- Out-of-seat: buttocks leave the seat surface\n- Verbal disruption: audible vocalization not directed at task', rows: 3, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none resize-none' }),
+                    // Subject Identification
+                    h('div', { className: 'mt-3 pt-3 border-t border-slate-100' },
+                        h('div', { className: 'flex items-center gap-2 mb-2' },
+                            h('span', { className: 'text-sm' }, '👤'),
+                            h('span', { className: 'text-xs font-bold text-slate-700' }, 'Subject Identification'),
+                            h('span', { className: 'text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full' }, 'RECOMMENDED')
+                        ),
+                        h('p', { className: 'text-[10px] text-slate-500 mb-2' }, 'Describe the subject so the AI can distinguish them from others in the recording. Include clothing, seating position, or physical characteristics. The student name (if entered on the main form) helps with audio recognition when someone addresses the subject by name.'),
+                        h('textarea', { value: subjectDescription, onChange: function(e) { setSubjectDescription(e.target.value); }, 'aria-label': 'Subject description', placeholder: 'e.g., Student wearing blue hoodie, seated at front-left desk, brown hair in ponytail. Only person at that table.', rows: 2, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-400 outline-none resize-none' })
+                    )
+                ),
+                // Recording Best Practices
+                h('details', { className: 'bg-sky-50 rounded-xl border border-sky-200 shadow-sm' },
+                    h('summary', { className: 'p-3 text-xs font-bold text-sky-700 cursor-pointer select-none flex items-center gap-2' },
+                        h('span', null, '📹'),
+                        h('span', null, 'Recording Best Practices for Accurate AI Coding')
+                    ),
+                    h('div', { className: 'px-4 pb-3 space-y-2' },
+                        h('div', { className: 'grid grid-cols-2 gap-2' },
+                            [['🎯 Camera Position', 'Position camera to keep the target student consistently visible. Avoid frequent panning or zooming.'],
+                             ['💡 Lighting', 'Ensure adequate lighting. Avoid backlighting (window behind subject) which creates silhouettes.'],
+                             ['🔇 Audio Clarity', 'Minimize background noise. Place recording device close enough to capture verbal behaviors.'],
+                             ['⏱️ Clip Length', '5-15 minute clips work best. Very long recordings (>30 min) may reduce accuracy.'],
+                             ['👥 Obstruction', 'Minimize other people walking between camera and subject. Clear line of sight is critical.'],
+                             ['📐 Stability', 'Use a tripod or fixed mount. Shaky handheld footage reduces coding accuracy.']].map(function(tip, i) {
+                                return h('div', { key: i, className: 'bg-white rounded-lg p-2.5 border border-sky-100' },
+                                    h('div', { className: 'text-[10px] font-bold text-sky-800' }, tip[0]),
+                                    h('div', { className: 'text-[10px] text-sky-600 mt-0.5' }, tip[1])
+                                );
+                            })
+                        ),
+                        h('div', { className: 'text-[9px] text-sky-500 italic mt-1' }, 'Following these guidelines significantly improves AI coding reliability. The AI works best with stable, well-lit recordings where the subject is consistently visible and identifiable.')
+                    )
                 ),
                 h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
                     h('div', { className: 'flex items-center gap-2 mb-2' },
