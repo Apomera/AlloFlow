@@ -7252,7 +7252,7 @@ Use professional, objective language. Do NOT use the student codename — use "t
 
     // ─── PracticeSandbox ────────────────────────────────────────────────
     // AI + pre-built scenario generator for PD / research practice
-    const PracticeSandbox = ({ onLoadScenario, callGemini, t, addToast }) => {
+    const PracticeSandbox = ({ onLoadScenario, abcEntries, callGemini, t, addToast }) => {
         const [customFunc, setCustomFunc] = useState('escape');
         const [customGrade, setCustomGrade] = useState('3-5');
         const [customContext, setCustomContext] = useState('');
@@ -7265,6 +7265,16 @@ Use professional, objective language. Do NOT use the student codename — use "t
         const dayOptions = [7, 14, 30, 60, 90];
         const entryOptions = [5, 10, 15, 20, 30];
         const obsOptions = [1, 2, 3, 5];
+
+        // ── Phase Data Generation State ──
+        const [phaseLabel, setPhaseLabel] = useState('intervention');
+        const [interventionDesc, setInterventionDesc] = useState('');
+        const [expectedPattern, setExpectedPattern] = useState('improving');
+        const [phaseDays, setPhaseDays] = useState(14);
+        const [phaseEntries, setPhaseEntries] = useState(10);
+        const [phaseGenerating, setPhaseGenerating] = useState(false);
+        const phaseDayOptions = [7, 14, 30];
+        const phaseEntryOptions = [5, 10, 15, 20];
 
         const functions = [
             { id: 'escape', label: '🚪 Escape/Avoidance' },
@@ -7569,6 +7579,194 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                     disabled: generating,
                     className: 'w-full py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
                 }, generating ? '⏳ Generating Scenario...' : '🧠 Generate Custom Scenario')
+            ),
+
+            // ═══════ ADD PHASE DATA (visible when data is loaded) ═══════
+            (abcEntries && abcEntries.length > 0) && h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-5 shadow-sm' },
+                h('div', { className: 'flex items-center justify-between mb-3' },
+                    h('h3', { className: 'text-sm font-black text-slate-800 flex items-center gap-2' }, '📊 Add Phase Data'),
+                    h('span', { className: 'text-[10px] bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold' }, `${abcEntries.length} entries loaded`)
+                ),
+                h('p', { className: 'text-xs text-slate-500 mb-4' }, 'Generate additional data representing a new phase (e.g., after implementing an intervention). New entries will be appended to existing data with timestamps continuing forward.'),
+
+                // Phase selector
+                h('div', { className: 'mb-3' },
+                    h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1.5' }, '🏷️ Phase Label'),
+                    h('div', { className: 'flex gap-2 flex-wrap' },
+                        [
+                            { id: 'intervention', label: '💊 Intervention', color: 'emerald' },
+                            { id: 'maintenance', label: '📈 Maintenance', color: 'blue' },
+                            { id: 'return_baseline', label: '🔄 Return to Baseline', color: 'amber' }
+                        ].map(p => h('button', {
+                            key: p.id,
+                            onClick: () => setPhaseLabel(p.id),
+                            className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${phaseLabel === p.id
+                                ? `bg-${p.color}-100 text-${p.color}-700 border-2 border-${p.color}-400`
+                                : 'bg-slate-50 text-slate-500 border-2 border-transparent hover:border-slate-200'}`
+                        }, p.label))
+                    )
+                ),
+
+                // Intervention description
+                h('div', { className: 'mb-3' },
+                    h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1' }, '📋 Intervention / Phase Description'),
+                    h('textarea', {
+                        value: interventionDesc,
+                        onChange: e => setInterventionDesc(e.target.value),
+                        placeholder: 'e.g., "Implemented token economy with 5-minute check-ins and visual schedule. Student earns stars for on-task behavior, exchangeable for 10 min preferred activity."',
+                        rows: 3,
+                        className: 'w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none'
+                    })
+                ),
+
+                // Expected pattern
+                h('div', { className: 'mb-3' },
+                    h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1.5' }, '📉 Expected Pattern'),
+                    h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
+                        [
+                            { id: 'improving', label: '📈 Improving', desc: 'Gradual decrease in problem behavior' },
+                            { id: 'stable', label: '➡️ Stable', desc: 'Behavior stays at similar levels' },
+                            { id: 'regressing', label: '📉 Regressing', desc: 'Behavior worsens over time' },
+                            { id: 'variable', label: '🔀 Variable', desc: 'Inconsistent — some good days, some bad' }
+                        ].map(p => h('button', {
+                            key: p.id,
+                            onClick: () => setExpectedPattern(p.id),
+                            className: `p-2 rounded-lg text-left transition-all ${expectedPattern === p.id
+                                ? 'bg-indigo-50 border-2 border-indigo-400'
+                                : 'bg-slate-50 border-2 border-transparent hover:border-slate-200'}`
+                        },
+                            h('div', { className: 'text-xs font-bold ' + (expectedPattern === p.id ? 'text-indigo-700' : 'text-slate-600') }, p.label),
+                            h('div', { className: 'text-[9px] ' + (expectedPattern === p.id ? 'text-indigo-500' : 'text-slate-400') }, p.desc)
+                        ))
+                    )
+                ),
+
+                // Parameters row
+                h('div', { className: 'grid grid-cols-2 gap-3 mb-4' },
+                    h('div', null,
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1' }, '📅 Phase Duration'),
+                        h('select', {
+                            value: phaseDays,
+                            onChange: e => setPhaseDays(parseInt(e.target.value)),
+                            className: 'w-full px-2 py-2 border border-slate-200 rounded-lg text-sm bg-white'
+                        }, phaseDayOptions.map(d => h('option', { key: d, value: d }, d + ' days')))
+                    ),
+                    h('div', null,
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1' }, '📝 New Entries'),
+                        h('select', {
+                            value: phaseEntries,
+                            onChange: e => setPhaseEntries(parseInt(e.target.value)),
+                            className: 'w-full px-2 py-2 border border-slate-200 rounded-lg text-sm bg-white'
+                        }, phaseEntryOptions.map(n => h('option', { key: n, value: n }, n + ' entries')))
+                    )
+                ),
+
+                // Summary preview
+                h('div', { className: 'mb-4 p-3 bg-slate-50 rounded-lg border border-slate-100' },
+                    h('div', { className: 'text-[10px] font-bold text-slate-500 mb-1' }, '📋 Generation Preview'),
+                    h('div', { className: 'text-xs text-slate-600' },
+                        `Will generate ${phaseEntries} new ${phaseLabel.replace('_', ' ')} entries spanning ${phaseDays} days, ` +
+                        `starting after your latest existing entry. Pattern: ${expectedPattern}. ` +
+                        `Total entries after: ${abcEntries.length + phaseEntries}.`
+                    )
+                ),
+
+                // Generate button
+                callGemini && h('button', {
+                    onClick: async () => {
+                        if (!callGemini || phaseGenerating) return;
+                        setPhaseGenerating(true);
+                        try {
+                            // Find the latest timestamp in existing data
+                            const timestamps = abcEntries.map(e => new Date(e.timestamp || e.date || 0).getTime()).filter(t => !isNaN(t));
+                            const latestTs = timestamps.length > 0 ? Math.max(...timestamps) : Date.now();
+                            const startDate = new Date(latestTs + 86400000); // day after last entry
+
+                            // Get last 5 entries for context
+                            const recentEntries = abcEntries.slice(-5).map(e =>
+                                `[${new Date(e.timestamp || e.date || 0).toLocaleDateString()}] B: ${e.behavior} | A: ${e.antecedent} | C: ${e.consequence} | Intensity: ${e.intensity}/5`
+                            ).join('\n');
+
+                            const phaseLabels = { intervention: 'Intervention', maintenance: 'Maintenance', return_baseline: 'Return to Baseline' };
+                            const patternInstructions = {
+                                improving: 'Show a GRADUAL DECREASE in problem behavior frequency and intensity over the time period. Include occasional setback days but the overall trend should be clearly improving. Later entries should show more replacement behaviors and lower intensity.',
+                                stable: 'Keep behavior frequency and intensity roughly the SAME as the baseline data. No significant improvement or worsening.',
+                                regressing: 'Show an INCREASE in problem behavior frequency and intensity. Include escalation patterns and new challenging behaviors emerging.',
+                                variable: 'Show INCONSISTENT patterns — some days with significant improvement, others with regression. Include "good weeks" and "bad weeks" with no clear trend.'
+                            };
+
+                            const prompt = `You are a BCBA creating realistic but FICTIONAL student behavioral data for educator training.
+${RESTORATIVE_PREAMBLE}
+
+CONTEXT: The user has already collected BASELINE behavioral data. Now they are generating data for the ${phaseLabels[phaseLabel] || 'Intervention'} phase.
+
+Previous baseline data (last 5 entries):
+${recentEntries}
+
+${interventionDesc ? `INTERVENTION DESCRIPTION: ${interventionDesc}` : 'INTERVENTION: A general behavioral intervention has been implemented.'}
+
+EXPECTED PATTERN: ${patternInstructions[expectedPattern] || patternInstructions.improving}
+
+PHASE: ${phaseLabels[phaseLabel] || 'Intervention'}
+Start date: ${startDate.toISOString().split('T')[0]}
+Duration: ${phaseDays} days
+
+Generate ${phaseEntries} ABC entries that CONTINUE the student's story during the ${phaseLabels[phaseLabel]} phase.
+
+Return ONLY valid JSON with this EXACT structure (no markdown, no explanation):
+{
+  "entries": [
+    {
+      "id": "phase_1",
+      "timestamp": "ISO date string (spread across the ${phaseDays}-day period starting from ${startDate.toISOString().split('T')[0]})",
+      "behavior": "Observable, measurable description",
+      "antecedent": "What happened before",
+      "consequence": "What happened after — reference the intervention when relevant",
+      "setting": "Where and when",
+      "intensity": 1-5,
+      "duration": "estimated duration",
+      "notes": "optional note — may reference intervention effects",
+      "phase": "${phaseLabel}"
+    }
+  ]
+}
+
+Rules:
+- Include a mix of challenging and positive behaviors, weighted by the expected pattern
+- Reference the specific intervention in consequences when appropriate
+- Use realistic school settings consistent with the baseline data
+- Make timestamps spread across the ${phaseDays}-day period starting from ${startDate.toISOString().split('T')[0]}
+- Include notes that reference intervention effectiveness where relevant
+- Each entry MUST have a "phase" field set to "${phaseLabel}"`;
+
+                            const raw = await callGemini(prompt, true);
+                            let data;
+                            try {
+                                const jsonMatch = raw.match(/\{[\s\S]*\}/);
+                                data = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
+                            } catch (parseErr) {
+                                throw new Error('Could not parse AI response as JSON');
+                            }
+
+                            if (data.entries && data.entries.length > 0 && onLoadScenario) {
+                                // Tag existing entries with baseline phase if not already tagged
+                                const taggedExisting = abcEntries.map(e => e.phase ? e : Object.assign({}, e, { phase: 'baseline' }));
+                                // Ensure new entries have the phase tag
+                                const taggedNew = data.entries.map(e => Object.assign({}, e, { phase: e.phase || phaseLabel }));
+                                onLoadScenario({
+                                    entries: taggedExisting.concat(taggedNew),
+                                    append: true
+                                });
+                                if (addToast) addToast(`Added ${taggedNew.length} ${phaseLabels[phaseLabel]} entries ✨`, 'success');
+                            }
+                        } catch (err) {
+                            warnLog('Phase data generation failed:', err);
+                            if (addToast) addToast('Phase data generation failed — try again', 'error');
+                        } finally { setPhaseGenerating(false); }
+                    },
+                    disabled: phaseGenerating,
+                    className: 'w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
+                }, phaseGenerating ? '⏳ Generating Phase Data...' : '🧠 Generate Phase Data')
             )
         );
     };
@@ -21602,10 +21800,13 @@ IMPORTANT rules for expert keys:
         // Practice sandbox data loader
         const handleLoadScenario = (scenarioData) => {
             setAbcEntries(scenarioData.entries || []);
-            setObservationSessions(scenarioData.observations || []);
-            setAiAnalysis(null);
+            if (!scenarioData.append) {
+                // Full load — reset analysis and observations
+                setObservationSessions(scenarioData.observations || []);
+                setAiAnalysis(null);
+                setPracticeScenarioName(scenarioData.name || 'Practice Scenario');
+            }
             setIsPracticeMode(true);
-            setPracticeScenarioName(scenarioData.name || 'Practice Scenario');
             setActivePanel('hub');
         };
         const handleClearPractice = () => {
@@ -24147,6 +24348,7 @@ Analyze this data and return ONLY valid JSON:
                 }),
                 activePanel === 'sandbox' && h(PracticeSandbox, {
                     onLoadScenario: handleLoadScenario,
+                    abcEntries,
                     callGemini: callGeminiWithContext,
                     t,
                     addToast
