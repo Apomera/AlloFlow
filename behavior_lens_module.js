@@ -17134,6 +17134,10 @@ Keep it under 150 words.`);
         var _pg = useState(0), aiProgress = _pg[0], setAiProgress = _pg[1];
         var _dc = useState([]), discrepancies = _dc[0], setDiscrepancies = _dc[1];
         var _cp = useState(null), ioaComparison = _cp[0], setIoaComparison = _cp[1];
+        var _ac2 = useState(null), aiCoding2 = _ac2[0], setAiCoding2 = _ac2[1];
+        var _ap2 = useState(false), aiProcessing2 = _ap2[0], setAiProcessing2 = _ap2[1];
+        var _cp2 = useState(null), ioaComparison2 = _cp2[0], setIoaComparison2 = _cp2[1];
+        var _ca = useState(null), aiVsAiComparison = _ca[0], setAiVsAiComparison = _ca[1];
         var ioaFileRef = useRef(null);
 
         var IOA_METHODS_LIST = [
@@ -17306,6 +17310,113 @@ Keep it under 150 words.`);
             reader.readAsDataURL(mediaFile);
         }
 
+        // Second Independent AI Pass (Double-Blind)
+        function runSecondAIPass() {
+            if (!mediaFile || !callGemini) return;
+            setAiProcessing2(true);
+            setAiCoding2(null);
+            setIoaComparison2(null);
+            setAiVsAiComparison(null);
+
+            var reader2 = new FileReader();
+            reader2.onload = function() {
+                var base64Data2 = reader2.result;
+                var sampDesc2 = IOA_SAMPLING.find(function(s) { return s.id === samplingMethod; });
+                var prompt2 = 'You are a behavioral observation coder performing an INDEPENDENT reliability review of a ' + mediaType + ' recording.\n\n' +
+                    'This is a blind review — you have NO knowledge of any prior coding for this recording. Code entirely from scratch.\n\n' +
+                    'RECORDING METHOD: ' + (sampDesc2 ? sampDesc2.label + ' — ' + sampDesc2.desc : samplingMethod) + '\n' +
+                    'INTERVAL LENGTH: ' + aiIntervalSec + ' seconds\n' +
+                    'TARGET BEHAVIOR(S): ' + targetBehaviors.trim() + '\n' +
+                    'STUDENT/SUBJECT: ' + (studentName || 'Subject') + '\n\n' +
+                    'INSTRUCTIONS:\n' +
+                    '1. Watch/listen to the entire ' + mediaType + ' carefully and divide into ' + aiIntervalSec + '-second intervals\n' +
+                    '2. For each interval, independently determine if the target behavior occurred\n' +
+                    '3. Be thorough — pay close attention to subtle instances\n' +
+                    '4. Provide your confidence level for each interval\n\n' +
+                    'Return ONLY valid JSON:\n' +
+                    '{"intervals": [{"start_sec": 0, "end_sec": ' + aiIntervalSec + ', "code": 0, "confidence": 95, "observation": "brief note", "uncertain": false}], "total_intervals": 6, "summary": "overall summary", "behavior_rate": "rate"}';
+
+                callGemini(prompt2, false, base64Data2)
+                    .then(function(result2) {
+                        try {
+                            var parsed2 = JSON.parse(result2.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
+                            setAiCoding2(parsed2);
+                            if (addToast) addToast('Second AI review complete: ' + (parsed2.intervals || []).length + ' intervals', 'success');
+                            // Auto-run triple comparison
+                            doTripleComparison(aiCoding, parsed2);
+                        } catch (pe2) {
+                            warnLog('AI IOA pass 2 parse failed', pe2);
+                            if (addToast) addToast('Second AI pass could not be parsed — try again', 'error');
+                        }
+                    })
+                    .catch(function(err2) {
+                        warnLog('AI IOA pass 2 failed', err2);
+                        if (addToast) addToast('Second pass failed: ' + (err2.message || 'Unknown error'), 'error');
+                    })
+                    .finally(function() {
+                        setAiProcessing2(false);
+                    });
+            };
+            reader2.onerror = function() {
+                setAiProcessing2(false);
+                if (addToast) addToast('Failed to read file for second pass', 'error');
+            };
+            reader2.readAsDataURL(mediaFile);
+        }
+
+        // Triple comparison: Practitioner×AI1, Practitioner×AI2, AI1×AI2
+        function doTripleComparison(pass1, pass2) {
+            var p1 = pass1 || aiCoding;
+            var p2 = pass2 || aiCoding2;
+            if (!p1 || !p2 || !p1.intervals || !p2.intervals) return;
+            var practData = practitionerCoding.trim() ? practitionerCoding.split(',').map(function(s) { return parseFloat(s.trim()); }).filter(function(n) { return !isNaN(n); }) : [];
+            var maxLen = Math.max(p1.intervals.length, p2.intervals.length, practData.length);
+            // AI1 vs AI2
+            var aiAgree = 0;
+            var aiDetails = [];
+            for (var i = 0; i < maxLen; i++) {
+                var a1 = p1.intervals[i] ? p1.intervals[i].code : null;
+                var a2 = p2.intervals[i] ? p2.intervals[i].code : null;
+                var c1 = p1.intervals[i] ? p1.intervals[i].confidence : 0;
+                var c2 = p2.intervals[i] ? p2.intervals[i].confidence : 0;
+                var startSec = i * aiIntervalSec;
+                var agree;
+                if (samplingMethod === 'frequency' || samplingMethod === 'duration') {
+                    agree = a1 === a2;
+                } else {
+                    agree = (a1 > 0 ? 1 : 0) === (a2 > 0 ? 1 : 0);
+                }
+                if (agree) aiAgree++;
+                aiDetails.push({ interval: i + 1, startTime: ioaFmtTime(startSec), endTime: ioaFmtTime(startSec + aiIntervalSec), ai1: a1, ai2: a2, conf1: c1, conf2: c2, agree: agree });
+            }
+            var aiPct = maxLen > 0 ? ((aiAgree / maxLen) * 100).toFixed(1) : '0';
+            setAiVsAiComparison({ agreementPct: aiPct, totalIntervals: maxLen, agreements: aiAgree, disagreements: maxLen - aiAgree, interpretation: parseFloat(aiPct) >= 80 ? 'Acceptable (≥80%)' : 'Below threshold', details: aiDetails });
+
+            // Practitioner vs AI2
+            if (practData.length > 0) {
+                var agree2 = 0;
+                var details2 = [];
+                var disagree2 = [];
+                for (var j = 0; j < maxLen; j++) {
+                    var pv = practData[j] !== undefined ? practData[j] : null;
+                    var av = p2.intervals[j] ? p2.intervals[j].code : null;
+                    var ag;
+                    if (samplingMethod === 'frequency' || samplingMethod === 'duration') {
+                        ag = pv === av;
+                    } else {
+                        ag = (pv > 0 ? 1 : 0) === (av > 0 ? 1 : 0);
+                    }
+                    if (ag) agree2++;
+                    var en = { interval: j + 1, startTime: ioaFmtTime(j * aiIntervalSec), endTime: ioaFmtTime((j + 1) * aiIntervalSec), practitioner: pv, ai: av, agree: ag };
+                    details2.push(en);
+                    if (!ag) disagree2.push(en);
+                }
+                var pct2 = maxLen > 0 ? ((agree2 / maxLen) * 100).toFixed(1) : '0';
+                setIoaComparison2({ agreementPct: pct2, totalIntervals: maxLen, agreements: agree2, disagreements: disagree2.length, interpretation: parseFloat(pct2) >= 80 ? 'Acceptable (≥80%)' : 'Below threshold', details: details2 });
+            }
+            if (addToast) addToast('Triple comparison: AI-1 × AI-2 = ' + aiPct + '% agreement', 'info');
+        }
+
         // Compare Practitioner vs AI Coding
         function doIOAComparison(aiData) {
             var ai = aiData || aiCoding;
@@ -17356,18 +17467,25 @@ Keep it under 150 words.`);
             if (ioaMode === 'ai' && ioaComparison) {
                 lines.push('Method: AI-Assisted IOA (' + samplingMethod + ')');
                 lines.push('Interval Length: ' + aiIntervalSec + ' seconds');
+                lines.push('');
+                lines.push('=== Practitioner × AI Pass 1 ===');
                 lines.push('Agreement: ' + ioaComparison.agreementPct + '%');
                 lines.push('Interpretation: ' + ioaComparison.interpretation);
+                if (ioaComparison2) {
+                    lines.push('');
+                    lines.push('=== Practitioner × AI Pass 2 ===');
+                    lines.push('Agreement: ' + ioaComparison2.agreementPct + '%');
+                }
+                if (aiVsAiComparison) {
+                    lines.push('');
+                    lines.push('=== AI Pass 1 × AI Pass 2 (Reliability) ===');
+                    lines.push('Agreement: ' + aiVsAiComparison.agreementPct + '%');
+                }
                 lines.push('');
                 lines.push('WARNING: AI coding is supplementary only. Not for primary data.');
-                lines.push('');
-                lines.push('Interval | Time | Practitioner | AI | Confidence | Agreement');
-                ioaComparison.details.forEach(function(d) {
-                    lines.push(d.interval + ' | ' + d.startTime + '-' + d.endTime + ' | ' + d.practitioner + ' | ' + d.ai + ' | ' + d.aiConfidence + '% | ' + (d.agree ? 'Yes' : '*** DISAGREE ***'));
-                });
                 if (discrepancies.length > 0) {
                     lines.push('');
-                    lines.push('=== DISCREPANCIES (Review These Timestamps) ===');
+                    lines.push('=== DISCREPANCIES ===');
                     discrepancies.forEach(function(d) {
                         lines.push('Interval ' + d.interval + ' (' + d.startTime + '-' + d.endTime + '): You=' + d.practitioner + ' AI=' + d.ai + ' | ' + d.aiNote);
                     });
@@ -17485,8 +17603,18 @@ Keep it under 150 words.`);
                     h('p', { className: 'text-[10px] text-slate-500 mb-2' }, 'Enter your observation codes as comma-separated values, one per interval'),
                     h('textarea', { value: practitionerCoding, onChange: function(e) { setPractitionerCoding(e.target.value); }, 'aria-label': 'Your observation coding', placeholder: 'e.g., 1, 0, 1, 1, 0, 0, 1, 0', rows: 2, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none resize-none font-mono' })
                 ),
-                h('button', { onClick: processIOAWithAI, disabled: !mediaFile || !targetBehaviors.trim() || aiProcessing, className: 'w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all text-base' }, aiProcessing ? '🧠 AI is analyzing... ' + aiProgress + '%' : '🧠 Run AI Behavioral Coding'),
-                aiCoding && practitionerCoding.trim() && !ioaComparison && h('button', { onClick: function() { doIOAComparison(null); }, className: 'w-full py-2.5 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl font-bold shadow-lg transition-all text-sm' }, '📊 Compare Your Coding vs AI')
+                h('button', { onClick: processIOAWithAI, disabled: !mediaFile || !targetBehaviors.trim() || aiProcessing, className: 'w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all text-base' }, aiProcessing ? '🧠 AI is analyzing... ' + aiProgress + '%' : '🧠 Run AI Behavioral Coding (Pass 1)'),
+                aiCoding && practitionerCoding.trim() && !ioaComparison && h('button', { onClick: function() { doIOAComparison(null); }, className: 'w-full py-2.5 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl font-bold shadow-lg transition-all text-sm' }, '📊 Compare Your Coding vs AI'),
+                // Second Independent AI Pass
+                aiCoding && h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-4 space-y-3' },
+                    h('div', { className: 'flex items-center gap-2' },
+                        h('div', { className: 'w-6 h-6 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-[10px] font-black' }, '5'),
+                        h('h3', { className: 'text-sm font-black text-violet-800' }, 'Independent Second AI Review (Double-Blind)')
+                    ),
+                    h('p', { className: 'text-[10px] text-violet-600' }, 'Run a second, independent AI analysis with NO knowledge of the first pass or your coding. This creates a true double-blind reliability check enabling three-way comparison: You × AI-1, You × AI-2, and AI-1 × AI-2.'),
+                    h('button', { onClick: runSecondAIPass, disabled: aiProcessing2, className: 'w-full py-2.5 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all text-sm' }, aiProcessing2 ? '🔬 Second review in progress...' : '🔬 Run Independent 2nd Review'),
+                    aiCoding2 && h('div', { className: 'text-[10px] text-emerald-600 font-bold' }, '✅ Second pass complete — ' + (aiCoding2.intervals || []).length + ' intervals coded independently')
+                )
             ),
 
             // Traditional Results
@@ -17584,6 +17712,48 @@ Keep it under 150 words.`);
                                 ];
                             })
                         )
+                    )
+                )
+            ),
+
+            // Triple Comparison Results
+            aiVsAiComparison && ioaMode === 'ai' && h('div', { className: 'bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 rounded-xl border-2 border-violet-300 p-5 shadow-sm space-y-4' },
+                h('h3', { className: 'text-sm font-black text-violet-800' }, '🔬 Triple IOA Comparison'),
+                h('div', { className: 'grid grid-cols-3 gap-3' },
+                    // Practitioner × AI-1
+                    ioaComparison && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 text-center' },
+                        h('div', { className: 'text-2xl font-black ' + (parseFloat(ioaComparison.agreementPct) >= 80 ? 'text-emerald-600' : 'text-amber-600') }, ioaComparison.agreementPct + '%'),
+                        h('div', { className: 'text-[9px] text-slate-500 font-bold uppercase mt-1' }, 'You × AI Pass 1')
+                    ),
+                    // Practitioner × AI-2
+                    ioaComparison2 && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 text-center' },
+                        h('div', { className: 'text-2xl font-black ' + (parseFloat(ioaComparison2.agreementPct) >= 80 ? 'text-emerald-600' : 'text-amber-600') }, ioaComparison2.agreementPct + '%'),
+                        h('div', { className: 'text-[9px] text-slate-500 font-bold uppercase mt-1' }, 'You × AI Pass 2')
+                    ),
+                    // AI-1 × AI-2
+                    h('div', { className: 'bg-white rounded-xl border border-violet-200 p-3 text-center' },
+                        h('div', { className: 'text-2xl font-black ' + (parseFloat(aiVsAiComparison.agreementPct) >= 80 ? 'text-emerald-600' : 'text-amber-600') }, aiVsAiComparison.agreementPct + '%'),
+                        h('div', { className: 'text-[9px] text-violet-600 font-bold uppercase mt-1' }, 'AI-1 × AI-2 Reliability')
+                    )
+                ),
+                h('div', { className: 'text-[10px] text-slate-500 bg-slate-50 rounded-lg p-3' },
+                    h('span', { className: 'font-bold' }, 'Interpretation: '),
+                    parseFloat(aiVsAiComparison.agreementPct) >= 90 ? 'AI coding is highly consistent across passes — high confidence in AI reliability.' :
+                    parseFloat(aiVsAiComparison.agreementPct) >= 80 ? 'AI coding is acceptably consistent. Discrepant intervals should be reviewed.' :
+                    'AI coding shows notable inconsistency between passes. Review all intervals manually — AI reliability is insufficient for this recording.'
+                ),
+                // AI-1 vs AI-2 discrepancy details
+                aiVsAiComparison.details && h('details', { className: 'bg-white rounded-lg p-3 border border-violet-200' },
+                    h('summary', { className: 'text-xs font-bold text-violet-700 cursor-pointer' }, '🔍 AI-1 vs AI-2 Interval Details (' + aiVsAiComparison.disagreements + ' discrepancies)'),
+                    h('div', { className: 'mt-2 space-y-1' },
+                        aiVsAiComparison.details.filter(function(d) { return !d.agree; }).map(function(d, i) {
+                            return h('div', { key: i, className: 'flex items-center gap-2 p-1.5 bg-violet-50 rounded text-[10px]' },
+                                h('span', { className: 'font-mono font-bold text-violet-700' }, d.startTime + '-' + d.endTime),
+                                h('span', null, 'AI-1: ' + d.ai1 + ' (' + d.conf1 + '%)'),
+                                h('span', { className: 'text-slate-400' }, '|'),
+                                h('span', null, 'AI-2: ' + d.ai2 + ' (' + d.conf2 + '%)')
+                            );
+                        })
                     )
                 )
             ),
