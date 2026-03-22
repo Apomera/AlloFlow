@@ -13779,6 +13779,316 @@ Fill in clinically appropriate values. The replacement behavior should serve the
     };
 
 
+
+    // ─── OperationalDefinitionBuilder ────────────────────────────────────
+    // "Tier 0" tool: converts vague behavior descriptions into BACB-aligned
+    // observable, measurable operational definitions with AI assistance.
+    const OperationalDefinitionBuilder = ({ studentName, studentProfile, callGemini, t, addToast }) => {
+        const [rawDesc, setRawDesc] = useState('');
+        const [deadManResult, setDeadManResult] = useState(null); // null | 'yes' | 'no'
+        const [aiDef, setAiDef] = useState(null); // AI-generated definition object
+        const [loading, setLoading] = useState(false);
+        const [dimensions, setDimensions] = useState({
+            topography: '', frequency: '', duration: '', latency: '', magnitude: ''
+        });
+        const [examples, setExamples] = useState('');
+        const [nonExamples, setNonExamples] = useState('');
+        const [savedDefs, setSavedDefs] = useState(() => {
+            try { return JSON.parse(localStorage.getItem('bl_opdef_saved') || '[]'); } catch { return []; }
+        });
+
+        const updateDim = (key, val) => setDimensions(prev => ({ ...prev, [key]: val }));
+
+        const DIMENSIONS = [
+            { key: 'topography', label: 'Topography', icon: '👁️', hint: 'What does it look like? (e.g. Student raises hand above shoulder, palm forward)', placeholder: 'Observable physical description...' },
+            { key: 'frequency', label: 'Frequency', icon: '🔢', hint: 'How often does it occur?', placeholder: 'e.g. 3-5 times per class period' },
+            { key: 'duration', label: 'Duration', icon: '⏱️', hint: 'How long does each instance last?', placeholder: 'e.g. 2-10 minutes per episode' },
+            { key: 'latency', label: 'Latency', icon: '⏳', hint: 'Time between prompt and behavior onset', placeholder: 'e.g. 30 seconds after teacher direction' },
+            { key: 'magnitude', label: 'Magnitude / Intensity', icon: '📊', hint: 'How intense is it? (volume, force, etc.)', placeholder: 'e.g. Voice raised above conversational level' }
+        ];
+
+        // ── Dead Man's Test Logic ──
+        const handleDeadManYes = () => {
+            setDeadManResult('yes');
+            if (addToast) addToast('A dead man CAN do that — let\'s reframe it as an active behavior!', 'warning');
+        };
+        const handleDeadManNo = () => {
+            setDeadManResult('no');
+            if (addToast) addToast('Great! This is an active, observable behavior. ✅', 'success');
+        };
+
+        // ── AI Rewrite ──
+        const handleAiRewrite = async () => {
+            if (!callGemini || !rawDesc.trim()) return;
+            setLoading(true);
+            try {
+                const profileCtx = studentProfile && Object.values(studentProfile).some(v => v?.trim())
+                    ? `\nStudent context: ${studentProfile.interests ? 'Interests: ' + studentProfile.interests + '. ' : ''}${studentProfile.triggers ? 'Known triggers: ' + studentProfile.triggers + '. ' : ''}${studentProfile.strengths ? 'Strengths: ' + studentProfile.strengths + '.' : ''}`
+                    : '';
+                const deadManCtx = deadManResult === 'yes'
+                    ? '\nIMPORTANT: The teacher\'s original description failed the Dead Man\'s Test (a dead man could do it). You MUST reframe it as an ACTIVE, observable behavior. For example, "not doing work" → "engaging in off-task behavior such as laying head on desk, looking out the window, or doodling on paper."'
+                    : '';
+                const prompt = `You are a Board Certified Behavior Analyst (BCBA) helping a teacher write an operational definition. Convert the following vague behavior description into a formal, BACB-compliant operational definition.
+
+Teacher's description: "${rawDesc}"
+Student codename: ${studentName || 'Not specified'}${profileCtx}${deadManCtx}
+
+Return ONLY a JSON object (no markdown, no explanation) with these exact keys:
+{
+  "formalDefinition": "A 1-3 sentence operational definition that is observable, measurable, and specific",
+  "topography": "Physical description of what the behavior looks like",
+  "frequency": "Estimated occurrence rate if inferrable, or 'To be measured'",
+  "duration": "Estimated duration if inferrable, or 'To be measured'",
+  "latency": "Latency description if relevant, or 'N/A'",
+  "magnitude": "Intensity description if relevant, or 'N/A'",
+  "examples": "2-3 specific examples of the behavior",
+  "nonExamples": "2-3 things that look similar but are NOT the behavior",
+  "reframedFrom": "Only if Dead Man's Test failed: what the original passive description was reframed into"
+}`;
+                const result = await callGemini(prompt);
+                // Parse JSON from AI response
+                let parsed;
+                try {
+                    const jsonMatch = result.match(/\{[\s\S]*\}/);
+                    parsed = JSON.parse(jsonMatch ? jsonMatch[0] : result);
+                } catch {
+                    parsed = { formalDefinition: result, topography: '', frequency: '', duration: '', latency: '', magnitude: '', examples: '', nonExamples: '' };
+                }
+                setAiDef(parsed);
+                // Auto-populate dimensions
+                setDimensions({
+                    topography: parsed.topography || '',
+                    frequency: parsed.frequency || '',
+                    duration: parsed.duration || '',
+                    latency: parsed.latency || '',
+                    magnitude: parsed.magnitude || ''
+                });
+                setExamples(parsed.examples || '');
+                setNonExamples(parsed.nonExamples || '');
+                if (addToast) addToast('Operational definition generated! Review and edit below.', 'success');
+            } catch (e) {
+                if (addToast) addToast('AI generation failed. Try again.', 'error');
+            }
+            setLoading(false);
+        };
+
+        // ── Build Final Definition Text ──
+        const buildFinalText = () => {
+            const parts = [];
+            if (aiDef?.formalDefinition) parts.push('OPERATIONAL DEFINITION:\n' + aiDef.formalDefinition);
+            parts.push('\nDIMENSIONS:');
+            DIMENSIONS.forEach(d => {
+                if (dimensions[d.key]?.trim()) parts.push(`  ${d.label}: ${dimensions[d.key]}`);
+            });
+            if (examples.trim()) parts.push('\nEXAMPLES (IS the behavior):\n' + examples);
+            if (nonExamples.trim()) parts.push('\nNON-EXAMPLES (is NOT the behavior):\n' + nonExamples);
+            if (deadManResult === 'yes' && aiDef?.reframedFrom) parts.push('\nNote: Reframed from passive description via Dead Man\'s Test.');
+            return parts.join('\n');
+        };
+
+        const handleCopy = () => {
+            navigator.clipboard.writeText(buildFinalText());
+            if (addToast) addToast('Definition copied to clipboard!', 'success');
+        };
+
+        const handleSave = () => {
+            const entry = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                studentName: studentName || 'Unknown',
+                rawDescription: rawDesc,
+                formalDefinition: aiDef?.formalDefinition || '',
+                dimensions: { ...dimensions },
+                examples, nonExamples,
+                deadManFailed: deadManResult === 'yes'
+            };
+            const updated = [entry, ...savedDefs].slice(0, 20);
+            setSavedDefs(updated);
+            try { localStorage.setItem('bl_opdef_saved', JSON.stringify(updated)); } catch {}
+            if (addToast) addToast('Definition saved! (' + updated.length + ' total)', 'success');
+        };
+
+        const handleReset = () => {
+            setRawDesc(''); setDeadManResult(null); setAiDef(null); setLoading(false);
+            setDimensions({ topography: '', frequency: '', duration: '', latency: '', magnitude: '' });
+            setExamples(''); setNonExamples('');
+        };
+
+        const hasDefinition = aiDef?.formalDefinition;
+
+        return h('div', { className: 'max-w-2xl mx-auto space-y-4 animate-in fade-in' },
+            // Header
+            h('div', { className: 'text-center py-3' },
+                h('div', { className: 'text-4xl mb-2' }, '\uD83D\uDD2C'),
+                h('h2', { className: 'text-lg font-black text-slate-800' }, 'Operational Definition Builder'),
+                h('p', { className: 'text-xs text-slate-500 mt-1' }, 'Turn vague descriptions into observable, measurable behavioral definitions')
+            ),
+
+            // Step 1: Describe
+            h('div', { className: 'bg-white rounded-xl border-2 border-slate-200 p-5 shadow-sm' },
+                h('div', { className: 'flex items-center gap-2 mb-3' },
+                    h('span', { className: 'bg-indigo-100 text-indigo-700 w-7 h-7 rounded-full flex items-center justify-center text-xs font-black' }, '1'),
+                    h('h3', { className: 'text-sm font-bold text-slate-800' }, 'Describe the Behavior')
+                ),
+                h('p', { className: 'text-xs text-slate-500 mb-3' }, 'Enter the behavior as you\'d normally describe it \u2014 don\'t worry about being "clinical" yet. The AI will help refine it.'),
+                h('textarea', {
+                    value: rawDesc,
+                    onChange: (e) => setRawDesc(e.target.value),
+                    placeholder: 'Examples:\n\u2022 "Student is disrespectful"\n\u2022 "Having a meltdown"\n\u2022 "Not paying attention"\n\u2022 "Student is aggressive during transitions"',
+                    rows: 3,
+                    className: 'w-full border-2 border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 resize-none'
+                })
+            ),
+
+            // Step 2: Dead Man's Test
+            rawDesc.trim().length > 5 && h('div', { className: 'bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border-2 border-amber-200 p-5 shadow-sm' },
+                h('div', { className: 'flex items-center gap-2 mb-3' },
+                    h('span', { className: 'bg-amber-100 text-amber-700 w-7 h-7 rounded-full flex items-center justify-center text-xs font-black' }, '2'),
+                    h('h3', { className: 'text-sm font-bold text-amber-800' }, '\uD83D\uDC80 The Dead Man\u2019s Test')
+                ),
+                h('div', { className: 'bg-white rounded-lg border border-amber-200 p-4 mb-3' },
+                    h('p', { className: 'text-xs text-amber-800 font-medium leading-relaxed' },
+                        'The Dead Man\u2019s Test (Lindsley, 1965): "If a dead man can do it, it isn\'t behavior." ',
+                        'This test ensures we\'re describing something ', h('span', { className: 'font-black' }, 'active & observable'),
+                        ', not just the ', h('span', { className: 'italic' }, 'absence'), ' of something.'
+                    )
+                ),
+                h('p', { className: 'text-sm font-bold text-slate-700 mb-3 text-center' },
+                    'Could a ', h('span', { className: 'text-amber-700' }, 'dead man'), ' do: "', h('span', { className: 'italic text-slate-600' }, rawDesc.length > 60 ? rawDesc.slice(0, 57) + '...' : rawDesc), '"?'
+                ),
+                !deadManResult && h('div', { className: 'flex gap-3 justify-center' },
+                    h('button', {
+                        onClick: handleDeadManYes,
+                        className: 'px-5 py-2.5 bg-red-100 text-red-700 border-2 border-red-200 rounded-xl font-bold text-sm hover:bg-red-200 transition-all'
+                    }, '\uD83D\uDC80 YES \u2014 a dead man can do this'),
+                    h('button', {
+                        onClick: handleDeadManNo,
+                        className: 'px-5 py-2.5 bg-green-100 text-green-700 border-2 border-green-200 rounded-xl font-bold text-sm hover:bg-green-200 transition-all'
+                    }, '\u2705 NO \u2014 this is active behavior')
+                ),
+                deadManResult === 'yes' && h('div', { className: 'bg-red-50 border border-red-200 rounded-lg p-3 mt-3' },
+                    h('p', { className: 'text-xs font-bold text-red-700 mb-1' }, '\u26A0\uFE0F Dead Man Alert!'),
+                    h('p', { className: 'text-xs text-red-600' }, 'Descriptions like "not doing work" or "staying quiet" describe the ABSENCE of behavior. The AI will reframe this into what the student IS doing (e.g., "head on desk", "looking out the window").'),
+                    h('button', { onClick: () => setDeadManResult(null), className: 'mt-2 text-[10px] text-red-500 hover:underline' }, 'Retake test')
+                ),
+                deadManResult === 'no' && h('div', { className: 'bg-green-50 border border-green-200 rounded-lg p-3 mt-3' },
+                    h('p', { className: 'text-xs font-bold text-green-700' }, '\u2705 Passed! This description is an active, observable behavior.'),
+                    h('button', { onClick: () => setDeadManResult(null), className: 'mt-1 text-[10px] text-green-500 hover:underline' }, 'Retake test')
+                )
+            ),
+
+            // Step 3: AI Rewrite Button
+            deadManResult && h('div', { className: 'flex justify-center' },
+                h('button', {
+                    onClick: handleAiRewrite,
+                    disabled: loading || !rawDesc.trim(),
+                    className: 'px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:from-indigo-700 hover:to-purple-700 transition-all disabled:opacity-50 text-sm'
+                }, loading ? '\u23F3 Generating Definition...' : '\uD83E\uDDE0 Generate Operational Definition')
+            ),
+
+            // Step 4: AI Result + Dimensions
+            hasDefinition && h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 p-5 shadow-sm' },
+                h('div', { className: 'flex items-center gap-2 mb-3' },
+                    h('span', { className: 'bg-indigo-100 text-indigo-700 w-7 h-7 rounded-full flex items-center justify-center text-xs font-black' }, '3'),
+                    h('h3', { className: 'text-sm font-bold text-slate-800' }, 'Formal Operational Definition')
+                ),
+                // AI formal definition
+                h('div', { className: 'bg-indigo-50 rounded-lg border border-indigo-200 p-4 mb-4' },
+                    h('p', { className: 'text-sm text-indigo-900 font-medium leading-relaxed italic' }, aiDef.formalDefinition),
+                    aiDef.reframedFrom && h('p', { className: 'text-[10px] text-indigo-500 mt-2' }, '\uD83D\uDD04 Reframed from passive description via Dead Man\u2019s Test')
+                ),
+                // Dimensions Checklist
+                h('div', { className: 'flex items-center gap-2 mb-3 mt-4' },
+                    h('span', { className: 'bg-emerald-100 text-emerald-700 w-7 h-7 rounded-full flex items-center justify-center text-xs font-black' }, '4'),
+                    h('h3', { className: 'text-sm font-bold text-slate-800' }, 'Behavioral Dimensions')
+                ),
+                h('p', { className: 'text-xs text-slate-500 mb-3' }, 'AI pre-filled these from your description. Edit as needed.'),
+                h('div', { className: 'space-y-3' },
+                    DIMENSIONS.map(d =>
+                        h('div', { key: d.key, className: 'bg-slate-50 rounded-lg border border-slate-200 p-3' },
+                            h('label', { className: 'text-xs font-bold text-slate-700 flex items-center gap-1 mb-1' },
+                                h('span', null, d.icon), ' ', d.label,
+                                h('span', { className: 'ml-auto text-[9px] text-slate-400 font-normal' }, d.hint)
+                            ),
+                            h('input', {
+                                type: 'text',
+                                value: dimensions[d.key],
+                                onChange: (e) => updateDim(d.key, e.target.value),
+                                placeholder: d.placeholder,
+                                className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-400 outline-none'
+                            })
+                        )
+                    )
+                )
+            ),
+
+            // Step 5: Examples / Non-Examples
+            hasDefinition && h('div', { className: 'bg-white rounded-xl border-2 border-teal-200 p-5 shadow-sm' },
+                h('div', { className: 'flex items-center gap-2 mb-3' },
+                    h('span', { className: 'bg-teal-100 text-teal-700 w-7 h-7 rounded-full flex items-center justify-center text-xs font-black' }, '5'),
+                    h('h3', { className: 'text-sm font-bold text-slate-800' }, 'Examples & Non-Examples')
+                ),
+                h('p', { className: 'text-xs text-slate-500 mb-3' }, 'Clarify the boundary: what counts and what doesn\u2019t. This ensures consistency across observers.'),
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+                    h('div', null,
+                        h('label', { className: 'text-xs font-bold text-green-700 mb-1 block' }, '\u2705 This IS the behavior'),
+                        h('textarea', {
+                            value: examples,
+                            onChange: (e) => setExamples(e.target.value),
+                            placeholder: 'e.g.:\n\u2022 Throwing a pencil across the room\n\u2022 Pushing a peer\u2019s materials off desk',
+                            rows: 4,
+                            className: 'w-full border border-green-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-green-400 outline-none resize-none bg-green-50/50'
+                        })
+                    ),
+                    h('div', null,
+                        h('label', { className: 'text-xs font-bold text-red-700 mb-1 block' }, '\u274C This is NOT the behavior'),
+                        h('textarea', {
+                            value: nonExamples,
+                            onChange: (e) => setNonExamples(e.target.value),
+                            placeholder: 'e.g.:\n\u2022 Accidentally bumping a peer\n\u2022 Dropping materials while standing up',
+                            rows: 4,
+                            className: 'w-full border border-red-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-red-400 outline-none resize-none bg-red-50/50'
+                        })
+                    )
+                )
+            ),
+
+            // Step 6: Final Definition Card
+            hasDefinition && h('div', { className: 'bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-5 shadow-md' },
+                h('div', { className: 'flex items-center gap-2 mb-3' },
+                    h('span', { className: 'bg-indigo-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-xs font-black' }, '6'),
+                    h('h3', { className: 'text-sm font-bold text-indigo-900' }, 'Final Definition Card')
+                ),
+                h('div', { className: 'bg-white rounded-lg border border-indigo-200 p-4 text-xs text-slate-700 whitespace-pre-wrap leading-relaxed font-mono' },
+                    buildFinalText()
+                ),
+                h('div', { className: 'flex gap-2 mt-4 flex-wrap' },
+                    h('button', { onClick: handleCopy, className: 'px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-all shadow-sm' }, '\uD83D\uDCCB Copy to Clipboard'),
+                    h('button', { onClick: handleSave, className: 'px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all shadow-sm' }, '\uD83D\uDCBE Save Definition'),
+                    h('button', { onClick: () => window.print(), className: 'px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-all' }, '\uD83D\uDDA8\uFE0F Print'),
+                    h('button', { onClick: handleReset, className: 'px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-all' }, '\uD83D\uDD04 Start Over')
+                )
+            ),
+
+            // Saved Definitions History
+            savedDefs.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                h('h3', { className: 'text-xs font-bold text-slate-600 mb-2' }, '\uD83D\uDCDA Saved Definitions (' + savedDefs.length + ')'),
+                h('div', { className: 'space-y-2 max-h-48 overflow-y-auto' },
+                    savedDefs.map(d =>
+                        h('div', { key: d.id, className: 'bg-slate-50 rounded-lg p-3 border border-slate-100' },
+                            h('div', { className: 'flex items-center justify-between' },
+                                h('span', { className: 'text-xs font-bold text-slate-700' }, d.studentName + ' \u2014 ' + (d.rawDescription || '').slice(0, 40)),
+                                h('span', { className: 'text-[9px] text-slate-400' }, new Date(d.date).toLocaleDateString())
+                            ),
+                            h('p', { className: 'text-[10px] text-slate-500 mt-1 italic' }, (d.formalDefinition || '').slice(0, 100) + '...')
+                        )
+                    )
+                )
+            )
+        );
+    };
+
+
     // ─── CantDoWontDo ─────────────────────────────────────────────────────
     // Skill Deficit vs Performance Deficit Assessment Tool
     const CantDoWontDo = ({ abcEntries, callGemini, t, addToast }) => {
@@ -23287,6 +23597,13 @@ Analyze this data and return ONLY valid JSON:
                     badge: '🆕 New',
                 },
                 {
+                    id: 'opdef',
+                    icon: '🔬',
+                    title: t('behavior_lens.hub.opdef_title') || 'Operational Definition Builder',
+                    desc: t('behavior_lens.hub.opdef_desc') || 'Turn vague descriptions into BACB-aligned observable definitions with AI + Dead Man\'s Test',
+                    color: 'indigo',
+                },
+                {
                     id: 'heatmap',
                     icon: '📅',
                     title: 'Behavior Timeline Heatmap',
@@ -23608,6 +23925,7 @@ Analyze this data and return ONLY valid JSON:
                         ioacalc: 'data', taskanalysis: 'data', dtt: 'data', prefassess: 'data', scatterplot: 'analysis', latency: 'data', socialvalidity: 'analysis', maintenance: 'planning', cumrecord: 'analysis', condprob: 'analysis', treatintegrity: 'planning',
                         skilltracker: 'utilities',
                         heatmap: 'analysis',
+                        opdef: 'data',
                     };
                     const categories = [
                         { key: 'data', label: '📋 Data Collection', icon: '📋' },
@@ -24749,6 +25067,13 @@ Analyze this data and return ONLY valid JSON:
                     onClose: () => openPanel('hub'),
                     onSelectTool: (toolId) => openPanel(toolId),
                     t
+                }),
+                activePanel === 'opdef' && h(OperationalDefinitionBuilder, {
+                    studentName: selectedStudent,
+                    studentProfile,
+                    callGemini: callGeminiWithContext,
+                    t,
+                    addToast
                 }),
                 // ── Related Tools Footer ──────────────────────────────
                 (() => {
