@@ -850,6 +850,8 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                 sortField === col && h('span', { className: 'ml-1' }, sortDir === 'asc' ? '↑' : '↓')
                                             )
                                         ),
+                                        // Phase column header
+                                        entries.some(e => e.phase) && h('th', { className: 'px-2 py-2.5 text-center text-xs font-bold text-slate-500 uppercase tracking-wide' }, t('behavior_lens.abc.phase') || 'Phase'),
                                         // Notes indicator header
                                         h('th', { className: 'px-2 py-2.5 text-center text-xs font-bold text-slate-400 w-8' }, '📝'),
                                         h('th', { className: 'px-3 py-2.5 text-right text-xs font-bold text-slate-500 uppercase' }, '')
@@ -892,6 +894,17 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                             })
                                                         )
                                                     )
+                                                ),
+                                                // Phase badge
+                                                entries.some(e => e.phase) && h('td', { className: 'px-2 py-2.5 text-center' },
+                                                    entry.phase ? h('span', { className: `text-[9px] px-2 py-0.5 rounded-full font-bold ${
+                                                        entry.phase === 'baseline' ? 'bg-slate-100 text-slate-600 border border-slate-200' :
+                                                        entry.phase === 'intervention' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                                                        entry.phase === 'maintenance' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                                                        entry.phase === 'return_to_baseline' ? 'bg-orange-50 text-orange-700 border border-orange-200' :
+                                                        'bg-slate-50 text-slate-500 border border-slate-200'
+                                                    }` }, { baseline: 'A', intervention: 'B', maintenance: 'M', return_to_baseline: 'A\u2032' }[entry.phase] || entry.phase)
+                                                    : h('span', { className: 'text-[9px] text-slate-300' }, '—')
                                                 ),
                                                 // Notes indicator
                                                 h('td', { className: 'px-2 py-2.5 text-center' },
@@ -2588,7 +2601,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 type = 'application/json';
             } else if (format === 'csv') {
                 // ABC Data as CSV
-                const headers = ['Timestamp', 'Date', 'Time', 'Antecedent', 'Behavior', 'Consequence', 'Setting', 'Intensity', 'Duration (s)', 'Notes'];
+                const headers = ['Timestamp', 'Date', 'Time', 'Antecedent', 'Behavior', 'Consequence', 'Setting', 'Intensity', 'Duration (s)', 'Phase', 'Notes'];
                 const rows = filteredAbc.map(e => [
                     csvEscape(e.timestamp),
                     csvEscape(fmtDate(e.timestamp)),
@@ -2599,6 +2612,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                     csvEscape(e.setting),
                     csvEscape(e.intensity),
                     csvEscape(e.duration),
+                    csvEscape(e.phase),
                     csvEscape(e.notes)
                 ].join(','));
                 content = [headers.join(','), ...rows].join('\n');
@@ -2633,6 +2647,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                     text += `  Consequence: ${e.consequence || '—'}\n`;
                     if (e.setting) text += `  Setting:    ${e.setting}\n`;
                     if (e.intensity) text += `  Intensity:  ${e.intensity}/5\n`;
+                    if (e.phase) text += `  Phase:      ${e.phase}\n`;
                     if (e.notes) text += `  Notes:      ${e.notes}\n`;
                 });
                 text += `\n\nOBSERVATION SESSIONS (${filteredObs.length})\n` + '─'.repeat(30) + '\n';
@@ -2696,6 +2711,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 h('div', { className: 'bg-slate-50 rounded-lg p-4 border border-slate-100' },
                     h('div', { className: 'text-xs text-slate-600 space-y-1' },
                         h('div', null, `📋 ${filteredAbc.length} ABC entries`),
+                        filteredAbc.filter(e => e.phase).length > 0 && h('div', null, `🏷️ ${filteredAbc.filter(e => e.phase).length} phase-tagged entries`),
                         h('div', null, `🔍 ${filteredObs.length} observation sessions`),
                         aiAnalysis && h('div', null, '🧠 AI analysis included')
                     )
@@ -2732,9 +2748,11 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                         html += `<div class="stat-row"><div class="stat"><div class="stat-value">${filteredAbc.length}</div><div class="stat-label">${t('bl.abc_entries') || 'ABC Entries'}</div></div><div class="stat"><div class="stat-value">${filteredObs.length}</div><div class="stat-label">${t('bl.observations') || 'Observations'}</div></div><div class="stat"><div class="stat-value">${avgInt}</div><div class="stat-label">${t('bl.avg_intensity') || 'Avg Intensity'}</div></div></div>`;
                         // ABC table
                         if (filteredAbc.length > 0) {
-                            html += `<h2>📋 ABC Data Log</h2><table><tr><th>#</th><th>Date</th><th>${t('bl.antecedent') || 'Antecedent'}</th><th>${t('bl.behavior') || 'Behavior'}</th><th>${t('bl.consequence') || 'Consequence'}</th><th>${t('bl.setting') || 'Setting'}</th><th>Int.</th></tr>`;
+                            html += `<h2>📋 ABC Data Log</h2><table><tr><th>#</th><th>Date</th><th>${t('bl.antecedent') || 'Antecedent'}</th><th>${t('bl.behavior') || 'Behavior'}</th><th>${t('bl.consequence') || 'Consequence'}</th><th>${t('bl.setting') || 'Setting'}</th><th>Phase</th><th>Int.</th></tr>`;
                             filteredAbc.forEach((e, i) => {
-                                html += `<tr><td>${i + 1}</td><td>${fmtDate(e.timestamp)}</td><td>${e.antecedent || '—'}</td><td>${e.behavior || '—'}</td><td>${e.consequence || '—'}</td><td>${e.setting || '—'}</td><td>${e.intensity || '—'}</td></tr>`;
+                                const phaseColors = { baseline: '#94a3b8', intervention: '#10b981', maintenance: '#3b82f6', 'return to baseline': '#f97316' };
+                                const phaseBadge = e.phase ? `<span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:8pt;font-weight:700;background:${phaseColors[e.phase] || '#e2e8f0'};color:white;">${e.phase === 'baseline' ? 'A' : e.phase === 'intervention' ? 'B' : e.phase === 'maintenance' ? 'M' : "A'"}</span>` : '—';
+                                html += `<tr><td>${i + 1}</td><td>${fmtDate(e.timestamp)}</td><td>${e.antecedent || '—'}</td><td>${e.behavior || '—'}</td><td>${e.consequence || '—'}</td><td>${e.setting || '—'}</td><td>${phaseBadge}</td><td>${e.intensity || '—'}</td></tr>`;
                             });
                             html += '</table>';
                         }
@@ -7556,10 +7574,10 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                             h('div', { className: 'w-4 h-4 bg-white rounded-full shadow mx-0.5' })
                         ),
                         h('div', null,
-                            h('span', { className: 'text-xs font-bold text-slate-700' }, isComplex ? '🧩 Complex Scenario' : '📋 Standard Scenario'),
+                            h('span', { className: 'text-xs font-bold text-slate-700' }, isComplex ? (t('behavior_lens.sandbox.complex_scenario') || '🧩 Complex Scenario') : (t('behavior_lens.sandbox.standard_scenario') || '📋 Standard Scenario')),
                             h('p', { className: 'text-[9px] text-slate-400 mt-0.5' }, isComplex
-                                ? 'Co-occurring behaviors, environmental shifts, trend patterns'
-                                : 'Single function, consistent setting, straightforward data'
+                                ? (t('behavior_lens.sandbox.complex_desc') || 'Co-occurring behaviors, environmental shifts, trend patterns')
+                                : (t('behavior_lens.sandbox.standard_desc') || 'Single function, consistent setting, straightforward data')
                             )
                         )
                     )
@@ -7578,20 +7596,20 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                     onClick: handleCustomGenerate,
                     disabled: generating,
                     className: 'w-full py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
-                }, generating ? '⏳ Generating Scenario...' : '🧠 Generate Custom Scenario')
+                }, generating ? (t('behavior_lens.sandbox.generating') || '⏳ Generating Scenario...') : (t('behavior_lens.sandbox.generate_custom') || '🧠 Generate Custom Scenario'))
             ),
 
             // ═══════ ADD PHASE DATA (visible when data is loaded) ═══════
             (abcEntries && abcEntries.length > 0) && h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-5 shadow-sm' },
                 h('div', { className: 'flex items-center justify-between mb-3' },
-                    h('h3', { className: 'text-sm font-black text-slate-800 flex items-center gap-2' }, '📊 Add Phase Data'),
-                    h('span', { className: 'text-[10px] bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold' }, `${abcEntries.length} entries loaded`)
+                    h('h3', { className: 'text-sm font-black text-slate-800 flex items-center gap-2' }, t('behavior_lens.sandbox.add_phase_data') || '📊 Add Phase Data'),
+                    h('span', { className: 'text-[10px] bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold' }, t('behavior_lens.sandbox.entries_loaded') || `${abcEntries.length} entries loaded`)
                 ),
-                h('p', { className: 'text-xs text-slate-500 mb-4' }, 'Generate additional data representing a new phase (e.g., after implementing an intervention). New entries will be appended to existing data with timestamps continuing forward.'),
+                h('p', { className: 'text-xs text-slate-500 mb-4' }, t('behavior_lens.sandbox.add_phase_desc') || 'Generate additional data representing a new phase (e.g., after implementing an intervention). New entries will be appended to existing data with timestamps continuing forward.'),
 
                 // Phase selector
                 h('div', { className: 'mb-3' },
-                    h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1.5' }, '🏷️ Phase Label'),
+                    h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1.5' }, t('behavior_lens.sandbox.phase_label') || '🏷️ Phase Label'),
                     h('div', { className: 'flex gap-2 flex-wrap' },
                         [
                             { id: 'intervention', label: '💊 Intervention', color: 'emerald' },
@@ -7609,7 +7627,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
 
                 // Intervention description
                 h('div', { className: 'mb-3' },
-                    h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1' }, '📋 Intervention / Phase Description'),
+                    h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1' }, t('behavior_lens.sandbox.intervention_desc_label') || '📋 Intervention / Phase Description'),
                     h('textarea', {
                         value: interventionDesc,
                         onChange: e => setInterventionDesc(e.target.value),
@@ -7621,7 +7639,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
 
                 // Expected pattern
                 h('div', { className: 'mb-3' },
-                    h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1.5' }, '📉 Expected Pattern'),
+                    h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1.5' }, t('behavior_lens.sandbox.expected_pattern') || '📉 Expected Pattern'),
                     h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
                         [
                             { id: 'improving', label: '📈 Improving', desc: 'Gradual decrease in problem behavior' },
@@ -7644,7 +7662,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                 // Parameters row
                 h('div', { className: 'grid grid-cols-2 gap-3 mb-4' },
                     h('div', null,
-                        h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1' }, '📅 Phase Duration'),
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1' }, t('behavior_lens.sandbox.phase_duration') || '📅 Phase Duration'),
                         h('select', {
                             value: phaseDays,
                             onChange: e => setPhaseDays(parseInt(e.target.value)),
@@ -7652,7 +7670,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                         }, phaseDayOptions.map(d => h('option', { key: d, value: d }, d + ' days')))
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1' }, '📝 New Entries'),
+                        h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1' }, t('behavior_lens.sandbox.new_entries') || '📝 New Entries'),
                         h('select', {
                             value: phaseEntries,
                             onChange: e => setPhaseEntries(parseInt(e.target.value)),
@@ -7663,7 +7681,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
 
                 // Summary preview
                 h('div', { className: 'mb-4 p-3 bg-slate-50 rounded-lg border border-slate-100' },
-                    h('div', { className: 'text-[10px] font-bold text-slate-500 mb-1' }, '📋 Generation Preview'),
+                    h('div', { className: 'text-[10px] font-bold text-slate-500 mb-1' }, t('behavior_lens.sandbox.generation_preview') || '📋 Generation Preview'),
                     h('div', { className: 'text-xs text-slate-600' },
                         `Will generate ${phaseEntries} new ${phaseLabel.replace('_', ' ')} entries spanning ${phaseDays} days, ` +
                         `starting after your latest existing entry. Pattern: ${expectedPattern}. ` +
@@ -7803,6 +7821,25 @@ Rules:
             { term: 'Generalization', affirming: 'Skill Transfer Across Settings', category: 'concepts', def: 'The ability to use a learned skill or behavior across different settings, people, materials, and times.', example: 'Student learns to use a break card in math class → also uses it in science, art, and with different teachers.' },
             { term: 'Baseline', affirming: 'Starting Point Snapshot', category: 'data', def: 'The level of behavior BEFORE any intervention is implemented. Used as a comparison point to measure the effectiveness of the intervention.', example: 'Before BIP: 8 call-outs per class. After BIP: 2 call-outs per class. Baseline shows 75% reduction.' },
             { term: 'Data-Based Decision Making', affirming: 'Using Evidence to Guide Next Steps', category: 'data', def: 'Using collected behavioral data to evaluate whether interventions are working and to make adjustments. Decisions should be based on data trends, not single incidents.', example: 'Review 2 weeks of data → off-task behavior decreasing by 30% → intervention is working, continue current plan.' },
+            // Expanded terms — measurement, ethics, crisis, advanced ABA
+            { term: 'Inter-Observer Agreement (IOA)', affirming: 'Data Reliability Check', category: 'data', def: 'A measure of how consistently two independent observers record the same behavior. High IOA (≥80%) indicates that the behavior definition is clear and data collection is reliable.', example: 'Two observers watch the same class. Observer A records 12 call-outs, Observer B records 11. IOA = 11/12 × 100 = 91.7%.' },
+            { term: 'Preference Assessment', affirming: 'Finding What Motivates', category: 'assessment', def: 'A systematic procedure to identify items, activities, or events that a student finds reinforcing. Types include free operant, paired stimulus, multiple stimulus.', example: 'Offering a student 5 different items and tracking which ones they approach/engage with most often across 3 sessions.' },
+            { term: 'Scatter Plot Analysis', affirming: 'Pattern-Over-Time Map', category: 'data', def: 'A data collection method that maps when behaviors occur across time intervals and days, revealing temporal patterns such as time-of-day or day-of-week correlations.', example: 'Plotting behavior on a grid: rows = time periods, columns = days. Darkened cells show most disruption happens between 10-11 AM on Mondays and Wednesdays.' },
+            { term: 'Behavioral Momentum', affirming: 'Easy–to–Hard Task Sequencing', category: 'intervention', def: 'Presenting a series of easy, high-probability requests before a difficult, low-probability request. The compliance "momentum" from easy tasks carries over to the harder task.', example: 'Teacher asks student to hand over a pencil (easy), then tell their name (easy), then open their math book (target demand).' },
+            { term: 'Response Cost', affirming: 'Removing Earned Privileges', category: 'concepts', def: 'A form of negative punishment where a previously earned reinforcer (points, tokens, privileges) is removed contingent on an undesired behavior. Used within a broader positive framework.', example: 'Student has 10 class points. Each instance of disruption removes 1 point. Student must maintain at least 5 to earn free time.' },
+            { term: 'Functional Communication Training (FCT)', affirming: 'Teaching How to Ask', category: 'intervention', def: 'Teaching an individual a communicative response (verbal, sign, picture exchange) that serves the SAME function as the problem behavior. One of the most evidence-based interventions.', example: 'Student screams when frustrated (function: escape). FCT teaches them to hold up a "break" card or say "I need help" instead.' },
+            { term: 'Visual Supports', affirming: 'Seeing Expectations Clearly', category: 'intervention', def: 'Any visual display that helps a student understand expectations, routines, or transitions. Includes visual schedules, social stories, choice boards, first-then boards, and graphic organizers.', example: 'A "First-Then" board showing: FIRST complete 5 math problems, THEN 5 minutes of drawing time.' },
+            { term: 'Social Skills Training', affirming: 'Learning People Skills', category: 'intervention', def: 'Direct instruction in social behaviors such as turn-taking, greetings, personal space, and conflict resolution. Often uses modeling, role-playing, video modeling, and reinforcement.', example: 'Teacher models greeting a classmate, student practices with a peer, then earns points for using greetings independently at recess.' },
+            { term: 'Chaining', affirming: 'Linking Steps Together', category: 'concepts', def: 'Teaching a complex behavior by breaking it into sequential steps and linking them together. Types: forward chaining (teach first step first), backward chaining (teach last step first), and total task presentation.', example: 'Handwashing: (1) Turn on water (2) Wet hands (3) Apply soap (4) Rub 20 sec (5) Rinse (6) Dry. Forward chaining: teach step 1, prompt the rest.' },
+            { term: 'Shaping', affirming: 'Reinforcing Closer Approximations', category: 'concepts', def: 'Reinforcing successive approximations toward a target behavior. Each step closer to the goal is reinforced until the full target behavior is achieved.', example: 'Target: student raises hand and waits. Step 1: reinforce any hand raise. Step 2: reinforce raising hand without calling out. Step 3: reinforce raising hand quietly and waiting to be called on.' },
+            { term: 'Antecedent Intervention', affirming: 'Preventing Before It Happens', category: 'intervention', def: 'Modifying the environment, task, or situation BEFORE a behavior occurs to prevent the problem behavior. Proactive rather than reactive.', example: 'Using a visual timer so student knows how long until a break, reducing transition-related anxiety and outbursts.' },
+            { term: 'De-escalation', affirming: 'Calming the Situation', category: 'intervention', def: 'Strategies used to reduce the intensity of a behavioral crisis. Includes maintaining calm body language, reducing verbal demands, providing space, and using empathetic statements.', example: 'Student begins throwing objects. Teacher calmly says "I can see you\'re upset. I\'m going to give you some space. I\'ll be right here when you\'re ready."' },
+            { term: 'Maintenance', affirming: 'Keeping Skills Over Time', category: 'concepts', def: 'The continued performance of a learned behavior after the intervention or training has been removed or reduced. A key goal of any behavior plan.', example: 'Student learned to use break cards 2 months ago. Even without daily reminders, they continue to use the card during frustrating tasks.' },
+            { term: 'Rate of Behavior', affirming: 'How Often Per Time Unit', category: 'data', def: 'The number of times a behavior occurs per unit of time (frequency divided by observation length). Allows comparison across observation periods of different lengths.', example: 'Student called out 15 times in a 45-min class = rate of 0.33 per minute. Compared to 6 times in a 30-min session = 0.20 per minute.' },
+            { term: 'Single-Subject Design', affirming: 'Tracking One Student Over Time', category: 'data', def: 'A research design that evaluates intervention effects by comparing a single individual\'s behavior across different conditions (e.g., baseline vs. intervention). Common in ABA.', example: 'A-B-A-B design: Collect baseline (A), implement intervention (B), withdraw (A), re-implement (B) to demonstrate experimental control.' },
+            { term: 'Ethical Considerations', affirming: 'Doing What\'s Right', category: 'concepts', def: 'Professional obligations including: using least restrictive interventions first, obtaining informed consent, maintaining confidentiality, ensuring cultural sensitivity, and basing decisions on data rather than assumptions.', example: 'Before implementing a response cost system, ensuring parents have given consent, the plan has been explained in their home language, and positive reinforcement is the primary strategy.' },
+            { term: 'Contingency Contract', affirming: 'Written Behavior Agreement', category: 'intervention', def: 'A written agreement between the student and teacher (and sometimes parents) that specifies the behavior expected, the reinforcement for meeting the goal, and consequences for not meeting it.', example: '"If Marcus completes 80% of his assignments this week, he earns 15 minutes of computer time on Friday." Signed by Marcus, teacher, and parent.' },
+            { term: 'Noncontingent Reinforcement (NCR)', affirming: 'Free Access to Preferred Things', category: 'intervention', def: 'Providing reinforcement on a fixed-time schedule regardless of behavior. Reduces motivation for problem behavior by making the maintaining reinforcer freely available.', example: 'Student disrupts class to get teacher attention. NCR: teacher provides 30 seconds of check-in attention every 10 minutes, regardless of behavior.' },
         ], []);
 
         const categories = { core: { label: '🔵 Core ABC', color: 'blue' }, assessment: { label: '🟣 Assessment', color: 'purple' }, data: { label: '🟢 Data Collection', color: 'green' }, intervention: { label: '🟠 Intervention', color: 'orange' }, concepts: { label: '⚪ Key Concepts', color: 'slate' } };
@@ -7900,11 +7937,11 @@ Rules:
             grade,
             color,
             dimensions: [
-                { label: 'Volume', value: Math.round(volScore * 100), tip: volScore < 1 ? `Add ${Math.max(0, 10 - entries.length)} more entries (need 10+)` : 'Great volume of data!' },
-                { label: 'Recency', value: Math.round(recScore * 100), tip: recScore < 1 ? `Last entry was ${Math.round(daysSince)} days ago — add fresh data` : 'Data is current!' },
-                { label: 'Diversity', value: Math.round(divScore * 100), tip: divScore < 1 ? `Only ${uniqueAnt.size} antecedent type${uniqueAnt.size !== 1 ? 's' : ''} — collect across 3+ settings` : 'Good setting diversity!' },
-                { label: 'Completeness', value: Math.round(compScore * 100), tip: compScore < 1 ? `${entries.length - complete} entries are missing A, B, or C fields` : 'All entries fully complete!' },
-                { label: 'Temporal Spread', value: Math.round(spreadScore * 100), tip: spreadScore < 1 ? `Data from only ${uniqueDays.size} day${uniqueDays.size !== 1 ? 's' : ''} — spread across 3+ days` : 'Good temporal coverage!' },
+                { label: t('behavior_lens.dq.volume') || 'Volume', value: Math.round(volScore * 100), tip: volScore < 1 ? (t('behavior_lens.dq.tip_add_entries') || `Add ${Math.max(0, 10 - entries.length)} more entries (need 10+)`) : (t('behavior_lens.dq.tip_great_volume') || 'Great volume of data!') },
+                { label: t('behavior_lens.dq.recency') || 'Recency', value: Math.round(recScore * 100), tip: recScore < 1 ? (t('behavior_lens.dq.tip_last_entry_ago') || `Last entry was ${Math.round(daysSince)} days ago — add fresh data`) : (t('behavior_lens.dq.tip_data_current') || 'Data is current!') },
+                { label: t('behavior_lens.dq.diversity') || 'Diversity', value: Math.round(divScore * 100), tip: divScore < 1 ? (t('behavior_lens.dq.tip_antecedent_types') || `Only ${uniqueAnt.size} antecedent type${uniqueAnt.size !== 1 ? 's' : ''} — collect across 3+ settings`) : (t('behavior_lens.dq.tip_good_diversity') || 'Good setting diversity!') },
+                { label: t('behavior_lens.dq.completeness') || 'Completeness', value: Math.round(compScore * 100), tip: compScore < 1 ? (t('behavior_lens.dq.tip_missing_fields') || `${entries.length - complete} entries are missing A, B, or C fields`) : (t('behavior_lens.dq.tip_all_complete') || 'All entries fully complete!') },
+                { label: t('behavior_lens.dq.temporal_spread') || 'Temporal Spread', value: Math.round(spreadScore * 100), tip: spreadScore < 1 ? (t('behavior_lens.dq.tip_spread_days') || `Data from only ${uniqueDays.size} day${uniqueDays.size !== 1 ? 's' : ''} — spread across 3+ days`) : (t('behavior_lens.dq.tip_good_coverage') || 'Good temporal coverage!') },
             ]
         };
     };
@@ -7930,12 +7967,12 @@ Rules:
                 onClick: e => e.stopPropagation()
             },
                 h('div', { className: 'flex items-center justify-between mb-3' },
-                    h('div', { className: 'text-sm font-black text-slate-800' }, '📊 Data Quality Scorecard'),
+                    h('div', { className: 'text-sm font-black text-slate-800' }, t('behavior_lens.dq.scorecard_title') || '📊 Data Quality Scorecard'),
                     h('button', { onClick: () => setExpanded(false), className: 'text-slate-300 hover:text-slate-500 text-lg' }, '×')
                 ),
                 h('div', { className: `text-center py-3 rounded-xl mb-3 ${quality.color === 'emerald' ? 'bg-emerald-50' : quality.color === 'amber' ? 'bg-amber-50' : 'bg-red-50'}` },
                     h('div', { className: 'text-3xl font-black ' + (quality.color === 'emerald' ? 'text-emerald-600' : quality.color === 'amber' ? 'text-amber-600' : 'text-red-600') }, `${quality.score}%`),
-                    h('div', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, quality.grade + ' dataset')
+                    h('div', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, (t('behavior_lens.dq.dataset_grade') || quality.grade + ' dataset'))
                 ),
                 h('div', { className: 'space-y-2.5' },
                     quality.dimensions.map((dim, i) =>
@@ -7961,13 +7998,13 @@ Rules:
         if (dismissed) return null;
 
         const FBA_STEPS = [
-            { id: 1, check: () => !selectedStudent, label: 'Select a Student', desc: 'Choose or create a student profile to begin collecting data', tool: null, icon: '👤' },
-            { id: 2, check: () => abcEntries.length === 0, label: 'Record ABC Data', desc: 'Start documenting Antecedent-Behavior-Consequence observations', tool: 'abc', icon: '📋' },
-            { id: 3, check: () => abcEntries.length > 0 && abcEntries.length < 5, label: 'Collect More Data', desc: `You have ${abcEntries.length} entries — aim for 5+ across different days for reliable patterns`, tool: 'abc', icon: '📝' },
-            { id: 4, check: () => abcEntries.length >= 5 && !aiAnalysis, label: 'Run AI Pattern Analysis', desc: 'You have enough data! Let AI identify behavior patterns and potential functions', tool: 'analysis', icon: '🧠' },
-            { id: 5, check: () => !!aiAnalysis && observationSessions.length === 0, label: 'Build a Hypothesis', desc: 'Create a visual hypothesis diagram linking triggers, behaviors, and consequences', tool: 'hypothesis', icon: '🔗' },
-            { id: 6, check: () => !!aiAnalysis && sessionHistory.length === 0, label: 'Track Intervention Sessions', desc: 'Start tracking data on your intervention to measure effectiveness', tool: 'sessiontracker', icon: '📈' },
-            { id: 7, check: () => sessionHistory.length > 0, label: 'Generate a Progress Report', desc: '🎉 Full FBA cycle data collected! Create a professional progress report', tool: 'progressreport', icon: '📄' },
+            { id: 1, check: () => !selectedStudent, label: t('behavior_lens.fba.step_select_student') || 'Select a Student', desc: t('behavior_lens.fba.step_select_student_desc') || 'Choose or create a student profile to begin collecting data', tool: null, icon: '👤' },
+            { id: 2, check: () => abcEntries.length === 0, label: t('behavior_lens.fba.step_record_abc') || 'Record ABC Data', desc: t('behavior_lens.fba.step_record_abc_desc') || 'Start documenting Antecedent-Behavior-Consequence observations', tool: 'abc', icon: '📋' },
+            { id: 3, check: () => abcEntries.length > 0 && abcEntries.length < 5, label: t('behavior_lens.fba.step_collect_more') || 'Collect More Data', desc: t('behavior_lens.fba.step_collect_more_desc') || `You have ${abcEntries.length} entries — aim for 5+ across different days for reliable patterns`, tool: 'abc', icon: '📝' },
+            { id: 4, check: () => abcEntries.length >= 5 && !aiAnalysis, label: t('behavior_lens.fba.step_ai_analysis') || 'Run AI Pattern Analysis', desc: t('behavior_lens.fba.step_ai_analysis_desc') || 'You have enough data! Let AI identify behavior patterns and potential functions', tool: 'analysis', icon: '🧠' },
+            { id: 5, check: () => !!aiAnalysis && observationSessions.length === 0, label: t('behavior_lens.fba.step_hypothesis') || 'Build a Hypothesis', desc: t('behavior_lens.fba.step_hypothesis_desc') || 'Create a visual hypothesis diagram linking triggers, behaviors, and consequences', tool: 'hypothesis', icon: '🔗' },
+            { id: 6, check: () => !!aiAnalysis && sessionHistory.length === 0, label: t('behavior_lens.fba.step_sessions') || 'Track Intervention Sessions', desc: t('behavior_lens.fba.step_sessions_desc') || 'Start tracking data on your intervention to measure effectiveness', tool: 'sessiontracker', icon: '📈' },
+            { id: 7, check: () => sessionHistory.length > 0, label: t('behavior_lens.fba.step_report') || 'Generate a Progress Report', desc: t('behavior_lens.fba.step_report_desc') || '🎉 Full FBA cycle data collected! Create a professional progress report', tool: 'progressreport', icon: '📄' },
         ];
 
         const currentStep = FBA_STEPS.find(s => s.check());
@@ -7994,12 +8031,12 @@ Rules:
                 currentStep.tool && onOpenTool && h('button', {
                     onClick: () => onOpenTool(currentStep.tool),
                     className: 'px-4 py-1.5 bg-white text-slate-800 rounded-lg text-xs font-black hover:bg-white/90 transition-all shadow-sm'
-                }, '→ Open Tool'),
+                }, t('behavior_lens.fba.open_tool') || '→ Open Tool'),
                 h('div', { className: 'flex-1' },
                     h('div', { className: 'w-full bg-white/20 rounded-full h-1.5 overflow-hidden' },
                         h('div', { className: 'h-full bg-white/80 rounded-full transition-all duration-700', style: { width: `${progress}%` } })
                     ),
-                    h('div', { className: 'text-[9px] text-white/50 mt-1 text-right' }, `${progress}% through FBA workflow`)
+                    h('div', { className: 'text-[9px] text-white/50 mt-1 text-right' }, t('behavior_lens.fba.progress_pct') || `${progress}% through FBA workflow`)
                 )
             )
         );
@@ -8025,11 +8062,14 @@ Rules:
                 const dayEntries = abcEntries.filter(e => e.date === dateStr);
                 const count = dayEntries.length;
                 const functions = {};
+                const phases = {};
                 dayEntries.forEach(e => {
                     const fn = e.perceivedFunction || 'Unknown';
                     functions[fn] = (functions[fn] || 0) + 1;
+                    if (e.phase) phases[e.phase] = (phases[e.phase] || 0) + 1;
                 });
-                cells.push({ date, dateStr, count, functions, weekIdx: weeks - 1 - w, dayIdx: d });
+                const dominantPhase = Object.keys(phases).length > 0 ? Object.entries(phases).sort((a,b) => b[1] - a[1])[0][0] : null;
+                cells.push({ date, dateStr, count, functions, dominantPhase, weekIdx: weeks - 1 - w, dayIdx: d });
             }
         }
 
@@ -8052,16 +8092,16 @@ Rules:
         return h('div', { className: mini ? '' : 'max-w-2xl mx-auto space-y-4' },
             !mini && h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '📅'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, 'Behavior Timeline Heatmap'),
-                h('p', { className: 'text-xs text-slate-500 mt-1' }, 'Incident density across the past 4 school weeks')
+                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.heatmap.title') || 'Behavior Timeline Heatmap'),
+                h('p', { className: 'text-xs text-slate-500 mt-1' }, t('behavior_lens.heatmap.subtitle') || 'Incident density across the past 4 school weeks')
             ),
             // Legend
             !mini && h('div', { className: 'flex items-center justify-center gap-4 text-[10px] text-slate-500' },
-                h('span', null, 'Less'),
+                h('span', null, t('behavior_lens.heatmap.less') || 'Less'),
                 ['#f1f5f9', '#fef3c7', '#fbbf24', '#f97316', '#ef4444'].map((c, i) =>
                     h('div', { key: i, className: 'w-4 h-4 rounded-sm border border-slate-200', style: { backgroundColor: c } })
                 ),
-                h('span', null, 'More')
+                h('span', null, t('behavior_lens.heatmap.more') || 'More')
             ),
             // SVG Grid
             h('div', { className: 'flex justify-center relative' },
@@ -8096,11 +8136,21 @@ Rules:
                             }),
                             !mini && cell.count > 0 && h('text', {
                                 x: x + cellSize / 2,
-                                y: y + cellSize / 2 + 4,
+                                y: y + cellSize / 2 + (cell.dominantPhase ? 1 : 4),
                                 textAnchor: 'middle',
                                 className: `font-black ${cell.count >= maxCount * 0.5 ? 'fill-white' : 'fill-slate-600'}`,
                                 style: { fontSize: '10px', pointerEvents: 'none' }
-                            }, cell.count)
+                            }, cell.count),
+                            // Phase indicator dot
+                            !mini && cell.dominantPhase && h('circle', {
+                                cx: x + cellSize / 2,
+                                cy: y + cellSize - 5,
+                                r: 3,
+                                fill: cell.dominantPhase === 'baseline' ? '#94a3b8' : cell.dominantPhase === 'intervention' ? '#10b981' : cell.dominantPhase === 'maintenance' ? '#3b82f6' : '#f97316',
+                                stroke: '#fff',
+                                strokeWidth: 1,
+                                style: { pointerEvents: 'none' }
+                            })
                         );
                     }),
                     // Week labels
@@ -19298,7 +19348,7 @@ Keep the language professional but accessible.`;
 
     // ─── EffectSizeCalculator ───────────────────────────────────
 
-    const EffectSizeCalculator = ({ sessionHistory, designPhases, graphExport, onResultsChange, setActivePanel, t, addToast }) => {
+    const EffectSizeCalculator = ({ sessionHistory, designPhases, graphExport, onResultsChange, setActivePanel, abcEntries, t, addToast }) => {
 
         const [baselineData, setBaselineData] = useState('');
 
@@ -19325,6 +19375,23 @@ Keep the language professional but accessible.`;
             setBaselineData(baseVals.join(', '));
             setInterventionData(intVals.join(', '));
             if (addToast) addToast(t('behavior_lens.toast.autofilled_n_baseline_n_intervention_points_from_n') || `Auto-filled: ${baseVals.length} baseline + ${intVals.length} intervention points from "${graphExport.behaviorName}"`, 'success');
+        };
+
+        // Auto-fill from phase-tagged ABC entries (e.g., from Practice Sandbox)
+        const hasPhaseData = abcEntries && abcEntries.some(e => e.phase && e.phase !== 'baseline');
+        const handleAutoFillFromPhases = () => {
+            if (!abcEntries || abcEntries.length === 0) return;
+            const baseEntries = abcEntries.filter(e => e.phase === 'baseline' || !e.phase);
+            const intEntries = abcEntries.filter(e => e.phase && e.phase !== 'baseline');
+            if (baseEntries.length < 2 || intEntries.length < 2) {
+                if (addToast) addToast(t('behavior_lens.toast.need_2_baseline_2_intervention_entries_with_phase_tags') || 'Need at least 2 baseline + 2 intervention entries with phase tags', 'warning');
+                return;
+            }
+            const baseVals = baseEntries.map(e => e.intensity || 3);
+            const intVals = intEntries.map(e => e.intensity || 3);
+            setBaselineData(baseVals.join(', '));
+            setInterventionData(intVals.join(', '));
+            if (addToast) addToast(t('behavior_lens.toast.autofilled_from_phase_tagged_entries') || `Auto-filled: ${baseVals.length} baseline + ${intVals.length} intervention intensity values from ABC data`, 'success');
         };
 
         const calculate = () => {
@@ -19406,7 +19473,13 @@ Keep the language professional but accessible.`;
                     className: 'w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-xs font-bold hover:from-emerald-600 hover:to-teal-600 shadow-md transition-all mb-2'
                 }, `📊 Auto-fill from Graph ("${graphExport.behaviorName}" — ${graphExport.phaseAnalysis.length} phases)`),
 
-                !graphExport && setActivePanel && h('button', {
+                // Auto-fill from phase-tagged ABC entries
+                hasPhaseData && h('button', {
+                    onClick: handleAutoFillFromPhases,
+                    className: 'w-full py-2.5 bg-gradient-to-r from-violet-500 to-purple-500 text-white rounded-xl text-xs font-bold hover:from-violet-600 hover:to-purple-600 shadow-md transition-all mb-2'
+                }, `🏷️ Auto-fill from Phase-Tagged ABC Data (${abcEntries.filter(e => e.phase === 'baseline' || !e.phase).length}A + ${abcEntries.filter(e => e.phase && e.phase !== 'baseline').length}B)`),
+
+                !graphExport && !hasPhaseData && setActivePanel && h('button', {
                     onClick: () => setActivePanel('abagraph'),
                     className: 'w-full py-2 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all mb-2'
                 }, '📈 Open ABA Graph to enable auto-fill'),
@@ -22426,9 +22499,9 @@ Analyze this data and return ONLY valid JSON:
             const studentLabel = selectedStudent || 'Student';
             let csvContent = '';
             if (['abc', 'overview', 'trends', 'hypothesis'].includes(activePanel) && abcEntries.length > 0) {
-                csvContent = 'Date,Antecedent,Behavior,Consequence,Setting,Intensity,Function\n';
+                csvContent = 'Date,Antecedent,Behavior,Consequence,Setting,Intensity,Phase,Function\n';
                 abcEntries.forEach(e => {
-                    csvContent += `"${e.date || ''}","${(e.antecedent || '').replace(/"/g, '""')}","${(e.behavior || '').replace(/"/g, '""')}","${(e.consequence || '').replace(/"/g, '""')}","${e.setting || ''}","${e.intensity || ''}","${e.function || ''}"\n`;
+                    csvContent += `"${e.date || ''}","${(e.antecedent || '').replace(/"/g, '""')}","${(e.behavior || '').replace(/"/g, '""')}","${(e.consequence || '').replace(/"/g, '""')}","${e.setting || ''}","${e.intensity || ''}","${e.phase || ''}","${e.function || ''}"\n`;
                 });
             } else if (['sessiontracker', 'abagraph', 'cumrecord', 'effectsize'].includes(activePanel) && sessionHistory.length > 0) {
                 csvContent = 'Date,Behavior,Count,Rate,Phase,Duration\n';
@@ -24601,7 +24674,7 @@ Analyze this data and return ONLY valid JSON:
                 }),
                 activePanel === 'effectsize' && h(EffectSizeCalculator, {
                     sessionHistory, designPhases,
-                    graphExport,
+                    graphExport, abcEntries,
                     onResultsChange: setEffectSizeResults,
                     setActivePanel: openPanel,
                     t, addToast
