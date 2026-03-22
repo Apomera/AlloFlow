@@ -5951,8 +5951,27 @@ Create a concise pocket BIP. Return ONLY valid JSON:
         const [showFeedback, setShowFeedback] = useState(false);
         const [selfRating, setSelfRating] = useState(3);
         const [strategyNotes, setStrategyNotes] = useState('');
+
         const [sessionCount, setSessionCount] = useState(0);
+        const [studentMood, setStudentMood] = useState({ emoji: '😐', label: 'Neutral', color: 'slate', intensity: 50 });
+        const [moodHistory, setMoodHistory] = useState([]);
+        const [studentAvatar, setStudentAvatar] = useState(null);
+        const [aiFeedback, setAiFeedback] = useState(null);
+        const [feedbackLoading, setFeedbackLoading] = useState(false);
         const messagesEndRef = useRef(null);
+
+        const MOOD_MAP = {
+            resistant: { emoji: '😤', label: 'Resistant', color: 'red' },
+            anxious: { emoji: '😰', label: 'Anxious', color: 'amber' },
+            withdrawn: { emoji: '😶', label: 'Withdrawn', color: 'slate' },
+            neutral: { emoji: '😐', label: 'Neutral', color: 'slate' },
+            cautious: { emoji: '🤔', label: 'Cautious', color: 'blue' },
+            opening_up: { emoji: '🙂', label: 'Opening Up', color: 'teal' },
+            engaged: { emoji: '😊', label: 'Engaged', color: 'green' },
+            trusting: { emoji: '😌', label: 'Trusting', color: 'emerald' },
+            upset: { emoji: '😢', label: 'Upset', color: 'purple' },
+            frustrated: { emoji: '😠', label: 'Frustrated', color: 'orange' },
+        };
 
         useEffect(() => {
             if (messagesEndRef.current) messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -5980,6 +5999,17 @@ Create a concise pocket BIP. Return ONLY valid JSON:
             }]);
             setSessionStarted(true);
             setSessionCount(prev => prev + 1);
+            setStudentMood({ emoji: '😐', label: 'Neutral', color: 'slate', intensity: 50 });
+            setMoodHistory([{ mood: 'neutral', turn: 0 }]);
+            setAiFeedback(null);
+            // Generate student avatar profile
+            if (callGemini) {
+                const persona = getPersona();
+                const profPrompt = 'Based on this student persona for a counseling simulation, generate a brief student profile card.\nPersona: ' + persona + '\nStudent name: "' + (studentName || 'Student') + '"\n\nReturn ONLY valid JSON with these fields:\n{"age": "estimated age range", "appearance": "brief 1-sentence physical description", "expression": "current facial expression", "body_language": "current posture/body language", "thinking": "what the student is thinking but not saying"}';
+                callGemini(profPrompt, false)
+                    .then(function(r) { try { var p = JSON.parse(r.replace(/```json?\n?/g,'').replace(/```/g,'').trim()); setStudentAvatar(p); } catch(e) { warnLog('Profile parse failed', e); } })
+                    .catch(function(e) { warnLog('Profile generation failed', e); });
+            }
             if (addToast) addToast(t('behavior_lens.toast.simulation_started_you_are_now_the_counselor') || 'Simulation started — you are now the counselor 🎭', 'success');
         };
 
@@ -6023,6 +6053,22 @@ Respond only with the student's words:`;
                 const studentMsg = { role: 'student', content: result.trim() };
                 setMessages(prev => [...prev, studentMsg]);
 
+                // Analyze mood from student response
+                if (callGemini) {
+                    var moodPrompt = 'Analyze this student response in a counseling simulation and determine their current emotional state.\nStudent said: "' + result.trim() + '"\nPrevious mood: ' + studentMood.label + '\n\nReturn ONLY valid JSON:\n{"mood": "one of: resistant, anxious, withdrawn, neutral, cautious, opening_up, engaged, trusting, upset, frustrated", "intensity": 50, "expression": "brief facial expression", "body_language": "brief posture/gesture", "thinking": "inner monologue"}';
+                    callGemini(moodPrompt, false)
+                        .then(function(r) {
+                            try {
+                                var m = JSON.parse(r.replace(/```json?\n?/g,'').replace(/```/g,'').trim());
+                                var moodData = MOOD_MAP[m.mood] || MOOD_MAP.neutral;
+                                setStudentMood({ emoji: moodData.emoji, label: moodData.label, color: moodData.color, intensity: m.intensity || 50 });
+                                setMoodHistory(function(prev) { return prev.concat([{ mood: m.mood, turn: prev.length }]); });
+                                if (studentAvatar) setStudentAvatar(function(prev) { return Object.assign({}, prev, { expression: m.expression, body_language: m.body_language, thinking: m.thinking }); });
+                            } catch(e) { warnLog('Mood parse failed', e); }
+                        })
+                        .catch(function(e) { warnLog('Mood analysis failed', e); });
+                }
+
             } catch (err) {
                 warnLog('Counseling simulation failed:', err);
                 if (addToast) addToast(t('behavior_lens.toast.response_failed_try_again') || 'Response failed — try again', 'error');
@@ -6033,6 +6079,24 @@ Respond only with the student's words:`;
 
         const handleEndSession = () => {
             setShowFeedback(true);
+            // Generate AI feedback scorecard
+            if (callGemini && messages.length > 2) {
+                setFeedbackLoading(true);
+                var transcript = messages.filter(function(m) { return m.role !== 'system'; })
+                    .map(function(m) { return (m.role === 'counselor' ? 'Counselor' : 'Student') + ': ' + m.content; })
+                    .join('\n');
+                var moodJourney = moodHistory.map(function(m) { return m.mood; }).join(' > ');
+                var fbPrompt = 'You are an expert clinical supervisor evaluating a counseling simulation transcript.\n\nSCENARIO: ' + (scenario ? scenario.label : 'Unknown') + '\nSTUDENT PERSONA: ' + getPersona() + '\nMOOD JOURNEY: ' + moodJourney + '\n\nTRANSCRIPT:\n' + transcript + '\n\nEvaluate the counselor performance. Return ONLY valid JSON:\n{"overall_score": 7, "overall_grade": "B+", "empathy_score": 7, "empathy_note": "feedback", "active_listening_score": 7, "active_listening_note": "feedback", "deescalation_score": 7, "deescalation_note": "feedback", "choice_giving_score": 7, "choice_giving_note": "feedback", "rapport_score": 7, "rapport_note": "feedback", "strengths": ["strength 1", "strength 2"], "growth_areas": ["area 1", "area 2"], "suggested_phrases": ["phrase 1", "phrase 2"], "clinical_note": "overall observation"}';
+                callGemini(fbPrompt, false)
+                    .then(function(r) {
+                        try {
+                            var fb = JSON.parse(r.replace(/```json?\n?/g,'').replace(/```/g,'').trim());
+                            setAiFeedback(fb);
+                        } catch(e) { warnLog('Feedback parse failed', e); }
+                    })
+                    .catch(function(e) { warnLog('Feedback generation failed', e); })
+                    .finally(function() { setFeedbackLoading(false); });
+            }
         };
 
         const handleReset = () => {
@@ -6129,7 +6193,67 @@ Respond only with the student's words:`;
             return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
                 h('div', { className: 'bg-white rounded-xl border border-slate-200 p-6 shadow-sm text-center' },
                     h('h3', { className: 'text-lg font-black text-slate-800 mb-1' }, '📋 Session Reflection'),
-                    h('p', { className: 'text-xs text-slate-500 mb-6' }, `Scenario: ${scenario?.label} | ${messages.filter(m => m.role === 'counselor').length} counselor exchanges`)
+                    h('p', { className: 'text-xs text-slate-500 mb-2' }, 'Scenario: ' + (scenario ? scenario.label : '') + ' | ' + messages.filter(function(m) { return m.role === 'counselor'; }).length + ' counselor exchanges'),
+                    moodHistory.length > 1 && h('div', { className: 'flex items-center justify-center gap-1 flex-wrap mt-2' },
+                        h('span', { className: 'text-[10px] text-slate-400 mr-1' }, 'Mood journey:'),
+                        moodHistory.map(function(m, idx) { return h('span', { key: idx, className: 'text-sm' }, (MOOD_MAP[m.mood] || MOOD_MAP.neutral).emoji); })
+                    )
+                ),
+                // AI Feedback Scorecard
+                feedbackLoading && h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-6 text-center' },
+                    h('div', { className: 'animate-pulse' },
+                        h('div', { className: 'text-2xl mb-2' }, '🧠'),
+                        h('div', { className: 'text-sm font-bold text-indigo-700' }, 'AI Clinical Supervisor is analyzing your session...'),
+                        h('div', { className: 'text-[10px] text-indigo-400 mt-1' }, 'Evaluating empathy, active listening, de-escalation, and rapport')
+                    )
+                ),
+                aiFeedback && h('div', { className: 'bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-xl border border-indigo-200 p-5 shadow-sm space-y-4' },
+                    h('div', { className: 'text-center' },
+                        h('div', { className: 'text-3xl font-black text-indigo-600' }, aiFeedback.overall_grade || 'B'),
+                        h('div', { className: 'text-[10px] text-indigo-400 font-bold uppercase tracking-wider mt-1' }, 'AI Clinical Supervisor Score'),
+                        h('div', { className: 'w-32 mx-auto mt-2 h-2 bg-slate-200 rounded-full overflow-hidden' },
+                            h('div', {
+                                className: 'h-full rounded-full transition-all duration-1000 ' + (aiFeedback.overall_score >= 8 ? 'bg-emerald-500' : aiFeedback.overall_score >= 6 ? 'bg-teal-500' : aiFeedback.overall_score >= 4 ? 'bg-amber-500' : 'bg-red-500'),
+                                style: { width: ((aiFeedback.overall_score || 5) * 10) + '%' }
+                            })
+                        ),
+                        h('div', { className: 'text-[10px] text-slate-400 mt-1' }, (aiFeedback.overall_score || 5) + '/10')
+                    ),
+                    h('div', { className: 'grid grid-cols-5 gap-2' },
+                        [
+                            { key: 'empathy', icon: '💚', label: 'Empathy' },
+                            { key: 'active_listening', icon: '👂', label: 'Listening' },
+                            { key: 'deescalation', icon: '🧘', label: 'De-escalation' },
+                            { key: 'choice_giving', icon: '🤲', label: 'Choice' },
+                            { key: 'rapport', icon: '🤝', label: 'Rapport' },
+                        ].map(function(skill) {
+                            var score = aiFeedback[skill.key + '_score'] || 5;
+                            var note = aiFeedback[skill.key + '_note'] || '';
+                            return h('div', { key: skill.key, className: 'text-center group relative' },
+                                h('div', { className: 'text-lg' }, skill.icon),
+                                h('div', { className: 'text-xs font-black text-slate-700 mt-0.5' }, score + '/10'),
+                                h('div', { className: 'text-[9px] text-slate-500' }, skill.label),
+                                note && h('div', { className: 'absolute hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-1 w-48 p-2 bg-slate-800 text-white text-[10px] rounded-lg shadow-lg z-10' }, note)
+                            );
+                        })
+                    ),
+                    h('div', { className: 'grid grid-cols-2 gap-3' },
+                        h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200' },
+                            h('div', { className: 'text-[10px] font-black text-emerald-700 uppercase mb-1.5' }, '✅ Strengths'),
+                            (aiFeedback.strengths || []).map(function(s, i) { return h('div', { key: i, className: 'text-[11px] text-emerald-800 mb-0.5' }, '• ' + s); })
+                        ),
+                        h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
+                            h('div', { className: 'text-[10px] font-black text-amber-700 uppercase mb-1.5' }, '📈 Growth Areas'),
+                            (aiFeedback.growth_areas || []).map(function(s, i) { return h('div', { key: i, className: 'text-[11px] text-amber-800 mb-0.5' }, '• ' + s); })
+                        )
+                    ),
+                    aiFeedback.suggested_phrases && aiFeedback.suggested_phrases.length > 0 && h('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-200' },
+                        h('div', { className: 'text-[10px] font-black text-blue-700 uppercase mb-1.5' }, '💬 Try These Phrases Next Time'),
+                        aiFeedback.suggested_phrases.map(function(p, i) { return h('div', { key: i, className: 'text-[11px] text-blue-800 italic mb-1 pl-2 border-l-2 border-blue-300' }, '"' + p + '"'); })
+                    ),
+                    aiFeedback.clinical_note && h('div', { className: 'text-xs text-slate-600 italic text-center pt-2 border-t border-slate-200' },
+                        '🧠 ' + aiFeedback.clinical_note
+                    )
                 ),
                 h('div', { className: 'bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4' },
                     h('div', null,
@@ -6188,16 +6312,53 @@ Respond only with the student's words:`;
 
         // ─── Chat Interface ─────────────────────────────────────────
         return h('div', { className: 'max-w-3xl mx-auto flex flex-col', style: { height: 'calc(100vh - 200px)', minHeight: '400px' } },
-            // Header
-            h('div', { className: 'bg-gradient-to-r from-teal-500 to-cyan-500 rounded-t-xl p-4 text-white flex items-center justify-between flex-shrink-0' },
-                h('div', null,
-                    h('h3', { className: 'font-black text-sm' }, '🎭 Counseling Simulation'),
-                    h('p', { className: 'text-[10px] opacity-80' }, `${scenario?.label} • ${studentName || 'Student'} • ${messages.filter(m => m.role === 'counselor').length} exchanges`)
+            // Header with student profile card
+            h('div', { className: 'bg-gradient-to-r from-teal-500 to-cyan-500 rounded-t-xl flex-shrink-0' },
+                h('div', { className: 'p-4 text-white flex items-center justify-between' },
+                    h('div', null,
+                        h('h3', { className: 'font-black text-sm' }, '🎭 Counseling Simulation'),
+                        h('p', { className: 'text-[10px] opacity-80' }, scenario.label + ' • ' + (studentName || 'Student') + ' • ' + messages.filter(function(m) { return m.role === 'counselor'; }).length + ' exchanges')
+                    ),
+                    h('button', {
+                        onClick: handleEndSession,
+                        className: 'px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold transition-all'
+                    }, '⏹ End Session')
                 ),
-                h('button', {
-                    onClick: handleEndSession,
-                    className: 'px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold transition-all'
-                }, '⏹ End Session')
+                // Dynamic student profile card
+                (studentAvatar || studentMood) && h('div', { className: 'mx-3 mb-3 bg-white/15 backdrop-blur-sm rounded-xl p-3 flex items-center gap-3' },
+                    h('div', { className: 'relative' },
+                        h('div', {
+                            className: 'w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-2xl transition-all duration-500'
+                        }, studentMood.emoji || '😐'),
+                        h('div', {
+                            className: 'absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-teal-500 bg-' + (studentMood.color || 'slate') + '-400 transition-colors duration-500'
+                        })
+                    ),
+                    h('div', { className: 'flex-1 min-w-0' },
+                        h('div', { className: 'flex items-center gap-2' },
+                            h('span', { className: 'text-xs font-black text-white' }, studentName || 'Student'),
+                            h('span', {
+                                className: 'px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-' + (studentMood.color || 'slate') + '-400/30 text-white transition-colors duration-500'
+                            }, studentMood.label || 'Neutral')
+                        ),
+                        studentAvatar && h('div', { className: 'text-[10px] text-white/70 mt-0.5 truncate' },
+                            (studentAvatar.expression || '') + ' • ' + (studentAvatar.body_language || '')
+                        ),
+                        studentAvatar && studentAvatar.thinking && h('div', { className: 'text-[10px] text-white/50 italic mt-0.5 truncate' },
+                            '💭 "' + studentAvatar.thinking + '"'
+                        )
+                    ),
+                    h('div', { className: 'w-16 flex flex-col items-center gap-0.5' },
+                        h('div', { className: 'text-[8px] text-white/60 font-bold uppercase' }, 'Intensity'),
+                        h('div', { className: 'w-full h-1.5 bg-white/20 rounded-full overflow-hidden' },
+                            h('div', {
+                                className: 'h-full bg-' + (studentMood.color || 'slate') + '-300 rounded-full transition-all duration-700',
+                                style: { width: (studentMood.intensity || 50) + '%' }
+                            })
+                        ),
+                        h('div', { className: 'text-[8px] text-white/50' }, (studentMood.intensity || 50) + '%')
+                    )
+                )
             ),
             // Messages
             h('div', { className: 'flex-1 overflow-y-auto bg-white border-x border-slate-200 p-4 space-y-3' },
