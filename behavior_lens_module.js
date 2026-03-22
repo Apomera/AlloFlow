@@ -17598,10 +17598,11 @@ Keep it under 150 words.`);
                 h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
                     h('div', { className: 'flex items-center gap-2 mb-2' },
                         h('div', { className: 'w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-black' }, '4'),
-                        h('h3', { className: 'text-sm font-black text-slate-800' }, 'Enter Your Coding Data')
+                        h('h3', { className: 'text-sm font-black text-slate-800' }, 'Enter Your Coding Data'),
+                        h('span', { className: 'text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full' }, 'OPTIONAL')
                     ),
-                    h('p', { className: 'text-[10px] text-slate-500 mb-2' }, 'Enter your observation codes as comma-separated values, one per interval'),
-                    h('textarea', { value: practitionerCoding, onChange: function(e) { setPractitionerCoding(e.target.value); }, 'aria-label': 'Your observation coding', placeholder: 'e.g., 1, 0, 1, 1, 0, 0, 1, 0', rows: 2, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none resize-none font-mono' })
+                    h('p', { className: 'text-[10px] text-slate-500 mb-2' }, 'Enter your observation codes to compare against AI. Leave blank for AI-only reliability testing (researchers can skip this to measure AI consistency across passes).'),
+                    h('textarea', { value: practitionerCoding, onChange: function(e) { setPractitionerCoding(e.target.value); }, 'aria-label': 'Your observation coding', placeholder: 'e.g., 1, 0, 1, 1, 0, 0, 1, 0  (leave blank for AI-only mode)', rows: 2, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none resize-none font-mono' })
                 ),
                 h('button', { onClick: processIOAWithAI, disabled: !mediaFile || !targetBehaviors.trim() || aiProcessing, className: 'w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all text-base' }, aiProcessing ? '🧠 AI is analyzing... ' + aiProgress + '%' : '🧠 Run AI Behavioral Coding (Pass 1)'),
                 aiCoding && practitionerCoding.trim() && !ioaComparison && h('button', { onClick: function() { doIOAComparison(null); }, className: 'w-full py-2.5 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl font-bold shadow-lg transition-all text-sm' }, '📊 Compare Your Coding vs AI'),
@@ -17611,7 +17612,7 @@ Keep it under 150 words.`);
                         h('div', { className: 'w-6 h-6 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-[10px] font-black' }, '5'),
                         h('h3', { className: 'text-sm font-black text-violet-800' }, 'Independent Second AI Review (Double-Blind)')
                     ),
-                    h('p', { className: 'text-[10px] text-violet-600' }, 'Run a second, independent AI analysis with NO knowledge of the first pass or your coding. This creates a true double-blind reliability check enabling three-way comparison: You × AI-1, You × AI-2, and AI-1 × AI-2.'),
+                    h('p', { className: 'text-[10px] text-violet-600' }, 'Run a second, independent AI analysis with NO knowledge of the first pass. ' + (practitionerCoding.trim() ? 'Enables three-way comparison: You × AI-1, You × AI-2, and AI-1 × AI-2.' : 'AI-only mode: measures AI reliability by comparing two independent passes (AI-1 × AI-2) — no human coding required.')),
                     h('button', { onClick: runSecondAIPass, disabled: aiProcessing2, className: 'w-full py-2.5 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all text-sm' }, aiProcessing2 ? '🔬 Second review in progress...' : '🔬 Run Independent 2nd Review'),
                     aiCoding2 && h('div', { className: 'text-[10px] text-emerald-600 font-bold' }, '✅ Second pass complete — ' + (aiCoding2.intervals || []).length + ' intervals coded independently')
                 )
