@@ -2401,6 +2401,11 @@
                 color: 'lime', ready: true
               },
               {
+                id: 'titrationLab', icon: '🧪', label: 'Titration Lab',
+                desc: 'PPE safety check, neutralize acid & base spills, live S-curve graphing, indicator selection, and molarity calculation challenge.',
+                color: 'emerald', ready: true
+              },
+              {
                 id: 'punnett', icon: '🧬', label: t('stem.tools_menu.punnett_square'),
                 desc: 'Genetic crosses with alleles. Predict genotype and phenotype ratios.',
                 color: 'violet', ready: true
@@ -14479,6 +14484,354 @@
             ),
             React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'pn-' + Date.now(), tool: 'punnett', label: d.parent1.join('') + ' \u00D7 ' + d.parent2.join(''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           )
+        })(),
+
+
+        stemLabTab === 'explore' && stemLabTool === 'titrationLab' && (() => {
+          // ── State ──
+          const d = labToolData.titrationLab || {
+            phase: 'safety', ppe: { goggles: false, gloves: false, coat: false },
+            spill: null, titrantVolume: 0, sloppyMode: false,
+            resultMessage: null, resultSuccess: false,
+            indicator: 'universal', curvePoints: [],
+            calcAnswer: '', calcChecked: false, calcCorrect: false
+          };
+          const upd = (key, val) => setLabToolData(prev => ({ ...prev, titrationLab: { ...(prev.titrationLab || {}), [key]: val } }));
+
+          // ── Indicators ──
+          const INDICATORS = {
+            universal:       { label: 'Universal',        icon: '🌈', desc: 'Full pH color spectrum' },
+            phenolphthalein: { label: 'Phenolphthalein',   icon: '💗', desc: 'Colorless → Pink (pH 8.2–10)' },
+            bromothymol:     { label: 'Bromothymol Blue',  icon: '💙', desc: 'Yellow → Blue (pH 6.0–7.6)' }
+          };
+
+          const getIndicatorColor = (pH) => {
+            const ind = d.indicator || 'universal';
+            if (ind === 'phenolphthalein') {
+              if (pH < 8.2) return 'rgba(220,220,230,0.25)';
+              if (pH < 10) { const t = (pH - 8.2) / 1.8; return 'rgba(219,39,119,' + (t * 0.7 + 0.15).toFixed(2) + ')'; }
+              return '#db2777';
+            }
+            if (ind === 'bromothymol') {
+              if (pH < 6.0) return '#eab308';
+              if (pH < 7.6) { const t = (pH - 6.0) / 1.6; return 'rgb(' + Math.round(234 - 138 * t) + ',' + Math.round(179 - 14 * t) + ',' + Math.round(8 + 242 * t) + ')'; }
+              return '#2563eb';
+            }
+            if (pH > 10) return '#9333ea';
+            if (pH > 8) return '#60a5fa';
+            if (pH >= 6.5 && pH <= 7.5) return '#22c55e';
+            if (pH > 3) return '#f59e0b';
+            return '#dc2626';
+          };
+
+          // ── Henderson-Hasselbalch S-Curve pH Model ──
+          const calcPH = (vol) => {
+            if (!d.spill) return 7;
+            const veq = d.spill.targetVolume, initPH = d.spill.pH, k = 2.0;
+            const s = 2 / (1 + Math.exp(-k * (vol - veq)));
+            return Math.max(0.5, Math.min(13.5, 7 + (initPH - 7) * (1 - s)));
+          };
+
+          // ── Spill Presets ──
+          const ALL_SPILLS = [
+            { name: 'Ammonia Spill',     pH: 11.0, targetVolume: 25.0, volume: 100, titrantM: 0.10, titrant: 'HCl',  type: 'base', hint: 'A rogue scientist spilled highly basic ammonia on the floor!' },
+            { name: 'Lye Leak',          pH: 13.0, targetVolume: 40.0, volume: 100, titrantM: 0.10, titrant: 'HCl',  type: 'base', hint: 'Caustic lye is leaking from a cracked pipe!' },
+            { name: 'Basic Soap Vat',    pH: 9.0,  targetVolume: 10.0, volume: 100, titrantM: 0.10, titrant: 'HCl',  type: 'base', hint: 'The industrial soap vat overflowed!' },
+            { name: 'Battery Acid Leak', pH: 2.0,  targetVolume: 30.0, volume: 100, titrantM: 0.10, titrant: 'NaOH', type: 'acid', hint: 'Sulfuric acid from a cracked battery is pooling under the bench!' },
+            { name: 'Vinegar Flood',     pH: 3.5,  targetVolume: 15.0, volume: 100, titrantM: 0.10, titrant: 'NaOH', type: 'acid', hint: 'A jug of industrial vinegar tipped off the shelf!' },
+            { name: 'Citric Acid Spill', pH: 3.0,  targetVolume: 20.0, volume: 100, titrantM: 0.10, titrant: 'NaOH', type: 'acid', hint: 'Concentrated citric acid is spreading across the floor!' }
+          ];
+
+          const SLOPPY_MSGS = [
+            'The floor is now a river of chemicals. Lab assistants are surfing on their stools. \uD83C\uDFC4',
+            'You invented Chaosium. Side effects include spontaneous combustion. \uD83D\uDD25',
+            'The beaker shattered dramatically. Standing ovation from the test tubes. \uD83D\uDC4F',
+            'So much gas the fire alarm went off. The janitor is NOT amused. \uD83D\uDEA8',
+            'The pH meter printed "WHY" and went dark. \uD83D\uDC80'
+          ];
+
+          // ── Actions ──
+          const enterLab = () => {
+            if (!d.ppe.goggles || !d.ppe.gloves || !d.ppe.coat) {
+              addToast('\u26A0\uFE0F Safety hazard! You need ALL PPE before entering!', 'error'); return;
+            }
+            const pick = ALL_SPILLS[Math.floor(Math.random() * ALL_SPILLS.length)];
+            upd('spill', pick); upd('titrantVolume', 0);
+            upd('curvePoints', [{ vol: 0, pH: pick.pH }]);
+            upd('calcAnswer', ''); upd('calcChecked', false); upd('calcCorrect', false);
+            upd('phase', 'spill');
+          };
+
+          const addTitrant = (amount) => {
+            const newVol = Math.round(((d.titrantVolume || 0) + amount) * 10) / 10;
+            upd('titrantVolume', newVol);
+            if (!d.spill) return;
+            const newPh = calcPH(newVol);
+            upd('curvePoints', (d.curvePoints || []).concat([{ vol: newVol, pH: newPh }]));
+            const target = d.spill.targetVolume;
+            if (newVol >= target - 0.5 && newVol <= target + 0.5) {
+              upd('phase', 'calculation'); upd('resultSuccess', true);
+              if (typeof awardStemXP === 'function') awardStemXP('titrationLab', 25, 'Titration Master');
+            } else if (newVol > target + 0.5) {
+              upd('phase', 'result'); upd('resultSuccess', false);
+              upd('resultMessage', d.sloppyMode
+                ? SLOPPY_MSGS[Math.floor(Math.random() * SLOPPY_MSGS.length)]
+                : 'Overshot the endpoint! The solution became highly ' + (d.spill.type === 'base' ? 'acidic' : 'basic') + '.');
+            }
+          };
+
+          const currentPh = d.spill ? calcPH(d.titrantVolume || 0) : 7;
+          const nearEndpoint = d.spill && Math.abs((d.titrantVolume || 0) - d.spill.targetVolume) < 3;
+
+          const checkCalc = () => {
+            if (!d.spill) return;
+            const expected = (d.spill.titrantM * d.spill.targetVolume) / d.spill.volume;
+            const ans = parseFloat(d.calcAnswer);
+            if (isNaN(ans)) { addToast('Please enter a number!', 'error'); return; }
+            upd('calcChecked', true);
+            if (Math.abs(ans - expected) <= 0.015) {
+              upd('calcCorrect', true);
+              if (typeof awardStemXP === 'function') awardStemXP('titrationLab', 15, 'Molarity Master');
+              addToast('\uD83C\uDFAF Correct! M\u2082 = ' + expected.toFixed(4) + ' M', 'success');
+            } else {
+              upd('calcCorrect', false);
+              addToast('Not quite! Hint: M\u2081V\u2081 = M\u2082V\u2082 \u2192 M\u2082 = M\u2081V\u2081 / V\u2082', 'error');
+            }
+          };
+
+          // ── SVG Titration Curve ──
+          const renderCurve = (compact) => {
+            const pts = d.curvePoints || [];
+            if (pts.length < 1) return null;
+            const W = compact ? 260 : 340, H = compact ? 140 : 180;
+            const pad = { l: 32, r: 8, t: 8, b: 26 };
+            const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+            const maxVol = d.spill ? Math.max(d.spill.targetVolume * 1.5, (d.titrantVolume || 0) + 5) : 50;
+            const sx = (v) => pad.l + (v / maxVol) * pw;
+            const sy = (p) => pad.t + ((14 - p) / 14) * ph;
+            const veq = d.spill ? d.spill.targetVolume : 0;
+            return React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-2 shadow-sm" },
+              React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 px-1" }, "\uD83D\uDCC8 TITRATION CURVE"),
+              React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full", style: { maxHeight: (H + 10) + 'px' } },
+                [0, 2, 4, 7, 10, 14].map(function (p) {
+                  return React.createElement("line", { key: 'g' + p, x1: pad.l, y1: sy(p), x2: W - pad.r, y2: sy(p), stroke: p === 7 ? '#86efac' : '#f1f5f9', strokeWidth: p === 7 ? 1.5 : 0.5, strokeDasharray: p === 7 ? '4 2' : '' });
+                }),
+                [0, 2, 4, 7, 10, 14].map(function (p) {
+                  return React.createElement("text", { key: 'yl' + p, x: pad.l - 4, y: sy(p) + 3, textAnchor: "end", style: { fontSize: '7px', fontWeight: p === 7 ? 'bold' : 'normal' }, fill: p === 7 ? '#16a34a' : '#94a3b8' }, p);
+                }),
+                Array.from({ length: 6 }, function (_, i) { return Math.round(maxVol * i / 5); }).map(function (v) {
+                  return React.createElement("text", { key: 'xl' + v, x: sx(v), y: H - 5, textAnchor: "middle", style: { fontSize: '7px' }, fill: "#94a3b8" }, v);
+                }),
+                React.createElement("line", { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: "#64748b", strokeWidth: 1.5 }),
+                React.createElement("line", { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: "#64748b", strokeWidth: 1.5 }),
+                React.createElement("text", { x: W / 2, y: H - 1, textAnchor: "middle", style: { fontSize: '7px', fontWeight: 'bold' }, fill: "#64748b" }, "Volume Added (mL)"),
+                React.createElement("text", { x: 6, y: H / 2, textAnchor: "middle", style: { fontSize: '7px', fontWeight: 'bold' }, fill: "#64748b", transform: "rotate(-90, 6, " + (H / 2) + ")" }, "pH"),
+                React.createElement("line", { x1: sx(veq), y1: pad.t, x2: sx(veq), y2: H - pad.b, stroke: "#f59e0b", strokeWidth: 1, strokeDasharray: "3 2" }),
+                React.createElement("text", { x: sx(veq), y: pad.t - 1, textAnchor: "middle", style: { fontSize: '6px', fontWeight: 'bold' }, fill: "#f59e0b" }, "Equiv."),
+                pts.length > 1 && React.createElement("polyline", {
+                  points: pts.map(function (p) { return sx(p.vol) + ',' + sy(p.pH); }).join(' '),
+                  fill: "none", stroke: "#6366f1", strokeWidth: 2, strokeLinejoin: "round"
+                }),
+                pts.map(function (p, i) {
+                  return React.createElement("circle", { key: i, cx: sx(p.vol), cy: sy(p.pH), r: i === pts.length - 1 ? 3.5 : 1.5, fill: i === pts.length - 1 ? '#6366f1' : '#a5b4fc', stroke: i === pts.length - 1 ? '#4f46e5' : 'none', strokeWidth: 1.5 });
+                }),
+                pts.length > 0 && React.createElement("text", {
+                  x: Math.min(sx(pts[pts.length - 1].vol) + 5, W - pad.r - 20), y: sy(pts[pts.length - 1].pH) - 4,
+                  style: { fontSize: '7px', fontWeight: 'bold' }, fill: "#4f46e5"
+                }, "pH " + pts[pts.length - 1].pH.toFixed(1))
+              )
+            );
+          };
+
+          // ── Render ──
+          return React.createElement("div", { className: "max-w-2xl mx-auto animate-in fade-in duration-200" },
+            // Header
+            React.createElement("div", { className: "flex items-center gap-3 mb-4" },
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDDEA Titration Lab"),
+              React.createElement("span", { className: "px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full" }, "CHEMISTRY"),
+              React.createElement("div", { className: "ml-auto flex items-center gap-2" },
+                React.createElement("label", { className: "text-xs font-bold text-slate-500 flex items-center gap-1 cursor-pointer" },
+                  React.createElement("input", { type: "checkbox", checked: d.sloppyMode, onChange: function (e) { upd('sloppyMode', e.target.checked); }, className: "accent-emerald-500" }),
+                  "Sloppy Mode"
+                )
+              )
+            ),
+
+            // ── Phase: Safety (PPE) ──
+            d.phase === 'safety' && React.createElement("div", { className: "bg-white border-2 border-slate-200 rounded-xl p-6 text-center shadow-sm" },
+              React.createElement("h4", { className: "text-lg font-bold text-slate-700 mb-2" }, "Gearing Up for the Lab"),
+              React.createElement("p", { className: "text-sm text-slate-500 mb-6" }, "Safety first! Equip your Personal Protective Equipment (PPE) before entering."),
+              React.createElement("div", { className: "flex justify-center gap-4 mb-6" },
+                [{ id: 'goggles', icon: '\uD83E\uDD7D', label: 'Goggles' }, { id: 'gloves', icon: '\uD83E\uDDE4', label: 'Gloves' }, { id: 'coat', icon: '\uD83E\uDD7C', label: 'Lab Coat' }].map(function (item) {
+                  return React.createElement("button", {
+                    key: item.id,
+                    onClick: function () { upd('ppe', Object.assign({}, d.ppe, { [item.id]: !d.ppe[item.id] })); },
+                    className: "w-24 h-24 flex flex-col justify-center items-center gap-2 border-2 rounded-xl transition-all " + (d.ppe[item.id] ? 'bg-emerald-50 border-emerald-400 shadow-md transform scale-105' : 'bg-slate-50 border-slate-200 hover:border-emerald-200')
+                  },
+                    React.createElement("span", { className: "text-3xl" }, item.icon),
+                    React.createElement("span", { className: "text-xs font-bold " + (d.ppe[item.id] ? 'text-emerald-700' : 'text-slate-500') }, item.label)
+                  );
+                })
+              ),
+              React.createElement("button", {
+                onClick: enterLab,
+                className: "px-6 py-2.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 shadow-sm transition-all text-sm"
+              }, "Enter Lab \uD83D\uDEAA")
+            ),
+
+            // ── Phase: Spill Briefing + Indicator Selection ──
+            d.phase === 'spill' && d.spill && React.createElement("div", { className: "bg-amber-50 border-2 border-amber-200 rounded-xl p-6 text-center shadow-sm animate-in zoom-in" },
+              React.createElement("div", { className: "text-4xl mb-3 animate-bounce" }, "\uD83D\uDEA8"),
+              React.createElement("h4", { className: "text-lg font-bold text-amber-800 mb-2" }, "Emergency in Sector 4!"),
+              React.createElement("p", { className: "text-sm text-amber-700 mb-4 font-bold" }, d.spill.hint),
+              React.createElement("div", { className: "bg-white p-4 rounded-lg inline-block border border-amber-300 text-left mb-4 shadow-sm" },
+                React.createElement("p", { className: "text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-2" }, "Analysis Report"),
+                React.createElement("p", { className: "text-sm font-bold text-slate-700 mt-1" }, "Substance: ", React.createElement("span", { className: "text-slate-500 font-normal" }, d.spill.name)),
+                React.createElement("p", { className: "text-sm font-bold text-slate-700" }, "Initial pH: ", React.createElement("span", { className: "text-rose-600 font-black" }, d.spill.pH.toFixed(1))),
+                React.createElement("p", { className: "text-sm font-bold text-slate-700" }, "Spill type: ", React.createElement("span", { className: d.spill.type === 'acid' ? 'text-red-600 font-black' : 'text-blue-600 font-black' }, d.spill.type === 'acid' ? 'ACIDIC' : 'BASIC')),
+                React.createElement("p", { className: "text-sm font-bold text-slate-700" }, "Titrant: ", React.createElement("span", { className: "text-indigo-600 font-black" }, '0.10 M ' + d.spill.titrant))
+              ),
+              // Indicator Selection
+              React.createElement("div", { className: "bg-white rounded-xl border border-amber-200 p-3 mb-4 text-left" },
+                React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 text-center" }, "\uD83E\uDDEA Choose Your Indicator"),
+                React.createElement("div", { className: "flex gap-2 justify-center" },
+                  Object.entries(INDICATORS).map(function (entry) {
+                    var key = entry[0], info = entry[1];
+                    var isActive = (d.indicator || 'universal') === key;
+                    return React.createElement("button", {
+                      key: key,
+                      onClick: function () { upd('indicator', key); },
+                      className: "flex-1 max-w-[140px] p-2 rounded-lg border-2 transition-all text-center " + (isActive ? 'bg-indigo-50 border-indigo-400 shadow-md' : 'bg-slate-50 border-slate-200 hover:border-indigo-200')
+                    },
+                      React.createElement("span", { className: "text-xl block" }, info.icon),
+                      React.createElement("span", { className: "text-[10px] font-bold block " + (isActive ? 'text-indigo-700' : 'text-slate-600') }, info.label),
+                      React.createElement("span", { className: "text-[8px] block text-slate-400" }, info.desc)
+                    );
+                  })
+                )
+              ),
+              React.createElement("button", {
+                onClick: function () { upd('phase', 'titrate'); },
+                className: "px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all text-sm"
+              }, "Grab the " + d.spill.titrant + " & Neutralize! \uD83C\uDFC3\uD83D\uDCA8")
+            ),
+
+            // ── Phase: Titrate ──
+            d.phase === 'titrate' && d.spill && React.createElement("div", { className: "space-y-3 animate-in fade-in" },
+              // Beaker + Controls row
+              React.createElement("div", { className: "bg-slate-50 border-2 border-slate-200 rounded-xl p-4 flex flex-col md:flex-row gap-6 shadow-sm" },
+                // Left: Beaker Visual
+                React.createElement("div", { className: "flex-1 relative flex justify-center items-end h-64 border bg-white rounded-lg p-4 shadow-inner" },
+                  React.createElement("div", { className: "w-32 h-32 border-4 border-t-0 border-slate-200 rounded-b-xl relative overflow-hidden flex flex-col justify-end" },
+                    React.createElement("div", { className: "w-full transition-colors duration-700 ease-in-out relative", style: { backgroundColor: getIndicatorColor(currentPh), height: (50 + Math.min(d.titrantVolume, 50)) + '%' } },
+                      React.createElement("div", { className: "absolute top-0 left-0 w-full h-1 bg-white/40" })
+                    )
+                  ),
+                  React.createElement("div", { className: "absolute top-4 left-1/2 transform -translate-x-1/2 w-4 h-20 bg-gradient-to-r from-slate-200 to-slate-100 border border-slate-300 flex flex-col items-center" },
+                    React.createElement("div", { className: "w-1 h-full flex flex-col justify-between py-1" },
+                      [1, 2, 3, 4, 5].map(function (i) { return React.createElement("div", { key: i, className: "w-full border-t border-slate-400" }); })
+                    ),
+                    React.createElement("div", { className: "absolute -bottom-2 w-2 h-4 bg-slate-300 rounded-b" })
+                  ),
+                  React.createElement("div", { key: 'drip-' + d.titrantVolume, className: "absolute top-24 left-1/2 transform -translate-x-1/2 text-sky-400 text-sm", style: { animation: 'bounce 0.6s ease-in-out' } }, "\uD83D\uDCA7"),
+                  // Indicator label
+                  React.createElement("div", { className: "absolute bottom-2 left-2 text-[8px] font-bold text-slate-400 uppercase" }, INDICATORS[d.indicator || 'universal'].label)
+                ),
+                // Right: Controls
+                React.createElement("div", { className: "w-full md:w-52 flex flex-col justify-center gap-3" },
+                  React.createElement("div", { className: "bg-white border rounded-lg p-3 text-center shadow-sm" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1" }, "Current pH"),
+                    React.createElement("p", { className: "text-3xl font-black transition-colors duration-700", style: { color: getIndicatorColor(currentPh) } }, currentPh.toFixed(1))
+                  ),
+                  React.createElement("div", { className: "bg-white border rounded-lg p-3 text-center shadow-sm" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1" }, "Titrant Added (" + d.spill.titrant + ")"),
+                    React.createElement("p", { className: "text-lg font-bold text-slate-700 font-mono" }, (d.titrantVolume || 0).toFixed(1) + " mL")
+                  ),
+                  React.createElement("div", { className: "grid gap-2 " + (nearEndpoint ? 'grid-cols-3' : 'grid-cols-2') },
+                    React.createElement("button", {
+                      onClick: function () { addTitrant(5); },
+                      className: "px-2 py-3 bg-blue-100 text-blue-800 font-bold rounded-lg hover:bg-blue-200 transition-all text-xs border border-blue-200 shadow-sm"
+                    }, "Pour \uD83C\uDF0A", React.createElement("span", { className: "block text-[9px] text-blue-600 font-normal mt-1" }, "5.0 mL")),
+                    React.createElement("button", {
+                      onClick: function () { addTitrant(0.5); },
+                      className: "px-2 py-3 bg-sky-100 text-sky-800 font-bold rounded-lg hover:bg-sky-200 transition-all text-xs border border-sky-200 shadow-sm"
+                    }, "Drop \uD83D\uDCA7", React.createElement("span", { className: "block text-[9px] text-sky-600 font-normal mt-1" }, "0.5 mL")),
+                    nearEndpoint && React.createElement("button", {
+                      onClick: function () { addTitrant(0.1); },
+                      className: "px-2 py-3 bg-violet-100 text-violet-800 font-bold rounded-lg hover:bg-violet-200 transition-all text-xs border border-violet-200 shadow-sm animate-pulse"
+                    }, "Micro \uD83D\uDD2C", React.createElement("span", { className: "block text-[9px] text-violet-600 font-normal mt-1" }, "0.1 mL"))
+                  ),
+                  nearEndpoint && React.createElement("p", { className: "text-[9px] text-amber-600 font-bold text-center animate-pulse" }, "\u26A0\uFE0F You're close to the endpoint! Use Micro-drops for precision!")
+                )
+              ),
+              // Titration Curve
+              renderCurve(false)
+            ),
+
+            // ── Phase: Calculation Challenge ──
+            d.phase === 'calculation' && d.spill && React.createElement("div", { className: "space-y-3 animate-in zoom-in" },
+              React.createElement("div", { className: "bg-emerald-50 border-2 border-emerald-200 rounded-xl p-6 text-center shadow-sm" },
+                React.createElement("div", { className: "text-4xl mb-3" }, "\uD83C\uDF89"),
+                React.createElement("h4", { className: "text-xl font-bold text-emerald-700 mb-2" }, "Spill Neutralized!"),
+                React.createElement("p", { className: "text-sm text-emerald-600 mb-4" }, "Now determine the unknown concentration of the spill."),
+                React.createElement("div", { className: "bg-white rounded-xl border border-emerald-200 p-4 max-w-sm mx-auto text-left shadow-sm" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3 text-center" }, "\uD83E\uDDEE Molarity Challenge: M\u2081V\u2081 = M\u2082V\u2082"),
+                  React.createElement("div", { className: "space-y-2 text-sm" },
+                    React.createElement("p", { className: "text-slate-600" }, "\uD83E\uDDEA Titrant: ", React.createElement("span", { className: "font-bold text-indigo-600" }, d.spill.titrantM + " M " + d.spill.titrant)),
+                    React.createElement("p", { className: "text-slate-600" }, "\uD83D\uDCCF Volume used (V\u2081): ", React.createElement("span", { className: "font-bold text-indigo-600" }, d.spill.targetVolume.toFixed(1) + " mL")),
+                    React.createElement("p", { className: "text-slate-600" }, "\uD83E\uDEE7 Spill volume (V\u2082): ", React.createElement("span", { className: "font-bold text-indigo-600" }, d.spill.volume + " mL")),
+                    React.createElement("p", { className: "text-slate-700 font-bold mt-3" }, "What was the spill\u2019s molarity (M\u2082)?")
+                  ),
+                  React.createElement("div", { className: "flex items-center gap-2 mt-3" },
+                    React.createElement("input", {
+                      type: "number", step: "0.001", placeholder: "0.000",
+                      value: d.calcAnswer || '', onChange: function (e) { upd('calcAnswer', e.target.value); upd('calcChecked', false); },
+                      className: "flex-1 px-3 py-2 border-2 border-slate-200 rounded-lg text-center font-mono font-bold text-lg focus:border-indigo-400 focus:outline-none"
+                    }),
+                    React.createElement("span", { className: "text-sm font-bold text-slate-500" }, "M")
+                  ),
+                  React.createElement("div", { className: "flex gap-2 mt-3" },
+                    React.createElement("button", {
+                      onClick: checkCalc,
+                      className: "flex-1 px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-all text-sm shadow-sm"
+                    }, "\u2705 Check Answer"),
+                    React.createElement("button", {
+                      onClick: function () { upd('phase', 'result'); upd('resultMessage', 'Spill neutralized! (Calculation skipped)'); },
+                      className: "px-4 py-2 bg-slate-200 text-slate-600 font-bold rounded-lg hover:bg-slate-300 transition-all text-sm"
+                    }, "Skip \u27A1")
+                  ),
+                  d.calcChecked && d.calcCorrect && React.createElement("div", { className: "mt-3 p-2 bg-emerald-50 rounded-lg border border-emerald-200 text-center" },
+                    React.createElement("p", { className: "text-sm font-bold text-emerald-700" }, "\uD83C\uDFAF Perfect! +15 XP"),
+                    React.createElement("button", {
+                      onClick: function () { upd('phase', 'result'); upd('resultMessage', 'Perfect neutralization AND correct molarity calculation!'); },
+                      className: "mt-2 px-4 py-1.5 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 transition-all text-xs"
+                    }, "Continue \u27A1")
+                  ),
+                  d.calcChecked && !d.calcCorrect && React.createElement("div", { className: "mt-3 p-2 bg-amber-50 rounded-lg border border-amber-200 text-center" },
+                    React.createElement("p", { className: "text-xs text-amber-700 font-bold" }, "Hint: M\u2082 = (M\u2081 \u00D7 V\u2081) / V\u2082 = (" + d.spill.titrantM + " \u00D7 " + d.spill.targetVolume.toFixed(1) + ") / " + d.spill.volume)
+                  )
+                )
+              ),
+              renderCurve(true)
+            ),
+
+            // ── Phase: Result ──
+            d.phase === 'result' && React.createElement("div", { className: "space-y-3 animate-in zoom-in" },
+              React.createElement("div", { className: "bg-slate-50 border-2 border-slate-200 rounded-xl p-8 text-center shadow-sm" },
+                React.createElement("div", { className: "text-5xl mb-4" }, d.resultSuccess ? '\uD83C\uDF89' : (d.sloppyMode ? '\uD83E\uDEE0' : '\uD83D\uDCA5')),
+                React.createElement("h4", { className: "text-2xl font-bold mb-2 " + (d.resultSuccess ? 'text-emerald-600' : 'text-red-600') },
+                  d.resultSuccess ? 'Disaster Averted!' : (d.sloppyMode ? 'Well, that\'s a mess.' : 'Experiment Failed')
+                ),
+                React.createElement("p", { className: "text-slate-600 mb-6 max-w-sm mx-auto font-bold" }, d.resultMessage),
+                React.createElement("button", {
+                  onClick: function () { upd('titrantVolume', 0); upd('phase', 'safety'); upd('ppe', { goggles: false, gloves: false, coat: false }); },
+                  className: "px-6 py-2.5 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 shadow-sm transition-all text-sm"
+                }, "Try Another Spill \uD83D\uDD04")
+              ),
+              renderCurve(true)
+            )
+          );
         })(),
 
 
