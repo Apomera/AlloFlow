@@ -1587,7 +1587,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             ),
             // Structured AI Insight Cards
             (aiAnalysis || stats.topChain || stats.peakRisk) &&
-            h('div', { className: 'space-y-3' },
+            h('div', { className: 'space-y-3', 'data-help-key': 'bl_data_insights' },
                 h('h3', { className: 'text-sm font-black text-slate-800' }, '🧠 ', t('behavior_lens.overview.ai_summary') || 'Data Insights'),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
                     // Top Pattern card
@@ -1853,7 +1853,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 h('div', { className: 'flex items-center gap-3' },
                     h('button', { onClick: onClose, className: 'p-2 rounded-full text-slate-400 hover:bg-white/10' }, h(X, { size: 20 })),
                     h('div', null,
-                        h('h3', { className: 'text-white font-black text-lg' }, t('behavior_lens.interval.title') || 'Interval Recording'),
+                        h('h3', { className: 'text-white font-black text-lg', 'data-help-key': 'bl_interval_recording' }, t('behavior_lens.interval.title') || 'Interval Recording'),
                         h('p', { className: 'text-xs text-slate-400' }, `${studentName || ''} — ${modeLabels[mode].label}`)
                     )
                 ),
@@ -2658,7 +2658,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
         };
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
-            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4' },
+            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4', 'data-help-key': 'bl_export_reports' },
                 h('h3', { className: 'text-sm font-black text-slate-800' }, '📥 ' + (t('behavior_lens.export.title') || 'Export Reports')),
                 // Format selector
                 h('div', null,
@@ -4184,7 +4184,7 @@ Analyze data convergence and return ONLY valid JSON:
 
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             // Sources overview
-            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-5 shadow-sm' },
+            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-5 shadow-sm', 'data-help-key': 'bl_data_triangulation' },
                 h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, '🔺 ' + (t('behavior_lens.triangulation.title') || 'Data Triangulation')),
                 h('div', { className: 'grid grid-cols-3 gap-3' },
                     sources.map(s =>
@@ -4763,7 +4763,7 @@ Return ONLY valid JSON:
 
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             // Config
-            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-3 print:hidden' },
+            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-3 print:hidden', 'data-help-key': 'bl_datasheet_generator' },
                 h('h3', { className: 'text-sm font-black text-slate-800' }, '📋 ' + (t('behavior_lens.datasheet.title') || 'Data Sheet Generator')),
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                     h('div', null,
@@ -7258,6 +7258,13 @@ Use professional, objective language. Do NOT use the student codename — use "t
         const [customContext, setCustomContext] = useState('');
         const [generating, setGenerating] = useState(false);
         const [selectedPrebuilt, setSelectedPrebuilt] = useState(null);
+        const [collectionDays, setCollectionDays] = useState(14);
+        const [entryCount, setEntryCount] = useState(10);
+        const [observationCount, setObservationCount] = useState(2);
+        const [isComplex, setIsComplex] = useState(false);
+        const dayOptions = [7, 14, 30, 60, 90];
+        const entryOptions = [5, 10, 15, 20, 30];
+        const obsOptions = [1, 2, 3, 5];
 
         const functions = [
             { id: 'escape', label: '🚪 Escape/Avoidance' },
@@ -7376,11 +7383,15 @@ Use professional, objective language. Do NOT use the student codename — use "t
             setGenerating(true);
             try {
                 const funcLabel = functions.find(f => f.id === customFunc)?.label || customFunc;
+                const complexClause = isComplex
+                    ? `\nCOMPLEXITY: Generate a COMPLEX scenario. Include:\n- At least 2 co-occurring behaviors (e.g., elopement + verbal aggression)\n- Environmental pattern shifts (behavior changes across settings like classroom vs. cafeteria)\n- A visible trend or regression pattern across the timeline (e.g., improvement after week 2, then regression)\n- At least one entry with staff disagreement on function\n- Varied consequence strategies showing what worked and what didn't`
+                    : '';
                 const prompt = `You are a BCBA creating realistic but FICTIONAL student behavioral data for educator training.
 ${RESTORATIVE_PREAMBLE}
 
 Generate a complete practice scenario for a student in grade band ${customGrade} with a hypothesized behavioral function of ${funcLabel}.
 ${customContext ? `Additional context: ${customContext}` : ''}
+${complexClause}
 
 Return a JSON object with this EXACT structure (no markdown, no explanation, ONLY valid JSON):
 {
@@ -7389,7 +7400,7 @@ Return a JSON object with this EXACT structure (no markdown, no explanation, ONL
   "entries": [
     {
       "id": "e1",
-      "timestamp": "ISO date string (within last 14 days)",
+      "timestamp": "ISO date string (within last ${collectionDays} days)",
       "behavior": "Observable, measurable description",
       "antecedent": "What happened before",
       "consequence": "What happened after",
@@ -7404,7 +7415,7 @@ Return a JSON object with this EXACT structure (no markdown, no explanation, ONL
   ]
 }
 
-Generate 10 entries and 2 observations. Include a mix of challenging behaviors AND positive moments. Use realistic school settings, specific measurable behaviors, and varied antecedents/consequences. Make timestamps spread across the last 14 days.`;
+Generate ${entryCount} entries and ${observationCount} observations. Include a mix of challenging behaviors AND positive moments. Use realistic school settings, specific measurable behaviors, and varied antecedents/consequences. Make timestamps spread across the last ${collectionDays} days.`;
 
                 const raw = await callGemini(prompt, true);
                 // Parse JSON from response
@@ -7434,7 +7445,7 @@ Generate 10 entries and 2 observations. Include a mix of challenging behaviors A
             // Header
             h('div', { className: 'text-center py-4' },
                 h('div', { className: 'text-4xl mb-2' }, '🎓'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.practice_sandbox') || 'Practice Sandbox'),
+                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_practice_sandbox' }, t('behavior_lens.ui.practice_sandbox') || 'Practice Sandbox'),
                 h('p', { className: 'text-xs text-slate-500 max-w-lg mx-auto mt-1' },
                     'Load realistic but FICTIONAL student data to practice ABA data collection and analysis. Perfect for professional development, pre-service training, or learning the tool before working with real students.'
                 ),
@@ -7491,6 +7502,56 @@ Generate 10 entries and 2 observations. Include a mix of challenging behaviors A
                             onChange: e => setCustomGrade(e.target.value),
                             className: 'w-full px-3 py-2 border border-slate-200 rounded-lg text-sm'
                         }, grades.map(g => h('option', { key: g.id, value: g.id }, g.label)))
+                    )
+                ),
+                // ── Scenario Parameters ──
+                h('div', { className: 'mb-4 p-4 bg-gradient-to-br from-slate-50 to-indigo-50/30 rounded-xl border border-slate-200' },
+                    h('h4', { className: 'text-[10px] font-black text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5' }, '⚙️ Scenario Parameters'),
+                    h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
+                        // Collection Period
+                        h('div', null,
+                            h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1' }, '📅 Collection Period'),
+                            h('select', {
+                                value: collectionDays,
+                                onChange: e => setCollectionDays(parseInt(e.target.value)),
+                                className: 'w-full px-2 py-2 border border-slate-200 rounded-lg text-sm bg-white'
+                            }, dayOptions.map(d => h('option', { key: d, value: d }, d + ' days')))
+                        ),
+                        // Entry Count
+                        h('div', null,
+                            h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1' }, '📝 ABC Entries'),
+                            h('select', {
+                                value: entryCount,
+                                onChange: e => setEntryCount(parseInt(e.target.value)),
+                                className: 'w-full px-2 py-2 border border-slate-200 rounded-lg text-sm bg-white'
+                            }, entryOptions.map(n => h('option', { key: n, value: n }, n + ' entries')))
+                        ),
+                        // Observation Count
+                        h('div', null,
+                            h('label', { className: 'text-[10px] font-bold text-slate-500 block mb-1' }, '🔬 Observations'),
+                            h('select', {
+                                value: observationCount,
+                                onChange: e => setObservationCount(parseInt(e.target.value)),
+                                className: 'w-full px-2 py-2 border border-slate-200 rounded-lg text-sm bg-white'
+                            }, obsOptions.map(n => h('option', { key: n, value: n }, n + (n === 1 ? ' session' : ' sessions'))))
+                        )
+                    ),
+                    // Complexity Toggle
+                    h('div', {
+                        role: 'button', tabIndex: 0,
+                        onClick: () => setIsComplex(prev => !prev),
+                        className: `flex items-center gap-3 p-2.5 rounded-lg border-2 cursor-pointer transition-all ${isComplex ? 'bg-purple-50 border-purple-400' : 'bg-white border-slate-200 hover:border-slate-300'}`
+                    },
+                        h('div', { className: `w-9 h-5 rounded-full flex items-center transition-all ${isComplex ? 'bg-purple-500 justify-end' : 'bg-slate-300 justify-start'}` },
+                            h('div', { className: 'w-4 h-4 bg-white rounded-full shadow mx-0.5' })
+                        ),
+                        h('div', null,
+                            h('span', { className: 'text-xs font-bold text-slate-700' }, isComplex ? '🧩 Complex Scenario' : '📋 Standard Scenario'),
+                            h('p', { className: 'text-[9px] text-slate-400 mt-0.5' }, isComplex
+                                ? 'Co-occurring behaviors, environmental shifts, trend patterns'
+                                : 'Single function, consistent setting, straightforward data'
+                            )
+                        )
                     )
                 ),
                 h('div', { className: 'mb-3' },
@@ -8755,7 +8816,7 @@ Keep it concise and encouraging. Use plain language.`;
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '✅'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.data_quality_checker') || 'Data Quality Checker'),
+                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_data_quality_checker' }, t('behavior_lens.ui.data_quality_checker') || 'Data Quality Checker'),
                 h('p', { className: 'text-xs text-slate-500 mt-1' }, t('behavior_lens.ui.review_your_abc_data_collection_for_completeness_a') || 'Review your ABC data collection for completeness and quality')
             ),
             // Quick local checks
@@ -8852,7 +8913,7 @@ Keep it concise and encouraging. Use plain language.`;
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '📊'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.trend_dashboard') || 'Behavior Trend Dashboard'),
+                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_trend_dashboard' }, t('behavior_lens.trend_dashboard') || 'Behavior Trend Dashboard'),
                 h('p', { className: 'text-xs text-slate-500 mt-1' }, `${abcEntries.length} entries visualized`)
             ),
             // View tabs
@@ -15032,7 +15093,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '📈'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.aba_graph_engine') || 'ABA Graph Engine'),
+                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_aba_graph_engine' }, t('behavior_lens.ui.aba_graph_engine') || 'ABA Graph Engine'),
                 h('p', { className: 'text-xs text-slate-500 mt-1' }, t('behavior_lens.ui.publicationstandard_singlecase_design_graphs') || 'Publication-standard single-case design graphs')
             ),
 
@@ -16733,7 +16794,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🎯'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.dtt_data_sheet') || 'DTT Data Sheet'),
+                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_dtt_data_sheet' }, t('behavior_lens.ui.dtt_data_sheet') || 'DTT Data Sheet'),
                 h('p', { className: 'text-xs text-slate-500 mt-1' }, t('behavior_lens.ui.discrete_trial_training_with_mastery_tracking_and') || 'Discrete Trial Training with mastery tracking and auto-advance')
             ),
             // Program tabs
@@ -17229,7 +17290,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '⏱️'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.latency_recorder') || 'Latency Recorder'),
+                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_latency_recorder' }, t('behavior_lens.ui.latency_recorder') || 'Latency Recorder'),
                 h('p', { className: 'text-xs text-slate-500 mt-1' }, t('behavior_lens.ui.measure_time_between_stimulus_presentation_and_beh') || 'Measure time between stimulus presentation and behavioral response')
             ),
             // Setup
@@ -18488,7 +18549,7 @@ Keep the language professional but accessible.`;
 
             h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl p-4 border border-violet-200' },
 
-                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '✏️'), h('h3', { className: 'text-lg font-black text-violet-800' }, t('behavior_lens.ui.natural_language_abc_entry') || 'Natural Language ABC Entry')),
+                h('div', { className: 'flex items-center gap-2 mb-1', 'data-help-key': 'bl_natural_language_abc' }, h('span', { className: 'text-2xl' }, '✏️'), h('h3', { className: 'text-lg font-black text-violet-800' }, t('behavior_lens.ui.natural_language_abc_entry') || 'Natural Language ABC Entry')),
 
                 h('p', { className: 'text-xs text-violet-600' }, t('behavior_lens.ui.type_or_paste_your_observation_notes_in_everyday_e') || 'Type or paste your observation notes in everyday English. AI will structure them into proper ABC entries.')
 
@@ -18860,7 +18921,7 @@ Keep the language professional but accessible.`;
 
             h('div', { className: 'bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl p-4 border border-teal-200' },
 
-                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '👥'), h('h3', { className: 'text-lg font-black text-teal-800' }, t('behavior_lens.ui.caseload_dashboard') || 'Caseload Dashboard')),
+                h('div', { className: 'flex items-center gap-2 mb-1', 'data-help-key': 'bl_caseload_dashboard' }, h('span', { className: 'text-2xl' }, '👥'), h('h3', { className: 'text-lg font-black text-teal-800' }, t('behavior_lens.ui.caseload_dashboard') || 'Caseload Dashboard')),
 
                 h('p', { className: 'text-xs text-teal-600' }, "Bird's-eye view of your caseload with status indicators, trends, and AI summary.")
 
@@ -19246,7 +19307,7 @@ Keep the language professional but accessible.`;
 
             h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200' },
 
-                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '🎓'), h('h3', { className: 'text-lg font-black text-amber-800' }, t('behavior_lens.ui.ai_observation_coach') || 'AI Observation Coach')),
+                h('div', { className: 'flex items-center gap-2 mb-1', 'data-help-key': 'bl_ai_observation_coach' }, h('span', { className: 'text-2xl' }, '🎓'), h('h3', { className: 'text-lg font-black text-amber-800' }, t('behavior_lens.ui.ai_observation_coach') || 'AI Observation Coach')),
 
                 h('p', { className: 'text-xs text-amber-600' }, t('behavior_lens.ui.get_ai_coaching_on_data_collection_quality_identif') || 'Get AI coaching on data collection quality. Identifies gaps, suggests improvements, rates your data.')
 
@@ -19879,7 +19940,7 @@ Keep the language professional but accessible.`;
 
         return h('div', { className: 'space-y-4' },
             h('div', { className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200' },
-                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '🎙️'), h('h3', { className: 'text-lg font-black text-rose-800' }, t('behavior_lens.ui.voicetoabc') || 'Voice-to-ABC')),
+                h('div', { className: 'flex items-center gap-2 mb-1', 'data-help-key': 'bl_voice_to_abc' }, h('span', { className: 'text-2xl' }, '🎙️'), h('h3', { className: 'text-lg font-black text-rose-800' }, t('behavior_lens.ui.voicetoabc') || 'Voice-to-ABC')),
                 h('p', { className: 'text-xs text-rose-600' }, t('behavior_lens.ui.speak_your_observations_naturally_ai_will_extract') || 'Speak your observations naturally. AI will extract structured ABC entries from your transcript.')
             ),
             // Not supported fallback
@@ -22990,20 +23051,27 @@ Analyze this data and return ONLY valid JSON:
                 darkGray: { bg: 'bg-zinc-50', border: 'border-zinc-300', icon: 'bg-zinc-100 text-zinc-700', hover: 'hover:border-zinc-500 hover:shadow-zinc-100' },
             };
 
+            // Sandbox configuration state (used by both Demo Student loader and AI generator)
+            const [sandboxDays, setSandboxDays] = useState(14);
+            const [sandboxEntries, setSandboxEntries] = useState(25);
+            const sandboxDayOptions = [7, 14, 30, 60, 90];
+            const sandboxEntryOptions = [10, 15, 25, 40, 60];
+
             const loadDemoStudent = () => {
                 const demoName = 'Demo Student (Sandbox)';
                 setSelectedStudent(demoName);
-                if (addToast) addToast("Sandbox loaded with 14 days of mock data!", "success");
+                if (addToast) addToast(`Sandbox loaded with ${sandboxDays} days / ${sandboxEntries} entries of mock data!`, 'success');
                 
-                // 1. Generate 14 days of mock ABC data
+                // 1. Generate mock ABC data using sandbox config
                 const mockAbc = [];
                 const now = new Date();
                 const functions = ['Escape', 'Attention', 'Tangible', 'Sensory'];
-                const behaviors = ['Elopement', 'Task Refusal', 'Physical Aggression', 'Disruption'];
-                const antecedents = ['Transition', 'Academic Demand', 'Peer Interaction', 'Denied Access'];
+                const behaviors = ['Elopement', 'Task Refusal', 'Physical Aggression', 'Disruption', 'Verbal Protest', 'Self-Stimulatory Behavior'];
+                const antecedents = ['Transition', 'Academic Demand', 'Peer Interaction', 'Denied Access', 'Change in Routine', 'Unstructured Time'];
+                const consequences = ['Redirection / Verbal Prompt', 'Planned ignoring', 'Peer support', 'Break provided', 'Teacher praised effort', 'Visual timer introduced'];
                 
-                for (let i = 0; i < 25; i++) {
-                    const daysAgo = Math.floor(Math.random() * 14);
+                for (let i = 0; i < sandboxEntries; i++) {
+                    const daysAgo = Math.floor(Math.random() * sandboxDays);
                     const d = new Date(now);
                     d.setDate(d.getDate() - daysAgo);
                     d.setHours(8 + Math.floor(Math.random() * 7), Math.floor(Math.random() * 60));
@@ -23015,11 +23083,11 @@ Analyze this data and return ONLY valid JSON:
                         time: d.toTimeString().slice(0, 5),
                         antecedent: antecedents[Math.floor(Math.random() * antecedents.length)],
                         behavior: behaviors[Math.floor(Math.random() * behaviors.length)],
-                        consequence: 'Redirection / Verbal Prompt',
+                        consequence: consequences[Math.floor(Math.random() * consequences.length)],
                         intensity: Math.floor(Math.random() * 5) + 1,
                         duration: Math.floor(Math.random() * 15) + 1,
                         perceivedFunction: functions[Math.floor(Math.random() * functions.length)],
-                        notes: 'Sandbox mock data entry for exploration.'
+                        notes: i % 5 === 0 ? 'Positive engagement observed' : 'Sandbox mock data entry for exploration.'
                     });
                 }
                 
@@ -23119,13 +23187,36 @@ Analyze this data and return ONLY valid JSON:
                                     title: t('behavior_lens.hub.randomize') || 'Randomize'
                                 }, '🎲')
                             ),
-                            h('div', { className: 'mt-4 pt-4 border-t border-indigo-100 flex justify-center' },
+                            // ── Sandbox Config ──
+                            h('div', { className: 'mt-4 pt-4 border-t border-indigo-100' },
+                                h('div', { className: 'flex items-center gap-1.5 mb-2' },
+                                    h('span', { className: 'text-[10px]' }, '⚙️'),
+                                    h('span', { className: 'text-[9px] font-black text-indigo-400 uppercase tracking-wider' }, 'Sandbox Config')
+                                ),
+                                h('div', { className: 'grid grid-cols-2 gap-2 mb-3' },
+                                    h('div', null,
+                                        h('label', { className: 'text-[9px] font-bold text-indigo-400 block mb-0.5' }, '📅 Period'),
+                                        h('select', {
+                                            value: sandboxDays,
+                                            onChange: e => setSandboxDays(parseInt(e.target.value)),
+                                            className: 'w-full px-2 py-1.5 border border-indigo-200 rounded-lg text-xs bg-white text-indigo-800 font-medium'
+                                        }, sandboxDayOptions.map(d => h('option', { key: d, value: d }, d + ' days')))
+                                    ),
+                                    h('div', null,
+                                        h('label', { className: 'text-[9px] font-bold text-indigo-400 block mb-0.5' }, '📝 Entries'),
+                                        h('select', {
+                                            value: sandboxEntries,
+                                            onChange: e => setSandboxEntries(parseInt(e.target.value)),
+                                            className: 'w-full px-2 py-1.5 border border-indigo-200 rounded-lg text-xs bg-white text-indigo-800 font-medium'
+                                        }, sandboxEntryOptions.map(n => h('option', { key: n, value: n }, n + ' entries')))
+                                    )
+                                ),
                                 h('button', {
                                     onClick: loadDemoStudent,
                                     className: 'w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-xl font-bold text-sm shadow outline-none transition-all flex justify-center items-center gap-2'
                                 },
                                     h('span', null, '🚀'),
-                                    h('span', null, 'Load Demo Sandbox (Mock Data)')
+                                    h('span', null, `Load Demo (${sandboxDays}d / ${sandboxEntries} entries)`)
                                 )
                             )
                         )

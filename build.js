@@ -66,6 +66,11 @@ const MODULES = [
         name: 'ReportWriter',
         filename: 'report_writer_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'StudentAnalytics',
+        filename: 'student_analytics_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 

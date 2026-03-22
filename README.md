@@ -1,146 +1,89 @@
-# AlloFlow v1.00
-**Adaptive Levels, Layers, & Outputs ➔ Flexible Learning Options for Whole-Student Education**
+<div align="center">
+  <img src="./rainbow-book.jpg" alt="AlloFlow Logo" width="150"/>
 
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
-[![Accessibility: Prioritized](https://img.shields.io/badge/Accessibility-A%2B-green.svg)](#accessibility)
-[![UDL Aligned](https://img.shields.io/badge/UDL-Aligned-purple.svg)](#udl-alignment)
+  # AlloFlow (v1.0)
+  **Adaptive Levels, Layers, & Outputs ➔ Flexible Learning Options for Whole-Student Education**
+
+  [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
+  [![Local-First Architecture](https://img.shields.io/badge/Architecture-Local--First-brightgreen.svg)](#school-box-deployment)
+  [![Privacy: FERPA & COPPA](https://img.shields.io/badge/Privacy-FERPA_Compatible-red.svg)](#-privacy--ferpa-compliance)
+</div>
 
 ---
 
 ## 🚀 What is AlloFlow?
 
-AlloFlow is an **open-source, privacy-first AI differentiation engine** that runs entirely inside Google Gemini Canvas. It instantly transforms static curriculum into:
+AlloFlow is an **open-source, privacy-first AI differentiation engine** built explicitly for specialized education, Response to Intervention (RTI) scaling, and clinical behavior support. 
 
-- 📚 **Leveled texts** (K-12 Lexile adjustment)
-- 🎮 **Gamified activities** (Escape Rooms, Boss Battles, Adventures)
-- 📝 **Interactive quizzes** with QTI export for Canvas/Schoology
-- 🌍 **Multilingual glossaries** with audio pronunciation
-- 📊 **Visual organizers** (Structured Outlines, Mind Maps, Venn Diagrams)
+Originally a simple text-adaptation tool, **Version 1.0** features a **Hub-and-Spoke Microservice Architecture** encompassing 450+ interactive STEM Lab modules, built-in Tier 1/2/3 Response to Intervention (RTI) screening, and a secure Clinical Reasoning Suite engineered specifically for Special Educators, Board Certified Behavior Analysts (BCBAs), and School Psychologists.
 
-**No install required.** Just click and go.
-
-🔗 **[Launch AlloFlow](https://gemini.google.com/share/544cba6b9967)**
-
----
-
-## ✨ Key Features
-
-### 🎓 For Teachers
-| Feature | Description |
-|---------|-------------|
-| **Smart Profiles** | Save configurations like "Grade 5 + ESL" for one-click switching |
-| **Group Differentiation** | Push different resources to different student groups in real-time |
-| **Lesson Plan Builder** | Auto-generate scripted lesson plans from all created resources |
-| **Standards Alignment** | Align to Common Core, NGSS, or state-specific standards |
-| **Teacher Dashboard** | Track class-wide misconceptions and collect offline grades |
-
-### 🎮 For Students
-| Feature | Description |
-|---------|-------------|
-| **Escape Room** | Team-based puzzle solving with 6 puzzle types (MCQ, Cipher, Matching, etc.) |
-| **Boss Battles** | Cooperative class games where answering questions defeats the "monster" |
-| **Adventure Mode** | Choose-your-own-adventure with XP, inventory, and dynamic scenes |
-| **Review Game** | Jeopardy-style competitive review with teams and scoring |
-| **Gamification Engine** | Earn XP and level up across all activities |
-
-### ♿ Accessibility Suite
-- **Dyslexia fonts** (OpenDyslexic)
-- **Text-to-Speech** with sentence highlighting
-- **Color overlays** (Irlen Syndrome support)
-- **Line focus / Reading ruler**
-- **High contrast & dark mode**
-- **Full keyboard navigation**
+### 📚 Core Pedagogical Differentiators
+- **Instant Leveled Texts & Scaffolds:** Generate bilingual interactive readers, cloze passages, and gamified reviews (Jeopardy, Escape Rooms, Adventure Modes).
+- **🗣️ Word Sounds Studio:** 13 interactive phonemic awareness drills ranging from syllable segmentation to digital letter-tracing.
+- **🧮 STEM & Visual Lab:** 450+ dynamic HTML5 manipulations (Calculus Graphing, Neuroanatomy Viewers, Star Systems, and Coding Playgrounds).
+- **📋 BehaviorLens (Clinical):** Gated ABA data collection (ABC tracking, MSWO Preference Assessments, Frequency/Interval counting) with automated DRO logic and IOA calculations.
+- **🧠 Report Writer Wizard:** A high-privacy, "Fact-Chunk" pipeline that prevents AI hallucination when synthesizing standardized assessments into bilingual psychoeducational reports.
 
 ---
 
-## ⚠️ Privacy & FERPA Compliance
+## 🏛️ Local-First Architecture (The "School Box")
 
-AlloFlow is designed to be **FERPA-compatible** with a privacy-first architecture:
+AlloFlow represents a paradigm shift away from cloud reliance. Our mission is to eliminate continuous API licensing costs for underfunded school districts via the **School Box Deployment**.
 
-| Principle | Implementation |
-|-----------|----------------|
-| **Local-First** | Student data is imported/exported as JSON files for local storage |
-| **No PII Required** | The tool never requires personally identifiable information |
-| **Air-Gap Architecture** | Student work stays on-device; only aggregated session data syncs |
-| **Your Infrastructure** | Runs within your existing Google Education environment |
+By utilizing the `aiProvider.js` integration and Docker, School IT departments can run AlloFlow **entirely offline** on local intranet hardware (e.g., an RTX 3090/4090 workstation). 
 
-> 💡 **Tip:** Keep cloud syncing off for maximum privacy. Turn it on only for cross-device resource development and preventing data loss prior to manual saves.
+1. **Frontend Host:** The React UI (`AlloFlowANTI.txt`) processes all student interactions and gamification locally in the browser utilizing LZ-String compressed caching.
+2. **Ollama Inference:** Routes all generative LLM requests to local, open-source models (Llama 3.1, Phi-3.5) hosted on the school's own hardware.
+3. **Dual-Engine TTS:** The system utilizes an ultra-high-quality offline English engine (Kokoro) and multi-lingual fallback (Piper) executing securely within the browser namespace, ensuring text-to-speech audio never hits cloud APIs. 
 
 ---
 
-## 💵 Is It Really Free?
+## 🔐 Privacy & FERPA Compliance
 
-**Yes.** AlloFlow leverages your Google account's free daily AI quota.
+**No student data leaves your school.**
 
-- **Free tier:** Generous daily limits (1+ lessons per day)
-- **Paid Gemini plans:** Access to extended daily usage
-- **District hosting:** Option to self-host via Firebase/Google Cloud for unlimited, FERPA-compliant usage
-
----
-
-## 🛠️ Quick Start
-
-1. **Click the link:** [Launch AlloFlow][(https://gemini.google.com/share/c8baf80a46cc)]
-2. **Complete the Quick Start wizard** or toggle "Auto-fill" and say "pack" to AlloBot
-3. **Generate your resources** - Full lesson pack ready in minutes!
-4. **Export or go live** - Share via HTML bundles, QTI, or start a Live Session
+AlloFlow is designed to be **FERPA-compatible** by default:
+- **Zero API Telemetry:** By deploying the School Box architecture, absolutely no student PII is transmitted to Google, OpenAI, or other 3rd party servers.
+- **On-Device Storage:** High-speed persistence happens via the browser's encrypted local storage JSON objects.
+- **TeacherGate Security:** Grading rubrics, answer keys, and the Clinical Reasoning Suite are isolated behind rigorous educator verification gating, separating authoring mode from the student-facing consumption interface.
 
 ---
 
-## 📚 Documentation
+## ♿ UDL & Accessibility Priority
 
-- 📖 [**User Manual**](https://docs.google.com/document/d/1ngaK8E351uCWRE9o2Ruf7b8YwaqoZzwPt2igpwnQ7xA/edit?usp=sharing) - Complete guide to all features
-- 🌐 [**Website**](https://apomera.github.io/AlloFlow/) - Feature overview and demos
-- 🐛 [**Report Issues**](https://docs.google.com/forms/d/e/1yPx2vx526lvqdAxH-xIAPjiUpwH0lKuq4jx1aj56-B0/viewform) - Bug reports via Google Forms
-
----
-
-## 🎯 UDL Alignment
-
-Every feature is mapped to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
-
-| UDL Principle | AlloFlow Tools |
-|---------------|----------------|
-| **Engagement** | Adventure Mode, Escape Room, Boss Battles, Student Interests integration |
-| **Representation** | Leveled Text, Glossary, Visual Organizers, Multilingual support, TTS |
-| **Action & Expression** | Writing Scaffolds, Rubrics, Oral Fluency Coach, Dictation, Quiz exports |
+Every element of AlloFlow inherently maps to Universal Design for Learning (UDL) checkpoints:
+- **Dyslexia fonts** (OpenDyslexic) and Bionic Reading overlays.
+- **Offline Text-to-Speech (TTS)** with word-for-word audio tracking.
+- **Color overlays** for Irlen Syndrome support (Peach, Blue, Yellow).
+- **Line focus / Reading ruler** visual isolation bars.
+- Complete voice-dictation natively supported on all input fields.
 
 ---
 
-## 🔧 For Developers
+## 🛠️ Installation & Getting Started
 
-AlloFlow is open-source under **AGPL v3**. Contributions welcome!
+Because AlloFlow distributes complex interactive modules via localized scripts and CDN commit-hash pinning, developers and IT admins can launch the platform seamlessly:
 
 ```bash
-# The app runs as a Gemini Canvas artifact
-# No local installation needed for end users
-
-# For development/self-hosting:
 # 1. Clone the repository
-# 2. Deploy to Firebase Hosting
-# 3. Configure your Gemini API key
+git clone https://github.com/apomera/AlloFlow.git
+
+# 2. Deploy the core frontend to Firebase Hosting (Cloud Option) 
+# OR spin up the School Box (Local Option)
+docker-compose up -d
+
+# 3. Access the platform at local HTTP port
 ```
 
----
-
-## 📝 Important Notes
-
-> **For Educators:** Use with Google Education accounts and confirm AlloFlow aligns with your district's acceptable use policy before classroom deployment.
-
-> **For Parents/Independent Learners:** Personal Google accounts work, but education accounts provide additional privacy protections.
+For comprehensive tutorials, pedagogical workflows, and advanced configurations, please refer to the extensively documented [**AlloFlow v1.0 Comprehensive User Manual.md**](./AlloFlow%20v1.0%20Comprehensive%20User%20Manual.md) included in this repository.
 
 ---
 
-## 📄 License
+## 📄 Licensing & Contribution
 
-**AGPL v3** - Free and open source forever.
-
-© 2026 Aaron Pomeranz, PsyD
-
----
+AlloFlow is distributed under the **AGPL v3 License** — free and open source forever, to ensure educational technology remains a public good.
 
 <p align="center">
   <strong>Built by a school psychologist, for educators.</strong><br>
   <em>"Differentiation should be the default, not the exception."</em>
 </p>
-
