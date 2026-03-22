@@ -17108,172 +17108,491 @@ Keep it under 150 words.`);
         );
     };
 
-    // ─── IOACalculator ──────────────────────────────────────────────────
-    // Inter-Observer Agreement with point-by-point, interval, exact/partial
-    const IOACalculator = ({ t, addToast }) => {
-        const [method, setMethod] = useState('pointbypoint');
-        const [obs1, setObs1] = useState('');
-        const [obs2, setObs2] = useState('');
-        const [intervals1, setIntervals1] = useState([]);
-        const [intervals2, setIntervals2] = useState([]);
-        const [numIntervals, setNumIntervals] = useState(10);
-        const [result, setResult] = useState(null);
-        const [history, setHistory] = useState([]);
+    // ─── IOACalculator ────────────────────────────────────────────────
+    // Inter-Observer Agreement Calculator with AI-Assisted Video/Audio IOA
+    function IOACalculator(props) {
+        var studentName = props.studentName;
+        var abcEntries = props.abcEntries;
+        var callGemini = props.callGemini;
+        var t = props.t;
+        var addToast = props.addToast;
 
-        const METHODS = [
-            { id: 'pointbypoint', name: 'Point-by-Point', desc: 'Compare each data point between observers', formula: 'Agreements / (Agreements + Disagreements) × 100' },
-            { id: 'totalcount', name: 'Total Count', desc: 'Compare total counts between observers', formula: 'Smaller Count / Larger Count × 100' },
-            { id: 'interval', name: 'Interval-by-Interval', desc: 'Compare each interval (occurrence/non-occurrence)', formula: 'Intervals Agreed / Total Intervals × 100' },
-            { id: 'scored', name: 'Scored Interval', desc: 'Only intervals where at least one observer scored occurrence', formula: 'Both Scored / (Both + Only One Scored) × 100' },
-            { id: 'unscored', name: 'Unscored Interval', desc: 'Only intervals where at least one observer scored non-occurrence', formula: 'Both Unscored / (Both + Only One Unscored) × 100' },
-            { id: 'exact', name: 'Exact Count per Interval', desc: 'Compare exact counts within each interval', formula: 'Smaller / Larger per interval, averaged' },
+        var _m = useState('traditional'), ioaMode = _m[0], setIoaMode = _m[1];
+        var _me = useState('pointbypoint'), ioaMethod = _me[0], setIoaMethod = _me[1];
+        var _o1 = useState(''), obs1Data = _o1[0], setObs1Data = _o1[1];
+        var _o2 = useState(''), obs2Data = _o2[0], setObs2Data = _o2[1];
+        var _re = useState(null), ioaResults = _re[0], setIoaResults = _re[1];
+        var _mf = useState(null), mediaFile = _mf[0], setMediaFile = _mf[1];
+        var _mt = useState(null), mediaType = _mt[0], setMediaType = _mt[1];
+        var _mu = useState(null), mediaUrl = _mu[0], setMediaUrl = _mu[1];
+        var _sm = useState('partial'), samplingMethod = _sm[0], setSamplingMethod = _sm[1];
+        var _ai = useState(300), aiIntervalSec = _ai[0], setAiIntervalSec = _ai[1];
+        var _tb = useState(''), targetBehaviors = _tb[0], setTargetBehaviors = _tb[1];
+        var _pc = useState(''), practitionerCoding = _pc[0], setPractitionerCoding = _pc[1];
+        var _ac = useState(null), aiCoding = _ac[0], setAiCoding = _ac[1];
+        var _ap = useState(false), aiProcessing = _ap[0], setAiProcessing = _ap[1];
+        var _pg = useState(0), aiProgress = _pg[0], setAiProgress = _pg[1];
+        var _dc = useState([]), discrepancies = _dc[0], setDiscrepancies = _dc[1];
+        var _cp = useState(null), ioaComparison = _cp[0], setIoaComparison = _cp[1];
+        var ioaFileRef = useRef(null);
+
+        var IOA_METHODS_LIST = [
+            { id: 'pointbypoint', label: 'Point-by-Point', icon: '📍', desc: 'Compare each interval: agree or disagree' },
+            { id: 'totalcount', label: 'Total Count', icon: '🔢', desc: 'Compare total frequency counts' },
+            { id: 'interval', label: 'Interval Agreement', icon: '⏱️', desc: 'Compare occurrence/non-occurrence per interval' },
+            { id: 'scored', label: 'Scored Interval', icon: '✅', desc: 'Only intervals where at least one observer scored occurrence' },
+            { id: 'unscored', label: 'Unscored Interval', icon: '⬜', desc: 'Only intervals where at least one observer scored non-occurrence' },
+            { id: 'exact', label: 'Exact Count', icon: '🎯', desc: 'Compare exact counts per interval' },
         ];
 
-        const initIntervals = (n) => {
-            setNumIntervals(n);
-            setIntervals1(Array(n).fill(false));
-            setIntervals2(Array(n).fill(false));
-            setResult(null);
-        };
+        var IOA_SAMPLING = [
+            { id: 'partial', label: 'Partial Interval', desc: 'Did behavior occur at ANY point during interval?', icon: '📊' },
+            { id: 'whole', label: 'Whole Interval', desc: 'Did behavior occur for the ENTIRE interval?', icon: '📏' },
+            { id: 'momentary', label: 'Momentary Time Sampling', desc: 'Was behavior occurring at the exact END of interval?', icon: '⏰' },
+            { id: 'frequency', label: 'Frequency Count', desc: 'How many times did behavior occur per interval?', icon: '🔢' },
+            { id: 'duration', label: 'Duration Recording', desc: 'Total seconds of behavior per interval', icon: '⏱️' },
+        ];
 
-        const toggleInterval = (observer, idx) => {
-            if (observer === 1) setIntervals1(prev => prev.map((v, i) => i === idx ? !v : v));
-            else setIntervals2(prev => prev.map((v, i) => i === idx ? !v : v));
-        };
+        function ioaFmtTime(totalSeconds) {
+            var mins = Math.floor(totalSeconds / 60);
+            var secs = Math.floor(totalSeconds % 60);
+            return (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+        }
 
-        const calculate = () => {
-            let ioa = 0, agreements = 0, disagreements = 0, details = '';
-            if (method === 'totalcount') {
-                const c1 = parseInt(obs1) || 0, c2 = parseInt(obs2) || 0;
-                ioa = c1 === 0 && c2 === 0 ? 100 : (Math.min(c1, c2) / Math.max(c1, c2)) * 100;
-                details = `Observer 1: ${c1}, Observer 2: ${c2}`;
-            } else if (method === 'pointbypoint') {
-                const a1 = obs1.split(',').map(s => s.trim());
-                const a2 = obs2.split(',').map(s => s.trim());
-                const len = Math.max(a1.length, a2.length);
-                for (let i = 0; i < len; i++) {
-                    if (a1[i] === a2[i]) agreements++; else disagreements++;
-                }
-                ioa = len === 0 ? 0 : (agreements / len) * 100;
-                details = `${agreements} agreements, ${disagreements} disagreements out of ${len} points`;
-            } else if (method === 'interval') {
-                for (let i = 0; i < numIntervals; i++) {
-                    if (intervals1[i] === intervals2[i]) agreements++; else disagreements++;
-                }
-                ioa = (agreements / numIntervals) * 100;
-                details = `${agreements}/${numIntervals} intervals agreed`;
-            } else if (method === 'scored') {
-                let scored = 0, bothScored = 0;
-                for (let i = 0; i < numIntervals; i++) {
-                    if (intervals1[i] || intervals2[i]) { scored++; if (intervals1[i] && intervals2[i]) bothScored++; }
-                }
-                ioa = scored === 0 ? 100 : (bothScored / scored) * 100;
-                details = `${bothScored}/${scored} scored intervals agreed`;
-            } else if (method === 'unscored') {
-                let unscored = 0, bothUnscored = 0;
-                for (let i = 0; i < numIntervals; i++) {
-                    if (!intervals1[i] || !intervals2[i]) { unscored++; if (!intervals1[i] && !intervals2[i]) bothUnscored++; }
-                }
-                ioa = unscored === 0 ? 100 : (bothUnscored / unscored) * 100;
-                details = `${bothUnscored}/${unscored} unscored intervals agreed`;
-            } else if (method === 'exact') {
-                const a1 = obs1.split(',').map(s => parseInt(s.trim()) || 0);
-                const a2 = obs2.split(',').map(s => parseInt(s.trim()) || 0);
-                const len = Math.max(a1.length, a2.length);
-                let sum = 0;
-                for (let i = 0; i < len; i++) {
-                    const v1 = a1[i] || 0, v2 = a2[i] || 0;
-                    sum += (v1 === 0 && v2 === 0) ? 1 : Math.min(v1, v2) / Math.max(v1, v2);
-                }
-                ioa = len === 0 ? 0 : (sum / len) * 100;
-                details = `Averaged exact agreement across ${len} intervals`;
+        // Traditional IOA Calculation
+        function calcTraditionalIOA() {
+            var d1 = obs1Data.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+            var d2 = obs2Data.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+            if (d1.length === 0 || d2.length === 0) {
+                if (addToast) addToast('Please enter data for both observers', 'error');
+                return;
             }
-            const r = { method, ioa: parseFloat(ioa.toFixed(1)), details, date: new Date().toISOString(), acceptable: ioa >= 80 };
-            setResult(r);
-            setHistory(prev => [r, ...prev].slice(0, 20));
-        };
+            var result = {};
+            if (ioaMethod === 'totalcount') {
+                var total1 = d1.reduce(function(a, b) { return a + parseFloat(b); }, 0);
+                var total2 = d2.reduce(function(a, b) { return a + parseFloat(b); }, 0);
+                var smaller = Math.min(total1, total2);
+                var larger = Math.max(total1, total2);
+                result = { method: 'Total Count', observer1Total: total1, observer2Total: total2, agreement: larger > 0 ? ((smaller / larger) * 100).toFixed(1) : '100.0', interpretation: larger > 0 ? ((smaller / larger) * 100 >= 80 ? 'Acceptable' : 'Below threshold') : 'N/A' };
+            } else if (ioaMethod === 'pointbypoint' || ioaMethod === 'interval') {
+                var maxLen = Math.max(d1.length, d2.length);
+                var agreements = 0;
+                var details = [];
+                for (var i = 0; i < maxLen; i++) {
+                    var v1 = (d1[i] || '0').toLowerCase();
+                    var v2 = (d2[i] || '0').toLowerCase();
+                    var agree = (v1 === v2) || (parseFloat(v1) === parseFloat(v2));
+                    if (agree) agreements++;
+                    details.push({ interval: i + 1, obs1: v1, obs2: v2, agree: agree });
+                }
+                var pct = ((agreements / maxLen) * 100).toFixed(1);
+                result = { method: ioaMethod === 'pointbypoint' ? 'Point-by-Point' : 'Interval', totalIntervals: maxLen, agreements: agreements, disagreements: maxLen - agreements, agreement: pct, interpretation: parseFloat(pct) >= 80 ? 'Acceptable (≥80%)' : 'Below threshold (<80%)', details: details };
+            } else if (ioaMethod === 'scored') {
+                var maxLen2 = Math.max(d1.length, d2.length);
+                var scored1 = 0, scored2 = 0, bothScored = 0;
+                for (var j = 0; j < maxLen2; j++) {
+                    var s1 = parseFloat(d1[j] || 0) > 0;
+                    var s2 = parseFloat(d2[j] || 0) > 0;
+                    if (s1) scored1++;
+                    if (s2) scored2++;
+                    if (s1 && s2) bothScored++;
+                }
+                var totalScored = scored1 + scored2 - bothScored;
+                result = { method: 'Scored Interval', scoredByObs1: scored1, scoredByObs2: scored2, bothScored: bothScored, agreement: totalScored > 0 ? ((bothScored / totalScored) * 100).toFixed(1) : '100.0', interpretation: totalScored > 0 && (bothScored / totalScored) * 100 >= 80 ? 'Acceptable' : 'Below threshold' };
+            } else if (ioaMethod === 'unscored') {
+                var maxLen3 = Math.max(d1.length, d2.length);
+                var unscored1 = 0, unscored2 = 0, bothUnscored = 0;
+                for (var k = 0; k < maxLen3; k++) {
+                    var u1 = parseFloat(d1[k] || 0) === 0;
+                    var u2 = parseFloat(d2[k] || 0) === 0;
+                    if (u1) unscored1++;
+                    if (u2) unscored2++;
+                    if (u1 && u2) bothUnscored++;
+                }
+                var totalUnscored = unscored1 + unscored2 - bothUnscored;
+                result = { method: 'Unscored Interval', agreement: totalUnscored > 0 ? ((bothUnscored / totalUnscored) * 100).toFixed(1) : '100.0', interpretation: totalUnscored > 0 && (bothUnscored / totalUnscored) * 100 >= 80 ? 'Acceptable' : 'Below threshold' };
+            } else if (ioaMethod === 'exact') {
+                var maxLen4 = Math.max(d1.length, d2.length);
+                var exactAgree = 0;
+                var exactDetails = [];
+                for (var m = 0; m < maxLen4; m++) {
+                    var e1 = parseFloat(d1[m] || 0);
+                    var e2 = parseFloat(d2[m] || 0);
+                    var eSmall = Math.min(e1, e2);
+                    var eLarge = Math.max(e1, e2);
+                    var intAgreement = eLarge > 0 ? (eSmall / eLarge) * 100 : 100;
+                    exactAgree += intAgreement;
+                    exactDetails.push({ interval: m + 1, obs1: e1, obs2: e2, agreement: intAgreement.toFixed(1) });
+                }
+                result = { method: 'Exact Count', totalIntervals: maxLen4, agreement: (exactAgree / maxLen4).toFixed(1), interpretation: (exactAgree / maxLen4) >= 80 ? 'Acceptable' : 'Below threshold', details: exactDetails };
+            }
+            setIoaResults(result);
+            if (addToast) addToast('IOA calculated: ' + result.agreement + '% agreement', 'success');
+        }
 
-        const isIntervalMethod = ['interval', 'scored', 'unscored'].includes(method);
+        // AI Video/Audio Processing
+        function handleIoaMediaUpload(e) {
+            var file = e.target.files[0];
+            if (!file) return;
+            var isVideo = file.type.startsWith('video/');
+            var isAudio = file.type.startsWith('audio/');
+            if (!isVideo && !isAudio) {
+                if (addToast) addToast('Please upload a video or audio file', 'error');
+                return;
+            }
+            setMediaFile(file);
+            setMediaType(isVideo ? 'video' : 'audio');
+            setMediaUrl(URL.createObjectURL(file));
+            setAiCoding(null);
+            setIoaComparison(null);
+            setDiscrepancies([]);
+            if (addToast) addToast((isVideo ? 'Video' : 'Audio') + ' loaded: ' + file.name + ' (' + (file.size / 1024 / 1024).toFixed(1) + ' MB)', 'success');
+        }
 
-        return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
-            h('div', { className: 'text-center py-3' },
-                h('div', { className: 'text-4xl mb-2' }, '🤝'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.ioa_calculator') || 'IOA Calculator'),
-                h('p', { className: 'text-xs text-slate-500 mt-1' }, t('behavior_lens.ui.interobserver_agreement_validate_data_reliability') || 'Inter-Observer Agreement — validate data reliability across observers')
+        function processIOAWithAI() {
+            if (!mediaFile || !callGemini) return;
+            if (!targetBehaviors.trim()) {
+                if (addToast) addToast('Please define target behavior(s) first', 'error');
+                return;
+            }
+            setAiProcessing(true);
+            setAiProgress(0);
+            setAiCoding(null);
+
+            var reader = new FileReader();
+            reader.onload = function() {
+                var base64Data = reader.result;
+                var sampDesc = IOA_SAMPLING.find(function(s) { return s.id === samplingMethod; });
+                var prompt = 'You are an expert behavior analyst (BCBA) conducting behavioral observation coding from ' + mediaType + '.\n\n' +
+                    'RECORDING METHOD: ' + (sampDesc ? sampDesc.label + ' — ' + sampDesc.desc : samplingMethod) + '\n' +
+                    'INTERVAL LENGTH: ' + aiIntervalSec + ' seconds\n' +
+                    'TARGET BEHAVIOR(S): ' + targetBehaviors.trim() + '\n' +
+                    'STUDENT/SUBJECT: ' + (studentName || 'Subject') + '\n\n' +
+                    'INSTRUCTIONS:\n' +
+                    '1. Analyze the ' + mediaType + ' in sequential ' + aiIntervalSec + '-second intervals\n' +
+                    '2. For each interval, code whether the target behavior occurred based on the recording method\n' +
+                    '3. Note contextual observations (antecedents, consequences, setting events)\n' +
+                    '4. Flag any intervals where coding was uncertain\n\n' +
+                    'Return ONLY valid JSON:\n' +
+                    '{"intervals": [{"start_sec": 0, "end_sec": ' + aiIntervalSec + ', "code": 0, "confidence": 95, "observation": "brief note", "antecedent": "what preceded", "behavior_topography": "specific description", "consequence": "what followed", "uncertain": false}], "total_intervals": 6, "summary": "brief overall summary", "behavior_rate": "occurrences per minute or % of intervals"}';
+
+                callGemini(prompt, false, base64Data)
+                    .then(function(result) {
+                        try {
+                            var parsed = JSON.parse(result.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
+                            setAiCoding(parsed);
+                            setAiProgress(100);
+                            if (addToast) addToast('AI coding complete: ' + (parsed.intervals || []).length + ' intervals analyzed', 'success');
+                            if (practitionerCoding.trim()) {
+                                doIOAComparison(parsed);
+                            }
+                        } catch (parseErr) {
+                            warnLog('AI IOA parse failed', parseErr);
+                            if (addToast) addToast('AI response could not be parsed — try again', 'error');
+                        }
+                    })
+                    .catch(function(err) {
+                        warnLog('AI IOA processing failed', err);
+                        if (addToast) addToast('Processing failed: ' + (err.message || 'Unknown error'), 'error');
+                    })
+                    .finally(function() {
+                        setAiProcessing(false);
+                    });
+            };
+            reader.onerror = function() {
+                setAiProcessing(false);
+                if (addToast) addToast('Failed to read file', 'error');
+            };
+            reader.readAsDataURL(mediaFile);
+        }
+
+        // Compare Practitioner vs AI Coding
+        function doIOAComparison(aiData) {
+            var ai = aiData || aiCoding;
+            if (!ai || !ai.intervals) return;
+            var practData = practitionerCoding.split(',').map(function(s) { return parseFloat(s.trim()); }).filter(function(n) { return !isNaN(n); });
+            if (practData.length === 0) {
+                if (addToast) addToast('Please enter your coding data (comma-separated)', 'error');
+                return;
+            }
+            var aiIntervals = ai.intervals;
+            var maxLen = Math.max(practData.length, aiIntervals.length);
+            var agreements = 0;
+            var disagreeList = [];
+            var detailList = [];
+            for (var i = 0; i < maxLen; i++) {
+                var practVal = practData[i] !== undefined ? practData[i] : null;
+                var aiVal = aiIntervals[i] ? aiIntervals[i].code : null;
+                var aiConf = aiIntervals[i] ? aiIntervals[i].confidence : 0;
+                var aiNote = aiIntervals[i] ? aiIntervals[i].observation : '';
+                var startSec = i * aiIntervalSec;
+                var endSec = (i + 1) * aiIntervalSec;
+                var agree;
+                if (samplingMethod === 'frequency' || samplingMethod === 'duration') {
+                    agree = practVal === aiVal;
+                } else {
+                    agree = (practVal > 0 ? 1 : 0) === (aiVal > 0 ? 1 : 0);
+                }
+                if (agree) agreements++;
+                var entry = { interval: i + 1, startTime: ioaFmtTime(startSec), endTime: ioaFmtTime(endSec), startSec: startSec, endSec: endSec, practitioner: practVal, ai: aiVal, aiConfidence: aiConf, aiNote: aiNote, agree: agree };
+                detailList.push(entry);
+                if (!agree) disagreeList.push(entry);
+            }
+            var agreePct = maxLen > 0 ? ((agreements / maxLen) * 100).toFixed(1) : '0';
+            var compResult = { totalIntervals: maxLen, agreements: agreements, disagreements: disagreeList.length, agreementPct: agreePct, interpretation: parseFloat(agreePct) >= 80 ? 'Acceptable (≥80%)' : parseFloat(agreePct) >= 70 ? 'Marginal (70-79%)' : 'Below threshold (<70%)', details: detailList, aiSummary: ai.summary || '', behaviorRate: ai.behavior_rate || '' };
+            setIoaComparison(compResult);
+            setDiscrepancies(disagreeList);
+            if (addToast) addToast('IOA Comparison: ' + agreePct + '% agreement (' + disagreeList.length + ' discrepancies)', 'info');
+        }
+
+        // Export Report
+        function ioaExportRpt() {
+            var lines = ['IOA Report — ' + new Date().toLocaleDateString(), 'Student: ' + (studentName || 'N/A'), ''];
+            if (ioaMode === 'traditional' && ioaResults) {
+                lines.push('Method: ' + ioaResults.method);
+                lines.push('Agreement: ' + ioaResults.agreement + '%');
+                lines.push('Interpretation: ' + ioaResults.interpretation);
+            }
+            if (ioaMode === 'ai' && ioaComparison) {
+                lines.push('Method: AI-Assisted IOA (' + samplingMethod + ')');
+                lines.push('Interval Length: ' + aiIntervalSec + ' seconds');
+                lines.push('Agreement: ' + ioaComparison.agreementPct + '%');
+                lines.push('Interpretation: ' + ioaComparison.interpretation);
+                lines.push('');
+                lines.push('WARNING: AI coding is supplementary only. Not for primary data.');
+                lines.push('');
+                lines.push('Interval | Time | Practitioner | AI | Confidence | Agreement');
+                ioaComparison.details.forEach(function(d) {
+                    lines.push(d.interval + ' | ' + d.startTime + '-' + d.endTime + ' | ' + d.practitioner + ' | ' + d.ai + ' | ' + d.aiConfidence + '% | ' + (d.agree ? 'Yes' : '*** DISAGREE ***'));
+                });
+                if (discrepancies.length > 0) {
+                    lines.push('');
+                    lines.push('=== DISCREPANCIES (Review These Timestamps) ===');
+                    discrepancies.forEach(function(d) {
+                        lines.push('Interval ' + d.interval + ' (' + d.startTime + '-' + d.endTime + '): You=' + d.practitioner + ' AI=' + d.ai + ' | ' + d.aiNote);
+                    });
+                }
+            }
+            navigator.clipboard.writeText(lines.join('\n')).then(function() {
+                if (addToast) addToast('Report copied to clipboard', 'success');
+            });
+        }
+
+        // ── RENDER ──
+        return h('div', { className: 'max-w-4xl mx-auto space-y-4' },
+            // Mode selector
+            h('div', { className: 'flex gap-2 p-1 bg-slate-100 rounded-xl' },
+                h('button', { onClick: function() { setIoaMode('traditional'); }, className: 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ' + (ioaMode === 'traditional' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700') }, '📊 Traditional IOA'),
+                h('button', { onClick: function() { setIoaMode('ai'); }, className: 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ' + (ioaMode === 'ai' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700') }, '🧠 AI-Assisted IOA')
             ),
-            // Method selector
-            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
-                h('h3', { className: 'text-xs font-bold text-slate-600 mb-3' }, '📐 Agreement Method'),
-                h('div', { className: 'grid grid-cols-2 gap-2' },
-                    METHODS.map(m =>
-                        h('button', { key: m.id, onClick: () => { setMethod(m.id); setResult(null); }, className: `text-left p-2 rounded-lg border-2 transition-all ${method === m.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'}` },
-                            h('span', { className: 'text-xs font-bold text-slate-700' }, m.name),
-                            h('p', { className: 'text-[9px] text-slate-500 mt-0.5' }, m.desc)
+
+            // Traditional Mode
+            ioaMode === 'traditional' && h('div', { className: 'space-y-4' },
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                    h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '📐 Select IOA Method'),
+                    h('div', { className: 'grid grid-cols-3 gap-2' },
+                        IOA_METHODS_LIST.map(function(m) {
+                            return h('button', { key: m.id, onClick: function() { setIoaMethod(m.id); }, className: 'p-3 rounded-xl border-2 text-left transition-all ' + (ioaMethod === m.id ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-slate-50 hover:bg-slate-100') },
+                                h('div', { className: 'text-lg mb-1' }, m.icon),
+                                h('div', { className: 'text-xs font-bold text-slate-800' }, m.label),
+                                h('div', { className: 'text-[10px] text-slate-500' }, m.desc)
+                            );
+                        })
+                    )
+                ),
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-3' },
+                    h('h3', { className: 'text-sm font-black text-slate-800' }, '📝 Enter Observer Data'),
+                    h('p', { className: 'text-[10px] text-slate-500' }, 'Enter comma-separated values. For binary: 0 = no occurrence, 1 = occurrence.'),
+                    h('div', null,
+                        h('label', { className: 'block text-xs font-bold text-slate-600 mb-1' }, '👤 Observer 1 (Practitioner)'),
+                        h('textarea', { value: obs1Data, onChange: function(e) { setObs1Data(e.target.value); }, 'aria-label': 'Observer 1 data', placeholder: 'e.g., 1, 0, 1, 1, 0, 0, 1, 0, 1, 0', rows: 2, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none resize-none font-mono' })
+                    ),
+                    h('div', null,
+                        h('label', { className: 'block text-xs font-bold text-slate-600 mb-1' }, '👤 Observer 2'),
+                        h('textarea', { value: obs2Data, onChange: function(e) { setObs2Data(e.target.value); }, 'aria-label': 'Observer 2 data', placeholder: 'e.g., 1, 0, 0, 1, 0, 1, 1, 0, 1, 0', rows: 2, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none resize-none font-mono' })
+                    ),
+                    h('button', { onClick: calcTraditionalIOA, className: 'w-full py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all text-sm' }, '📊 Calculate IOA')
+                )
+            ),
+
+            // AI-Assisted Mode
+            ioaMode === 'ai' && h('div', { className: 'space-y-4' },
+                h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3' },
+                    h('div', { className: 'text-2xl' }, '⚠️'),
+                    h('div', null,
+                        h('div', { className: 'text-xs font-black text-amber-700 uppercase' }, 'Experimental Feature — Research Use Only'),
+                        h('div', { className: 'text-[11px] text-amber-600 mt-1' }, 'AI-assisted IOA is supplementary and not a substitute for trained human observation. Use AI as a second observer for reliability cross-checking — always verify flagged discrepancies manually.'),
+                        h('div', { className: 'text-[10px] text-amber-500 mt-1 italic' }, 'Video/audio is processed by Gemini API and is NOT stored. Ensure appropriate consent for AI processing.')
+                    )
+                ),
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                    h('div', { className: 'flex items-center gap-2 mb-2' },
+                        h('div', { className: 'w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-black' }, '1'),
+                        h('h3', { className: 'text-sm font-black text-slate-800' }, 'Define Target Behavior(s)')
+                    ),
+                    h('textarea', { value: targetBehaviors, onChange: function(e) { setTargetBehaviors(e.target.value); }, 'aria-label': 'Target behaviors', placeholder: 'Describe the target behavior operationally, e.g.:\n- Out-of-seat: buttocks leave the seat surface\n- Verbal disruption: audible vocalization not directed at task', rows: 3, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none resize-none' })
+                ),
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                    h('div', { className: 'flex items-center gap-2 mb-2' },
+                        h('div', { className: 'w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-black' }, '2'),
+                        h('h3', { className: 'text-sm font-black text-slate-800' }, 'Recording Method & Interval')
+                    ),
+                    h('div', { className: 'grid grid-cols-5 gap-2 mb-3' },
+                        IOA_SAMPLING.map(function(s) {
+                            return h('button', { key: s.id, onClick: function() { setSamplingMethod(s.id); }, className: 'p-2 rounded-xl border-2 text-center transition-all ' + (samplingMethod === s.id ? 'border-indigo-500 bg-indigo-50' : 'border-transparent bg-slate-50 hover:bg-slate-100') },
+                                h('div', { className: 'text-lg' }, s.icon),
+                                h('div', { className: 'text-[10px] font-bold text-slate-700 mt-1' }, s.label)
+                            );
+                        })
+                    ),
+                    h('div', { className: 'flex items-center gap-3' },
+                        h('label', { className: 'text-xs font-bold text-slate-600' }, 'Interval length:'),
+                        h('div', { className: 'flex gap-1' },
+                            [30, 60, 120, 300, 600].map(function(sec) {
+                                return h('button', { key: sec, onClick: function() { setAiIntervalSec(sec); }, className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ' + (aiIntervalSec === sec ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, sec < 60 ? sec + 's' : (sec / 60) + ' min');
+                            })
+                        )
+                    )
+                ),
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                    h('div', { className: 'flex items-center gap-2 mb-2' },
+                        h('div', { className: 'w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-black' }, '3'),
+                        h('h3', { className: 'text-sm font-black text-slate-800' }, 'Upload Video or Audio')
+                    ),
+                    h('input', { ref: ioaFileRef, type: 'file', accept: 'video/*,audio/*', onChange: handleIoaMediaUpload, className: 'hidden' }),
+                    !mediaFile
+                        ? h('button', { onClick: function() { ioaFileRef.current && ioaFileRef.current.click(); }, className: 'w-full py-8 border-2 border-dashed border-indigo-300 rounded-xl bg-indigo-50/50 hover:bg-indigo-50 transition-all text-center' },
+                            h('div', { className: 'text-3xl mb-2' }, '📁'),
+                            h('div', { className: 'text-sm font-bold text-indigo-600' }, 'Click to upload video or audio'),
+                            h('div', { className: 'text-[10px] text-indigo-400 mt-1' }, 'Supports .mp4, .webm, .wav, .mp3')
+                        )
+                        : h('div', { className: 'flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200' },
+                            h('div', { className: 'text-2xl' }, mediaType === 'video' ? '🎬' : '🎙️'),
+                            h('div', { className: 'flex-1' },
+                                h('div', { className: 'text-xs font-bold text-emerald-700' }, mediaFile.name),
+                                h('div', { className: 'text-[10px] text-emerald-500' }, (mediaFile.size / 1024 / 1024).toFixed(1) + ' MB')
+                            ),
+                            h('button', { onClick: function() { setMediaFile(null); setMediaUrl(null); setAiCoding(null); }, className: 'text-xs text-red-500 hover:text-red-700 font-bold', 'aria-label': 'Remove file' }, '✕')
+                        ),
+                    mediaUrl && mediaType === 'video' && h('video', { src: mediaUrl, controls: true, className: 'w-full rounded-xl mt-3 max-h-48' }),
+                    mediaUrl && mediaType === 'audio' && h('audio', { src: mediaUrl, controls: true, className: 'w-full mt-3' })
+                ),
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                    h('div', { className: 'flex items-center gap-2 mb-2' },
+                        h('div', { className: 'w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-black' }, '4'),
+                        h('h3', { className: 'text-sm font-black text-slate-800' }, 'Enter Your Coding Data')
+                    ),
+                    h('p', { className: 'text-[10px] text-slate-500 mb-2' }, 'Enter your observation codes as comma-separated values, one per interval'),
+                    h('textarea', { value: practitionerCoding, onChange: function(e) { setPractitionerCoding(e.target.value); }, 'aria-label': 'Your observation coding', placeholder: 'e.g., 1, 0, 1, 1, 0, 0, 1, 0', rows: 2, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none resize-none font-mono' })
+                ),
+                h('button', { onClick: processIOAWithAI, disabled: !mediaFile || !targetBehaviors.trim() || aiProcessing, className: 'w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all text-base' }, aiProcessing ? '🧠 AI is analyzing... ' + aiProgress + '%' : '🧠 Run AI Behavioral Coding'),
+                aiCoding && practitionerCoding.trim() && !ioaComparison && h('button', { onClick: function() { doIOAComparison(null); }, className: 'w-full py-2.5 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl font-bold shadow-lg transition-all text-sm' }, '📊 Compare Your Coding vs AI')
+            ),
+
+            // Traditional Results
+            ioaResults && ioaMode === 'traditional' && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4' },
+                h('div', { className: 'text-center' },
+                    h('div', { className: 'text-4xl font-black ' + (parseFloat(ioaResults.agreement) >= 80 ? 'text-emerald-600' : parseFloat(ioaResults.agreement) >= 70 ? 'text-amber-600' : 'text-red-600') }, ioaResults.agreement + '%'),
+                    h('div', { className: 'text-xs text-slate-500 font-bold uppercase mt-1' }, ioaResults.method + ' Agreement'),
+                    h('div', { className: 'text-sm font-bold mt-2 px-3 py-1 rounded-full inline-block ' + (parseFloat(ioaResults.agreement) >= 80 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700') }, ioaResults.interpretation)
+                ),
+                ioaResults.details && h('details', { className: 'bg-slate-50 rounded-lg p-3' },
+                    h('summary', { className: 'text-xs font-bold text-slate-600 cursor-pointer' }, 'Interval Details (' + ioaResults.details.length + ' intervals)'),
+                    h('div', { className: 'mt-2 grid grid-cols-4 gap-1 text-[10px]' },
+                        h('div', { className: 'font-bold text-slate-500' }, 'Interval'),
+                        h('div', { className: 'font-bold text-slate-500' }, 'Obs 1'),
+                        h('div', { className: 'font-bold text-slate-500' }, 'Obs 2'),
+                        h('div', { className: 'font-bold text-slate-500' }, 'Agree?'),
+                        ioaResults.details.map(function(d) {
+                            return [
+                                h('div', { key: d.interval + 'i', className: 'text-slate-600' }, '#' + d.interval),
+                                h('div', { key: d.interval + 'a' }, d.obs1),
+                                h('div', { key: d.interval + 'b' }, d.obs2),
+                                h('div', { key: d.interval + 'c', className: d.agree ? 'text-emerald-600 font-bold' : 'text-red-600 font-bold' }, d.agree ? '✓' : '✗')
+                            ];
+                        })
+                    )
+                )
+            ),
+
+            // AI IOA Results
+            aiCoding && ioaMode === 'ai' && h('div', { className: 'bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-xl border border-indigo-200 p-5 shadow-sm space-y-4' },
+                h('h3', { className: 'text-sm font-black text-indigo-800' }, '🧠 AI Behavioral Coding Results'),
+                aiCoding.summary && h('div', { className: 'text-xs text-slate-600 bg-white rounded-lg p-3 border border-slate-200' }, 'Summary: ' + aiCoding.summary),
+                aiCoding.behavior_rate && h('div', { className: 'text-xs text-indigo-600 font-bold' }, 'Rate: ' + aiCoding.behavior_rate),
+                h('div', { className: 'space-y-1' },
+                    (aiCoding.intervals || []).map(function(iv, idx) {
+                        return h('div', { key: idx, className: 'flex items-center gap-2 p-2 rounded-lg text-[11px] ' + (iv.code > 0 ? 'bg-red-50 border border-red-200' : 'bg-slate-50 border border-slate-200') },
+                            h('div', { className: 'w-8 text-center font-black text-slate-500' }, '#' + (idx + 1)),
+                            h('div', { className: 'w-20 text-slate-400 font-mono text-[10px]' }, ioaFmtTime(iv.start_sec) + '-' + ioaFmtTime(iv.end_sec)),
+                            h('div', { className: 'w-8 text-center font-black text-lg ' + (iv.code > 0 ? 'text-red-600' : 'text-slate-400') }, iv.code > 0 ? iv.code : '—'),
+                            h('div', { className: 'flex-1 text-slate-600 truncate' }, iv.observation || ''),
+                            iv.uncertain && h('div', { className: 'px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-[9px] font-bold' }, '⚠ Uncertain'),
+                            h('div', { className: 'w-12 text-right text-slate-400 text-[10px]' }, (iv.confidence || 0) + '%')
+                        );
+                    })
+                )
+            ),
+
+            // Comparison Results
+            ioaComparison && ioaMode === 'ai' && h('div', { className: 'bg-white rounded-xl border-2 ' + (parseFloat(ioaComparison.agreementPct) >= 80 ? 'border-emerald-400' : 'border-amber-400') + ' p-5 shadow-sm space-y-4' },
+                h('div', { className: 'text-center' },
+                    h('div', { className: 'text-4xl font-black ' + (parseFloat(ioaComparison.agreementPct) >= 80 ? 'text-emerald-600' : parseFloat(ioaComparison.agreementPct) >= 70 ? 'text-amber-600' : 'text-red-600') }, ioaComparison.agreementPct + '%'),
+                    h('div', { className: 'text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1' }, 'Practitioner × AI Agreement'),
+                    h('div', { className: 'text-sm font-bold mt-2 px-3 py-1 rounded-full inline-block ' + (parseFloat(ioaComparison.agreementPct) >= 80 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700') }, ioaComparison.interpretation),
+                    h('div', { className: 'text-[10px] text-slate-500 mt-2' }, ioaComparison.agreements + ' agreements / ' + ioaComparison.disagreements + ' disagreements of ' + ioaComparison.totalIntervals + ' intervals')
+                ),
+                discrepancies.length > 0 && h('div', { className: 'bg-red-50 rounded-xl border border-red-200 p-4' },
+                    h('h4', { className: 'text-xs font-black text-red-700 uppercase mb-2' }, '🔍 Review These Timestamps (' + discrepancies.length + ' discrepancies)'),
+                    h('p', { className: 'text-[10px] text-red-500 mb-2' }, 'Skip to these timestamps in the recording to verify your coding.'),
+                    h('div', { className: 'space-y-1.5' },
+                        discrepancies.map(function(d, i) {
+                            return h('div', { key: i, className: 'flex items-center gap-2 p-2 bg-white rounded-lg border border-red-200' },
+                                h('div', { className: 'px-2 py-1 bg-red-100 text-red-700 rounded font-mono text-xs font-bold' }, d.startTime + '-' + d.endTime),
+                                h('div', { className: 'text-[11px]' },
+                                    h('span', { className: 'text-slate-600' }, 'You: '),
+                                    h('span', { className: 'font-bold' }, String(d.practitioner)),
+                                    h('span', { className: 'text-slate-400 mx-1' }, '|'),
+                                    h('span', { className: 'text-slate-600' }, 'AI: '),
+                                    h('span', { className: 'font-bold' }, String(d.ai)),
+                                    h('span', { className: 'text-slate-400 mx-1' }, '|'),
+                                    h('span', { className: 'text-slate-500 italic' }, d.aiNote || '')
+                                ),
+                                h('div', { className: 'ml-auto text-[9px] text-slate-400' }, d.aiConfidence + '% conf')
+                            );
+                        })
+                    )
+                ),
+                ioaComparison.details && h('details', { className: 'bg-slate-50 rounded-lg p-3' },
+                    h('summary', { className: 'text-xs font-bold text-slate-600 cursor-pointer' }, 'Full Interval Comparison'),
+                    h('div', { className: 'mt-2 overflow-x-auto' },
+                        h('div', { className: 'grid grid-cols-6 gap-1 text-[10px] min-w-[400px]' },
+                            h('div', { className: 'font-bold text-slate-500' }, '#'),
+                            h('div', { className: 'font-bold text-slate-500' }, 'Time'),
+                            h('div', { className: 'font-bold text-slate-500' }, 'You'),
+                            h('div', { className: 'font-bold text-slate-500' }, 'AI'),
+                            h('div', { className: 'font-bold text-slate-500' }, 'Conf'),
+                            h('div', { className: 'font-bold text-slate-500' }, 'Agree?'),
+                            ioaComparison.details.map(function(d) {
+                                return [
+                                    h('div', { key: d.interval + 'i' }, d.interval),
+                                    h('div', { key: d.interval + 't', className: 'font-mono' }, d.startTime),
+                                    h('div', { key: d.interval + 'p', className: 'font-bold' }, String(d.practitioner)),
+                                    h('div', { key: d.interval + 'a', className: 'font-bold' }, String(d.ai)),
+                                    h('div', { key: d.interval + 'c' }, d.aiConfidence + '%'),
+                                    h('div', { key: d.interval + 'g', className: d.agree ? 'text-emerald-600 font-bold' : 'text-red-600 font-bold' }, d.agree ? '✓' : '✗ REVIEW')
+                                ];
+                            })
                         )
                     )
                 )
             ),
-            // Data entry
-            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
-                h('h3', { className: 'text-xs font-bold text-slate-600 mb-3' }, '📊 Observer Data'),
-                isIntervalMethod ? h('div', { className: 'space-y-3' },
-                    h('div', { className: 'flex items-center gap-2' },
-                        h('span', { className: 'text-xs font-medium text-slate-600' }, t('behavior_lens.ui.intervals') || 'Intervals:'),
-                        [6, 10, 15, 20, 30].map(n => h('button', { key: n, onClick: () => initIntervals(n), className: `px-2 py-1 rounded text-[10px] font-bold ${numIntervals === n ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}` }, n))
-                    ),
-                    h('div', { className: 'space-y-2' },
-                        ['Observer 1', 'Observer 2'].map((label, oi) => {
-                            const vals = oi === 0 ? intervals1 : intervals2;
-                            return h('div', { key: label },
-                                h('span', { className: 'text-[10px] font-bold text-slate-500' }, label),
-                                h('div', { className: 'flex flex-wrap gap-1 mt-1' },
-                                    vals.map((v, i) => h('button', { key: i, onClick: () => toggleInterval(oi + 1, i), className: `w-8 h-8 rounded-lg text-[10px] font-bold border-2 ${v ? 'bg-green-500 text-white border-green-600' : 'bg-white text-slate-400 border-slate-200'}` }, v ? '✓' : (i + 1)))
-                                )
-                            );
-                        })
-                    )
-                ) : h('div', { className: 'space-y-2' },
-                    h('div', null,
-                        h('label', { className: 'text-[10px] font-bold text-slate-500' }, `Observer 1 ${method === 'totalcount' ? '(count)' : '(comma-separated values)'}`),
-                        h('input', { value: obs1, onChange: e => setObs1(e.target.value), placeholder: method === 'totalcount' ? '45' : '3, 5, 2, 4, 1', className: 'w-full text-xs border border-slate-200 rounded-lg px-3 py-2 mt-1' })
-                    ),
-                    h('div', null,
-                        h('label', { className: 'text-[10px] font-bold text-slate-500' }, `Observer 2 ${method === 'totalcount' ? '(count)' : '(comma-separated values)'}`),
-                        h('input', { value: obs2, onChange: e => setObs2(e.target.value), placeholder: method === 'totalcount' ? '42' : '3, 4, 2, 5, 1', className: 'w-full text-xs border border-slate-200 rounded-lg px-3 py-2 mt-1' })
-                    )
-                )
-            ),
-            h('button', { onClick: calculate, className: 'w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-600 hover:to-purple-700 shadow-lg' }, '🧮 Calculate IOA'),
-            // Result
-            result && h('div', { className: `rounded-xl p-5 border-2 ${result.acceptable ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}` },
-                h('div', { className: 'text-center mb-3' },
-                    h('div', { className: `text-4xl font-black ${result.acceptable ? 'text-green-600' : 'text-red-600'}` }, `${result.ioa}%`),
-                    h('p', { className: `text-xs font-bold ${result.acceptable ? 'text-green-700' : 'text-red-700'}` }, result.acceptable ? '✅ Acceptable (≥ 80%)' : '⚠️ Below Threshold (< 80%) — Retrain Observers'),
-                ),
-                h('p', { className: 'text-[10px] text-slate-600 text-center' }, result.details),
-                h('p', { className: 'text-[9px] text-slate-400 text-center mt-1 italic' }, METHODS.find(m => m.id === result.method)?.formula),
-                !result.acceptable && h('div', { className: 'mt-3 bg-red-100 rounded-lg p-3 border border-red-200' },
-                    h('h4', { className: 'text-[10px] font-bold text-red-800 mb-1' }, '📋 Recommended Actions'),
-                    h('ul', { className: 'text-[10px] text-red-700 space-y-0.5 list-disc pl-4' },
-                        h('li', null, t('behavior_lens.ioa_tip_1') || 'Review operational definitions with both observers'),
-                        h('li', null, t('behavior_lens.ioa_tip_2') || 'Conduct practice sessions with feedback'),
-                        h('li', null, t('behavior_lens.ioa_tip_3') || 'Use video examples for calibration'),
-                        h('li', null, t('behavior_lens.ioa_tip_4') || 'Re-collect IOA data before using session data')
-                    )
-                )
-            ),
-            history.length > 1 && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
-                h('h3', { className: 'text-xs font-bold text-slate-600 mb-2' }, `📋 IOA History (${history.length})`),
-                h('div', { className: 'space-y-1' },
-                    history.map((r, i) => h('div', { key: i, className: 'flex items-center justify-between text-[10px] bg-slate-50 rounded-lg px-3 py-1.5' },
-                        h('span', { className: 'text-slate-500' }, new Date(r.date).toLocaleString()),
-                        h('span', { className: 'font-medium text-slate-600' }, METHODS.find(m => m.id === r.method)?.name),
-                        h('span', { className: `font-bold ${r.acceptable ? 'text-green-600' : 'text-red-600'}` }, `${r.ioa}%`)
-                    ))
-                )
-            )
+
+            // Export
+            (ioaResults || ioaComparison) && h('button', { onClick: ioaExportRpt, className: 'w-full py-2.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all' }, '📋 Export IOA Report')
         );
-    };
+    }
+
 
     // ─── TaskAnalysisTool ───────────────────────────────────────────────
     // Task analysis with forward/backward/total-task chaining
@@ -25195,7 +25514,7 @@ Analyze this data and return ONLY valid JSON:
                     t,
                     addToast
                 }),
-                activePanel === 'ioacalc' && h(IOACalculator, { t, addToast }),
+                activePanel === 'ioacalc' && h(IOACalculator, { studentName: selectedStudent, abcEntries: abcEntries, callGemini: callGeminiWithContext, t: t, addToast: addToast }),
                 activePanel === 'prefassess' && h(PreferenceAssessmentWizard, {
                     studentName: selectedStudent,
                     callGemini: callGeminiWithContext,
