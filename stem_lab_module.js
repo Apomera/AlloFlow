@@ -24709,22 +24709,22 @@
         // ═══════════════════════════════════════════════════════
 
         (function _musicSynth() { var _isMusicSynth = stemLabTab === 'explore' && stemLabTool === 'musicSynth'; if (!_isMusicSynth) {
-            // Placeholder hooks — must match exact active-path sequence (verified L19411–19953)
-            React.useEffect(function(){}, []);  // 1 – waveform draw loop
-            React.useEffect(function(){}, []);  // 2 – sequencer playback
-            React.useRef(null);                 // 3 – beat-painter FX ref
-            React.useEffect(function(){}, []);  // 4 – beat-painter cleanup
-            React.useEffect(function(){}, []);  // 5 – chord helper
-            React.useRef(null);                 // 6 – recording ref
-            React.useRef(null);                 // 7 – recording chunks ref
-            React.useRef(null);                 // 8 – recording stream ref
-            React.useEffect(function(){}, []);  // 9 – recording toggle
-            React.useRef(null);                 // 10 – sequencer step ref
-            React.useRef(null);                 // 11 – metronome ref
-            React.useEffect(function(){}, []);  // 12 – metronome tick
-            React.useEffect(function(){}, []);  // 13 – metronome cleanup
-            React.useEffect(function(){}, []);  // 14 – arpeggiator
-            React.useEffect(function(){}, []);  // 15 – particle cleanup
+            // Placeholder hooks — must match exact active-path sequence and dep array sizes
+            React.useEffect(function(){}, [0, 0, 0, 0]);  // 1 – keyboard/chord handler [synthTab, omniChordRoot, omniChordType, omniVoice]
+            React.useEffect(function(){}, [0]);            // 2 – MIDI access [omniVoice]
+            React.useRef(null);                            // 3 – beat-painter FX ref
+            React.useEffect(function(){}, [0, 0, 0]);     // 4 – beat-painter FX update [bpReverb, bpDelay, bpFilterCut]
+            React.useEffect(function(){}, []);             // 5 – hash beat loader (mount-only)
+            React.useRef(null);                            // 6 – beat-painter canvas ref
+            React.useRef(null);                            // 7 – beat-painter anim ref
+            React.useRef(null);                            // 8 – beat-painter analyser ref
+            React.useEffect(function(){}, [0, 0]);         // 9 – beat-painter vis [seqPlaying, synthTab]
+            React.useRef(null);                            // 10 – sequencer timer ref
+            React.useRef(null);                            // 11 – sequencer step ref
+            React.useEffect(function(){}, []);             // 12 – sequencer cleanup (mount-only)
+            React.useEffect(function(){}, [0]);            // 13 – BPM restart [seqBPM]
+            React.useEffect(function(){}, [0, 0]);         // 14 – sample kit loader [synthTab, activeKit]
+            React.useEffect(function(){}, [0, 0]);         // 15 – drum pad keyboard [synthTab, activeKit]
             return null;
           }
           const d = labToolData.musicSynth;
@@ -30944,6 +30944,7 @@
               ctx.font = '11px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)';
               ctx.fillText(spec.icon + ' ' + spec.name + (d.viewAngle === 'dorsal' ? '  ' + t('stem.dissection.dorsal_view') : '  ' + t('stem.dissection.ventral_view')), 14, 20);
               // System color legend (top-right)
+              var sysColors = { circulatory: '#ef4444', digestive: '#f59e0b', respiratory: '#3b82f6', nervous: '#8b5cf6', skeletal: '#94a3b8', muscular: '#dc2626', excretory: '#84cc16', reproductive: '#ec4899' };
               var legendSys = ['circulatory', 'digestive', 'respiratory', 'nervous', 'skeletal', 'muscular', 'excretory', 'reproductive'];
               var legendLabels = [t('stem.dissection.legend_circ'), t('stem.dissection.legend_dig'), t('stem.dissection.legend_resp'), t('stem.dissection.legend_nerv'), t('stem.dissection.legend_skel'), t('stem.dissection.legend_musc'), t('stem.dissection.legend_excr'), t('stem.dissection.legend_repr')];
               ctx.font = '7px Inter, system-ui';
