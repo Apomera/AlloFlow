@@ -23021,7 +23021,7 @@ IMPORTANT rules for expert keys:
         const _cloudDocPath = useCallback((studentName) => {
             if (!_cloudUserId || !studentName) return null;
             const safeName = studentName.replace(/[\/\.#$\[\]]/g, '_');
-            return `apps/prismflow/behaviorLens/users/${_cloudUserId}/workspaces/${safeName}`;
+            return `behaviorLens/users/${_cloudUserId}/workspaces/${safeName}`;
         }, [_cloudUserId]);
 
         const _saveToCloud = useCallback(async (studentName, data) => {
@@ -23976,6 +23976,11 @@ Analyze this data and return ONLY valid JSON:
 
         const graphPanels = ['abagraph', 'cumrecord', 'scatterplot', 'trends', 'hotspot'];
 
+        // ─── Sandbox config state — hoisted from renderHub to comply with React's
+        //     rules of hooks (renderHub is called conditionally) ─────────────
+        const [sandboxDays, setSandboxDays] = useState(14);
+        const [sandboxEntries, setSandboxEntries] = useState(25);
+
         const renderHub = () => {
             // Accessibility: skip navigation link for keyboard users
             const skipLink = h('a', {
@@ -24791,9 +24796,7 @@ Analyze this data and return ONLY valid JSON:
                 darkGray: { bg: 'bg-zinc-50', border: 'border-zinc-300', icon: 'bg-zinc-100 text-zinc-700', hover: 'hover:border-zinc-500 hover:shadow-zinc-100' },
             };
 
-            // Sandbox configuration state (used by both Demo Student loader and AI generator)
-            const [sandboxDays, setSandboxDays] = useState(14);
-            const [sandboxEntries, setSandboxEntries] = useState(25);
+            // Sandbox configuration state (hoisted to component top level)
             const sandboxDayOptions = [7, 14, 30, 60, 90];
             const sandboxEntryOptions = [10, 15, 25, 40, 60];
 
