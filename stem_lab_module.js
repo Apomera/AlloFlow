@@ -14835,7 +14835,7 @@
         })(),
 
 
-        (function _circuitTool() { var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_isCircuit) { React.useEffect(function(){}, []); return null; }
+        (function _circuitTool() { var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_isCircuit) { React.useEffect(function(){}, [0, 0, 0]); return null; }
           const d = labToolData.circuit;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, circuit: { ...prev.circuit, [key]: val } }));
           const mode = d.mode || 'series';
@@ -24875,7 +24875,7 @@
             React.useRef(null);                            // 11 – sequencer step ref
             React.useEffect(function(){}, []);             // 12 – sequencer cleanup (mount-only)
             React.useEffect(function(){}, [0]);            // 13 – BPM restart [seqBPM]
-            React.useEffect(function(){}, [0, 0]);         // 14 – sample kit loader [synthTab, activeKit]
+            React.useEffect(function(){}, [0]);            // 14 – sample kit loader [synthTab]
             React.useEffect(function(){}, [0, 0]);         // 15 – drum pad keyboard [synthTab, activeKit]
             return null;
           }
@@ -50751,7 +50751,17 @@
         // ════════════════════════════════════════════════════════════════════
         (function _cyberDefenseLab() {
           var _isCyber = stemLabTab === 'explore' && stemLabTool === 'cyberDefense';
-          if (!_isCyber) { return null; }
+          if (!_isCyber) {
+            // 23 useState placeholders
+            React.useState(0); React.useState(0); React.useState(0); React.useState(0); React.useState(0);
+            React.useState(0); React.useState(0); React.useState(0); React.useState(0); React.useState(0);
+            React.useState(0); React.useState(0); React.useState(0); React.useState(0); React.useState(0);
+            React.useState(0); React.useState(0); React.useState(0); React.useState(0); React.useState(0);
+            React.useState(0); React.useState(0); React.useState(0);
+            // 1 useEffect placeholder
+            React.useEffect(function(){}, [0]);
+            return null;
+          }
 
           // ── State ──
           var _s = React.useState('phish');     var cyberTab = _s[0];     var setCyberTab = _s[1];
