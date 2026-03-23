@@ -17114,6 +17114,7 @@ Keep it under 150 words.`);
         var studentName = props.studentName;
         var abcEntries = props.abcEntries;
         var callGemini = props.callGemini;
+        var callGeminiVision = props.callGeminiVision;
         var t = props.t;
         var addToast = props.addToast;
 
@@ -17146,6 +17147,93 @@ Keep it under 150 words.`);
         var _iar = useState(null), iaResults = _iar[0], setIaResults = _iar[1];
         var ioaFileRef = useRef(null);
         var iaFileRef = useRef(null);
+
+        // ─── callGeminiWithMedia — routes media to vision API or audio-extract fallback ───
+        // Small files (≤20 MB): send inline base64 to callGeminiVision
+        // Large files (>20 MB): extract audio track, transcribe, then analyse text via callGemini
+        var INLINE_LIMIT = 20 * 1024 * 1024; // 20 MB
+        function callGeminiWithMedia(prompt, file, base64DataUrl) {
+            // base64DataUrl is the full data-URL from FileReader.readAsDataURL
+            var rawBase64 = base64DataUrl.split(',')[1] || base64DataUrl;
+            var detectedMime = base64DataUrl.split(';')[0].split(':')[1] || file.type || 'video/mp4';
+            var byteSize = rawBase64.length * 0.75; // approximate decoded size
+
+            if (byteSize <= INLINE_LIMIT && callGeminiVision) {
+                // Small file — send directly as inline data to the vision model
+                return callGeminiVision(prompt, rawBase64, detectedMime);
+            } else if (byteSize <= INLINE_LIMIT && !callGeminiVision) {
+                // Fallback: callGeminiVision not available, warn and try text-only
+                warnLog('callGeminiVision not available — falling back to text-only callGemini');
+                return callGemini(prompt, false);
+            }
+
+            // Large file path — extract audio, transcribe, then analyse transcript
+            return new Promise(function(resolve, reject) {
+                try {
+                    // Decode base64 → ArrayBuffer → AudioContext for audio extraction
+                    var binaryString = atob(rawBase64);
+                    var bytes = new Uint8Array(binaryString.length);
+                    for (var i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+                    var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    audioCtx.decodeAudioData(bytes.buffer).then(function(audioBuffer) {
+                        // Encode extracted audio as WAV
+                        var numCh = audioBuffer.numberOfChannels;
+                        var sampleRate = Math.min(audioBuffer.sampleRate, 16000); // downsample for smaller payload
+                        var length = audioBuffer.length;
+                        var wavBuffer = new ArrayBuffer(44 + length * 2);
+                        var view = new DataView(wavBuffer);
+                        // WAV header
+                        function writeStr(offset, str) { for (var i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i)); }
+                        writeStr(0, 'RIFF'); view.setUint32(4, 36 + length * 2, true); writeStr(8, 'WAVE');
+                        writeStr(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true);
+                        view.setUint16(22, 1, true); view.setUint32(24, sampleRate, true);
+                        view.setUint32(28, sampleRate * 2, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+                        writeStr(36, 'data'); view.setUint32(40, length * 2, true);
+                        var channelData = audioBuffer.getChannelData(0);
+                        var offset = 44;
+                        for (var j = 0; j < length; j++) {
+                            var s = Math.max(-1, Math.min(1, channelData[j]));
+                            view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+                            offset += 2;
+                        }
+                        // Convert WAV to base64
+                        var wavBytes = new Uint8Array(wavBuffer);
+                        var wavBase64 = '';
+                        var CHUNK_SZ = 0x8000;
+                        for (var k = 0; k < wavBytes.length; k += CHUNK_SZ) {
+                            wavBase64 += String.fromCharCode.apply(null, wavBytes.subarray(k, k + CHUNK_SZ));
+                        }
+                        wavBase64 = btoa(wavBase64);
+
+                        // Check if WAV fits inline limit
+                        if (wavBase64.length * 0.75 <= INLINE_LIMIT && callGeminiVision) {
+                            resolve(callGeminiVision(
+                                'TRANSCRIBE the following audio, then: ' + prompt,
+                                wavBase64, 'audio/wav'
+                            ));
+                        } else {
+                            // WAV still too large — send as text-only with note
+                            resolve(callGemini(
+                                '[NOTE: The media file was too large for inline analysis. ' +
+                                'Audio extraction yielded a file that is still too large. ' +
+                                'Please respond based on the text prompt only.]\n\n' + prompt,
+                                false
+                            ));
+                        }
+                    }).catch(function(decodeErr) {
+                        // Audio decode failed (e.g. corrupt file) — fall back to text
+                        warnLog('Audio extraction failed, falling back to text-only', decodeErr);
+                        resolve(callGemini(
+                            '[NOTE: Audio extraction from the media file failed. ' +
+                            'Please respond based on the text prompt only.]\n\n' + prompt,
+                            false
+                        ));
+                    });
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        }
 
         var IOA_METHODS_LIST = [
             { id: 'pointbypoint', label: 'Point-by-Point', icon: '📍', desc: 'Compare each interval: agree or disagree' },
@@ -17289,7 +17377,7 @@ Keep it under 150 words.`);
                     'Return ONLY valid JSON:\n' +
                     '{"intervals": [{"start_sec": 0, "end_sec": ' + aiIntervalSec + ', "code": 0, "confidence": 95, "observation": "brief note", "antecedent": "what preceded", "behavior_topography": "specific description", "consequence": "what followed", "uncertain": false}], "total_intervals": 6, "summary": "brief overall summary", "behavior_rate": "occurrences per minute or % of intervals"}';
 
-                callGemini(prompt, false, base64Data)
+                callGeminiWithMedia(prompt, mediaFile, base64Data)
                     .then(function(result) {
                         try {
                             var parsed = JSON.parse(result.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
@@ -17346,7 +17434,7 @@ Keep it under 150 words.`);
                     'Return ONLY valid JSON:\n' +
                     '{"intervals": [{"start_sec": 0, "end_sec": ' + aiIntervalSec + ', "code": 0, "confidence": 95, "observation": "brief note", "uncertain": false}], "total_intervals": 6, "summary": "overall summary", "behavior_rate": "rate"}';
 
-                callGemini(prompt2, false, base64Data2)
+                callGeminiWithMedia(prompt2, mediaFile, base64Data2)
                     .then(function(result2) {
                         try {
                             var parsed2 = JSON.parse(result2.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
@@ -17580,7 +17668,7 @@ Keep it under 150 words.`);
                     '"overall_quality": "excellent/good/developing/needs_support"' +
                     '}';
 
-                callGemini(prompt, false, base64)
+                callGeminiWithMedia(prompt, mediaFile, base64)
                     .then(function(result) {
                         try {
                             var parsed = JSON.parse(result.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
@@ -22880,6 +22968,7 @@ IMPORTANT rules for expert keys:
     window.AlloModules.BehaviorLens = ({
         onClose,
         callGemini,
+        callGeminiVision,
         addToast,
         t,
         studentNickname,
@@ -26062,7 +26151,7 @@ Analyze this data and return ONLY valid JSON:
                     t,
                     addToast
                 }),
-                activePanel === 'ioacalc' && h(IOACalculator, { studentName: selectedStudent, abcEntries: abcEntries, callGemini: callGeminiWithContext, t: t, addToast: addToast }),
+                activePanel === 'ioacalc' && h(IOACalculator, { studentName: selectedStudent, abcEntries: abcEntries, callGemini: callGeminiWithContext, callGeminiVision: callGeminiVision, t: t, addToast: addToast }),
                 activePanel === 'prefassess' && h(PreferenceAssessmentWizard, {
                     studentName: selectedStudent,
                     callGemini: callGeminiWithContext,
@@ -26107,7 +26196,7 @@ Analyze this data and return ONLY valid JSON:
                     abcEntries, observationSessions, studentProfile,
                     studentName: selectedStudent, callGemini: callGeminiWithContext, t, addToast
                 }),
-                activePanel === 'ioacalc' && h(IOACalculator, { t, addToast }),
+                activePanel === 'ioacalc' && h(IOACalculator, { callGemini: callGeminiWithContext, callGeminiVision: callGeminiVision, t, addToast }),
                 activePanel === 'taskanalysis' && h(TaskAnalysisTool, { studentName: selectedStudent, callGemini: callGeminiWithContext, t, addToast }),
                 activePanel === 'dtt' && h(DTTDataSheet, { studentName: selectedStudent, t, addToast }),
                 activePanel === 'prefassess' && h(PreferenceAssessment, { studentName: selectedStudent, t, addToast }),
