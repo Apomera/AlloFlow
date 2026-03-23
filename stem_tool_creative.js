@@ -2540,6 +2540,11 @@ const d = labToolData.artStudio || {};
 
                   if (!canvas) return;
 
+                  // Always sync current color to canvas data attributes (runs on every render)
+                  canvas.dataset.hue = d.hue || 0;
+                  canvas.dataset.sat = d.sat || 100;
+                  canvas.dataset.lit = d.lit || 50;
+
                   if (canvas._spinInit) return;
 
                   canvas._spinInit = true;
@@ -2559,6 +2564,9 @@ const d = labToolData.artStudio || {};
                   var isDark = d.spinDark || false;
 
                   var baseHue = d.hue || 0, baseSat = d.sat || 100, baseLit = d.lit || 50;
+
+
+
 
                   ctx.fillStyle = isDark ? '#0f172a' : '#fefefe';
 
@@ -2598,6 +2606,9 @@ const d = labToolData.artStudio || {};
 
                   function spawnDrip(x, y) {
 
+                    var curHue = parseFloat(canvas.dataset.hue) || 0;
+                    var curSat = parseFloat(canvas.dataset.sat) || 100;
+                    var curLit = parseFloat(canvas.dataset.lit) || 50;
                     var count = splatter ? 5 + Math.floor(Math.random() * 8) : 1;
 
                     for (var i = 0; i < count; i++) {
@@ -2606,7 +2617,7 @@ const d = labToolData.artStudio || {};
 
                       var oy = splatter ? (Math.random() - 0.5) * 30 : 0;
 
-                      drips.push({ x: x + ox, y: y + oy, vx: 0, vy: 0, life: 200 + Math.random() * 150, size: splatter ? 1 + Math.random() * brushSize : brushSize * 0.6, hue: baseHue + (splatter ? Math.random() * 30 - 15 : 0) });
+                      drips.push({ x: x + ox, y: y + oy, vx: 0, vy: 0, life: 200 + Math.random() * 150, size: splatter ? 1 + Math.random() * brushSize : brushSize * 0.6, hue: curHue + (splatter ? Math.random() * 30 - 15 : 0), sat: curSat, lit: curLit });
 
                     }
 
@@ -2662,7 +2673,7 @@ const d = labToolData.artStudio || {};
 
                       ctx.arc(dr.x, dr.y, dr.size, 0, Math.PI * 2);
 
-                      ctx.fillStyle = 'hsl(' + Math.round(dr.hue) + ',' + baseSat + '%,' + baseLit + '%)';
+                      ctx.fillStyle = 'hsl(' + Math.round(dr.hue) + ',' + (dr.sat || baseSat) + '%,' + (dr.lit || baseLit) + '%)';
 
                       ctx.fill();
 

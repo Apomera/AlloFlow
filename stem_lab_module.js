@@ -34061,6 +34061,10 @@
               React.createElement("canvas", { id: 'spinCanvas', key: 'spin-' + (d.spinReset || 0), width: 512, height: 512, className: "rounded-full border-4 border-orange-300 shadow-lg cursor-crosshair mx-auto block mt-3", style: { maxWidth: '100%', background: d.spinDark ? '#0f172a' : '#fefefe' },
                 ref: function (canvas) {
                   if (!canvas) return;
+                  // Always sync current color to canvas data attributes (runs on every render)
+                  canvas.dataset.hue = d.hue || 0;
+                  canvas.dataset.sat = d.sat || 100;
+                  canvas.dataset.lit = d.lit || 50;
                   if (canvas._spinInit) return;
                   canvas._spinInit = true;
                   var ctx = canvas.getContext('2d');
@@ -34090,11 +34094,14 @@
                   canvas.onmouseup = canvas.ontouchend = function () { mouseDown = false; };
                   canvas.onmouseleave = function () { mouseDown = false; };
                   function spawnDrip(x, y) {
+                    var curHue = parseFloat(canvas.dataset.hue) || 0;
+                    var curSat = parseFloat(canvas.dataset.sat) || 100;
+                    var curLit = parseFloat(canvas.dataset.lit) || 50;
                     var count = splatter ? 5 + Math.floor(Math.random() * 8) : 1;
                     for (var i = 0; i < count; i++) {
                       var ox = splatter ? (Math.random() - 0.5) * 30 : 0;
                       var oy = splatter ? (Math.random() - 0.5) * 30 : 0;
-                      drips.push({ x: x + ox, y: y + oy, vx: 0, vy: 0, life: 200 + Math.random() * 150, size: splatter ? 1 + Math.random() * brushSize : brushSize * 0.6, hue: baseHue + (splatter ? Math.random() * 30 - 15 : 0) });
+                      drips.push({ x: x + ox, y: y + oy, vx: 0, vy: 0, life: 200 + Math.random() * 150, size: splatter ? 1 + Math.random() * brushSize : brushSize * 0.6, hue: curHue + (splatter ? Math.random() * 30 - 15 : 0), sat: curSat, lit: curLit });
                     }
                   }
                   function animate() {
@@ -34122,7 +34129,7 @@
                       ctx.globalAlpha = alpha * 0.85;
                       ctx.beginPath();
                       ctx.arc(dr.x, dr.y, dr.size, 0, Math.PI * 2);
-                      ctx.fillStyle = 'hsl(' + Math.round(dr.hue) + ',' + baseSat + '%,' + baseLit + '%)';
+                      ctx.fillStyle = 'hsl(' + Math.round(dr.hue) + ',' + (dr.sat || baseSat) + '%,' + (dr.lit || baseLit) + '%)';
                       ctx.fill();
                       if (dist > W * 0.48) { drips.splice(i, 1); }
                     }
