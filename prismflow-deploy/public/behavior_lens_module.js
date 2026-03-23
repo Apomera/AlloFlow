@@ -17139,7 +17139,13 @@ Keep it under 150 words.`);
         var _cp2 = useState(null), ioaComparison2 = _cp2[0], setIoaComparison2 = _cp2[1];
         var _ca = useState(null), aiVsAiComparison = _ca[0], setAiVsAiComparison = _ca[1];
         var _sd = useState(''), subjectDescription = _sd[0], setSubjectDescription = _sd[1];
+        var _ir = useState('parent'), iaRole = _ir[0], setIaRole = _ir[1];
+        var _irs = useState(''), iaReinfSchedule = _irs[0], setIaReinfSchedule = _irs[1];
+        var _iad = useState(''), iaAdultDesc = _iad[0], setIaAdultDesc = _iad[1];
+        var _iap = useState(false), iaProcessing = _iap[0], setIaProcessing = _iap[1];
+        var _iar = useState(null), iaResults = _iar[0], setIaResults = _iar[1];
         var ioaFileRef = useRef(null);
+        var iaFileRef = useRef(null);
 
         var IOA_METHODS_LIST = [
             { id: 'pointbypoint', label: 'Point-by-Point', icon: '📍', desc: 'Compare each interval: agree or disagree' },
@@ -17500,12 +17506,147 @@ Keep it under 150 words.`);
             });
         }
 
+        // ── Interaction Analysis ──
+        var IA_ROLES = [
+            { id: 'parent', label: 'Parent', icon: '👨‍👩‍👧', desc: 'Parent-child interaction at home or community' },
+            { id: 'teacher', label: 'Teacher', icon: '👩‍🏫', desc: 'Teacher-student interaction in classroom' },
+            { id: 'edtech', label: 'Ed-Tech / Para', icon: '🧑‍💼', desc: 'Educational technician or paraprofessional with student' }
+        ];
+
+        function handleIaMediaUpload(e) {
+            var file = e.target.files[0];
+            if (!file) return;
+            var isVideo = file.type.startsWith('video/');
+            var isAudio = file.type.startsWith('audio/');
+            if (!isVideo && !isAudio) {
+                if (addToast) addToast('Please upload a video or audio file', 'error');
+                return;
+            }
+            setMediaFile(file);
+            setMediaType(isVideo ? 'video' : 'audio');
+            setMediaUrl(URL.createObjectURL(file));
+            setIaResults(null);
+            if (addToast) addToast((isVideo ? 'Video' : 'Audio') + ' loaded for interaction analysis', 'success');
+        }
+
+        function processInteractionAnalysis() {
+            if (!mediaFile || !callGemini) return;
+            if (!targetBehaviors.trim()) {
+                if (addToast) addToast('Please define target behavior(s) first', 'error');
+                return;
+            }
+            setIaProcessing(true);
+            setIaResults(null);
+
+            var reader = new FileReader();
+            reader.onload = function() {
+                var base64 = reader.result;
+                var roleInfo = IA_ROLES.find(function(r) { return r.id === iaRole; });
+                var roleName = roleInfo ? roleInfo.label : 'Caregiver';
+                var childDesc = (studentName || 'the child') + (subjectDescription.trim() ? ' (' + subjectDescription.trim() + ')' : '');
+                var adultDesc = roleName + (iaAdultDesc.trim() ? ' — ' + iaAdultDesc.trim() : '');
+                var scheduleSection = iaReinfSchedule.trim() ? '\nREINFORCEMENT SCHEDULE IN EFFECT: ' + iaReinfSchedule.trim() + '\nEvaluate the ' + roleName.toLowerCase() + "'s adherence to this schedule. Note any deviations, missed reinforcement opportunities, or incorrect delivery timing.\n" : '';
+
+                var prompt = 'You are an expert Board Certified Behavior Analyst (BCBA) conducting a detailed interaction analysis from ' + mediaType + '.\n\n' +
+                    'CONTEXT: ' + roleName + '-child interaction observation\n' +
+                    'CHILD/STUDENT: ' + childDesc + '\n' +
+                    'ADULT (' + roleName.toUpperCase() + '): ' + adultDesc + '\n' +
+                    'TARGET CHILD BEHAVIOR(S): ' + targetBehaviors.trim() + '\n' +
+                    scheduleSection + '\n' +
+                    'ANALYSIS INSTRUCTIONS:\n' +
+                    '1. Divide the recording into 60-second intervals\n' +
+                    '2. For EACH interval, code:\n' +
+                    '   a. CHILD behavior: occurrence of target behavior, emotional state, engagement level\n' +
+                    '   b. ADULT behavior: type of response (reinforcement, prompt, redirect, ignore, punishment), latency to respond (seconds), prompt type used (FP=full physical, PP=partial physical, M=model, G=gestural, V=verbal, I=independent)\n' +
+                    '3. Provide a clinical summary identifying any of these patterns:\n' +
+                    '   - Ratio strain (behavior deteriorating due to lean reinforcement schedule)\n' +
+                    '   - Extinction burst (temporary increase in behavior after reinforcement removed)\n' +
+                    '   - Prompt dependency (child waiting for prompts rather than responding independently)\n' +
+                    '   - Differential reinforcement errors (reinforcing wrong behavior or failing to reinforce target)\n' +
+                    '   - Reinforcement timing issues (delayed delivery reducing effectiveness)\n' +
+                    '   - Satiation or deprivation effects\n' +
+                    '   - Emotional escalation patterns\n' +
+                    '   - Effective strategies the ' + roleName.toLowerCase() + ' is using well\n' +
+                    '4. Generate specific, actionable coaching tips for the ' + roleName.toLowerCase() + '\n\n' +
+                    'Return ONLY valid JSON:\n' +
+                    '{' +
+                    '"intervals": [{"start_sec": 0, "end_sec": 60, "child_behavior": "description", "child_code": 0, "child_engagement": "high/medium/low", "adult_response": "description", "adult_behavior_type": "reinforcement/prompt/redirect/ignore", "response_latency_sec": 3, "prompt_level": "V", "reinforcement_delivered": true, "schedule_adherent": true}],' +
+                    '"child_summary": "overall child behavioral pattern",' +
+                    '"adult_summary": "overall adult interaction pattern",' +
+                    '"schedule_adherence": {"percentage": 85, "details": "description of adherence"},' +
+                    '"clinical_observations": [{"type": "ratio_strain", "severity": "mild/moderate/significant", "timestamp": "3:22", "description": "detailed observation", "recommendation": "what to do"}],' +
+                    '"coaching_tips": ["specific actionable tip 1", "tip 2", "tip 3"],' +
+                    '"strengths": ["thing the ' + roleName.toLowerCase() + ' did well"],' +
+                    '"overall_quality": "excellent/good/developing/needs_support"' +
+                    '}';
+
+                callGemini(prompt, false, base64)
+                    .then(function(result) {
+                        try {
+                            var parsed = JSON.parse(result.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
+                            setIaResults(parsed);
+                            if (addToast) addToast('Interaction analysis complete: ' + (parsed.intervals || []).length + ' intervals analyzed', 'success');
+                        } catch (pe) {
+                            warnLog('Interaction analysis parse failed', pe);
+                            if (addToast) addToast('AI response could not be parsed — try again', 'error');
+                        }
+                    })
+                    .catch(function(err) {
+                        warnLog('Interaction analysis failed', err);
+                        if (addToast) addToast('Analysis failed: ' + (err.message || 'Unknown error'), 'error');
+                    })
+                    .finally(function() {
+                        setIaProcessing(false);
+                    });
+            };
+            reader.onerror = function() {
+                setIaProcessing(false);
+                if (addToast) addToast('Failed to read file', 'error');
+            };
+            reader.readAsDataURL(mediaFile);
+        }
+
+        function iaExportReport() {
+            if (!iaResults) return;
+            var roleInfo = IA_ROLES.find(function(r) { return r.id === iaRole; });
+            var roleName = roleInfo ? roleInfo.label : 'Caregiver';
+            var lines = ['Interaction Analysis Report — ' + new Date().toLocaleDateString(), 'Student: ' + (studentName || 'N/A'), 'Role: ' + roleName, ''];
+            if (iaResults.child_summary) lines.push('Child Summary: ' + iaResults.child_summary);
+            if (iaResults.adult_summary) lines.push(roleName + ' Summary: ' + iaResults.adult_summary);
+            if (iaResults.schedule_adherence) lines.push('Schedule Adherence: ' + iaResults.schedule_adherence.percentage + '% — ' + iaResults.schedule_adherence.details);
+            if (iaResults.overall_quality) lines.push('Overall Quality: ' + iaResults.overall_quality);
+            if (iaResults.clinical_observations && iaResults.clinical_observations.length > 0) {
+                lines.push('');
+                lines.push('=== CLINICAL OBSERVATIONS ===');
+                iaResults.clinical_observations.forEach(function(obs) {
+                    lines.push('[' + obs.severity.toUpperCase() + '] ' + obs.type.replace(/_/g, ' ') + ' at ' + obs.timestamp + ': ' + obs.description);
+                    if (obs.recommendation) lines.push('   → Recommendation: ' + obs.recommendation);
+                });
+            }
+            if (iaResults.coaching_tips && iaResults.coaching_tips.length > 0) {
+                lines.push('');
+                lines.push('=== COACHING TIPS ===');
+                iaResults.coaching_tips.forEach(function(tip, i) { lines.push((i + 1) + '. ' + tip); });
+            }
+            if (iaResults.strengths && iaResults.strengths.length > 0) {
+                lines.push('');
+                lines.push('=== STRENGTHS ===');
+                iaResults.strengths.forEach(function(s) { lines.push('✓ ' + s); });
+            }
+            lines.push('');
+            lines.push('WARNING: AI analysis is supplementary. Clinical decisions require professional judgment.');
+            navigator.clipboard.writeText(lines.join('\n')).then(function() {
+                if (addToast) addToast('Interaction report copied to clipboard', 'success');
+            });
+        }
+
         // ── RENDER ──
         return h('div', { className: 'max-w-4xl mx-auto space-y-4' },
             // Mode selector
             h('div', { className: 'flex gap-2 p-1 bg-slate-100 rounded-xl' },
                 h('button', { onClick: function() { setIoaMode('traditional'); }, className: 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ' + (ioaMode === 'traditional' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700') }, '📊 Traditional IOA'),
-                h('button', { onClick: function() { setIoaMode('ai'); }, className: 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ' + (ioaMode === 'ai' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700') }, '🧠 AI-Assisted IOA')
+                h('button', { onClick: function() { setIoaMode('ai'); }, className: 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ' + (ioaMode === 'ai' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700') }, '🧠 AI-Assisted IOA'),
+                h('button', { onClick: function() { setIoaMode('interaction'); }, className: 'flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ' + (ioaMode === 'interaction' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700') }, '🎥 Interaction Analysis')
             ),
 
             // Traditional Mode
@@ -17797,7 +17938,206 @@ Keep it under 150 words.`);
             ),
 
             // Export
-            (ioaResults || ioaComparison) && h('button', { onClick: ioaExportRpt, className: 'w-full py-2.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all' }, '📋 Export IOA Report')
+            (ioaResults || ioaComparison) && ioaMode !== 'interaction' && h('button', { onClick: ioaExportRpt, className: 'w-full py-2.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all' }, '📋 Export IOA Report'),
+
+            // ── Interaction Analysis Mode ──
+            ioaMode === 'interaction' && h('div', { className: 'space-y-4' },
+                // Intro Banner
+                h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-4 flex gap-3' },
+                    h('div', { className: 'text-2xl' }, '🎥'),
+                    h('div', null,
+                        h('div', { className: 'text-xs font-black text-emerald-700 uppercase' }, 'AI-Powered Interaction Analysis'),
+                        h('div', { className: 'text-[11px] text-emerald-600 mt-1' }, 'Upload a video of a caregiver-child interaction. The AI will analyze both the child\'s behavior and the adult\'s responses — including reinforcement timing, prompt usage, and clinical patterns like ratio strain or extinction bursts.'),
+                        h('div', { className: 'text-[10px] text-emerald-500 mt-1 italic' }, 'Video/audio is processed by Gemini API and is NOT stored. Ensure appropriate consent.')
+                    )
+                ),
+                // Role Selector
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                    h('div', { className: 'flex items-center gap-2 mb-3' },
+                        h('div', { className: 'w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-black' }, '1'),
+                        h('h3', { className: 'text-sm font-black text-slate-800' }, 'Observer Role')
+                    ),
+                    h('div', { className: 'grid grid-cols-3 gap-2' },
+                        IA_ROLES.map(function(r) {
+                            return h('button', { key: r.id, onClick: function() { setIaRole(r.id); }, className: 'p-3 rounded-xl border-2 text-center transition-all ' + (iaRole === r.id ? 'border-emerald-500 bg-emerald-50 shadow-sm' : 'border-transparent bg-slate-50 hover:bg-slate-100') },
+                                h('div', { className: 'text-xl mb-1' }, r.icon),
+                                h('div', { className: 'text-xs font-bold text-slate-800' }, r.label),
+                                h('div', { className: 'text-[9px] text-slate-500 mt-0.5' }, r.desc)
+                            );
+                        })
+                    ),
+                    // Adult description
+                    h('div', { className: 'mt-3 pt-3 border-t border-slate-100' },
+                        h('div', { className: 'flex items-center gap-2 mb-1' },
+                            h('span', { className: 'text-xs' }, '👤'),
+                            h('span', { className: 'text-[10px] font-bold text-slate-600' }, 'Identify the ' + (IA_ROLES.find(function(r) { return r.id === iaRole; }) || {}).label + ' in the recording')
+                        ),
+                        h('input', { value: iaAdultDesc, onChange: function(e) { setIaAdultDesc(e.target.value); }, 'aria-label': 'Adult description', placeholder: 'e.g., Woman in red sweater standing near whiteboard', className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-400 outline-none' })
+                    )
+                ),
+                // Target Behaviors + Subject ID
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                    h('div', { className: 'flex items-center gap-2 mb-2' },
+                        h('div', { className: 'w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-black' }, '2'),
+                        h('h3', { className: 'text-sm font-black text-slate-800' }, 'Target Behavior & Child Identification')
+                    ),
+                    h('textarea', { value: targetBehaviors, onChange: function(e) { setTargetBehaviors(e.target.value); }, 'aria-label': 'Target behaviors', placeholder: 'Describe the child\'s target behavior(s) operationally, e.g.:\n- Tantrum: crying, screaming, or falling to floor lasting >5 seconds\n- Non-compliance: failure to initiate task within 10 seconds of instruction', rows: 3, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-400 outline-none resize-none' }),
+                    subjectDescription !== undefined && h('div', { className: 'mt-3 pt-3 border-t border-slate-100' },
+                        h('div', { className: 'flex items-center gap-2 mb-1' },
+                            h('span', { className: 'text-xs' }, '🧒'),
+                            h('span', { className: 'text-[10px] font-bold text-slate-600' }, 'Identify the child in the recording')
+                        ),
+                        h('input', { value: subjectDescription, onChange: function(e) { setSubjectDescription(e.target.value); }, 'aria-label': 'Child description', placeholder: 'e.g., Boy in green shirt seated at small table', className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-400 outline-none' })
+                    )
+                ),
+                // Reinforcement Schedule (Optional)
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                    h('div', { className: 'flex items-center gap-2 mb-2' },
+                        h('div', { className: 'w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-black' }, '3'),
+                        h('h3', { className: 'text-sm font-black text-slate-800' }, 'Reinforcement Schedule'),
+                        h('span', { className: 'text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full' }, 'OPTIONAL')
+                    ),
+                    h('p', { className: 'text-[10px] text-slate-500 mb-2' }, 'If the child is on a specific reinforcement schedule, enter it here so the AI can evaluate adherence.'),
+                    h('input', { value: iaReinfSchedule, onChange: function(e) { setIaReinfSchedule(e.target.value); }, 'aria-label': 'Reinforcement schedule', placeholder: 'e.g., FR3 (fixed-ratio 3), VR5, DRO 2min, FI 30s, token economy every 5 correct', className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-400 outline-none font-mono' }),
+                    h('div', { className: 'flex flex-wrap gap-1 mt-2' },
+                        ['FR3', 'VR5', 'FI 30s', 'VI 2min', 'DRO 2min', 'DRA', 'DRI', 'Token economy'].map(function(ex) {
+                            return h('button', { key: ex, onClick: function() { setIaReinfSchedule(ex); }, className: 'px-2 py-1 rounded-lg text-[9px] font-bold transition-all ' + (iaReinfSchedule === ex ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200') }, ex);
+                        })
+                    )
+                ),
+                // Media Upload
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                    h('div', { className: 'flex items-center gap-2 mb-2' },
+                        h('div', { className: 'w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-black' }, '4'),
+                        h('h3', { className: 'text-sm font-black text-slate-800' }, 'Upload Interaction Video/Audio')
+                    ),
+                    h('input', { ref: iaFileRef, type: 'file', accept: 'video/*,audio/*', onChange: handleIaMediaUpload, className: 'hidden' }),
+                    !mediaFile
+                        ? h('button', { onClick: function() { iaFileRef.current && iaFileRef.current.click(); }, className: 'w-full py-8 border-2 border-dashed border-emerald-300 rounded-xl bg-emerald-50/50 hover:bg-emerald-50 transition-all text-center' },
+                            h('div', { className: 'text-3xl mb-2' }, '📁'),
+                            h('div', { className: 'text-sm font-bold text-emerald-600' }, 'Click to upload interaction recording'),
+                            h('div', { className: 'text-[10px] text-emerald-400 mt-1' }, 'Supports .mp4, .webm, .wav, .mp3')
+                        )
+                        : h('div', { className: 'flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200' },
+                            h('div', { className: 'text-2xl' }, mediaType === 'video' ? '🎬' : '🎙️'),
+                            h('div', { className: 'flex-1' },
+                                h('div', { className: 'text-xs font-bold text-emerald-700' }, mediaFile.name),
+                                h('div', { className: 'text-[10px] text-emerald-500' }, (mediaFile.size / 1024 / 1024).toFixed(1) + ' MB')
+                            ),
+                            h('button', { onClick: function() { setMediaFile(null); setMediaUrl(null); setIaResults(null); }, className: 'text-xs text-red-500 hover:text-red-700 font-bold' }, '✕')
+                        ),
+                    mediaUrl && mediaType === 'video' && h('video', { src: mediaUrl, controls: true, className: 'w-full rounded-xl mt-3 max-h-48' }),
+                    mediaUrl && mediaType === 'audio' && h('audio', { src: mediaUrl, controls: true, className: 'w-full mt-3' })
+                ),
+                // Process Button
+                h('button', { onClick: processInteractionAnalysis, disabled: !mediaFile || !targetBehaviors.trim() || iaProcessing, className: 'w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all text-base' }, iaProcessing ? '🎥 Analyzing interaction...' : '🎥 Analyze Interaction'),
+
+                // ── RESULTS ──
+                iaResults && h('div', { className: 'space-y-4' },
+                    // Overview Cards
+                    h('div', { className: 'grid grid-cols-3 gap-3' },
+                        h('div', { className: 'bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-4 text-center' },
+                            h('div', { className: 'text-2xl font-black text-blue-700' }, iaResults.overall_quality ? iaResults.overall_quality.charAt(0).toUpperCase() + iaResults.overall_quality.slice(1) : '—'),
+                            h('div', { className: 'text-[9px] text-blue-500 font-bold uppercase mt-1' }, 'Overall Quality')
+                        ),
+                        iaResults.schedule_adherence && h('div', { className: 'bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-4 text-center' },
+                            h('div', { className: 'text-2xl font-black ' + (iaResults.schedule_adherence.percentage >= 80 ? 'text-emerald-600' : iaResults.schedule_adherence.percentage >= 60 ? 'text-amber-600' : 'text-red-600') }, iaResults.schedule_adherence.percentage + '%'),
+                            h('div', { className: 'text-[9px] text-emerald-500 font-bold uppercase mt-1' }, 'Schedule Adherence')
+                        ),
+                        h('div', { className: 'bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl border border-violet-200 p-4 text-center' },
+                            h('div', { className: 'text-2xl font-black text-violet-700' }, (iaResults.intervals || []).length),
+                            h('div', { className: 'text-[9px] text-violet-500 font-bold uppercase mt-1' }, 'Intervals Analyzed')
+                        )
+                    ),
+                    // Summaries
+                    h('div', { className: 'grid grid-cols-2 gap-3' },
+                        iaResults.child_summary && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                            h('div', { className: 'text-xs font-black text-slate-700 mb-2' }, '🧒 Child Behavioral Summary'),
+                            h('div', { className: 'text-[11px] text-slate-600 leading-relaxed' }, iaResults.child_summary)
+                        ),
+                        iaResults.adult_summary && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                            h('div', { className: 'text-xs font-black text-slate-700 mb-2' }, (iaRole === 'parent' ? '👨‍👩‍👧' : iaRole === 'teacher' ? '👩‍🏫' : '🧑‍💼') + ' ' + (IA_ROLES.find(function(r) { return r.id === iaRole; }) || {}).label + ' Summary'),
+                            h('div', { className: 'text-[11px] text-slate-600 leading-relaxed' }, iaResults.adult_summary)
+                        )
+                    ),
+                    // Clinical Observations
+                    iaResults.clinical_observations && iaResults.clinical_observations.length > 0 && h('div', { className: 'bg-gradient-to-br from-amber-50 via-white to-red-50 rounded-xl border-2 border-amber-300 p-5 shadow-sm space-y-3' },
+                        h('h3', { className: 'text-sm font-black text-amber-800' }, '⚠️ Clinical Observations'),
+                        iaResults.clinical_observations.map(function(obs, i) {
+                            var sevColor = obs.severity === 'significant' ? 'border-red-300 bg-red-50' : obs.severity === 'moderate' ? 'border-amber-300 bg-amber-50' : 'border-yellow-200 bg-yellow-50';
+                            var sevText = obs.severity === 'significant' ? 'text-red-700' : obs.severity === 'moderate' ? 'text-amber-700' : 'text-yellow-700';
+                            return h('div', { key: i, className: 'rounded-xl border-2 p-3 ' + sevColor },
+                                h('div', { className: 'flex items-center gap-2 mb-1' },
+                                    h('span', { className: 'px-2 py-0.5 rounded-full text-[9px] font-black uppercase ' + sevText + ' bg-white/80' }, obs.severity),
+                                    h('span', { className: 'text-xs font-bold text-slate-700' }, obs.type.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); })),
+                                    obs.timestamp && h('span', { className: 'text-[10px] text-slate-400 font-mono' }, '@ ' + obs.timestamp)
+                                ),
+                                h('div', { className: 'text-[11px] text-slate-600 mt-1' }, obs.description),
+                                obs.recommendation && h('div', { className: 'text-[10px] text-emerald-700 mt-2 flex items-start gap-1' },
+                                    h('span', { className: 'font-bold' }, '→'),
+                                    h('span', null, obs.recommendation)
+                                )
+                            );
+                        })
+                    ),
+                    // Strengths
+                    iaResults.strengths && iaResults.strengths.length > 0 && h('div', { className: 'bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-4 shadow-sm' },
+                        h('h3', { className: 'text-xs font-black text-emerald-800 mb-2' }, '✨ Strengths Observed'),
+                        h('div', { className: 'space-y-1' },
+                            iaResults.strengths.map(function(s, i) {
+                                return h('div', { key: i, className: 'flex items-start gap-2 text-[11px] text-emerald-700' },
+                                    h('span', { className: 'text-emerald-500 font-bold mt-0.5' }, '✓'),
+                                    h('span', null, s)
+                                );
+                            })
+                        )
+                    ),
+                    // Coaching Tips
+                    iaResults.coaching_tips && iaResults.coaching_tips.length > 0 && h('div', { className: 'bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl border border-sky-200 p-4 shadow-sm' },
+                        h('h3', { className: 'text-xs font-black text-sky-800 mb-2' }, '💡 Coaching Recommendations'),
+                        h('div', { className: 'space-y-2' },
+                            iaResults.coaching_tips.map(function(tip, i) {
+                                return h('div', { key: i, className: 'flex items-start gap-2 p-2 bg-white rounded-lg border border-sky-100 text-[11px]' },
+                                    h('div', { className: 'w-5 h-5 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center text-[9px] font-black flex-shrink-0 mt-0.5' }, i + 1),
+                                    h('span', { className: 'text-slate-700' }, tip)
+                                );
+                            })
+                        )
+                    ),
+                    // Interval Timeline
+                    (iaResults.intervals || []).length > 0 && h('details', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                        h('summary', { className: 'text-xs font-bold text-slate-700 cursor-pointer' }, '📊 Interval-by-Interval Timeline (' + iaResults.intervals.length + ' intervals)'),
+                        h('div', { className: 'mt-3 space-y-2' },
+                            iaResults.intervals.map(function(iv, idx) {
+                                return h('div', { key: idx, className: 'p-3 rounded-xl border border-slate-200 bg-slate-50 space-y-1' },
+                                    h('div', { className: 'flex items-center gap-2 text-[10px]' },
+                                        h('span', { className: 'font-mono font-bold text-slate-500' }, ioaFmtTime(iv.start_sec) + '–' + ioaFmtTime(iv.end_sec)),
+                                        iv.child_engagement && h('span', { className: 'px-1.5 py-0.5 rounded-full text-[8px] font-bold ' + (iv.child_engagement === 'high' ? 'bg-emerald-100 text-emerald-700' : iv.child_engagement === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700') }, iv.child_engagement.toUpperCase()),
+                                        iv.reinforcement_delivered && h('span', { className: 'px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[8px] font-bold' }, 'SR+')
+                                    ),
+                                    h('div', { className: 'grid grid-cols-2 gap-2 text-[10px]' },
+                                        h('div', null,
+                                            h('span', { className: 'font-bold text-blue-700' }, '🧒 Child: '),
+                                            h('span', { className: 'text-slate-600' }, iv.child_behavior || '—')
+                                        ),
+                                        h('div', null,
+                                            h('span', { className: 'font-bold text-purple-700' }, '👤 Adult: '),
+                                            h('span', { className: 'text-slate-600' }, iv.adult_response || '—')
+                                        )
+                                    ),
+                                    (iv.prompt_level || iv.response_latency_sec) && h('div', { className: 'flex gap-3 text-[9px] text-slate-400' },
+                                        iv.prompt_level && h('span', null, 'Prompt: ' + iv.prompt_level),
+                                        iv.response_latency_sec !== undefined && h('span', null, 'Latency: ' + iv.response_latency_sec + 's'),
+                                        iv.schedule_adherent !== undefined && h('span', { className: iv.schedule_adherent ? 'text-emerald-500' : 'text-red-500' }, iv.schedule_adherent ? '✓ On schedule' : '✗ Off schedule')
+                                    )
+                                );
+                            })
+                        )
+                    ),
+                    // Export
+                    h('button', { onClick: iaExportReport, className: 'w-full py-2.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all' }, '📋 Export Interaction Report')
+                )
+            )
         );
     }
 
