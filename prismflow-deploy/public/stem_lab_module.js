@@ -14835,7 +14835,7 @@
         })(),
 
 
-        (function _circuitTool() { var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_isCircuit) { React.useEffect(function(){}, []); return null; }
+        (function _circuitTool() { var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_isCircuit) { React.useEffect(function(){}, [0, 0, 0]); return null; }
           const d = labToolData.circuit;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, circuit: { ...prev.circuit, [key]: val } }));
           const mode = d.mode || 'series';
@@ -17655,19 +17655,25 @@
                         fsToggle.onmouseout = function() { this.style.background = 'rgba(0,0,0,0.6)'; };
                         fsToggle.onclick = function() {
                           var container = document.getElementById('drone-fullscreen-container') || canvasEl.parentElement;
-                          if (!document.fullscreenElement) {
-                            if (container.requestFullscreen) { container.requestFullscreen(); }
-                            else if (container.mozRequestFullScreen) { container.mozRequestFullScreen(); }
-                            else if (container.webkitRequestFullscreen) { container.webkitRequestFullscreen(); }
-                            else if (container.msRequestFullscreen) { container.msRequestFullscreen(); }
-                            fsToggle.innerHTML = '\xDF'; // shrink icon approximation
-                          } else {
-                            if (document.exitFullscreen) { document.exitFullscreen(); }
-                            else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
-                            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
-                            else if (document.msExitFullscreen) { document.msExitFullscreen(); }
-                            fsToggle.innerHTML = '\u26F6'; // expand icon
-                          }
+                          try {
+                            if (!document.fullscreenElement) {
+                              var p = null;
+                              if (container.requestFullscreen) { p = container.requestFullscreen(); }
+                              else if (container.mozRequestFullScreen) { p = container.mozRequestFullScreen(); }
+                              else if (container.webkitRequestFullscreen) { p = container.webkitRequestFullscreen(); }
+                              else if (container.msRequestFullscreen) { p = container.msRequestFullscreen(); }
+                              if (p && p.catch) { p.catch(function(e) { console.warn('[SolarDrone] Fullscreen denied:', e.message); }); }
+                              fsToggle.innerHTML = '\xDF'; // shrink icon approximation
+                            } else {
+                              var q = null;
+                              if (document.exitFullscreen) { q = document.exitFullscreen(); }
+                              else if (document.mozCancelFullScreen) { q = document.mozCancelFullScreen(); }
+                              else if (document.webkitExitFullscreen) { q = document.webkitExitFullscreen(); }
+                              else if (document.msExitFullscreen) { q = document.msExitFullscreen(); }
+                              if (q && q.catch) { q.catch(function(e) { console.warn('[SolarDrone] Exit fullscreen denied:', e.message); }); }
+                              fsToggle.innerHTML = '\u26F6'; // expand icon
+                            }
+                          } catch (e) { console.warn('[SolarDrone] Fullscreen not supported:', e.message); }
                         };
                         canvasEl.parentElement.appendChild(fsToggle);
 
@@ -18446,6 +18452,7 @@
           var cosmicAge = d.cosmicAge !== undefined ? d.cosmicAge : 10;
           var showLifecycle = d.showLifecycle || false;
           var lifecycleMass = d.lifecycleMass !== undefined ? d.lifecycleMass : 1;
+          var activeStage = d.activeStage || 'main_sequence';
           var showSNAnim = d.showSNAnim || false;
           var galaxyType = d.galaxyType || 'barredSpiral';
           var simMode = d.simMode || 'galaxy';
@@ -19021,7 +19028,7 @@
             { key: 'dust', icon: '\uD83C\uDF2B\uFE0F', label: 'Dust Lanes' }
           ];
 
-          return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
+          return React.createElement("div", { className: (simMode === 'star' ? 'max-w-7xl' : 'max-w-4xl') + " mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
             renderTutorial('galaxy', _tutGalaxy),
             // ── Header ──
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
@@ -19298,7 +19305,7 @@
               React.createElement("div", { style: { flex: "1 1 58%", position: "sticky", top: "16px", display: "flex", flexDirection: "column", gap: "16px", order: 2 } },
 
               // ── Animated Star Canvas ──
-              React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210] shadow-2xl shadow-indigo-500/10", style: { height: '450px', minHeight: '450px' } },
+              React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210] shadow-2xl shadow-indigo-500/10", style: { height: 'calc(85vh - 40px)', minHeight: '400px' } },
                 React.createElement("canvas", {
                   "data-star-life-canvas": "true",
                   ref: function (cvEl) {
@@ -19311,26 +19318,22 @@
                     function drawStar() {
                       tick++;
                       ctx.clearRect(0, 0, W, H);
-                      // Starfield background
                       ctx.fillStyle = '#020210';
                       ctx.fillRect(0, 0, W, H);
-                      for (var si = 0; si < 80; si++) {
+                      for (var si = 0; si < 120; si++) {
                         var sx = ((si * 137 + 29) % W);
                         var sy = ((si * 211 + 17) % H);
-                        var sb = 0.2 + 0.3 * Math.sin(tick * 0.02 + si);
+                        var sb = 0.15 + 0.35 * Math.sin(tick * 0.015 + si * 1.7);
                         ctx.globalAlpha = sb;
-                        ctx.fillStyle = '#fff';
-                        ctx.fillRect(sx, sy, 1, 1);
+                        ctx.fillStyle = si % 7 === 0 ? '#aaccff' : si % 11 === 0 ? '#ffddaa' : '#fff';
+                        var ssz = si % 13 === 0 ? 2 : 1;
+                        ctx.fillRect(sx, sy, ssz, ssz);
                       }
                       ctx.globalAlpha = 1;
-
                       var mass = lifecycleMass;
+                      var stage = activeStage;
                       var cx = W * 0.5, cy = H * 0.5;
-                      var baseR = Math.max(12, Math.min(60, Math.pow(mass, 0.6) * 15));
-                      var pulse = 1 + 0.03 * Math.sin(tick * 0.04);
-                      var r = baseR * pulse;
-
-                      // Determine star color based on mass
+                      var baseR = Math.max(18, Math.min(W * 0.18, Math.pow(mass, 0.6) * (W * 0.04)));
                       var coreColor, glowColor, coronaColor;
                       if (mass < 0.5) { coreColor = '#ffaa44'; glowColor = '#ff7722'; coronaColor = '#ff550033'; }
                       else if (mass < 0.8) { coreColor = '#ffcc6f'; glowColor = '#ff9944'; coronaColor = '#ff884422'; }
@@ -19339,50 +19342,194 @@
                       else if (mass < 2.1) { coreColor = '#e8eeff'; glowColor = '#cad7ff'; coronaColor = '#aabbff22'; }
                       else if (mass < 16) { coreColor = '#d0ddff'; glowColor = '#aabfff'; coronaColor = '#8899ff33'; }
                       else { coreColor = '#c0ccff'; glowColor = '#9bb0ff'; coronaColor = '#7788ff44'; }
-
-                      // Corona (outer glow)
-                      var corona = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 3.5);
-                      corona.addColorStop(0, coronaColor);
-                      corona.addColorStop(1, 'transparent');
-                      ctx.beginPath(); ctx.arc(cx, cy, r * 3.5, 0, Math.PI * 2);
-                      ctx.fillStyle = corona; ctx.fill();
-
-                      // Main glow
-                      var glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 1.8);
-                      glow.addColorStop(0, glowColor);
-                      glow.addColorStop(0.4, glowColor + '88');
-                      glow.addColorStop(1, 'transparent');
-                      ctx.beginPath(); ctx.arc(cx, cy, r * 1.8, 0, Math.PI * 2);
-                      ctx.fillStyle = glow; ctx.fill();
-
-                      // Star body
-                      var body = ctx.createRadialGradient(cx - r * 0.15, cy - r * 0.15, r * 0.1, cx, cy, r);
-                      body.addColorStop(0, '#ffffff');
-                      body.addColorStop(0.3, coreColor);
-                      body.addColorStop(1, glowColor);
-                      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                      ctx.fillStyle = body; ctx.fill();
-
-                      // Surface detail (subtle noise)
-                      for (var sp = 0; sp < 6; sp++) {
-                        var spAngle = (sp / 6) * Math.PI * 2 + tick * 0.005;
-                        var spR = r * 0.6;
-                        var spx = cx + Math.cos(spAngle) * spR;
-                        var spy = cy + Math.sin(spAngle) * spR;
-                        var spotG = ctx.createRadialGradient(spx, spy, 0, spx, spy, r * 0.3);
-                        spotG.addColorStop(0, 'rgba(255,255,255,0.08)');
-                        spotG.addColorStop(1, 'transparent');
-                        ctx.beginPath(); ctx.arc(spx, spy, r * 0.3, 0, Math.PI * 2);
-                        ctx.fillStyle = spotG; ctx.fill();
+                      var stageLabel = '';
+                      if (stage === 'nebula') {
+                        stageLabel = '\u2601\uFE0F Nebular Cloud';
+                        for (var nc = 0; nc < 18; nc++) {
+                          var na = (nc / 18) * Math.PI * 2 + tick * 0.003;
+                          var nd = 30 + nc * 12 + 15 * Math.sin(tick * 0.008 + nc * 2);
+                          var nx = cx + Math.cos(na) * nd; var ny = cy + Math.sin(na) * nd;
+                          var nr = 40 + 25 * Math.sin(tick * 0.01 + nc);
+                          var ng = ctx.createRadialGradient(nx, ny, 0, nx, ny, nr);
+                          var ncols = ['#a855f766', '#818cf844', '#6366f133', '#f472b622'];
+                          ng.addColorStop(0, ncols[nc % ncols.length]); ng.addColorStop(1, 'transparent');
+                          ctx.beginPath(); ctx.arc(nx, ny, nr, 0, Math.PI * 2); ctx.fillStyle = ng; ctx.fill();
+                        }
+                        for (var es = 0; es < 5; es++) {
+                          var ea = (es / 5) * Math.PI * 2 + 0.5; var ed = 20 + es * 18;
+                          var ex = cx + Math.cos(ea) * ed; var ey = cy + Math.sin(ea) * ed;
+                          var eg = ctx.createRadialGradient(ex, ey, 0, ex, ey, 4);
+                          eg.addColorStop(0, '#ffffffcc'); eg.addColorStop(1, 'transparent');
+                          ctx.beginPath(); ctx.arc(ex, ey, 4, 0, Math.PI * 2); ctx.fillStyle = eg; ctx.fill();
+                        }
+                      } else if (stage === 'protostar') {
+                        stageLabel = '\uD83D\uDFE0 Protostar';
+                        var pr = baseR * 0.5 * (1 + 0.06 * Math.sin(tick * 0.06));
+                        for (var pe = 0; pe < 10; pe++) {
+                          var pea2 = (pe / 10) * Math.PI * 2 + tick * 0.005;
+                          var ped = pr * 3 + pe * 8;
+                          var pex = cx + Math.cos(pea2) * ped * 0.8; var pey = cy + Math.sin(pea2) * ped * 0.5;
+                          var peg = ctx.createRadialGradient(pex, pey, 0, pex, pey, 25);
+                          peg.addColorStop(0, 'rgba(251,146,60,0.15)'); peg.addColorStop(1, 'transparent');
+                          ctx.beginPath(); ctx.arc(pex, pey, 25, 0, Math.PI * 2); ctx.fillStyle = peg; ctx.fill();
+                        }
+                        ctx.save(); ctx.translate(cx, cy); ctx.scale(1, 0.3);
+                        var diskG = ctx.createRadialGradient(0, 0, pr * 0.8, 0, 0, pr * 4);
+                        diskG.addColorStop(0, 'rgba(251,146,60,0.4)'); diskG.addColorStop(0.5, 'rgba(168,85,247,0.2)'); diskG.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(0, 0, pr * 4, 0, Math.PI * 2); ctx.fillStyle = diskG; ctx.fill(); ctx.restore();
+                        var pbg = ctx.createRadialGradient(cx, cy, 0, cx, cy, pr);
+                        pbg.addColorStop(0, '#ffffff'); pbg.addColorStop(0.4, '#ffcc6f'); pbg.addColorStop(1, '#fb923c');
+                        ctx.beginPath(); ctx.arc(cx, cy, pr, 0, Math.PI * 2); ctx.fillStyle = pbg; ctx.fill();
+                        var pgg = ctx.createRadialGradient(cx, cy, pr * 0.5, cx, cy, pr * 2);
+                        pgg.addColorStop(0, 'rgba(251,146,60,0.3)'); pgg.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, pr * 2, 0, Math.PI * 2); ctx.fillStyle = pgg; ctx.fill();
+                      } else if (stage === 'red_giant') {
+                        stageLabel = '\uD83D\uDD34 Red Giant';
+                        var rgR = baseR * 2.5 * (1 + 0.08 * Math.sin(tick * 0.03) + 0.03 * Math.sin(tick * 0.07));
+                        var rgCorona = ctx.createRadialGradient(cx, cy, rgR * 0.3, cx, cy, rgR * 3);
+                        rgCorona.addColorStop(0, 'rgba(239,68,68,0.25)'); rgCorona.addColorStop(0.5, 'rgba(239,68,68,0.08)'); rgCorona.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, rgR * 3, 0, Math.PI * 2); ctx.fillStyle = rgCorona; ctx.fill();
+                        var rgBody = ctx.createRadialGradient(cx - rgR * 0.1, cy - rgR * 0.1, rgR * 0.05, cx, cy, rgR);
+                        rgBody.addColorStop(0, '#fff8e0'); rgBody.addColorStop(0.2, '#ffaa44'); rgBody.addColorStop(0.6, '#ef4444'); rgBody.addColorStop(1, '#991b1b');
+                        ctx.beginPath(); ctx.arc(cx, cy, rgR, 0, Math.PI * 2); ctx.fillStyle = rgBody; ctx.fill();
+                        for (var rc = 0; rc < 12; rc++) {
+                          var rca = (rc / 12) * Math.PI * 2 + tick * 0.004;
+                          var rcr = rgR * (0.3 + 0.3 * Math.sin(tick * 0.01 + rc));
+                          var rcx2 = cx + Math.cos(rca) * rcr; var rcy2 = cy + Math.sin(rca) * rcr;
+                          var rcg = ctx.createRadialGradient(rcx2, rcy2, 0, rcx2, rcy2, rgR * 0.25);
+                          rcg.addColorStop(0, 'rgba(255,200,100,0.12)'); rcg.addColorStop(1, 'transparent');
+                          ctx.beginPath(); ctx.arc(rcx2, rcy2, rgR * 0.25, 0, Math.PI * 2); ctx.fillStyle = rcg; ctx.fill();
+                        }
+                      } else if (stage === 'planetary_nebula') {
+                        stageLabel = '\uD83D\uDFE3 Planetary Nebula';
+                        var pnR = baseR * 0.15; var ringR2 = baseR * 2 + 15 * Math.sin(tick * 0.015);
+                        for (var pr3 = 0; pr3 < 4; pr3++) {
+                          var rOff = pr3 * 15 + 5 * Math.sin(tick * 0.01 + pr3);
+                          ctx.beginPath(); ctx.arc(cx, cy, ringR2 + rOff, 0, Math.PI * 2);
+                          ctx.lineWidth = 12 - pr3 * 2;
+                          var ringCols = ['rgba(129,140,248,0.35)', 'rgba(168,85,247,0.25)', 'rgba(236,72,153,0.2)', 'rgba(99,102,241,0.15)'];
+                          ctx.strokeStyle = ringCols[pr3]; ctx.stroke();
+                          var prg2 = ctx.createRadialGradient(cx, cy, ringR2 + rOff - 10, cx, cy, ringR2 + rOff + 15);
+                          prg2.addColorStop(0, ringCols[pr3]); prg2.addColorStop(1, 'transparent');
+                          ctx.beginPath(); ctx.arc(cx, cy, ringR2 + rOff + 15, 0, Math.PI * 2); ctx.fillStyle = prg2; ctx.fill();
+                        }
+                        var wdg2 = ctx.createRadialGradient(cx, cy, 0, cx, cy, pnR);
+                        wdg2.addColorStop(0, '#ffffff'); wdg2.addColorStop(0.5, '#e2e8f0'); wdg2.addColorStop(1, '#94a3b8');
+                        ctx.beginPath(); ctx.arc(cx, cy, pnR, 0, Math.PI * 2); ctx.fillStyle = wdg2; ctx.fill();
+                        var wdglow2 = ctx.createRadialGradient(cx, cy, pnR * 0.5, cx, cy, pnR * 3);
+                        wdglow2.addColorStop(0, 'rgba(226,232,240,0.4)'); wdglow2.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, pnR * 3, 0, Math.PI * 2); ctx.fillStyle = wdglow2; ctx.fill();
+                      } else if (stage === 'white_dwarf') {
+                        stageLabel = '\u26AA White Dwarf';
+                        var wdr2 = baseR * 0.12 * (1 + 0.01 * Math.sin(tick * 0.02));
+                        var wdgl2 = ctx.createRadialGradient(cx, cy, wdr2, cx, cy, wdr2 * 8);
+                        wdgl2.addColorStop(0, 'rgba(226,232,240,0.2)'); wdgl2.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, wdr2 * 8, 0, Math.PI * 2); ctx.fillStyle = wdgl2; ctx.fill();
+                        var wdb2 = ctx.createRadialGradient(cx, cy, 0, cx, cy, wdr2);
+                        wdb2.addColorStop(0, '#ffffff'); wdb2.addColorStop(0.5, '#e2e8f0'); wdb2.addColorStop(1, '#94a3b8');
+                        ctx.beginPath(); ctx.arc(cx, cy, wdr2, 0, Math.PI * 2); ctx.fillStyle = wdb2; ctx.fill();
+                        ctx.font = '11px Inter, system-ui'; ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.textAlign = 'center';
+                        ctx.fillText('(Earth-sized)', cx, cy + wdr2 + 20);
+                      } else if (stage === 'supernova') {
+                        stageLabel = '\uD83D\uDCA5 Supernova!';
+                        var snPhase = (tick * 0.02) % (Math.PI * 2);
+                        var snScale = 0.5 + 1.5 * Math.abs(Math.sin(snPhase));
+                        for (var sw2 = 0; sw2 < 6; sw2++) {
+                          var swR2 = (baseR * 1.5 + sw2 * 25) * snScale + 10 * Math.sin(tick * 0.03 + sw2);
+                          ctx.beginPath(); ctx.arc(cx, cy, swR2, 0, Math.PI * 2);
+                          ctx.lineWidth = 3 - sw2 * 0.4;
+                          ctx.strokeStyle = 'rgba(251,191,36,' + Math.max(0.05, 0.4 - sw2 * 0.06) + ')'; ctx.stroke();
+                        }
+                        var snG = ctx.createRadialGradient(cx, cy, 0, cx, cy, baseR * 3 * snScale);
+                        snG.addColorStop(0, 'rgba(255,255,255,0.9)'); snG.addColorStop(0.15, 'rgba(251,191,36,0.6)');
+                        snG.addColorStop(0.4, 'rgba(239,68,68,0.3)'); snG.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, baseR * 3 * snScale, 0, Math.PI * 2); ctx.fillStyle = snG; ctx.fill();
+                        for (var ej2 = 0; ej2 < 12; ej2++) {
+                          var ejA2 = (ej2 / 12) * Math.PI * 2 + tick * 0.01;
+                          var ejLen2 = (baseR * 2 + 30) * snScale;
+                          ctx.beginPath(); ctx.moveTo(cx, cy);
+                          ctx.lineTo(cx + Math.cos(ejA2) * ejLen2, cy + Math.sin(ejA2) * ejLen2);
+                          ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(251,191,36,0.15)'; ctx.stroke();
+                        }
+                        var cfl = ctx.createRadialGradient(cx, cy, 0, cx, cy, baseR * 0.5);
+                        cfl.addColorStop(0, '#ffffff'); cfl.addColorStop(1, 'rgba(255,255,255,0)');
+                        ctx.beginPath(); ctx.arc(cx, cy, baseR * 0.5, 0, Math.PI * 2); ctx.fillStyle = cfl; ctx.fill();
+                      } else if (stage === 'neutron_star') {
+                        stageLabel = '\u2B50 Neutron Star (Pulsar)';
+                        var nsR2 = baseR * 0.08;
+                        var beamA2 = tick * 0.05;
+                        for (var bi2 = 0; bi2 < 2; bi2++) {
+                          var ba2 = beamA2 + bi2 * Math.PI;
+                          ctx.save(); ctx.translate(cx, cy); ctx.rotate(ba2);
+                          var beamG2 = ctx.createLinearGradient(0, 0, W * 0.4, 0);
+                          beamG2.addColorStop(0, 'rgba(56,189,248,0.5)'); beamG2.addColorStop(1, 'transparent');
+                          ctx.beginPath(); ctx.moveTo(0, -3); ctx.lineTo(W * 0.4, -15); ctx.lineTo(W * 0.4, 15); ctx.lineTo(0, 3); ctx.closePath();
+                          ctx.fillStyle = beamG2; ctx.fill(); ctx.restore();
+                        }
+                        ctx.beginPath(); ctx.arc(cx, cy, nsR2 * 12, 0, Math.PI * 2);
+                        ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(56,189,248,0.15)'; ctx.stroke();
+                        var nsb2 = ctx.createRadialGradient(cx, cy, 0, cx, cy, nsR2);
+                        nsb2.addColorStop(0, '#ffffff'); nsb2.addColorStop(0.5, '#38bdf8'); nsb2.addColorStop(1, '#0ea5e9');
+                        ctx.beginPath(); ctx.arc(cx, cy, nsR2, 0, Math.PI * 2); ctx.fillStyle = nsb2; ctx.fill();
+                        var nsg2 = ctx.createRadialGradient(cx, cy, nsR2, cx, cy, nsR2 * 6);
+                        nsg2.addColorStop(0, 'rgba(56,189,248,0.4)'); nsg2.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, nsR2 * 6, 0, Math.PI * 2); ctx.fillStyle = nsg2; ctx.fill();
+                      } else if (stage === 'black_hole') {
+                        stageLabel = '\uD83D\uDD73\uFE0F Black Hole';
+                        var bhR2 = baseR * 0.4;
+                        ctx.save(); ctx.translate(cx, cy); ctx.scale(1, 0.25);
+                        for (var ad2 = 0; ad2 < 5; ad2++) {
+                          var adR3 = bhR2 * (2.5 + ad2 * 0.8);
+                          ctx.beginPath(); ctx.arc(0, 0, adR3, 0, Math.PI * 2);
+                          ctx.lineWidth = 6 - ad2;
+                          var adCols2 = ['rgba(251,191,36,0.5)', 'rgba(249,115,22,0.4)', 'rgba(239,68,68,0.3)', 'rgba(168,85,247,0.2)', 'rgba(99,102,241,0.1)'];
+                          ctx.strokeStyle = adCols2[ad2]; ctx.stroke();
+                        }
+                        ctx.restore();
+                        ctx.beginPath(); ctx.arc(cx, cy, bhR2 * 1.3, 0, Math.PI * 2);
+                        ctx.lineWidth = 3;
+                        var lensG2 = ctx.createRadialGradient(cx, cy, bhR2, cx, cy, bhR2 * 1.5);
+                        lensG2.addColorStop(0, 'rgba(251,191,36,0.6)'); lensG2.addColorStop(1, 'transparent');
+                        ctx.strokeStyle = 'rgba(251,191,36,0.4)'; ctx.stroke(); ctx.fillStyle = lensG2; ctx.fill();
+                        ctx.beginPath(); ctx.arc(cx, cy, bhR2, 0, Math.PI * 2); ctx.fillStyle = '#000000'; ctx.fill();
+                        ctx.beginPath(); ctx.arc(cx, cy, bhR2, 0, Math.PI * 2);
+                        ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(251,191,36,0.3)'; ctx.stroke();
+                        for (var hr2 = 0; hr2 < 8; hr2++) {
+                          var hra2 = (hr2 / 8) * Math.PI * 2 + tick * 0.02;
+                          var hrd2 = bhR2 * 1.3 + 3 * Math.sin(tick * 0.05 + hr2);
+                          var hrx2 = cx + Math.cos(hra2) * hrd2; var hry2 = cy + Math.sin(hra2) * hrd2 * 0.25;
+                          ctx.globalAlpha = 0.3 + 0.3 * Math.sin(tick * 0.04 + hr2);
+                          ctx.fillStyle = '#fbbf24'; ctx.fillRect(hrx2, hry2, 1.5, 1.5);
+                        }
+                        ctx.globalAlpha = 1;
+                      } else {
+                        stageLabel = '\u2B50 Main Sequence';
+                        var msR = baseR * (1 + 0.03 * Math.sin(tick * 0.04));
+                        var msCorona = ctx.createRadialGradient(cx, cy, msR * 0.5, cx, cy, msR * 3.5);
+                        msCorona.addColorStop(0, coronaColor); msCorona.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, msR * 3.5, 0, Math.PI * 2); ctx.fillStyle = msCorona; ctx.fill();
+                        var msGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, msR * 1.8);
+                        msGlow.addColorStop(0, glowColor); msGlow.addColorStop(0.4, glowColor + '88'); msGlow.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, msR * 1.8, 0, Math.PI * 2); ctx.fillStyle = msGlow; ctx.fill();
+                        var msBody = ctx.createRadialGradient(cx - msR * 0.15, cy - msR * 0.15, msR * 0.1, cx, cy, msR);
+                        msBody.addColorStop(0, '#ffffff'); msBody.addColorStop(0.3, coreColor); msBody.addColorStop(1, glowColor);
+                        ctx.beginPath(); ctx.arc(cx, cy, msR, 0, Math.PI * 2); ctx.fillStyle = msBody; ctx.fill();
+                        for (var sp2 = 0; sp2 < 6; sp2++) {
+                          var spAngle2 = (sp2 / 6) * Math.PI * 2 + tick * 0.005;
+                          var spR3 = msR * 0.6;
+                          var spx2 = cx + Math.cos(spAngle2) * spR3; var spy2 = cy + Math.sin(spAngle2) * spR3;
+                          var spotG2 = ctx.createRadialGradient(spx2, spy2, 0, spx2, spy2, msR * 0.3);
+                          spotG2.addColorStop(0, 'rgba(255,255,255,0.08)'); spotG2.addColorStop(1, 'transparent');
+                          ctx.beginPath(); ctx.arc(spx2, spy2, msR * 0.3, 0, Math.PI * 2); ctx.fillStyle = spotG2; ctx.fill();
+                        }
                       }
-
-                      // Label
+                      ctx.textAlign = 'center';
+                      ctx.font = 'bold 13px Inter, system-ui, sans-serif';
+                      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                      ctx.fillText(stageLabel, cx, 24);
                       ctx.font = 'bold 10px Inter, system-ui, sans-serif';
                       ctx.fillStyle = 'rgba(255,255,255,0.5)';
-                      ctx.textAlign = 'center';
                       ctx.fillText(mass + ' Solar Masses', cx, H - 12);
-
-                      // Classification label
                       var cls = mass < 0.45 ? 'M-type Red Dwarf' : mass < 0.8 ? 'K-type Orange' : mass < 1.04 ? 'G-type (Sun-like)' : mass < 1.4 ? 'F-type Yellow-White' : mass < 2.1 ? 'A-type White' : mass < 16 ? 'B-type Blue-White' : 'O-type Blue Giant';
                       ctx.font = '9px Inter, system-ui, sans-serif';
                       ctx.fillStyle = 'rgba(255,255,255,0.35)';
@@ -19501,7 +19648,12 @@
                     if (s.maxMass && lifecycleMass > s.maxMass) return false;
                     return true;
                   })).map(function (s, idx) {
-                    return React.createElement("div", { key: s.name, className: "flex items-center gap-3 p-3 rounded-xl border ml-6 transition-all hover:scale-[1.01]", style: { borderColor: s.color + '55', background: s.color + '15' } },
+                    var endStageMap = {'Planetary Nebula': 'planetary_nebula', 'White Dwarf': 'white_dwarf', 'Supernova': 'supernova', 'Neutron Star': 'neutron_star', 'Black Hole': 'black_hole'};
+                    var endStageId = null;
+                    for (var ek in endStageMap) { if (s.name.indexOf(ek) >= 0 || s.name === ek) { endStageId = endStageMap[ek]; break; } }
+                    if (!endStageId) { var eidx2 = idx; endStageId = eidx2 === 0 ? (lifecycleMass < 8 ? 'planetary_nebula' : 'supernova') : eidx2 === 1 ? (lifecycleMass < 8 ? 'white_dwarf' : (lifecycleMass < 25 ? 'neutron_star' : 'black_hole')) : 'black_hole'; }
+                    var isEndActive = activeStage === endStageId;
+                    return React.createElement("div", { key: s.name, onClick: function() { upd('activeStage', endStageId); }, className: "flex items-center gap-3 p-3 rounded-xl border ml-6 transition-all cursor-pointer " + (isEndActive ? "scale-[1.03] ring-2 ring-offset-1 ring-amber-400 shadow-lg" : "hover:scale-[1.01]"), style: { borderColor: isEndActive ? s.color : s.color + '55', background: isEndActive ? s.color + '25' : s.color + '15' } },
                       React.createElement("div", { className: "w-10 h-10 rounded-xl flex items-center justify-center text-2xl flex-shrink-0", style: { background: s.color + '25' } }, s.emoji),
                       React.createElement("div", { className: "flex-1 min-w-0" },
                         React.createElement("p", { className: "text-xs font-bold", style: { color: s.color } }, s.name),
@@ -19532,7 +19684,7 @@
                       className: "text-center p-2 rounded-xl border-2 transition-all cursor-pointer hover:scale-105 " +
                         (isMatch ? "border-indigo-400 shadow-md shadow-indigo-100 scale-105" : "border-transparent hover:border-slate-200"),
                       style: isMatch ? { background: st.color + '20' } : {},
-                      onClick: function () { upd("selectedStar", st.id); upd("simMode", "galaxy"); upd("quizMode", false); }
+                      onClick: function () { var massMap = { O: 30, B: 8, A: 1.8, F: 1.2, G: 1, K: 0.7, M: 0.3 }; upd("lifecycleMass", massMap[st.id] || 1); }
                     },
                       React.createElement("div", { className: "text-2xl mb-1", style: { color: st.color } }, "\u2B50"),
                       React.createElement("p", { className: "text-xs font-black", style: { color: st.color } }, st.id),
@@ -24709,22 +24861,22 @@
         // ═══════════════════════════════════════════════════════
 
         (function _musicSynth() { var _isMusicSynth = stemLabTab === 'explore' && stemLabTool === 'musicSynth'; if (!_isMusicSynth) {
-            // Placeholder hooks — must match exact active-path sequence (verified L19411–19953)
-            React.useEffect(function(){}, []);  // 1 – waveform draw loop
-            React.useEffect(function(){}, []);  // 2 – sequencer playback
-            React.useRef(null);                 // 3 – beat-painter FX ref
-            React.useEffect(function(){}, []);  // 4 – beat-painter cleanup
-            React.useEffect(function(){}, []);  // 5 – chord helper
-            React.useRef(null);                 // 6 – recording ref
-            React.useRef(null);                 // 7 – recording chunks ref
-            React.useRef(null);                 // 8 – recording stream ref
-            React.useEffect(function(){}, []);  // 9 – recording toggle
-            React.useRef(null);                 // 10 – sequencer step ref
-            React.useRef(null);                 // 11 – metronome ref
-            React.useEffect(function(){}, []);  // 12 – metronome tick
-            React.useEffect(function(){}, []);  // 13 – metronome cleanup
-            React.useEffect(function(){}, []);  // 14 – arpeggiator
-            React.useEffect(function(){}, []);  // 15 – particle cleanup
+            // Placeholder hooks — must match exact active-path sequence and dep array sizes
+            React.useEffect(function(){}, [0, 0, 0, 0]);  // 1 – keyboard/chord handler [synthTab, omniChordRoot, omniChordType, omniVoice]
+            React.useEffect(function(){}, [0]);            // 2 – MIDI access [omniVoice]
+            React.useRef(null);                            // 3 – beat-painter FX ref
+            React.useEffect(function(){}, [0, 0, 0]);     // 4 – beat-painter FX update [bpReverb, bpDelay, bpFilterCut]
+            React.useEffect(function(){}, []);             // 5 – hash beat loader (mount-only)
+            React.useRef(null);                            // 6 – beat-painter canvas ref
+            React.useRef(null);                            // 7 – beat-painter anim ref
+            React.useRef(null);                            // 8 – beat-painter analyser ref
+            React.useEffect(function(){}, [0, 0]);         // 9 – beat-painter vis [seqPlaying, synthTab]
+            React.useRef(null);                            // 10 – sequencer timer ref
+            React.useRef(null);                            // 11 – sequencer step ref
+            React.useEffect(function(){}, []);             // 12 – sequencer cleanup (mount-only)
+            React.useEffect(function(){}, [0]);            // 13 – BPM restart [seqBPM]
+            React.useEffect(function(){}, [0]);            // 14 – sample kit loader [synthTab]
+            React.useEffect(function(){}, [0, 0]);         // 15 – drum pad keyboard [synthTab, activeKit]
             return null;
           }
           const d = labToolData.musicSynth;
@@ -30944,6 +31096,7 @@
               ctx.font = '11px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)';
               ctx.fillText(spec.icon + ' ' + spec.name + (d.viewAngle === 'dorsal' ? '  ' + t('stem.dissection.dorsal_view') : '  ' + t('stem.dissection.ventral_view')), 14, 20);
               // System color legend (top-right)
+              var sysColors = { circulatory: '#ef4444', digestive: '#f59e0b', respiratory: '#3b82f6', nervous: '#8b5cf6', skeletal: '#94a3b8', muscular: '#dc2626', excretory: '#84cc16', reproductive: '#ec4899' };
               var legendSys = ['circulatory', 'digestive', 'respiratory', 'nervous', 'skeletal', 'muscular', 'excretory', 'reproductive'];
               var legendLabels = [t('stem.dissection.legend_circ'), t('stem.dissection.legend_dig'), t('stem.dissection.legend_resp'), t('stem.dissection.legend_nerv'), t('stem.dissection.legend_skel'), t('stem.dissection.legend_musc'), t('stem.dissection.legend_excr'), t('stem.dissection.legend_repr')];
               ctx.font = '7px Inter, system-ui';
@@ -33908,6 +34061,10 @@
               React.createElement("canvas", { id: 'spinCanvas', key: 'spin-' + (d.spinReset || 0), width: 512, height: 512, className: "rounded-full border-4 border-orange-300 shadow-lg cursor-crosshair mx-auto block mt-3", style: { maxWidth: '100%', background: d.spinDark ? '#0f172a' : '#fefefe' },
                 ref: function (canvas) {
                   if (!canvas) return;
+                  // Always sync current color to canvas data attributes (runs on every render)
+                  canvas.dataset.hue = d.hue || 0;
+                  canvas.dataset.sat = d.sat || 100;
+                  canvas.dataset.lit = d.lit || 50;
                   if (canvas._spinInit) return;
                   canvas._spinInit = true;
                   var ctx = canvas.getContext('2d');
@@ -33937,11 +34094,14 @@
                   canvas.onmouseup = canvas.ontouchend = function () { mouseDown = false; };
                   canvas.onmouseleave = function () { mouseDown = false; };
                   function spawnDrip(x, y) {
+                    var curHue = parseFloat(canvas.dataset.hue) || 0;
+                    var curSat = parseFloat(canvas.dataset.sat) || 100;
+                    var curLit = parseFloat(canvas.dataset.lit) || 50;
                     var count = splatter ? 5 + Math.floor(Math.random() * 8) : 1;
                     for (var i = 0; i < count; i++) {
                       var ox = splatter ? (Math.random() - 0.5) * 30 : 0;
                       var oy = splatter ? (Math.random() - 0.5) * 30 : 0;
-                      drips.push({ x: x + ox, y: y + oy, vx: 0, vy: 0, life: 200 + Math.random() * 150, size: splatter ? 1 + Math.random() * brushSize : brushSize * 0.6, hue: baseHue + (splatter ? Math.random() * 30 - 15 : 0) });
+                      drips.push({ x: x + ox, y: y + oy, vx: 0, vy: 0, life: 200 + Math.random() * 150, size: splatter ? 1 + Math.random() * brushSize : brushSize * 0.6, hue: curHue + (splatter ? Math.random() * 30 - 15 : 0), sat: curSat, lit: curLit });
                     }
                   }
                   function animate() {
@@ -33969,7 +34129,7 @@
                       ctx.globalAlpha = alpha * 0.85;
                       ctx.beginPath();
                       ctx.arc(dr.x, dr.y, dr.size, 0, Math.PI * 2);
-                      ctx.fillStyle = 'hsl(' + Math.round(dr.hue) + ',' + baseSat + '%,' + baseLit + '%)';
+                      ctx.fillStyle = 'hsl(' + Math.round(dr.hue) + ',' + (dr.sat || baseSat) + '%,' + (dr.lit || baseLit) + '%)';
                       ctx.fill();
                       if (dist > W * 0.48) { drips.splice(i, 1); }
                     }
@@ -50598,7 +50758,17 @@
         // ════════════════════════════════════════════════════════════════════
         (function _cyberDefenseLab() {
           var _isCyber = stemLabTab === 'explore' && stemLabTool === 'cyberDefense';
-          if (!_isCyber) { return null; }
+          if (!_isCyber) {
+            // 23 useState placeholders
+            React.useState(0); React.useState(0); React.useState(0); React.useState(0); React.useState(0);
+            React.useState(0); React.useState(0); React.useState(0); React.useState(0); React.useState(0);
+            React.useState(0); React.useState(0); React.useState(0); React.useState(0); React.useState(0);
+            React.useState(0); React.useState(0); React.useState(0); React.useState(0); React.useState(0);
+            React.useState(0); React.useState(0); React.useState(0);
+            // 1 useEffect placeholder
+            React.useEffect(function(){}, [0]);
+            return null;
+          }
 
           // ── State ──
           var _s = React.useState('phish');     var cyberTab = _s[0];     var setCyberTab = _s[1];

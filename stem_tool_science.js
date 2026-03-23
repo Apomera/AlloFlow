@@ -16027,7 +16027,7 @@ var d = labToolData.galaxy || {};
 
 
 
-          return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
+          return React.createElement("div", { className: (simMode === 'star' ? 'max-w-7xl' : 'max-w-4xl') + " mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
 
             renderTutorial('galaxy', _tutGalaxy),
 
@@ -17233,7 +17233,7 @@ var d = labToolData.galaxy || {};
 
                       style: isMatch ? { background: st.color + '20' } : {},
 
-                      onClick: function () { upd("selectedStar", st.id); upd("simMode", "galaxy"); upd("quizMode", false); }
+                      onClick: function () { var massMap = { O: 30, B: 8, A: 1.8, F: 1.2, G: 1, K: 0.7, M: 0.3 }; upd("lifecycleMass", massMap[st.id] || 1); }
 
                     },
 

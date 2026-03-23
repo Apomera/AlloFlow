@@ -14875,6 +14875,7 @@ var d = labToolData.galaxy || {};
           var showLifecycle = d.showLifecycle || false;
 
           var lifecycleMass = d.lifecycleMass !== undefined ? d.lifecycleMass : 1;
+          var activeStage = d.activeStage || 'main_sequence';
 
           var showSNAnim = d.showSNAnim || false;
 
@@ -16580,7 +16581,7 @@ var d = labToolData.galaxy || {};
 
               // ── Animated Star Canvas ──
 
-              React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210] shadow-2xl shadow-indigo-500/10", style: { height: '450px', minHeight: '450px' } },
+              React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210] shadow-2xl shadow-indigo-500/10", style: { height: 'calc(85vh - 40px)', minHeight: '400px' } },
 
                 React.createElement("canvas", {
 
@@ -16601,161 +16602,338 @@ var d = labToolData.galaxy || {};
                     var tick = 0;
 
                     function drawStar() {
-
                       tick++;
-
                       ctx.clearRect(0, 0, W, H);
-
                       // Starfield background
-
                       ctx.fillStyle = '#020210';
-
                       ctx.fillRect(0, 0, W, H);
-
-                      for (var si = 0; si < 80; si++) {
-
+                      for (var si = 0; si < 120; si++) {
                         var sx = ((si * 137 + 29) % W);
-
                         var sy = ((si * 211 + 17) % H);
-
-                        var sb = 0.2 + 0.3 * Math.sin(tick * 0.02 + si);
-
+                        var sb = 0.15 + 0.35 * Math.sin(tick * 0.015 + si * 1.7);
                         ctx.globalAlpha = sb;
-
-                        ctx.fillStyle = '#fff';
-
-                        ctx.fillRect(sx, sy, 1, 1);
-
+                        ctx.fillStyle = si % 7 === 0 ? '#aaccff' : si % 11 === 0 ? '#ffddaa' : '#fff';
+                        var ssz = si % 13 === 0 ? 2 : 1;
+                        ctx.fillRect(sx, sy, ssz, ssz);
                       }
-
                       ctx.globalAlpha = 1;
 
-
-
                       var mass = lifecycleMass;
-
+                      var stage = activeStage;
                       var cx = W * 0.5, cy = H * 0.5;
-
-                      var baseR = Math.max(12, Math.min(60, Math.pow(mass, 0.6) * 15));
-
-                      var pulse = 1 + 0.03 * Math.sin(tick * 0.04);
-
-                      var r = baseR * pulse;
-
-
+                      var baseR = Math.max(18, Math.min(W * 0.18, Math.pow(mass, 0.6) * (W * 0.04)));
 
                       // Determine star color based on mass
-
                       var coreColor, glowColor, coronaColor;
-
                       if (mass < 0.5) { coreColor = '#ffaa44'; glowColor = '#ff7722'; coronaColor = '#ff550033'; }
-
                       else if (mass < 0.8) { coreColor = '#ffcc6f'; glowColor = '#ff9944'; coronaColor = '#ff884422'; }
-
                       else if (mass < 1.04) { coreColor = '#fff8e8'; glowColor = '#ffe4a8'; coronaColor = '#ffdd6622'; }
-
                       else if (mass < 1.4) { coreColor = '#fff'; glowColor = '#f0f0ff'; coronaColor = '#dde4ff22'; }
-
                       else if (mass < 2.1) { coreColor = '#e8eeff'; glowColor = '#cad7ff'; coronaColor = '#aabbff22'; }
-
                       else if (mass < 16) { coreColor = '#d0ddff'; glowColor = '#aabfff'; coronaColor = '#8899ff33'; }
-
                       else { coreColor = '#c0ccff'; glowColor = '#9bb0ff'; coronaColor = '#7788ff44'; }
 
+                      var stageLabel = '';
 
-
-                      // Corona (outer glow)
-
-                      var corona = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 3.5);
-
-                      corona.addColorStop(0, coronaColor);
-
-                      corona.addColorStop(1, 'transparent');
-
-                      ctx.beginPath(); ctx.arc(cx, cy, r * 3.5, 0, Math.PI * 2);
-
-                      ctx.fillStyle = corona; ctx.fill();
-
-
-
-                      // Main glow
-
-                      var glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 1.8);
-
-                      glow.addColorStop(0, glowColor);
-
-                      glow.addColorStop(0.4, glowColor + '88');
-
-                      glow.addColorStop(1, 'transparent');
-
-                      ctx.beginPath(); ctx.arc(cx, cy, r * 1.8, 0, Math.PI * 2);
-
-                      ctx.fillStyle = glow; ctx.fill();
-
-
-
-                      // Star body
-
-                      var body = ctx.createRadialGradient(cx - r * 0.15, cy - r * 0.15, r * 0.1, cx, cy, r);
-
-                      body.addColorStop(0, '#ffffff');
-
-                      body.addColorStop(0.3, coreColor);
-
-                      body.addColorStop(1, glowColor);
-
-                      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-
-                      ctx.fillStyle = body; ctx.fill();
-
-
-
-                      // Surface detail (subtle noise)
-
-                      for (var sp = 0; sp < 6; sp++) {
-
-                        var spAngle = (sp / 6) * Math.PI * 2 + tick * 0.005;
-
-                        var spR = r * 0.6;
-
-                        var spx = cx + Math.cos(spAngle) * spR;
-
-                        var spy = cy + Math.sin(spAngle) * spR;
-
-                        var spotG = ctx.createRadialGradient(spx, spy, 0, spx, spy, r * 0.3);
-
-                        spotG.addColorStop(0, 'rgba(255,255,255,0.08)');
-
-                        spotG.addColorStop(1, 'transparent');
-
-                        ctx.beginPath(); ctx.arc(spx, spy, r * 0.3, 0, Math.PI * 2);
-
-                        ctx.fillStyle = spotG; ctx.fill();
-
+                      // ── NEBULA: diffuse gas cloud ──
+                      if (stage === 'nebula') {
+                        stageLabel = '\u2601\uFE0F Nebular Cloud';
+                        for (var nc = 0; nc < 18; nc++) {
+                          var na = (nc / 18) * Math.PI * 2 + tick * 0.003;
+                          var nd = 30 + nc * 12 + 15 * Math.sin(tick * 0.008 + nc * 2);
+                          var nx = cx + Math.cos(na) * nd;
+                          var ny = cy + Math.sin(na) * nd;
+                          var nr = 40 + 25 * Math.sin(tick * 0.01 + nc);
+                          var ng = ctx.createRadialGradient(nx, ny, 0, nx, ny, nr);
+                          var ncols = ['#a855f766', '#818cf844', '#6366f133', '#f472b622'];
+                          ng.addColorStop(0, ncols[nc % ncols.length]);
+                          ng.addColorStop(1, 'transparent');
+                          ctx.beginPath(); ctx.arc(nx, ny, nr, 0, Math.PI * 2);
+                          ctx.fillStyle = ng; ctx.fill();
+                        }
+                        // Embedded protostars
+                        for (var es = 0; es < 5; es++) {
+                          var ea = (es / 5) * Math.PI * 2 + 0.5;
+                          var ed = 20 + es * 18;
+                          var ex = cx + Math.cos(ea) * ed;
+                          var ey = cy + Math.sin(ea) * ed;
+                          var eg = ctx.createRadialGradient(ex, ey, 0, ex, ey, 4);
+                          eg.addColorStop(0, '#ffffffcc'); eg.addColorStop(1, 'transparent');
+                          ctx.beginPath(); ctx.arc(ex, ey, 4, 0, Math.PI * 2);
+                          ctx.fillStyle = eg; ctx.fill();
+                        }
                       }
 
+                      // ── PROTOSTAR: forming star with accretion disk ──
+                      else if (stage === 'protostar') {
+                        stageLabel = '\uD83D\uDFE0 Protostar';
+                        var pr = baseR * 0.5;
+                        var pp = 1 + 0.06 * Math.sin(tick * 0.06);
+                        pr *= pp;
+                        // Surrounding envelope
+                        for (var pe = 0; pe < 10; pe++) {
+                          var pea = (pe / 10) * Math.PI * 2 + tick * 0.005;
+                          var ped = pr * 3 + pe * 8;
+                          var pex = cx + Math.cos(pea) * ped * 0.8;
+                          var pey = cy + Math.sin(pea) * ped * 0.5;
+                          var peg = ctx.createRadialGradient(pex, pey, 0, pex, pey, 25);
+                          peg.addColorStop(0, 'rgba(251,146,60,0.15)'); peg.addColorStop(1, 'transparent');
+                          ctx.beginPath(); ctx.arc(pex, pey, 25, 0, Math.PI * 2);
+                          ctx.fillStyle = peg; ctx.fill();
+                        }
+                        // Accretion disk
+                        ctx.save();
+                        ctx.translate(cx, cy); ctx.scale(1, 0.3);
+                        var diskG = ctx.createRadialGradient(0, 0, pr * 0.8, 0, 0, pr * 4);
+                        diskG.addColorStop(0, 'rgba(251,146,60,0.4)'); diskG.addColorStop(0.5, 'rgba(168,85,247,0.2)'); diskG.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(0, 0, pr * 4, 0, Math.PI * 2);
+                        ctx.fillStyle = diskG; ctx.fill();
+                        ctx.restore();
+                        // Protostar body
+                        var pbg = ctx.createRadialGradient(cx, cy, 0, cx, cy, pr);
+                        pbg.addColorStop(0, '#ffffff'); pbg.addColorStop(0.4, '#ffcc6f'); pbg.addColorStop(1, '#fb923c');
+                        ctx.beginPath(); ctx.arc(cx, cy, pr, 0, Math.PI * 2);
+                        ctx.fillStyle = pbg; ctx.fill();
+                        // Glow
+                        var pgg = ctx.createRadialGradient(cx, cy, pr * 0.5, cx, cy, pr * 2);
+                        pgg.addColorStop(0, 'rgba(251,146,60,0.3)'); pgg.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, pr * 2, 0, Math.PI * 2);
+                        ctx.fillStyle = pgg; ctx.fill();
+                      }
 
+                      // ── RED GIANT: huge pulsing red-orange star ──
+                      else if (stage === 'red_giant') {
+                        stageLabel = '\uD83D\uDD34 Red Giant';
+                        var rgR = baseR * 2.5;
+                        var rgPulse = 1 + 0.08 * Math.sin(tick * 0.03) + 0.03 * Math.sin(tick * 0.07);
+                        rgR *= rgPulse;
+                        // Huge corona
+                        var rgCorona = ctx.createRadialGradient(cx, cy, rgR * 0.3, cx, cy, rgR * 3);
+                        rgCorona.addColorStop(0, 'rgba(239,68,68,0.25)'); rgCorona.addColorStop(0.5, 'rgba(239,68,68,0.08)'); rgCorona.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, rgR * 3, 0, Math.PI * 2);
+                        ctx.fillStyle = rgCorona; ctx.fill();
+                        // Body
+                        var rgBody = ctx.createRadialGradient(cx - rgR * 0.1, cy - rgR * 0.1, rgR * 0.05, cx, cy, rgR);
+                        rgBody.addColorStop(0, '#fff8e0'); rgBody.addColorStop(0.2, '#ffaa44'); rgBody.addColorStop(0.6, '#ef4444'); rgBody.addColorStop(1, '#991b1b');
+                        ctx.beginPath(); ctx.arc(cx, cy, rgR, 0, Math.PI * 2);
+                        ctx.fillStyle = rgBody; ctx.fill();
+                        // Convection cells
+                        for (var rc = 0; rc < 12; rc++) {
+                          var rca = (rc / 12) * Math.PI * 2 + tick * 0.004;
+                          var rcr = rgR * (0.3 + 0.3 * Math.sin(tick * 0.01 + rc));
+                          var rcx = cx + Math.cos(rca) * rcr;
+                          var rcy = cy + Math.sin(rca) * rcr;
+                          var rcg = ctx.createRadialGradient(rcx, rcy, 0, rcx, rcy, rgR * 0.25);
+                          rcg.addColorStop(0, 'rgba(255,200,100,0.12)'); rcg.addColorStop(1, 'transparent');
+                          ctx.beginPath(); ctx.arc(rcx, rcy, rgR * 0.25, 0, Math.PI * 2);
+                          ctx.fillStyle = rcg; ctx.fill();
+                        }
+                      }
 
-                      // Label
+                      // ── PLANETARY NEBULA: expanding ring + white dwarf ──
+                      else if (stage === 'planetary_nebula') {
+                        stageLabel = '\uD83D\uDFE3 Planetary Nebula';
+                        var pnR = baseR * 0.15;
+                        var ringR = baseR * 2 + 15 * Math.sin(tick * 0.015);
+                        // Nebula rings
+                        for (var pr2 = 0; pr2 < 4; pr2++) {
+                          var rOff = pr2 * 15 + 5 * Math.sin(tick * 0.01 + pr2);
+                          ctx.beginPath(); ctx.arc(cx, cy, ringR + rOff, 0, Math.PI * 2);
+                          ctx.lineWidth = 12 - pr2 * 2;
+                          var ringCols = ['rgba(129,140,248,0.35)', 'rgba(168,85,247,0.25)', 'rgba(236,72,153,0.2)', 'rgba(99,102,241,0.15)'];
+                          ctx.strokeStyle = ringCols[pr2]; ctx.stroke();
+                          // Fill glow
+                          var prg = ctx.createRadialGradient(cx, cy, ringR + rOff - 10, cx, cy, ringR + rOff + 15);
+                          prg.addColorStop(0, ringCols[pr2]); prg.addColorStop(1, 'transparent');
+                          ctx.beginPath(); ctx.arc(cx, cy, ringR + rOff + 15, 0, Math.PI * 2);
+                          ctx.fillStyle = prg; ctx.fill();
+                        }
+                        // Central white dwarf
+                        var wdg = ctx.createRadialGradient(cx, cy, 0, cx, cy, pnR);
+                        wdg.addColorStop(0, '#ffffff'); wdg.addColorStop(0.5, '#e2e8f0'); wdg.addColorStop(1, '#94a3b8');
+                        ctx.beginPath(); ctx.arc(cx, cy, pnR, 0, Math.PI * 2);
+                        ctx.fillStyle = wdg; ctx.fill();
+                        var wdglow = ctx.createRadialGradient(cx, cy, pnR * 0.5, cx, cy, pnR * 3);
+                        wdglow.addColorStop(0, 'rgba(226,232,240,0.4)'); wdglow.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, pnR * 3, 0, Math.PI * 2);
+                        ctx.fillStyle = wdglow; ctx.fill();
+                      }
 
-                      ctx.font = 'bold 10px Inter, system-ui, sans-serif';
+                      // ── WHITE DWARF: tiny dim star ──
+                      else if (stage === 'white_dwarf') {
+                        stageLabel = '\u26AA White Dwarf';
+                        var wdr = baseR * 0.12;
+                        var wdpulse = 1 + 0.01 * Math.sin(tick * 0.02);
+                        wdr *= wdpulse;
+                        // Faint glow
+                        var wdgl = ctx.createRadialGradient(cx, cy, wdr, cx, cy, wdr * 8);
+                        wdgl.addColorStop(0, 'rgba(226,232,240,0.2)'); wdgl.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, wdr * 8, 0, Math.PI * 2);
+                        ctx.fillStyle = wdgl; ctx.fill();
+                        // Body
+                        var wdb = ctx.createRadialGradient(cx, cy, 0, cx, cy, wdr);
+                        wdb.addColorStop(0, '#ffffff'); wdb.addColorStop(0.5, '#e2e8f0'); wdb.addColorStop(1, '#94a3b8');
+                        ctx.beginPath(); ctx.arc(cx, cy, wdr, 0, Math.PI * 2);
+                        ctx.fillStyle = wdb; ctx.fill();
+                        // Size comparison text
+                        ctx.font = '11px Inter, system-ui';
+                        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                        ctx.fillText('(Earth-sized)', cx, cy + wdr + 20);
+                      }
 
-                      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                      // ── SUPERNOVA: explosive burst ──
+                      else if (stage === 'supernova') {
+                        stageLabel = '\uD83D\uDCA5 Supernova!';
+                        var snPhase = (tick * 0.02) % (Math.PI * 2);
+                        var snScale = 0.5 + 1.5 * Math.abs(Math.sin(snPhase));
+                        // Shock waves
+                        for (var sw = 0; sw < 6; sw++) {
+                          var swR = (baseR * 1.5 + sw * 25) * snScale + 10 * Math.sin(tick * 0.03 + sw);
+                          ctx.beginPath(); ctx.arc(cx, cy, swR, 0, Math.PI * 2);
+                          ctx.lineWidth = 3 - sw * 0.4;
+                          var swAlpha = Math.max(0.05, 0.4 - sw * 0.06);
+                          ctx.strokeStyle = 'rgba(251,191,36,' + swAlpha + ')'; ctx.stroke();
+                        }
+                        // Explosion glow
+                        var snG = ctx.createRadialGradient(cx, cy, 0, cx, cy, baseR * 3 * snScale);
+                        snG.addColorStop(0, 'rgba(255,255,255,0.9)'); snG.addColorStop(0.15, 'rgba(251,191,36,0.6)');
+                        snG.addColorStop(0.4, 'rgba(239,68,68,0.3)'); snG.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, baseR * 3 * snScale, 0, Math.PI * 2);
+                        ctx.fillStyle = snG; ctx.fill();
+                        // Ejecta rays
+                        for (var ej = 0; ej < 12; ej++) {
+                          var ejA = (ej / 12) * Math.PI * 2 + tick * 0.01;
+                          var ejLen = (baseR * 2 + 30) * snScale;
+                          ctx.beginPath(); ctx.moveTo(cx, cy);
+                          ctx.lineTo(cx + Math.cos(ejA) * ejLen, cy + Math.sin(ejA) * ejLen);
+                          ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(251,191,36,0.15)'; ctx.stroke();
+                        }
+                        // Core flash
+                        var cfl = ctx.createRadialGradient(cx, cy, 0, cx, cy, baseR * 0.5);
+                        cfl.addColorStop(0, '#ffffff'); cfl.addColorStop(1, 'rgba(255,255,255,0)');
+                        ctx.beginPath(); ctx.arc(cx, cy, baseR * 0.5, 0, Math.PI * 2);
+                        ctx.fillStyle = cfl; ctx.fill();
+                      }
 
+                      // ── NEUTRON STAR: tiny pulsar with beams ──
+                      else if (stage === 'neutron_star') {
+                        stageLabel = '\u2B50 Neutron Star (Pulsar)';
+                        var nsR = baseR * 0.08;
+                        // Rotating beams
+                        var beamA = tick * 0.05;
+                        for (var bi = 0; bi < 2; bi++) {
+                          var ba = beamA + bi * Math.PI;
+                          ctx.save(); ctx.translate(cx, cy); ctx.rotate(ba);
+                          var beamG = ctx.createLinearGradient(0, 0, W * 0.4, 0);
+                          beamG.addColorStop(0, 'rgba(56,189,248,0.5)'); beamG.addColorStop(1, 'transparent');
+                          ctx.beginPath(); ctx.moveTo(0, -3); ctx.lineTo(W * 0.4, -15); ctx.lineTo(W * 0.4, 15); ctx.lineTo(0, 3); ctx.closePath();
+                          ctx.fillStyle = beamG; ctx.fill();
+                          ctx.restore();
+                        }
+                        // Magnetosphere
+                        ctx.beginPath(); ctx.arc(cx, cy, nsR * 12, 0, Math.PI * 2);
+                        ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(56,189,248,0.15)'; ctx.stroke();
+                        // Body
+                        var nsb = ctx.createRadialGradient(cx, cy, 0, cx, cy, nsR);
+                        nsb.addColorStop(0, '#ffffff'); nsb.addColorStop(0.5, '#38bdf8'); nsb.addColorStop(1, '#0ea5e9');
+                        ctx.beginPath(); ctx.arc(cx, cy, nsR, 0, Math.PI * 2);
+                        ctx.fillStyle = nsb; ctx.fill();
+                        // Intense glow
+                        var nsg = ctx.createRadialGradient(cx, cy, nsR, cx, cy, nsR * 6);
+                        nsg.addColorStop(0, 'rgba(56,189,248,0.4)'); nsg.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, nsR * 6, 0, Math.PI * 2);
+                        ctx.fillStyle = nsg; ctx.fill();
+                      }
+
+                      // ── BLACK HOLE: dark sphere with accretion disk ──
+                      else if (stage === 'black_hole') {
+                        stageLabel = '\uD83D\uDD73\uFE0F Black Hole';
+                        var bhR = baseR * 0.4;
+                        // Accretion disk (behind)
+                        ctx.save();
+                        ctx.translate(cx, cy); ctx.scale(1, 0.25);
+                        for (var ad = 0; ad < 5; ad++) {
+                          var adR2 = bhR * (2.5 + ad * 0.8);
+                          ctx.beginPath(); ctx.arc(0, 0, adR2, 0, Math.PI * 2);
+                          ctx.lineWidth = 6 - ad;
+                          var adCols = ['rgba(251,191,36,0.5)', 'rgba(249,115,22,0.4)', 'rgba(239,68,68,0.3)', 'rgba(168,85,247,0.2)', 'rgba(99,102,241,0.1)'];
+                          ctx.strokeStyle = adCols[ad]; ctx.stroke();
+                        }
+                        ctx.restore();
+                        // Gravitational lensing ring
+                        ctx.beginPath(); ctx.arc(cx, cy, bhR * 1.3, 0, Math.PI * 2);
+                        ctx.lineWidth = 3;
+                        var lensG = ctx.createRadialGradient(cx, cy, bhR, cx, cy, bhR * 1.5);
+                        lensG.addColorStop(0, 'rgba(251,191,36,0.6)'); lensG.addColorStop(1, 'transparent');
+                        ctx.strokeStyle = 'rgba(251,191,36,0.4)'; ctx.stroke();
+                        ctx.fillStyle = lensG; ctx.fill();
+                        // Event horizon (pure black)
+                        ctx.beginPath(); ctx.arc(cx, cy, bhR, 0, Math.PI * 2);
+                        ctx.fillStyle = '#000000'; ctx.fill();
+                        // Subtle edge highlight
+                        ctx.beginPath(); ctx.arc(cx, cy, bhR, 0, Math.PI * 2);
+                        ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(251,191,36,0.3)'; ctx.stroke();
+                        // Hawking radiation particles
+                        for (var hr = 0; hr < 8; hr++) {
+                          var hra = (hr / 8) * Math.PI * 2 + tick * 0.02;
+                          var hrd = bhR * 1.3 + 3 * Math.sin(tick * 0.05 + hr);
+                          var hrx = cx + Math.cos(hra) * hrd;
+                          var hry = cy + Math.sin(hra) * hrd * 0.25;
+                          ctx.globalAlpha = 0.3 + 0.3 * Math.sin(tick * 0.04 + hr);
+                          ctx.fillStyle = '#fbbf24';
+                          ctx.fillRect(hrx, hry, 1.5, 1.5);
+                        }
+                        ctx.globalAlpha = 1;
+                      }
+
+                      // ── MAIN SEQUENCE (default): normal star ──
+                      else {
+                        stageLabel = '\u2B50 Main Sequence';
+                        var msR = baseR;
+                        var msPulse = 1 + 0.03 * Math.sin(tick * 0.04);
+                        msR *= msPulse;
+                        // Corona
+                        var msCorona = ctx.createRadialGradient(cx, cy, msR * 0.5, cx, cy, msR * 3.5);
+                        msCorona.addColorStop(0, coronaColor); msCorona.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, msR * 3.5, 0, Math.PI * 2);
+                        ctx.fillStyle = msCorona; ctx.fill();
+                        // Glow
+                        var msGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, msR * 1.8);
+                        msGlow.addColorStop(0, glowColor); msGlow.addColorStop(0.4, glowColor + '88'); msGlow.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, msR * 1.8, 0, Math.PI * 2);
+                        ctx.fillStyle = msGlow; ctx.fill();
+                        // Body
+                        var msBody = ctx.createRadialGradient(cx - msR * 0.15, cy - msR * 0.15, msR * 0.1, cx, cy, msR);
+                        msBody.addColorStop(0, '#ffffff'); msBody.addColorStop(0.3, coreColor); msBody.addColorStop(1, glowColor);
+                        ctx.beginPath(); ctx.arc(cx, cy, msR, 0, Math.PI * 2);
+                        ctx.fillStyle = msBody; ctx.fill();
+                        // Surface noise
+                        for (var sp = 0; sp < 6; sp++) {
+                          var spAngle = (sp / 6) * Math.PI * 2 + tick * 0.005;
+                          var spR2 = msR * 0.6;
+                          var spx = cx + Math.cos(spAngle) * spR2;
+                          var spy = cy + Math.sin(spAngle) * spR2;
+                          var spotG = ctx.createRadialGradient(spx, spy, 0, spx, spy, msR * 0.3);
+                          spotG.addColorStop(0, 'rgba(255,255,255,0.08)'); spotG.addColorStop(1, 'transparent');
+                          ctx.beginPath(); ctx.arc(spx, spy, msR * 0.3, 0, Math.PI * 2);
+                          ctx.fillStyle = spotG; ctx.fill();
+                        }
+                      }
+
+                      // ── HUD Labels ──
                       ctx.textAlign = 'center';
-
+                      // Stage name (top)
+                      ctx.font = 'bold 13px Inter, system-ui, sans-serif';
+                      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                      ctx.fillText(stageLabel, cx, 24);
+                      // Mass label (bottom)
+                      ctx.font = 'bold 10px Inter, system-ui, sans-serif';
+                      ctx.fillStyle = 'rgba(255,255,255,0.5)';
                       ctx.fillText(mass + ' Solar Masses', cx, H - 12);
-
-
-
-                      // Classification label
-
+                      // Classification
                       var cls = mass < 0.45 ? 'M-type Red Dwarf' : mass < 0.8 ? 'K-type Orange' : mass < 1.04 ? 'G-type (Sun-like)' : mass < 1.4 ? 'F-type Yellow-White' : mass < 2.1 ? 'A-type White' : mass < 16 ? 'B-type Blue-White' : 'O-type Blue Giant';
-
                       ctx.font = '9px Inter, system-ui, sans-serif';
-
                       ctx.fillStyle = 'rgba(255,255,255,0.35)';
-
                       ctx.fillText(cls, cx, H - 2);
 
 
@@ -16913,10 +17091,12 @@ var d = labToolData.galaxy || {};
                 React.createElement("div", { className: "space-y-2" },
 
                   LIFECYCLE.stages.map(function (s, idx) {
-
+                    var stageIds = ['nebula', 'protostar', 'main_sequence', 'red_giant'];
+                    var stageId = stageIds[idx] || 'main_sequence';
+                    var isActive = activeStage === stageId;
                     return React.createElement("div", { key: s.name },
 
-                      React.createElement("div", { className: "flex items-center gap-3 p-3 rounded-xl border transition-all hover:scale-[1.01]", style: { borderColor: s.color + '55', background: s.color + '15' } },
+                      React.createElement("div", { onClick: function() { upd('activeStage', stageId); }, className: "flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer " + (isActive ? "scale-[1.03] ring-2 ring-offset-1 ring-amber-400 shadow-lg" : "hover:scale-[1.01]"), style: { borderColor: isActive ? s.color : s.color + '55', background: isActive ? s.color + '25' : s.color + '15' } },
 
                         React.createElement("div", { className: "w-10 h-10 rounded-xl flex items-center justify-center text-2xl flex-shrink-0", style: { background: s.color + '25' } }, s.emoji),
 
@@ -16986,7 +17166,12 @@ var d = labToolData.galaxy || {};
 
                   })).map(function (s, idx) {
 
-                    return React.createElement("div", { key: s.name, className: "flex items-center gap-3 p-3 rounded-xl border ml-6 transition-all hover:scale-[1.01]", style: { borderColor: s.color + '55', background: s.color + '15' } },
+                    var endStageMap = {'Planetary Nebula': 'planetary_nebula', 'White Dwarf': 'white_dwarf', 'Supernova': 'supernova', 'Neutron Star': 'neutron_star', 'Black Hole': 'black_hole'};
+                    var endStageId = null;
+                    for (var ek in endStageMap) { if (s.name.indexOf(ek) >= 0 || s.name === ek) { endStageId = endStageMap[ek]; break; } }
+                    if (!endStageId) { var eidx2 = idx; endStageId = eidx2 === 0 ? (lifecycleMass < 8 ? 'planetary_nebula' : 'supernova') : eidx2 === 1 ? (lifecycleMass < 8 ? 'white_dwarf' : (lifecycleMass < 25 ? 'neutron_star' : 'black_hole')) : 'black_hole'; }
+                    var isEndActive = activeStage === endStageId;
+                    return React.createElement("div", { key: s.name, onClick: function() { upd('activeStage', endStageId); }, className: "flex items-center gap-3 p-3 rounded-xl border ml-6 transition-all cursor-pointer " + (isEndActive ? "scale-[1.03] ring-2 ring-offset-1 ring-amber-400 shadow-lg" : "hover:scale-[1.01]"), style: { borderColor: isEndActive ? s.color : s.color + '55', background: isEndActive ? s.color + '25' : s.color + '15' } },
 
                       React.createElement("div", { className: "w-10 h-10 rounded-xl flex items-center justify-center text-2xl flex-shrink-0", style: { background: s.color + '25' } }, s.emoji),
 

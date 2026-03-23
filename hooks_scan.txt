@@ -1,0 +1,102 @@
+EFFECT #1 @ line 25623:
+          React.useEffect(function () {
+            if (synthTab !== 'harmonypad' && synthTab !== 'beatpad') return;
+            function onKeyDown(e) {
+              if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+              var k = e.key.toLowerCase();
+              if (synthTab === 'harmonypad') {
+                var chord = CHORD_KEY_MAP[k];
+                if (
+---
+EFFECT #2 @ line 25651:
+          React.useEffect(function () {
+            if (!navigator.requestMIDIAccess) return;
+            var cleanup = [];
+            navigator.requestMIDIAccess({ sysex: false }).then(function (midi) {
+              upd('midiConnected', midi.inputs.size > 0);
+              midi.onstatechange = function () { upd('midiConnected', midi.inputs.size > 0); };
+              midi.inputs.forEach(functio
+---
+REF #3 @ line 25826: var _bpFxRef = React.useRef(null);
+---
+EFFECT #4 @ line 25855:
+          React.useEffect(function () {
+            if (!_bpFxRef.current) return;
+            var fx = _bpFxRef.current;
+            var r = (d.bpReverb || 0) / 100, dl = (d.bpDelay || 0) / 100, c = d.bpFilterCut || 20000;
+            fx.revG.gain.value = r * 0.6; fx.dryG.gain.value = 1 - r * 0.3;
+            fx.delW.gain.value = dl * 0.5; fx.delFb.gain.value = dl * 0.4;
+            fx.flt.freque
+---
+EFFECT #5 @ line 25939:
+          React.useEffect(function () {
+            try {
+              var h = location.hash;
+              if (!h || h.indexOf('#beat=') !== 0) return;
+              var json = decodeURIComponent(escape(atob(h.substring(6))));
+              var obj = JSON.parse(json);
+              if (obj.g) upd('seqGrid', obj.g);
+              if (obj.m) upd('beatMelody', obj.m);
+
+---
+REF #6 @ line 25979: var _bpCanvasRef = React.useRef(null);
+---
+REF #7 @ line 25980: var _bpAnimRef = React.useRef(null);
+---
+REF #8 @ line 25981: var _bpAnalyserRef = React.useRef(null);
+---
+EFFECT #9 @ line 25982:
+          React.useEffect(function () {
+            if (!d.seqPlaying) { if (_bpAnimRef.current) { cancelAnimationFrame(_bpAnimRef.current); _bpAnimRef.current = null; } return; }
+            var canvas = _bpCanvasRef.current; if (!canvas) return;
+            var audio = getCtx(); var ctx = audio.ctx;
+            if (!_bpAnalyserRef.current) { var an = ctx.createAnalyser(); an.fftSize = 256; audio
+---
+REF #10 @ line 26023: var _seqTimer = React.useRef(null);
+---
+REF #11 @ line 26024: var _seqStep = React.useRef(0);
+---
+EFFECT #12 @ line 26057:
+          React.useEffect(function () { return function () { stopSequencer(); }; }, []);
+          // Restart sequencer when BPM changes while playing
+          React.useEffect(function () {
+            if (d.seqPlaying && _seqTimer.current) {
+              clearInterval(_seqTimer.current);
+              _seqTimer.current = null;
+              var bpm = d.seqBPM || 120;
+              var stepMs = 
+---
+EFFECT #13 @ line 26059:
+          React.useEffect(function () {
+            if (d.seqPlaying && _seqTimer.current) {
+              clearInterval(_seqTimer.current);
+              _seqTimer.current = null;
+              var bpm = d.seqBPM || 120;
+              var stepMs = (60000 / bpm) / 4;
+              _seqTimer.current = setInterval(function () {
+                var step = _seqStep.current;
+
+---
+EFFECT #14 @ line 26159:
+          React.useEffect(function () {
+            if (synthTab === 'beatpad' && !d.activeKit && !d.samplesLoading) {
+              loadSampleKit('CR78');
+            }
+          }, [synthTab]);
+          // Keyboard shortcuts for drum pads (number row)
+          React.useEffect(function () {
+            function handlePadKey(e) {
+
+---
+EFFECT #15 @ line 26165:
+          React.useEffect(function () {
+            function handlePadKey(e) {
+              if (synthTab !== 'beatpad') return;
+              if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+              var padMap = { '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6, '8': 7, '9': 8, '0': 9, '-': 10, '=': 11 };
+              var idx = padMap[e.key];
+            
+---
+--- END of _musicSynth at line 26445 ---
+
+Total hooks in active path: 15
