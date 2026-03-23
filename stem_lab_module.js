@@ -17655,19 +17655,25 @@
                         fsToggle.onmouseout = function() { this.style.background = 'rgba(0,0,0,0.6)'; };
                         fsToggle.onclick = function() {
                           var container = document.getElementById('drone-fullscreen-container') || canvasEl.parentElement;
-                          if (!document.fullscreenElement) {
-                            if (container.requestFullscreen) { container.requestFullscreen(); }
-                            else if (container.mozRequestFullScreen) { container.mozRequestFullScreen(); }
-                            else if (container.webkitRequestFullscreen) { container.webkitRequestFullscreen(); }
-                            else if (container.msRequestFullscreen) { container.msRequestFullscreen(); }
-                            fsToggle.innerHTML = '\xDF'; // shrink icon approximation
-                          } else {
-                            if (document.exitFullscreen) { document.exitFullscreen(); }
-                            else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
-                            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
-                            else if (document.msExitFullscreen) { document.msExitFullscreen(); }
-                            fsToggle.innerHTML = '\u26F6'; // expand icon
-                          }
+                          try {
+                            if (!document.fullscreenElement) {
+                              var p = null;
+                              if (container.requestFullscreen) { p = container.requestFullscreen(); }
+                              else if (container.mozRequestFullScreen) { p = container.mozRequestFullScreen(); }
+                              else if (container.webkitRequestFullscreen) { p = container.webkitRequestFullscreen(); }
+                              else if (container.msRequestFullscreen) { p = container.msRequestFullscreen(); }
+                              if (p && p.catch) { p.catch(function(e) { console.warn('[SolarDrone] Fullscreen denied:', e.message); }); }
+                              fsToggle.innerHTML = '\xDF'; // shrink icon approximation
+                            } else {
+                              var q = null;
+                              if (document.exitFullscreen) { q = document.exitFullscreen(); }
+                              else if (document.mozCancelFullScreen) { q = document.mozCancelFullScreen(); }
+                              else if (document.webkitExitFullscreen) { q = document.webkitExitFullscreen(); }
+                              else if (document.msExitFullscreen) { q = document.msExitFullscreen(); }
+                              if (q && q.catch) { q.catch(function(e) { console.warn('[SolarDrone] Exit fullscreen denied:', e.message); }); }
+                              fsToggle.innerHTML = '\u26F6'; // expand icon
+                            }
+                          } catch (e) { console.warn('[SolarDrone] Fullscreen not supported:', e.message); }
                         };
                         canvasEl.parentElement.appendChild(fsToggle);
 
