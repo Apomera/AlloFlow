@@ -14129,7 +14129,14 @@ Return ONLY a JSON object (no markdown, no explanation) with these exact keys:
                     placeholder: 'Examples:\n\u2022 "Student is disrespectful"\n\u2022 "Having a meltdown"\n\u2022 "Not paying attention"\n\u2022 "Student is aggressive during transitions"',
                     rows: 3,
                     className: 'w-full border-2 border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 resize-none'
-                })
+                }),
+                // Quick Generate — always visible, disabled when text too short
+                h('button', {
+                    onClick: handleAiRewrite,
+                    disabled: loading || !callGemini || rawDesc.trim().length < 3,
+                    className: 'mt-3 w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:from-indigo-700 hover:to-purple-700 transition-all disabled:opacity-50 text-sm flex items-center justify-center gap-2'
+                }, loading ? '\u23F3 Generating Definition...' : '\uD83E\uDDE0 Generate Operational Definition'),
+                h('p', { className: 'text-[10px] text-slate-400 text-center mt-1' }, rawDesc.trim().length < 3 ? 'Type a behavior description above to get started' : !deadManResult ? 'Or complete the Dead Man\u2019s Test below for guided analysis \u2193' : deadManResult === 'yes' ? '\u26A0\uFE0F Dead Man\u2019s Test failed — AI will reframe as active behavior' : '\u2705 Dead Man\u2019s Test passed')
             ),
 
             // Step 2: Dead Man's Test
@@ -14169,14 +14176,6 @@ Return ONLY a JSON object (no markdown, no explanation) with these exact keys:
                 )
             ),
 
-            // Step 3: AI Rewrite Button
-            deadManResult && h('div', { className: 'flex justify-center' },
-                h('button', {
-                    onClick: handleAiRewrite,
-                    disabled: loading || !rawDesc.trim(),
-                    className: 'px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:from-indigo-700 hover:to-purple-700 transition-all disabled:opacity-50 text-sm'
-                }, loading ? '\u23F3 Generating Definition...' : '\uD83E\uDDE0 Generate Operational Definition')
-            ),
 
             // Step 4: AI Result + Dimensions
             hasDefinition && h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 p-5 shadow-sm' },
@@ -17123,6 +17122,38 @@ Keep it under 150 words.`);
         var _me = useState('pointbypoint'), ioaMethod = _me[0], setIoaMethod = _me[1];
         var _o1 = useState(''), obs1Data = _o1[0], setObs1Data = _o1[1];
         var _o2 = useState(''), obs2Data = _o2[0], setObs2Data = _o2[1];
+        var _ic = useState(10), intervalCount = _ic[0], setIntervalCount = _ic[1];
+        var _id2 = useState(function() { return Array.from({ length: 10 }, function() { return { obs1: '', obs2: '', label: '' }; }); }), intervalData = _id2[0], setIntervalData = _id2[1];
+        var _dur = useState(5), intervalDuration = _dur[0], setIntervalDuration = _dur[1];
+        var _bm = useState(false), bulkMode = _bm[0], setBulkMode = _bm[1];
+
+        function updateIntervalCount(newCount) {
+            newCount = Math.max(1, Math.min(100, parseInt(newCount) || 1));
+            setIntervalCount(newCount);
+            setIntervalData(function(prev) {
+                var updated = prev.slice(0, newCount);
+                while (updated.length < newCount) updated.push({ obs1: '', obs2: '', label: '' });
+                return updated;
+            });
+        }
+        function updateIntervalField(idx, field, val) {
+            setIntervalData(function(prev) {
+                var copy = prev.map(function(r) { return Object.assign({}, r); });
+                copy[idx][field] = val;
+                return copy;
+            });
+        }
+        function syncStructuredToCSV() {
+            setObs1Data(intervalData.map(function(r) { return r.obs1 || '0'; }).join(', '));
+            setObs2Data(intervalData.map(function(r) { return r.obs2 || '0'; }).join(', '));
+        }
+        function ioaTimeLabel(idx) {
+            if (!intervalDuration || intervalDuration <= 0) return '';
+            var startMin = idx * intervalDuration;
+            var endMin = (idx + 1) * intervalDuration;
+            function fmtMin(m) { var h2 = Math.floor(m / 60); var mm = m % 60; return h2 > 0 ? h2 + ':' + (mm < 10 ? '0' : '') + mm : mm + ''; }
+            return fmtMin(startMin) + '–' + fmtMin(endMin) + ' min';
+        }
         var _re = useState(null), ioaResults = _re[0], setIoaResults = _re[1];
         var _mf = useState(null), mediaFile = _mf[0], setMediaFile = _mf[1];
         var _mt = useState(null), mediaType = _mt[0], setMediaType = _mt[1];
@@ -17753,17 +17784,62 @@ Keep it under 150 words.`);
                     )
                 ),
                 h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-3' },
-                    h('h3', { className: 'text-sm font-black text-slate-800' }, '📝 Enter Observer Data'),
-                    h('p', { className: 'text-[10px] text-slate-500' }, 'Enter comma-separated values. For binary: 0 = no occurrence, 1 = occurrence.'),
-                    h('div', null,
-                        h('label', { className: 'block text-xs font-bold text-slate-600 mb-1' }, '👤 Observer 1 (Practitioner)'),
-                        h('textarea', { value: obs1Data, onChange: function(e) { setObs1Data(e.target.value); }, 'aria-label': 'Observer 1 data', placeholder: 'e.g., 1, 0, 1, 1, 0, 0, 1, 0, 1, 0', rows: 2, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none resize-none font-mono' })
+                    h('div', { className: 'flex items-center justify-between mb-1' },
+                        h('h3', { className: 'text-sm font-black text-slate-800' }, '📝 Enter Observer Data'),
+                        h('button', { onClick: function() { setBulkMode(!bulkMode); }, className: 'text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all ' + (bulkMode ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200') }, bulkMode ? '📋 Structured View' : '📄 Bulk CSV Import')
                     ),
-                    h('div', null,
-                        h('label', { className: 'block text-xs font-bold text-slate-600 mb-1' }, '👤 Observer 2'),
-                        h('textarea', { value: obs2Data, onChange: function(e) { setObs2Data(e.target.value); }, 'aria-label': 'Observer 2 data', placeholder: 'e.g., 1, 0, 0, 1, 0, 1, 1, 0, 1, 0', rows: 2, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none resize-none font-mono' })
+                    // Interval config row
+                    !bulkMode && h('div', { className: 'flex items-center gap-4 bg-slate-50 rounded-lg p-3 border border-slate-100' },
+                        h('div', { className: 'flex items-center gap-2' },
+                            h('label', { className: 'text-[10px] font-bold text-slate-600 whitespace-nowrap' }, '# Intervals'),
+                            h('input', { type: 'number', min: 1, max: 100, value: intervalCount, onChange: function(e) { updateIntervalCount(e.target.value); }, className: 'w-16 border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-center font-bold focus:ring-2 focus:ring-indigo-400 outline-none' })
+                        ),
+                        h('div', { className: 'flex items-center gap-2' },
+                            h('label', { className: 'text-[10px] font-bold text-slate-600 whitespace-nowrap' }, '⏱️ Each interval'),
+                            h('div', { className: 'flex gap-1' },
+                                [1, 2, 5, 10, 15, 30].map(function(min) {
+                                    return h('button', { key: min, onClick: function() { setIntervalDuration(min); }, className: 'px-2 py-1 rounded-md text-[10px] font-bold transition-all ' + (intervalDuration === min ? 'bg-indigo-600 text-white' : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-100') }, min + ' min');
+                                })
+                            )
+                        ),
+                        h('div', { className: 'text-[9px] text-slate-400 ml-auto' }, 'Total: ' + (intervalCount * intervalDuration) + ' min')
                     ),
-                    h('button', { onClick: calcTraditionalIOA, className: 'w-full py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all text-sm' }, '📊 Calculate IOA')
+                    // Structured interval rows
+                    !bulkMode && h('div', { className: 'space-y-1' },
+                        // Header row
+                        h('div', { className: 'grid gap-2 items-center text-[9px] font-bold text-slate-500 uppercase tracking-wide pb-1 border-b border-slate-100', style: { gridTemplateColumns: '36px 60px 1fr 64px 64px' } },
+                            h('div', null, '#'),
+                            h('div', null, 'Time'),
+                            h('div', null, 'Label'),
+                            h('div', { className: 'text-center' }, 'Obs 1'),
+                            h('div', { className: 'text-center' }, 'Obs 2')
+                        ),
+                        // Data rows
+                        h('div', { className: 'max-h-80 overflow-y-auto space-y-0.5 pr-1' },
+                            intervalData.slice(0, intervalCount).map(function(row, idx) {
+                                return h('div', { key: idx, className: 'grid gap-2 items-center py-1 rounded-lg hover:bg-slate-50 transition-all', style: { gridTemplateColumns: '36px 60px 1fr 64px 64px' } },
+                                    h('div', { className: 'text-xs font-black text-slate-400 text-center' }, idx + 1),
+                                    h('div', { className: 'text-[9px] text-indigo-500 font-medium' }, ioaTimeLabel(idx)),
+                                    h('input', { type: 'text', value: row.label, onChange: function(e) { updateIntervalField(idx, 'label', e.target.value); }, placeholder: 'e.g. Math time', className: 'w-full border border-slate-100 rounded px-2 py-1 text-[10px] focus:ring-1 focus:ring-indigo-300 outline-none bg-transparent' }),
+                                    h('input', { type: 'text', value: row.obs1, onChange: function(e) { updateIntervalField(idx, 'obs1', e.target.value); }, placeholder: '0', className: 'w-full border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-center font-mono focus:ring-2 focus:ring-indigo-400 outline-none' }),
+                                    h('input', { type: 'text', value: row.obs2, onChange: function(e) { updateIntervalField(idx, 'obs2', e.target.value); }, placeholder: '0', className: 'w-full border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-center font-mono focus:ring-2 focus:ring-indigo-400 outline-none' })
+                                );
+                            })
+                        )
+                    ),
+                    // Bulk CSV mode (fallback)
+                    bulkMode && h('div', { className: 'space-y-3' },
+                        h('p', { className: 'text-[10px] text-slate-500' }, 'Enter comma-separated values. For binary: 0 = no occurrence, 1 = occurrence.'),
+                        h('div', null,
+                            h('label', { className: 'block text-xs font-bold text-slate-600 mb-1' }, '👤 Observer 1 (Practitioner)'),
+                            h('textarea', { value: obs1Data, onChange: function(e) { setObs1Data(e.target.value); }, 'aria-label': 'Observer 1 data', placeholder: 'e.g., 1, 0, 1, 1, 0, 0, 1, 0, 1, 0', rows: 2, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none resize-none font-mono' })
+                        ),
+                        h('div', null,
+                            h('label', { className: 'block text-xs font-bold text-slate-600 mb-1' }, '👤 Observer 2'),
+                            h('textarea', { value: obs2Data, onChange: function(e) { setObs2Data(e.target.value); }, 'aria-label': 'Observer 2 data', placeholder: 'e.g., 1, 0, 0, 1, 0, 1, 1, 0, 1, 0', rows: 2, className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none resize-none font-mono' })
+                        )
+                    ),
+                    h('button', { onClick: function() { if (!bulkMode) syncStructuredToCSV(); calcTraditionalIOA(); }, className: 'w-full py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all text-sm' }, '📊 Calculate IOA')
                 )
             ),
 
@@ -17894,17 +17970,20 @@ Keep it under 150 words.`);
                 ),
                 ioaResults.details && h('details', { className: 'bg-slate-50 rounded-lg p-3' },
                     h('summary', { className: 'text-xs font-bold text-slate-600 cursor-pointer' }, 'Interval Details (' + ioaResults.details.length + ' intervals)'),
-                    h('div', { className: 'mt-2 grid grid-cols-4 gap-1 text-[10px]' },
-                        h('div', { className: 'font-bold text-slate-500' }, 'Interval'),
-                        h('div', { className: 'font-bold text-slate-500' }, 'Obs 1'),
-                        h('div', { className: 'font-bold text-slate-500' }, 'Obs 2'),
-                        h('div', { className: 'font-bold text-slate-500' }, 'Agree?'),
+                    h('div', { className: 'mt-2 grid gap-1 text-[10px]', style: { gridTemplateColumns: '40px 1fr 50px 50px 40px' } },
+                        h('div', { className: 'font-bold text-slate-500' }, '#'),
+                        h('div', { className: 'font-bold text-slate-500' }, 'Label'),
+                        h('div', { className: 'font-bold text-slate-500 text-center' }, 'Obs 1'),
+                        h('div', { className: 'font-bold text-slate-500 text-center' }, 'Obs 2'),
+                        h('div', { className: 'font-bold text-slate-500 text-center' }, 'Agree?'),
                         ioaResults.details.map(function(d) {
+                            var lbl = (intervalData && intervalData[d.interval - 1]) ? (intervalData[d.interval - 1].label || ioaTimeLabel(d.interval - 1)) : ioaTimeLabel(d.interval - 1);
                             return [
-                                h('div', { key: d.interval + 'i', className: 'text-slate-600' }, '#' + d.interval),
-                                h('div', { key: d.interval + 'a' }, d.obs1),
-                                h('div', { key: d.interval + 'b' }, d.obs2),
-                                h('div', { key: d.interval + 'c', className: d.agree ? 'text-emerald-600 font-bold' : 'text-red-600 font-bold' }, d.agree ? '✓' : '✗')
+                                h('div', { key: d.interval + 'i', className: 'text-slate-600 font-bold' }, '#' + d.interval),
+                                h('div', { key: d.interval + 'l', className: 'text-slate-500 truncate' }, lbl || '—'),
+                                h('div', { key: d.interval + 'a', className: 'text-center' }, d.obs1),
+                                h('div', { key: d.interval + 'b', className: 'text-center' }, d.obs2),
+                                h('div', { key: d.interval + 'c', className: (d.agree !== undefined ? (d.agree ? 'text-emerald-600' : 'text-red-600') : 'text-slate-400') + ' font-bold text-center' }, d.agree !== undefined ? (d.agree ? '✓' : '✗') : (d.agreement || ''))
                             ];
                         })
                     )
