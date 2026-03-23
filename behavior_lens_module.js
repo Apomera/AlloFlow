@@ -22705,7 +22705,7 @@ IMPORTANT rules for expert keys:
                             onClick: generateAiScenario,
                             disabled: generatingAi,
                             className: 'px-4 py-2 bg-purple-600 text-white rounded-lg text-[11px] font-bold hover:bg-purple-700 disabled:opacity-50 transition-all whitespace-nowrap flex items-center gap-1'
-                        }, generatingAi ? h('span', { className: 'animate-spin inline-block' }, '⏳') : '✨', generatingAi ? ' Generating...' : ' Generate')
+                        }, generatingAi ? h('span', { className: 'animate-spin inline-block' }, '⏳') : '✿', generatingAi ? ' Generating...' : ' Generate')
                     ),
                     aiScenarios.length > 0 && h('p', { className: 'text-[10px] text-purple-400 mt-2' }, `${aiScenarios.length} AI scenario${aiScenarios.length > 1 ? 's' : ''} generated this session`)
                 ),
@@ -22981,104 +22981,94 @@ IMPORTANT rules for expert keys:
         isCanvasEnv
     }) => {
 
-        // ─── useCloudSync — Firebase cloud persistence hook ──────────────
-        // Firebase v9 modular SDK: standalone functions are exposed via window.__alloFirebase
-        // The `fs` param = Firestore instance (db), `fbAuth` param = Auth instance (auth)
+        // ─── Cloud Sync — Firebase cloud persistence (flattened hooks) ─────
+        // Hooks are declared directly in the component body to comply with
+        // React's rules of hooks and avoid "Rendered fewer hooks than expected"
+        // (React error #300). Firebase v9 modular SDK.
         const _fb = window.__alloFirebase || {};
-        const useCloudSync = (fs, fbAuth, canvasEnv) => {
-            const [syncStatus, setSyncStatus] = useState(canvasEnv ? 'disabled' : 'idle');
-            const [userId, setUserId] = useState(null);
-            const authAttempted = useRef(false);
+        const [_syncStatus, _setSyncStatus] = useState(isCanvasEnv ? 'disabled' : 'idle');
+        const [_cloudUserId, _setCloudUserId] = useState(null);
+        const _authAttempted = useRef(false);
 
-            // Attempt anonymous sign-in on mount
-            useEffect(() => {
-                if (canvasEnv || !fs || !fbAuth || authAttempted.current) return;
-                if (!_fb.onAuthStateChanged || !_fb.signInAnonymously) {
-                    warnLog('CloudSync: Firebase helpers not available on window.__alloFirebase');
-                    setSyncStatus('offline');
-                    return;
+        // Attempt anonymous sign-in on mount
+        useEffect(() => {
+            if (isCanvasEnv || !firestore || !firebaseAuth || _authAttempted.current) return;
+            if (!_fb.onAuthStateChanged || !_fb.signInAnonymously) {
+                warnLog('CloudSync: Firebase helpers not available on window.__alloFirebase');
+                _setSyncStatus('offline');
+                return;
+            }
+            _authAttempted.current = true;
+            const unsub = _fb.onAuthStateChanged(firebaseAuth, user => {
+                if (user) {
+                    _setCloudUserId(user.uid);
+                    _setSyncStatus('idle');
+                    debugLog('CloudSync: authenticated as', user.uid);
+                } else {
+                    _fb.signInAnonymously(firebaseAuth).then(cred => {
+                        _setCloudUserId(cred.user.uid);
+                        _setSyncStatus('idle');
+                        debugLog('CloudSync: anonymous sign-in', cred.user.uid);
+                    }).catch(err => {
+                        warnLog('CloudSync: auth failed', err);
+                        _setSyncStatus('offline');
+                    });
                 }
-                authAttempted.current = true;
-                // Firebase v9: onAuthStateChanged(auth, callback) returns unsubscribe fn
-                const unsub = _fb.onAuthStateChanged(fbAuth, user => {
-                    if (user) {
-                        setUserId(user.uid);
-                        setSyncStatus('idle');
-                        debugLog('CloudSync: authenticated as', user.uid);
-                    } else {
-                        // Firebase v9: signInAnonymously(auth)
-                        _fb.signInAnonymously(fbAuth).then(cred => {
-                            setUserId(cred.user.uid);
-                            setSyncStatus('idle');
-                            debugLog('CloudSync: anonymous sign-in', cred.user.uid);
-                        }).catch(err => {
-                            warnLog('CloudSync: auth failed', err);
-                            setSyncStatus('offline');
-                        });
-                    }
-                });
-                return () => unsub();
-            }, [fs, fbAuth, canvasEnv]);
+            });
+            return () => unsub();
+        }, [firestore, firebaseAuth, isCanvasEnv]);
 
-            // Build a Firestore doc path for a student workspace
-            const docPath = useCallback((studentName) => {
-                if (!userId || !studentName) return null;
-                const safeName = studentName.replace(/[\/.#$\[\]]/g, '_');
-                return `apps/prismflow/behaviorLens/users/${userId}/workspaces/${safeName}`;
-            }, [userId]);
+        const _cloudDocPath = useCallback((studentName) => {
+            if (!_cloudUserId || !studentName) return null;
+            const safeName = studentName.replace(/[\/\.#$\[\]]/g, '_');
+            return `apps/prismflow/behaviorLens/users/${_cloudUserId}/workspaces/${safeName}`;
+        }, [_cloudUserId]);
 
-            // Save data to Firestore
-            const saveToCloud = useCallback(async (studentName, data) => {
-                if (canvasEnv || !fs || !userId || !studentName) return false;
-                if (!_fb.doc || !_fb.setDoc) return false;
-                const path = docPath(studentName);
-                if (!path) return false;
-                try {
-                    setSyncStatus('syncing');
-                    // Firebase v9: doc(firestore, path...) then setDoc(docRef, data)
-                    const pathParts = path.split('/');
-                    const docRef = _fb.doc(fs, ...pathParts);
-                    await _fb.setDoc(docRef, {
-                        ...data,
-                        updatedAt: new Date().toISOString(),
-                        _uid: userId
-                    }, { merge: true });
-                    setSyncStatus('synced');
-                    debugLog('CloudSync: saved', studentName);
-                    return true;
-                } catch (err) {
-                    warnLog('CloudSync: save failed', err);
-                    setSyncStatus('offline');
-                    return false;
-                }
-            }, [fs, userId, canvasEnv, docPath]);
+        const _saveToCloud = useCallback(async (studentName, data) => {
+            if (isCanvasEnv || !firestore || !_cloudUserId || !studentName) return false;
+            if (!_fb.doc || !_fb.setDoc) return false;
+            const path = _cloudDocPath(studentName);
+            if (!path) return false;
+            try {
+                _setSyncStatus('syncing');
+                const pathParts = path.split('/');
+                const docRef = _fb.doc(firestore, ...pathParts);
+                await _fb.setDoc(docRef, {
+                    ...data,
+                    updatedAt: new Date().toISOString(),
+                    _uid: _cloudUserId
+                }, { merge: true });
+                _setSyncStatus('synced');
+                debugLog('CloudSync: saved', studentName);
+                return true;
+            } catch (err) {
+                warnLog('CloudSync: save failed', err);
+                _setSyncStatus('offline');
+                return false;
+            }
+        }, [firestore, _cloudUserId, isCanvasEnv, _cloudDocPath]);
 
-            // Load data from Firestore
-            const loadFromCloud = useCallback(async (studentName) => {
-                if (canvasEnv || !fs || !userId || !studentName) return null;
-                if (!_fb.doc || !_fb.getDoc) return null;
-                const path = docPath(studentName);
-                if (!path) return null;
-                try {
-                    setSyncStatus('syncing');
-                    // Firebase v9: doc(firestore, path...) then getDoc(docRef)
-                    const pathParts = path.split('/');
-                    const docRef = _fb.doc(fs, ...pathParts);
-                    const snap = await _fb.getDoc(docRef);
-                    setSyncStatus(snap.exists() ? 'synced' : 'idle');
-                    return snap.exists() ? snap.data() : null;
-                } catch (err) {
-                    warnLog('CloudSync: load failed', err);
-                    setSyncStatus('offline');
-                    return null;
-                }
-            }, [fs, userId, canvasEnv, docPath]);
+        const _loadFromCloud = useCallback(async (studentName) => {
+            if (isCanvasEnv || !firestore || !_cloudUserId || !studentName) return null;
+            if (!_fb.doc || !_fb.getDoc) return null;
+            const path = _cloudDocPath(studentName);
+            if (!path) return null;
+            try {
+                _setSyncStatus('syncing');
+                const pathParts = path.split('/');
+                const docRef = _fb.doc(firestore, ...pathParts);
+                const snap = await _fb.getDoc(docRef);
+                _setSyncStatus(snap.exists() ? 'synced' : 'idle');
+                return snap.exists() ? snap.data() : null;
+            } catch (err) {
+                warnLog('CloudSync: load failed', err);
+                _setSyncStatus('offline');
+                return null;
+            }
+        }, [firestore, _cloudUserId, isCanvasEnv, _cloudDocPath]);
 
-            return { saveToCloud, loadFromCloud, syncStatus, setSyncStatus, userId };
-        };
-
-        // Initialize cloud sync
-        const cloudSync = useCloudSync(firestore, firebaseAuth, isCanvasEnv);
+        // Assemble the cloudSync object (same interface as before)
+        const cloudSync = { saveToCloud: _saveToCloud, loadFromCloud: _loadFromCloud, syncStatus: _syncStatus, setSyncStatus: _setSyncStatus, userId: _cloudUserId };
         const [activePanel, setActivePanel] = useState('hub');
         const [selectedStudent, setSelectedStudent] = useState(studentNickname || '');
         const [abcEntries, setAbcEntries] = useState([]);
