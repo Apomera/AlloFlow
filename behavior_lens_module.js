@@ -8099,7 +8099,8 @@ Rules:
     };
 
     // ─── Data Quality Utility ────────────────────────────────────────────
-    const computeDataQuality = (entries) => {
+    const computeDataQuality = (entries, t) => {
+        if (typeof t !== 'function') t = (k) => '';
         if (!entries || entries.length === 0) return { score: 0, grade: 'none', color: 'slate', dimensions: [] };
         const now = new Date();
         // 1. Volume (20%)
@@ -8140,7 +8141,7 @@ Rules:
     // ─── DataQualityBadge ────────────────────────────────────────────────
     const DataQualityBadge = ({ abcEntries, t }) => {
         const [expanded, setExpanded] = useState(false);
-        const quality = computeDataQuality(abcEntries);
+        const quality = computeDataQuality(abcEntries, t);
         if (quality.grade === 'none') return null;
 
         const ringColors = { emerald: 'border-emerald-400 bg-emerald-50 text-emerald-700', amber: 'border-amber-400 bg-amber-50 text-amber-700', red: 'border-red-400 bg-red-50 text-red-700' };
