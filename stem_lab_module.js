@@ -23457,7 +23457,7 @@
         // ═══════════════════════════════════════════════════════
         // FRACTION VISUALIZER
         // ═══════════════════════════════════════════════════════
-        stemLabTab === 'explore' && stemLabTool === 'fractionViz' && (() => {
+        stemLabTab === 'explore' && stemLabTool === 'fractionViz' && !(window.StemLab && window.StemLab.isRegistered('fractionViz')) && (() => {
           const d = labToolData.fractions;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, fractions: { ...prev.fractions, [key]: val } }));
           const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
@@ -23709,7 +23709,7 @@
         // ═══════════════════════════════════════════════════════
         // FRACTION TILES + CHALLENGE MODE
         // ═══════════════════════════════════════════════════════
-        stemLabTab === 'explore' && stemLabTool === 'fractions' && (() => {
+        stemLabTab === 'explore' && stemLabTool === 'fractions' && !(window.StemLab && window.StemLab.isRegistered('fractions')) && (() => {
           // Difficulty-adaptive denominator pools (expanded for higher denominators)
           var fdiff = exploreDifficulty || 'medium';
           var dpool = fdiff === 'easy' ? [2, 3, 4] : fdiff === 'hard' ? [3, 4, 5, 6, 8, 10, 12, 15, 16, 20] : [2, 3, 4, 5, 6, 8, 10, 12];
@@ -51448,7 +51448,8 @@
             dnaLab: true, gameStudio: true, geoQuiz: true,
             geometryProver: true, logicLab: true, plateTectonics: true,
             titrationLab: true,
-            volume: true, numberline: true, areamodel: true
+            volume: true, numberline: true, areamodel: true,
+            fractionViz: true, fractions: true
           };
           if (!_pluginOnlyTools[stemLabTool]) return null;
 
