@@ -51448,7 +51448,7 @@
             dnaLab: true, gameStudio: true, geoQuiz: true,
             geometryProver: true, logicLab: true, plateTectonics: true,
             titrationLab: true,
-            titrationLab: true
+            volume: true, numberline: true, areamodel: true
           };
           if (!_pluginOnlyTools[stemLabTool]) return null;
 
