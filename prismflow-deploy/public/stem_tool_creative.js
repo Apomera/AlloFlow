@@ -35,9 +35,9 @@ window.StemLab = window.StemLab || {
 
   // ═══ 🔬 dataPlot (dataPlot) ═══
   window.StemLab.registerTool('dataPlot', {
-    icon: '🔬',
-    label: 'dataPlot',
-    desc: '',
+    icon: '📊',
+    label: 'Data Plotter',
+    desc: 'Plot data, calculate regression & R²',
     color: 'slate',
     category: 'creative',
     render: function(ctx) {
@@ -208,7 +208,7 @@ const d = labToolData.dataPlot;
 
               // Data points
 
-              d.points.map((p, i) => React.createElement("circle", { key: i, cx: toSX(p.x), cy: toSY(p.y), r: 5, fill: "#0d9488", stroke: "#fff", strokeWidth: 1.5 })),
+              d.points.map(function(p, i) { return React.createElement("g", { key: 'pt'+i, style: { cursor: 'pointer' }, onClick: function(e) { e.stopPropagation(); upd('points', d.points.filter(function(_, j) { return j !== i; })); addToast('🗑 Removed (' + p.x + ', ' + p.y + ')', 'info'); } }, React.createElement("circle", { cx: toSX(p.x), cy: toSY(p.y), r: 12, fill: "transparent" }), React.createElement("circle", { cx: toSX(p.x), cy: toSY(p.y), r: 5, fill: "#0d9488", stroke: "#fff", strokeWidth: 1.5 }), React.createElement("title", null, "(" + p.x + ", " + p.y + ") — click to remove")); }),
 
               // Regression line
 
@@ -320,6 +320,8 @@ const d = labToolData.dataPlot;
 
               var dpScore = d.dpScore || 0;
 
+              var dpStreak = d.dpStreak || 0;
+
               function makeDpQuiz() {
 
                 var scenarios = [
@@ -350,7 +352,9 @@ const d = labToolData.dataPlot;
 
                   React.createElement("button", { onClick: function () { var q = makeDpQuiz(); upd('dpQuiz', q); upd('points', q.pts); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (dpQuiz ? 'bg-teal-100 text-teal-700' : 'bg-teal-600 text-white') + " hover:opacity-90 transition-all" }, dpQuiz ? '🔄 Next Scenario' : '📊 Predict Correlation'),
 
-                  dpScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + dpScore + ' correct')
+                  dpScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + dpScore + ' correct'),
+
+                  dpStreak > 1 && React.createElement("span", { className: "text-xs font-bold text-orange-600" }, '🔥 ' + dpStreak + ' streak')
 
                 ),
 
@@ -372,7 +376,9 @@ const d = labToolData.dataPlot;
 
                           upd('dpScore', dpScore + (correct ? 1 : 0));
 
-                          if (correct) addToast(t('stem.data_plot.correct') + dpQuiz.answer + ' correlation', 'success'); else addToast(t('stem.data_plot.it') + "'s " + dpQuiz.answer + ' correlation', 'error');
+                          upd('dpStreak', correct ? dpStreak + 1 : 0);
+
+                          if (correct) { addToast(t('stem.data_plot.correct') + dpQuiz.answer + ' correlation', 'success'); awardStemXP('dataPlot', 10, 'Correlation Quiz'); } else { addToast(t('stem.data_plot.it') + "'s " + dpQuiz.answer + ' correlation', 'error'); }
 
                         }, className: "px-4 py-2 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-teal-400 hover:bg-teal-50 transition-all"
 
