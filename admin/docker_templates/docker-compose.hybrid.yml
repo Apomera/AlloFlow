@@ -1,0 +1,211 @@
+# ============================================================================
+# AlloFlow Hybrid Stack - Local Services with Cloud Fallback
+# ============================================================================
+# For hybrid deployments that run essential services locally
+# and fall back to cloud services for optional/heavy workloads
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # DATABASE & API (Local - Required)
+  # ============================================================================
+  pocketbase:
+    image: ghcr.io/pbkit/pocketbase:latest
+    container_name: alloflow-pocketbase
+    restart: unless-stopped
+    ports:
+      - "8090:8090"
+    volumes:
+      - pocketbase_data:/pb_data
+      - pb_hooks:/pb_hooks
+    environment:
+      # SECURITY: Change these in production!
+      POCKETBASE_ADMIN_EMAIL: admin@alloflow.local
+      POCKETBASE_ADMIN_PASSWORD: alloflow_default_please_change
+      # For hybrid mode: configure cloud sync
+      POCKETBASE_CLOUD_SYNC: "false"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8090/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - alloflow
+    labels:
+      - "alloflow=database"
+
+  # ============================================================================
+  # Text-to-Speech Service (Local - Required)
+  # ============================================================================
+  piper:
+    image: rhasspy/piper:latest
+    container_name: alloflow-piper
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      HOME: /tmp
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - alloflow
+    labels:
+      - "alloflow=tts"
+
+  # ============================================================================
+  # Meta-Search Engine (Local - Required)
+  # ============================================================================
+  searxng:
+    image: searxng/searxng:latest
+    container_name: alloflow-searxng
+    restart: unless-stopped
+    ports:
+      - "8888:8080"
+    volumes:
+      - searxng_data:/etc/searxng
+    environment:
+      BASE_URL: http://localhost:8888/
+      IMAGE_PROXY: "true"
+      SEARXNG_SECRET: alloflow_default_secret_change_me
+      # Hybrid mode: disable heavy searches by default
+      AUTOCOMPLETE: "false"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - alloflow
+    labels:
+      - "alloflow=search"
+
+  # ============================================================================
+  # OPTIONAL: Local LLM Inference (Uncomment for fully local option)
+  # ============================================================================
+  # In hybrid mode, this is optional. Uncomment to run local Ollama
+  # alongside cloud fallbacks, or use purely cloud APIs by leaving this disabled
+  #
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: alloflow-ollama
+  #   restart: unless-stopped
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   environment:
+  #     OLLAMA_HOST: 0.0.0.0:11434
+  #     NVIDIA_VISIBLE_DEVICES: all
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+  #     interval: 15s
+  #     timeout: 10s
+  #     retries: 10
+  #     start_period: 30s
+  #   networks:
+  #     - alloflow
+  #   labels:
+  #     - "alloflow=llm"
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: all
+  #             capabilities: [gpu]
+
+# ============================================================================
+# CLOUD INTEGRATION CONFIGURATION
+# ============================================================================
+#
+# For hybrid deployments, configure cloud fallbacks in your application.
+# These services run locally while AI workloads use cloud APIs.
+#
+# LLM / Chat Services:
+#   - Default: Cloud-based (OpenAI, Anthropic, Google, etc.)
+#   - Local: Optional Ollama (uncomment above if available)
+#   - Advantage: No GPU needed if using cloud APIs
+#   - Cost: Pay-per-use cloud model
+#
+# Image Generation (Flux):
+#   - Disabled locally in hybrid mode (requires 12GB+ GPU VRAM)
+#   - Recommended: Use Replicate API or similar
+#   - Configuration: Set REPLICATE_API_TOKEN environment variable
+#
+# Search:
+#   - Supported by local SearXNG
+#   - Can be enhanced with specialized APIs
+#
+# Text-to-Speech:
+#   - Runs locally with Piper (fast, private, no cost)
+#   - Fallback to cloud TTS if needed (Google, Azure, etc.)
+#
+# Environment Variables for Cloud Services:
+#   OPENAI_API_KEY=sk-...                # OpenAI GPT-4
+#   ANTHROPIC_API_KEY=sk-ant-...         # Claude
+#   GOOGLE_API_KEY=AIza...               # Google Gemini
+#   REPLICATE_API_TOKEN=...              # Flux image generation
+#   PERPLEXITY_API_KEY=...               # Advanced search
+#
+# Recommended Hybrid Strategy:
+#   1. Run local services (Database, TTS, Search)
+#   2. Use one primary cloud LLM API (e.g., OpenAI)
+#   3. Have fallback for image generation
+#   4. Monitor costs and performance
+#   5. Fall back to local Ollama if APIs become too expensive
+#
+
+# ============================================================================
+# Persistent Volumes
+# ============================================================================
+volumes:
+  pocketbase_data:
+    driver: local
+  pb_hooks:
+    driver: local
+  searxng_data:
+    driver: local
+  # ollama_data:          # Uncomment if using local Ollama
+  #   driver: local
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  alloflow:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ============================================================================
+# Service Endpoints
+# ============================================================================
+# Once running, access services at:
+#
+# - PocketBase Admin:  http://localhost:8090/_/
+# - PocketBase API:    http://localhost:8090/api/
+# - Piper TTS:         http://localhost:5000
+# - SearXNG:           http://localhost:8888
+# - Ollama API:        http://localhost:11434 (if enabled)
+#
+# Hybrid Mode Workflow:
+#   1. Deploy this stack (local services only)
+#   2. Configure cloud API keys in your application
+#   3. Application queries local services for TTS/search
+#   4. Application queries cloud APIs for LLM/image generation
+#   5. Cache results to minimize API calls and costs
+#
+# Common Commands:
+#   docker-compose up -d              # Start all services
+#   docker-compose down               # Stop all services
+#   docker-compose logs -f            # View live logs
+#   docker-compose ps                 # Show running services
+# ============================================================================

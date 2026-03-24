@@ -1,0 +1,219 @@
+# ============================================================================
+# AlloFlow Local Stack - Full Setup with All Services
+# ============================================================================
+# For standalone installations with complete AI capabilities
+# Edit this file to enable/disable services as needed
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # DATABASE & API (Required)
+  # ============================================================================
+  pocketbase:
+    image: ghcr.io/pbkit/pocketbase:latest
+    container_name: alloflow-pocketbase
+    restart: unless-stopped
+    ports:
+      - "8090:8090"
+    volumes:
+      - pocketbase_data:/pb_data
+      - pb_hooks:/pb_hooks
+    environment:
+      # SECURITY: Change these in production!
+      POCKETBASE_ADMIN_EMAIL: admin@alloflow.local
+      POCKETBASE_ADMIN_PASSWORD: alloflow_default_please_change
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8090/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - alloflow
+    labels:
+      - "alloflow=database"
+
+  # ============================================================================
+  # LLM Inference Engine (Required)
+  # ============================================================================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: alloflow-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      # Allow listening on all interfaces
+      OLLAMA_HOST: 0.0.0.0:11434
+      # GPU support (set to 0 or omit for CPU-only)
+      NVIDIA_VISIBLE_DEVICES: all
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - alloflow
+    labels:
+      - "alloflow=llm"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # ============================================================================
+  # Text-to-Speech Service (Required)
+  # ============================================================================
+  piper:
+    image: rhasspy/piper:latest
+    container_name: alloflow-piper
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      HOME: /tmp
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - alloflow
+    labels:
+      - "alloflow=tts"
+
+  # ============================================================================
+  # Meta-Search Engine (Required)
+  # ============================================================================
+  searxng:
+    image: searxng/searxng:latest
+    container_name: alloflow-searxng
+    restart: unless-stopped
+    ports:
+      - "8888:8080"
+    volumes:
+      - searxng_data:/etc/searxng
+    environment:
+      BASE_URL: http://localhost:8888/
+      IMAGE_PROXY: "true"
+      SEARXNG_SECRET: alloflow_default_secret_change_me
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - alloflow
+    labels:
+      - "alloflow=search"
+
+# ============================================================================
+# OPTIONAL SERVICES - Uncomment to enable
+# ============================================================================
+
+  # ============================================================================
+  # Image Generation (Optional - High VRAM requirement)
+  # ============================================================================
+  # Uncomment this section to enable image generation with Flux
+  # WARNING: Requires NVIDIA GPU with 12GB+ VRAM
+  # On CPU: Very slow (10-40 minutes per image)
+  # flux:
+  #   image: black-forest-labs/flux-pro:latest
+  #   container_name: alloflow-flux
+  #   restart: unless-stopped
+  #   ports:
+  #     - "7860:7860"
+  #   environment:
+  #     CUDA_VISIBLE_DEVICES: "0"
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:7860/"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+  #     start_period: 60s
+  #   networks:
+  #     - alloflow
+  #   labels:
+  #     - "alloflow=image-generation"
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 24G
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+
+  # ============================================================================
+  # Reverse Proxy / API Gateway (Optional)
+  # ============================================================================
+  # Uncomment this section to enable unified API gateway
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: alloflow-proxy
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #   depends_on:
+  #     - pocketbase
+  #     - ollama
+  #     - piper
+  #     - searxng
+  #   networks:
+  #     - alloflow
+  #   labels:
+  #     - "alloflow=proxy"
+
+# ============================================================================
+# Persistent Volumes
+# ============================================================================
+volumes:
+  pocketbase_data:
+    driver: local
+  pb_hooks:
+    driver: local
+  ollama_data:
+    driver: local
+  searxng_data:
+    driver: local
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  alloflow:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ============================================================================
+# Service Endpoints
+# ============================================================================
+# Once running, access services at:
+#
+# - PocketBase Admin:  http://localhost:8090/_/
+# - PocketBase API:    http://localhost:8090/api/
+# - Ollama API:        http://localhost:11434
+# - Piper TTS:         http://localhost:5000
+# - SearXNG:           http://localhost:8888
+#
+# Common Commands:
+#   docker-compose up -d              # Start all services
+#   docker-compose down               # Stop all services
+#   docker-compose logs -f            # View live logs
+#   docker-compose ps                 # Show running services
+#   docker exec alloflow-ollama ollama pull mistral   # Pull a model
+# ============================================================================

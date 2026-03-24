@@ -1,125 +1,103 @@
 import React, { useState, useEffect } from 'react';
+import SetupWizard from './pages/SetupWizard';
 import './App.css';
-import Dashboard from './pages/Dashboard';
-import Services from './pages/Services';
-import Models from './pages/Models';
-import Cluster from './pages/Cluster';
-import AIConfig from './pages/AIConfig';
-import Security from './pages/Security';
-import Deploy from './pages/Deploy';
-import Settings from './pages/Settings';
-import SetupWizard from './setup/SetupWizard';
-import UpdateNotification from './components/UpdateNotification';
 
-const TABS = [
-  { id: 'dashboard', label: '📊 Dashboard', component: Dashboard },
-  { id: 'services', label: '⚙ Services', component: Services },
-  { id: 'models', label: '🤖 Models', component: Models },
-  { id: 'cluster', label: '🌐 Cluster', component: Cluster },
-  { id: 'ai', label: '🧠 AI Config', component: AIConfig },
-  { id: 'security', label: '🔒 Security', component: Security },
-  { id: 'settings', label: '⚙️ Settings', component: Settings },
-  { id: 'deploy', label: '📦 Deploy', component: Deploy },
-];
-
-export default function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [isDark, setIsDark] = useState(true);
-  const [setupComplete, setSetupComplete] = useState(null); // null = loading, true = done, false = needs setup
+function App() {
+  const [setupState, setSetupState] = useState({
+    loading: true,
+    installed: false,
+    config: null,
+    error: null
+  });
 
   useEffect(() => {
-    // Check if setup is complete
-    const checkSetup = async () => {
-      try {
-        // Check for setup-complete.lock file first (more reliable)
-        const hasSetupLock = await window.alloAPI.checkSetupComplete?.() || false;
-        
-        if (hasSetupLock) {
-          console.log('[Setup Check] Found setup-complete.lock file');
-          setSetupComplete(true);
-          return;
-        }
-        
-        // Fallback: Check if .env has SERVER_IP configuration
-        const env = await window.alloAPI.readEnv?.();
-        const isSetupComplete = env?.success && env?.content && env.content.includes('SERVER_IP');
-        console.log('[Setup Check]', { envSuccess: env?.success, hasServerIP: env?.content?.includes('SERVER_IP'), isSetupComplete });
-        setSetupComplete(isSetupComplete);
-      } catch (err) {
-        console.error('[Setup Check Error]', err);
-        // If there's an error, assume setup is not complete
-        setSetupComplete(false);
-      }
-    };
-    
-    checkSetup();
+    checkSetupStatus();
   }, []);
 
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+  const checkSetupStatus = async () => {
+    try {
+      console.log('[App] Checking setup status...');
+      const result = await window.alloAPI.setup.check();
+      console.log('[App] Setup check result:', result);
+      
+      setSetupState({
+        loading: false,
+        installed: result.installed,
+        config: result.config,
+        error: result.error || null
+      });
+    } catch (err) {
+      console.error('[App] Error checking setup:', err);
+      setSetupState({
+        loading: false,
+        installed: false,
+        config: null,
+        error: err.message
+      });
     }
-  }, [isDark]);
-
-  const handleSetupComplete = () => {
-    setSetupComplete(true);
   };
 
-  // Show loading state while checking
-  if (setupComplete === null) {
+  const handleSetupComplete = (config) => {
+    console.log('[App] Setup complete, saving config:', config.deploymentType);
+    setSetupState({
+      loading: false,
+      installed: true,
+      config: config,
+      error: null
+    });
+  };
+
+  if (setupState.loading) {
     return (
-      <div className="app">
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-          <div className="loading-spinner">Loading...</div>
-        </div>
+      <div className="app-container loading">
+        <div className="spinner"></div>
+        <p>Initializing AlloFlow...</p>
       </div>
     );
   }
 
-  // Show setup wizard if not complete
-  if (setupComplete === false) {
+  if (setupState.error) {
+    return (
+      <div className="app-container error">
+        <h1>Error</h1>
+        <p>{setupState.error}</p>
+        <button onClick={checkSetupStatus}>Retry</button>
+      </div>
+    );
+  }
+
+  // Show setup wizard if not installed
+  if (!setupState.installed) {
     return <SetupWizard onComplete={handleSetupComplete} />;
   }
 
-  // Show main admin center
-  const ActiveComponent = TABS.find(t => t.id === activeTab)?.component || Dashboard;
-
+  // If installed, show dashboard or update screen
   return (
-    <div className="app">
-      <UpdateNotification />
+    <div className="app-container dashboard">
+      <div className="dashboard-header">
+        <h1>AlloFlow Admin</h1>
+        <p>Deployment: {setupState.config?.deploymentType}</p>
+      </div>
       
-      <header className="header">
-        <h1>⚡ AlloFlow Admin Center</h1>
-        <button 
-          className="theme-toggle"
-          onClick={() => setIsDark(!isDark)}
-          title={isDark ? 'Light mode' : 'Dark mode'}
-        >
-          {isDark ? '☀️' : '🌙'}
+      <div className="dashboard-content">
+        <h2>Installation Complete</h2>
+        <p>AlloFlow has been configured with deployment type: <strong>{setupState.config?.deploymentType}</strong></p>
+        <p>Setup date: {new Date(setupState.config?.setupDate).toLocaleString()}</p>
+        
+        <hr />
+        
+        <h3>Setup Details</h3>
+        <pre>{JSON.stringify(setupState.config, null, 2)}</pre>
+        
+        <button className="btn-primary" onClick={() => {
+          console.log('[App] Re-running setup wizard');
+          setSetupState({ ...setupState, installed: false });
+        }}>
+          Re-run Setup Wizard
         </button>
-      </header>
-
-      <nav className="tabs">
-        {TABS.map(tab => (
-          <button
-            key={tab.id}
-            className={`tab ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </nav>
-
-      <main className="content">
-        <ActiveComponent onNavigateTab={setActiveTab} />
-      </main>
-
-      <footer className="footer">
-        <p>AlloFlow Admin | Version 0.2.0 | All services running locally (127.0.0.1)</p>
-      </footer>
+      </div>
     </div>
   );
 }
+
+export default App;
