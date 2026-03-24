@@ -6,6 +6,34 @@
     // STEM Lab module for AlloFlow - loaded from GitHub CDN
     // Version: 1.0.0 (Feb 2026)
 
+    // ── StemLab Plugin Registry (Phase 2) ──
+    // Initialize before the hub component so plugins can register tools.
+    // Plugins (stem_tool_*.js) call window.StemLab.registerTool(id, config)
+    // and the hub's fallback renderer (at the end of the explore chain) delegates to them.
+    if (!window.StemLab) {
+      window.StemLab = {
+        _registry: {},
+        _order: [],
+        registerTool: function(id, config) {
+          config.id = id;
+          config.ready = config.ready !== false;
+          this._registry[id] = config;
+          if (this._order.indexOf(id) === -1) this._order.push(id);
+          console.log('[StemLab] Registered tool: ' + id);
+        },
+        getRegisteredTools: function() {
+          var self = this;
+          return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean);
+        },
+        isRegistered: function(id) { return !!this._registry[id]; },
+        renderTool: function(id, ctx) {
+          var tool = this._registry[id];
+          if (!tool || !tool.render) return null;
+          try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
+        }
+      };
+    }
+
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.StemLab = function StemLabModal(props) {
       const {
@@ -2479,7 +2507,19 @@
               },
 
               { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
-              { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true }
+              { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
+              { id: 'gameStudio', icon: '🎮', label: 'Game Studio', desc: 'Design, build, and test your own games with a visual coding interface.', color: 'purple', ready: true },
+
+              { id: '_cat_Biology', icon: '', label: '🧬 Biology & Life Science', desc: '', color: 'slate', category: true },
+              { id: 'dnaLab', icon: '🧬', label: 'DNA Lab', desc: 'Extract, sequence, and analyze DNA. Explore genetics through interactive experiments.', color: 'emerald', ready: true },
+
+              { id: '_cat_Geography', icon: '', label: '🌍 Geography & Earth Science', desc: '', color: 'slate', category: true },
+              { id: 'geoQuiz', icon: '🗺️', label: 'Geography Quiz', desc: 'Test your world geography knowledge with interactive maps, flags, and capitals.', color: 'sky', ready: true },
+              { id: 'plateTectonics', icon: '🌋', label: 'Plate Tectonics', desc: 'Explore tectonic plates, earthquakes, volcanoes, and continental drift.', color: 'orange', ready: true },
+
+              { id: '_cat_AdvancedMath', icon: '', label: '📐 Advanced Math', desc: '', color: 'slate', category: true },
+              { id: 'geometryProver', icon: '📐', label: 'Geometry Prover', desc: 'Construct geometric proofs step-by-step with interactive diagrams.', color: 'violet', ready: true },
+              { id: 'logicLab', icon: '🧩', label: 'Logic Lab', desc: 'Logic gates, truth tables, and Boolean algebra puzzles.', color: 'indigo', ready: true }
             ];
             // ── Tool search filter ──
             var _searchLower = _stemToolSearch.toLowerCase().trim();
@@ -51381,7 +51421,77 @@
           );
         })(),
 
+        // ════════════════════════════════════════════════════════════════════
+        // ── Plugin Registry Fallback Renderer (Phase 2) ──
+        // For tools registered via window.StemLab.registerTool() that do NOT
+        // have inline render code above. Bridges hub-scope variables into
+        // the plugin's ctx object format.
+        // ════════════════════════════════════════════════════════════════════
+        stemLabTab === 'explore' && stemLabTool && window.StemLab && window.StemLab.isRegistered(stemLabTool) && (function _pluginFallback() {
+          // Only render if no inline IIFE already handled this tool.
+          // We detect this by checking a known marker: inline tools set state
+          // immediately via their IIFE returns. If the tool is in the registry
+          // AND has inline code, the inline code already rendered it — we skip.
+          // For now, use an explicit set of tools WITHOUT inline code.
+          var _pluginOnlyTools = {
+            dnaLab: true, gameStudio: true, geoQuiz: true,
+            geometryProver: true, logicLab: true, plateTectonics: true
+          };
+          if (!_pluginOnlyTools[stemLabTool]) return null;
 
+          // Build context bridge: map hub-local variables to plugin ctx format
+          var _ctx = {
+            React: React,
+            toolData: labToolData,
+            update: function(toolId, key, val) {
+              setLabToolData(function(prev) {
+                var toolState = Object.assign({}, (prev && prev[toolId]) || {});
+                toolState[key] = val;
+                var patch = {}; patch[toolId] = toolState;
+                return Object.assign({}, prev, patch);
+              });
+            },
+            updateMulti: function(toolId, obj) {
+              setLabToolData(function(prev) {
+                var toolState = Object.assign({}, (prev && prev[toolId]) || {}, obj);
+                var patch = {}; patch[toolId] = toolState;
+                return Object.assign({}, prev, patch);
+              });
+            },
+            setStemLabTool: setStemLabTool,
+            setStemLabTab: setStemLabTab,
+            setToolSnapshots: setToolSnapshots,
+            addToast: addToast,
+            awardXP: typeof awardStemXP === 'function' ? awardStemXP : function() {},
+            getXP: typeof getStemXP === 'function' ? getStemXP : function() { return 0; },
+            announceToSR: typeof announceToSR === 'function' ? announceToSR : function() {},
+            celebrate: typeof stemCelebrate === 'function' ? stemCelebrate : function() {},
+            t: typeof t === 'function' ? t : function(k) { return k; },
+            icons: { ArrowLeft: ArrowLeft },
+            saveSnapshot: function(toolId, label, data) {
+              if (typeof setToolSnapshots === 'function') {
+                setToolSnapshots(function(prev) {
+                  return (prev || []).concat([{ id: toolId + '-' + Date.now(), tool: toolId, label: label, data: data, ts: Date.now() }]);
+                });
+              }
+            }
+          };
+
+          try {
+            return window.StemLab.renderTool(stemLabTool, _ctx);
+          } catch(e) {
+            console.error('[StemLab] Plugin fallback error for ' + stemLabTool, e);
+            return React.createElement('div', { style: { padding: 40, textAlign: 'center', color: '#ef4444' } },
+              React.createElement('p', { style: { fontSize: 32, marginBottom: 12 } }, '⚠️'),
+              React.createElement('p', { style: { fontWeight: 700, marginBottom: 8 } }, 'Error loading ' + stemLabTool),
+              React.createElement('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 16 } }, e.message || 'Unknown error'),
+              React.createElement('button', {
+                onClick: function() { setStemLabTool(null); },
+                style: { padding: '8px 20px', borderRadius: 8, background: '#3b82f6', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
+              }, '← Back to Tools')
+            );
+          }
+        })(),
 
 
       ));

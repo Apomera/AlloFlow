@@ -74,6 +74,16 @@ const MODULES = [
     }
 ];
 
+// Plugin files loaded via the setTimeout plugin loader (not loadModule)
+// build.js updates their CDN hash in the pluginCdnBase variable
+const PLUGIN_FILES = [
+    'stem_tool_dna.js',
+    'stem_tool_math.js',
+    'stem_tool_science.js',
+    'stem_tool_creative.js',
+    'stem_tool_geo.js'
+];
+
 // ── Read source ─────────────────────────────────────────────────
 if (!fs.existsSync(SOURCE)) {
     console.error(`❌ Source file not found: ${SOURCE}`);
@@ -132,6 +142,32 @@ content = content.replace(LOAD_MODULE_RE, (match, moduleName, currentUrl) => {
 
     return `loadModule('${moduleName}', '${newUrl}')`;
 });
+
+// ── Transform plugin loader CDN base ────────────────────────────
+// Matches: var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@HASH/';
+const PLUGIN_CDN_RE = /var\s+pluginCdnBase\s*=\s*'https:\/\/cdn\.jsdelivr\.net\/gh\/Apomera\/AlloFlow@[^/]+\//;
+let pluginReplaced = false;
+
+if (mode === 'dev') {
+    // In dev mode, plugins load from local paths
+    content = content.replace(PLUGIN_CDN_RE, () => {
+        pluginReplaced = true;
+        console.log('  ✏️  pluginCdnBase: → local (./)'); 
+        return "var pluginCdnBase = './";
+    });
+} else {
+    content = content.replace(PLUGIN_CDN_RE, () => {
+        pluginReplaced = true;
+        const newBase = `https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@${gitHash}/`;
+        console.log(`  ✏️  pluginCdnBase: → @${gitHash}`);
+        return `var pluginCdnBase = '${newBase}`;
+    });
+}
+
+if (pluginReplaced) {
+    replacementCount++;
+    console.log(`  📦 Plugin files managed: ${PLUGIN_FILES.join(', ')}`);
+}
 
 // ── Summary ─────────────────────────────────────────────────────
 if (replacementCount === 0) {
