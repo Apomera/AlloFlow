@@ -126,8 +126,8 @@ const createWindow = () => {
 
   mainWindow.loadURL(startURL);
 
-  // Always open DevTools for debugging
-  mainWindow.webContents.openDevTools();
+  // DevTools disabled for production
+  // mainWindow.webContents.openDevTools();
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -311,22 +311,39 @@ const { SERVICE_DEFINITIONS, HARDWARE_PROFILES } = require('./serviceDefinitions
 // Helper: Execute docker-compose command, trying both old and new syntax
 function execDockerCompose(command, options = {}) {
   const { execSync } = require('child_process');
+  const cwd = options.cwd || process.cwd();
+  const stdio = options.stdio || 'inherit';
+  
+  console.log('[docker-compose] Executing:', command, 'in', cwd);
+  
   try {
     // Try docker-compose first (older syntax)
-    return execSync(`docker-compose ${command}`, {
-      stdio: options.stdio || 'inherit',
+    console.log('[docker-compose] Trying old syntax: docker-compose');
+    const output = execSync(`docker-compose ${command}`, {
+      stdio: stdio,
       encoding: options.encoding || 'utf-8',
-      cwd: options.cwd || process.cwd()
+      cwd: cwd,
+      maxBuffer: 10 * 1024 * 1024 // 10MB buffer for large outputs
     });
+    console.log('[docker-compose] Old syntax succeeded');
+    return output;
   } catch (err) {
+    console.warn('[docker-compose] Old syntax failed:', err.message);
     // Try docker compose (v2 syntax)
     try {
-      return execSync(`docker compose ${command}`, {
-        stdio: options.stdio || 'inherit',
+      console.log('[docker-compose] Trying new syntax: docker compose');
+      const output = execSync(`docker compose ${command}`, {
+        stdio: stdio,
         encoding: options.encoding || 'utf-8',
-        cwd: options.cwd || process.cwd()
+        cwd: cwd,
+        maxBuffer: 10 * 1024 * 1024
       });
+      console.log('[docker-compose] New syntax succeeded');
+      return output;
     } catch (v2Err) {
+      console.error('[docker-compose] Both syntaxes failed');
+      console.error('[docker-compose] Old syntax error:', err.message);
+      console.error('[docker-compose] New syntax error:', v2Err.message);
       throw new Error(`docker-compose failed: ${err.message}. Also tried 'docker compose': ${v2Err.message}`);
     }
   }
@@ -654,17 +671,29 @@ async function startDeployment(setupData, onProgress) {
     
     const composeResult = generateDockerCompose(setupData.selectedServices);
     if (!composeResult.success) {
+      console.error('[deploy:start] Failed to generate docker-compose:', composeResult.error);
       throw new Error('Failed to generate docker-compose: ' + composeResult.error);
     }
     
+    console.log('[deploy:start] Generated docker-compose with', composeResult.serviceCount, 'services');
+    console.log('[deploy:start] YAML content length:', composeResult.content.length, 'bytes');
+    
     // Ensure docker directory exists
     if (!fs.existsSync(dockerDir)) {
+      console.log('[deploy:start] Creating docker directory:', dockerDir);
       fs.mkdirSync(dockerDir, { recursive: true });
     }
     
     // Write docker-compose file
-    fs.writeFileSync(composeFile, composeResult.content);
-    console.log('[deploy:start] Wrote docker-compose to:', composeFile);
+    try {
+      fs.writeFileSync(composeFile, composeResult.content);
+      console.log('[deploy:start] Wrote docker-compose to:', composeFile);
+      const fileStats = fs.statSync(composeFile);
+      console.log('[deploy:start] File size:', fileStats.size, 'bytes');
+    } catch (writeErr) {
+      console.error('[deploy:start] Failed to write file:', writeErr.message);
+      throw new Error('Failed to write docker-compose file: ' + writeErr.message);
+    }
     
     onProgress({
       phase: 'config',
@@ -674,13 +703,14 @@ async function startDeployment(setupData, onProgress) {
     
     // PHASE 3: Pull images
     try {
+      console.log('[deploy:start] Pulling images from:', composeFile);
       execDockerCompose(`-f "${composeFile}" pull`, {
         cwd: dockerDir,
-        stdio: 'inherit'
+        stdio: 'pipe'
       });
       console.log('[deploy:start] Docker images pulled successfully');
-    } catch (err) {
-      console.warn('[deploy:start] Image pull had issues:', err.message);
+    } catch (pullErr) {
+      console.warn('[deploy:start] Image pull issue (continuing anyway):', pullErr.message);
       // Continue anyway - images might already exist locally
     }
     
@@ -692,14 +722,18 @@ async function startDeployment(setupData, onProgress) {
     
     // PHASE 4: Start containers
     try {
-      execDockerCompose(`-f "${composeFile}" up -d`, {
+      console.log('[deploy:start] Starting containers from:', composeFile);
+      console.log('[deploy:start] Working directory:', dockerDir);
+      const output = execDockerCompose(`-f "${composeFile}" up -d`, {
         cwd: dockerDir,
         stdio: 'pipe'
       });
+      console.log('[deploy:start] Containers startup output:', output);
       console.log('[deploy:start] Containers started successfully');
-    } catch (err) {
-      console.error('[deploy:start] Container startup error:', err.message);
-      throw new Error('Failed to start containers: ' + err.message);
+    } catch (startErr) {
+      console.error('[deploy:start] Container startup error:', startErr.message);
+      console.error('[deploy:start] Full error:', startErr);
+      throw new Error('Failed to start containers: ' + startErr.message);
     }
     
     onProgress({
