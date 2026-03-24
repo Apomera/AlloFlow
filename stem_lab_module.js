@@ -9853,6 +9853,12 @@
                 rows: 0,
                 cols: 0
               });
+              setAreaChallenge({
+                a: a,
+                b: b,
+                answer: a * b,
+                question: 'What is ' + a + ' \u00d7 ' + b + '?'
+              });
               setAreaAnswer('');
               setAreaFeedback(null);
             },
