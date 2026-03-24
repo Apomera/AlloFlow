@@ -2522,7 +2522,7 @@
               { id: 'geoQuiz', icon: '🗺️', label: 'Geography Quiz', desc: 'Test your world geography knowledge with interactive maps, flags, and capitals.', color: 'sky', ready: true },
               { id: 'plateTectonics', icon: '🌋', label: 'Plate Tectonics', desc: 'Explore tectonic plates, earthquakes, volcanoes, and continental drift.', color: 'orange', ready: true },
 
-              { id: '_cat_AdvancedMath', icon: '', label: '📐 Advanced Math', desc: '', color: 'slate', category: true },
+              { id: '_cat_AdvancedMathLogic', icon: '', label: '📐 Advanced Math', desc: '', color: 'slate', category: true },
               { id: 'geometryProver', icon: '📐', label: 'Geometry Prover', desc: 'Construct geometric proofs step-by-step with interactive diagrams.', color: 'violet', ready: true },
               { id: 'logicLab', icon: '🧩', label: 'Logic Lab', desc: 'Logic gates, truth tables, and Boolean algebra puzzles.', color: 'indigo', ready: true }
             ];
@@ -51456,6 +51456,8 @@
           var _ctx = {
             React: React,
             toolData: labToolData,
+            setToolData: setLabToolData,
+            setToolData: setLabToolData,
             update: function(toolId, key, val) {
               setLabToolData(function(prev) {
                 var toolState = Object.assign({}, (prev && prev[toolId]) || {});
