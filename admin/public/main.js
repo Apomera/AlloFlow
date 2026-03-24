@@ -308,6 +308,30 @@ ipcMain.handle('setup:browse-folder', async (event, defaultPath) => {
 
 const { SERVICE_DEFINITIONS, HARDWARE_PROFILES } = require('./serviceDefinitions');
 
+// Helper: Execute docker-compose command, trying both old and new syntax
+function execDockerCompose(command, options = {}) {
+  const { execSync } = require('child_process');
+  try {
+    // Try docker-compose first (older syntax)
+    return execSync(`docker-compose ${command}`, {
+      stdio: options.stdio || 'inherit',
+      encoding: options.encoding || 'utf-8',
+      cwd: options.cwd || process.cwd()
+    });
+  } catch (err) {
+    // Try docker compose (v2 syntax)
+    try {
+      return execSync(`docker compose ${command}`, {
+        stdio: options.stdio || 'inherit',
+        encoding: options.encoding || 'utf-8',
+        cwd: options.cwd || process.cwd()
+      });
+    } catch (v2Err) {
+      throw new Error(`docker-compose failed: ${err.message}. Also tried 'docker compose': ${v2Err.message}`);
+    }
+  }
+}
+
 // Detect hardware capabilities
 function detectHardware() {
   try {
@@ -363,17 +387,50 @@ function detectHardware() {
         };
         console.log('[hardware:detect] Detected NVIDIA GPU:', gpuName, '-', vramGB, 'GB VRAM');
       } catch (nvidiaErr) {
-        // Check for AMD GPU
+        // Check for AMD GPU - try multiple detection methods
+        let amdDetected = false;
+        
+        // Method 1: rocm-smi (most common)
         try {
-          execSync('rocm-smi --showproductname', { stdio: 'pipe' });
-          gpu = {
-            type: 'AMD',
-            name: 'AMD GPU (ROCm)',
-            vramGB: 'unknown'
-          };
-          console.log('[hardware:detect] Detected AMD GPU');
-        } catch (amdErr) {
-          console.log('[hardware:detect] No GPU detected');
+          const rocmResult = execSync('rocm-smi', { stdio: 'pipe', encoding: 'utf-8' });
+          if (rocmResult.includes('GPU') || rocmResult.includes('Device')) {
+            gpu = {
+              type: 'AMD',
+              name: 'AMD GPU (ROCm)',
+              vramGB: 'detected'
+            };
+            console.log('[hardware:detect] Detected AMD GPU via rocm-smi');
+            amdDetected = true;
+          }
+        } catch (rocmErr) {
+          // Method 2: Check for AMD device files (Linux/WSL)
+          try {
+            if (process.platform !== 'win32') {
+              execSync('ls /dev/dri/renderD* 2>/dev/null | grep -q .', { stdio: 'pipe' });
+              gpu = {
+                type: 'AMD',
+                name: 'AMD GPU (DRI Device)',
+                vramGB: 'detected'
+              };
+              console.log('[hardware:detect] Detected AMD GPU via DRI devices');
+              amdDetected = true;
+            }
+          } catch (driErr) {
+            // Method 3: Check for Windows AMD device (HIP)
+            try {
+              execSync('where hipcc', { stdio: 'pipe' });
+              gpu = {
+                type: 'AMD',
+                name: 'AMD GPU (HIP)',
+                vramGB: 'detected'
+              };
+              console.log('[hardware:detect] Detected AMD GPU via HIP');
+              amdDetected = true;
+            } catch (hipErr) {
+              // No AMD GPU could be found
+              console.log('[hardware:detect] No AMD GPU detected via any method');
+            }
+          }
         }
       }
     } catch (err) {
@@ -531,6 +588,7 @@ async function startDeployment(setupData, onProgress) {
     const { execSync, spawn } = require('child_process');
     
     console.log('[deploy:start] Starting deployment for:', setupData.deploymentType);
+    console.log('[deploy:start] Setup data:', JSON.stringify(setupData));
     
     const dockerDir = setupData.dockerDir;
     const composeFile = path.join(dockerDir, 'docker-compose.yml');
@@ -546,6 +604,26 @@ async function startDeployment(setupData, onProgress) {
       execSync('docker ps', { stdio: 'pipe' });
     } catch (err) {
       throw new Error('Docker daemon is not running. Please start Docker Desktop.');
+    }
+    
+    // Check docker-compose availability
+    onProgress({
+      phase: 'preflight',
+      status: 'Checking docker-compose...',
+      progress: 8
+    });
+    
+    try {
+      execSync('docker-compose --version', { stdio: 'pipe' });
+      console.log('[deploy:start] docker-compose is available');
+    } catch (composeErr) {
+      // docker-compose might be docker compose (v2)
+      try {
+        execSync('docker compose version', { stdio: 'pipe' });
+        console.log('[deploy:start] Using docker compose v2');
+      } catch (v2Err) {
+        throw new Error('docker-compose is not installed. Please install Docker Compose.');
+      }
     }
     
     onProgress({
@@ -596,10 +674,11 @@ async function startDeployment(setupData, onProgress) {
     
     // PHASE 3: Pull images
     try {
-      execSync(`docker-compose -f "${composeFile}" pull`, {
+      execDockerCompose(`-f "${composeFile}" pull`, {
         cwd: dockerDir,
         stdio: 'inherit'
       });
+      console.log('[deploy:start] Docker images pulled successfully');
     } catch (err) {
       console.warn('[deploy:start] Image pull had issues:', err.message);
       // Continue anyway - images might already exist locally
@@ -613,12 +692,13 @@ async function startDeployment(setupData, onProgress) {
     
     // PHASE 4: Start containers
     try {
-      execSync(`docker-compose -f "${composeFile}" up -d`, {
+      execDockerCompose(`-f "${composeFile}" up -d`, {
         cwd: dockerDir,
         stdio: 'pipe'
       });
-      console.log('[deploy:start] Containers started');
+      console.log('[deploy:start] Containers started successfully');
     } catch (err) {
+      console.error('[deploy:start] Container startup error:', err.message);
       throw new Error('Failed to start containers: ' + err.message);
     }
     
