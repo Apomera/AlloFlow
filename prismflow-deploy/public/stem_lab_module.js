@@ -3434,7 +3434,7 @@
             }, "\u2714 Check")), cubeBuilderFeedback && /*#__PURE__*/React.createElement("p", {
               className: "text-sm font-bold mt-2 " + (cubeBuilderFeedback.correct ? "text-green-600" : "text-red-600")
             }, cubeBuilderFeedback.msg)));
-          })(), stemLabTab === 'explore' && stemLabTool === 'base10' && (() => {
+          })(), stemLabTab === 'explore' && stemLabTool === 'base10' && !(window.StemLab && window.StemLab.isRegistered('base10')) && (() => {
             // ── Math Manipulatives Hub ──
             const _manipMode = (labToolData && labToolData._mathManipMode) || 'blocks';
             const setManipMode = (mode) => setLabToolData(prev => Object.assign({}, prev, { _mathManipMode: mode }));
@@ -3913,7 +3913,7 @@
             return /*#__PURE__*/React.createElement("div", {
               className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200"
             }, headerEl, /*#__PURE__*/React.createElement("p", { className: "text-sm text-slate-400 text-center" }, "Select a tool above to get started."));
-          })(), stemLabTab === 'explore' && stemLabTool === 'moneyMath' && (() => {
+          })(), stemLabTab === 'explore' && stemLabTool === 'moneyMath' && !(window.StemLab && window.StemLab.isRegistered('moneyMath')) && (() => {
             // ══════════════════════════════════════════════════════
             // MONEY MATH — Financial Literacy Manipulatives
             // ══════════════════════════════════════════════════════
@@ -51449,7 +51449,8 @@
             geometryProver: true, logicLab: true, plateTectonics: true,
             titrationLab: true,
             volume: true, numberline: true, areamodel: true,
-            fractionViz: true, fractions: true
+            fractionViz: true, fractions: true,
+            base10: true, moneyMath: true
           };
           if (!_pluginOnlyTools[stemLabTool]) return null;
 
