@@ -18,12 +18,14 @@
     "electron-builder": "^24.13.3",
     "electron-log": "^5.0.1",
     "electron-updater": "^6.1.7",
+    "rimraf": "^5.0.5",
     "wait-on": "^7.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "dist": "npm run build && electron-builder -w --publish never"
+    "clean": "rimraf dist",
+    "dist": "npm run clean && npm run build && electron-builder -w --publish never"
   },
   "eslintConfig": {
     "extends": "react-app"
