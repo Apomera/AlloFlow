@@ -23,12 +23,12 @@ description: Sync AlloFlowANTI.txt to App.jsx, build, and deploy to Firebase
 
 1. Copy updated module files to `prismflow-deploy/public/`:
 ```
-Copy-Item -Path stem_lab_module.js -Destination prismflow-deploy\public\stem_lab_module.js -Force
+Copy-Item -Path stem_lab\stem_lab_module.js -Destination prismflow-deploy\public\stem_lab_module.js -Force
 ```
 Working directory: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
 
 > Also copy other modules if changed: `word_sounds_module.js`, `behavior_lens_module.js`, `report_writer_module.js`, `ui_strings.js`.
-> Also copy STEM plugin files if changed: `stem_tool_science.js`, `stem_tool_math.js`, `stem_tool_creative.js`, `stem_tool_dna.js`, `stem_tool_geo.js`.
+> Also copy STEM plugin files if changed (from `stem_lab/`): `stem_tool_science.js`, `stem_tool_math.js`, `stem_tool_creative.js`, `stem_tool_dna.js`, `stem_tool_geo.js`, `stem_tool_coordgrid.js`, `stem_tool_angles.js`, etc.
 
 2. Run the build script in **prod** mode (auto-detects the git hash and writes App.jsx):
 ```
@@ -96,4 +96,4 @@ To run locally with hot-reload of module files:
 node build.js --mode=dev
 cd prismflow-deploy; npm start
 ```
-This replaces CDN URLs with `./stem_lab_module.js`, `./word_sounds_module.js`, and `./behavior_lens_module.js` so the dev server loads local copies.
+This replaces CDN URLs with `./stem_lab/stem_lab_module.js`, `./word_sounds_module.js`, and `./behavior_lens_module.js` so the dev server loads local copies.

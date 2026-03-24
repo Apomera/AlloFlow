@@ -49,7 +49,7 @@ const BACKUP = path.join(ROOT, 'prismflow-deploy', 'src', 'AlloFlowANTI.txt');
 const MODULES = [
     {
         name: 'StemLab',
-        filename: 'stem_lab_module.js',
+        filename: 'stem_lab/stem_lab_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -77,16 +77,16 @@ const MODULES = [
 // Plugin files loaded via the setTimeout plugin loader (not loadModule)
 // build.js updates their CDN hash in the pluginCdnBase variable
 const PLUGIN_FILES = [
-    'stem_tool_dna.js',
-    'stem_tool_math.js',
-    'stem_tool_science.js',
-    'stem_tool_creative.js',
-    'stem_tool_geo.js',
-    'stem_tool_fractions.js',
-    'stem_tool_manipulatives.js',
-    'stem_tool_money.js',
-    'stem_tool_coordgrid.js',
-    'stem_tool_angles.js'
+    'stem_lab/stem_tool_dna.js',
+    'stem_lab/stem_tool_math.js',
+    'stem_lab/stem_tool_science.js',
+    'stem_lab/stem_tool_creative.js',
+    'stem_lab/stem_tool_geo.js',
+    'stem_lab/stem_tool_fractions.js',
+    'stem_lab/stem_tool_manipulatives.js',
+    'stem_lab/stem_tool_money.js',
+    'stem_lab/stem_tool_coordgrid.js',
+    'stem_lab/stem_tool_angles.js'
 ];
 
 // ── Read source ─────────────────────────────────────────────────
