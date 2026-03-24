@@ -39,8 +39,9 @@ Working directory: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
 > The script will:
 > - Read `AlloFlowANTI.txt`
 > - Run `git rev-parse --short HEAD` to get the latest hash
-> - Replace both `loadModule` CDN URLs with the new hash
+> - Replace both `loadModule` CDN URLs and `pluginCdnBase` with the new hash
 > - Write to `prismflow-deploy/src/App.jsx` and `prismflow-deploy/src/AlloFlowANTI.txt`
+> - **Write updated hashes back to root `AlloFlowANTI.txt`** (keeps source of truth in sync)
 > - Stamp `build/sw.js` with a unique timestamp (if build/ exists)
 
 3. Build the production bundle:

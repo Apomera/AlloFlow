@@ -2395,6 +2395,11 @@
                 color: 'rose', ready: true
               },
               {
+                id: 'titrationLab', icon: '🧪', label: 'Titration Lab',
+                desc: 'Virtual titration with live S-curve graphing, indicator selection, and pH calculation.',
+                color: 'emerald', ready: true
+              },
+              {
                 id: 'dissection', icon: '\uD83D\uDD2C', label: 'Dissection Lab',
                 desc: 'Virtual frog dissection — peel back layers to explore organs, muscles, and skeleton.',
                 color: 'emerald', ready: true
@@ -51435,7 +51440,9 @@
           // For now, use an explicit set of tools WITHOUT inline code.
           var _pluginOnlyTools = {
             dnaLab: true, gameStudio: true, geoQuiz: true,
-            geometryProver: true, logicLab: true, plateTectonics: true
+            geometryProver: true, logicLab: true, plateTectonics: true,
+            titrationLab: true,
+            titrationLab: true
           };
           if (!_pluginOnlyTools[stemLabTool]) return null;
 

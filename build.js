@@ -194,6 +194,13 @@ if (dryRun) {
     fs.writeFileSync(BACKUP, content, 'utf-8');
     console.log(`📄 Backup:  ${path.relative(ROOT, BACKUP)}`);
 
+    // ── Write hashes back to root AlloFlowANTI.txt (prod only) ──
+    // Keeps the root source-of-truth file in sync with deployed CDN hashes.
+    if (mode === 'prod') {
+        fs.writeFileSync(SOURCE, content, 'utf-8');
+        console.log(`📄 Source:  ${path.relative(ROOT, SOURCE)} (updated with @${gitHash})`);
+    }
+
     // ── Stamp service worker with build timestamp ───────────────
     const SW_SOURCE = path.join(ROOT, 'prismflow-deploy', 'public', 'sw.js');
     if (fs.existsSync(SW_SOURCE)) {
