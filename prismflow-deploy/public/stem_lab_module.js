@@ -8629,7 +8629,7 @@
             );
           })(),
 
-           stemLabTab === 'explore' && stemLabTool === 'coordinate' && (() => {
+           stemLabTab === 'explore' && stemLabTool === 'coordinate' && !(window.StemLab && window.StemLab.isRegistered('coordinate')) && (() => {
             const gridW = 400,
               gridH = 400;
             const range = gridRange.max - gridRange.min;
@@ -8929,7 +8929,7 @@
                   React.createElement("div", { className: "text-2xl font-bold text-cyan-800" }, gridLines.length)
                 )
               ));
-          })(), stemLabTab === 'explore' && stemLabTool === 'protractor' && (() => {
+          })(), stemLabTab === 'explore' && stemLabTool === 'protractor' && !(window.StemLab && window.StemLab.isRegistered('protractor')) && (() => {
             const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('stem.calculus.right') : a < 180 ? 'Obtuse' : a === 180 ? 'Straight' : a < 360 ? 'Reflex' : 'Full';
             const angleClass = classifyAngle(angleValue);
             const rad = angleValue * Math.PI / 180;
@@ -51450,7 +51450,8 @@
             titrationLab: true,
             volume: true, numberline: true, areamodel: true,
             fractionViz: true, fractions: true,
-            base10: true, moneyMath: true
+            base10: true, moneyMath: true,
+            coordinate: true, protractor: true
           };
           if (!_pluginOnlyTools[stemLabTool]) return null;
 

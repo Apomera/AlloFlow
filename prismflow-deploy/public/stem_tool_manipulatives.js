@@ -210,13 +210,13 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-4xl font-bold text-orange-800 font-mono' }, totalValue.toLocaleString()),
               h('span', { className: 'text-2xl text-slate-400 mx-3' }, '='),
               h('div', { className: 'flex items-end gap-2 flex-wrap justify-center', style: { minHeight: '60px' } },
-                renderBlock3D('#a855f7', '#c084fc', 56, 56, b10.thousands, 10, 10),
+                renderBlock3D('#db2777', '#f472b6', 56, 56, b10.thousands, 10, 10),
                 b10.thousands > 0 && b10.hundreds > 0 && h('span', { className: 'w-px h-8 bg-slate-200 mx-0.5' }),
-                renderBlock3D('#3b82f6', '#60a5fa', 48, 14, b10.hundreds, 10, 1),
+                renderBlock3D('#2563eb', '#60a5fa', 48, 14, b10.hundreds, 10, 1),
                 (b10.thousands > 0 || b10.hundreds > 0) && b10.tens > 0 && h('span', { className: 'w-px h-8 bg-slate-200 mx-0.5' }),
-                renderBlock3D('#22c55e', '#4ade80', 10, 48, b10.tens, 1, 10),
+                renderBlock3D('#059669', '#34d399', 10, 48, b10.tens, 1, 10),
                 (b10.thousands > 0 || b10.hundreds > 0 || b10.tens > 0) && b10.ones > 0 && h('span', { className: 'w-px h-8 bg-slate-200 mx-0.5' }),
-                renderBlock3D('#f59e0b', '#fbbf24', 10, 10, b10.ones, 1, 1),
+                renderBlock3D('#ea580c', '#fb923c', 10, 10, b10.ones, 1, 1),
                 totalValue === 0 && h('span', { className: 'text-sm text-slate-300 italic' }, 'no blocks')
               )
             ),
@@ -225,23 +225,23 @@ window.StemLab = window.StemLab || {
             ),
             // Place value columns
             h('div', { className: 'grid grid-cols-4 gap-3' },
-              placeCol('Thousands', '\u25A0', 'thousands', '#a855f7', '#c084fc', 56, 56, 10, 10),
-              placeCol('Hundreds', '\u25AC', 'hundreds', '#3b82f6', '#60a5fa', 48, 14, 10, 1),
-              placeCol('Tens', '\u2503', 'tens', '#22c55e', '#4ade80', 10, 48, 1, 10),
-              placeCol('Ones', '\u25AA', 'ones', '#f59e0b', '#fbbf24', 10, 10, 1, 1)
+              placeCol('Thousands', '\u25A0', 'thousands', '#db2777', '#f472b6', 56, 56, 10, 10),
+              placeCol('Hundreds', '\u25AC', 'hundreds', '#2563eb', '#60a5fa', 48, 14, 10, 1),
+              placeCol('Tens', '\u2503', 'tens', '#059669', '#34d399', 10, 48, 1, 10),
+              placeCol('Ones', '\u25AA', 'ones', '#ea580c', '#fb923c', 10, 10, 1, 1)
             ),
             // Regrouping buttons
             h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-3 mt-1' },
               h('p', { className: 'text-[10px] font-bold text-violet-700 uppercase tracking-wider mb-2 text-center' }, '\u21C4 Regroup / Ungroup'),
               h('div', { className: 'flex flex-wrap gap-2 justify-center' },
-                regroupBtn('10 \u25AA \u2192 1 \u2503', 'ones', 'tens', b10.ones >= 10 && b10.tens < 9, '#f59e0b', '#22c55e'),
-                regroupBtn('1 \u2503 \u2192 10 \u25AA', 'tens', 'ones', b10.tens >= 1, '#22c55e', '#f59e0b'),
+                regroupBtn('10 \u25AA \u2192 1 \u2503', 'ones', 'tens', b10.ones >= 10 && b10.tens < 9, '#ea580c', '#059669'),
+                regroupBtn('1 \u2503 \u2192 10 \u25AA', 'tens', 'ones', b10.tens >= 1, '#059669', '#ea580c'),
                 h('span', { className: 'w-px h-6 bg-violet-200 mx-1 self-center' }),
-                regroupBtn('10 \u2503 \u2192 1 \u25AC', 'tens', 'hundreds', b10.tens >= 10 && b10.hundreds < 9, '#22c55e', '#3b82f6'),
-                regroupBtn('1 \u25AC \u2192 10 \u2503', 'hundreds', 'tens', b10.hundreds >= 1, '#3b82f6', '#22c55e'),
+                regroupBtn('10 \u2503 \u2192 1 \u25AC', 'tens', 'hundreds', b10.tens >= 10 && b10.hundreds < 9, '#059669', '#2563eb'),
+                regroupBtn('1 \u25AC \u2192 10 \u2503', 'hundreds', 'tens', b10.hundreds >= 1, '#2563eb', '#059669'),
                 h('span', { className: 'w-px h-6 bg-violet-200 mx-1 self-center' }),
-                regroupBtn('10 \u25AC \u2192 1 \u25A0', 'hundreds', 'thousands', b10.hundreds >= 10 && b10.thousands < 9, '#3b82f6', '#a855f7'),
-                regroupBtn('1 \u25A0 \u2192 10 \u25AC', 'thousands', 'hundreds', b10.thousands >= 1, '#a855f7', '#3b82f6')
+                regroupBtn('10 \u25AC \u2192 1 \u25A0', 'hundreds', 'thousands', b10.hundreds >= 10 && b10.thousands < 9, '#2563eb', '#db2777'),
+                regroupBtn('1 \u25A0 \u2192 10 \u25AC', 'thousands', 'hundreds', b10.thousands >= 1, '#db2777', '#2563eb')
               ),
               h('p', { className: 'text-[9px] text-violet-400 text-center mt-1.5 italic' }, '\uD83D\uDCA1 10 of one place value always equals 1 of the next. Try adding 10+ ones, then regroup!')
             )

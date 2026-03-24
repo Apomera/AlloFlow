@@ -348,17 +348,21 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-white rounded-xl p-3 border border-emerald-100 text-center' },
             h('div', { className: 'text-xs font-bold text-emerald-600 uppercase mb-1' }, 'Volume'),
             h('div', { className: 'text-xl font-bold text-emerald-800' },
-              isSlider ? dims.l+' \u00d7 '+dims.w+' \u00d7 '+dims.h+' = ' : '',
+              isSlider && !challenge ? dims.l+' \u00d7 '+dims.w+' \u00d7 '+dims.h+' = ' : '',
               h('span', { className: 'text-2xl text-emerald-600' },
+                (isSlider && challenge && !feedback) ? '?' :
                 (!isSlider && builderChallenge && builderChallenge.type === 'volume') ? '?' : volume)),
+            (isSlider && challenge && !feedback) ? null :
+            (!isSlider && builderChallenge && builderChallenge.type === 'volume') ? null :
             h('div', { className: 'text-xs text-slate-400' }, volume + ' unit cube' + (volume !== 1 ? 's' : ''))
           ),
           h('div', { className: 'bg-white rounded-xl p-3 border border-teal-100 text-center' },
             h('div', { className: 'text-xs font-bold text-teal-600 uppercase mb-1' }, 'Surface Area'),
             h('div', { className: 'text-xl font-bold text-teal-800' },
               'SA = ', h('span', { className: 'text-2xl text-teal-600' },
+                (isSlider && challenge && !feedback) ? '?' :
                 (!isSlider && builderChallenge && builderChallenge.type === 'volume') ? '?' : surfaceArea)),
-            isSlider && h('div', { className: 'text-xs text-slate-400' },
+            isSlider && !challenge && h('div', { className: 'text-xs text-slate-400' },
               '2('+dims.l+'\u00d7'+dims.w+' + '+dims.l+'\u00d7'+dims.h+' + '+dims.w+'\u00d7'+dims.h+')')
           )
         ),
@@ -381,21 +385,21 @@ window.StemLab = window.StemLab || {
             h('button', {
               onClick: function() {
                 var l=2+Math.floor(Math.random()*4), w=2+Math.floor(Math.random()*3), hh=1+Math.floor(Math.random()*3);
-                upd({ positions: [], builderChallenge: {type:'prism',target:{l:l,w:w,h:hh},answer:l*w*hh}, builderFeedback: null });
+                upd({ mode: 'freeform', positions: [], builderChallenge: {type:'prism',target:{l:l,w:w,h:hh},answer:l*w*hh}, builderFeedback: null, challenge: null, feedback: null });
               },
               className: 'flex-1 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-lg text-sm hover:from-blue-600 hover:to-indigo-600 transition-all shadow-md'
             }, '\uD83C\uDFD7\uFE0F Build Prism'),
             h('button', {
               onClick: function() {
                 var lb = generateLBlock();
-                upd({ positions: lb.positions, builderChallenge: {type:'volume',answer:lb.volume,shape:'L-Block'}, builderFeedback: null });
+                upd({ mode: 'freeform', positions: lb.positions, builderChallenge: {type:'volume',answer:lb.volume,shape:'L-Block'}, builderFeedback: null, challenge: null, feedback: null });
               },
               className: 'flex-1 py-2 bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold rounded-lg text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md'
             }, '\uD83D\uDCD0 L-Block Vol'),
             h('button', {
               onClick: function() {
                 var tv = 5+Math.floor(Math.random()*16);
-                upd({ positions: [], builderChallenge: {type:'volume',answer:tv,shape:'any'}, builderFeedback: null });
+                upd({ mode: 'freeform', positions: [], builderChallenge: {type:'volume',answer:tv,shape:'any'}, builderFeedback: null, challenge: null, feedback: null });
               },
               className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md'
             }, '\uD83C\uDFB2 Random Vol')

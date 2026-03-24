@@ -84,7 +84,9 @@ const PLUGIN_FILES = [
     'stem_tool_geo.js',
     'stem_tool_fractions.js',
     'stem_tool_manipulatives.js',
-    'stem_tool_money.js'
+    'stem_tool_money.js',
+    'stem_tool_coordgrid.js',
+    'stem_tool_angles.js'
 ];
 
 // ── Read source ─────────────────────────────────────────────────

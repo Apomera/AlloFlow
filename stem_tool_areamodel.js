@@ -332,9 +332,11 @@ window.StemLab = window.StemLab || {
         // Product display (basic mode)
         viewMode === 'basic' && h('div', { className: 'bg-white rounded-xl p-4 border border-amber-100 text-center' },
           h('div', { className: 'text-xl font-bold text-amber-800' },
+            (challenge && !feedback) ? rows + ' \u00d7 ' + cols + ' = ?' :
             rows + ' \u00d7 ' + cols + ' = ',
-            h('span', { className: 'text-3xl text-amber-600' }, rows * cols)
+            (challenge && !feedback) ? null : h('span', { className: 'text-3xl text-amber-600' }, rows * cols)
           ),
+          (challenge && !feedback) ? null :
           highlight.rows > 0 && highlight.cols > 0 && h('div', { className: 'text-sm text-amber-600 mt-1' },
             'Selected: ' + highlight.rows + ' \u00d7 ' + highlight.cols + ' = ' + (highlight.rows * highlight.cols) + ' (click squares to highlight)')
         ),
