@@ -1652,7 +1652,7 @@
           backdropFilter: 'blur(6px)'
         }
       }, /*#__PURE__*/React.createElement("div", {
-        className: "w-full max-w-[98vw] m-2 bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden" + (_reduceMotion ? "" : " animate-in zoom-in-95 duration-300")
+        className: "w-full max-w-[98vw] m-2 bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden overflow-y-auto stemlab-styled-scrollbar" + (_reduceMotion ? "" : " animate-in zoom-in-95 duration-300")
       }, /*#__PURE__*/React.createElement("div", {
         className: "flex items-center justify-between px-6 py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white", role: "banner"
       }, /*#__PURE__*/React.createElement("div", {
@@ -9377,7 +9377,7 @@
                 }), " Hover cross", /*#__PURE__*/React.createElement("span", {
                   className: "ml-3 inline-block w-3 h-3 bg-pink-500 rounded mr-1"
                 }), " Selected"));
-          })(), stemLabTab === 'explore' && stemLabTool === 'numberline' && /*#__PURE__*/React.createElement("div", {
+          })(), stemLabTab === 'explore' && stemLabTool === 'numberline' && !(window.StemLab && window.StemLab.isRegistered('numberline')) && /*#__PURE__*/React.createElement("div", {
             className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200"
           }, /*#__PURE__*/React.createElement("div", {
             className: "flex items-center gap-3 mb-2"
@@ -9733,7 +9733,7 @@
               setNlAnswer('');
             },
             className: "text-xs text-blue-600 font-bold hover:underline"
-          }, t('explore.next_challenge'))))), stemLabTab === 'explore' && stemLabTool === 'areamodel' && /*#__PURE__*/React.createElement("div", {
+          }, t('explore.next_challenge'))))), stemLabTab === 'explore' && stemLabTool === 'areamodel' && !(window.StemLab && window.StemLab.isRegistered('areamodel')) && /*#__PURE__*/React.createElement("div", {
             className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200"
           }, /*#__PURE__*/React.createElement("div", {
             className: "flex items-center gap-3 mb-2"
@@ -51456,7 +51456,6 @@
           var _ctx = {
             React: React,
             toolData: labToolData,
-            setToolData: setLabToolData,
             setToolData: setLabToolData,
             update: function(toolId, key, val) {
               setLabToolData(function(prev) {
