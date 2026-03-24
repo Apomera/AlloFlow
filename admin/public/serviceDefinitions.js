@@ -166,11 +166,12 @@ const SERVICE_DEFINITIONS = {
   flux: {
     id: 'flux',
     name: 'Flux (Image Generation)',
-    description: 'AI-powered image generation from text descriptions (optional, requires decent GPU or patience)',
+    description: 'AI-powered image generation (Coming Soon — no stable Docker image available yet)',
     icon: '🎨',
     required: false,
-    optional: true, // User can disable this
-    defaultEnabled: false, // Disabled by default
+    optional: true,
+    defaultEnabled: false,
+    available: false, // No verified Docker image exists yet
     image: 'black-forest-labs/flux-pro:latest',
     port: 7860,
     internalPort: 7860,
@@ -304,7 +305,7 @@ const HARDWARE_PROFILES = {
       recommendedRAM: 32768,
       recommendedGPU_VRAM: 12000
     },
-    servicesToInclude: ['pocketbase', 'ollama', 'piper', 'searxng', 'flux'],
+    servicesToInclude: ['pocketbase', 'ollama', 'piper', 'searxng'],
     limitations: [],
     recommendations: [
       'Run large models (13B, 70B) for better quality',

@@ -530,7 +530,6 @@ function generateDockerCompose(selectedServices) {
     
     // Base compose structure
     let compose = {
-      version: '3.8',
       services: {},
       networks: {
         alloflow: {
@@ -545,6 +544,11 @@ function generateDockerCompose(selectedServices) {
       const serviceDef = SERVICE_DEFINITIONS[serviceId];
       if (!serviceDef) {
         console.warn('[docker:generate] Unknown service:', serviceId);
+        return;
+      }
+      
+      if (serviceDef.available === false) {
+        console.warn('[docker:generate] Skipping unavailable service:', serviceId);
         return;
       }
       
@@ -876,11 +880,13 @@ ipcMain.handle('setup:get-services', async (event, hardwareTier) => {
       throw new Error('Invalid hardware tier: ' + hardwareTier);
     }
     
-    // Get services for this tier
-    const services = tier.servicesToInclude.map(serviceId => ({
-      ...SERVICE_DEFINITIONS[serviceId],
-      enabled: !SERVICE_DEFINITIONS[serviceId].optional || SERVICE_DEFINITIONS[serviceId].defaultEnabled
-    }));
+    // Get services for this tier (exclude unavailable ones)
+    const services = tier.servicesToInclude
+      .filter(serviceId => SERVICE_DEFINITIONS[serviceId] && SERVICE_DEFINITIONS[serviceId].available !== false)
+      .map(serviceId => ({
+        ...SERVICE_DEFINITIONS[serviceId],
+        enabled: !SERVICE_DEFINITIONS[serviceId].optional || SERVICE_DEFINITIONS[serviceId].defaultEnabled
+      }));
     
     return {
       success: true,
