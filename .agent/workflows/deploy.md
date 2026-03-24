@@ -28,6 +28,7 @@ Copy-Item -Path stem_lab_module.js -Destination prismflow-deploy\public\stem_lab
 Working directory: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
 
 > Also copy other modules if changed: `word_sounds_module.js`, `behavior_lens_module.js`, `report_writer_module.js`, `ui_strings.js`.
+> Also copy STEM plugin files if changed: `stem_tool_science.js`, `stem_tool_math.js`, `stem_tool_creative.js`, `stem_tool_dna.js`, `stem_tool_geo.js`.
 
 2. Run the build script in **prod** mode (auto-detects the git hash and writes App.jsx):
 ```
