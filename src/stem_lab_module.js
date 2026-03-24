@@ -18159,7 +18159,12 @@
             { q: 'What stage comes after a Red Giant for a massive star?', a: 'Supernova', options: ['White dwarf', 'Planetary nebula', 'Supernova', 'Protostar'] },
             { q: 'How long does a star with 1 solar mass live?', a: '~10 billion years', options: ['~1 million years', '~100 million years', '~10 billion years', '~1 trillion years'] },
             { q: 'What is a protostar?', a: 'A star forming from a collapsing gas cloud', options: ['A dying star', 'A star forming from a collapsing gas cloud', 'A type of neutron star', 'A binary star system'] },
-            { q: 'What determines a star\'s final fate?', a: 'Its mass', options: ['Its color', 'Its mass', 'Its age', 'Its distance from Earth'] }
+            { q: 'What determines a star\'s final fate?', a: 'Its mass', options: ['Its color', 'Its mass', 'Its age', 'Its distance from Earth'] },
+            { q: 'What shape are planetary orbits?', a: 'Ellipses', options: ['Circles', 'Ellipses', 'Parabolas', 'Spirals'] },
+            { q: 'What does Kepler\'s 2nd Law describe?', a: 'Equal areas in equal times', options: ['Orbital speed is constant', 'Equal areas in equal times', 'Orbits are circular', 'Gravity weakens with distance'] },
+            { q: 'What happens if a planet exceeds escape velocity?', a: 'It leaves the star system', options: ['It speeds up forever', 'It leaves the star system', 'It crashes into the star', 'Its orbit becomes circular'] },
+            { q: 'Kepler\'s 3rd Law relates orbital period to what?', a: 'Semi-major axis', options: ['Planet mass', 'Semi-major axis', 'Eccentricity', 'Star brightness'] },
+            { q: 'Where is a planet fastest in an elliptical orbit?', a: 'At perihelion (closest to star)', options: ['At aphelion (farthest)', 'At perihelion (closest to star)', 'Speed is constant', 'At the semi-minor axis'] }
           ];
 
           // ── Scale data ──
@@ -18675,7 +18680,7 @@
               React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0C Galaxy Explorer"),
               React.createElement("div", { className: "flex gap-1 ml-auto bg-slate-100 rounded-lg p-0.5" },
-                [{ key: 'galaxy', icon: '\uD83C\uDF0C', label: 'Galaxy' }, { key: 'star', icon: '\u2B50', label: 'Star Life' }, { key: 'quiz', icon: '\uD83E\uDDE0', label: 'Quiz' }].map(function (m) {
+                [{ key: 'galaxy', icon: '\uD83C\uDF0C', label: 'Galaxy' }, { key: 'star', icon: '\u2B50', label: 'Star Life' }, { key: 'orbital', icon: '\uD83E\uDE90', label: 'Orbits' }, { key: 'quiz', icon: '\uD83E\uDDE0', label: 'Quiz' }].map(function (m) {
                   var isActive = m.key === 'quiz' ? d.quizMode : (!d.quizMode && simMode === m.key);
                   return React.createElement("button", {
                     key: m.key, onClick: function () {
@@ -19274,6 +19279,418 @@
                 React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: 'Star Life: ' + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Star life snapshot saved!', 'success'); }, className: "px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
               )
             ),
+
+            // ══════════════════════════════════════════════
+            // ── Orbital Mechanics Simulation Mode ──
+            // ══════════════════════════════════════════════
+            !d.quizMode && simMode === 'orbital' && React.createElement("div", { className: "animate-in fade-in duration-300" },
+
+              // ── Preset bar ──
+              React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+                [
+                  { key: 'earth', label: '\uD83C\uDF0D Earth', au: 1.0, vFrac: 1.0, starM: 1.0, desc: 'Nearly circular orbit at 1 AU' },
+                  { key: 'mercury', label: '\u263F Mercury', au: 0.387, vFrac: 1.0, starM: 1.0, desc: 'Close-in orbit with high eccentricity' },
+                  { key: 'mars', label: '\uD83D\uDD34 Mars', au: 1.524, vFrac: 1.0, starM: 1.0, desc: 'Wider orbit at 1.52 AU' },
+                  { key: 'halley', label: '\u2604\uFE0F Halley', au: 0.586, vFrac: 1.82, starM: 1.0, desc: 'Highly eccentric comet orbit (e\u22480.97)' },
+                  { key: 'hotJupiter', label: '\uD83E\uDE90 Hot Jupiter', au: 0.05, vFrac: 1.0, starM: 1.2, desc: 'Gas giant orbiting extremely close to its star' },
+                  { key: 'escape', label: '\uD83D\uDE80 Escape!', au: 1.0, vFrac: 1.42, starM: 1.0, desc: 'Exceeds escape velocity \u2014 hyperbolic trajectory' }
+                ].map(function (p) {
+                  return React.createElement("button", {
+                    key: p.key,
+                    onClick: function () {
+                      upd("orbitalAU", p.au); upd("orbitalVFrac", p.vFrac); upd("orbitalStarMass", p.starM);
+                      upd("orbitalPreset", p.key); upd("orbitalInfo", p.desc);
+                      var cv = document.querySelector('[data-orbital-canvas]');
+                      if (cv && cv._resetSim) cv._resetSim(p.starM, p.au, p.vFrac);
+                    },
+                    className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " +
+                      ((d.orbitalPreset || 'earth') === p.key ? 'border-cyan-400 bg-cyan-100 text-cyan-700 shadow-sm' : 'border-slate-200 bg-white text-slate-600 hover:border-cyan-200')
+                  }, p.label);
+                })
+              ),
+
+              // ── Info card ──
+              d.orbitalInfo && React.createElement("div", { className: "mb-3 px-3 py-2 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-lg border border-cyan-100 text-[11px]" },
+                React.createElement("span", { className: "font-bold text-cyan-700" }, "\uD83D\uDCCD "),
+                React.createElement("span", { className: "text-slate-600" }, d.orbitalInfo)
+              ),
+
+              // ── 2D Canvas ──
+              React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-cyan-200 bg-[#020210]", style: { height: '520px' } },
+                React.createElement("canvas", {
+                  "data-orbital-canvas": "true",
+                  ref: function (cvEl) {
+                    if (!cvEl || cvEl._orbitalInit) return;
+                    cvEl._orbitalInit = true;
+                    var dpr = window.devicePixelRatio || 1;
+                    var ow = cvEl.offsetWidth, oh = cvEl.offsetHeight;
+                    if (!ow || !oh) { cvEl._orbitalInit = false; requestAnimationFrame(function () { cvEl._orbitalInit = false; }); return; }
+                    var W = cvEl.width = ow * dpr, H = cvEl.height = oh * dpr;
+                    var ctx = cvEl.getContext('2d');
+                    var cx = W / 2, cy = H / 2;
+                    var SCALE = Math.min(W, H) * 0.35;
+                    var G_SCALED = 4 * Math.PI * Math.PI;
+                    var dt = 0.0002;
+                    var timeScale = 1;
+                    var starMass = 1.0;
+                    var px, py, vx, vy;
+                    var trail = [];
+                    var maxTrail = 2000;
+                    var tick = 0;
+                    var totalTime = 0;
+                    var xpAwarded = {};
+                    var showKepler1 = false, showKepler2 = false, showKepler3 = false;
+                    var sweepPoints = [];
+                    var sweepInterval = 60;
+                    var sweepAreas = [];
+                    var paused = false;
+
+                    function initOrbit(sM, au, vFrac) {
+                      starMass = sM || 1.0;
+                      var r0 = au || 1.0;
+                      var vCirc = Math.sqrt(G_SCALED * starMass / r0);
+                      px = r0; py = 0;
+                      vx = 0; vy = vCirc * (vFrac || 1.0);
+                      trail = []; sweepPoints = []; sweepAreas = [];
+                      totalTime = 0; tick = 0;
+                    }
+                    initOrbit(d.orbitalStarMass || 1.0, d.orbitalAU || 1.0, d.orbitalVFrac || 1.0);
+                    cvEl._resetSim = function (sM, au, vFrac) { initOrbit(sM, au, vFrac); };
+
+                    function computeElements() {
+                      var r = Math.sqrt(px * px + py * py);
+                      var v2 = vx * vx + vy * vy;
+                      var mu = G_SCALED * starMass;
+                      var energy = 0.5 * v2 - mu / r;
+                      var h = px * vy - py * vx;
+                      var a = -mu / (2 * energy);
+                      var ecc = Math.sqrt(Math.max(0, 1 + 2 * energy * h * h / (mu * mu)));
+                      var period = a > 0 ? 2 * Math.PI * Math.sqrt(a * a * a / mu) : Infinity;
+                      var vEsc = Math.sqrt(2 * mu / r);
+                      var isEscaping = energy >= 0;
+                      return { a: a, ecc: ecc, period: period, energy: energy, h: h, r: r, v: Math.sqrt(v2), vEsc: vEsc, isEscaping: isEscaping, KE: 0.5 * v2, PE: -mu / r };
+                    }
+
+                    cvEl._setKepler = function (k, val) {
+                      if (k === 1) showKepler1 = val;
+                      if (k === 2) { showKepler2 = val; sweepPoints = []; sweepAreas = []; }
+                      if (k === 3) showKepler3 = val;
+                    };
+                    cvEl._setPaused = function (v) { paused = v; };
+                    cvEl._setTimeScale = function (v) { timeScale = v; };
+
+                    function toScreen(x, y) { return { x: cx + x * SCALE, y: cy - y * SCALE }; }
+
+                    var bgStars = [];
+                    for (var bsi = 0; bsi < 200; bsi++) {
+                      bgStars.push({ x: Math.random() * W, y: Math.random() * H, s: Math.random() * 1.5 + 0.5, b: Math.random() });
+                    }
+
+                    function draw() {
+                      cvEl._orbitalAnim = requestAnimationFrame(draw);
+                      tick++;
+                      if (!paused) {
+                        var steps = Math.max(1, Math.round(timeScale));
+                        for (var si = 0; si < steps; si++) {
+                          var r2 = px * px + py * py;
+                          var r = Math.sqrt(r2);
+                          if (r < 0.005) { initOrbit(starMass, 1.0, 1.0); break; }
+                          var r3 = r2 * r;
+                          var mu = G_SCALED * starMass;
+                          var ax = -mu * px / r3, ay = -mu * py / r3;
+                          vx += 0.5 * ax * dt; vy += 0.5 * ay * dt;
+                          px += vx * dt; py += vy * dt;
+                          r2 = px * px + py * py; r = Math.sqrt(r2); r3 = r2 * r;
+                          var ax2 = -mu * px / r3, ay2 = -mu * py / r3;
+                          vx += 0.5 * ax2 * dt; vy += 0.5 * ay2 * dt;
+                          totalTime += dt;
+                        }
+                        if (tick % 2 === 0 && Math.sqrt(px * px + py * py) < 12) {
+                          trail.push({ x: px, y: py });
+                          if (trail.length > maxTrail) trail.shift();
+                        }
+                        if (showKepler2 && tick % sweepInterval === 0) {
+                          sweepPoints.push({ x: px, y: py, angle: Math.atan2(py, px), t: totalTime });
+                          if (sweepPoints.length > 1) {
+                            var p1 = sweepPoints[sweepPoints.length - 2], p2 = sweepPoints[sweepPoints.length - 1];
+                            sweepAreas.push({ p1: p1, p2: p2, area: Math.abs(0.5 * (p1.x * p2.y - p2.x * p1.y)) });
+                          }
+                          if (sweepPoints.length > 12) { sweepPoints.shift(); sweepAreas.shift(); }
+                        }
+                      }
+                      var elems = computeElements();
+                      if (!xpAwarded.launch) { xpAwarded.launch = true; if (typeof awardStemXP === 'function') awardStemXP('galaxy_orbital', 5, 'Launched orbital simulation'); }
+                      if (!xpAwarded.circular && elems.ecc < 0.05 && !elems.isEscaping && totalTime > 0.5) {
+                        xpAwarded.circular = true;
+                        if (typeof awardStemXP === 'function') awardStemXP('galaxy_orbital', 10, 'Created stable circular orbit');
+                        if (typeof addToast === 'function') addToast('\uD83C\uDFC6 Stable Circular Orbit! +10 XP', 'success');
+                      }
+                      if (!xpAwarded.escape && elems.isEscaping && totalTime > 0.1) {
+                        xpAwarded.escape = true;
+                        if (typeof awardStemXP === 'function') awardStemXP('galaxy_orbital', 15, 'Discovered escape trajectory');
+                        if (typeof addToast === 'function') addToast('\uD83D\uDE80 Escape Trajectory! +15 XP', 'success');
+                      }
+
+                      ctx.clearRect(0, 0, W, H);
+                      ctx.fillStyle = '#020210'; ctx.fillRect(0, 0, W, H);
+                      for (var bi = 0; bi < bgStars.length; bi++) {
+                        var bs = bgStars[bi];
+                        ctx.globalAlpha = 0.2 + 0.3 * Math.sin(tick * 0.015 + bs.b * 10);
+                        ctx.fillStyle = '#fff'; ctx.fillRect(bs.x, bs.y, bs.s, bs.s);
+                      }
+                      ctx.globalAlpha = 1;
+
+                      // Scale ring
+                      ctx.strokeStyle = 'rgba(100,150,255,0.08)'; ctx.lineWidth = 1;
+                      ctx.setLineDash([4, 8]);
+                      ctx.beginPath(); ctx.arc(cx, cy, SCALE, 0, Math.PI * 2); ctx.stroke();
+                      ctx.setLineDash([]);
+                      ctx.font = (9 * dpr) + 'px Inter, system-ui, sans-serif';
+                      ctx.fillStyle = 'rgba(100,150,255,0.3)'; ctx.textAlign = 'center';
+                      ctx.fillText('1 AU', cx + SCALE + 20 * dpr, cy + 4 * dpr);
+
+                      // Kepler 1st Law
+                      if (showKepler1 && !elems.isEscaping && elems.a > 0) {
+                        var a = elems.a, ecc = elems.ecc, b = a * Math.sqrt(1 - ecc * ecc), c = a * ecc;
+                        ctx.strokeStyle = 'rgba(59,130,246,0.3)'; ctx.lineWidth = 1.5 * dpr;
+                        ctx.setLineDash([6, 4]);
+                        ctx.beginPath(); ctx.ellipse(cx - c * SCALE, cy, a * SCALE, b * SCALE, 0, 0, Math.PI * 2); ctx.stroke();
+                        ctx.setLineDash([]);
+                        ctx.fillStyle = '#3b82f6';
+                        ctx.beginPath(); ctx.arc(cx, cy, 5 * dpr, 0, Math.PI * 2); ctx.fill();
+                        var f2x = cx - 2 * c * SCALE;
+                        ctx.beginPath(); ctx.arc(f2x, cy, 4 * dpr, 0, Math.PI * 2); ctx.fill();
+                        ctx.font = 'bold ' + (10 * dpr) + 'px Inter, system-ui, sans-serif';
+                        ctx.fillStyle = 'rgba(59,130,246,0.7)'; ctx.textAlign = 'center';
+                        ctx.fillText('F\u2081 (Star)', cx, cy + 18 * dpr);
+                        ctx.fillText('F\u2082', f2x, cy + 18 * dpr);
+                        ctx.strokeStyle = 'rgba(59,130,246,0.4)'; ctx.lineWidth = 1;
+                        ctx.beginPath(); ctx.moveTo(cx - (a + c) * SCALE, cy); ctx.lineTo(cx + (a - c) * SCALE, cy); ctx.stroke();
+                        ctx.fillStyle = 'rgba(59,130,246,0.7)';
+                        ctx.fillText('a = ' + a.toFixed(2) + ' AU', cx, cy - 12 * dpr);
+                      }
+
+                      // Kepler 2nd Law
+                      if (showKepler2 && sweepAreas.length > 1) {
+                        var colors = ['rgba(239,68,68,0.2)', 'rgba(59,130,246,0.2)', 'rgba(34,197,94,0.2)', 'rgba(168,85,247,0.2)', 'rgba(245,158,11,0.2)'];
+                        for (var swi = Math.max(0, sweepAreas.length - 5); swi < sweepAreas.length; swi++) {
+                          var sw = sweepAreas[swi];
+                          var sp1 = toScreen(sw.p1.x, sw.p1.y), sp2 = toScreen(sw.p2.x, sw.p2.y);
+                          ctx.fillStyle = colors[swi % colors.length];
+                          ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(sp1.x, sp1.y); ctx.lineTo(sp2.x, sp2.y); ctx.closePath(); ctx.fill();
+                          ctx.strokeStyle = colors[swi % colors.length].replace('0.2', '0.5'); ctx.lineWidth = 1; ctx.stroke();
+                        }
+                        ctx.font = (10 * dpr) + 'px Inter, system-ui, sans-serif';
+                        ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.textAlign = 'left';
+                        ctx.fillText('\u25B3 Equal areas in equal time intervals', 12 * dpr, H - 12 * dpr);
+                      }
+
+                      // Orbit trail
+                      if (trail.length > 2) {
+                        ctx.lineWidth = 1.5 * dpr;
+                        for (var ti = 1; ti < trail.length; ti++) {
+                          var alpha = ti / trail.length;
+                          var s1 = toScreen(trail[ti - 1].x, trail[ti - 1].y), s2 = toScreen(trail[ti].x, trail[ti].y);
+                          ctx.strokeStyle = elems.isEscaping ? 'rgba(239,68,68,' + (alpha * 0.6) + ')' : 'rgba(56,189,248,' + (alpha * 0.6) + ')';
+                          ctx.beginPath(); ctx.moveTo(s1.x, s1.y); ctx.lineTo(s2.x, s2.y); ctx.stroke();
+                        }
+                      }
+
+                      // Star
+                      var starR = Math.max(6, Math.min(25, starMass * 12)) * dpr;
+                      var sGlow = ctx.createRadialGradient(cx, cy, starR * 0.3, cx, cy, starR * 3);
+                      sGlow.addColorStop(0, 'rgba(255,220,100,0.4)'); sGlow.addColorStop(0.5, 'rgba(255,180,60,0.1)'); sGlow.addColorStop(1, 'rgba(255,180,60,0)');
+                      ctx.fillStyle = sGlow; ctx.beginPath(); ctx.arc(cx, cy, starR * 3, 0, Math.PI * 2); ctx.fill();
+                      var sBody = ctx.createRadialGradient(cx - starR * 0.2, cy - starR * 0.2, starR * 0.1, cx, cy, starR);
+                      sBody.addColorStop(0, '#ffffff'); sBody.addColorStop(0.4, '#fff4d6'); sBody.addColorStop(1, '#ffaa33');
+                      ctx.fillStyle = sBody; ctx.beginPath(); ctx.arc(cx, cy, starR, 0, Math.PI * 2); ctx.fill();
+
+                      // Planet
+                      var pScreen = toScreen(px, py);
+                      var planetR = 5 * dpr;
+                      var pGlow = ctx.createRadialGradient(pScreen.x, pScreen.y, planetR * 0.5, pScreen.x, pScreen.y, planetR * 2.5);
+                      pGlow.addColorStop(0, elems.isEscaping ? 'rgba(239,68,68,0.4)' : 'rgba(56,189,248,0.4)'); pGlow.addColorStop(1, 'transparent');
+                      ctx.fillStyle = pGlow; ctx.beginPath(); ctx.arc(pScreen.x, pScreen.y, planetR * 2.5, 0, Math.PI * 2); ctx.fill();
+                      ctx.fillStyle = elems.isEscaping ? '#ef4444' : '#38bdf8';
+                      ctx.beginPath(); ctx.arc(pScreen.x, pScreen.y, planetR, 0, Math.PI * 2); ctx.fill();
+                      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                      ctx.beginPath(); ctx.arc(pScreen.x - planetR * 0.25, pScreen.y - planetR * 0.25, planetR * 0.35, 0, Math.PI * 2); ctx.fill();
+
+                      // Velocity vector
+                      var vLen = Math.min(60 * dpr, Math.sqrt(vx * vx + vy * vy) * SCALE * 0.03);
+                      var vAngle = Math.atan2(-vy, vx);
+                      ctx.strokeStyle = elems.isEscaping ? 'rgba(239,68,68,0.6)' : 'rgba(52,211,153,0.6)';
+                      ctx.lineWidth = 2 * dpr;
+                      ctx.beginPath(); ctx.moveTo(pScreen.x, pScreen.y);
+                      ctx.lineTo(pScreen.x + Math.cos(vAngle) * vLen, pScreen.y + Math.sin(vAngle) * vLen); ctx.stroke();
+                      var aSize = 5 * dpr; ctx.fillStyle = ctx.strokeStyle;
+                      ctx.beginPath();
+                      ctx.moveTo(pScreen.x + Math.cos(vAngle) * vLen, pScreen.y + Math.sin(vAngle) * vLen);
+                      ctx.lineTo(pScreen.x + Math.cos(vAngle - 0.4) * (vLen - aSize), pScreen.y + Math.sin(vAngle - 0.4) * (vLen - aSize));
+                      ctx.lineTo(pScreen.x + Math.cos(vAngle + 0.4) * (vLen - aSize), pScreen.y + Math.sin(vAngle + 0.4) * (vLen - aSize));
+                      ctx.closePath(); ctx.fill();
+
+                      // HUD
+                      ctx.font = 'bold ' + (11 * dpr) + 'px Inter, system-ui, sans-serif'; ctx.textAlign = 'right';
+                      var hudX = W - 14 * dpr, hudY = 20 * dpr;
+                      var hudLines = [
+                        { label: 'Semi-major axis', val: elems.isEscaping ? 'Hyperbolic' : elems.a.toFixed(3) + ' AU', color: '#38bdf8' },
+                        { label: 'Eccentricity', val: elems.ecc.toFixed(4), color: elems.ecc < 0.05 ? '#34d399' : elems.ecc > 1 ? '#ef4444' : '#fbbf24' },
+                        { label: 'Period', val: elems.isEscaping ? '\u221E' : (elems.period * 365.25).toFixed(1) + ' days', color: '#a78bfa' },
+                        { label: 'Speed', val: (elems.v * 29.78).toFixed(1) + ' km/s', color: '#f472b6' },
+                        { label: 'Distance', val: elems.r.toFixed(3) + ' AU', color: '#fbbf24' },
+                        { label: 'v/v_esc', val: (elems.v / elems.vEsc).toFixed(3), color: elems.v >= elems.vEsc ? '#ef4444' : '#34d399' }
+                      ];
+                      hudLines.forEach(function (hl, hi) {
+                        var ly = hudY + hi * 16 * dpr;
+                        ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.font = (9 * dpr) + 'px Inter, system-ui, sans-serif';
+                        ctx.fillText(hl.label, hudX - 60 * dpr, ly);
+                        ctx.fillStyle = hl.color; ctx.font = 'bold ' + (11 * dpr) + 'px Inter, system-ui, sans-serif';
+                        ctx.fillText(hl.val, hudX, ly);
+                      });
+                      ctx.font = 'bold ' + (12 * dpr) + 'px Inter, system-ui, sans-serif';
+                      ctx.fillStyle = elems.isEscaping ? '#ef4444' : elems.ecc < 0.05 ? '#34d399' : '#fbbf24';
+                      ctx.textAlign = 'right';
+                      ctx.fillText(elems.isEscaping ? '\uD83D\uDE80 ESCAPE TRAJECTORY' : elems.ecc < 0.05 ? '\u2705 CIRCULAR ORBIT' : elems.ecc < 0.5 ? '\uD83D\uDFE1 ELLIPTICAL ORBIT' : '\uD83D\uDD34 HIGHLY ECCENTRIC', hudX, hudY + hudLines.length * 16 * dpr + 8 * dpr);
+
+                      // Energy bars
+                      var barW = 140 * dpr, barH = 8 * dpr, barX = 12 * dpr, barY = H - 60 * dpr;
+                      ctx.font = (9 * dpr) + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.textAlign = 'left';
+                      ctx.fillText('KE', barX, barY - 2 * dpr);
+                      ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fillRect(barX + 18 * dpr, barY - 10 * dpr, barW, barH);
+                      var keNorm = Math.min(1, elems.KE / (G_SCALED * starMass));
+                      ctx.fillStyle = '#34d399'; ctx.fillRect(barX + 18 * dpr, barY - 10 * dpr, barW * keNorm, barH);
+                      var barY2 = barY + 10 * dpr;
+                      ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillText('PE', barX, barY2 - 2 * dpr);
+                      ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fillRect(barX + 18 * dpr, barY2 - 10 * dpr, barW, barH);
+                      var peNorm = Math.min(1, Math.abs(elems.PE) / (G_SCALED * starMass));
+                      ctx.fillStyle = '#f87171'; ctx.fillRect(barX + 18 * dpr, barY2 - 10 * dpr, barW * peNorm, barH);
+                      ctx.fillStyle = elems.energy < 0 ? 'rgba(52,211,153,0.6)' : 'rgba(239,68,68,0.6)';
+                      ctx.font = (9 * dpr) + 'px Inter, system-ui, sans-serif';
+                      ctx.fillText('E = ' + (elems.energy < 0 ? '' : '+') + elems.energy.toFixed(3) + (elems.energy < 0 ? ' (bound)' : ' (unbound)'), barX, barY2 + 12 * dpr);
+
+                      // Kepler 3rd Law
+                      if (showKepler3 && !elems.isEscaping && elems.a > 0) {
+                        ctx.font = 'bold ' + (11 * dpr) + 'px Inter, system-ui, sans-serif';
+                        ctx.fillStyle = 'rgba(168,85,247,0.8)'; ctx.textAlign = 'left';
+                        var k3y = 20 * dpr;
+                        ctx.fillText("Kepler's 3rd Law: T\u00B2 \u221D a\u00B3", 12 * dpr, k3y);
+                        ctx.font = (10 * dpr) + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(168,85,247,0.6)';
+                        ctx.fillText('T = ' + elems.period.toFixed(4) + ' yr  |  a = ' + elems.a.toFixed(4) + ' AU', 12 * dpr, k3y + 16 * dpr);
+                        ctx.fillText('T\u00B2 = ' + (elems.period * elems.period).toFixed(4) + '  |  a\u00B3 = ' + (elems.a * elems.a * elems.a).toFixed(4), 12 * dpr, k3y + 32 * dpr);
+                        var ratio = (elems.period * elems.period) / (elems.a * elems.a * elems.a);
+                        ctx.fillStyle = Math.abs(ratio - 1.0 / starMass) < 0.01 ? 'rgba(52,211,153,0.8)' : 'rgba(251,191,36,0.8)';
+                        ctx.fillText('T\u00B2/a\u00B3 = ' + ratio.toFixed(4) + ' (expect ' + (1.0 / starMass).toFixed(2) + ' for ' + starMass.toFixed(1) + ' M\u2609)', 12 * dpr, k3y + 48 * dpr);
+                      }
+
+                      // Time
+                      ctx.font = (9 * dpr) + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.textAlign = 'center';
+                      ctx.fillText('t = ' + (totalTime * 365.25).toFixed(0) + ' days (' + totalTime.toFixed(2) + ' yr)', cx, H - 8 * dpr);
+                    }
+
+                    cvEl._orbitalAnim = requestAnimationFrame(draw);
+                    var ro = new ResizeObserver(function () {
+                      var ow2 = cvEl.offsetWidth, oh2 = cvEl.offsetHeight;
+                      if (ow2 && oh2) { W = cvEl.width = ow2 * dpr; H = cvEl.height = oh2 * dpr; cx = W / 2; cy = H / 2; SCALE = Math.min(W, H) * 0.35; }
+                    });
+                    ro.observe(cvEl);
+                    cvEl._orbitalCleanup = function () { if (cvEl._orbitalAnim) cancelAnimationFrame(cvEl._orbitalAnim); ro.disconnect(); };
+                  },
+                  style: { width: '100%', height: '100%', cursor: 'crosshair' }
+                })
+              ),
+
+              // ── Controls ──
+              React.createElement("div", { className: "mt-3 grid grid-cols-2 gap-3" },
+                React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("span", { className: "text-sm" }, "\u2600\uFE0F"),
+                    React.createElement("span", { className: "text-xs font-bold text-amber-700" }, "Star Mass"),
+                    React.createElement("span", { className: "ml-auto text-xs font-black text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full" }, (d.orbitalStarMass || 1.0) + " M\u2609")
+                  ),
+                  React.createElement("input", { type: "range", min: 0.3, max: 10, step: 0.1, value: d.orbitalStarMass || 1.0,
+                    onChange: function (e) { var val = parseFloat(e.target.value); upd("orbitalStarMass", val); upd("orbitalPreset", null); var cv = document.querySelector('[data-orbital-canvas]'); if (cv && cv._resetSim) cv._resetSim(val, d.orbitalAU || 1.0, d.orbitalVFrac || 1.0); },
+                    className: "w-full h-1.5 accent-amber-500" })
+                ),
+                React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-3" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("span", { className: "text-sm" }, "\uD83D\uDE80"),
+                    React.createElement("span", { className: "text-xs font-bold text-emerald-700" }, "Velocity"),
+                    React.createElement("span", { className: "ml-auto text-xs font-black text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full" }, (d.orbitalVFrac || 1.0).toFixed(2) + "\u00D7 v\u2080")
+                  ),
+                  React.createElement("input", { type: "range", min: 0.3, max: 2.0, step: 0.01, value: d.orbitalVFrac || 1.0,
+                    onChange: function (e) { var val = parseFloat(e.target.value); upd("orbitalVFrac", val); upd("orbitalPreset", null); var cv = document.querySelector('[data-orbital-canvas]'); if (cv && cv._resetSim) cv._resetSim(d.orbitalStarMass || 1.0, d.orbitalAU || 1.0, val); },
+                    className: "w-full h-1.5 accent-emerald-500" }),
+                  React.createElement("div", { className: "flex justify-between text-[8px] text-emerald-400 mt-1" },
+                    React.createElement("span", null, "Slow (\u2192 crash)"), React.createElement("span", null, "1.0\u00D7 = circular"), React.createElement("span", null, "\u22651.41\u00D7 = escape"))
+                ),
+                React.createElement("div", { className: "bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-3" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("span", { className: "text-sm" }, "\uD83D\uDCCF"),
+                    React.createElement("span", { className: "text-xs font-bold text-blue-700" }, "Orbital Radius"),
+                    React.createElement("span", { className: "ml-auto text-xs font-black text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full" }, (d.orbitalAU || 1.0).toFixed(2) + " AU")
+                  ),
+                  React.createElement("input", { type: "range", min: 0.05, max: 5.0, step: 0.05, value: d.orbitalAU || 1.0,
+                    onChange: function (e) { var val = parseFloat(e.target.value); upd("orbitalAU", val); upd("orbitalPreset", null); var cv = document.querySelector('[data-orbital-canvas]'); if (cv && cv._resetSim) cv._resetSim(d.orbitalStarMass || 1.0, val, d.orbitalVFrac || 1.0); },
+                    className: "w-full h-1.5 accent-blue-500" })
+                ),
+                React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl border border-violet-200 p-3" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("span", { className: "text-sm" }, "\u23F1\uFE0F"),
+                    React.createElement("span", { className: "text-xs font-bold text-violet-700" }, "Time Speed"),
+                    React.createElement("span", { className: "ml-auto text-xs font-black text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full" }, (d.orbitalTimeScale || 1) + "\u00D7")
+                  ),
+                  React.createElement("input", { type: "range", min: 1, max: 10, step: 1, value: d.orbitalTimeScale || 1,
+                    onChange: function (e) { var val = parseInt(e.target.value); upd("orbitalTimeScale", val); var cv = document.querySelector('[data-orbital-canvas]'); if (cv && cv._setTimeScale) cv._setTimeScale(val); },
+                    className: "w-full h-1.5 accent-violet-500" })
+                )
+              ),
+
+              // ── Kepler toggles + pause ──
+              React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
+                React.createElement("button", {
+                  onClick: function () { var cv = document.querySelector('[data-orbital-canvas]'); if (cv && cv._setPaused) cv._setPaused(!(d.orbitalPaused)); upd("orbitalPaused", !(d.orbitalPaused)); },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.orbitalPaused ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-600 hover:bg-slate-300")
+                }, d.orbitalPaused ? "\u25B6 Resume" : "\u23F8 Pause"),
+                React.createElement("button", {
+                  onClick: function () { var cv = document.querySelector('[data-orbital-canvas]'); if (cv && cv._resetSim) cv._resetSim(d.orbitalStarMass || 1.0, d.orbitalAU || 1.0, d.orbitalVFrac || 1.0); },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 text-slate-600 hover:bg-slate-300 transition-all"
+                }, "\uD83D\uDD04 Reset"),
+                [
+                  { k: 1, label: "1st Law (Ellipse)", icon: "\u2B2D\uFE0F", stateKey: "showK1" },
+                  { k: 2, label: "2nd Law (Areas)", icon: "\u25B3", stateKey: "showK2" },
+                  { k: 3, label: "3rd Law (T\u00B2\u221Da\u00B3)", icon: "\uD83D\uDCCA", stateKey: "showK3" }
+                ].map(function (kl) {
+                  var isOn = d[kl.stateKey];
+                  return React.createElement("button", { key: kl.k,
+                    onClick: function () { upd(kl.stateKey, !isOn); var cv = document.querySelector('[data-orbital-canvas]'); if (cv && cv._setKepler) cv._setKepler(kl.k, !isOn); },
+                    className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all " + (isOn ? "border-indigo-400 bg-indigo-100 text-indigo-700 shadow-sm" : "border-slate-200 bg-white text-slate-500 hover:border-indigo-200")
+                  }, kl.icon + " Kepler " + kl.label);
+                })
+              ),
+
+              // ── Educational callout ──
+              React.createElement("div", { className: "mt-3 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl border border-cyan-200 p-4" },
+                React.createElement("h4", { className: "text-sm font-bold text-cyan-700 mb-2 flex items-center gap-2" },
+                  React.createElement("span", null, "\uD83D\uDCA1"), "Orbital Mechanics Guide"
+                ),
+                React.createElement("div", { className: "grid grid-cols-1 gap-2 text-[11px] text-cyan-800" },
+                  React.createElement("p", null, "\u2022 Set velocity to exactly 1.0\u00D7 v\u2080 for a perfect circular orbit (eccentricity \u2248 0)"),
+                  React.createElement("p", null, "\u2022 Increase velocity to make the orbit more elliptical. At \u22651.414\u00D7, the planet escapes!"),
+                  React.createElement("p", null, "\u2022 Enable Kepler's 2nd Law to see how planets sweep equal areas in equal time intervals"),
+                  React.createElement("p", null, "\u2022 The green velocity arrow shows the planet's instantaneous direction and speed"),
+                  React.createElement("p", null, "\u2022 Watch the energy bars: KE + PE = constant (energy conservation!)")
+                )
+              ),
+
+              // ── Snapshot ──
+              React.createElement("div", { className: "flex justify-end mt-3" },
+                React.createElement("button", {
+                  onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'orb-' + Date.now(), tool: 'galaxy', label: 'Orbital: ' + (d.orbitalAU || 1.0) + ' AU', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Orbital snapshot saved!', 'success'); },
+                  className: "px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full hover:from-cyan-600 hover:to-blue-600 shadow-md hover:shadow-lg transition-all"
+                }, "\uD83D\uDCF8 Snapshot")
+              )
+            ), // end Orbital Mechanics mode
           );
         })(),
 
