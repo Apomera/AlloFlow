@@ -64,3 +64,22 @@ scripts/archive/
 stem_test*.js
 search_results.txt
 tour.txt
+
+# CIS security reference docs
+cis16.rtf
+
+# Internal security & development roadmaps (sensitive, kept locally only)
+SECURE_DEVELOPMENT.md
+PROFESSIONAL_DEVELOPMENT_ROADMAP.md
+
+# Internal planning documents (kept locally, not in repo)
+HOMESCHOOL_ACTION_PLAN.md
+HOMESCHOOL_ARCHITECTURE_SUMMARY.md
+ACTION_PLAN.md
+
+# Note: User-facing deployment guides remain in repo:
+# - DEPLOY_YOUR_OWN.md
+# - HOMESCHOOL_DEPLOYMENT_GUIDE.md
+# - GPU_AUTO_DETECTION_README.md
+# - architecture_extracted.md
+# - setup-local-ai.bat
