@@ -13,8 +13,9 @@ const SERVICE_DEFINITIONS = {
     required: true,
     optional: false,
     defaultEnabled: true,
-    image: 'pocketbase/pocketbase:latest',
+    image: 'ghcr.io/muchobien/pocketbase:latest',
     port: 8090,
+    internalPort: 8090,
     healthCheck: {
       endpoint: 'http://localhost:8090/api/health',
       method: 'GET',
@@ -48,6 +49,7 @@ const SERVICE_DEFINITIONS = {
     defaultEnabled: true,
     image: 'ollama/ollama:latest',
     port: 11434,
+    internalPort: 11434,
     healthCheck: {
       endpoint: 'http://localhost:11434/api/tags',
       method: 'GET',
@@ -98,10 +100,11 @@ const SERVICE_DEFINITIONS = {
     required: true,
     optional: false,
     defaultEnabled: true,
-    image: 'rhasspy/piper:latest',
-    port: 5000,
+    image: 'rhasspy/wyoming-piper:latest',
+    port: 10400,
+    internalPort: 10400,
     healthCheck: {
-      endpoint: 'http://localhost:5000/process',
+      endpoint: 'http://localhost:10400/',
       method: 'GET',
       timeout: 10000,
       maxRetries: 20,
@@ -135,6 +138,7 @@ const SERVICE_DEFINITIONS = {
     defaultEnabled: true,
     image: 'searxng/searxng:latest',
     port: 8888,
+    internalPort: 8080,
     healthCheck: {
       endpoint: 'http://localhost:8888/',
       method: 'GET',
@@ -169,6 +173,7 @@ const SERVICE_DEFINITIONS = {
     defaultEnabled: false, // Disabled by default
     image: 'black-forest-labs/flux-pro:latest',
     port: 7860,
+    internalPort: 7860,
     healthCheck: {
       endpoint: 'http://localhost:7860/',
       method: 'GET',

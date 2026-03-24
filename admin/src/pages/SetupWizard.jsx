@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 const DEPLOYMENT_TYPES = [
   {
@@ -42,7 +42,6 @@ export default function SetupWizard({ onComplete }) {
   const [config, setConfig] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [dockerStatus, setDockerStatus] = useState(null);
   
   // Hardware & Services
   const [hardware, setHardware] = useState(null);
@@ -75,8 +74,6 @@ export default function SetupWizard({ onComplete }) {
       setLoading(true);
       const result = await window.alloAPI.setup.checkDocker(deploymentType);
       console.log('[SetupWizard] Docker check result:', result);
-      
-      setDockerStatus(result.installed);
       
       if (result.required && !result.installed) {
         setError(
@@ -225,8 +222,13 @@ export default function SetupWizard({ onComplete }) {
           if (event.type === 'progress') {
             setDeploymentProgress(event);
           } else if (event.type === 'complete') {
-            console.log('[SetupWizard] Deployment complete');
-            handleDeploymentComplete(setupData);
+            if (event.success === false) {
+              setError('Deployment failed: ' + (event.error || 'Unknown error'));
+              setLoading(false);
+            } else {
+              console.log('[SetupWizard] Deployment complete');
+              handleDeploymentComplete(setupData);
+            }
           } else if (event.type === 'error') {
             setError('Deployment failed: ' + event.error);
             setLoading(false);

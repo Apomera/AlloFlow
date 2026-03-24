@@ -308,45 +308,52 @@ ipcMain.handle('setup:browse-folder', async (event, defaultPath) => {
 
 const { SERVICE_DEFINITIONS, HARDWARE_PROFILES } = require('./serviceDefinitions');
 
-// Helper: Execute docker-compose command, trying both old and new syntax
-function execDockerCompose(command, options = {}) {
-  const { execSync } = require('child_process');
-  const cwd = options.cwd || process.cwd();
-  const stdio = options.stdio || 'inherit';
-  
-  console.log('[docker-compose] Executing:', command, 'in', cwd);
-  
-  try {
-    // Try docker-compose first (older syntax)
-    console.log('[docker-compose] Trying old syntax: docker-compose');
-    const output = execSync(`docker-compose ${command}`, {
-      stdio: stdio,
-      encoding: options.encoding || 'utf-8',
-      cwd: cwd,
-      maxBuffer: 10 * 1024 * 1024 // 10MB buffer for large outputs
+// Helper: Execute docker compose command asynchronously (non-blocking)
+function execDockerComposeAsync(args, options = {}) {
+  return new Promise((resolve, reject) => {
+    const { spawn } = require('child_process');
+    const cwd = options.cwd || process.cwd();
+    const onOutput = options.onOutput || (() => {});
+
+    const fullArgs = ['compose', ...args];
+    console.log('[docker-compose] Executing: docker', fullArgs.join(' '), 'in', cwd);
+
+    const proc = spawn('docker', fullArgs, {
+      cwd,
+      windowsHide: true
     });
-    console.log('[docker-compose] Old syntax succeeded');
-    return output;
-  } catch (err) {
-    console.warn('[docker-compose] Old syntax failed:', err.message);
-    // Try docker compose (v2 syntax)
-    try {
-      console.log('[docker-compose] Trying new syntax: docker compose');
-      const output = execSync(`docker compose ${command}`, {
-        stdio: stdio,
-        encoding: options.encoding || 'utf-8',
-        cwd: cwd,
-        maxBuffer: 10 * 1024 * 1024
-      });
-      console.log('[docker-compose] New syntax succeeded');
-      return output;
-    } catch (v2Err) {
-      console.error('[docker-compose] Both syntaxes failed');
-      console.error('[docker-compose] Old syntax error:', err.message);
-      console.error('[docker-compose] New syntax error:', v2Err.message);
-      throw new Error(`docker-compose failed: ${err.message}. Also tried 'docker compose': ${v2Err.message}`);
-    }
-  }
+
+    let stdout = '';
+    let stderr = '';
+
+    proc.stdout.on('data', (data) => {
+      const text = data.toString();
+      stdout += text;
+      onOutput(text);
+    });
+
+    proc.stderr.on('data', (data) => {
+      const text = data.toString();
+      stderr += text;
+      onOutput(text); // Docker outputs progress to stderr
+    });
+
+    proc.on('close', (code) => {
+      if (code !== 0) {
+        const errMsg = stderr.trim() || stdout.trim() || `Process exited with code ${code}`;
+        console.error('[docker-compose] Failed (exit code ' + code + '):', errMsg);
+        reject(new Error(errMsg));
+      } else {
+        console.log('[docker-compose] Completed successfully');
+        resolve(stdout);
+      }
+    });
+
+    proc.on('error', (err) => {
+      console.error('[docker-compose] Spawn error:', err.message);
+      reject(new Error('Failed to run Docker: ' + err.message));
+    });
+  });
 }
 
 // Detect hardware capabilities
@@ -389,66 +396,89 @@ function detectHardware() {
     // Detect GPU
     let gpu = null;
     try {
-      // Check for NVIDIA GPU
-      try {
-        const nvidiaResult = execSync('nvidia-smi --query-gpu=name,memory.total --format=csv,noheader', { 
-          stdio: 'pipe',
-          encoding: 'utf-8'
-        });
-        const [gpuName, vramStr] = nvidiaResult.trim().split(',').map(s => s.trim());
-        const vramGB = parseInt(vramStr);
-        gpu = {
-          type: 'NVIDIA',
-          name: gpuName,
-          vramGB: vramGB
-        };
-        console.log('[hardware:detect] Detected NVIDIA GPU:', gpuName, '-', vramGB, 'GB VRAM');
-      } catch (nvidiaErr) {
-        // Check for AMD GPU - try multiple detection methods
-        let amdDetected = false;
-        
-        // Method 1: rocm-smi (most common)
+      if (process.platform === 'win32') {
+        // Windows: Use WMI to detect GPU (works for ALL GPU brands)
         try {
-          const rocmResult = execSync('rocm-smi', { stdio: 'pipe', encoding: 'utf-8' });
-          if (rocmResult.includes('GPU') || rocmResult.includes('Device')) {
+          const wmicResult = execSync('wmic path win32_VideoController get name,adapterram /format:csv', {
+            stdio: 'pipe',
+            encoding: 'utf-8'
+          });
+          console.log('[hardware:detect] WMI GPU output:', wmicResult.trim());
+          
+          // Parse CSV lines, skip empty and header
+          const lines = wmicResult.trim().split('\n').filter(l => l.trim() && !l.startsWith('Node'));
+          for (const line of lines) {
+            const parts = line.split(',').map(s => s.trim());
+            // CSV format: Node, AdapterRAM, Name
+            const adapterRAM = parts.length >= 2 ? parseInt(parts[1]) : 0;
+            const gpuName = parts.length >= 3 ? parts[2] : '';
+            
+            // Skip virtual/basic display adapters
+            if (!gpuName || gpuName.includes('Virtual') || gpuName.includes('Basic') || gpuName.includes('Microsoft')) {
+              continue;
+            }
+            
+            // WMI caps AdapterRAM at ~4GB (32-bit unsigned), so estimate from card name
+            let vramGB = Math.round(adapterRAM / (1024 * 1024 * 1024));
+            // Known card VRAM overrides when WMI reports wrong value
+            if (gpuName.includes('9070 XT')) vramGB = 16;
+            else if (gpuName.includes('9070') && !gpuName.includes('XT')) vramGB = 12;
+            else if (gpuName.includes('7900 XTX')) vramGB = 24;
+            else if (gpuName.includes('7900 XT')) vramGB = 20;
+            else if (gpuName.includes('4090')) vramGB = 24;
+            else if (gpuName.includes('4080')) vramGB = 16;
+            else if (gpuName.includes('4070 Ti Super')) vramGB = 16;
+            else if (gpuName.includes('4070 Ti')) vramGB = 12;
+            else if (gpuName.includes('4070')) vramGB = 12;
+            else if (gpuName.includes('3090')) vramGB = 24;
+            else if (gpuName.includes('3080')) vramGB = 10;
+            else if (vramGB <= 0 || vramGB > 48) vramGB = 'unknown';
+            
+            const gpuType = gpuName.includes('AMD') || gpuName.includes('Radeon') ? 'AMD' :
+                            gpuName.includes('NVIDIA') || gpuName.includes('GeForce') || gpuName.includes('RTX') || gpuName.includes('GTX') ? 'NVIDIA' :
+                            gpuName.includes('Intel') || gpuName.includes('Arc') ? 'Intel' : 'Unknown';
+            
             gpu = {
-              type: 'AMD',
-              name: 'AMD GPU (ROCm)',
-              vramGB: 'detected'
+              type: gpuType,
+              name: gpuName,
+              vramGB: vramGB
             };
-            console.log('[hardware:detect] Detected AMD GPU via rocm-smi');
-            amdDetected = true;
+            console.log('[hardware:detect] Detected GPU:', gpuName, '-', vramGB, 'GB VRAM (' + gpuType + ')');
+            break; // Use first real GPU found
           }
-        } catch (rocmErr) {
-          // Method 2: Check for AMD device files (Linux/WSL)
+        } catch (wmicErr) {
+          console.warn('[hardware:detect] WMI GPU detection failed:', wmicErr.message);
+        }
+      } else {
+        // Linux/macOS: Try nvidia-smi first, then lspci
+        try {
+          const nvidiaResult = execSync('nvidia-smi --query-gpu=name,memory.total --format=csv,noheader', {
+            stdio: 'pipe',
+            encoding: 'utf-8'
+          });
+          const [gpuName, vramStr] = nvidiaResult.trim().split(',').map(s => s.trim());
+          gpu = {
+            type: 'NVIDIA',
+            name: gpuName,
+            vramGB: parseInt(vramStr)
+          };
+          console.log('[hardware:detect] Detected NVIDIA GPU:', gpuName);
+        } catch (nvidiaErr) {
           try {
-            if (process.platform !== 'win32') {
-              execSync('ls /dev/dri/renderD* 2>/dev/null | grep -q .', { stdio: 'pipe' });
-              gpu = {
-                type: 'AMD',
-                name: 'AMD GPU (DRI Device)',
-                vramGB: 'detected'
-              };
-              console.log('[hardware:detect] Detected AMD GPU via DRI devices');
-              amdDetected = true;
+            const lspciResult = execSync('lspci | grep -i vga', { stdio: 'pipe', encoding: 'utf-8' });
+            if (lspciResult.includes('AMD') || lspciResult.includes('ATI')) {
+              gpu = { type: 'AMD', name: lspciResult.trim().split(':').pop().trim(), vramGB: 'detected' };
+            } else if (lspciResult.includes('NVIDIA')) {
+              gpu = { type: 'NVIDIA', name: lspciResult.trim().split(':').pop().trim(), vramGB: 'detected' };
             }
-          } catch (driErr) {
-            // Method 3: Check for Windows AMD device (HIP)
-            try {
-              execSync('where hipcc', { stdio: 'pipe' });
-              gpu = {
-                type: 'AMD',
-                name: 'AMD GPU (HIP)',
-                vramGB: 'detected'
-              };
-              console.log('[hardware:detect] Detected AMD GPU via HIP');
-              amdDetected = true;
-            } catch (hipErr) {
-              // No AMD GPU could be found
-              console.log('[hardware:detect] No AMD GPU detected via any method');
-            }
+          } catch (e) {
+            console.log('[hardware:detect] No GPU detected on Linux');
           }
         }
+      }
+      
+      if (!gpu) {
+        console.log('[hardware:detect] No discrete GPU detected');
       }
     } catch (err) {
       console.log('[hardware:detect] GPU detection error:', err.message);
@@ -523,15 +553,9 @@ function generateDockerCompose(selectedServices) {
       // Basic service config
       compose.services[serviceId] = {
         image: serviceDef.image,
-        ports: [`${serviceDef.port}:${serviceDef.port}`],
+        ports: [`${serviceDef.port}:${serviceDef.internalPort || serviceDef.port}`],
         networks: ['alloflow'],
-        restart: 'unless-stopped',
-        healthcheck: {
-          test: ['CMD', 'curl', '-f', `http://localhost:${serviceDef.port}/` ],
-          interval: '10s',
-          timeout: '5s',
-          retries: 5
-        }
+        restart: 'unless-stopped'
       };
       
       // Service-specific configs
@@ -561,9 +585,7 @@ function generateDockerCompose(selectedServices) {
         ];
         compose.volumes.searxng = {};
       } else if (serviceId === 'piper') {
-        compose.services.piper.environment = {
-          'TZ': 'UTC'
-        };
+        compose.services.piper.command = ['--voice', 'en_US-lessac-medium'];
       } else if (serviceId === 'flux') {
         // Flux requires special GPU handling
         compose.services.flux.deploy = {
@@ -696,22 +718,31 @@ async function startDeployment(setupData, onProgress) {
     }
     
     onProgress({
-      phase: 'config',
-      status: 'Pulling Docker images...',
+      phase: 'pull',
+      status: 'Pulling Docker images (this may take several minutes)...',
       progress: 25
     });
     
-    // PHASE 3: Pull images
+    // PHASE 3: Pull images (async - won't freeze the UI)
     try {
       console.log('[deploy:start] Pulling images from:', composeFile);
-      execDockerCompose(`-f "${composeFile}" pull`, {
+      await execDockerComposeAsync(['-f', composeFile, 'pull'], {
         cwd: dockerDir,
-        stdio: 'pipe'
+        onOutput: (text) => {
+          const line = text.trim();
+          if (line) {
+            onProgress({
+              phase: 'pull',
+              status: `Pulling: ${line.slice(-100)}`,
+              progress: 30
+            });
+          }
+        }
       });
       console.log('[deploy:start] Docker images pulled successfully');
     } catch (pullErr) {
-      console.warn('[deploy:start] Image pull issue (continuing anyway):', pullErr.message);
-      // Continue anyway - images might already exist locally
+      console.error('[deploy:start] Image pull failed:', pullErr.message);
+      throw new Error('Failed to pull Docker images. Check your internet connection.\n' + pullErr.message);
     }
     
     onProgress({
@@ -720,19 +751,26 @@ async function startDeployment(setupData, onProgress) {
       progress: 50
     });
     
-    // PHASE 4: Start containers
+    // PHASE 4: Start containers (async - won't freeze the UI)
     try {
       console.log('[deploy:start] Starting containers from:', composeFile);
       console.log('[deploy:start] Working directory:', dockerDir);
-      const output = execDockerCompose(`-f "${composeFile}" up -d`, {
+      await execDockerComposeAsync(['-f', composeFile, 'up', '-d'], {
         cwd: dockerDir,
-        stdio: 'pipe'
+        onOutput: (text) => {
+          const line = text.trim();
+          if (line) {
+            onProgress({
+              phase: 'deployment',
+              status: `Starting: ${line.slice(-100)}`,
+              progress: 55
+            });
+          }
+        }
       });
-      console.log('[deploy:start] Containers startup output:', output);
       console.log('[deploy:start] Containers started successfully');
     } catch (startErr) {
       console.error('[deploy:start] Container startup error:', startErr.message);
-      console.error('[deploy:start] Full error:', startErr);
       throw new Error('Failed to start containers: ' + startErr.message);
     }
     
@@ -878,10 +916,17 @@ ipcMain.handle('setup:start-deployment', async (event, setupData) => {
       }
     }).then(result => {
       if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('deployment:complete', {
-          channelId,
-          ...result
-        });
+        if (result && result.success) {
+          mainWindow.webContents.send('deployment:complete', {
+            channelId,
+            ...result
+          });
+        } else {
+          mainWindow.webContents.send('deployment:error', {
+            channelId,
+            error: (result && result.error) || 'Deployment failed'
+          });
+        }
       }
     }).catch(err => {
       if (mainWindow && !mainWindow.isDestroyed()) {

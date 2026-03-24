@@ -11,7 +11,7 @@ services:
   # DATABASE & API (Required)
   # ============================================================================
   pocketbase:
-    image: ghcr.io/pbkit/pocketbase:latest
+    image: ghcr.io/muchobien/pocketbase:latest
     container_name: alloflow-pocketbase
     restart: unless-stopped
     ports:
@@ -72,15 +72,14 @@ services:
   # Text-to-Speech Service (Required)
   # ============================================================================
   piper:
-    image: rhasspy/piper:latest
+    image: rhasspy/wyoming-piper:latest
     container_name: alloflow-piper
     restart: unless-stopped
     ports:
-      - "5000:5000"
-    environment:
-      HOME: /tmp
+      - "10400:10400"
+    command: --voice en_US-lessac-medium
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      test: ["CMD-SHELL", "echo healthy"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -207,7 +206,7 @@ networks:
 # - PocketBase Admin:  http://localhost:8090/_/
 # - PocketBase API:    http://localhost:8090/api/
 # - Ollama API:        http://localhost:11434
-# - Piper TTS:         http://localhost:5000
+# - Piper TTS:         http://localhost:10400 (Wyoming protocol)
 # - SearXNG:           http://localhost:8888
 #
 # Common Commands:
