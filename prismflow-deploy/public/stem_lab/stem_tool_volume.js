@@ -55,6 +55,7 @@ window.StemLab = window.StemLab || {
       var builderChallenge = _v.builderChallenge || null;
       var builderFeedback = _v.builderFeedback || null;
       var score = _v.score || { correct: 0, total: 0 };
+      var paintSurfaceArea = _v.paintSurfaceArea || false;
 
       // ── Helper functions ──
       var getVolume = function(ps) { return ps.size || ps.length || 0; };
@@ -81,29 +82,39 @@ window.StemLab = window.StemLab || {
         : 30;
 
       // ── 3D Cube rendering ──
-      var renderCube = function(x, y, z, hue, lt, unit, clickable, onClick) {
+      var renderCube = function(x, y, z, hue, lt, unit, clickable, onClick, isGhost) {
+        var isPaint = paintSurfaceArea && !isGhost;
+        var actHue = isPaint ? 25 : hue; // Orange paint
+        var sat = isPaint ? 90 : 70;
+        var op1 = isPaint ? 0.95 : 0.85;
+        var op2 = isPaint ? 0.90 : 0.70;
+        var op3 = isPaint ? 0.92 : 0.80;
+        
         var faces = [
-          { transform: 'translateZ(' + unit/2 + 'px)', bg: 'hsla('+hue+',70%,'+lt+'%,0.85)' },
-          { transform: 'rotateY(180deg) translateZ(' + unit/2 + 'px)', bg: 'hsla('+hue+',65%,'+(lt+5)+'%,0.7)' },
-          { transform: 'rotateY(-90deg) translateZ(' + unit/2 + 'px)', bg: 'hsla('+(hue+10)+',60%,'+(lt-5)+'%,0.8)' },
-          { transform: 'rotateY(90deg) translateZ(' + unit/2 + 'px)', bg: 'hsla('+(hue+10)+',60%,'+(lt+3)+'%,0.8)' },
-          { transform: 'rotateX(90deg) translateZ(' + unit/2 + 'px)', bg: 'hsla('+(hue-5)+',75%,'+(lt+8)+'%,0.9)' },
-          { transform: 'rotateX(-90deg) translateZ(' + unit/2 + 'px)', bg: 'hsla('+(hue+5)+',55%,'+(lt-8)+'%,0.6)' }
+          { transform: 'translateZ(' + unit/2 + 'px)', bg: isGhost ? 'hsla(210,100%,70%,0.1)' : 'hsla('+actHue+','+sat+'%,'+lt+'%,'+op1+')' },
+          { transform: 'rotateY(180deg) translateZ(' + unit/2 + 'px)', bg: isGhost ? 'hsla(210,100%,70%,0.1)' : 'hsla('+actHue+','+(sat-5)+'%,'+(lt+5)+'%,'+op2+')' },
+          { transform: 'rotateY(-90deg) translateZ(' + unit/2 + 'px)', bg: isGhost ? 'hsla(210,100%,70%,0.1)' : 'hsla('+(actHue+10)+','+(sat-10)+'%,'+(lt-5)+'%,'+op3+')' },
+          { transform: 'rotateY(90deg) translateZ(' + unit/2 + 'px)', bg: isGhost ? 'hsla(210,100%,70%,0.1)' : 'hsla('+(actHue+10)+','+(sat-10)+'%,'+(lt+3)+'%,'+op3+')' },
+          { transform: 'rotateX(90deg) translateZ(' + unit/2 + 'px)', bg: isGhost ? 'hsla(210,100%,70%,0.1)' : 'hsla('+(actHue-5)+','+(sat+5)+'%,'+(lt+8)+'%,'+Math.min(1, op1+0.05)+')' },
+          { transform: 'rotateX(-90deg) translateZ(' + unit/2 + 'px)', bg: isGhost ? 'hsla(210,100%,70%,0.1)' : 'hsla('+(actHue+5)+','+(sat-15)+'%,'+(lt-8)+'%,'+(isPaint?0.8:0.6)+')' }
         ];
+        var borderStyle = isGhost ? '1px dashed hsla(210,100%,50%,0.6)' : (isPaint ? '1px solid hsla(25,100%,20%,0.5)' : '1px solid hsla('+actHue+',80%,30%,0.4)');
+        
         return h('div', {
-          key: x+'-'+y+'-'+z,
+          key: isGhost ? ('ghost-'+x+'-'+y+'-'+z) : (x+'-'+y+'-'+z),
           onClick: clickable ? function(e) { e.stopPropagation(); onClick && onClick(); } : undefined,
           style: {
             position: 'absolute', width: unit+'px', height: unit+'px',
             transform: 'translate3d('+x*unit+'px,'+-z*unit+'px,'+y*unit+'px)',
             transformStyle: 'preserve-3d',
-            cursor: clickable ? 'pointer' : 'default'
+            cursor: clickable ? 'pointer' : 'default',
+            pointerEvents: isGhost ? 'none' : 'auto'
           }
         }, faces.map(function(f, i) {
           return h('div', { key: i, style: {
             position: 'absolute', width: '100%', height: i >= 4 ? unit+'px' : '100%',
             transform: f.transform, background: f.bg,
-            border: '1px solid hsla('+hue+',80%,30%,0.4)', boxSizing: 'border-box'
+            border: borderStyle, boxSizing: 'border-box'
           }});
         }));
       };
@@ -166,6 +177,20 @@ window.StemLab = window.StemLab || {
             })(p[0], p[1], p[2]+1);
           }
         });
+        
+        // Render ghost target for prism challenge
+        if (builderChallenge && builderChallenge.type === 'prism') {
+          var tgt = builderChallenge.target;
+          for (var gx = 0; gx < tgt.l; gx++) {
+            for (var gy = 0; gy < tgt.w; gy++) {
+              for (var gz = 0; gz < tgt.h; gz++) {
+                if (!posSet.has(gx+'-'+gy+'-'+gz)) {
+                  cubes.push(renderCube(gx, gy, gz, 210, 80, cubeUnit, false, null, true));
+                }
+              }
+            }
+          }
+        }
       }
 
       var fw = isSlider ? dims.l * cubeUnit : 8 * cubeUnit;
@@ -278,6 +303,11 @@ window.StemLab = window.StemLab || {
               onClick: function() { upd({ mode: 'freeform', challenge: null, feedback: null }); },
               className: 'px-3 py-1 rounded-md text-xs font-bold transition-all ' + (!isSlider ? 'bg-white text-indigo-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700')
             }, '\uD83E\uDDF1 Freeform')),
+          // Paint toggle
+          h('button', {
+            onClick: function() { upd({ paintSurfaceArea: !paintSurfaceArea }); },
+            className: 'px-3 py-1 ml-2 rounded-lg text-xs font-bold transition-all border ' + (paintSurfaceArea ? 'bg-orange-100 text-orange-700 border-orange-300 shadow-inner' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50')
+          }, paintSurfaceArea ? '🧼 Wash Paint' : '🎨 Paint Surface'),
           // Zoom
           h('div', { className: 'flex items-center gap-1' },
             h('button', { onClick: function() { upd({ scale: Math.max(0.4, scale - 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '\u2212'),
@@ -345,13 +375,20 @@ window.StemLab = window.StemLab || {
 
         // Stats
         h('div', { className: 'grid grid-cols-2 gap-3' },
-          h('div', { className: 'bg-white rounded-xl p-3 border border-emerald-100 text-center' },
+          h('div', { className: 'bg-white rounded-xl p-3 border border-emerald-100 text-center flex flex-col items-center justify-center' },
             h('div', { className: 'text-xs font-bold text-emerald-600 uppercase mb-1' }, 'Volume'),
             h('div', { className: 'text-xl font-bold text-emerald-800' },
-              isSlider && !challenge ? dims.l+' \u00d7 '+dims.w+' \u00d7 '+dims.h+' = ' : '',
-              h('span', { className: 'text-2xl text-emerald-600' },
-                (isSlider && challenge && !feedback) ? '?' :
-                (!isSlider && builderChallenge && builderChallenge.type === 'volume') ? '?' : volume)),
+              isSlider && !challenge ? h('div', { className: 'flex flex-col items-center gap-1' },
+                h('div', { className: 'text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200' }, 
+                  'Area of Base ('+dims.l+'\u00d7'+dims.w+') = ' + (dims.l * dims.w)),
+                h('div', { className: 'whitespace-nowrap' }, 
+                  (dims.l * dims.w) + ' \u00d7 Height ('+dims.h+') = ', 
+                  h('span', { className: 'text-2xl text-emerald-600' }, volume))
+              ) : h('span', null, 
+                h('span', { className: 'text-2xl text-emerald-600' },
+                  (isSlider && challenge && !feedback) ? '?' :
+                  (!isSlider && builderChallenge && builderChallenge.type === 'volume') ? '?' : volume))
+            ),
             (isSlider && challenge && !feedback) ? null :
             (!isSlider && builderChallenge && builderChallenge.type === 'volume') ? null :
             h('div', { className: 'text-xs text-slate-400' }, volume + ' unit cube' + (volume !== 1 ? 's' : ''))
