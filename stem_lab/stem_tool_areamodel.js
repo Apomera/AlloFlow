@@ -95,7 +95,8 @@ window.StemLab = window.StemLab || {
         }
         return h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4' },
           h('div', {
-            className: 'grid gap-1 sm:gap-2 w-full max-w-4xl mx-auto grid-cols-' + cols
+            className: 'grid gap-1 sm:gap-2 w-full max-w-full mx-auto',
+            style: { gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))' }
           }, cells)
         );
       };
@@ -130,12 +131,13 @@ window.StemLab = window.StemLab || {
           ),
           // Two-part grid
           h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4' },
-            h('div', { className: 'flex gap-2 sm:gap-4 justify-center items-start w-full max-w-4xl mx-auto' },
+            h('div', { className: 'flex gap-2 sm:gap-4 justify-center items-start w-full max-w-full mx-auto' },
               // Left section
               h('div', { className: 'text-center flex-' + leftCols, style: { flex: leftCols, minWidth: 0 } },
                 h('div', { className: 'text-xs font-bold text-blue-700 mb-1' }, rows + ' \u00d7 ' + leftCols),
                 h('div', {
-                  className: 'grid gap-1 sm:gap-2 grid-cols-' + leftCols
+                  className: 'grid gap-1 sm:gap-2',
+                  style: { gridTemplateColumns: 'repeat(' + leftCols + ', minmax(0, 1fr))' }
                 }, leftCells),
                 h('div', { className: 'text-sm font-bold text-blue-600 mt-1' }, '= ' + leftProduct)
               ),
@@ -149,7 +151,8 @@ window.StemLab = window.StemLab || {
               rightCols > 0 && h('div', { className: 'text-center flex-' + rightCols, style: { flex: rightCols, minWidth: 0 } },
                 h('div', { className: 'text-xs font-bold text-emerald-700 mb-1' }, rows + ' \u00d7 ' + rightCols),
                 h('div', {
-                  className: 'grid gap-1 sm:gap-2 grid-cols-' + rightCols
+                  className: 'grid gap-1 sm:gap-2',
+                  style: { gridTemplateColumns: 'repeat(' + rightCols + ', minmax(0, 1fr))' }
                 }, rightCells),
                 h('div', { className: 'text-sm font-bold text-emerald-600 mt-1' }, '= ' + rightProduct)
               )
@@ -273,7 +276,7 @@ window.StemLab = window.StemLab || {
       };
 
       // ══════════ RENDER ══════════
-      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200' },
+      return h('div', { className: 'space-y-4 w-full px-2 sm:px-4 max-w-7xl mx-auto animate-in fade-in duration-200' },
         // Header
         h('div', { className: 'flex items-center gap-3 mb-2' },
           h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' },
