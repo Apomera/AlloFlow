@@ -1,4 +1,4 @@
-torch
+# torch is already in the base image (pytorch/pytorch or rocm/pytorch)
 diffusers>=0.30.0
 transformers
 accelerate

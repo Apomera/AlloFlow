@@ -1,8 +1,12 @@
 # ── AlloFlow Flux Image Server ──
 # GPU-accelerated image generation with Flux.1-schnell
 # OpenAI-compatible API for plug-and-play with AIProvider
+#
+# Build args:
+#   BASE_IMAGE - pytorch/pytorch:latest (NVIDIA/CPU) or rocm/pytorch:latest (AMD)
 
-FROM pytorch/pytorch:latest
+ARG BASE_IMAGE=pytorch/pytorch:latest
+FROM ${BASE_IMAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -15,9 +19,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Install remaining deps
+# Install remaining deps (torch already in base image)
 COPY requirements.txt .
-RUN pip3 install -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Copy server code
 COPY flux_server.py .

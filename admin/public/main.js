@@ -438,10 +438,20 @@ function detectHardware() {
                             gpuName.includes('NVIDIA') || gpuName.includes('GeForce') || gpuName.includes('RTX') || gpuName.includes('GTX') ? 'NVIDIA' :
                             gpuName.includes('Intel') || gpuName.includes('Arc') ? 'Intel' : 'Unknown';
             
+            // Determine ROCm GFX version for AMD GPUs
+            let rocmGfxVersion = null;
+            if (gpuType === 'AMD') {
+              // Map known AMD GPU families to GFX versions
+              if (gpuName.includes('9070') || gpuName.includes('9050')) rocmGfxVersion = '12.0.0'; // RDNA 4 (gfx1200)
+              else if (gpuName.includes('7900') || gpuName.includes('7800') || gpuName.includes('7700') || gpuName.includes('7600')) rocmGfxVersion = '11.0.0'; // RDNA 3 (gfx1100)
+              else if (gpuName.includes('6900') || gpuName.includes('6800') || gpuName.includes('6700') || gpuName.includes('6600') || gpuName.includes('6500')) rocmGfxVersion = '10.3.0'; // RDNA 2 (gfx1030)
+            }
+            
             gpu = {
               type: gpuType,
               name: gpuName,
-              vramGB: vramGB
+              vramGB: vramGB,
+              rocmGfxVersion: rocmGfxVersion
             };
             console.log('[hardware:detect] Detected GPU:', gpuName, '-', vramGB, 'GB VRAM (' + gpuType + ')');
             break; // Use first real GPU found
@@ -614,8 +624,11 @@ function generateDockerCompose(selectedServices, gpuInfo) {
           'flux_models:/models'
         ];
         compose.volumes.flux_models = {};
-        // Only add NVIDIA GPU reservation if NVIDIA GPU detected
+        
+        // GPU-specific configuration
         if (gpuInfo && gpuInfo.type === 'NVIDIA') {
+          // NVIDIA: use CUDA base image + GPU reservation
+          compose.services.flux.build.args = { BASE_IMAGE: 'pytorch/pytorch:latest' };
           compose.services.flux.deploy = {
             resources: {
               reservations: {
@@ -627,7 +640,18 @@ function generateDockerCompose(selectedServices, gpuInfo) {
               }
             }
           };
+        } else if (gpuInfo && gpuInfo.type === 'AMD') {
+          // AMD: use ROCm base image + device passthrough
+          compose.services.flux.build.args = { BASE_IMAGE: 'rocm/pytorch:latest' };
+          compose.services.flux.devices = [
+            '/dev/kfd',
+            '/dev/dri'
+          ];
+          compose.services.flux.group_add = ['video'];
+          compose.services.flux.environment['HSA_OVERRIDE_GFX_VERSION'] = gpuInfo.rocmGfxVersion || '11.0.0';
+          compose.services.flux.environment['ROCM_VISIBLE_DEVICES'] = '0';
         }
+        // else: CPU-only — no GPU config needed, pytorch/pytorch base is default
       }
     });
     
