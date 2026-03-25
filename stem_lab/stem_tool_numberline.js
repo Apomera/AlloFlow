@@ -80,7 +80,9 @@ window.StemLab = window.StemLab || {
 
         var ok;
         if (challenge.type === 'estimate') {
-          ok = Math.abs(ans - challenge.answer) <= 1; // within 1 is acceptable for estimate
+          ok = Math.abs(ans - challenge.answer) <= Math.max(1, rLen * 0.05); // within 5% of range
+        } else if (challenge.type === 'place') {
+          ok = Math.abs(ans - challenge.answer) <= Math.max(1, rLen * 0.02); // within 2% for place
         } else {
           ok = ans === challenge.answer;
         }
@@ -101,12 +103,21 @@ window.StemLab = window.StemLab || {
       var tickCount = Math.min(rLen + 1, 21);
       var ticks = [];
       for (var i = 0; i < tickCount; i++) {
-        var val = range.min + Math.round(i * rLen / Math.min(rLen, 20));
+        var rawVal = range.min + (i * rLen / Math.min(rLen, 20));
+        var val = Math.round(rawVal * 10) / 10; // keep one decimal if needed
         var x = PAD + i / Math.min(rLen, 20) * (W - 2 * PAD);
         var isMajor = i % 5 === 0 || i === Math.min(rLen, 20);
+        var valStr = val.toLocaleString();
+        // If numbers are very large, tilt them
+        var transformAttr = (valStr.length > 5) ? ('rotate(-35 ' + x + ' 98)') : '';
         ticks.push(h('g', { key: i },
           h('line', { x1: x, y1: isMajor ? 42 : 50, x2: x, y2: isMajor ? 78 : 70, stroke: '#3b82f6', strokeWidth: isMajor ? 2.5 : 1.5 }),
-          isMajor && h('text', { x: x, y: 98, textAnchor: 'middle', fill: '#1e40af', fontSize: '13', fontWeight: 'bold', fontFamily: 'monospace' }, val)
+          isMajor && h('text', { 
+            x: x, y: 98, textAnchor: valStr.length > 5 ? 'end' : 'middle', 
+            transform: transformAttr,
+            fill: '#1e40af', fontSize: valStr.length > 5 ? '10' : '13', 
+            fontWeight: 'bold', fontFamily: 'monospace' 
+          }, valStr)
         ));
       }
 
@@ -160,8 +171,30 @@ window.StemLab = window.StemLab || {
         ),
 
         // SVG number line
-        h('div', { className: 'bg-white rounded-xl border-2 border-blue-200 p-6 flex flex-col items-center' },
-          h('svg', { width: '100%', height: H, viewBox: '0 0 '+W+' '+H, className: 'max-w-full' },
+        h('div', { className: 'bg-white rounded-xl border-2 border-blue-200 p-6 flex flex-col items-center select-none cursor-crosshair' },
+          h('svg', { 
+             width: '100%', height: H, viewBox: '0 0 '+W+' '+H, className: 'max-w-full',
+             onClick: function(e) {
+               if (!challenge || challenge.type !== 'place') return;
+               var rect = e.currentTarget.getBoundingClientRect();
+               // SVG internal coords
+               var scaleX = W / rect.width;
+               var clickX = (e.clientX - rect.left) * scaleX;
+               // Map clickX back to value
+               var fraction = (clickX - PAD) / (W - 2 * PAD);
+               var valObj = range.min + fraction * rLen;
+               // Snap to nearest integer or halfway point depending on range scale
+               var step = rLen > 50 ? Math.max(1, Math.round(rLen / 50)) : 1;
+               var valSnapped = Math.round(valObj / step) * step;
+               if (valSnapped < range.min) valSnapped = range.min;
+               if (valSnapped > range.max) valSnapped = range.max;
+               // Set as answer AND visual marker
+               upd({ 
+                 answer: String(valSnapped),
+                 markers: [{ value: valSnapped, color: '#f59e0b', label: '?' }] 
+               });
+             }
+          },
             h('line', { x1: PAD, y1: 60, x2: W-PAD, y2: 60, stroke: '#3b82f6', strokeWidth: 3, strokeLinecap: 'round' }),
             ticks,
             arrowEl,
@@ -225,18 +258,19 @@ window.StemLab = window.StemLab || {
               }, '\uD83C\uDFB2 Generate Challenge')
             : h('div', { className: 'space-y-2' },
                 h('p', { className: 'text-sm font-bold text-blue-800' }, challenge.question),
-                h('div', { className: 'flex gap-2' },
-                  h('input', {
+                h('div', { className: 'flex gap-2 items-center' },
+                  challenge.type !== 'place' ? h('input', {
                     type: 'number', value: answer,
                     onChange: function(e) { upd({ answer: e.target.value }); },
                     onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkAnswer(); },
                     placeholder: 'Your answer',
                     className: 'flex-1 px-3 py-2 border border-blue-300 rounded-lg text-sm font-mono'
-                  }),
+                  }) : h('div', { className: 'flex-1 text-sm font-bold text-amber-600 px-2' }, 'Click the number line above to place a marker.'),
                   h('button', {
                     onClick: checkAnswer,
-                    className: 'px-4 py-2 bg-blue-600 text-white font-bold rounded-lg text-sm hover:bg-blue-700'
-                  }, 'Check')
+                    disabled: challenge.type === 'place' && !answer,
+                    className: 'px-4 py-2 bg-blue-600 text-white font-bold rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition-all'
+                  }, challenge.type === 'place' ? 'Check Placement' : 'Check')
                 ),
                 feedback && h('p', { className: 'text-sm font-bold ' + (feedback.correct ? 'text-green-600' : 'text-red-600') }, feedback.msg),
                 feedback && h('button', {
