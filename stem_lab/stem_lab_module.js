@@ -46167,9 +46167,12 @@
                     el('button', { onClick: advanceCase,
                       style: { marginTop: 14, padding: '10px 24px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 } },
                       '\uD83D\uDD75\uFE0F Next Case \u2192')
-                  ),
-                    el('span', { style: { color: '#64748b', fontSize: 11, fontWeight: 600 } }, 'Entropy: ' + pwStrength.entropy + ' bits')
-                  ),
+                  )
+                ),
+
+              // ═══════ PASSWORD FORGE ═══════
+              cyberTab === 'password' && el('div', { style: { maxWidth: 640, margin: '0 auto' } },
+                  el('span', { style: { color: '#64748b', fontSize: 11, fontWeight: 600 } }, 'Entropy: ' + pwStrength.entropy + ' bits'),
                   // Strength bar
                   el('div', { style: { width: '100%', height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
                     el('div', { style: { width: (pwStrength.score / 5 * 100) + '%', height: '100%', borderRadius: 4, background: pwStrength.color, transition: 'all 0.5s ease-out', boxShadow: '0 0 10px ' + pwStrength.color + '60' } })
