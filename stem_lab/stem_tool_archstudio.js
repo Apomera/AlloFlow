@@ -11,7 +11,11 @@
   'use strict';
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
-  window.StemLab.registerTool('archStudio', function (ctx) {
+  window.StemLab.registerTool('archStudio', {
+    name: 'Architecture Studio',
+    icon: '\uD83C\uDFD7\uFE0F',
+    category: 'explore',
+    render: function (ctx) {
     var React = ctx.React;
     var d = (ctx.toolData && ctx.toolData.archStudio) || {};
     var upd = function (key, val) {
@@ -700,5 +704,5 @@
         coachTip
       )
     );
-  });
+  }});
 })();

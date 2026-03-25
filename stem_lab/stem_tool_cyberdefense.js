@@ -1,4 +1,4 @@
-﻿/**
+/**
  * stem_tool_cyberdefense.js - Cyber Defense Lab
  *
  * Phishing detective, password strength forge, cipher playground.
@@ -11,7 +11,11 @@
   'use strict';
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
-  window.StemLab.registerTool('cyberDefense', function (ctx) {
+  window.StemLab.registerTool('cyberDefense', {
+    name: 'Cyber Defense Lab',
+    icon: '\uD83D\uDEE1\uFE0F',
+    category: 'tech',
+    render: function (ctx) {
     var React = ctx.React;
     var el = React.createElement;
 
@@ -715,5 +719,5 @@
             )
           );
 
-  });
+  }});
 })();
