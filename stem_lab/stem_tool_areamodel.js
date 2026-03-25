@@ -89,15 +89,13 @@ window.StemLab = window.StemLab || {
               key: i,
               onClick: function() { upd({ highlight: { rows: ri + 1, cols: ci + 1 } }); },
               className: 'aspect-square rounded-sm border cursor-pointer transition-all hover:scale-110 ' +
-                (isHigh ? 'bg-amber-400 border-amber-500 shadow-sm' : 'bg-amber-100 border-amber-200 hover:bg-amber-200'),
-              style: { minWidth: '28px' }
+                (isHigh ? 'bg-amber-400 border-amber-500 shadow-sm' : 'bg-amber-100 border-amber-200 hover:bg-amber-200')
             }));
           })(r, c);
         }
-        return h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4 flex justify-center' },
+        return h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4' },
           h('div', {
-            className: 'inline-grid gap-[2px]',
-            style: { gridTemplateColumns: 'repeat(' + cols + ', minmax(28px, 48px))' }
+            className: 'grid gap-1 sm:gap-2 w-full max-w-4xl mx-auto grid-cols-' + cols
           }, cells)
         );
       };
@@ -109,11 +107,11 @@ window.StemLab = window.StemLab || {
 
         var leftCells = [];
         for (var i = 0; i < rows * leftCols; i++) {
-          leftCells.push(h('div', { key: 'L'+i, className: 'aspect-square rounded-sm border bg-blue-400 border-blue-500', style: { minWidth: '24px' } }));
+          leftCells.push(h('div', { key: 'L'+i, className: 'aspect-square rounded-sm border bg-blue-400 border-blue-500' }));
         }
         var rightCells = [];
         for (var j = 0; j < rows * rightCols; j++) {
-          rightCells.push(h('div', { key: 'R'+j, className: 'aspect-square rounded-sm border bg-emerald-400 border-emerald-500', style: { minWidth: '24px' } }));
+          rightCells.push(h('div', { key: 'R'+j, className: 'aspect-square rounded-sm border bg-emerald-400 border-emerald-500' }));
         }
 
         var leftProduct = rows * leftCols;
@@ -132,28 +130,26 @@ window.StemLab = window.StemLab || {
           ),
           // Two-part grid
           h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4' },
-            h('div', { className: 'flex gap-3 justify-center items-start' },
+            h('div', { className: 'flex gap-2 sm:gap-4 justify-center items-start w-full max-w-4xl mx-auto' },
               // Left section
-              h('div', { className: 'text-center' },
+              h('div', { className: 'text-center flex-' + leftCols, style: { flex: leftCols, minWidth: 0 } },
                 h('div', { className: 'text-xs font-bold text-blue-700 mb-1' }, rows + ' \u00d7 ' + leftCols),
                 h('div', {
-                  className: 'inline-grid gap-[2px]',
-                  style: { gridTemplateColumns: 'repeat(' + leftCols + ', minmax(24px, 40px))' }
+                  className: 'grid gap-1 sm:gap-2 grid-cols-' + leftCols
                 }, leftCells),
                 h('div', { className: 'text-sm font-bold text-blue-600 mt-1' }, '= ' + leftProduct)
               ),
               // Divider
-              h('div', { className: 'flex flex-col items-center justify-center self-stretch' },
+              h('div', { className: 'flex flex-col items-center justify-center self-stretch w-4 sm:w-8' },
                 h('div', { className: 'w-px flex-1 bg-violet-300' }),
                 h('span', { className: 'text-violet-500 font-bold text-lg py-1' }, '+'),
                 h('div', { className: 'w-px flex-1 bg-violet-300' })
               ),
               // Right section
-              rightCols > 0 && h('div', { className: 'text-center' },
+              rightCols > 0 && h('div', { className: 'text-center flex-' + rightCols, style: { flex: rightCols, minWidth: 0 } },
                 h('div', { className: 'text-xs font-bold text-emerald-700 mb-1' }, rows + ' \u00d7 ' + rightCols),
                 h('div', {
-                  className: 'inline-grid gap-[2px]',
-                  style: { gridTemplateColumns: 'repeat(' + rightCols + ', minmax(24px, 40px))' }
+                  className: 'grid gap-1 sm:gap-2 grid-cols-' + rightCols
                 }, rightCells),
                 h('div', { className: 'text-sm font-bold text-emerald-600 mt-1' }, '= ' + rightProduct)
               )
@@ -277,7 +273,7 @@ window.StemLab = window.StemLab || {
       };
 
       // ══════════ RENDER ══════════
-      return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
+      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200' },
         // Header
         h('div', { className: 'flex items-center gap-3 mb-2' },
           h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' },
