@@ -2771,76 +2771,137 @@ const d = labToolData.wave;
               } else if (currentMode === 'spectrum') {
                 // ========== FFT / SPECTRUM MODE ==========
                 var midY_s = cH / 2;
-                var barCount = 32;
+                var barCount = d.micActive ? 64 : 32;
                 var barW = (cW - 40) / barCount;
 
-                // Time-domain waveform (top half)
-                ctx.strokeStyle = '#60a5fa';
-                ctx.lineWidth = 2 * dpr;
-                ctx.setLineDash([]);
-                ctx.beginPath();
-                for (var sx = 0; sx < cW; sx += 2) {
-                  var sv = amp * Math.sin(2 * Math.PI * (sx / cW * freq - t * freq * 0.05));
-                  if (showSecond) sv += amp2 * Math.sin(2 * Math.PI * (sx / cW * freq2 - t * freq2 * 0.05));
-                  var sy = midY_s * 0.5 + sv * midY_s * 0.35;
-                  if (sx === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
-                }
-                ctx.stroke();
+                if (d.micActive && d._audioAnalyser) {
+                  var analyser = d._audioAnalyser;
+                  var bufferLength = analyser.frequencyBinCount;
+                  var timeData = new Uint8Array(bufferLength);
+                  var freqData = new Uint8Array(bufferLength);
+                  analyser.getByteTimeDomainData(timeData);
+                  analyser.getByteFrequencyData(freqData);
 
-                // Divider line
-                ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-                ctx.lineWidth = 1;
-                ctx.beginPath(); ctx.moveTo(0, midY_s); ctx.lineTo(cW, midY_s); ctx.stroke();
-
-                // Frequency domain bars (bottom half)
-                var maxFreqDisp = Math.max(freq * 3, 1000);
-                var freqBin = maxFreqDisp / barCount;
-                for (var bi = 0; bi < barCount; bi++) {
-                  var binCenterFreq = (bi + 0.5) * freqBin;
-                  // Calculate magnitude: peaks at fundamental frequencies
-                  var mag = 0;
-                  var spread = freqBin * 0.8;
-                  mag += amp * Math.exp(-Math.pow(binCenterFreq - freq, 2) / (2 * spread * spread));
-                  // Add harmonics
-                  mag += amp * 0.3 * Math.exp(-Math.pow(binCenterFreq - freq * 2, 2) / (2 * spread * spread));
-                  mag += amp * 0.15 * Math.exp(-Math.pow(binCenterFreq - freq * 3, 2) / (2 * spread * spread));
-                  if (showSecond) {
-                    mag += amp2 * Math.exp(-Math.pow(binCenterFreq - freq2, 2) / (2 * spread * spread));
-                    mag += amp2 * 0.3 * Math.exp(-Math.pow(binCenterFreq - freq2 * 2, 2) / (2 * spread * spread));
+                  // Time-domain waveform (top half) - Mic
+                  ctx.strokeStyle = '#34d399'; // emerald for mic
+                  ctx.lineWidth = 2 * dpr;
+                  ctx.beginPath();
+                  var sliceWidth = cW / bufferLength;
+                  for (var i = 0; i < bufferLength; i++) {
+                    var v = timeData[i] / 128.0; // 0.0 to 2.0
+                    var sy = v * (midY_s * 0.45) + (midY_s * 0.05);
+                    if (i === 0) ctx.moveTo(i * sliceWidth, sy);
+                    else ctx.lineTo(i * sliceWidth, sy);
                   }
-                  // Animate with slight jitter
-                  mag *= (0.9 + 0.1 * Math.sin(t * 2 + bi));
+                  ctx.stroke();
 
-                  var barH = Math.min(midY_s - 20, mag * midY_s * 0.8);
-                  var barX = 20 + bi * barW;
-                  var barY = cH - 10 - barH;
+                  // Divider line
+                  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                  ctx.beginPath(); ctx.moveTo(0, midY_s); ctx.lineTo(cW, midY_s); ctx.stroke();
 
-                  // Gradient color based on frequency
-                  var hue = (bi / barCount) * 270;
-                  ctx.fillStyle = 'hsla(' + hue + ', 80%, 60%, 0.85)';
-                  ctx.fillRect(barX, barY, barW - 2, barH);
+                  // Frequency domain bars (bottom half) - Mic
+                  for (var bi = 0; bi < barCount; bi++) {
+                    // Map linearly to the first portion of the spectrum (usually 0 to ~10kHz)
+                    var dataIdx = Math.floor(bi * (bufferLength * 0.5) / barCount);
+                    var mag = freqData[dataIdx] / 255.0; // 0 to 1
+                    var barH = Math.min(midY_s - 20, mag * midY_s * 0.85);
+                    var barX = 20 + bi * barW;
+                    var barY = cH - 10 - Math.max(0, barH);
+                    var hue = (bi / barCount) * 270;
+                    ctx.fillStyle = 'hsla(' + hue + ', 80%, 60%, 0.85)';
+                    ctx.fillRect(barX, barY, barW - 2, Math.max(1, barH));
+                    // Glow cap
+                    ctx.fillStyle = 'hsla(' + hue + ', 90%, 80%, 0.9)';
+                    ctx.fillRect(barX, barY, barW - 2, 3 * dpr);
+                  }
 
-                  // Glow cap
-                  ctx.fillStyle = 'hsla(' + hue + ', 90%, 80%, 0.9)';
-                  ctx.fillRect(barX, barY, barW - 2, 3 * dpr);
+                  // Frequency axis labels
+                  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                  ctx.font = (5 * dpr) + 'px sans-serif';
+                  var maxFreqHz = ((d._audioCtxMic && d._audioCtxMic.sampleRate ? d._audioCtxMic.sampleRate : 44100) / 2) * 0.5; 
+                  for (var fl = 0; fl < 5; fl++) {
+                    var fLabel = Math.round(fl * maxFreqHz / 4);
+                    ctx.fillText(fLabel + ' Hz', 20 + fl * (cW - 40) / 4, cH - 2);
+                  }
+
+                  // Labels
+                  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                  ctx.fillRect(4, 4, 250 * dpr, 36 * dpr);
+                  ctx.fillStyle = '#34d399';
+                  ctx.font = (7 * dpr) + 'px sans-serif';
+                  ctx.fillText('\uD83C\uDFA4 LIVE MIC Spectrum Analyzer', 8 * dpr, 14 * dpr);
+                  ctx.fillStyle = '#c084fc';
+                  ctx.fillText('Top: Audio Waveform | Bottom: Real-Time FFT', 8 * dpr, 26 * dpr);
+
+                } else {
+                  // Time-domain waveform (top half) - Synthetic
+                  ctx.strokeStyle = '#60a5fa';
+                  ctx.lineWidth = 2 * dpr;
+                  ctx.setLineDash([]);
+                  ctx.beginPath();
+                  for (var sx = 0; sx < cW; sx += 2) {
+                    var sv = amp * Math.sin(2 * Math.PI * (sx / cW * freq - t * freq * 0.05));
+                    if (showSecond) sv += amp2 * Math.sin(2 * Math.PI * (sx / cW * freq2 - t * freq2 * 0.05));
+                    var sy = midY_s * 0.5 + sv * midY_s * 0.35;
+                    if (sx === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+                  }
+                  ctx.stroke();
+
+                  // Divider line
+                  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                  ctx.lineWidth = 1;
+                  ctx.beginPath(); ctx.moveTo(0, midY_s); ctx.lineTo(cW, midY_s); ctx.stroke();
+
+                  // Frequency domain bars (bottom half) - Synthetic
+                  var maxFreqDisp = Math.max(freq * 3, 1000);
+                  var freqBin = maxFreqDisp / barCount;
+                  for (var bi = 0; bi < barCount; bi++) {
+                    var binCenterFreq = (bi + 0.5) * freqBin;
+                    // Calculate magnitude: peaks at fundamental frequencies
+                    var mag = 0;
+                    var spread = freqBin * 0.8;
+                    mag += amp * Math.exp(-Math.pow(binCenterFreq - freq, 2) / (2 * spread * spread));
+                    // Add harmonics
+                    mag += amp * 0.3 * Math.exp(-Math.pow(binCenterFreq - freq * 2, 2) / (2 * spread * spread));
+                    mag += amp * 0.15 * Math.exp(-Math.pow(binCenterFreq - freq * 3, 2) / (2 * spread * spread));
+                    if (showSecond) {
+                      mag += amp2 * Math.exp(-Math.pow(binCenterFreq - freq2, 2) / (2 * spread * spread));
+                      mag += amp2 * 0.3 * Math.exp(-Math.pow(binCenterFreq - freq2 * 2, 2) / (2 * spread * spread));
+                    }
+                    // Animate with slight jitter
+                    mag *= (0.9 + 0.1 * Math.sin(t * 2 + bi));
+
+                    var barH = Math.min(midY_s - 20, mag * midY_s * 0.8);
+                    var barX = 20 + bi * barW;
+                    var barY = cH - 10 - barH;
+
+                    // Gradient color based on frequency
+                    var hue = (bi / barCount) * 270;
+                    ctx.fillStyle = 'hsla(' + hue + ', 80%, 60%, 0.85)';
+                    ctx.fillRect(barX, barY, barW - 2, barH);
+
+                    // Glow cap
+                    ctx.fillStyle = 'hsla(' + hue + ', 90%, 80%, 0.9)';
+                    ctx.fillRect(barX, barY, barW - 2, 3 * dpr);
+                  }
+
+                  // Frequency axis labels
+                  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                  ctx.font = (5 * dpr) + 'px sans-serif';
+                  for (var fl = 0; fl < 5; fl++) {
+                    var fLabel = Math.round(fl * maxFreqDisp / 4);
+                    ctx.fillText(fLabel + ' Hz', 20 + fl * (cW - 40) / 4, cH - 2);
+                  }
+
+                  // Labels
+                  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                  ctx.fillRect(4, 4, 230 * dpr, 36 * dpr);
+                  ctx.fillStyle = '#60a5fa';
+                  ctx.font = (7 * dpr) + 'px sans-serif';
+                  ctx.fillText('Spectrum Analyzer \u2014 Time \u2192 Frequency Domain', 8 * dpr, 14 * dpr);
+                  ctx.fillStyle = '#c084fc';
+                  ctx.fillText('Top: Waveform | Bottom: Frequency Spectrum (FFT)', 8 * dpr, 26 * dpr);
                 }
-
-                // Frequency axis labels
-                ctx.fillStyle = 'rgba(255,255,255,0.5)';
-                ctx.font = (5 * dpr) + 'px sans-serif';
-                for (var fl = 0; fl < 5; fl++) {
-                  var fLabel = Math.round(fl * maxFreqDisp / 4);
-                  ctx.fillText(fLabel + ' Hz', 20 + fl * (cW - 40) / 4, cH - 2);
-                }
-
-                // Labels
-                ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                ctx.fillRect(4, 4, 230 * dpr, 36 * dpr);
-                ctx.fillStyle = '#60a5fa';
-                ctx.font = (7 * dpr) + 'px sans-serif';
-                ctx.fillText('Spectrum Analyzer \u2014 Time \u2192 Frequency Domain', 8 * dpr, 14 * dpr);
-                ctx.fillStyle = '#c084fc';
-                ctx.fillText('Top: Waveform | Bottom: Frequency Spectrum (FFT)', 8 * dpr, 26 * dpr);
 
               }
 
@@ -2890,6 +2951,9 @@ const d = labToolData.wave;
 
           var toggleSound = function () {
 
+            // Turn off mic if on
+            if (d.micActive && typeof toggleMic !== 'undefined') toggleMic();
+
             if (d._audioCtx) {
 
               try { d._audioCtx.close(); } catch (e) { }
@@ -2930,10 +2994,53 @@ const d = labToolData.wave;
 
             } catch (e) {
 
-              addToast(t('stem.wave.u26a0_audio_not_supported_in'), 'error');
+              addToast(t('stem.wave.u26a0_audio_not_supported_in') || 'Audio not supported', 'error');
 
             }
 
+          };
+
+
+
+          // Microphone Input
+
+          var toggleMic = function () {
+
+            // Turn off oscillator if on
+            if (d.soundPlaying) toggleSound();
+
+            if (d.micActive) {
+              if (d._micStream) d._micStream.getTracks().forEach(function(t) { t.stop(); });
+              if (d._audioCtxMic) { try { d._audioCtxMic.close(); } catch(e){} }
+              upd('micActive', false);
+              upd('_micStream', null);
+              upd('_audioCtxMic', null);
+              upd('_audioAnalyser', null);
+              return;
+            }
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+              addToast('Microphone not supported in this browser.', 'error');
+              return;
+            }
+
+            navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+              .then(function(stream) {
+                var ctx = new (window.AudioContext || window.webkitAudioContext)();
+                var source = ctx.createMediaStreamSource(stream);
+                var analyser = ctx.createAnalyser();
+                analyser.fftSize = 2048;
+                source.connect(analyser);
+                upd('_audioCtxMic', ctx);
+                upd('_micStream', stream);
+                upd('_audioAnalyser', analyser);
+                upd('micActive', true);
+                // Switch to spectrum mode automatically to see the FFT
+                if (d.waveMode !== 'spectrum') upd('waveMode', 'spectrum');
+              })
+              .catch(function(err) {
+                addToast('Microphone access denied: ' + err.message, 'error');
+              });
           };
 
 
@@ -3064,7 +3171,7 @@ const d = labToolData.wave;
 
             // Mode tabs
 
-            React.createElement("div", { className: "flex gap-2 mb-3" },
+            React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
 
               [['free', '\uD83C\uDF0A Free Wave'], ['standing', '\uD83C\uDFB8 Standing'], ['ripple', '\uD83D\uDCA7 Ripple Tank'], ['longitudinal', '\u2261 Longitudinal'], ['doppler', '\uD83D\uDE97 Doppler'], ['spectrum', '\uD83D\uDCCA Spectrum']].map(function (m) {
 
@@ -3072,13 +3179,17 @@ const d = labToolData.wave;
 
               }),
 
-              React.createElement("button", {
+              React.createElement("div", { className: "ml-auto flex gap-2" },
+                React.createElement("button", {
+                  onClick: toggleMic,
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.micActive ? 'bg-rose-500 text-white shadow-md animate-pulse' : 'bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100')
+                }, d.micActive ? '\uD83C\uDFA4 Mic Active' : '\uD83C\uDFA4 Use Mic'),
 
-                onClick: toggleSound,
-
-                className: "ml-auto px-4 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.soundPlaying ? 'bg-emerald-500 text-white animate-pulse' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
-
-              }, d.soundPlaying ? '\uD83D\uDD0A Stop Sound' : '\uD83D\uDD08 Play Sound (' + (d.frequency * 100) + 'Hz)')
+                React.createElement("button", {
+                  onClick: toggleSound,
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.soundPlaying ? 'bg-emerald-500 text-white shadow-md animate-pulse' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
+                }, d.soundPlaying ? '\uD83D\uDD0A Stop Tone' : '\uD83D\uDD08 Play Tone')
+              )
 
             ),
 
