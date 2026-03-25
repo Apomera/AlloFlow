@@ -75,7 +75,9 @@
           var undoStack = d.undoStack || [];
           var redoStack = d.redoStack || [];
           var showTemplates = d.showTemplates || false;
-          var tutorialDismissed = d.tutorialDismissed || false;
+          var tutorialDismissed = d.tutorialDismissed || false;
+          var showGrid = d.showGrid !== false;
+          var showCoords = d.showCoords !== false;
 
           // ── Robot Grid Mode State ──
           var playgroundMode = d.playgroundMode || 'turtle';
@@ -1002,6 +1004,23 @@
             { target: '.coding-mode-toggle', title: 'Code Mode', text: 'Switch to Code mode for JavaScript-like syntax. Everything stays in sync!' }
           ];
 
+
+          // ── Keyboard Shortcuts ──
+          if (typeof document !== 'undefined') {
+            var _kbHandler = function(e) {
+              // Only handle if Coding Playground is active
+              if (!document.querySelector('.coding-run-btn')) return;
+              if (e.ctrlKey && e.key === 'z') { e.preventDefault(); handleUndo(); }
+              else if (e.ctrlKey && e.key === 'y') { e.preventDefault(); handleRedo(); }
+              else if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); if (!running) handleRun(); }
+              else if (e.key === 'Escape') { if (running) updMulti({ running: false, stepIdx: -1 }); }
+            };
+            // Attach once using a flag
+            if (!window.__codingKBAttached) {
+              document.addEventListener('keydown', _kbHandler);
+              window.__codingKBAttached = true;
+            }
+          }
           // NOTE: Coding Playground canvas hooks (useRef + useEffect) have been hoisted
           // to top level of StemLabModal to satisfy React Rules of Hooks.
           // The ref is available as _codingCanvasRef.
@@ -1027,11 +1046,11 @@
           // Helper: render quick-add buttons for children
           function renderQuickAdd(parentIdx, isElse) {
             return React.createElement("div", { className: "flex flex-wrap gap-1 mt-1" },
-              ['forward', 'backward', 'right', 'left', 'circle', 'color'].map(function (ct) {
+              ['forward', 'backward', 'right', 'left', 'circle', 'color', 'playNote', 'random'].map(function (ct) {
                 return React.createElement("button", {
                   key: ct, onClick: function () { addChildBlock(parentIdx, ct, isElse); },
                   className: "px-2 py-0.5 rounded text-[10px] bg-slate-600 text-slate-300 hover:bg-slate-500 transition-colors"
-                }, ct === 'forward' ? '+🐢' : ct === 'backward' ? '+🔙' : ct === 'right' ? '+↩️' : ct === 'left' ? '+↪️' : ct === 'circle' ? '+⭕' : '+🎨');
+                }, ct === 'forward' ? '+🐢' : ct === 'backward' ? '+🔙' : ct === 'right' ? '+↩️' : ct === 'left' ? '+↪️' : ct === 'circle' ? '+⭕' : ct === 'playNote' ? '+🎵' : ct === 'random' ? '+🎲' : '+🎨');
               })
             );
           }
@@ -1150,12 +1169,14 @@
               React.createElement("button", {
                 onClick: handleUndo, disabled: undoStack.length === 0,
                 title: 'Undo (Ctrl+Z)',
+                'aria-label': 'Undo',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (undoStack.length > 0 ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-white/5 text-white/30 cursor-not-allowed')
               }, "↩"),
               React.createElement("button", {
                 onClick: handleRedo, disabled: redoStack.length === 0,
                 title: 'Redo (Ctrl+Y)',
+                'aria-label': 'Redo',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (redoStack.length > 0 ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-white/5 text-white/30 cursor-not-allowed')
               }, "↪"),
@@ -1170,6 +1191,20 @@
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (showTemplates ? 'bg-amber-500 text-white' : 'bg-white/15 text-white hover:bg-white/25')
               }, "📂 Templates"),
+
+              // Canvas controls
+              React.createElement("button", {
+                onClick: function () { upd('showGrid', !showGrid); },
+                title: showGrid ? 'Hide grid' : 'Show grid',
+                className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
+                  (showGrid ? 'bg-white/20 text-white' : 'bg-white/5 text-white/40')
+              }, "⊞"),
+              React.createElement("button", {
+                onClick: function () { upd('showCoords', !showCoords); },
+                title: showCoords ? 'Hide coordinates' : 'Show coordinates',
+                className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
+                  (showCoords ? 'bg-white/20 text-white' : 'bg-white/5 text-white/40')
+              }, "📐"),
               // Tutorial help button
               tutorialDismissed && React.createElement("button", {
                 onClick: function () { upd('tutorialDismissed', false); },
