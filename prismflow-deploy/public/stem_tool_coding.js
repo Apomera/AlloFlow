@@ -446,6 +446,28 @@
                   lines.push(blocksToText(b.elseChildren, indent + '  '));
                 }
                 lines.push(indent + '}');
+              } else if (b.type === 'while') {
+                lines.push(indent + 'while (' + (b.condition || 'x < 450') + ') {');
+                if (b.children && b.children.length > 0) {
+                  lines.push(blocksToText(b.children, indent + '  '));
+                }
+                lines.push(indent + '}');
+              } else if (b.type === 'function') {
+                lines.push(indent + 'function ' + (b.funcName || 'myShape') + '() {');
+                if (b.children && b.children.length > 0) {
+                  lines.push(blocksToText(b.children, indent + '  '));
+                }
+                lines.push(indent + '}');
+              } else if (b.type === 'callFunction') {
+                lines.push(indent + (b.funcName || 'myShape') + '()');
+              } else if (b.type === 'random') {
+                lines.push(indent + 'random("' + (b.varName || 'r') + '", ' + (b.randomMin || 0) + ', ' + (b.randomMax || 100) + ')');
+              } else if (b.type === 'stamp') {
+                lines.push(indent + 'stamp()');
+              } else if (b.type === 'arc') {
+                lines.push(indent + 'arc(' + (b.arcAngle || 180) + ', ' + (b.arcRadius || 30) + ')');
+              } else if (b.type === 'playNote') {
+                lines.push(indent + 'playNote(' + (b.frequency || 440) + ', ' + (b.duration || 200) + ')');
               }
             }
             return lines.join('\n');
@@ -492,6 +514,23 @@
                   blks.push({ type: 'repeat', times: parseInt(m[1]), children: children });
                   continue;
                 }
+                else if ((m = line.match(/^while\s*\((.+)\)\s*\{/))) {
+                  i++;
+                  var whileChildren = parse();
+                  blks.push({ type: 'while', condition: m[1].trim(), children: whileChildren });
+                  continue;
+                }
+                else if ((m = line.match(/^function\s+(\w+)\(\)\s*\{/))) {
+                  i++;
+                  var funcBody = parse();
+                  blks.push({ type: 'function', funcName: m[1], children: funcBody });
+                  continue;
+                }
+                else if ((m = line.match(/^(\w+)\(\)$/))) { blks.push({ type: 'callFunction', funcName: m[1] }); }
+                else if ((m = line.match(/^random\("([^"]+)",\s*(-?[\d.]+),\s*(-?[\d.]+)\)/))) { blks.push({ type: 'random', varName: m[1], randomMin: parseFloat(m[2]), randomMax: parseFloat(m[3]) }); }
+                else if (line.match(/^stamp\(\)/)) { blks.push({ type: 'stamp' }); }
+                else if ((m = line.match(/^arc\(([\d.]+),\s*([\d.]+)\)/))) { blks.push({ type: 'arc', arcAngle: parseFloat(m[1]), arcRadius: parseFloat(m[2]) }); }
+                else if ((m = line.match(/^playNote\(([\d.]+)(?:,\s*([\d.]+))?\)/))) { blks.push({ type: 'playNote', frequency: parseFloat(m[1]), duration: m[2] ? parseFloat(m[2]) : 200 }); }
                 i++;
               }
               return blks;
@@ -554,6 +593,12 @@
                   for (var r = 0; r < times; r++) {
                     flat = flat.concat(flattenBlocks(blk.children || []));
                   }
+                } else if (blk.type === 'while') {
+                  // While — push as marker for deferred evaluation in step()
+                  flat.push(blk);
+                } else if (blk.type === 'function') {
+                  // Function definition — push as marker to register in step()
+                  flat.push(blk);
                 } else if (blk.type === 'ifelse') {
                   // defer evaluation — push a marker
                   flat.push(blk);
@@ -645,6 +690,82 @@
                   allLines.push({ x1: t.x, y1: t.y, x2: 250, y2: 250, color: t.color, width: t.width });
                 }
                 t.x = 250; t.y = 250; t.angle = -90;
+              } else if (b.type === 'while') {
+                // While loop: evaluate condition and insert children + self if true (with safety cap)
+                if (!b._iterCount) b._iterCount = 0;
+                if (b._iterCount < 1000 && evalCondition(b.condition || 'x < 450', t, vars)) {
+                  b._iterCount++;
+                  var whileBody = flattenBlocks(b.children || []);
+                  var whileMarker = Object.assign({}, b); // re-evaluate on next pass
+                  var beforeW = flat.slice(0, idx + 1);
+                  var afterW = flat.slice(idx + 1);
+                  flat = beforeW.concat(whileBody).concat([whileMarker]).concat(afterW);
+                } else {
+                  b._iterCount = 0; // reset for next run
+                }
+              } else if (b.type === 'function') {
+                // Function definition — store in registry, don't execute
+                vars['__func_' + (b.funcName || 'myShape')] = b.children || [];
+              } else if (b.type === 'callFunction') {
+                // Call function — insert its body into execution stream
+                var funcBody = vars['__func_' + (b.funcName || 'myShape')];
+                if (funcBody && funcBody.length > 0) {
+                  var callBody = flattenBlocks(JSON.parse(JSON.stringify(funcBody)));
+                  var beforeC = flat.slice(0, idx + 1);
+                  var afterC = flat.slice(idx + 1);
+                  flat = beforeC.concat(callBody).concat(afterC);
+                }
+              } else if (b.type === 'random') {
+                // Random — set variable to random value in [min, max]
+                var rMin = b.randomMin != null ? b.randomMin : 0;
+                var rMax = b.randomMax != null ? b.randomMax : 100;
+                vars[b.varName || 'r'] = Math.floor(Math.random() * (rMax - rMin + 1)) + rMin;
+              } else if (b.type === 'stamp') {
+                // Stamp — duplicate all current lines at current position (creates a "stamp")
+                if (allLines.length > 0) {
+                  var stampLines = allLines.slice();
+                  var ox = stampLines[0].x1, oy = stampLines[0].y1;
+                  var dx = t.x - ox, dy = t.y - oy;
+                  for (var si = 0; si < stampLines.length; si++) {
+                    allLines.push({ x1: stampLines[si].x1 + dx, y1: stampLines[si].y1 + dy, x2: stampLines[si].x2 + dx, y2: stampLines[si].y2 + dy, color: stampLines[si].color, width: stampLines[si].width });
+                  }
+                }
+              } else if (b.type === 'arc') {
+                // Arc — draw a portion of a circle (arcAngle degrees, arcRadius pixels)
+                var arcAngle = resolveVal(b.arcAngle != null ? b.arcAngle : 180, vars);
+                var arcRadius = resolveVal(b.arcRadius != null ? b.arcRadius : 30, vars);
+                if (t.penDown) {
+                  var arcSegs = Math.max(8, Math.ceil(Math.abs(arcAngle) / 10));
+                  var arcStep = arcAngle / arcSegs;
+                  var prevX = t.x, prevY = t.y;
+                  for (var ai = 1; ai <= arcSegs; ai++) {
+                    var curAngle = t.angle + arcStep * ai;
+                    var curRad = curAngle * Math.PI / 180;
+                    var stepDist = (2 * arcRadius * Math.sin(Math.abs(arcStep) * Math.PI / 360));
+                    var ax = prevX + Math.cos((t.angle + arcStep * (ai - 0.5)) * Math.PI / 180) * stepDist;
+                    var ay = prevY + Math.sin((t.angle + arcStep * (ai - 0.5)) * Math.PI / 180) * stepDist;
+                    allLines.push({ x1: prevX, y1: prevY, x2: ax, y2: ay, color: t.color, width: t.width });
+                    prevX = ax; prevY = ay;
+                  }
+                  t.x = prevX; t.y = prevY;
+                }
+                t.angle = (t.angle + arcAngle) % 360;
+              } else if (b.type === 'playNote') {
+                // Play Note — use Web Audio API for sound
+                try {
+                  var audioCtx = window.__codingAudioCtx || (window.__codingAudioCtx = new (window.AudioContext || window.webkitAudioContext)());
+                  var osc = audioCtx.createOscillator();
+                  var gain = audioCtx.createGain();
+                  osc.type = 'sine';
+                  osc.frequency.value = resolveVal(b.frequency != null ? b.frequency : 440, vars);
+                  gain.gain.value = 0.15;
+                  osc.connect(gain);
+                  gain.connect(audioCtx.destination);
+                  var noteDur = (b.duration || 200) / 1000;
+                  osc.start();
+                  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + noteDur);
+                  osc.stop(audioCtx.currentTime + noteDur + 0.05);
+                } catch(e) { /* Audio not available */ }
               }
               updMulti({ turtle: Object.assign({}, t), lines: allLines.slice(), stepIdx: idx, running: true });
               idx++;
@@ -787,7 +908,7 @@
             if (type === 'setVar') { newBlock.varName = 'size'; newBlock.varValue = 50; }
             if (type === 'changeVar') { newBlock.varName = 'size'; newBlock.varDelta = 10; }
             var updated = blocks.map(function (b, i) {
-              if (i === parentIdx && (b.type === 'repeat' || b.type === 'ifelse')) {
+              if (i === parentIdx && (b.type === 'repeat' || b.type === 'ifelse' || b.type === 'while' || b.type === 'function')) {
                 var nb = Object.assign({}, b);
                 if (isElse && b.type === 'ifelse') {
                   nb.elseChildren = (nb.elseChildren || []).concat([newBlock]);
@@ -805,7 +926,7 @@
           function removeChildBlock(parentIdx, childIdx, isElse) {
             pushUndo();
             var updated = blocks.map(function (b, i) {
-              if (i === parentIdx && (b.type === 'repeat' || b.type === 'ifelse')) {
+              if (i === parentIdx && (b.type === 'repeat' || b.type === 'ifelse' || b.type === 'while' || b.type === 'function')) {
                 var nb = Object.assign({}, b);
                 if (isElse && b.type === 'ifelse') {
                   nb.elseChildren = (nb.elseChildren || []).filter(function (_, ci) { return ci !== childIdx; });
@@ -1565,6 +1686,45 @@
                       }, ch.concept)
                     );
                   })
+                )
+              ),
+
+              // ── Variable Inspector / Debug Panel ──
+              React.createElement("div", { className: "bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl p-3 border border-slate-600/40" },
+                React.createElement("h4", { className: "text-xs font-bold text-emerald-300 mb-2 flex items-center gap-1" },
+                  React.createElement("span", null, "🔍"), " Variable Inspector"
+                ),
+                React.createElement("div", { className: "grid gap-1", style: { gridTemplateColumns: '1fr 1fr' } },
+                  // Turtle State
+                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                    "🐢 x: ", React.createElement("span", { className: "text-cyan-300 font-bold" }, Math.round(turtleState.x))
+                  ),
+                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                    "🐢 y: ", React.createElement("span", { className: "text-cyan-300 font-bold" }, Math.round(turtleState.y))
+                  ),
+                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                    "🧭 angle: ", React.createElement("span", { className: "text-amber-300 font-bold" }, Math.round(turtleState.angle) + "°")
+                  ),
+                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                    "✏️ pen: ", React.createElement("span", { className: turtleState.penDown ? "text-green-400 font-bold" : "text-red-400 font-bold" }, turtleState.penDown ? "down" : "up")
+                  ),
+                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                    "📐 lines: ", React.createElement("span", { className: "text-purple-300 font-bold" }, drawnLines.length)
+                  ),
+                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                    "⚡ step: ", React.createElement("span", { className: "text-orange-300 font-bold" }, stepIdx >= 0 ? stepIdx : "—")
+                  )
+                ),
+                // User-defined variables
+                d._vars && Object.keys(d._vars).length > 0 && React.createElement("div", { className: "mt-2 border-t border-slate-600/30 pt-2" },
+                  React.createElement("span", { className: "text-[9px] font-bold text-slate-500 uppercase tracking-wider" }, "User Variables"),
+                  React.createElement("div", { className: "grid gap-1 mt-1", style: { gridTemplateColumns: '1fr 1fr' } },
+                    Object.keys(d._vars || {}).filter(function(k) { return k.indexOf('__func_') !== 0; }).map(function(vk) {
+                      return React.createElement("div", { key: vk, className: "text-[10px] font-mono text-slate-300 bg-emerald-900/30 rounded px-2 py-1 border border-emerald-700/20" },
+                        "$" + vk + " = ", React.createElement("span", { className: "text-emerald-300 font-bold" }, String(d._vars[vk]))
+                      );
+                    })
+                  )
                 )
               ),
 
