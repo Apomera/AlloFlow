@@ -95,8 +95,11 @@ window.StemLab = window.StemLab || {
         }
         return h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4' },
           h('div', {
-            className: 'grid gap-1 sm:gap-2 w-full max-w-full mx-auto',
-            style: { gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))' }
+            className: 'grid gap-1 mx-auto',
+            style: {
+              gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))',
+              maxWidth: (cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32) + 'px'
+            }
           }, cells)
         );
       };

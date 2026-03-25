@@ -53,6 +53,20 @@ window.StemLab = window.StemLab || {
       var props = ctx.props;
 
       // ── Tool body (wave) ──
+      // Guard: ensure wave state exists (main module doesn't pre-init plugin state)
+      if (!labToolData || !labToolData.wave) {
+        if (typeof setLabToolData === 'function') {
+          setLabToolData(function(prev) {
+            return Object.assign({}, prev, { wave: {
+              frequency: 2, amplitude: 50, waveType: 'sine',
+              waveMode: 'free', waveSpeed: 343, showSecond: false,
+              amp2: 30, freq2: 3, phase2: 0, harmonic: 1,
+              damping: false, dampingAlpha: 0.5
+            }});
+          });
+        }
+        return h('div', { className: 'p-8 text-center text-slate-400' }, 'Loading Wave Simulator…');
+      }
       return (function() {
 const d = labToolData.wave;
 
@@ -1326,7 +1340,7 @@ const d = labToolData.wave;
 
           return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
 
-            renderTutorial('wave', _tutWave),
+            null, // tutorial overlay removed (hub-scope dependency)
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
@@ -1836,5 +1850,5 @@ const d = labToolData.wave;
     }
   });
 
-  // ═══ 🔬 cell (cell) ═══
+
   })();
