@@ -1792,6 +1792,122 @@ const d = labToolData.wave;
 
 
 
+          // ── AI Pedagogical Assessment (Tier 6) ──
+
+          var handleAIAssessment = function() {
+
+            if (d.isAIAssessing) return;
+
+            upd('isAIAssessing', true);
+
+            upd('aiAssessment', null);
+
+            upd('aiAssessmentFeedback', null);
+
+            upd('aiAnswer', '');
+
+            
+
+            var stateDesc = "The student is using a physics wave simulator. Current mode is '" + waveMode + "'. ";
+
+            stateDesc += "Amplitude: " + d.amplitude + ", Frequency: " + d.frequency + "Hz. ";
+
+            if (waveMode === 'standing') stateDesc += "Harmonic: " + (d.harmonic||1) + ". ";
+
+            if (waveMode === 'doppler') stateDesc += "Source Speed: " + ((d.sourceSpeed||0.3)*100) + "% speed of sound. ";
+
+            if (waveMode === 'spectrum') stateDesc += "Microphone Input: " + (d.micActive ? 'Active' : 'Inactive') + " (Spectrum Analysis). ";
+
+            
+
+            var prompt = "Given this simulation state: " + stateDesc + " Generate a short, pedagogical question (1-2 sentences) to test the student's understanding of this specific wave setup. The question should be conceptual and encourage critical thinking. Do not provide the answer.";
+
+            
+
+            if (typeof callGemini === 'function') {
+
+              callGemini(prompt).then(function(res) {
+
+                upd('aiAssessment', res);
+
+                upd('isAIAssessing', false);
+
+              }).catch(function(err) {
+
+                addToast("Failed to connect to pedagogical AI.", 'error');
+
+                upd('isAIAssessing', false);
+
+              });
+
+            } else {
+
+              setTimeout(function() {
+
+                upd('aiAssessment', "Consider the current frequency (" + d.frequency + "Hz). If you double the frequency, what happens to the wavelength assuming wave speed is constant?");
+
+                upd('isAIAssessing', false);
+
+              }, 1000);
+
+            }
+
+          };
+
+
+
+          var submitAIAnswer = function() {
+
+            if (!d.aiAnswer || !d.aiAssessment) return;
+
+            upd('isAIAssessing', true);
+
+            
+
+            var prompt = "The question was: '" + d.aiAssessment + "'. The student answered: '" + d.aiAnswer + "'. Evaluate this answer pedagogically. Provide a brief, encouraging response (max 2 sentences) that corrects any misconceptions or validates correct thinking.";
+
+            
+
+            if (typeof callGemini === 'function') {
+
+              callGemini(prompt).then(function(res) {
+
+                upd('aiAssessmentFeedback', res);
+
+                upd('isAIAssessing', false);
+
+                if (typeof awardStemXP === 'function' && res.toLowerCase().indexOf('correct') !== -1) {
+
+                  awardStemXP('wave-ai-quiz', 10, 'Completed AI Assessment');
+
+                }
+
+              }).catch(function(err) {
+
+                addToast("Failed to evaluate answer.", 'error');
+
+                upd('isAIAssessing', false);
+
+              });
+
+            } else {
+
+              setTimeout(function() {
+
+                upd('aiAssessmentFeedback', "Great effort! That shows good understanding of wave properties.");
+
+                upd('isAIAssessing', false);
+
+                if (typeof awardStemXP === 'function') awardStemXP('wave-ai-quiz', 10, 'Completed AI Assessment');
+
+              }, 1000);
+
+            }
+
+          };
+
+
+
           // ── Match Waveform XP check (called on slider change) ──
 
           var checkWaveMatch = function (newAmp, newFreq) {
@@ -2288,7 +2404,14 @@ const d = labToolData.wave;
 
                 if (type === 'triangle') return Math.asin(Math.sin(t)) * 2 / Math.PI;
 
-                return (t % (Math.PI * 2)) / Math.PI - 1;
+                if (type === 'sawtooth') return (t % (Math.PI * 2)) / Math.PI - 1;
+                
+                // Instrument profiles
+                if (type === 'flute') return Math.sin(t) + 0.2*Math.sin(2*t) + 0.1*Math.sin(3*t);
+                if (type === 'clarinet') return (Math.sin(t) + 0.5*Math.sin(3*t) + 0.2*Math.sin(5*t) + 0.1*Math.sin(7*t)) * 0.7;
+                if (type === 'brass') return (Math.sin(t) + 0.8*Math.sin(2*t) + 0.6*Math.sin(3*t) + 0.4*Math.sin(4*t) + 0.2*Math.sin(5*t)) * 0.5;
+
+                return Math.sin(t);
 
               }
 
@@ -2824,14 +2947,25 @@ const d = labToolData.wave;
                     ctx.fillText(fLabel + ' Hz', 20 + fl * (cW - 40) / 4, cH - 2);
                   }
 
+                  // Pitch Detection
+                  var maxFreqBin = 0, maxFreqVal = 0;
+                  for (var fi = 1; fi < bufferLength / 2; fi++) {
+                    if (freqData[fi] > maxFreqVal) { maxFreqVal = freqData[fi]; maxFreqBin = fi; }
+                  }
+                  var detectedPitch = maxFreqVal > 30 ? (maxFreqBin * analyser.context.sampleRate / analyser.fftSize) : 0;
+
                   // Labels
                   ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                  ctx.fillRect(4, 4, 250 * dpr, 36 * dpr);
+                  ctx.fillRect(4, 4, 250 * dpr, detectedPitch > 0 ? 50 * dpr : 36 * dpr);
                   ctx.fillStyle = '#34d399';
                   ctx.font = (7 * dpr) + 'px sans-serif';
                   ctx.fillText('\uD83C\uDFA4 LIVE MIC Spectrum Analyzer', 8 * dpr, 14 * dpr);
                   ctx.fillStyle = '#c084fc';
                   ctx.fillText('Top: Audio Waveform | Bottom: Real-Time FFT', 8 * dpr, 26 * dpr);
+                  if (detectedPitch > 0) {
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.fillText('Detected Pitch (Peak): ~' + Math.round(detectedPitch) + ' Hz', 8 * dpr, 38 * dpr);
+                  }
 
                 } else {
                   // Time-domain waveform (top half) - Synthetic
@@ -2840,9 +2974,13 @@ const d = labToolData.wave;
                   ctx.setLineDash([]);
                   ctx.beginPath();
                   for (var sx = 0; sx < cW; sx += 2) {
-                    var sv = amp * Math.sin(2 * Math.PI * (sx / cW * freq - t * freq * 0.05));
-                    if (showSecond) sv += amp2 * Math.sin(2 * Math.PI * (sx / cW * freq2 - t * freq2 * 0.05));
-                    var sy = midY_s * 0.5 + sv * midY_s * 0.35;
+                    var ts1 = 2 * Math.PI * (sx / cW * freq - t * freq * 0.05);
+                    var sv = amp * waveVal(ts1, canvasEl.dataset.waveType || 'sine');
+                    if (showSecond) {
+                       var ts2 = 2 * Math.PI * (sx / cW * freq2 - t * freq2 * 0.05);
+                       sv += amp2 * Math.sin(ts2); 
+                    }
+                    var sy = midY_s * 0.5 + sv * midY_s * 0.25;
                     if (sx === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
                   }
                   ctx.stroke();
@@ -2853,7 +2991,7 @@ const d = labToolData.wave;
                   ctx.beginPath(); ctx.moveTo(0, midY_s); ctx.lineTo(cW, midY_s); ctx.stroke();
 
                   // Frequency domain bars (bottom half) - Synthetic
-                  var maxFreqDisp = Math.max(freq * 3, 1000);
+                  var maxFreqDisp = Math.max(freq * 4, 1000);
                   var freqBin = maxFreqDisp / barCount;
                   for (var bi = 0; bi < barCount; bi++) {
                     var binCenterFreq = (bi + 0.5) * freqBin;
@@ -2861,9 +2999,27 @@ const d = labToolData.wave;
                     var mag = 0;
                     var spread = freqBin * 0.8;
                     mag += amp * Math.exp(-Math.pow(binCenterFreq - freq, 2) / (2 * spread * spread));
-                    // Add harmonics
-                    mag += amp * 0.3 * Math.exp(-Math.pow(binCenterFreq - freq * 2, 2) / (2 * spread * spread));
-                    mag += amp * 0.15 * Math.exp(-Math.pow(binCenterFreq - freq * 3, 2) / (2 * spread * spread));
+                    
+                    // Add harmonics based on wave type
+                    var wType = canvasEl.dataset.waveType || 'sine';
+                    if (wType === 'square' || wType === 'clarinet') {
+                        mag += amp * 0.3 * Math.exp(-Math.pow(binCenterFreq - freq * 3, 2) / (2 * spread * spread));
+                        mag += amp * 0.1 * Math.exp(-Math.pow(binCenterFreq - freq * 5, 2) / (2 * spread * spread));
+                        if (wType === 'clarinet') mag += amp * 0.05 * Math.exp(-Math.pow(binCenterFreq - freq * 7, 2) / (2 * spread * spread));
+                    } else if (wType === 'sawtooth' || wType === 'brass') {
+                        mag += amp * 0.5 * Math.exp(-Math.pow(binCenterFreq - freq * 2, 2) / (2 * spread * spread));
+                        mag += amp * 0.25 * Math.exp(-Math.pow(binCenterFreq - freq * 3, 2) / (2 * spread * spread));
+                        mag += amp * 0.1 * Math.exp(-Math.pow(binCenterFreq - freq * 4, 2) / (2 * spread * spread));
+                        if (wType === 'brass') mag += amp * 0.05 * Math.exp(-Math.pow(binCenterFreq - freq * 5, 2) / (2 * spread * spread));
+                    } else if (wType === 'triangle') {
+                        mag += amp * 0.1 * Math.exp(-Math.pow(binCenterFreq - freq * 3, 2) / (2 * spread * spread));
+                    } else if (wType === 'flute') {
+                        mag += amp * 0.2 * Math.exp(-Math.pow(binCenterFreq - freq * 2, 2) / (2 * spread * spread));
+                        mag += amp * 0.1 * Math.exp(-Math.pow(binCenterFreq - freq * 3, 2) / (2 * spread * spread));
+                    } else {
+                        mag += amp * 0.1 * Math.exp(-Math.pow(binCenterFreq - freq * 2, 2) / (2 * spread * spread));
+                    }
+
                     if (showSecond) {
                       mag += amp2 * Math.exp(-Math.pow(binCenterFreq - freq2, 2) / (2 * spread * spread));
                       mag += amp2 * 0.3 * Math.exp(-Math.pow(binCenterFreq - freq2 * 2, 2) / (2 * spread * spread));
@@ -2974,7 +3130,11 @@ const d = labToolData.wave;
 
               var gain = ctx.createGain();
 
-              osc.type = (d.waveType || 'sine');
+              var baseType = d.waveType || 'sine';
+              if (baseType === 'flute') baseType = 'sine';
+              else if (baseType === 'clarinet') baseType = 'square';
+              else if (baseType === 'brass') baseType = 'sawtooth';
+              osc.type = baseType;
 
               osc.frequency.value = d.frequency * 100;
 
@@ -3215,7 +3375,7 @@ const d = labToolData.wave;
 
                 "data-harmonic": d.harmonic || 1,
                 "data-phase2": d.phase2 || 0,
-                "data-damping": dampingEnabled ? 'true' : 'false',
+                "data-damping": d.damping ? 'true' : 'false',
                 "data-damp-alpha": d.dampingAlpha || 0.5,
                 "data-wave-speed": d.waveSpeed || 343,
 
@@ -3247,11 +3407,13 @@ const d = labToolData.wave;
 
             ),
 
-            // Wave type buttons (free mode only)
+            // Wave & Instrument profiles (free/spectrum modes)
 
-            waveMode === 'free' && React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
+            (waveMode === 'free' || waveMode === 'spectrum') && !d.micActive && React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 mb-2" },
 
-              ['sine', 'square', 'triangle', 'sawtooth'].map(wt =>
+              React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1" }, "Profile:"),
+
+              ['sine', 'square', 'triangle', 'sawtooth', 'flute', 'clarinet', 'brass'].map(wt =>
 
                 React.createElement("button", {
 
@@ -3557,20 +3719,126 @@ const d = labToolData.wave;
             ),
 
             // Quiz
+            React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
+              React.createElement("select", {
+                value: d.quizDifficulty || 'Medium',
+                onChange: function(e) { upd('quizDifficulty', e.target.value); },
+                className: "bg-slate-100 border border-slate-300 text-slate-700 text-xs font-bold rounded px-2 py-1 outline-none"
+              }, 
+                React.createElement("option", {value: "Easy"}, "Easy"),
+                React.createElement("option", {value: "Medium"}, "Medium"),
+                React.createElement("option", {value: "Hard"}, "Hard")
+              ),
+              React.createElement("button", {
+                onClick: function () {
+                  if (d.generatingAiQuiz) return;
+                  upd('generatingAiQuiz', true);
+                  var dif = d.quizDifficulty || 'Medium';
+                  var prompt = "You are a physics teacher. The student is using a wave simulator with Amplitude=" + (d.amplitude||50) + ", Frequency=" + (d.frequency||2) + "Hz, Mode=" + (d.waveMode||'free') + ". Generate a single multiple-choice question to test their understanding conceptually. Difficulty level: " + dif + ". Return ONLY a valid JSON object: {\"q\": \"Question text\", \"a\": \"Correct answer\", \"opts\": [\"Correct answer\", \"Wrong 1\", \"Wrong 2\", \"Wrong 3\"]}. No markdown formatting.";
 
-            React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                  if (typeof callGemini === 'function') {
+
+                    callGemini(prompt).then(function(res) {
+
+                      try {
+
+                        var parsed = JSON.parse(res.replace(/```json/gi, '').replace(/```/g, '').trim());
+
+                        var shuffled = parsed.opts.sort(function() { return 0.5 - Math.random(); });
+
+                        upd('quiz', { q: parsed.q, a: parsed.a, opts: shuffled, answered: false, score: (d.quiz && d.quiz.score) || 0 });
+
+                        upd('matchTarget', null); // Hide challenges
+
+                      } catch (e) {
+
+                        console.error("AI Quiz error:", e, res);
+
+                        addToast("Failed to parse AI quiz.", "error");
+
+                      }
+
+                      upd('generatingAiQuiz', false);
+
+                    }).catch(function(err) {
+
+                      addToast("AI error: " + err.message, "error");
+
+                      upd('generatingAiQuiz', false);
+
+                    });
+
+                  } else {
+
+                    // fallback
+
+                    var q = WAVE_QUIZ[Math.floor(Math.random() * WAVE_QUIZ.length)];
+
+                    upd('quiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.quiz && d.quiz.score) || 0 });
+
+                    upd('generatingAiQuiz', false);
+
+                  }
+
+                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.generatingAiQuiz ? 'bg-cyan-200 text-cyan-800 animate-pulse' : (d.quiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-600 text-white')) + " transition-all"
+
+              }, d.generatingAiQuiz ? "\u23F3 Generating..." : (d.quiz ? "\uD83D\uDD04 Next AI Question" : "\uD83E\uDDE0 AI Quiz Mode")),
 
               React.createElement("button", {
 
                 onClick: function () {
 
-                  var q = WAVE_QUIZ[Math.floor(Math.random() * WAVE_QUIZ.length)];
+                  if (d.generatingAiTarget) return;
 
-                  upd('quiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.quiz && d.quiz.score) || 0 });
+                  upd('generatingAiTarget', true);
 
-                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-600 text-white') + " transition-all"
+                  var prompt = "You are a physics teacher. Generate a wave matching challenge. The student needs to set an amplitude (10 to 100) and frequency (0.5 to 10.0, step 0.5). Return ONLY a JSON object: {\"hint\": \"A descriptive scenario, e.g. 'Create a very loud bass note' or 'Generate a high-energy wave with a short period'\", \"amp\": <integer target_amplitude>, \"freq\": <number target_frequency>}. No markdown formatting.";
 
-              }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
+                  if (typeof callGemini === 'function') {
+
+                    callGemini(prompt).then(function(res) {
+
+                      try {
+
+                        var parsed = JSON.parse(res.replace(/```json/gi, '').replace(/```/g, '').trim());
+
+                        upd('matchTarget', { amp: parsed.amp, freq: parsed.freq, isEquation: false, hint: parsed.hint });
+
+                        upd('quiz', null); // Hide quiz
+
+                        upd('matchXpClaimed', false);
+
+                        addToast("\uD83C\uDFAF AI Challenge Generated!", 'info');
+
+                      } catch(e) {
+
+                        console.error("AI Challenge error:", e, res);
+
+                        addToast("Failed to parse AI challenge.", "error");
+
+                      }
+
+                      upd('generatingAiTarget', false);
+
+                    }).catch(function(err) {
+
+                      addToast("AI error: " + err.message, "error");
+
+                      upd('generatingAiTarget', false);
+
+                    });
+
+                  } else {
+
+                    upd('matchTarget', { amp: 40, freq: 3, isEquation: false, hint: "Match the dashed wave!" });
+
+                    upd('generatingAiTarget', false);
+
+                  }
+
+                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.generatingAiTarget ? 'bg-amber-200 text-amber-800 animate-pulse' : (d.matchTarget && !d.matchTarget.isEquation ? 'bg-amber-100 text-amber-700' : 'bg-amber-500 text-white')) + " transition-all"
+
+              }, d.generatingAiTarget ? "\u23F3 Generating..." : (d.matchTarget && !d.matchTarget.isEquation ? "\uD83D\uDD04 New AI Target" : "\uD83C\uDFAF AI Wave Challenge")),
 
               React.createElement("button", {
 
@@ -3584,29 +3852,9 @@ const d = labToolData.wave;
 
                   var tf = tFreqs[Math.floor(Math.random() * tFreqs.length)];
 
-                  upd('matchTarget', { amp: ta, freq: tf, isEquation: false });
+                  upd('matchTarget', { amp: ta, freq: tf, isEquation: true, hint: "Match the mathematical equation!" });
 
-                  upd('matchXpClaimed', false);
-
-                  addToast(t('stem.wave.ud83cudfaf_match_the_yellow_dashed'), 'info');
-
-                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.matchTarget && !d.matchTarget.isEquation ? 'bg-amber-100 text-amber-700' : 'bg-amber-500 text-white') + " transition-all"
-
-              }, d.matchTarget && !d.matchTarget.isEquation ? "\uD83D\uDD04 New Target" : "\uD83C\uDFAF Match Waveform"),
-
-              React.createElement("button", {
-
-                onClick: function () {
-
-                  var tAmps = [20, 30, 40, 50, 60, 70];
-
-                  var tFreqs = [1, 2, 3, 4, 5, 6];
-
-                  var ta = tAmps[Math.floor(Math.random() * tAmps.length)];
-
-                  var tf = tFreqs[Math.floor(Math.random() * tFreqs.length)];
-
-                  upd('matchTarget', { amp: ta, freq: tf, isEquation: true });
+                  upd('quiz', null);
 
                   upd('matchXpClaimed', false);
 
