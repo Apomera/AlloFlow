@@ -4,10 +4,12 @@ Write-Host "1. Copying module files..."
 Copy-Item -Path stem_lab\stem_lab_module.js -Destination prismflow-deploy\public\stem_lab_module.js -Force
 Copy-Item -Path stem_lab\stem_tool_coding.js -Destination prismflow-deploy\public\stem_tool_coding.js -Force
 Copy-Item -Path stem_lab\stem_tool_creative.js -Destination prismflow-deploy\public\stem_tool_creative.js -Force
+Copy-Item -Path stem_lab\stem_tool_art.js -Destination prismflow-deploy\public\stem_tool_art.js -Force
+Copy-Item -Path stem_lab\stem_tool_datastudio.js -Destination prismflow-deploy\public\stem_tool_datastudio.js -Force
 
 Write-Host "2. Committing and pushing..."
 git add -A
-git commit -m "Architectural extraction: Fully modularize Coding Playground"
+git commit -m "Deploy: split creative plugin into standalone art and datastudio files"
 git push origin main
 
 Write-Host "3. Verifying push..."

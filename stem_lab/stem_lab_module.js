@@ -41235,7 +41235,7 @@
             fractionViz: true, fractions: true,
             base10: true, moneyMath: true,
             coordinate: true, protractor: true,
-            archStudio: true, artStudio: true, cyberDefense: true
+            archStudio: true, artStudio: true, dataStudio: true, cyberDefense: true
           };
           if (!_pluginOnlyTools[stemLabTool]) return null;
 
