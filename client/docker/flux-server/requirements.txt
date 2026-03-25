@@ -1,4 +1,5 @@
-torch
+# torch is already in the base image (pytorch/pytorch or rocm/pytorch)
+# torch-directml is installed conditionally via Dockerfile build arg
 diffusers>=0.30.0
 transformers
 accelerate

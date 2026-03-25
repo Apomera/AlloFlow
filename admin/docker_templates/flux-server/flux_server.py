@@ -31,10 +31,23 @@ from PIL import Image
 
 # ── Configuration ──────────────────────────────────────────────
 MODEL_ID = os.getenv("FLUX_MODEL", "black-forest-labs/FLUX.1-schnell")
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-DTYPE = torch.float16 if DEVICE == "cuda" else torch.float32
 PORT = int(os.getenv("PORT", "7860"))
 MAX_SIZE = int(os.getenv("MAX_IMAGE_SIZE", "1024"))
+
+# Device detection: CUDA > DirectML > CPU
+dml_device = None
+if torch.cuda.is_available():
+    DEVICE = "cuda"
+    DTYPE = torch.float16
+else:
+    try:
+        import torch_directml
+        dml_device = torch_directml.device()
+        DEVICE = "privateuseone"  # DirectML device type in PyTorch
+        DTYPE = torch.float16
+    except ImportError:
+        DEVICE = "cpu"
+        DTYPE = torch.float32
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("flux-server")
@@ -50,16 +63,18 @@ async def lifespan(app: FastAPI):
     global pipe_txt2img, pipe_img2img
 
     log.info(f"🎨 Loading Flux model: {MODEL_ID}")
-    log.info(f"   Device: {DEVICE} | Dtype: {DTYPE}")
+    log.info(f"   Device: {DEVICE}{' (DirectML)' if dml_device else ''} | Dtype: {DTYPE}")
 
     from diffusers import FluxPipeline, FluxImg2ImgPipeline
+
+    target_device = dml_device if dml_device else DEVICE
 
     # Text-to-image pipeline
     pipe_txt2img = FluxPipeline.from_pretrained(
         MODEL_ID,
         torch_dtype=DTYPE,
     )
-    pipe_txt2img = pipe_txt2img.to(DEVICE)
+    pipe_txt2img = pipe_txt2img.to(target_device)
     if DEVICE == "cuda":
         pipe_txt2img.enable_model_cpu_offload()
     log.info("✅ Text-to-image pipeline ready")
@@ -70,7 +85,7 @@ async def lifespan(app: FastAPI):
             MODEL_ID,
             torch_dtype=DTYPE,
         )
-        pipe_img2img = pipe_img2img.to(DEVICE)
+        pipe_img2img = pipe_img2img.to(target_device)
         if DEVICE == "cuda":
             pipe_img2img.enable_model_cpu_offload()
         log.info("✅ Image-to-image pipeline ready")
@@ -164,7 +179,7 @@ async def health():
     return {
         "status": "ok",
         "model": MODEL_ID,
-        "device": DEVICE,
+        "device": "DirectML" if dml_device else DEVICE,
         "txt2img": pipe_txt2img is not None,
         "img2img": pipe_img2img is not None,
     }

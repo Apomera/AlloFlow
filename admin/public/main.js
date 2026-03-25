@@ -641,15 +641,24 @@ function generateDockerCompose(selectedServices, gpuInfo) {
             }
           };
         } else if (gpuInfo && gpuInfo.type === 'AMD') {
-          // AMD: use ROCm base image + device passthrough
-          compose.services.flux.build.args = { BASE_IMAGE: 'rocm/pytorch:latest' };
-          compose.services.flux.devices = [
-            '/dev/kfd',
-            '/dev/dri'
-          ];
-          compose.services.flux.group_add = ['video'];
-          compose.services.flux.environment['HSA_OVERRIDE_GFX_VERSION'] = gpuInfo.rocmGfxVersion || '11.0.0';
-          compose.services.flux.environment['ROCM_VISIBLE_DEVICES'] = '0';
+          if (process.platform === 'win32') {
+            // AMD on Windows (WSL2): use DirectML — ROCm doesn't work in WSL2
+            compose.services.flux.build.args = {
+              BASE_IMAGE: 'pytorch/pytorch:latest',
+              INSTALL_DIRECTML: '1'
+            };
+            // WSL2 auto-exposes the GPU via d3d12/GPU-PV, no device passthrough needed
+          } else {
+            // AMD on native Linux: use ROCm base image + device passthrough
+            compose.services.flux.build.args = { BASE_IMAGE: 'rocm/pytorch:latest' };
+            compose.services.flux.devices = [
+              '/dev/kfd',
+              '/dev/dri'
+            ];
+            compose.services.flux.group_add = ['video'];
+            compose.services.flux.environment['HSA_OVERRIDE_GFX_VERSION'] = gpuInfo.rocmGfxVersion || '11.0.0';
+            compose.services.flux.environment['ROCM_VISIBLE_DEVICES'] = '0';
+          }
         }
         // else: CPU-only — no GPU config needed, pytorch/pytorch base is default
       }

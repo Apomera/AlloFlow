@@ -1,8 +1,15 @@
 # ── AlloFlow Flux Image Server ──
 # GPU-accelerated image generation with Flux.1-schnell
 # OpenAI-compatible API for plug-and-play with AIProvider
+#
+# Build args:
+#   BASE_IMAGE      - pytorch/pytorch:latest (NVIDIA/CPU/DirectML) or rocm/pytorch:latest (AMD Linux)
+#   INSTALL_DIRECTML - set to "1" to install torch-directml (AMD GPU via WSL2)
 
-FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04
+ARG BASE_IMAGE=pytorch/pytorch:latest
+FROM ${BASE_IMAGE}
+
+ARG INSTALL_DIRECTML=0
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -10,17 +17,17 @@ ENV PIP_NO_CACHE_DIR=1
 
 # System deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 python3-pip python3-dev git \
+    python3-dev git curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install PyTorch with CUDA support first (large layer, cached separately)
-RUN pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu121
-
-# Install remaining deps
+# Install remaining deps (torch already in base image)
 COPY requirements.txt .
-RUN pip3 install -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Install DirectML support for AMD GPUs on Windows/WSL2
+RUN if [ "$INSTALL_DIRECTML" = "1" ]; then pip3 install --no-cache-dir torch-directml; fi
 
 # Copy server code
 COPY flux_server.py .
