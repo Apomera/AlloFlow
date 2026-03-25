@@ -647,7 +647,10 @@ function generateDockerCompose(selectedServices, gpuInfo) {
               BASE_IMAGE: 'pytorch/pytorch:latest',
               INSTALL_DIRECTML: '1'
             };
-            // WSL2 auto-exposes the GPU via d3d12/GPU-PV, no device passthrough needed
+            // Mount WSL2 DirectX libraries so libd3d12.so is available inside the container
+            compose.services.flux.volumes = compose.services.flux.volumes || [];
+            compose.services.flux.volumes.push('/usr/lib/wsl/lib:/usr/lib/wsl/lib:ro');
+            compose.services.flux.environment['LD_LIBRARY_PATH'] = '/usr/lib/wsl/lib';
           } else {
             // AMD on native Linux: use ROCm base image + device passthrough
             compose.services.flux.build.args = { BASE_IMAGE: 'rocm/pytorch:latest' };

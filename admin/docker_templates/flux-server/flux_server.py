@@ -45,7 +45,7 @@ else:
         dml_device = torch_directml.device()
         DEVICE = "privateuseone"  # DirectML device type in PyTorch
         DTYPE = torch.float16
-    except ImportError:
+    except (ImportError, OSError):
         DEVICE = "cpu"
         DTYPE = torch.float32
 
