@@ -45,7 +45,9 @@ else:
         dml_device = torch_directml.device()
         DEVICE = "privateuseone"  # DirectML device type in PyTorch
         DTYPE = torch.float16
-    except (ImportError, OSError):
+    except Exception:
+        # ImportError (not installed), OSError (libd3d12 missing),
+        # RuntimeError (no DML devices found) — fall back to CPU
         DEVICE = "cpu"
         DTYPE = torch.float32
 
