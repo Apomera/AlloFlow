@@ -4737,6 +4737,25 @@ window.StemLab = window.StemLab || {
 
       // ── Tool body (coordinate) ──
       return (function() {
+            if (!labToolData || !labToolData.coordinate) {
+              if (typeof setLabToolData === 'function') {
+                setLabToolData(prev => ({ ...prev, coordinate: { gridRange: {min: -10, max: 10}, gridPoints: [], gridChallenge: null, gridFeedback: null, exploreScore: {correct: 0, total: 0} }}));
+              }
+              return React.createElement('div', { className: 'p-8 text-center text-slate-400' }, 'Loading Coordinate Grid...');
+            }
+            const d = labToolData.coordinate;
+            function upd(k, v) { setLabToolData(prev => ({ ...prev, coordinate: { ...prev.coordinate, [k]: typeof v === 'function' ? v(prev.coordinate[k]) : v } })); }
+            
+            const gridRange = d.gridRange;
+            const gridPoints = d.gridPoints || [];
+            const setGridPoints = (v) => upd('gridPoints', v);
+            const gridChallenge = d.gridChallenge;
+            const setGridChallenge = (v) => upd('gridChallenge', v);
+            const gridFeedback = d.gridFeedback;
+            const setGridFeedback = (v) => upd('gridFeedback', typeof v === 'function' ? v(d.gridFeedback) : v);
+            const exploreScore = d.exploreScore || {correct: 0, total: 0};
+            const setExploreScore = (v) => upd('exploreScore', typeof v === 'function' ? v(d.exploreScore) : v);
+
 const gridW = 400,
 
               gridH = 400;
