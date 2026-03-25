@@ -555,12 +555,24 @@ function generateDockerCompose(selectedServices) {
       console.log('[docker:generate] Adding service:', serviceId);
       
       // Basic service config
-      compose.services[serviceId] = {
-        image: serviceDef.image,
+      const svcConfig = {
         ports: [`${serviceDef.port}:${serviceDef.internalPort || serviceDef.port}`],
         networks: ['alloflow'],
         restart: 'unless-stopped'
       };
+      
+      // Use build context if available, otherwise pull image
+      if (serviceDef.buildContext) {
+        svcConfig.build = {
+          context: './' + serviceDef.buildContext,
+          dockerfile: 'Dockerfile'
+        };
+        svcConfig.image = serviceDef.image; // Tag the built image
+      } else {
+        svcConfig.image = serviceDef.image;
+      }
+      
+      compose.services[serviceId] = svcConfig;
       
       // Service-specific configs
       if (serviceId === 'ollama') {
@@ -591,7 +603,17 @@ function generateDockerCompose(selectedServices) {
       } else if (serviceId === 'piper') {
         compose.services.piper.command = ['--voice', 'en_US-lessac-medium'];
       } else if (serviceId === 'flux') {
-        // Flux requires special GPU handling
+        compose.services.flux.environment = {
+          'FLUX_MODEL': 'black-forest-labs/FLUX.1-schnell',
+          'PORT': '7860',
+          'MAX_IMAGE_SIZE': '1024',
+          'HF_HOME': '/models'
+        };
+        compose.services.flux.volumes = [
+          'flux_models:/models'
+        ];
+        compose.volumes.flux_models = {};
+        // GPU support (NVIDIA)
         compose.services.flux.deploy = {
           resources: {
             reservations: {
@@ -721,6 +743,70 @@ async function startDeployment(setupData, onProgress) {
       throw new Error('Failed to write docker-compose file: ' + writeErr.message);
     }
     
+    // Copy build context directories for services that build from source
+    for (const serviceId of setupData.selectedServices) {
+      const serviceDef = SERVICE_DEFINITIONS[serviceId];
+      if (serviceDef && serviceDef.buildContext) {
+        const destDir = path.join(dockerDir, serviceDef.buildContext);
+        // Find source: packaged app uses resources/, dev uses docker_templates/
+        const resourcesPath = isDev
+          ? path.join(__dirname, '..', 'docker_templates', serviceDef.buildContext)
+          : path.join(process.resourcesPath, 'docker_templates', serviceDef.buildContext);
+        
+        console.log('[deploy:start] Copying build context:', resourcesPath, '->', destDir);
+        
+        if (!fs.existsSync(resourcesPath)) {
+          throw new Error(`Build context not found: ${resourcesPath}. Cannot build ${serviceDef.name}.`);
+        }
+        
+        // Copy directory recursively
+        fs.mkdirSync(destDir, { recursive: true });
+        const files = fs.readdirSync(resourcesPath);
+        for (const file of files) {
+          const srcFile = path.join(resourcesPath, file);
+          const destFile = path.join(destDir, file);
+          if (fs.statSync(srcFile).isFile()) {
+            fs.copyFileSync(srcFile, destFile);
+            console.log('[deploy:start] Copied:', file);
+          }
+        }
+      }
+    }
+    
+    // Determine if any services need building
+    const needsBuild = setupData.selectedServices.some(
+      svcId => SERVICE_DEFINITIONS[svcId] && SERVICE_DEFINITIONS[svcId].buildContext
+    );
+    
+    if (needsBuild) {
+      onProgress({
+        phase: 'build',
+        status: 'Building local Docker images (this may take several minutes)...',
+        progress: 22
+      });
+      
+      try {
+        console.log('[deploy:start] Building images from:', composeFile);
+        await execDockerComposeAsync(['-f', composeFile, 'build'], {
+          cwd: dockerDir,
+          onOutput: (text) => {
+            const line = text.trim();
+            if (line) {
+              onProgress({
+                phase: 'build',
+                status: `Building: ${line.slice(-100)}`,
+                progress: 24
+              });
+            }
+          }
+        });
+        console.log('[deploy:start] Docker images built successfully');
+      } catch (buildErr) {
+        console.error('[deploy:start] Image build failed:', buildErr.message);
+        throw new Error('Failed to build Docker images: ' + buildErr.message);
+      }
+    }
+    
     onProgress({
       phase: 'pull',
       status: 'Pulling Docker images (this may take several minutes)...',
@@ -728,9 +814,13 @@ async function startDeployment(setupData, onProgress) {
     });
     
     // PHASE 3: Pull images (async - won't freeze the UI)
+    // Use --ignore-buildable to skip services that are built from source
+    const pullArgs = ['-f', composeFile, 'pull'];
+    if (needsBuild) pullArgs.push('--ignore-buildable');
+    
     try {
       console.log('[deploy:start] Pulling images from:', composeFile);
-      await execDockerComposeAsync(['-f', composeFile, 'pull'], {
+      await execDockerComposeAsync(pullArgs, {
         cwd: dockerDir,
         onOutput: (text) => {
           const line = text.trim();

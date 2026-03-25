@@ -166,21 +166,21 @@ const SERVICE_DEFINITIONS = {
   flux: {
     id: 'flux',
     name: 'Flux (Image Generation)',
-    description: 'AI-powered image generation (Coming Soon — no stable Docker image available yet)',
+    description: 'AI-powered image generation from text descriptions (builds locally, requires GPU for reasonable speed)',
     icon: '🎨',
     required: false,
     optional: true,
     defaultEnabled: false,
-    available: false, // No verified Docker image exists yet
-    image: 'black-forest-labs/flux-pro:latest',
+    buildContext: 'flux-server', // Built from local Dockerfile, not pulled from registry
+    image: 'alloflow-flux:latest', // Local image tag after build
     port: 7860,
     internalPort: 7860,
     healthCheck: {
-      endpoint: 'http://localhost:7860/',
+      endpoint: 'http://localhost:7860/health',
       method: 'GET',
       timeout: 30000,
       maxRetries: 30,
-      retryInterval: 3000 // Flux takes longer to initialize
+      retryInterval: 3000
     },
     resources: {
       minRAM: 4096, // 4GB minimum
@@ -305,7 +305,7 @@ const HARDWARE_PROFILES = {
       recommendedRAM: 32768,
       recommendedGPU_VRAM: 12000
     },
-    servicesToInclude: ['pocketbase', 'ollama', 'piper', 'searxng'],
+    servicesToInclude: ['pocketbase', 'ollama', 'piper', 'searxng', 'flux'],
     limitations: [],
     recommendations: [
       'Run large models (13B, 70B) for better quality',
