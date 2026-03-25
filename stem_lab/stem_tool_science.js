@@ -6785,6 +6785,38 @@ const d = labToolData.solarSystem;
 
                 // Saturn's rings
 
+                if (p.name === t('stem.solar_sys.earth')) {
+                  const moonGeo = new THREE.SphereGeometry(0.12, 8, 8);
+                  const moonMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.9 });
+                  const moonMesh = new THREE.Mesh(moonGeo, moonMat);
+                  moonMesh._orbitAngle = 0; moonMesh._dist = p.size + 0.6;
+                  mesh.add(moonMesh); mesh._moonObj = moonMesh;
+                }
+                if (p.name === t('stem.solar_sys.mars')) {
+                  mesh._moons = [];
+                  for(let m=0; m<2; m++) {
+                    const jm = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), new THREE.MeshBasicMaterial({color: 0x888888}));
+                    jm._dist = p.size + 0.3 + m * 0.2; jm._orbitAngle = Math.random() * Math.PI * 2; jm._speed = 4 - m;
+                    mesh.add(jm); mesh._moons.push(jm);
+                  }
+                }
+                if (p.name === t('stem.solar_sys.jupiter')) {
+                  mesh._moons = [];
+                  for(let m=0; m<4; m++) {
+                    const jm = new THREE.Mesh(new THREE.SphereGeometry(0.08+Math.random()*0.05, 8, 8), new THREE.MeshStandardMaterial({color: 0xddccaa}));
+                    jm._dist = p.size + 0.6 + m * 0.4; jm._orbitAngle = Math.random() * Math.PI * 2; jm._speed = 3 - m * 0.4;
+                    mesh.add(jm); mesh._moons.push(jm);
+                  }
+                }
+                if (p.name === t('stem.solar_sys.saturn')) {
+                  mesh._moons = [];
+                  for(let m=0; m<3; m++) {
+                    const jm = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), new THREE.MeshStandardMaterial({color: 0xddddcc}));
+                    jm._dist = p.size * 2.4 + m * 0.5; jm._orbitAngle = Math.random() * Math.PI * 2; jm._speed = 2 - m * 0.3;
+                    mesh.add(jm); mesh._moons.push(jm);
+                  }
+                }
+
                 if (p.hasRings) {
 
                   const ringGeo = new THREE.RingGeometry(p.size * 1.4, p.size * 2.2, 64);
@@ -6846,6 +6878,27 @@ const d = labToolData.solarSystem;
               asteroidGeo.setAttribute('position', new THREE.BufferAttribute(aPos, 3));
 
               scene.add(new THREE.Points(asteroidGeo, new THREE.PointsMaterial({ color: 0x888888, size: 0.08 })));
+
+              const cometGeo = new THREE.SphereGeometry(0.15, 8, 8);
+              const cometMat = new THREE.MeshBasicMaterial({ color: 0xaaffff });
+              const cometMesh = new THREE.Mesh(cometGeo, cometMat);
+              cometMesh.userData = { name: 'Halley\'s Comet', idx: planetMeshes.length, isComet: true };
+              cometMesh._orbitAngle = 0;
+              cometMesh._a = 35; // semi-major axis
+              cometMesh._e = 0.94; // eccentricity
+              cometMesh._speedScale = 0.8;
+              
+              // Add a simple tail using points
+              const tailGeo = new THREE.BufferGeometry();
+              const tailPos = new Float32Array(50 * 3);
+              tailGeo.setAttribute('position', new THREE.BufferAttribute(tailPos, 3));
+              const tailPoints = new THREE.Points(tailGeo, new THREE.PointsMaterial({ color: 0x88ffff, size: 0.1, transparent: true, opacity: 0.4 }));
+              scene.add(tailPoints);
+              cometMesh._tail = tailPoints;
+              
+              scene.add(cometMesh);
+              planetMeshes.push(cometMesh);
+
 
 
 
@@ -7049,15 +7102,55 @@ const d = labToolData.solarSystem;
 
                 // Orbit planets
 
+                var timeScale = 0.008 * speed * (isPaused ? 0 : 1);
                 planetMeshes.forEach(function (mesh, i) {
+                  if (mesh.userData.isComet) {
+                    // Kepler's second law approx (faster near perihelion)
+                    var angularSpeed = mesh._speedScale * (1 / (1 - mesh._e * Math.cos(mesh._orbitAngle)));
+                    mesh._orbitAngle += timeScale * angularSpeed;
+                    const r = mesh._a * (1 - mesh._e * mesh._e) / (1 + mesh._e * Math.cos(mesh._orbitAngle));
+                    mesh.position.x = Math.cos(mesh._orbitAngle) * r - (mesh._a * mesh._e);
+                    mesh.position.z = Math.sin(mesh._orbitAngle) * r;
+                    mesh.rotation.y += 0.1;
+                    
+                    // Update comet tail
+                    if (mesh._tail) {
+                       const tArr = mesh._tail.geometry.attributes.position.array;
+                       // shift old positions back
+                       for(let t=49; t>0; t--) {
+                         tArr[t*3] = tArr[(t-1)*3]; tArr[t*3+1] = tArr[(t-1)*3+1]; tArr[t*3+2] = tArr[(t-1)*3+2];
+                       }
+                       // add new head position, offset slightly away from sun
+                       const dirX = mesh.position.x; const dirZ = mesh.position.z;
+                       const dist = Math.sqrt(dirX*dirX + dirZ*dirZ);
+                       tArr[0] = mesh.position.x + (dirX/dist)*0.5 + (Math.random()-0.5)*0.2;
+                       tArr[1] = (Math.random()-0.5)*0.2;
+                       tArr[2] = mesh.position.z + (dirZ/dist)*0.5 + (Math.random()-0.5)*0.2;
+                       mesh._tail.geometry.attributes.position.needsUpdate = true;
+                    }
+                    return;
+                  }
 
-                  mesh._orbitAngle += 0.008 * mesh._orbitSpeed * speed * (isPaused ? 0 : 1);
+                  mesh._orbitAngle += timeScale * mesh._orbitSpeed;
 
                   mesh.position.x = Math.cos(mesh._orbitAngle) * mesh._orbitDist;
 
                   mesh.position.z = Math.sin(mesh._orbitAngle) * mesh._orbitDist;
 
                   mesh.rotation.y += 0.02 * speed * (isPaused ? 0 : 1);
+                  
+                  if (mesh._moonObj && !isPaused) {
+                    mesh._moonObj._orbitAngle += 0.05 * speed;
+                    mesh._moonObj.position.x = Math.cos(mesh._moonObj._orbitAngle) * mesh._moonObj._dist;
+                    mesh._moonObj.position.z = Math.sin(mesh._moonObj._orbitAngle) * mesh._moonObj._dist;
+                  }
+                  if (mesh._moons && !isPaused) {
+                    mesh._moons.forEach(jm => {
+                      jm._orbitAngle += 0.03 * jm._speed * speed;
+                      jm.position.x = Math.cos(jm._orbitAngle) * jm._dist;
+                      jm.position.z = Math.sin(jm._orbitAngle) * jm._dist;
+                    });
+                  }
 
                 });
 
@@ -7177,7 +7270,22 @@ const d = labToolData.solarSystem;
 
                 }
 
-
+                // HUD telemetry update
+                var telemetryEl = canvas.parentElement.querySelector('.solar-telemetry');
+                if (telemetryEl) {
+                  var days = (time / (Math.PI * 2)) * 365.25;
+                  var html = '<b>Time Elapsed:</b> ' + Math.floor(days) + ' Earth days<br/>';
+                  if (focusedPlanetIdx >= 0 && planetMeshes[focusedPlanetIdx] && !planetMeshes[focusedPlanetIdx].userData.isComet) {
+                     var fd = planetMeshes[focusedPlanetIdx].position.length();
+                     var au = (fd / 14).toFixed(2); // Earth is at dist=14
+                     html += '<b>Dist from Sun:</b> ' + au + ' AU<br/>';
+                  } else if (focusedPlanetIdx >= 0 && planetMeshes[focusedPlanetIdx] && planetMeshes[focusedPlanetIdx].userData.isComet) {
+                     var fd = planetMeshes[focusedPlanetIdx].position.length();
+                     var au = (fd / 14).toFixed(2);
+                     html += '<b>Dist from Sun:</b> ' + au + ' AU<br/>';
+                  }
+                  telemetryEl.innerHTML = html;
+                }
 
                 renderer.render(scene, camera);
 
@@ -7288,6 +7396,7 @@ const d = labToolData.solarSystem;
               // Floating planet labels
 
               React.createElement("div", { className: "solar-labels", style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden' } }),
+              React.createElement("div", { className: "solar-telemetry", style: { position: 'absolute', top: '10px', left: '10px', color: '#60a5fa', background: 'rgba(0,0,0,0.6)', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontFamily: 'monospace', pointerEvents: 'none', border: '1px solid #1e3a8a', zIndex: 10 } }),
 
               // Controls overlay
 
