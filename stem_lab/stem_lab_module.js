@@ -2625,6 +2625,7 @@
                 className: "mt-2 text-xs text-indigo-500 hover:text-indigo-700 font-bold transition-colors"
               }, "Clear search")
               ));
+          })()),
         /* base10: removed -- see stem_tool_manipulatives.js */
         /* moneyMath: removed -- see stem_tool_money.js */
         stemLabTab === 'explore' && stemLabTool === 'lifeSkills' && (function () {
@@ -45570,9 +45571,7 @@
               }, '← Back to Tools')
             );
           }
-        })(),
-
-
+        })()
       ));
     };
   }

@@ -1,0 +1,15 @@
+              );
+            })(),
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+          )
+        })(),
+
+
+        stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
+          const d = labToolData.physics;
+          const upd = (key, val) => setLabToolData(prev => ({ ...prev, physics: { ...prev.physics, [key]: val } }));
+
+          // Canvas animated projectile
+          const canvasRef = function (canvasEl) {
+            if (!canvasEl) return;
+            if (canvasEl._physInit) {
