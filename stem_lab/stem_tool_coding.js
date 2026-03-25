@@ -37,6 +37,7 @@
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var _codingCanvasRef = ctx._codingCanvasRef;
 
       // ── Tool body (codingPlayground) ──
     return (function() {

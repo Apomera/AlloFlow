@@ -44001,6 +44001,7 @@
             callGemini: typeof callGemini === 'function' ? callGemini : null,
             t: typeof t === 'function' ? t : function(k) { return k; },
             icons: { ArrowLeft: ArrowLeft },
+            _codingCanvasRef: typeof _codingCanvasRef !== 'undefined' ? _codingCanvasRef : null,
             saveSnapshot: function(toolId, label, data) {
               if (typeof setToolSnapshots === 'function') {
                 setToolSnapshots(function(prev) {
