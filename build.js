@@ -80,7 +80,7 @@ const MODULES = [
 const PLUGIN_FILES = [
     'stem_lab/stem_tool_dna.js',
     'stem_lab/stem_tool_math.js',
-    'stem_lab/stem_tool_science.js',
+    'stem_lab/stem_tool_science.js', 'stem_lab/stem_tool_galaxy.js',
     'stem_lab/stem_tool_creative.js',
     'stem_lab/stem_tool_art.js',
     'stem_lab/stem_tool_datastudio.js',
