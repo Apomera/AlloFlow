@@ -33,7 +33,7 @@ Copy-Item -Path stem_lab\stem_lab_module.js -Destination prismflow-deploy\public
 Working directory: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
 
 > Also copy other modules if changed: `word_sounds_module.js`, `behavior_lens_module.js`, `report_writer_module.js`, `ui_strings.js`.
-> Also copy STEM plugin files if changed (from `stem_lab/`): `stem_tool_science.js`, `stem_tool_math.js`, `stem_tool_creative.js`, `stem_tool_dna.js`, `stem_tool_geo.js`, `stem_tool_coordgrid.js`, `stem_tool_angles.js`, etc.
+> Also copy STEM plugin files if changed (from `stem_lab/`): `stem_tool_science.js`, `stem_tool_math.js`, `stem_tool_creative.js`, `stem_tool_coding.js`, `stem_tool_dna.js`, `stem_tool_geo.js`, `stem_tool_coordgrid.js`, `stem_tool_angles.js`, etc.
 
 2. **Commit and push** all changes to GitHub (creates the hash that CDN URLs will reference):
 ```
@@ -43,6 +43,16 @@ Working directory: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
 
 > **This step is MANDATORY.** The CDN serves files from this commit hash.
 > If git commit times out due to OneDrive, the commit usually still succeeds — check with `git status --short`.
+
+2b. **Verify clean working tree** — confirm all changes were committed:
+```
+git status --short
+```
+Working directory: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
+
+> Output should be **empty** (no modified files). If you see `M  stem_lab/stem_lab_module.js` or similar,
+> the commit failed silently — re-run `git add -A; git commit -m "Deploy: retry"; git push origin main`.
+> **DO NOT proceed to build.js until this is clean.** Deploying with uncommitted module files = stale CDN.
 
 3. **Verify the push succeeded** — confirm local HEAD matches origin/main:
 ```
