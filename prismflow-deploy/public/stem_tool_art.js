@@ -1185,6 +1185,35 @@ const d = labToolData.artStudio || {};
 
 
 
+            // ═══ REFERENCE IMAGE → DEPTH MAP PIPELINE ═══
+            function _photoToDepthMap(callVisionFn, callImagenFn, imageDataUrl, onStatus, onDone, onError) {
+              if (onStatus) onStatus('Analyzing photo with Vision AI...');
+              callVisionFn(imageDataUrl, 'Describe the 3D spatial layout of this image in detail for creating a depth map. Focus on: what objects are closest to the camera (foreground), what is in the middle ground, and what is furthest away (background). Describe the relative depth of each element. Be specific about shapes, positions, and layering. Keep it under 100 words.')
+                .then(function(description) {
+                  if (onStatus) onStatus('Generating depth map from description...');
+                  var depthPrompt = 'A smooth, high-quality, continuous 3D grayscale depth map matching this scene description: ' + description + '. The closest foreground parts must be pure white, mid-ground elements medium gray, and the furthest background pure black. Smooth gradients between depth layers. No text, no labels, no floating artifacts. Fill the entire square frame.';
+                  return callImagenFn(depthPrompt, 400);
+                })
+                .then(function(base64) {
+                  var img = new Image();
+                  img.onload = function() {
+                    var c = document.createElement('canvas'); c.width = 400; c.height = 400;
+                    c.getContext('2d').drawImage(img, 0, 0, 400, 400);
+                    var imgData = c.getContext('2d').getImageData(0, 0, 400, 400);
+                    onDone(imgData, base64);
+                  };
+                  img.onerror = function() { if (onError) onError(new Error('Failed to load generated depth map image')); };
+                  img.src = base64;
+                })
+                .catch(function(e) { if (onError) onError(e); });
+            }
+
+            function _readFileAsDataUrl(file, callback) {
+              var reader = new FileReader();
+              reader.onload = function(ev) { callback(ev.target.result); };
+              reader.readAsDataURL(file);
+            }
+
             // ═══ AI FLIPBOOK FRAME GENERATOR ═══
             function _generateFlipbookFrames(callImagenFn, scenePrompt, motionPrompt, nFrames, onProgress, onDone, onError) {
               var depthMaps = [];
@@ -4458,6 +4487,91 @@ const d = labToolData.artStudio || {};
 
                       }),
 
+                      // --- REFERENCE IMAGE UPLOAD ---
+                      callGeminiVision && React.createElement("div", { className: "mb-2" },
+
+                        React.createElement("div", { className: "flex items-center gap-2" },
+
+                          React.createElement("label", { className: "text-[10px] font-bold text-indigo-600" }, "\uD83D\uDCF7 Or upload a reference photo:"),
+
+                          d.stereoRefPhotoPreview && React.createElement("img", { src: d.stereoRefPhotoPreview, style: { width: 32, height: 32, borderRadius: 6, objectFit: 'cover', border: '2px solid #818cf8' } }),
+
+                          d.stereoRefPhotoPreview && React.createElement("button", { onClick: function() { upd('stereoRefPhotoPreview', null); upd('stereoRefPhotoData', null); }, className: "text-[9px] text-red-500 hover:text-red-700 font-bold" }, "\u274C")
+
+                        ),
+
+                        React.createElement("div", { className: "flex gap-2 mt-1" },
+
+                          React.createElement("input", { type: "file", accept: "image/png,image/jpeg,image/webp",
+
+                            className: "text-[10px] file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200 flex-1",
+
+                            disabled: !!d.stereoAiGen,
+
+                            onChange: function(e) {
+
+                              var file = e.target.files && e.target.files[0];
+
+                              if (!file) return;
+
+                              _readFileAsDataUrl(file, function(dataUrl) {
+
+                                upd('stereoRefPhotoData', dataUrl);
+
+                                upd('stereoRefPhotoPreview', dataUrl);
+
+                              });
+
+                            }
+
+                          }),
+
+                          React.createElement("button", {
+
+                            onClick: function() {
+
+                              if (!d.stereoRefPhotoData) { if (typeof addToast === 'function') addToast('Upload a photo first!', 'warning'); return; }
+
+                              upd('stereoAiGen', 'Photo \u2192 Depth');
+
+                              _photoToDepthMap(callGeminiVision, callImagen, d.stereoRefPhotoData,
+
+                                function(status) { upd('stereoAiGen', status); },
+
+                                function(imgData) {
+
+                                  var cvs = document.getElementById('depthMapCanvas');
+
+                                  if (cvs) { var ztx = cvs.getContext('2d'); ztx.clearRect(0, 0, cvs.width, cvs.height); var tmp = document.createElement('canvas'); tmp.width = imgData.width; tmp.height = imgData.height; tmp.getContext('2d').putImageData(imgData, 0, 0); ztx.drawImage(tmp, 0, 0, cvs.width, cvs.height); }
+
+                                  upd('stereoAiGen', null);
+
+                                  if (typeof addToast === 'function') addToast('\uD83D\uDCF7 Depth map generated from your photo!', 'success');
+
+                                },
+
+                                function(err) {
+
+                                  upd('stereoAiGen', null);
+
+                                  if (typeof addToast === 'function') addToast('AI Error: ' + (err.message || err), 'error');
+
+                                }
+
+                              );
+
+                            },
+
+                            disabled: !!d.stereoAiGen || !d.stereoRefPhotoData,
+
+                            className: "px-3 py-1.5 rounded-lg text-[10px] font-bold bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:from-violet-600 hover:to-purple-600 disabled:opacity-50 shadow-sm transition-all"
+
+                          }, d.stereoAiGen && d.stereoAiGen.indexOf && d.stereoAiGen.indexOf('Photo') >= 0 ? '\u23F3 ' + d.stereoAiGen : '\uD83D\uDCF7 Photo \u2192 Depth Map')
+
+                        )
+
+                      ),
+
                       React.createElement("div", { className: "flex gap-2" },
 
                         React.createElement("button", { 
@@ -5360,6 +5474,61 @@ const d = labToolData.artStudio || {};
 
                       }),
 
+                      // --- REFERENCE PHOTO FOR ANIMATE AI DEPTH ---
+                      callGeminiVision && React.createElement("div", { className: "mb-2 flex items-center gap-2" },
+
+                        React.createElement("label", { className: "text-[10px] font-bold text-purple-600" }, "\uD83D\uDCF7 Or use a photo:"),
+
+                        React.createElement("input", { type: "file", accept: "image/png,image/jpeg,image/webp",
+
+                          className: "text-[10px] file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 flex-1",
+
+                          disabled: !!d.stereoAnimAiGenerating,
+
+                          onChange: function(e) {
+
+                            var file = e.target.files && e.target.files[0];
+
+                            if (!file) return;
+
+                            upd('stereoAnimAiGenerating', true);
+
+                            _readFileAsDataUrl(file, function(dataUrl) {
+
+                              _photoToDepthMap(callGeminiVision, callImagen, dataUrl,
+
+                                function(status) { if (typeof addToast === 'function') addToast(status, 'info'); },
+
+                                function(imgData) {
+
+                                  upd('stereoAnimAiDepth', { width: 400, height: 400, data: Array.from(imgData.data) });
+
+                                  upd('stereoAnimAiGenerating', false);
+
+                                  if (typeof addToast === 'function') addToast('\uD83D\uDCF7 Depth map generated from your photo!', 'success');
+
+                                },
+
+                                function(err) {
+
+                                  upd('stereoAnimAiGenerating', false);
+
+                                  if (typeof addToast === 'function') addToast('AI Error: ' + (err.message || err), 'error');
+
+                                }
+
+                              );
+
+                            });
+
+                          }
+
+                        }),
+
+                        d.stereoAnimAiDepth && React.createElement("span", { className: "text-[9px] text-green-600 font-bold" }, "\u2705")
+
+                      ),
+
                       React.createElement("button", {
 
                         onClick: function() {
@@ -5471,6 +5640,66 @@ const d = labToolData.artStudio || {};
                     React.createElement("p", { className: "text-[10px] text-slate-400" }, "AI generates a sequence of depth maps frame-by-frame, like drawing a flipbook. Describe the scene and how it moves."),
 
                     callImagen ? React.createElement("div", { className: "space-y-2" },
+
+                      // --- REFERENCE PHOTO FOR FLIPBOOK ---
+                      callGeminiVision && React.createElement("div", { className: "bg-violet-50 rounded-lg p-2 border border-violet-200" },
+
+                        React.createElement("div", { className: "flex items-center gap-2" },
+
+                          React.createElement("label", { className: "text-[10px] font-bold text-violet-600" }, "\uD83D\uDCF7 Start from a reference photo (optional):"),
+
+                          d.stereoFlipbookRefPreview && React.createElement("img", { src: d.stereoFlipbookRefPreview, style: { width: 28, height: 28, borderRadius: 4, objectFit: 'cover', border: '2px solid #8b5cf6' } }),
+
+                          d.stereoFlipbookRefPreview && React.createElement("button", { onClick: function() { upd('stereoFlipbookRefPreview', null); }, className: "text-[9px] text-red-500 hover:text-red-700 font-bold" }, "\u274C")
+
+                        ),
+
+                        React.createElement("div", { className: "flex gap-2 mt-1" },
+
+                          React.createElement("input", { type: "file", accept: "image/png,image/jpeg,image/webp",
+
+                            className: "text-[10px] file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-violet-100 file:text-violet-700 hover:file:bg-violet-200 flex-1",
+
+                            disabled: !!d.stereoFlipbookGenerating,
+
+                            onChange: function(e) {
+
+                              var file = e.target.files && e.target.files[0];
+
+                              if (!file) return;
+
+                              _readFileAsDataUrl(file, function(dataUrl) {
+
+                                upd('stereoFlipbookRefPreview', dataUrl);
+
+                                // Use Vision to describe the scene and auto-fill the Scene prompt
+                                if (typeof addToast === 'function') addToast('\u23F3 Analyzing photo...', 'info');
+
+                                callGeminiVision(dataUrl, 'Describe the main subject and scene of this image in one short sentence (under 15 words). Focus on what the subject IS, not colors or artistic style. Example: "A cat sitting on a windowsill" or "A mountain landscape with a lake".')
+
+                                  .then(function(desc) {
+
+                                    upd('stereoFlipbookScene', desc);
+
+                                    if (typeof addToast === 'function') addToast('\uD83D\uDCF7 Scene auto-filled from photo: "' + desc + '"', 'success');
+
+                                  }).catch(function(e2) {
+
+                                    if (typeof addToast === 'function') addToast('Could not analyze photo, please type the scene manually.', 'warning');
+
+                                  });
+
+                              });
+
+                            }
+
+                          })
+
+                        ),
+
+                        React.createElement("p", { className: "text-[9px] text-violet-500 mt-1" }, "\uD83D\uDCA1 Upload a photo and the AI will auto-describe the scene. You can then edit the prompt and add motion.")
+
+                      ),
 
                       React.createElement("div", null,
 
