@@ -20,6 +20,12 @@ window.StemLab = window.StemLab || {
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
+      
+      if (!this._NumberLineComponent) {
+        this._NumberLineComponent = function(props) {
+          var ctx = props.ctx;
+          var React = ctx.React;
+      var h = React.createElement;
       var ArrowLeft = ctx.icons.ArrowLeft;
       var setStemLabTool = ctx.setStemLabTool;
       var addToast = ctx.addToast;
@@ -339,6 +345,9 @@ window.StemLab = window.StemLab || {
               )
         )
       );
+        }; // End of _NumberLineComponent
+      }
+      return React.createElement(this._NumberLineComponent, { ctx: ctx });
     }
   });
 })();
