@@ -88,7 +88,14 @@ window.StemLab = window.StemLab || {
               return Object.assign({}, prev, { physics: {
                 angle: 45, velocity: 25, gravity: 9.8, airResist: false,
                 showLearn: false, showFlightData: false, showEnergy: false, showVectors: false,
-                challengeTier: 0, challengeActive: false, launchCount: 0, targetsHit: 0
+                challengeTier: 0, challengeActive: false, launchCount: 0, targetsHit: 0,
+                // Target Destruction Mode
+                targetMode: false, targetRound: 0, targetScore: 0, targetAttempts: 0,
+                targetList: null, targetConstraint: null, targetFeedback: null, targetShowScaffold: false,
+                // Battle Mode
+                battleMode: false, battleType: null, battleRound: 0,
+                playerHP: 3, enemyHP: 3, enemyDist: 0, aiDifficulty: 'medium',
+                isPlayerTurn: true, battleConstraint: null, battleFeedback: null, battleLog: []
               }});
             });
             return React.createElement('div', { className: 'p-8 text-center text-slate-400' }, 'Loading...');
@@ -96,6 +103,103 @@ window.StemLab = window.StemLab || {
 const d = labToolData.physics;
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, physics: { ...prev.physics, [key]: val } }));
+          // ═══ TARGET DESTRUCTION MODE — Constraint Engine ═══
+          var TARGET_LEVELS = [
+            { round: 1,  targets: [{x:80, y:0}],   constraint: {type:'fixedAngle', value:45},  gravity: 9.8, drag: false, label: 'Cadet 1', desc: 'Angle locked at 45°. Calculate velocity to hit 80m.', xp: 15, tol: 10 },
+            { round: 2,  targets: [{x:120, y:0}],  constraint: {type:'fixedVelocity', value:35}, gravity: 9.8, drag: false, label: 'Cadet 2', desc: 'Velocity locked at 35 m/s. Calculate angle to hit 120m.', xp: 15, tol: 10 },
+            { round: 3,  targets: [{x:60, y:0}],   constraint: {type:'fixedAngle', value:30},  gravity: 9.8, drag: false, label: 'Cadet 3', desc: 'Angle locked at 30°. Hit the 60m crate.', xp: 15, tol: 8 },
+            { round: 4,  targets: [{x:150, y:0}],  constraint: {type:'fixedVelocity', value:40}, gravity: 9.8, drag: false, label: 'Gunner 1', desc: 'Velocity locked at 40 m/s. Hit 150m.', xp: 25, tol: 12 },
+            { round: 5,  targets: [{x:100, y:0}],  constraint: {type:'fixedAngle', value:55},  gravity: 1.6, drag: false, label: 'Gunner 2', desc: 'On the Moon! Angle locked at 55°. Hit 100m.', xp: 25, tol: 12 },
+            { round: 6,  targets: [{x:80, y:0}, {x:160, y:0}], constraint: {type:'fixedAngle', value:40}, gravity: 9.8, drag: false, label: 'Gunner 3', desc: 'Two targets! Angle locked at 40°. Hit both.', xp: 30, tol: 10 },
+            { round: 7,  targets: [{x:90, y:0}],   constraint: {type:'fixedAngle', value:35},  gravity: 9.8, drag: true, label: 'Sniper 1', desc: 'Air drag ON! Angle locked at 35°. Compensate!', xp: 40, tol: 15 },
+            { round: 8,  targets: [{x:200, y:0}],  constraint: {type:'fixedVelocity', value:45}, gravity: 3.7, drag: false, label: 'Sniper 2', desc: 'Mars gravity. Velocity locked at 45 m/s. Hit 200m.', xp: 40, tol: 15 },
+            { round: 9,  targets: [{x:70, y:0}, {x:140, y:0}, {x:220, y:0}], constraint: {type:'fixedAngle', value:42}, gravity: 9.8, drag: false, label: 'Sniper 3', desc: 'Triple targets! Same angle, adjust velocity each shot.', xp: 50, tol: 10 },
+            { round: 10, targets: [{x:130, y:0}],  constraint: {type:'fixedVelocity', value:38}, gravity: 9.8, drag: true, label: 'Ace', desc: 'Final challenge: drag ON, velocity locked at 38 m/s. Prove your mastery.', xp: 60, tol: 12 },
+          ];
+
+          function startTargetRound(roundNum) {
+            var level = TARGET_LEVELS[Math.min(roundNum - 1, TARGET_LEVELS.length - 1)];
+            var tgts = level.targets.map(function(t, i) {
+              return { x: t.x, y: t.y || 0, radius: level.tol, destroyed: false, id: i };
+            });
+            upd('targetRound', roundNum);
+            upd('targetList', tgts);
+            upd('targetConstraint', level.constraint);
+            upd('targetFeedback', null);
+            upd('targetAttempts', 0);
+            upd('targetShowScaffold', false);
+            // Apply level conditions
+            upd('gravity', level.gravity);
+            upd('airResist', level.drag);
+            // Apply constraint
+            if (level.constraint.type === 'fixedAngle') {
+              upd('angle', level.constraint.value);
+            } else if (level.constraint.type === 'fixedVelocity') {
+              upd('velocity', level.constraint.value);
+            }
+            if (addToast) addToast('\u{1F3AF} ' + level.label + ': ' + level.desc, 'info');
+          }
+
+          function checkTargetHit(landingX) {
+            if (!d.targetMode || !d.targetList) return;
+            var tgts = d.targetList.slice();
+            var hitAny = false;
+            var closestDist = Infinity;
+            for (var ti = 0; ti < tgts.length; ti++) {
+              if (tgts[ti].destroyed) continue;
+              var dist = Math.abs(landingX - tgts[ti].x);
+              if (dist < closestDist) closestDist = dist;
+              if (dist <= tgts[ti].radius) {
+                tgts[ti].destroyed = true;
+                hitAny = true;
+              }
+            }
+            upd('targetList', tgts);
+            upd('targetAttempts', (d.targetAttempts || 0) + 1);
+            var allDestroyed = tgts.every(function(t) { return t.destroyed; });
+            if (hitAny && allDestroyed) {
+              // Round complete!
+              var levelData = TARGET_LEVELS[Math.min((d.targetRound || 1) - 1, TARGET_LEVELS.length - 1)];
+              upd('targetScore', (d.targetScore || 0) + levelData.xp);
+              upd('targetFeedback', { type: 'success', msg: '\u2705 All targets destroyed! +' + levelData.xp + ' XP' });
+              if (awardStemXP) awardStemXP('targetMode', levelData.xp, 'Target Mode Round ' + d.targetRound);
+              if (stemCelebrate) stemCelebrate();
+              if (addToast) addToast('\u{1F4A5} Round ' + d.targetRound + ' complete! +' + levelData.xp + ' XP', 'success');
+            } else if (hitAny) {
+              upd('targetFeedback', { type: 'partial', msg: '\u{1F4A5} Hit! ' + tgts.filter(function(t){return !t.destroyed;}).length + ' target(s) remaining.' });
+              if (addToast) addToast('\u{1F4A5} Target hit! Keep going!', 'success');
+            } else {
+              var missMsg = '\u274C Missed by ' + closestDist.toFixed(1) + 'm';
+              upd('targetFeedback', { type: 'miss', msg: missMsg });
+              if ((d.targetAttempts || 0) >= 2 && !d.targetShowScaffold) {
+                upd('targetShowScaffold', true);
+              }
+              if (addToast) addToast(missMsg + ' — try again!', 'warning');
+            }
+          }
+
+          // Calculate correct answer for scaffold display
+          function getTargetAnswer() {
+            if (!d.targetConstraint || !d.targetList) return null;
+            var tgt = d.targetList.find(function(t) { return !t.destroyed; });
+            if (!tgt) return null;
+            var R = tgt.x;
+            var g = d.gravity;
+            if (d.targetConstraint.type === 'fixedAngle') {
+              var theta = d.targetConstraint.value * Math.PI / 180;
+              var v = Math.sqrt(R * g / Math.sin(2 * theta));
+              return { param: 'velocity', value: v, equation: 'v = \u221A(R\u00B7g / sin(2\u03B8))', steps: 'v = \u221A(' + R + ' \u00D7 ' + g + ' / sin(2\u00D7' + d.targetConstraint.value + '\u00B0)) = ' + v.toFixed(1) + ' m/s' };
+            } else if (d.targetConstraint.type === 'fixedVelocity') {
+              var v2 = d.targetConstraint.value;
+              var sinVal = R * g / (v2 * v2);
+              if (sinVal > 1) return { param: 'angle', value: null, equation: 'Target unreachable at this velocity', steps: '' };
+              var theta2 = Math.asin(sinVal) / 2 * 180 / Math.PI;
+              return { param: 'angle', value: theta2, equation: '\u03B8 = \u00BD arcsin(R\u00B7g / v\u00B2)', steps: '\u03B8 = \u00BD arcsin(' + R + ' \u00D7 ' + g + ' / ' + v2 + '\u00B2) = ' + theta2.toFixed(1) + '\u00B0' };
+            }
+            return null;
+          }
+
+
 
           // Canvas animated projectile
 
@@ -239,6 +343,12 @@ const d = labToolData.physics;
             }
 
             canvasEl._launch = launch;
+            // Target Mode hit callback (deferred to avoid state update during draw loop)
+            canvasEl._onTargetLand = function(landingMX) {
+              setTimeout(function() {
+                if (typeof checkTargetHit === 'function') checkTargetHit(landingMX);
+              }, 0);
+            };
 
             // Simulation timestep (seconds per frame tick)
 
@@ -815,6 +925,12 @@ const d = labToolData.physics;
 
                   }
 
+                  // ── Target Mode: check hit ──
+                  if (canvasEl.dataset.targetMode === 'true') {
+                    // Dispatch target hit check (deferred to avoid re-render during draw)
+                    if (canvasEl._onTargetLand) canvasEl._onTargetLand(ball.mX);
+                  }
+
                   // Spawn enhanced explosion particles (in screen-px space)
 
                   var impactSX = mToScreenX(ball.mX);
@@ -1278,6 +1394,79 @@ const d = labToolData.physics;
 
               ctx.restore();
 
+
+              // ── Target Mode: Draw destructible crates ──
+              if (canvasEl.dataset.targetMode === 'true') {
+                var tgtDataStr = canvasEl.dataset.targetList;
+                if (tgtDataStr) {
+                  try {
+                    var tgtData = JSON.parse(tgtDataStr);
+                    tgtData.forEach(function(tgt) {
+                      var tx = mToScreenX(tgt.x) * dpr;
+                      var ty = mToScreenY(tgt.y || 0) * dpr;
+                      if (tgt.destroyed) {
+                        // Destroyed crate: faded wreckage
+                        ctx.save(); ctx.globalAlpha = 0.25;
+                        ctx.fillStyle = '#92400e';
+                        ctx.fillRect(tx - 8 * dpr, ty - 12 * dpr, 16 * dpr, 12 * dpr);
+                        ctx.restore();
+                      } else {
+                        // Wooden crate body
+                        var crW = 16 * dpr, crH = 14 * dpr;
+                        ctx.fillStyle = '#b45309';
+                        ctx.fillRect(tx - crW/2, ty - crH, crW, crH);
+                        // Wood grain
+                        ctx.strokeStyle = '#92400e'; ctx.lineWidth = 1 * dpr;
+                        ctx.beginPath(); ctx.moveTo(tx - crW/2, ty - crH * 0.5); ctx.lineTo(tx + crW/2, ty - crH * 0.5); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(tx, ty - crH); ctx.lineTo(tx, ty); ctx.stroke();
+                        // Bullseye
+                        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5 * dpr;
+                        ctx.beginPath(); ctx.arc(tx, ty - crH/2, 5 * dpr, 0, Math.PI * 2); ctx.stroke();
+                        ctx.beginPath(); ctx.arc(tx, ty - crH/2, 2.5 * dpr, 0, Math.PI * 2); ctx.stroke();
+                        ctx.fillStyle = '#ef4444';
+                        ctx.beginPath(); ctx.arc(tx, ty - crH/2, 1 * dpr, 0, Math.PI * 2); ctx.fill();
+                        // Distance label
+                        ctx.font = 'bold ' + (5 * dpr) + 'px sans-serif';
+                        ctx.fillStyle = '#fbbf24'; ctx.textAlign = 'center';
+                        ctx.fillText(tgt.x + 'm', tx, ty - crH - 4 * dpr);
+                        // Hit zone indicator (faint circle)
+                        ctx.save();
+                        ctx.globalAlpha = 0.12;
+                        ctx.fillStyle = '#22c55e';
+                        var zoneW = (tgt.radius || 10) * scale * dpr;
+                        ctx.beginPath(); ctx.ellipse(tx, ty, zoneW, 3 * dpr, 0, 0, Math.PI * 2); ctx.fill();
+                        ctx.restore();
+                      }
+                    });
+                  } catch(e) {}
+                }
+
+                // Constraint badge near cannon
+                var conStr = canvasEl.dataset.constraintType;
+                var conVal = canvasEl.dataset.constraintValue;
+                if (conStr) {
+                  ctx.save();
+                  var bx = 10 * dpr, by2 = 54 * dpr;
+                  ctx.fillStyle = 'rgba(239,68,68,0.85)';
+                  ctx.beginPath();
+                  var bw = 110 * dpr, bh = 16 * dpr, br2 = 4 * dpr;
+                  ctx.moveTo(bx + br2, by2); ctx.lineTo(bx + bw - br2, by2);
+                  ctx.arcTo(bx + bw, by2, bx + bw, by2 + br2, br2);
+                  ctx.lineTo(bx + bw, by2 + bh - br2);
+                  ctx.arcTo(bx + bw, by2 + bh, bx + bw - br2, by2 + bh, br2);
+                  ctx.lineTo(bx + br2, by2 + bh);
+                  ctx.arcTo(bx, by2 + bh, bx, by2 + bh - br2, br2);
+                  ctx.lineTo(bx, by2 + br2);
+                  ctx.arcTo(bx, by2, bx + br2, by2, br2);
+                  ctx.closePath(); ctx.fill();
+                  ctx.font = 'bold ' + (5.5 * dpr) + 'px sans-serif';
+                  ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left';
+                  var lockLabel = conStr === 'fixedAngle' ? '\u{1F512} \u03B8 = ' + conVal + '\u00B0' : '\u{1F512} v = ' + conVal + ' m/s';
+                  ctx.fillText(lockLabel, bx + 4 * dpr, by2 + 12 * dpr);
+                  ctx.restore();
+                }
+              }
+
               // Sync state back to canvas element for persistence
 
               canvasEl._tick = tick; canvasEl._trails = trails; canvasEl._ball = ball;
@@ -1348,6 +1537,10 @@ const d = labToolData.physics;
                 "data-air-resist": d.airResist ? 'true' : 'false',
                 "data-show-vectors": d.showVectors ? 'true' : 'false',
                 "data-show-energy": d.showEnergy ? 'true' : 'false',
+                "data-target-mode": d.targetMode ? 'true' : 'false',
+                "data-target-list": d.targetList ? JSON.stringify(d.targetList) : '',
+                "data-constraint-type": d.targetConstraint ? d.targetConstraint.type : '',
+                "data-constraint-value": d.targetConstraint ? String(d.targetConstraint.value) : '',
 
                 onKeyDown: function (e) {
 
@@ -1436,14 +1629,17 @@ const d = labToolData.physics;
             React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-3" },
 
               [{ k: 'angle', label: t('stem.physics.angle_u00b0'), min: 5, max: 85, step: 1 }, { k: 'velocity', label: t('stem.physics.velocity_ms'), min: 5, max: 50, step: 1 }, { k: 'gravity', label: t('stem.physics.gravity_msu00b2'), min: 1, max: 25, step: 0.1 }].map(function (s) {
+                var isLocked = d.targetMode && d.targetConstraint && (
+                  (d.targetConstraint.type === 'fixedAngle' && s.k === 'angle') ||
+                  (d.targetConstraint.type === 'fixedVelocity' && s.k === 'velocity')
+                );
+                return React.createElement("div", { key: s.k, className: "text-center rounded-lg p-2 border " + (isLocked ? 'bg-red-50 border-red-300' : 'bg-slate-50') },
 
-                return React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
+                  React.createElement("label", { className: "text-[10px] font-bold block " + (isLocked ? 'text-red-500' : 'text-slate-500') }, isLocked ? '\u{1F512} ' + s.label : s.label),
 
-                  React.createElement("label", { className: "text-[10px] font-bold text-slate-500 block" }, s.label),
+                  React.createElement("span", { className: "text-sm font-bold block " + (isLocked ? 'text-red-700' : 'text-slate-700') }, d[s.k]),
 
-                  React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k]),
-
-                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], onChange: function (e) { upd(s.k, parseFloat(e.target.value)); }, className: "w-full accent-sky-600" })
+                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], disabled: isLocked, onChange: function (e) { if (!isLocked) upd(s.k, parseFloat(e.target.value)); }, className: "w-full " + (isLocked ? 'accent-red-400 opacity-50 cursor-not-allowed' : 'accent-sky-600') })
 
                 );
 
@@ -1526,6 +1722,103 @@ const d = labToolData.physics;
                   React.createElement("tbody", null, rows)
                 );
               })()
+            ),
+
+
+            // ═══ TARGET DESTRUCTION MODE UI ═══
+            React.createElement("div", { className: "bg-gradient-to-r from-red-50 to-amber-50 rounded-xl border border-red-200 p-3 mb-3" },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("p", { className: "text-[10px] font-bold text-red-700 uppercase tracking-wider" }, "\u{1F3AF} Target Destruction Mode"),
+                !d.targetMode
+                  ? React.createElement("button", {
+                      onClick: function() { upd('targetMode', true); startTargetRound(1); },
+                      className: "px-3 py-1 bg-red-600 text-white text-[10px] font-bold rounded-lg hover:bg-red-700 transition-all"
+                    }, "\u25B6 Start Mission")
+                  : React.createElement("div", { className: "flex gap-1.5" },
+                      React.createElement("button", {
+                        onClick: function() {
+                          var allDone = d.targetList && d.targetList.every(function(t){return t.destroyed;});
+                          if (allDone && d.targetRound < TARGET_LEVELS.length) {
+                            startTargetRound(d.targetRound + 1);
+                          }
+                        },
+                        disabled: !(d.targetList && d.targetList.every(function(t){return t.destroyed;})),
+                        className: "px-3 py-1 text-[10px] font-bold rounded-lg transition-all " +
+                          (d.targetList && d.targetList.every(function(t){return t.destroyed;}) ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed')
+                      }, "\u27A1 Next Round"),
+                      React.createElement("button", {
+                        onClick: function() { startTargetRound(d.targetRound || 1); },
+                        className: "px-3 py-1 bg-amber-500 text-white text-[10px] font-bold rounded-lg hover:bg-amber-600 transition-all"
+                      }, "\u{1F504} Retry"),
+                      React.createElement("button", {
+                        onClick: function() { upd('targetMode', false); upd('targetList', null); upd('targetConstraint', null); upd('targetFeedback', null); upd('targetShowScaffold', false); },
+                        className: "px-3 py-1 bg-slate-400 text-white text-[10px] font-bold rounded-lg hover:bg-slate-500 transition-all"
+                      }, "\u2716 End")
+                    )
+              ),
+
+              // Active round info
+              d.targetMode && React.createElement("div", { className: "space-y-2" },
+                // Round header
+                React.createElement("div", { className: "bg-white rounded-lg p-2 border border-red-100" },
+                  React.createElement("div", { className: "flex items-center justify-between" },
+                    React.createElement("span", { className: "text-xs font-bold text-red-800" },
+                      "Round " + (d.targetRound || 1) + "/" + TARGET_LEVELS.length + " — " +
+                      (TARGET_LEVELS[Math.min((d.targetRound || 1) - 1, TARGET_LEVELS.length - 1)] || {}).label
+                    ),
+                    React.createElement("span", { className: "text-[10px] font-bold text-amber-500" }, "Score: " + (d.targetScore || 0) + " XP")
+                  ),
+                  React.createElement("p", { className: "text-[10px] text-slate-600 mt-1" },
+                    (TARGET_LEVELS[Math.min((d.targetRound || 1) - 1, TARGET_LEVELS.length - 1)] || {}).desc
+                  )
+                ),
+
+                // Constraint indicator
+                d.targetConstraint && React.createElement("div", { className: "flex items-center gap-2 bg-red-100 rounded-lg px-3 py-1.5" },
+                  React.createElement("span", { className: "text-xs font-bold text-red-700" },
+                    d.targetConstraint.type === 'fixedAngle'
+                      ? "\u{1F512} Angle LOCKED at " + d.targetConstraint.value + "\u00B0 — adjust velocity to hit the target"
+                      : "\u{1F512} Velocity LOCKED at " + d.targetConstraint.value + " m/s — adjust angle to hit the target"
+                  )
+                ),
+
+                // Target status chips
+                d.targetList && React.createElement("div", { className: "flex gap-1.5 flex-wrap" },
+                  d.targetList.map(function(tgt, i) {
+                    return React.createElement("span", {
+                      key: i,
+                      className: "px-2 py-0.5 rounded-full text-[10px] font-bold " +
+                        (tgt.destroyed ? 'bg-emerald-100 text-emerald-700 line-through' : 'bg-amber-100 text-amber-700')
+                    }, (tgt.destroyed ? "\u2705 " : "\u{1F4E6} ") + tgt.x + "m");
+                  })
+                ),
+
+                // Feedback
+                d.targetFeedback && React.createElement("div", {
+                  className: "px-3 py-2 rounded-lg text-xs font-bold " + (
+                    d.targetFeedback.type === 'success' ? 'bg-emerald-100 text-emerald-700 border border-emerald-300' :
+                    d.targetFeedback.type === 'partial' ? 'bg-blue-100 text-blue-700 border border-blue-300' :
+                    'bg-red-100 text-red-700 border border-red-300'
+                  )
+                }, d.targetFeedback.msg),
+
+                // Calculation Scaffold (appears after 2 misses)
+                d.targetShowScaffold && React.createElement("div", { className: "bg-amber-50 rounded-lg border border-amber-200 p-3 animate-in fade-in duration-300" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1" }, "\u{1F4DD} Calculation Helper"),
+                  (function() {
+                    var ans = getTargetAnswer();
+                    if (!ans) return React.createElement("p", { className: "text-xs text-slate-400" }, "No active target");
+                    return React.createElement("div", { className: "space-y-1" },
+                      React.createElement("p", { className: "text-xs text-slate-600" }, "Equation: ", React.createElement("b", { className: "font-mono text-blue-700" }, ans.equation)),
+                      React.createElement("p", { className: "text-xs text-slate-600" }, "Substitution: ", React.createElement("span", { className: "font-mono text-emerald-700" }, ans.steps)),
+                      React.createElement("p", { className: "text-[10px] text-amber-500 italic mt-1" }, "\u{1F4A1} Try setting " + ans.param + " to approximately " + (ans.value ? ans.value.toFixed(1) : '?'))
+                    );
+                  })()
+                ),
+
+                // Attempt counter
+                React.createElement("p", { className: "text-[10px] text-slate-400 text-right" }, "Attempts: " + (d.targetAttempts || 0))
+              )
             ),
 
             // ── Multi-Tier Challenges ──
