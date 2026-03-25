@@ -32,6 +32,7 @@ const hasFlag = (name) => args.includes(`--${name}`);
 const mode = getArg('mode') || 'dev';
 const explicitHash = getArg('hash');
 const dryRun = hasFlag('dry-run');
+const forceFlag = hasFlag('force');
 
 if (!['dev', 'prod'].includes(mode)) {
     console.error('❌ Invalid mode. Use --mode=dev or --mode=prod');
@@ -118,6 +119,43 @@ if (mode === 'prod') {
             console.error('❌ Could not determine git hash. Pass --hash=<hash> or run from within the git repo.');
             process.exit(1);
         }
+    }
+
+    // ── Dirty-tree guard: block prod builds with uncommitted module files ──
+    // The CDN serves files from the committed hash. If module files have
+    // uncommitted changes, the CDN URLs will point to old code.
+    if (!forceFlag) {
+        try {
+            const gitStatus = execSync('git status --porcelain', { cwd: ROOT, encoding: 'utf-8' }).trim();
+            if (gitStatus) {
+                const allManagedFiles = MODULES.map(m => m.filename).concat(PLUGIN_FILES);
+                const dirtyModules = [];
+                gitStatus.split('\n').forEach(line => {
+                    const filePath = line.substring(3).trim();
+                    allManagedFiles.forEach(mf => {
+                        if (filePath === mf || filePath.endsWith('/' + mf) || filePath.endsWith('\\' + mf)) {
+                            dirtyModules.push(filePath);
+                        }
+                    });
+                });
+                if (dirtyModules.length > 0) {
+                    console.error('');
+                    console.error('❌ UNCOMMITTED MODULE FILES DETECTED — CDN will serve stale code!');
+                    dirtyModules.forEach(f => console.error(`   Modified: ${f}`));
+                    console.error('');
+                    console.error('   The CDN hash @' + gitHash + ' does NOT contain these changes.');
+                    console.error('   You MUST commit + push before running build.js --mode=prod.');
+                    console.error('   Or use --force to skip this check.');
+                    console.error('');
+                    process.exit(1);
+                }
+            }
+        } catch (e) {
+            // git status failed — warn but don't block
+            console.warn('⚠️  Could not check git status for uncommitted files: ' + e.message);
+        }
+    } else {
+        console.warn('⚠️  --force flag: skipping uncommitted file check');
     }
 }
 
