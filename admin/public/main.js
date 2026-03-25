@@ -524,9 +524,10 @@ function detectHardware() {
 }
 
 // Generate docker-compose based on selected services
-function generateDockerCompose(selectedServices) {
+function generateDockerCompose(selectedServices, gpuInfo) {
   try {
     console.log('[docker:generate] Generating docker-compose for services:', selectedServices);
+    console.log('[docker:generate] GPU info:', gpuInfo ? gpuInfo.type : 'none');
     
     // Base compose structure
     let compose = {
@@ -613,18 +614,20 @@ function generateDockerCompose(selectedServices) {
           'flux_models:/models'
         ];
         compose.volumes.flux_models = {};
-        // GPU support (NVIDIA)
-        compose.services.flux.deploy = {
-          resources: {
-            reservations: {
-              devices: [{
-                driver: 'nvidia',
-                count: 1,
-                capabilities: ['gpu']
-              }]
+        // Only add NVIDIA GPU reservation if NVIDIA GPU detected
+        if (gpuInfo && gpuInfo.type === 'NVIDIA') {
+          compose.services.flux.deploy = {
+            resources: {
+              reservations: {
+                devices: [{
+                  driver: 'nvidia',
+                  count: 1,
+                  capabilities: ['gpu']
+                }]
+              }
             }
-          }
-        };
+          };
+        }
       }
     });
     
@@ -717,7 +720,11 @@ async function startDeployment(setupData, onProgress) {
       progress: 20
     });
     
-    const composeResult = generateDockerCompose(setupData.selectedServices);
+    // Detect GPU for compose generation (determines GPU config)
+    const hardware = detectHardware();
+    const gpuInfo = hardware.gpu || null;
+    
+    const composeResult = generateDockerCompose(setupData.selectedServices, gpuInfo);
     if (!composeResult.success) {
       console.error('[deploy:start] Failed to generate docker-compose:', composeResult.error);
       throw new Error('Failed to generate docker-compose: ' + composeResult.error);
