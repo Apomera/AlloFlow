@@ -1185,6 +1185,44 @@ const d = labToolData.artStudio || {};
 
 
 
+            // ═══ AI FLIPBOOK FRAME GENERATOR ═══
+            function _generateFlipbookFrames(callImagenFn, scenePrompt, motionPrompt, nFrames, onProgress, onDone, onError) {
+              var depthMaps = [];
+              var i = 0;
+              function nextFrame() {
+                if (i >= nFrames) { onDone(depthMaps); return; }
+                var pct = Math.round((i / (nFrames - 1)) * 100);
+                var phaseDesc;
+                if (nFrames <= 1) { phaseDesc = 'at the starting position'; }
+                else if (i === 0) { phaseDesc = 'at the very beginning of the motion cycle (0%)'; }
+                else if (i === nFrames - 1) { phaseDesc = 'at the very end of the motion cycle (100%), almost back to start for seamless looping'; }
+                else { phaseDesc = 'at ' + pct + '% through the motion cycle'; }
+                var prompt = 'A smooth, high-quality, continuous 3D grayscale depth map of: ' + scenePrompt + '. The subject is ' + motionPrompt + ', currently ' + phaseDesc + '. The closest parts must be pure white, and the furthest background pure black. No text, no labels, no floating artifacts. Fill the entire square frame. Consistent style across frames.';
+                if (onProgress) onProgress(i + 1, nFrames, 'generating');
+                callImagenFn(prompt, 400)
+                  .then(function(base64) {
+                    var img = new Image();
+                    img.onload = function() {
+                      var c = document.createElement('canvas'); c.width = 400; c.height = 400;
+                      c.getContext('2d').drawImage(img, 0, 0, 400, 400);
+                      var imgData = c.getContext('2d').getImageData(0, 0, 400, 400);
+                      depthMaps.push({ width: 400, height: 400, data: Array.from(imgData.data) });
+                      if (onProgress) onProgress(i + 1, nFrames, 'done');
+                      i++;
+                      // Small delay between calls to avoid rate limiting
+                      setTimeout(nextFrame, 500);
+                    };
+                    img.onerror = function() {
+                      if (onError) onError(new Error('Failed to load generated image for frame ' + (i + 1)));
+                    };
+                    img.src = base64;
+                  }).catch(function(e) {
+                    if (onError) onError(e);
+                  });
+              }
+              nextFrame();
+            }
+
             // ═══ CUSTOM ANIMATION HELPERS ═══
 
             function _genTransformDepth(sourceImgData, W, H, transformType, frameIdx, totalFrames) {
@@ -4912,9 +4950,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block mb-1" }, "\uD83D\uDCE1 Animation Source"),
 
-                    React.createElement("div", { className: "grid grid-cols-5 gap-1" },
+                    React.createElement("div", { className: "grid grid-cols-6 gap-1" },
 
-                      [{ id: 'preset', icon: '\u2728', label: 'Preset' }, { id: 'draw', icon: '\u270F\uFE0F', label: 'Draw' }, { id: 'upload', icon: '\uD83D\uDCC2', label: 'Upload' }, { id: 'transform', icon: '\uD83D\uDD04', label: 'Transform' }, { id: 'ai', icon: '\uD83E\uDD16', label: 'AI Depth' }].map(function(s) {
+                      [{ id: 'preset', icon: '\u2728', label: 'Preset' }, { id: 'draw', icon: '\u270F\uFE0F', label: 'Draw' }, { id: 'upload', icon: '\uD83D\uDCC2', label: 'Upload' }, { id: 'transform', icon: '\uD83D\uDD04', label: 'Transform' }, { id: 'ai', icon: '\uD83E\uDD16', label: 'AI Depth' }, { id: 'flipbook', icon: '\uD83D\uDCD6', label: 'AI Flipbook' }].map(function(s) {
 
                         return React.createElement("button", { key: s.id, onClick: function() { upd('stereoAnimSource', s.id); },
 
@@ -5424,6 +5462,204 @@ const d = labToolData.artStudio || {};
 
 
 
+                  // ═══ AI FLIPBOOK SOURCE ═══
+
+                  (d.stereoAnimSource) === 'flipbook' && React.createElement("div", { className: "mb-3 space-y-2" },
+
+                    React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block" }, "\uD83D\uDCD6 AI Generative Flipbook"),
+
+                    React.createElement("p", { className: "text-[10px] text-slate-400" }, "AI generates a sequence of depth maps frame-by-frame, like drawing a flipbook. Describe the scene and how it moves."),
+
+                    callImagen ? React.createElement("div", { className: "space-y-2" },
+
+                      React.createElement("div", null,
+
+                        React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 block mb-0.5" }, "\uD83C\uDFAC Scene (what to show)"),
+
+                        React.createElement("textarea", {
+
+                          value: d.stereoFlipbookScene || '',
+
+                          onChange: function(e) { upd('stereoFlipbookScene', e.target.value); },
+
+                          placeholder: "e.g. A butterfly with detailed wings",
+
+                          className: "w-full text-xs p-2 rounded border border-indigo-200 focus:ring-2 focus:ring-indigo-400 h-12 resize-none",
+
+                          disabled: !!d.stereoFlipbookGenerating
+
+                        })
+
+                      ),
+
+                      React.createElement("div", null,
+
+                        React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 block mb-0.5" }, "\uD83C\uDFAC Motion (how it moves)"),
+
+                        React.createElement("textarea", {
+
+                          value: d.stereoFlipbookMotion || '',
+
+                          onChange: function(e) { upd('stereoFlipbookMotion', e.target.value); },
+
+                          placeholder: "e.g. flapping its wings up and down in a full cycle",
+
+                          className: "w-full text-xs p-2 rounded border border-indigo-200 focus:ring-2 focus:ring-indigo-400 h-12 resize-none",
+
+                          disabled: !!d.stereoFlipbookGenerating
+
+                        })
+
+                      ),
+
+                      React.createElement("div", { className: "flex items-center gap-3" },
+
+                        React.createElement("label", { className: "text-[10px] font-bold text-indigo-600" }, "Frames:"),
+
+                        React.createElement("div", { className: "flex gap-1" },
+
+                          [4, 6, 8].map(function(n) {
+
+                            return React.createElement("button", { key: n, onClick: function() { upd('stereoFlipbookFrameCount', n); },
+
+                              className: "px-3 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoFlipbookFrameCount || 6) === n ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-indigo-50')
+
+                            }, n + ' frames');
+
+                          })
+
+                        ),
+
+                        React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-bold text-indigo-600 ml-auto cursor-pointer" },
+
+                          React.createElement("input", { type: "checkbox", checked: d.stereoFlipbookInterpolate !== false, onChange: function(e) { upd('stereoFlipbookInterpolate', e.target.checked); }, className: "accent-indigo-600" }),
+
+                          "Smooth interpolation"
+
+                        )
+
+                      ),
+
+                      React.createElement("button", {
+
+                        onClick: function() {
+
+                          if (!d.stereoFlipbookScene || !d.stereoFlipbookMotion) { if (typeof addToast === 'function') addToast('Enter both a scene and motion description!', 'warning'); return; }
+
+                          upd('stereoFlipbookGenerating', true);
+
+                          upd('stereoFlipbookProgress', 'Starting...');
+
+                          upd('stereoFlipbookFrames', null);
+
+                          var nF = d.stereoFlipbookFrameCount || 6;
+
+                          _generateFlipbookFrames(callImagen, d.stereoFlipbookScene, d.stereoFlipbookMotion, nF,
+
+                            function(done, total, phase) {
+
+                              upd('stereoFlipbookProgress', (phase === 'generating' ? '\u23F3 Generating' : '\u2705 Got') + ' frame ' + done + '/' + total + '...');
+
+                            },
+
+                            function(depthMaps) {
+
+                              upd('stereoFlipbookFrames', depthMaps);
+
+                              upd('stereoFlipbookGenerating', false);
+
+                              upd('stereoFlipbookProgress', null);
+
+                              if (typeof addToast === 'function') addToast('\uD83D\uDCD6 ' + depthMaps.length + ' flipbook frames generated!', 'success');
+
+                            },
+
+                            function(err) {
+
+                              upd('stereoFlipbookGenerating', false);
+
+                              upd('stereoFlipbookProgress', null);
+
+                              if (typeof addToast === 'function') addToast('AI Error: ' + (err.message || err), 'error');
+
+                            }
+
+                          );
+
+                        },
+
+                        disabled: !!d.stereoFlipbookGenerating || !d.stereoFlipbookScene || !d.stereoFlipbookMotion,
+
+                        className: "w-full px-3 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 disabled:opacity-50 shadow-sm transition-all"
+
+                      }, d.stereoFlipbookGenerating ? (d.stereoFlipbookProgress || '\u23F3 Generating...') : '\uD83D\uDCD6 Generate Flipbook Frames'),
+
+                      d.stereoFlipbookGenerating && React.createElement("div", { className: "h-1.5 bg-indigo-100 rounded-full overflow-hidden" },
+
+                        React.createElement("div", { className: "h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full animate-pulse", style: { width: '60%' } })
+
+                      ),
+
+                      (d.stereoFlipbookFrames && d.stereoFlipbookFrames.length > 0) && React.createElement("div", { className: "space-y-1" },
+
+                        React.createElement("div", { className: "flex justify-between items-center" },
+
+                          React.createElement("p", { className: "text-[10px] font-bold text-green-600" }, "\u2705 " + d.stereoFlipbookFrames.length + " depth frames ready"),
+
+                          React.createElement("button", { onClick: function() { upd('stereoFlipbookFrames', null); }, className: "text-[9px] text-red-500 hover:text-red-700 font-bold" }, "\u274C Clear")
+
+                        ),
+
+                        React.createElement("div", { className: "flex gap-1 flex-wrap" },
+
+                          d.stereoFlipbookFrames.map(function(kf, idx) {
+
+                            return React.createElement("div", { key: idx, className: "relative" },
+
+                              React.createElement("canvas", { width: 60, height: 60, className: "rounded border border-indigo-200", ref: function(c) {
+
+                                if (!c) return;
+
+                                var ctx = c.getContext('2d');
+
+                                var imgData = ctx.createImageData(kf.width, kf.height);
+
+                                for (var i = 0; i < kf.data.length; i++) imgData.data[i] = kf.data[i];
+
+                                var temp = document.createElement('canvas'); temp.width = kf.width; temp.height = kf.height;
+
+                                temp.getContext('2d').putImageData(imgData, 0, 0);
+
+                                ctx.drawImage(temp, 0, 0, 60, 60);
+
+                              } }),
+
+                              React.createElement("span", { className: "absolute bottom-0 left-0 right-0 text-center text-[7px] font-bold text-white bg-black/50 rounded-b" }, 'F' + (idx + 1))
+
+                            );
+
+                          })
+
+                        )
+
+                      ),
+
+                      React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200 mt-1" },
+
+                        React.createElement("p", { className: "text-[10px] text-amber-700" }, "\uD83D\uDCA1 Each frame is a separate AI generation. The AI interprets the motion at different % of the cycle, creating a flipbook effect. Enable \u2018Smooth interpolation\u2019 to blend between frames.")
+
+                      )
+
+                    ) : React.createElement("div", { className: "bg-amber-50 rounded-lg p-3 border border-amber-200" },
+
+                      React.createElement("p", { className: "text-[10px] text-amber-700 font-bold" }, "\u26A0\uFE0F AI image generation is not available. Use the Preset, Draw, Upload, or Transform modes instead.")
+
+                    )
+
+                  ),
+
+
+
                   // ═══ COMMON CONTROLS (frames, speed, pattern, strength) ═══
 
                   React.createElement("div", { className: "grid grid-cols-2 gap-3 mb-3" },
@@ -5514,6 +5750,8 @@ const d = labToolData.artStudio || {};
 
                         if (source === 'ai' && !d.stereoAnimAiDepth) { if (typeof addToast === 'function') addToast('Generate an AI depth map first!', 'warning'); return; }
 
+                        if (source === 'flipbook' && (!d.stereoFlipbookFrames || d.stereoFlipbookFrames.length < 2)) { if (typeof addToast === 'function') addToast('Generate at least 2 flipbook frames first!', 'warning'); return; }
+
 
 
                         _stopStereoAnim();
@@ -5560,11 +5798,13 @@ const d = labToolData.artStudio || {};
 
                           function getDepthForFrame(frameIdx) {
 
-                            if (source === 'draw') {
+                            if (source === 'draw' || source === 'flipbook') {
 
-                              // Interpolate between keyframes
+                              // Interpolate between keyframes (draw) or AI flipbook frames
 
-                              var kfs = d.stereoAnimKeyframes;
+                              var kfs = source === 'flipbook' ? d.stereoFlipbookFrames : d.stereoAnimKeyframes;
+
+                              var useInterp = source === 'flipbook' ? (d.stereoFlipbookInterpolate !== false) : true;
 
                               var maps = kfs.map(function(kf) {
 
@@ -5582,7 +5822,13 @@ const d = labToolData.artStudio || {};
 
                               });
 
-                              return _interpolateDepthMaps(maps, frameIdx, nF);
+                              if (useInterp) return _interpolateDepthMaps(maps, frameIdx, nF);
+
+                              // Direct frame (no interpolation): pick nearest frame
+
+                              var directIdx = Math.min(Math.floor((frameIdx / nF) * maps.length), maps.length - 1);
+
+                              return maps[directIdx];
 
                             } else {
 
