@@ -83,7 +83,7 @@ var d = labToolData.galaxy || {};
 
           var layers = d.layers || { arms: true, bulge: true, blackHole: true, nebulae: true, bgStars: true, grid: false, labels: false };
 
-          var starCount = d.starCount || 5000;
+          var starCount = d.starCount || 25000;
 
           var cosmicAge = d.cosmicAge !== undefined ? d.cosmicAge : 10;
 
@@ -722,7 +722,7 @@ var d = labToolData.galaxy || {};
 
             var bgGrad = bgCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
 
-            bgGrad.addColorStop(0, 'rgba(255,220,150,0.35)'); bgGrad.addColorStop(0.3, 'rgba(255,180,100,0.12)');
+            bgGrad.addColorStop(0, 'rgba(255,230,200,1.0)'); bgGrad.addColorStop(0.15, 'rgba(255,180,100,0.5)'); bgGrad.addColorStop(0.4, 'rgba(200,100,50,0.15)');
 
             bgGrad.addColorStop(0.6, 'rgba(200,150,80,0.05)'); bgGrad.addColorStop(1, 'rgba(0,0,0,0)');
 
@@ -732,7 +732,7 @@ var d = labToolData.galaxy || {};
 
             var bulgeGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: bulgeTex, transparent: true, blending: THREE.AdditiveBlending }));
 
-            bulgeGlow.scale.set(0.35, 0.15, 1); bulgeGroup.add(bulgeGlow);
+            bulgeGlow.scale.set(0.9, 0.3, 1); bulgeGroup.add(bulgeGlow);
 
 
 
@@ -788,17 +788,28 @@ var d = labToolData.galaxy || {};
 
             // Multi-ring accretion disk with color gradient
 
-            var ringColors = [[0.015, 0.025, 0xffffcc, 0.8], [0.025, 0.035, 0xffaa44, 0.6], [0.035, 0.045, 0xff6622, 0.4], [0.045, 0.055, 0xcc3311, 0.2]];
-
-            var rings = [];
-
-            ringColors.forEach(function (rc) {
-
-              var r = new THREE.Mesh(new THREE.RingGeometry(rc[0], rc[1], 48), new THREE.MeshBasicMaterial({ color: rc[2], side: THREE.DoubleSide, transparent: true, opacity: rc[3], blending: THREE.AdditiveBlending }));
-
-              r.rotation.x = Math.PI * 0.5; bhGroup.add(r); rings.push(r);
-
-            });
+            // High-speed particle accretion disk
+            var accCount = 2000;
+            var accGeo = new THREE.BufferGeometry();
+            var accPos = new Float32Array(accCount * 3);
+            var accCol = new Float32Array(accCount * 3);
+            for (var ai=0; ai<accCount; ai++) {
+                var ar = 0.015 + Math.pow(Math.random(), 2) * 0.06;
+                var ath = Math.random() * Math.PI * 2;
+                accPos[ai*3] = Math.cos(ath)*ar;
+                accPos[ai*3+1] = (Math.random()-0.5)*0.002;
+                accPos[ai*3+2] = Math.sin(ath)*ar;
+                var intensity = 1.0 - (ar - 0.015)/0.06;
+                accCol[ai*3] = 1.0; 
+                accCol[ai*3+1] = 0.4 + intensity*0.6;
+                accCol[ai*3+2] = intensity*0.5;
+            }
+            accGeo.setAttribute('position', new THREE.BufferAttribute(accPos, 3));
+            accGeo.setAttribute('color', new THREE.BufferAttribute(accCol, 3));
+            var accMat = new THREE.PointsMaterial({size: 0.003, vertexColors: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending});
+            var accPoints = new THREE.Points(accGeo, accMat);
+            bhGroup.add(accPoints);
+            var rings = [accPoints]; // Keep variable for animate loop
 
             var ring = rings[0];
 
@@ -810,7 +821,7 @@ var d = labToolData.galaxy || {};
 
             var bhGrad = bhGc.createRadialGradient(32, 32, 0, 32, 32, 32);
 
-            bhGrad.addColorStop(0, 'rgba(255,200,100,0.6)'); bhGrad.addColorStop(0.3, 'rgba(255,120,40,0.2)'); bhGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            bhGrad.addColorStop(0, 'rgba(255,255,255,1.0)'); bhGrad.addColorStop(0.1, 'rgba(255,200,100,0.8)'); bhGrad.addColorStop(0.4, 'rgba(255,120,40,0.3)'); bhGrad.addColorStop(1, 'rgba(0,0,0,0)');
 
             bhGc.fillStyle = bhGrad; bhGc.fillRect(0, 0, 64, 64);
 
@@ -818,7 +829,7 @@ var d = labToolData.galaxy || {};
 
             var bhGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: bhGlowTex, transparent: true, blending: THREE.AdditiveBlending, opacity: 0.7 }));
 
-            bhGlow.scale.set(0.12, 0.12, 1); bhGroup.add(bhGlow);
+            bhGlow.scale.set(0.25, 0.25, 1); bhGroup.add(bhGlow);
 
 
 
@@ -928,7 +939,7 @@ var d = labToolData.galaxy || {};
 
               composer.addPass(new THREE.RenderPass(scene, camera));
 
-              var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(W, H), 0.6, 0.3, 0.85);
+              var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(W, H), 2.2, 0.4, 0.85);
 
               composer.addPass(bloomPass);
 
@@ -1117,7 +1128,7 @@ var d = labToolData.galaxy || {};
               animId = requestAnimationFrame(animate);
 
               var elapsed = (Date.now() - startT) * 0.001;
-
+              if (!isDragging) { spherical.theta -= 0.0003; updateCamera(); }
               starShaderMat.uniforms.uTime.value = elapsed;
 
               if (armGroup.visible) armGroup.children.forEach(function (c) { c.rotation.y += 0.0003; });
@@ -1128,7 +1139,7 @@ var d = labToolData.galaxy || {};
 
               if (bhGroup.visible) {
 
-                rings.forEach(function (r, ri) { r.rotation.z += 0.005 - ri * 0.001; r.material.opacity = ringColors[ri][3] * (0.8 + 0.2 * Math.sin(elapsed * 1.2 + ri)); });
+                rings.forEach(function (r) { r.rotation.y -= 0.03; });
 
                 bhGlow.material.opacity = 0.6 + 0.3 * Math.sin(elapsed * 0.8);
 
