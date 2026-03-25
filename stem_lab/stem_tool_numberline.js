@@ -98,27 +98,54 @@ window.StemLab = window.StemLab || {
       };
 
       // ── SVG dimensions ──
+            var [hoverVal, setHoverVal] = React.useState(null);
+      var hoverActive = React.useRef(false);
       var W = 700, H = 120, PAD = 40;
       var rLen = range.max - range.min;
-      var tickCount = Math.min(rLen + 1, 21);
+      
+      // Dynamic ruler demarcations
+      var steps = 20; // Default segments
+      var minorSteps = 0; // Number of minor ticks per major segment
+      if (rLen <= 20) { steps = rLen; minorSteps = 0; }
+      else if (rLen <= 50) { steps = 10; minorSteps = 5; }
+      else if (rLen <= 100) { steps = 10; minorSteps = 10; } // major every 10, minor every 1
+      else if (rLen <= 1000) { steps = 10; minorSteps = 10; } // major every 100, minor every 10
+      else if (rLen <= 10000) { steps = 10; minorSteps = 10; }
+      else { steps = 10; minorSteps = 5; } // really huge numbers
+      
+      var majorTickCount = steps + 1;
       var ticks = [];
-      for (var i = 0; i < tickCount; i++) {
-        var rawVal = range.min + (i * rLen / Math.min(rLen, 20));
-        var val = Math.round(rawVal * 10) / 10; // keep one decimal if needed
-        var x = PAD + i / Math.min(rLen, 20) * (W - 2 * PAD);
-        var isMajor = i % 5 === 0 || i === Math.min(rLen, 20);
+      
+      for (var i = 0; i < majorTickCount; i++) {
+        var rawVal = range.min + (i * rLen / steps);
+        var val = Math.round(rawVal * 100) / 100;
+        var x = PAD + i / steps * (W - 2 * PAD);
         var valStr = val.toLocaleString();
-        // If numbers are very large, tilt them
-        var transformAttr = (valStr.length > 5) ? ('rotate(-35 ' + x + ' 98)') : '';
-        ticks.push(h('g', { key: i },
-          h('line', { x1: x, y1: isMajor ? 42 : 50, x2: x, y2: isMajor ? 78 : 70, stroke: '#3b82f6', strokeWidth: isMajor ? 2.5 : 1.5 }),
-          isMajor && h('text', { 
-            x: x, y: 98, textAnchor: valStr.length > 5 ? 'end' : 'middle', 
+        
+        // Major tick
+        var transformAttr = (valStr.length > 4) ? ('rotate(-40 ' + x + ' 98)') : '';
+        ticks.push(h('g', { key: 'major-'+i },
+          h('line', { x1: x, y1: 38, x2: x, y2: 82, stroke: '#1e40af', strokeWidth: 2.5 }),
+          h('text', { 
+            x: x, y: 102, textAnchor: valStr.length > 4 ? 'end' : 'middle', 
             transform: transformAttr,
-            fill: '#1e40af', fontSize: valStr.length > 5 ? '10' : '13', 
+            fill: '#1e3a8a', fontSize: valStr.length > 4 ? '11' : '13', 
             fontWeight: 'bold', fontFamily: 'monospace' 
           }, valStr)
         ));
+        
+        // Minor ticks
+        if (i < steps && minorSteps > 0) {
+          for (var j = 1; j < minorSteps; j++) {
+            var minorX = x + (j / minorSteps) * ((W - 2 * PAD) / steps);
+            var isMid = minorSteps % 2 === 0 && j === minorSteps / 2;
+            ticks.push(h('line', { 
+              key: 'minor-'+i+'-'+j, 
+              x1: minorX, y1: isMid ? 45 : 52, x2: minorX, y2: isMid ? 75 : 68, 
+              stroke: '#60a5fa', strokeWidth: isMid ? 2 : 1.5 
+            }));
+          }
+        }
       }
 
       // Challenge arrow
@@ -174,6 +201,23 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'bg-white rounded-xl border-2 border-blue-200 p-6 flex flex-col items-center select-none cursor-crosshair' },
           h('svg', { 
              width: '100%', height: H, viewBox: '0 0 '+W+' '+H, className: 'max-w-full',
+             onMouseEnter: function() { hoverActive.current = true; },
+             onMouseLeave: function() { hoverActive.current = false; setHoverVal(null); },
+             onMouseMove: function(e) {
+               if (!hoverActive.current) return;
+               var rect = e.currentTarget.getBoundingClientRect();
+               var scaleX = W / rect.width;
+               var clickX = (e.clientX - rect.left) * scaleX;
+               var fraction = (clickX - PAD) / (W - 2 * PAD);
+               var valObj = range.min + fraction * rLen;
+               var totalSteps = steps * (minorSteps || 1);
+               var stepVal = rLen / totalSteps;
+               var valSnapped = Math.round(valObj / stepVal) * stepVal;
+               if (valSnapped < range.min) valSnapped = range.min;
+               if (valSnapped > range.max) valSnapped = range.max;
+               valSnapped = Math.round(valSnapped * 1000) / 1000; 
+               setHoverVal(valSnapped);
+             },
              onClick: function(e) {
                if (!challenge || challenge.type !== 'place') return;
                var rect = e.currentTarget.getBoundingClientRect();
@@ -199,6 +243,21 @@ window.StemLab = window.StemLab || {
             ticks,
             arrowEl,
             markerEls,
+            (hoverVal !== null && challenge && challenge.type === 'place') && h('g', { opacity: 0.6, pointerEvents: 'none' },
+              h('line', { 
+                x1: PAD + (hoverVal - range.min) / rLen * (W - 2 * PAD), y1: 20, 
+                x2: PAD + (hoverVal - range.min) / rLen * (W - 2 * PAD), y2: 100, 
+                stroke: '#f59e0b', strokeWidth: 2, strokeDasharray: '4,4' 
+              }),
+              h('rect', {
+                x: PAD + (hoverVal - range.min) / rLen * (W - 2 * PAD) - 20, y: 5,
+                width: 40, height: 20, rx: 4, fill: '#fef3c7', stroke: '#f59e0b', strokeWidth: 1
+              }),
+              h('text', { 
+                x: PAD + (hoverVal - range.min) / rLen * (W - 2 * PAD), y: 19, 
+                textAnchor: 'middle', fill: '#b45309', fontSize: '11', fontWeight: 'bold' 
+              }, hoverVal.toLocaleString())
+            ),
             h('polygon', { points: (W-PAD)+',53 '+(W-PAD+10)+',60 '+(W-PAD)+',67', fill: '#3b82f6' }),
             h('polygon', { points: PAD+',53 '+(PAD-10)+',60 '+PAD+',67', fill: '#3b82f6' })
           )
