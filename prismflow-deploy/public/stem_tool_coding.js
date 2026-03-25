@@ -88,6 +88,10 @@
           var highContrastMode = d.highContrastMode || false;
 
 
+          // ── 3D Isometric Mode ──
+          var pitchAngle = d.pitchAngle || 0;
+          var yawAngle = d.yawAngle || 0;
+
           // ── Multi-Turtle & Extra Feature State ──
           var turtleSkin = d.turtleSkin || '🐢';
           var extraTurtles = d.extraTurtles || [];   // [{name, x, y, angle, penDown, color, width, skin}]
@@ -538,10 +542,36 @@
                 lines.push(indent + 'arc(' + (b.arcAngle || 180) + ', ' + (b.arcRadius || 30) + ')');
               } else if (b.type === 'playNote') {
                 lines.push(indent + 'playNote(' + (b.frequency || 440) + ', ' + (b.duration || 200) + ')');
+              } else if (b.type === 'pitch') {
+                pitchAngle = (pitchAngle + resolveVal(b.degrees || 30, vars)) % 360;
+                upd('pitchAngle', pitchAngle);
+              } else if (b.type === 'yaw') {
+                yawAngle = (yawAngle + resolveVal(b.degrees || 30, vars)) % 360;
+                upd('yawAngle', yawAngle);
+              } else if (b.type === 'forward3D') {
+                var dist3D = resolveVal(b.distance || 50, vars);
+                var radAngle = t.angle * Math.PI / 180;
+                var radPitch = pitchAngle * Math.PI / 180;
+                var dx3 = Math.cos(radAngle) * Math.cos(radPitch) * dist3D;
+                var dy3 = Math.sin(radAngle) * Math.cos(radPitch) * dist3D;
+                dy3 -= Math.sin(radPitch) * dist3D * 0.5;
+                var nx3 = t.x + dx3;
+                var ny3 = t.y + dy3;
+                if (t.penDown) {
+                  var depthFactor = 1 - Math.abs(Math.sin(radPitch)) * 0.3;
+                  allLines.push({ x1: t.x, y1: t.y, x2: nx3, y2: ny3, color: t.color, width: Math.max(1, t.width * depthFactor) });
+                }
+                t.x = nx3; t.y = ny3;
               } else if (b.type === 'spawnTurtle') {
                 lines.push(indent + 'spawnTurtle("' + (b.turtleName || 'bob') + '")');
               } else if (b.type === 'switchTurtle') {
                 lines.push(indent + 'switchTurtle("' + (b.turtleName || 'bob') + '")');
+              } else if (b.type === 'pitch') {
+                lines.push(indent + 'pitch(' + (b.degrees || 30) + ')');
+              } else if (b.type === 'yaw') {
+                lines.push(indent + 'yaw(' + (b.degrees || 30) + ')');
+              } else if (b.type === 'forward3D') {
+                lines.push(indent + 'forward3D(' + (b.distance || 50) + ')');
               }
             }
             return lines.join('\n');
@@ -607,6 +637,9 @@
                 else if ((m = line.match(/^playNote\(([\d.]+)(?:,\s*([\d.]+))?\)/))) { blks.push({ type: 'playNote', frequency: parseFloat(m[1]), duration: m[2] ? parseFloat(m[2]) : 200 }); }
                 else if ((m = line.match(/^spawnTurtle\("([^"]+)"\)/))) { blks.push({ type: 'spawnTurtle', turtleName: m[1] }); }
                 else if ((m = line.match(/^switchTurtle\("([^"]+)"\)/))) { blks.push({ type: 'switchTurtle', turtleName: m[1] }); }
+                else if ((m = line.match(/^pitch\((\d+)\)/))) { blks.push({ type: 'pitch', degrees: parseFloat(m[1]) }); }
+                else if ((m = line.match(/^yaw\((\d+)\)/))) { blks.push({ type: 'yaw', degrees: parseFloat(m[1]) }); }
+                else if ((m = line.match(/^forward3D\(([\$\w]+)\)/))) { blks.push({ type: 'forward3D', distance: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
                 i++;
               }
               return blks;
@@ -826,6 +859,26 @@
                   t.x = prevX; t.y = prevY;
                 }
                 t.angle = (t.angle + arcAngle) % 360;
+              } else if (b.type === 'pitch') {
+                pitchAngle = (pitchAngle + resolveVal(b.degrees || 30, vars)) % 360;
+                upd('pitchAngle', pitchAngle);
+              } else if (b.type === 'yaw') {
+                yawAngle = (yawAngle + resolveVal(b.degrees || 30, vars)) % 360;
+                upd('yawAngle', yawAngle);
+              } else if (b.type === 'forward3D') {
+                var dist3D = resolveVal(b.distance || 50, vars);
+                var radAngle = t.angle * Math.PI / 180;
+                var radPitch = pitchAngle * Math.PI / 180;
+                var dx3 = Math.cos(radAngle) * Math.cos(radPitch) * dist3D;
+                var dy3 = Math.sin(radAngle) * Math.cos(radPitch) * dist3D;
+                dy3 -= Math.sin(radPitch) * dist3D * 0.5;
+                var nx3 = t.x + dx3;
+                var ny3 = t.y + dy3;
+                if (t.penDown) {
+                  var depthFactor = 1 - Math.abs(Math.sin(radPitch)) * 0.3;
+                  allLines.push({ x1: t.x, y1: t.y, x2: nx3, y2: ny3, color: t.color, width: Math.max(1, t.width * depthFactor) });
+                }
+                t.x = nx3; t.y = ny3;
               } else if (b.type === 'spawnTurtle') {
                 // Spawn a named turtle at current position
                 var tName = b.turtleName || 'bob';
@@ -1129,6 +1182,21 @@
             }, 400);
           }
 
+
+          // ── Live Text-to-Blocks Sync ──
+          var _textSyncTimer = null;
+          function handleTextChange(newCode) {
+            upd('textCode', newCode);
+            if (_textSyncTimer) clearTimeout(_textSyncTimer);
+            _textSyncTimer = setTimeout(function() {
+              try {
+                var parsed = textToBlocks(newCode);
+                if (parsed && parsed.length > 0) {
+                  upd('blocks', parsed);
+                }
+              } catch(e) { /* silent — user may be mid-edit */ }
+            }, 400);
+          }
           // ── Coordinate Picker Handler ──
           function handleCanvasClick(e) {
             if (!showCoordPicker) return;
@@ -1323,9 +1391,12 @@
           // NOTE: Coding Playground canvas hooks (useRef + useEffect) have been hoisted
           // to top level of StemLabModal to satisfy React Rules of Hooks.
           // The ref is available as _codingCanvasRef.
-          var canvasRef = _codingCanvasRef;
-
-          // Canvas click handler for coordinate picker
+          var canvasRef = _codingCanvasRef;
+
+
+
+          // Canvas click handler for coordinate picker
+
           var canvasClickHandler = handleCanvasClick;
 
           // ── Render ──
@@ -1529,6 +1600,14 @@
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white hover:bg-white/25 transition-all"
               }, "🔗 Share"),
 
+
+              // 3D Mode toggle
+              React.createElement("button", {
+                onClick: function() { upd('show3D', !show3D); if (!show3D) { upd('pitchAngle', 0); upd('yawAngle', 0); } },
+                title: show3D ? 'Switch to 2D mode' : 'Switch to 3D isometric mode',
+                className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
+                  (show3D ? "bg-teal-500 text-white" : "bg-white/15 text-white hover:bg-white/25")
+              }, show3D ? "\u{1F310} 3D" : "\u{1F4D0} 2D"),
               // Turtle Skin selector
               React.createElement("select", {
                 value: turtleSkin,
@@ -2012,7 +2091,7 @@
                 React.createElement("textarea", {
                   'aria-label': 'Code editor',
                   value: textCode,
-                  onChange: function (e) { upd('textCode', e.target.value); },
+                  onChange: function (e) { handleTextChange(e.target.value); },
                   placeholder: "forward(50)\nright(90)\nbackward(30)\n\nrepeat(4, function() {\n  forward(100)\n  right(90)\n})\n\nsetVar('size', 50)\nchangeVar('size', 10)\n\nif(x > 250, function() {\n  left(45)\n}, function() {\n  right(45)\n})",
                   className: "w-full h-60 p-3 rounded-lg bg-slate-900 text-green-400 text-xs font-mono border border-slate-600 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 resize-none",
                   spellCheck: false
