@@ -32816,8 +32816,8 @@
         null,
 
 
-        // --- ARCHITECTURE STUDIO ---
-        stemLabTab === 'explore' && stemLabTool === 'archStudio' && (function () {
+        // --- ARCHITECTURE STUDIO --- (bypass if plugin loaded)
+        stemLabTab === 'explore' && stemLabTool === 'archStudio' && !(window.StemLab && window.StemLab.isRegistered && window.StemLab.isRegistered('archStudio')) && (function () {
           var d = (labToolData && labToolData.archStudio) || {};
           var upd = function (key, val) { setLabToolData(function (prev) { return Object.assign({}, prev, { archStudio: Object.assign({}, prev.archStudio || {}, (typeof key === 'object' ? key : (function () { var o = {}; o[key] = val; return o; })())) }); }); };
           var blocks = d.blocks || [];
@@ -46321,7 +46321,8 @@
             volume: true, numberline: true, areamodel: true,
             fractionViz: true, fractions: true,
             base10: true, moneyMath: true,
-            coordinate: true, protractor: true
+            coordinate: true, protractor: true,
+            archStudio: true, cyberDefense: true
           };
           if (!_pluginOnlyTools[stemLabTool]) return null;
 
@@ -46353,6 +46354,7 @@
             getXP: typeof getStemXP === 'function' ? getStemXP : function() { return 0; },
             announceToSR: typeof announceToSR === 'function' ? announceToSR : function() {},
             celebrate: typeof stemCelebrate === 'function' ? stemCelebrate : function() {},
+            callGemini: typeof callGemini === 'function' ? callGemini : null,
             t: typeof t === 'function' ? t : function(k) { return k; },
             icons: { ArrowLeft: ArrowLeft },
             saveSnapshot: function(toolId, label, data) {
