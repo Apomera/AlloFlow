@@ -1783,6 +1783,12 @@ const d = labToolData.wave;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, wave: { ...prev.wave, [key]: val } }));
 
           var waveMode = d.waveMode || 'free';
+          var phase2 = d.phase2 || 0;
+          var dampingEnabled = !!d.damping;
+          var dampingAlpha = d.dampingAlpha || 0.5;
+          var waveSpeedBase = d.waveSpeed || 343;
+          var wavelength = waveSpeedBase / (d.frequency || 1);
+          var waveSpeedCalc = (d.frequency || 1) * wavelength;
 
 
 
@@ -2262,6 +2268,10 @@ const d = labToolData.wave;
 
               var speed = parseFloat(canvasEl.dataset.speed || '1');
 
+              var phase2Val = parseFloat(canvasEl.dataset.phase2 || '0');
+              var dampOn = canvasEl.dataset.damping === 'true';
+              var dampAlpha = parseFloat(canvasEl.dataset.dampAlpha || '0.5');
+
               var currentMode = canvasEl.dataset.waveMode || 'free';
 
               var harmonic = parseInt(canvasEl.dataset.harmonic || '1', 10);
@@ -2399,21 +2409,14 @@ const d = labToolData.wave;
                 ctx.fillText('N=Node  ', 8 * dpr, 26 * dpr);
 
                 ctx.fillStyle = '#22c55e';
-
                 ctx.fillText('           A=Antinode', 8 * dpr, 26 * dpr);
 
-              } else {
-
+              } else if (currentMode === 'free') {
                 // Free wave mode
-
                 // Draw main wave
-
                 ctx.lineWidth = 3 * dpr;
-
                 ctx.strokeStyle = '#22d3ee';
-
                 ctx.shadowColor = '#22d3ee';
-
                 ctx.shadowBlur = 8;
 
                 ctx.beginPath();
@@ -2423,6 +2426,7 @@ const d = labToolData.wave;
                   var t = x / (cW) * Math.PI * 2 * freq - tick * 0.08 * speed;
 
                   var y = waveVal(t, waveType);
+                  if (dampOn) { y *= Math.exp(-dampAlpha * (x / cW) * 3); }
 
                   var py = cH / 2 - y * amp * dpr;
 
@@ -2518,9 +2522,10 @@ const d = labToolData.wave;
 
                   for (var x2 = 0; x2 < cW; x2++) {
 
-                    var t2 = x2 / (cW) * Math.PI * 2 * freq2 - tick * 0.03 * speed;
+                    var t2 = x2 / (cW) * Math.PI * 2 * freq2 - tick * 0.03 * speed + phase2Val;
 
                     var y2 = Math.sin(t2);
+                    if (dampOn) { y2 *= Math.exp(-dampAlpha * (x2 / cW) * 3); }
 
                     var py2 = cH / 2 - y2 * amp2 * dpr;
 
@@ -2600,6 +2605,243 @@ const d = labToolData.wave;
 
                 }
 
+              } else if (currentMode === 'ripple') {
+                // ========== 2D RIPPLE TANK MODE ==========
+                var rippleCx = cW / 2, rippleCy = cH / 2;
+                var rippleSep = parseFloat(canvasEl.dataset.rippleSeparation || '80') * dpr;
+                var src1x = rippleCx - rippleSep / 2, src2x = rippleCx + rippleSep / 2;
+                var rippleWL = Math.max(20, cW / (freq * 2));
+                var rippleDamp = parseFloat(canvasEl.dataset.dampingCoeff || '0.002');
+
+                // Draw interference pattern pixel by pixel using imageData for performance
+                var imgData = ctx.createImageData(cW, cH);
+                var data = imgData.data;
+                for (var py = 0; py < cH; py += 2) {
+                  for (var px = 0; px < cW; px += 2) {
+                    var d1 = Math.sqrt((px - src1x) * (px - src1x) + (py - rippleCy) * (py - rippleCy));
+                    var d2 = Math.sqrt((px - src2x) * (px - src2x) + (py - rippleCy) * (py - rippleCy));
+                    var v1 = amp * Math.sin(2 * Math.PI * (d1 / rippleWL - t * freq * 0.05)) * Math.exp(-rippleDamp * d1);
+                    var v2 = amp * Math.sin(2 * Math.PI * (d2 / rippleWL - t * freq * 0.05)) * Math.exp(-rippleDamp * d2);
+                    var vSum = (v1 + v2) / 2;
+                    // Map to color: blue for troughs, cyan/white for crests
+                    var bright = Math.floor(128 + vSum * 127);
+                    bright = Math.max(0, Math.min(255, bright));
+                    var idx = (py * cW + px) * 4;
+                    data[idx] = Math.floor(bright * 0.2);       // R
+                    data[idx + 1] = Math.floor(bright * 0.6);   // G
+                    data[idx + 2] = bright;                       // B
+                    data[idx + 3] = 255;                          // A
+                    // Fill 2x2 block for speed
+                    if (px + 1 < cW) { data[idx + 4] = data[idx]; data[idx + 5] = data[idx + 1]; data[idx + 6] = data[idx + 2]; data[idx + 7] = 255; }
+                    if (py + 1 < cH) {
+                      var idx2 = ((py + 1) * cW + px) * 4;
+                      data[idx2] = data[idx]; data[idx2 + 1] = data[idx + 1]; data[idx2 + 2] = data[idx + 2]; data[idx2 + 3] = 255;
+                      if (px + 1 < cW) { data[idx2 + 4] = data[idx]; data[idx2 + 5] = data[idx + 1]; data[idx2 + 6] = data[idx + 2]; data[idx2 + 7] = 255; }
+                    }
+                  }
+                }
+                ctx.putImageData(imgData, 0, 0);
+
+                // Mark sources
+                ctx.fillStyle = '#ff6b6b';
+                ctx.beginPath(); ctx.arc(src1x, rippleCy, 5 * dpr, 0, 2 * Math.PI); ctx.fill();
+                ctx.beginPath(); ctx.arc(src2x, rippleCy, 5 * dpr, 0, 2 * Math.PI); ctx.fill();
+
+                // Labels
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
+                ctx.fillText('S\u2081', src1x - 6 * dpr, rippleCy - 10 * dpr);
+                ctx.fillText('S\u2082', src2x - 6 * dpr, rippleCy - 10 * dpr);
+
+                // Legend
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillRect(4, 4, 180 * dpr, 36 * dpr);
+                ctx.fillStyle = '#67e8f9';
+                ctx.font = (7 * dpr) + 'px sans-serif';
+                ctx.fillText('2D Ripple Tank \u2014 Two-Source Interference', 8 * dpr, 14 * dpr);
+                ctx.fillText('Bright = Constructive | Dark = Destructive', 8 * dpr, 26 * dpr);
+
+              } else if (currentMode === 'longitudinal') {
+                // ========== LONGITUDINAL WAVE MODE ==========
+                var numParticles = 60;
+                var particleSpacing = cW / (numParticles + 1);
+                var longAmp = amp * 15 * dpr;
+                var midY = cH / 2;
+
+                // Draw tube outline
+                ctx.strokeStyle = 'rgba(100,200,255,0.15)';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(10, midY - 40 * dpr, cW - 20, 80 * dpr);
+
+                // Pressure graph (top)
+                ctx.strokeStyle = '#f472b6';
+                ctx.lineWidth = 2 * dpr;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                for (var lx = 0; lx < cW; lx += 2) {
+                  var pressure = -Math.cos(2 * Math.PI * (lx / cW * freq - t * freq * 0.05)) * amp * 0.5;
+                  var py_p = midY - 60 * dpr + pressure * 40 * dpr;
+                  if (lx === 0) ctx.moveTo(lx, py_p); else ctx.lineTo(lx, py_p);
+                }
+                ctx.stroke();
+
+                // Draw particles as vertical lines (density visualization)
+                for (var pi = 0; pi < numParticles; pi++) {
+                  var baseX = (pi + 1) * particleSpacing;
+                  var displacement = longAmp * Math.sin(2 * Math.PI * (baseX / cW * freq - t * freq * 0.05));
+                  var drawX = baseX + displacement;
+                  // Color by density: compressed = bright, rarefied = dim
+                  var nextDisp = pi < numParticles - 1 ? longAmp * Math.sin(2 * Math.PI * ((baseX + particleSpacing) / cW * freq - t * freq * 0.05)) : 0;
+                  var localDensity = 1 - (nextDisp - displacement) / (particleSpacing * 0.8);
+                  localDensity = Math.max(0.1, Math.min(2, localDensity));
+                  var alpha = Math.min(1, localDensity * 0.7);
+                  ctx.strokeStyle = 'rgba(96,165,250,' + alpha.toFixed(2) + ')';
+                  ctx.lineWidth = Math.max(1, localDensity * 3 * dpr);
+                  ctx.beginPath();
+                  ctx.moveTo(drawX, midY - 30 * dpr);
+                  ctx.lineTo(drawX, midY + 30 * dpr);
+                  ctx.stroke();
+                }
+
+                // Labels
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillRect(4, 4, 220 * dpr, 36 * dpr);
+                ctx.fillStyle = '#60a5fa';
+                ctx.font = (7 * dpr) + 'px sans-serif';
+                ctx.fillText('Longitudinal Wave \u2014 Compression & Rarefaction', 8 * dpr, 14 * dpr);
+                ctx.fillStyle = '#f472b6';
+                ctx.fillText('\u223F Pressure wave (top) | Particles (center)', 8 * dpr, 26 * dpr);
+
+              } else if (currentMode === 'doppler') {
+                // ========== DOPPLER EFFECT MODE ==========
+                var sourceSpeed = parseFloat(canvasEl.dataset.sourceSpeed || '0.3');
+                var midY_d = cH / 2;
+                // Source moves left to right, wrapping
+                var sourceX = ((t * sourceSpeed * 60) % (cW + 100)) - 50;
+                var waveSpeedPx = 3 * dpr;
+                var soundSpeed = parseFloat(canvasEl.dataset.waveSpeed || '343');
+
+                // Draw expanding wavefronts from source's past positions
+                ctx.lineWidth = 1;
+                var numFronts = 20;
+                for (var wf = 0; wf < numFronts; wf++) {
+                  var age = wf * 8;
+                  var emitX = sourceX - age * sourceSpeed * 60 / 60;
+                  var radius = age * waveSpeedPx;
+                  if (radius > 0 && radius < cW) {
+                    var frontAlpha = Math.max(0.05, 1 - age / (numFronts * 8));
+                    ctx.strokeStyle = 'rgba(96,165,250,' + frontAlpha.toFixed(2) + ')';
+                    ctx.beginPath();
+                    ctx.arc(emitX, midY_d, radius, 0, 2 * Math.PI);
+                    ctx.stroke();
+                  }
+                }
+
+                // Draw source
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath(); ctx.arc(sourceX, midY_d, 8 * dpr, 0, 2 * Math.PI); ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold ' + (6 * dpr) + 'px sans-serif';
+                ctx.fillText('S', sourceX - 3 * dpr, midY_d + 2 * dpr);
+
+                // Draw observer (right side)
+                var obsX = cW - 40 * dpr;
+                ctx.fillStyle = '#22c55e';
+                ctx.beginPath(); ctx.arc(obsX, midY_d, 8 * dpr, 0, 2 * Math.PI); ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.fillText('O', obsX - 3 * dpr, midY_d + 2 * dpr);
+
+                // Frequency display
+                var mach = sourceSpeed;
+                var approachFreq = (freq / (1 - Math.min(mach, 0.95))).toFixed(1);
+                var recedeFreq = (freq / (1 + mach)).toFixed(1);
+
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillRect(4, 4, 260 * dpr, 52 * dpr);
+                ctx.fillStyle = '#67e8f9';
+                ctx.font = (7 * dpr) + 'px sans-serif';
+                ctx.fillText('Doppler Effect \u2014 Source speed: ' + (mach * 100).toFixed(0) + '% of sound', 8 * dpr, 14 * dpr);
+                ctx.fillStyle = '#f87171';
+                ctx.fillText('Approaching f\u2032 = ' + approachFreq + ' Hz (compressed)', 8 * dpr, 26 * dpr);
+                ctx.fillStyle = '#60a5fa';
+                ctx.fillText('Receding f\u2032 = ' + recedeFreq + ' Hz (stretched)', 8 * dpr, 38 * dpr);
+                ctx.fillStyle = '#a78bfa';
+                ctx.fillText('f\u2080 = ' + freq.toFixed(1) + ' Hz | v_s = ' + soundSpeed + ' m/s', 8 * dpr, 50 * dpr);
+
+              } else if (currentMode === 'spectrum') {
+                // ========== FFT / SPECTRUM MODE ==========
+                var midY_s = cH / 2;
+                var barCount = 32;
+                var barW = (cW - 40) / barCount;
+
+                // Time-domain waveform (top half)
+                ctx.strokeStyle = '#60a5fa';
+                ctx.lineWidth = 2 * dpr;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                for (var sx = 0; sx < cW; sx += 2) {
+                  var sv = amp * Math.sin(2 * Math.PI * (sx / cW * freq - t * freq * 0.05));
+                  if (showSecond) sv += amp2 * Math.sin(2 * Math.PI * (sx / cW * freq2 - t * freq2 * 0.05));
+                  var sy = midY_s * 0.5 + sv * midY_s * 0.35;
+                  if (sx === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+                }
+                ctx.stroke();
+
+                // Divider line
+                ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(0, midY_s); ctx.lineTo(cW, midY_s); ctx.stroke();
+
+                // Frequency domain bars (bottom half)
+                var maxFreqDisp = Math.max(freq * 3, 1000);
+                var freqBin = maxFreqDisp / barCount;
+                for (var bi = 0; bi < barCount; bi++) {
+                  var binCenterFreq = (bi + 0.5) * freqBin;
+                  // Calculate magnitude: peaks at fundamental frequencies
+                  var mag = 0;
+                  var spread = freqBin * 0.8;
+                  mag += amp * Math.exp(-Math.pow(binCenterFreq - freq, 2) / (2 * spread * spread));
+                  // Add harmonics
+                  mag += amp * 0.3 * Math.exp(-Math.pow(binCenterFreq - freq * 2, 2) / (2 * spread * spread));
+                  mag += amp * 0.15 * Math.exp(-Math.pow(binCenterFreq - freq * 3, 2) / (2 * spread * spread));
+                  if (showSecond) {
+                    mag += amp2 * Math.exp(-Math.pow(binCenterFreq - freq2, 2) / (2 * spread * spread));
+                    mag += amp2 * 0.3 * Math.exp(-Math.pow(binCenterFreq - freq2 * 2, 2) / (2 * spread * spread));
+                  }
+                  // Animate with slight jitter
+                  mag *= (0.9 + 0.1 * Math.sin(t * 2 + bi));
+
+                  var barH = Math.min(midY_s - 20, mag * midY_s * 0.8);
+                  var barX = 20 + bi * barW;
+                  var barY = cH - 10 - barH;
+
+                  // Gradient color based on frequency
+                  var hue = (bi / barCount) * 270;
+                  ctx.fillStyle = 'hsla(' + hue + ', 80%, 60%, 0.85)';
+                  ctx.fillRect(barX, barY, barW - 2, barH);
+
+                  // Glow cap
+                  ctx.fillStyle = 'hsla(' + hue + ', 90%, 80%, 0.9)';
+                  ctx.fillRect(barX, barY, barW - 2, 3 * dpr);
+                }
+
+                // Frequency axis labels
+                ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                ctx.font = (5 * dpr) + 'px sans-serif';
+                for (var fl = 0; fl < 5; fl++) {
+                  var fLabel = Math.round(fl * maxFreqDisp / 4);
+                  ctx.fillText(fLabel + ' Hz', 20 + fl * (cW - 40) / 4, cH - 2);
+                }
+
+                // Labels
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillRect(4, 4, 230 * dpr, 36 * dpr);
+                ctx.fillStyle = '#60a5fa';
+                ctx.font = (7 * dpr) + 'px sans-serif';
+                ctx.fillText('Spectrum Analyzer \u2014 Time \u2192 Frequency Domain', 8 * dpr, 14 * dpr);
+                ctx.fillStyle = '#c084fc';
+                ctx.fillText('Top: Waveform | Bottom: Frequency Spectrum (FFT)', 8 * dpr, 26 * dpr);
+
               }
 
               // Wavelength annotation
@@ -2628,7 +2870,7 @@ const d = labToolData.wave;
 
                   ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
 
-                  ctx.fillText('\u03BB = ' + (1 / freq).toFixed(2) + ' m', 10 + wavelengthPx / 2 - 20 * dpr, arrowY - 5 * dpr);
+                  var canvasWL = parseFloat(canvasEl.dataset.waveSpeed || '343') / freq; ctx.fillText('\u03BB = ' + canvasWL.toFixed(1) + ' m', 10 + wavelengthPx / 2 - 20 * dpr, arrowY - 5 * dpr);
 
                 }
 
@@ -2824,9 +3066,9 @@ const d = labToolData.wave;
 
             React.createElement("div", { className: "flex gap-2 mb-3" },
 
-              [['free', '\uD83C\uDF0A Free Wave'], ['standing', '\uD83C\uDFB8 Standing Wave']].map(function (m) {
+              [['free', '\uD83C\uDF0A Free Wave'], ['standing', '\uD83C\uDFB8 Standing'], ['ripple', '\uD83D\uDCA7 Ripple Tank'], ['longitudinal', '\u2261 Longitudinal'], ['doppler', '\uD83D\uDE97 Doppler'], ['spectrum', '\uD83D\uDCCA Spectrum']].map(function (m) {
 
-                return React.createElement("button", { key: m[0], onClick: function () { upd('waveMode', m[0]); }, className: "px-4 py-1.5 rounded-lg text-xs font-bold transition-all " + (waveMode === m[0] ? 'bg-cyan-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50') }, m[1]);
+                return React.createElement("button", { key: m[0], onClick: function () { upd('waveMode', m[0]); }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (waveMode === m[0] ? 'bg-cyan-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50') }, m[1]);
 
               }),
 
@@ -2861,6 +3103,10 @@ const d = labToolData.wave;
                 "data-wave-mode": waveMode,
 
                 "data-harmonic": d.harmonic || 1,
+                "data-phase2": d.phase2 || 0,
+                "data-damping": dampingEnabled ? 'true' : 'false',
+                "data-damp-alpha": d.dampingAlpha || 0.5,
+                "data-wave-speed": d.waveSpeed || 343,
 
                 "data-target-amp": d.matchTarget ? d.matchTarget.amp : 0,
 
@@ -2952,15 +3198,17 @@ const d = labToolData.wave;
 
                 { k: 'speed', label: '\u23E9 Speed', min: 0.1, max: 5, step: 0.1 },
 
+                { k: 'waveSpeed', label: '\uD83C\uDF0D Medium v (m/s)', min: 50, max: 1500, step: 10 },
+
               ].map(s =>
 
                 React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
 
                   React.createElement("label", { className: "text-[10px] font-bold text-slate-500 block" }, s.label),
 
-                  React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k] || (s.k === 'speed' ? 1 : d[s.k])),
+                  React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : d[s.k])),
 
-                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || (s.k === 'speed' ? 1 : 0), onChange: function (e) { var v = parseFloat(e.target.value); upd(s.k, v); if (s.k === 'amplitude' || s.k === 'frequency') { checkWaveMatch(s.k === 'amplitude' ? v : d.amplitude, s.k === 'frequency' ? v : d.frequency); } }, className: "w-full accent-cyan-600" })
+                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : 0), onChange: function (e) { var v = parseFloat(e.target.value); upd(s.k, v); if (s.k === 'amplitude' || s.k === 'frequency') { checkWaveMatch(s.k === 'amplitude' ? v : d.amplitude, s.k === 'frequency' ? v : d.frequency); } }, className: "w-full accent-cyan-600" })
 
                 )
 
@@ -2968,9 +3216,9 @@ const d = labToolData.wave;
 
             ),
 
-            // Second wave (free mode only)
+            // Second wave (free & spectrum mode)
 
-            waveMode === 'free' && React.createElement("div", { className: "flex items-center gap-3 mb-3 p-2 bg-pink-50 rounded-lg border border-pink-200" },
+            (waveMode === 'free' || waveMode === 'spectrum') && React.createElement("div", { className: "flex items-center gap-3 mb-3 p-2 bg-pink-50 rounded-lg border border-pink-200" },
 
               React.createElement("label", { className: "text-xs font-bold text-pink-700 flex items-center gap-1.5 cursor-pointer" },
 
@@ -3000,9 +3248,87 @@ const d = labToolData.wave;
 
                   React.createElement("span", { className: "text-[10px] text-pink-700 font-bold" }, d.frequency2 || 3)
 
+                ),
+
+                React.createElement("div", { className: "flex items-center gap-1" },
+
+                  React.createElement("span", { className: "text-[10px] text-pink-500 font-bold" }, "\u03C6\u2082:"),
+
+                  React.createElement("input", { type: "range", min: 0, max: 6.28, step: 0.1, value: d.phase2 || 0, onChange: e => upd('phase2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
+
+                  React.createElement("span", { className: "text-[10px] text-pink-700 font-bold" }, ((d.phase2 || 0) / Math.PI).toFixed(1) + "\u03C0")
+
                 )
 
               )
+
+            ),
+
+            // Damping toggle (free mode only)
+
+            waveMode === 'free' && React.createElement("div", { className: "flex items-center gap-3 mb-3 p-2 bg-amber-50 rounded-lg border border-amber-200" },
+
+              React.createElement("label", { className: "text-xs font-bold text-amber-700 flex items-center gap-1.5 cursor-pointer" },
+
+                React.createElement("input", { type: "checkbox", checked: !!d.damping, onChange: e => upd('damping', e.target.checked), className: "accent-amber-600" }),
+
+                "\uD83C\uDF0A Damping (Exponential Decay)"
+
+              ),
+
+              d.damping && React.createElement("div", { className: "flex items-center gap-1" },
+
+                React.createElement("span", { className: "text-[10px] text-amber-500 font-bold" }, "\u03B1:"),
+
+                React.createElement("input", { type: "range", min: 0.1, max: 2.0, step: 0.1, value: d.dampingAlpha || 0.5, onChange: e => upd('dampingAlpha', parseFloat(e.target.value)), className: "w-20 accent-amber-500" }),
+
+                React.createElement("span", { className: "text-[10px] text-amber-700 font-bold" }, (d.dampingAlpha || 0.5).toFixed(1))
+
+              )
+
+            ),
+
+            // Ripple Tank custom controls
+
+            waveMode === 'ripple' && React.createElement("div", { className: "flex items-center flex-wrap gap-4 mb-3 p-2 bg-indigo-50 rounded-lg border border-indigo-200" },
+
+              React.createElement("div", { className: "flex items-center gap-2" },
+
+                React.createElement("span", { className: "text-xs font-bold text-indigo-700" }, "Source Separation:"),
+
+                React.createElement("input", { type: "range", min: 20, max: 200, step: 5, value: d.rippleSeparation || 80, onChange: e => upd('rippleSeparation', parseFloat(e.target.value)), className: "w-24 accent-indigo-600" }),
+
+                React.createElement("span", { className: "text-xs text-indigo-900 font-bold w-6" }, d.rippleSeparation || 80)
+
+              ),
+
+              React.createElement("div", { className: "flex items-center gap-2" },
+
+                React.createElement("span", { className: "text-xs font-bold text-indigo-700" }, "Medium Damping:"),
+
+                React.createElement("input", { type: "range", min: 0.000, max: 0.010, step: 0.001, value: d.dampingCoeff !== undefined ? d.dampingCoeff : 0.002, onChange: e => upd('dampingCoeff', parseFloat(e.target.value)), className: "w-24 accent-indigo-600" }),
+
+                React.createElement("span", { className: "text-xs text-indigo-900 font-bold w-12" }, (d.dampingCoeff !== undefined ? d.dampingCoeff : 0.002).toFixed(3))
+
+              )
+
+            ),
+
+            // Doppler specific controls
+
+            waveMode === 'doppler' && React.createElement("div", { className: "flex items-center gap-3 mb-3 p-2 bg-rose-50 rounded-lg border border-rose-200" },
+
+              React.createElement("label", { className: "text-xs font-bold text-rose-700 flex items-center gap-2" },
+
+                "Source Speed (v\u209B):",
+
+                React.createElement("input", { type: "range", min: 0.0, max: 0.95, step: 0.05, value: d.sourceSpeed !== undefined ? d.sourceSpeed : 0.3, onChange: e => upd('sourceSpeed', parseFloat(e.target.value)), className: "w-32 accent-rose-600" }),
+
+                React.createElement("span", { className: "inline-block w-8 text-right" }, Math.round((d.sourceSpeed !== undefined ? d.sourceSpeed : 0.3) * 100) + "%")
+
+              ),
+
+              React.createElement("span", { className: "text-[10px] text-rose-500" }, "of sound speed (Mach number)")
 
             ),
 
@@ -3059,7 +3385,6 @@ const d = labToolData.wave;
                       ? React.createElement("span", {className: "text-[9px] font-bold text-emerald-400 bg-emerald-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, "\u2705 " + pct + "% match") 
 
                       : React.createElement("span", {className: "text-[9px] font-bold text-amber-400 bg-amber-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, pct + "% match");
-
                   })()
 
               ),
@@ -3076,7 +3401,7 @@ const d = labToolData.wave;
 
                   ? 'Standing wave \u2014 superposition of two traveling waves. A = Amplitude, n = Harmonic' 
 
-                  : 'A = ' + d.amplitude + ', f = ' + d.frequency + ' Hz, \u03BB = ' + (1 / d.frequency).toFixed(2) + ' m, T = ' + (1 / d.frequency).toFixed(3) + ' s'
+                  : 'A = ' + d.amplitude + ', f = ' + d.frequency + ' Hz, \u03BB = ' + wavelength.toFixed(1) + ' m, T = ' + (1 / d.frequency).toFixed(3) + ' s'
 
               )
 
@@ -3090,7 +3415,7 @@ const d = labToolData.wave;
 
                 React.createElement("p", { className: "text-[9px] font-bold text-cyan-600 uppercase" }, "Wavelength \u03BB"),
 
-                React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, (1 / d.frequency).toFixed(2) + " m")
+                React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, wavelength.toFixed(1) + " m")
 
               ),
 
@@ -3104,9 +3429,9 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
 
-                React.createElement("p", { className: "text-[9px] font-bold text-cyan-600 uppercase" }, "Wave Speed"),
+                React.createElement("p", { className: "text-[9px] font-bold text-cyan-600 uppercase" }, "Wave Speed v"),
 
-                React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, ((1 / d.frequency) * d.frequency).toFixed(1) + " m/s")
+                React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, waveSpeedCalc.toFixed(0) + " m/s")
 
               ),
 
