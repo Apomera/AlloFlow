@@ -93,7 +93,8 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_angles.js',
     'stem_lab/stem_tool_archstudio.js',
     'stem_lab/stem_tool_cyberdefense.js',
-    'stem_lab/stem_tool_physics.js'
+    'stem_lab/stem_tool_physics.js',
+    'stem_lab/stem_tool_watercycle.js'
 ];
 
 // ── Read source ─────────────────────────────────────────────────
