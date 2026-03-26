@@ -72,6 +72,11 @@ const MODULES = [
         name: 'StudentAnalytics',
         filename: 'student_analytics_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'SymbolStudio',
+        filename: 'symbol_studio_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 
@@ -95,7 +100,8 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_cyberdefense.js',
     'stem_lab/stem_tool_physics.js',
     'stem_lab/stem_tool_watercycle.js',
-    'stem_lab/stem_tool_rocks.js'
+    'stem_lab/stem_tool_rocks.js',
+    'stem_lab/stem_tool_dissection.js'
 ];
 
 // ── Read source ─────────────────────────────────────────────────

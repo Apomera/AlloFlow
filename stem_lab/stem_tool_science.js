@@ -1,10 +1,10 @@
-// ═══════════════════════════════════════════
-// stem_tool_science.js — STEM Lab Science Tools
+﻿// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// stem_tool_science.js â€” STEM Lab Science Tools
 // 29 registered tools
 // Auto-extracted (Phase 2 modularization)
-// ═══════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-// ═══ Defensive StemLab guard ═══
+// â•â•â• Defensive StemLab guard â•â•â•
 // Ensure window.StemLab is available before registering tools.
 // If stem_lab_module.js hasn't loaded yet, create the registry stub.
 window.StemLab = window.StemLab || {
@@ -28,21 +28,21 @@ window.StemLab = window.StemLab || {
     try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
   }
 };
-// ═══ End Guard ═══
+// â•â•â• End Guard â•â•â•
 
 (function() {
   'use strict';
 
-  // ═══ 🔬 volume (volume) ═══
+  // â•â•â• ðŸ”¬ volume (volume) â•â•â•
   /* volume tool extracted to stem_tool_volume.js */
   window.StemLab.registerTool('cell', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'cell',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -75,7 +75,7 @@ window.StemLab = window.StemLab || {
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (cell) ──
+      // â”€â”€ Tool body (cell) â”€â”€
       return (function() {
 var d = labToolData.cell;
 
@@ -83,7 +83,7 @@ var d = labToolData.cell;
 
 
 
-          // ── Organism definitions ──
+          // â”€â”€ Organism definitions â”€â”€
 
           var ORGANISMS = [
 
@@ -309,7 +309,7 @@ var d = labToolData.cell;
 
 
 
-          // ── Quiz questions (observation-based) ──
+          // â”€â”€ Quiz questions (observation-based) â”€â”€
 
           var QUIZ_BANK = [
 
@@ -339,11 +339,11 @@ var d = labToolData.cell;
 
             { q: 'Which organism has a cell wall made of glass (silica)?', a: 'diatom', hint: 'Look for the geometric, crystalline-looking one.' },
 
-            { q: 'What organism forms hollow spheres of thousands of cells?', a: 'volvox', hint: 'A rotating green colony — its name means "fierce roller."' },
+            { q: 'What organism forms hollow spheres of thousands of cells?', a: 'volvox', hint: 'A rotating green colony â€” its name means "fierce roller."' },
 
-            { q: 'Which organism can regenerate from tiny fragments?', a: 'stentor', hint: 'The trumpet-shaped one — one of the largest single cells.' },
+            { q: 'Which organism can regenerate from tiny fragments?', a: 'stentor', hint: 'The trumpet-shaped one â€” one of the largest single cells.' },
 
-            { q: 'What organism can survive in outer space?', a: 'tardigrade', options: ['tardigrade', 'amoeba', 'bacterium', 'paramecium'], hint: 'Also called a water bear — nearly indestructible!' },
+            { q: 'What organism can survive in outer space?', a: 'tardigrade', options: ['tardigrade', 'amoeba', 'bacterium', 'paramecium'], hint: 'Also called a water bear â€” nearly indestructible!' },
 
             { q: 'Which bacterium moves with a corkscrew spiral motion?', a: 'spirillum', hint: 'Look for the spiral orange one spinning through the medium.' }
 
@@ -351,7 +351,7 @@ var d = labToolData.cell;
 
 
 
-          // ── Canvas ref callback for simulation ──
+          // â”€â”€ Canvas ref callback for simulation â”€â”€
 
           var canvasRefCb = function (canvasEl) {
 
@@ -1401,7 +1401,7 @@ var d = labToolData.cell;
 
 
 
-            // ── Helper: convert any CSS color to rgba string ──
+            // â”€â”€ Helper: convert any CSS color to rgba string â”€â”€
 
             function hexToRgba(hex, alpha) {
 
@@ -1423,19 +1423,19 @@ var d = labToolData.cell;
 
 
 
-            // ── Smoothed label positions (persist across frames) ──
+            // â”€â”€ Smoothed label positions (persist across frames) â”€â”€
 
             var _labelPositions = {};
 
 
 
-            // ── Organelle label hit regions for click-to-explain ──
+            // â”€â”€ Organelle label hit regions for click-to-explain â”€â”€
 
             var _labelHitRegions = [];
 
 
 
-            // ── Organelle labels (floating pills with leader lines) ──
+            // â”€â”€ Organelle labels (floating pills with leader lines) â”€â”€
 
             function drawOrganelleLabels(o) {
 
@@ -1495,7 +1495,7 @@ var d = labToolData.cell;
 
                 var sy = p.y + ry;
 
-                // Target label position — pushed outward from center
+                // Target label position â€” pushed outward from center
 
                 var labelDist = sz * 1.5 + fontSize * 2;
 
@@ -1529,7 +1529,7 @@ var d = labToolData.cell;
 
 
 
-                // ── Leader line (visible, animated) ──
+                // â”€â”€ Leader line (visible, animated) â”€â”€
 
                 // Glow line (thicker, subtle)
 
@@ -1545,7 +1545,7 @@ var d = labToolData.cell;
 
                 ctx.stroke();
 
-                // Main leader line — solid with flowing dash overlay
+                // Main leader line â€” solid with flowing dash overlay
 
                 ctx.beginPath();
 
@@ -1775,7 +1775,7 @@ var d = labToolData.cell;
 
                 } else if (def.id === 'stentor') {
 
-                  // Realistic filter-feeding behaviour: drift ➜ anchor ➜ feed ➜ escape
+                  // Realistic filter-feeding behaviour: drift âžœ anchor âžœ feed âžœ escape
 
                   if (!o._stentorTimer) o._stentorTimer = Math.floor(Math.random() * 300);
 
@@ -1817,7 +1817,7 @@ var d = labToolData.cell;
 
                   } else if (stCycle < 350) {
 
-                    // Drifting phase — slow purposeful glide seeking attachment site
+                    // Drifting phase â€” slow purposeful glide seeking attachment site
 
                     if (stCycle === 0 || stCycle % 140 === 0) {
 
@@ -1837,7 +1837,7 @@ var d = labToolData.cell;
 
                   } else {
 
-                    // Feeding pause — anchored, body pulses as cilia create feeding currents
+                    // Feeding pause â€” anchored, body pulses as cilia create feeding currents
 
                     o.vx *= 0.88; o.vy *= 0.88;
 
@@ -1861,7 +1861,7 @@ var d = labToolData.cell;
 
                 } else if (def.id === 'spirillum') {
 
-                  // Corkscrew movement — smooth spiraling path using sine-based steering
+                  // Corkscrew movement â€” smooth spiraling path using sine-based steering
 
                   var spSteer = Math.sin(world.tick * 0.04 + o.phase) * 0.04;
 
@@ -1875,7 +1875,7 @@ var d = labToolData.cell;
 
                 } else if (def.id === 'diatom') {
 
-                  // Gentle drift — simulate water currents
+                  // Gentle drift â€” simulate water currents
 
                   o.vx += Math.sin(world.tick * 0.005 + o.phase) * 0.005;
 
@@ -1883,7 +1883,7 @@ var d = labToolData.cell;
 
                 } else if (def.id === 'tardigrade') {
 
-                  // Slow purposeful walk — smooth sine-based wandering
+                  // Slow purposeful walk â€” smooth sine-based wandering
 
                   o.vx += Math.sin(world.tick * 0.012 + o.phase) * 0.012;
 
@@ -1895,7 +1895,7 @@ var d = labToolData.cell;
 
                 } else {
 
-                  // Random walk — smoothed with velocity damping instead of raw noise
+                  // Random walk â€” smoothed with velocity damping instead of raw noise
 
                   o.vx += Math.sin(world.tick * 0.02 + o.phase) * 0.02 + (Math.random() - 0.5) * 0.01;
 
@@ -1903,7 +1903,7 @@ var d = labToolData.cell;
 
                 }
 
-                // Velocity damping — reduces jitter across all organisms
+                // Velocity damping â€” reduces jitter across all organisms
 
                 o.vx *= 0.97; o.vy *= 0.97;
 
@@ -2009,7 +2009,7 @@ var d = labToolData.cell;
 
 
 
-              // ── Microscope slide background ──
+              // â”€â”€ Microscope slide background â”€â”€
 
               var bgGrad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
 
@@ -2051,7 +2051,7 @@ var d = labToolData.cell;
 
 
 
-              // ── Fine grid lines ──
+              // â”€â”€ Fine grid lines â”€â”€
 
               ctx.strokeStyle = 'rgba(148,163,184,0.1)'; ctx.lineWidth = 0.5 * dpr;
 
@@ -2081,7 +2081,7 @@ var d = labToolData.cell;
 
 
 
-              // ── Floating out-of-focus debris (depth-of-field) ──
+              // â”€â”€ Floating out-of-focus debris (depth-of-field) â”€â”€
 
               if (!world._debris) {
 
@@ -2115,7 +2115,7 @@ var d = labToolData.cell;
 
 
 
-              // ── Light zones (warm glow) ──
+              // â”€â”€ Light zones (warm glow) â”€â”€
 
               world.lightZones.forEach(function (lz) {
 
@@ -2145,7 +2145,7 @@ var d = labToolData.cell;
 
 
 
-              // ── Food particles (organic gradient) ──
+              // â”€â”€ Food particles (organic gradient) â”€â”€
 
               world.food.forEach(function (f) {
 
@@ -2177,7 +2177,7 @@ var d = labToolData.cell;
 
 
 
-              // ── Extracellular Matrix Fibers (collagen-like strands in culture medium) ──
+              // â”€â”€ Extracellular Matrix Fibers (collagen-like strands in culture medium) â”€â”€
 
               if (!world._ecmFibers) {
 
@@ -2245,7 +2245,7 @@ var d = labToolData.cell;
 
 
 
-              // ── Vesicle Transport (tiny membrane vesicles drifting between organisms) ──
+              // â”€â”€ Vesicle Transport (tiny membrane vesicles drifting between organisms) â”€â”€
 
               if (!world._vesicles) {
 
@@ -2371,7 +2371,7 @@ var d = labToolData.cell;
 
 
 
-              // ── Click-to-explain tooltip ──
+              // â”€â”€ Click-to-explain tooltip â”€â”€
 
               if (world._tooltip) {
 
@@ -2505,7 +2505,7 @@ var d = labToolData.cell;
 
 
 
-              // ── Enhanced Microscope Vignette Overlay ──
+              // â”€â”€ Enhanced Microscope Vignette Overlay â”€â”€
 
               // Circular vignette
 
@@ -2571,7 +2571,7 @@ var d = labToolData.cell;
 
 
 
-              // ── Onboarding hint: "Click an organism to explore" ──
+              // â”€â”€ Onboarding hint: "Click an organism to explore" â”€â”€
 
               if (!selectedOrg && !playAsOrg && world.tick < 600) {
 
@@ -2639,7 +2639,7 @@ var d = labToolData.cell;
 
 
 
-              // ── Hover tooltip: "Click to explore" near hovered organism ──
+              // â”€â”€ Hover tooltip: "Click to explore" near hovered organism â”€â”€
 
               if (hoveredOrg && !selectedOrg && !playAsOrg) {
 
@@ -2707,7 +2707,7 @@ var d = labToolData.cell;
 
 
 
-              // ── Magnification label (glassmorphic) ──
+              // â”€â”€ Magnification label (glassmorphic) â”€â”€
 
               var mag = Math.round(40 * cam.zoom);
 
@@ -2747,7 +2747,7 @@ var d = labToolData.cell;
 
 
 
-              // ── Player energy bar (enhanced) ──
+              // â”€â”€ Player energy bar (enhanced) â”€â”€
 
               if (playAsOrg) {
 
@@ -2869,7 +2869,7 @@ var d = labToolData.cell;
 
             animId = requestAnimationFrame(loop);
 
-            // Restart method — revives a dead loop
+            // Restart method â€” revives a dead loop
 
             canvasEl._cellSimRestart = function () {
 
@@ -3087,7 +3087,7 @@ var d = labToolData.cell;
 
 
 
-          // ── Cleanup on unmount ──
+          // â”€â”€ Cleanup on unmount â”€â”€
 
           // Only run cleanup when truly leaving the cell tool, not on re-renders
 
@@ -3109,7 +3109,7 @@ var d = labToolData.cell;
 
 
 
-          // ── Quiz logic ──
+          // â”€â”€ Quiz logic â”€â”€
 
           var quizQuestion = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? QUIZ_BANK[d.quizIdx || 0] : null;
 
@@ -3199,7 +3199,7 @@ var d = labToolData.cell;
 
               ),
 
-              // ── Play mode instructions overlay ──
+              // â”€â”€ Play mode instructions overlay â”€â”€
 
               d.playAsOrganism && d.showPlayInstructions !== false && (() => {
 
@@ -3213,23 +3213,23 @@ var d = labToolData.cell;
 
                   amoeba: { pred: 'Paramecium & WBCs', warn: 'Larger cells may engulf you!' },
 
-                  paramecium: { pred: 'Stentor', warn: 'Stentor creates vortex currents — avoid its trumpet-shaped mouth!' },
+                  paramecium: { pred: 'Stentor', warn: 'Stentor creates vortex currents â€” avoid its trumpet-shaped mouth!' },
 
                   euglena: { pred: 'Amoeba & Paramecium', warn: 'They can engulf small protists. Stay in the light!' },
 
-                  wbc: { pred: 'None — you are the hunter!', warn: 'Your targets are bacteria. Failure to catch them lets infection spread.' },
+                  wbc: { pred: 'None â€” you are the hunter!', warn: 'Your targets are bacteria. Failure to catch them lets infection spread.' },
 
                   bacterium: { pred: 'WBCs & Amoeba', warn: 'White blood cells will chase and engulf you!' },
 
-                  plantcell: { pred: 'None — you are stationary', warn: 'Explore your organelles up close.' },
+                  plantcell: { pred: 'None â€” you are stationary', warn: 'Explore your organelles up close.' },
 
                   diatom: { pred: 'Copepods & Ciliates', warn: 'Filter-feeders may sweep you up!' },
 
                   volvox: { pred: 'Rotifers', warn: 'Stay together with your colony!' },
 
-                  stentor: { pred: 'None — apex filter feeder!', warn: 'Anchor and create food vortices.' },
+                  stentor: { pred: 'None â€” apex filter feeder!', warn: 'Anchor and create food vortices.' },
 
-                  tardigrade: { pred: 'None — nearly indestructible', warn: 'You can survive extreme conditions!' },
+                  tardigrade: { pred: 'None â€” nearly indestructible', warn: 'You can survive extreme conditions!' },
 
                   spirillum: { pred: 'WBCs & Bacteriophages', warn: 'Immune cells are hunting you!' }
 
@@ -3335,7 +3335,7 @@ var d = labToolData.cell;
 
                         style: { background: 'linear-gradient(135deg, ' + org.color + ', ' + org.color + 'cc)' }
 
-                      }, "\uD83D\uDE80 Got it — Let's Go!")
+                      }, "\uD83D\uDE80 Got it â€” Let's Go!")
 
                     )
 
@@ -3453,7 +3453,7 @@ var d = labToolData.cell;
 
               ),
 
-              // Facts — always visible
+              // Facts â€” always visible
 
               React.createElement("div", { className: "mt-2 grid grid-cols-1 gap-0.5" },
 
@@ -3630,15 +3630,15 @@ var d = labToolData.cell;
 
   // physics: EXTRACTED to stem_tool_physics.js (standalone plugin)
 
-  // ═══ 🔬 chemBalance (chemBalance) ═══
+  // â•â•â• ðŸ”¬ chemBalance (chemBalance) â•â•â•
   window.StemLab.registerTool('chemBalance', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'chemBalance',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -3671,7 +3671,7 @@ var d = labToolData.cell;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (chemBalance) ──
+      // â”€â”€ Tool body (chemBalance) â”€â”€
       return (function() {
 const d = labToolData.chemBalance;
 
@@ -4063,7 +4063,7 @@ const d = labToolData.chemBalance;
 
             ),
 
-            // ── Chemistry Concept Quiz ──
+            // â”€â”€ Chemistry Concept Quiz â”€â”€
 
             (() => {
 
@@ -4077,25 +4077,25 @@ const d = labToolData.chemBalance;
 
                 var bank = [
 
-                  { q: 'What type of reaction is: 2H₂ + O₂ → 2H₂O?', a: 'Synthesis', opts: ['Synthesis', 'Decomposition', 'Single Replacement', 'Double Replacement'], explain: 'Two reactants combine to form one product (A + B → AB)' },
+                  { q: 'What type of reaction is: 2Hâ‚‚ + Oâ‚‚ â†’ 2Hâ‚‚O?', a: 'Synthesis', opts: ['Synthesis', 'Decomposition', 'Single Replacement', 'Double Replacement'], explain: 'Two reactants combine to form one product (A + B â†’ AB)' },
 
-                  { q: 'What type of reaction is: CaCO₃ → CaO + CO₂?', a: 'Decomposition', opts: ['Synthesis', 'Decomposition', 'Combustion', 'Single Replacement'], explain: 'One compound breaks into two or more products (AB → A + B)' },
+                  { q: 'What type of reaction is: CaCOâ‚ƒ â†’ CaO + COâ‚‚?', a: 'Decomposition', opts: ['Synthesis', 'Decomposition', 'Combustion', 'Single Replacement'], explain: 'One compound breaks into two or more products (AB â†’ A + B)' },
 
-                  { q: 'What type of reaction is: CH₄ + 2O₂ → CO₂ + 2H₂O?', a: 'Combustion', opts: ['Synthesis', 'Decomposition', 'Combustion', 'Acid-Base'], explain: 'A hydrocarbon reacts with O₂ to produce CO₂ and H₂O' },
+                  { q: 'What type of reaction is: CHâ‚„ + 2Oâ‚‚ â†’ COâ‚‚ + 2Hâ‚‚O?', a: 'Combustion', opts: ['Synthesis', 'Decomposition', 'Combustion', 'Acid-Base'], explain: 'A hydrocarbon reacts with Oâ‚‚ to produce COâ‚‚ and Hâ‚‚O' },
 
-                  { q: 'What type of reaction is: Zn + CuSO₄ → ZnSO₄ + Cu?', a: 'Single Replacement', opts: ['Synthesis', 'Combustion', 'Single Replacement', 'Double Replacement'], explain: 'One element replaces another in a compound (A + BC → AC + B)' },
+                  { q: 'What type of reaction is: Zn + CuSOâ‚„ â†’ ZnSOâ‚„ + Cu?', a: 'Single Replacement', opts: ['Synthesis', 'Combustion', 'Single Replacement', 'Double Replacement'], explain: 'One element replaces another in a compound (A + BC â†’ AC + B)' },
 
-                  { q: 'What type of reaction is: HCl + NaOH → NaCl + H₂O?', a: 'Double Replacement', opts: ['Combustion', 'Single Replacement', 'Double Replacement', 'Decomposition'], explain: 'Two compounds exchange partners (AB + CD → AD + CB)' },
+                  { q: 'What type of reaction is: HCl + NaOH â†’ NaCl + Hâ‚‚O?', a: 'Double Replacement', opts: ['Combustion', 'Single Replacement', 'Double Replacement', 'Decomposition'], explain: 'Two compounds exchange partners (AB + CD â†’ AD + CB)' },
 
                   { q: 'In a balanced equation, what is always conserved?', a: 'Mass (atoms)', opts: ['Mass (atoms)', 'Molecules', 'Volume', 'Energy only'], explain: 'Law of Conservation of Mass: atoms are neither created nor destroyed' },
 
-                  { q: 'To balance Fe + O₂ → Fe₂O₃, what coefficient goes in front of Fe?', a: '4', opts: ['1', '2', '3', '4'], explain: '4Fe + 3O₂ → 2Fe₂O₃ gives 4 Fe and 6 O on each side' },
+                  { q: 'To balance Fe + Oâ‚‚ â†’ Feâ‚‚Oâ‚ƒ, what coefficient goes in front of Fe?', a: '4', opts: ['1', '2', '3', '4'], explain: '4Fe + 3Oâ‚‚ â†’ 2Feâ‚‚Oâ‚ƒ gives 4 Fe and 6 O on each side' },
 
-                  { q: 'To balance N₂ + H₂ → NH₃, what coefficient goes in front of NH₃?', a: '2', opts: ['1', '2', '3', '4'], explain: 'N₂ + 3H₂ → 2NH₃ gives 2 N and 6 H on each side' },
+                  { q: 'To balance Nâ‚‚ + Hâ‚‚ â†’ NHâ‚ƒ, what coefficient goes in front of NHâ‚ƒ?', a: '2', opts: ['1', '2', '3', '4'], explain: 'Nâ‚‚ + 3Hâ‚‚ â†’ 2NHâ‚ƒ gives 2 N and 6 H on each side' },
 
-                  { q: 'What is the correct balanced form of: Al + O₂ → Al₂O₃?', a: '4Al + 3O₂ → 2Al₂O₃', opts: ['2Al + O₂ → Al₂O₃', '4Al + 3O₂ → 2Al₂O₃', 'Al + O₂ → Al₂O₃', '3Al + 2O₂ → Al₂O₃'], explain: '4 Al, 6 O on each side' },
+                  { q: 'What is the correct balanced form of: Al + Oâ‚‚ â†’ Alâ‚‚Oâ‚ƒ?', a: '4Al + 3Oâ‚‚ â†’ 2Alâ‚‚Oâ‚ƒ', opts: ['2Al + Oâ‚‚ â†’ Alâ‚‚Oâ‚ƒ', '4Al + 3Oâ‚‚ â†’ 2Alâ‚‚Oâ‚ƒ', 'Al + Oâ‚‚ â†’ Alâ‚‚Oâ‚ƒ', '3Al + 2Oâ‚‚ â†’ Alâ‚‚Oâ‚ƒ'], explain: '4 Al, 6 O on each side' },
 
-                  { q: 'In CH₄ + 2O₂ → CO₂ + 2H₂O, how many total atoms of O are on the product side?', a: '4', opts: ['2', '3', '4', '6'], explain: 'CO₂ has 2 O + 2H₂O has 2 O = 4 O total' }
+                  { q: 'In CHâ‚„ + 2Oâ‚‚ â†’ COâ‚‚ + 2Hâ‚‚O, how many total atoms of O are on the product side?', a: '4', opts: ['2', '3', '4', '6'], explain: 'COâ‚‚ has 2 O + 2Hâ‚‚O has 2 O = 4 O total' }
 
                 ];
 
@@ -4115,11 +4115,11 @@ const d = labToolData.chemBalance;
 
                     className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (chemQ ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' : 'bg-purple-600 text-white hover:bg-purple-700')
 
-                  }, chemQ ? '🔄 Next Question' : '🧪 Chemistry Quiz'),
+                  }, chemQ ? 'ðŸ”„ Next Question' : 'ðŸ§ª Chemistry Quiz'),
 
-                  chemScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + chemScore + ' correct'),
+                  chemScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, 'â­ ' + chemScore + ' correct'),
 
-                  chemQStreak > 1 && React.createElement("span", { className: "text-xs font-bold text-orange-600" }, '🔥 ' + chemQStreak + ' streak')
+                  chemQStreak > 1 && React.createElement("span", { className: "text-xs font-bold text-orange-600" }, 'ðŸ”¥ ' + chemQStreak + ' streak')
 
                 ),
 
@@ -4143,9 +4143,9 @@ const d = labToolData.chemBalance;
 
                           upd('chemQStreak', correct ? chemQStreak + 1 : 0);
 
-                          if (correct) { addToast('🧪 Correct! ' + chemQ.explain, 'success'); awardStemXP('chemBalance', 10, 'Chemistry Quiz'); }
+                          if (correct) { addToast('ðŸ§ª Correct! ' + chemQ.explain, 'success'); awardStemXP('chemBalance', 10, 'Chemistry Quiz'); }
 
-                          else { addToast('❌ ' + chemQ.explain, 'error'); }
+                          else { addToast('âŒ ' + chemQ.explain, 'error'); }
 
                         }, className: "px-3 py-2.5 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all"
 
@@ -4159,9 +4159,9 @@ const d = labToolData.chemBalance;
 
                 chemQ && chemQ.answered && React.createElement("div", { className: "p-3 rounded-lg text-sm font-bold " + (chemQ.chosen === chemQ.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
 
-                  chemQ.chosen === chemQ.answer ? '✅ Correct!' : '❌ Answer: ' + chemQ.answer,
+                  chemQ.chosen === chemQ.answer ? 'âœ… Correct!' : 'âŒ Answer: ' + chemQ.answer,
 
-                  React.createElement("p", { className: "text-xs font-normal mt-1 " + (chemQ.chosen === chemQ.answer ? 'text-emerald-600' : 'text-red-600') }, '📐 ' + chemQ.explain)
+                  React.createElement("p", { className: "text-xs font-normal mt-1 " + (chemQ.chosen === chemQ.answer ? 'text-emerald-600' : 'text-red-600') }, 'ðŸ“ ' + chemQ.explain)
 
                 )
 
@@ -4176,15 +4176,15 @@ const d = labToolData.chemBalance;
     }
   });
 
-  // ═══ 🔬 punnett (punnett) ═══
+  // â•â•â• ðŸ”¬ punnett (punnett) â•â•â•
   window.StemLab.registerTool('punnett', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'punnett',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -4217,7 +4217,7 @@ const d = labToolData.chemBalance;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (punnett) ──
+      // â”€â”€ Tool body (punnett) â”€â”€
       return (function() {
 const d = labToolData.punnett;
 
@@ -4227,7 +4227,7 @@ const d = labToolData.punnett;
 
 
 
-          // ── Sex-linked grid computation ──
+          // â”€â”€ Sex-linked grid computation â”€â”€
 
           var grid, isSexLinked = inheritMode === 'sexLinked';
 
@@ -4263,7 +4263,7 @@ const d = labToolData.punnett;
 
 
 
-          // ── Mode-aware phenotype function ──
+          // â”€â”€ Mode-aware phenotype function â”€â”€
 
           var phenotype;
 
@@ -4315,7 +4315,7 @@ const d = labToolData.punnett;
 
               }
 
-              // Female: XX — check for any uppercase
+              // Female: XX â€” check for any uppercase
 
               var alleles = g.split('X').filter(Boolean);
 
@@ -4397,7 +4397,7 @@ const d = labToolData.punnett;
 
 
 
-          // ── Inheritance mode info ──
+          // â”€â”€ Inheritance mode info â”€â”€
 
           var MODE_INFO = {
 
@@ -4421,43 +4421,43 @@ const d = labToolData.punnett;
 
             complete: [
 
-              { label: '\uD83C\uDF31 Peas (Tt × Tt)', p1: ['T', 't'], p2: ['T', 't'], trait: 'Tall vs Short', domEmoji: '\uD83C\uDF31', recEmoji: '\uD83C\uDF3F', domLabel: 'Tall', recLabel: 'Short', tip: 'Mendel\'s classic 3:1 ratio of tall to short pea plants' },
+              { label: '\uD83C\uDF31 Peas (Tt Ã— Tt)', p1: ['T', 't'], p2: ['T', 't'], trait: 'Tall vs Short', domEmoji: '\uD83C\uDF31', recEmoji: '\uD83C\uDF3F', domLabel: 'Tall', recLabel: 'Short', tip: 'Mendel\'s classic 3:1 ratio of tall to short pea plants' },
 
-              { label: '\uD83C\uDF38 Flower (Rr × Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Red vs White', domEmoji: '\uD83C\uDF39', recEmoji: '\uD83E\uDEB7', domLabel: 'Red', recLabel: 'White', tip: 'Red flower color is dominant over white' },
+              { label: '\uD83C\uDF38 Flower (Rr Ã— Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Red vs White', domEmoji: '\uD83C\uDF39', recEmoji: '\uD83E\uDEB7', domLabel: 'Red', recLabel: 'White', tip: 'Red flower color is dominant over white' },
 
-              { label: '\uD83D\uDFE4 Eyes (Bb × Bb)', p1: ['B', 'b'], p2: ['B', 'b'], trait: 'Brown vs Blue', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83D\uDD35', domLabel: 'Brown', recLabel: 'Blue', tip: 'Brown eye color is dominant over blue (simplified)' },
+              { label: '\uD83D\uDFE4 Eyes (Bb Ã— Bb)', p1: ['B', 'b'], p2: ['B', 'b'], trait: 'Brown vs Blue', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83D\uDD35', domLabel: 'Brown', recLabel: 'Blue', tip: 'Brown eye color is dominant over blue (simplified)' },
 
-              { label: '\uD83D\uDCA0 Test Cross (Bb × bb)', p1: ['B', 'b'], p2: ['b', 'b'], trait: 'Test cross', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83D\uDD35', domLabel: 'Dominant', recLabel: 'Recessive', tip: 'Test cross reveals heterozygosity — 1:1 ratio' },
+              { label: '\uD83D\uDCA0 Test Cross (Bb Ã— bb)', p1: ['B', 'b'], p2: ['b', 'b'], trait: 'Test cross', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83D\uDD35', domLabel: 'Dominant', recLabel: 'Recessive', tip: 'Test cross reveals heterozygosity â€” 1:1 ratio' },
 
-              { label: '\uD83E\uDD47 BB × bb (All Hetero)', p1: ['B', 'B'], p2: ['b', 'b'], trait: 'Pure cross', domEmoji: '\uD83D\uDFE2', recEmoji: '\uD83D\uDD34', domLabel: 'Dominant', recLabel: 'Recessive', tip: 'F1 generation: 100% heterozygous, all dominant' },
+              { label: '\uD83E\uDD47 BB Ã— bb (All Hetero)', p1: ['B', 'B'], p2: ['b', 'b'], trait: 'Pure cross', domEmoji: '\uD83D\uDFE2', recEmoji: '\uD83D\uDD34', domLabel: 'Dominant', recLabel: 'Recessive', tip: 'F1 generation: 100% heterozygous, all dominant' },
 
             ],
 
             incomplete: [
 
-              { label: '\uD83C\uDF3A Snapdragon (Rr × Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Flower color', domEmoji: '\uD83D\uDD34', recEmoji: '\u26AA', blendEmoji: '\uD83C\uDF38', domLabel: 'Red', recLabel: 'White', blendLabel: 'Pink', tip: 'Classic incomplete dominance: red × white = pink heterozygotes' },
+              { label: '\uD83C\uDF3A Snapdragon (Rr Ã— Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Flower color', domEmoji: '\uD83D\uDD34', recEmoji: '\u26AA', blendEmoji: '\uD83C\uDF38', domLabel: 'Red', recLabel: 'White', blendLabel: 'Pink', tip: 'Classic incomplete dominance: red Ã— white = pink heterozygotes' },
 
-              { label: '\uD83D\uDC14 Andalusian (Bb × Bb)', p1: ['B', 'b'], p2: ['B', 'b'], trait: 'Feather color', domEmoji: '\u2B1B', recEmoji: '\u2B1C', blendEmoji: '\uD83D\uDD35', domLabel: 'Black', recLabel: 'White', blendLabel: 'Blue', tip: 'Andalusian fowl: black × white = blue feathers' },
+              { label: '\uD83D\uDC14 Andalusian (Bb Ã— Bb)', p1: ['B', 'b'], p2: ['B', 'b'], trait: 'Feather color', domEmoji: '\u2B1B', recEmoji: '\u2B1C', blendEmoji: '\uD83D\uDD35', domLabel: 'Black', recLabel: 'White', blendLabel: 'Blue', tip: 'Andalusian fowl: black Ã— white = blue feathers' },
 
-              { label: '\uD83D\uDC34 Palomino (Cc × Cc)', p1: ['C', 'c'], p2: ['C', 'c'], trait: 'Coat color', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83E\uDDD1', blendEmoji: '\uD83D\uDFE1', domLabel: 'Chestnut', recLabel: 'Cremello', blendLabel: 'Palomino', tip: 'Horse coat: chestnut × cremello = palomino' },
+              { label: '\uD83D\uDC34 Palomino (Cc Ã— Cc)', p1: ['C', 'c'], p2: ['C', 'c'], trait: 'Coat color', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83E\uDDD1', blendEmoji: '\uD83D\uDFE1', domLabel: 'Chestnut', recLabel: 'Cremello', blendLabel: 'Palomino', tip: 'Horse coat: chestnut Ã— cremello = palomino' },
 
             ],
 
             codominant: [
 
-              { label: '\uD83E\uDE78 Blood Type (AB × AB)', p1: ['A', 'B'], p2: ['A', 'B'], trait: 'ABO blood type', domEmoji: '\uD83C\uDD70', recEmoji: '\uD83C\uDD71', blendEmoji: '\uD83C\uDD8E', domLabel: 'Type A', recLabel: 'Type B', blendLabel: 'Type AB', tip: 'A and B alleles are codominant — both expressed in AB blood type' },
+              { label: '\uD83E\uDE78 Blood Type (AB Ã— AB)', p1: ['A', 'B'], p2: ['A', 'B'], trait: 'ABO blood type', domEmoji: '\uD83C\uDD70', recEmoji: '\uD83C\uDD71', blendEmoji: '\uD83C\uDD8E', domLabel: 'Type A', recLabel: 'Type B', blendLabel: 'Type AB', tip: 'A and B alleles are codominant â€” both expressed in AB blood type' },
 
-              { label: '\uD83E\uDE78 Blood (Ai × Bi)', p1: ['A', 'i'], p2: ['B', 'i'], trait: 'Blood type', domEmoji: '\uD83C\uDD70', recEmoji: '\uD83C\uDD71', blendEmoji: '\uD83C\uDD8E', domLabel: 'Type A', recLabel: 'Type B', blendLabel: 'Type AB', tip: 'Carrier cross: possible A, B, AB, or O children' },
+              { label: '\uD83E\uDE78 Blood (Ai Ã— Bi)', p1: ['A', 'i'], p2: ['B', 'i'], trait: 'Blood type', domEmoji: '\uD83C\uDD70', recEmoji: '\uD83C\uDD71', blendEmoji: '\uD83C\uDD8E', domLabel: 'Type A', recLabel: 'Type B', blendLabel: 'Type AB', tip: 'Carrier cross: possible A, B, AB, or O children' },
 
-              { label: '\uD83D\uDC04 Roan Cattle (Rr × Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Coat pattern', domEmoji: '\uD83D\uDD34', recEmoji: '\u26AA', blendEmoji: '\uD83D\uDD35', domLabel: 'Red', recLabel: 'White', blendLabel: 'Roan (mixed)', tip: 'Roan cattle show both red and white hairs together' },
+              { label: '\uD83D\uDC04 Roan Cattle (Rr Ã— Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Coat pattern', domEmoji: '\uD83D\uDD34', recEmoji: '\u26AA', blendEmoji: '\uD83D\uDD35', domLabel: 'Red', recLabel: 'White', blendLabel: 'Roan (mixed)', tip: 'Roan cattle show both red and white hairs together' },
 
             ],
 
             sexLinked: [
 
-              { label: '\uD83D\uDC41 Color Vision (Cc × cY)', p1: ['C', 'c'], p2: ['C', 'Y'], trait: 'Color vision', domEmoji: '\uD83D\uDC41', recEmoji: '\uD83D\uDE36\u200D\uD83C\uDF2B\uFE0F', domLabel: 'Normal', recLabel: 'Colorblind', tip: 'Carrier mother × normal father: 50% sons affected' },
+              { label: '\uD83D\uDC41 Color Vision (Cc Ã— cY)', p1: ['C', 'c'], p2: ['C', 'Y'], trait: 'Color vision', domEmoji: '\uD83D\uDC41', recEmoji: '\uD83D\uDE36\u200D\uD83C\uDF2B\uFE0F', domLabel: 'Normal', recLabel: 'Colorblind', tip: 'Carrier mother Ã— normal father: 50% sons affected' },
 
-              { label: '\uD83E\uDE78 Hemophilia (Hh × hY)', p1: ['H', 'h'], p2: ['H', 'Y'], trait: 'Blood clotting', domEmoji: '\uD83E\uDE78', recEmoji: '\uD83E\uDE79', domLabel: 'Normal', recLabel: 'Hemophilia', tip: 'X-linked recessive: carrier mother can produce affected sons' },
+              { label: '\uD83E\uDE78 Hemophilia (Hh Ã— hY)', p1: ['H', 'h'], p2: ['H', 'Y'], trait: 'Blood clotting', domEmoji: '\uD83E\uDE78', recEmoji: '\uD83E\uDE79', domLabel: 'Normal', recLabel: 'Hemophilia', tip: 'X-linked recessive: carrier mother can produce affected sons' },
 
             ]
 
@@ -4481,7 +4481,7 @@ const d = labToolData.punnett;
 
             React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Predict offspring genotypes. Select alleles for each parent."),
 
-            // ── Inheritance Mode Selector ──
+            // â”€â”€ Inheritance Mode Selector â”€â”€
 
             React.createElement("div", { className: "mb-4 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-3 border border-violet-200" },
 
@@ -4625,7 +4625,7 @@ const d = labToolData.punnett;
 
             ),
 
-            // ── Phenotype Pie Chart + Bar Chart side by side ──
+            // â”€â”€ Phenotype Pie Chart + Bar Chart side by side â”€â”€
 
             React.createElement("div", { className: "mt-3 grid grid-cols-2 gap-3" },
 
@@ -4747,7 +4747,7 @@ const d = labToolData.punnett;
 
             ),
 
-            // ── Trait Presets ──
+            // â”€â”€ Trait Presets â”€â”€
 
             React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
 
@@ -4777,7 +4777,7 @@ const d = labToolData.punnett;
 
             ),
 
-            // ── Phenotype Visual (when preset is active) ──
+            // â”€â”€ Phenotype Visual (when preset is active) â”€â”€
 
             activePreset && React.createElement("div", { className: "mt-3 bg-gradient-to-r from-violet-50 to-blue-50 rounded-xl border border-violet-200 p-3" },
 
@@ -4811,7 +4811,7 @@ const d = labToolData.punnett;
 
             ),
 
-            // ── Educational Callout ──
+            // â”€â”€ Educational Callout â”€â”€
 
             React.createElement("p", { className: "mt-3 text-xs text-slate-400 italic" },
 
@@ -4872,15 +4872,15 @@ const d = labToolData.punnett;
     }
   });
 
-  // ═══ 🔬 molecule (molecule) ═══
+  // â•â•â• ðŸ”¬ molecule (molecule) â•â•â•
   window.StemLab.registerTool('molecule', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'molecule',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -4913,7 +4913,7 @@ const d = labToolData.punnett;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (molecule) ──
+      // â”€â”€ Tool body (molecule) â”€â”€
       return (function() {
 const d = labToolData.molecule;
 
@@ -4923,7 +4923,7 @@ const d = labToolData.molecule;
 
           const mode = d.moleculeMode || 'viewer';
 
-          // ── Periodic Table Data (118 elements) ──
+          // â”€â”€ Periodic Table Data (118 elements) â”€â”€
 
           const ELEMENTS = [
 
@@ -5053,83 +5053,83 @@ const d = labToolData.molecule;
 
 
 
-          // ── Element Details (descriptions, uses, compounds) ──
+          // â”€â”€ Element Details (descriptions, uses, compounds) â”€â”€
 
           const ELEMENT_DETAILS = {
 
-            H: { desc: t('stem.periodic.lightest_element_fuels_stars_via'), uses: ['Fuel cells', 'Rocket propellant', 'Ammonia production'], compounds: ['H₂O (Water)', 'HCl (Hydrochloric Acid)', 'NH₃ (Ammonia)', 'CH₄ (Methane)'] },
+            H: { desc: t('stem.periodic.lightest_element_fuels_stars_via'), uses: ['Fuel cells', 'Rocket propellant', 'Ammonia production'], compounds: ['Hâ‚‚O (Water)', 'HCl (Hydrochloric Acid)', 'NHâ‚ƒ (Ammonia)', 'CHâ‚„ (Methane)'] },
 
-            He: { desc: t('stem.periodic.inert_noble_gas_2nd_most'), uses: ['Balloons & blimps', 'MRI coolant', 'Deep-sea diving gas'], compounds: ['None (noble gas — does not form compounds)'] },
+            He: { desc: t('stem.periodic.inert_noble_gas_2nd_most'), uses: ['Balloons & blimps', 'MRI coolant', 'Deep-sea diving gas'], compounds: ['None (noble gas â€” does not form compounds)'] },
 
-            Li: { desc: t('stem.periodic.lightest_metal_soft_enough_to'), uses: ['Rechargeable batteries', 'Mood-stabilizing medication', 'Ceramics & glass'], compounds: ['LiOH (Lithium Hydroxide)', 'Li₂CO₃ (Lithium Carbonate)'] },
+            Li: { desc: t('stem.periodic.lightest_metal_soft_enough_to'), uses: ['Rechargeable batteries', 'Mood-stabilizing medication', 'Ceramics & glass'], compounds: ['LiOH (Lithium Hydroxide)', 'Liâ‚‚COâ‚ƒ (Lithium Carbonate)'] },
 
             Be: { desc: t('stem.periodic.rare_toxic_metal_that_is'), uses: ['Aerospace alloys', 'X-ray windows', 'Satellite components'], compounds: ['BeO (Beryllium Oxide)'] },
 
-            B: { desc: t('stem.periodic.metalloid_essential_for_plant_growth'), uses: ['Borosilicate glass (Pyrex)', 'Cleaning products (borax)', 'Semiconductors'], compounds: ['B₂O₃ (Boron Trioxide)', 'H₃BO₃ (Boric Acid)'] },
+            B: { desc: t('stem.periodic.metalloid_essential_for_plant_growth'), uses: ['Borosilicate glass (Pyrex)', 'Cleaning products (borax)', 'Semiconductors'], compounds: ['Bâ‚‚Oâ‚ƒ (Boron Trioxide)', 'Hâ‚ƒBOâ‚ƒ (Boric Acid)'] },
 
-            C: { desc: t('stem.periodic.basis_of_all_known_life'), uses: ['Steel production', 'Graphite pencils', 'Carbon fiber composites'], compounds: ['CO₂ (Carbon Dioxide)', 'CH₄ (Methane)', 'C₆H₁₂O₆ (Glucose)', 'CaCO₃ (Limestone)'] },
+            C: { desc: t('stem.periodic.basis_of_all_known_life'), uses: ['Steel production', 'Graphite pencils', 'Carbon fiber composites'], compounds: ['COâ‚‚ (Carbon Dioxide)', 'CHâ‚„ (Methane)', 'Câ‚†Hâ‚â‚‚Oâ‚† (Glucose)', 'CaCOâ‚ƒ (Limestone)'] },
 
-            N: { desc: t('stem.periodic.makes_up_78_of_earth') + "'s atmosphere", uses: ['Fertilizers', 'Explosives(TNT)', 'Food preservation'], compounds: ['NH₃ (Ammonia)', 'NO₂ (Nitrogen Dioxide)', 'N₂O(Laughing Gas)', 'HNO₃ (Nitric Acid)'] },
+            N: { desc: t('stem.periodic.makes_up_78_of_earth') + "'s atmosphere", uses: ['Fertilizers', 'Explosives(TNT)', 'Food preservation'], compounds: ['NHâ‚ƒ (Ammonia)', 'NOâ‚‚ (Nitrogen Dioxide)', 'Nâ‚‚O(Laughing Gas)', 'HNOâ‚ƒ (Nitric Acid)'] },
 
-            O: { desc: t('stem.periodic.essential_for_respiration_most_abundant') + "'s crust", uses: ['Medical oxygen', 'Welding & cutting', 'Water purification'], compounds: ['H₂O(Water)', 'CO₂ (Carbon Dioxide)', 'Fe₂O₃(Rust)', 'O₃(Ozone)'] },
+            O: { desc: t('stem.periodic.essential_for_respiration_most_abundant') + "'s crust", uses: ['Medical oxygen', 'Welding & cutting', 'Water purification'], compounds: ['Hâ‚‚O(Water)', 'COâ‚‚ (Carbon Dioxide)', 'Feâ‚‚Oâ‚ƒ(Rust)', 'Oâ‚ƒ(Ozone)'] },
 
-            F: { desc: t('stem.periodic.most_reactive_and_electronegative_element'), uses: ['Toothpaste (fluoride)', 'Teflon coatings', 'Refrigerants'], compounds: ['HF (Hydrofluoric Acid)', 'NaF (Sodium Fluoride)', 'CF₄ (Carbon Tetrafluoride)'] },
+            F: { desc: t('stem.periodic.most_reactive_and_electronegative_element'), uses: ['Toothpaste (fluoride)', 'Teflon coatings', 'Refrigerants'], compounds: ['HF (Hydrofluoric Acid)', 'NaF (Sodium Fluoride)', 'CFâ‚„ (Carbon Tetrafluoride)'] },
 
             Ne: { desc: t('stem.periodic.produces_iconic_reddishorange_glow_in'), uses: ['Neon signs', 'High-voltage indicators', 'Laser technology'], compounds: ['None (noble gas)'] },
 
-            Na: { desc: t('stem.periodic.soft_silvery_metal_that_reacts'), uses: ['Table salt (NaCl)', 'Street lighting', 'Baking soda'], compounds: ['NaCl (Table Salt)', 'NaOH (Lye)', 'NaHCO₃ (Baking Soda)', 'Na₂CO₃ (Washing Soda)'] },
+            Na: { desc: t('stem.periodic.soft_silvery_metal_that_reacts'), uses: ['Table salt (NaCl)', 'Street lighting', 'Baking soda'], compounds: ['NaCl (Table Salt)', 'NaOH (Lye)', 'NaHCOâ‚ƒ (Baking Soda)', 'Naâ‚‚COâ‚ƒ (Washing Soda)'] },
 
-            Mg: { desc: t('stem.periodic.lightweight_metal_that_burns_with'), uses: ['Alloy wheels', 'Fireworks & flares', 'Antacid tablets'], compounds: ['MgO (Magnesium Oxide)', 'MgSO₄ (Epsom Salt)', 'Mg(OH)₂ (Milk of Magnesia)'] },
+            Mg: { desc: t('stem.periodic.lightweight_metal_that_burns_with'), uses: ['Alloy wheels', 'Fireworks & flares', 'Antacid tablets'], compounds: ['MgO (Magnesium Oxide)', 'MgSOâ‚„ (Epsom Salt)', 'Mg(OH)â‚‚ (Milk of Magnesia)'] },
 
-            Al: { desc: t('stem.periodic.most_abundant_metal_in_earth') + "'s crust", uses: ['Cans & foil', 'Aircraft frames', 'Window frames'], compounds: ['Al₂O₃ (Alumina)', 'AlCl₃(Aluminum Chloride)'] },
+            Al: { desc: t('stem.periodic.most_abundant_metal_in_earth') + "'s crust", uses: ['Cans & foil', 'Aircraft frames', 'Window frames'], compounds: ['Alâ‚‚Oâ‚ƒ (Alumina)', 'AlClâ‚ƒ(Aluminum Chloride)'] },
 
-            Si: { desc: t('stem.periodic.semiconductor_that_powers_the_digital'), uses: ['Computer chips', 'Solar panels', 'Glass & concrete'], compounds: ['SiO₂ (Sand/Quartz)', 'SiC (Silicon Carbide)'] },
+            Si: { desc: t('stem.periodic.semiconductor_that_powers_the_digital'), uses: ['Computer chips', 'Solar panels', 'Glass & concrete'], compounds: ['SiOâ‚‚ (Sand/Quartz)', 'SiC (Silicon Carbide)'] },
 
-            P: { desc: t('stem.periodic.essential_for_dna_and_bones'), uses: ['Fertilizers', 'Matches', 'Detergents'], compounds: ['H₃PO₄ (Phosphoric Acid)', 'Ca₃(PO₄)₂ (Bone mineral)'] },
+            P: { desc: t('stem.periodic.essential_for_dna_and_bones'), uses: ['Fertilizers', 'Matches', 'Detergents'], compounds: ['Hâ‚ƒPOâ‚„ (Phosphoric Acid)', 'Caâ‚ƒ(POâ‚„)â‚‚ (Bone mineral)'] },
 
-            S: { desc: t('stem.periodic.yellow_element_with_distinctive_rottenegg'), uses: ['Vulcanizing rubber', 'Sulfuric acid production', 'Gunpowder'], compounds: ['H₂SO₄ (Sulfuric Acid)', 'SO₂ (Sulfur Dioxide)', 'H₂S (Hydrogen Sulfide)'] },
+            S: { desc: t('stem.periodic.yellow_element_with_distinctive_rottenegg'), uses: ['Vulcanizing rubber', 'Sulfuric acid production', 'Gunpowder'], compounds: ['Hâ‚‚SOâ‚„ (Sulfuric Acid)', 'SOâ‚‚ (Sulfur Dioxide)', 'Hâ‚‚S (Hydrogen Sulfide)'] },
 
             Cl: { desc: t('stem.periodic.greenishyellow_gas_used_to_purify'), uses: ['Water treatment', 'PVC plastic', 'Bleach & disinfectants'], compounds: ['NaCl (Table Salt)', 'HCl (Hydrochloric Acid)', 'NaOCl (Bleach)'] },
 
             Ar: { desc: t('stem.periodic.third_most_abundant_gas_in'), uses: ['Welding shield gas', 'Light bulb filling', 'Window insulation'], compounds: ['None (noble gas)'] },
 
-            K: { desc: t('stem.periodic.essential_nutrient_found_in_bananas'), uses: ['Fertilizers (potash)', 'Soap making', 'Food preservation'], compounds: ['KCl (Potassium Chloride)', 'KOH (Potassium Hydroxide)', 'KNO₃ (Saltpeter)'] },
+            K: { desc: t('stem.periodic.essential_nutrient_found_in_bananas'), uses: ['Fertilizers (potash)', 'Soap making', 'Food preservation'], compounds: ['KCl (Potassium Chloride)', 'KOH (Potassium Hydroxide)', 'KNOâ‚ƒ (Saltpeter)'] },
 
-            Ca: { desc: t('stem.periodic.builds_bones_and_teeth_5th'), uses: ['Cement & concrete', 'Chalk & plaster', 'Dietary supplement'], compounds: ['CaCO₃ (Limestone/Chalk)', 'CaO (Quicklime)', 'Ca(OH)₂ (Slaked Lime)', 'CaSO₄ (Gypsum)'] },
+            Ca: { desc: t('stem.periodic.builds_bones_and_teeth_5th'), uses: ['Cement & concrete', 'Chalk & plaster', 'Dietary supplement'], compounds: ['CaCOâ‚ƒ (Limestone/Chalk)', 'CaO (Quicklime)', 'Ca(OH)â‚‚ (Slaked Lime)', 'CaSOâ‚„ (Gypsum)'] },
 
-            Fe: { desc: t('stem.periodic.most_used_metal_core_of'), uses: ['Steel construction', 'Cast iron cookware', 'Magnetic devices'], compounds: ['Fe₂O₃ (Rust)', 'FeSO₄ (Iron Supplement)', 'Fe₃O₄ (Magnetite)'] },
+            Fe: { desc: t('stem.periodic.most_used_metal_core_of'), uses: ['Steel construction', 'Cast iron cookware', 'Magnetic devices'], compounds: ['Feâ‚‚Oâ‚ƒ (Rust)', 'FeSOâ‚„ (Iron Supplement)', 'Feâ‚ƒOâ‚„ (Magnetite)'] },
 
-            Cu: { desc: t('stem.periodic.reddish_metal_used_since_the'), uses: ['Electrical wiring', 'Plumbing pipes', 'Coins'], compounds: ['CuSO₄ (Blue Vitriol)', 'CuO (Copper Oxide)', 'Cu₂O (Cuprous Oxide)'] },
+            Cu: { desc: t('stem.periodic.reddish_metal_used_since_the'), uses: ['Electrical wiring', 'Plumbing pipes', 'Coins'], compounds: ['CuSOâ‚„ (Blue Vitriol)', 'CuO (Copper Oxide)', 'Cuâ‚‚O (Cuprous Oxide)'] },
 
-            Zn: { desc: t('stem.periodic.bluishwhite_metal_that_prevents_rust'), uses: ['Galvanizing steel', 'Batteries', 'Sunscreen (zinc oxide)'], compounds: ['ZnO (Zinc Oxide)', 'ZnS (Zinc Sulfide)', 'ZnCl₂ (Zinc Chloride)'] },
+            Zn: { desc: t('stem.periodic.bluishwhite_metal_that_prevents_rust'), uses: ['Galvanizing steel', 'Batteries', 'Sunscreen (zinc oxide)'], compounds: ['ZnO (Zinc Oxide)', 'ZnS (Zinc Sulfide)', 'ZnClâ‚‚ (Zinc Chloride)'] },
 
-            Ag: { desc: t('stem.periodic.best_conductor_of_electricity_among'), uses: ['Jewelry & silverware', 'Photography', 'Electronics'], compounds: ['AgNO₃ (Silver Nitrate)', 'AgCl (Silver Chloride)', 'Ag₂O (Silver Oxide)'] },
+            Ag: { desc: t('stem.periodic.best_conductor_of_electricity_among'), uses: ['Jewelry & silverware', 'Photography', 'Electronics'], compounds: ['AgNOâ‚ƒ (Silver Nitrate)', 'AgCl (Silver Chloride)', 'Agâ‚‚O (Silver Oxide)'] },
 
-            Au: { desc: t('stem.periodic.dense_soft_shiny_precious_metal'), uses: ['Jewelry', 'Electronics (connectors)', 'Currency reserves'], compounds: ['AuCl₃ (Gold Chloride) — gold rarely forms compounds'] },
+            Au: { desc: t('stem.periodic.dense_soft_shiny_precious_metal'), uses: ['Jewelry', 'Electronics (connectors)', 'Currency reserves'], compounds: ['AuClâ‚ƒ (Gold Chloride) â€” gold rarely forms compounds'] },
 
-            Ti: { desc: t('stem.periodic.strong_as_steel_but_45'), uses: ['Aircraft & spacecraft', 'Joint replacements', 'Titanium white paint'], compounds: ['TiO₂ (Titanium Dioxide)', 'TiCl₄ (Titanium Tetrachloride)'] },
+            Ti: { desc: t('stem.periodic.strong_as_steel_but_45'), uses: ['Aircraft & spacecraft', 'Joint replacements', 'Titanium white paint'], compounds: ['TiOâ‚‚ (Titanium Dioxide)', 'TiClâ‚„ (Titanium Tetrachloride)'] },
 
-            Cr: { desc: t('stem.periodic.shiny_metal_that_gives_rubies'), uses: ['Chrome plating', 'Stainless steel', 'Leather tanning'], compounds: ['Cr₂O₃ (Chromium Oxide)', 'K₂Cr₂O₇ (Potassium Dichromate)'] },
+            Cr: { desc: t('stem.periodic.shiny_metal_that_gives_rubies'), uses: ['Chrome plating', 'Stainless steel', 'Leather tanning'], compounds: ['Crâ‚‚Oâ‚ƒ (Chromium Oxide)', 'Kâ‚‚Crâ‚‚Oâ‚‡ (Potassium Dichromate)'] },
 
-            Mn: { desc: t('stem.periodic.essential_for_steel_production_and'), uses: ['Steel alloys', 'Alkaline batteries', 'Glass decolorizer'], compounds: ['MnO₂ (Manganese Dioxide)', 'KMnO₄ (Potassium Permanganate)'] },
+            Mn: { desc: t('stem.periodic.essential_for_steel_production_and'), uses: ['Steel alloys', 'Alkaline batteries', 'Glass decolorizer'], compounds: ['MnOâ‚‚ (Manganese Dioxide)', 'KMnOâ‚„ (Potassium Permanganate)'] },
 
-            Ni: { desc: t('stem.periodic.corrosionresistant_metal_used_in_coins'), uses: ['Stainless steel', 'Rechargeable batteries', 'Coins'], compounds: ['NiO (Nickel Oxide)', 'NiSO₄ (Nickel Sulfate)'] },
+            Ni: { desc: t('stem.periodic.corrosionresistant_metal_used_in_coins'), uses: ['Stainless steel', 'Rechargeable batteries', 'Coins'], compounds: ['NiO (Nickel Oxide)', 'NiSOâ‚„ (Nickel Sulfate)'] },
 
             Br: { desc: t('stem.periodic.only_nonmetal_liquid_at_room'), uses: ['Flame retardants', 'Photography', 'Water purification'], compounds: ['NaBr (Sodium Bromide)', 'HBr (Hydrobromic Acid)'] },
 
             I: { desc: t('stem.periodic.essential_trace_element_for_thyroid'), uses: ['Antiseptic (tincture)', 'Iodized salt', 'Medical imaging'], compounds: ['KI (Potassium Iodide)', 'HI (Hydroiodic Acid)'] },
 
-            Pt: { desc: t('stem.periodic.precious_metal_rarer_than_gold'), uses: ['Catalytic converters', 'Jewelry', 'Anti-cancer drugs'], compounds: ['PtCl₂ (Platinum Chloride)', 'H₂PtCl₆ (Chloroplatinic Acid)'] },
+            Pt: { desc: t('stem.periodic.precious_metal_rarer_than_gold'), uses: ['Catalytic converters', 'Jewelry', 'Anti-cancer drugs'], compounds: ['PtClâ‚‚ (Platinum Chloride)', 'Hâ‚‚PtClâ‚† (Chloroplatinic Acid)'] },
 
-            U: { desc: t('stem.periodic.dense_radioactive_metal_that_powers'), uses: ['Nuclear power', 'Nuclear weapons', 'Radiation shielding'], compounds: ['UO₂ (Uranium Dioxide)', 'UF₆ (Uranium Hexafluoride)'] },
+            U: { desc: t('stem.periodic.dense_radioactive_metal_that_powers'), uses: ['Nuclear power', 'Nuclear weapons', 'Radiation shielding'], compounds: ['UOâ‚‚ (Uranium Dioxide)', 'UFâ‚† (Uranium Hexafluoride)'] },
 
-            Hg: { desc: t('stem.periodic.only_metal_liquid_at_room'), uses: ['Thermometers (historic)', 'Fluorescent lights', 'Dental amalgams'], compounds: ['HgCl₂ (Mercury Chloride)', 'HgO (Mercury Oxide)'] },
+            Hg: { desc: t('stem.periodic.only_metal_liquid_at_room'), uses: ['Thermometers (historic)', 'Fluorescent lights', 'Dental amalgams'], compounds: ['HgClâ‚‚ (Mercury Chloride)', 'HgO (Mercury Oxide)'] },
 
-            Pb: { desc: t('stem.periodic.dense_soft_metal_once_used'), uses: ['Car batteries', 'Radiation shielding', 'Solder (lead-free now)'], compounds: ['PbO (Lead Oxide)', 'PbSO₄ (Lead Sulfate)'] },
+            Pb: { desc: t('stem.periodic.dense_soft_metal_once_used'), uses: ['Car batteries', 'Radiation shielding', 'Solder (lead-free now)'], compounds: ['PbO (Lead Oxide)', 'PbSOâ‚„ (Lead Sulfate)'] },
 
-            Sn: { desc: t('stem.periodic.soft_silvery_metal_used_since'), uses: ['Tin cans (coating)', 'Solder', 'Bronze alloy'], compounds: ['SnO₂ (Tin Oxide)', 'SnCl₂ (Tin Chloride)'] },
+            Sn: { desc: t('stem.periodic.soft_silvery_metal_used_since'), uses: ['Tin cans (coating)', 'Solder', 'Bronze alloy'], compounds: ['SnOâ‚‚ (Tin Oxide)', 'SnClâ‚‚ (Tin Chloride)'] },
 
-            W: { desc: t('stem.periodic.has_the_highest_melting_point'), uses: ['Light bulb filaments', 'Drill bits & cutting tools', 'Military armor'], compounds: ['WO₃ (Tungsten Trioxide)', 'WC (Tungsten Carbide)'] },
+            W: { desc: t('stem.periodic.has_the_highest_melting_point'), uses: ['Light bulb filaments', 'Drill bits & cutting tools', 'Military armor'], compounds: ['WOâ‚ƒ (Tungsten Trioxide)', 'WC (Tungsten Carbide)'] },
 
           };
 
@@ -5141,7 +5141,7 @@ const d = labToolData.molecule;
 
           const getEl = (sym) => ELEMENTS.find(e => e.s === sym);
 
-          // ── Periodic Table layout (row, col) ──
+          // â”€â”€ Periodic Table layout (row, col) â”€â”€
 
           const PT_LAYOUT = [
 
@@ -5167,7 +5167,7 @@ const d = labToolData.molecule;
 
           ];
 
-          // ── Compound Recipes ──
+          // â”€â”€ Compound Recipes â”€â”€
 
           const COMPOUNDS = [
 
@@ -5253,73 +5253,73 @@ const d = labToolData.molecule;
 
           const catColors = { nonmetal: 'bg-blue-100 text-blue-700 border-blue-200', noble: 'bg-purple-100 text-purple-700 border-purple-200', alkali: 'bg-red-100 text-red-700 border-red-200', alkaline: 'bg-yellow-100 text-yellow-700 border-yellow-200', transition: 'bg-orange-100 text-orange-700 border-orange-200', metal: 'bg-slate-200 text-slate-700 border-slate-300', metalloid: 'bg-emerald-100 text-emerald-700 border-emerald-200', halogen: 'bg-teal-100 text-teal-700 border-teal-200', lanthanide: 'bg-violet-100 text-violet-700 border-violet-200', actinide: 'bg-pink-100 text-pink-700 border-pink-200' };
 
-          // ── Molecule Viewer presets ──
+          // â”€â”€ Molecule Viewer presets â”€â”€
 
           const viewerPresets = [
 
-            { name: 'H₂O (Water)', atoms: [{ el: 'O', x: 200, y: 120, color: '#ef4444' }, { el: 'H', x: 140, y: 190, color: '#60a5fa' }, { el: 'H', x: 260, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2]], formula: 'H₂O' },
+            { name: 'Hâ‚‚O (Water)', atoms: [{ el: 'O', x: 200, y: 120, color: '#ef4444' }, { el: 'H', x: 140, y: 190, color: '#60a5fa' }, { el: 'H', x: 260, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2]], formula: 'Hâ‚‚O' },
 
-            { name: 'CO₂ (Carbon Dioxide)', atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 120, y: 150, color: '#ef4444' }, { el: 'O', x: 280, y: 150, color: '#ef4444' }], bonds: [[0, 1], [0, 2]], formula: 'CO₂' },
+            { name: 'COâ‚‚ (Carbon Dioxide)', atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 120, y: 150, color: '#ef4444' }, { el: 'O', x: 280, y: 150, color: '#ef4444' }], bonds: [[0, 1], [0, 2]], formula: 'COâ‚‚' },
 
-            { name: 'CH₄ (Methane)', atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'H', x: 200, y: 80, color: '#60a5fa' }, { el: 'H', x: 270, y: 180, color: '#60a5fa' }, { el: 'H', x: 130, y: 180, color: '#60a5fa' }, { el: 'H', x: 200, y: 220, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [0, 3], [0, 4]], formula: 'CH₄' },
+            { name: 'CHâ‚„ (Methane)', atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'H', x: 200, y: 80, color: '#60a5fa' }, { el: 'H', x: 270, y: 180, color: '#60a5fa' }, { el: 'H', x: 130, y: 180, color: '#60a5fa' }, { el: 'H', x: 200, y: 220, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [0, 3], [0, 4]], formula: 'CHâ‚„' },
 
             { name: 'NaCl (Table Salt)', atoms: [{ el: 'Na', x: 160, y: 150, color: '#a855f7' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0, 1]], formula: 'NaCl' },
 
-            { name: 'NH₃ (Ammonia)', atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'H', x: 140, y: 185, color: '#94a3b8' }, { el: 'H', x: 200, y: 210, color: '#94a3b8' }, { el: 'H', x: 260, y: 185, color: '#94a3b8' }], bonds: [[0, 1], [0, 2], [0, 3]], formula: 'NH₃' },
+            { name: 'NHâ‚ƒ (Ammonia)', atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'H', x: 140, y: 185, color: '#94a3b8' }, { el: 'H', x: 200, y: 210, color: '#94a3b8' }, { el: 'H', x: 260, y: 185, color: '#94a3b8' }], bonds: [[0, 1], [0, 2], [0, 3]], formula: 'NHâ‚ƒ' },
 
-            { name: 'O₂ (Oxygen Gas)', atoms: [{ el: 'O', x: 160, y: 150, color: '#ef4444' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0, 1]], formula: 'O₂' },
+            { name: 'Oâ‚‚ (Oxygen Gas)', atoms: [{ el: 'O', x: 160, y: 150, color: '#ef4444' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0, 1]], formula: 'Oâ‚‚' },
 
-            { name: 'N₂ (Nitrogen Gas)', atoms: [{ el: 'N', x: 155, y: 150, color: '#3b82f6' }, { el: 'N', x: 245, y: 150, color: '#3b82f6' }], bonds: [[0, 1]], formula: 'N₂' },
+            { name: 'Nâ‚‚ (Nitrogen Gas)', atoms: [{ el: 'N', x: 155, y: 150, color: '#3b82f6' }, { el: 'N', x: 245, y: 150, color: '#3b82f6' }], bonds: [[0, 1]], formula: 'Nâ‚‚' },
 
-            { name: 'H₂O₂ (Hydrogen Peroxide)', atoms: [{ el: 'O', x: 160, y: 130, color: '#ef4444' }, { el: 'O', x: 240, y: 130, color: '#ef4444' }, { el: 'H', x: 110, y: 190, color: '#60a5fa' }, { el: 'H', x: 290, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [1, 3]], formula: 'H₂O₂' },
+            { name: 'Hâ‚‚Oâ‚‚ (Hydrogen Peroxide)', atoms: [{ el: 'O', x: 160, y: 130, color: '#ef4444' }, { el: 'O', x: 240, y: 130, color: '#ef4444' }, { el: 'H', x: 110, y: 190, color: '#60a5fa' }, { el: 'H', x: 290, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [1, 3]], formula: 'Hâ‚‚Oâ‚‚' },
 
             { name: 'HCl (Hydrochloric Acid)', atoms: [{ el: 'H', x: 160, y: 150, color: '#60a5fa' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0, 1]], formula: 'HCl' },
 
-            { name: 'H₂SO₄ (Sulfuric Acid)', atoms: [{ el: 'S', x: 200, y: 140, color: '#facc15' }, { el: 'O', x: 130, y: 100, color: '#ef4444' }, { el: 'O', x: 270, y: 100, color: '#ef4444' }, { el: 'O', x: 130, y: 190, color: '#ef4444' }, { el: 'O', x: 270, y: 190, color: '#ef4444' }, { el: 'H', x: 80, y: 210, color: '#60a5fa' }, { el: 'H', x: 320, y: 210, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[0,4],[3,5],[4,6]], formula: 'H₂SO₄' },
+            { name: 'Hâ‚‚SOâ‚„ (Sulfuric Acid)', atoms: [{ el: 'S', x: 200, y: 140, color: '#facc15' }, { el: 'O', x: 130, y: 100, color: '#ef4444' }, { el: 'O', x: 270, y: 100, color: '#ef4444' }, { el: 'O', x: 130, y: 190, color: '#ef4444' }, { el: 'O', x: 270, y: 190, color: '#ef4444' }, { el: 'H', x: 80, y: 210, color: '#60a5fa' }, { el: 'H', x: 320, y: 210, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[0,4],[3,5],[4,6]], formula: 'Hâ‚‚SOâ‚„' },
 
-            { name: 'C₂H₅OH (Ethanol)', atoms: [{ el: 'C', x: 150, y: 140, color: '#1e293b' }, { el: 'C', x: 230, y: 140, color: '#1e293b' }, { el: 'O', x: 300, y: 140, color: '#ef4444' }, { el: 'H', x: 320, y: 200, color: '#60a5fa' }, { el: 'H', x: 110, y: 90, color: '#60a5fa' }, { el: 'H', x: 110, y: 190, color: '#60a5fa' }, { el: 'H', x: 190, y: 90, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[0,4],[0,5],[0,6]], formula: 'C₂H₅OH' },
+            { name: 'Câ‚‚Hâ‚…OH (Ethanol)', atoms: [{ el: 'C', x: 150, y: 140, color: '#1e293b' }, { el: 'C', x: 230, y: 140, color: '#1e293b' }, { el: 'O', x: 300, y: 140, color: '#ef4444' }, { el: 'H', x: 320, y: 200, color: '#60a5fa' }, { el: 'H', x: 110, y: 90, color: '#60a5fa' }, { el: 'H', x: 110, y: 190, color: '#60a5fa' }, { el: 'H', x: 190, y: 90, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[0,4],[0,5],[0,6]], formula: 'Câ‚‚Hâ‚…OH' },
 
-            { name: 'CaCO₃ (Calcium Carbonate)', atoms: [{ el: 'Ca', x: 100, y: 150, color: '#fbbf24' }, { el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 200, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 190, color: '#ef4444' }, { el: 'O', x: 130, y: 190, color: '#ef4444' }], bonds: [[0,4],[1,2],[1,3],[1,4]], formula: 'CaCO₃' },
+            { name: 'CaCOâ‚ƒ (Calcium Carbonate)', atoms: [{ el: 'Ca', x: 100, y: 150, color: '#fbbf24' }, { el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 200, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 190, color: '#ef4444' }, { el: 'O', x: 130, y: 190, color: '#ef4444' }], bonds: [[0,4],[1,2],[1,3],[1,4]], formula: 'CaCOâ‚ƒ' },
 
-            { name: 'C₆H₁₂O₆ (Glucose)', atoms: [{ el: 'C', x: 120, y: 110, color: '#1e293b' }, { el: 'C', x: 180, y: 110, color: '#1e293b' }, { el: 'C', x: 240, y: 110, color: '#1e293b' }, { el: 'O', x: 120, y: 180, color: '#ef4444' }, { el: 'O', x: 180, y: 180, color: '#ef4444' }, { el: 'O', x: 240, y: 180, color: '#ef4444' }, { el: 'H', x: 300, y: 110, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[1,4],[2,5],[2,6]], formula: 'C₆H₁₂O₆' },
+            { name: 'Câ‚†Hâ‚â‚‚Oâ‚† (Glucose)', atoms: [{ el: 'C', x: 120, y: 110, color: '#1e293b' }, { el: 'C', x: 180, y: 110, color: '#1e293b' }, { el: 'C', x: 240, y: 110, color: '#1e293b' }, { el: 'O', x: 120, y: 180, color: '#ef4444' }, { el: 'O', x: 180, y: 180, color: '#ef4444' }, { el: 'O', x: 240, y: 180, color: '#ef4444' }, { el: 'H', x: 300, y: 110, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[1,4],[2,5],[2,6]], formula: 'Câ‚†Hâ‚â‚‚Oâ‚†' },
 
             { name: 'NaOH (Sodium Hydroxide)', atoms: [{ el: 'Na', x: 130, y: 150, color: '#a855f7' }, { el: 'O', x: 210, y: 150, color: '#ef4444' }, { el: 'H', x: 280, y: 150, color: '#60a5fa' }], bonds: [[0,1],[1,2]], formula: 'NaOH' },
 
-            { name: 'Fe₂O₃ (Iron Oxide)', atoms: [{ el: 'Fe', x: 140, y: 120, color: '#fb923c' }, { el: 'Fe', x: 260, y: 120, color: '#fb923c' }, { el: 'O', x: 120, y: 200, color: '#ef4444' }, { el: 'O', x: 200, y: 200, color: '#ef4444' }, { el: 'O', x: 280, y: 200, color: '#ef4444' }], bonds: [[0,2],[0,3],[1,3],[1,4]], formula: 'Fe₂O₃' },
+            { name: 'Feâ‚‚Oâ‚ƒ (Iron Oxide)', atoms: [{ el: 'Fe', x: 140, y: 120, color: '#fb923c' }, { el: 'Fe', x: 260, y: 120, color: '#fb923c' }, { el: 'O', x: 120, y: 200, color: '#ef4444' }, { el: 'O', x: 200, y: 200, color: '#ef4444' }, { el: 'O', x: 280, y: 200, color: '#ef4444' }], bonds: [[0,2],[0,3],[1,3],[1,4]], formula: 'Feâ‚‚Oâ‚ƒ' },
 
-            { name: 'O₃ (Ozone)', atoms: [{ el: 'O', x: 130, y: 150, color: '#ef4444' }, { el: 'O', x: 200, y: 110, color: '#ef4444' }, { el: 'O', x: 270, y: 150, color: '#ef4444' }], bonds: [[0,1],[1,2]], formula: 'O₃' },
+            { name: 'Oâ‚ƒ (Ozone)', atoms: [{ el: 'O', x: 130, y: 150, color: '#ef4444' }, { el: 'O', x: 200, y: 110, color: '#ef4444' }, { el: 'O', x: 270, y: 150, color: '#ef4444' }], bonds: [[0,1],[1,2]], formula: 'Oâ‚ƒ' },
 
             { name: 'CO (Carbon Monoxide)', atoms: [{ el: 'C', x: 160, y: 150, color: '#1e293b' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0,1]], formula: 'CO' },
 
-            { name: 'NO₂ (Nitrogen Dioxide)', atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'O', x: 140, y: 180, color: '#ef4444' }, { el: 'O', x: 260, y: 180, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'NO₂' },
+            { name: 'NOâ‚‚ (Nitrogen Dioxide)', atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'O', x: 140, y: 180, color: '#ef4444' }, { el: 'O', x: 260, y: 180, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'NOâ‚‚' },
 
-            { name: 'SO₂ (Sulfur Dioxide)', atoms: [{ el: 'S', x: 200, y: 120, color: '#facc15' }, { el: 'O', x: 130, y: 180, color: '#ef4444' }, { el: 'O', x: 270, y: 180, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'SO₂' },
+            { name: 'SOâ‚‚ (Sulfur Dioxide)', atoms: [{ el: 'S', x: 200, y: 120, color: '#facc15' }, { el: 'O', x: 130, y: 180, color: '#ef4444' }, { el: 'O', x: 270, y: 180, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'SOâ‚‚' },
 
-            { name: 'N₂O (Nitrous Oxide)', atoms: [{ el: 'N', x: 140, y: 150, color: '#3b82f6' }, { el: 'N', x: 200, y: 150, color: '#3b82f6' }, { el: 'O', x: 260, y: 150, color: '#ef4444' }], bonds: [[0,1],[1,2]], formula: 'N₂O' },
+            { name: 'Nâ‚‚O (Nitrous Oxide)', atoms: [{ el: 'N', x: 140, y: 150, color: '#3b82f6' }, { el: 'N', x: 200, y: 150, color: '#3b82f6' }, { el: 'O', x: 260, y: 150, color: '#ef4444' }], bonds: [[0,1],[1,2]], formula: 'Nâ‚‚O' },
 
-            { name: 'CH₃OH (Methanol)', atoms: [{ el: 'C', x: 160, y: 140, color: '#1e293b' }, { el: 'O', x: 240, y: 140, color: '#ef4444' }, { el: 'H', x: 300, y: 140, color: '#60a5fa' }, { el: 'H', x: 120, y: 90, color: '#60a5fa' }, { el: 'H', x: 120, y: 190, color: '#60a5fa' }, { el: 'H', x: 190, y: 80, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[0,4],[0,5]], formula: 'CH₃OH' },
+            { name: 'CHâ‚ƒOH (Methanol)', atoms: [{ el: 'C', x: 160, y: 140, color: '#1e293b' }, { el: 'O', x: 240, y: 140, color: '#ef4444' }, { el: 'H', x: 300, y: 140, color: '#60a5fa' }, { el: 'H', x: 120, y: 90, color: '#60a5fa' }, { el: 'H', x: 120, y: 190, color: '#60a5fa' }, { el: 'H', x: 190, y: 80, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[0,4],[0,5]], formula: 'CHâ‚ƒOH' },
 
-            { name: 'HNO₃ (Nitric Acid)', atoms: [{ el: 'N', x: 200, y: 130, color: '#3b82f6' }, { el: 'O', x: 140, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 100, color: '#ef4444' }, { el: 'O', x: 200, y: 200, color: '#ef4444' }, { el: 'H', x: 260, y: 200, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[3,4]], formula: 'HNO₃' },
+            { name: 'HNOâ‚ƒ (Nitric Acid)', atoms: [{ el: 'N', x: 200, y: 130, color: '#3b82f6' }, { el: 'O', x: 140, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 100, color: '#ef4444' }, { el: 'O', x: 200, y: 200, color: '#ef4444' }, { el: 'H', x: 260, y: 200, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[3,4]], formula: 'HNOâ‚ƒ' },
 
-            { name: 'H₃PO₄ (Phosphoric Acid)', atoms: [{ el: 'P', x: 200, y: 140, color: '#f97316' }, { el: 'O', x: 140, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 90, color: '#ef4444' }, { el: 'O', x: 270, y: 195, color: '#ef4444' }, { el: 'O', x: 130, y: 195, color: '#ef4444' }, { el: 'H', x: 310, y: 60, color: '#60a5fa' }, { el: 'H', x: 320, y: 210, color: '#60a5fa' }, { el: 'H', x: 80, y: 210, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[0,4],[2,5],[3,6],[4,7]], formula: 'H₃PO₄' },
+            { name: 'Hâ‚ƒPOâ‚„ (Phosphoric Acid)', atoms: [{ el: 'P', x: 200, y: 140, color: '#f97316' }, { el: 'O', x: 140, y: 80, color: '#ef4444' }, { el: 'O', x: 270, y: 90, color: '#ef4444' }, { el: 'O', x: 270, y: 195, color: '#ef4444' }, { el: 'O', x: 130, y: 195, color: '#ef4444' }, { el: 'H', x: 310, y: 60, color: '#60a5fa' }, { el: 'H', x: 320, y: 210, color: '#60a5fa' }, { el: 'H', x: 80, y: 210, color: '#60a5fa' }], bonds: [[0,1],[0,2],[0,3],[0,4],[2,5],[3,6],[4,7]], formula: 'Hâ‚ƒPOâ‚„' },
 
-            { name: 'C₃H₈ (Propane)', atoms: [{ el: 'C', x: 130, y: 140, color: '#1e293b' }, { el: 'C', x: 200, y: 140, color: '#1e293b' }, { el: 'C', x: 270, y: 140, color: '#1e293b' }, { el: 'H', x: 100, y: 90, color: '#60a5fa' }, { el: 'H', x: 100, y: 190, color: '#60a5fa' }, { el: 'H', x: 130, y: 210, color: '#60a5fa' }, { el: 'H', x: 200, y: 90, color: '#60a5fa' }, { el: 'H', x: 200, y: 190, color: '#60a5fa' }, { el: 'H', x: 300, y: 90, color: '#60a5fa' }, { el: 'H', x: 300, y: 190, color: '#60a5fa' }, { el: 'H', x: 270, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[0,4],[0,5],[1,6],[1,7],[2,8],[2,9],[2,10]], formula: 'C₃H₈' },
+            { name: 'Câ‚ƒHâ‚ˆ (Propane)', atoms: [{ el: 'C', x: 130, y: 140, color: '#1e293b' }, { el: 'C', x: 200, y: 140, color: '#1e293b' }, { el: 'C', x: 270, y: 140, color: '#1e293b' }, { el: 'H', x: 100, y: 90, color: '#60a5fa' }, { el: 'H', x: 100, y: 190, color: '#60a5fa' }, { el: 'H', x: 130, y: 210, color: '#60a5fa' }, { el: 'H', x: 200, y: 90, color: '#60a5fa' }, { el: 'H', x: 200, y: 190, color: '#60a5fa' }, { el: 'H', x: 300, y: 90, color: '#60a5fa' }, { el: 'H', x: 300, y: 190, color: '#60a5fa' }, { el: 'H', x: 270, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[0,3],[0,4],[0,5],[1,6],[1,7],[2,8],[2,9],[2,10]], formula: 'Câ‚ƒHâ‚ˆ' },
 
-            { name: 'C₄H₁₀ (Butane)', atoms: [{ el: 'C', x: 100, y: 140, color: '#1e293b' }, { el: 'C', x: 170, y: 140, color: '#1e293b' }, { el: 'C', x: 240, y: 140, color: '#1e293b' }, { el: 'C', x: 310, y: 140, color: '#1e293b' }, { el: 'H', x: 70, y: 100, color: '#60a5fa' }, { el: 'H', x: 70, y: 180, color: '#60a5fa' }, { el: 'H', x: 100, y: 210, color: '#60a5fa' }, { el: 'H', x: 170, y: 100, color: '#60a5fa' }, { el: 'H', x: 170, y: 195, color: '#60a5fa' }, { el: 'H', x: 240, y: 100, color: '#60a5fa' }, { el: 'H', x: 240, y: 195, color: '#60a5fa' }, { el: 'H', x: 340, y: 100, color: '#60a5fa' }, { el: 'H', x: 340, y: 180, color: '#60a5fa' }, { el: 'H', x: 310, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[0,4],[0,5],[0,6],[1,7],[1,8],[2,9],[2,10],[3,11],[3,12],[3,13]], formula: 'C₄H₁₀' },
+            { name: 'Câ‚„Hâ‚â‚€ (Butane)', atoms: [{ el: 'C', x: 100, y: 140, color: '#1e293b' }, { el: 'C', x: 170, y: 140, color: '#1e293b' }, { el: 'C', x: 240, y: 140, color: '#1e293b' }, { el: 'C', x: 310, y: 140, color: '#1e293b' }, { el: 'H', x: 70, y: 100, color: '#60a5fa' }, { el: 'H', x: 70, y: 180, color: '#60a5fa' }, { el: 'H', x: 100, y: 210, color: '#60a5fa' }, { el: 'H', x: 170, y: 100, color: '#60a5fa' }, { el: 'H', x: 170, y: 195, color: '#60a5fa' }, { el: 'H', x: 240, y: 100, color: '#60a5fa' }, { el: 'H', x: 240, y: 195, color: '#60a5fa' }, { el: 'H', x: 340, y: 100, color: '#60a5fa' }, { el: 'H', x: 340, y: 180, color: '#60a5fa' }, { el: 'H', x: 310, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[0,4],[0,5],[0,6],[1,7],[1,8],[2,9],[2,10],[3,11],[3,12],[3,13]], formula: 'Câ‚„Hâ‚â‚€' },
 
-            { name: 'SiO₂ (Silicon Dioxide)', atoms: [{ el: 'Si', x: 200, y: 150, color: '#34d399' }, { el: 'O', x: 130, y: 150, color: '#ef4444' }, { el: 'O', x: 270, y: 150, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'SiO₂' },
+            { name: 'SiOâ‚‚ (Silicon Dioxide)', atoms: [{ el: 'Si', x: 200, y: 150, color: '#34d399' }, { el: 'O', x: 130, y: 150, color: '#ef4444' }, { el: 'O', x: 270, y: 150, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'SiOâ‚‚' },
 
             { name: 'KCl (Potassium Chloride)', atoms: [{ el: 'K', x: 160, y: 150, color: '#f87171' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0,1]], formula: 'KCl' },
 
             { name: 'MgO (Magnesium Oxide)', atoms: [{ el: 'Mg', x: 160, y: 150, color: '#fbbf24' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0,1]], formula: 'MgO' },
 
-            { name: 'NaHCO₃ (Baking Soda)', atoms: [{ el: 'Na', x: 80, y: 150, color: '#a855f7' }, { el: 'O', x: 150, y: 150, color: '#ef4444' }, { el: 'C', x: 220, y: 150, color: '#1e293b' }, { el: 'O', x: 220, y: 80, color: '#ef4444' }, { el: 'O', x: 290, y: 150, color: '#ef4444' }, { el: 'H', x: 340, y: 150, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[2,4],[4,5]], formula: 'NaHCO₃' },
+            { name: 'NaHCOâ‚ƒ (Baking Soda)', atoms: [{ el: 'Na', x: 80, y: 150, color: '#a855f7' }, { el: 'O', x: 150, y: 150, color: '#ef4444' }, { el: 'C', x: 220, y: 150, color: '#1e293b' }, { el: 'O', x: 220, y: 80, color: '#ef4444' }, { el: 'O', x: 290, y: 150, color: '#ef4444' }, { el: 'H', x: 340, y: 150, color: '#60a5fa' }], bonds: [[0,1],[1,2],[2,3],[2,4],[4,5]], formula: 'NaHCOâ‚ƒ' },
 
-            { name: 'CH₃COOH (Acetic Acid)', atoms: [{ el: 'C', x: 140, y: 140, color: '#1e293b' }, { el: 'C', x: 220, y: 140, color: '#1e293b' }, { el: 'O', x: 220, y: 70, color: '#ef4444' }, { el: 'O', x: 290, y: 160, color: '#ef4444' }, { el: 'H', x: 340, y: 160, color: '#60a5fa' }, { el: 'H', x: 100, y: 95, color: '#60a5fa' }, { el: 'H', x: 100, y: 185, color: '#60a5fa' }, { el: 'H', x: 140, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[1,3],[3,4],[0,5],[0,6],[0,7]], formula: 'CH₃COOH' },
+            { name: 'CHâ‚ƒCOOH (Acetic Acid)', atoms: [{ el: 'C', x: 140, y: 140, color: '#1e293b' }, { el: 'C', x: 220, y: 140, color: '#1e293b' }, { el: 'O', x: 220, y: 70, color: '#ef4444' }, { el: 'O', x: 290, y: 160, color: '#ef4444' }, { el: 'H', x: 340, y: 160, color: '#60a5fa' }, { el: 'H', x: 100, y: 95, color: '#60a5fa' }, { el: 'H', x: 100, y: 185, color: '#60a5fa' }, { el: 'H', x: 140, y: 210, color: '#60a5fa' }], bonds: [[0,1],[1,2],[1,3],[3,4],[0,5],[0,6],[0,7]], formula: 'CHâ‚ƒCOOH' },
 
-            { name: 'KNO₃ (Potassium Nitrate)', atoms: [{ el: 'K', x: 100, y: 150, color: '#f87171' }, { el: 'N', x: 200, y: 130, color: '#3b82f6' }, { el: 'O', x: 160, y: 190, color: '#ef4444' }, { el: 'O', x: 240, y: 190, color: '#ef4444' }, { el: 'O', x: 200, y: 70, color: '#ef4444' }], bonds: [[0,2],[1,2],[1,3],[1,4]], formula: 'KNO₃' },
+            { name: 'KNOâ‚ƒ (Potassium Nitrate)', atoms: [{ el: 'K', x: 100, y: 150, color: '#f87171' }, { el: 'N', x: 200, y: 130, color: '#3b82f6' }, { el: 'O', x: 160, y: 190, color: '#ef4444' }, { el: 'O', x: 240, y: 190, color: '#ef4444' }, { el: 'O', x: 200, y: 70, color: '#ef4444' }], bonds: [[0,2],[1,2],[1,3],[1,4]], formula: 'KNOâ‚ƒ' },
 
-            { name: 'CuSO₄ (Copper Sulfate)', atoms: [{ el: 'Cu', x: 100, y: 150, color: '#fb923c' }, { el: 'S', x: 200, y: 140, color: '#facc15' }, { el: 'O', x: 160, y: 80, color: '#ef4444' }, { el: 'O', x: 260, y: 90, color: '#ef4444' }, { el: 'O', x: 260, y: 200, color: '#ef4444' }, { el: 'O', x: 140, y: 200, color: '#ef4444' }], bonds: [[0,5],[1,2],[1,3],[1,4],[1,5]], formula: 'CuSO₄' },
+            { name: 'CuSOâ‚„ (Copper Sulfate)', atoms: [{ el: 'Cu', x: 100, y: 150, color: '#fb923c' }, { el: 'S', x: 200, y: 140, color: '#facc15' }, { el: 'O', x: 160, y: 80, color: '#ef4444' }, { el: 'O', x: 260, y: 90, color: '#ef4444' }, { el: 'O', x: 260, y: 200, color: '#ef4444' }, { el: 'O', x: 140, y: 200, color: '#ef4444' }], bonds: [[0,5],[1,2],[1,3],[1,4],[1,5]], formula: 'CuSOâ‚„' },
 
           ];
 
@@ -5353,7 +5353,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
             ),
 
-            // ── Viewer Mode ──
+            // â”€â”€ Viewer Mode â”€â”€
 
             mode === 'viewer' && React.createElement("div", null,
 
@@ -5383,7 +5383,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
             ),
 
-            // ── Compound Creator Mode ──
+            // â”€â”€ Compound Creator Mode â”€â”€
 
             mode === 'creator' && React.createElement("div", null,
 
@@ -5483,7 +5483,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
             ),
 
-            // ── Build Mode ──
+            // â”€â”€ Build Mode â”€â”€
 
             mode === 'build' && React.createElement("div", null,
 
@@ -5775,7 +5775,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     } else {
 
-                      // Enter bond mode — user must click first atom
+                      // Enter bond mode â€” user must click first atom
 
                       upd('buildBondFrom', null);
 
@@ -5789,7 +5789,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 }, "\u{1F517} " + (d.buildBondFrom !== null && d.buildBondFrom !== undefined ? 'Cancel Bond' : 'Draw Bond')),
 
-                // Bond-from selector — click an atom first
+                // Bond-from selector â€” click an atom first
 
                 (d.buildAtoms || []).length >= 2 && d.buildBondFrom === null && React.createElement("div", { className: "flex gap-1" },
 
@@ -6005,7 +6005,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
             ),
 
-            // ── Periodic Table Mode ──
+            // â”€â”€ Periodic Table Mode â”€â”€
 
             mode === 'table' && React.createElement("div", null,
 
@@ -6085,7 +6085,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     ),
 
-                    // ─── BOHR MODEL ATOM VISUALIZATION ───
+                    // â”€â”€â”€ BOHR MODEL ATOM VISUALIZATION â”€â”€â”€
 
                     React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200/50" },
 
@@ -6431,7 +6431,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
               ),
 
-              // ── Quiz: Element Hunt ──
+              // â”€â”€ Quiz: Element Hunt â”€â”€
 
               (() => {
 
@@ -6467,9 +6467,9 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                    React.createElement("button", { onClick: function () { upd('elQuiz', makeElQuiz()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (elQuiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-600 text-white') + " hover:opacity-90 transition-all" }, elQuiz ? '🔄 Next Question' : '🔬 Element Quiz'),
+                    React.createElement("button", { onClick: function () { upd('elQuiz', makeElQuiz()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (elQuiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-600 text-white') + " hover:opacity-90 transition-all" }, elQuiz ? 'ðŸ”„ Next Question' : 'ðŸ”¬ Element Quiz'),
 
-                    elScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + elScore + ' | 🔥 ' + elStreak)
+                    elScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, 'â­ ' + elScore + ' | ðŸ”¥ ' + elStreak)
 
                   ),
 
@@ -6503,7 +6503,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   ),
 
-                  elQuiz && elQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold " + (elQuiz.chosen === elQuiz.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') }, elQuiz.chosen === elQuiz.answer ? '✅ Correct!' : '❌ Answer: ' + elQuiz.answer)
+                  elQuiz && elQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold " + (elQuiz.chosen === elQuiz.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') }, elQuiz.chosen === elQuiz.answer ? 'âœ… Correct!' : 'âŒ Answer: ' + elQuiz.answer)
 
                 );
 
@@ -6516,15 +6516,15 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
     }
   });
 
-  // ═══ 🔬 solarSystem (solarSystem) ═══
+  // â•â•â• ðŸ”¬ solarSystem (solarSystem) â•â•â•
   window.StemLab.registerTool('solarSystem', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'solarSystem',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -6557,7 +6557,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (solarSystem) ──
+      // â”€â”€ Tool body (solarSystem) â”€â”€
       return (function() {
 const d = labToolData.solarSystem;
 
@@ -6593,11 +6593,11 @@ const d = labToolData.solarSystem;
 
 
 
-          // ── Three.js 3D Canvas ──
+          // â”€â”€ Three.js 3D Canvas â”€â”€
 
           const canvasRef = function (canvas) {
 
-            if (!canvas) { // cleanup on unmount — but skip if canvas is still alive (just a ref swap from re-render)
+            if (!canvas) { // cleanup on unmount â€” but skip if canvas is still alive (just a ref swap from re-render)
 
               const prev = document.querySelector('.solar3d-canvas');
 
@@ -6639,7 +6639,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // ── Starfield ──
+              // â”€â”€ Starfield â”€â”€
 
               const starGeo = new THREE.BufferGeometry();
 
@@ -6653,13 +6653,13 @@ const d = labToolData.solarSystem;
 
 
 
-              // ── Ambient light ──
+              // â”€â”€ Ambient light â”€â”€
 
               scene.add(new THREE.AmbientLight(0x222244, 0.3));
 
 
 
-              // ── Sun ──
+              // â”€â”€ Sun â”€â”€
 
               const sunGeo = new THREE.SphereGeometry(5.5, 32, 32);
 
@@ -6695,7 +6695,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // ── Procedural planet texture ──
+              // â”€â”€ Procedural planet texture â”€â”€
 
               function makePlanetTex(rgb, variation) {
 
@@ -6731,7 +6731,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // ── Create planets ──
+              // â”€â”€ Create planets â”€â”€
 
               const planetMeshes = [];
 
@@ -6767,7 +6767,7 @@ const d = labToolData.solarSystem;
 
                 mesh.userData = { name: p.name, idx: idx };
 
-                // Starting orbital angle — spread planets out
+                // Starting orbital angle â€” spread planets out
 
                 mesh._orbitAngle = (idx / PLANETS.length) * Math.PI * 2;
 
@@ -6853,7 +6853,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // ── Asteroid belt (between Mars and Jupiter) ──
+              // â”€â”€ Asteroid belt (between Mars and Jupiter) â”€â”€
 
               const asteroidCount = 300;
 
@@ -6902,7 +6902,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // ── Camera orbit controls (manual) ──
+              // â”€â”€ Camera orbit controls (manual) â”€â”€
 
               let camTheta = 0.5, camPhi = 1.0, camDist = 55;
 
@@ -6982,7 +6982,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // ── Raycasting for planet clicks (smooth fly-to) ──
+              // â”€â”€ Raycasting for planet clicks (smooth fly-to) â”€â”€
 
               const raycaster = new THREE.Raycaster();
 
@@ -7012,7 +7012,7 @@ const d = labToolData.solarSystem;
 
                   focusedPlanetIdx = hitObj.userData.idx;
 
-                  // Set smooth zoom target — closer for small planets, farther for giants
+                  // Set smooth zoom target â€” closer for small planets, farther for giants
 
                   var radius = hitObj.geometry.parameters.radius;
 
@@ -7028,7 +7028,7 @@ const d = labToolData.solarSystem;
 
                 } else {
 
-                  // Clicked empty space — deselect, return to system view
+                  // Clicked empty space â€” deselect, return to system view
 
                   upd('selectedPlanet', null);
 
@@ -7072,13 +7072,13 @@ const d = labToolData.solarSystem;
 
 
 
-              // ── Planet label overlay ──
+              // â”€â”€ Planet label overlay â”€â”€
 
               const labelContainer = canvas.parentElement.querySelector('.solar-labels');
 
 
 
-              // ── Animation loop ──
+              // â”€â”€ Animation loop â”€â”€
 
               let animId;
 
@@ -7156,7 +7156,7 @@ const d = labToolData.solarSystem;
 
 
 
-                // ── Handle camera reset signal from Reset View button ──
+                // â”€â”€ Handle camera reset signal from Reset View button â”€â”€
 
                 if (canvas.dataset.resetCamera === 'true') {
 
@@ -7176,7 +7176,7 @@ const d = labToolData.solarSystem;
 
 
 
-                // ── Smooth camera tracking ──
+                // â”€â”€ Smooth camera tracking â”€â”€
 
                 // If focused on a planet, update targetLookAt to follow it as it orbits
 
@@ -7295,7 +7295,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // ── Resize handler ──
+              // â”€â”€ Resize handler â”€â”€
 
               const resizeObserver = new ResizeObserver(function () {
 
@@ -7309,7 +7309,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // ── Cleanup ──
+              // â”€â”€ Cleanup â”€â”€
 
               canvas._solarCleanup = function () {
 
@@ -7452,7 +7452,7 @@ const d = labToolData.solarSystem;
 
             ),
 
-            // ── Scale Explanation Collapsible ──
+            // â”€â”€ Scale Explanation Collapsible â”€â”€
 
             React.createElement("details", { className: "mt-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 overflow-hidden" },
 
@@ -7500,7 +7500,7 @@ const d = labToolData.solarSystem;
 
             ),
 
-            // ── Planet Info Card (Enhanced with Close-Up & Drone) ──
+            // â”€â”€ Planet Info Card (Enhanced with Close-Up & Drone) â”€â”€
 
             sel && React.createElement("div", { className: "mt-3 bg-slate-50 rounded-xl border border-slate-200 p-4 animate-in slide-in-from-bottom duration-300" },
 
@@ -7544,7 +7544,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // ── OVERVIEW TAB ──
+              // â”€â”€ OVERVIEW TAB â”€â”€
 
               (d.viewTab || 'overview') === 'overview' && React.createElement("div", null,
 
@@ -7622,7 +7622,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // ── SURFACE TAB ──
+              // â”€â”€ SURFACE TAB â”€â”€
 
               (d.viewTab) === 'surface' && React.createElement("div", { className: "space-y-3" },
 
@@ -7646,7 +7646,7 @@ const d = labToolData.solarSystem;
 
                       ['\uD83C\uDF21 Temperature', sel.temp],
 
-                      ['\uD83C\uDF2C\uFE0F Atmosphere', (sel.atmosphere || 'None').split(' —')[0]]
+                      ['\uD83C\uDF2C\uFE0F Atmosphere', (sel.atmosphere || 'None').split(' â€”')[0]]
 
                     ].map(function (item) {
 
@@ -7664,7 +7664,7 @@ const d = labToolData.solarSystem;
 
                 ),
 
-                // ── 2D Planet Surface Canvas ──
+                // â”€â”€ 2D Planet Surface Canvas â”€â”€
 
                 React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 shadow-xl", style: { height: '350px', borderColor: sel.color + '60' } },
 
@@ -7922,7 +7922,7 @@ const d = labToolData.solarSystem;
 
 
 
-              // ── ROVER / PROBE TAB (Three.js First-Person) ──
+              // â”€â”€ ROVER / PROBE TAB (Three.js First-Person) â”€â”€
 
               (d.viewTab) === 'drone' && React.createElement("div", { id: "drone-fullscreen-container" },
 
@@ -7962,7 +7962,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Sky dome ──
+                        // â”€â”€ Sky dome â”€â”€
 
                         var skyGeo = new THREE.SphereGeometry(200, 32, 16);
 
@@ -8002,7 +8002,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Terrain (rocky planets) or Cloud layers (gas giants) ──
+                        // â”€â”€ Terrain (rocky planets) or Cloud layers (gas giants) â”€â”€
 
                         if (!isGas) {
 
@@ -8118,7 +8118,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Lighting ──
+                        // â”€â”€ Lighting â”€â”€
 
                         scene.add(new THREE.AmbientLight(0x444466, 0.6));
 
@@ -8128,7 +8128,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── 3D Rover / Probe Model ──
+                        // â”€â”€ 3D Rover / Probe Model â”€â”€
 
                         var roverGroup = new THREE.Group();
 
@@ -8326,7 +8326,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Scattered Environment Objects (rocks/boulders for depth cues) ──
+                        // â”€â”€ Scattered Environment Objects (rocks/boulders for depth cues) â”€â”€
 
                         var envObjects = [];
 
@@ -8438,7 +8438,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Particle effects ──
+                        // â”€â”€ Particle effects â”€â”€
 
                         if (sel.terrainType === 'desert' || sel.terrainType === 'volcanic') {
 
@@ -8496,7 +8496,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Movement state ──
+                        // â”€â”€ Movement state â”€â”€
 
                         var moveState = { forward: false, back: false, left: false, right: false, up: false, down: false };
 
@@ -8570,7 +8570,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Rich Educational HUD (Enhanced) ──
+                        // â”€â”€ Rich Educational HUD (Enhanced) â”€â”€
 
                         var hud = document.createElement('div');
 
@@ -8586,7 +8586,7 @@ const d = labToolData.solarSystem;
 
                         var featList = (sel.notableFeatures || []).slice(0, 3).map(function (f) { return '<div style="color:#94a3b8;font-size:9px;padding-left:8px">\u2022 ' + f + '</div>'; }).join('');
 
-                        // ── Fullscreen Toggle ──
+                        // â”€â”€ Fullscreen Toggle â”€â”€
 
                         var fsToggle = document.createElement('button');
 
@@ -8712,7 +8712,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Hazard Warning Strip ──
+                        // â”€â”€ Hazard Warning Strip â”€â”€
 
                         var hazardEl = document.createElement('div');
 
@@ -8784,7 +8784,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Discovery System (POI landmarks) ──
+                        // â”€â”€ Discovery System (POI landmarks) â”€â”€
 
                         var POI_DATA = {
 
@@ -8986,7 +8986,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Mission Card Overlay (M key toggle) ──
+                        // â”€â”€ Mission Card Overlay (M key toggle) â”€â”€
 
                         var missionCard = document.createElement('div');
 
@@ -9056,7 +9056,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Science Fact Ticker (bottom of canvas, expanded) ──
+                        // â”€â”€ Science Fact Ticker (bottom of canvas, expanded) â”€â”€
 
                         var ticker = document.createElement('div');
 
@@ -9122,7 +9122,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Compass / bearing indicator (top-right) ──
+                        // â”€â”€ Compass / bearing indicator (top-right) â”€â”€
 
                         var compass = document.createElement('div');
 
@@ -9134,7 +9134,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── 3rd-person camera toggle (V key) + Mission card (M key) ──
+                        // â”€â”€ 3rd-person camera toggle (V key) + Mission card (M key) â”€â”€
 
                         var thirdPerson = false;
 
@@ -9206,7 +9206,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Trail Line (path history) - REMOVED ──
+                        // â”€â”€ Trail Line (path history) - REMOVED â”€â”€
 
                         var trailPositions = []; var trailLine = null; var trailMaxPoints = 500;
 
@@ -9218,7 +9218,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Navigation Challenge System (N key) ──
+                        // â”€â”€ Navigation Challenge System (N key) â”€â”€
 
                         var navChallengeActive = false, navTargetX = 0, navTargetZ = 0, navTargetMesh = null;
 
@@ -9382,7 +9382,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Course Plotter System (P key) ──
+                        // â”€â”€ Course Plotter System (P key) â”€â”€
 
                         var plotterVisible = false, plotterWaypoints = [], plotterRouteLine = null, plotterActiveWP = 0;
 
@@ -9538,7 +9538,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Signal Triangulation System ──
+                        // â”€â”€ Signal Triangulation System â”€â”€
 
                         var beacons = [
 
@@ -9592,7 +9592,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Skills Badge System ──
+                        // â”€â”€ Skills Badge System â”€â”€
 
                         var badges = {
 
@@ -9632,7 +9632,7 @@ const d = labToolData.solarSystem;
 
 
 
-                        // ── Animation loop with 3rd-person + compass ──
+                        // â”€â”€ Animation loop with 3rd-person + compass â”€â”€
 
                         function animate3dV2() {
 
@@ -9738,7 +9738,7 @@ const d = labToolData.solarSystem;
 
 
 
-                          // ── Live telemetry updates (every 3 frames for perf) ──
+                          // â”€â”€ Live telemetry updates (every 3 frames for perf) â”€â”€
 
                           if (tick3d % 3 === 0) {
 
@@ -9784,7 +9784,7 @@ const d = labToolData.solarSystem;
 
 
 
-                          // ── Update Goal Line Dynamic Vertex ──
+                          // â”€â”€ Update Goal Line Dynamic Vertex â”€â”€
 
                           if (navChallengeActive && navGoalLine) {
 
@@ -9798,7 +9798,7 @@ const d = labToolData.solarSystem;
 
 
 
-                          // ── POI proximity detection (every 10 frames) ──
+                          // â”€â”€ POI proximity detection (every 10 frames) â”€â”€
 
                           if (tick3d % 10 === 0) {
 
@@ -9836,7 +9836,7 @@ const d = labToolData.solarSystem;
 
 
 
-                          // ── Feature updates (trail, nav, plotter, badges) ──
+                          // â”€â”€ Feature updates (trail, nav, plotter, badges) â”€â”€
 
                           if (tick3d % 5 === 0) updateTrail();
 
@@ -9852,7 +9852,7 @@ const d = labToolData.solarSystem;
 
 
 
-                          // ── Pulse POI markers (animate opacity) ──
+                          // â”€â”€ Pulse POI markers (animate opacity) â”€â”€
 
                           poiMeshes.forEach(function (m) {
 
@@ -9876,7 +9876,7 @@ const d = labToolData.solarSystem;
 
 
 
-                          // ── Update rover/probe model position ──
+                          // â”€â”€ Update rover/probe model position â”€â”€
 
                           roverGroup.position.x = playerPos.x;
 
@@ -10006,7 +10006,7 @@ const d = labToolData.solarSystem;
 
                   }),
 
-                  // ── Quiz Mode ──
+                  // â”€â”€ Quiz Mode â”€â”€
 
                   React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
 
@@ -10090,7 +10090,7 @@ const d = labToolData.solarSystem;
 
                     ),
 
-                    // ── Planet Comparison ──
+                    // â”€â”€ Planet Comparison â”€â”€
 
                     React.createElement("div", { className: "mt-3" },
 
@@ -10168,15 +10168,15 @@ const d = labToolData.solarSystem;
   
   // [Galaxy tool extracted to stem_tool_galaxy.js]
 
-  // ═══ 🔬 universe (universe) ═══
+  // â•â•â• ðŸ”¬ universe (universe) â•â•â•
   window.StemLab.registerTool('universe', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'universe',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -10209,7 +10209,7 @@ const d = labToolData.solarSystem;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (universe) ──
+      // â”€â”€ Tool body (universe) â”€â”€
       return (function() {
 var d = labToolData.universe || {};
 
@@ -10225,7 +10225,7 @@ var d = labToolData.universe || {};
 
 
 
-          // ── Cosmic epochs (enhanced) ──
+          // â”€â”€ Cosmic epochs (enhanced) â”€â”€
 
           var EPOCHS = [
 
@@ -10371,7 +10371,7 @@ var d = labToolData.universe || {};
 
 
 
-          // ── Canvas visualization ──
+          // â”€â”€ Canvas visualization â”€â”€
 
           var canvasRefCb = function (canvasEl) {
 
@@ -10483,7 +10483,7 @@ var d = labToolData.universe || {};
 
 
 
-                // ── Sky gradient (era-specific) ──
+                // â”€â”€ Sky gradient (era-specific) â”€â”€
 
                 var skyGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, W * 0.7);
 
@@ -10543,7 +10543,7 @@ var d = labToolData.universe || {};
 
 
 
-                // ── Big Bang: expanding shockwave rings ──
+                // â”€â”€ Big Bang: expanding shockwave rings â”€â”€
 
                 if (t < 0.3) {
 
@@ -10627,7 +10627,7 @@ var d = labToolData.universe || {};
 
 
 
-                // ── CMB glow (recombination era: 0.2-1.0) ──
+                // â”€â”€ CMB glow (recombination era: 0.2-1.0) â”€â”€
 
                 if (t > 0.15 && t < 1.0) {
 
@@ -10663,7 +10663,7 @@ var d = labToolData.universe || {};
 
 
 
-                // ── Stars (appear after Dark Ages) ──
+                // â”€â”€ Stars (appear after Dark Ages) â”€â”€
 
                 var starBrightness = t < 0.4 ? 0 : Math.min(1, (t - 0.4) / 0.8);
 
@@ -10721,7 +10721,7 @@ var d = labToolData.universe || {};
 
 
 
-                // ── Nebulae (after t > 2 Gyr, star-forming regions) ──
+                // â”€â”€ Nebulae (after t > 2 Gyr, star-forming regions) â”€â”€
 
                 if (t > 2) {
 
@@ -10753,7 +10753,7 @@ var d = labToolData.universe || {};
 
 
 
-                // ── Galaxies (after t > 1 Gyr) with spiral hints ──
+                // â”€â”€ Galaxies (after t > 1 Gyr) with spiral hints â”€â”€
 
                 if (t > 1) {
 
@@ -10825,7 +10825,7 @@ var d = labToolData.universe || {};
 
 
 
-                // ── Cosmic Web Filaments (dark matter structure connecting galaxies, t > 2) ──
+                // â”€â”€ Cosmic Web Filaments (dark matter structure connecting galaxies, t > 2) â”€â”€
 
                 if (t > 2) {
 
@@ -10893,7 +10893,7 @@ var d = labToolData.universe || {};
 
 
 
-                // ── Dark Matter Halos (subtle glow behind galaxies) ──
+                // â”€â”€ Dark Matter Halos (subtle glow behind galaxies) â”€â”€
 
                 if (t > 1.5) {
 
@@ -10933,7 +10933,7 @@ var d = labToolData.universe || {};
 
 
 
-                // ── Shooting Stars / Meteor Streaks (after t > 9, Solar System era) ──
+                // â”€â”€ Shooting Stars / Meteor Streaks (after t > 9, Solar System era) â”€â”€
 
                 if (t > 9) {
 
@@ -10995,7 +10995,7 @@ var d = labToolData.universe || {};
 
 
 
-                // ── Protoplanetary Disk (near Sun formation, t ≈ 9.0–9.5) ──
+                // â”€â”€ Protoplanetary Disk (near Sun formation, t â‰ˆ 9.0â€“9.5) â”€â”€
 
                 if (t > 8.5 && t < 10) {
 
@@ -11099,7 +11099,7 @@ var d = labToolData.universe || {};
 
 
 
-                // ── Epoch label overlay (bottom-left HUD) ──
+                // â”€â”€ Epoch label overlay (bottom-left HUD) â”€â”€
 
                 // Dark backdrop for readability
 
@@ -11273,7 +11273,7 @@ var d = labToolData.universe || {};
 
             ),
 
-            // ── Current epoch info card (enhanced with dark theme + extra fields) ──
+            // â”€â”€ Current epoch info card (enhanced with dark theme + extra fields) â”€â”€
 
             React.createElement("div", { className: "mt-3 rounded-xl border-2 p-5 animate-in fade-in duration-300 shadow-lg", style: { backgroundColor: epoch.color, borderColor: epoch.border } },
 
@@ -11360,20 +11360,20 @@ var d = labToolData.universe || {};
     }
   });
 
-  // ═══ rocks & rockCycle — REMOVED: now in standalone stem_tool_rocks.js ═══
+  // â•â•â• rocks & rockCycle â€” REMOVED: now in standalone stem_tool_rocks.js â•â•â•
 
-  // ═══ waterCycle — REMOVED: now in standalone stem_tool_watercycle.js ═══
+  // â•â•â• waterCycle â€” REMOVED: now in standalone stem_tool_watercycle.js â•â•â•
 
 
-  // ═══ 🔬 ecosystem (ecosystem) ═══
+  // â•â•â• ðŸ”¬ ecosystem (ecosystem) â•â•â•
   window.StemLab.registerTool('ecosystem', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'ecosystem',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -11406,7 +11406,7 @@ var d = labToolData.universe || {};
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (ecosystem) ──
+      // â”€â”€ Tool body (ecosystem) â”€â”€
       return (function() {
 const d = labToolData.ecosystem;
 
@@ -11622,7 +11622,7 @@ const d = labToolData.ecosystem;
 
 
 
-              // ── Day/night cycle ──
+              // â”€â”€ Day/night cycle â”€â”€
 
               var dayPhase = (Math.sin(tick * 0.004) + 1) / 2;
 
@@ -11778,7 +11778,7 @@ const d = labToolData.ecosystem;
 
 
 
-              // ── Vegetation (enhanced with bark, multi-layer canopy, flowers, seeds) ──
+              // â”€â”€ Vegetation (enhanced with bark, multi-layer canopy, flowers, seeds) â”€â”€
 
               var alivePreyCount = preyList.filter(function (p) { return p.alive; }).length;
 
@@ -11942,7 +11942,7 @@ const d = labToolData.ecosystem;
 
 
 
-              // ── Prey (rabbits — canvas-drawn) ──
+              // â”€â”€ Prey (rabbits â€” canvas-drawn) â”€â”€
 
               var aliveCount = 0;
 
@@ -12136,7 +12136,7 @@ const d = labToolData.ecosystem;
 
 
 
-              // ── Predators (foxes as emoji) ──
+              // â”€â”€ Predators (foxes as emoji) â”€â”€
 
               var alivePredCount = 0;
 
@@ -12246,7 +12246,7 @@ const d = labToolData.ecosystem;
 
                 ctx.scale(1, huntCrouch);
 
-                // Tail (behind body) — bushy with white tip
+                // Tail (behind body) â€” bushy with white tip
 
                 ctx.beginPath();
 
@@ -12470,7 +12470,7 @@ const d = labToolData.ecosystem;
 
 
 
-              // ── Catch particles ──
+              // â”€â”€ Catch particles â”€â”€
 
               for (var cpi = catchParticles.length - 1; cpi >= 0; cpi--) {
 
@@ -12492,7 +12492,7 @@ const d = labToolData.ecosystem;
 
 
 
-              // ── Ambient creatures (butterflies/fireflies) ──
+              // â”€â”€ Ambient creatures (butterflies/fireflies) â”€â”€
 
               for (var abi2 = 0; abi2 < ambientBugs.length; abi2++) {
 
@@ -12630,7 +12630,7 @@ const d = labToolData.ecosystem;
 
 
 
-              // ── Population dynamics ──
+              // â”€â”€ Population dynamics â”€â”€
 
               if (tick % 200 === 0) {
 
@@ -12682,7 +12682,7 @@ const d = labToolData.ecosystem;
 
 
 
-              // ── Track population history for live graph ──
+              // â”€â”€ Track population history for live graph â”€â”€
 
               if (tick % 10 === 0) {
 
@@ -12708,7 +12708,7 @@ const d = labToolData.ecosystem;
 
 
 
-              // ── HUD ──
+              // â”€â”€ HUD â”€â”€
 
               ctx.fillStyle = 'rgba(0,0,0,0.6)';
 
@@ -12752,7 +12752,7 @@ const d = labToolData.ecosystem;
 
 
 
-              // ── Live Population Graph (mini) ──
+              // â”€â”€ Live Population Graph (mini) â”€â”€
 
               if (popHistory.length > 2) {
 
@@ -12906,7 +12906,7 @@ const d = labToolData.ecosystem;
 
             ),
 
-            // ── Live Population Graph Panel (collapsible) ──
+            // â”€â”€ Live Population Graph Panel (collapsible) â”€â”€
 
             (function() {
 
@@ -13222,7 +13222,7 @@ const d = labToolData.ecosystem;
 
             })(),
 
-            // ── Food Web Diagram ──
+            // â”€â”€ Food Web Diagram â”€â”€
 
             React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-3 mb-3" },
 
@@ -13415,15 +13415,15 @@ const d = labToolData.ecosystem;
     }
   });
 
-  // ═══ 🔬 fractionViz (fractionViz) ═══
+  // â•â•â• ðŸ”¬ fractionViz (fractionViz) â•â•â•
   window.StemLab.registerTool('fractionViz', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'fractionViz',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -13456,7 +13456,7 @@ const d = labToolData.ecosystem;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (fractionViz) ──
+      // â”€â”€ Tool body (fractionViz) â”€â”€
       return (function() {
 const d = labToolData.fractions;
 
@@ -13744,7 +13744,7 @@ const d = labToolData.fractions;
 
             ),
 
-            // Comparison result — hidden when quiz is active and unanswered
+            // Comparison result â€” hidden when quiz is active and unanswered
 
             !(d.fqQuiz && !d.fqQuiz.answered) && React.createElement("div", { className: "p-3 rounded-xl text-center font-bold text-lg mb-3 " + (Math.abs(val1 - val2) < 0.001 ? 'bg-green-50 text-green-700 border border-green-200' : val1 > val2 ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-red-50 text-red-700 border border-red-200') },
 
@@ -13874,7 +13874,7 @@ const d = labToolData.fractions;
 
             ),
 
-            // ── Quiz: Which Fraction is Larger? ──
+            // â”€â”€ Quiz: Which Fraction is Larger? â”€â”€
 
             (() => {
 
@@ -13904,9 +13904,9 @@ const d = labToolData.fractions;
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                  React.createElement("button", { onClick: function () { var q = makeFqQuiz(); upd('fqQuiz', q); upd('num1', q.n1); upd('den1', q.d1); upd('num2', q.n2); upd('den2', q.d2); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (fqQuiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-600 text-white') + " hover:opacity-90 transition-all" }, fqQuiz ? '🔄 Next Round' : '⚡ Which is Larger?'),
+                  React.createElement("button", { onClick: function () { var q = makeFqQuiz(); upd('fqQuiz', q); upd('num1', q.n1); upd('den1', q.d1); upd('num2', q.n2); upd('den2', q.d2); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (fqQuiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-600 text-white') + " hover:opacity-90 transition-all" }, fqQuiz ? 'ðŸ”„ Next Round' : 'âš¡ Which is Larger?'),
 
-                  fqScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + fqScore + ' | 🔥 ' + fqStreak)
+                  fqScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, 'â­ ' + fqScore + ' | ðŸ”¥ ' + fqStreak)
 
                 ),
 
@@ -13928,7 +13928,7 @@ const d = labToolData.fractions;
 
                           upd('fqScore', fqScore + (correct ? 1 : 0)); upd('fqStreak', correct ? fqStreak + 1 : 0);
 
-                          if (correct) addToast(t('stem.fractions.correct') + fqQuiz.answer + ' is larger', 'success'); else addToast('❌ ' + fqQuiz.answer + ' is larger', 'error');
+                          if (correct) addToast(t('stem.fractions.correct') + fqQuiz.answer + ' is larger', 'success'); else addToast('âŒ ' + fqQuiz.answer + ' is larger', 'error');
 
                         }, className: "px-4 py-2 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-orange-400 hover:bg-orange-50 transition-all"
 
@@ -13940,7 +13940,7 @@ const d = labToolData.fractions;
 
                 ),
 
-                fqQuiz && fqQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold text-center " + (fqQuiz.chosen === fqQuiz.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') }, fqQuiz.chosen === fqQuiz.answer ? '✅ Correct! ' + fqQuiz.answer + ' ≈ ' + (fqQuiz.chosen === fqQuiz.n1 + '/' + fqQuiz.d1 ? (fqQuiz.n1 / fqQuiz.d1).toFixed(3) : (fqQuiz.n2 / fqQuiz.d2).toFixed(3)) : '❌ ' + fqQuiz.answer + ' is larger')
+                fqQuiz && fqQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold text-center " + (fqQuiz.chosen === fqQuiz.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') }, fqQuiz.chosen === fqQuiz.answer ? 'âœ… Correct! ' + fqQuiz.answer + ' â‰ˆ ' + (fqQuiz.chosen === fqQuiz.n1 + '/' + fqQuiz.d1 ? (fqQuiz.n1 / fqQuiz.d1).toFixed(3) : (fqQuiz.n2 / fqQuiz.d2).toFixed(3)) : 'âŒ ' + fqQuiz.answer + ' is larger')
 
               );
 
@@ -13953,15 +13953,15 @@ const d = labToolData.fractions;
     }
   });
 
-  // ═══ 🔬 decomposer (decomposer) ═══
+  // â•â•â• ðŸ”¬ decomposer (decomposer) â•â•â•
   window.StemLab.registerTool('decomposer', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'decomposer',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -13994,7 +13994,7 @@ const d = labToolData.fractions;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (decomposer) ──
+      // â”€â”€ Tool body (decomposer) â”€â”€
       return (function() {
 const d = labToolData.decomposer || {};
 
@@ -14006,25 +14006,25 @@ const d = labToolData.decomposer || {};
 
           const MATERIALS = [
 
-            { name: t('stem.chem_balance.water'), formula: 'H₂O', emoji: '💧', color: '#60a5fa', desc: 'The most essential molecule for life. Two hydrogen atoms bonded to one oxygen.', elements: [{ sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 2, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 1, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Covalent', state: 'Liquid', molarMass: '18.015 g/mol', realUse: 'Covers 71% of Earth. Every living cell requires water.' },
+            { name: t('stem.chem_balance.water'), formula: 'Hâ‚‚O', emoji: 'ðŸ’§', color: '#60a5fa', desc: 'The most essential molecule for life. Two hydrogen atoms bonded to one oxygen.', elements: [{ sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 2, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 1, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Covalent', state: 'Liquid', molarMass: '18.015 g/mol', realUse: 'Covers 71% of Earth. Every living cell requires water.' },
 
-            { name: t('stem.chem_balance.table_salt'), formula: t('stem.periodic.nacl'), emoji: '🧂', color: '#a855f7', desc: 'Sodium chloride — an ionic crystal essential for nerve function.', elements: [{ sym: 'Na', name: t('stem.periodic.sodium'), num: 11, count: 1, color: '#a855f7', group: 'Alkali Metal', mass: '22.990' }, { sym: 'Cl', name: t('stem.periodic.chlorine'), num: 17, count: 1, color: '#22c55e', group: 'Halogen', mass: '35.453' }], bondType: 'Ionic', state: 'Solid', molarMass: '58.44 g/mol', realUse: 'Used in cooking, road de-icing, and IV fluids. Humans need ~5g daily.' },
+            { name: t('stem.chem_balance.table_salt'), formula: t('stem.periodic.nacl'), emoji: 'ðŸ§‚', color: '#a855f7', desc: 'Sodium chloride â€” an ionic crystal essential for nerve function.', elements: [{ sym: 'Na', name: t('stem.periodic.sodium'), num: 11, count: 1, color: '#a855f7', group: 'Alkali Metal', mass: '22.990' }, { sym: 'Cl', name: t('stem.periodic.chlorine'), num: 17, count: 1, color: '#22c55e', group: 'Halogen', mass: '35.453' }], bondType: 'Ionic', state: 'Solid', molarMass: '58.44 g/mol', realUse: 'Used in cooking, road de-icing, and IV fluids. Humans need ~5g daily.' },
 
-            { name: t('stem.decomposer.sugar_sucrose'), formula: 'C₁₂H₂₂O₁₁', emoji: '🍬', color: '#f59e0b', desc: 'A disaccharide made of glucose + fructose. 45 atoms in one molecule!', elements: [{ sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 12, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 22, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 11, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Covalent', state: 'Solid', molarMass: '342.30 g/mol', realUse: 'Plants make sucrose via photosynthesis. Your body breaks it into glucose for energy.' },
+            { name: t('stem.decomposer.sugar_sucrose'), formula: 'Câ‚â‚‚Hâ‚‚â‚‚Oâ‚â‚', emoji: 'ðŸ¬', color: '#f59e0b', desc: 'A disaccharide made of glucose + fructose. 45 atoms in one molecule!', elements: [{ sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 12, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 22, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 11, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Covalent', state: 'Solid', molarMass: '342.30 g/mol', realUse: 'Plants make sucrose via photosynthesis. Your body breaks it into glucose for energy.' },
 
-            { name: t('stem.periodic.baking_soda'), formula: 'NaHCO₃', emoji: '🧁', color: '#fb923c', desc: 'Sodium bicarbonate — releases CO₂ when heated, making baked goods rise.', elements: [{ sym: 'Na', name: t('stem.periodic.sodium'), num: 11, count: 1, color: '#a855f7', group: 'Alkali Metal', mass: '22.990' }, { sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 1, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }, { sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 1, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 3, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Ionic + Covalent', state: 'Solid', molarMass: '84.01 g/mol', realUse: 'Used in baking, cleaning, antacids, and fire extinguishers.' },
+            { name: t('stem.periodic.baking_soda'), formula: 'NaHCOâ‚ƒ', emoji: 'ðŸ§', color: '#fb923c', desc: 'Sodium bicarbonate â€” releases COâ‚‚ when heated, making baked goods rise.', elements: [{ sym: 'Na', name: t('stem.periodic.sodium'), num: 11, count: 1, color: '#a855f7', group: 'Alkali Metal', mass: '22.990' }, { sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 1, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }, { sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 1, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 3, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Ionic + Covalent', state: 'Solid', molarMass: '84.01 g/mol', realUse: 'Used in baking, cleaning, antacids, and fire extinguishers.' },
 
-            { name: t('stem.periodic.rust'), formula: 'Fe₂O₃', emoji: '🟤', color: '#b45309', desc: 'Iron(III) oxide — what happens when iron reacts with oxygen and water.', elements: [{ sym: 'Fe', name: t('stem.periodic.iron'), num: 26, count: 2, color: '#fb923c', group: 'Transition Metal', mass: '55.845' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 3, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Ionic', state: 'Solid', molarMass: '159.69 g/mol', realUse: 'Costs ~$7 billion/year in damage. Mars is red because of iron oxide on its surface!' },
+            { name: t('stem.periodic.rust'), formula: 'Feâ‚‚Oâ‚ƒ', emoji: 'ðŸŸ¤', color: '#b45309', desc: 'Iron(III) oxide â€” what happens when iron reacts with oxygen and water.', elements: [{ sym: 'Fe', name: t('stem.periodic.iron'), num: 26, count: 2, color: '#fb923c', group: 'Transition Metal', mass: '55.845' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 3, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Ionic', state: 'Solid', molarMass: '159.69 g/mol', realUse: 'Costs ~$7 billion/year in damage. Mars is red because of iron oxide on its surface!' },
 
-            { name: t('stem.periodic.carbon_dioxide'), formula: 'CO₂', emoji: '💨', color: '#94a3b8', desc: 'A greenhouse gas we exhale. Plants absorb it during photosynthesis.', elements: [{ sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 1, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 2, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Covalent', state: 'Gas', molarMass: '44.01 g/mol', realUse: 'Makes soda fizzy. Dry ice is solid CO₂ at -78.5°C. Key greenhouse gas.' },
+            { name: t('stem.periodic.carbon_dioxide'), formula: 'COâ‚‚', emoji: 'ðŸ’¨', color: '#94a3b8', desc: 'A greenhouse gas we exhale. Plants absorb it during photosynthesis.', elements: [{ sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 1, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 2, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Covalent', state: 'Gas', molarMass: '44.01 g/mol', realUse: 'Makes soda fizzy. Dry ice is solid COâ‚‚ at -78.5Â°C. Key greenhouse gas.' },
 
-            { name: t('stem.chem_balance.ammonia'), formula: 'NH₃', emoji: '🧪', color: '#3b82f6', desc: t('stem.decomposer.a_pungent_compound_essential_for'), elements: [{ sym: 'N', name: t('stem.periodic.nitrogen'), num: 7, count: 1, color: '#3b82f6', group: 'Nonmetal', mass: '14.007' }, { sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 3, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }], bondType: 'Covalent', state: 'Gas', molarMass: '17.03 g/mol', realUse: 'Haber process makes 150M tons/year for fertilizer. Found in household cleaners.' },
+            { name: t('stem.chem_balance.ammonia'), formula: 'NHâ‚ƒ', emoji: 'ðŸ§ª', color: '#3b82f6', desc: t('stem.decomposer.a_pungent_compound_essential_for'), elements: [{ sym: 'N', name: t('stem.periodic.nitrogen'), num: 7, count: 1, color: '#3b82f6', group: 'Nonmetal', mass: '14.007' }, { sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 3, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }], bondType: 'Covalent', state: 'Gas', molarMass: '17.03 g/mol', realUse: 'Haber process makes 150M tons/year for fertilizer. Found in household cleaners.' },
 
-            { name: t('stem.periodic.glucose'), formula: 'C₆H₁₂O₆', emoji: '🩸', color: '#ef4444', desc: 'The primary energy source for cells. Your blood carries ~5g at all times.', elements: [{ sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 6, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 12, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 6, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Covalent', state: 'Solid', molarMass: '180.16 g/mol', realUse: 'Produced by photosynthesis. Cellular respiration breaks it for ATP energy.' },
+            { name: t('stem.periodic.glucose'), formula: 'Câ‚†Hâ‚â‚‚Oâ‚†', emoji: 'ðŸ©¸', color: '#ef4444', desc: 'The primary energy source for cells. Your blood carries ~5g at all times.', elements: [{ sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 6, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 12, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 6, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Covalent', state: 'Solid', molarMass: '180.16 g/mol', realUse: 'Produced by photosynthesis. Cellular respiration breaks it for ATP energy.' },
 
-            { name: t('stem.chem_balance.calcium_carbonate'), formula: 'CaCO₃', emoji: '🐚', color: '#fbbf24', desc: t('stem.decomposer.found_in_chalk_limestone_marble'), elements: [{ sym: 'Ca', name: t('stem.periodic.calcium'), num: 20, count: 1, color: '#f59e0b', group: 'Alkaline Earth Metal', mass: '40.078' }, { sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 1, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 3, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Ionic + Covalent', state: 'Solid', molarMass: '100.09 g/mol', realUse: 'Used in cement, antacids (Tums), and toothpaste. Coral reefs are made of this.' },
+            { name: t('stem.chem_balance.calcium_carbonate'), formula: 'CaCOâ‚ƒ', emoji: 'ðŸš', color: '#fbbf24', desc: t('stem.decomposer.found_in_chalk_limestone_marble'), elements: [{ sym: 'Ca', name: t('stem.periodic.calcium'), num: 20, count: 1, color: '#f59e0b', group: 'Alkaline Earth Metal', mass: '40.078' }, { sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 1, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 3, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Ionic + Covalent', state: 'Solid', molarMass: '100.09 g/mol', realUse: 'Used in cement, antacids (Tums), and toothpaste. Coral reefs are made of this.' },
 
-            { name: t('stem.periodic.methane'), formula: 'CH₄', emoji: '🔥', color: '#22c55e', desc: t('stem.decomposer.the_simplest_hydrocarbon_natural_gas'), elements: [{ sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 1, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 4, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }], bondType: 'Covalent', state: 'Gas', molarMass: '16.04 g/mol', realUse: 'Burned for energy. Cow burps release ~100L/day. A potent greenhouse gas.' },
+            { name: t('stem.periodic.methane'), formula: 'CHâ‚„', emoji: 'ðŸ”¥', color: '#22c55e', desc: t('stem.decomposer.the_simplest_hydrocarbon_natural_gas'), elements: [{ sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 1, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 4, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }], bondType: 'Covalent', state: 'Gas', molarMass: '16.04 g/mol', realUse: 'Burned for energy. Cow burps release ~100L/day. A potent greenhouse gas.' },
 
           ];
 
@@ -14112,7 +14112,7 @@ const d = labToolData.decomposer || {};
 
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "⚗️ Material Decomposer"),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "âš—ï¸ Material Decomposer"),
 
               React.createElement("span", { className: "px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full" }, totalAtoms + " ATOMS")
 
@@ -14152,11 +14152,11 @@ const d = labToolData.decomposer || {};
 
                   React.createElement("div", { className: "flex gap-3 mt-2 text-[10px] font-bold" },
 
-                    React.createElement("span", { className: "text-cyan-600" }, "🔗 " + sel.bondType),
+                    React.createElement("span", { className: "text-cyan-600" }, "ðŸ”— " + sel.bondType),
 
-                    React.createElement("span", { className: "text-indigo-600" }, "📊 " + sel.state),
+                    React.createElement("span", { className: "text-indigo-600" }, "ðŸ“Š " + sel.state),
 
-                    React.createElement("span", { className: "text-emerald-600" }, "⚖ " + sel.molarMass)
+                    React.createElement("span", { className: "text-emerald-600" }, "âš– " + sel.molarMass)
 
                   )
 
@@ -14166,7 +14166,7 @@ const d = labToolData.decomposer || {};
 
               // Decompose button
 
-              React.createElement("button", { onClick: function () { upd('decomposed', !decomposed); }, className: "w-full py-2.5 rounded-xl text-sm font-bold transition-all " + (decomposed ? 'bg-amber-600 text-white shadow-lg' : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-md') }, decomposed ? "🔄 Reassemble" : "⚗️ Decompose into Elements"),
+              React.createElement("button", { onClick: function () { upd('decomposed', !decomposed); }, className: "w-full py-2.5 rounded-xl text-sm font-bold transition-all " + (decomposed ? 'bg-amber-600 text-white shadow-lg' : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-md') }, decomposed ? "ðŸ”„ Reassemble" : "âš—ï¸ Decompose into Elements"),
 
               // Animated decomposition visual
 
@@ -14184,7 +14184,7 @@ const d = labToolData.decomposer || {};
 
                     React.createElement("span", { className: "text-[10px] font-bold text-slate-600 mt-1" }, el.name),
 
-                    React.createElement("span", { className: "text-[10px] font-black px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded-full mt-0.5" }, "×" + el.count)
+                    React.createElement("span", { className: "text-[10px] font-black px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded-full mt-0.5" }, "Ã—" + el.count)
 
                   );
 
@@ -14226,11 +14226,11 @@ const d = labToolData.decomposer || {};
 
                       React.createElement("p", { className: "font-bold text-sm text-slate-800" }, el.name),
 
-                      React.createElement("p", { className: "text-[10px] text-slate-400" }, el.group + " · " + el.mass + " u")
+                      React.createElement("p", { className: "text-[10px] text-slate-400" }, el.group + " Â· " + el.mass + " u")
 
                     ),
 
-                    React.createElement("span", { className: "ml-auto px-2 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-bold" }, "×" + el.count + " in " + sel.formula)
+                    React.createElement("span", { className: "ml-auto px-2 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-bold" }, "Ã—" + el.count + " in " + sel.formula)
 
                   ),
 
@@ -14350,7 +14350,7 @@ const d = labToolData.decomposer || {};
 
             React.createElement("div", { className: "bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl border border-cyan-200 p-3 mb-3" },
 
-              React.createElement("p", { className: "text-[10px] font-bold text-cyan-600 uppercase tracking-wider mb-1" }, "🌍 Real World"),
+              React.createElement("p", { className: "text-[10px] font-bold text-cyan-600 uppercase tracking-wider mb-1" }, "ðŸŒ Real World"),
 
               React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.realUse)
 
@@ -14372,9 +14372,9 @@ const d = labToolData.decomposer || {};
 
                   }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (quizMode ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white') + " hover:opacity-90 transition-all"
 
-                }, quizMode ? "🔄 Next Question" : "🧠 Quiz Mode"),
+                }, quizMode ? "ðŸ”„ Next Question" : "ðŸ§  Quiz Mode"),
 
-                quizScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "⭐ " + quizScore + " correct | 🔥 " + quizStreak + " streak")
+                quizScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "â­ " + quizScore + " correct | ðŸ”¥ " + quizStreak + " streak")
 
               ),
 
@@ -14420,22 +14420,22 @@ const d = labToolData.decomposer || {};
 
             ),
 
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'dc-' + Date.now(), tool: 'decomposer', label: sel.name + ' (' + sel.formula + ')', data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-1 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'dc-' + Date.now(), tool: 'decomposer', label: sel.name + ' (' + sel.formula + ')', data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-1 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "ðŸ“¸ Snapshot")
 
           );
       })();
     }
   });
 
-  // ═══ 🔬 anatomy (anatomy) ═══
+  // â•â•â• ðŸ”¬ anatomy (anatomy) â•â•â•
   window.StemLab.registerTool('anatomy', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'anatomy',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -14468,7 +14468,7 @@ const d = labToolData.decomposer || {};
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (anatomy) ──
+      // â”€â”€ Tool body (anatomy) â”€â”€
       return (function() {
 var d = labToolData.anatomy || {};
 
@@ -14898,7 +14898,7 @@ var d = labToolData.anatomy || {};
 
 
 
-          // ── Layer Transparency System ──
+          // â”€â”€ Layer Transparency System â”€â”€
 
           var LAYER_DEFS = [
 
@@ -14946,7 +14946,7 @@ var d = labToolData.anatomy || {};
 
 
 
-          // Complexity level lookup — structures shown at each tier
+          // Complexity level lookup â€” structures shown at each tier
 
           var ELEMENTARY_IDS = ['skull', 'ribs', 'femur', 'humerus', 'vertebral', 'pelvis', 'biceps', 'quads', 'heart', 'brain', 'lungs', 'stomach', 'kidneys', 'spinal_cord', 'deltoid', 'hamstrings', 'gastrocnemius', 'aorta', 'carotid', 'sciatic', 'liver', 'diaphragm', 'spleen', 'thymus', 'epidermis', 'dermis', 'trachea', 'alveoli', 'pituitary', 'uterus', 'testes_repro', 'mammary', 'cerebral_cortex', 'cerebellum', 'brainstem'];
 
@@ -14974,7 +14974,7 @@ var d = labToolData.anatomy || {};
 
 
 
-          // Quiz logic — options memoized in state to prevent re-shuffle on render
+          // Quiz logic â€” options memoized in state to prevent re-shuffle on render
 
           var quizPool = allStructures.filter(function (s) { return s.fn && passesComplexity(s); });
 
@@ -14998,7 +14998,7 @@ var d = labToolData.anatomy || {};
 
 
 
-          // Body drawing on canvas — animated
+          // Body drawing on canvas â€” animated
 
           var canvasRef = function (canvas) {
 
@@ -15020,7 +15020,7 @@ var d = labToolData.anatomy || {};
 
 
 
-              // ── Enhanced Anatomical Figure ──
+              // â”€â”€ Enhanced Anatomical Figure â”€â”€
 
               // Apply skin layer opacity
 
@@ -15520,7 +15520,7 @@ var d = labToolData.anatomy || {};
 
 
 
-              // ── Restore skin save & draw system-specific overlays (layer-aware) ──
+              // â”€â”€ Restore skin save & draw system-specific overlays (layer-aware) â”€â”€
 
               ctx.restore(); // end skin opacity group
 
@@ -15534,7 +15534,7 @@ var d = labToolData.anatomy || {};
 
 
 
-              // ── SKELETAL LAYER ──
+              // â”€â”€ SKELETAL LAYER â”€â”€
 
               if (layerOn('skeletal')) {
 
@@ -15610,7 +15610,7 @@ var d = labToolData.anatomy || {};
 
 
 
-              // ── MUSCULAR LAYER ──
+              // â”€â”€ MUSCULAR LAYER â”€â”€
 
               if (layerOn('muscular')) {
 
@@ -15666,7 +15666,7 @@ var d = labToolData.anatomy || {};
 
 
 
-              // ── ORGAN LAYER ──
+              // â”€â”€ ORGAN LAYER â”€â”€
 
               if (layerOn('organs')) {
 
@@ -15720,7 +15720,7 @@ var d = labToolData.anatomy || {};
 
 
 
-              // ── CIRCULATORY LAYER ──
+              // â”€â”€ CIRCULATORY LAYER â”€â”€
 
               if (layerOn('circulatory')) {
 
@@ -15790,7 +15790,7 @@ var d = labToolData.anatomy || {};
 
 
 
-              // ── NERVOUS LAYER ──
+              // â”€â”€ NERVOUS LAYER â”€â”€
 
               if (layerOn('nervous')) {
 
@@ -15844,7 +15844,7 @@ var d = labToolData.anatomy || {};
 
 
 
-              // ── LYMPHATIC LAYER ──
+              // â”€â”€ LYMPHATIC LAYER â”€â”€
 
               if (layerOn('lymphatic')) {
 
@@ -15880,7 +15880,7 @@ var d = labToolData.anatomy || {};
 
 
 
-              // ── Enhanced Structure Markers ──
+              // â”€â”€ Enhanced Structure Markers â”€â”€
 
               filtered.forEach(function (st) {
 
@@ -15990,7 +15990,7 @@ var d = labToolData.anatomy || {};
 
               });
 
-              // ── Styled View Label ──
+              // â”€â”€ Styled View Label â”€â”€
 
               ctx.save();
 
@@ -16368,7 +16368,7 @@ var d = labToolData.anatomy || {};
 
                         ),
 
-                        // ── Brain Waves Section ──
+                        // â”€â”€ Brain Waves Section â”€â”€
 
                         sel.brainWaves && React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200" },
 
@@ -16404,7 +16404,7 @@ var d = labToolData.anatomy || {};
 
                         ),
 
-                        // ── Sleep Stages Section ──
+                        // â”€â”€ Sleep Stages Section â”€â”€
 
                         sel.sleepStages && React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200" },
 
@@ -16497,7034 +16497,22 @@ var d = labToolData.anatomy || {};
     }
   });
 
-  // ═══ 🔬 dissection (dissection) ═══
-  window.StemLab.registerTool('dissection', {
-    icon: '🔬',
-    label: 'dissection',
-    desc: '',
-    color: 'slate',
-    category: 'science',
-    render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
-      var React = ctx.React;
-      var h = React.createElement;
-      var labToolData = ctx.toolData;
-      var setLabToolData = ctx.setToolData;
-      var setStemLabTool = ctx.setStemLabTool;
-      var setStemLabTab = ctx.setStemLabTab;
-      var stemLabTab = ctx.stemLabTab || 'explore';
-      var stemLabTool = ctx.stemLabTool;
-      var toolSnapshots = ctx.toolSnapshots;
-      var setToolSnapshots = ctx.setToolSnapshots;
-      var addToast = ctx.addToast;
-      var t = ctx.t;
-      var ArrowLeft = ctx.icons.ArrowLeft;
-      var Calculator = ctx.icons.Calculator;
-      var Sparkles = ctx.icons.Sparkles;
-      var X = ctx.icons.X;
-      var GripVertical = ctx.icons.GripVertical;
-      var announceToSR = ctx.announceToSR;
-      var awardStemXP = ctx.awardXP;
-      var getStemXP = ctx.getXP;
-      var stemCelebrate = ctx.celebrate;
-      var stemBeep = ctx.beep;
-      var callGemini = ctx.callGemini;
-      var callTTS = ctx.callTTS;
-      var callImagen = ctx.callImagen;
-      var callGeminiVision = ctx.callGeminiVision;
-      var gradeLevel = ctx.gradeLevel;
-      var srOnly = ctx.srOnly;
-      var a11yClick = ctx.a11yClick;
-      var canvasA11yDesc = ctx.canvasA11yDesc;
-      var props = ctx.props;
 
-      // ── Tool body (dissection) ──
-      return (function() {
-var d = labToolData.dissection || {};
+  /* dissection: removed — see stem_tool_dissection.js */
 
-          var upd = function (k, v) { setLabToolData(function (p) { return Object.assign({}, p, { dissection: Object.assign({}, p.dissection, (function () { var o = {}; o[k] = v; return o; })()) }); }); };
 
 
+  /* brainAtlas: removed â€” see stem_tool_brainatlas.js */
 
-          // ════════ SPECIMEN DATABASE ════════
-
-          var SPECIMENS = {
-
-            frog: {
-
-              name: 'Frog (Rana)', icon: '\uD83D\uDC38',
-
-              desc: 'Classic vertebrate — 3-chambered heart, cutaneous respiration, metamorphosis.',
-
-              bodyShape: 'frog',
-
-              layers: [
-
-                { id: 'skin', name: 'Skin', icon: '\uD83D\uDFE2', color: '#4ade80', accent: '#16a34a', desc: 'Moist permeable integument with chromatophores.' },
-
-                { id: 'muscle', name: 'Muscle', icon: '\uD83D\uDCAA', color: '#f87171', accent: '#dc2626', desc: 'Skeletal muscles for jumping and swimming.' },
-
-                { id: 'organs', name: 'Organs', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Digestive, respiratory, circulatory, and urogenital organs.' },
-
-                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#64748b', desc: 'Endoskeleton adapted for jumping.' },
-
-                { id: 'nervous', name: 'Nervous', icon: '\u26A1', color: '#c084fc', accent: '#7c3aed', desc: 'CNS and peripheral nerves.' }
-
-              ],
-
-              organs: {
-
-                skin: [
-
-                  { id: 'dorsal_skin', name: 'Dorsal Skin', x: 0.50, y: 0.35, fn: 'Green-brown pigmented surface with chromatophores. Mucous glands keep skin moist for cutaneous respiration (up to 50% of gas exchange).', clinical: 'Chytrid fungus attacks frog skin keratin, causing global amphibian declines.' },
-
-                  { id: 'ventral_skin', name: 'Ventral Skin', x: 0.50, y: 0.65, fn: 'Lighter, thinner ventral surface. Highly vascularized \u2014 frogs absorb water through skin, not by drinking.', clinical: 'Permeable skin makes frogs sensitive bioindicators of environmental pollution.' },
-
-                  { id: 'tympanum', name: 'Tympanic Membrane', x: 0.62, y: 0.18, fn: 'External eardrum behind eye. Transmits sound to columella and inner ear. Size indicates sex (larger = male).', clinical: 'Used for species and sex identification in field studies.' },
-
-                  { id: 'nictitating', name: 'Nictitating Membrane', x: 0.58, y: 0.15, fn: 'Transparent third eyelid protecting eye underwater. Homologous to human plica semilunaris (vestigial).', clinical: 'Present in many vertebrates \u2014 vestigial in humans as plica semilunaris.' }
-
-                ],
-
-                muscle: [
-
-                  { id: 'pectoralis', name: 'Pectoralis', x: 0.50, y: 0.42, fn: 'Chest muscle adducting forelimb. Assists landing absorption after jumps. Homologous to human pectoralis major.', clinical: 'Comparative anatomy: same muscle, different function \u2014 landing in frogs vs pushing in humans.' },
-
-                  { id: 'rectus_abd', name: 'Rectus Abdominis', x: 0.50, y: 0.55, fn: 'Ventral abdominal muscle from sternum to pelvis. Flexes trunk and compresses cavity for buccal pump breathing.', clinical: 'Frogs use buccal pumping (throat) rather than diaphragmatic breathing like mammals.' },
-
-                  { id: 'gastrocnemius', name: 'Gastrocnemius', x: 0.35, y: 0.78, fn: 'Large calf muscle powering jumps. Can generate 2\u00D7 body weight force. Galvani used frog legs to discover bioelectricity (1780s).', clinical: 'Classic muscle for physiology experiments \u2014 Galvani\'s frog leg experiments founded bioelectricity.' },
-
-                  { id: 'triceps_fem', name: 'Triceps Femoris', x: 0.38, y: 0.68, fn: 'Three-headed thigh muscle (homolog of quadriceps). Primary knee extensor during jumping.', clinical: 'Frogs can jump 20\u00D7 body length due to elastic energy storage in tendons.' },
-
-                  { id: 'sartorius', name: 'Sartorius', x: 0.42, y: 0.65, fn: 'Thin strap on medial thigh. Flexes and rotates hip. Assists drawing legs into swimming position.', clinical: 'Longest muscle in both frogs and humans \u2014 a homologous structure across vertebrates.' },
-
-                  { id: 'deltoid', name: 'Deltoideus', x: 0.38, y: 0.38, fn: 'Shoulder muscle elevating/rotating forelimb. Smaller than hindlimb muscles \u2014 frogs are hindlimb-dominant.' }
-
-                ],
-
-                organs: [
-
-                  { id: 'heart', name: 'Heart (3-chamber)', x: 0.50, y: 0.38, fn: '2 atria + 1 ventricle. Spiral valve in conus arteriosus separates blood with ~90% efficiency despite single ventricle.', clinical: 'Frog hearts beat without neural input (myogenic) and can beat in saline for hours \u2014 used in cardiac physiology research.' },
-
-                  { id: 'lungs', name: 'Lungs', x: 0.45, y: 0.40, fn: 'Simple thin-walled sacs (no alveoli). Supplemented by cutaneous respiration. Inflated by buccal pumping \u2014 not diaphragm.', clinical: 'The Bornean flat-headed frog is completely lungless \u2014 breathes entirely through skin.' },
-
-                  { id: 'liver', name: 'Liver (3 lobes)', x: 0.50, y: 0.45, fn: 'Large three-lobed organ. Produces bile, detoxifies blood, stores glycogen. Largest internal organ.', clinical: 'Liver color/size indicates environmental contamination in ecotoxicology studies.' },
-
-                  { id: 'gallbladder', name: 'Gallbladder', x: 0.52, y: 0.47, fn: 'Small green sac between liver lobes. Stores/concentrates bile. Bright green color \u2014 key dissection landmark.', clinical: 'Bright green color makes it one of the easiest organs to identify in dissection.' },
-
-                  { id: 'stomach', name: 'Stomach', x: 0.48, y: 0.50, fn: 'J-shaped muscular organ. Frogs swallow prey whole and use eye retraction to push food down.', clinical: 'Frogs push food into stomach by retracting eyes into mouth roof \u2014 unique swallowing mechanism.' },
-
-                  { id: 'sm_intestine', name: 'Small Intestine', x: 0.50, y: 0.58, fn: 'Coiled tube (duodenum + ileum). Primary nutrient absorption site. Shorter than in herbivorous tadpoles.', clinical: 'Tadpoles (herbivores) have much longer intestines than adult frogs (carnivores) \u2014 diet drives gut length.' },
-
-                  { id: 'lg_intestine', name: 'Large Intestine', x: 0.50, y: 0.65, fn: 'Short wide tube to cloaca. Absorbs water. Opens into cloaca (shared digestive/urinary/reproductive exit).', clinical: 'The cloaca \u2014 shared exit for 3 systems \u2014 is the ancestral vertebrate condition; separate openings evolved later.' },
-
-                  { id: 'spleen', name: 'Spleen', x: 0.46, y: 0.53, fn: 'Small reddish organ near stomach. Filters blood, removes old RBCs, immune function.', clinical: 'Spleen plus antimicrobial skin peptides form a dual immune defense system.' },
-
-                  { id: 'kidneys', name: 'Kidneys', x: 0.50, y: 0.70, fn: 'Elongated, dorsal organs. Mesonephric kidneys \u2014 intermediate between fish and mammal kidney types. Drains to cloaca.', clinical: 'Frog kidneys (mesonephric) are ancestral \u2014 mammals evolved more advanced metanephric kidneys.' },
-
-                  { id: 'fat_bodies', name: 'Fat Bodies', x: 0.48, y: 0.35, fn: 'Yellow finger-like structures on kidneys/gonads. Energy reserves for hibernation and reproduction.', clinical: 'Fat body size indicates nutritional status \u2014 shrunken = environmental stress.' },
-
-                  { id: 'pancreas', name: 'Pancreas', x: 0.53, y: 0.52, fn: 'Thin pale organ between stomach and duodenum. Produces digestive enzymes and insulin/glucagon.', clinical: 'Frog pancreatic islets used in early insulin research.' },
-
-                  { id: 'cloaca', name: 'Cloaca', x: 0.50, y: 0.75, fn: 'Common chamber for digestive, urinary, and reproductive output. Present in amphibians, reptiles, birds.', clinical: 'Represents ancestral vertebrate design \u2014 separate openings evolved independently in mammals.' }
-
-                ],
-
-                skeleton: [
-
-                  { id: 'skull', name: 'Skull', x: 0.50, y: 0.15, fn: 'Broad flat skull with large orbits. Frontoparietal bone fused (unique to frogs). Maxillary + vomerine teeth.', clinical: 'Frogs have teeth on upper jaw only \u2014 toads have no teeth at all.' },
-
-                  { id: 'vertebral_col', name: 'Vertebral Column', x: 0.50, y: 0.40, fn: 'Only 9 presacral vertebrae (mammals have 24+). Short rigid spine for jumping.', clinical: 'Fewest vertebrae of any tetrapod \u2014 extreme spinal reduction for jumping.' },
-
-                  { id: 'urostyle', name: 'Urostyle', x: 0.50, y: 0.55, fn: 'Fused caudal vertebrae forming rod-like tailbone. Absorbs landing shock. Unique to frogs/toads.', clinical: 'The urostyle is found only in anurans \u2014 a defining skeletal feature of frogs and toads.' },
-
-                  { id: 'pelvic_girdle', name: 'Pelvic Girdle', x: 0.50, y: 0.60, fn: 'Elongated ilium creates lever for powerful jumps. Highly modified compared to other vertebrates.', clinical: 'Elongated pelvic girdle is the key anatomical adaptation enabling the frog jump.' },
-
-                  { id: 'pectoral_gird', name: 'Pectoral Girdle', x: 0.50, y: 0.32, fn: 'Supports forelimbs. Acts as shock absorber during landing. Clavicle, coracoid, scapula, suprascapula.', clinical: 'The pectoral girdle absorbs impact forces that would fracture bones in most other animals.' },
-
-                  { id: 'femur', name: 'Femur', x: 0.40, y: 0.65, fn: 'Long thigh bone. Proportionally longer than most vertebrates for jumping leverage.', clinical: 'Frog femur is proportionally longer than human femur relative to body size.' },
-
-                  { id: 'tibiofibula', name: 'Tibio-fibula', x: 0.38, y: 0.75, fn: 'Fused tibia + fibula (single bone). Reduces weight while maintaining strength. 5 digits with webbing.', clinical: 'Bone fusion reduces weight \u2014 an adaptation for efficient jumping.' },
-
-                  { id: 'radioulna', name: 'Radio-ulna', x: 0.30, y: 0.42, fn: 'Fused radius + ulna. 4 digits on forelimb (digit I lost). Simplified limb for landing.', clinical: 'Loss of digit I and bone fusion are weight reduction adaptations.' },
-
-                  { id: 'astragalus', name: 'Elongated Ankle Bones', x: 0.36, y: 0.82, fn: 'Astragalus and calcaneus elongated to add extra leg segment \u2014 increases jump distance. Unique to frogs.', clinical: 'Elongated ankles function as an extra leg segment \u2014 key innovation for saltatory locomotion.' }
-
-                ],
-
-                nervous: [
-
-                  { id: 'brain', name: 'Brain', x: 0.50, y: 0.12, fn: 'Small brain with prominent optic lobes (largest region). Olfactory lobes, cerebrum, cerebellum (small), medulla.', clinical: 'Vision dominates \u2014 classic Lettvin 1959 study: "What the Frog\'s Eye Tells the Frog\'s Brain."' },
-
-                  { id: 'spinal_cord', name: 'Spinal Cord', x: 0.50, y: 0.40, fn: '10 spinal nerve pairs. Ends with filum terminale. Classic spinal frog preparation demonstrates reflexes.', clinical: 'A "spinal frog" (brain destroyed) still shows coordinated reflex responses \u2014 foundational neuroscience.' },
-
-                  { id: 'sciatic_n', name: 'Sciatic Nerve', x: 0.42, y: 0.68, fn: 'Largest nerve. Runs along posterior thigh. Branches from sacral plexus (spinal nerves 8-9).', clinical: 'Frog sciatic nerve was the model system for early electrophysiology experiments.' },
-
-                  { id: 'brachial_n', name: 'Brachial Nerves', x: 0.38, y: 0.35, fn: 'Spinal nerves 2-3 forming brachial plexus for forelimb. Smaller than sciatic due to smaller forelimb.', clinical: 'Smaller brachial vs larger sciatic reflects hindlimb dominance in frogs.' },
-
-                  { id: 'cranial_n', name: 'Cranial Nerves', x: 0.55, y: 0.14, fn: '10 pairs (mammals have 12). Key: optic (II, large), trigeminal (V), vagus (X, viscera).', clinical: 'Frogs have 10 cranial nerve pairs vs 12 in mammals \u2014 lacking spinal accessory (XI) and hypoglossal (XII).' },
-
-                  { id: 'optic_lobe', name: 'Optic Lobes (Tectum)', x: 0.52, y: 0.10, fn: 'Largest brain region processing visual "bug detector" neurons \u2014 respond to small moving dark objects.', clinical: 'Optic tectum "bug detectors" inspired early computer vision and AI motion detection algorithms.' }
-
-                ]
-
-              }
-
-            },
-
-
-
-            earthworm: {
-
-              name: 'Earthworm (Lumbricus)', icon: '\uD83E\uDEB1',
-
-              desc: 'Annelid \u2014 segmented body, closed circulation, 5 aortic arches, ventral nerve cord.',
-
-              bodyShape: 'worm',
-
-              layers: [
-
-                { id: 'skin', name: 'Integument', icon: '\uD83D\uDFE4', color: '#a78bfa', accent: '#7c3aed', desc: 'Moist cuticle with setae for locomotion.' },
-
-                { id: 'muscle', name: 'Body Wall', icon: '\uD83D\uDCAA', color: '#f87171', accent: '#dc2626', desc: 'Circular and longitudinal muscles for peristalsis.' },
-
-                { id: 'organs', name: 'Internal Organs', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Digestive tube, aortic arches, nephridia.' },
-
-                { id: 'nervous', name: 'Nervous System', icon: '\u26A1', color: '#c084fc', accent: '#7c3aed', desc: 'Ventral nerve cord with cerebral ganglia.' }
-
-              ],
-
-              organs: {
-
-                skin: [
-
-                  { id: 'cuticle', name: 'Cuticle', x: 0.50, y: 0.30, fn: 'Transparent outer covering. Keeps skin moist for gas exchange \u2014 earthworms breathe through skin.', clinical: 'Earthworms die if skin dries out \u2014 cutaneous respiration requires moisture.' },
-
-                  { id: 'setae', name: 'Setae', x: 0.35, y: 0.55, fn: 'Tiny chitinous bristles (4 pairs/segment). Grip soil during peristaltic locomotion.', clinical: 'Setae are homologous to marine polychaete parapodia.' },
-
-                  { id: 'clitellum', name: 'Clitellum', x: 0.50, y: 0.25, fn: 'Glandular band (segments 32-37). Secretes cocoon for eggs. Indicates sexual maturity.', clinical: 'Clitellum position varies by species \u2014 used for identification.' },
-
-                  { id: 'prostomium', name: 'Prostomium', x: 0.50, y: 0.08, fn: 'Fleshy lip over mouth. Sensory: detects light, chemicals, vibrations. Not a true segment.', clinical: '"Worm grunting" exploits vibration sensitivity to harvest bait worms.' }
-
-                ],
-
-                muscle: [
-
-                  { id: 'circular_m', name: 'Circular Muscles', x: 0.55, y: 0.40, fn: 'Outer layer running around each segment. Contraction = longer/thinner (elongation phase).', clinical: 'Same peristaltic mechanism humans use for intestinal movement.' },
-
-                  { id: 'longitudinal_m', name: 'Longitudinal Muscles', x: 0.45, y: 0.50, fn: 'Inner layer along body length. Contraction = shorter/fatter (anchoring phase). Antagonistic to circular.', clinical: 'Hydrostatic skeleton (fluid-filled coelom) transmits force between the two layers.' },
-
-                  { id: 'septa', name: 'Septa', x: 0.50, y: 0.45, fn: 'Muscular partitions between segments. Each segment = independent hydraulic unit.', clinical: 'Segmentation allows independent control \u2014 damage to one segment doesn\'t disable others.' }
-
-                ],
-
-                organs: [
-
-                  { id: 'pharynx', name: 'Pharynx', x: 0.50, y: 0.12, fn: 'Muscular pump (segments 1-5). Sucks in soil and organic matter.', clinical: 'Earthworms eat their own weight in soil daily, aerating tons of soil per acre.' },
-
-                  { id: 'crop', name: 'Crop', x: 0.50, y: 0.28, fn: 'Thin-walled storage chamber (segments 15-16). Temporary food storage.', clinical: 'Similar function to a bird\'s crop \u2014 convergent evolution of food storage.' },
-
-                  { id: 'gizzard', name: 'Gizzard', x: 0.50, y: 0.33, fn: 'Thick muscular grinder (segments 17-18). Uses sand grains to crush food. No teeth.', clinical: 'Like a bird\'s gizzard \u2014 independent evolution of grit-grinding organs.' },
-
-                  { id: 'intestine', name: 'Intestine', x: 0.50, y: 0.55, fn: 'Straight tube with typhlosole (dorsal fold increasing surface area). Digestion and absorption.', clinical: 'Typhlosole is a simple version of intestinal villi \u2014 same principle, different solution.' },
-
-                  { id: 'aortic_arches', name: 'Aortic Arches (5 Hearts)', x: 0.48, y: 0.22, fn: '5 pairs of contractile vessels (segments 7-11). Pump blood in closed circulatory system.', clinical: 'Often called "5 hearts" \u2014 actually muscular blood vessels. Among first studied for closed circulation.' },
-
-                  { id: 'nephridia', name: 'Nephridia', x: 0.55, y: 0.48, fn: 'Paired excretory organs per segment. Filter coelomic fluid. Equivalent of kidneys.', clinical: 'Segmentally repeated kidneys \u2014 unique annelid design with one pair per segment.' },
-
-                  { id: 'seminal_v', name: 'Seminal Vesicles', x: 0.45, y: 0.20, fn: 'White organs (segments 9-12). Store sperm. Earthworms are hermaphrodites but cross-fertilize.', clinical: 'Despite being hermaphrodites, self-fertilization is rare \u2014 they mate with partners.' }
-
-                ],
-
-                nervous: [
-
-                  { id: 'cerebral_g', name: 'Cerebral Ganglia', x: 0.50, y: 0.08, fn: 'Paired ganglia above pharynx (segment 3). Process sensory input. "Brain."', clinical: 'Very simple \u2014 a headless earthworm can still burrow, eat, and mate.' },
-
-                  { id: 'ventral_cord', name: 'Ventral Nerve Cord', x: 0.50, y: 0.50, fn: 'Runs entire ventral length. Giant fibers enable rapid escape contraction (20-45 m/s).', clinical: 'Giant axons transmit signals fast \u2014 enabling rapid withdrawal when disturbed.' },
-
-                  { id: 'segmental_g', name: 'Segmental Ganglia', x: 0.48, y: 0.40, fn: 'Paired ganglia per segment. Control local reflexes independently.', clinical: 'Each ganglion controls its segment \u2014 why cut segments still move.' }
-
-                ]
-
-              }
-
-            },
-
-            pig: {
-
-              name: 'Fetal Pig (Sus scrofa)', icon: '\uD83D\uDC37',
-
-              desc: 'Mammal \u2014 4-chambered heart, diaphragm, organ systems nearly identical to human.',
-
-              bodyShape: 'pig',
-
-              layers: [
-
-                { id: 'skin', name: 'Skin', icon: '\uD83E\uDDB4', color: '#fda4af', accent: '#e11d48', desc: 'Thin skin with hair follicles and umbilical cord.' },
-
-                { id: 'muscle', name: 'Musculature', icon: '\uD83D\uDCAA', color: '#f87171', accent: '#dc2626', desc: 'Mammalian muscles nearly identical to human.' },
-
-                { id: 'organs', name: 'Visceral Organs', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Complete mammalian organs \u2014 closest lab animal to human.' },
-
-                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#64748b', desc: 'Largely cartilaginous fetal skeleton.' },
-
-                { id: 'nervous', name: 'Nervous', icon: '\u26A1', color: '#c084fc', accent: '#7c3aed', desc: 'Complex mammalian CNS with cerebral cortex.' }
-
-              ],
-
-              organs: {
-
-                skin: [
-
-                  { id: 'epidermis_p', name: 'Epidermis', x: 0.50, y: 0.35, fn: 'Stratified squamous epithelium. Pig skin is closest animal model to human skin.', clinical: 'Pig skin used in burn treatment research and skin graft studies.' },
-
-                  { id: 'umbilical', name: 'Umbilical Cord', x: 0.50, y: 0.55, fn: '2 umbilical arteries + 1 umbilical vein in Wharton\'s jelly. Same structure as human.', clinical: 'Single umbilical artery may indicate congenital abnormalities in both pigs and humans.' },
-
-                  { id: 'mammary', name: 'Mammary Papillae', x: 0.42, y: 0.60, fn: '6-7 pairs along ventral surface (vs 1 pair in humans). Along embryonic "milk line."', clinical: 'Supernumerary nipples occur in 1-5% of humans along the vestigial milk line.' }
-
-                ],
-
-                muscle: [
-
-                  { id: 'diaphragm_p', name: 'Diaphragm', x: 0.50, y: 0.42, fn: 'Dome separating thorax/abdomen. Primary respiratory muscle. Phrenic nerve (C3-C5). Identical to human.', clinical: 'Diaphragm is a key mammalian innovation \u2014 enables negative-pressure breathing.' },
-
-                  { id: 'masseter_p', name: 'Masseter', x: 0.55, y: 0.12, fn: 'Powerful jaw muscle. Larger than human \u2014 pigs process tough plant material.', clinical: 'Homologous to human masseter \u2014 strongest muscle by weight in both species.' },
-
-                  { id: 'ext_oblique_p', name: 'External Oblique', x: 0.55, y: 0.45, fn: 'Largest abdominal wall muscle. Same function as human external oblique.', clinical: 'Identical innervation pattern to humans \u2014 used in surgical training.' }
-
-                ],
-
-                organs: [
-
-                  { id: 'heart_p', name: 'Heart (4-chamber)', x: 0.50, y: 0.32, fn: '4 chambers identical to human. Complete separation of oxygenated/deoxygenated blood. Coronary arteries present.', clinical: 'Pig heart valves replace human valves in cardiac surgery. Pig-to-human heart xenotransplantation research ongoing.' },
-
-                  { id: 'lungs_p', name: 'Lungs', x: 0.45, y: 0.34, fn: 'Lobed with alveolar structure identical to human. Right: 4 lobes. Left: 2-3 lobes. Pleural membranes.', clinical: 'Pig lungs used for surgical technique practice. Lobation differs slightly from human.' },
-
-                  { id: 'liver_p', name: 'Liver', x: 0.52, y: 0.40, fn: '5 lobes (more lobed than human). Bile production, detoxification, protein synthesis, glycogen storage.', clinical: 'Pig liver studied for xenotransplantation. Functionally identical to human liver.' },
-
-                  { id: 'stomach_p', name: 'Stomach', x: 0.48, y: 0.45, fn: 'Monogastric (simple stomach like human). Cardiac, fundic, pyloric regions. Produces HCl and pepsin.', clinical: 'Unlike ruminants (cows), pigs have simple stomachs like humans \u2014 ideal gastric research model.' },
-
-                  { id: 'sm_int_p', name: 'Small Intestine', x: 0.50, y: 0.55, fn: 'Long (~15m adult). Duodenum, jejunum, ileum. Villi for nutrient absorption.', clinical: 'Proportionally longer than human \u2014 used for surgical anastomosis training.' },
-
-                  { id: 'lg_int_p', name: 'Spiral Colon', x: 0.50, y: 0.62, fn: 'Distinctive spiral colon (coiled). Cecum present. Absorbs water.', clinical: 'Spiral colon is uniquely porcine \u2014 coiled like a watch spring.' },
-
-                  { id: 'kidneys_p', name: 'Kidneys', x: 0.55, y: 0.48, fn: 'Bean-shaped, retroperitoneal. Multipyramidal like human. Filter blood, regulate electrolytes.', clinical: 'Leading xenotransplantation candidates \u2014 closest to human in structure/function.' },
-
-                  { id: 'thymus_p', name: 'Thymus', x: 0.50, y: 0.25, fn: 'Enormous in fetus (much larger than adult). T-cell maturation. Extends from mediastinum into neck.', clinical: 'Fetal thymus demonstrates critical early immune development role.' },
-
-                  { id: 'pancreas_p', name: 'Pancreas', x: 0.52, y: 0.50, fn: 'Exocrine enzymes + endocrine insulin/glucagon. Nearly identical to human.', clinical: 'Porcine insulin treated human diabetes for decades before synthetic insulin.' },
-
-                  { id: 'bladder_p', name: 'Urinary Bladder', x: 0.50, y: 0.68, fn: 'Large distensible organ. Allantoic bladder with urachus in fetus.', clinical: 'Patent urachus is a congenital anomaly in both pigs and humans.' }
-
-                ],
-
-                skeleton: [
-
-                  { id: 'skull_p', name: 'Skull', x: 0.25, y: 0.22, fn: 'Elongated snout. Largely cartilaginous in fetus. Internal anatomy similar to human.', clinical: 'Elongated pig skull vs rounded human skull, but cranial contents are similar.' },
-
-                  { id: 'vert_col_p', name: 'Vertebral Column', x: 0.50, y: 0.38, fn: '7C, 14-15T, 6-7L, 4S, 20-23 caudal. More vertebrae than human. 7 cervical constant across mammals.', clinical: 'Cervical count (7) is constant across nearly all mammals \u2014 giraffe to mouse.' },
-
-                  { id: 'ribs_p', name: 'Ribs', x: 0.55, y: 0.35, fn: '14-15 pairs (vs 12 human). Cartilaginous in fetus. Protect thoracic organs.', clinical: '"Spare ribs" in cooking come from this ventral rib region.' },
-
-                  { id: 'pelvis_p', name: 'Pelvis', x: 0.70, y: 0.42, fn: 'Ilium, ischium, pubis — largely cartilaginous in fetus. Same tripartite structure as human pelvis but horizontally oriented for quadrupedal stance.', clinical: 'Pig pelvis is oriented horizontally vs vertically in bipedal humans — key comparative anatomy difference.' },
-
-                  { id: 'scapula_p', name: 'Scapula', x: 0.30, y: 0.35, fn: 'Triangular shoulder blade with prominent spine and acromion. Cartilaginous in fetus. Attachment for supraspinatus and infraspinatus muscles.', clinical: 'Pig scapula is more vertically oriented than human — adaptation for quadrupedal weight bearing.' },
-
-                  { id: 'humerus_p', name: 'Forelimb Bones', x: 0.35, y: 0.40, fn: 'Humerus (upper), radius and ulna (lower). Articulate with shoulder and carpals. Ulna has prominent olecranon process for triceps attachment.', clinical: 'Pig limb proportions differ from human but bone homology is exact — used in orthopedic research.' },
-
-                  { id: 'femur_p', name: 'Hindlimb Bones', x: 0.68, y: 0.42, fn: 'Femur (thigh), tibia and fibula (leg). Terminates in cloven hoof (digits III and IV). Other digits are vestigial dewclaws.', clinical: 'Pig walks on digits III-IV — an even-toed ungulate (Artiodactyla). Humans walk on entire foot sole.' },
-
-                  { id: 'sternum_p', name: 'Sternum', x: 0.50, y: 0.40, fn: 'Segmented breastbone with 6-7 sternebrae. Largely cartilaginous in fetus with ossification centers. Ribs articulate laterally.', clinical: 'Segmented pig sternum reveals the fetal ossification process — each sternebra starts as cartilage.' }
-
-                ],
-
-                nervous: [
-
-                  { id: 'brain_p', name: 'Brain', x: 0.50, y: 0.08, fn: 'Mammalian brain with sulci/gyri. Large olfactory bulbs. Structure very similar to human.', clinical: 'Pig brains used in neurosurgery training \u2014 closer to human than any common lab animal except primates.' },
-
-                  { id: 'spinal_p', name: 'Spinal Cord', x: 0.50, y: 0.40, fn: 'Full vertebral length in fetus. Cervical/lumbar enlargements. Gray/white matter identical to human.', clinical: 'Spinal cord organization (dorsal sensory, ventral motor) identical to human.' },
-
-                  { id: 'vagus_p', name: 'Vagus Nerve (CN X)', x: 0.48, y: 0.22, fn: 'Longest cranial nerve. Heart, lungs, GI innervation. Runs with carotid/jugular.', clinical: 'Pig vagus nerve studies led to human vagus nerve stimulator implants for epilepsy.' }
-
-                ]
-
-              }
-
-            },
-
-
-
-            perch: {
-
-              name: 'Perch (Perca)', icon: '\uD83D\uDC1F',
-
-              desc: 'Bony fish \u2014 gills, swim bladder, lateral line, 2-chambered heart.',
-
-              bodyShape: 'fish',
-
-              layers: [
-
-                { id: 'skin', name: 'Scales & Skin', icon: '\uD83D\uDFE1', color: '#fde68a', accent: '#d97706', desc: 'Ctenoid scales with mucus coating and lateral line.' },
-
-                { id: 'muscle', name: 'Musculature', icon: '\uD83D\uDCAA', color: '#f87171', accent: '#dc2626', desc: 'W-shaped myomeres for undulatory swimming.' },
-
-                { id: 'organs', name: 'Internal Organs', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Swim bladder, gills, 2-chambered heart, pyloric ceca.' },
-
-                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#64748b', desc: 'Ossified skeleton with fin rays and operculum.' }
-
-              ],
-
-              organs: {
-
-                skin: [
-
-                  { id: 'scales', name: 'Ctenoid Scales', x: 0.50, y: 0.40, fn: 'Overlapping bony scales with growth rings \u2014 used to determine fish age like tree rings.', clinical: 'Scale annuli counting is the standard method for aging fish in fisheries biology.' },
-
-                  { id: 'lat_line', name: 'Lateral Line', x: 0.50, y: 0.45, fn: 'Sensory system detecting water pressure changes. Enables schooling, predator detection, murky-water navigation.', clinical: 'A "sixth sense" unique to fish/aquatic amphibians \u2014 no equivalent in terrestrial vertebrates.' },
-
-                  { id: 'operculum', name: 'Operculum', x: 0.25, y: 0.35, fn: 'Bony gill cover. Protects gills and pumps water for respiration.', clinical: 'Only bony fish have opercula \u2014 sharks have exposed gill slits.' },
-
-                  { id: 'fins_ext', name: 'Fins (7 types)', x: 0.60, y: 0.25, fn: 'Dorsal (spiny + soft), caudal, anal, pelvic, pectoral. Pectoral/pelvic are homologous to tetrapod limbs.', clinical: 'Fish fins are evolutionary precursors of tetrapod limbs \u2014 pectoral=arms, pelvic=legs.' }
-
-                ],
-
-                muscle: [
-
-                  { id: 'myomeres', name: 'Myomeres', x: 0.50, y: 0.42, fn: 'W-shaped muscle blocks separated by myosepta. Contract in waves for swimming. White (fast) + red (slow) fibers.', clinical: 'Visible as "flakes" in cooked fish \u2014 each flake is one myomere.' },
-
-                  { id: 'epaxial', name: 'Epaxial Muscles', x: 0.50, y: 0.32, fn: 'Dorsal muscle mass above lateral septum. Main swimming power. Bulk of body musculature.', clinical: 'This is the "fillet" \u2014 mostly epaxial muscle, the main edible portion.' }
-
-                ],
-
-                organs: [
-
-                  { id: 'gills', name: 'Gills', x: 0.25, y: 0.38, fn: '4 gill arches with filaments/lamellae. Countercurrent flow extracts 80% of dissolved O\u2082.', clinical: 'Fish gills extract proportionally more oxygen from water than lungs from air.' },
-
-                  { id: 'heart_f', name: 'Heart (2-chamber)', x: 0.22, y: 0.45, fn: '1 atrium + 1 ventricle. Single-circuit circulation: heart\u2192gills\u2192body\u2192heart.', clinical: 'Simplest vertebrate heart. Evolution: 2 (fish) \u2192 3 (amphibian) \u2192 4 (mammal/bird).' },
-
-                  { id: 'swim_bladder', name: 'Swim Bladder', x: 0.50, y: 0.35, fn: 'Gas-filled sac for buoyancy. Closed type \u2014 gas secreted/absorbed via rete mirabile. Neutral buoyancy without effort.', clinical: 'Homologous to the tetrapod lung \u2014 both evolved from pharyngeal outpocketing in ancestral fish.' },
-
-                  { id: 'liver_f', name: 'Liver', x: 0.35, y: 0.42, fn: 'Large lobed organ. Bile production, glycogen/lipid storage.', clinical: 'Fish liver oil is a concentrated energy reserve \u2014 cod liver oil rich in vitamins A and D.' },
-
-                  { id: 'stomach_f', name: 'Stomach', x: 0.40, y: 0.48, fn: 'J-shaped. HCl + pepsin. Expandable for large prey.', clinical: 'Not all fish have stomachs \u2014 carp and minnows lack them entirely.' },
-
-                  { id: 'pyloric_ceca', name: 'Pyloric Ceca', x: 0.42, y: 0.52, fn: 'Finger-like pouches at stomach-intestine junction (3-5 in perch). Increase absorption area.', clinical: 'Unique to fish \u2014 no mammalian homolog. Number used in species identification.' },
-
-                  { id: 'kidneys_f', name: 'Kidneys', x: 0.50, y: 0.30, fn: 'Dark elongated organs along dorsal wall. Head kidney (immune) + trunk kidney (excretion).', clinical: 'Freshwater fish excrete dilute urine \u2014 constantly fighting water influx through gills.' },
-
-                  { id: 'gonads_f', name: 'Gonads', x: 0.50, y: 0.50, fn: 'Paired dorsal organs. External fertilization. Ovaries can be 20-30% of body weight when full.', clinical: 'Enormous reproductive investment \u2014 some fish produce millions of eggs per spawning.' }
-
-                ],
-
-                skeleton: [
-
-                  { id: 'skull_f', name: 'Skull', x: 0.18, y: 0.35, fn: 'Complex with 60+ separate bones \u2014 more than any other vertebrate class.', clinical: 'Fish skulls have the most individual bones of any vertebrate group.' },
-
-                  { id: 'vert_col_f', name: 'Vertebral Column', x: 0.50, y: 0.38, fn: 'Neural arches (spinal cord) + hemal arches (caudal vessels). Trunk + caudal regions only.', clinical: 'No distinct cervical/thoracic/lumbar regions \u2014 the "neck" is a tetrapod innovation.' },
-
-                  { id: 'fin_rays', name: 'Fin Rays', x: 0.55, y: 0.22, fn: 'Spiny (hard, sharp, defense) and soft (segmented, flexible) rays support fin membranes.', clinical: 'Perch spiny rays are sharp enough to puncture skin \u2014 defensive adaptation.' }
-
-                ]
-
-              }
-
-            },
-
-            crayfish: {
-
-              name: 'Crayfish (Cambarus)', icon: '\uD83E\uDD9E',
-
-              desc: 'Crustacean \u2014 exoskeleton, compound eyes, gills, open circulatory system, gastric mill.',
-
-              bodyShape: 'crayfish',
-
-              layers: [
-
-                { id: 'skin', name: 'Exoskeleton', icon: '\uD83D\uDEE1\uFE0F', color: '#ef4444', accent: '#b91c1c', desc: 'Chitinous shell hardened with calcium carbonate.' },
-
-                { id: 'muscle', name: 'Musculature', icon: '\uD83D\uDCAA', color: '#f87171', accent: '#dc2626', desc: 'Muscles attached inside exoskeleton.' },
-
-                { id: 'organs', name: 'Internal Organs', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Open circulatory system, gastric mill, green glands.' },
-
-                { id: 'nervous', name: 'Nervous System', icon: '\u26A1', color: '#c084fc', accent: '#7c3aed', desc: 'Ventral nerve cord, compound eyes, antennae.' }
-
-              ],
-
-              organs: {
-
-                skin: [
-
-                  { id: 'carapace', name: 'Carapace', x: 0.40, y: 0.32, fn: 'Fused dorsal shell covering cephalothorax. Chitin + CaCO\u2083. Must molt (ecdysis) to grow.', clinical: 'Soft-shell stage after molting makes them vulnerable \u2014 many crustaceans hide while hardening.' },
-
-                  { id: 'telson', name: 'Telson & Uropods', x: 0.80, y: 0.40, fn: 'Tail fan for escape response ("tail flip"). Swims backward at 2 m/s in milliseconds.', clinical: 'Tail flip is one of the fastest animal movements \u2014 mediated by giant nerve fibers.' },
-
-                  { id: 'chelipeds', name: 'Chelipeds (Claws)', x: 0.18, y: 0.42, fn: 'First walking legs modified into pincers. Defense, feeding, territorial displays. Can regenerate if lost.', clinical: 'Lost claws regenerate over several molts \u2014 remarkable crustacean regenerative ability.' },
-
-                  { id: 'compound_eye', name: 'Compound Eyes', x: 0.22, y: 0.30, fn: '~3,000 ommatidia per eye on moveable stalks. Motion detection specialist.', clinical: 'Compound eyes excel at motion detection but have lower resolution than vertebrate eyes.' }
-
-                ],
-
-                muscle: [
-
-                  { id: 'flexor_m', name: 'Abdominal Flexors', x: 0.65, y: 0.42, fn: 'Powerful ventral muscles for escape tail-flip. Among fastest muscle contractions in animal kingdom.', clinical: 'This is the edible "crawfish tail" \u2014 these flexor muscles are the commercial meat.' },
-
-                  { id: 'extensor_m', name: 'Abdominal Extensors', x: 0.65, y: 0.35, fn: 'Dorsal muscles returning abdomen to rest position. Slower than flexors.', clinical: 'Antagonistic flexor/extensor system works same as in vertebrate limbs.' },
-
-                  { id: 'cheliped_m', name: 'Cheliped Muscles', x: 0.22, y: 0.38, fn: 'Closer (adductor) much larger than opener. Crushing force >50N in large specimens.', clinical: 'Claw joint leverages amplify muscle force \u2014 a biological lever system.' }
-
-                ],
-
-                organs: [
-
-                  { id: 'heart_c', name: 'Heart', x: 0.45, y: 0.30, fn: 'Single-chambered dorsal heart. Open circulatory system \u2014 hemolymph flows through sinuses, not vessels.', clinical: 'Low-pressure open circulation limits crustacean maximum body size.' },
-
-                  { id: 'gills_c', name: 'Gills', x: 0.35, y: 0.30, fn: 'Feather-like gills in branchial chamber. Gill bailer creates water current. Attached to leg bases.', clinical: 'Walking legs ventilate gills \u2014 movement and breathing are linked.' },
-
-                  { id: 'gastric_mill', name: 'Gastric Mill', x: 0.32, y: 0.35, fn: '3 calcified teeth (ossicles) inside stomach. Grind food after swallowing. Gastroliths store calcium for molting.', clinical: '"Teeth in the stomach" \u2014 crustaceans chew food after eating it.' },
-
-                  { id: 'green_gland', name: 'Green Glands', x: 0.25, y: 0.32, fn: 'Excretory organs at antenna base. Filter hemolymph, produce urine. Equivalent of kidneys.', clinical: 'Excrete ammonia directly \u2014 possible because aquatic environments flush waste.' },
-
-                  { id: 'hepato', name: 'Hepatopancreas', x: 0.42, y: 0.38, fn: 'Combined liver + pancreas. Digestive enzymes, nutrient absorption, energy storage. Largest internal organ.', clinical: 'Called "tomalley" in lobster cuisine. Accumulates toxins in polluted waters.' },
-
-                  { id: 'gonads_c', name: 'Gonads', x: 0.50, y: 0.35, fn: 'Dorsal to hepatopancreas. Females carry eggs on swimmerets ("berried" females).', clinical: 'Males identified by modified first swimmerets (gonopods) for sperm transfer.' }
-
-                ],
-
-                nervous: [
-
-                  { id: 'brain_c', name: 'Supraesophageal Ganglion', x: 0.25, y: 0.30, fn: 'Fused ganglia above esophagus. Processes eyes, antennae input. Supports learning and social hierarchies.', clinical: 'Simple brain but complex behavior \u2014 crayfish establish dominance hierarchies.' },
-
-                  { id: 'ventral_c', name: 'Ventral Nerve Cord', x: 0.50, y: 0.42, fn: 'Double cord with giant fibers mediating escape. Segmental ganglia control appendages.', clinical: 'Crayfish giant axons were foundational to neuroscience \u2014 among first where action potentials recorded.' },
-
-                  { id: 'antennae_n', name: 'Antennae & Antennules', x: 0.18, y: 0.32, fn: 'Long pair: touch/taste. Short pair: chemoreception + balance (statocyst).', clinical: 'Classic experiment: iron filings in statocyst + magnet = inverted orientation.' }
-
-                ]
-
-              }
-
-            },
-
-            sheepEye: {
-
-              name: 'Sheep Eye', icon: '\uD83D\uDC41\uFE0F',
-
-              desc: 'Organ dissection \u2014 camera-type eye with lens, retina, vitreous humor. Nearly identical to human.',
-
-              bodyShape: 'eye',
-
-              layers: [
-
-                { id: 'skin', name: 'External', icon: '\uD83D\uDC41\uFE0F', color: '#93c5fd', accent: '#2563eb', desc: 'Outer structures: cornea, sclera, muscles, optic nerve.' },
-
-                { id: 'organs', name: 'Internal', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Internal structures: lens, iris, retina, humors.' }
-
-              ],
-
-              organs: {
-
-                skin: [
-
-                  { id: 'cornea', name: 'Cornea', x: 0.30, y: 0.45, fn: 'Transparent anterior surface. Provides 2/3 of refractive power. Avascular \u2014 nourished by aqueous humor and tears. 5 layers.', clinical: 'LASIK reshapes the cornea with laser. Corneal transplants are the most common transplant surgery worldwide.' },
-
-                  { id: 'sclera', name: 'Sclera', x: 0.70, y: 0.45, fn: 'Tough white outer coat. Dense connective tissue protecting eye contents. Attachment for extraocular muscles. "White of the eye."', clinical: 'Yellow sclera (scleral icterus) = jaundice from liver disease. Blue sclera = osteogenesis imperfecta.' },
-
-                  { id: 'optic_nerve', name: 'Optic Nerve', x: 0.82, y: 0.50, fn: '~1.2 million retinal ganglion cell axons. Exits at optic disc (blind spot). Surrounded by meninges extension.', clinical: 'Optic disc has no photoreceptors = blind spot. Papilledema (optic disc swelling) = increased intracranial pressure.' },
-
-                  { id: 'ext_muscles', name: 'Extraocular Muscles', x: 0.75, y: 0.30, fn: '6 muscles control eye movement: 4 rectus (sup/inf/med/lat) + 2 oblique (sup/inf). Cranial nerves III, IV, VI.', clinical: 'CN III palsy: eye "down and out," ptosis. CN IV: difficulty looking down stairs. CN VI: medial deviation.' },
-
-                  { id: 'conjunctiva', name: 'Conjunctiva', x: 0.35, y: 0.30, fn: 'Thin mucous membrane lining eyelids (palpebral) and covering sclera (bulbar). Produces mucin for tear film.', clinical: 'Conjunctivitis ("pink eye") = inflamed conjunctiva. Subconjunctival hemorrhage looks alarming but is usually benign.' },
-
-                  { id: 'fat_pad', name: 'Orbital Fat', x: 0.70, y: 0.65, fn: 'Cushions and insulates the eye within the orbit. Acts as shock absorber.', clinical: 'Orbital fat atrophy causes sunken eyes (enophthalmos). Graves disease causes fat expansion \u2192 proptosis.' }
-
-                ],
-
-                organs: [
-
-                  { id: 'iris', name: 'Iris & Pupil', x: 0.35, y: 0.45, fn: 'Pigmented muscular diaphragm. Dilator (sympathetic) and sphincter (parasympathetic) muscles control pupil size. Regulates light entry.', clinical: 'Anisocoria (unequal pupils): may indicate CN III palsy, Horner syndrome, or elevated ICP. Iris color from melanin amount.' },
-
-                  { id: 'lens', name: 'Crystalline Lens', x: 0.42, y: 0.45, fn: 'Biconvex, transparent, avascular. Changes shape for focusing (accommodation). Held by zonular fibers attached to ciliary body. Contains crystallin proteins.', clinical: 'Cataracts = lens clouding (most common surgery worldwide). Presbyopia = lens stiffening with age.' },
-
-                  { id: 'ciliary_body', name: 'Ciliary Body', x: 0.38, y: 0.35, fn: 'Ring of muscle + epithelium. Ciliary muscle changes lens shape for focusing. Epithelium produces aqueous humor.', clinical: 'Glaucoma: excess aqueous humor \u2192 increased IOP \u2192 optic nerve damage. Treated with drugs reducing production.' },
-
-                  { id: 'retina', name: 'Retina', x: 0.65, y: 0.45, fn: '10 neural layers. Rods (~120M, light sensitivity) and cones (~6M, color/acuity). Fovea: cone-dense center for sharp vision. Macula: surrounding high-acuity region.', clinical: 'Retinal detachment = surgical emergency. Diabetic retinopathy. Macular degeneration = leading cause of blindness in elderly.' },
-
-                  { id: 'tapetum', name: 'Tapetum Lucidum', x: 0.65, y: 0.55, fn: 'Reflective layer behind retina in sheep (absent in humans). Reflects light back through retina for enhanced night vision. Causes "eyeshine."', clinical: 'Present in many animals (cats, dogs, sheep) but not humans or pigs. This is why animal eyes glow in headlights.' },
-
-                  { id: 'vitreous', name: 'Vitreous Humor', x: 0.55, y: 0.45, fn: 'Clear gel filling posterior 80% of eye. Maintains eye shape. 99% water + collagen + hyaluronic acid. Does not regenerate.', clinical: 'Floaters = collagen clumps in vitreous. Posterior vitreous detachment common with aging.' },
-
-                  { id: 'aqueous', name: 'Aqueous Humor', x: 0.33, y: 0.50, fn: 'Clear fluid in anterior/posterior chambers (in front of lens). Produced by ciliary body, drains via trabecular meshwork at angle.', clinical: 'Blocked drainage \u2192 increased IOP \u2192 glaucoma. Acute angle-closure = emergency.' },
-
-                  { id: 'choroid', name: 'Choroid', x: 0.60, y: 0.35, fn: 'Vascular layer between sclera and retina. Blood supply for outer retina. Heavily pigmented to absorb stray light.', clinical: 'Choroidal melanoma is the most common primary intraocular malignancy in adults.' }
-
-                ]
-
-              }
-
-            },
-
-            sheepHeart: {
-
-              name: 'Sheep Heart', icon: '\u2764\uFE0F',
-
-              desc: 'Organ dissection \u2014 4-chambered mammalian heart. Functionally identical to human heart.',
-
-              bodyShape: 'heart',
-
-              layers: [
-
-                { id: 'skin', name: 'External', icon: '\u2764\uFE0F', color: '#fca5a5', accent: '#dc2626', desc: 'Pericardium, great vessels, coronary arteries, surface anatomy.' },
-
-                { id: 'organs', name: 'Internal', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Chambers, valves, septum, chordae tendineae.' }
-
-              ],
-
-              organs: {
-
-                skin: [
-
-                  { id: 'pericardium', name: 'Pericardium', x: 0.50, y: 0.30, fn: 'Double-walled sac enclosing heart. Fibrous (outer, tough) and serous (inner, 2 layers with fluid). Anchors heart. 15-50mL pericardial fluid reduces friction.', clinical: 'Pericarditis: inflammation causing chest pain. Cardiac tamponade: fluid compresses heart = emergency. Beck triad: hypotension, JVD, muffled sounds.' },
-
-                  { id: 'aorta_h', name: 'Aorta', x: 0.45, y: 0.15, fn: 'Largest artery. Ascending aorta exits LV, curves as aortic arch (brachiocephalic, L carotid, L subclavian), descends as thoracic/abdominal aorta.', clinical: 'Aortic aneurysm: >5.5cm \u2192 surgical repair risk. Aortic dissection: tearing pain, emergency surgery.' },
-
-                  { id: 'pulm_trunk', name: 'Pulmonary Trunk', x: 0.55, y: 0.18, fn: 'Exits RV, bifurcates into R and L pulmonary arteries carrying deoxygenated blood to lungs. Only arteries carrying deoxy blood.', clinical: 'Pulmonary embolism: clot lodges here. Saddle PE across bifurcation is life-threatening.' },
-
-                  { id: 'coronary_aa', name: 'Coronary Arteries', x: 0.40, y: 0.40, fn: 'Left main \u2192 LAD + circumflex. Right coronary artery (RCA). Supply myocardium with oxygenated blood. First aortic branches.', clinical: 'LAD = "widow maker." Coronary artery disease is #1 cause of death. CABG bypasses blockages using vein/artery grafts.' },
-
-                  { id: 'sup_vena_h', name: 'Superior Vena Cava', x: 0.55, y: 0.12, fn: 'Returns deoxygenated blood from upper body to RA. Formed by brachiocephalic veins.', clinical: 'SVC syndrome from lung cancer: facial swelling and dyspnea.' },
-
-                  { id: 'inf_vena_h', name: 'Inferior Vena Cava', x: 0.55, y: 0.70, fn: 'Returns blood from lower body to RA. Largest vein.', clinical: 'IVC filter prevents PE from DVT. Compression in pregnancy causes supine hypotension.' },
-
-                  { id: 'apex', name: 'Apex', x: 0.45, y: 0.75, fn: 'Inferior tip of heart formed by LV. Points left and anterior. PMI (point of maximum impulse) at 5th intercostal space, midclavicular line.', clinical: 'Displaced PMI = ventricular enlargement. PMI palpation is key clinical exam finding.' }
-
-                ],
-
-                organs: [
-
-                  { id: 'ra', name: 'Right Atrium', x: 0.60, y: 0.38, fn: 'Receives deoxygenated blood from SVC (upper body), IVC (lower body), and coronary sinus (heart). Thin-walled. SA node here sets heart rhythm.', clinical: 'SA node = "pacemaker of the heart" \u2014 sets sinus rhythm at 60-100 bpm. Atrial fibrillation: chaotic atrial activity.' },
-
-                  { id: 'rv', name: 'Right Ventricle', x: 0.55, y: 0.55, fn: 'Pumps blood to lungs via pulmonary trunk. Thinner wall than LV (lower pressure: 25/5 mmHg vs 120/80). Crescent shape wraps around LV.', clinical: 'RV failure from pulmonary hypertension or massive PE. RV infarction from RCA occlusion.' },
-
-                  { id: 'la', name: 'Left Atrium', x: 0.45, y: 0.35, fn: 'Receives oxygenated blood from 4 pulmonary veins. Smooth walled. Left atrial appendage is common site of thrombus formation in AFib.', clinical: 'Atrial appendage clots in AFib = stroke risk. Anticoagulation or appendage occlusion devices prevent this.' },
-
-                  { id: 'lv', name: 'Left Ventricle', x: 0.42, y: 0.55, fn: 'Thickest wall (3x RV). Pumps oxygenated blood to entire body via aorta at 120/80 mmHg. Conical shape. Apex formed by LV.', clinical: 'LV hypertrophy from chronic hypertension or aortic stenosis. LV ejection fraction (normal 55-70%) = key cardiac metric.' },
-
-                  { id: 'tricuspid', name: 'Tricuspid Valve', x: 0.58, y: 0.45, fn: 'AV valve with 3 cusps between RA and RV. Chordae tendineae attach to papillary muscles preventing prolapse during systole.', clinical: 'Tricuspid regurgitation: blood leaks backward. Endocarditis in IV drug users often affects tricuspid.' },
-
-                  { id: 'mitral', name: 'Mitral (Bicuspid) Valve', x: 0.43, y: 0.42, fn: 'AV valve with 2 cusps between LA and LV. Most commonly affected valve in rheumatic heart disease. "Bicuspid" = 2 leaflets.', clinical: 'Mitral stenosis from rheumatic fever. Mitral valve prolapse (MVP) in 2-3% of population. "Lub" = AV valves closing.' },
-
-                  { id: 'aortic_v', name: 'Aortic Valve', x: 0.45, y: 0.25, fn: '3 semilunar cusps at LV-aorta junction. Opens during systole for ejection. Coronary ostia just above valve.', clinical: 'Aortic stenosis: calcified valve \u2192 syncope, angina, HF. "Dub" = semilunar valves closing. Bicuspid aortic valve (1-2% prevalence).' },
-
-                  { id: 'pulm_v', name: 'Pulmonary Valve', x: 0.55, y: 0.28, fn: '3 semilunar cusps at RV-pulmonary trunk junction. Prevents backflow into RV during diastole.', clinical: 'Pulmonary stenosis: congenital narrowing (part of Tetralogy of Fallot). Least commonly affected valve.' },
-
-                  { id: 'septum', name: 'Interventricular Septum', x: 0.48, y: 0.52, fn: 'Muscular wall separating L and R ventricles. Thick muscular portion + thin membranous portion. LAD supplies anterior septum.', clinical: 'VSD (ventricular septal defect): most common congenital heart defect. Septal MI from LAD occlusion.' },
-
-                  { id: 'chordae', name: 'Chordae Tendineae', x: 0.50, y: 0.48, fn: '"Heart strings" \u2014 fibrous cords connecting AV valve leaflets to papillary muscles. Prevent valve prolapse during ventricular contraction.', clinical: 'Ruptured chordae = sudden severe valve regurgitation = acute heart failure. Can occur in endocarditis or MI.' },
-
-                  { id: 'conduction', name: 'Conduction System', x: 0.52, y: 0.42, fn: 'SA node (pacemaker, 60-100) \u2192 AV node (delay, 40-60) \u2192 Bundle of His \u2192 R/L bundle branches \u2192 Purkinje fibers. Coordinates cardiac contraction.', clinical: 'Heart blocks: 1st degree (delayed), 2nd degree (dropped beats), 3rd degree (complete dissociation). Pacemaker implantation.' }
-
-                ]
-
-              }
-
-            }
-
-          };
-
-
-
-
-
-          // ════════ ACTIVE STATE ════════
-
-          var specimen = d.specimen || 'frog';
-
-          var spec = SPECIMENS[specimen];
-
-          if (!spec) { specimen = 'frog'; spec = SPECIMENS['frog']; }
-
-          var activeLayer = d.activeLayer || (spec.layers[0] || {}).id || 'skin';
-
-          var revealedLayers = d.revealedLayers || {};
-
-          var currentLayerIdx = spec.layers.findIndex(function (l) { return l.id === activeLayer; });
-
-          if (currentLayerIdx < 0) currentLayerIdx = 0;
-
-          var organs = (spec.organs[activeLayer] || []);
-
-          var sel = d.selectedOrgan ? organs.find(function (o) { return o.id === d.selectedOrgan; }) : null;
-
-          var guidedStep = d.guidedStep || 0;
-
-          var guidedMode = d.guidedMode || false;
-
-
-
-          // Quiz
-
-          var quizPool = organs.filter(function (o) { return o.fn; });
-
-          var quizQ = d.quizMode && quizPool.length > 0 ? quizPool[(d.quizIdx || 0) % quizPool.length] : null;
-
-          var quizOptions = d._dissQuizOpts || [];
-
-          if (quizQ && d._dissQuizFor !== (specimen + '|' + activeLayer + '|' + d.quizIdx)) {
-
-            var wrong = quizPool.filter(function (o) { return o.id !== quizQ.id; });
-
-            var shuffled = wrong.sort(function () { return Math.random() - 0.5; }).slice(0, 3);
-
-            quizOptions = shuffled.concat([quizQ]).sort(function () { return Math.random() - 0.5; });
-
-            var _qo = quizOptions, _qf = specimen + '|' + activeLayer + '|' + d.quizIdx;
-
-            setTimeout(function () { upd('_dissQuizOpts', _qo); upd('_dissQuizFor', _qf); }, 0);
-
-          }
-
-
-
-          function peelCurrentLayer() {
-
-            var newRevealed = Object.assign({}, revealedLayers);
-
-            newRevealed[activeLayer] = true;
-
-            upd('revealedLayers', newRevealed);
-
-            if (currentLayerIdx < spec.layers.length - 1) {
-
-              upd('activeLayer', spec.layers[currentLayerIdx + 1].id);
-
-              upd('selectedOrgan', null);
-
-            }
-
-            awardStemXP('dissection', 3, 'Peeled ' + activeLayer + ' layer');
-
-            if (addToast) addToast('\uD83D\uDD2C +3 XP Layer revealed!', 'success');
-
-          }
-
-
-
-          // Canvas renderer
-
-          var canvasRef = function (canvas) {
-
-            if (!canvas) return;
-
-            // Always update zoom/pan on canvas element so animation loop reads latest values
-
-            canvas._zoom = d.canvasZoom || 1;
-
-            canvas._panX = d.canvasPanX || 0;
-
-            canvas._panY = d.canvasPanY || 0;
-
-            // Store all drawing state on canvas so animation loop always has fresh values
-
-            canvas._drawSpec = spec;
-
-            canvas._drawActiveLayer = activeLayer;
-
-            canvas._drawCurrentLayerIdx = currentLayerIdx;
-
-            canvas._drawOrgans = organs;
-
-            canvas._drawRevealedLayers = revealedLayers;
-
-            canvas._drawSel = sel;
-
-            canvas._drawD = d;
-
-            canvas._drawSpecimen = specimen;
-
-            canvas._drawGuidedMode = guidedMode;
-
-            canvas._drawGuidedStep = guidedStep;
-
-            // If animation loop is already running, just update state — don't restart
-
-            if (canvas._dissAnim) return;
-
-            var ctx = canvas.getContext('2d');
-
-            var W = canvas.width, H = canvas.height;
-
-            var dissTick = 0;
-
-            function drawDissectionFrame() {
-
-              dissTick++;
-
-              // Guard: skip frame if canvas dimensions are not finite or zero
-
-              W = canvas.width; H = canvas.height;
-
-              if (!W || !H || !isFinite(W) || !isFinite(H)) {
-
-                canvas._dissAnim = requestAnimationFrame(drawDissectionFrame);
-
-                return;
-
-              }
-
-              // Read ALL drawing state from canvas element (updated by canvasRef on each React render)
-
-              // This avoids stale closures that caused the specimen to vanish permanently
-
-              spec = canvas._drawSpec || spec;
-
-              activeLayer = canvas._drawActiveLayer || activeLayer;
-
-              currentLayerIdx = canvas._drawCurrentLayerIdx != null ? canvas._drawCurrentLayerIdx : currentLayerIdx;
-
-              organs = canvas._drawOrgans || organs;
-
-              revealedLayers = canvas._drawRevealedLayers || revealedLayers;
-
-              sel = canvas._drawSel;
-
-              d = canvas._drawD || d;
-
-              specimen = canvas._drawSpecimen || specimen;
-
-              guidedMode = canvas._drawGuidedMode;
-
-              guidedStep = canvas._drawGuidedStep || 0;
-
-              try {
-
-              // BULLETPROOF: Reset all canvas state at frame start to prevent leaks
-
-              ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-              ctx.globalAlpha = 1;
-
-              ctx.setLineDash([]);
-
-              ctx.lineDashOffset = 0;
-
-              ctx.shadowBlur = 0;
-
-              ctx.shadowColor = 'transparent';
-
-              ctx.clearRect(0, 0, W, H);
-
-              var cx = W * 0.5, cy = H * 0.45;
-
-              // Read zoom + pan from canvas element (always current, avoids stale closure)
-
-              var zoom = canvas._zoom || 1;
-
-              var panX = canvas._panX || 0;
-
-              var panY = canvas._panY || 0;
-
-              ctx.save();
-
-              ctx.translate(W / 2 + panX, H / 2 + panY);
-
-              ctx.scale(zoom, zoom);
-
-              ctx.translate(-W / 2, -H / 2);
-
-              // Dark dissection tray background
-
-              var isHC = d.highContrast;
-
-              var trayGrad = ctx.createLinearGradient(0, 0, 0, H);
-
-              trayGrad.addColorStop(0, '#1e293b'); trayGrad.addColorStop(1, '#0f172a');
-
-              ctx.fillStyle = trayGrad; ctx.fillRect(0, 0, W, H);
-
-              ctx.strokeStyle = '#334155'; ctx.lineWidth = 3; ctx.strokeRect(4, 4, W - 8, H - 8);
-
-              // Faint grid
-
-              ctx.strokeStyle = 'rgba(100,116,139,0.12)'; ctx.lineWidth = 0.5;
-
-              for (var gx = 0; gx < W; gx += 30) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
-
-              for (var gy = 0; gy < H; gy += 30) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
-
-              ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-
-              // Specular highlight for 3D effect
-
-              if (spec.bodyShape !== 'worm') {
-
-                var specGrad = ctx.createRadialGradient(cx - W * 0.05, cy - H * 0.08, 0, cx - W * 0.05, cy - H * 0.08, W * 0.15);
-
-                specGrad.addColorStop(0, 'rgba(255,255,255,0.06)');
-
-                specGrad.addColorStop(1, 'rgba(255,255,255,0)');
-
-                ctx.fillStyle = specGrad;
-
-                ctx.beginPath(); ctx.ellipse(cx - W * 0.05, cy - H * 0.08, W * 0.12, H * 0.08, -0.3, 0, Math.PI * 2);
-
-                ctx.fill();
-
-              } else {
-
-                // Worm gets elongated highlight
-
-                var wSpecGrad = ctx.createRadialGradient(cx - W * 0.01, H * 0.30, 0, cx - W * 0.01, H * 0.30, W * 0.04);
-
-                wSpecGrad.addColorStop(0, 'rgba(255,255,255,0.06)');
-
-                wSpecGrad.addColorStop(1, 'rgba(255,255,255,0)');
-
-                ctx.fillStyle = wSpecGrad;
-
-                ctx.fillRect(cx - W * 0.03, H * 0.08, W * 0.04, H * 0.84);
-
-              }
-
-              // 3D depth shadow under body
-
-              ctx.globalAlpha = 0.08;
-
-              ctx.beginPath();
-
-              if (spec.bodyShape === 'frog') { ctx.ellipse(cx + 3, cy + 5, W * 0.18, H * 0.30, 0, 0, Math.PI * 2); }
-
-              else if (spec.bodyShape === 'pig') { ctx.ellipse(cx + 3, cy + 5, W * 0.30, H * 0.14, 0, 0, Math.PI * 2); }
-
-              else if (spec.bodyShape === 'fish') { ctx.ellipse(cx + 3, cy + 5, W * 0.32, H * 0.10, 0, 0, Math.PI * 2); }
-
-              else if (spec.bodyShape === 'crayfish') { ctx.ellipse(cx + 3, cy + 5, W * 0.32, H * 0.08, 0, 0, Math.PI * 2); }
-
-              else if (spec.bodyShape === 'worm') { ctx.ellipse(cx + 2, H * 0.50 + 5, W * 0.05, H * 0.42, 0, 0, Math.PI * 2); }
-
-              ctx.fillStyle = '#000'; ctx.fill();
-
-              ctx.globalAlpha = 1;
-
-              // Tissue texture overlay (stipple for organic feel)
-
-              if (spec.bodyShape !== 'eye' && spec.bodyShape !== 'heart') {
-
-                ctx.globalAlpha = 0.03;
-
-                for (var stip = 0; stip < 80; stip++) {
-
-                  var sx = cx + (Math.sin(stip * 137.5) * W * 0.25);
-
-                  var sy_t = cy + (Math.cos(stip * 47.3) * H * 0.30);
-
-                  ctx.beginPath(); ctx.arc(sx, sy_t, Math.random() * 2 + 0.5, 0, Math.PI * 2);
-
-                  ctx.fillStyle = stip % 2 === 0 ? '#000' : '#fff'; ctx.fill();
-
-                }
-
-                ctx.globalAlpha = 1;
-
-              }
-
-              // Dissection tools illustration (bottom-right corner)
-
-              ctx.globalAlpha = 0.15;
-
-              // Scalpel
-
-              ctx.beginPath(); ctx.moveTo(W - 60, H - 60); ctx.lineTo(W - 35, H - 35);
-
-              ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.stroke();
-
-              ctx.beginPath(); ctx.moveTo(W - 35, H - 35); ctx.lineTo(W - 30, H - 32);
-
-              ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 3; ctx.stroke();
-
-              // Forceps
-
-              ctx.beginPath(); ctx.moveTo(W - 80, H - 55); ctx.lineTo(W - 55, H - 40);
-
-              ctx.moveTo(W - 80, H - 48); ctx.lineTo(W - 55, H - 40);
-
-              ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5; ctx.stroke();
-
-              // Pins
-
-              for (var pi_tool = 0; pi_tool < 3; pi_tool++) {
-
-                ctx.beginPath(); ctx.arc(W - 90 + pi_tool * 8, H - 70, 1.5, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#94a3b8'; ctx.fill();
-
-                ctx.beginPath(); ctx.moveTo(W - 90 + pi_tool * 8, H - 70); ctx.lineTo(W - 90 + pi_tool * 8, H - 62);
-
-                ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 0.5; ctx.stroke();
-
-              }
-
-              ctx.globalAlpha = 1;
-
-
-
-              // Get current layer styling
-
-              var curLayer = spec.layers[currentLayerIdx] || spec.layers[0];
-
-              var layerColor = curLayer.color || '#94a3b8';
-
-              var layerStroke = curLayer.accent || '#64748b';
-
-              // cx, cy declared at top of drawDissectionFrame
-
-
-
-              // Create body gradient for 3D depth effect
-
-              var bodyGrad = ctx.createRadialGradient(cx - W * 0.05, cy - H * 0.05, 10, cx, cy, W * 0.30);
-
-              bodyGrad.addColorStop(0, layerColor);
-
-              bodyGrad.addColorStop(0.7, layerColor);
-
-              bodyGrad.addColorStop(1, layerStroke);
-
-              // Breathing animation for organic feel
-
-              var breathScale = 1 + Math.sin(dissTick * 0.02) * 0.005;
-
-
-
-              ctx.save();
-
-              ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 12;
-
-
-
-              // ── Draw specimen body based on bodyShape ──
-
-              if (spec.bodyShape === 'frog') {
-
-                // ══ ANATOMICALLY ACCURATE FROG (Rana temporaria) ══
-
-                var bS = breathScale;
-
-
-
-                // ── Hindlimbs (drawn first, behind body) ──
-
-                [-1, 1].forEach(function (sx) {
-
-                  var hipX = cx + sx * W * 0.13, hipY = cy + H * 0.20;
-
-                  var kneeX = cx + sx * W * 0.26, kneeY = cy + H * 0.18;
-
-                  var ankleX = cx + sx * W * 0.28, ankleY = cy + H * 0.30;
-
-                  var footX = cx + sx * W * 0.22, footY = cy + H * 0.38;
-
-                  // Thigh (femur region – thick)
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(hipX, hipY);
-
-                  ctx.bezierCurveTo(hipX + sx * W * 0.04, hipY - H * 0.02, kneeX - sx * W * 0.02, kneeY - H * 0.04, kneeX, kneeY);
-
-                  ctx.bezierCurveTo(kneeX + sx * W * 0.02, kneeY + H * 0.02, hipX + sx * W * 0.06, hipY + H * 0.06, hipX + sx * W * 0.02, hipY + H * 0.04);
-
-                  ctx.closePath();
-
-                  ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.stroke();
-
-                  // Calf (tibia-fibula – tapers)
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(kneeX, kneeY);
-
-                  ctx.bezierCurveTo(kneeX + sx * W * 0.01, kneeY + H * 0.04, ankleX + sx * W * 0.02, ankleY - H * 0.03, ankleX, ankleY);
-
-                  ctx.bezierCurveTo(ankleX - sx * W * 0.03, ankleY + H * 0.01, kneeX - sx * W * 0.03, kneeY + H * 0.04, kneeX - sx * W * 0.02, kneeY + H * 0.02);
-
-                  ctx.closePath();
-
-                  ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1; ctx.stroke();
-
-                  // Elongated ankle (astragalus/calcaneus – frog adaptation)
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(ankleX, ankleY);
-
-                  ctx.lineTo(footX, footY - H * 0.02);
-
-                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.stroke();
-
-                  // Foot with 5 webbed toes
-
-                  var toeAngles = [-0.45, -0.22, 0, 0.22, 0.45];
-
-                  var toeLens = [0.07, 0.09, 0.10, 0.09, 0.06];
-
-                  toeAngles.forEach(function (ang, ti) {
-
-                    var toeEndX = footX + Math.sin(ang + sx * 0.1) * W * toeLens[ti] * sx;
-
-                    var toeEndY = footY + Math.cos(ang) * H * toeLens[ti] * 0.7;
-
-                    ctx.beginPath(); ctx.moveTo(footX, footY - H * 0.02);
-
-                    ctx.lineTo(toeEndX, toeEndY);
-
-                    ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
-
-                    // Toe tip bulb
-
-                    ctx.beginPath(); ctx.arc(toeEndX, toeEndY, 1.5, 0, Math.PI * 2);
-
-                    ctx.fillStyle = layerColor; ctx.fill();
-
-                  });
-
-                  // Webbing between toes
-
-                  ctx.globalAlpha = 0.15;
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(footX + Math.sin(toeAngles[0] + sx * 0.1) * W * toeLens[0] * sx, footY + Math.cos(toeAngles[0]) * H * toeLens[0] * 0.7);
-
-                  for (var tw = 1; tw < 5; tw++) {
-
-                    ctx.lineTo(footX + Math.sin(toeAngles[tw] + sx * 0.1) * W * toeLens[tw] * sx, footY + Math.cos(toeAngles[tw]) * H * toeLens[tw] * 0.7);
-
-                  }
-
-                  ctx.lineTo(footX, footY - H * 0.02); ctx.closePath();
-
-                  ctx.fillStyle = layerColor; ctx.fill();
-
-                  ctx.globalAlpha = 1;
-
-                });
-
-
-
-                // ── Forelimbs (drawn behind body) ──
-
-                [-1, 1].forEach(function (sx) {
-
-                  var shX = cx + sx * W * 0.15, shY = cy - H * 0.12;
-
-                  var elbX = cx + sx * W * 0.22, elbY = cy - H * 0.06;
-
-                  var wristX = cx + sx * W * 0.24, wristY = cy + H * 0.02;
-
-                  // Upper arm
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(shX, shY);
-
-                  ctx.bezierCurveTo(shX + sx * W * 0.03, shY + H * 0.01, elbX - sx * W * 0.02, elbY - H * 0.02, elbX, elbY);
-
-                  ctx.bezierCurveTo(elbX - sx * W * 0.01, elbY + H * 0.02, shX + sx * W * 0.01, shY + H * 0.04, shX - sx * W * 0.01, shY + H * 0.02);
-
-                  ctx.closePath();
-
-                  ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1; ctx.stroke();
-
-                  // Forearm (radioulna)
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(elbX, elbY);
-
-                  ctx.bezierCurveTo(elbX + sx * W * 0.01, elbY + H * 0.03, wristX, wristY - H * 0.03, wristX, wristY);
-
-                  ctx.bezierCurveTo(wristX - sx * W * 0.02, wristY, elbX - sx * W * 0.02, elbY + H * 0.03, elbX - sx * W * 0.01, elbY + H * 0.01);
-
-                  ctx.closePath();
-
-                  ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-
-                  // 4 digits (digit I lost in frogs)
-
-                  var dAngles = [-0.5, -0.15, 0.15, 0.45];
-
-                  dAngles.forEach(function (da) {
-
-                    var dEndX = wristX + Math.sin(da + sx * 0.2) * W * 0.04 * sx;
-
-                    var dEndY = wristY + Math.cos(da) * H * 0.04;
-
-                    ctx.beginPath(); ctx.moveTo(wristX, wristY);
-
-                    ctx.lineTo(dEndX, dEndY);
-
-                    ctx.strokeStyle = layerStroke; ctx.lineWidth = 1; ctx.stroke();
-
-                    ctx.beginPath(); ctx.arc(dEndX, dEndY, 1, 0, Math.PI * 2);
-
-                    ctx.fillStyle = layerColor; ctx.fill();
-
-                  });
-
-                });
-
-
-
-                // ── Main body (Rana dorsal silhouette – Bézier contour) ──
-
-                ctx.beginPath();
-
-                // Start at anterior (top of body, behind head junction)
-
-                ctx.moveTo(cx, cy - H * 0.20 * bS);
-
-                // Right shoulder curve (wider)
-
-                ctx.bezierCurveTo(cx + W * 0.10, cy - H * 0.20 * bS, cx + W * 0.17 * bS, cy - H * 0.14, cx + W * 0.18 * bS, cy - H * 0.05);
-
-                // Right waist (narrower – amphibian body shape)
-
-                ctx.bezierCurveTo(cx + W * 0.17 * bS, cy + H * 0.05, cx + W * 0.14 * bS, cy + H * 0.10, cx + W * 0.13 * bS, cy + H * 0.12);
-
-                // Right pelvic flare
-
-                ctx.bezierCurveTo(cx + W * 0.15 * bS, cy + H * 0.16, cx + W * 0.16 * bS, cy + H * 0.20, cx + W * 0.14 * bS, cy + H * 0.24 * bS);
-
-                // Posterior (cloaca)
-
-                ctx.bezierCurveTo(cx + W * 0.08, cy + H * 0.26 * bS, cx - W * 0.08, cy + H * 0.26 * bS, cx - W * 0.14 * bS, cy + H * 0.24 * bS);
-
-                // Left pelvic flare
-
-                ctx.bezierCurveTo(cx - W * 0.16 * bS, cy + H * 0.20, cx - W * 0.15 * bS, cy + H * 0.16, cx - W * 0.13 * bS, cy + H * 0.12);
-
-                // Left waist
-
-                ctx.bezierCurveTo(cx - W * 0.14 * bS, cy + H * 0.10, cx - W * 0.17 * bS, cy + H * 0.05, cx - W * 0.18 * bS, cy - H * 0.05);
-
-                // Left shoulder curve
-
-                ctx.bezierCurveTo(cx - W * 0.17 * bS, cy - H * 0.14, cx - W * 0.10, cy - H * 0.20 * bS, cx, cy - H * 0.20 * bS);
-
-                ctx.closePath();
-
-                ctx.fillStyle = bodyGrad; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
-
-                ctx.shadowBlur = 0;
-
-
-
-                // Body highlight (3D volume)
-
-                ctx.beginPath(); ctx.ellipse(cx - W * 0.03, cy - H * 0.06, W * 0.09, H * 0.12, -0.1, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fill();
-
-
-
-                // ── Head (triangular snout, not oval) ──
-
-                var headCy = cy - H * 0.25;
-
-                var headGrad = ctx.createRadialGradient(cx - W * 0.01, headCy - H * 0.02, 3, cx, headCy, W * 0.13);
-
-                headGrad.addColorStop(0, layerColor); headGrad.addColorStop(1, layerStroke);
-
-                ctx.beginPath();
-
-                // Triangular head: wide behind eyes, narrows to round snout
-
-                ctx.moveTo(cx, headCy - H * 0.07);  // snout tip
-
-                ctx.bezierCurveTo(cx + W * 0.04, headCy - H * 0.07, cx + W * 0.09, headCy - H * 0.04, cx + W * 0.12, headCy);
-
-                ctx.bezierCurveTo(cx + W * 0.13, headCy + H * 0.03, cx + W * 0.10, headCy + H * 0.06, cx + W * 0.05, headCy + H * 0.06);
-
-                ctx.lineTo(cx - W * 0.05, headCy + H * 0.06);
-
-                ctx.bezierCurveTo(cx - W * 0.10, headCy + H * 0.06, cx - W * 0.13, headCy + H * 0.03, cx - W * 0.12, headCy);
-
-                ctx.bezierCurveTo(cx - W * 0.09, headCy - H * 0.04, cx - W * 0.04, headCy - H * 0.07, cx, headCy - H * 0.07);
-
-                ctx.closePath();
-
-                ctx.fillStyle = headGrad; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.stroke();
-
-                // Maxillary ridge (subtle line)
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.10, headCy - H * 0.01);
-
-                ctx.quadraticCurveTo(cx, headCy - H * 0.04, cx + W * 0.10, headCy - H * 0.01);
-
-                ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 0.8; ctx.stroke();
-
-                // Nostrils (pair at snout tip)
-
-                [-1, 1].forEach(function (s) {
-
-                  ctx.beginPath(); ctx.ellipse(cx + s * W * 0.025, headCy - H * 0.06, 2, 1.5, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = layerStroke; ctx.fill();
-
-                });
-
-
-
-                // ── Tympanic membranes (large circular, behind eyes) ──
-
-                [-1, 1].forEach(function (s) {
-
-                  ctx.beginPath(); ctx.arc(cx + s * W * 0.10, headCy + H * 0.01, W * 0.022, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(139,92,246,0.15)'; ctx.fill();
-
-                  ctx.strokeStyle = 'rgba(139,92,246,0.35)'; ctx.lineWidth = 0.8; ctx.stroke();
-
-                  // Inner detail ring
-
-                  ctx.beginPath(); ctx.arc(cx + s * W * 0.10, headCy + H * 0.01, W * 0.012, 0, Math.PI * 2);
-
-                  ctx.strokeStyle = 'rgba(139,92,246,0.2)'; ctx.lineWidth = 0.4; ctx.stroke();
-
-                });
-
-
-
-                // ── Eyes (protruding bulbous amphibian eyes) ──
-
-                [-1, 1].forEach(function (s) {
-
-                  var eyeX = cx + s * W * 0.09, eyeY = headCy - H * 0.04;
-
-                  var eyeR = W * 0.032;
-
-                  // Eye socket shadow
-
-                  ctx.beginPath(); ctx.arc(eyeX, eyeY + 1, eyeR + 2, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.fill();
-
-                  // Eyeball (multicolor iris gradient)
-
-                  var irisGrad = ctx.createRadialGradient(eyeX - 1, eyeY - 1, 0, eyeX, eyeY, eyeR);
-
-                  irisGrad.addColorStop(0, '#d4a017');
-
-                  irisGrad.addColorStop(0.3, '#b8860b');
-
-                  irisGrad.addColorStop(0.6, '#8B6914');
-
-                  irisGrad.addColorStop(0.85, '#5c4a1e');
-
-                  irisGrad.addColorStop(1, '#2d2010');
-
-                  ctx.beginPath(); ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2);
-
-                  ctx.fillStyle = irisGrad; ctx.fill();
-
-                  ctx.strokeStyle = '#1a1206'; ctx.lineWidth = 1.2; ctx.stroke();
-
-                  // Horizontal slit pupil (amphibian characteristic)
-
-                  ctx.beginPath();
-
-                  ctx.ellipse(eyeX, eyeY, eyeR * 0.55, eyeR * 0.25, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#0a0a0a'; ctx.fill();
-
-                  // Specular highlight (top-left)
-
-                  ctx.beginPath(); ctx.arc(eyeX - eyeR * 0.3, eyeY - eyeR * 0.3, eyeR * 0.2, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fill();
-
-                  // Secondary highlight (smaller)
-
-                  ctx.beginPath(); ctx.arc(eyeX + eyeR * 0.2, eyeY + eyeR * 0.15, eyeR * 0.08, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fill();
-
-                });
-
-
-
-                // ── Skin layer details ──
-
-                if (activeLayer === 'skin' && !revealedLayers['skin']) {
-
-                  // Irregular blotch pattern (realistic chromatophore clusters)
-
-                  ctx.globalAlpha = 0.30;
-
-                  var blotchSeeds = [
-
-                    { x: -0.06, y: -0.10, r: 0.035, c: '#14532d' }, { x: 0.08, y: -0.08, r: 0.03, c: '#166534' },
-
-                    { x: -0.03, y: 0.05, r: 0.045, c: '#14532d' }, { x: 0.05, y: 0.02, r: 0.028, c: '#15803d' },
-
-                    { x: -0.10, y: 0.12, r: 0.032, c: '#166534' }, { x: 0.10, y: 0.10, r: 0.038, c: '#14532d' },
-
-                    { x: 0.00, y: 0.15, r: 0.025, c: '#15803d' }, { x: -0.08, y: -0.01, r: 0.022, c: '#166534' },
-
-                    { x: 0.11, y: -0.04, r: 0.020, c: '#14532d' }, { x: -0.04, y: 0.18, r: 0.028, c: '#15803d' },
-
-                    { x: 0.02, y: -0.15, r: 0.018, c: '#166534' }, { x: -0.12, y: 0.05, r: 0.020, c: '#14532d' },
-
-                    { x: 0.07, y: 0.16, r: 0.024, c: '#166534' }, { x: -0.02, y: -0.05, r: 0.030, c: '#15803d' }
-
-                  ];
-
-                  blotchSeeds.forEach(function (b) {
-
-                    var bx = cx + b.x * W, by = cy + b.y * H, br = b.r * W;
-
-                    // Irregular blotch using overlapping ellipses
-
-                    var bg = ctx.createRadialGradient(bx, by, 0, bx, by, br);
-
-                    bg.addColorStop(0, b.c); bg.addColorStop(0.6, b.c); bg.addColorStop(1, 'transparent');
-
-                    ctx.save();
-
-                    ctx.translate(bx, by); ctx.rotate(Math.sin(b.x * 10) * 0.5); ctx.translate(-bx, -by);
-
-                    ctx.beginPath(); ctx.ellipse(bx, by, br, br * 0.7, 0, 0, Math.PI * 2);
-
-                    ctx.fillStyle = bg; ctx.fill();
-
-                    ctx.restore();
-
-                  });
-
-                  ctx.globalAlpha = 1;
-
-
-
-                  // Dorsolateral folds (raised ridges running along back)
-
-                  ctx.globalAlpha = 0.18;
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(cx + s * W * 0.06, cy - H * 0.18);
-
-                    ctx.bezierCurveTo(cx + s * W * 0.07, cy - H * 0.05, cx + s * W * 0.06, cy + H * 0.08, cx + s * W * 0.05, cy + H * 0.20);
-
-                    ctx.strokeStyle = '#15803d'; ctx.lineWidth = 2; ctx.stroke();
-
-                  });
-
-                  ctx.globalAlpha = 1;
-
-
-
-                  // Moisture sheen gradient (glistening moist skin)
-
-                  ctx.globalAlpha = 0.06;
-
-                  var sheenGrad = ctx.createLinearGradient(cx - W * 0.15, cy - H * 0.15, cx + W * 0.10, cy + H * 0.10);
-
-                  sheenGrad.addColorStop(0, 'transparent'); sheenGrad.addColorStop(0.4, '#ffffff');
-
-                  sheenGrad.addColorStop(0.6, '#ffffff'); sheenGrad.addColorStop(1, 'transparent');
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy, W * 0.16, H * 0.22, -0.2, 0, Math.PI * 2);
-
-                  ctx.fillStyle = sheenGrad; ctx.fill();
-
-                  ctx.globalAlpha = 1;
-
-
-
-                  // Ventral skin indication (lighter belly)
-
-                  ctx.globalAlpha = 0.08;
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.08, W * 0.10, H * 0.12, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#fef9c3'; ctx.fill();
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-
-
-                // ── Frog layer-specific internal anatomy ──
-
-                // Muscle layer: animated fiber contraction
-
-                if (activeLayer === 'muscle') {
-
-                  ctx.globalAlpha = 0.25;
-
-                  ctx.strokeStyle = '#991b1b';
-
-                  ctx.lineWidth = 0.6;
-
-                  // Abdominal muscle fibers with contraction wave
-
-                  var contractionWave = Math.sin(dissTick * 0.04);
-
-                  for (var mf = 0; mf < 12; mf++) {
-
-                    var mfy = cy - H * 0.15 + mf * H * 0.035;
-
-                    var mfContract = Math.sin(dissTick * 0.04 + mf * 0.5) * 2;
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(cx - W * 0.10, mfy);
-
-                    ctx.quadraticCurveTo(cx, mfy + mfContract, cx + W * 0.10, mfy);
-
-                    ctx.lineWidth = 0.6 + Math.abs(mfContract) * 0.15;
-
-                    ctx.stroke();
-
-                  }
-
-                  // Muscle tension indicator
-
-                  ctx.globalAlpha = 0.15;
-
-                  var tensionColor = 'rgba(220,38,38,' + (0.1 + Math.abs(contractionWave) * 0.12) + ')';
-
-                  ctx.fillStyle = tensionColor;
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy, W * 0.12, H * 0.20, 0, 0, Math.PI * 2);
-
-                  ctx.fill();
-
-                  // Leg muscle detail
-
-                  [-1, 1].forEach(function (side) {
-
-                    for (var lm = 0; lm < 5; lm++) {
-
-                      ctx.beginPath();
-
-                      ctx.moveTo(cx + side * W * 0.12, cy + H * 0.24 + lm * H * 0.03);
-
-                      ctx.quadraticCurveTo(cx + side * W * 0.18, cy + H * 0.28 + lm * H * 0.02, cx + side * W * 0.20, cy + H * 0.32 + lm * H * 0.01);
-
-                      ctx.stroke();
-
-                    }
-
-                  });
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-                // Organs layer: draw simplified organ shapes inside body
-
-                if (activeLayer === 'organs') {
-
-                  ctx.globalAlpha = 0.55;
-
-                  // Heart (anterior)
-
-                  ctx.beginPath(); ctx.arc(cx, cy - H * 0.08, W * 0.03, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#dc2626'; ctx.fill();
-
-                  ctx.strokeStyle = '#991b1b'; ctx.lineWidth = 0.8; ctx.stroke();
-
-                  // Aorta line from heart
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.11);
-
-                  ctx.lineTo(cx, cy - H * 0.18);
-
-                  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                  // Lungs (paired)
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.ellipse(cx + s * W * 0.06, cy - H * 0.06, W * 0.03, H * 0.04, 0, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#fca5a5'; ctx.fill();
-
-                    ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  });
-
-                  // Liver (3 lobes)
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.02, W * 0.10, H * 0.04, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#92400e'; ctx.fill();
-
-                  ctx.strokeStyle = '#78350f'; ctx.lineWidth = 0.6; ctx.stroke();
-
-                  // Gallbladder
-
-                  ctx.beginPath(); ctx.ellipse(cx + W * 0.04, cy + H * 0.03, W * 0.015, H * 0.02, 0.3, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#22c55e'; ctx.fill(); ctx.strokeStyle = '#15803d'; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  // Stomach
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.03, cy + H * 0.08, W * 0.04, H * 0.025, -0.3, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#fde68a'; ctx.fill(); ctx.strokeStyle = '#d97706'; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  // Small intestine (coiled)
-
-                  ctx.beginPath();
-
-                  ctx.strokeStyle = '#f97316'; ctx.lineWidth = 2;
-
-                  ctx.moveTo(cx - W * 0.01, cy + H * 0.10);
-
-                  for (var gi = 0; gi < 6; gi++) {
-
-                    ctx.quadraticCurveTo(cx + (gi % 2 ? 1 : -1) * W * 0.06, cy + H * 0.11 + gi * H * 0.015, cx + (gi % 2 ? -1 : 1) * W * 0.02, cy + H * 0.12 + gi * H * 0.015);
-
-                  }
-
-                  ctx.stroke();
-
-                  // Fat bodies (yellow fingers)
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.ellipse(cx + s * W * 0.05, cy - H * 0.10, W * 0.008, H * 0.03, s * 0.3, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#fbbf24'; ctx.fill();
-
-                  });
-
-                  // Bladder
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.15, W * 0.025, H * 0.018, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(186,230,253,0.4)'; ctx.fill();
-
-                  ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  // Stomach churning animation
-
-                  if (activeLayer === 'organs') {
-
-                    ctx.globalAlpha = 0.12;
-
-                    var churnPhase = Math.sin(dissTick * 0.04);
-
-                    ctx.beginPath();
-
-                    ctx.ellipse(cx - W * 0.02, cy - H * 0.04, W * 0.02 + churnPhase * W * 0.005, H * 0.015 - churnPhase * H * 0.003, 0, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#fbbf24'; ctx.fill();
-
-                    ctx.globalAlpha = 0.5;
-
-                  }
-
-                  // Spleen (small red organ near stomach)
-
-                  ctx.beginPath(); ctx.ellipse(cx + W * 0.06, cy - H * 0.03, W * 0.012, H * 0.008, 0.3, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#7f1d1d'; ctx.fill();
-
-                  // Pancreas (thin, yellowish)
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.02, cy - H * 0.04);
-
-                  ctx.quadraticCurveTo(cx + W * 0.05, cy - H * 0.02, cx + W * 0.08, cy - H * 0.01);
-
-                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2; ctx.globalAlpha = 0.4; ctx.stroke(); ctx.globalAlpha = 0.5;
-
-                  // Adrenal glands (on top of kidneys)
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.ellipse(cx + s * W * 0.06, cy + H * 0.07, W * 0.008, H * 0.004, 0, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#fbbf24'; ctx.fill();
-
-                  });
-
-                  // Peritoneum lining (body cavity membrane)
-
-                  ctx.globalAlpha = 0.04;
-
-                  ctx.beginPath();
-
-                  ctx.ellipse(cx, cy, W * 0.14, H * 0.25, 0, 0, Math.PI * 2);
-
-                  ctx.strokeStyle = '#fef08a'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]); ctx.stroke(); ctx.setLineDash([]);
-
-                  ctx.globalAlpha = 0.5;
-
-                  ctx.font = '6px Inter, system-ui'; ctx.fillStyle = 'rgba(254,240,138,0.4)';
-
-                  ctx.fillText(t('stem.dissection.canvas_peritoneum'), cx + W * 0.12, cy + H * 0.22);
-
-                  // Mesentery (translucent membrane connecting organs)
-
-                  ctx.globalAlpha = 0.06;
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(cx - W * 0.05, cy - H * 0.08);
-
-                  ctx.quadraticCurveTo(cx + W * 0.08, cy, cx - W * 0.03, cy + H * 0.10);
-
-                  ctx.quadraticCurveTo(cx + W * 0.06, cy + H * 0.05, cx - W * 0.05, cy - H * 0.08);
-
-                  ctx.fillStyle = '#fde68a'; ctx.fill();
-
-                  ctx.globalAlpha = 0.5;
-
-                  // Animated blood flow paths
-
-                  var bloodT = (dissTick * 0.03) % 1;
-
-                  // Arterial flow (red, from heart outward)
-
-                  ctx.setLineDash([4, 8]);
-
-                  ctx.lineDashOffset = -dissTick * 0.5;
-
-                  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1; ctx.globalAlpha = 0.4;
-
-                  // Aorta → body
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.11);
-
-                  ctx.quadraticCurveTo(cx + W * 0.03, cy - H * 0.15, cx + W * 0.05, cy - H * 0.18);
-
-                  ctx.stroke();
-
-                  // To legs
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.moveTo(cx + s * W * 0.02, cy + H * 0.10);
-
-                    ctx.lineTo(cx + s * W * 0.10, cy + H * 0.30);
-
-                    ctx.stroke();
-
-                  });
-
-                  // Venous return (blue)
-
-                  ctx.strokeStyle = '#3b82f6';
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.moveTo(cx + s * W * 0.12, cy + H * 0.32);
-
-                    ctx.quadraticCurveTo(cx + s * W * 0.04, cy + H * 0.15, cx + s * W * 0.01, cy - H * 0.05);
-
-                    ctx.stroke();
-
-                  });
-
-                  ctx.setLineDash([]); ctx.lineDashOffset = 0;
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-                // Skeleton layer: draw bone outlines
-
-                if (activeLayer === 'skeleton') {
-
-                  ctx.globalAlpha = 0.6;
-
-                  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2;
-
-                  // Skull
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.25, W * 0.09, H * 0.055, 0, 0, Math.PI * 2);
-
-                  ctx.stroke();
-
-                  // Orbits
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.arc(cx + s * W * 0.05, cy - H * 0.26, W * 0.025, 0, Math.PI * 2);
-
-                    ctx.stroke();
-
-                  });
-
-                  // Vertebral column (9 vertebrae)
-
-                  for (var vi = 0; vi < 9; vi++) {
-
-                    var vy = cy - H * 0.18 + vi * (H * 0.36 / 9);
-
-                    ctx.beginPath(); ctx.ellipse(cx, vy, W * 0.015, H * 0.01, 0, 0, Math.PI * 2);
-
-                    ctx.fillStyle = 'rgba(226,232,240,0.4)'; ctx.fill();
-
-                    ctx.stroke();
-
-                  }
-
-                  // Urostyle
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy + H * 0.15);
-
-                  ctx.lineTo(cx, cy + H * 0.24);
-
-                  ctx.lineWidth = 3; ctx.stroke();
-
-                  // Pelvic girdle
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.16, W * 0.08, H * 0.025, 0, 0, Math.PI * 2);
-
-                  ctx.lineWidth = 1.5; ctx.stroke();
-
-                  // Pectoral girdle
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.16, W * 0.10, H * 0.02, 0, 0, Math.PI * 2);
-
-                  ctx.stroke();
-
-                  // Femur + tibiofibula outlines
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(cx + s * W * 0.08, cy + H * 0.18);
-
-                    ctx.lineTo(cx + s * W * 0.16, cy + H * 0.26);
-
-                    ctx.lineTo(cx + s * W * 0.18, cy + H * 0.36);
-
-                    ctx.lineWidth = 2.5; ctx.stroke();
-
-                    // Humerus + radioulna
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(cx + s * W * 0.10, cy - H * 0.14);
-
-                    ctx.lineTo(cx + s * W * 0.18, cy - H * 0.08);
-
-                    ctx.lineTo(cx + s * W * 0.20, cy - H * 0.02);
-
-                    ctx.lineWidth = 2; ctx.stroke();
-
-                  });
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-                // Nervous layer: draw nerve pathways
-
-                if (activeLayer === 'nervous') {
-
-                  ctx.globalAlpha = 0.6;
-
-                  // Brain
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.25, W * 0.05, H * 0.03, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(167,139,250,0.4)'; ctx.fill();
-
-                  ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                  // Optic lobes
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.28, W * 0.03, H * 0.015, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(196,181,253,0.4)'; ctx.fill(); ctx.stroke();
-
-                  // Spinal cord
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.22); ctx.lineTo(cx, cy + H * 0.18);
-
-                  ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2.5; ctx.setLineDash([4, 2]); ctx.stroke(); ctx.setLineDash([]);
-
-                  // Spinal nerves (10 pairs)
-
-                  for (var sn = 0; sn < 10; sn++) {
-
-                    var sny = cy - H * 0.18 + sn * (H * 0.36 / 10);
-
-                    [-1, 1].forEach(function (s) {
-
-                      ctx.beginPath(); ctx.moveTo(cx, sny);
-
-                      ctx.lineTo(cx + s * W * 0.08, sny + H * 0.01);
-
-                      ctx.strokeStyle = 'rgba(167,139,250,0.3)'; ctx.lineWidth = 0.8; ctx.stroke();
-
-                    });
-
-                  }
-
-                  // Sciatic nerves
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.moveTo(cx + s * W * 0.04, cy + H * 0.15);
-
-                    ctx.quadraticCurveTo(cx + s * W * 0.10, cy + H * 0.25, cx + s * W * 0.16, cy + H * 0.38);
-
-                    ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2; ctx.setLineDash([3, 2]); ctx.stroke(); ctx.setLineDash([]);
-
-                  });
-
-                  // Optic nerves to eyes
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.moveTo(cx + s * W * 0.03, cy - H * 0.26);
-
-                    ctx.lineTo(cx + s * W * 0.07, cy - H * 0.28);
-
-                    ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 1; ctx.stroke();
-
-                  });
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-
-
-              } else if (spec.bodyShape === 'worm') {
-
-                // ══ EARTHWORM (Lumbricus) — segmented annelid ══
-
-                var wormTop = cy - H * 0.38;
-
-                var wormBot = cy + H * 0.38;
-
-                var ww = W * 0.045;
-
-                // ── Body (S-curved) ──
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - ww, wormTop);
-
-                ctx.bezierCurveTo(cx - ww - W * 0.02, wormTop + H * 0.20, cx - ww + W * 0.02, wormTop + H * 0.40, cx - ww - W * 0.01, wormBot);
-
-                ctx.quadraticCurveTo(cx, wormBot + H * 0.02, cx + ww + W * 0.01, wormBot);
-
-                ctx.bezierCurveTo(cx + ww + W * 0.02, wormTop + H * 0.40, cx + ww - W * 0.02, wormTop + H * 0.20, cx + ww, wormTop);
-
-                ctx.quadraticCurveTo(cx, wormTop - H * 0.015, cx - ww, wormTop);
-
-                ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
-
-                ctx.shadowBlur = 0;
-
-                // ── Segmentation rings ──
-
-                ctx.globalAlpha = 0.15;
-
-                var numSegs = 32;
-
-                for (var seg = 1; seg < numSegs; seg++) {
-
-                  var segY = wormTop + seg * (wormBot - wormTop) / numSegs;
-
-                  var xOff = Math.sin(seg * 0.2) * W * 0.008;
-
-                  ctx.beginPath(); ctx.moveTo(cx - ww + xOff, segY); ctx.lineTo(cx + ww + xOff, segY);
-
-                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.5; ctx.stroke();
-
-                }
-
-                ctx.globalAlpha = 1;
-
-                // ── Prostomium ──
-
-                ctx.beginPath(); ctx.ellipse(cx, wormTop - H * 0.005, ww * 0.6, H * 0.008, 0, 0, Math.PI * 2);
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-
-                // ── Clitellum ──
-
-                var clitTop = wormTop + 12 * (wormBot - wormTop) / numSegs;
-
-                var clitBot = wormTop + 15 * (wormBot - wormTop) / numSegs;
-
-                ctx.beginPath(); ctx.rect(cx - ww - W * 0.005, clitTop, ww * 2 + W * 0.01, clitBot - clitTop);
-
-                ctx.fillStyle = 'rgba(0,0,0,0.06)'; ctx.fill();
-
-                ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.6; ctx.stroke();
-
-                ctx.beginPath(); ctx.rect(cx - ww * 0.5, clitTop, ww, clitBot - clitTop);
-
-                ctx.fillStyle = 'rgba(255,255,255,0.04)'; ctx.fill();
-
-                // ── Setae ──
-
-                ctx.globalAlpha = 0.2;
-
-                for (var st = 2; st < numSegs - 1; st++) {
-
-                  var stY = wormTop + st * (wormBot - wormTop) / numSegs + (wormBot - wormTop) / numSegs / 2;
-
-                  var stOff = Math.sin(st * 0.2) * W * 0.008;
-
-                  ctx.beginPath(); ctx.moveTo(cx - ww + stOff, stY);
-
-                  ctx.lineTo(cx - ww - W * 0.008 + stOff, stY - 1); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx - ww + stOff, stY);
-
-                  ctx.lineTo(cx - ww - W * 0.008 + stOff, stY + 1); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx + ww + stOff, stY);
-
-                  ctx.lineTo(cx + ww + W * 0.008 + stOff, stY - 1); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx + ww + stOff, stY);
-
-                  ctx.lineTo(cx + ww + W * 0.008 + stOff, stY + 1); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.5; ctx.stroke();
-
-                }
-
-                ctx.globalAlpha = 1;
-
-                // ── Moisture sheen ──
-
-                ctx.globalAlpha = 0.05;
-
-                ctx.beginPath(); ctx.rect(cx - ww * 0.3, wormTop + H * 0.05, ww * 0.4, wormBot - wormTop - H * 0.10);
-
-                ctx.fillStyle = '#fff'; ctx.fill();
-
-                ctx.globalAlpha = 1;
-
-                // ── Layer overlays ──
-
-                if (activeLayer === 'skin') {
-
-                  ctx.globalAlpha = 0.1;
-
-                  for (var mg = 0; mg < 20; mg++) {
-
-                    ctx.beginPath(); ctx.arc(cx - ww * 0.5, wormTop + H * 0.05 + mg * H * 0.035, 1.5, 0, Math.PI * 2);
-
-                    ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fill();
-
-                  }
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-                if (activeLayer === 'muscle') {
-
-                  ctx.globalAlpha = 0.3;
-
-                  for (var lm = 0; lm < 3; lm++) {
-
-                    ctx.beginPath(); ctx.moveTo(cx - ww * 0.5 + lm * ww * 0.5, wormTop + H * 0.02);
-
-                    ctx.lineTo(cx - ww * 0.5 + lm * ww * 0.5, wormBot - H * 0.02);
-
-                    ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1; ctx.stroke();
-
-                  }
-
-                  for (var cm = 0; cm < 15; cm++) {
-
-                    ctx.beginPath(); ctx.moveTo(cx - ww, wormTop + cm * H * 0.05 + H * 0.03);
-
-                    ctx.lineTo(cx + ww, wormTop + cm * H * 0.05 + H * 0.03);
-
-                    ctx.strokeStyle = '#f87171'; ctx.lineWidth = 0.8; ctx.stroke();
-
-                  }
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-                if (activeLayer === 'organs') {
-
-                  ctx.globalAlpha = 0.5;
-
-                  for (var aa = 0; aa < 5; aa++) {
-
-                    ctx.beginPath(); ctx.arc(cx, wormTop + H * 0.15 + aa * H * 0.04, W * 0.012, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#dc2626'; ctx.fill();
-
-                  }
-
-                  ctx.beginPath(); ctx.ellipse(cx, wormTop + H * 0.35, ww * 0.6, H * 0.02, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#fde68a'; ctx.fill();
-
-                  ctx.beginPath(); ctx.ellipse(cx, wormTop + H * 0.40, ww * 0.7, H * 0.02, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#a78bfa'; ctx.fill();
-
-                  ctx.beginPath(); ctx.moveTo(cx, wormTop + H * 0.42);
-
-                  ctx.lineTo(cx, wormBot - H * 0.05);
-
-                  ctx.strokeStyle = '#f97316'; ctx.lineWidth = ww * 0.6; ctx.stroke();
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-                if (activeLayer === 'nervous') {
-
-                  ctx.globalAlpha = 0.6;
-
-                  ctx.beginPath(); ctx.arc(cx, wormTop + H * 0.04, W * 0.012, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#fbbf24'; ctx.fill();
-
-                  ctx.beginPath(); ctx.moveTo(cx, wormTop + H * 0.04);
-
-                  ctx.lineTo(cx, wormBot - H * 0.02);
-
-                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                  for (var sg2 = 0; sg2 < 12; sg2++) {
-
-                    ctx.beginPath(); ctx.arc(cx, wormTop + H * 0.08 + sg2 * H * 0.06, 2.5, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#f59e0b'; ctx.fill();
-
-                  }
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-
-
-
-
-              } else if (spec.bodyShape === 'pig') {
-
-                // ══ FETAL PIG (Sus scrofa) ══
-
-                // ── Body (barrel-shaped torso) ──
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.18, cy - H * 0.14);
-
-                ctx.bezierCurveTo(cx - W * 0.08, cy - H * 0.18, cx + W * 0.10, cy - H * 0.18, cx + W * 0.20, cy - H * 0.12);
-
-                ctx.bezierCurveTo(cx + W * 0.24, cy - H * 0.06, cx + W * 0.24, cy + H * 0.08, cx + W * 0.20, cy + H * 0.14);
-
-                ctx.bezierCurveTo(cx + W * 0.10, cy + H * 0.18, cx - W * 0.08, cy + H * 0.18, cx - W * 0.18, cy + H * 0.14);
-
-                ctx.bezierCurveTo(cx - W * 0.22, cy + H * 0.08, cx - W * 0.22, cy - H * 0.06, cx - W * 0.18, cy - H * 0.14);
-
-                ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
-
-                ctx.shadowBlur = 0;
-
-                // Body midline highlight (3D volume)
-
-                ctx.beginPath(); ctx.ellipse(cx - W * 0.02, cy - H * 0.04, W * 0.12, H * 0.08, -0.05, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fill();
-
-
-
-                // ── Head (elongated snout) ──
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.18, cy - H * 0.10);
-
-                ctx.bezierCurveTo(cx - W * 0.22, cy - H * 0.12, cx - W * 0.28, cy - H * 0.10, cx - W * 0.30, cy - H * 0.04);
-
-                ctx.bezierCurveTo(cx - W * 0.32, cy + H * 0.01, cx - W * 0.30, cy + H * 0.06, cx - W * 0.26, cy + H * 0.08);
-
-                ctx.bezierCurveTo(cx - W * 0.22, cy + H * 0.10, cx - W * 0.18, cy + H * 0.08, cx - W * 0.18, cy + H * 0.04);
-
-                ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.stroke();
-
-                // Snout (disk-shaped pig nose)
-
-                ctx.beginPath(); ctx.ellipse(cx - W * 0.31, cy - H * 0.01, W * 0.028, H * 0.035, 0, 0, Math.PI * 2);
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.stroke();
-
-                // Nostrils
-
-                ctx.beginPath(); ctx.ellipse(cx - W * 0.32, cy - H * 0.025, 2, 1.5, 0.3, 0, Math.PI * 2);
-
-                ctx.fillStyle = layerStroke; ctx.fill();
-
-                ctx.beginPath(); ctx.ellipse(cx - W * 0.32, cy + H * 0.005, 2, 1.5, -0.3, 0, Math.PI * 2);
-
-                ctx.fillStyle = layerStroke; ctx.fill();
-
-                // Eye
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.24, cy - H * 0.06, 4, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#1a1a1a'; ctx.fill();
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.237, cy - H * 0.065, 1.5, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fill();
-
-                // Ears (floppy pig ears)
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.22, cy - H * 0.10);
-
-                ctx.bezierCurveTo(cx - W * 0.24, cy - H * 0.16, cx - W * 0.20, cy - H * 0.18, cx - W * 0.17, cy - H * 0.14);
-
-                ctx.bezierCurveTo(cx - W * 0.16, cy - H * 0.12, cx - W * 0.19, cy - H * 0.10, cx - W * 0.20, cy - H * 0.09);
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-
-                // Inner ear shading
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.215, cy - H * 0.11);
-
-                ctx.bezierCurveTo(cx - W * 0.23, cy - H * 0.15, cx - W * 0.19, cy - H * 0.16, cx - W * 0.175, cy - H * 0.13);
-
-                ctx.fillStyle = 'rgba(0,0,0,0.06)'; ctx.fill();
-
-
-
-                // ── Legs (anatomically shaped with joints) ──
-
-                // Front-left leg
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.14, cy + H * 0.12);
-
-                ctx.bezierCurveTo(cx - W * 0.15, cy + H * 0.16, cx - W * 0.14, cy + H * 0.22, cx - W * 0.135, cy + H * 0.26);
-
-                ctx.bezierCurveTo(cx - W * 0.13, cy + H * 0.28, cx - W * 0.12, cy + H * 0.29, cx - W * 0.115, cy + H * 0.30);
-
-                ctx.lineTo(cx - W * 0.095, cy + H * 0.30);
-
-                ctx.bezierCurveTo(cx - W * 0.09, cy + H * 0.29, cx - W * 0.10, cy + H * 0.28, cx - W * 0.105, cy + H * 0.26);
-
-                ctx.bezierCurveTo(cx - W * 0.11, cy + H * 0.22, cx - W * 0.12, cy + H * 0.16, cx - W * 0.11, cy + H * 0.12);
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-
-                // Front-right leg (behind)
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.12, cy + H * 0.12);
-
-                ctx.bezierCurveTo(cx - W * 0.13, cy + H * 0.16, cx - W * 0.12, cy + H * 0.22, cx - W * 0.115, cy + H * 0.26);
-
-                ctx.bezierCurveTo(cx - W * 0.11, cy + H * 0.28, cx - W * 0.10, cy + H * 0.29, cx - W * 0.095, cy + H * 0.30);
-
-                ctx.lineTo(cx - W * 0.075, cy + H * 0.30);
-
-                ctx.bezierCurveTo(cx - W * 0.07, cy + H * 0.29, cx - W * 0.08, cy + H * 0.28, cx - W * 0.085, cy + H * 0.26);
-
-                ctx.bezierCurveTo(cx - W * 0.09, cy + H * 0.22, cx - W * 0.10, cy + H * 0.16, cx - W * 0.09, cy + H * 0.12);
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-
-                // Rear-left leg
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx + W * 0.10, cy + H * 0.12);
-
-                ctx.bezierCurveTo(cx + W * 0.09, cy + H * 0.16, cx + W * 0.10, cy + H * 0.22, cx + W * 0.105, cy + H * 0.26);
-
-                ctx.bezierCurveTo(cx + W * 0.11, cy + H * 0.28, cx + W * 0.12, cy + H * 0.29, cx + W * 0.125, cy + H * 0.30);
-
-                ctx.lineTo(cx + W * 0.145, cy + H * 0.30);
-
-                ctx.bezierCurveTo(cx + W * 0.15, cy + H * 0.29, cx + W * 0.14, cy + H * 0.28, cx + W * 0.135, cy + H * 0.26);
-
-                ctx.bezierCurveTo(cx + W * 0.13, cy + H * 0.22, cx + W * 0.12, cy + H * 0.16, cx + W * 0.13, cy + H * 0.12);
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-
-                // Rear-right leg (behind)
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx + W * 0.12, cy + H * 0.12);
-
-                ctx.bezierCurveTo(cx + W * 0.11, cy + H * 0.16, cx + W * 0.12, cy + H * 0.22, cx + W * 0.125, cy + H * 0.26);
-
-                ctx.bezierCurveTo(cx + W * 0.13, cy + H * 0.28, cx + W * 0.14, cy + H * 0.29, cx + W * 0.145, cy + H * 0.30);
-
-                ctx.lineTo(cx + W * 0.165, cy + H * 0.30);
-
-                ctx.bezierCurveTo(cx + W * 0.17, cy + H * 0.29, cx + W * 0.16, cy + H * 0.28, cx + W * 0.155, cy + H * 0.26);
-
-                ctx.bezierCurveTo(cx + W * 0.15, cy + H * 0.22, cx + W * 0.14, cy + H * 0.16, cx + W * 0.15, cy + H * 0.12);
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-
-
-
-                // ── Hooves (dark, split/cloven) ──
-
-                // Front hooves
-
-                [cx - W * 0.115, cx - W * 0.095].forEach(function (hx) {
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(hx - W * 0.01, cy + H * 0.30);
-
-                  ctx.lineTo(hx - W * 0.012, cy + H * 0.33);
-
-                  ctx.lineTo(hx - W * 0.002, cy + H * 0.33);
-
-                  ctx.lineTo(hx, cy + H * 0.31);
-
-                  ctx.lineTo(hx + W * 0.002, cy + H * 0.33);
-
-                  ctx.lineTo(hx + W * 0.012, cy + H * 0.33);
-
-                  ctx.lineTo(hx + W * 0.01, cy + H * 0.30);
-
-                  ctx.closePath();
-
-                  ctx.fillStyle = '#292524'; ctx.fill();
-
-                });
-
-                [cx - W * 0.075].forEach(function (hx) {
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(hx - W * 0.01, cy + H * 0.30);
-
-                  ctx.lineTo(hx - W * 0.012, cy + H * 0.33);
-
-                  ctx.lineTo(hx - W * 0.002, cy + H * 0.33);
-
-                  ctx.lineTo(hx, cy + H * 0.31);
-
-                  ctx.lineTo(hx + W * 0.002, cy + H * 0.33);
-
-                  ctx.lineTo(hx + W * 0.012, cy + H * 0.33);
-
-                  ctx.lineTo(hx + W * 0.01, cy + H * 0.30);
-
-                  ctx.closePath();
-
-                  ctx.fillStyle = '#292524'; ctx.fill();
-
-                });
-
-                // Rear hooves
-
-                [cx + W * 0.125, cx + W * 0.145, cx + W * 0.165].forEach(function (hx) {
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(hx - W * 0.01, cy + H * 0.30);
-
-                  ctx.lineTo(hx - W * 0.012, cy + H * 0.33);
-
-                  ctx.lineTo(hx - W * 0.002, cy + H * 0.33);
-
-                  ctx.lineTo(hx, cy + H * 0.31);
-
-                  ctx.lineTo(hx + W * 0.002, cy + H * 0.33);
-
-                  ctx.lineTo(hx + W * 0.012, cy + H * 0.33);
-
-                  ctx.lineTo(hx + W * 0.01, cy + H * 0.30);
-
-                  ctx.closePath();
-
-                  ctx.fillStyle = '#292524'; ctx.fill();
-
-                });
-
-
-
-                // ── Curly tail ──
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx + W * 0.22, cy - H * 0.02);
-
-                ctx.bezierCurveTo(cx + W * 0.26, cy - H * 0.06, cx + W * 0.28, cy - H * 0.10, cx + W * 0.26, cy - H * 0.12);
-
-                ctx.strokeStyle = layerStroke; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.stroke();
-
-
-
-                // ── Skin layer details ──
-
-                if (activeLayer === 'skin') {
-
-                  ctx.globalAlpha = 0.08;
-
-                  for (var hf = 0; hf < 50; hf++) {
-
-                    var hfx = cx - W * 0.18 + (hf % 10) * W * 0.04;
-
-                    var hfy = cy - H * 0.12 + Math.floor(hf / 10) * H * 0.05;
-
-                    ctx.beginPath(); ctx.moveTo(hfx, hfy);
-
-                    ctx.lineTo(hfx + (Math.sin(hf * 2.7) * 1.5), hfy - 3);
-
-                    ctx.strokeStyle = '#78716c'; ctx.lineWidth = 0.4; ctx.stroke();
-
-                  }
-
-                  ctx.globalAlpha = 1;
-
-                  // Skin folds
-
-                  ctx.globalAlpha = 0.05;
-
-                  for (var sf = 0; sf < 4; sf++) {
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(cx - W * 0.10, cy - H * 0.08 + sf * H * 0.05);
-
-                    ctx.quadraticCurveTo(cx, cy - H * 0.10 + sf * H * 0.05, cx + W * 0.10, cy - H * 0.08 + sf * H * 0.05);
-
-                    ctx.strokeStyle = '#78716c'; ctx.lineWidth = 0.6; ctx.stroke();
-
-                  }
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-
-
-                // ── Pig layer overlays ──
-
-                if (activeLayer === 'organs') {
-
-                  ctx.globalAlpha = 0.5;
-
-                  // Heart
-
-                  ctx.beginPath(); ctx.arc(cx - W * 0.04, cy - H * 0.06, W * 0.025, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#dc2626'; ctx.fill();
-
-                  // Lungs
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.ellipse(cx + s * W * 0.08 - W * 0.04, cy - H * 0.04, W * 0.04, H * 0.06, 0, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#fca5a5'; ctx.fill(); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  });
-
-                  // Liver
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.02, cy + H * 0.02, W * 0.10, H * 0.04, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#92400e'; ctx.fill();
-
-                  // Stomach
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.06, W * 0.06, H * 0.03, 0.2, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#fde68a'; ctx.fill(); ctx.strokeStyle = '#d97706'; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  // Intestines
-
-                  ctx.beginPath(); ctx.strokeStyle = '#f97316'; ctx.lineWidth = 1.5;
-
-                  ctx.moveTo(cx - W * 0.05, cy + H * 0.08);
-
-                  for (var pi = 0; pi < 5; pi++) {
-
-                    ctx.quadraticCurveTo(cx + (pi % 2 ? 1 : -1) * W * 0.08, cy + H * 0.09 + pi * H * 0.012, cx + (pi % 2 ? -1 : 1) * W * 0.03, cy + H * 0.10 + pi * H * 0.012);
-
-                  }
-
-                  ctx.stroke();
-
-                  // Umbilical cord
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy + H * 0.14);
-
-                  ctx.quadraticCurveTo(cx + W * 0.05, cy + H * 0.20, cx + W * 0.02, cy + H * 0.26);
-
-                  ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 3; ctx.stroke();
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-                if (activeLayer === 'skeleton') {
-
-                  // Use higher opacity and darker colors for visibility
-
-                  ctx.globalAlpha = 0.85;
-
-                  var boneColor = '#94a3b8';
-
-                  var boneFill = 'rgba(148,163,184,0.35)';
-
-                  ctx.strokeStyle = boneColor; ctx.lineWidth = 1.5;
-
-                  // ── Skull ──
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.24, cy - H * 0.02, W * 0.07, H * 0.06, -0.2, 0, Math.PI * 2);
-
-                  ctx.fillStyle = boneFill; ctx.fill(); ctx.stroke();
-
-                  // Eye socket
-
-                  ctx.beginPath(); ctx.arc(cx - W * 0.24, cy - H * 0.05, W * 0.015, 0, Math.PI * 2);
-
-                  ctx.strokeStyle = boneColor; ctx.lineWidth = 0.8; ctx.stroke();
-
-                  // Jaw
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.27, cy + H * 0.02);
-
-                  ctx.quadraticCurveTo(cx - W * 0.30, cy + H * 0.01, cx - W * 0.30, cy - H * 0.01);
-
-                  ctx.strokeStyle = boneColor; ctx.lineWidth = 1.2; ctx.stroke();
-
-                  // ── Spine (vertebral column) ──
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.17, cy - H * 0.02);
-
-                  ctx.lineTo(cx + W * 0.20, cy - H * 0.02);
-
-                  ctx.strokeStyle = boneColor; ctx.lineWidth = 4; ctx.stroke();
-
-                  // Vertebrae marks + neural arches
-
-                  for (var pv = 0; pv < 18; pv++) {
-
-                    var pvx = cx - W * 0.15 + pv * (W * 0.34 / 18);
-
-                    ctx.beginPath(); ctx.moveTo(pvx, cy - H * 0.05); ctx.lineTo(pvx, cy + H * 0.01);
-
-                    ctx.strokeStyle = boneColor; ctx.lineWidth = 0.8; ctx.stroke();
-
-                    // Spinous process (dorsal bump)
-
-                    ctx.beginPath(); ctx.arc(pvx, cy - H * 0.055, 1.8, 0, Math.PI * 2);
-
-                    ctx.fillStyle = boneFill; ctx.fill();
-
-                  }
-
-                  // ── Ribs (extending from vertebrae down to sternum) ──
-
-                  for (var pr = 0; pr < 8; pr++) {
-
-                    var prx = cx - W * 0.12 + pr * (W * 0.18 / 8);
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(prx, cy - H * 0.04);
-
-                    ctx.bezierCurveTo(prx - W * 0.015, cy + H * 0.02, prx - W * 0.01, cy + H * 0.06, prx + W * 0.005, cy + H * 0.09);
-
-                    ctx.strokeStyle = boneColor; ctx.lineWidth = 1; ctx.stroke();
-
-                  }
-
-                  // ── Sternum (connecting rib tips ventrally) ──
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(cx - W * 0.10, cy + H * 0.09);
-
-                  ctx.lineTo(cx + W * 0.06, cy + H * 0.09);
-
-                  ctx.strokeStyle = boneColor; ctx.lineWidth = 2.5; ctx.stroke();
-
-                  // Sternebrae
-
-                  for (var stb = 0; stb < 6; stb++) {
-
-                    var stbx = cx - W * 0.09 + stb * (W * 0.15 / 6);
-
-                    ctx.beginPath(); ctx.arc(stbx, cy + H * 0.09, 2.5, 0, Math.PI * 2);
-
-                    ctx.fillStyle = boneFill; ctx.fill();
-
-                    ctx.strokeStyle = boneColor; ctx.lineWidth = 0.6; ctx.stroke();
-
-                  }
-
-                  // ── Scapula (shoulder blade — inside body outline) ──
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(cx - W * 0.16, cy - H * 0.04);
-
-                  ctx.lineTo(cx - W * 0.19, cy - H * 0.11);
-
-                  ctx.lineTo(cx - W * 0.12, cy - H * 0.09);
-
-                  ctx.closePath();
-
-                  ctx.fillStyle = boneFill; ctx.fill();
-
-                  ctx.strokeStyle = boneColor; ctx.lineWidth = 1.5; ctx.stroke();
-
-                  // Scapular spine
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.17, cy - H * 0.10);
-
-                  ctx.lineTo(cx - W * 0.14, cy - H * 0.06);
-
-                  ctx.strokeStyle = boneColor; ctx.lineWidth = 1; ctx.stroke();
-
-                  // ── Pelvis (ilium-ischium-pubis, inside body) ──
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(cx + W * 0.12, cy - H * 0.04);
-
-                  ctx.bezierCurveTo(cx + W * 0.16, cy - H * 0.08, cx + W * 0.20, cy - H * 0.04, cx + W * 0.18, cy);
-
-                  ctx.bezierCurveTo(cx + W * 0.20, cy + H * 0.04, cx + W * 0.16, cy + H * 0.08, cx + W * 0.12, cy + H * 0.04);
-
-                  ctx.closePath();
-
-                  ctx.fillStyle = boneFill; ctx.fill();
-
-                  ctx.strokeStyle = boneColor; ctx.lineWidth = 1.5; ctx.stroke();
-
-                  // Acetabulum (hip socket)
-
-                  ctx.beginPath(); ctx.arc(cx + W * 0.14, cy + H * 0.01, W * 0.012, 0, Math.PI * 2);
-
-                  ctx.strokeStyle = boneColor; ctx.lineWidth = 0.8; ctx.stroke();
-
-                  // Obturator foramen
-
-                  ctx.beginPath(); ctx.ellipse(cx + W * 0.15, cy + H * 0.03, W * 0.008, H * 0.015, 0, 0, Math.PI * 2);
-
-                  ctx.strokeStyle = 'rgba(200,214,229,0.4)'; ctx.lineWidth = 0.6; ctx.stroke();
-
-                  ctx.strokeStyle = boneColor;
-
-                  // ── Forelimb bones ──
-
-                  // Humerus + radius/ulna for each front leg
-
-                  [[-0.135, -0.005], [-0.105, 0.005]].forEach(function (lp) {
-
-                    var legX = cx + W * lp[0];
-
-                    // Humerus (upper)
-
-                    ctx.beginPath(); ctx.moveTo(legX, cy + H * 0.12);
-
-                    ctx.lineTo(legX - W * 0.005, cy + H * 0.20);
-
-                    ctx.strokeStyle = boneColor; ctx.lineWidth = 2.5; ctx.stroke();
-
-                    // Elbow joint
-
-                    ctx.beginPath(); ctx.arc(legX - W * 0.005, cy + H * 0.20, 3, 0, Math.PI * 2);
-
-                    ctx.fillStyle = boneFill; ctx.fill(); ctx.strokeStyle = boneColor; ctx.lineWidth = 0.8; ctx.stroke();
-
-                    // Radius/ulna (lower)
-
-                    ctx.beginPath(); ctx.moveTo(legX - W * 0.005, cy + H * 0.20);
-
-                    ctx.lineTo(legX, cy + H * 0.29);
-
-                    ctx.strokeStyle = boneColor; ctx.lineWidth = 2; ctx.stroke();
-
-                  });
-
-                  // ── Hindlimb bones ──
-
-                  // Femur + tibia/fibula for each rear leg
-
-                  [[0.115, -0.005], [0.145, 0.005]].forEach(function (lp) {
-
-                    var legX = cx + W * lp[0];
-
-                    // Femur (upper)
-
-                    ctx.beginPath(); ctx.moveTo(legX, cy + H * 0.12);
-
-                    ctx.lineTo(legX + W * 0.005, cy + H * 0.20);
-
-                    ctx.strokeStyle = boneColor; ctx.lineWidth = 2.5; ctx.stroke();
-
-                    // Knee joint
-
-                    ctx.beginPath(); ctx.arc(legX + W * 0.005, cy + H * 0.20, 3, 0, Math.PI * 2);
-
-                    ctx.fillStyle = boneFill; ctx.fill(); ctx.strokeStyle = boneColor; ctx.lineWidth = 0.8; ctx.stroke();
-
-                    // Tibia/fibula (lower)
-
-                    ctx.beginPath(); ctx.moveTo(legX + W * 0.005, cy + H * 0.20);
-
-                    ctx.lineTo(legX, cy + H * 0.29);
-
-                    ctx.strokeStyle = boneColor; ctx.lineWidth = 2; ctx.stroke();
-
-                  });
-
-                  // ── Hoof bones (distal phalanges) ──
-
-                  [cx - W * 0.135, cx - W * 0.105, cx + W * 0.115, cx + W * 0.145].forEach(function (hx) {
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(hx - W * 0.008, cy + H * 0.30);
-
-                    ctx.lineTo(hx - W * 0.01, cy + H * 0.32);
-
-                    ctx.lineTo(hx, cy + H * 0.31);
-
-                    ctx.lineTo(hx + W * 0.01, cy + H * 0.32);
-
-                    ctx.lineTo(hx + W * 0.008, cy + H * 0.30);
-
-                    ctx.strokeStyle = boneColor; ctx.lineWidth = 1; ctx.stroke();
-
-                  });
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-
-
-
-
-              } else if (spec.bodyShape === 'fish') {
-
-                // ══ PERCH (Perca) — fusiform bony fish ══
-
-                // ── Body (streamlined fusiform shape) ──
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.30, cy); // snout tip
-
-                ctx.bezierCurveTo(cx - W * 0.25, cy - H * 0.08, cx - W * 0.18, cy - H * 0.13, cx - W * 0.10, cy - H * 0.14);
-
-                ctx.bezierCurveTo(cx - W * 0.02, cy - H * 0.15, cx + W * 0.08, cy - H * 0.13, cx + W * 0.16, cy - H * 0.10);
-
-                ctx.bezierCurveTo(cx + W * 0.22, cy - H * 0.08, cx + W * 0.25, cy - H * 0.06, cx + W * 0.26, cy - H * 0.04);
-
-                // Caudal peduncle
-
-                ctx.lineTo(cx + W * 0.28, cy - H * 0.03);
-
-                // Caudal fin (forked)
-
-                ctx.lineTo(cx + W * 0.34, cy - H * 0.12);
-
-                ctx.bezierCurveTo(cx + W * 0.33, cy - H * 0.06, cx + W * 0.33, cy + H * 0.06, cx + W * 0.34, cy + H * 0.12);
-
-                ctx.lineTo(cx + W * 0.28, cy + H * 0.03);
-
-                // Ventral contour
-
-                ctx.lineTo(cx + W * 0.26, cy + H * 0.04);
-
-                ctx.bezierCurveTo(cx + W * 0.22, cy + H * 0.08, cx + W * 0.16, cy + H * 0.10, cx + W * 0.08, cy + H * 0.12);
-
-                ctx.bezierCurveTo(cx - W * 0.02, cy + H * 0.14, cx - W * 0.12, cy + H * 0.14, cx - W * 0.20, cy + H * 0.10);
-
-                ctx.bezierCurveTo(cx - W * 0.25, cy + H * 0.07, cx - W * 0.28, cy + H * 0.04, cx - W * 0.30, cy);
-
-                ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
-
-                ctx.shadowBlur = 0;
-
-                // Dorsal highlight
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.20, cy - H * 0.08);
-
-                ctx.quadraticCurveTo(cx, cy - H * 0.12, cx + W * 0.18, cy - H * 0.06);
-
-                ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 3; ctx.stroke();
-
-                // ── Operculum (gill cover) ──
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.18, cy - H * 0.10);
-
-                ctx.bezierCurveTo(cx - W * 0.16, cy - H * 0.04, cx - W * 0.16, cy + H * 0.04, cx - W * 0.18, cy + H * 0.08);
-
-                ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.stroke();
-
-                // ── Eye ──
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.23, cy - H * 0.02, 6, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#fef9c3'; ctx.fill(); ctx.strokeStyle = '#854d0e'; ctx.lineWidth = 1; ctx.stroke();
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.23, cy - H * 0.02, 3, 0, Math.PI * 2); ctx.fillStyle = '#1a1a1a'; ctx.fill();
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.225, cy - H * 0.03, 1.5, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fill();
-
-                // ── Mouth ──
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.30, cy); ctx.lineTo(cx - W * 0.28, cy + H * 0.02);
-
-                ctx.strokeStyle = layerStroke; ctx.lineWidth = 1; ctx.stroke();
-
-                // ── Spiny dorsal fin ──
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy - H * 0.14);
-
-                for (var ds = 0; ds < 8; ds++) {
-
-                  var dsx = cx - W * 0.10 + ds * W * 0.025;
-
-                  ctx.lineTo(dsx, cy - H * 0.14 - (ds < 4 ? ds : 7 - ds) * H * 0.015 - H * 0.04);
-
-                  ctx.lineTo(dsx + W * 0.012, cy - H * 0.14);
-
-                }
-
-                ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.5; ctx.fill();
-
-                ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke(); ctx.globalAlpha = 1;
-
-                // ── Soft dorsal ──
-
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.12, cy - H * 0.11);
-
-                for (var sd = 0; sd < 5; sd++) {
-
-                  var sdx = cx + W * 0.12 + sd * W * 0.02;
-
-                  ctx.lineTo(sdx, cy - H * 0.16 - sd * H * 0.003);
-
-                  ctx.lineTo(sdx + W * 0.01, cy - H * 0.11);
-
-                }
-
-                ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.5; ctx.fill();
-
-                ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
-
-                // ── Anal fin ──
-
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.10, cy + H * 0.11);
-
-                for (var af = 0; af < 4; af++) {
-
-                  var afx = cx + W * 0.10 + af * W * 0.02;
-
-                  ctx.lineTo(afx, cy + H * 0.17); ctx.lineTo(afx + W * 0.01, cy + H * 0.11);
-
-                }
-
-                ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.4; ctx.fill();
-
-                ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
-
-                // ── Pelvic fin ──
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy + H * 0.10);
-
-                ctx.lineTo(cx - W * 0.12, cy + H * 0.18); ctx.lineTo(cx - W * 0.06, cy + H * 0.16);
-
-                ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.4; ctx.fill();
-
-                ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
-
-                // ── Pectoral fin ──
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.16, cy + H * 0.02);
-
-                ctx.bezierCurveTo(cx - W * 0.18, cy + H * 0.06, cx - W * 0.16, cy + H * 0.10, cx - W * 0.13, cy + H * 0.08);
-
-                ctx.bezierCurveTo(cx - W * 0.14, cy + H * 0.05, cx - W * 0.15, cy + H * 0.03, cx - W * 0.16, cy + H * 0.02);
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.5; ctx.fill();
-
-                ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
-
-                // ── Scale pattern ──
-
-                ctx.globalAlpha = 0.12;
-
-                for (var sc = 0; sc < 12; sc++) {
-
-                  for (var sr = 0; sr < 4; sr++) {
-
-                    var scx = cx - W * 0.15 + sc * W * 0.035 + (sr % 2) * W * 0.017;
-
-                    var scy = cy - H * 0.08 + sr * H * 0.04;
-
-                    ctx.beginPath(); ctx.arc(scx, scy, W * 0.012, 0, Math.PI, true);
-
-                    ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.4; ctx.stroke();
-
-                  }
-
-                }
-
-                ctx.globalAlpha = 1;
-
-                // ── Caudal fin rays ──
-
-                ctx.globalAlpha = 0.25;
-
-                for (var cfr = 0; cfr < 7; cfr++) {
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.28, cy);
-
-                  ctx.lineTo(cx + W * 0.34, cy - H * 0.10 + cfr * H * 0.03);
-
-                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.4; ctx.stroke();
-
-                }
-
-                ctx.globalAlpha = 1;
-
-                // ── Lateral line ──
-
-                ctx.globalAlpha = 0.3;
-
-                for (var ll = 0; ll < 18; ll++) {
-
-                  ctx.beginPath(); ctx.arc(cx - W * 0.22 + ll * W * 0.025, cy - H * 0.01, 1, 0, Math.PI * 2);
-
-                  ctx.fillStyle = layerStroke; ctx.fill();
-
-                }
-
-                ctx.globalAlpha = 1;
-
-                // ── Perch vertical bars ──
-
-                ctx.globalAlpha = 0.08;
-
-                for (var pb = 0; pb < 6; pb++) {
-
-                  var pbx = cx - W * 0.10 + pb * W * 0.06;
-
-                  ctx.beginPath(); ctx.moveTo(pbx, cy - H * 0.10); ctx.lineTo(pbx, cy + H * 0.08);
-
-                  ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = W * 0.015; ctx.stroke();
-
-                }
-
-                ctx.globalAlpha = 1;
-
-                // ── Layer overlays ──
-
-                if (activeLayer === 'organs') {
-
-                  ctx.globalAlpha = 0.5;
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.04, W * 0.10, H * 0.035, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(219,234,254,0.6)'; ctx.fill();
-
-                  ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 0.8; ctx.stroke();
-
-                  ctx.beginPath(); ctx.arc(cx - W * 0.20, cy + H * 0.04, W * 0.015, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#dc2626'; ctx.fill();
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.10, cy + H * 0.02, W * 0.05, H * 0.03, 0.2, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#92400e'; ctx.fill();
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.03, cy + H * 0.04, W * 0.04, H * 0.02, -0.1, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#fde68a'; ctx.fill();
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.01, cy + H * 0.04);
-
-                  ctx.quadraticCurveTo(cx + W * 0.08, cy + H * 0.06, cx + W * 0.12, cy + H * 0.04);
-
-                  ctx.strokeStyle = '#f97316'; ctx.lineWidth = 2; ctx.stroke();
-
-                  for (var gf = 0; gf < 5; gf++) {
-
-                    ctx.beginPath(); ctx.moveTo(cx - W * 0.175, cy - H * 0.06 + gf * H * 0.025);
-
-                    ctx.lineTo(cx - W * 0.20, cy - H * 0.06 + gf * H * 0.025);
-
-                    ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                  }
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.08, W * 0.12, H * 0.012, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#78350f'; ctx.fill();
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-                if (activeLayer === 'skeleton') {
-
-                  ctx.globalAlpha = 0.7; var boneC = '#94a3b8';
-
-                  ctx.strokeStyle = boneC; ctx.lineWidth = 1.5;
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.25, cy - H * 0.01, W * 0.06, H * 0.05, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(148,163,184,0.2)'; ctx.fill(); ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.28, cy);
-
-                  ctx.lineTo(cx - W * 0.30, cy + H * 0.03); ctx.lineTo(cx - W * 0.24, cy + H * 0.02); ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.19, cy - H * 0.02);
-
-                  ctx.lineTo(cx + W * 0.26, cy - H * 0.02); ctx.lineWidth = 3; ctx.stroke();
-
-                  for (var fv = 0; fv < 22; fv++) {
-
-                    var fvx = cx - W * 0.18 + fv * (W * 0.43 / 22);
-
-                    ctx.beginPath(); ctx.moveTo(fvx, cy - H * 0.05); ctx.lineTo(fvx, cy + H * 0.01);
-
-                    ctx.strokeStyle = boneC; ctx.lineWidth = 0.6; ctx.stroke();
-
-                  }
-
-                  for (var rb = 0; rb < 10; rb++) {
-
-                    var rbx = cx - W * 0.15 + rb * W * 0.03;
-
-                    ctx.beginPath(); ctx.moveTo(rbx, cy);
-
-                    ctx.quadraticCurveTo(rbx - W * 0.005, cy + H * 0.06, rbx, cy + H * 0.08);
-
-                    ctx.strokeStyle = boneC; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  }
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.19, cy, W * 0.02, H * 0.06, 0, 0, Math.PI * 2);
-
-                  ctx.strokeStyle = boneC; ctx.lineWidth = 0.8; ctx.stroke();
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-
-
-
-
-              } else if (spec.bodyShape === 'crayfish') {
-
-                // ══ CRAYFISH (Cambarus) — crustacean ══
-
-                // ── Cephalothorax ──
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.18, cy - H * 0.06);
-
-                ctx.bezierCurveTo(cx - W * 0.20, cy - H * 0.10, cx - W * 0.12, cy - H * 0.14, cx - W * 0.02, cy - H * 0.14);
-
-                ctx.bezierCurveTo(cx + W * 0.06, cy - H * 0.14, cx + W * 0.10, cy - H * 0.12, cx + W * 0.12, cy - H * 0.08);
-
-                ctx.bezierCurveTo(cx + W * 0.12, cy - H * 0.04, cx + W * 0.10, cy + H * 0.04, cx + W * 0.12, cy + H * 0.08);
-
-                ctx.bezierCurveTo(cx + W * 0.10, cy + H * 0.12, cx + W * 0.06, cy + H * 0.14, cx - W * 0.02, cy + H * 0.14);
-
-                ctx.bezierCurveTo(cx - W * 0.12, cy + H * 0.14, cx - W * 0.20, cy + H * 0.10, cx - W * 0.18, cy + H * 0.06);
-
-                ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
-
-                ctx.shadowBlur = 0;
-
-                // Cervical groove
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.04, cy - H * 0.13);
-
-                ctx.quadraticCurveTo(cx - W * 0.06, cy, cx - W * 0.04, cy + H * 0.13);
-
-                ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.globalAlpha = 0.4; ctx.stroke(); ctx.globalAlpha = 1;
-
-                // Carapace texture
-
-                ctx.globalAlpha = 0.06;
-
-                for (var ct = 0; ct < 30; ct++) {
-
-                  ctx.beginPath(); ctx.arc(cx - W * 0.12 + (ct % 6) * W * 0.04, cy - H * 0.10 + Math.floor(ct / 6) * H * 0.04, 1.5, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#000'; ctx.fill();
-
-                }
-
-                ctx.globalAlpha = 1;
-
-                // ── Rostrum ──
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.18, cy - H * 0.04);
-
-                ctx.lineTo(cx - W * 0.26, cy); ctx.lineTo(cx - W * 0.18, cy + H * 0.04);
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1; ctx.stroke();
-
-                // ── Compound eyes ──
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.18, cy - H * 0.06);
-
-                ctx.lineTo(cx - W * 0.22, cy - H * 0.10);
-
-                ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.22, cy - H * 0.10, 3.5, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#1a1a1a'; ctx.fill();
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.218, cy - H * 0.105, 1.2, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fill();
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.18, cy + H * 0.06);
-
-                ctx.lineTo(cx - W * 0.22, cy + H * 0.10);
-
-                ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.22, cy + H * 0.10, 3.5, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#1a1a1a'; ctx.fill();
-
-                // ── Antennae ──
-
-                ctx.strokeStyle = layerStroke; ctx.lineWidth = 1;
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.20, cy - H * 0.08);
-
-                ctx.bezierCurveTo(cx - W * 0.28, cy - H * 0.14, cx - W * 0.30, cy - H * 0.08, cx - W * 0.34, cy - H * 0.10);
-
-                ctx.stroke();
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.20, cy + H * 0.08);
-
-                ctx.bezierCurveTo(cx - W * 0.28, cy + H * 0.14, cx - W * 0.30, cy + H * 0.08, cx - W * 0.34, cy + H * 0.10);
-
-                ctx.stroke();
-
-                ctx.lineWidth = 0.6;
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.22, cy - H * 0.04);
-
-                ctx.lineTo(cx - W * 0.28, cy - H * 0.06); ctx.stroke();
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.22, cy + H * 0.04);
-
-                ctx.lineTo(cx - W * 0.28, cy + H * 0.06); ctx.stroke();
-
-                // ── Abdomen ──
-
-                for (var seg = 0; seg < 6; seg++) {
-
-                  var segX = cx + W * 0.12 + seg * W * 0.035;
-
-                  var segH2 = H * (0.10 - seg * 0.008);
-
-                  ctx.beginPath(); ctx.rect(segX, cy - segH2, W * 0.035, segH2 * 2);
-
-                  ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-
-                }
-
-                // ── Telson + Uropods ──
-
-                var tailX = cx + W * 0.33;
-
-                ctx.beginPath(); ctx.moveTo(tailX, cy - H * 0.04);
-
-                ctx.lineTo(tailX + W * 0.06, cy); ctx.lineTo(tailX, cy + H * 0.04); ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-
-                ctx.beginPath(); ctx.moveTo(tailX, cy - H * 0.04);
-
-                ctx.bezierCurveTo(tailX + W * 0.03, cy - H * 0.10, tailX + W * 0.06, cy - H * 0.08, tailX + W * 0.05, cy - H * 0.02);
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.6; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
-
-                ctx.beginPath(); ctx.moveTo(tailX, cy + H * 0.04);
-
-                ctx.bezierCurveTo(tailX + W * 0.03, cy + H * 0.10, tailX + W * 0.06, cy + H * 0.08, tailX + W * 0.05, cy + H * 0.02);
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.6; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
-
-                // ── Chelipeds (claws) ──
-
-                [-1, 1].forEach(function (s) {
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.14, cy + s * H * 0.10);
-
-                  ctx.lineTo(cx - W * 0.22, cy + s * H * 0.16);
-
-                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.22, cy + s * H * 0.16);
-
-                  ctx.lineTo(cx - W * 0.28, cy + s * H * 0.20);
-
-                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 2.5; ctx.stroke();
-
-                  // Pincer
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.28, cy + s * H * 0.20);
-
-                  ctx.bezierCurveTo(cx - W * 0.32, cy + s * H * 0.18, cx - W * 0.34, cy + s * H * 0.19, cx - W * 0.34, cy + s * H * 0.20);
-
-                  ctx.bezierCurveTo(cx - W * 0.34, cy + s * H * 0.21, cx - W * 0.32, cy + s * H * 0.22, cx - W * 0.28, cy + s * H * 0.20);
-
-                  ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1; ctx.stroke();
-
-                });
-
-                // ── Walking legs (4 pairs) ──
-
-                for (var wl = 0; wl < 4; wl++) {
-
-                  [-1, 1].forEach(function (s) {
-
-                    var lx = cx - W * 0.04 + wl * W * 0.04;
-
-                    ctx.beginPath(); ctx.moveTo(lx, cy + s * H * 0.12);
-
-                    ctx.lineTo(lx - W * 0.02, cy + s * H * 0.20);
-
-                    ctx.lineTo(lx - W * 0.04, cy + s * H * 0.26);
-
-                    ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.lineCap = 'round'; ctx.stroke();
-
-                    ctx.beginPath(); ctx.arc(lx - W * 0.02, cy + s * H * 0.20, 1.5, 0, Math.PI * 2);
-
-                    ctx.fillStyle = layerStroke; ctx.fill();
-
-                  });
-
-                }
-
-                // ── Swimmerets ──
-
-                ctx.globalAlpha = 0.3;
-
-                for (var sw = 0; sw < 5; sw++) {
-
-                  var swx = cx + W * 0.14 + sw * W * 0.035;
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.moveTo(swx, cy + s * H * 0.04);
-
-                    ctx.lineTo(swx + W * 0.01, cy + s * H * 0.08);
-
-                    ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.6; ctx.stroke();
-
-                  });
-
-                }
-
-                ctx.globalAlpha = 1;
-
-                // ── Layer overlays ──
-
-                if (activeLayer === 'organs') {
-
-                  ctx.globalAlpha = 0.5;
-
-                  ctx.beginPath(); ctx.arc(cx + W * 0.04, cy, W * 0.02, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#dc2626'; ctx.fill();
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.02, cy, W * 0.05, H * 0.06, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#92400e'; ctx.fill();
-
-                  ctx.beginPath(); ctx.arc(cx - W * 0.10, cy, W * 0.018, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#fde68a'; ctx.fill();
-
-                  for (var cg = 0; cg < 3; cg++) {
-
-                    ctx.beginPath(); ctx.ellipse(cx + W * 0.06, cy + (cg - 1) * H * 0.04, W * 0.015, H * 0.02, 0, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#fca5a5'; ctx.fill();
-
-                  }
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.02, cy);
-
-                  ctx.lineTo(cx + W * 0.32, cy);
-
-                  ctx.strokeStyle = '#f97316'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-                if (activeLayer === 'nervous') {
-
-                  ctx.globalAlpha = 0.6;
-
-                  ctx.beginPath(); ctx.arc(cx - W * 0.14, cy, W * 0.018, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#fbbf24'; ctx.fill();
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.12, cy);
-
-                  ctx.lineTo(cx + W * 0.32, cy);
-
-                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2; ctx.stroke();
-
-                  for (var ng = 0; ng < 8; ng++) {
-
-                    ctx.beginPath(); ctx.arc(cx - W * 0.10 + ng * W * 0.05, cy, 3, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#f59e0b'; ctx.fill();
-
-                  }
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-
-
-
-
-              } else if (spec.bodyShape === 'eye') {
-
-                // Sheep eye — cross-section
-
-                ctx.beginPath(); ctx.arc(cx, cy, W * 0.30, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#f1f5f9'; ctx.fill(); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 3; ctx.stroke();
-
-                ctx.shadowBlur = 0;
-
-                // Choroid (dark inner layer)
-
-                ctx.beginPath(); ctx.arc(cx, cy, W * 0.27, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#1e1b4b'; ctx.fill();
-
-                // Retina (inner)
-
-                ctx.beginPath(); ctx.arc(cx, cy, W * 0.25, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#fef3c7'; ctx.fill();
-
-                // Vitreous humor (clear)
-
-                ctx.beginPath(); ctx.arc(cx, cy, W * 0.23, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(219,234,254,0.5)'; ctx.fill();
-
-                // Lens
-
-                ctx.beginPath(); ctx.ellipse(cx - W * 0.12, cy, W * 0.06, H * 0.10, 0, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fill(); ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                // Cornea (front bulge)
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.28, cy, W * 0.08, -Math.PI * 0.4, Math.PI * 0.4);
-
-                ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2.5; ctx.stroke();
-
-                // Iris
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.16, cy, H * 0.08, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#7c3aed'; ctx.globalAlpha = 0.6; ctx.fill(); ctx.globalAlpha = 1;
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.16, cy, H * 0.03, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#0f172a'; ctx.fill(); // pupil
-
-                // Optic nerve with myelin sheath
-
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.30, cy);
-
-                ctx.lineTo(cx + W * 0.38, cy + H * 0.05);
-
-                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 6; ctx.stroke();
-
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.30, cy);
-
-                ctx.lineTo(cx + W * 0.38, cy + H * 0.05);
-
-                ctx.strokeStyle = '#fde68a'; ctx.lineWidth = 3; ctx.stroke();
-
-                // Blood vessels on retina
-
-                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 0.8; ctx.globalAlpha = 0.4;
-
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.10, cy);
-
-                ctx.quadraticCurveTo(cx + W * 0.05, cy - H * 0.10, cx - W * 0.05, cy - H * 0.12); ctx.stroke();
-
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.10, cy);
-
-                ctx.quadraticCurveTo(cx + W * 0.05, cy + H * 0.08, cx - W * 0.05, cy + H * 0.10); ctx.stroke();
-
-                ctx.globalAlpha = 1;
-
-                // Tapetum reflection
-
-                ctx.beginPath(); ctx.arc(cx + W * 0.10, cy, W * 0.08, -0.5, 0.5);
-
-                ctx.strokeStyle = 'rgba(34,211,238,0.3)'; ctx.lineWidth = 8; ctx.stroke();
-
-                // Animated light refraction ray
-
-                var rayPhase = (dissTick * 0.02) % (Math.PI * 2);
-
-                var rayAlpha = 0.3 + Math.sin(rayPhase) * 0.15;
-
-                ctx.globalAlpha = rayAlpha;
-
-                // Incoming ray
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.45, cy - H * 0.08);
-
-                ctx.lineTo(cx - W * 0.28, cy); // hits cornea
-
-                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                // Ray through cornea → aqueous humor → lens (bends)
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.28, cy);
-
-                ctx.quadraticCurveTo(cx - W * 0.20, cy + H * 0.01, cx - W * 0.12, cy); // through pupil/lens
-
-                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                // Ray through vitreous → hits retina (converges)
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.12, cy);
-
-                ctx.lineTo(cx + W * 0.10, cy + H * 0.02); // focal point on retina
-
-                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                // Focal point glow
-
-                ctx.beginPath(); ctx.arc(cx + W * 0.10, cy + H * 0.02, 4, 0, Math.PI * 2);
-
-                var focalGrad = ctx.createRadialGradient(cx + W * 0.10, cy + H * 0.02, 0, cx + W * 0.10, cy + H * 0.02, 4);
-
-                focalGrad.addColorStop(0, 'rgba(251,191,36,0.8)');
-
-                focalGrad.addColorStop(1, 'rgba(251,191,36,0)');
-
-                ctx.fillStyle = focalGrad; ctx.fill();
-
-                // Ray label
-
-                ctx.font = '8px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
-
-                ctx.fillText(t('stem.dissection.canvas_light_ray'), cx - W * 0.44, cy - H * 0.10);
-
-                ctx.globalAlpha = 1;
-
-                // Aqueous humor label
-
-                ctx.font = '7px Inter, system-ui'; ctx.fillStyle = 'rgba(255,255,255,0.25)';
-
-                ctx.fillText(t('stem.dissection.canvas_aqueous_humor'), cx - W * 0.24, cy + H * 0.06);
-
-                ctx.fillText(t('stem.dissection.canvas_vitreous_humor'), cx - W * 0.05, cy + H * 0.10);
-
-                // Ciliary body
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.14, cy - H * 0.08, W * 0.015, 0, Math.PI);
-
-                ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1; ctx.stroke();
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.14, cy + H * 0.08, W * 0.015, Math.PI, Math.PI * 2);
-
-                ctx.strokeStyle = '#a78bfa'; ctx.stroke();
-
-                ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillText(t('stem.dissection.canvas_ciliary_body'), cx - W * 0.18, cy - H * 0.11);
-
-                // Suspensory ligaments (zonules)
-
-                ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 0.4;
-
-                for (var zl = 0; zl < 6; zl++) {
-
-                  var za = -0.5 + zl * 0.2;
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.14 + Math.cos(za) * W * 0.015, cy + Math.sin(za) * H * 0.08);
-
-                  ctx.lineTo(cx - W * 0.12 + Math.cos(za) * W * 0.04, cy + Math.sin(za) * H * 0.06);
-
-                  ctx.stroke();
-
-                }
-
-                // Fovea centralis (center of macula)
-
-                ctx.beginPath(); ctx.arc(cx + W * 0.10, cy, 2.5, 0, Math.PI * 2);
-
-                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1; ctx.stroke();
-
-                ctx.fillStyle = 'rgba(251,191,36,0.3)'; ctx.fillText(t('stem.dissection.canvas_fovea'), cx + W * 0.12, cy - H * 0.02);
-
-                // Blind spot (optic disc)
-
-                ctx.beginPath(); ctx.arc(cx + W * 0.18, cy + H * 0.03, 3, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(251,191,36,0.4)'; ctx.fill();
-
-                ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillText(t('stem.dissection.canvas_optic_disc'), cx + W * 0.20, cy + H * 0.02);
-
-                // Iris sphincter muscle detail
-
-                ctx.globalAlpha = 0.15;
-
-                for (var ism = 0; ism < 12; ism++) {
-
-                  var ismA = (ism / 12) * Math.PI * 2;
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.24 + Math.cos(ismA) * W * 0.06, cy + Math.sin(ismA) * H * 0.04);
-
-                  ctx.lineTo(cx - W * 0.24 + Math.cos(ismA) * W * 0.08, cy + Math.sin(ismA) * H * 0.06);
-
-                  ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 0.5; ctx.stroke();
-
-                }
-
-                ctx.globalAlpha = 1;
-
-                // Macula lutea region
-
-                ctx.beginPath(); ctx.ellipse(cx + W * 0.10, cy, W * 0.03, H * 0.02, 0, 0, Math.PI * 2);
-
-                ctx.strokeStyle = 'rgba(251,191,36,0.2)'; ctx.lineWidth = 0.5; ctx.stroke();
-
-                ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fillText(t('stem.dissection.canvas_macula'), cx + W * 0.12, cy + H * 0.03);
-
-                // Rod and cone cell detail on retina
-
-                ctx.globalAlpha = 0.15;
-
-                for (var rc = 0; rc < 20; rc++) {
-
-                  var rcAngle = Math.PI * 0.65 + rc * Math.PI * 0.02;
-
-                  var rcR = W * 0.28;
-
-                  var rcx = cx + Math.cos(rcAngle) * rcR;
-
-                  var rcy = cy + Math.sin(rcAngle) * rcR;
-
-                  ctx.beginPath();
-
-                  if (rc % 3 === 0) {
-
-                    // Cone cell (triangle shape)
-
-                    ctx.moveTo(rcx, rcy - 1.5); ctx.lineTo(rcx - 1, rcy + 1.5); ctx.lineTo(rcx + 1, rcy + 1.5); ctx.closePath();
-
-                    ctx.fillStyle = '#3b82f6'; ctx.fill();
-
-                  } else {
-
-                    // Rod cell (rectangle shape)
-
-                    ctx.fillStyle = '#94a3b8';
-
-                    ctx.fillRect(rcx - 0.5, rcy - 2, 1, 4);
-
-                  }
-
-                }
-
-                ctx.globalAlpha = 1;
-
-                ctx.font = '5px Inter, system-ui'; ctx.fillStyle = 'rgba(255,255,255,0.15)';
-
-                ctx.fillText(t('stem.dissection.canvas_rods'), cx + W * 0.22, cy - H * 0.14);
-
-                ctx.fillStyle = 'rgba(59,130,246,0.15)';
-
-                ctx.fillText(t('stem.dissection.canvas_cones'), cx + W * 0.22, cy - H * 0.12);
-
-              } else if (spec.bodyShape === 'heart') {
-
-                // Sheep heart — anatomical shape with beating animation
-
-                var heartPhase = (dissTick * 0.04) % (Math.PI * 2);
-
-                var systole = Math.max(0, Math.sin(heartPhase));
-
-                var heartScale = 1 + systole * 0.03;
-
-                ctx.save();
-
-                ctx.translate(cx, cy);
-
-                ctx.scale(heartScale, heartScale);
-
-                ctx.translate(-cx, -cy);
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx, cy - H * 0.25);
-
-                ctx.quadraticCurveTo(cx - W * 0.22, cy - H * 0.30, cx - W * 0.25, cy - H * 0.10);
-
-                ctx.quadraticCurveTo(cx - W * 0.26, cy + H * 0.05, cx - W * 0.15, cy + H * 0.18);
-
-                ctx.quadraticCurveTo(cx - W * 0.05, cy + H * 0.30, cx, cy + H * 0.28);
-
-                ctx.quadraticCurveTo(cx + W * 0.05, cy + H * 0.30, cx + W * 0.15, cy + H * 0.18);
-
-                ctx.quadraticCurveTo(cx + W * 0.26, cy + H * 0.05, cx + W * 0.25, cy - H * 0.10);
-
-                ctx.quadraticCurveTo(cx + W * 0.22, cy - H * 0.30, cx, cy - H * 0.25);
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 2; ctx.stroke();
-
-                ctx.shadowBlur = 0;
-
-                // Septum line
-
-                ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.20); ctx.lineTo(cx, cy + H * 0.25);
-
-                ctx.strokeStyle = layerStroke; ctx.globalAlpha = 0.3; ctx.lineWidth = 1; ctx.stroke(); ctx.globalAlpha = 1;
-
-                // Great vessels stubs
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.08, cy - H * 0.25); ctx.lineTo(cx - W * 0.10, cy - H * 0.35);
-
-                ctx.lineTo(cx - W * 0.04, cy - H * 0.35); ctx.closePath();
-
-                ctx.fillStyle = '#ef4444'; ctx.fill(); // aorta stub
-
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.08, cy - H * 0.25); ctx.lineTo(cx + W * 0.10, cy - H * 0.35);
-
-                ctx.lineTo(cx + W * 0.04, cy - H * 0.35); ctx.closePath();
-
-                ctx.fillStyle = '#3b82f6'; ctx.fill(); // pulm trunk stub
-
-                // Left coronary artery (LAD)
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.06, cy - H * 0.18);
-
-                ctx.quadraticCurveTo(cx - W * 0.15, cy, cx - W * 0.10, cy + H * 0.15);
-
-                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; ctx.globalAlpha = 0.7; ctx.stroke();
-
-                // Right coronary artery
-
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.06, cy - H * 0.18);
-
-                ctx.quadraticCurveTo(cx + W * 0.18, cy - H * 0.05, cx + W * 0.12, cy + H * 0.10);
-
-                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                // Coronary sinus (venous drainage)
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.12, cy + H * 0.12);
-
-                ctx.quadraticCurveTo(cx, cy + H * 0.18, cx + W * 0.10, cy + H * 0.12);
-
-                ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1; ctx.stroke();
-
-                // Pericardium outline (outer membrane)
-
-                ctx.beginPath();
-
-                ctx.ellipse(cx, cy, W * 0.28, H * 0.30, 0, 0, Math.PI * 2);
-
-                ctx.strokeStyle = 'rgba(148,163,184,0.2)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
-
-                ctx.globalAlpha = 1;
-
-                // ECG waveform display (bottom of canvas)
-
-                var ecgY = H - 35; var ecgW = W * 0.6; var ecgX = (W - ecgW) / 2;
-
-                ctx.fillStyle = 'rgba(15,23,42,0.7)';
-
-                ctx.fillRect(ecgX - 5, ecgY - 20, ecgW + 10, 35);
-
-                ctx.strokeStyle = 'rgba(34,197,94,0.15)'; ctx.lineWidth = 0.3;
-
-                // Grid lines
-
-                for (var eg = 0; eg < 6; eg++) { ctx.beginPath(); ctx.moveTo(ecgX, ecgY - 15 + eg * 5); ctx.lineTo(ecgX + ecgW, ecgY - 15 + eg * 5); ctx.stroke(); }
-
-                // ECG trace
-
-                ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1.5; ctx.beginPath();
-
-                for (var ep = 0; ep < ecgW; ep++) {
-
-                  var et = ((ep + dissTick * 2) % ecgW) / ecgW;
-
-                  var ey = ecgY;
-
-                  // P wave
-
-                  if (et > 0.05 && et < 0.15) ey -= Math.sin((et - 0.05) * 10 * Math.PI) * 4;
-
-                  // QRS complex
-
-                  else if (et > 0.20 && et < 0.22) ey += (et - 0.20) * 200;
-
-                  else if (et > 0.22 && et < 0.26) ey -= 15 - (et - 0.22) * 375;
-
-                  else if (et > 0.26 && et < 0.28) ey += (et - 0.26) * 150;
-
-                  // T wave
-
-                  else if (et > 0.35 && et < 0.50) ey -= Math.sin((et - 0.35) * 6.67 * Math.PI) * 5;
-
-                  ep === 0 ? ctx.moveTo(ecgX + ep, ey) : ctx.lineTo(ecgX + ep, ey);
-
-                }
-
-                ctx.stroke();
-
-                // BPM display
-
-                var bpm = 72 + Math.floor(Math.sin(dissTick * 0.02) * 5);
-
-                ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#22c55e';
-
-                ctx.fillText(bpm + ' BPM', ecgX + ecgW + 8, ecgY);
-
-                ctx.font = '6px Inter, system-ui'; ctx.fillStyle = 'rgba(34,197,94,0.5)';
-
-                ctx.fillText(t('stem.dissection.canvas_ecg_p'), ecgX + ecgW * 0.10, ecgY - 18); ctx.fillText(t('stem.dissection.canvas_ecg_qrs'), ecgX + ecgW * 0.23, ecgY - 18); ctx.fillText(t('stem.dissection.canvas_ecg_t'), ecgX + ecgW * 0.42, ecgY - 18);
-
-                // Chamber shading (left side thicker wall)
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.04, cy - H * 0.15);
-
-                ctx.quadraticCurveTo(cx - W * 0.20, cy, cx - W * 0.10, cy + H * 0.20);
-
-                ctx.strokeStyle = 'rgba(239,68,68,0.15)'; ctx.lineWidth = 12; ctx.stroke();
-
-                // Right side (thinner wall)
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx + W * 0.04, cy - H * 0.15);
-
-                ctx.quadraticCurveTo(cx + W * 0.18, cy, cx + W * 0.10, cy + H * 0.18);
-
-                ctx.strokeStyle = 'rgba(59,130,246,0.12)'; ctx.lineWidth = 8; ctx.stroke();
-
-                ctx.restore(); // End heartbeat scale
-
-                // Conduction system animation
-
-                if (activeLayer === 'nervous' || activeLayer === 'conduction') {
-
-                  ctx.globalAlpha = 0.7;
-
-                  var condPhase = (dissTick * 0.03) % 1;
-
-                  // SA Node (pacemaker)
-
-                  var saGlow = Math.max(0, Math.sin(condPhase * Math.PI * 2));
-
-                  ctx.beginPath(); ctx.arc(cx + W * 0.12, cy - H * 0.14, 5 + saGlow * 3, 0, Math.PI * 2);
-
-                  var saGrad = ctx.createRadialGradient(cx + W * 0.12, cy - H * 0.14, 0, cx + W * 0.12, cy - H * 0.14, 5 + saGlow * 3);
-
-                  saGrad.addColorStop(0, 'rgba(251,191,36,' + (0.5 + saGlow * 0.5) + ')');
-
-                  saGrad.addColorStop(1, 'rgba(251,191,36,0)');
-
-                  ctx.fillStyle = saGrad; ctx.fill();
-
-                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#fbbf24'; ctx.fillText(t('stem.dissection.canvas_sa_node'), cx + W * 0.13, cy - H * 0.18);
-
-                  // AV Node
-
-                  var avDelay = Math.max(0, Math.sin((condPhase - 0.15) * Math.PI * 2));
-
-                  ctx.beginPath(); ctx.arc(cx, cy - H * 0.04, 4 + avDelay * 2, 0, Math.PI * 2);
-
-                  var avGrad = ctx.createRadialGradient(cx, cy - H * 0.04, 0, cx, cy - H * 0.04, 4 + avDelay * 2);
-
-                  avGrad.addColorStop(0, 'rgba(34,197,94,' + (0.4 + avDelay * 0.5) + ')');
-
-                  avGrad.addColorStop(1, 'rgba(34,197,94,0)');
-
-                  ctx.fillStyle = avGrad; ctx.fill();
-
-                  ctx.fillStyle = '#22c55e'; ctx.fillText(t('stem.dissection.canvas_av_node'), cx + W * 0.02, cy - H * 0.06);
-
-                  // Bundle of His
-
-                  var hisPhase = Math.max(0, Math.sin((condPhase - 0.3) * Math.PI * 2));
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.02); ctx.lineTo(cx, cy + H * 0.06);
-
-                  ctx.strokeStyle = 'rgba(59,130,246,' + (0.3 + hisPhase * 0.5) + ')'; ctx.lineWidth = 2; ctx.stroke();
-
-                  ctx.fillStyle = '#3b82f6'; ctx.fillText(t('stem.dissection.canvas_bundle_his'), cx + W * 0.02, cy + H * 0.02);
-
-                  // Left and right bundle branches
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy + H * 0.06);
-
-                  ctx.lineTo(cx - W * 0.08, cy + H * 0.18);
-
-                  ctx.strokeStyle = 'rgba(59,130,246,' + (0.2 + hisPhase * 0.4) + ')'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy + H * 0.06);
-
-                  ctx.lineTo(cx + W * 0.06, cy + H * 0.16);
-
-                  ctx.stroke();
-
-                  // Purkinje fibers (fan out in ventricles)
-
-                  var purkPhase = Math.max(0, Math.sin((condPhase - 0.5) * Math.PI * 2));
-
-                  ctx.strokeStyle = 'rgba(168,85,247,' + (0.2 + purkPhase * 0.4) + ')'; ctx.lineWidth = 0.8;
-
-                  for (var pk = 0; pk < 5; pk++) {
-
-                    ctx.beginPath(); ctx.moveTo(cx - W * 0.08, cy + H * 0.18);
-
-                    ctx.lineTo(cx - W * 0.12 + pk * W * 0.02, cy + H * 0.22 + pk * H * 0.01);
-
-                    ctx.stroke();
-
-                    ctx.beginPath(); ctx.moveTo(cx + W * 0.06, cy + H * 0.16);
-
-                    ctx.lineTo(cx + W * 0.02 + pk * W * 0.02, cy + H * 0.20 + pk * H * 0.01);
-
-                    ctx.stroke();
-
-                  }
-
-                  ctx.fillStyle = '#a855f7'; ctx.fillText(t('stem.dissection.canvas_purkinje'), cx - W * 0.14, cy + H * 0.24);
-
-                  // Signal propagation indicator
-
-                  var sigY = cy - H * 0.14 + condPhase * H * 0.38;
-
-                  ctx.beginPath(); ctx.arc(cx, sigY, 3, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(251,191,36,0.8)'; ctx.fill();
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-                // Internal chambers when on interior/chambers layer
-
-                if (activeLayer === 'chambers' || activeLayer === 'interior') {
-
-                  ctx.globalAlpha = 0.4;
-
-                  // Left atrium
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.10, cy - H * 0.10, W * 0.08, H * 0.06, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#dc2626'; ctx.fill();
-
-                  ctx.font = '8px Inter'; ctx.fillStyle = '#ffffff'; ctx.fillText(t('stem.dissection.canvas_la'), cx - W * 0.11, cy - H * 0.09);
-
-                  // Right atrium
-
-                  ctx.beginPath(); ctx.ellipse(cx + W * 0.10, cy - H * 0.10, W * 0.08, H * 0.06, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#3b82f6'; ctx.fill();
-
-                  ctx.fillStyle = '#ffffff'; ctx.fillText(t('stem.dissection.canvas_ra'), cx + W * 0.09, cy - H * 0.09);
-
-                  // Left ventricle (thicker wall)
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.08, cy + H * 0.08, W * 0.10, H * 0.10, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#b91c1c'; ctx.fill();
-
-                  ctx.fillStyle = '#ffffff'; ctx.fillText(t('stem.dissection.canvas_lv'), cx - W * 0.09, cy + H * 0.09);
-
-                  // Right ventricle (thinner wall)
-
-                  ctx.beginPath(); ctx.ellipse(cx + W * 0.08, cy + H * 0.08, W * 0.08, H * 0.08, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#2563eb'; ctx.fill();
-
-                  ctx.fillStyle = '#ffffff'; ctx.fillText(t('stem.dissection.canvas_rv'), cx + W * 0.07, cy + H * 0.09);
-
-                  // Valve lines
-
-                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.5;
-
-                  // Mitral valve
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.15, cy - H * 0.02); ctx.lineTo(cx - W * 0.04, cy - H * 0.02); ctx.stroke();
-
-                  ctx.font = '6px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
-
-                  // Animated valve movement
-
-                  var valveOpen = Math.sin(dissTick * 0.05);
-
-                  var vOff = Math.max(0, valveOpen) * 3;
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy - H * 0.02 - vOff); ctx.lineTo(cx - W * 0.10, cy - H * 0.02 + vOff);
-
-                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2; ctx.stroke();
-
-                  ctx.fillText(t('stem.dissection.canvas_mitral') + (valveOpen > 0 ? ' ' + t('stem.dissection.canvas_valve_open') : ' ' + t('stem.dissection.canvas_valve_closed')), cx - W * 0.14, cy - H * 0.035);
-
-                  // Tricuspid valve
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.04, cy - H * 0.02); ctx.lineTo(cx + W * 0.15, cy - H * 0.02); ctx.stroke();
-
-                  ctx.fillText(t('stem.dissection.canvas_tricuspid'), cx + W * 0.05, cy - H * 0.035);
-
-                  // Semilunar valves (above ventricles)
-
-                  ctx.beginPath(); ctx.arc(cx - W * 0.08, cy - H * 0.05, 3, 0, Math.PI); ctx.stroke();
-
-                  ctx.fillText(t('stem.dissection.canvas_aortic'), cx - W * 0.10, cy - H * 0.07);
-
-                  ctx.beginPath(); ctx.arc(cx + W * 0.06, cy - H * 0.05, 3, 0, Math.PI); ctx.stroke();
-
-                  ctx.fillText(t('stem.dissection.canvas_pulmonary'), cx + W * 0.04, cy - H * 0.07);
-
-                  // Papillary muscles (bumps on ventricle walls)
-
-                  ctx.globalAlpha = 0.4;
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.10, cy + H * 0.12, W * 0.008, H * 0.015, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#ef4444'; ctx.fill();
-
-                  ctx.beginPath(); ctx.ellipse(cx + W * 0.08, cy + H * 0.10, W * 0.006, H * 0.012, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#ef4444'; ctx.fill();
-
-                  // Chordae tendinae (strings connecting papillary to valves)
-
-                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 0.4;
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy + H * 0.105);
-
-                  ctx.lineTo(cx - W * 0.08, cy - H * 0.02); ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy + H * 0.105);
-
-                  ctx.lineTo(cx - W * 0.06, cy - H * 0.02); ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.08, cy + H * 0.088);
-
-                  ctx.lineTo(cx + W * 0.06, cy - H * 0.02); ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.08, cy + H * 0.088);
-
-                  ctx.lineTo(cx + W * 0.10, cy - H * 0.02); ctx.stroke();
-
-                  ctx.globalAlpha = 0.35;
-
-                  ctx.font = '5px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
-
-                  ctx.fillText(t('stem.dissection.canvas_chordae'), cx - W * 0.14, cy + H * 0.08);
-
-                  ctx.fillText(t('stem.dissection.canvas_papillary'), cx - W * 0.14, cy + H * 0.14);
-
-                  ctx.globalAlpha = 0.5;
-
-                  ctx.globalAlpha = 1;
-
-                  // Animated blood flow through chambers
-
-                  ctx.setLineDash([3, 5]); ctx.lineDashOffset = -dissTick * 0.4;
-
-                  ctx.globalAlpha = 0.6;
-
-                  // Deoxygenated flow: RA → RV → lungs
-
-                  ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1.2;
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.10, cy - H * 0.16);
-
-                  ctx.lineTo(cx + W * 0.10, cy - H * 0.03);
-
-                  ctx.lineTo(cx + W * 0.08, cy + H * 0.05); ctx.stroke();
-
-                  // Oxygenated flow: LA → LV → body
-
-                  ctx.strokeStyle = '#ef4444';
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy - H * 0.16);
-
-                  ctx.lineTo(cx - W * 0.10, cy - H * 0.03);
-
-                  ctx.lineTo(cx - W * 0.08, cy + H * 0.05); ctx.stroke();
-
-                  ctx.setLineDash([]); ctx.lineDashOffset = 0;
-
-                  ctx.globalAlpha = 1;
-
-                }
-
-              }
-
-
-
-              ctx.restore();
-
-
-
-              // ── Draw organ pins ──
-
-              organs.forEach(function (org, oi) {
-
-                var px = org.x * W, py = org.y * H;
-
-                var isSel = d.selectedOrgan === org.id;
-
-                var isHov = !isSel && d.hoveredOrgan === org.id;
-
-                var pulse = isSel ? 1 + Math.sin(dissTick * 0.06) * 0.3 : 1;
-
-                // Outer glow
-
-                if (isSel) {
-
-                  ctx.beginPath(); ctx.arc(px, py, 18 * pulse, 0, Math.PI * 2);
-
-                  var glowGrad = ctx.createRadialGradient(px, py, 4, px, py, 18 * pulse);
-
-                  glowGrad.addColorStop(0, 'rgba(251,191,36,0.4)');
-
-                  glowGrad.addColorStop(1, 'rgba(251,191,36,0)');
-
-                  ctx.fillStyle = glowGrad; ctx.fill();
-
-                }
-
-                // Pin dot with system color
-
-                var sysCol = layerStroke || '#94a3b8';
-
-                ctx.beginPath(); ctx.arc(px, py, 5 * pulse, 0, Math.PI * 2);
-
-                var pinGrad = ctx.createRadialGradient(px - 1, py - 1, 1, px, py, 5 * pulse);
-
-                pinGrad.addColorStop(0, isSel ? '#fef08a' : isHov ? '#bfdbfe' : '#ffffff');
-
-                pinGrad.addColorStop(1, isSel ? '#f59e0b' : isHov ? '#3b82f6' : sysCol);
-
-                ctx.fillStyle = pinGrad; ctx.fill();
-
-                ctx.strokeStyle = isSel ? '#f59e0b' : 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                // Selection/hover ring
-
-                if (isSel) { ctx.beginPath(); ctx.arc(px, py, 12 * pulse, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(251,191,36,0.7)'; ctx.lineWidth = 2; ctx.setLineDash([3, 3]); ctx.stroke(); ctx.setLineDash([]); }
-
-                if (isHov) { ctx.beginPath(); ctx.arc(px, py, 10, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(59,130,246,0.5)'; ctx.lineWidth = 1.5; ctx.stroke(); }
-
-                ctx.font = '10px Inter, system-ui, sans-serif';
-
-                var tw = ctx.measureText(org.name).width + 10;
-
-                var lx = px + 12, ly = py - 8;
-
-                if (lx + tw > W - 10) lx = px - tw - 12;
-
-                ctx.beginPath(); ctx.moveTo(px + 6, py); ctx.lineTo(lx, ly + 6);
-
-                ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.setLineDash([2, 2]); ctx.lineWidth = 0.8; ctx.stroke(); ctx.setLineDash([]);
-
-                if (d.labelMode !== 'hidden' || isSel) {
-
-                  ctx.fillStyle = isSel ? 'rgba(251,191,36,0.9)' : 'rgba(30,41,59,0.85)';
-
-                  if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(lx, ly, tw, 16, 4); ctx.fill(); } else { ctx.fillRect(lx, ly, tw, 16); }
-
-                  ctx.strokeStyle = isSel ? '#f59e0b' : 'rgba(148,163,184,0.4)'; ctx.lineWidth = 0.6; ctx.stroke();
-
-                  ctx.fillStyle = isSel ? '#1e293b' : '#e2e8f0'; ctx.fillText(org.name, lx + 5, ly + 11.5);
-
-                } else {
-
-                  // Hidden mode: show numbered markers instead of names
-
-                  var markerNum = String(oi + 1);
-
-                  ctx.fillStyle = 'rgba(30,41,59,0.7)';
-
-                  ctx.beginPath(); ctx.arc(lx + 8, ly + 8, 8, 0, Math.PI * 2); ctx.fill();
-
-                  ctx.fillStyle = '#ffffff'; ctx.font = 'bold 8px Inter, system-ui';
-
-                  ctx.fillText(markerNum, lx + 8 - ctx.measureText(markerNum).width / 2, ly + 11);
-
-                  ctx.font = '10px Inter, system-ui, sans-serif';
-
-                }
-
-              });
-
-              // Layer label
-
-              var activeLayerDef = spec.layers[currentLayerIdx];
-
-              if (activeLayerDef) { ctx.font = 'bold 13px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fillText(activeLayerDef.icon + ' ' + activeLayerDef.name + ' Layer', 14, H - 14); }
-
-              // Annotation drawing overlay
-
-              if (d.annotations && d.annotations.length > 0) {
-
-                ctx.strokeStyle = '#ec4899'; ctx.lineWidth = 2; ctx.lineCap = 'round';
-
-                d.annotations.forEach(function (ann) {
-
-                  if (ann.prevX !== undefined) {
-
-                    ctx.beginPath(); ctx.moveTo(ann.prevX, ann.prevY);
-
-                    ctx.lineTo(ann.x, ann.y); ctx.stroke();
-
-                  }
-
-                  ctx.beginPath(); ctx.arc(ann.x, ann.y, 2, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#ec4899'; ctx.fill();
-
-                });
-
-              }
-
-              // Clear annotations button hint
-
-              if (d.annotateMode && d.annotations && d.annotations.length > 0) {
-
-                ctx.font = '8px Inter, system-ui'; ctx.fillStyle = 'rgba(236,72,153,0.6)';
-
-                ctx.fillText(t('stem.dissection.canvas_dblclick_clear'), 10, H - 5);
-
-              }
-
-              // Ruler tool overlay
-
-              if (d.rulerMode && d.rulerStart && d.rulerEnd) {
-
-                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.setLineDash([]);
-
-                ctx.beginPath(); ctx.moveTo(d.rulerStart.x, d.rulerStart.y);
-
-                ctx.lineTo(d.rulerEnd.x, d.rulerEnd.y); ctx.stroke();
-
-                // Endpoints
-
-                ctx.beginPath(); ctx.arc(d.rulerStart.x, d.rulerStart.y, 3, 0, Math.PI * 2); ctx.fillStyle = '#fbbf24'; ctx.fill();
-
-                ctx.beginPath(); ctx.arc(d.rulerEnd.x, d.rulerEnd.y, 3, 0, Math.PI * 2); ctx.fill();
-
-                // Distance
-
-                var rdx = d.rulerEnd.x - d.rulerStart.x;
-
-                var rdy = d.rulerEnd.y - d.rulerStart.y;
-
-                var rDist = Math.sqrt(rdx * rdx + rdy * rdy);
-
-                var rCm = (rDist / W * (spec.bodyShape === 'worm' ? 15 : spec.bodyShape === 'pig' ? 25 : spec.bodyShape === 'fish' ? 20 : spec.bodyShape === 'crayfish' ? 12 : spec.bodyShape === 'frog' ? 8 : 3)).toFixed(1);
-
-                ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
-
-                ctx.fillText(rCm + ' cm', (d.rulerStart.x + d.rulerEnd.x) / 2 + 5, (d.rulerStart.y + d.rulerEnd.y) / 2 - 5);
-
-              }
-
-              // Scale bar
-
-              ctx.fillStyle = 'rgba(255,255,255,0.25)';
-
-              ctx.fillRect(W - 80, H - 18, 60, 2);
-
-              ctx.font = '8px Inter, system-ui'; ctx.fillText(t('stem.dissection.canvas_scale_bar'), W - 72, H - 7);
-
-              // Endocrine system overlay
-
-              if (d.showEndocrine) {
-
-                ctx.globalAlpha = 0.6; ctx.font = '6px Inter, system-ui';
-
-                var glands = [];
-
-                if (spec.bodyShape === 'frog') {
-
-                  glands = [
-
-                    { name: 'pituitary', x: cx, y: cy - H * 0.24, hormone: 'GH, TSH, FSH', color: '#ec4899' },
-
-                    { name: 'thyroid', x: cx - W * 0.03, y: cy - H * 0.18, hormone: 'T3, T4 (metabolism)', color: '#f472b6' },
-
-                    { name: 'parathyroid', x: cx + W * 0.03, y: cy - H * 0.17, hormone: 'PTH (calcium)', color: '#fb7185' },
-
-                    { name: 'adrenals', x: cx + W * 0.06, y: cy + H * 0.07, hormone: 'cortisol, adrenaline', color: '#fbbf24' },
-
-                    { name: 'pancreas (islets)', x: cx + W * 0.04, y: cy - H * 0.02, hormone: 'insulin, glucagon', color: '#34d399' },
-
-                    { name: 'gonads', x: cx, y: cy + H * 0.12, hormone: 'estrogen/testosterone', color: '#a78bfa' }
-
-                  ];
-
-                } else if (spec.bodyShape === 'pig') {
-
-                  glands = [
-
-                    { name: 'pituitary', x: cx - W * 0.26, y: cy - H * 0.06, hormone: 'master gland', color: '#ec4899' },
-
-                    { name: 'thyroid', x: cx - W * 0.16, y: cy - H * 0.06, hormone: 'T3, T4', color: '#f472b6' },
-
-                    { name: 'thymus', x: cx - W * 0.08, y: cy - H * 0.08, hormone: 'thymosin (immunity)', color: '#fbbf24' },
-
-                    { name: 'adrenals', x: cx + W * 0.09, y: cy + H * 0.065, hormone: 'cortisol', color: '#fbbf24' },
-
-                    { name: 'pancreas', x: cx + W * 0.02, y: cy + H * 0.04, hormone: 'insulin', color: '#34d399' }
-
-                  ];
-
-                }
-
-                glands.forEach(function (gl) {
-
-                  // Gland marker (pulsing circle)
-
-                  var glPulse = 1 + Math.sin(dissTick * 0.04) * 0.2;
-
-                  ctx.beginPath(); ctx.arc(gl.x, gl.y, 5 * glPulse, 0, Math.PI * 2);
-
-                  var glGrad = ctx.createRadialGradient(gl.x, gl.y, 0, gl.x, gl.y, 5 * glPulse);
-
-                  glGrad.addColorStop(0, gl.color); glGrad.addColorStop(1, gl.color.slice(0, -1) + ',0)');
-
-                  ctx.fillStyle = glGrad; ctx.fill();
-
-                  // Hormone arrows radiating out
-
-                  ctx.strokeStyle = gl.color; ctx.lineWidth = 0.5;
-
-                  for (var ha = 0; ha < 4; ha++) {
-
-                    var hAngle = ha * Math.PI / 2 + dissTick * 0.02;
-
-                    var hLen = 8 + Math.sin(dissTick * 0.05 + ha) * 3;
-
-                    ctx.beginPath(); ctx.moveTo(gl.x + Math.cos(hAngle) * 6, gl.y + Math.sin(hAngle) * 6);
-
-                    ctx.lineTo(gl.x + Math.cos(hAngle) * hLen, gl.y + Math.sin(hAngle) * hLen);
-
-                    ctx.stroke();
-
-                  }
-
-                  // Labels
-
-                  ctx.fillStyle = gl.color;
-
-                  ctx.fillText(gl.name, gl.x + 8, gl.y - 3);
-
-                  ctx.fillStyle = 'rgba(255,255,255,0.35)';
-
-                  ctx.fillText(gl.hormone, gl.x + 8, gl.y + 5);
-
-                });
-
-                ctx.globalAlpha = 1;
-
-              }
-
-              // Nervous system tracing overlay
-
-              if (d.traceNervous) {
-
-                ctx.setLineDash([3, 5]);
-
-                ctx.lineDashOffset = -dissTick * 0.5;
-
-                ctx.lineWidth = 1.5; ctx.globalAlpha = 0.7;
-
-                if (spec.bodyShape === 'frog') {
-
-                  ctx.strokeStyle = '#a855f7';
-
-                  // Brain → spinal cord
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.25); // brain
-
-                  ctx.lineTo(cx, cy + H * 0.10); // spinal cord
-
-                  ctx.stroke();
-
-                  // Cranial nerves radiating from brain
-
-                  for (var cn = 0; cn < 5; cn++) {
-
-                    var cnAngle = -1.2 + cn * 0.5;
-
-                    ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.24);
-
-                    ctx.lineTo(cx + Math.cos(cnAngle) * W * 0.08, cy - H * 0.24 + Math.sin(cnAngle) * H * 0.06);
-
-                    ctx.stroke();
-
-                  }
-
-                  // Sciatic nerves to legs
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.moveTo(cx, cy + H * 0.08);
-
-                    ctx.quadraticCurveTo(cx + s * W * 0.06, cy + H * 0.18, cx + s * W * 0.10, cy + H * 0.35);
-
-                    ctx.stroke();
-
-                  });
-
-                  // Brachial plexus to arms
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.12);
-
-                    ctx.quadraticCurveTo(cx + s * W * 0.08, cy - H * 0.08, cx + s * W * 0.14, cy + H * 0.05);
-
-                    ctx.stroke();
-
-                  });
-
-                  // Signal pulse animation
-
-                  var sigT = (dissTick * 0.01) % 1;
-
-                  var sigY = cy - H * 0.25 + sigT * H * 0.35;
-
-                  ctx.beginPath(); ctx.arc(cx, sigY, 3, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#e879f9'; ctx.fill();
-
-                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#a855f7';
-
-                  ctx.fillText(t('stem.dissection.canvas_brain'), cx + W * 0.03, cy - H * 0.26);
-
-                  ctx.fillText(t('stem.dissection.canvas_spinal_cord'), cx + W * 0.02, cy);
-
-                  ctx.fillText(t('stem.dissection.canvas_sciatic'), cx + W * 0.08, cy + H * 0.25);
-
-                  ctx.fillText(t('stem.dissection.canvas_brachial'), cx + W * 0.06, cy - H * 0.10);
-
-                } else if (spec.bodyShape === 'worm') {
-
-                  ctx.strokeStyle = '#a855f7';
-
-                  // Ventral nerve cord
-
-                  ctx.beginPath(); ctx.moveTo(cx, H * 0.07); ctx.lineTo(cx, H * 0.93); ctx.stroke();
-
-                  // Segmental ganglia
-
-                  for (var sg = 0; sg < 20; sg++) {
-
-                    var sgY = H * 0.10 + sg * H * 0.04;
-
-                    ctx.beginPath(); ctx.arc(cx, sgY, 2, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#c084fc'; ctx.fill();
-
-                    // Lateral nerves
-
-                    ctx.beginPath(); ctx.moveTo(cx, sgY);
-
-                    ctx.lineTo(cx - W * 0.04, sgY); ctx.stroke();
-
-                    ctx.beginPath(); ctx.moveTo(cx, sgY);
-
-                    ctx.lineTo(cx + W * 0.04, sgY); ctx.stroke();
-
-                  }
-
-                  var wSigT = (dissTick * 0.008) % 1;
-
-                  ctx.beginPath(); ctx.arc(cx, H * 0.07 + wSigT * H * 0.86, 3, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#e879f9'; ctx.fill();
-
-                  ctx.font = '6px Inter, system-ui'; ctx.fillStyle = '#a855f7';
-
-                  ctx.fillText(t('stem.dissection.canvas_ventral_nerve_cord'), cx + W * 0.05, H * 0.50);
-
-                  ctx.fillText(t('stem.dissection.canvas_segmental_ganglia'), cx + W * 0.05, H * 0.52);
-
-                } else if (spec.bodyShape === 'crayfish') {
-
-                  ctx.strokeStyle = '#a855f7';
-
-                  // Brain → ventral cord
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.20, cy); // brain
-
-                  ctx.lineTo(cx + W * 0.25, cy); // ventral cord
-
-                  ctx.stroke();
-
-                  // Ganglia
-
-                  for (var cg = 0; cg < 6; cg++) {
-
-                    ctx.beginPath(); ctx.arc(cx - W * 0.15 + cg * W * 0.08, cy, 2, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#c084fc'; ctx.fill();
-
-                  }
-
-                  ctx.font = '6px Inter, system-ui'; ctx.fillStyle = '#a855f7';
-
-                  ctx.fillText(t('stem.dissection.canvas_brain'), cx - W * 0.22, cy - H * 0.03);
-
-                  ctx.fillText(t('stem.dissection.canvas_ventral_cord'), cx + W * 0.05, cy - H * 0.03);
-
-                }
-
-                ctx.setLineDash([]); ctx.lineDashOffset = 0;
-
-                ctx.globalAlpha = 1;
-
-              }
-
-              // Excretory flow tracing overlay
-
-              if (d.traceExcretory && activeLayer === 'organs') {
-
-                ctx.setLineDash([4, 4]);
-
-                ctx.lineDashOffset = -dissTick * 0.4;
-
-                ctx.lineWidth = 2; ctx.globalAlpha = 0.65;
-
-                if (spec.bodyShape === 'frog') {
-
-                  ctx.strokeStyle = '#84cc16';
-
-                  // Kidneys → ureters → bladder → cloaca
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(cx + s * W * 0.06, cy + H * 0.08); // kidney
-
-                    ctx.quadraticCurveTo(cx + s * W * 0.03, cy + H * 0.12, cx, cy + H * 0.15); // ureter → bladder
-
-                    ctx.stroke();
-
-                  });
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy + H * 0.15); // bladder
-
-                  ctx.lineTo(cx, cy + H * 0.22); // cloaca
-
-                  ctx.stroke();
-
-                  // Filtrate animation
-
-                  var filtT = (dissTick * 0.006) % 1;
-
-                  ctx.beginPath(); ctx.arc(cx + Math.cos(filtT * 6) * W * 0.03, cy + H * 0.08 + filtT * H * 0.14, 2, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#a3e635'; ctx.fill();
-
-                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#84cc16';
-
-                  ctx.fillText(t('stem.dissection.canvas_kidneys'), cx + W * 0.08, cy + H * 0.09);
-
-                  ctx.fillText(t('stem.dissection.canvas_ureters'), cx + W * 0.04, cy + H * 0.13);
-
-                  ctx.fillText(t('stem.dissection.canvas_bladder'), cx + W * 0.03, cy + H * 0.16);
-
-                  ctx.fillText(t('stem.dissection.canvas_cloaca'), cx + W * 0.02, cy + H * 0.23);
-
-                } else if (spec.bodyShape === 'worm') {
-
-                  ctx.strokeStyle = '#84cc16';
-
-                  // Nephridia along body
-
-                  for (var neph = 0; neph < 8; neph++) {
-
-                    var nephY = H * 0.22 + neph * H * 0.08;
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(cx - W * 0.04, nephY);
-
-                    ctx.quadraticCurveTo(cx - W * 0.05, nephY + H * 0.02, cx - W * 0.045, nephY + H * 0.04);
-
-                    ctx.stroke();
-
-                    // Nephridiopore
-
-                    ctx.beginPath(); ctx.arc(cx - W * 0.045, nephY + H * 0.04, 1.5, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#84cc16'; ctx.fill();
-
-                  }
-
-                  ctx.font = '6px Inter, system-ui'; ctx.fillStyle = '#84cc16';
-
-                  ctx.fillText(t('stem.dissection.canvas_nephridia'), cx - W * 0.09, H * 0.35);
-
-                  ctx.fillText(t('stem.dissection.canvas_nephridiopores'), cx - W * 0.10, H * 0.37);
-
-                } else if (spec.bodyShape === 'pig') {
-
-                  ctx.strokeStyle = '#84cc16';
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(cx + W * 0.08, cy + H * 0.08); // kidney
-
-                  ctx.quadraticCurveTo(cx + W * 0.06, cy + H * 0.12, cx + W * 0.04, cy + H * 0.14); // ureter
-
-                  ctx.lineTo(cx, cy + H * 0.16); // bladder
-
-                  ctx.stroke();
-
-                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#84cc16';
-
-                  ctx.fillText(t('stem.dissection.canvas_kidney'), cx + W * 0.09, cy + H * 0.07);
-
-                  ctx.fillText(t('stem.dissection.canvas_ureter'), cx + W * 0.07, cy + H * 0.13);
-
-                  ctx.fillText(t('stem.dissection.canvas_bladder'), cx + W * 0.01, cy + H * 0.18);
-
-                }
-
-                ctx.setLineDash([]); ctx.lineDashOffset = 0;
-
-                ctx.globalAlpha = 1;
-
-              }
-
-              // Circulatory flow tracing overlay
-
-              if (d.traceCirculation && activeLayer === 'organs') {
-
-                ctx.setLineDash([5, 4]);
-
-                ctx.lineWidth = 2; ctx.globalAlpha = 0.6;
-
-                if (spec.bodyShape === 'frog') {
-
-                  // Heart → Arteries (red, oxygenated)
-
-                  ctx.lineDashOffset = -dissTick * 0.6;
-
-                  ctx.strokeStyle = '#ef4444';
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.12); // heart
-
-                  ctx.quadraticCurveTo(cx - W * 0.08, cy - H * 0.18, cx - W * 0.04, cy - H * 0.24); // carotid → head
-
-                  ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.12);
-
-                  ctx.quadraticCurveTo(cx + W * 0.05, cy - H * 0.05, cx + W * 0.03, cy + H * 0.06); // systemic → body
-
-                  ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.03, cy + H * 0.06);
-
-                  ctx.lineTo(cx + W * 0.12, cy + H * 0.30); // to legs
-
-                  ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.03, cy + H * 0.06);
-
-                  ctx.lineTo(cx - W * 0.12, cy + H * 0.30);
-
-                  ctx.stroke();
-
-                  // Veins (blue, deoxygenated) → back to heart
-
-                  ctx.lineDashOffset = dissTick * 0.6;
-
-                  ctx.strokeStyle = '#3b82f6';
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.12, cy + H * 0.32);
-
-                  ctx.quadraticCurveTo(cx - W * 0.06, cy + H * 0.15, cx - W * 0.02, cy - H * 0.10);
-
-                  ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.12, cy + H * 0.32);
-
-                  ctx.quadraticCurveTo(cx + W * 0.06, cy + H * 0.15, cx + W * 0.02, cy - H * 0.10);
-
-                  ctx.stroke();
-
-                  // Pulmonary loop
-
-                  ctx.strokeStyle = '#a855f7';
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.12);
-
-                  ctx.quadraticCurveTo(cx - W * 0.10, cy - H * 0.10, cx - W * 0.08, cy - H * 0.06);
-
-                  ctx.stroke();
-
-                  // Labels
-
-                  ctx.font = '7px Inter, system-ui';
-
-                  ctx.fillStyle = '#ef4444'; ctx.fillText(t('stem.dissection.canvas_arteries_o2'), cx - W * 0.12, cy - H * 0.20);
-
-                  ctx.fillStyle = '#3b82f6'; ctx.fillText(t('stem.dissection.canvas_veins_co2'), cx + W * 0.06, cy + H * 0.20);
-
-                  ctx.fillStyle = '#a855f7'; ctx.fillText(t('stem.dissection.canvas_pulmonary'), cx - W * 0.14, cy - H * 0.08);
-
-                  // Blood cell animation
-
-                  var bcT = (dissTick * 0.008) % 1;
-
-                  ctx.beginPath(); ctx.arc(cx + bcT * W * 0.15, cy - H * 0.12 + (bcT * H * 0.42), 3, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#ef4444'; ctx.fill();
-
-                } else if (spec.bodyShape === 'heart') {
-
-                  // Through chambers
-
-                  ctx.lineDashOffset = -dissTick * 0.5;
-
-                  ctx.strokeStyle = '#3b82f6'; // deoxygenated
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.15, cy - H * 0.25); // SVC
-
-                  ctx.lineTo(cx + W * 0.10, cy - H * 0.10); // RA
-
-                  ctx.lineTo(cx + W * 0.08, cy + H * 0.05); // RV
-
-                  ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.08, cy + H * 0.05);
-
-                  ctx.quadraticCurveTo(cx + W * 0.15, cy - H * 0.15, cx + W * 0.20, cy - H * 0.25); // pulmonary artery
-
-                  ctx.stroke();
-
-                  ctx.strokeStyle = '#ef4444'; // oxygenated
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.15, cy - H * 0.20); // pulmonary vein
-
-                  ctx.lineTo(cx - W * 0.10, cy - H * 0.10); // LA
-
-                  ctx.lineTo(cx - W * 0.08, cy + H * 0.05); // LV
-
-                  ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.08, cy + H * 0.05);
-
-                  ctx.quadraticCurveTo(cx - W * 0.15, cy, cx, cy - H * 0.28); // aorta
-
-                  ctx.stroke();
-
-                  ctx.font = '7px Inter, system-ui';
-
-                  ctx.fillStyle = '#3b82f6'; ctx.fillText(t('stem.dissection.canvas_svc'), cx + W * 0.16, cy - H * 0.26);
-
-                  ctx.fillText(t('stem.dissection.canvas_pulm_artery'), cx + W * 0.16, cy - H * 0.16);
-
-                  ctx.fillStyle = '#ef4444'; ctx.fillText(t('stem.dissection.canvas_pulm_vein'), cx - W * 0.20, cy - H * 0.22);
-
-                  ctx.fillText(t('stem.dissection.canvas_aorta'), cx - W * 0.04, cy - H * 0.30);
-
-                }
-
-                ctx.setLineDash([]); ctx.lineDashOffset = 0;
-
-                ctx.globalAlpha = 1;
-
-              }
-
-              // Respiratory flow tracing overlay
-
-              if (d.traceRespiration && activeLayer === 'organs') {
-
-                ctx.setLineDash([4, 5]);
-
-                ctx.lineDashOffset = -dissTick * 0.7;
-
-                ctx.lineWidth = 2; ctx.globalAlpha = 0.7;
-
-                if (spec.bodyShape === 'frog') {
-
-                  ctx.strokeStyle = '#38bdf8';
-
-                  // Air path: nares → glottis → lungs
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(cx, cy - H * 0.28); // nostrils
-
-                  ctx.lineTo(cx, cy - H * 0.20); // pharynx
-
-                  ctx.lineTo(cx, cy - H * 0.15); // glottis
-
-                  ctx.stroke();
-
-                  // Left lung
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.15);
-
-                  ctx.quadraticCurveTo(cx - W * 0.06, cy - H * 0.12, cx - W * 0.08, cy - H * 0.06);
-
-                  ctx.stroke();
-
-                  // Right lung
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.15);
-
-                  ctx.quadraticCurveTo(cx + W * 0.06, cy - H * 0.12, cx + W * 0.08, cy - H * 0.06);
-
-                  ctx.stroke();
-
-                  // Air particles animation
-
-                  for (var ap = 0; ap < 5; ap++) {
-
-                    var apT = ((dissTick * 0.01 + ap * 0.2) % 1);
-
-                    var apY = cy - H * 0.28 + apT * H * 0.22;
-
-                    ctx.beginPath(); ctx.arc(cx + Math.sin(apT * 8) * W * 0.01, apY, 2, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#38bdf8'; ctx.fill();
-
-                  }
-
-                  // O2/CO2 labels
-
-                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#38bdf8';
-
-                  ctx.fillText(t('stem.dissection.canvas_o2_in'), cx + W * 0.02, cy - H * 0.26);
-
-                  ctx.fillStyle = '#ef4444';
-
-                  ctx.fillText(t('stem.dissection.canvas_co2_out'), cx + W * 0.02, cy - H * 0.24);
-
-                  // Cutaneous respiration note
-
-                  ctx.fillStyle = 'rgba(56,189,248,0.4)'; ctx.font = '6px Inter, system-ui';
-
-                  ctx.fillText(t('stem.dissection.canvas_cutaneous'), cx + W * 0.10, cy + H * 0.05);
-
-                } else if (spec.bodyShape === 'pig') {
-
-                  ctx.strokeStyle = '#38bdf8';
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(cx - W * 0.32, cy - H * 0.01); // nostrils
-
-                  ctx.lineTo(cx - W * 0.20, cy - H * 0.02); // trachea
-
-                  ctx.stroke();
-
-                  // Bronchi split
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.20, cy - H * 0.02);
-
-                  ctx.quadraticCurveTo(cx - W * 0.12, cy - H * 0.06, cx - W * 0.06, cy - H * 0.08);
-
-                  ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.20, cy - H * 0.02);
-
-                  ctx.quadraticCurveTo(cx - W * 0.12, cy + H * 0.02, cx - W * 0.06, cy + H * 0.02);
-
-                  ctx.stroke();
-
-                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#38bdf8';
-
-                  ctx.fillText(t('stem.dissection.canvas_trachea'), cx - W * 0.22, cy - H * 0.05);
-
-                  ctx.fillText(t('stem.dissection.canvas_l_bronchus'), cx - W * 0.10, cy - H * 0.10);
-
-                  ctx.fillText(t('stem.dissection.canvas_r_bronchus'), cx - W * 0.10, cy + H * 0.05);
-
-                } else if (spec.bodyShape === 'fish') {
-
-                  ctx.strokeStyle = '#38bdf8';
-
-                  // Water flow through gills
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.35, cy); // mouth intake
-
-                  ctx.lineTo(cx - W * 0.22, cy); // through pharynx
-
-                  ctx.stroke();
-
-                  // Through gills and out operculum
-
-                  for (var gf = 0; gf < 3; gf++) {
-
-                    ctx.beginPath(); ctx.moveTo(cx - W * 0.22, cy - H * 0.02 + gf * H * 0.02);
-
-                    ctx.lineTo(cx - W * 0.28, cy - H * 0.03 + gf * H * 0.02);
-
-                    ctx.stroke();
-
-                  }
-
-                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#38bdf8';
-
-                  ctx.fillText(t('stem.dissection.canvas_water_in'), cx - W * 0.38, cy - H * 0.02);
-
-                  ctx.fillText(t('stem.dissection.canvas_o2_exchange'), cx - W * 0.26, cy - H * 0.06);
-
-                  ctx.fillText(t('stem.dissection.canvas_water_out'), cx - W * 0.30, cy + H * 0.06);
-
-                }
-
-                ctx.setLineDash([]); ctx.lineDashOffset = 0;
-
-                ctx.globalAlpha = 1;
-
-              }
-
-              // Digestive tract tracing overlay
-
-              if (d.traceDigestion && activeLayer === 'organs') {
-
-                ctx.setLineDash([6, 4]);
-
-                ctx.lineDashOffset = -dissTick * 0.6;
-
-                ctx.lineWidth = 2.5; ctx.globalAlpha = 0.7;
-
-                if (spec.bodyShape === 'frog') {
-
-                  ctx.strokeStyle = '#f59e0b';
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(cx, cy - H * 0.26); // mouth
-
-                  ctx.lineTo(cx, cy - H * 0.18); // esophagus
-
-                  ctx.quadraticCurveTo(cx + W * 0.02, cy - H * 0.12, cx + W * 0.04, cy - H * 0.05); // stomach
-
-                  ctx.quadraticCurveTo(cx + W * 0.06, cy + H * 0.02, cx + W * 0.03, cy + H * 0.05); // duodenum
-
-                  ctx.quadraticCurveTo(cx - W * 0.02, cy + H * 0.10, cx, cy + H * 0.14); // intestines
-
-                  ctx.quadraticCurveTo(cx + W * 0.03, cy + H * 0.18, cx, cy + H * 0.22); // large intestine
-
-                  ctx.stroke();
-
-                  // Food bolus moving along path
-
-                  var foodT = (dissTick * 0.005) % 1;
-
-                  var foodY = cy - H * 0.26 + foodT * H * 0.48;
-
-                  ctx.beginPath(); ctx.arc(cx + Math.sin(foodT * 10) * W * 0.02, foodY, 4, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#92400e'; ctx.fill();
-
-                  ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1; ctx.stroke();
-
-                  // Labels
-
-                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#f59e0b';
-
-                  ctx.fillText(t('stem.dissection.canvas_mouth'), cx + W * 0.02, cy - H * 0.27);
-
-                  ctx.fillText(t('stem.dissection.canvas_esophagus'), cx + W * 0.04, cy - H * 0.17);
-
-                  ctx.fillText(t('stem.dissection.canvas_stomach'), cx + W * 0.07, cy - H * 0.06);
-
-                  ctx.fillText(t('stem.dissection.canvas_sm_intestine'), cx + W * 0.06, cy + H * 0.08);
-
-                  ctx.fillText(t('stem.dissection.canvas_lg_intestine'), cx + W * 0.04, cy + H * 0.18);
-
-                  ctx.fillText(t('stem.dissection.canvas_cloaca'), cx + W * 0.02, cy + H * 0.23);
-
-                } else if (spec.bodyShape === 'worm') {
-
-                  ctx.strokeStyle = '#f59e0b';
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(cx, H * 0.06); // mouth
-
-                  ctx.lineTo(cx, H * 0.10); // pharynx
-
-                  ctx.lineTo(cx, H * 0.28); // crop
-
-                  ctx.lineTo(cx, H * 0.33); // gizzard
-
-                  ctx.lineTo(cx, H * 0.88); // intestine
-
-                  ctx.lineTo(cx, H * 0.94); // anus
-
-                  ctx.stroke();
-
-                  var wFoodT = (dissTick * 0.003) % 1;
-
-                  var wFoodY = H * 0.06 + wFoodT * H * 0.88;
-
-                  ctx.beginPath(); ctx.arc(cx, wFoodY, 3, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#92400e'; ctx.fill();
-
-                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#f59e0b';
-
-                  ctx.fillText(t('stem.dissection.canvas_mouth'), cx + W * 0.05, H * 0.065);
-
-                  ctx.fillText(t('stem.dissection.canvas_pharynx'), cx + W * 0.05, H * 0.11);
-
-                  ctx.fillText(t('stem.dissection.canvas_crop'), cx + W * 0.05, H * 0.29);
-
-                  ctx.fillText(t('stem.dissection.canvas_gizzard'), cx + W * 0.05, H * 0.34);
-
-                  ctx.fillText(t('stem.dissection.canvas_intestine'), cx + W * 0.05, H * 0.60);
-
-                  ctx.fillText(t('stem.dissection.canvas_anus'), cx + W * 0.05, H * 0.945);
-
-                } else if (spec.bodyShape === 'pig') {
-
-                  ctx.strokeStyle = '#f59e0b';
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(cx - W * 0.30, cy); // mouth
-
-                  ctx.lineTo(cx - W * 0.20, cy); // esophagus
-
-                  ctx.quadraticCurveTo(cx - W * 0.05, cy - H * 0.02, cx, cy + H * 0.02); // stomach
-
-                  ctx.quadraticCurveTo(cx + W * 0.08, cy + H * 0.06, cx + W * 0.10, cy + H * 0.10); // intestines
-
-                  ctx.quadraticCurveTo(cx + W * 0.12, cy + H * 0.14, cx + W * 0.16, cy + H * 0.12); // rectum
-
-                  ctx.stroke();
-
-                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#f59e0b';
-
-                  ctx.fillText(t('stem.dissection.canvas_mouth'), cx - W * 0.33, cy - H * 0.02);
-
-                  ctx.fillText(t('stem.dissection.canvas_esophagus'), cx - W * 0.18, cy - H * 0.03);
-
-                  ctx.fillText(t('stem.dissection.canvas_stomach'), cx + W * 0.02, cy - H * 0.01);
-
-                  ctx.fillText(t('stem.dissection.canvas_intestines'), cx + W * 0.09, cy + H * 0.13);
-
-                } else if (spec.bodyShape === 'fish') {
-
-                  ctx.strokeStyle = '#f59e0b';
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(cx - W * 0.32, cy); // mouth
-
-                  ctx.lineTo(cx - W * 0.18, cy); // pharynx
-
-                  ctx.quadraticCurveTo(cx - W * 0.08, cy + H * 0.02, cx, cy + H * 0.03); // stomach
-
-                  ctx.lineTo(cx + W * 0.10, cy + H * 0.02); // pyloric caeca
-
-                  ctx.lineTo(cx + W * 0.20, cy + H * 0.04); // intestine
-
-                  ctx.stroke();
-
-                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#f59e0b';
-
-                  ctx.fillText(t('stem.dissection.canvas_mouth'), cx - W * 0.35, cy - H * 0.02);
-
-                  ctx.fillText(t('stem.dissection.canvas_stomach'), cx - W * 0.04, cy + H * 0.06);
-
-                  ctx.fillText(t('stem.dissection.canvas_intestine'), cx + W * 0.12, cy + H * 0.07);
-
-                }
-
-                ctx.setLineDash([]); ctx.lineDashOffset = 0;
-
-                ctx.globalAlpha = 1;
-
-              }
-
-              // Cross-section indicators
-
-              if (activeLayer === 'organs' && (spec.bodyShape === 'frog' || spec.bodyShape === 'pig' || spec.bodyShape === 'fish')) {
-
-                ctx.globalAlpha = 0.15; ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 0.5; ctx.setLineDash([4, 6]);
-
-                // Transverse section lines
-
-                var sectionYs = spec.bodyShape === 'frog' ? [cy - H * 0.12, cy, cy + H * 0.10] :
-
-                  spec.bodyShape === 'pig' ? [cy - H * 0.06, cy + H * 0.04] :
-
-                    [cy - H * 0.04, cy + H * 0.04];
-
-                sectionYs.forEach(function (sy, si) {
-
-                  ctx.beginPath(); ctx.moveTo(10, sy); ctx.lineTo(W - 10, sy); ctx.stroke();
-
-                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = 'rgba(148,163,184,0.3)';
-
-                  ctx.fillText(t('stem.dissection.section') + ' ' + String.fromCharCode(65 + si), 12, sy - 3);
-
-                });
-
-                ctx.setLineDash([]); ctx.globalAlpha = 1;
-
-              }
-
-              // Dissection tray corner labels
-
-              ctx.font = '7px Inter, system-ui';
-
-              ctx.fillStyle = 'rgba(100,116,139,0.3)';
-
-              ctx.fillText(t('stem.dissection.anterior'), W / 2 - 20, 14);
-
-              ctx.fillText(t('stem.dissection.posterior'), W / 2 - 20, H - 4);
-
-              ctx.save(); ctx.translate(8, H / 2 + 10); ctx.rotate(-Math.PI / 2);
-
-              ctx.fillText(t('stem.dissection.left_dir'), 0, 0); ctx.restore();
-
-              ctx.save(); ctx.translate(W - 4, H / 2 - 10); ctx.rotate(Math.PI / 2);
-
-              ctx.fillText(t('stem.dissection.right_dir'), 0, 0); ctx.restore();
-
-              // Specimen label
-
-              ctx.font = '11px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)';
-
-              ctx.fillText(spec.icon + ' ' + spec.name + (d.viewAngle === 'dorsal' ? '  ' + t('stem.dissection.dorsal_view') : '  ' + t('stem.dissection.ventral_view')), 14, 20);
-
-              // System color legend (top-right)
-
-              var legendSys = ['circulatory', 'digestive', 'respiratory', 'nervous', 'skeletal', 'muscular', 'excretory', 'reproductive'];
-
-              var legendLabels = [t('stem.dissection.legend_circ'), t('stem.dissection.legend_dig'), t('stem.dissection.legend_resp'), t('stem.dissection.legend_nerv'), t('stem.dissection.legend_skel'), t('stem.dissection.legend_musc'), t('stem.dissection.legend_excr'), t('stem.dissection.legend_repr')];
-
-              ctx.font = '7px Inter, system-ui';
-
-              for (var li = 0; li < legendSys.length; li++) {
-
-                var lx = W - 58, ly = 50 + li * 12;
-
-                ctx.beginPath(); ctx.arc(lx, ly, 3, 0, Math.PI * 2);
-
-                ctx.fillStyle = sysColors[legendSys[li]]; ctx.fill();
-
-                ctx.fillStyle = 'rgba(255,255,255,0.4)';
-
-                ctx.fillText(legendLabels[li], lx + 6, ly + 3);
-
-              }
-
-              // Progress bar at top
-
-              if (totalOrgansInSpecimen > 0) {
-
-                var barW = W - 28;
-
-                ctx.fillStyle = 'rgba(30,41,59,0.6)';
-
-                ctx.fillRect(14, 28, barW, 4);
-
-                ctx.fillStyle = progressPct >= 100 ? '#22c55e' : '#3b82f6';
-
-                ctx.fillRect(14, 28, barW * (progressPct / 100), 4);
-
-                ctx.font = '9px Inter, system-ui, sans-serif';
-
-                ctx.fillStyle = 'rgba(255,255,255,0.35)';
-
-                ctx.fillText(t('stem.dissection.explored_count_bar').replace('{count}', exploredCount).replace('{total}', totalOrgansInSpecimen).replace('{pct}', progressPct), 14, 42);
-
-              }
-
-              // Hover tooltip
-
-              var hovOrg = d.hoveredOrgan ? organs.find(function (o) { return o.id === d.hoveredOrgan; }) : null;
-
-              if (hovOrg && d.selectedOrgan !== hovOrg.id) {
-
-                var hpx = hovOrg.x * W, hpy = hovOrg.y * H;
-
-                var hText = hovOrg.name + ': ' + hovOrg.fn.split('.')[0] + '.';
-
-                ctx.font = '10px Inter, system-ui, sans-serif';
-
-                var hLines = [];
-
-                var words = hText.split(' ');
-
-                var line = '';
-
-                for (var wi = 0; wi < words.length; wi++) {
-
-                  var testLine = line + words[wi] + ' ';
-
-                  if (ctx.measureText(testLine).width > 180 && line) { hLines.push(line.trim()); line = words[wi] + ' '; }
-
-                  else { line = testLine; }
-
-                }
-
-                if (line.trim()) hLines.push(line.trim());
-
-                if (hLines.length > 3) hLines = hLines.slice(0, 3);
-
-                var hBoxH = hLines.length * 14 + 10;
-
-                var hBoxW = 196;
-
-                var hbx = Math.min(hpx + 20, W - hBoxW - 10);
-
-                var hby = Math.max(hpy - hBoxH - 10, 50);
-
-                ctx.fillStyle = 'rgba(15,23,42,0.92)';
-
-                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(hbx, hby, hBoxW, hBoxH, 6); ctx.fill(); } else { ctx.fillRect(hbx, hby, hBoxW, hBoxH); }
-
-                ctx.strokeStyle = 'rgba(59,130,246,0.4)'; ctx.lineWidth = 1; ctx.stroke();
-
-                ctx.fillStyle = '#e2e8f0';
-
-                for (var hi = 0; hi < hLines.length; hi++) {
-
-                  ctx.fillText(hLines[hi], hbx + 8, hby + 16 + hi * 14);
-
-                }
-
-              }
-
-              // Guided walkthrough prompt
-
-              if (guidedMode && currentGuided) {
-
-                ctx.fillStyle = 'rgba(147,51,234,0.85)';
-
-                var gpW = W - 28;
-
-                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(14, H - 50, gpW, 32, 6); ctx.fill(); } else { ctx.fillRect(14, H - 50, gpW, 32); }
-
-                ctx.font = 'bold 11px Inter, system-ui, sans-serif';
-
-                ctx.fillStyle = '#ffffff';
-
-                ctx.fillText(currentGuided.prompt, 22, H - 30);
-
-                // Highlight guided organ with arrow
-
-                var gOrg = organs.find(function (o) { return o.id === currentGuided.organId; });
-
-                if (gOrg) {
-
-                  var gx = gOrg.x * W, gy = gOrg.y * H;
-
-                  ctx.beginPath(); ctx.arc(gx, gy, 16 + Math.sin(dissTick * 0.08) * 3, 0, Math.PI * 2);
-
-                  ctx.strokeStyle = 'rgba(147,51,234,0.7)'; ctx.lineWidth = 2.5; ctx.setLineDash([4, 3]); ctx.stroke(); ctx.setLineDash([]);
-
-                }
-
-              }
-
-
-
-              ctx.restore(); // End zoom transform
-
-              } catch (e) { console.error('[DissectionLab] render error:', e); try { ctx.restore(); ctx.restore(); } catch (_) {} }
-
-              canvas._dissAnim = requestAnimationFrame(drawDissectionFrame);
-
-            }
-
-            drawDissectionFrame();
-
-          };
-
-
-
-          // Auto-save progress to localStorage (non-hook: inline during render)
-
-          try {
-
-            var saveKey = 'dissection_progress_' + (spec ? spec.id : '');
-
-            var saveData = {
-
-              exploredOrgans: d.exploredOrgans || {},
-
-              quizScore: d.quizScore || 0,
-
-              completedObjectives: d.completedObjectives || {},
-
-              currentLayerIdx: d.currentDissLayer || 0,
-
-              timeSpent: d.timeSpent || 0
-
-            };
-
-            localStorage.setItem(saveKey, JSON.stringify(saveData));
-
-          } catch (e) { }
-
-          // Load progress (non-hook: deferred to avoid setState-during-render)
-
-          if (!d._dissLoadedSpec || d._dissLoadedSpec !== (spec ? spec.id : '')) {
-
-            setTimeout(function () {
-
-              var saveKey2 = 'dissection_progress_' + (spec ? spec.id : '');
-
-              try {
-
-                var saved = localStorage.getItem(saveKey2);
-
-                if (saved) {
-
-                  var data = JSON.parse(saved);
-
-                  if (data.exploredOrgans) upd('exploredOrgans', data.exploredOrgans);
-
-                  if (data.quizScore) upd('quizScore', data.quizScore);
-
-                  if (data.completedObjectives) upd('completedObjectives', data.completedObjectives);
-
-                }
-
-              } catch (e) { }
-
-              upd('_dissLoadedSpec', spec ? spec.id : '');
-
-            }, 0);
-
-          }
-
-          // Keyboard shortcuts (non-hook: window global ref for cleanup)
-
-          window._dissectionKeyHandler = function (e) {
-
-            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-
-              var oi = organs.findIndex(function (o) { return o.id === d.selectedOrgan; });
-
-              if (oi < organs.length - 1) upd('selectedOrgan', organs[oi + 1].id);
-
-            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-
-              var oi2 = organs.findIndex(function (o) { return o.id === d.selectedOrgan; });
-
-              if (oi2 > 0) upd('selectedOrgan', organs[oi2 - 1].id);
-
-            } else if (e.key === 'Escape') {
-
-              upd('selectedOrgan', null);
-
-            } else if (e.key === 'r' || e.key === 'R') {
-
-              upd('canvasZoom', 1); upd('canvasPanX', 0); upd('canvasPanY', 0);
-
-            }
-
-          };
-
-          if (!window._dissectionKeyBound) {
-
-            window._dissectionKeyBound = true;
-
-            window.addEventListener('keydown', function (e) { if (window._dissectionKeyHandler) window._dissectionKeyHandler(e); });
-
-          }
-
-
-
-          // Simple sound effects via Web Audio API
-
-          var audioCtx = null;
-
-          function playDissectSound(type) {
-
-            try {
-
-              if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-              var osc = audioCtx.createOscillator();
-
-              var gain = audioCtx.createGain();
-
-              osc.connect(gain); gain.connect(audioCtx.destination);
-
-              gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-
-              if (type === 'pin') { osc.frequency.setValueAtTime(880, audioCtx.currentTime); osc.type = 'sine'; gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1); osc.start(); osc.stop(audioCtx.currentTime + 0.1); }
-
-              else if (type === 'peel') { osc.frequency.setValueAtTime(220, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(440, audioCtx.currentTime + 0.2); osc.type = 'sawtooth'; gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25); osc.start(); osc.stop(audioCtx.currentTime + 0.25); }
-
-              else if (type === 'success') { osc.frequency.setValueAtTime(523, audioCtx.currentTime); osc.type = 'sine'; gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15); osc.start(); osc.stop(audioCtx.currentTime + 0.15); var osc2 = audioCtx.createOscillator(); var g2 = audioCtx.createGain(); osc2.connect(g2); g2.connect(audioCtx.destination); g2.gain.setValueAtTime(0.05, audioCtx.currentTime + 0.12); osc2.frequency.setValueAtTime(659, audioCtx.currentTime + 0.12); osc2.type = 'sine'; g2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); osc2.start(audioCtx.currentTime + 0.12); osc2.stop(audioCtx.currentTime + 0.3); }
-
-            } catch (e) { }
-
-          }
-
-
-
-          var canvasClick = function (e) {
-
-            if (e.target._wasPanning) { e.target._wasPanning = false; return; }
-
-            var canvas = e.target; var rect = canvas.getBoundingClientRect();
-
-            var rawX = (e.clientX - rect.left) / rect.width, rawY = (e.clientY - rect.top) / rect.height;
-
-            // Inverse-transform for zoom + pan
-
-            var _z = d.canvasZoom || 1, _px = d.canvasPanX || 0, _py = d.canvasPanY || 0;
-
-            var mx = (rawX - 0.5 - _px / rect.width) / _z + 0.5;
-
-            var my = (rawY - 0.5 - _py / rect.height) / _z + 0.5;
-
-            var hit = null;
-
-            organs.forEach(function (org) { var dx = mx - org.x, dy = my - org.y; if (Math.sqrt(dx * dx + dy * dy) < 0.04) hit = org; });
-
-            upd('selectedOrgan', hit ? (hit.id === d.selectedOrgan ? null : hit.id) : null);
-
-            if (hit) playDissectSound('pin');
-
-            // Annotation mode: add to drawing
-
-            if (d.annotateMode) {
-
-              var annots = d.annotations || [];
-
-              annots.push({ x: mx, y: my, type: 'dot' });
-
-              upd('annotations', annots);
-
-              if (annots.length > 1) {
-
-                // Connect to previous dot
-
-                annots[annots.length - 1].prevX = annots[annots.length - 2].x;
-
-                annots[annots.length - 1].prevY = annots[annots.length - 2].y;
-
-                upd('annotations', annots.slice());
-
-              }
-
-            }
-
-            // Ruler mode: set start/end points
-
-            if (d.rulerMode) {
-
-              if (!d.rulerStart || d.rulerEnd) {
-
-                upd('rulerStart', { x: mx, y: my });
-
-                upd('rulerEnd', null);
-
-              } else {
-
-                upd('rulerEnd', { x: mx, y: my });
-
-              }
-
-            }
-
-            // Track explored organs for progress
-
-            if (hit) {
-
-              var explored = Object.assign({}, d.exploredOrgans || {});
-
-              explored[specimen + '|' + hit.id] = true;
-
-              upd('exploredOrgans', explored);
-
-              // Advance guided walkthrough if correct organ clicked
-
-              if (guidedMode && currentGuided && hit.id === currentGuided.organId) {
-
-                upd('guidedStep', guidedStep + 1);
-
-                awardStemXP('dissection', 2, 'Found ' + hit.name + ' in guided tour');
-
-                if (addToast) addToast('\uD83D\uDCCD ' + t('stem.dissection.found_organ').replace('{name}', hit.name), 'success');
-
-                if (guidedStep + 1 >= guidedSteps.length) {
-
-                  upd('guidedMode', false);
-
-                  awardStemXP('dissection', 10, 'Completed guided tour');
-
-                  if (addToast) addToast('\uD83C\uDF89 ' + t('stem.dissection.tour_complete'), 'success');
-
-                }
-
-              }
-
-            }
-
-          };
-
-
-
-          // Hover handler for canvas tooltips
-
-          var canvasHover = function (e) {
-
-            var canvas = e.target; var rect = canvas.getBoundingClientRect();
-
-            var rawX = (e.clientX - rect.left) / rect.width, rawY = (e.clientY - rect.top) / rect.height;
-
-            // Inverse-transform for zoom + pan
-
-            var _z = d.canvasZoom || 1, _px = d.canvasPanX || 0, _py = d.canvasPanY || 0;
-
-            var mx = (rawX - 0.5 - _px / rect.width) / _z + 0.5;
-
-            var my = (rawY - 0.5 - _py / rect.height) / _z + 0.5;
-
-            var hit = null;
-
-            organs.forEach(function (org) { var dx = mx - org.x, dy = my - org.y; if (Math.sqrt(dx * dx + dy * dy) < 0.04) hit = org; });
-
-            upd('hoveredOrgan', hit ? hit.id : null);
-
-            canvas.style.cursor = hit ? 'pointer' : (canvas._isPanning ? 'grabbing' : ((d.canvasZoom || 1) > 1 ? 'grab' : 'crosshair'));
-
-          };
-
-
-
-          // Progress calculation
-
-          var exploredOrgans = d.exploredOrgans || {};
-
-          var totalOrgansInSpecimen = 0;
-
-          var exploredCount = 0;
-
-          spec.layers.forEach(function (layer) {
-
-            var layerOrgans = spec.organs[layer.id] || [];
-
-            totalOrgansInSpecimen += layerOrgans.length;
-
-            layerOrgans.forEach(function (org) {
-
-              if (exploredOrgans[specimen + '|' + org.id]) exploredCount++;
-
-            });
-
-          });
-
-          var progressPct = totalOrgansInSpecimen > 0 ? Math.round((exploredCount / totalOrgansInSpecimen) * 100) : 0;
-
-
-
-          // Guided walkthrough data
-
-          var guidedSteps = organs.map(function (org, i) {
-
-            return { organId: org.id, name: org.name, prompt: t('stem.dissection.guided_prompt').replace('{step}', i + 1).replace('{total}', organs.length).replace('{name}', org.name) };
-
-          });
-
-          var currentGuided = guidedMode && guidedSteps[guidedStep % guidedSteps.length];
-
-
-
-          var SPEC_KEYS = Object.keys(SPECIMENS);
-
-
-
-
-
-          // ── Render ──
-
-          return React.createElement("div", { className: "space-y-3 max-h-[calc(100vh-180px)] overflow-y-auto pr-1" },
-
-            // Header
-
-            React.createElement("div", { className: "flex items-center gap-3 mb-1" },
-
-              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "text-lg hover:scale-110 transition-transform", 'aria-label': 'Back' }, "\u2B05"),
-
-              React.createElement("div", null,
-
-                React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, '\uD83D\uDD2C ' + t('stem.dissection.title')),
-
-                React.createElement("p", { className: "text-xs text-slate-500" }, spec.icon + ' ' + spec.name),
-
-                React.createElement("p", { className: "text-[9px] text-slate-400 mt-0.5" }, '\uD83D\uDD0E ' + t('stem.dissection.scroll_zoom_hint')),
-
-                React.createElement("div", { className: "flex gap-1 mt-0.5" },
-
-                  React.createElement("span", {
-
-                    className: "text-[9px] px-1.5 py-0.5 rounded-full " +
-
-                      (totalOrgansInSpecimen > 30 ? 'bg-red-100 text-red-600' :
-
-                        totalOrgansInSpecimen > 18 ? 'bg-amber-100 text-amber-600' :
-
-                          'bg-green-100 text-green-600')
-
-                  }, totalOrgansInSpecimen > 30 ? '\uD83D\uDD34 ' + t('stem.dissection.advanced') : totalOrgansInSpecimen > 18 ? '\uD83D\uDFE1 ' + t('stem.dissection.intermediate') : '\uD83D\uDFE2 ' + t('stem.dissection.beginner')),
-
-                  React.createElement("span", { className: "text-[9px] text-slate-400" }, totalOrgansInSpecimen + ' structures \u2022 ' + spec.layers.length + ' layers'),
-
-                  React.createElement("span", { className: "text-[8px] text-slate-300 ml-1" }, t('stem.dissection.keyboard_hint'))
-
-                )
-
-              ),
-
-              React.createElement("div", { className: "ml-auto flex gap-2" },
-
-                React.createElement("button", {
-
-                  onClick: function () { upd('guidedMode', !guidedMode); upd('guidedStep', 0); },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (guidedMode ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700')
-
-                }, guidedMode ? '\u23F9 ' + t('stem.dissection.end_tour') : '\uD83D\uDCCD ' + t('stem.dissection.tour')),
-
-                React.createElement("button", {
-
-                  onClick: function () { upd('compareMode', !d.compareMode); },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.compareMode ? 'bg-cyan-600 text-white' : 'bg-cyan-100 text-cyan-700')
-
-                }, d.compareMode ? '\u23F9 ' + t('stem.dissection.end_compare') : '\uD83D\uDD0D ' + t('stem.dissection.compare')),
-
-                React.createElement("button", {
-
-                  onClick: function () { upd('labelMode', d.labelMode === 'hidden' ? 'show' : 'hidden'); },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.labelMode === 'hidden' ? 'bg-rose-600 text-white' : 'bg-rose-100 text-rose-700')
-
-                }, d.labelMode === 'hidden' ? '\uD83D\uDC41 ' + t('stem.dissection.show_labels') : '\uD83C\uDFF7 ' + t('stem.dissection.hide_labels')),
-
-                React.createElement("button", {
-
-                  onClick: function () {
-
-                    var el = document.getElementById('dissection-lab-canvas');
-
-                    if (el && el.requestFullscreen) el.requestFullscreen();
-
-                  },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700"
-
-                }, '\u26F6 ' + t('stem.dissection.full')),
-
-                React.createElement("button", {
-
-                  onClick: function () {
-
-                    var speeds = [0.5, 1, 2, 3];
-
-                    var si = speeds.indexOf(d.animSpeed || 1);
-
-                    upd('animSpeed', speeds[(si + 1) % 4]);
-
-                  },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700"
-
-                }, '\u23E9 ' + (d.animSpeed || 1) + 'x'),
-
-                React.createElement("button", {
-
-                  onClick: function () {
-
-                    upd('printMode', !d.printMode);
-
-                    if (!d.printMode) { upd('annotations', []); upd('rulerStart', null); upd('rulerEnd', null); }
-
-                  },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.printMode ? 'bg-slate-600 text-white' : 'bg-slate-100 text-slate-700')
-
-                }, d.printMode ? '\u23F9 ' + t('stem.dissection.normal') : '\uD83D\uDDA8 ' + t('stem.dissection.clean')),
-
-                spec.bodyShape !== 'eye' && spec.bodyShape !== 'heart' && React.createElement("button", {
-
-                  onClick: function () { upd('viewAngle', d.viewAngle === 'dorsal' ? 'ventral' : 'dorsal'); },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.viewAngle === 'dorsal' ? 'bg-teal-600 text-white' : 'bg-teal-100 text-teal-700')
-
-                }, d.viewAngle === 'dorsal' ? '\uD83D\uDD04 ' + t('stem.dissection.dorsal') : '\uD83D\uDD04 ' + t('stem.dissection.ventral')),
-
-                React.createElement("button", {
-
-                  onClick: function () { upd('quizMode', !d.quizMode); if (!d.quizMode) { upd('quizIdx', 0); upd('quizScore', 0); upd('quizTotal', 0); upd('quizFeedback', null); } },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quizMode ? 'bg-amber-600 text-white' : 'bg-amber-100 text-amber-700')
-
-                }, d.quizMode ? '\u23F9 ' + t('stem.dissection.end_quiz') : '\uD83E\uDDE0 ' + t('stem.dissection.quiz')),
-
-                React.createElement("button", {
-
-                  onClick: function () { upd('rulerMode', !d.rulerMode); upd('annotateMode', false); },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.rulerMode ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700')
-
-                }, d.rulerMode ? '\uD83D\uDCCF ' + t('stem.dissection.ruler_on') : '\uD83D\uDCCF ' + t('stem.dissection.ruler')),
-
-                React.createElement("button", {
-
-                  onClick: function () { upd('annotateMode', !d.annotateMode); upd('rulerMode', false); },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.annotateMode ? 'bg-pink-500 text-white' : 'bg-pink-100 text-pink-700')
-
-                }, d.annotateMode ? '\u270F\uFE0F ' + t('stem.dissection.drawing') : '\u270F\uFE0F ' + t('stem.dissection.draw')),
-
-                React.createElement("button", {
-
-                  onClick: function () {
-
-                    var canvas = canvasRef.current;
-
-                    if (canvas) {
-
-                      var link = document.createElement('a');
-
-                      link.download = spec.name.replace(/[^a-zA-Z0-9]/g, '_') + '_dissection.png';
-
-                      link.href = canvas.toDataURL('image/png');
-
-                      link.click();
-
-                      if (addToast) addToast('\uD83D\uDCF7 ' + t('stem.dissection.screenshot_saved'), 'success');
-
-                    }
-
-                  },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-100 text-blue-700"
-
-                }, '\uD83D\uDCF7 ' + t('stem.dissection.save')),
-
-                React.createElement("button", {
-
-                  onClick: function () {
-
-                    // Generate lab report
-
-                    var report = '\uD83D\uDD2C ' + t('stem.dissection.lab_report_title') + '\n';
-
-                    report += '========================\n';
-
-                    report += t('stem.dissection.specimen_label') + ': ' + spec.icon + ' ' + spec.name + '\n';
-
-                    report += t('stem.dissection.date_label') + ': ' + new Date().toLocaleDateString() + '\n\n';
-
-                    var explored = d.exploredOrgans || {};
-
-                    spec.layers.forEach(function (layer) {
-
-                      var layerOrgans = spec.organs[layer.id] || [];
-
-                      var examined = layerOrgans.filter(function (o) { return explored[specimen + '|' + o.id]; });
-
-                      if (examined.length > 0) {
-
-                        report += layer.icon + ' ' + layer.name.toUpperCase() + ' (' + examined.length + '/' + layerOrgans.length + ')\n';
-
-                        report += '---\n';
-
-                        examined.forEach(function (o) {
-
-                          report += '\u2022 ' + o.name + ': ' + o.fn.split('.')[0] + '.\n';
-
-                        });
-
-                        report += '\n';
-
-                      }
-
-                    });
-
-                    report += '\n' + t('stem.dissection.progress_label') + ': ' + exploredCount + '/' + totalOrgansInSpecimen + ' structures (' + progressPct + '%)\n';
-
-                    report += t('stem.dissection.quiz_score_label') + ': ' + (d.quizScore || 0) + '/' + (d.quizTotal || 0) + '\n';
-
-                    // Copy to clipboard
-
-                    if (navigator.clipboard) { navigator.clipboard.writeText(report); }
-
-                    if (addToast) addToast('\uD83D\uDCCB ' + t('stem.dissection.report_copied'), 'success');
-
-                  },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700"
-
-                }, '\uD83D\uDCCB ' + t('stem.dissection.report')),
-
-                React.createElement("button", {
-
-                  onClick: function () { upd('revealedLayers', {}); upd('activeLayer', (spec.layers[0] || {}).id || 'skin'); upd('selectedOrgan', null); },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700"
-
-                }, '\uD83D\uDD04 ' + t('stem.dissection.reset')),
-
-                React.createElement("button", {
-
-                  onClick: function () { upd('highContrast', !d.highContrast); },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.highContrast ? 'bg-yellow-500 text-black' : 'bg-slate-100 text-slate-700'),
-
-                  'aria-label': 'Toggle high contrast mode'
-
-                }, d.highContrast ? '\u2600 HC' : '\u2600 HC'),
-
-                React.createElement("button", {
-
-                  onClick: function () {
-
-                    upd('flashcardMode', !d.flashcardMode);
-
-                    if (!d.flashcardMode) {
-
-                      upd('flashcardIdx', 0);
-
-                      upd('flashcardFlipped', false);
-
-                    }
-
-                  },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.flashcardMode ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700')
-
-                }, d.flashcardMode ? '\u23F9 ' + t('stem.dissection.end_cards') : '\uD83D\uDCDD ' + t('stem.dissection.cards')),
-
-                React.createElement("button", {
-
-                  onClick: function () {
-
-                    if (!d.practicalMode) {
-
-                      upd('practicalMode', true);
-
-                      upd('practicalTimer', 120); // 2 minutes
-
-                      upd('practicalScore', 0);
-
-                      upd('practicalTotal', 0);
-
-                      upd('labelMode', 'hidden');
-
-                      upd('quizMode', true);
-
-                      upd('quizIdx', 0);
-
-                      upd('quizScore', 0);
-
-                      upd('quizTotal', 0);
-
-                      upd('quizFeedback', null);
-
-                      // Start countdown
-
-                      var tmr = setInterval(function () {
-
-                        var t = (d.practicalTimer || 120) - 1;
-
-                        if (t <= 0) { clearInterval(tmr); upd('practicalMode', false); upd('labelMode', 'show'); if (addToast) addToast('\u23F0 ' + t('stem.dissection.times_up') + ' ' + (d.quizScore || 0), 'info'); }
-
-                        upd('practicalTimer', t);
-
-                      }, 1000);
-
-                      upd('_practicalInterval', tmr);
-
-                    } else {
-
-                      clearInterval(d._practicalInterval);
-
-                      upd('practicalMode', false);
-
-                      upd('labelMode', 'show');
-
-                      upd('quizMode', false);
-
-                    }
-
-                  },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.practicalMode ? 'bg-red-600 text-white animate-pulse' : 'bg-orange-100 text-orange-700')
-
-                }, d.practicalMode ? '\u23F0 ' + Math.floor((d.practicalTimer || 0) / 60) + ':' + String((d.practicalTimer || 0) % 60).padStart(2, '0') : '\u23F1 ' + t('stem.dissection.practical'))
-
-              )
-
-            ),
-
-
-
-            // Specimen selector
-
-            React.createElement("div", { className: "flex gap-1 bg-slate-50 rounded-xl p-1 overflow-x-auto" },
-
-              SPEC_KEYS.map(function (sk) {
-
-                var sp = SPECIMENS[sk];
-
-                var isActive = sk === specimen;
-
-                return React.createElement("button", {
-
-                  key: sk,
-
-                  onClick: function () { upd('specimen', sk); upd('activeLayer', (sp.layers[0] || {}).id || 'skin'); upd('revealedLayers', {}); upd('selectedOrgan', null); upd('quizMode', false); },
-
-                  className: "px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap " + (isActive ? 'bg-white shadow-md text-slate-800 ring-1 ring-slate-200' : 'text-slate-500 hover:bg-white/60 hover:text-slate-700')
-
-                }, sp.icon + ' ' + sp.name.split('(')[0].trim());
-
-              })
-
-            ),
-
-
-
-            // Layer bar
-
-            React.createElement("div", { className: "flex gap-1 bg-slate-100 rounded-xl p-1" },
-
-              spec.layers.map(function (layer) {
-
-                var isRevealed = revealedLayers[layer.id];
-
-                var isActive = layer.id === activeLayer;
-
-                return React.createElement("button", {
-
-                  key: layer.id,
-
-                  onClick: function () { if (!isRevealed) { upd('activeLayer', layer.id); upd('selectedOrgan', null); } },
-
-                  disabled: isRevealed && layer.id !== activeLayer,
-
-                  className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (isActive ? 'bg-white shadow-md text-slate-800' : isRevealed ? 'bg-slate-200 text-slate-400 line-through' : 'text-slate-600 hover:bg-white/50')
-
-                }, layer.icon + ' ' + layer.name);
-
-              })
-
-            ),
-
-
-
-            // Main: Canvas + sidebar
-
-            React.createElement("div", { className: "flex gap-3" },
-
-              // Canvas + peel button
-
-              React.createElement("div", { className: "flex-1" },
-
-                React.createElement("canvas", {
-
-                  ref: canvasRef, onClick: canvasClick,
-
-                  'data-diss-canvas': true,
-
-                  onMouseMove: function (e) {
-
-                    var canvas = e.currentTarget;
-
-                    // Pan via drag when zoomed > 1
-
-                    if (canvas._isPanning) {
-
-                      var dx = e.clientX - canvas._panStartX;
-
-                      var dy = e.clientY - canvas._panStartY;
-
-                      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) canvas._wasPanning = true;
-
-                      var newPanX = (canvas._panOrigX || 0) + dx;
-
-                      var newPanY = (canvas._panOrigY || 0) + dy;
-
-                      canvas._panX = newPanX;
-
-                      canvas._panY = newPanY;
-
-                      upd('canvasPanX', newPanX);
-
-                      upd('canvasPanY', newPanY);
-
-                      return;
-
-                    }
-
-                    canvasHover(e);
-
-                  },
-
-                  onMouseDown: function (e) {
-
-                    var canvas = e.currentTarget;
-
-                    if ((canvas._zoom || 1) > 1.01 && !d.annotateMode && !d.rulerMode) {
-
-                      canvas._isPanning = true;
-
-                      canvas._panStartX = e.clientX;
-
-                      canvas._panStartY = e.clientY;
-
-                      canvas._panOrigX = canvas._panX || 0;
-
-                      canvas._panOrigY = canvas._panY || 0;
-
-                      canvas._wasPanning = false;
-
-                      canvas.style.cursor = 'grabbing';
-
-                      e.preventDefault();
-
-                    }
-
-                  },
-
-                  onMouseUp: function (e) {
-
-                    var canvas = e.currentTarget;
-
-                    canvas._isPanning = false;
-
-                    canvas.style.cursor = (canvas._zoom || 1) > 1.01 ? 'grab' : 'crosshair';
-
-                  },
-
-                  onMouseLeave: function (e) {
-
-                    var canvas = e.currentTarget;
-
-                    canvas._isPanning = false;
-
-                  },
-
-                  width: 500, height: 600,
-
-                  className: "w-full rounded-xl border border-slate-200 cursor-crosshair",
-
-                  style: { aspectRatio: '5/6', background: '#0f172a' }
-
-                }),
-
-                // Zoom control bar — always visible
-
-                React.createElement("div", { className: "flex items-center justify-center gap-2 mt-1.5 py-1 px-2 rounded-lg bg-slate-100 border border-slate-200" },
-
-                  React.createElement("button", {
-
-                    onClick: function () { var z = Math.max(0.8, (d.canvasZoom || 1) * 0.92); if (Math.abs(z - 1) < 0.03) z = 1; if (z === 1) { upd('canvasPanX', 0); upd('canvasPanY', 0); } upd('canvasZoom', z); var cv = document.querySelector('canvas[data-diss-canvas]'); if (cv) { cv._zoom = z; cv._panX = z === 1 ? 0 : (cv._panX || 0); cv._panY = z === 1 ? 0 : (cv._panY || 0); } },
-
-                    className: "w-7 h-7 flex items-center justify-center rounded-md text-sm font-bold bg-white shadow-sm border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-all",
-
-                    title: 'Zoom out'
-
-                  }, '\u2212'),
-
-                  React.createElement("span", { className: "text-xs font-semibold text-slate-600 min-w-[48px] text-center select-none" }, Math.round((d.canvasZoom || 1) * 100) + '%'),
-
-                  React.createElement("button", {
-
-                    onClick: function () { var z = Math.min(2.0, (d.canvasZoom || 1) * 1.08); if (Math.abs(z - 1) < 0.03) z = 1; upd('canvasZoom', z); var cv = document.querySelector('canvas[data-diss-canvas]'); if (cv) { cv._zoom = z; } },
-
-                    className: "w-7 h-7 flex items-center justify-center rounded-md text-sm font-bold bg-white shadow-sm border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-all",
-
-                    title: 'Zoom in'
-
-                  }, '+'),
-
-                  ((d.canvasZoom != null && d.canvasZoom !== 1) || (d.canvasPanX != null && d.canvasPanX !== 0) || (d.canvasPanY != null && d.canvasPanY !== 0)) ? React.createElement("button", {
-
-                    onClick: function () { upd('canvasZoom', 1); upd('canvasPanX', 0); upd('canvasPanY', 0); var cv = document.querySelector('canvas[data-diss-canvas]'); if (cv) { cv._zoom = 1; cv._panX = 0; cv._panY = 0; } },
-
-                    className: "ml-1 px-2 h-7 flex items-center justify-center rounded-md text-xs font-semibold bg-white shadow-sm border border-slate-200 text-blue-600 hover:bg-blue-50 transition-all",
-
-                    title: 'Reset to 100%'
-
-                  }, '\u21BA 100%') : null
-
-                ),
-
-                currentLayerIdx < spec.layers.length - 1 && React.createElement("button", {
-
-                  onClick: peelCurrentLayer,
-
-                  className: "w-full mt-2 py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600 shadow-md hover:shadow-lg transition-all"
-
-                }, '\u2702\uFE0F ' + t('stem.dissection.peel') + ' ' + spec.layers[currentLayerIdx].name + ' \u2192 ' + spec.layers[Math.min(currentLayerIdx + 1, spec.layers.length - 1)].name),
-
-                (activeLayer === 'organs') && React.createElement("button", {
-
-                  onClick: function () { upd('traceDigestion', !d.traceDigestion); upd('traceRespiration', false); },
-
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceDigestion ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700 border border-amber-200')
-
-                }, d.traceDigestion ? '\u23F9 ' + t('stem.dissection.stop_trace') : '\uD83E\uDD62 ' + t('stem.dissection.trace_digestive')),
-
-                (activeLayer === 'organs') && React.createElement("button", {
-
-                  onClick: function () { upd('traceRespiration', !d.traceRespiration); upd('traceDigestion', false); upd('traceCirculation', false); },
-
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceRespiration ? 'bg-sky-500 text-white' : 'bg-sky-50 text-sky-700 border border-sky-200')
-
-                }, d.traceRespiration ? '\u23F9 ' + t('stem.dissection.stop_trace') : '\uD83C\uDF2C\uFE0F ' + t('stem.dissection.trace_respiratory')),
-
-                (activeLayer === 'organs') && React.createElement("button", {
-
-                  onClick: function () { upd('traceCirculation', !d.traceCirculation); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceExcretory', false); },
-
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceCirculation ? 'bg-red-500 text-white' : 'bg-red-50 text-red-700 border border-red-200')
-
-                }, d.traceCirculation ? '\u23F9 ' + t('stem.dissection.stop_trace') : '\u2764\uFE0F ' + t('stem.dissection.trace_circulatory')),
-
-                (activeLayer === 'organs') && React.createElement("button", {
-
-                  onClick: function () { upd('traceExcretory', !d.traceExcretory); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceCirculation', false); upd('traceNervous', false); },
-
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceExcretory ? 'bg-lime-500 text-white' : 'bg-lime-50 text-lime-700 border border-lime-200')
-
-                }, d.traceExcretory ? '\u23F9 ' + t('stem.dissection.stop_trace') : '\uD83D\uDCA7 ' + t('stem.dissection.trace_excretory')),
-
-                React.createElement("button", {
-
-                  onClick: function () { upd('traceNervous', !d.traceNervous); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceCirculation', false); upd('traceExcretory', false); upd('showEndocrine', false); },
-
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceNervous ? 'bg-purple-500 text-white' : 'bg-purple-50 text-purple-700 border border-purple-200')
-
-                }, d.traceNervous ? '\u23F9 ' + t('stem.dissection.stop_trace') : '\u26A1 ' + t('stem.dissection.trace_nervous')),
-
-                React.createElement("button", {
-
-                  onClick: function () { upd('showEndocrine', !d.showEndocrine); upd('traceNervous', false); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceCirculation', false); upd('traceExcretory', false); },
-
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.showEndocrine ? 'bg-pink-500 text-white' : 'bg-pink-50 text-pink-700 border border-pink-200')
-
-                }, d.showEndocrine ? '\u23F9 ' + t('stem.dissection.endocrine_hide') : '\uD83E\uDDE0 ' + t('stem.dissection.endocrine_show'))
-
-              ),
-
-
-
-              // Flashcard panel
-
-              d.flashcardMode && React.createElement("div", { className: "mt-2 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-200 p-4" },
-
-                React.createElement("div", { className: "text-center" },
-
-                  React.createElement("div", {
-
-                    onClick: function () { upd('flashcardFlipped', !d.flashcardFlipped); },
-
-                    className: "cursor-pointer bg-white rounded-xl shadow-lg p-6 min-h-[100px] flex items-center justify-center border-2 border-indigo-200 hover:shadow-xl transition-shadow"
-
-                  },
-
-                    React.createElement("div", null,
-
-                      !d.flashcardFlipped && React.createElement("div", null,
-
-                        React.createElement("p", { className: "text-sm font-bold text-indigo-700" }, organs[d.flashcardIdx || 0] ? organs[d.flashcardIdx || 0].name : t('stem.dissection.no_organs')),
-
-                        React.createElement("p", { className: "text-[10px] text-indigo-400 mt-1" }, t('stem.dissection.click_reveal'))
-
-                      ),
-
-                      d.flashcardFlipped && React.createElement("div", null,
-
-                        React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, organs[d.flashcardIdx || 0] ? organs[d.flashcardIdx || 0].fn : ''),
-
-                        organs[d.flashcardIdx || 0] && organs[d.flashcardIdx || 0].clinical && React.createElement("p", { className: "text-[10px] text-amber-600 mt-1 italic" }, organs[d.flashcardIdx || 0].clinical)
-
-                      )
-
-                    )
-
-                  ),
-
-                  React.createElement("div", { className: "flex items-center justify-between mt-3" },
-
-                    React.createElement("button", {
-
-                      onClick: function () { upd('flashcardIdx', Math.max(0, (d.flashcardIdx || 0) - 1)); upd('flashcardFlipped', false); },
-
-                      className: "px-3 py-1 rounded-lg text-xs bg-indigo-100 text-indigo-700"
-
-                    }, '\u25C0 ' + t('stem.dissection.prev')),
-
-                    React.createElement("span", { className: "text-[10px] text-indigo-400" }, ((d.flashcardIdx || 0) + 1) + ' / ' + organs.length),
-
-                    React.createElement("button", {
-
-                      onClick: function () { upd('flashcardIdx', Math.min(organs.length - 1, (d.flashcardIdx || 0) + 1)); upd('flashcardFlipped', false); },
-
-                      className: "px-3 py-1 rounded-lg text-xs bg-indigo-100 text-indigo-700"
-
-                    }, t('stem.dissection.next') + ' \u25B6')
-
-                  )
-
-                )
-
-              ),
-
-              // Comparison panel
-
-              d.compareMode && sel && React.createElement("div", { className: "mt-2 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl border border-cyan-200 p-3" },
-
-                React.createElement("div", { className: "text-xs font-bold text-cyan-800 mb-2" }, '\uD83D\uDD0D ' + t('stem.dissection.comparing_across') + ': ' + sel.name + ' across specimens'),
-
-                React.createElement("div", { className: "space-y-1.5 max-h-48 overflow-y-auto" },
-
-                  SPEC_KEYS.map(function (sk) {
-
-                    var sp = SPECIMENS[sk];
-
-                    // Search for matching organ name in all layers
-
-                    var match = null;
-
-                    sp.layers.forEach(function (layer) {
-
-                      if (match) return;
-
-                      var layerOrgans = sp.organs[layer.id] || [];
-
-                      layerOrgans.forEach(function (org) {
-
-                        if (!match && org.name.toLowerCase() === sel.name.toLowerCase()) match = { organ: org, layer: layer };
-
-                      });
-
-                    });
-
-                    // Also try partial match (e.g. "Heart" matches "3-Chamber Heart")
-
-                    if (!match) {
-
-                      var searchWord = sel.name.split(' ').pop().toLowerCase();
-
-                      sp.layers.forEach(function (layer) {
-
-                        if (match) return;
-
-                        var layerOrgans = sp.organs[layer.id] || [];
-
-                        layerOrgans.forEach(function (org) {
-
-                          if (!match && org.name.toLowerCase().indexOf(searchWord) >= 0) match = { organ: org, layer: layer };
-
-                        });
-
-                      });
-
-                    }
-
-                    if (!match) return null;
-
-                    var isCurrent = sk === specimen;
-
-                    return React.createElement("div", {
-
-                      key: sk,
-
-                      className: "p-2 rounded-lg text-xs " + (isCurrent ? 'bg-cyan-100 border border-cyan-300' : 'bg-white border border-slate-200')
-
-                    },
-
-                      React.createElement("div", { className: "font-bold " + (isCurrent ? 'text-cyan-800' : 'text-slate-700') }, sp.icon + ' ' + sp.name.split('(')[0].trim() + ': ' + match.organ.name),
-
-                      React.createElement("p", { className: "text-[10px] text-slate-500 mt-0.5 leading-relaxed" }, match.organ.fn.substring(0, 120) + (match.organ.fn.length > 120 ? '...' : '')),
-
-                      match.organ.clinical && React.createElement("p", { className: "text-[10px] text-amber-600 mt-0.5 italic" }, '\uD83C\uDFEB ' + match.organ.clinical.substring(0, 80) + '...')
-
-                    );
-
-                  })
-
-                ),
-
-                !sel && React.createElement("p", { className: "text-xs text-cyan-600 italic" }, t('stem.dissection.click_organ_compare'))
-
-              ),
-
-
-
-              // Sidebar
-
-              React.createElement("div", { className: "w-72 space-y-3" },
-
-                // Selected organ detail
-
-                sel && React.createElement("div", { className: "bg-white rounded-xl border p-4" },
-
-                  React.createElement("div", { className: "flex items-center justify-between mb-1" },
-
-                    React.createElement("h4", { className: "text-sm font-bold text-slate-800" }, sel.name),
-
-                    React.createElement("div", { className: "flex gap-1" },
-
-                      React.createElement("button", {
-
-                        onClick: function () {
-
-                          var idx = organs.findIndex(function (o) { return o.id === sel.id; });
-
-                          if (idx > 0) upd('selectedOrgan', organs[idx - 1].id);
-
-                        },
-
-                        className: "w-6 h-6 rounded bg-slate-100 text-slate-500 text-xs hover:bg-slate-200 flex items-center justify-center"
-
-                      }, '\u25C0'),
-
-                      React.createElement("button", {
-
-                        onClick: function () {
-
-                          var idx = organs.findIndex(function (o) { return o.id === sel.id; });
-
-                          if (idx < organs.length - 1) upd('selectedOrgan', organs[idx + 1].id);
-
-                        },
-
-                        className: "w-6 h-6 rounded bg-slate-100 text-slate-500 text-xs hover:bg-slate-200 flex items-center justify-center"
-
-                      }, '\u25B6')
-
-                    )
-
-                  ),
-
-                  // Embryological origin badge
-
-                  (function () {
-
-                    var devMap = {
-
-                      heart: 'Mesoderm', liver: 'Endoderm', brain: 'Ectoderm', kidney: 'Mesoderm',
-
-                      lung: 'Endoderm', stomach: 'Endoderm', intestine: 'Endoderm', spleen: 'Mesoderm',
-
-                      skin: 'Ectoderm', bone: 'Mesoderm', muscle: 'Mesoderm', nerve: 'Ectoderm',
-
-                      eye: 'Ectoderm (lens) + mesoderm', retina: 'Ectoderm', pancreas: 'Endoderm',
-
-                      blood: 'Mesoderm', thyroid: 'Endoderm'
-
-                    };
-
-                    var sn = sel.name.toLowerCase(); var dev = null;
-
-                    Object.keys(devMap).forEach(function (k) { if (sn.indexOf(k) >= 0) dev = devMap[k]; });
-
-                    var dColors = { Ectoderm: 'bg-blue-50 text-blue-600 border-blue-200', Mesoderm: 'bg-red-50 text-red-600 border-red-200', Endoderm: 'bg-yellow-50 text-yellow-600 border-yellow-200' };
-
-                    var dcKey = dev ? (dev.indexOf('Ecto') >= 0 ? 'Ectoderm' : dev.indexOf('Meso') >= 0 ? 'Mesoderm' : 'Endoderm') : null;
-
-                    return dev ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[9px] font-bold mr-1 mb-1 border " + (dColors[dcKey] || 'bg-slate-50 text-slate-600 border-slate-200') }, '\uD83E\uDDEC ' + dev) : null;
-
-                  })(),
-
-                  // Tissue type badge
-
-                  (function () {
-
-                    var tissueMap = {
-
-                      heart: 'Cardiac muscle', liver: 'Epithelial', brain: 'Nervous', kidney: 'Epithelial',
-
-                      lung: 'Epithelial', stomach: 'Smooth muscle', intestine: 'Epithelial', spleen: 'Lymphoid',
-
-                      bone: 'Connective', cartilage: 'Connective', skin: 'Epithelial', muscle: 'Skeletal muscle',
-
-                      nerve: 'Nervous', tendon: 'Connective', blood: 'Connective (fluid)', pancreas: 'Glandular',
-
-                      eye: 'Mixed', lens: 'Epithelial', retina: 'Nervous', esophagus: 'Smooth muscle'
-
-                    };
-
-                    var sn = sel.name.toLowerCase(); var tissue = null;
-
-                    Object.keys(tissueMap).forEach(function (k) { if (sn.indexOf(k) >= 0) tissue = tissueMap[k]; });
-
-                    var tColors = {
-
-                      'Cardiac muscle': 'bg-red-100 text-red-600', 'Epithelial': 'bg-emerald-100 text-emerald-600',
-
-                      'Nervous': 'bg-purple-100 text-purple-600', 'Smooth muscle': 'bg-rose-100 text-rose-600',
-
-                      'Lymphoid': 'bg-amber-100 text-amber-600', 'Connective': 'bg-blue-100 text-blue-600',
-
-                      'Skeletal muscle': 'bg-red-100 text-red-600', 'Glandular': 'bg-teal-100 text-teal-600',
-
-                      'Mixed': 'bg-slate-100 text-slate-600', 'Connective (fluid)': 'bg-blue-100 text-blue-600'
-
-                    };
-
-                    return tissue ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[9px] font-bold mr-1 mb-1 " + (tColors[tissue] || 'bg-slate-100 text-slate-600') }, '\uD83E\uDDA0 ' + tissue) : null;
-
-                  })(),
-
-                  // Organ weight estimate
-
-                  (function () {
-
-                    var weightMap = { heart: '250-350g', liver: '1.4-1.5kg', brain: '1.3-1.4kg', kidney: '120-170g', lung: '0.5-0.6kg', stomach: '150g', spleen: '170g', pancreas: '80g', eye: '7.5g', thyroid: '20-25g', adrenal: '4-5g', gallbladder: '30-50ml' };
-
-                    var w = null; var sn = sel.name.toLowerCase();
-
-                    Object.keys(weightMap).forEach(function (k) { if (sn.indexOf(k) >= 0) w = weightMap[k]; });
-
-                    return w ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 text-slate-500 border border-slate-200 mr-1 mb-1" }, '\u2696\uFE0F ' + w + ' ' + t('stem.dissection.human_label')) : null;
-
-                  })(),
-
-                  // System badge
-
-                  (function () {
-
-                    var sn = sel.name.toLowerCase();
-
-                    var sysN = null;
-
-                    var sysBadges = { circulatory: '\u2764\uFE0F Circulatory', digestive: '\uD83C\uDF7D\uFE0F Digestive', respiratory: '\uD83C\uDF2C\uFE0F Respiratory', nervous: '\u26A1 Nervous', skeletal: '\uD83E\uDDB4 Skeletal', muscular: '\uD83D\uDCAA Muscular', excretory: '\uD83D\uDCA7 Excretory', reproductive: '\u2665\uFE0F Reproductive' };
-
-                    var sysCols = { circulatory: 'bg-red-50 text-red-700 border-red-200', digestive: 'bg-amber-50 text-amber-700 border-amber-200', respiratory: 'bg-blue-50 text-blue-700 border-blue-200', nervous: 'bg-purple-50 text-purple-700 border-purple-200', skeletal: 'bg-slate-50 text-slate-700 border-slate-200', muscular: 'bg-red-50 text-red-700 border-red-200', excretory: 'bg-lime-50 text-lime-700 border-lime-200', reproductive: 'bg-pink-50 text-pink-700 border-pink-200' };
-
-                    var sysKW = { circulatory: ['heart', 'aorta', 'artery', 'vein', 'atrium', 'ventricle', 'blood', 'aortic'], digestive: ['stomach', 'liver', 'intestin', 'gizzard', 'crop', 'pancreas', 'gallbladder'], respiratory: ['lung', 'gill', 'trachea', 'swim bladder'], nervous: ['brain', 'nerve', 'spinal', 'eye', 'optic'], skeletal: ['bone', 'skull', 'vertebr', 'femur'], muscular: ['muscle', 'rectus'], excretory: ['kidney', 'nephri'], reproductive: ['gonad', 'ovary', 'testi'] };
-
-                    Object.keys(sysKW).forEach(function (sk) { sysKW[sk].forEach(function (kw) { if (!sysN && sn.indexOf(kw) >= 0) sysN = sk; }); });
-
-                    return sysN ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[9px] font-bold border mb-1 " + sysCols[sysN] }, sysBadges[sysN]) : null;
-
-                  })(),
-
-                  React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-2" }, sel.fn),
-
-                  sel.clinical && React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" },
-
-                    React.createElement("span", { className: "text-[10px] font-bold text-amber-700" }, '\uD83C\uDFEB ' + t('stem.dissection.fun_fact')),
-
-                    React.createElement("p", { className: "text-[10px] text-amber-600 leading-relaxed mt-0.5" }, sel.clinical)
-
-                  ),
-
-                  // Position info
-
-                  React.createElement("div", { className: "mt-2 flex gap-2 text-[9px] text-slate-400" },
-
-                    React.createElement("span", null, '\uD83D\uDCCD x:' + Math.round(sel.x * 100) + '% y:' + Math.round(sel.y * 100) + '%'),
-
-                    React.createElement("span", null, '\uD83C\uDFF7 ' + (sel.layer || activeLayer))
-
-                  ),
-
-                  // Clinical correlations
-
-                  (function () {
-
-                    var clinMap = {
-
-                      heart: '\u26A0 Myocardial infarction, arrhythmia, heart murmur',
-
-                      liver: '\u26A0 Hepatitis, cirrhosis, fatty liver disease',
-
-                      lung: '\u26A0 Pneumonia, asthma, COPD, pulmonary embolism',
-
-                      brain: '\u26A0 Stroke (CVA), concussion, meningitis',
-
-                      kidney: '\u26A0 Renal calculi (stones), UTI, nephritis',
-
-                      stomach: '\u26A0 Gastric ulcer, GERD, H. pylori infection',
-
-                      pancreas: '\u26A0 Pancreatitis, diabetes mellitus',
-
-                      spleen: '\u26A0 Splenomegaly, splenic rupture (trauma)',
-
-                      gallbladder: '\u26A0 Cholelithiasis (gallstones), cholecystitis',
-
-                      thyroid: '\u26A0 Hypothyroidism, hyperthyroidism, goiter',
-
-                      eye: '\u26A0 Cataracts, glaucoma, retinal detachment',
-
-                      retina: '\u26A0 Macular degeneration, diabetic retinopathy'
-
-                    };
-
-                    var sn = sel.name.toLowerCase(); var clin = null;
-
-                    Object.keys(clinMap).forEach(function (k) { if (sn.indexOf(k) >= 0) clin = clinMap[k]; });
-
-                    return clin ? React.createElement("div", { className: "text-[9px] text-amber-500 mt-1 italic border-l-2 border-amber-300 pl-2" }, clin) : null;
-
-                  })(),
-
-                  // Related organs info
-
-                  (function () {
-
-                    var relMap = {
-
-                      heart: ['lungs', 'aorta', 'blood vessels'],
-
-                      lungs: ['heart', 'trachea', 'diaphragm'],
-
-                      liver: ['gallbladder', 'stomach', 'intestine'],
-
-                      stomach: ['esophagus', 'liver', 'intestine'],
-
-                      brain: ['spinal cord', 'nerves', 'eyes'],
-
-                      kidneys: ['bladder', 'ureters', 'adrenals']
-
-                    };
-
-                    var sn = sel.name.toLowerCase();
-
-                    var related = null;
-
-                    Object.keys(relMap).forEach(function (k) { if (sn.indexOf(k) >= 0) related = relMap[k]; });
-
-                    return related ? React.createElement("div", { className: "text-[9px] text-slate-400 mt-1" },
-
-                      React.createElement("span", { className: "font-bold" }, '\uD83D\uDD17 ' + t('stem.dissection.related') + ': '),
-
-                      related.join(', ')
-
-                    ) : null;
-
-                  })(),
-
-                  // Action buttons
-
-                  React.createElement("div", { className: "mt-2 flex gap-1" },
-
-                    React.createElement("button", {
-
-                      onClick: function () {
-
-                        if (typeof window.aiChat === 'function') {
-
-                          window.aiChat('Explain the ' + sel.name + ' in a ' + spec.name + ' in simple terms for a biology student. Include: function, location, clinical significance, and one interesting fact.');
-
-                        } else if (addToast) {
-
-                          addToast('\uD83E\uDD16 AI: The ' + sel.name + ' ' + sel.fn.split('.')[0] + '.', 'info');
-
-                        }
-
-                      },
-
-                      className: "flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:from-violet-600 hover:to-purple-600"
-
-                    }, '\uD83E\uDD16 ' + t('stem.dissection.ai_explain')),
-
-                    React.createElement("button", {
-
-                      onClick: function () {
-
-                        var text = sel.name + '\n' + sel.fn;
-
-                        if (sel.clinical) text += '\n\nFun Fact: ' + sel.clinical;
-
-                        if (navigator.clipboard) navigator.clipboard.writeText(text);
-
-                        if (addToast) addToast('\uD83D\uDCCB ' + t('stem.dissection.copied_info') + ' ' + sel.name + ' info!', 'success');
-
-                      },
-
-                      className: "px-2 py-1.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200"
-
-                    }, '\uD83D\uDCCB ' + t('stem.dissection.copy'))
-
-                  )
-
-                ),
-
-
-
-                // Organ list with search
-
-                !sel && React.createElement("div", { className: "bg-white rounded-xl border p-3" },
-
-                  React.createElement("div", { className: "text-xs font-bold text-slate-700 mb-2" }, (spec.layers[currentLayerIdx] || {}).icon + ' ' + (spec.layers[currentLayerIdx] || {}).name + ' Structures (' + organs.length + ')'),
-
-                  React.createElement("input", {
-
-                    type: "text",
-
-                    placeholder: t('stem.dissection.search_organs'),
-
-                    value: d.organSearch || '',
-
-                    onChange: function (e) { upd('organSearch', e.target.value); },
-
-                    className: "w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs mb-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
-
-                  }),
-
-                  React.createElement("div", { className: "space-y-1 max-h-72 overflow-y-auto" },
-
-                    organs.filter(function (org) {
-
-                      var search = (d.organSearch || '').toLowerCase();
-
-                      if (!search) return true;
-
-                      return org.name.toLowerCase().indexOf(search) >= 0 || org.fn.toLowerCase().indexOf(search) >= 0;
-
-                    }).map(function (org) {
-
-                      var orgSys = null;
-
-                      var orgName = org.name.toLowerCase();
-
-                      var sysKeys = ['circulatory', 'digestive', 'respiratory', 'nervous', 'skeletal', 'muscular', 'excretory', 'reproductive'];
-
-                      var sysKws = { circulatory: ['heart', 'aorta', 'artery', 'vein', 'atrium', 'ventricle', 'blood', 'aortic'], digestive: ['stomach', 'liver', 'intestin', 'gizzard', 'crop', 'pancreas', 'gallbladder'], respiratory: ['lung', 'gill', 'trachea', 'swim bladder'], nervous: ['brain', 'nerve', 'spinal', 'eye', 'optic'], skeletal: ['bone', 'skull', 'vertebr', 'femur'], muscular: ['muscle', 'rectus'], excretory: ['kidney', 'nephri'], reproductive: ['gonad', 'ovary', 'testi', 'oviduct'] };
-
-                      for (var si = 0; si < sysKeys.length; si++) {
-
-                        var kws = sysKws[sysKeys[si]];
-
-                        for (var ki = 0; kws && ki < kws.length; ki++) {
-
-                          if (orgName.indexOf(kws[ki]) >= 0) { orgSys = sysKeys[si]; break; }
-
-                        }
-
-                        if (orgSys) break;
-
-                      }
-
-                      var sysColorsMap = { circulatory: '#ef4444', digestive: '#f59e0b', respiratory: '#3b82f6', nervous: '#8b5cf6', skeletal: '#94a3b8', muscular: '#dc2626', excretory: '#84cc16', reproductive: '#ec4899' };
-
-                      var dotColor = orgSys ? sysColorsMap[orgSys] : '#94a3b8';
-
-                      var isExplored = (d.exploredOrgans || {})[specimen + '|' + org.id];
-
-                      return React.createElement("button", {
-
-                        key: org.id,
-
-                        id: 'diss-organ-' + org.id,
-
-                        onClick: function () { upd('selectedOrgan', org.id); },
-
-                        className: "w-full text-left px-2 py-1.5 rounded-lg text-xs hover:bg-slate-50 transition-all flex items-center gap-1.5 " + (d.selectedOrgan === org.id ? 'bg-amber-50 border border-amber-200 font-bold text-amber-800' : 'text-slate-600')
-
-                      },
-
-                        React.createElement("span", { style: { width: 6, height: 6, borderRadius: '50%', backgroundColor: dotColor, display: 'inline-block', flexShrink: 0 } }),
-
-                        React.createElement("span", { className: "flex-1" }, org.name),
-
-                        isExplored && React.createElement("span", { className: "text-[9px] text-green-500" }, '\u2713')
-
-                      );
-
-                    })
-
-                  )
-
-                ),
-
-
-
-                // Quiz card
-
-                d.quizMode && quizQ && React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4" },
-
-                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-
-                    React.createElement("span", { className: "text-xs font-bold text-amber-800" }, '\uD83E\uDDE0 ' + t('stem.dissection.identify')),
-
-                    d.quizScore > 0 && React.createElement("span", { className: "text-[10px] font-bold text-green-600 ml-auto" }, '\u2B50 ' + d.quizScore + '/' + (d.quizTotal || 0))
-
-                  ),
-
-                  React.createElement("p", { className: "text-xs text-amber-700 mb-2 italic" }, '"' + quizQ.fn.split('.')[0] + '."'),
-
-                  React.createElement("div", { className: "grid grid-cols-2 gap-1" },
-
-                    quizOptions.map(function (opt) {
-
-                      var fb = d.quizFeedback;
-
-                      var isCorrect = fb && opt.id === quizQ.id;
-
-                      var isChosen = fb && fb.chosen === opt.id;
-
-                      var isWrong = isChosen && !isCorrect;
-
-                      return React.createElement("button", {
-
-                        key: opt.id, disabled: !!fb,
-
-                        onClick: function () {
-
-                          var correct = opt.id === quizQ.id;
-
-                          upd('quizFeedback', { correct: correct, chosen: opt.id });
-
-                          upd('quizScore', (d.quizScore || 0) + (correct ? 1 : 0));
-
-                          upd('quizTotal', (d.quizTotal || 0) + 1);
-
-                          if (correct) awardStemXP('dissection', 2, 'Correct quiz answer');
-
-                          addToast(correct ? '\u2705 ' + t('stem.dissection.correct') : '\u274C ' + t('stem.dissection.it_was') + ' ' + quizQ.name, correct ? 'success' : 'error');
-
-                        },
-
-                        className: "px-2 py-1.5 rounded-lg text-[11px] font-bold border transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-400' : 'border-amber-200 bg-white text-slate-700 hover:border-amber-400')
-
-                      }, opt.name);
-
-                    })
-
-                  ),
-
-                  d.quizFeedback && React.createElement("button", {
-
-                    onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
-
-                    className: "w-full mt-2 py-1.5 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700"
-
-                  }, t('stem.dissection.next_question') + ' \u2192')
-
-                ),
-
-
-
-                // Layer + specimen info
-
-                React.createElement("div", { className: "bg-slate-50 rounded-xl border p-3" },
-
-                  React.createElement("div", { className: "text-[10px] font-bold text-slate-500 mb-1" }, t('stem.dissection.layer_progress')),
-
-                  spec.layers.map(function (layer) {
-
-                    var done = !!revealedLayers[layer.id];
-
-                    return React.createElement("div", { key: layer.id, className: "flex items-center gap-2 py-0.5" },
-
-                      React.createElement("span", { className: "text-[10px] " + (done ? 'line-through text-slate-400' : 'text-slate-600') }, layer.icon + ' ' + layer.name),
-
-                      done && React.createElement("span", { className: "text-[9px] text-green-500 ml-auto" }, '\u2713')
-
-                    );
-
-                  }),
-
-                  React.createElement("div", { className: "mt-2 pt-2 border-t border-slate-200" },
-
-                    React.createElement("p", { className: "text-[10px] text-slate-500 leading-relaxed mb-1" }, spec.desc),
-
-                    React.createElement("div", { className: "grid grid-cols-2 gap-1 mt-1" },
-
-                      spec.kingdom && React.createElement("div", null,
-
-                        React.createElement("span", { className: "text-[8px] font-bold text-slate-400 uppercase" }, t('stem.dissection.kingdom')),
-
-                        React.createElement("p", { className: "text-[9px] text-slate-500" }, spec.kingdom)
-
-                      ),
-
-                      spec.phylum && React.createElement("div", null,
-
-                        React.createElement("span", { className: "text-[8px] font-bold text-slate-400 uppercase" }, t('stem.dissection.phylum')),
-
-                        React.createElement("p", { className: "text-[9px] text-slate-500" }, spec.phylum)
-
-                      ),
-
-                      spec.habitat && React.createElement("div", null,
-
-                        React.createElement("span", { className: "text-[8px] font-bold text-slate-400 uppercase" }, t('stem.dissection.habitat')),
-
-                        React.createElement("p", { className: "text-[9px] text-slate-500" }, spec.habitat)
-
-                      ),
-
-                      spec.lifespan && React.createElement("div", null,
-
-                        React.createElement("span", { className: "text-[8px] font-bold text-slate-400 uppercase" }, t('stem.dissection.lifespan')),
-
-                        React.createElement("p", { className: "text-[9px] text-slate-500" }, spec.lifespan)
-
-                      )
-
-                    )
-
-                  )
-
-                ),
-
-
-
-                // Progress card
-
-                React.createElement("div", { className: "bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-3" },
-
-                  React.createElement("div", { className: "flex items-center justify-between mb-1" },
-
-                    React.createElement("span", { className: "text-[10px] font-bold text-blue-700" }, '\uD83D\uDCCA ' + t('stem.dissection.exploration')),
-
-                    React.createElement("span", { className: "text-[10px] font-bold " + (progressPct >= 100 ? 'text-green-600' : 'text-blue-600') }, progressPct + '%')
-
-                  ),
-
-                  React.createElement("div", { className: "w-full h-2 bg-blue-100 rounded-full overflow-hidden" },
-
-                    React.createElement("div", { className: "h-full rounded-full transition-all duration-500 " + (progressPct >= 100 ? 'bg-green-500' : 'bg-blue-500'), style: { width: progressPct + '%' } })
-
-                  ),
-
-                  React.createElement("div", { className: "mt-1 text-[9px] text-blue-500" }, t('stem.dissection.structures_examined').replace('{count}', exploredCount).replace('{total}', totalOrgansInSpecimen)),
-
-                  progressPct >= 100 && React.createElement("div", { className: "mt-1" },
-
-                    React.createElement("div", { className: "text-[10px] font-bold text-green-600" }, '\u2B50 ' + t('stem.dissection.specimen_complete')),
-
-                    React.createElement("div", { className: "text-[9px] text-emerald-500 mt-0.5" },
-
-                      '\uD83C\uDFC6 ' + t('stem.dissection.identified_count').replace('{count}', Object.keys(d.exploredOrgans || {}).length).replace('{total}', totalOrgansInSpecimen)
-
-                    ),
-
-                    React.createElement("button", {
-
-                      onClick: function () {
-
-                        var cert = '\u2728 ' + t('stem.dissection.cert_title') + ' \u2728\n';
-
-                        cert += '\u2500'.repeat(40) + '\n';
-
-                        cert += t('stem.dissection.specimen_label') + ': ' + spec.icon + ' ' + spec.name + '\n';
-
-                        cert += t('stem.dissection.cert_structures') + ': ' + totalOrgansInSpecimen + '/' + totalOrgansInSpecimen + '\n';
-
-                        cert += t('stem.dissection.cert_layers') + ': ' + spec.layers.length + '\n';
-
-                        cert += t('stem.dissection.cert_quiz') + ': ' + (d.quizScore || 0) + '\n';
-
-                        cert += t('stem.dissection.date_label') + ': ' + new Date().toLocaleDateString() + '\n';
-
-                        cert += '\u2500'.repeat(40) + '\n';
-
-                        cert += t('stem.dissection.cert_verified');
-
-                        if (navigator.clipboard) navigator.clipboard.writeText(cert);
-
-                        if (addToast) addToast('\uD83C\uDF93 ' + t('stem.dissection.cert_copied'), 'success');
-
-                      },
-
-                      className: "mt-1 px-2 py-1 rounded-lg text-[9px] font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white"
-
-                    }, '\uD83C\uDF93 ' + t('stem.dissection.copy_certificate'))
-
-                  )
-
-                ),
-
-
-
-                // Specimen stats card
-
-                React.createElement("div", { className: "bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl border border-slate-200 p-3 mb-2" },
-
-                  React.createElement("div", { className: "text-[10px] font-bold text-slate-700 mb-1" }, '\uD83D\uDCC8 ' + t('stem.dissection.specimen_stats')),
-
-                  React.createElement("div", { className: "grid grid-cols-3 gap-2 text-center" },
-
-                    React.createElement("div", null,
-
-                      React.createElement("div", { className: "text-lg font-bold text-blue-600" }, String(totalOrgansInSpecimen)),
-
-                      React.createElement("div", { className: "text-[8px] text-slate-400" }, t('stem.dissection.structures'))
-
-                    ),
-
-                    React.createElement("div", null,
-
-                      React.createElement("div", { className: "text-lg font-bold text-emerald-600" }, String(spec.layers.length)),
-
-                      React.createElement("div", { className: "text-[8px] text-slate-400" }, t('stem.dissection.layers_label'))
-
-                    ),
-
-                    React.createElement("div", null,
-
-                      React.createElement("div", { className: "text-lg font-bold text-amber-600" }, String(d.quizScore || 0)),
-
-                      React.createElement("div", { className: "text-[8px] text-slate-400" }, t('stem.dissection.quiz_score_label'))
-
-                    ),
-
-                    React.createElement("div", null,
-
-                      React.createElement("div", { className: "text-lg font-bold text-violet-600" }, (function () {
-
-                        var ts = d.timeSpent || 0;
-
-                        return ts < 60 ? ts + 's' : Math.floor(ts / 60) + 'm';
-
-                      })()),
-
-                      React.createElement("div", { className: "text-[8px] text-slate-400" }, t('stem.dissection.time_label'))
-
-                    )
-
-                  )
-
-                ),
-
-                // Learning Objectives
-
-                React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-3 mb-2" },
-
-                  React.createElement("div", {
-
-                    className: "text-[10px] font-bold text-emerald-700 mb-1 cursor-pointer",
-
-                    onClick: function () { upd('showObjectives', !d.showObjectives); }
-
-                  }, '\uD83C\uDF93 ' + t('stem.dissection.learning_objectives') + ' ' + (d.showObjectives ? '\u25B2' : '\u25BC')),
-
-                  d.showObjectives && React.createElement("div", { className: "space-y-1" },
-
-                    (spec.objectives || [
-
-                      'Identify major organs and their functions',
-
-                      'Compare organ systems across body layers',
-
-                      'Trace the digestive pathway from ingestion to excretion',
-
-                      'Trace the respiratory pathway and gas exchange',
-
-                      'Locate and name all structures in each layer',
-
-                      'Explain how structure relates to function',
-
-                      'Compare homologous organs across specimens'
-
-                    ]).map(function (obj, oi) {
-
-                      var isComplete = (d.completedObjectives || {})[oi];
-
-                      return React.createElement("div", {
-
-                        key: oi,
-
-                        onClick: function () {
-
-                          var co = Object.assign({}, d.completedObjectives || {});
-
-                          co[oi] = !co[oi];
-
-                          upd('completedObjectives', co);
-
-                        },
-
-                        className: "flex items-start gap-1.5 text-[10px] cursor-pointer hover:bg-emerald-100 rounded px-1 py-0.5"
-
-                      },
-
-                        React.createElement("span", { className: isComplete ? 'text-emerald-600' : 'text-slate-300' }, isComplete ? '\u2705' : '\u2B1C'),
-
-                        React.createElement("span", { className: isComplete ? 'text-emerald-600 line-through' : 'text-slate-600' }, obj)
-
-                      );
-
-                    })
-
-                  )
-
-                ),
-
-                // Glossary panel
-
-                React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl border border-violet-200 p-3" },
-
-                  React.createElement("div", {
-
-                    className: "text-[10px] font-bold text-violet-700 mb-1 cursor-pointer",
-
-                    onClick: function () { upd('showGlossary', d.showGlossary === false ? true : (d.showGlossary === undefined ? false : !d.showGlossary)); }
-
-                  }, '\uD83D\uDCDA ' + t('stem.dissection.key_terms') + ' ' + (d.showGlossary === false ? '\u25BC' : '\u25B2')),
-
-                  (d.showGlossary !== false) && React.createElement("div", { className: "space-y-1 max-h-40 overflow-y-auto" },
-
-                    [
-
-                      { term: 'Dorsal', def: 'Back/upper surface of the organism' },
-
-                      { term: 'Ventral', def: 'Belly/lower surface of the organism' },
-
-                      { term: 'Anterior', def: 'Front/head end of the organism' },
-
-                      { term: 'Posterior', def: 'Rear/tail end of the organism' },
-
-                      { term: 'Lateral', def: 'Side of the organism' },
-
-                      { term: 'Medial', def: 'Toward the midline of the organism' },
-
-                      { term: 'Proximal', def: 'Closer to the point of attachment' },
-
-                      { term: 'Distal', def: 'Further from the point of attachment' },
-
-                      { term: 'Sagittal', def: 'Plane dividing body into left/right' },
-
-                      { term: 'Transverse', def: 'Plane dividing body into top/bottom' },
-
-                      { term: 'Homologous', def: 'Structures with shared evolutionary origin' },
-
-                      { term: 'Analogous', def: 'Similar function but different origin' }
-
-                    ].map(function (g) {
-
-                      return React.createElement("div", { key: g.term, className: "text-[10px]" },
-
-                        React.createElement("span", { className: "font-bold text-violet-700" }, g.term + ': '),
-
-                        React.createElement("span", { className: "text-slate-500" }, g.def)
-
-                      );
-
-                    })
-
-                  )
-
-                )
-
-              )
-
-            )
-
-          );
-      })();
-    }
-  });
-
-
-  /* brainAtlas: removed — see stem_tool_brainatlas.js */
-
-  // ═══ 🔬 companionPlanting (companionPlanting) ═══
+  // â•â•â• ðŸ”¬ companionPlanting (companionPlanting) â•â•â•
   window.StemLab.registerTool('companionPlanting', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'companionPlanting',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -23557,7 +16545,7 @@ var d = labToolData.dissection || {};
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (companionPlanting) ──
+      // â”€â”€ Tool body (companionPlanting) â”€â”€
       return (function() {
 var d = (labToolData.companionPlanting) || {};
 
@@ -23565,7 +16553,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-          // ── State defaults ──
+          // â”€â”€ State defaults â”€â”€
 
           var phase = d.phase || 'plant';  // 'plant' | 'grow' | 'harvest'
 
@@ -23597,7 +16585,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-          // ── Sims-style needs/meters ──
+          // â”€â”€ Sims-style needs/meters â”€â”€
 
           var day = d.day || 0;
 
@@ -23637,13 +16625,13 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-          // ── Season calculation ──
+          // â”€â”€ Season calculation â”€â”€
 
           var DAYS_PER_SEASON = 30;
 
           var seasonIndex = Math.floor((day % 120) / DAYS_PER_SEASON);  // 0=spring, 1=summer, 2=autumn, 3=winter
 
-          var seasonNames = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'];
+          var seasonNames = ['ðŸŒ± Spring', 'â˜€ï¸ Summer', 'ðŸ‚ Autumn', 'â„ï¸ Winter'];
 
           var seasonName = seasonNames[seasonIndex];
 
@@ -23665,7 +16653,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-          // ── Computed values from meters ──
+          // â”€â”€ Computed values from meters â”€â”€
 
           var allPlanted = cornPlanted && beansPlanted && squashPlanted;
 
@@ -23715,47 +16703,47 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-          // ── Random Events Table ──
+          // â”€â”€ Random Events Table â”€â”€
 
           var _EVENTS = [
 
-            { id: 'rain', emoji: '🌧️', title: 'Heavy Rain', desc: 'A downpour soaks the soil! Nitrogen leaches with runoff.', effects: { moisture: 40, nitrogenLevel: -5 }, lesson: 'Nutrient leaching: Heavy rain washes soluble nitrogen deeper into soil, away from plant roots. Cover crops and mulch help prevent this.' },
+            { id: 'rain', emoji: 'ðŸŒ§ï¸', title: 'Heavy Rain', desc: 'A downpour soaks the soil! Nitrogen leaches with runoff.', effects: { moisture: 40, nitrogenLevel: -5 }, lesson: 'Nutrient leaching: Heavy rain washes soluble nitrogen deeper into soil, away from plant roots. Cover crops and mulch help prevent this.' },
 
-            { id: 'aphids', emoji: '🐛', title: 'Aphid Outbreak', desc: 'Aphids swarm the garden!', effects: { pestPressure: 30 }, lesson: 'Biological pest control: Aphids feed on plant sap. Ladybugs, lacewings, and parasitic wasps are natural predators that control aphid populations without chemicals.' },
+            { id: 'aphids', emoji: 'ðŸ›', title: 'Aphid Outbreak', desc: 'Aphids swarm the garden!', effects: { pestPressure: 30 }, lesson: 'Biological pest control: Aphids feed on plant sap. Ladybugs, lacewings, and parasitic wasps are natural predators that control aphid populations without chemicals.' },
 
-            { id: 'pollinators', emoji: '🐝', title: 'Pollinator Visit', desc: 'Bees and butterflies visit the garden!', effects: { plantHealth: 15 }, lesson: 'Pollination biology: Squash flowers especially depend on pollinators. Companion planting attracts diverse pollinators, improving fruit set across all crops.' },
+            { id: 'pollinators', emoji: 'ðŸ', title: 'Pollinator Visit', desc: 'Bees and butterflies visit the garden!', effects: { plantHealth: 15 }, lesson: 'Pollination biology: Squash flowers especially depend on pollinators. Companion planting attracts diverse pollinators, improving fruit set across all crops.' },
 
-            { id: 'wind', emoji: '🌪️', title: 'Wind Storm', desc: 'Strong winds stress the plants.', effects: { plantHealth: -10, moisture: -10 }, lesson: 'Windbreak design: Dense planting and tall stalks (like corn) create natural windbreaks. Bean vines wrapped around corn stalks add structural stability.' },
+            { id: 'wind', emoji: 'ðŸŒªï¸', title: 'Wind Storm', desc: 'Strong winds stress the plants.', effects: { plantHealth: -10, moisture: -10 }, lesson: 'Windbreak design: Dense planting and tall stalks (like corn) create natural windbreaks. Bean vines wrapped around corn stalks add structural stability.' },
 
-            { id: 'ladybugs', emoji: '🐞', title: 'Ladybug Arrival', desc: 'Ladybugs colonize the garden!', effects: { pestPressure: -25 }, lesson: 'Beneficial insects: A single ladybug eats ~5,000 aphids in its lifetime. Companion planting creates habitat diversity that attracts these natural pest controllers.' },
+            { id: 'ladybugs', emoji: 'ðŸž', title: 'Ladybug Arrival', desc: 'Ladybugs colonize the garden!', effects: { pestPressure: -25 }, lesson: 'Beneficial insects: A single ladybug eats ~5,000 aphids in its lifetime. Companion planting creates habitat diversity that attracts these natural pest controllers.' },
 
-            { id: 'heatwave', emoji: '☀️', title: 'Heat Wave', desc: 'Scorching heat dries the soil.', effects: { moisture: -20, soilTemp: 5 }, lesson: 'Microclimate management: Squash leaves shade the soil, reducing temperature by up to 10°F and cutting evaporation by 50%. This living mulch is nature\'s AC.' },
+            { id: 'heatwave', emoji: 'â˜€ï¸', title: 'Heat Wave', desc: 'Scorching heat dries the soil.', effects: { moisture: -20, soilTemp: 5 }, lesson: 'Microclimate management: Squash leaves shade the soil, reducing temperature by up to 10Â°F and cutting evaporation by 50%. This living mulch is nature\'s AC.' },
 
-            { id: 'mycorrhiza', emoji: '🍄', title: 'Mycorrhizal Bloom', desc: 'Beneficial fungi spread through the root zone!', effects: { nitrogenLevel: 15, plantHealth: 10 }, lesson: 'Fungal symbiosis: Mycorrhizal fungi extend plant root systems 100-1000×, trading soil minerals for plant sugars. This underground network connects all three sisters.' }
+            { id: 'mycorrhiza', emoji: 'ðŸ„', title: 'Mycorrhizal Bloom', desc: 'Beneficial fungi spread through the root zone!', effects: { nitrogenLevel: 15, plantHealth: 10 }, lesson: 'Fungal symbiosis: Mycorrhizal fungi extend plant root systems 100-1000Ã—, trading soil minerals for plant sugars. This underground network connects all three sisters.' }
 
           ];
 
 
 
-          // ── Action definitions ──
+          // â”€â”€ Action definitions â”€â”€
 
           var _ACTIONS = [
 
-            { id: 'water', emoji: '💧', label: 'Water', effect: function () { return { moisture: 25 }; }, cooldownDays: 4, tip: 'Irrigate the soil' },
+            { id: 'water', emoji: 'ðŸ’§', label: 'Water', effect: function () { return { moisture: 25 }; }, cooldownDays: 4, tip: 'Irrigate the soil' },
 
-            { id: 'compost', emoji: '🧱', label: 'Compost', effect: function () { return { nitrogenLevel: 20, plantHealth: 5 }; }, cooldownDays: 6, tip: 'Add organic compost' },
+            { id: 'compost', emoji: 'ðŸ§±', label: 'Compost', effect: function () { return { nitrogenLevel: 20, plantHealth: 5 }; }, cooldownDays: 6, tip: 'Add organic compost' },
 
-            { id: 'weed', emoji: '🧹', label: 'Weed', effect: function () { return { weedCover: -30, pestPressure: -10 }; }, cooldownDays: 3, tip: 'Remove weeds' },
+            { id: 'weed', emoji: 'ðŸ§¹', label: 'Weed', effect: function () { return { weedCover: -30, pestPressure: -10 }; }, cooldownDays: 3, tip: 'Remove weeds' },
 
-            { id: 'inspect', emoji: '🔍', label: 'Inspect', effect: function () { return { pestPressure: -5 }; }, cooldownDays: 2, tip: 'Check for pests' },
+            { id: 'inspect', emoji: 'ðŸ”', label: 'Inspect', effect: function () { return { pestPressure: -5 }; }, cooldownDays: 2, tip: 'Check for pests' },
 
-            { id: 'mulch', emoji: '🍂', label: 'Mulch', effect: function () { return { weedCover: -15, moisture: 10 }; }, cooldownDays: 5, tip: 'Spread organic mulch' }
+            { id: 'mulch', emoji: 'ðŸ‚', label: 'Mulch', effect: function () { return { weedCover: -15, moisture: 10 }; }, cooldownDays: 5, tip: 'Spread organic mulch' }
 
           ];
 
 
 
-          // ── Helper: apply effects dict ──
+          // â”€â”€ Helper: apply effects dict â”€â”€
 
           function applyEffects(efx) {
 
@@ -23779,7 +16767,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-          // ── Perform action ──
+          // â”€â”€ Perform action â”€â”€
 
           function doAction(actionDef) {
 
@@ -23803,13 +16791,13 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-          // ── Quiz data ──
+          // â”€â”€ Quiz data â”€â”€
 
           var quizzes = [
 
-            { q: 'Which plant fixes atmospheric nitrogen into the soil?', opts: ['Corn', 'Beans', 'Squash'], correct: 'Beans', explain: 'Bean roots house Rhizobium bacteria that convert N₂ gas into ammonia (NH₃), enriching the soil for all three plants.' },
+            { q: 'Which plant fixes atmospheric nitrogen into the soil?', opts: ['Corn', 'Beans', 'Squash'], correct: 'Beans', explain: 'Bean roots house Rhizobium bacteria that convert Nâ‚‚ gas into ammonia (NHâ‚ƒ), enriching the soil for all three plants.' },
 
-            { q: 'What role do squash leaves play in the Three Sisters system?', opts: ['Structural support', 'Living mulch', 'Nitrogen fixation'], correct: 'Living mulch', explain: 'Squash\'s large leaves shade the soil, retaining moisture, cooling roots, and suppressing weed growth — acting as living mulch.' },
+            { q: 'What role do squash leaves play in the Three Sisters system?', opts: ['Structural support', 'Living mulch', 'Nitrogen fixation'], correct: 'Living mulch', explain: 'Squash\'s large leaves shade the soil, retaining moisture, cooling roots, and suppressing weed growth â€” acting as living mulch.' },
 
             { q: 'Why are beans planted around the corn stalks?', opts: ['For shade', 'To climb the stalks', 'For color'], correct: 'To climb the stalks', explain: 'Corn provides a natural trellis for bean vines to climb, replacing the need for artificial supports.' },
 
@@ -23817,11 +16805,11 @@ var d = (labToolData.companionPlanting) || {};
 
             { q: 'Corn and beans together provide a complete protein because:', opts: ['They taste good together', 'Their amino acid profiles complement each other', 'They grow at the same rate'], correct: 'Their amino acid profiles complement each other', explain: 'Corn is rich in methionine but low in lysine; beans are rich in lysine but low in methionine. Together they form a complete protein.' },
 
-            { q: 'What organisms in bean root nodules actually fix nitrogen?', opts: ['Mycorrhizal fungi', 'Rhizobium bacteria', 'Earthworms'], correct: 'Rhizobium bacteria', explain: 'Rhizobium bacteria form a symbiotic relationship with legume roots, converting atmospheric N₂ into plant-usable ammonia through nitrogenase enzyme.' },
+            { q: 'What organisms in bean root nodules actually fix nitrogen?', opts: ['Mycorrhizal fungi', 'Rhizobium bacteria', 'Earthworms'], correct: 'Rhizobium bacteria', explain: 'Rhizobium bacteria form a symbiotic relationship with legume roots, converting atmospheric Nâ‚‚ into plant-usable ammonia through nitrogenase enzyme.' },
 
             { q: 'How do prickly squash stems help the garden?', opts: ['They attract pollinators', 'They deter pests like raccoons and deer', 'They provide nutrients'], correct: 'They deter pests like raccoons and deer', explain: 'The spiny, prickly stems and vines of many squash varieties create a natural barrier that discourages animals from entering the garden.' },
 
-            { q: 'What is the Haudenosaunee name for the Three Sisters?', opts: ['Milpa', 'De-oh-há-ko', 'Teosinte'], correct: 'De-oh-há-ko', explain: 'De-oh-há-ko means "they sustain us" — the Haudenosaunee view the Three Sisters as inseparable spiritual beings, not merely crops.' }
+            { q: 'What is the Haudenosaunee name for the Three Sisters?', opts: ['Milpa', 'De-oh-hÃ¡-ko', 'Teosinte'], correct: 'De-oh-hÃ¡-ko', explain: 'De-oh-hÃ¡-ko means "they sustain us" â€” the Haudenosaunee view the Three Sisters as inseparable spiritual beings, not merely crops.' }
 
           ];
 
@@ -23829,7 +16817,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-          // ── Canvas Renderer ──
+          // â”€â”€ Canvas Renderer â”€â”€
 
           var _lastGardenCanvas = null;
 
@@ -23903,7 +16891,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Underground soil layers ──
+              // â”€â”€ Underground soil layers â”€â”€
 
               // Subsoil
 
@@ -23945,7 +16933,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Root systems underground ──
+              // â”€â”€ Root systems underground â”€â”€
 
               if (_corn && gt > 0.1) {
 
@@ -23991,7 +16979,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   ctx.fill();
 
-                  // N₂ label near nodule
+                  // Nâ‚‚ label near nodule
 
                   if (ni < 2 && gt > 0.5) {
 
@@ -23999,7 +16987,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     ctx.font = (8 + gt * 4) + 'px monospace';
 
-                    ctx.fillText('N₂→NH₃', nx + 5, ny - 3);
+                    ctx.fillText('Nâ‚‚â†’NHâ‚ƒ', nx + 5, ny - 3);
 
                   }
 
@@ -24007,7 +16995,7 @@ var d = (labToolData.companionPlanting) || {};
 
               }
 
-              // ── Mycorrhizal fungal network (connecting all root systems) ──
+              // â”€â”€ Mycorrhizal fungal network (connecting all root systems) â”€â”€
 
               if ((_corn && _beans || _corn && _squash || _beans && _squash) && gt > 0.25) {
 
@@ -24079,7 +17067,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Corn stalks (enhanced with segments, leaf midribs, silk, husks) ──
+              // â”€â”€ Corn stalks (enhanced with segments, leaf midribs, silk, husks) â”€â”€
 
               if (_corn) {
 
@@ -24333,7 +17321,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Bean vines climbing corn ──
+              // â”€â”€ Bean vines climbing corn â”€â”€
 
               if (_beans && _corn) {
 
@@ -24393,7 +17381,7 @@ var d = (labToolData.companionPlanting) || {};
 
               } else if (_beans && !_corn) {
 
-                // Beans without corn — sprawling on ground
+                // Beans without corn â€” sprawling on ground
 
                 ctx.strokeStyle = '#1B5E20';
 
@@ -24415,7 +17403,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Squash vines & leaves (enhanced with multi-lobed leaves, cross-veins, flowers, ribbed fruit) ──
+              // â”€â”€ Squash vines & leaves (enhanced with multi-lobed leaves, cross-veins, flowers, ribbed fruit) â”€â”€
 
               if (_squash) {
 
@@ -24677,7 +17665,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Earthworms in soil ──
+              // â”€â”€ Earthworms in soil â”€â”€
 
               if (gt > 0.15) {
 
@@ -24783,19 +17771,19 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Season-aware Sky ──
+              // â”€â”€ Season-aware Sky â”€â”€
 
               var dayPhase = (Math.sin(tick * 0.003) + 1) / 2;
 
               var seasonSkies = [
 
-                { topH: 170, topS: 65, topL: 65, botH: 90, botS: 45, botL: 80 },   // spring — fresh blue-green
+                { topH: 170, topS: 65, topL: 65, botH: 90, botS: 45, botL: 80 },   // spring â€” fresh blue-green
 
-                { topH: 210, topS: 70, topL: 60, botH: 40, botS: 55, botL: 82 },   // summer — deep blue
+                { topH: 210, topS: 70, topL: 60, botH: 40, botS: 55, botL: 82 },   // summer â€” deep blue
 
-                { topH: 220, topS: 35, topL: 50, botH: 25, botS: 60, botL: 70 },   // autumn — muted orange
+                { topH: 220, topS: 35, topL: 50, botH: 25, botS: 60, botL: 70 },   // autumn â€” muted orange
 
-                { topH: 215, topS: 25, topL: 40, botH: 220, botS: 15, botL: 65 }   // winter — gray-blue
+                { topH: 215, topS: 25, topL: 40, botH: 220, botS: 15, botL: 65 }   // winter â€” gray-blue
 
               ];
 
@@ -24889,7 +17877,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Ground (season-tinted) ──
+              // â”€â”€ Ground (season-tinted) â”€â”€
 
               var groundColors = [
 
@@ -24945,7 +17933,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Draw garden mound(s) ──
+              // â”€â”€ Draw garden mound(s) â”€â”€
 
               if (_compare) {
 
@@ -24997,7 +17985,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Floating particles (pollen, pollinators, N₂ symbols) ──
+              // â”€â”€ Floating particles (pollen, pollinators, Nâ‚‚ symbols) â”€â”€
 
               particles.forEach(function (p) {
 
@@ -25123,7 +18111,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   ctx.font = '8px monospace';
 
-                  ctx.fillText('N₂', p.x, p.y);
+                  ctx.fillText('Nâ‚‚', p.x, p.y);
 
                 }
 
@@ -25131,7 +18119,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Rain effect (moisture indicator when squash is planted) ──
+              // â”€â”€ Rain effect (moisture indicator when squash is planted) â”€â”€
 
               if (_squash && _gt > 10) {
 
@@ -25179,7 +18167,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Pest swarm overlay ──
+              // â”€â”€ Pest swarm overlay â”€â”€
 
               if (_pestLvl > 40) {
 
@@ -25205,7 +18193,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Weed overlay ──
+              // â”€â”€ Weed overlay â”€â”€
 
               if (_weedLvl > 30) {
 
@@ -25237,7 +18225,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Wilting tint (low moisture) ──
+              // â”€â”€ Wilting tint (low moisture) â”€â”€
 
               if (_moistLvl < 25 && (_corn || _beans || _squash)) {
 
@@ -25249,11 +18237,11 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Day / Season HUD ──
+              // â”€â”€ Day / Season HUD â”€â”€
 
               if (_corn || _beans || _squash) {
 
-                var seasonNames = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'];
+                var seasonNames = ['ðŸŒ± Spring', 'â˜€ï¸ Summer', 'ðŸ‚ Autumn', 'â„ï¸ Winter'];
 
                 var hudText = seasonNames[_season] + '  Day ' + (_dayNum % 30 + 1) + '/30';
 
@@ -25285,7 +18273,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Seasonal Transition Animation ──
+              // â”€â”€ Seasonal Transition Animation â”€â”€
 
               var _dayInSeason = _dayNum % 30;
 
@@ -25295,13 +18283,13 @@ var d = (labToolData.companionPlanting) || {};
 
                 var _seasonOverlays = [
 
-                  { color: 'rgba(100,200,100,', emoji: '🌱', name: 'Spring' },
+                  { color: 'rgba(100,200,100,', emoji: 'ðŸŒ±', name: 'Spring' },
 
-                  { color: 'rgba(255,200,50,', emoji: '☀️', name: 'Summer' },
+                  { color: 'rgba(255,200,50,', emoji: 'â˜€ï¸', name: 'Summer' },
 
-                  { color: 'rgba(180,120,50,', emoji: '🍂', name: 'Autumn' },
+                  { color: 'rgba(180,120,50,', emoji: 'ðŸ‚', name: 'Autumn' },
 
-                  { color: 'rgba(180,200,230,', emoji: '❄️', name: 'Winter' }
+                  { color: 'rgba(180,200,230,', emoji: 'â„ï¸', name: 'Winter' }
 
                 ];
 
@@ -25383,7 +18371,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-          // ── Gauge helper (inline colors to avoid Tailwind JIT purge) ──
+          // â”€â”€ Gauge helper (inline colors to avoid Tailwind JIT purge) â”€â”€
 
           var _gaugeColors = {
 
@@ -25431,13 +18419,13 @@ var d = (labToolData.companionPlanting) || {};
 
           return React.createElement("div", { className: "space-y-4 animate-in fade-in duration-200" },
 
-            // ── Tutorial ──
+            // â”€â”€ Tutorial â”€â”€
 
             renderTutorial('companionPlanting', _tutCompanionPlanting),
 
 
 
-            // ── Header ──
+            // â”€â”€ Header â”€â”€
 
             React.createElement("div", { className: "flex items-center justify-between" },
 
@@ -25453,9 +18441,9 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("div", null,
 
-                  React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "🌱 Companion Planting Lab"),
+                  React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "ðŸŒ± Companion Planting Lab"),
 
-                  React.createElement("p", { className: "text-xs text-slate-400" }, "The milpa / Three Sisters — 7,000+ years of agricultural science")
+                  React.createElement("p", { className: "text-xs text-slate-400" }, "The milpa / Three Sisters â€” 7,000+ years of agricultural science")
 
                 )
 
@@ -25471,7 +18459,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   "aria-label": "Cultural context"
 
-                }, "📜 Origins"),
+                }, "ðŸ“œ Origins"),
 
                 React.createElement("button", {
 
@@ -25479,7 +18467,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (compareMode ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-slate-100 text-slate-600 hover:bg-blue-50')
 
-                }, "🔬 Compare"),
+                }, "ðŸ”¬ Compare"),
 
                 React.createElement("button", {
 
@@ -25487,7 +18475,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showSoilDetail ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
 
-                }, "🧪 Soil Science")
+                }, "ðŸ§ª Soil Science")
 
               )
 
@@ -25495,11 +18483,11 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-            // ── Cultural Context Panel ──
+            // â”€â”€ Cultural Context Panel â”€â”€
 
             showCulture && React.createElement("div", { className: "bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 rounded-xl border border-amber-200 p-4 space-y-3" },
 
-              React.createElement("h4", { className: "text-sm font-bold text-amber-900 flex items-center gap-2" }, "📜 Cultural Origins & Living Knowledge"),
+              React.createElement("h4", { className: "text-sm font-bold text-amber-900 flex items-center gap-2" }, "ðŸ“œ Cultural Origins & Living Knowledge"),
 
               React.createElement("div", { className: "grid md:grid-cols-2 gap-3 text-xs text-amber-800 leading-relaxed" },
 
@@ -25507,7 +18495,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   React.createElement("p", { className: "font-bold text-amber-900" }, "Mesoamerican Origins: The Milpa"),
 
-                  React.createElement("p", null, "The companion planting of corn, beans, and squash — known as milpa in Mesoamerica — is one of humanity's oldest agricultural innovations. Archaeological evidence traces this system to over 7,000 years ago in present-day Mexico. Squash was domesticated ~10,000 years ago, maize ~9,000 years ago from the wild grass teosinte, and common beans ~7,000 years ago."),
+                  React.createElement("p", null, "The companion planting of corn, beans, and squash â€” known as milpa in Mesoamerica â€” is one of humanity's oldest agricultural innovations. Archaeological evidence traces this system to over 7,000 years ago in present-day Mexico. Squash was domesticated ~10,000 years ago, maize ~9,000 years ago from the wild grass teosinte, and common beans ~7,000 years ago."),
 
                   React.createElement("p", null, "The milpa system diffused northward over millennia, appearing in North America around 1070 CE. By the time European colonizers arrived around 1500, it was a foundational food system across Central and North America.")
 
@@ -25515,9 +18503,9 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("div", { className: "space-y-2" },
 
-                  React.createElement("p", { className: "font-bold text-amber-900" }, "Haudenosaunee Tradition: De-oh-há-ko"),
+                  React.createElement("p", { className: "font-bold text-amber-900" }, "Haudenosaunee Tradition: De-oh-hÃ¡-ko"),
 
-                  React.createElement("p", null, "The Haudenosaunee (Iroquois Confederacy) call these plants De-oh-há-ko — \"they sustain us.\" The Three Sisters are spiritual beings and precious gifts, central to Haudenosaunee language, ceremony, songs, and cosmology. This is not merely a farming technique — it is a living relationship between people and plants."),
+                  React.createElement("p", null, "The Haudenosaunee (Iroquois Confederacy) call these plants De-oh-hÃ¡-ko â€” \"they sustain us.\" The Three Sisters are spiritual beings and precious gifts, central to Haudenosaunee language, ceremony, songs, and cosmology. This is not merely a farming technique â€” it is a living relationship between people and plants."),
 
                   React.createElement("p", null, "This knowledge is not historical artifact. Milpa and Three Sisters gardens are actively cultivated today across the Americas, representing a continuous tradition of ecological wisdom.")
 
@@ -25531,11 +18519,11 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("a", { href: "https://www.haudenosauneeconfederacy.com/", target: "_blank", rel: "noopener noreferrer", className: "text-[10px] text-amber-700 underline hover:text-amber-900" }, "Haudenosaunee Confederacy"),
 
-                React.createElement("span", { className: "text-[10px] text-amber-400" }, "•"),
+                React.createElement("span", { className: "text-[10px] text-amber-400" }, "â€¢"),
 
                 React.createElement("a", { href: "https://americanindian.si.edu/", target: "_blank", rel: "noopener noreferrer", className: "text-[10px] text-amber-700 underline hover:text-amber-900" }, "Smithsonian NMAI"),
 
-                React.createElement("span", { className: "text-[10px] text-amber-400" }, "•"),
+                React.createElement("span", { className: "text-[10px] text-amber-400" }, "â€¢"),
 
                 React.createElement("a", { href: "https://www.usda.gov/media/blog/2021/11/02/three-sisters-and-more-indigenous-food-systems", target: "_blank", rel: "noopener noreferrer", className: "text-[10px] text-amber-700 underline hover:text-amber-900" }, "USDA: Three Sisters")
 
@@ -25545,13 +18533,13 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-            // ── Main Layout: Canvas + Dashboard ──
+            // â”€â”€ Main Layout: Canvas + Dashboard â”€â”€
 
             React.createElement("div", { className: "grid md:grid-cols-3 gap-4" },
 
 
 
-              // ── Canvas ──
+              // â”€â”€ Canvas â”€â”€
 
               React.createElement("div", { className: "md:col-span-2" },
 
@@ -25573,7 +18561,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Soil Chemistry Dashboard ──
+              // â”€â”€ Soil Chemistry Dashboard â”€â”€
 
               React.createElement("div", { className: "space-y-3" },
 
@@ -25581,27 +18569,27 @@ var d = (labToolData.companionPlanting) || {};
 
                   React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                    React.createElement("h4", { className: "text-xs font-bold text-emerald-800 flex items-center gap-1.5" }, "🧪 Needs & Meters"),
+                    React.createElement("h4", { className: "text-xs font-bold text-emerald-800 flex items-center gap-1.5" }, "ðŸ§ª Needs & Meters"),
 
                     phase === 'grow' && React.createElement("span", { className: "text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full" },
 
-                      seasonName + ' • Day ' + dayInSeason + '/30'
+                      seasonName + ' â€¢ Day ' + dayInSeason + '/30'
 
                     )
 
                   ),
 
-                  gauge('Moisture', moisture, 'blue', '💧', '%'),
+                  gauge('Moisture', moisture, 'blue', 'ðŸ’§', '%'),
 
-                  gauge('Nitrogen (N₂)', nitrogen, 'emerald', '🫘', '%'),
+                  gauge('Nitrogen (Nâ‚‚)', nitrogen, 'emerald', 'ðŸ«˜', '%'),
 
-                  gauge('Pest Pressure', pestPressure, 'red', '🐛', '%'),
+                  gauge('Pest Pressure', pestPressure, 'red', 'ðŸ›', '%'),
 
-                  gauge('Weed Cover', weedPressure, 'orange', '🌿', '%'),
+                  gauge('Weed Cover', weedPressure, 'orange', 'ðŸŒ¿', '%'),
 
-                  gauge('Soil Temp', temperature, 'orange', '🌡️', '°C'),
+                  gauge('Soil Temp', temperature, 'orange', 'ðŸŒ¡ï¸', 'Â°C'),
 
-                  gauge('Plant Health', plantHealth, plantHealth > 60 ? 'emerald' : plantHealth > 30 ? 'orange' : 'red', '❤️', '%'),
+                  gauge('Plant Health', plantHealth, plantHealth > 60 ? 'emerald' : plantHealth > 30 ? 'orange' : 'red', 'â¤ï¸', '%'),
 
                   React.createElement("div", { className: "border-t border-emerald-200 pt-2 mt-2" },
 
@@ -25623,13 +18611,13 @@ var d = (labToolData.companionPlanting) || {};
 
                 compareMode && React.createElement("div", { className: "bg-gradient-to-br from-red-50 to-orange-50 rounded-xl border border-red-200 p-3 space-y-2" },
 
-                  React.createElement("h4", { className: "text-xs font-bold text-red-800" }, "🌽 Monoculture Comparison"),
+                  React.createElement("h4", { className: "text-xs font-bold text-red-800" }, "ðŸŒ½ Monoculture Comparison"),
 
-                  gauge('Nitrogen', monoN, 'red', '📉', '%'),
+                  gauge('Nitrogen', monoN, 'red', 'ðŸ“‰', '%'),
 
-                  gauge('Moisture', monoH2O, 'red', '📉', '%'),
+                  gauge('Moisture', monoH2O, 'red', 'ðŸ“‰', '%'),
 
-                  gauge('Weeds', monoWeeds, 'red', '📈', '%'),
+                  gauge('Weeds', monoWeeds, 'red', 'ðŸ“ˆ', '%'),
 
                   React.createElement("div", { className: "border-t border-red-200 pt-2" },
 
@@ -25639,7 +18627,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   growthTime > 30 && React.createElement("div", { className: "text-[10px] text-red-600 bg-red-100 rounded-lg p-2 mt-1" },
 
-                    "⚠️ Without beans, nitrogen depletes. Without squash leaves, moisture drops and weeds take over."
+                    "âš ï¸ Without beans, nitrogen depletes. Without squash leaves, moisture drops and weeds take over."
 
                   )
 
@@ -25651,15 +18639,15 @@ var d = (labToolData.companionPlanting) || {};
 
                 showSoilDetail && React.createElement("div", { className: "bg-gradient-to-br from-stone-50 to-amber-50 rounded-xl border border-stone-200 p-3 text-[10px] text-stone-700 space-y-2 leading-relaxed" },
 
-                  React.createElement("h4", { className: "font-bold text-stone-800 text-xs" }, "🔬 The Science"),
+                  React.createElement("h4", { className: "font-bold text-stone-800 text-xs" }, "ðŸ”¬ The Science"),
 
-                  React.createElement("p", null, React.createElement("b", null, "Nitrogen Fixation:"), " Rhizobium bacteria in bean root nodules convert atmospheric N₂ → NH₃ (ammonia) via nitrogenase enzyme. This biological process enriches soil without synthetic fertilizers."),
+                  React.createElement("p", null, React.createElement("b", null, "Nitrogen Fixation:"), " Rhizobium bacteria in bean root nodules convert atmospheric Nâ‚‚ â†’ NHâ‚ƒ (ammonia) via nitrogenase enzyme. This biological process enriches soil without synthetic fertilizers."),
 
                   React.createElement("p", null, React.createElement("b", null, "Living Mulch:"), " Squash's broad leaves create ground cover that shades soil, reducing evapotranspiration by up to 50% and suppressing weed germination by blocking sunlight."),
 
                   React.createElement("p", null, React.createElement("b", null, "Structural Symbiosis:"), " Corn stalks serve as natural trellises for bean vines. Bean vines, in turn, stabilize corn against wind shear."),
 
-                  React.createElement("p", null, React.createElement("b", null, "Nutritional Complementarity:"), " Corn provides methionine-rich carbohydrates; beans provide lysine-rich protein. Together they form a complete amino acid profile — a balanced diet from one garden.")
+                  React.createElement("p", null, React.createElement("b", null, "Nutritional Complementarity:"), " Corn provides methionine-rich carbohydrates; beans provide lysine-rich protein. Together they form a complete amino acid profile â€” a balanced diet from one garden.")
 
                 )
 
@@ -25669,7 +18657,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-            // ── Event Popup ──
+            // â”€â”€ Event Popup â”€â”€
 
             eventPopup && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-4 space-y-2 animate-in slide-in-from-top duration-300 shadow-xl" },
 
@@ -25683,13 +18671,13 @@ var d = (labToolData.companionPlanting) || {};
 
                   className: "text-indigo-400 hover:text-indigo-700 text-lg font-bold"
 
-                }, "✕")
+                }, "âœ•")
 
               ),
 
               React.createElement("p", { className: "text-xs text-indigo-800 leading-relaxed bg-white/50 rounded-lg p-2" },
 
-                "🔬 ", React.createElement("b", null, "Science: "), eventPopup.lesson
+                "ðŸ”¬ ", React.createElement("b", null, "Science: "), eventPopup.lesson
 
               )
 
@@ -25697,7 +18685,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-            // ── Controls Bar ──
+            // â”€â”€ Controls Bar â”€â”€
 
             React.createElement("div", { className: "space-y-3" },
 
@@ -25721,7 +18709,7 @@ var d = (labToolData.companionPlanting) || {};
 
                         awardStemXP('companion_planting_corn', 10, 'Planted corn');
 
-                        if (addToast) addToast('🌽 Corn planted! Tall stalks provide a trellis for beans.', 'success');
+                        if (addToast) addToast('ðŸŒ½ Corn planted! Tall stalks provide a trellis for beans.', 'success');
 
                       }
 
@@ -25729,7 +18717,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (cornPlanted ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' : 'bg-slate-50 text-slate-600 hover:bg-yellow-50 border border-slate-200')
 
-                  }, "🌽 Corn" + (cornPlanted ? ' ✓' : '')),
+                  }, "ðŸŒ½ Corn" + (cornPlanted ? ' âœ“' : '')),
 
                   React.createElement("button", {
 
@@ -25741,7 +18729,7 @@ var d = (labToolData.companionPlanting) || {};
 
                         awardStemXP('companion_planting_beans', 10, 'Planted beans');
 
-                        if (addToast) addToast('🫘 Beans planted! Rhizobium bacteria fix nitrogen.', 'success');
+                        if (addToast) addToast('ðŸ«˜ Beans planted! Rhizobium bacteria fix nitrogen.', 'success');
 
                       }
 
@@ -25749,7 +18737,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (beansPlanted ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-slate-50 text-slate-600 hover:bg-green-50 border border-slate-200')
 
-                  }, "🫘 Beans" + (beansPlanted ? ' ✓' : '')),
+                  }, "ðŸ«˜ Beans" + (beansPlanted ? ' âœ“' : '')),
 
                   React.createElement("button", {
 
@@ -25761,7 +18749,7 @@ var d = (labToolData.companionPlanting) || {};
 
                         awardStemXP('companion_planting_squash', 10, 'Planted squash');
 
-                        if (addToast) addToast('🎃 Squash planted! Leaves shade soil and trap moisture.', 'success');
+                        if (addToast) addToast('ðŸŽƒ Squash planted! Leaves shade soil and trap moisture.', 'success');
 
                       }
 
@@ -25769,7 +18757,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (squashPlanted ? 'bg-orange-100 text-orange-800 border border-orange-300' : 'bg-slate-50 text-slate-600 hover:bg-orange-50 border border-slate-200')
 
-                  }, "🎃 Squash" + (squashPlanted ? ' ✓' : ''))
+                  }, "ðŸŽƒ Squash" + (squashPlanted ? ' âœ“' : ''))
 
                 ),
 
@@ -25779,7 +18767,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   className: "px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-200 hover:from-emerald-600 hover:to-green-700 transition-all flex items-center gap-1.5"
 
-                }, "▶ Grow!"),
+                }, "â–¶ Grow!"),
 
                 !allPlanted && React.createElement("span", { className: "text-[10px] text-slate-400 italic" }, "Plant all three seeds to begin")
 
@@ -25787,13 +18775,13 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Action Toolbar (grow phase) ──
+              // â”€â”€ Action Toolbar (grow phase) â”€â”€
 
               phase === 'grow' && React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-3" },
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                  React.createElement("span", { className: "text-xs font-bold text-emerald-800" }, "🎮 Actions"),
+                  React.createElement("span", { className: "text-xs font-bold text-emerald-800" }, "ðŸŽ® Actions"),
 
                   React.createElement("div", { className: "flex-1" }),
 
@@ -25813,7 +18801,7 @@ var d = (labToolData.companionPlanting) || {};
 
                         className: "px-2 py-0.5 rounded text-[10px] font-bold transition-all " + (growSpeed === s ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50')
 
-                      }, s + '×');
+                      }, s + 'Ã—');
 
                     })
 
@@ -25829,15 +18817,15 @@ var d = (labToolData.companionPlanting) || {};
 
                   [
 
-                    { id: 'water', emoji: '💧', label: 'Water', tip: 'Irrigation replenishes soil moisture. Over-watering leaches nutrients.' },
+                    { id: 'water', emoji: 'ðŸ’§', label: 'Water', tip: 'Irrigation replenishes soil moisture. Over-watering leaches nutrients.' },
 
-                    { id: 'compost', emoji: '🧪', label: 'Compost', tip: 'Composting adds organic nitrogen and beneficial microbes.' },
+                    { id: 'compost', emoji: 'ðŸ§ª', label: 'Compost', tip: 'Composting adds organic nitrogen and beneficial microbes.' },
 
-                    { id: 'weed', emoji: '🌿', label: 'Weed', tip: 'Weeding removes competition for light, water, and nutrients.' },
+                    { id: 'weed', emoji: 'ðŸŒ¿', label: 'Weed', tip: 'Weeding removes competition for light, water, and nutrients.' },
 
-                    { id: 'inspect', emoji: '🔍', label: 'Inspect', tip: 'Inspecting reveals plant condition and early pest signs.' },
+                    { id: 'inspect', emoji: 'ðŸ”', label: 'Inspect', tip: 'Inspecting reveals plant condition and early pest signs.' },
 
-                    { id: 'mulch', emoji: '🍂', label: 'Mulch', tip: 'Mulching regulates soil temperature and retains moisture.' }
+                    { id: 'mulch', emoji: 'ðŸ‚', label: 'Mulch', tip: 'Mulching regulates soil temperature and retains moisture.' }
 
                   ].map(function (action) {
 
@@ -25921,21 +18909,21 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Synergy Panel (grow phase) ──
+              // â”€â”€ Synergy Panel (grow phase) â”€â”€
 
               phase === 'grow' && React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-xl border border-purple-200 p-3 space-y-2" },
 
-                React.createElement("h4", { className: "text-xs font-bold text-purple-800 flex items-center gap-1.5" }, "🤝 Companion Synergies"),
+                React.createElement("h4", { className: "text-xs font-bold text-purple-800 flex items-center gap-1.5" }, "ðŸ¤ Companion Synergies"),
 
                 React.createElement("div", { className: "grid grid-cols-3 gap-3" },
 
                   [
 
-                    { label: 'Corn ↔ Beans', val: synCornBeans, desc: 'Structural support & N-fixation', color: 'emerald' },
+                    { label: 'Corn â†” Beans', val: synCornBeans, desc: 'Structural support & N-fixation', color: 'emerald' },
 
-                    { label: 'Beans → Soil', val: synBeansSoil, desc: 'Rhizobium nitrogen enrichment', color: 'blue' },
+                    { label: 'Beans â†’ Soil', val: synBeansSoil, desc: 'Rhizobium nitrogen enrichment', color: 'blue' },
 
-                    { label: 'Squash → All', val: synSquashAll, desc: 'Living mulch & pest deterrent', color: 'orange' }
+                    { label: 'Squash â†’ All', val: synSquashAll, desc: 'Living mulch & pest deterrent', color: 'orange' }
 
                   ].map(function (syn) {
 
@@ -25945,7 +18933,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     return React.createElement("div", { key: syn.label, className: "text-center space-y-1" },
 
-                      React.createElement("div", { className: "text-[10px] font-bold " + (unlocked ? 'text-purple-700' : 'text-slate-500') }, (unlocked ? '✨ ' : '🔒 ') + syn.label),
+                      React.createElement("div", { className: "text-[10px] font-bold " + (unlocked ? 'text-purple-700' : 'text-slate-500') }, (unlocked ? 'âœ¨ ' : 'ðŸ”’ ') + syn.label),
 
                       React.createElement("div", { className: "w-full h-2 bg-slate-200 rounded-full overflow-hidden" },
 
@@ -25967,7 +18955,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Harvest Panel ──
+              // â”€â”€ Harvest Panel â”€â”€
 
               phase === 'harvest' && (() => {
 
@@ -25987,21 +18975,21 @@ var d = (labToolData.companionPlanting) || {};
 
                 return React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border-2 border-amber-300 p-4 space-y-3 shadow-lg" },
 
-                React.createElement("h4", { className: "text-sm font-bold text-amber-900 flex items-center gap-2" }, "🌾 Season " + (seasonIndex + 1) + " Harvest Report"),
+                React.createElement("h4", { className: "text-sm font-bold text-amber-900 flex items-center gap-2" }, "ðŸŒ¾ Season " + (seasonIndex + 1) + " Harvest Report"),
 
-                // ── Per-Crop Yield Indicators ──
+                // â”€â”€ Per-Crop Yield Indicators â”€â”€
 
                 React.createElement("div", { className: "bg-white rounded-xl p-3 space-y-2 border border-amber-200" },
 
-                  React.createElement("div", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1" }, "🌾 Crop Yields"),
+                  React.createElement("div", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1" }, "ðŸŒ¾ Crop Yields"),
 
                   [
 
-                    { emoji: '🌽', name: 'Corn', value: _cornYield, planted: cornPlanted, color: '#ca8a04', bgColor: '#fef9c3', unit: 'ears' },
+                    { emoji: 'ðŸŒ½', name: 'Corn', value: _cornYield, planted: cornPlanted, color: '#ca8a04', bgColor: '#fef9c3', unit: 'ears' },
 
-                    { emoji: '🫘', name: 'Beans', value: _beanYield, planted: beansPlanted, color: '#16a34a', bgColor: '#dcfce7', unit: 'lbs' },
+                    { emoji: 'ðŸ«˜', name: 'Beans', value: _beanYield, planted: beansPlanted, color: '#16a34a', bgColor: '#dcfce7', unit: 'lbs' },
 
-                    { emoji: '🎃', name: 'Squash', value: _squashYield, planted: squashPlanted, color: '#ea580c', bgColor: '#fff7ed', unit: 'lbs' }
+                    { emoji: 'ðŸŽƒ', name: 'Squash', value: _squashYield, planted: squashPlanted, color: '#ea580c', bgColor: '#fff7ed', unit: 'lbs' }
 
                   ].map(function (crop) {
 
@@ -26017,7 +19005,7 @@ var d = (labToolData.companionPlanting) || {};
 
                           React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, crop.name),
 
-                          React.createElement("span", { className: "text-[10px] font-bold", style: { color: crop.color } }, crop.planted ? crop.value + ' ' + crop.unit : '—')
+                          React.createElement("span", { className: "text-[10px] font-bold", style: { color: crop.color } }, crop.planted ? crop.value + ' ' + crop.unit : 'â€”')
 
                         ),
 
@@ -26039,7 +19027,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     React.createElement("span", { className: "text-sm font-bold text-amber-700" }, _totalYield + ' units'),
 
-                    synergyBonus > 1.05 && React.createElement("span", { className: "text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full" }, '✨ +' + Math.round((synergyBonus - 1) * 100) + '% synergy bonus')
+                    synergyBonus > 1.05 && React.createElement("span", { className: "text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full" }, 'âœ¨ +' + Math.round((synergyBonus - 1) * 100) + '% synergy bonus')
 
                   )
 
@@ -26075,9 +19063,9 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("div", { className: "flex items-center justify-between bg-amber-100 rounded-lg p-2" },
 
-                  React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "🏆 Total Score: " + totalScore),
+                  React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "ðŸ† Total Score: " + totalScore),
 
-                  React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "🌾 Harvests: " + harvestCount)
+                  React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "ðŸŒ¾ Harvests: " + harvestCount)
 
                 ),
 
@@ -26121,13 +19109,13 @@ var d = (labToolData.companionPlanting) || {};
 
                     });
 
-                    if (addToast) addToast('🌾 Harvest complete! Yield: ' + (_cornYield + _beanYield + _squashYield) + ' units. Nitrogen carryover: +' + Math.round(_carry) + '%. +20 XP', 'success');
+                    if (addToast) addToast('ðŸŒ¾ Harvest complete! Yield: ' + (_cornYield + _beanYield + _squashYield) + ' units. Nitrogen carryover: +' + Math.round(_carry) + '%. +20 XP', 'success');
 
                   },
 
                   className: "w-full px-4 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-yellow-600 text-white shadow-lg shadow-amber-200 hover:from-amber-600 hover:to-yellow-700 transition-all"
 
-                }, "🌾 Harvest & Start Next Season →")
+                }, "ðŸŒ¾ Harvest & Start Next Season â†’")
 
               ); })()
 
@@ -26135,7 +19123,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-            // ── Quiz Button ──
+            // â”€â”€ Quiz Button â”€â”€
 
             React.createElement("div", { className: "flex items-center gap-3" },
 
@@ -26147,7 +19135,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (quizActive ? 'bg-indigo-600 text-white shadow-lg' : 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100')
 
-              }, "🧠 Quiz"),
+              }, "ðŸ§  Quiz"),
 
               React.createElement("button", {
 
@@ -26161,7 +19149,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-            // ── Quiz Panel ──
+            // â”€â”€ Quiz Panel â”€â”€
 
             showSciencePanel && React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-4 space-y-4", style: { maxHeight: '60vh', overflowY: 'auto' } },
 
@@ -26291,7 +19279,7 @@ var d = (labToolData.companionPlanting) || {};
 
             quizActive && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-200 p-4 space-y-3" },
 
-              React.createElement("h4", { className: "text-sm font-bold text-indigo-900" }, "🧠 Question " + ((quizQ % quizzes.length) + 1) + " of " + quizzes.length),
+              React.createElement("h4", { className: "text-sm font-bold text-indigo-900" }, "ðŸ§  Question " + ((quizQ % quizzes.length) + 1) + " of " + quizzes.length),
 
               React.createElement("p", { className: "text-sm text-indigo-800" }, currentQuiz.q),
 
@@ -26317,13 +19305,13 @@ var d = (labToolData.companionPlanting) || {};
 
                       if (isCorrect) {
 
-                        upd('quizFeedback', '✅ Correct! ' + currentQuiz.explain);
+                        upd('quizFeedback', 'âœ… Correct! ' + currentQuiz.explain);
 
                         awardStemXP('companion_planting_quiz', 15, 'Quiz correct: ' + currentQuiz.q.substring(0, 30));
 
                       } else {
 
-                        upd('quizFeedback', '❌ Not quite. ' + currentQuiz.explain);
+                        upd('quizFeedback', 'âŒ Not quite. ' + currentQuiz.explain);
 
                       }
 
@@ -26353,7 +19341,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 className: "px-4 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all"
 
-              }, quizQ + 1 < quizzes.length ? "Next Question →" : "🔄 Restart Quiz"),
+              }, quizQ + 1 < quizzes.length ? "Next Question â†’" : "ðŸ”„ Restart Quiz"),
 
               // AI hint for wrong answers
 
@@ -26363,7 +19351,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-            // ── Snapshot button ──
+            // â”€â”€ Snapshot button â”€â”€
 
             React.createElement("button", {
 
@@ -26371,13 +19359,13 @@ var d = (labToolData.companionPlanting) || {};
 
                 setToolSnapshots(function (prev) { return prev.concat([{ id: 'garden-' + Date.now(), tool: 'companionPlanting', label: 'Companion Planting Lab', data: Object.assign({}, d), timestamp: Date.now() }]); });
 
-                if (addToast) addToast('📸 Garden snapshot saved!', 'success');
+                if (addToast) addToast('ðŸ“¸ Garden snapshot saved!', 'success');
 
               },
 
               className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 rounded-full hover:from-emerald-600 hover:to-green-700 shadow-md hover:shadow-lg transition-all"
 
-            }, "📸 Snapshot")
+            }, "ðŸ“¸ Snapshot")
 
           );
       })();
@@ -26385,15 +19373,15 @@ var d = (labToolData.companionPlanting) || {};
   });
 
 
-  // ═══ 🔬 graphCalc (graphCalc) ═══
+  // â•â•â• ðŸ”¬ graphCalc (graphCalc) â•â•â•
   window.StemLab.registerTool('graphCalc', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'graphCalc',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -26426,7 +19414,7 @@ var d = (labToolData.companionPlanting) || {};
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (graphCalc) ──
+      // â”€â”€ Tool body (graphCalc) â”€â”€
       return (function() {
 const d = labToolData.graphCalc || {};
 
@@ -26770,7 +19758,7 @@ const d = labToolData.graphCalc || {};
 
 
 
-                // ── Math Pad (collapsible symbol buttons) ──
+                // â”€â”€ Math Pad (collapsible symbol buttons) â”€â”€
 
                 React.createElement('div', { style: { padding: '4px 12px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
 
@@ -26970,7 +19958,7 @@ const d = labToolData.graphCalc || {};
 
 
 
-                // ── Arithmetic Calculator ──
+                // â”€â”€ Arithmetic Calculator â”€â”€
 
                 showArith && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(96,165,250,0.06)' } },
 
@@ -27008,7 +19996,7 @@ const d = labToolData.graphCalc || {};
 
                 ),
 
-                // ── Slider Parameters ──
+                // â”€â”€ Slider Parameters â”€â”€
 
                 showSliders && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(167,139,250,0.06)' } },
 
@@ -27034,7 +20022,7 @@ const d = labToolData.graphCalc || {};
 
                 ),
 
-                // ── Derivative ──
+                // â”€â”€ Derivative â”€â”€
 
                 d.showDeriv && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(251,146,60,0.06)' } },
 
@@ -27076,7 +20064,7 @@ const d = labToolData.graphCalc || {};
 
                 ),
 
-                // ── Analysis Results ──
+                // â”€â”€ Analysis Results â”€â”€
 
                 d.showAnalysis && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(52,211,153,0.06)' } },
 
@@ -27259,15 +20247,15 @@ const d = labToolData.graphCalc || {};
     }
   });
 
-  // ═══ 🔬 algebraCAS (algebraCAS) ═══
+  // â•â•â• ðŸ”¬ algebraCAS (algebraCAS) â•â•â•
   window.StemLab.registerTool('algebraCAS', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'algebraCAS',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -27300,7 +20288,7 @@ const d = labToolData.graphCalc || {};
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (algebraCAS) ──
+      // â”€â”€ Tool body (algebraCAS) â”€â”€
       return (function() {
 var d = (labToolData && labToolData._algebraCAS) || {};
 
@@ -27350,19 +20338,19 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
           var PROBLEM_TYPES = [
 
-            { id: 'linear', label: '📏 Linear', desc: 'e.g. 3x + 7 = 22' },
+            { id: 'linear', label: 'ðŸ“ Linear', desc: 'e.g. 3x + 7 = 22' },
 
-            { id: 'quadratic', label: '📐 Quadratic', desc: 'e.g. x² + 3x - 10 = 0' },
+            { id: 'quadratic', label: 'ðŸ“ Quadratic', desc: 'e.g. xÂ² + 3x - 10 = 0' },
 
-            { id: 'multi-step', label: '🔢 Multi-Step', desc: 'e.g. 2(x+3) - 5 = 11' },
+            { id: 'multi-step', label: 'ðŸ”¢ Multi-Step', desc: 'e.g. 2(x+3) - 5 = 11' },
 
-            { id: 'fractions', label: '🍕 Fractions', desc: 'e.g. x/3 + 2 = 5' },
+            { id: 'fractions', label: 'ðŸ• Fractions', desc: 'e.g. x/3 + 2 = 5' },
 
-            { id: 'word-problem', label: '📖 Word Problem', desc: 'Story-based equations' },
+            { id: 'word-problem', label: 'ðŸ“– Word Problem', desc: 'Story-based equations' },
 
-            { id: 'systems', label: '⚖️ Systems', desc: 'e.g. 2x + y = 10' },
+            { id: 'systems', label: 'âš–ï¸ Systems', desc: 'e.g. 2x + y = 10' },
 
-            { id: 'random', label: '🎲 Random', desc: 'Mix of all types' }
+            { id: 'random', label: 'ðŸŽ² Random', desc: 'Mix of all types' }
 
           ];
 
@@ -27370,13 +20358,13 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
           var MODES = [
 
-            { id: 'solve', label: '🔍 Solve', desc: 'Find the value of a variable' },
+            { id: 'solve', label: 'ðŸ” Solve', desc: 'Find the value of a variable' },
 
-            { id: 'factor', label: '🧩 Factor', desc: 'Factor an expression' },
+            { id: 'factor', label: 'ðŸ§© Factor', desc: 'Factor an expression' },
 
-            { id: 'simplify', label: '✨ Simplify', desc: 'Simplify an expression' },
+            { id: 'simplify', label: 'âœ¨ Simplify', desc: 'Simplify an expression' },
 
-            { id: 'expand', label: '📐 Expand', desc: 'Expand & distribute' }
+            { id: 'expand', label: 'ðŸ“ Expand', desc: 'Expand & distribute' }
 
           ];
 
@@ -27396,13 +20384,13 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
           var EXAMPLES = {
 
-            solve: ['2x + 5 = 13', 'x² - 4x + 3 = 0', '3(x - 2) = 15'],
+            solve: ['2x + 5 = 13', 'xÂ² - 4x + 3 = 0', '3(x - 2) = 15'],
 
-            factor: ['x² - 9', 'x² + 5x + 6', '2x² - 8'],
+            factor: ['xÂ² - 9', 'xÂ² + 5x + 6', '2xÂ² - 8'],
 
-            simplify: ['(3x² + 6x) / 3x', '2(x + 3) - (x - 1)', '√(50)'],
+            simplify: ['(3xÂ² + 6x) / 3x', '2(x + 3) - (x - 1)', 'âˆš(50)'],
 
-            expand: ['(x + 3)(x - 2)', '(2x + 1)²', '3(x² - 4x + 1)']
+            expand: ['(x + 3)(x - 2)', '(2x + 1)Â²', '3(xÂ² - 4x + 1)']
 
           };
 
@@ -27494,7 +20482,7 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
             var diffDesc = difficulty === 'elementary' ? 'single-variable linear equation (e.g. 3x + 7 = 22)' :
 
-              difficulty === 'middle' ? 'quadratic or two-step equation (e.g. x² + 3x - 10 = 0)' :
+              difficulty === 'middle' ? 'quadratic or two-step equation (e.g. xÂ² + 3x - 10 = 0)' :
 
                 'rational, radical, or multi-step polynomial equation';
 
@@ -27620,7 +20608,7 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
 
 
-          // ── Dark theme styles ──
+          // â”€â”€ Dark theme styles â”€â”€
 
           var _bg = isDark || isContrast ? '#1e1b4b' : '#fffbeb';
 
@@ -27642,13 +20630,13 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
           return React.createElement("div", { className: "p-4 space-y-4", style: { color: _text } },
 
-            // ── Header ──
+            // â”€â”€ Header â”€â”€
 
             React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
               React.createElement("div", null,
 
-                React.createElement("h3", { className: "text-lg font-bold flex items-center gap-2" }, "🧮 Algebra Solver"),
+                React.createElement("h3", { className: "text-lg font-bold flex items-center gap-2" }, "ðŸ§® Algebra Solver"),
 
                 React.createElement("p", { className: "text-xs", style: { color: _muted } }, "Step-by-step symbolic math powered by AI")
 
@@ -27664,7 +20652,7 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
                   style: { background: practiceMode ? _btnBg : _card, color: practiceMode ? _btnText : _text, border: '1px solid ' + _border }
 
-                }, practiceMode ? '📝 Practice Mode' : '🎯 Practice Mode'),
+                }, practiceMode ? 'ðŸ“ Practice Mode' : 'ðŸŽ¯ Practice Mode'),
 
                 React.createElement("button", {
 
@@ -27674,7 +20662,7 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
                   style: { background: _card, border: '1px solid ' + _border, color: _text }
 
-                }, "← Back")
+                }, "â† Back")
 
               )
 
@@ -27682,7 +20670,7 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
 
 
-            // ── Practice Mode ──
+            // â”€â”€ Practice Mode â”€â”€
 
             practiceMode ? React.createElement("div", { className: "space-y-4" },
 
@@ -27690,9 +20678,9 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
               (practiceScore > 0 || practiceStreak > 0) && React.createElement("div", { className: "flex items-center gap-3" },
 
-                practiceScore > 0 && React.createElement("span", { className: "text-xs font-bold", style: { color: 'rgba(34,197,94,0.9)' } }, '⭐ ' + practiceScore + ' correct'),
+                practiceScore > 0 && React.createElement("span", { className: "text-xs font-bold", style: { color: 'rgba(34,197,94,0.9)' } }, 'â­ ' + practiceScore + ' correct'),
 
-                practiceStreak > 1 && React.createElement("span", { className: "text-xs font-bold", style: { color: '#f97316' } }, '🔥 ' + practiceStreak + ' streak')
+                practiceStreak > 1 && React.createElement("span", { className: "text-xs font-bold", style: { color: '#f97316' } }, 'ðŸ”¥ ' + practiceStreak + ' streak')
 
               ),
 
@@ -27700,7 +20688,7 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
               React.createElement("div", null,
 
-                React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider mb-1.5", style: { color: _muted } }, "📊 Difficulty"),
+                React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider mb-1.5", style: { color: _muted } }, "ðŸ“Š Difficulty"),
 
                 React.createElement("div", { className: "flex gap-2 flex-wrap" },
 
@@ -27728,7 +20716,7 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
               React.createElement("div", null,
 
-                React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider mb-1.5", style: { color: _muted } }, "📝 Problem Type"),
+                React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider mb-1.5", style: { color: _muted } }, "ðŸ“ Problem Type"),
 
                 React.createElement("div", { className: "flex gap-1.5 flex-wrap" },
 
@@ -27770,7 +20758,7 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
                   style: { background: _btnBg, color: _btnText, opacity: isLoading ? 0.5 : 1 }
 
-                }, isLoading ? '⏳ Generating...' : '🎲 Generate Problem')
+                }, isLoading ? 'â³ Generating...' : 'ðŸŽ² Generate Problem')
 
               ) : React.createElement("div", { className: "space-y-3" },
 
@@ -27778,11 +20766,11 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
                 React.createElement("div", { className: "p-4 rounded-2xl", style: { background: _card, border: '2px solid ' + _accent } },
 
-                  React.createElement("div", { className: "text-xs font-bold mb-2", style: { color: _accent } }, "📋 PROBLEM"),
+                  React.createElement("div", { className: "text-xs font-bold mb-2", style: { color: _accent } }, "ðŸ“‹ PROBLEM"),
 
                   React.createElement("div", { className: "text-xl font-mono font-bold text-center py-3" }, practiceQ.problem),
 
-                  React.createElement("p", { className: "text-xs text-center mt-2", style: { color: _muted } }, "💡 Hint: " + practiceQ.hint)
+                  React.createElement("p", { className: "text-xs text-center mt-2", style: { color: _muted } }, "ðŸ’¡ Hint: " + practiceQ.hint)
 
                 ),
 
@@ -27818,7 +20806,7 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
                     style: { background: _btnBg, color: _btnText, opacity: (isLoading || !practiceAnswer.trim()) ? 0.5 : 1 }
 
-                  }, isLoading ? '⏳' : '✅ Check')
+                  }, isLoading ? 'â³' : 'âœ… Check')
 
                 ),
 
@@ -27832,7 +20820,7 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
                 },
 
-                  React.createElement("div", { className: "text-sm font-bold mb-2" }, practiceFeedback.correct ? '🎉 Correct!' : '❌ Not quite...'),
+                  React.createElement("div", { className: "text-sm font-bold mb-2" }, practiceFeedback.correct ? 'ðŸŽ‰ Correct!' : 'âŒ Not quite...'),
 
                   React.createElement("div", { className: "text-xs leading-relaxed mb-2" },
 
@@ -27850,7 +20838,7 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
                     style: { background: showSolution ? 'rgba(99,102,241,0.15)' : _card, color: showSolution ? (isDark || isContrast ? '#a5b4fc' : '#6366f1') : _muted, border: '1px solid ' + _border }
 
-                  }, (showSolution ? '▼' : '▶') + ' Step-by-Step Solution'),
+                  }, (showSolution ? 'â–¼' : 'â–¶') + ' Step-by-Step Solution'),
 
                   showSolution && React.createElement("div", { className: "mt-2 p-3 rounded-xl text-xs font-mono whitespace-pre-wrap leading-relaxed", style: { background: isDark || isContrast ? 'rgba(15,23,42,0.5)' : 'rgba(248,250,252,1)', border: '1px solid ' + _border } },
 
@@ -27870,7 +20858,7 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
                         var ruleMatch = line.match(/\[([^\]]+)\]/);
 
-                        if (isAnswer) return React.createElement("div", { key: i, className: "mt-3 p-2.5 rounded-xl text-sm font-bold", style: { background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' } }, '✅ ' + line.trim());
+                        if (isAnswer) return React.createElement("div", { key: i, className: "mt-3 p-2.5 rounded-xl text-sm font-bold", style: { background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' } }, 'âœ… ' + line.trim());
 
                         if (isStep) return React.createElement("div", { key: i, className: "py-1.5 flex items-start gap-2" },
 
@@ -27902,13 +20890,13 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
                   style: { background: _card, border: '1px solid ' + _border, color: _text }
 
-                }, "🔄 New Problem")
+                }, "ðŸ”„ New Problem")
 
               )
 
             ) :
 
-              // ── Solver Mode ──
+              // â”€â”€ Solver Mode â”€â”€
 
               React.createElement("div", { className: "space-y-4" },
 
@@ -27972,7 +20960,7 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
                     style: { background: _btnBg, color: _btnText, opacity: (isLoading || !expression.trim()) ? 0.5 : 1 }
 
-                  }, isLoading ? '⏳ Computing...' : '▶ ' + (mode.charAt(0).toUpperCase() + mode.slice(1)))
+                  }, isLoading ? 'â³ Computing...' : 'â–¶ ' + (mode.charAt(0).toUpperCase() + mode.slice(1)))
 
                 ),
 
@@ -28004,7 +20992,7 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
                 result && React.createElement("div", { className: "p-4 rounded-2xl", style: { background: _card, border: '1px solid ' + _accent } },
 
-                  React.createElement("div", { className: "text-xs font-bold mb-3 flex items-center gap-2", style: { color: _accent } }, "📋 Step-by-Step Solution"),
+                  React.createElement("div", { className: "text-xs font-bold mb-3 flex items-center gap-2", style: { color: _accent } }, "ðŸ“‹ Step-by-Step Solution"),
 
                   React.createElement("div", { className: "text-sm whitespace-pre-wrap leading-relaxed font-mono" },
 
@@ -28016,7 +21004,7 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
                       var ruleMatch = line.match(/\[([^\]]+)\]/);
 
-                      if (isAnswer) return React.createElement("div", { key: i, className: "mt-3 p-3 rounded-xl text-base font-bold", style: { background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' } }, "✅ " + line.trim());
+                      if (isAnswer) return React.createElement("div", { key: i, className: "mt-3 p-3 rounded-xl text-base font-bold", style: { background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' } }, "âœ… " + line.trim());
 
                       if (isStep) return React.createElement("div", { key: i, className: "py-1.5 flex items-start gap-2" },
 
@@ -28038,7 +21026,7 @@ var d = (labToolData && labToolData._algebraCAS) || {};
 
                 history.length > 0 && React.createElement("div", null,
 
-                  React.createElement("div", { className: "text-xs font-bold mb-2", style: { color: _muted } }, "📜 Recent (last " + history.length + ")"),
+                  React.createElement("div", { className: "text-xs font-bold mb-2", style: { color: _muted } }, "ðŸ“œ Recent (last " + history.length + ")"),
 
                   React.createElement("div", { className: "flex gap-2 flex-wrap" },
 
@@ -28069,15 +21057,15 @@ var d = (labToolData && labToolData._algebraCAS) || {};
     }
   });
 
-  // ═══ 🔬 aquarium (aquarium) ═══
+  // â•â•â• ðŸ”¬ aquarium (aquarium) â•â•â•
   window.StemLab.registerTool('aquarium', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'aquarium',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -28110,7 +21098,7 @@ var d = (labToolData && labToolData._algebraCAS) || {};
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (aquarium) ──
+      // â”€â”€ Tool body (aquarium) â”€â”€
       return (function() {
 var d = (labToolData && labToolData._aquarium) || {};
 
@@ -28148,7 +21136,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Inject aquarium CSS animations ──
+          // â”€â”€ Inject aquarium CSS animations â”€â”€
 
           if (!document.getElementById('aqua-css')) {
 
@@ -28232,7 +21220,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           }
 
-          // ═══ ANATOMY VIEWER SYSTEM ═══
+          // â•â•â• ANATOMY VIEWER SYSTEM â•â•â•
 
           var BODY_PLANS = {
 
@@ -28308,7 +21296,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 { name: 'Dorsal Fin', x: 48, y: 5, desc: 'Stabilizes the fish during swimming, preventing rolling. Contains bony spines (rays) connected by thin membrane. Erected when alarmed.' },
 
-                { name: 'Caudal Fin (Tail)', x: 93, y: 48, desc: 'Primary propulsion organ. Shape determines swimming style — forked tails are built for speed, rounded for maneuverability.' },
+                { name: 'Caudal Fin (Tail)', x: 93, y: 48, desc: 'Primary propulsion organ. Shape determines swimming style â€” forked tails are built for speed, rounded for maneuverability.' },
 
                 { name: 'Pectoral Fins', x: 26, y: 68, desc: 'Paired fins used for steering, braking, and hovering. Act like hydrofoils. Can be fanned out to appear larger to rivals.' },
 
@@ -28318,7 +21306,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 { name: 'Lateral Line', x: 58, y: 42, desc: 'A row of sensory pores detecting vibrations and pressure changes. Allows fish to sense movement, currents, and obstacles in total darkness.' },
 
-                { name: 'Eye', x: 19, y: 44, desc: 'Spherical lens focuses light. Most fish see in color and some perceive UV light. No eyelids — cornea is bathed in water.' },
+                { name: 'Eye', x: 19, y: 44, desc: 'Spherical lens focuses light. Most fish see in color and some perceive UV light. No eyelids â€” cornea is bathed in water.' },
 
                 { name: 'Swim Bladder (internal)', x: 48, y: 38, desc: 'Gas-filled organ for buoyancy control. Fish add or remove gas to hover at any depth without expending energy.' },
 
@@ -28390,19 +21378,19 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Dorsal Fin', x: 53, y: 3, desc: 'The iconic triangular fin provides stability. Made entirely of cartilage — sharks have no true bones anywhere in their body.' },
+                { name: 'Dorsal Fin', x: 53, y: 3, desc: 'The iconic triangular fin provides stability. Made entirely of cartilage â€” sharks have no true bones anywhere in their body.' },
 
-                { name: 'Gill Slits (5)', x: 27, y: 36, desc: 'Five exposed gill slits with no protective cover. Sharks must swim to push water over gills — they cannot pump water like bony fish.' },
+                { name: 'Gill Slits (5)', x: 27, y: 36, desc: 'Five exposed gill slits with no protective cover. Sharks must swim to push water over gills â€” they cannot pump water like bony fish.' },
 
-                { name: 'Ampullae of Lorenzini', x: 9, y: 46, desc: 'Jelly-filled pores on the snout that detect electrical fields as weak as 5 nanovolts — enough to sense a prey heartbeat buried in sand.' },
+                { name: 'Ampullae of Lorenzini', x: 9, y: 46, desc: 'Jelly-filled pores on the snout that detect electrical fields as weak as 5 nanovolts â€” enough to sense a prey heartbeat buried in sand.' },
 
                 { name: 'Heterocercal Tail', x: 95, y: 32, desc: 'Upper lobe is longer, generating upward lift as the shark swims. This compensates for the lack of a swim bladder.' },
 
-                { name: 'Pectoral Fins', x: 26, y: 62, desc: 'Rigid, wing-like fins that generate lift. Unlike bony fish, shark pectoral fins cannot fold flat — they act as airplane wings.' },
+                { name: 'Pectoral Fins', x: 26, y: 62, desc: 'Rigid, wing-like fins that generate lift. Unlike bony fish, shark pectoral fins cannot fold flat â€” they act as airplane wings.' },
 
-                { name: 'Dermal Denticles', x: 62, y: 55, desc: 'Tooth-like scales (placoid scales) that channel water flow. Surface texture reduces drag by 8% — inspired NASA swimsuit designs.' },
+                { name: 'Dermal Denticles', x: 62, y: 55, desc: 'Tooth-like scales (placoid scales) that channel water flow. Surface texture reduces drag by 8% â€” inspired NASA swimsuit designs.' },
 
-                { name: 'Cartilage Skeleton', x: 45, y: 50, desc: 'Skeleton is 100% cartilage — half the density of bone. This makes sharks lighter and more agile, but fossils only preserve teeth and spines.' },
+                { name: 'Cartilage Skeleton', x: 45, y: 50, desc: 'Skeleton is 100% cartilage â€” half the density of bone. This makes sharks lighter and more agile, but fossils only preserve teeth and spines.' },
 
                 { name: 'Replaceable Teeth', x: 5, y: 50, desc: 'Teeth grow in rows on a conveyor-belt jaw. A single shark may produce 30,000+ teeth in its lifetime, replacing them every 1-2 weeks.' }
 
@@ -28460,9 +21448,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Bell (Medusa)', x: 50, y: 10, desc: 'The dome-shaped body contracts rhythmically for jet propulsion. Made of mesoglea — 95% water with collagen fibers for elasticity.' },
+                { name: 'Bell (Medusa)', x: 50, y: 10, desc: 'The dome-shaped body contracts rhythmically for jet propulsion. Made of mesoglea â€” 95% water with collagen fibers for elasticity.' },
 
-                { name: 'Tentacles', x: 78, y: 60, desc: 'Trailing appendages lined with cnidocytes — stinging cells that fire nematocysts in 700 nanoseconds, among the fastest events in nature.' },
+                { name: 'Tentacles', x: 78, y: 60, desc: 'Trailing appendages lined with cnidocytes â€” stinging cells that fire nematocysts in 700 nanoseconds, among the fastest events in nature.' },
 
                 { name: 'Oral Arms', x: 25, y: 50, desc: 'Frilly appendages near the mouth that capture food particles. In some species they fuse to form a feeding curtain.' },
 
@@ -28478,7 +21466,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             sea_anemone: {
 
-              label: 'Cnidarian (Polyp Form — Sea Anemone)',
+              label: 'Cnidarian (Polyp Form â€” Sea Anemone)',
 
               svg: function (w, h, color) {
 
@@ -28550,15 +21538,15 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Tentacles', x: 50, y: 8, desc: 'Ring of flexible tentacles armed with cnidocytes (stinging cells). Used to capture prey — small fish and shrimp are paralyzed by nematocyst venom and guided to the mouth.' },
+                { name: 'Tentacles', x: 50, y: 8, desc: 'Ring of flexible tentacles armed with cnidocytes (stinging cells). Used to capture prey â€” small fish and shrimp are paralyzed by nematocyst venom and guided to the mouth.' },
 
-                { name: 'Oral Disc', x: 50, y: 33, desc: 'Flat upper surface surrounding the central mouth. The mouth is the only opening — it serves as both entrance for food and exit for waste, identical to the jellyfish body plan.' },
+                { name: 'Oral Disc', x: 50, y: 33, desc: 'Flat upper surface surrounding the central mouth. The mouth is the only opening â€” it serves as both entrance for food and exit for waste, identical to the jellyfish body plan.' },
 
                 { name: 'Column', x: 28, y: 55, desc: 'Muscular cylindrical body wall made of two tissue layers (ectoderm and endoderm) separated by mesoglea. Can contract to retract tentacles when threatened.' },
 
                 { name: 'Pedal Disc', x: 50, y: 95, desc: 'Adhesive base that anchors the anemone to rocks, shells, or coral. Despite appearing fixed, anemones can slowly glide across surfaces at ~1 cm/hour.' },
 
-                { name: 'Cnidocytes', x: 75, y: 18, desc: 'Specialized stinging cells concentrated on tentacles. Each cnidocyte fires a barbed nematocyst in under 700 nanoseconds — one of the fastest mechanical processes in nature.' },
+                { name: 'Cnidocytes', x: 75, y: 18, desc: 'Specialized stinging cells concentrated on tentacles. Each cnidocyte fires a barbed nematocyst in under 700 nanoseconds â€” one of the fastest mechanical processes in nature.' },
 
                 { name: 'Zooxanthellae', x: 30, y: 70, desc: 'Symbiotic photosynthetic algae living inside the tissue. They provide up to 90% of the anemone\'s energy via photosynthesis, in exchange for shelter and nutrients.' }
 
@@ -28616,7 +21604,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Carapace (Exoskeleton)', x: 50, y: 24, desc: 'Hardened shell of chitin and calcium carbonate. Must be molted (shed) to grow — the animal is soft and vulnerable for hours after.' },
+                { name: 'Carapace (Exoskeleton)', x: 50, y: 24, desc: 'Hardened shell of chitin and calcium carbonate. Must be molted (shed) to grow â€” the animal is soft and vulnerable for hours after.' },
 
                 { name: 'Antennae (2 pairs)', x: 10, y: 11, desc: 'Long antennae detect touch, chemicals, and water currents. Short antennules sense gravity and balance via statocysts.' },
 
@@ -28698,7 +21686,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 { name: 'Mantle', x: 50, y: 8, desc: 'Muscular body housing all organs. Contracts forcefully to jet water through the siphon, achieving speeds up to 40 km/h in squids.' },
 
-                { name: 'Arms (8) with Suckers', x: 25, y: 60, desc: 'Eight arms lined with suckers containing chemoreceptors — they can taste what they touch. Each sucker can exert tremendous grip force.' },
+                { name: 'Arms (8) with Suckers', x: 25, y: 60, desc: 'Eight arms lined with suckers containing chemoreceptors â€” they can taste what they touch. Each sucker can exert tremendous grip force.' },
 
                 { name: 'Siphon (Funnel)', x: 50, y: 40, desc: 'A muscular nozzle for jet propulsion. Water is drawn into the mantle cavity, then expelled forcefully. Also ejects ink for escape.' },
 
@@ -28706,9 +21694,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 { name: 'Chromatophores', x: 60, y: 15, desc: 'Thousands of pigment-filled sacs that expand/contract in milliseconds. Controlled directly by the brain for instant camouflage, signaling, and hypnotic hunting displays.' },
 
-                { name: 'Three Hearts', x: 50, y: 30, desc: 'Two branchial hearts push blood through the gills. One systemic heart circulates oxygenated blood. Blood is copper-based (hemocyanin) — it is blue.' },
+                { name: 'Three Hearts', x: 50, y: 30, desc: 'Two branchial hearts push blood through the gills. One systemic heart circulates oxygenated blood. Blood is copper-based (hemocyanin) â€” it is blue.' },
 
-                { name: 'Beak', x: 50, y: 36, desc: 'A hard, parrot-like beak of chitin — the only rigid structure. An octopus can squeeze through any gap larger than its beak.' }
+                { name: 'Beak', x: 50, y: 36, desc: 'A hard, parrot-like beak of chitin â€” the only rigid structure. An octopus can squeeze through any gap larger than its beak.' }
 
               ]
 
@@ -28772,9 +21760,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 { name: 'Madreporite', x: 48, y: 38, desc: 'A small sieve plate (visible as a pale dot) that filters seawater into the water vascular system. Located off-center on the aboral surface.' },
 
-                { name: 'Eyespots', x: 50, y: 5, desc: 'Simple photoreceptors at each arm tip — bright spots visible at extremities. Cannot form images but detect light direction and intensity.' },
+                { name: 'Eyespots', x: 50, y: 5, desc: 'Simple photoreceptors at each arm tip â€” bright spots visible at extremities. Cannot form images but detect light direction and intensity.' },
 
-                { name: 'Pentaradial Symmetry', x: 85, y: 22, desc: 'Five-fold body plan. Adults develop this from bilateral larvae — a unique metamorphosis among animals. No front, back, or sides.' },
+                { name: 'Pentaradial Symmetry', x: 85, y: 22, desc: 'Five-fold body plan. Adults develop this from bilateral larvae â€” a unique metamorphosis among animals. No front, back, or sides.' },
 
                 { name: 'Regeneration Zone', x: 24, y: 60, desc: 'Can regrow entire arms from the central disc. Some species regenerate a complete animal from a single arm. Process takes months to years.' }
 
@@ -28820,15 +21808,15 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Blowhole', x: 12, y: 28, desc: 'Modified nostril(s) on top of skull. Breathing is voluntary — cetaceans must consciously surface. Only half the brain sleeps at a time (unihemispheric sleep).' },
+                { name: 'Blowhole', x: 12, y: 28, desc: 'Modified nostril(s) on top of skull. Breathing is voluntary â€” cetaceans must consciously surface. Only half the brain sleeps at a time (unihemispheric sleep).' },
 
                 { name: 'Melon (Echolocation)', x: 20, y: 40, desc: 'A fatty, oil-filled lens in the forehead that focuses outgoing clicks into a directional beam. Returning echoes are received through the lower jaw.' },
 
-                { name: 'Dorsal Fin', x: 57, y: 12, desc: 'Dense connective tissue (no bone). Used for thermoregulation — blood vessels release or retain heat. Shape and nicks identify individuals.' },
+                { name: 'Dorsal Fin', x: 57, y: 12, desc: 'Dense connective tissue (no bone). Used for thermoregulation â€” blood vessels release or retain heat. Shape and nicks identify individuals.' },
 
-                { name: 'Fluke (Tail)', x: 95, y: 38, desc: 'Horizontal tail moved up-and-down by powerful back muscles (not side-to-side like fish). No bones — pure collagen and connective tissue.' },
+                { name: 'Fluke (Tail)', x: 95, y: 38, desc: 'Horizontal tail moved up-and-down by powerful back muscles (not side-to-side like fish). No bones â€” pure collagen and connective tissue.' },
 
-                { name: 'Pectoral Flippers', x: 30, y: 68, desc: 'Modified forelimbs containing humerus, radius, ulna, and finger bones — the same skeletal plan as a human arm, adapted for steering and braking.' },
+                { name: 'Pectoral Flippers', x: 30, y: 68, desc: 'Modified forelimbs containing humerus, radius, ulna, and finger bones â€” the same skeletal plan as a human arm, adapted for steering and braking.' },
 
                 { name: 'Blubber Layer', x: 50, y: 55, desc: 'Thick subcutaneous fat providing insulation, energy storage, buoyancy, and streamlining. Up to 50 cm thick in Arctic species like bowhead whales.' }
 
@@ -28944,13 +21932,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Carapace (Shell)', x: 50, y: 25, desc: 'Fused vertebrae and ribs covered in keratinous scutes. Unlike land turtles, sea turtles cannot retract into their shell — it is streamlined for swimming.' },
+                { name: 'Carapace (Shell)', x: 50, y: 25, desc: 'Fused vertebrae and ribs covered in keratinous scutes. Unlike land turtles, sea turtles cannot retract into their shell â€” it is streamlined for swimming.' },
 
                 { name: 'Front Flippers', x: 8, y: 35, desc: 'Elongated forelimbs used for powerful underwater flight. Leatherbacks can dive to 1,280 meters. Front flippers generate all thrust.' },
 
                 { name: 'Rear Flippers', x: 20, y: 80, desc: 'Shorter and rounder than front flippers. Used as rudders for steering. Females use them to dig egg chambers on nesting beaches.' },
 
-                { name: 'Salt Glands', x: 5, y: 18, desc: 'Orbital glands near the eyes excrete concentrated salt — this is why sea turtles appear to cry. Excreted salt is twice as concentrated as seawater.' },
+                { name: 'Salt Glands', x: 5, y: 18, desc: 'Orbital glands near the eyes excrete concentrated salt â€” this is why sea turtles appear to cry. Excreted salt is twice as concentrated as seawater.' },
 
                 { name: 'Scute Pattern', x: 35, y: 42, desc: 'Keratinous plates in species-specific arrangements. The pattern helps identify species. Growth rings on scutes record age like tree rings.' },
 
@@ -29072,15 +22060,15 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Coronet (Crown)', x: 49, y: 2, desc: 'A bony crest unique to each individual — like a fingerprint. Used for species identification. Grows more elaborate with age.' },
+                { name: 'Coronet (Crown)', x: 49, y: 2, desc: 'A bony crest unique to each individual â€” like a fingerprint. Used for species identification. Grows more elaborate with age.' },
 
-                { name: 'Prehensile Tail', x: 30, y: 72, desc: 'Muscular, gripping tail used to anchor to seagrass and coral. Has a square cross-section for superior grip strength — unique among fish.' },
+                { name: 'Prehensile Tail', x: 30, y: 72, desc: 'Muscular, gripping tail used to anchor to seagrass and coral. Has a square cross-section for superior grip strength â€” unique among fish.' },
 
                 { name: 'Brood Pouch (male)', x: 53, y: 48, desc: 'Males carry eggs in a ventral pouch. The female deposits eggs during an elaborate upright dance. Males nourish embryos for 2-4 weeks before giving birth.' },
 
-                { name: 'Dorsal Fin', x: 60, y: 20, desc: 'Tiny, translucent dorsal fin that beats up to 35 times per second. This is the primary means of propulsion — making seahorses the slowest fish in the ocean.' },
+                { name: 'Dorsal Fin', x: 60, y: 20, desc: 'Tiny, translucent dorsal fin that beats up to 35 times per second. This is the primary means of propulsion â€” making seahorses the slowest fish in the ocean.' },
 
-                { name: 'Tubular Snout', x: 78, y: 10, desc: 'Elongated snout acts as a pipette — seahorses slurp up tiny crustaceans with a rapid head snap. Can strike and ingest prey in under 1 millisecond.' },
+                { name: 'Tubular Snout', x: 78, y: 10, desc: 'Elongated snout acts as a pipette â€” seahorses slurp up tiny crustaceans with a rapid head snap. Can strike and ingest prey in under 1 millisecond.' },
 
                 { name: 'Bony Armor Plates', x: 42, y: 35, desc: 'Body encased in bony rings instead of scales. Provides excellent protection but limits flexibility. Few predators can digest the bony exterior.' }
 
@@ -29156,13 +22144,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 { name: 'Inflation Sac', x: 50, y: 48, desc: 'A highly elastic stomach that can inflate with water (or air) to 3x normal size. This makes the fish nearly impossible for predators to swallow.' },
 
-                { name: 'Fused Beak Teeth', x: 50, y: 55, desc: 'Four fused teeth form a strong beak that can crack open shellfish, sea urchins, and crabs. Teeth grow continuously — must eat hard food to keep them trimmed.' },
+                { name: 'Fused Beak Teeth', x: 50, y: 55, desc: 'Four fused teeth form a strong beak that can crack open shellfish, sea urchins, and crabs. Teeth grow continuously â€” must eat hard food to keep them trimmed.' },
 
                 { name: 'Spines (when inflated)', x: 30, y: 18, desc: 'Short spines embedded in the skin become erect when inflated. Combined with inflation, they create a spiky ball that deters all but the most determined predators.' },
 
-                { name: 'Large Eyes', x: 33, y: 34, desc: 'Independently moving eyes provide near 360° vision. Puffers are considered among the most intelligent fish — they recognize their owners and can learn tricks.' },
+                { name: 'Large Eyes', x: 33, y: 34, desc: 'Independently moving eyes provide near 360Â° vision. Puffers are considered among the most intelligent fish â€” they recognize their owners and can learn tricks.' },
 
-                { name: 'Tetrodotoxin Organs', x: 70, y: 45, desc: 'Liver, ovaries, and skin contain tetrodotoxin — 1,200× more lethal than cyanide. Produced by symbiotic bacteria. There is no antidote.' },
+                { name: 'Tetrodotoxin Organs', x: 70, y: 45, desc: 'Liver, ovaries, and skin contain tetrodotoxin â€” 1,200Ã— more lethal than cyanide. Produced by symbiotic bacteria. There is no antidote.' },
 
                 { name: 'Caudal Fin (Rudder)', x: 88, y: 40, desc: 'Small tail fin for slow, precise maneuvering. Dorsal and anal fins do most of the work. Puffers swim awkwardly but compensate with excellent defenses.' }
 
@@ -29226,7 +22214,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 { name: 'Bioluminescent Lure (Esca)', x: 24, y: 4, desc: 'A modified dorsal fin spine (illicium) tipped with a glowing bulb. Contains symbiotic bioluminescent bacteria. Attracts prey in the pitch-black deep sea.' },
 
-                { name: 'Enormous Mouth', x: 15, y: 55, desc: 'Hinged jaw can open to 120°, allowing the anglerfish to swallow prey up to twice its own body size. Inward-pointing teeth prevent escape.' },
+                { name: 'Enormous Mouth', x: 15, y: 55, desc: 'Hinged jaw can open to 120Â°, allowing the anglerfish to swallow prey up to twice its own body size. Inward-pointing teeth prevent escape.' },
 
                 { name: 'Enormous Eye', x: 26, y: 43, desc: 'Large, forward-facing eyes sensitized to detect bioluminescent flashes. In many species, eyes are adapted to see blue-green light wavelengths only.' },
 
@@ -29298,9 +22286,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 { name: 'Laterally Compressed Body', x: 42, y: 48, desc: 'Disc-shaped body allows navigation through dense vegetation. Angelfish are ambush predators that hide among plant stems in the Amazon basin.' },
 
-                { name: 'Caudal Fin (Tail)', x: 92, y: 48, desc: 'Small, fan-shaped tail provides gentle propulsion. Angelfish are slow, deliberate swimmers — built for maneuverability, not speed.' },
+                { name: 'Caudal Fin (Tail)', x: 92, y: 48, desc: 'Small, fan-shaped tail provides gentle propulsion. Angelfish are slow, deliberate swimmers â€” built for maneuverability, not speed.' },
 
-                { name: 'Vertical Bars', x: 60, y: 35, desc: 'Dark vertical bars provide camouflage among underwater vegetation. Pattern intensity changes with mood — bars fade when stressed or dominant.' },
+                { name: 'Vertical Bars', x: 60, y: 35, desc: 'Dark vertical bars provide camouflage among underwater vegetation. Pattern intensity changes with mood â€” bars fade when stressed or dominant.' },
 
                 { name: 'Pectoral Fins', x: 30, y: 42, desc: 'Fan-shaped fins for precise steering. Used to fan eggs during spawning. Both parents guard eggs by wafting fresh, oxygenated water over them.' }
 
@@ -29350,7 +22338,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Iridescent Stripe', x: 40, y: 37, desc: 'The famous neon stripe is made of guanine crystals arranged in layers. Acts like a biological mirror — reflects light to create iridescent blue-green shimmer.' },
+                { name: 'Iridescent Stripe', x: 40, y: 37, desc: 'The famous neon stripe is made of guanine crystals arranged in layers. Acts like a biological mirror â€” reflects light to create iridescent blue-green shimmer.' },
 
                 { name: 'Red Band', x: 40, y: 44, desc: 'Pigment cells (chromatophores) produce the vivid red belly band. Color intensity signals health and breeding readiness to potential mates.' },
 
@@ -29358,7 +22346,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 { name: 'Forked Caudal Fin', x: 90, y: 50, desc: 'Deeply forked tail for rapid bursts of speed. Tetras alternate between hovering in schools and explosive escape dashes when startled.' },
 
-                { name: 'Adipose Fin', x: 55, y: 10, desc: 'A small, fleshy fin between dorsal and tail found only in certain fish groups. Its function is debated — may detect water flow turbulence.' },
+                { name: 'Adipose Fin', x: 55, y: 10, desc: 'A small, fleshy fin between dorsal and tail found only in certain fish groups. Its function is debated â€” may detect water flow turbulence.' },
 
                 { name: 'Schooling Behavior', x: 20, y: 45, desc: 'Large eyes positioned for wide-angle vision enable precise school coordination. Each fish maintains exact distance from neighbors using its lateral line.' }
 
@@ -29412,11 +22400,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 { name: 'Fan-Shaped Caudal', x: 90, y: 30, desc: 'Large, colorful tail fin doubles as a display organ. Males fan their tails to attract females. Tail shape varies: round, lyretail, swordtail, delta.' },
 
-                { name: 'Gravid Spot (female)', x: 60, y: 58, desc: 'A dark patch near the anal fin in pregnant females. Darkens as embryos develop. Fry develop fully inside the mother — born live and free-swimming.' },
+                { name: 'Gravid Spot (female)', x: 60, y: 58, desc: 'A dark patch near the anal fin in pregnant females. Darkens as embryos develop. Fry develop fully inside the mother â€” born live and free-swimming.' },
 
-                { name: 'Gonopodium (male)', x: 53, y: 78, desc: 'Modified anal fin used for internal fertilization — unique to livebearers. Guppies can store sperm for months, producing multiple broods from a single mating.' },
+                { name: 'Gonopodium (male)', x: 53, y: 78, desc: 'Modified anal fin used for internal fertilization â€” unique to livebearers. Guppies can store sperm for months, producing multiple broods from a single mating.' },
 
-                { name: 'Color Patterns', x: 40, y: 35, desc: 'Male coloration is genetically determined and Y-linked. Females prefer males with rare patterns — driving constant evolution of new color morphs.' },
+                { name: 'Color Patterns', x: 40, y: 35, desc: 'Male coloration is genetically determined and Y-linked. Females prefer males with rare patterns â€” driving constant evolution of new color morphs.' },
 
                 { name: 'Compact Body', x: 35, y: 50, desc: 'Rounded, robust body optimized for quick starts rather than sustained swimming. Livebearers are surface-feeders that dart for food.' },
 
@@ -29474,7 +22462,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Sucker Mouth', x: 10, y: 58, desc: 'Ventral sucker-like mouth for rasping algae off surfaces. The lips form a vacuum seal. Specialized teeth scrape biofilm — a living algae scrubber.' },
+                { name: 'Sucker Mouth', x: 10, y: 58, desc: 'Ventral sucker-like mouth for rasping algae off surfaces. The lips form a vacuum seal. Specialized teeth scrape biofilm â€” a living algae scrubber.' },
 
                 { name: 'Bony Armor Plates', x: 50, y: 30, desc: 'Overlapping bony scutes replace scales. Provides armor-like protection from predators. So tough that some indigenous peoples use dried pleco skin as sandpaper.' },
 
@@ -29484,7 +22472,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 { name: 'Flat Ventral Profile', x: 40, y: 55, desc: 'Body flattened from top to bottom (dorsoventrally) for a low profile against substrates. Reduces drag in current and helps maintain position on rocks.' },
 
-                { name: 'Intestinal Breathing', x: 70, y: 52, desc: 'Some species can absorb atmospheric oxygen through a modified intestine. They gulp air at the surface — essential in low-oxygen tropical waters.' }
+                { name: 'Intestinal Breathing', x: 70, y: 52, desc: 'Some species can absorb atmospheric oxygen through a modified intestine. They gulp air at the surface â€” essential in low-oxygen tropical waters.' }
 
               ]
 
@@ -29522,17 +22510,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Massive Hinged Jaw', x: 15, y: 30, desc: 'Jaw can unhinge to an angle greater than 180°. The entire head unfolds like a net to engulf prey. Can swallow fish larger than its own body.' },
+                { name: 'Massive Hinged Jaw', x: 15, y: 30, desc: 'Jaw can unhinge to an angle greater than 180Â°. The entire head unfolds like a net to engulf prey. Can swallow fish larger than its own body.' },
 
                 { name: 'Distensible Stomach', x: 30, y: 50, desc: 'Expandable stomach stretches to accommodate enormous meals. In the food-scarce deep sea, the ability to eat any prey encountered is essential for survival.' },
 
-                { name: 'Bioluminescent Tail Tip', x: 97, y: 53, desc: 'The tail tip emits a pinkish-red glow to lure prey. Functions as a fishing line in reverse — prey approaches the light and enters the gaping mouth.' },
+                { name: 'Bioluminescent Tail Tip', x: 97, y: 53, desc: 'The tail tip emits a pinkish-red glow to lure prey. Functions as a fishing line in reverse â€” prey approaches the light and enters the gaping mouth.' },
 
                 { name: 'Tiny Eyes', x: 11, y: 35, desc: 'Extremely small eyes with minimal visual capability. In the lightless deep sea, vision is less important than detecting bioluminescent flashes.' },
 
                 { name: 'Whip-Like Body', x: 60, y: 60, desc: 'Extremely elongated and laterally compressed body. The tail is 3-4x longer than the head and body combined. Enables slow, energy-efficient drifting.' },
 
-                { name: 'Reduced Skeleton', x: 45, y: 40, desc: 'Minimally ossified bones reduce weight for neutral buoyancy. No swim bladder, no pelvic fins, no scales — everything stripped for deep-sea efficiency.' }
+                { name: 'Reduced Skeleton', x: 45, y: 40, desc: 'Minimally ossified bones reduce weight for neutral buoyancy. No swim bladder, no pelvic fins, no scales â€” everything stripped for deep-sea efficiency.' }
 
               ]
 
@@ -29590,7 +22578,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 { name: 'Whip Tail', x: 50, y: 85, desc: 'Long, slender tail without a stinging barb (unlike stingrays). Used as a rudder for precise turns during barrel-roll feeding maneuvers.' },
 
-                { name: 'Gill Slits (ventral)', x: 38, y: 42, desc: 'Five pairs of gill slits on the underside filter oxygen. During feeding, water enters the mouth and exits the gills — a ram-ventilation system.' }
+                { name: 'Gill Slits (ventral)', x: 38, y: 42, desc: 'Five pairs of gill slits on the underside filter oxygen. During feeding, water enters the mouth and exits the gills â€” a ram-ventilation system.' }
 
               ]
 
@@ -29644,7 +22632,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 { name: 'Blowhole', x: 57, y: 5, desc: 'Paired nostrils migrated to the top of the skull. Exhaled air can reach 9 meters high. Contains a muscular plug that seals watertight during dives.' },
 
-                { name: 'Fluke (Tail)', x: 95, y: 42, desc: 'Horizontal tail flukes move up and down (unlike fish tails). Each fluke has a unique trailing edge pattern — used by researchers to identify individuals.' },
+                { name: 'Fluke (Tail)', x: 95, y: 42, desc: 'Horizontal tail flukes move up and down (unlike fish tails). Each fluke has a unique trailing edge pattern â€” used by researchers to identify individuals.' },
 
                 { name: 'Pectoral Flipper', x: 13, y: 78, desc: 'Contains the same bones as a human arm (humerus, radius, ulna, fingers). Internal structure reveals the whale\'s evolution from land-dwelling mammals.' },
 
@@ -29700,17 +22688,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Plume (Obturaculae)', x: 50, y: 8, desc: 'Bright red feathery plume absorbs hydrogen sulfide, oxygen, and CO₂ from vent water. The red color comes from hemoglobin — same iron-based molecule as in human blood.' },
+                { name: 'Plume (Obturaculae)', x: 50, y: 8, desc: 'Bright red feathery plume absorbs hydrogen sulfide, oxygen, and COâ‚‚ from vent water. The red color comes from hemoglobin â€” same iron-based molecule as in human blood.' },
 
                 { name: 'Chitin Tube', x: 50, y: 55, desc: 'Self-secreted protective tube made of chitin and protein. Can grow over 2 meters tall. The worm can retract completely inside when threatened by predators.' },
 
-                { name: 'Trophosome (internal)', x: 50, y: 40, desc: 'A spongy organ packed with billions of chemosynthetic bacteria. These bacteria convert hydrogen sulfide into organic molecules — the worm\'s sole energy source.' },
+                { name: 'Trophosome (internal)', x: 50, y: 40, desc: 'A spongy organ packed with billions of chemosynthetic bacteria. These bacteria convert hydrogen sulfide into organic molecules â€” the worm\'s sole energy source.' },
 
                 { name: 'No Mouth or Gut', x: 30, y: 30, desc: 'Adult tube worms have no digestive system at all. They rely entirely on their symbiotic bacteria. Nutrients are delivered through the bloodstream.' },
 
-                { name: 'Vestimentiferan Body', x: 35, y: 50, desc: 'Segmented body plan divided into distinct regions. Anchors in the tube using tiny hooks called chaetae. Can grow at rates of 85cm per year — the fastest of any invertebrate.' },
+                { name: 'Vestimentiferan Body', x: 35, y: 50, desc: 'Segmented body plan divided into distinct regions. Anchors in the tube using tiny hooks called chaetae. Can grow at rates of 85cm per year â€” the fastest of any invertebrate.' },
 
-                { name: 'Hydrothermal Vent Base', x: 50, y: 92, desc: 'Lives exclusively at hydrothermal vents where superheated water (up to 400°C) meets near-freezing ocean. Thrives in water containing lethal levels of hydrogen sulfide.' }
+                { name: 'Hydrothermal Vent Base', x: 50, y: 92, desc: 'Lives exclusively at hydrothermal vents where superheated water (up to 400Â°C) meets near-freezing ocean. Thrives in water containing lethal levels of hydrogen sulfide.' }
 
               ]
 
@@ -29762,13 +22750,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'White Bands', x: 33, y: 22, desc: 'Distinctive vertical white bands bordered by black margins. Band pattern varies by species — 0 to 3 bands. Produced by iridophore cells containing guanine crystals.' },
+                { name: 'White Bands', x: 33, y: 22, desc: 'Distinctive vertical white bands bordered by black margins. Band pattern varies by species â€” 0 to 3 bands. Produced by iridophore cells containing guanine crystals.' },
 
                 { name: 'Rounded Body', x: 50, y: 50, desc: 'Compact, laterally compressed body adapted for quick turns among anemone tentacles. Shape allows rapid darting rather than sustained swimming.' },
 
                 { name: 'Mucus Coating', x: 20, y: 48, desc: 'Special mucus layer prevents anemone stings. Built up gradually through careful acclimation touching. Composition includes sugars that inhibit nematocyst discharge.' },
 
-                { name: 'Rounded Tail', x: 92, y: 48, desc: 'Small, rounded caudal fin for quick maneuvers near host anemone. Clownfish rarely venture far from their home anemone — typically within 1 meter.' },
+                { name: 'Rounded Tail', x: 92, y: 48, desc: 'Small, rounded caudal fin for quick maneuvers near host anemone. Clownfish rarely venture far from their home anemone â€” typically within 1 meter.' },
 
                 { name: 'Protandrous Sex', x: 55, y: 35, desc: 'All clownfish are born male. The dominant individual transitions to female. If the female dies, the next-largest male becomes female.' },
 
@@ -29846,13 +22834,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 { name: 'Spiny Dorsal Fin', x: 48, y: 3, desc: 'Long dorsal fin with sharp anterior spines and soft posterior rays. Spines lock erect for defense. Cichlids raise their dorsal to signal aggression.' },
 
-                { name: 'Thick Oval Body', x: 50, y: 50, desc: 'Deep, laterally compressed body provides power for territorial defense. Cichlids are among the most diverse vertebrate families — over 2,000 species.' },
+                { name: 'Thick Oval Body', x: 50, y: 50, desc: 'Deep, laterally compressed body provides power for territorial defense. Cichlids are among the most diverse vertebrate families â€” over 2,000 species.' },
 
                 { name: 'Protrusible Jaw', x: 12, y: 48, desc: 'Pharyngeal jaws in the throat grind food independently of the outer jaw. This dual-jaw system enabled explosive adaptive radiation in African rift lakes.' },
 
                 { name: 'Lateral Line', x: 55, y: 42, desc: 'Sensory canal running head to tail detects water pressure changes. Enables cichlids to sense approaching rivals and fine-tune territorial spacing.' },
 
-                { name: 'Pelvic Fans', x: 25, y: 72, desc: 'Modified pelvic fins used for fanning eggs and signaling. Many cichlids are mouthbrooders — carrying fertilized eggs inside their mouth.' },
+                { name: 'Pelvic Fans', x: 25, y: 72, desc: 'Modified pelvic fins used for fanning eggs and signaling. Many cichlids are mouthbrooders â€” carrying fertilized eggs inside their mouth.' },
 
                 { name: 'Color Patches', x: 40, y: 35, desc: 'Chromatophore-driven color patterns signal mood, dominance, and breeding readiness. Colors intensify during courtship and territorial displays.' }
 
@@ -29914,17 +22902,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Rounded Body', x: 50, y: 48, desc: 'Selectively bred for 1,000+ years to achieve the deep, egg-shaped body. Wild-type carp have streamlined bodies — the round shape is entirely artificial selection.' },
+                { name: 'Rounded Body', x: 50, y: 48, desc: 'Selectively bred for 1,000+ years to achieve the deep, egg-shaped body. Wild-type carp have streamlined bodies â€” the round shape is entirely artificial selection.' },
 
                 { name: 'Double Tail Fin', x: 92, y: 45, desc: 'Flowing double or triple caudal fin with delicate membrane. Fancy varieties include butterfly, veil, and fantail. Creates drag but enhances display.' },
 
-                { name: 'Dorsal Fin', x: 45, y: 6, desc: 'Single dorsal fin — absent in some fancy breeds like ranchu. When present, it provides stability during the slow, waddling swim of round-bodied varieties.' },
+                { name: 'Dorsal Fin', x: 45, y: 6, desc: 'Single dorsal fin â€” absent in some fancy breeds like ranchu. When present, it provides stability during the slow, waddling swim of round-bodied varieties.' },
 
                 { name: 'Pharyngeal Teeth', x: 18, y: 48, desc: 'Teeth in the throat (not the mouth) crush food. Goldfish are omnivorous bottom-feeders that naturally root through substrate for insect larvae.' },
 
-                { name: 'Lateral Line', x: 55, y: 40, desc: 'Pressure-sensing canal line. Goldfish have excellent senses — they can distinguish individual humans and learn to respond to feeding cues within days.' },
+                { name: 'Lateral Line', x: 55, y: 40, desc: 'Pressure-sensing canal line. Goldfish have excellent senses â€” they can distinguish individual humans and learn to respond to feeding cues within days.' },
 
-                { name: 'Operculum', x: 22, y: 52, desc: 'Bony gill cover pumps water over the gills. Goldfish are cold-water fish with a remarkable temperature range (2-30°C) and can survive brief oxygen deprivation.' }
+                { name: 'Operculum', x: 22, y: 52, desc: 'Bony gill cover pumps water over the gills. Goldfish are cold-water fish with a remarkable temperature range (2-30Â°C) and can survive brief oxygen deprivation.' }
 
               ]
 
@@ -29980,7 +22968,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Bill / Rostrum', x: 5, y: 48, desc: 'Elongated upper jaw forms a flat, sword-like bill. Used to slash through schools of fish, stunning prey. Can reach speeds of 100 km/h — one of the fastest fish.' },
+                { name: 'Bill / Rostrum', x: 5, y: 48, desc: 'Elongated upper jaw forms a flat, sword-like bill. Used to slash through schools of fish, stunning prey. Can reach speeds of 100 km/h â€” one of the fastest fish.' },
 
                 { name: 'Streamlined Torpedo', x: 50, y: 50, desc: 'Supremely hydrodynamic body with minimal drag coefficient. Skin secretes an oil that further reduces friction. Built for sustained high-speed pursuit.' },
 
@@ -29990,7 +22978,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 { name: 'Lateral Keel', x: 30, y: 38, desc: 'Bony ridge on the caudal peduncle reduces drag during tail beats. Combined with counter-current heat exchangers, allows warm-blooded muscle operation.' },
 
-                { name: 'Large Eye', x: 20, y: 45, desc: 'Enormous eyes with specialized heating organs keep them warm. Heated eyes process visual information faster — critical for high-speed pursuit in cold deep water.' }
+                { name: 'Large Eye', x: 20, y: 45, desc: 'Enormous eyes with specialized heating organs keep them warm. Heated eyes process visual information faster â€” critical for high-speed pursuit in cold deep water.' }
 
               ]
 
@@ -30050,15 +23038,15 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 { name: 'Barbels (3 pairs)', x: 10, y: 48, desc: 'Sensitive whisker-like organs around the mouth packed with taste buds. Used to probe substrate for buried worms, larvae, and detritus in murky Amazonian streams.' },
 
-                { name: 'Bony Scute Armor', x: 30, y: 35, desc: 'Two rows of overlapping bony plates (scutes) instead of scales. Provides excellent armor — most predators avoid them. Plates are visible as ridged lines along the flanks.' },
+                { name: 'Bony Scute Armor', x: 30, y: 35, desc: 'Two rows of overlapping bony plates (scutes) instead of scales. Provides excellent armor â€” most predators avoid them. Plates are visible as ridged lines along the flanks.' },
 
                 { name: 'Dorsal Spine', x: 47, y: 5, desc: 'Sharp, lockable dorsal spine that can pierce predator mouths. Some species secrete a mild venom. The spine locks rigid with a ratchet mechanism.' },
 
-                { name: 'Flat Belly', x: 50, y: 78, desc: 'Ventrally flattened body profile for bottom-dwelling. Corydoras spend most of their time rooting through substrate — they are the cleanup crew of freshwater tanks.' },
+                { name: 'Flat Belly', x: 50, y: 78, desc: 'Ventrally flattened body profile for bottom-dwelling. Corydoras spend most of their time rooting through substrate â€” they are the cleanup crew of freshwater tanks.' },
 
                 { name: 'Intestinal Breathing', x: 65, y: 55, desc: 'Can gulp air at the surface and absorb oxygen through a modified intestine. This adaptation allows survival in warm, stagnant Amazonian pools with near-zero dissolved oxygen.' },
 
-                { name: 'Adipose Fin', x: 80, y: 30, desc: 'A small, fleshy fin between dorsal and tail — a telltale sign shared with tetras, catfish, and salmon. Its function remains debated among ichthyologists.' }
+                { name: 'Adipose Fin', x: 80, y: 30, desc: 'A small, fleshy fin between dorsal and tail â€” a telltale sign shared with tetras, catfish, and salmon. Its function remains debated among ichthyologists.' }
 
               ]
 
@@ -30110,7 +23098,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           var SPECIES_COLORS = {
 
-            // ── Freshwater ──
+            // â”€â”€ Freshwater â”€â”€
 
             neon: '#38bdf8',     // electric blue stripe
 
@@ -30124,7 +23112,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             molly: '#334155',    // dark slate (visible at small sizes)
 
-            // ── Planted ──
+            // â”€â”€ Planted â”€â”€
 
             cardinal: '#dc2626', // deep red stripe
 
@@ -30136,7 +23124,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             betta: '#7c3aed',    // royal purple
 
-            // ── Reef ──
+            // â”€â”€ Reef â”€â”€
 
             clown: '#f97316',    // orange clownfish
 
@@ -30148,7 +23136,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             cleaner: '#ef4444',  // red/white stripe
 
-            // ── Predator ──
+            // â”€â”€ Predator â”€â”€
 
             oscar: '#b45309',    // dark orange/brown tiger
 
@@ -30156,7 +23144,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             pleco: '#57534e',    // dark brown armor
 
-            // ── Turtle & Reptile ──
+            // â”€â”€ Turtle & Reptile â”€â”€
 
             slider: '#16a34a',   // green shell
 
@@ -30164,7 +23152,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             goldfish: '#f59e0b', // classic gold
 
-            // ── Invertebrate Reef ──
+            // â”€â”€ Invertebrate Reef â”€â”€
 
             crab: '#dc2626',     // red crab
 
@@ -30174,13 +23162,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             seastar: '#ef4444',  // red seastar
 
-            // ── Cold Water ──
+            // â”€â”€ Cold Water â”€â”€
 
             rockfish: '#9f1239', // vermillion rockfish
 
             kelp: '#15803d',     // dark green
 
-            // ── Brackish ──
+            // â”€â”€ Brackish â”€â”€
 
             archer: '#c2410c',   // amber/brown bands
 
@@ -30188,7 +23176,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             mudskip: '#713f12',  // muddy brown
 
-            // ── Marine Science species ──
+            // â”€â”€ Marine Science species â”€â”€
 
             clownfish: '#f97316',  // orange
 
@@ -30238,21 +23226,21 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             mudskip: { override: 'Modified pectoral fins act as legs. Can breathe through skin and oral lining when on land.', locomotion: 'Uses pectoral fins to "walk" and "skip" across mud. Can also climb roots.' },
 
-            betta: { override: 'Has a labyrinth organ that allows breathing atmospheric air directly — can survive in low-oxygen water.', locomotion: 'Flowing fins create drag; bettas are slow but agile swimmers using sculling pectoral fins.' },
+            betta: { override: 'Has a labyrinth organ that allows breathing atmospheric air directly â€” can survive in low-oxygen water.', locomotion: 'Flowing fins create drag; bettas are slow but agile swimmers using sculling pectoral fins.' },
 
-            seahorse: { override: 'Swims upright using a tiny dorsal fin that beats 35 times per second. Prehensile tail grips substrates.', locomotion: 'The worst swimmer in the ocean — relies on rapid dorsal fin oscillation and steers with pectoral fins.' },
+            seahorse: { override: 'Swims upright using a tiny dorsal fin that beats 35 times per second. Prehensile tail grips substrates.', locomotion: 'The worst swimmer in the ocean â€” relies on rapid dorsal fin oscillation and steers with pectoral fins.' },
 
             anglerfish: { override: 'The bioluminescent lure (esca) contains symbiotic bacteria. Males fuse permanently to females, sharing blood supply.', locomotion: 'Slow ambush predator. Uses modified pectoral fins to "walk" on the seafloor.' },
 
-            puffer: { override: 'Can inflate body by swallowing water rapidly. Many species contain tetrodotoxin — 1200x more toxic than cyanide.', locomotion: 'Slow swimmer using pectoral and dorsal fin sculling. Sacrifices speed for defensive inflation ability.' },
+            puffer: { override: 'Can inflate body by swallowing water rapidly. Many species contain tetrodotoxin â€” 1200x more toxic than cyanide.', locomotion: 'Slow swimmer using pectoral and dorsal fin sculling. Sacrifices speed for defensive inflation ability.' },
 
-            mantaray: { override: 'Cephalic fins funnel plankton into mouth. Largest brain-to-body ratio of any fish. Recognized individual humans.', locomotion: 'Underwater flight — flaps wing-like pectoral fins. Can breach completely out of the water.' },
+            mantaray: { override: 'Cephalic fins funnel plankton into mouth. Largest brain-to-body ratio of any fish. Recognized individual humans.', locomotion: 'Underwater flight â€” flaps wing-like pectoral fins. Can breach completely out of the water.' },
 
-            coelacanth: { override: 'Lobed fins move in alternating pattern like tetrapod limbs — may represent step in fish-to-land transition.', locomotion: 'Slow drift feeder. Uses lobed fins in a unique "walking" pattern not seen in other living fish.' },
+            coelacanth: { override: 'Lobed fins move in alternating pattern like tetrapod limbs â€” may represent step in fish-to-land transition.', locomotion: 'Slow drift feeder. Uses lobed fins in a unique "walking" pattern not seen in other living fish.' },
 
-            nautilus: { override: 'Shell chambers filled with gas for buoyancy control. Has 90+ tentacles with no suckers — uses sticky ridges.', locomotion: 'Jet propulsion via siphon. Can withdraw completely into shell and seal with a leathery hood.' },
+            nautilus: { override: 'Shell chambers filled with gas for buoyancy control. Has 90+ tentacles with no suckers â€” uses sticky ridges.', locomotion: 'Jet propulsion via siphon. Can withdraw completely into shell and seal with a leathery hood.' },
 
-            clown: { override: 'Mucus coating prevents anemone stings. All born male — the dominant fish transitions to female (sequential hermaphroditism).', locomotion: 'Rapid pectoral fin waving for hovering near host anemone. Rarely strays far from home.' },
+            clown: { override: 'Mucus coating prevents anemone stings. All born male â€” the dominant fish transitions to female (sequential hermaphroditism).', locomotion: 'Rapid pectoral fin waving for hovering near host anemone. Rarely strays far from home.' },
 
             slider: { override: 'Basking behavior critical for thermoregulation and vitamin D synthesis. Can brumate (hibernate) underwater for months.', locomotion: 'Powerful rear leg kicks propel through water. On land, uses all four legs in a characteristic waddle.' }
 
@@ -30260,7 +23248,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Per-species display sizes (proportional to real-world size) ──
+          // â”€â”€ Per-species display sizes (proportional to real-world size) â”€â”€
 
           var SPECIES_DISPLAY_SIZE = {
 
@@ -30318,7 +23306,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Tank SVG mini-renderer — uses close-up body plan SVGs as miniatures in the tank ──
+          // â”€â”€ Tank SVG mini-renderer â€” uses close-up body plan SVGs as miniatures in the tank â”€â”€
 
           var getTankSvg = function (speciesId) {
 
@@ -30338,7 +23326,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Anatomy viewer state ──
+          // â”€â”€ Anatomy viewer state â”€â”€
 
           var viewingAnatomy = d.viewingAnatomy || null;
 
@@ -30364,21 +23352,21 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-            { id: 'freshwater', name: '🐠 Freshwater Community', size: 20, temp: 76, salinity: 0, pH: 7.0, diff: 1, desc: 'Classic beginner setup with tetras, guppies, and corydoras.' },
+            { id: 'freshwater', name: 'ðŸ  Freshwater Community', size: 20, temp: 76, salinity: 0, pH: 7.0, diff: 1, desc: 'Classic beginner setup with tetras, guppies, and corydoras.' },
 
-            { id: 'planted', name: '🌿 Planted Tropical', size: 40, temp: 78, salinity: 0, pH: 6.8, diff: 2, desc: 'Lush aquascape with live plants and small schooling fish.' },
+            { id: 'planted', name: 'ðŸŒ¿ Planted Tropical', size: 40, temp: 78, salinity: 0, pH: 6.8, diff: 2, desc: 'Lush aquascape with live plants and small schooling fish.' },
 
-            { id: 'reef', name: '🐡 Saltwater Reef', size: 55, temp: 78, salinity: 35, pH: 8.2, diff: 3, desc: 'Vibrant coral reef with clownfish and anemones.' },
+            { id: 'reef', name: 'ðŸ¡ Saltwater Reef', size: 55, temp: 78, salinity: 35, pH: 8.2, diff: 3, desc: 'Vibrant coral reef with clownfish and anemones.' },
 
-            { id: 'predator', name: '🦈 Predator Tank', size: 75, temp: 76, salinity: 0, pH: 7.2, diff: 3, desc: 'Oscars, pike cichlids, and other large predatory fish.' },
+            { id: 'predator', name: 'ðŸ¦ˆ Predator Tank', size: 75, temp: 76, salinity: 0, pH: 7.2, diff: 3, desc: 'Oscars, pike cichlids, and other large predatory fish.' },
 
-            { id: 'turtle', name: '🐢 Turtle & Reptile', size: 40, temp: 80, salinity: 0, pH: 7.5, diff: 2, desc: 'Basking dock, UVB lighting, and hardy companion fish.' },
+            { id: 'turtle', name: 'ðŸ¢ Turtle & Reptile', size: 40, temp: 80, salinity: 0, pH: 7.5, diff: 2, desc: 'Basking dock, UVB lighting, and hardy companion fish.' },
 
-            { id: 'invert', name: '🦐 Invertebrate Reef', size: 30, temp: 77, salinity: 35, pH: 8.3, diff: 4, desc: 'Shrimp, crabs, urchins, and delicate corals.' },
+            { id: 'invert', name: 'ðŸ¦ Invertebrate Reef', size: 30, temp: 77, salinity: 35, pH: 8.3, diff: 4, desc: 'Shrimp, crabs, urchins, and delicate corals.' },
 
-            { id: 'coldwater', name: '🐧 Cold Water Marine', size: 100, temp: 55, salinity: 34, pH: 8.1, diff: 4, desc: 'Kelp forest ecosystem with rockfish and sea stars.' },
+            { id: 'coldwater', name: 'ðŸ§ Cold Water Marine', size: 100, temp: 55, salinity: 34, pH: 8.1, diff: 4, desc: 'Kelp forest ecosystem with rockfish and sea stars.' },
 
-            { id: 'brackish', name: '🔬 Brackish Estuary', size: 30, temp: 75, salinity: 15, pH: 7.8, diff: 3, desc: 'Where river meets sea — archerfish, puffers, mudskippers.' }
+            { id: 'brackish', name: 'ðŸ”¬ Brackish Estuary', size: 30, temp: 75, salinity: 15, pH: 7.8, diff: 3, desc: 'Where river meets sea â€” archerfish, puffers, mudskippers.' }
 
           ];
 
@@ -30388,93 +23376,93 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             freshwater: [
 
-              { id: 'neon', name: 'Neon Tetra', icon: '🐟', load: 1, minTank: 10, tempRange: [72, 80], pHRange: [6.0, 7.5], compat: ['guppy', 'cory', 'platy'], diet: 'Micro-omnivore — brine shrimp, daphnia, and crushed flake food', habitat: 'Shaded blackwater streams in the Amazon basin among submerged roots and leaf litter', fact: 'Their iridescent stripe is made of guanine crystals.' },
+              { id: 'neon', name: 'Neon Tetra', icon: 'ðŸŸ', load: 1, minTank: 10, tempRange: [72, 80], pHRange: [6.0, 7.5], compat: ['guppy', 'cory', 'platy'], diet: 'Micro-omnivore â€” brine shrimp, daphnia, and crushed flake food', habitat: 'Shaded blackwater streams in the Amazon basin among submerged roots and leaf litter', fact: 'Their iridescent stripe is made of guanine crystals.' },
 
-              { id: 'guppy', name: 'Guppy', icon: '🐠', load: 1, minTank: 5, tempRange: [72, 82], pHRange: [6.8, 7.8], compat: ['neon', 'cory', 'platy', 'molly'], diet: 'Omnivore — algae, mosquito larvae, micro-worms, and flake food', habitat: 'Warm, slow-moving streams and pools in Trinidad, Venezuela, and northeast Brazil', fact: 'Males display vibrant colors to attract females.' },
+              { id: 'guppy', name: 'Guppy', icon: 'ðŸ ', load: 1, minTank: 5, tempRange: [72, 82], pHRange: [6.8, 7.8], compat: ['neon', 'cory', 'platy', 'molly'], diet: 'Omnivore â€” algae, mosquito larvae, micro-worms, and flake food', habitat: 'Warm, slow-moving streams and pools in Trinidad, Venezuela, and northeast Brazil', fact: 'Males display vibrant colors to attract females.' },
 
-              { id: 'cory', name: 'Corydoras', icon: '🐡', load: 2, minTank: 15, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['neon', 'guppy', 'platy', 'angel'], diet: 'Bottom-feeder — sinking pellets, bloodworms, and organic detritus from the substrate', habitat: 'Sandy-bottomed, slow-flowing tributaries of the Amazon and Orinoco basins', fact: 'They breathe air by darting to the surface!' },
+              { id: 'cory', name: 'Corydoras', icon: 'ðŸ¡', load: 2, minTank: 15, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['neon', 'guppy', 'platy', 'angel'], diet: 'Bottom-feeder â€” sinking pellets, bloodworms, and organic detritus from the substrate', habitat: 'Sandy-bottomed, slow-flowing tributaries of the Amazon and Orinoco basins', fact: 'They breathe air by darting to the surface!' },
 
-              { id: 'angel', name: 'Angelfish', icon: '🐠', load: 4, minTank: 20, tempRange: [76, 84], pHRange: [6.0, 7.5], compat: ['cory'], diet: 'Predatory omnivore — small fish, insects, worms, and vegetable matter', habitat: 'Deep, quiet, vegetated floodplains and slow tributaries of the central Amazon', fact: 'Angelfish are cichlids — they guard their eggs fiercely.' },
+              { id: 'angel', name: 'Angelfish', icon: 'ðŸ ', load: 4, minTank: 20, tempRange: [76, 84], pHRange: [6.0, 7.5], compat: ['cory'], diet: 'Predatory omnivore â€” small fish, insects, worms, and vegetable matter', habitat: 'Deep, quiet, vegetated floodplains and slow tributaries of the central Amazon', fact: 'Angelfish are cichlids â€” they guard their eggs fiercely.' },
 
-              { id: 'platy', name: 'Platy', icon: '🐠', load: 1, minTank: 10, tempRange: [70, 80], pHRange: [7.0, 8.2], compat: ['neon', 'guppy', 'cory', 'molly'], diet: 'Omnivore — algae, blanched vegetables, and small invertebrates', habitat: 'Warm, spring-fed streams and drainage ditches in southern Mexico and Guatemala', fact: 'Platys are livebearers — they give birth to free-swimming fry.' },
+              { id: 'platy', name: 'Platy', icon: 'ðŸ ', load: 1, minTank: 10, tempRange: [70, 80], pHRange: [7.0, 8.2], compat: ['neon', 'guppy', 'cory', 'molly'], diet: 'Omnivore â€” algae, blanched vegetables, and small invertebrates', habitat: 'Warm, spring-fed streams and drainage ditches in southern Mexico and Guatemala', fact: 'Platys are livebearers â€” they give birth to free-swimming fry.' },
 
-              { id: 'molly', name: 'Molly', icon: '🐟', load: 2, minTank: 15, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['guppy', 'platy'], diet: 'Herbivore-leaning omnivore — algae films, spirulina, and occasional insect larvae', habitat: 'Brackish coastal lagoons, mangrove swamps, and freshwater streams from Mexico to Colombia', fact: 'Mollies can survive in both fresh and saltwater!' }
+              { id: 'molly', name: 'Molly', icon: 'ðŸŸ', load: 2, minTank: 15, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['guppy', 'platy'], diet: 'Herbivore-leaning omnivore â€” algae films, spirulina, and occasional insect larvae', habitat: 'Brackish coastal lagoons, mangrove swamps, and freshwater streams from Mexico to Colombia', fact: 'Mollies can survive in both fresh and saltwater!' }
 
             ],
 
             planted: [
 
-              { id: 'cardinal', name: 'Cardinal Tetra', icon: '🐟', load: 1, minTank: 10, tempRange: [73, 81], pHRange: [5.5, 7.0], compat: ['rummy', 'oto', 'shrimp'], diet: 'Micro-predator — tiny crustaceans, insect larvae, and fine flake food', habitat: 'Tea-stained blackwater streams of the Rio Negro basin under dense rainforest canopy', fact: 'Cardinals have a deeper red stripe than neons.' },
+              { id: 'cardinal', name: 'Cardinal Tetra', icon: 'ðŸŸ', load: 1, minTank: 10, tempRange: [73, 81], pHRange: [5.5, 7.0], compat: ['rummy', 'oto', 'shrimp'], diet: 'Micro-predator â€” tiny crustaceans, insect larvae, and fine flake food', habitat: 'Tea-stained blackwater streams of the Rio Negro basin under dense rainforest canopy', fact: 'Cardinals have a deeper red stripe than neons.' },
 
-              { id: 'rummy', name: 'Rummynose Tetra', icon: '🐟', load: 1, minTank: 15, tempRange: [75, 82], pHRange: [5.5, 7.0], compat: ['cardinal', 'oto', 'shrimp'], diet: 'Omnivore — micro-crustaceans, fallen fruit particles, and algae', habitat: 'Soft, acidic tributaries of the Amazon and Rio Meta with sandy substrates', fact: 'Their red nose fades when stressed — a living water quality indicator!' },
+              { id: 'rummy', name: 'Rummynose Tetra', icon: 'ðŸŸ', load: 1, minTank: 15, tempRange: [75, 82], pHRange: [5.5, 7.0], compat: ['cardinal', 'oto', 'shrimp'], diet: 'Omnivore â€” micro-crustaceans, fallen fruit particles, and algae', habitat: 'Soft, acidic tributaries of the Amazon and Rio Meta with sandy substrates', fact: 'Their red nose fades when stressed â€” a living water quality indicator!' },
 
-              { id: 'oto', name: 'Otocinclus', icon: '🐡', load: 1, minTank: 10, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['cardinal', 'rummy', 'shrimp', 'betta'], diet: 'Herbivore — biofilm, soft green algae, and blanched zucchini', habitat: 'Shallow, sunlit, plant-rich margins of South American rivers with moderate current', fact: 'These tiny catfish are the best algae cleaners in the hobby.' },
+              { id: 'oto', name: 'Otocinclus', icon: 'ðŸ¡', load: 1, minTank: 10, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['cardinal', 'rummy', 'shrimp', 'betta'], diet: 'Herbivore â€” biofilm, soft green algae, and blanched zucchini', habitat: 'Shallow, sunlit, plant-rich margins of South American rivers with moderate current', fact: 'These tiny catfish are the best algae cleaners in the hobby.' },
 
-              { id: 'shrimp', name: 'Cherry Shrimp', icon: '🦐', load: 0.5, minTank: 5, tempRange: [68, 78], pHRange: [6.5, 8.0], compat: ['cardinal', 'rummy', 'oto'], diet: 'Detritivore — biofilm, decaying plant matter, algae, and microorganisms', habitat: 'Densely vegetated freshwater streams and ponds in Taiwan', fact: 'A colony can double in size every 2-3 months.' },
+              { id: 'shrimp', name: 'Cherry Shrimp', icon: 'ðŸ¦', load: 0.5, minTank: 5, tempRange: [68, 78], pHRange: [6.5, 8.0], compat: ['cardinal', 'rummy', 'oto'], diet: 'Detritivore â€” biofilm, decaying plant matter, algae, and microorganisms', habitat: 'Densely vegetated freshwater streams and ponds in Taiwan', fact: 'A colony can double in size every 2-3 months.' },
 
-              { id: 'betta', name: 'Betta', icon: '🐠', load: 2, minTank: 5, tempRange: [76, 82], pHRange: [6.5, 7.5], compat: ['oto'], diet: 'Insectivore — mosquito larvae, small insects, daphnia, and brine shrimp', habitat: 'Shallow rice paddies, stagnant ponds, and floodplains of Thailand and Cambodia', fact: 'Bettas build bubble nests at the surface for their eggs.' }
+              { id: 'betta', name: 'Betta', icon: 'ðŸ ', load: 2, minTank: 5, tempRange: [76, 82], pHRange: [6.5, 7.5], compat: ['oto'], diet: 'Insectivore â€” mosquito larvae, small insects, daphnia, and brine shrimp', habitat: 'Shallow rice paddies, stagnant ponds, and floodplains of Thailand and Cambodia', fact: 'Bettas build bubble nests at the surface for their eggs.' }
 
             ],
 
             reef: [
 
-              { id: 'clown', name: 'Clownfish', icon: '🐠', load: 3, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['tang', 'goby', 'anemone'], diet: 'Omnivore — algae, zooplankton, and leftover scraps from its host anemone', habitat: 'Shelters among venomous tentacles of Heteractis anemones on Indo-Pacific reefs', fact: 'All clownfish are born male — the dominant one becomes female!' },
+              { id: 'clown', name: 'Clownfish', icon: 'ðŸ ', load: 3, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['tang', 'goby', 'anemone'], diet: 'Omnivore â€” algae, zooplankton, and leftover scraps from its host anemone', habitat: 'Shelters among venomous tentacles of Heteractis anemones on Indo-Pacific reefs', fact: 'All clownfish are born male â€” the dominant one becomes female!' },
 
-              { id: 'tang', name: 'Blue Tang', icon: '🐠', load: 5, minTank: 55, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'goby'], diet: 'Herbivore — filamentous algae and seaweed, essential for reef health', habitat: 'Coral-rich outer reef slopes and lagoons throughout the Indo-Pacific', fact: 'Blue tangs can "play dead" when stressed, lying on their side.' },
+              { id: 'tang', name: 'Blue Tang', icon: 'ðŸ ', load: 5, minTank: 55, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'goby'], diet: 'Herbivore â€” filamentous algae and seaweed, essential for reef health', habitat: 'Coral-rich outer reef slopes and lagoons throughout the Indo-Pacific', fact: 'Blue tangs can "play dead" when stressed, lying on their side.' },
 
-              { id: 'goby', name: 'Watchman Goby', icon: '🐡', load: 2, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'tang', 'anemone'], diet: 'Micro-predator — copepods, mysis shrimp, and sand-dwelling invertebrates', habitat: 'Sandy rubble zones adjacent to coral reefs, often sharing a burrow with a pistol shrimp', fact: 'Gobies form symbiotic partnerships with pistol shrimp.' },
+              { id: 'goby', name: 'Watchman Goby', icon: 'ðŸ¡', load: 2, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'tang', 'anemone'], diet: 'Micro-predator â€” copepods, mysis shrimp, and sand-dwelling invertebrates', habitat: 'Sandy rubble zones adjacent to coral reefs, often sharing a burrow with a pistol shrimp', fact: 'Gobies form symbiotic partnerships with pistol shrimp.' },
 
-              { id: 'anemone', name: 'Sea Anemone', icon: '🪸', load: 3, minTank: 30, tempRange: [76, 82], pHRange: [8.1, 8.4], compat: ['clown', 'goby'], diet: 'Carnivore — captures small fish and shrimp with nematocyst-armed tentacles; also hosts photosynthetic zooxanthellae', habitat: 'Well-lit, current-swept sections of tropical reefs in the Indo-Pacific', fact: 'Anemones can live over 100 years in the right conditions.' }
+              { id: 'anemone', name: 'Sea Anemone', icon: 'ðŸª¸', load: 3, minTank: 30, tempRange: [76, 82], pHRange: [8.1, 8.4], compat: ['clown', 'goby'], diet: 'Carnivore â€” captures small fish and shrimp with nematocyst-armed tentacles; also hosts photosynthetic zooxanthellae', habitat: 'Well-lit, current-swept sections of tropical reefs in the Indo-Pacific', fact: 'Anemones can live over 100 years in the right conditions.' }
 
             ],
 
             predator: [
 
-              { id: 'oscar', name: 'Oscar', icon: '🐠', load: 10, minTank: 55, tempRange: [74, 81], pHRange: [6.0, 8.0], compat: ['pleco'], diet: 'Carnivore — crayfish, insects, small fish, and earthworms', habitat: 'Slow-moving, white-water rivers and flooded forests of the Amazon, Orinoco, and Paraná basins', fact: 'Oscars recognize their owners and can learn tricks.' },
+              { id: 'oscar', name: 'Oscar', icon: 'ðŸ ', load: 10, minTank: 55, tempRange: [74, 81], pHRange: [6.0, 8.0], compat: ['pleco'], diet: 'Carnivore â€” crayfish, insects, small fish, and earthworms', habitat: 'Slow-moving, white-water rivers and flooded forests of the Amazon, Orinoco, and ParanÃ¡ basins', fact: 'Oscars recognize their owners and can learn tricks.' },
 
-              { id: 'pike', name: 'Pike Cichlid', icon: '🐡', load: 8, minTank: 55, tempRange: [75, 82], pHRange: [6.0, 7.5], compat: ['pleco'], diet: 'Aggressive piscivore — ambushes fish, large insects, and crustaceans', habitat: 'Submerged logs and undercut banks in fast-flowing Amazonian creeks', fact: 'Pike cichlids are ambush predators that strike in milliseconds.' },
+              { id: 'pike', name: 'Pike Cichlid', icon: 'ðŸ¡', load: 8, minTank: 55, tempRange: [75, 82], pHRange: [6.0, 7.5], compat: ['pleco'], diet: 'Aggressive piscivore â€” ambushes fish, large insects, and crustaceans', habitat: 'Submerged logs and undercut banks in fast-flowing Amazonian creeks', fact: 'Pike cichlids are ambush predators that strike in milliseconds.' },
 
-              { id: 'pleco', name: 'Plecostomus', icon: '🐡', load: 6, minTank: 40, tempRange: [72, 82], pHRange: [6.5, 7.5], compat: ['oscar', 'pike'], diet: 'Omnivorous grazer — rasps algae and biofilm off rocks; also eats driftwood and sinking wafers', habitat: 'Rocky rapids and submerged driftwood in tropical South American rivers', fact: 'Some plecos can grow over 2 feet long!' }
+              { id: 'pleco', name: 'Plecostomus', icon: 'ðŸ¡', load: 6, minTank: 40, tempRange: [72, 82], pHRange: [6.5, 7.5], compat: ['oscar', 'pike'], diet: 'Omnivorous grazer â€” rasps algae and biofilm off rocks; also eats driftwood and sinking wafers', habitat: 'Rocky rapids and submerged driftwood in tropical South American rivers', fact: 'Some plecos can grow over 2 feet long!' }
 
             ],
 
             turtle: [
 
-              { id: 'slider', name: 'Red-Eared Slider', icon: '🐢', load: 15, minTank: 40, tempRange: [75, 85], pHRange: [6.5, 8.0], compat: ['goldfish'], diet: 'Omnivore — aquatic plants, snails, insects, and commercial turtle pellets; diet shifts to more vegetation with age', habitat: 'Calm ponds, lakes, and slow streams with muddy bottoms and basking logs in the southern United States', fact: 'They can hold their breath for over 30 minutes!' },
+              { id: 'slider', name: 'Red-Eared Slider', icon: 'ðŸ¢', load: 15, minTank: 40, tempRange: [75, 85], pHRange: [6.5, 8.0], compat: ['goldfish'], diet: 'Omnivore â€” aquatic plants, snails, insects, and commercial turtle pellets; diet shifts to more vegetation with age', habitat: 'Calm ponds, lakes, and slow streams with muddy bottoms and basking logs in the southern United States', fact: 'They can hold their breath for over 30 minutes!' },
 
-              { id: 'goldfish', name: 'Feeder Goldfish', icon: '🐠', load: 3, minTank: 20, tempRange: [65, 75], pHRange: [7.0, 8.4], compat: ['slider'], diet: 'Omnivore — algae, aquatic plants, detritus, small invertebrates, and prepared pellets', habitat: 'Cool, slow-moving freshwater ponds and rivers; originally domesticated from wild carp in East Asia', fact: 'Goldfish can live 20+ years with proper care.' }
+              { id: 'goldfish', name: 'Feeder Goldfish', icon: 'ðŸ ', load: 3, minTank: 20, tempRange: [65, 75], pHRange: [7.0, 8.4], compat: ['slider'], diet: 'Omnivore â€” algae, aquatic plants, detritus, small invertebrates, and prepared pellets', habitat: 'Cool, slow-moving freshwater ponds and rivers; originally domesticated from wild carp in East Asia', fact: 'Goldfish can live 20+ years with proper care.' }
 
             ],
 
             invert: [
 
-              { id: 'cleaner', name: 'Cleaner Shrimp', icon: '🦐', load: 1, minTank: 10, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['urchin', 'crab', 'starfish'], diet: 'Ectoparasite feeder — removes parasites, dead skin, and mucus from visiting reef fish', habitat: 'Coral ledges and reef crevices throughout the Indo-Pacific where it establishes cleaning stations', fact: 'They set up cleaning stations where fish line up to be groomed!' },
+              { id: 'cleaner', name: 'Cleaner Shrimp', icon: 'ðŸ¦', load: 1, minTank: 10, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['urchin', 'crab', 'starfish'], diet: 'Ectoparasite feeder â€” removes parasites, dead skin, and mucus from visiting reef fish', habitat: 'Coral ledges and reef crevices throughout the Indo-Pacific where it establishes cleaning stations', fact: 'They set up cleaning stations where fish line up to be groomed!' },
 
-              { id: 'urchin', name: 'Sea Urchin', icon: '🦔', load: 2, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'crab', 'starfish'], diet: 'Herbivore — rasps coralline and filamentous algae off rocks using a five-toothed jaw called Aristotle\'s lantern', habitat: 'Rocky subtidal reef zones and kelp forests in temperate and tropical seas', fact: 'Urchin spines are actually modified teeth.' },
+              { id: 'urchin', name: 'Sea Urchin', icon: 'ðŸ¦”', load: 2, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'crab', 'starfish'], diet: 'Herbivore â€” rasps coralline and filamentous algae off rocks using a five-toothed jaw called Aristotle\'s lantern', habitat: 'Rocky subtidal reef zones and kelp forests in temperate and tropical seas', fact: 'Urchin spines are actually modified teeth.' },
 
-              { id: 'crab', name: 'Hermit Crab', icon: '🦀', load: 2, minTank: 10, tempRange: [72, 80], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'starfish'], diet: 'Scavenger/omnivore — detritus, algae, leftover food scraps, and small worms', habitat: 'Intertidal rock pools and shallow coral rubble zones in tropical seas', fact: 'Hermit crabs form "vacancy chains" — swapping shells in order of size!' },
+              { id: 'crab', name: 'Hermit Crab', icon: 'ðŸ¦€', load: 2, minTank: 10, tempRange: [72, 80], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'starfish'], diet: 'Scavenger/omnivore â€” detritus, algae, leftover food scraps, and small worms', habitat: 'Intertidal rock pools and shallow coral rubble zones in tropical seas', fact: 'Hermit crabs form "vacancy chains" â€” swapping shells in order of size!' },
 
-              { id: 'starfish', name: 'Sea Star', icon: '⭐', load: 3, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'crab'], diet: 'Predator — everts its stomach to digest mussels, clams, and oysters externally', habitat: 'Rocky intertidal zones to deep reef slopes in nearly every ocean', fact: 'Sea stars can regenerate lost arms — and sometimes an entire body from one arm.' }
+              { id: 'starfish', name: 'Sea Star', icon: 'â­', load: 3, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'crab'], diet: 'Predator â€” everts its stomach to digest mussels, clams, and oysters externally', habitat: 'Rocky intertidal zones to deep reef slopes in nearly every ocean', fact: 'Sea stars can regenerate lost arms â€” and sometimes an entire body from one arm.' }
 
             ],
 
             coldwater: [
 
-              { id: 'rockfish', name: 'Rockfish', icon: '🐡', load: 5, minTank: 55, tempRange: [50, 60], pHRange: [7.8, 8.4], compat: ['seastar', 'kelp'], diet: 'Ambush predator — small fish, shrimp, and planktonic crustaceans near rocky structure', habitat: 'Deep rocky reefs and kelp forests along the Pacific coast of North America', fact: 'Some rockfish live over 200 years!' },
+              { id: 'rockfish', name: 'Rockfish', icon: 'ðŸ¡', load: 5, minTank: 55, tempRange: [50, 60], pHRange: [7.8, 8.4], compat: ['seastar', 'kelp'], diet: 'Ambush predator â€” small fish, shrimp, and planktonic crustaceans near rocky structure', habitat: 'Deep rocky reefs and kelp forests along the Pacific coast of North America', fact: 'Some rockfish live over 200 years!' },
 
-              { id: 'seastar', name: 'Sunflower Star', icon: '⭐', load: 4, minTank: 40, tempRange: [48, 58], pHRange: [7.8, 8.4], compat: ['rockfish', 'kelp'], diet: 'Voracious predator — sea urchins, clams, snails, and other sea stars', habitat: 'Kelp forests and rocky reefs from Alaska to Baja California, critical for controlling urchin populations', fact: 'Sunflower stars have up to 24 arms and can move 1 meter per minute.' },
+              { id: 'seastar', name: 'Sunflower Star', icon: 'â­', load: 4, minTank: 40, tempRange: [48, 58], pHRange: [7.8, 8.4], compat: ['rockfish', 'kelp'], diet: 'Voracious predator â€” sea urchins, clams, snails, and other sea stars', habitat: 'Kelp forests and rocky reefs from Alaska to Baja California, critical for controlling urchin populations', fact: 'Sunflower stars have up to 24 arms and can move 1 meter per minute.' },
 
-              { id: 'kelp', name: 'Giant Kelp', icon: '🌿', load: 1, minTank: 30, tempRange: [50, 65], pHRange: [7.5, 8.5], compat: ['rockfish', 'seastar'], diet: 'Photosynthetic autotroph — converts sunlight, CO₂, and dissolved nutrients into biomass', habitat: 'Cool, nutrient-rich, sunlit coastal waters from 6-30m depth along temperate coastlines', fact: 'Giant kelp can grow up to 2 feet per day!' }
+              { id: 'kelp', name: 'Giant Kelp', icon: 'ðŸŒ¿', load: 1, minTank: 30, tempRange: [50, 65], pHRange: [7.5, 8.5], compat: ['rockfish', 'seastar'], diet: 'Photosynthetic autotroph â€” converts sunlight, COâ‚‚, and dissolved nutrients into biomass', habitat: 'Cool, nutrient-rich, sunlit coastal waters from 6-30m depth along temperate coastlines', fact: 'Giant kelp can grow up to 2 feet per day!' }
 
             ],
 
             brackish: [
 
-              { id: 'archer', name: 'Archerfish', icon: '🐠', load: 3, minTank: 20, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['puffer', 'mudskip'], diet: 'Insectivore — shoots down terrestrial insects with precisely aimed jets of water', habitat: 'Mangrove-lined estuaries, brackish creeks, and river mouths across Southeast Asia and northern Australia', fact: 'Archerfish shoot jets of water to knock insects off branches!' },
+              { id: 'archer', name: 'Archerfish', icon: 'ðŸ ', load: 3, minTank: 20, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['puffer', 'mudskip'], diet: 'Insectivore â€” shoots down terrestrial insects with precisely aimed jets of water', habitat: 'Mangrove-lined estuaries, brackish creeks, and river mouths across Southeast Asia and northern Australia', fact: 'Archerfish shoot jets of water to knock insects off branches!' },
 
-              { id: 'puffer', name: 'Figure-8 Puffer', icon: '🐡', load: 4, minTank: 15, tempRange: [72, 79], pHRange: [7.5, 8.5], compat: ['archer'], diet: 'Molluscivore — crunches snails, clams, and crustacean shells to keep its fused beak trimmed', habitat: 'Brackish river deltas and coastal mangroves of Southeast Asia, especially in Thailand and Borneo', fact: 'Puffers need to crunch hard-shelled food to keep their beaks trimmed.' },
+              { id: 'puffer', name: 'Figure-8 Puffer', icon: 'ðŸ¡', load: 4, minTank: 15, tempRange: [72, 79], pHRange: [7.5, 8.5], compat: ['archer'], diet: 'Molluscivore â€” crunches snails, clams, and crustacean shells to keep its fused beak trimmed', habitat: 'Brackish river deltas and coastal mangroves of Southeast Asia, especially in Thailand and Borneo', fact: 'Puffers need to crunch hard-shelled food to keep their beaks trimmed.' },
 
-              { id: 'mudskip', name: 'Mudskipper', icon: '🐸', load: 3, minTank: 20, tempRange: [75, 86], pHRange: [7.0, 8.5], compat: ['archer'], diet: 'Opportunistic omnivore — insects, small crabs, algae, and detritus from mudflats', habitat: 'Intertidal mudflats and mangrove forests of the Indo-Pacific, spending much of its time on land', fact: 'Mudskippers are fish that can walk on land and breathe air!' }
+              { id: 'mudskip', name: 'Mudskipper', icon: 'ðŸ¸', load: 3, minTank: 20, tempRange: [75, 86], pHRange: [7.0, 8.5], compat: ['archer'], diet: 'Opportunistic omnivore â€” insects, small crabs, algae, and detritus from mudflats', habitat: 'Intertidal mudflats and mangrove forests of the Indo-Pacific, spending much of its time on land', fact: 'Mudskippers are fish that can walk on land and breathe air!' }
 
             ]
 
@@ -30482,7 +23470,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ═══ PLANT SPECIES CATALOG ═══
+          // â•â•â• PLANT SPECIES CATALOG â•â•â•
 
           // Each plant has real aquatic properties that affect the ecosystem simulation
 
@@ -30490,55 +23478,55 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             freshwater: [
 
-              { id: 'java_fern', name: 'Java Fern', icon: '🌿', o2: 0.3, co2Need: 0.2, nitrateAbsorb: 0.2, light: 'low', growth: 0.02, maxSize: 3, desc: 'Hardy epiphyte — attaches to rocks and driftwood. Thrives in low light. Absorbs nutrients through leaves, not roots.', fact: 'Java Fern reproduces by growing tiny plantlets on its leaves!' },
+              { id: 'java_fern', name: 'Java Fern', icon: 'ðŸŒ¿', o2: 0.3, co2Need: 0.2, nitrateAbsorb: 0.2, light: 'low', growth: 0.02, maxSize: 3, desc: 'Hardy epiphyte â€” attaches to rocks and driftwood. Thrives in low light. Absorbs nutrients through leaves, not roots.', fact: 'Java Fern reproduces by growing tiny plantlets on its leaves!' },
 
-              { id: 'amazon_sword', name: 'Amazon Sword', icon: '🌱', o2: 0.8, co2Need: 0.5, nitrateAbsorb: 0.7, light: 'medium', growth: 0.05, maxSize: 5, desc: 'Large rosette plant with broad leaves. Heavy root feeder — needs nutrient-rich substrate. Excellent nitrate absorber.', fact: 'A single Amazon Sword can grow over 20 inches tall and consume enormous amounts of nitrate.' },
+              { id: 'amazon_sword', name: 'Amazon Sword', icon: 'ðŸŒ±', o2: 0.8, co2Need: 0.5, nitrateAbsorb: 0.7, light: 'medium', growth: 0.05, maxSize: 5, desc: 'Large rosette plant with broad leaves. Heavy root feeder â€” needs nutrient-rich substrate. Excellent nitrate absorber.', fact: 'A single Amazon Sword can grow over 20 inches tall and consume enormous amounts of nitrate.' },
 
-              { id: 'java_moss', name: 'Java Moss', icon: '🌿', o2: 0.2, co2Need: 0.15, nitrateAbsorb: 0.3, light: 'low', growth: 0.06, maxSize: 4, desc: 'Versatile moss that carpets surfaces. Provides hiding spots for fry and shrimp. Nearly indestructible.', fact: 'Java Moss can survive in almost any water conditions and even grow emersed above water.' },
+              { id: 'java_moss', name: 'Java Moss', icon: 'ðŸŒ¿', o2: 0.2, co2Need: 0.15, nitrateAbsorb: 0.3, light: 'low', growth: 0.06, maxSize: 4, desc: 'Versatile moss that carpets surfaces. Provides hiding spots for fry and shrimp. Nearly indestructible.', fact: 'Java Moss can survive in almost any water conditions and even grow emersed above water.' },
 
-              { id: 'hornwort', name: 'Hornwort', icon: '🌿', o2: 1.0, co2Need: 0.4, nitrateAbsorb: 0.9, light: 'medium', growth: 0.08, maxSize: 6, desc: 'Fast-growing floating/anchored stem plant. Champion nitrate absorber and oxygenator. Can grow 1-5 inches per week.', fact: 'Hornwort releases allelopathic chemicals that actively inhibit algae growth!' },
+              { id: 'hornwort', name: 'Hornwort', icon: 'ðŸŒ¿', o2: 1.0, co2Need: 0.4, nitrateAbsorb: 0.9, light: 'medium', growth: 0.08, maxSize: 6, desc: 'Fast-growing floating/anchored stem plant. Champion nitrate absorber and oxygenator. Can grow 1-5 inches per week.', fact: 'Hornwort releases allelopathic chemicals that actively inhibit algae growth!' },
 
-              { id: 'anubias', name: 'Anubias', icon: '🍀', o2: 0.2, co2Need: 0.1, nitrateAbsorb: 0.15, light: 'low', growth: 0.01, maxSize: 3, desc: 'Extremely slow-growing but nearly unkillable. Thick, waxy leaves resist algae and herbivorous fish.', fact: 'Anubias grows so slowly that algae often colonizes its leaves before new ones emerge.' },
+              { id: 'anubias', name: 'Anubias', icon: 'ðŸ€', o2: 0.2, co2Need: 0.1, nitrateAbsorb: 0.15, light: 'low', growth: 0.01, maxSize: 3, desc: 'Extremely slow-growing but nearly unkillable. Thick, waxy leaves resist algae and herbivorous fish.', fact: 'Anubias grows so slowly that algae often colonizes its leaves before new ones emerge.' },
 
-              { id: 'water_wisteria', name: 'Water Wisteria', icon: '🌿', o2: 0.7, co2Need: 0.4, nitrateAbsorb: 0.6, light: 'medium', growth: 0.07, maxSize: 5, desc: 'Fast-growing stem plant with finely divided leaves. Excellent for absorbing excess nutrients and preventing algae.', fact: 'Water Wisteria leaf shape changes dramatically based on whether it grows submerged or above water.' },
+              { id: 'water_wisteria', name: 'Water Wisteria', icon: 'ðŸŒ¿', o2: 0.7, co2Need: 0.4, nitrateAbsorb: 0.6, light: 'medium', growth: 0.07, maxSize: 5, desc: 'Fast-growing stem plant with finely divided leaves. Excellent for absorbing excess nutrients and preventing algae.', fact: 'Water Wisteria leaf shape changes dramatically based on whether it grows submerged or above water.' },
 
-              { id: 'duckweed', name: 'Duckweed', icon: '🟢', o2: 0.5, co2Need: 0.1, nitrateAbsorb: 0.8, light: 'high', growth: 0.1, maxSize: 8, desc: 'Tiny floating plant that doubles in mass every 2-3 days. Absorbs nitrate voraciously but blocks light to plants below.', fact: 'Duckweed is the fastest-growing flowering plant on Earth — used in wastewater treatment worldwide.' }
+              { id: 'duckweed', name: 'Duckweed', icon: 'ðŸŸ¢', o2: 0.5, co2Need: 0.1, nitrateAbsorb: 0.8, light: 'high', growth: 0.1, maxSize: 8, desc: 'Tiny floating plant that doubles in mass every 2-3 days. Absorbs nitrate voraciously but blocks light to plants below.', fact: 'Duckweed is the fastest-growing flowering plant on Earth â€” used in wastewater treatment worldwide.' }
 
             ],
 
             planted: [
 
-              { id: 'dwarf_hairgrass', name: 'Dwarf Hairgrass', icon: '🌾', o2: 0.5, co2Need: 0.7, nitrateAbsorb: 0.4, light: 'high', growth: 0.04, maxSize: 3, desc: 'Carpet-forming grass that creates lush green lawns. Requires high CO2 and bright light to thrive.', fact: 'Dwarf Hairgrass sends out runners underground, forming a dense carpet over weeks.' },
+              { id: 'dwarf_hairgrass', name: 'Dwarf Hairgrass', icon: 'ðŸŒ¾', o2: 0.5, co2Need: 0.7, nitrateAbsorb: 0.4, light: 'high', growth: 0.04, maxSize: 3, desc: 'Carpet-forming grass that creates lush green lawns. Requires high CO2 and bright light to thrive.', fact: 'Dwarf Hairgrass sends out runners underground, forming a dense carpet over weeks.' },
 
-              { id: 'red_root_floater', name: 'Red Root Floater', icon: '🔴', o2: 0.4, co2Need: 0.1, nitrateAbsorb: 0.5, light: 'high', growth: 0.06, maxSize: 4, desc: 'Floating plant with red-purple roots that dangle into the water. Roots absorb nutrients directly from the water column.', fact: 'The roots turn deep red under intense light — a sign of anthocyanin pigment production.' },
+              { id: 'red_root_floater', name: 'Red Root Floater', icon: 'ðŸ”´', o2: 0.4, co2Need: 0.1, nitrateAbsorb: 0.5, light: 'high', growth: 0.06, maxSize: 4, desc: 'Floating plant with red-purple roots that dangle into the water. Roots absorb nutrients directly from the water column.', fact: 'The roots turn deep red under intense light â€” a sign of anthocyanin pigment production.' },
 
-              { id: 'rotala', name: 'Rotala Rotundifolia', icon: '🌺', o2: 0.6, co2Need: 0.6, nitrateAbsorb: 0.5, light: 'high', growth: 0.05, maxSize: 5, desc: 'Colorful stem plant that turns pink-red under high light and CO2. One of the most popular aquascaping plants.', fact: 'Rotala can grow completely red when iron levels are high, creating stunning underwater landscapes.' },
+              { id: 'rotala', name: 'Rotala Rotundifolia', icon: 'ðŸŒº', o2: 0.6, co2Need: 0.6, nitrateAbsorb: 0.5, light: 'high', growth: 0.05, maxSize: 5, desc: 'Colorful stem plant that turns pink-red under high light and CO2. One of the most popular aquascaping plants.', fact: 'Rotala can grow completely red when iron levels are high, creating stunning underwater landscapes.' },
 
-              { id: 'monte_carlo', name: 'Monte Carlo', icon: '🌿', o2: 0.4, co2Need: 0.6, nitrateAbsorb: 0.3, light: 'high', growth: 0.03, maxSize: 2, desc: 'Low-growing carpet plant with small round leaves. Creates dense ground cover. Needs CO2 injection.', fact: 'Monte Carlo was discovered in Argentina and named after Monte Carlo, the famous Mediterranean city.' },
+              { id: 'monte_carlo', name: 'Monte Carlo', icon: 'ðŸŒ¿', o2: 0.4, co2Need: 0.6, nitrateAbsorb: 0.3, light: 'high', growth: 0.03, maxSize: 2, desc: 'Low-growing carpet plant with small round leaves. Creates dense ground cover. Needs CO2 injection.', fact: 'Monte Carlo was discovered in Argentina and named after Monte Carlo, the famous Mediterranean city.' },
 
-              { id: 'java_fern', name: 'Java Fern', icon: '🌿', o2: 0.3, co2Need: 0.2, nitrateAbsorb: 0.2, light: 'low', growth: 0.02, maxSize: 3, desc: 'Hardy epiphyte — attaches to rocks and driftwood. Thrives in low light.', fact: 'Java Fern reproduces by growing tiny plantlets on its leaves!' },
+              { id: 'java_fern', name: 'Java Fern', icon: 'ðŸŒ¿', o2: 0.3, co2Need: 0.2, nitrateAbsorb: 0.2, light: 'low', growth: 0.02, maxSize: 3, desc: 'Hardy epiphyte â€” attaches to rocks and driftwood. Thrives in low light.', fact: 'Java Fern reproduces by growing tiny plantlets on its leaves!' },
 
-              { id: 'hornwort', name: 'Hornwort', icon: '🌿', o2: 1.0, co2Need: 0.4, nitrateAbsorb: 0.9, light: 'medium', growth: 0.08, maxSize: 6, desc: 'Champion oxygenator and nitrate absorber. Grows fast and releases algae-inhibiting chemicals.', fact: 'Hornwort allelopathy actively suppresses algae growth in the water column.' },
+              { id: 'hornwort', name: 'Hornwort', icon: 'ðŸŒ¿', o2: 1.0, co2Need: 0.4, nitrateAbsorb: 0.9, light: 'medium', growth: 0.08, maxSize: 6, desc: 'Champion oxygenator and nitrate absorber. Grows fast and releases algae-inhibiting chemicals.', fact: 'Hornwort allelopathy actively suppresses algae growth in the water column.' },
 
-              { id: 'water_wisteria', name: 'Water Wisteria', icon: '🌿', o2: 0.7, co2Need: 0.4, nitrateAbsorb: 0.6, light: 'medium', growth: 0.07, maxSize: 5, desc: 'Fast-growing nutrient sponge with beautiful lacey leaves.', fact: 'Water Wisteria can be propagated from just a single stem cutting.' }
+              { id: 'water_wisteria', name: 'Water Wisteria', icon: 'ðŸŒ¿', o2: 0.7, co2Need: 0.4, nitrateAbsorb: 0.6, light: 'medium', growth: 0.07, maxSize: 5, desc: 'Fast-growing nutrient sponge with beautiful lacey leaves.', fact: 'Water Wisteria can be propagated from just a single stem cutting.' }
 
             ],
 
             reef: [
 
-              { id: 'chaeto', name: 'Chaetomorpha', icon: '🌿', o2: 0.8, co2Need: 0.6, nitrateAbsorb: 0.9, light: 'high', growth: 0.07, maxSize: 5, desc: 'Green macroalgae grown in refugiums. The ultimate nitrate and phosphate remover for saltwater tanks.', fact: 'Chaeto is so effective at nutrient export that reefers harvest and discard overgrown portions regularly.' },
+              { id: 'chaeto', name: 'Chaetomorpha', icon: 'ðŸŒ¿', o2: 0.8, co2Need: 0.6, nitrateAbsorb: 0.9, light: 'high', growth: 0.07, maxSize: 5, desc: 'Green macroalgae grown in refugiums. The ultimate nitrate and phosphate remover for saltwater tanks.', fact: 'Chaeto is so effective at nutrient export that reefers harvest and discard overgrown portions regularly.' },
 
-              { id: 'mangrove', name: 'Mangrove Seedling', icon: '🌳', o2: 0.4, co2Need: 0.2, nitrateAbsorb: 0.6, light: 'high', growth: 0.01, maxSize: 4, desc: 'Grows roots in saltwater while leaves emerge above. Excellent natural denitrifier and provides habitat structure.', fact: 'Mangrove forests protect coastlines from storms and serve as nurseries for 75% of commercially caught fish species.' },
+              { id: 'mangrove', name: 'Mangrove Seedling', icon: 'ðŸŒ³', o2: 0.4, co2Need: 0.2, nitrateAbsorb: 0.6, light: 'high', growth: 0.01, maxSize: 4, desc: 'Grows roots in saltwater while leaves emerge above. Excellent natural denitrifier and provides habitat structure.', fact: 'Mangrove forests protect coastlines from storms and serve as nurseries for 75% of commercially caught fish species.' },
 
-              { id: 'caulerpa', name: 'Caulerpa', icon: '🌿', o2: 0.5, co2Need: 0.4, nitrateAbsorb: 0.7, light: 'medium', growth: 0.06, maxSize: 5, desc: 'Fast-growing marine macroalgae. Can become invasive if not pruned — known to "go sexual" and release spores in a toxic crash.', fact: 'Caulerpa is a single-celled organism — one of the largest single cells on Earth, up to 3 meters long!' }
+              { id: 'caulerpa', name: 'Caulerpa', icon: 'ðŸŒ¿', o2: 0.5, co2Need: 0.4, nitrateAbsorb: 0.7, light: 'medium', growth: 0.06, maxSize: 5, desc: 'Fast-growing marine macroalgae. Can become invasive if not pruned â€” known to "go sexual" and release spores in a toxic crash.', fact: 'Caulerpa is a single-celled organism â€” one of the largest single cells on Earth, up to 3 meters long!' }
 
             ],
 
             brackish: [
 
-              { id: 'mangrove', name: 'Mangrove Seedling', icon: '🌳', o2: 0.4, co2Need: 0.2, nitrateAbsorb: 0.6, light: 'high', growth: 0.01, maxSize: 4, desc: 'Grows roots in brackish water while leaves emerge above. Natural denitrifier.', fact: 'Mangroves can filter salt from seawater — their roots excrete salt crystals.' },
+              { id: 'mangrove', name: 'Mangrove Seedling', icon: 'ðŸŒ³', o2: 0.4, co2Need: 0.2, nitrateAbsorb: 0.6, light: 'high', growth: 0.01, maxSize: 4, desc: 'Grows roots in brackish water while leaves emerge above. Natural denitrifier.', fact: 'Mangroves can filter salt from seawater â€” their roots excrete salt crystals.' },
 
-              { id: 'java_fern', name: 'Java Fern', icon: '🌿', o2: 0.3, co2Need: 0.2, nitrateAbsorb: 0.2, light: 'low', growth: 0.02, maxSize: 3, desc: 'Tolerates mild brackish conditions. Hardy and low-maintenance.', fact: 'Java Fern is one of the few plants that can tolerate slight salinity.' }
+              { id: 'java_fern', name: 'Java Fern', icon: 'ðŸŒ¿', o2: 0.3, co2Need: 0.2, nitrateAbsorb: 0.2, light: 'low', growth: 0.02, maxSize: 3, desc: 'Tolerates mild brackish conditions. Hardy and low-maintenance.', fact: 'Java Fern is one of the few plants that can tolerate slight salinity.' }
 
             ]
 
@@ -30554,13 +23542,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ═══ BREEDING DATA CATALOG ═══
+          // â•â•â• BREEDING DATA CATALOG â•â•â•
 
           // Per-species reproductive strategies and parameters
 
           var BREEDING_DATA = {
 
-            // Livebearers — give birth to free-swimming fry, no egg stage
+            // Livebearers â€” give birth to free-swimming fry, no egg stage
 
             guppy: { type: 'livebearer', gestationTicks: 20, fryCount: [3, 7], breedChance: 0.12, minPop: 2, desc: 'Males display vibrant color patterns to attract females. Females store sperm and can produce multiple broods.' },
 
@@ -30568,23 +23556,23 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             molly: { type: 'livebearer', gestationTicks: 22, fryCount: [3, 8], breedChance: 0.08, minPop: 2, desc: 'Mollies prefer slightly brackish conditions for breeding. Fry are large and independent at birth.' },
 
-            // Egg-layers — lay eggs on surfaces, parents may guard
+            // Egg-layers â€” lay eggs on surfaces, parents may guard
 
             angel: { type: 'egg_layer', gestationTicks: 30, fryCount: [1, 3], breedChance: 0.05, minPop: 2, desc: 'Angelfish carefully clean a flat surface before laying hundreds of eggs. Both parents fan and guard the clutch.' },
 
-            clown: { type: 'egg_layer', gestationTicks: 35, fryCount: [1, 2], breedChance: 0.04, minPop: 2, hermaphrodite: true, desc: 'All clownfish are born male. The dominant fish becomes female — if she dies, the next male transitions.' },
+            clown: { type: 'egg_layer', gestationTicks: 35, fryCount: [1, 2], breedChance: 0.04, minPop: 2, hermaphrodite: true, desc: 'All clownfish are born male. The dominant fish becomes female â€” if she dies, the next male transitions.' },
 
             cory: { type: 'egg_layer', gestationTicks: 25, fryCount: [2, 4], breedChance: 0.06, minPop: 2, desc: 'Corydoras perform a unique "T-position" mating dance. Females carry eggs in their pelvic fins before depositing them on glass or leaves.' },
 
-            // Bubble nest builders — male builds floating bubble nest
+            // Bubble nest builders â€” male builds floating bubble nest
 
             betta: { type: 'bubble_nest', gestationTicks: 25, fryCount: [1, 2], breedChance: 0.04, minPop: 1, desc: 'Males blow mucus-coated bubbles to build a floating nest. After spawning, the male guards eggs and returns fallen fry to the nest.' },
 
-            // Colony breeders — rapid reproduction, females carry eggs
+            // Colony breeders â€” rapid reproduction, females carry eggs
 
             shrimp: { type: 'colony', gestationTicks: 12, fryCount: [4, 10], breedChance: 0.15, minPop: 2, desc: 'Females carry fertilized eggs under their abdomen ("berried"). Shrimplets are miniature adults at birth.' },
 
-            // Schooling egg-scatterers — eggs scattered among plants, no parental care
+            // Schooling egg-scatterers â€” eggs scattered among plants, no parental care
 
             neon: { type: 'egg_scatter', gestationTicks: 28, fryCount: [1, 3], breedChance: 0.03, minPop: 4, desc: 'Scatter tiny adhesive eggs among fine-leaved plants at dawn. Eggs are light-sensitive and hatch in 24 hours.' },
 
@@ -30656,7 +23644,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Current state ──
+          // â”€â”€ Current state â”€â”€
 
           var selectedTank = d.selectedTank || null;
 
@@ -30674,7 +23662,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Enhanced sim state ──
+          // â”€â”€ Enhanced sim state â”€â”€
 
           var hungerLevels = d.hungerLevels || {};
 
@@ -30692,7 +23680,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── New gameplay state ──
+          // â”€â”€ New gameplay state â”€â”€
 
           var lightsOn = d.lightsOn !== undefined ? d.lightsOn : true;
 
@@ -30702,7 +23690,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Plant ecosystem state ──
+          // â”€â”€ Plant ecosystem state â”€â”€
 
           var tankPlants = d.tankPlants || []; // array of plant IDs in the tank
 
@@ -30714,7 +23702,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Breeding ecosystem state ──
+          // â”€â”€ Breeding ecosystem state â”€â”€
 
           var breedingState = d.breedingState || {}; // { speciesId: { stage: 'gestating'|'hatching', startTick: N, fryCount: N } }
 
@@ -30724,7 +23712,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Species animation behaviors ──
+          // â”€â”€ Species animation behaviors â”€â”€
 
           var SPECIES_ANIM = {
 
@@ -30788,7 +23776,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Species diet types ──
+          // â”€â”€ Species diet types â”€â”€
 
           var SPECIES_DIET = {
 
@@ -30832,7 +23820,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Fallback Event Bank (fires when Gemini unavailable) ──
+          // â”€â”€ Fallback Event Bank (fires when Gemini unavailable) â”€â”€
 
           var FALLBACK_EVENTS = [
 
@@ -31102,7 +24090,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── AI Event Generator (Gemini-powered with fallback) ──
+          // â”€â”€ AI Event Generator (Gemini-powered with fallback) â”€â”€
 
           var generateAIEvent = function () {
 
@@ -31222,7 +24210,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             } else {
 
-              // No callGemini available — use fallback
+              // No callGemini available â€” use fallback
 
               var fb = FALLBACK_EVENTS[Math.floor(Math.random() * FALLBACK_EVENTS.length)];
 
@@ -31234,7 +24222,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Resolve AI Event (apply chosen consequence) ──
+          // â”€â”€ Resolve AI Event (apply chosen consequence) â”€â”€
 
           var resolveAIEvent = function (choiceIdx) {
 
@@ -31294,7 +24282,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Ocean Ecology state ──
+          // â”€â”€ Ocean Ecology state â”€â”€
 
           var oceanPop = d.oceanPop || { sardines: 800, tuna: 200, sharks: 50 };
 
@@ -31320,7 +24308,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Marine Science state ──
+          // â”€â”€ Marine Science state â”€â”€
 
           var selectedZone = d.selectedZone || null;
 
@@ -31336,7 +24324,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Chemistry educational data ──
+          // â”€â”€ Chemistry educational data â”€â”€
 
           var CHEM_INFO = {
 
@@ -31348,7 +24336,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               what: 'A measure of how acidic or basic the water is. The scale runs 0-14, where 7 is neutral. Each whole number change represents a 10x difference in hydrogen ion concentration.',
 
-              safeRange: 'Depends on species — freshwater: 6.5-7.5, African cichlids: 7.8-8.6, marine: 8.1-8.4',
+              safeRange: 'Depends on species â€” freshwater: 6.5-7.5, African cichlids: 7.8-8.6, marine: 8.1-8.4',
 
               danger: 'Rapid pH swings > 0.5 in 24h cause osmotic stress. Fish gills struggle to regulate ion exchange, leading to respiratory distress.',
 
@@ -31370,7 +24358,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               icon: '\uD83C\uDF21\uFE0F',
 
-              what: 'Fish are ectotherms — their metabolism is controlled by water temperature. Higher temps increase metabolism, oxygen demand, and ammonia toxicity.',
+              what: 'Fish are ectotherms â€” their metabolism is controlled by water temperature. Higher temps increase metabolism, oxygen demand, and ammonia toxicity.',
 
               safeRange: 'Tropical: 75-82\u00B0F (24-28\u00B0C), Coldwater: 60-72\u00B0F (16-22\u00B0C), Marine: 76-82\u00B0F (24-28\u00B0C)',
 
@@ -31386,7 +24374,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               },
 
-              fix: 'Adjust heater gradually — no more than 2\u00B0F per hour. Rapid changes cause thermal shock.'
+              fix: 'Adjust heater gradually â€” no more than 2\u00B0F per hour. Rapid changes cause thermal shock.'
 
             },
 
@@ -31422,7 +24410,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               icon: '\u26A0\uFE0F',
 
-              what: 'Produced by Nitrosomonas bacteria converting ammonia. Still toxic — it binds to hemoglobin, reducing oxygen-carrying capacity (brown blood disease).',
+              what: 'Produced by Nitrosomonas bacteria converting ammonia. Still toxic â€” it binds to hemoglobin, reducing oxygen-carrying capacity (brown blood disease).',
 
               safeRange: '0 ppm ideal | < 0.25 ppm tolerable | 0.25-1.0 ppm dangerous | > 1.0 ppm critical',
 
@@ -31540,7 +24528,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           };
 
-          // ── Tank setup helpers ──
+          // â”€â”€ Tank setup helpers â”€â”€
 
           var initTank = function (tankId) {
 
@@ -31556,7 +24544,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               waterChem: { pH: tank.pH, temp: tank.temp, ammonia: 0, nitrite: 0, nitrate: 5, salinity: tank.salinity, dissolvedO2: 7.0, co2: 3.0 },
 
-              simTick: 0, simRunning: false, fishHealth: {}, eventLog: [{ tick: 0, msg: '🐠 ' + tank.name + ' tank initialized!' }],
+              simTick: 0, simRunning: false, fishHealth: {}, eventLog: [{ tick: 0, msg: 'ðŸ  ' + tank.name + ' tank initialized!' }],
 
               tankPlants: [], plantHealth: {}, plantBiomass: {},
 
@@ -31588,7 +24576,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             if (currentLoad + species.load > maxLoad) {
 
-              if (addToast) addToast('⚠️ Tank is at capacity! Bioload would exceed safe limits.', 'warning');
+              if (addToast) addToast('âš ï¸ Tank is at capacity! Bioload would exceed safe limits.', 'warning');
 
               return;
 
@@ -31604,7 +24592,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             if (newHunger[speciesId] === undefined) newHunger[speciesId] = 50;
 
-            updMulti({ tankFish: newFish, fishHealth: newHealth, hungerLevels: newHunger, eventLog: eventLog.concat([{ tick: simTick, msg: '🐟 Added ' + species.name + ' to tank' }]) });
+            updMulti({ tankFish: newFish, fishHealth: newHealth, hungerLevels: newHunger, eventLog: eventLog.concat([{ tick: simTick, msg: 'ðŸŸ Added ' + species.name + ' to tank' }]) });
 
           };
 
@@ -31618,13 +24606,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === removed; });
 
-            updMulti({ tankFish: newFish, eventLog: eventLog.concat([{ tick: simTick, msg: '🔄 Removed ' + (sp ? sp.name : removed) }]) });
+            updMulti({ tankFish: newFish, eventLog: eventLog.concat([{ tick: simTick, msg: 'ðŸ”„ Removed ' + (sp ? sp.name : removed) }]) });
 
           };
 
 
 
-          // ── Plant management helpers ──
+          // â”€â”€ Plant management helpers â”€â”€
 
           var addPlant = function (plantId) {
 
@@ -31638,7 +24626,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             if (tankPlants.length >= 8) {
 
-              if (addToast) addToast('🌿 Maximum plant slots reached! Remove a plant first.', 'warning');
+              if (addToast) addToast('ðŸŒ¿ Maximum plant slots reached! Remove a plant first.', 'warning');
 
               return;
 
@@ -31662,7 +24650,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               plantBiomass: newPB,
 
-              eventLog: eventLog.concat([{ tick: simTick, msg: '🌿 Planted ' + plant.name }])
+              eventLog: eventLog.concat([{ tick: simTick, msg: 'ðŸŒ¿ Planted ' + plant.name }])
 
             });
 
@@ -31686,7 +24674,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               tankPlants: newPlants,
 
-              eventLog: eventLog.concat([{ tick: simTick, msg: '🔄 Removed ' + (plant ? plant.name : removed) }])
+              eventLog: eventLog.concat([{ tick: simTick, msg: 'ðŸ”„ Removed ' + (plant ? plant.name : removed) }])
 
             });
 
@@ -31694,7 +24682,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Water chemistry helpers ──
+          // â”€â”€ Water chemistry helpers â”€â”€
 
           var getChemStatus = function (param, value) {
 
@@ -31734,7 +24722,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          var statusIcon = function (s) { return s === 'ok' ? '✅' : s === 'warn' ? '⚠️' : '❌'; };
+          var statusIcon = function (s) { return s === 'ok' ? 'âœ…' : s === 'warn' ? 'âš ï¸' : 'âŒ'; };
 
           var statusColor = function (s) { return s === 'ok' ? 'text-green-600' : s === 'warn' ? 'text-amber-600' : 'text-red-600'; };
 
@@ -31758,9 +24746,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             });
 
-            updMulti({ waterChem: newChem, eventLog: eventLog.concat([{ tick: simTick, msg: '💧 25% water change performed' }]) });
+            updMulti({ waterChem: newChem, eventLog: eventLog.concat([{ tick: simTick, msg: 'ðŸ’§ 25% water change performed' }]) });
 
-            if (addToast) addToast('💧 Water change complete!', 'success');
+            if (addToast) addToast('ðŸ’§ Water change complete!', 'success');
 
           };
 
@@ -31808,7 +24796,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               'Overfeeding is the #1 cause of poor water quality in aquariums.',
 
-              'Bottom feeders like corydoras eat leftover food — nature\'s cleanup crew!',
+              'Bottom feeders like corydoras eat leftover food â€” nature\'s cleanup crew!',
 
               'In the wild, fish may go days without food. Don\'t panic if you miss a feeding.'
 
@@ -31822,7 +24810,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               feedingLog: { fishCount: tankFish.length, avgHungerDrop: avgDrop, ammoniaAdded: 0.15 * (tankFish.length || 1), overfedCount: overfedCount, tip: tips[Math.floor(Math.random() * tips.length)] },
 
-              eventLog: eventLog.concat([{ tick: simTick, msg: '🍽️ Fish fed — hunger reduced by ' + avgDrop + ' avg' }])
+              eventLog: eventLog.concat([{ tick: simTick, msg: 'ðŸ½ï¸ Fish fed â€” hunger reduced by ' + avgDrop + ' avg' }])
 
             });
 
@@ -31830,7 +24818,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Live Feed (for carnivores) ──
+          // â”€â”€ Live Feed (for carnivores) â”€â”€
 
           var feedLive = function () {
 
@@ -31874,7 +24862,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             var tipText = fedCarnivores > 0
 
-              ? '\uD83E\uDD69 Live food satisfies carnivores like pike and oscar. Herbivores like plecos ignore it — they need algae wafers!'
+              ? '\uD83E\uDD69 Live food satisfies carnivores like pike and oscar. Herbivores like plecos ignore it â€” they need algae wafers!'
 
               : '\uD83E\uDD14 No carnivores in tank! Live food was wasted. Try flake/pellet feed instead.';
 
@@ -31886,7 +24874,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               feedingLog: { fishCount: tankFish.length, avgHungerDrop: fedCarnivores > 0 ? 45 : 0, ammoniaAdded: 0.22 * (tankFish.length || 1), overfedCount: 0, tip: tipText },
 
-              eventLog: eventLog.concat([{ tick: simTick, msg: '\uD83E\uDD90 Live feed added — ' + fedCarnivores + ' carnivores fed' + (ignoredHerbivores > 0 ? ', ' + ignoredHerbivores + ' ignored it' : '') }])
+              eventLog: eventLog.concat([{ tick: simTick, msg: '\uD83E\uDD90 Live feed added â€” ' + fedCarnivores + ' carnivores fed' + (ignoredHerbivores > 0 ? ', ' + ignoredHerbivores + ' ignored it' : '') }])
 
             });
 
@@ -31894,13 +24882,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Toggle Lights ──
+          // â”€â”€ Toggle Lights â”€â”€
 
           var toggleLights = function () {
 
             var newState = !lightsOn;
 
-            var msg = newState ? '\uD83D\uDCA1 Lights turned ON' : '\uD83C\uDF19 Lights turned OFF — fish will rest';
+            var msg = newState ? '\uD83D\uDCA1 Lights turned ON' : '\uD83C\uDF19 Lights turned OFF â€” fish will rest';
 
             updMulti({
 
@@ -31916,7 +24904,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Medicate Fish ──
+          // â”€â”€ Medicate Fish â”€â”€
 
           var medicateFish = function () {
 
@@ -31954,7 +24942,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             });
 
-            // Medication kills some beneficial bacteria — ammonia spike
+            // Medication kills some beneficial bacteria â€” ammonia spike
 
             var newChem = Object.assign({}, waterChem, {
 
@@ -31968,17 +24956,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               waterChem: newChem,
 
-              eventLog: eventLog.concat([{ tick: simTick, msg: '\uD83D\uDC8A Medication applied — ' + cured + ' fish cured. Beneficial bacteria reduced.' }])
+              eventLog: eventLog.concat([{ tick: simTick, msg: '\uD83D\uDC8A Medication applied â€” ' + cured + ' fish cured. Beneficial bacteria reduced.' }])
 
             });
 
-            if (addToast) addToast('\uD83D\uDC8A Treated ' + cured + ' fish. Watch ammonia — medication disrupts the nitrogen cycle.', cured > 0 ? 'success' : 'warning');
+            if (addToast) addToast('\uD83D\uDC8A Treated ' + cured + ' fish. Watch ammonia â€” medication disrupts the nitrogen cycle.', cured > 0 ? 'success' : 'warning');
 
           };
 
 
 
-          // ── Clean Glass ──
+          // â”€â”€ Clean Glass â”€â”€
 
           var cleanGlass = function () {
 
@@ -31992,7 +24980,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               waterChem: newChem,
 
-              eventLog: eventLog.concat([{ tick: simTick, msg: '\uD83E\uDDF9 Glass cleaned — algae removed' }])
+              eventLog: eventLog.concat([{ tick: simTick, msg: '\uD83E\uDDF9 Glass cleaned â€” algae removed' }])
 
             });
 
@@ -32002,7 +24990,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Simulation tick (water chemistry drift) ──
+          // â”€â”€ Simulation tick (water chemistry drift) â”€â”€
 
           // Uses functional state update to always read fresh state (avoids stale closures)
 
@@ -32038,7 +25026,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var _waterChem = aq.waterChem;
 
-              // ── Plant state ──
+              // â”€â”€ Plant state â”€â”€
 
               var _tankPlants = aq.tankPlants || [];
 
@@ -32052,7 +25040,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var plantCatalog = getPlantsForTank(_selectedTank);
 
-              // ── Breeding state ──
+              // â”€â”€ Breeding state â”€â”€
 
               var _breedingState = Object.assign({}, aq.breedingState || {});
 
@@ -32082,7 +25070,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var newNitrate = Math.max(0, _waterChem.nitrate + nitrateBact);
 
-              // ── Fish respiration: consume O2, produce CO2 ──
+              // â”€â”€ Fish respiration: consume O2, produce CO2 â”€â”€
 
               // Each unit of bioload consumes ~0.05 mg/L O2 and produces ~0.04 mg/L CO2 per tick
 
@@ -32094,7 +25082,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var deltaCO2 = fishCO2Produce;
 
-              // ── Plant photosynthesis & respiration ──
+              // â”€â”€ Plant photosynthesis & respiration â”€â”€
 
               // Day cycle: if lights are on AND it's daytime (6-20), plants photosynthesize
 
@@ -32148,7 +25136,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 }
 
-                // ── Plant health update ──
+                // â”€â”€ Plant health update â”€â”€
 
                 var healthDelta = 0;
 
@@ -32182,7 +25170,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 _plantHealth[pId] = Math.max(0, Math.min(100, health + healthDelta));
 
-                // ── Plant growth ──
+                // â”€â”€ Plant growth â”€â”€
 
                 if (health > 40 && isDaylight && newNitrate > 3) {
 
@@ -32286,7 +25274,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               });
 
-              // ── Disease progression ──
+              // â”€â”€ Disease progression â”€â”€
 
               var newSickness = Object.assign({}, _fishSickness);
 
@@ -32322,7 +25310,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               });
 
-              // ── Hunger consequences ──
+              // â”€â”€ Hunger consequences â”€â”€
 
               var species = SPECIES_BY_TANK[_selectedTank] || [];
 
@@ -32386,7 +25374,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               });
 
-              // ── Species aggression ──
+              // â”€â”€ Species aggression â”€â”€
 
               var tank = TANK_TYPES.find(function (t) { return t.id === _selectedTank; });
 
@@ -32470,7 +25458,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               }
 
-              // ── Algae growth (competes with plants) ──
+              // â”€â”€ Algae growth (competes with plants) â”€â”€
 
               var newAlgae = _algaeLevel;
 
@@ -32496,7 +25484,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               if (newO2 < 2 && _tankFish.length > 0 && newTick % 3 === 0) {
 
-                newLog.push({ tick: newTick, msg: '⚠️ Fish are gasping at the surface — dangerously low oxygen!' });
+                newLog.push({ tick: newTick, msg: 'âš ï¸ Fish are gasping at the surface â€” dangerously low oxygen!' });
 
               }
 
@@ -32510,7 +25498,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   _plantBiomass[pId] = 0;
 
-                  newLog.push({ tick: newTick, msg: '🥀 ' + (pDef ? pDef.name : pId) + ' has died and is decomposing.' });
+                  newLog.push({ tick: newTick, msg: 'ðŸ¥€ ' + (pDef ? pDef.name : pId) + ' has died and is decomposing.' });
 
                   // Dead plant biomass releases ammonia
 
@@ -32522,7 +25510,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               });
 
-              // ── Breeding ──
+              // â”€â”€ Breeding â”€â”€
 
               // Count population of each species in the current tank
 
@@ -32562,7 +25550,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-                // ── Active gestation check ──
+                // â”€â”€ Active gestation check â”€â”€
 
                 if (_breedingState[sId]) {
 
@@ -32614,7 +25602,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-                  // Gestation complete — birth!
+                  // Gestation complete â€” birth!
 
                   if (elapsed >= bData.gestationTicks) {
 
@@ -32686,7 +25674,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     } else {
 
-                      newLog.push({ tick: newTick, msg: '\u2620\uFE0F ' + sp.name + ' fry did not survive — too many predators or poor conditions.' });
+                      newLog.push({ tick: newTick, msg: '\u2620\uFE0F ' + sp.name + ' fry did not survive â€” too many predators or poor conditions.' });
 
                     }
 
@@ -32708,7 +25696,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-                // ── Breeding initiation check ──
+                // â”€â”€ Breeding initiation check â”€â”€
 
                 // Condition 1: enough population
 
@@ -32752,7 +25740,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-                // All conditions met — initiate breeding!
+                // All conditions met â€” initiate breeding!
 
                 var fryMin = bData.fryCount[0];
 
@@ -32838,7 +25826,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Tank Health Score & Strategy Tips ──
+          // â”€â”€ Tank Health Score & Strategy Tips â”€â”€
 
           var getTankHealth = function () {
 
@@ -32914,15 +25902,15 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           };
 
-          // ── Ocean Ecology helpers ──
+          // â”€â”€ Ocean Ecology helpers â”€â”€
 
           var OCEAN_SPECIES = [
 
-            { id: 'sardines', name: 'Sardines', icon: '🐟', r: 0.4, K: 1000, value: 1, desc: 'Fast-reproducing small fish. Foundation of the marine food web.' },
+            { id: 'sardines', name: 'Sardines', icon: 'ðŸŸ', r: 0.4, K: 1000, value: 1, desc: 'Fast-reproducing small fish. Foundation of the marine food web.' },
 
-            { id: 'tuna', name: 'Tuna', icon: '🐠', r: 0.15, K: 400, value: 8, desc: 'Mid-level predator. High commercial value but slow to recover.' },
+            { id: 'tuna', name: 'Tuna', icon: 'ðŸ ', r: 0.15, K: 400, value: 8, desc: 'Mid-level predator. High commercial value but slow to recover.' },
 
-            { id: 'sharks', name: 'Sharks', icon: '🦈', r: 0.05, K: 100, value: 3, desc: 'Apex predator. Extremely slow reproduction — vulnerable to overfishing.' }
+            { id: 'sharks', name: 'Sharks', icon: 'ðŸ¦ˆ', r: 0.05, K: 100, value: 3, desc: 'Apex predator. Extremely slow reproduction â€” vulnerable to overfishing.' }
 
           ];
 
@@ -32998,7 +25986,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             if (collapsed && !oceanCollapsed) {
 
-              if (addToast) addToast('🚨 Fish stock collapse! Populations have crashed below sustainable levels.', 'error');
+              if (addToast) addToast('ðŸš¨ Fish stock collapse! Populations have crashed below sustainable levels.', 'error');
 
             }
 
@@ -33030,19 +26018,19 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ── Marine Science data ──
+          // â”€â”€ Marine Science data â”€â”€
 
           var OCEAN_ZONES = [
 
-            { id: 'sunlight', name: 'Sunlight Zone (Epipelagic)', depth: '0-200m', light: '100%', temp: '20-25°C', color: '#38bdf8', species: ['clownfish', 'dolphin', 'jellyfish', 'turtle'] },
+            { id: 'sunlight', name: 'Sunlight Zone (Epipelagic)', depth: '0-200m', light: '100%', temp: '20-25Â°C', color: '#38bdf8', species: ['clownfish', 'dolphin', 'jellyfish', 'turtle'] },
 
-            { id: 'twilight', name: 'Twilight Zone (Mesopelagic)', depth: '200-1000m', light: '1%', temp: '5-20°C', color: '#1e40af', species: ['squid', 'hatchetfish', 'swordfish'] },
+            { id: 'twilight', name: 'Twilight Zone (Mesopelagic)', depth: '200-1000m', light: '1%', temp: '5-20Â°C', color: '#1e40af', species: ['squid', 'hatchetfish', 'swordfish'] },
 
-            { id: 'midnight', name: 'Midnight Zone (Bathypelagic)', depth: '1000-4000m', light: '0%', temp: '2-5°C', color: '#1e1b4b', species: ['anglerfish', 'gulpereel', 'giantsquid'] },
+            { id: 'midnight', name: 'Midnight Zone (Bathypelagic)', depth: '1000-4000m', light: '0%', temp: '2-5Â°C', color: '#1e1b4b', species: ['anglerfish', 'gulpereel', 'giantsquid'] },
 
-            { id: 'abyssal', name: 'Abyssal Zone (Abyssopelagic)', depth: '4000-6000m', light: '0%', temp: '1-2°C', color: '#0f0a2e', species: ['tubeworms', 'seacucumber'] },
+            { id: 'abyssal', name: 'Abyssal Zone (Abyssopelagic)', depth: '4000-6000m', light: '0%', temp: '1-2Â°C', color: '#0f0a2e', species: ['tubeworms', 'seacucumber'] },
 
-            { id: 'hadal', name: 'Hadal Zone (Trenches)', depth: '6000-11000m', light: '0%', temp: '1-4°C', color: '#050210', species: ['amphipod', 'snailfish'] }
+            { id: 'hadal', name: 'Hadal Zone (Trenches)', depth: '6000-11000m', light: '0%', temp: '1-4Â°C', color: '#050210', species: ['amphipod', 'snailfish'] }
 
           ];
 
@@ -33050,45 +26038,45 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           var MARINE_SPECIES = [
 
-            { id: 'clownfish', name: 'Clownfish', icon: '🐠', zone: 'sunlight', habitat: 'Shelters among venomous tentacles of Heteractis magnifica anemones on Indo-Pacific coral reefs', diet: 'Omnivore — algae, zooplankton, and leftover scraps from its host anemone', status: 'LC', fact: 'Lives in symbiosis with venomous sea anemones.', quiz: 'What protects clownfish from anemone stings?' },
+            { id: 'clownfish', name: 'Clownfish', icon: 'ðŸ ', zone: 'sunlight', habitat: 'Shelters among venomous tentacles of Heteractis magnifica anemones on Indo-Pacific coral reefs', diet: 'Omnivore â€” algae, zooplankton, and leftover scraps from its host anemone', status: 'LC', fact: 'Lives in symbiosis with venomous sea anemones.', quiz: 'What protects clownfish from anemone stings?' },
 
-            { id: 'dolphin', name: 'Bottlenose Dolphin', icon: '🐬', zone: 'sunlight', habitat: 'Temperate and tropical open oceans, coastal bays, and estuaries worldwide', diet: 'Carnivore — fish, squid, and crustaceans hunted cooperatively using echolocation', status: 'LC', fact: 'Dolphins sleep with one eye open — one brain hemisphere at a time.', quiz: 'How do dolphins breathe while sleeping?' },
+            { id: 'dolphin', name: 'Bottlenose Dolphin', icon: 'ðŸ¬', zone: 'sunlight', habitat: 'Temperate and tropical open oceans, coastal bays, and estuaries worldwide', diet: 'Carnivore â€” fish, squid, and crustaceans hunted cooperatively using echolocation', status: 'LC', fact: 'Dolphins sleep with one eye open â€” one brain hemisphere at a time.', quiz: 'How do dolphins breathe while sleeping?' },
 
-            { id: 'jellyfish', name: 'Moon Jellyfish', icon: '🪼', zone: 'sunlight', habitat: 'Surface waters of temperate and tropical coastal seas, often near estuaries and harbors', diet: 'Carnivore — traps plankton, fish eggs, and tiny crustaceans on its mucus-covered bell', status: 'LC', fact: 'Jellyfish have no brain, heart, or blood — just a nerve net.', quiz: 'What body system do jellyfish lack?' },
+            { id: 'jellyfish', name: 'Moon Jellyfish', icon: 'ðŸª¼', zone: 'sunlight', habitat: 'Surface waters of temperate and tropical coastal seas, often near estuaries and harbors', diet: 'Carnivore â€” traps plankton, fish eggs, and tiny crustaceans on its mucus-covered bell', status: 'LC', fact: 'Jellyfish have no brain, heart, or blood â€” just a nerve net.', quiz: 'What body system do jellyfish lack?' },
 
-            { id: 'turtle', name: 'Green Sea Turtle', icon: '🐢', zone: 'sunlight', habitat: 'Tropical seagrass meadows and coral reefs; nests on sandy beaches across the Atlantic and Pacific', diet: 'Herbivore — seagrass and algae; juveniles also eat jellyfish and sponges', status: 'EN', fact: 'Sea turtles navigate using Earth\'s magnetic field.', quiz: 'How do sea turtles find their nesting beaches?' },
+            { id: 'turtle', name: 'Green Sea Turtle', icon: 'ðŸ¢', zone: 'sunlight', habitat: 'Tropical seagrass meadows and coral reefs; nests on sandy beaches across the Atlantic and Pacific', diet: 'Herbivore â€” seagrass and algae; juveniles also eat jellyfish and sponges', status: 'EN', fact: 'Sea turtles navigate using Earth\'s magnetic field.', quiz: 'How do sea turtles find their nesting beaches?' },
 
-            { id: 'squid', name: 'Firefly Squid', icon: '🦑', zone: 'twilight', habitat: 'Western Pacific mesopelagic zone (200-600m), migrating to the surface at night off Japan\'s Toyama Bay', diet: 'Carnivore — small fish, crustaceans, and other squids caught during nightly vertical migrations', status: 'LC', fact: 'Firefly squid produce bioluminescent light from photophores.', quiz: 'What is the light-producing ability of deep sea creatures called?' },
+            { id: 'squid', name: 'Firefly Squid', icon: 'ðŸ¦‘', zone: 'twilight', habitat: 'Western Pacific mesopelagic zone (200-600m), migrating to the surface at night off Japan\'s Toyama Bay', diet: 'Carnivore â€” small fish, crustaceans, and other squids caught during nightly vertical migrations', status: 'LC', fact: 'Firefly squid produce bioluminescent light from photophores.', quiz: 'What is the light-producing ability of deep sea creatures called?' },
 
-            { id: 'hatchetfish', name: 'Hatchetfish', icon: '🐟', zone: 'twilight', habitat: 'Mesopelagic waters (200-1000m) in tropical and temperate oceans worldwide', diet: 'Carnivore — copepods, ostracods, and other tiny crustaceans caught during diel vertical migration', status: 'LC', fact: 'Uses counter-illumination to hide from predators below.', quiz: 'Why do hatchetfish have light organs on their belly?' },
+            { id: 'hatchetfish', name: 'Hatchetfish', icon: 'ðŸŸ', zone: 'twilight', habitat: 'Mesopelagic waters (200-1000m) in tropical and temperate oceans worldwide', diet: 'Carnivore â€” copepods, ostracods, and other tiny crustaceans caught during diel vertical migration', status: 'LC', fact: 'Uses counter-illumination to hide from predators below.', quiz: 'Why do hatchetfish have light organs on their belly?' },
 
-            { id: 'swordfish', name: 'Swordfish', icon: '🐟', zone: 'twilight', habitat: 'Epipelagic to mesopelagic zones of tropical and temperate oceans; dives to 550m to hunt', diet: 'Carnivore — slashes through schools of mackerel, squid, and crustaceans with its bill', status: 'LC', fact: 'Swordfish heat their eyes and brain to hunt in cold deep waters.', quiz: 'What unique adaptation helps swordfish hunt in cold water?' },
+            { id: 'swordfish', name: 'Swordfish', icon: 'ðŸŸ', zone: 'twilight', habitat: 'Epipelagic to mesopelagic zones of tropical and temperate oceans; dives to 550m to hunt', diet: 'Carnivore â€” slashes through schools of mackerel, squid, and crustaceans with its bill', status: 'LC', fact: 'Swordfish heat their eyes and brain to hunt in cold deep waters.', quiz: 'What unique adaptation helps swordfish hunt in cold water?' },
 
-            { id: 'anglerfish', name: 'Anglerfish', icon: '🐡', zone: 'midnight', habitat: 'Bathypelagic darkness (1000-4000m) throughout the world\'s deep oceans', diet: 'Carnivore — ambush predator that lures fish and crustaceans with a bioluminescent esca', status: 'LC', fact: 'The glowing lure is a bioluminescent bacteria colony.', quiz: 'What zone does the anglerfish inhabit?' },
+            { id: 'anglerfish', name: 'Anglerfish', icon: 'ðŸ¡', zone: 'midnight', habitat: 'Bathypelagic darkness (1000-4000m) throughout the world\'s deep oceans', diet: 'Carnivore â€” ambush predator that lures fish and crustaceans with a bioluminescent esca', status: 'LC', fact: 'The glowing lure is a bioluminescent bacteria colony.', quiz: 'What zone does the anglerfish inhabit?' },
 
-            { id: 'gulpereel', name: 'Gulper Eel', icon: '🐍', zone: 'midnight', habitat: 'Bathypelagic to abyssopelagic zones (1000-3000m) in tropical and temperate deep oceans', diet: 'Carnivore — engulfs fish and shrimp whole using a massively expandable, hinged jaw', status: 'LC', fact: 'Can unhinge its jaw to swallow prey larger than itself.', quiz: 'What adaptation lets the gulper eel eat large prey?' },
+            { id: 'gulpereel', name: 'Gulper Eel', icon: 'ðŸ', zone: 'midnight', habitat: 'Bathypelagic to abyssopelagic zones (1000-3000m) in tropical and temperate deep oceans', diet: 'Carnivore â€” engulfs fish and shrimp whole using a massively expandable, hinged jaw', status: 'LC', fact: 'Can unhinge its jaw to swallow prey larger than itself.', quiz: 'What adaptation lets the gulper eel eat large prey?' },
 
-            { id: 'giantsquid', name: 'Giant Squid', icon: '🦑', zone: 'midnight', habitat: 'Bathypelagic waters (300-1000m) of all the world\'s oceans, from sub-Arctic to subtropical', diet: 'Carnivore — captures deep-sea fish and other squids with two long, club-tipped tentacles', status: 'LC', fact: 'Has the largest eyes in the animal kingdom — up to 10 inches across.', quiz: 'How large can a giant squid\'s eyes grow?' },
+            { id: 'giantsquid', name: 'Giant Squid', icon: 'ðŸ¦‘', zone: 'midnight', habitat: 'Bathypelagic waters (300-1000m) of all the world\'s oceans, from sub-Arctic to subtropical', diet: 'Carnivore â€” captures deep-sea fish and other squids with two long, club-tipped tentacles', status: 'LC', fact: 'Has the largest eyes in the animal kingdom â€” up to 10 inches across.', quiz: 'How large can a giant squid\'s eyes grow?' },
 
-            { id: 'tubeworms', name: 'Giant Tube Worms', icon: '🪱', zone: 'abyssal', habitat: 'Clustered around superheated hydrothermal vents on mid-ocean ridges (e.g., East Pacific Rise)', diet: 'Chemosynthetic — internal sulfur-oxidizing bacteria convert H₂S into organic nutrients', status: 'LC', fact: 'They have no mouth or stomach — bacteria inside them convert chemicals to energy.', quiz: 'What process do tube worm symbionts use instead of photosynthesis?' },
+            { id: 'tubeworms', name: 'Giant Tube Worms', icon: 'ðŸª±', zone: 'abyssal', habitat: 'Clustered around superheated hydrothermal vents on mid-ocean ridges (e.g., East Pacific Rise)', diet: 'Chemosynthetic â€” internal sulfur-oxidizing bacteria convert Hâ‚‚S into organic nutrients', status: 'LC', fact: 'They have no mouth or stomach â€” bacteria inside them convert chemicals to energy.', quiz: 'What process do tube worm symbionts use instead of photosynthesis?' },
 
-            { id: 'seacucumber', name: 'Sea Cucumber', icon: '🥒', zone: 'abyssal', habitat: 'Soft sediment of the abyssal plain (4000-6000m), comprising 90% of deep-sea megafauna biomass', diet: 'Detritivore — sifts organic particles and bacteria from seafloor sediment through tentacle-like feeding appendages', status: 'LC', fact: 'Can expel their internal organs as a defense and regrow them.', quiz: 'What defense mechanism do sea cucumbers use?' },
+            { id: 'seacucumber', name: 'Sea Cucumber', icon: 'ðŸ¥’', zone: 'abyssal', habitat: 'Soft sediment of the abyssal plain (4000-6000m), comprising 90% of deep-sea megafauna biomass', diet: 'Detritivore â€” sifts organic particles and bacteria from seafloor sediment through tentacle-like feeding appendages', status: 'LC', fact: 'Can expel their internal organs as a defense and regrow them.', quiz: 'What defense mechanism do sea cucumbers use?' },
 
-            { id: 'amphipod', name: 'Supergiant Amphipod', icon: '🦐', zone: 'hadal', habitat: 'Hadal trenches below 6000m, notably the Mariana and Kermadec Trenches', diet: 'Scavenger — consumes carrion falls (dead fish and whales) that sink to extreme depths', status: 'LC', fact: 'Found 7 miles deep in the Mariana Trench.', quiz: 'What is the deepest ocean trench on Earth?' },
+            { id: 'amphipod', name: 'Supergiant Amphipod', icon: 'ðŸ¦', zone: 'hadal', habitat: 'Hadal trenches below 6000m, notably the Mariana and Kermadec Trenches', diet: 'Scavenger â€” consumes carrion falls (dead fish and whales) that sink to extreme depths', status: 'LC', fact: 'Found 7 miles deep in the Mariana Trench.', quiz: 'What is the deepest ocean trench on Earth?' },
 
-            { id: 'snailfish', name: 'Mariana Snailfish', icon: '🐟', zone: 'hadal', habitat: 'Record-holding depth of 8,178m in the Mariana Trench, living in total darkness under crushing pressure', diet: 'Carnivore — feeds on small amphipods and other hadal invertebrates at extreme depth', status: 'LC', fact: 'Deepest-living fish ever recorded at 8,178 meters.', quiz: 'What is the deepest-living fish species discovered?' },
+            { id: 'snailfish', name: 'Mariana Snailfish', icon: 'ðŸŸ', zone: 'hadal', habitat: 'Record-holding depth of 8,178m in the Mariana Trench, living in total darkness under crushing pressure', diet: 'Carnivore â€” feeds on small amphipods and other hadal invertebrates at extreme depth', status: 'LC', fact: 'Deepest-living fish ever recorded at 8,178 meters.', quiz: 'What is the deepest-living fish species discovered?' },
 
-            { id: 'mantaray', name: 'Manta Ray', icon: '🐟', zone: 'sunlight', habitat: 'Tropical and subtropical surface waters near coral reefs, seamounts, and oceanic islands', diet: 'Filter feeder — strains zooplankton and small fish through gill raker plates while doing barrel rolls', status: 'VU', fact: 'Mantas have the largest brain-to-body ratio of any fish.', quiz: 'What type of feeding do manta rays use?' },
+            { id: 'mantaray', name: 'Manta Ray', icon: 'ðŸŸ', zone: 'sunlight', habitat: 'Tropical and subtropical surface waters near coral reefs, seamounts, and oceanic islands', diet: 'Filter feeder â€” strains zooplankton and small fish through gill raker plates while doing barrel rolls', status: 'VU', fact: 'Mantas have the largest brain-to-body ratio of any fish.', quiz: 'What type of feeding do manta rays use?' },
 
-            { id: 'bluewhale', name: 'Blue Whale', icon: '🐋', zone: 'sunlight', habitat: 'All major oceans, migrating between polar feeding grounds and tropical breeding waters', diet: 'Filter feeder — consumes up to 4 tons of Antarctic krill per day using 300+ baleen plates', status: 'EN', fact: 'The largest animal ever — their heart is the size of a small car.', quiz: 'What is the largest animal that has ever lived?' },
+            { id: 'bluewhale', name: 'Blue Whale', icon: 'ðŸ‹', zone: 'sunlight', habitat: 'All major oceans, migrating between polar feeding grounds and tropical breeding waters', diet: 'Filter feeder â€” consumes up to 4 tons of Antarctic krill per day using 300+ baleen plates', status: 'EN', fact: 'The largest animal ever â€” their heart is the size of a small car.', quiz: 'What is the largest animal that has ever lived?' },
 
-            { id: 'seahorse', name: 'Seahorse', icon: '🐟', zone: 'sunlight', habitat: 'Sheltered seagrass beds, mangrove roots, and coral rubble in tropical and temperate shallows', diet: 'Carnivore — ambush-feeds on mysid shrimp and copepods by rapidly snapping its tubular snout', status: 'VU', fact: 'Males carry and give birth to the babies — unique in the animal kingdom.', quiz: 'Which seahorse parent carries the eggs?' },
+            { id: 'seahorse', name: 'Seahorse', icon: 'ðŸŸ', zone: 'sunlight', habitat: 'Sheltered seagrass beds, mangrove roots, and coral rubble in tropical and temperate shallows', diet: 'Carnivore â€” ambush-feeds on mysid shrimp and copepods by rapidly snapping its tubular snout', status: 'VU', fact: 'Males carry and give birth to the babies â€” unique in the animal kingdom.', quiz: 'Which seahorse parent carries the eggs?' },
 
-            { id: 'octopus', name: 'Dumbo Octopus', icon: '🐙', zone: 'midnight', habitat: 'Near the seafloor at extreme depths (3000-7000m) in every ocean, the deepest-living octopus genus', diet: 'Carnivore — swallows worms, copepods, and isopods whole near the deep-ocean floor', status: 'LC', fact: 'Named for their ear-like fins. Three hearts pump blue blood.', quiz: 'How many hearts does an octopus have?' },
+            { id: 'octopus', name: 'Dumbo Octopus', icon: 'ðŸ™', zone: 'midnight', habitat: 'Near the seafloor at extreme depths (3000-7000m) in every ocean, the deepest-living octopus genus', diet: 'Carnivore â€” swallows worms, copepods, and isopods whole near the deep-ocean floor', status: 'LC', fact: 'Named for their ear-like fins. Three hearts pump blue blood.', quiz: 'How many hearts does an octopus have?' },
 
-            { id: 'nautilus', name: 'Nautilus', icon: '🐚', zone: 'twilight', habitat: 'Deep fore-reef slopes (200-700m) of the Indo-Pacific, ascending to shallow reefs at night to feed', diet: 'Scavenger — dead fish, crustacean molts, and detritus detected by chemosensory tentacles', status: 'VU', fact: 'A living fossil — virtually unchanged for 500 million years.', quiz: 'How long have nautiluses existed?' },
+            { id: 'nautilus', name: 'Nautilus', icon: 'ðŸš', zone: 'twilight', habitat: 'Deep fore-reef slopes (200-700m) of the Indo-Pacific, ascending to shallow reefs at night to feed', diet: 'Scavenger â€” dead fish, crustacean molts, and detritus detected by chemosensory tentacles', status: 'VU', fact: 'A living fossil â€” virtually unchanged for 500 million years.', quiz: 'How long have nautiluses existed?' },
 
-            { id: 'coelacanth', name: 'Coelacanth', icon: '🐟', zone: 'twilight', habitat: 'Deep volcanic caves and overhangs (150-700m) off the Comoros Islands and South Africa', diet: 'Carnivore — slow drift-hunter of cuttlefish, squid, snipefish, and small sharks', status: 'CR', fact: 'Thought extinct for 66 million years until rediscovered in 1938!', quiz: 'When was the coelacanth rediscovered?' }
+            { id: 'coelacanth', name: 'Coelacanth', icon: 'ðŸŸ', zone: 'twilight', habitat: 'Deep volcanic caves and overhangs (150-700m) off the Comoros Islands and South Africa', diet: 'Carnivore â€” slow drift-hunter of cuttlefish, squid, snipefish, and small sharks', status: 'CR', fact: 'Thought extinct for 66 million years until rediscovered in 1938!', quiz: 'When was the coelacanth rediscovered?' }
 
           ];
 
@@ -33146,7 +26134,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          // ═══ RENDER ═══
+          // â•â•â• RENDER â•â•â•
 
           var modeColors = { tank: 'cyan', ocean: 'blue', marine: 'indigo' };
 
@@ -33158,7 +26146,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-            // ── Header ──
+            // â”€â”€ Header â”€â”€
 
             React.createElement("div", { className: "flex items-center gap-3 mb-2" },
 
@@ -33196,7 +26184,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-            // ── Mode Tabs ──
+            // â”€â”€ Mode Tabs â”€â”€
 
             React.createElement("div", { className: "flex gap-1 bg-slate-100 rounded-xl p-1" },
 
@@ -33228,7 +26216,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-            // ═══ ANATOMY VIEWER OVERLAY ═══
+            // â•â•â• ANATOMY VIEWER OVERLAY â•â•â•
 
             viewingAnatomy && (() => {
 
@@ -33290,7 +26278,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-                // ── SVG Diagram with interactive labels ──
+                // â”€â”€ SVG Diagram with interactive labels â”€â”€
 
                 React.createElement("div", { className: "relative bg-gradient-to-b from-slate-800/50 to-slate-900/50 rounded-xl p-4 mb-4 border border-slate-700/30", style: { overflow: 'visible' } },
 
@@ -33376,11 +26364,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         ),
 
-                        // Tooltip on highlight — flip above/below based on dot y-position
+                        // Tooltip on highlight â€” flip above/below based on dot y-position
 
                         isHighlighted && (() => {
 
-                          var flipUp = part.y < 30; // dots near top → show tooltip below; near bottom or middle → show above
+                          var flipUp = part.y < 30; // dots near top â†’ show tooltip below; near bottom or middle â†’ show above
 
                           var tooltipStyle = flipUp
 
@@ -33418,7 +26406,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-                // ── Parts Legend ──
+                // â”€â”€ Parts Legend â”€â”€
 
                 React.createElement("div", { className: "grid grid-cols-2 gap-1.5 mb-3 relative z-10" },
 
@@ -33448,7 +26436,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-                // ── Species-Specific Info ──
+                // â”€â”€ Species-Specific Info â”€â”€
 
                 React.createElement("div", { className: "space-y-2 relative z-10" },
 
@@ -33524,7 +26512,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-            // ═══════════════ MODE 1: AQUARIUM LAB ═══════════════
+            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MODE 1: AQUARIUM LAB â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
             mode === 'tank' && !selectedTank && React.createElement("div", { className: "space-y-3" },
 
@@ -33582,7 +26570,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-            // ── Active Tank View ──
+            // â”€â”€ Active Tank View â”€â”€
 
             mode === 'tank' && selectedTank && (() => {
 
@@ -33744,7 +26732,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   ),
 
-                  // ── Chemistry Tooltip Overlay ──
+                  // â”€â”€ Chemistry Tooltip Overlay â”€â”€
 
                   chemTooltip && CHEM_INFO[chemTooltip] && (() => {
 
@@ -33844,7 +26832,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-                // â”€â”€ Plant Management Panel â”€â”€
+                // Ã¢â€â‚¬Ã¢â€â‚¬ Plant Management Panel Ã¢â€â‚¬Ã¢â€â‚¬
 
                 React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 via-green-50 to-lime-50 rounded-2xl p-4 border border-emerald-200/60 shadow-sm" },
 
@@ -34002,7 +26990,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-                // ── Breeding Status Panel ──
+                // â”€â”€ Breeding Status Panel â”€â”€
 
                 (function () {
 
@@ -34866,7 +27854,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   ),
 
-                  // ── Second action row ──
+                  // â”€â”€ Second action row â”€â”€
 
                   React.createElement("div", { className: "flex gap-2" },
 
@@ -34898,7 +27886,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-                  // ── Feeding Impact Panel (slides in after feeding) ──
+                  // â”€â”€ Feeding Impact Panel (slides in after feeding) â”€â”€
 
                   feedingLog && React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-3 border border-amber-200/60 animate-in slide-in-from-top duration-300" },
 
@@ -34954,7 +27942,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-                // ── Tank Health Score & Strategy Tips ──
+                // â”€â”€ Tank Health Score & Strategy Tips â”€â”€
 
                 (() => {
 
@@ -35000,7 +27988,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-                // ── Hunger Overview ──
+                // â”€â”€ Hunger Overview â”€â”€
 
                 tankFish.length > 0 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
 
@@ -35062,7 +28050,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-                // ── AI Event Decision Modal ──
+                // â”€â”€ AI Event Decision Modal â”€â”€
 
                 aiEvent && !aiEvent.resolved && React.createElement("div", { className: "ai-event-card rounded-2xl overflow-hidden border-2 border-blue-300/60 shadow-xl shadow-blue-500/10" },
 
@@ -35138,7 +28126,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-                // ── AI Event Outcome Display ──
+                // â”€â”€ AI Event Outcome Display â”€â”€
 
                 aiEvent && aiEvent.resolved && React.createElement("div", { className: "ai-event-card rounded-2xl overflow-hidden border-2 shadow-lg " + (aiEvent.chosenXp >= 5 ? 'border-green-300 shadow-green-500/10' : aiEvent.chosenXp >= 3 ? 'border-blue-300 shadow-blue-500/10' : 'border-amber-300 shadow-amber-500/10') },
 
@@ -35146,7 +28134,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("span", { className: "text-lg" }, aiEvent.chosenXp >= 5 ? '\u2705' : aiEvent.chosenXp >= 3 ? '\uD83D\uDCA1' : '\u26A0\uFE0F'),
 
-                    React.createElement("span", { className: "text-sm font-bold text-white flex-1" }, aiEvent.title + ' — Outcome'),
+                    React.createElement("span", { className: "text-sm font-bold text-white flex-1" }, aiEvent.title + ' â€” Outcome'),
 
                     React.createElement("span", { style: { animation: 'xpPop 0.5s ease-out' }, className: "text-sm font-bold px-2 py-0.5 rounded-full bg-white/25 text-white" }, '+' + (aiEvent.chosenXp || 0) + ' XP'),
 
@@ -35164,7 +28152,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-                // ── AI Event Loading Indicator ──
+                // â”€â”€ AI Event Loading Indicator â”€â”€
 
                 aiEventLoading && React.createElement("div", { className: "ai-event-card rounded-2xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 text-center" },
 
@@ -35180,7 +28168,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-                // ── AI Event History (Learning Journal) ──
+                // â”€â”€ AI Event History (Learning Journal) â”€â”€
 
                 aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradient-to-b from-indigo-50 to-slate-50 rounded-xl p-2.5 border border-indigo-200/60 max-h-36 overflow-y-auto" },
 
@@ -35208,7 +28196,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         ),
 
-                        React.createElement("p", { className: "text-[9px] text-slate-500 truncate" }, entry.choice + ' → ' + (entry.outcome || '').substring(0, 60) + '...')
+                        React.createElement("p", { className: "text-[9px] text-slate-500 truncate" }, entry.choice + ' â†’ ' + (entry.outcome || '').substring(0, 60) + '...')
 
                       ),
 
@@ -35242,7 +28230,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-            // ═══════════════ MODE 2: OCEAN ECOLOGY ═══════════════
+            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MODE 2: OCEAN ECOLOGY â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
             mode === 'ocean' && React.createElement("div", { className: "space-y-3" },
 
@@ -35388,11 +28376,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       return React.createElement("div", { key: i, className: "flex-1 flex flex-col gap-px justify-end h-full" },
 
-                        React.createElement("div", { style: { height: Math.max(1, h.sardines / maxPop * 80) + 'px', background: 'linear-gradient(180deg, #38bdf8, #0ea5e9)', borderRadius: '3px 3px 0 0' }, title: 'Yr ' + (i + 1) + ' — Sardines: ' + h.sardines }),
+                        React.createElement("div", { style: { height: Math.max(1, h.sardines / maxPop * 80) + 'px', background: 'linear-gradient(180deg, #38bdf8, #0ea5e9)', borderRadius: '3px 3px 0 0' }, title: 'Yr ' + (i + 1) + ' â€” Sardines: ' + h.sardines }),
 
-                        React.createElement("div", { style: { height: Math.max(1, h.tuna / maxPop * 80) + 'px', background: 'linear-gradient(180deg, #3b82f6, #2563eb)', borderRadius: '1px' }, title: 'Yr ' + (i + 1) + ' — Tuna: ' + h.tuna }),
+                        React.createElement("div", { style: { height: Math.max(1, h.tuna / maxPop * 80) + 'px', background: 'linear-gradient(180deg, #3b82f6, #2563eb)', borderRadius: '1px' }, title: 'Yr ' + (i + 1) + ' â€” Tuna: ' + h.tuna }),
 
-                        React.createElement("div", { style: { height: Math.max(1, h.sharks / maxPop * 80) + 'px', background: 'linear-gradient(180deg, #6366f1, #4f46e5)', borderRadius: '0 0 3px 3px' }, title: 'Yr ' + (i + 1) + ' — Sharks: ' + h.sharks })
+                        React.createElement("div", { style: { height: Math.max(1, h.sharks / maxPop * 80) + 'px', background: 'linear-gradient(180deg, #6366f1, #4f46e5)', borderRadius: '0 0 3px 3px' }, title: 'Yr ' + (i + 1) + ' â€” Sharks: ' + h.sharks })
 
                       );
 
@@ -35606,7 +28594,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-            // ═══════════════ MODE 3: MARINE SCIENCE ═══════════════
+            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MODE 3: MARINE SCIENCE â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
             mode === 'marine' && React.createElement("div", { className: "space-y-3" },
 
@@ -35805,15 +28793,15 @@ var d = (labToolData && labToolData._aquarium) || {};
     }
   });
 
-  // ═══ 🔬 economicsLab (economicsLab) ═══
+  // â•â•â• ðŸ”¬ economicsLab (economicsLab) â•â•â•
   window.StemLab.registerTool('economicsLab', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'economicsLab',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -35846,7 +28834,7 @@ var d = (labToolData && labToolData._aquarium) || {};
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (economicsLab) ──
+      // â”€â”€ Tool body (economicsLab) â”€â”€
       return (function() {
 var d = labToolData || {};
 
@@ -35860,7 +28848,7 @@ var d = labToolData || {};
 
 
 
-          // ── Supply & Demand State ──
+          // â”€â”€ Supply & Demand State â”€â”€
 
           var sdDemandShift = d.sdDemandShift || 0;
 
@@ -35874,7 +28862,7 @@ var d = labToolData || {};
 
 
 
-          // ── Personal Finance Life Sim State ──
+          // â”€â”€ Personal Finance Life Sim State â”€â”€
 
           var pfAge = d.pfAge || 22;
 
@@ -35888,7 +28876,7 @@ var d = labToolData || {};
 
 
 
-          // ── Personal Finance Budget Breakdown ──
+          // â”€â”€ Personal Finance Budget Breakdown â”€â”€
 
           var pfIncome = Math.round((d.pfSalary || 35000) / 12);
 
@@ -35904,7 +28892,7 @@ var d = labToolData || {};
 
 
 
-          // ── Stock Market State ──
+          // â”€â”€ Stock Market State â”€â”€
 
           var smCash = d.smCash !== undefined ? d.smCash : 10000;
 
@@ -35920,7 +28908,7 @@ var d = labToolData || {};
 
 
 
-          // ── Entrepreneur State ──
+          // â”€â”€ Entrepreneur State â”€â”€
 
           var enDay = d.enDay || 1;
 
@@ -35938,7 +28926,7 @@ var d = labToolData || {};
 
 
 
-          // ── National Economy (Macro) State ──
+          // â”€â”€ National Economy (Macro) State â”€â”€
 
           var macroGDP = d.macroGDP || 2.1;
 
@@ -35956,7 +28944,7 @@ var d = labToolData || {};
 
 
 
-          // ── Achievement Tracking ──
+          // â”€â”€ Achievement Tracking â”€â”€
 
           var econAchievements = [];
 
@@ -36024,7 +29012,7 @@ var d = labToolData || {};
 
 
 
-          // ── Canvas Rendering ── (non-hook: setTimeout to avoid conditional hook)
+          // â”€â”€ Canvas Rendering â”€â”€ (non-hook: setTimeout to avoid conditional hook)
 
           setTimeout(function () {
 
@@ -36046,7 +29034,7 @@ var d = labToolData || {};
 
             if (econTab === 'supplyDemand') {
 
-              // ── Supply & Demand Graph ──
+              // â”€â”€ Supply & Demand Graph â”€â”€
 
               var gx = 60, gy = 30, gw = W - 120, gh = H - 80;
 
@@ -36260,7 +29248,7 @@ var d = labToolData || {};
 
             else if (econTab === 'personalFinance') {
 
-              // ── Life Sim Net Worth Chart ──
+              // â”€â”€ Life Sim Net Worth Chart â”€â”€
 
               ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
 
@@ -36402,7 +29390,7 @@ var d = labToolData || {};
 
             else if (econTab === 'stockMarket') {
 
-              // ── Stock Market Chart ──
+              // â”€â”€ Stock Market Chart â”€â”€
 
               ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
 
@@ -36606,13 +29594,13 @@ var d = labToolData || {};
 
             else if (econTab === 'macro') {
 
-              // ── National Economy Dashboard ──
+              // â”€â”€ National Economy Dashboard â”€â”€
 
               ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
 
               ctx.font = 'bold 18px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
-              ctx.fillText('\uD83C\uDFDB\uFE0F National Economy — Year ' + macroYear, 30, 35);
+              ctx.fillText('\uD83C\uDFDB\uFE0F National Economy â€” Year ' + macroYear, 30, 35);
 
               // Indicator gauges
 
@@ -36750,7 +29738,7 @@ var d = labToolData || {};
 
             else if (econTab === 'entrepreneur') {
 
-              // ── Lemonade Stand ──
+              // â”€â”€ Lemonade Stand â”€â”€
 
               ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
 
@@ -38837,15 +31825,15 @@ var d = labToolData || {};
     }
   });
 
-  // ═══ 🔬 behaviorLab (behaviorLab) ═══
+  // â•â•â• ðŸ”¬ behaviorLab (behaviorLab) â•â•â•
   window.StemLab.registerTool('behaviorLab', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'behaviorLab',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -38878,7 +31866,7 @@ var d = labToolData || {};
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (behaviorLab) ──
+      // â”€â”€ Tool body (behaviorLab) â”€â”€
       return (function() {
 var d = labToolData || {};
 
@@ -38886,7 +31874,7 @@ var d = labToolData || {};
 
 
 
-          // ── Level definitions ──
+          // â”€â”€ Level definitions â”€â”€
 
           var LEVELS = [
 
@@ -38898,11 +31886,11 @@ var d = labToolData || {};
 
               termDef: 'Positive Reinforcement (SR+): Adding a stimulus after a behavior that increases the future probability of that behavior.',
 
-              funFact: '🧪 B.F. Skinner discovered that pigeons could be trained to guide missiles during WWII using operant conditioning — the project was called "Project Pigeon"!',
+              funFact: 'ðŸ§ª B.F. Skinner discovered that pigeons could be trained to guide missiles during WWII using operant conditioning â€” the project was called "Project Pigeon"!',
 
               vocab: ['SR+ (Positive Reinforcement)', 'Operant Behavior', 'Consequence'],
 
-              contingency: { a: 'Chamber present', b: 'Presses lever', c: '🍕 Food delivered (+SR)' }
+              contingency: { a: 'Chamber present', b: 'Presses lever', c: 'ðŸ• Food delivered (+SR)' }
 
             },
 
@@ -38910,15 +31898,15 @@ var d = labToolData || {};
 
               id: 2, title: 'Shape Up!', concept: 'Shaping', target: 'spin', goal: 5,
 
-              intro: 'Shaping uses successive approximations. The mouse won\'t spin on its own! Follow this 3-step sequence: (1) Reinforce "Turning Right" (↪️) to increase turning. (2) Once turns are frequent, wait for "Half-Turn" (↩️↪️) and reinforce those. (3) Finally, wait for full "Spinning" (🌀) and reinforce! Shape 5 complete spins through 3 stages of approximation!',
+              intro: 'Shaping uses successive approximations. The mouse won\'t spin on its own! Follow this 3-step sequence: (1) Reinforce "Turning Right" (â†ªï¸) to increase turning. (2) Once turns are frequent, wait for "Half-Turn" (â†©ï¸â†ªï¸) and reinforce those. (3) Finally, wait for full "Spinning" (ðŸŒ€) and reinforce! Shape 5 complete spins through 3 stages of approximation!',
 
               termDef: 'Shaping: Differentially reinforcing successive approximations toward a terminal (target) behavior.',
 
-              funFact: '🐬 Dolphin trainers at SeaWorld use shaping to teach dolphins to do backflips — they start by reinforcing any upward movement!',
+              funFact: 'ðŸ¬ Dolphin trainers at SeaWorld use shaping to teach dolphins to do backflips â€” they start by reinforcing any upward movement!',
 
               vocab: ['Successive Approximations', 'Terminal Behavior', 'Differential Reinforcement'],
 
-              contingency: { a: 'Trainer present', b: 'Closer to spin', c: '🍕 Food (reinforce!)' }
+              contingency: { a: 'Trainer present', b: 'Closer to spin', c: 'ðŸ• Food (reinforce!)' }
 
             },
 
@@ -38926,15 +31914,15 @@ var d = labToolData || {};
 
               id: 3, title: 'The Burst', concept: 'Extinction', target: 'pressLever', goal: 0,
 
-              intro: 'When reinforcement is suddenly withheld, the organism often shows an extinction burst — a temporary INCREASE in the behavior before it decreases. First, reinforce 5 lever presses, then STOP reinforcing and watch what happens!',
+              intro: 'When reinforcement is suddenly withheld, the organism often shows an extinction burst â€” a temporary INCREASE in the behavior before it decreases. First, reinforce 5 lever presses, then STOP reinforcing and watch what happens!',
 
               termDef: 'Extinction Burst: A temporary increase in frequency/intensity of a previously reinforced behavior when reinforcement is discontinued.',
 
-              funFact: '🛗 Ever push an elevator button multiple times when it doesn\'t light up? That\'s YOUR extinction burst!',
+              funFact: 'ðŸ›— Ever push an elevator button multiple times when it doesn\'t light up? That\'s YOUR extinction burst!',
 
               vocab: ['Extinction', 'Extinction Burst', 'Spontaneous Recovery'],
 
-              contingency: { a: 'Chamber present', b: 'Presses lever', c: '❌ No food (extinction)' }
+              contingency: { a: 'Chamber present', b: 'Presses lever', c: 'âŒ No food (extinction)' }
 
             },
 
@@ -38946,11 +31934,11 @@ var d = labToolData || {};
 
               termDef: 'Fixed Ratio (FR): A schedule where reinforcement is delivered after a fixed number of responses.',
 
-              funFact: '🎰 Slot machines use Variable Ratio (VR) schedules — the most resistant to extinction — which is why they\'re so addictive!',
+              funFact: 'ðŸŽ° Slot machines use Variable Ratio (VR) schedules â€” the most resistant to extinction â€” which is why they\'re so addictive!',
 
               vocab: ['Fixed Ratio (FR)', 'Continuous Reinforcement (CRF)', 'Intermittent Reinforcement'],
 
-              contingency: { a: 'Chamber present', b: 'Every 3rd press', c: '🍕 Food (FR-3)' }
+              contingency: { a: 'Chamber present', b: 'Every 3rd press', c: 'ðŸ• Food (FR-3)' }
 
             },
 
@@ -38962,11 +31950,11 @@ var d = labToolData || {};
 
               termDef: 'SD (Discriminative Stimulus): A stimulus that signals reinforcement is available for a specific behavior.',
 
-              funFact: '🚦 Traffic lights work as discriminative stimuli for drivers — green (SD) signals "go" and red (S-delta) signals "stop"!',
+              funFact: 'ðŸš¦ Traffic lights work as discriminative stimuli for drivers â€” green (SD) signals "go" and red (S-delta) signals "stop"!',
 
-              vocab: ['SD (Discriminative Stimulus)', 'S-delta (S∆)', 'Stimulus Control'],
+              vocab: ['SD (Discriminative Stimulus)', 'S-delta (Sâˆ†)', 'Stimulus Control'],
 
-              contingency: { a: '🟢 Green light (SD)', b: 'Presses lever', c: '🍕 Food delivered' }
+              contingency: { a: 'ðŸŸ¢ Green light (SD)', b: 'Presses lever', c: 'ðŸ• Food delivered' }
 
             },
 
@@ -38978,7 +31966,7 @@ var d = labToolData || {};
 
               termDef: 'Applied Behavior Analysis (ABA): The science of applying behavioral principles to improve socially significant behavior.',
 
-              funFact: '🌍 ABA principles are used everywhere — from teaching children with autism to training service dogs, to designing better apps!',
+              funFact: 'ðŸŒ ABA principles are used everywhere â€” from teaching children with autism to training service dogs, to designing better apps!',
 
               vocab: ['Behavior Chain', 'Generalization', 'Maintenance'],
 
@@ -38990,31 +31978,31 @@ var d = labToolData || {};
 
               id: 7, title: 'Chain Reaction', concept: 'Behavior Chaining', target: 'pressLever', goal: 3,
 
-              intro: 'A behavior chain links multiple behaviors in a specific sequence. The completion of one step becomes the signal (SD) for the next. Teach the mouse this chain: Sniff ➜ Rear Up ➜ Press Lever. Reinforce ONLY when the full 3-step chain is completed!',
+              intro: 'A behavior chain links multiple behaviors in a specific sequence. The completion of one step becomes the signal (SD) for the next. Teach the mouse this chain: Sniff âžœ Rear Up âžœ Press Lever. Reinforce ONLY when the full 3-step chain is completed!',
 
               termDef: 'Behavior Chain: A sequence of responses where each response produces the discriminative stimulus (SD) for the next response, and the last response is followed by a reinforcer.',
 
-              funFact: '🐕 Service dogs learn behavior chains of 20+ steps — like opening the fridge, grabbing a drink, closing the fridge, and bringing it to their handler!',
+              funFact: 'ðŸ• Service dogs learn behavior chains of 20+ steps â€” like opening the fridge, grabbing a drink, closing the fridge, and bringing it to their handler!',
 
               vocab: ['Behavior Chain', 'Forward Chaining', 'Task Analysis', 'Terminal Reinforcer'],
 
-              contingency: { a: 'Chain cue', b: 'Sniff→Rear→Lever', c: '🍕 Food (chain complete!)' }
+              contingency: { a: 'Chain cue', b: 'Sniffâ†’Rearâ†’Lever', c: 'ðŸ• Food (chain complete!)' }
 
             },
 
             {
 
-              id: 8, title: 'Not That!', concept: 'DRO — Differential Reinforcement', target: null, goal: 5,
+              id: 8, title: 'Not That!', concept: 'DRO â€” Differential Reinforcement', target: null, goal: 5,
 
-              intro: 'DRO (Differential Reinforcement of Other behavior) means reinforcing the ABSENCE of a specific behavior for a set time interval. A countdown timer runs — if the mouse does NOT press the lever before the timer finishes, deliver food! If the mouse presses the lever, the timer resets. Deliver 5 successful DRO intervals!',
+              intro: 'DRO (Differential Reinforcement of Other behavior) means reinforcing the ABSENCE of a specific behavior for a set time interval. A countdown timer runs â€” if the mouse does NOT press the lever before the timer finishes, deliver food! If the mouse presses the lever, the timer resets. Deliver 5 successful DRO intervals!',
 
               termDef: 'DRO (Differential Reinforcement of Other Behavior): Reinforcement is delivered when a specified behavior does NOT occur for a predetermined interval of time.',
 
-              funFact: '🏫 Teachers use DRO all the time — "If no one calls out for 5 minutes, the class earns a point!" It reduces unwanted behavior without punishment.',
+              funFact: 'ðŸ« Teachers use DRO all the time â€” "If no one calls out for 5 minutes, the class earns a point!" It reduces unwanted behavior without punishment.',
 
               vocab: ['DRO', 'Differential Reinforcement', 'Interval', 'Target Behavior Reduction'],
 
-              contingency: { a: 'Timer running', b: 'Any behavior EXCEPT lever', c: '🍕 Food (DRO interval met!)' }
+              contingency: { a: 'Timer running', b: 'Any behavior EXCEPT lever', c: 'ðŸ• Food (DRO interval met!)' }
 
             },
 
@@ -39022,15 +32010,15 @@ var d = labToolData || {};
 
               id: 9, title: 'Pavlov\'s Bell', concept: 'Classical Conditioning', target: null, goal: 0,
 
-              intro: 'Classical conditioning pairs a neutral stimulus (bell) with an unconditioned stimulus (food) that naturally causes a response (salivation). After repeated pairings the bell ALONE triggers salivation! Phase 1: Ring the bell — nothing happens. Phase 2: Pair bell + food 5 times. Phase 3: Ring bell alone and watch for the conditioned response!',
+              intro: 'Classical conditioning pairs a neutral stimulus (bell) with an unconditioned stimulus (food) that naturally causes a response (salivation). After repeated pairings the bell ALONE triggers salivation! Phase 1: Ring the bell â€” nothing happens. Phase 2: Pair bell + food 5 times. Phase 3: Ring bell alone and watch for the conditioned response!',
 
               termDef: 'Classical Conditioning: A learning process where a neutral stimulus (CS) is repeatedly paired with an unconditioned stimulus (US) until the CS alone elicits a conditioned response (CR).',
 
-              funFact: '🐶 Ivan Pavlov discovered classical conditioning accidentally while studying dog digestion in the 1890s. The dogs began salivating at the sight of lab coats because they associated them with food!',
+              funFact: 'ðŸ¶ Ivan Pavlov discovered classical conditioning accidentally while studying dog digestion in the 1890s. The dogs began salivating at the sight of lab coats because they associated them with food!',
 
               vocab: ['US (Unconditioned Stimulus)', 'UR (Unconditioned Response)', 'CS (Conditioned Stimulus)', 'CR (Conditioned Response)', 'Acquisition', 'Extinction'],
 
-              contingency: { a: '🔔 Bell (CS)', b: 'Paired with food (US)', c: '🤤 Salivation (CR)' }
+              contingency: { a: 'ðŸ”” Bell (CS)', b: 'Paired with food (US)', c: 'ðŸ¤¤ Salivation (CR)' }
 
             }
 
@@ -39038,7 +32026,7 @@ var d = labToolData || {};
 
 
 
-          // ── Knowledge Quiz Questions ──
+          // â”€â”€ Knowledge Quiz Questions â”€â”€
 
           var QUIZ_BANK = {
 
@@ -39048,7 +32036,7 @@ var d = labToolData || {};
 
             3: { q: 'What is an extinction burst?', opts: ['A permanent increase in behavior', 'A temporary increase before behavior decreases', 'When a new behavior appears', 'When reinforcement increases'], correct: 1, explain: 'An extinction burst is a temporary INCREASE in the frequency or intensity of a behavior when reinforcement is suddenly discontinued.' },
 
-            4: { q: 'In an FR-3 schedule, when is reinforcement delivered?', opts: ['After every response', 'After every 3rd response', 'After random responses', 'After 3 minutes'], correct: 1, explain: 'Fixed Ratio (FR-3) delivers reinforcement after every 3rd response — a fixed number of responses.' },
+            4: { q: 'In an FR-3 schedule, when is reinforcement delivered?', opts: ['After every response', 'After every 3rd response', 'After random responses', 'After 3 minutes'], correct: 1, explain: 'Fixed Ratio (FR-3) delivers reinforcement after every 3rd response â€” a fixed number of responses.' },
 
             5: { q: 'What does SD (discriminative stimulus) signal?', opts: ['Punishment is coming', 'Reinforcement is available', 'Extinction has started', 'The session is over'], correct: 1, explain: 'An SD signals that reinforcement is available for a specific behavior. It "sets the occasion" for that behavior.' },
 
@@ -39062,13 +32050,13 @@ var d = labToolData || {};
 
 
 
-          // ── Chain sequence for Level 7 ──
+          // â”€â”€ Chain sequence for Level 7 â”€â”€
 
           var CHAIN_SEQ = ['sniff', 'rearUp', 'pressLever'];
 
 
 
-          // ── State initialization ──
+          // â”€â”€ State initialization â”€â”€
 
           var blLevel = d.blLevel || 1;
 
@@ -39154,7 +32142,7 @@ var d = labToolData || {};
 
           var blChainHistory = d.blChainHistory || [];
 
-          var blMoodEmoji = d.blMoodEmoji || '😐';
+          var blMoodEmoji = d.blMoodEmoji || 'ðŸ˜';
 
           var blMoodTimer = d.blMoodTimer || 0;
 
@@ -39202,7 +32190,7 @@ var d = labToolData || {};
 
 
 
-          // ── Sound effects (Web Audio API) ──
+          // â”€â”€ Sound effects (Web Audio API) â”€â”€
 
           var _blAudioCtx = null;
 
@@ -39242,7 +32230,7 @@ var d = labToolData || {};
 
 
 
-          // ── Contextual Hints ──
+          // â”€â”€ Contextual Hints â”€â”€
 
           var blHint = '';
 
@@ -39252,7 +32240,7 @@ var d = labToolData || {};
 
             else if (blLevel === 1 && blLevelScore > 0 && blLevelScore < 3) blHint = '\uD83D\uDC4D Great! Keep reinforcing lever presses. Watch the probability bar grow!';
 
-            else if (blLevel === 2 && blLevelScore === 0 && blTick > 5) blHint = '\uD83D\uDCA1 Shape in stages: reinforce Turn Right (↪️) first, then Half-Turns, then full Spins!';
+            else if (blLevel === 2 && blLevelScore === 0 && blTick > 5) blHint = '\uD83D\uDCA1 Shape in stages: reinforce Turn Right (â†ªï¸) first, then Half-Turns, then full Spins!';
 
             else if (blLevel === 3 && !blExtinctionPhase && blLevelScore >= 5) blHint = '\uD83D\uDCA1 You\'ve reinforced 5 times! Click "Start Extinction" to stop reinforcing.';
 
@@ -39268,15 +32256,15 @@ var d = labToolData || {};
 
 
 
-          // ── Action labels for display ──
+          // â”€â”€ Action labels for display â”€â”€
 
           var ACTION_LABELS = {
 
-            explore: '🔍 Exploring', groom: '🧹 Grooming', sniff: '👃 Sniffing',
+            explore: 'ðŸ” Exploring', groom: 'ðŸ§¹ Grooming', sniff: 'ðŸ‘ƒ Sniffing',
 
-            pressLever: '⚡ Pressing Lever!', turnLeft: '↩️ Turning Left', turnRight: '↪️ Turning Right',
+            pressLever: 'âš¡ Pressing Lever!', turnLeft: 'â†©ï¸ Turning Left', turnRight: 'â†ªï¸ Turning Right',
 
-            rearUp: '🐭 Rearing Up', freeze: '🧊 Frozen', spin: '🌀 Spinning!', touchWall: '🧱 Touching Wall'
+            rearUp: 'ðŸ­ Rearing Up', freeze: 'ðŸ§Š Frozen', spin: 'ðŸŒ€ Spinning!', touchWall: 'ðŸ§± Touching Wall'
 
           };
 
@@ -39294,7 +32282,7 @@ var d = labToolData || {};
 
 
 
-          // ── Level accent colors ──
+          // â”€â”€ Level accent colors â”€â”€
 
           var LEVEL_COLORS = { 1: '#f59e0b', 2: '#8b5cf6', 3: '#ef4444', 4: '#3b82f6', 5: '#22c55e', 6: '#ec4899', 7: '#a855f7', 8: '#06b6d4', 9: '#e11d48' };
 
@@ -39302,7 +32290,7 @@ var d = labToolData || {};
 
 
 
-          // ── Behavior Engine: Select next action based on weights ──
+          // â”€â”€ Behavior Engine: Select next action based on weights â”€â”€
 
           function selectAction() {
 
@@ -39330,7 +32318,7 @@ var d = labToolData || {};
 
 
 
-          // ── Reinforce: increase weight of the last action ──
+          // â”€â”€ Reinforce: increase weight of the last action â”€â”€
 
           function reinforceAction() {
 
@@ -39362,13 +32350,13 @@ var d = labToolData || {};
 
 
 
-            // Level 7: behavior chain check — only allow reinforce on completed chain
+            // Level 7: behavior chain check â€” only allow reinforce on completed chain
 
             if (blLevel === 7) {
 
               if (blChainStep < CHAIN_SEQ.length || actionToReinforce !== 'pressLever') {
 
-                if (addToast) addToast('\u26A0\uFE0F Wait for the full chain: Sniff ➜ Rear Up ➜ Lever!', 'warning');
+                if (addToast) addToast('\u26A0\uFE0F Wait for the full chain: Sniff âžœ Rear Up âžœ Lever!', 'warning');
 
                 return;
 
@@ -39392,9 +32380,9 @@ var d = labToolData || {};
 
 
 
-            // Mood update — happy!
+            // Mood update â€” happy!
 
-            upd('blMoodEmoji', '😊');
+            upd('blMoodEmoji', 'ðŸ˜Š');
 
             upd('blMoodTimer', Date.now());
 
@@ -39470,13 +32458,13 @@ var d = labToolData || {};
 
 
 
-          // ── Action dwell times (ticks an action persists) ──
+          // â”€â”€ Action dwell times (ticks an action persists) â”€â”€
 
           var ACTION_DWELL = { explore: 4, groom: 5, sniff: 3, approachLever: 4, pressLever: 3, turnLeft: 3, turnRight: 3, halfTurn: 4, rearUp: 3, freeze: 5, spin: 4, touchWall: 3 };
 
 
 
-          // ── Advance simulation by one tick ──
+          // â”€â”€ Advance simulation by one tick â”€â”€
 
           function advanceTick() {
 
@@ -39626,7 +32614,7 @@ var d = labToolData || {};
 
 
 
-            // ── Delta-based proximity shaping ──
+            // â”€â”€ Delta-based proximity shaping â”€â”€
 
             // Track rolling position history (last 5 positions)
 
@@ -39656,7 +32644,7 @@ var d = labToolData || {};
 
 
 
-              // Apply shaping on levels 1, 2, and 6 (sandbox) — any proximity gain counts
+              // Apply shaping on levels 1, 2, and 6 (sandbox) â€” any proximity gain counts
 
               if ((blLevel === 1 || blLevel === 2 || blLevel === 6) && proxDelta > 5) {
 
@@ -39730,7 +32718,7 @@ var d = labToolData || {};
 
               } else if (CHAIN_SEQ.indexOf(action) >= 0 && action !== CHAIN_SEQ[curChainStep]) {
 
-                // Wrong order — reset chain
+                // Wrong order â€” reset chain
 
                 upd('blChainStep', 0);
 
@@ -39744,7 +32732,7 @@ var d = labToolData || {};
 
             if (blMoodTimer > 0 && (Date.now() - blMoodTimer) > 5000) {
 
-              upd('blMoodEmoji', blReinforcements > 3 ? '🤔' : '😐');
+              upd('blMoodEmoji', blReinforcements > 3 ? 'ðŸ¤”' : 'ðŸ˜');
 
               upd('blMoodTimer', 0);
 
@@ -39826,13 +32814,13 @@ var d = labToolData || {};
 
               if (action === 'pressLever') {
 
-                // Target behavior occurred — reset DRO timer
+                // Target behavior occurred â€” reset DRO timer
 
                 upd('blDroTimer', 0);
 
                 var droResetLog = blAbcLog.slice();
 
-                droResetLog.unshift({ tick: newTick, a: 'DRO timer running', b: '⚡ Pressing Lever!', c: '🔄 Timer reset (target occurred)', t: Date.now() });
+                droResetLog.unshift({ tick: newTick, a: 'DRO timer running', b: 'âš¡ Pressing Lever!', c: 'ðŸ”„ Timer reset (target occurred)', t: Date.now() });
 
                 upd('blAbcLog', droResetLog.slice(0, 50));
 
@@ -39858,7 +32846,7 @@ var d = labToolData || {};
 
                   upd('blLevelScore', blLevelScore + 1);
 
-                  upd('blMoodEmoji', '😊');
+                  upd('blMoodEmoji', 'ðŸ˜Š');
 
                   upd('blMoodTimer', Date.now());
 
@@ -39868,13 +32856,13 @@ var d = labToolData || {};
 
                   var droSuccessLog = blAbcLog.slice();
 
-                  droSuccessLog.unshift({ tick: newTick, a: 'DRO interval complete', b: 'No lever press for ' + blDroInterval + ' ticks', c: '🍕 Food delivered (DRO success!)', t: Date.now() });
+                  droSuccessLog.unshift({ tick: newTick, a: 'DRO interval complete', b: 'No lever press for ' + blDroInterval + ' ticks', c: 'ðŸ• Food delivered (DRO success!)', t: Date.now() });
 
                   upd('blAbcLog', droSuccessLog.slice(0, 50));
 
                   if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 2, 'DRO interval success');
 
-                  if (addToast) addToast('🍕 DRO interval met! Food delivered.', 'success');
+                  if (addToast) addToast('ðŸ• DRO interval met! Food delivered.', 'success');
 
                 } else {
 
@@ -40008,7 +32996,7 @@ var d = labToolData || {};
 
 
 
-          // ── Canvas Drawing ──
+          // â”€â”€ Canvas Drawing â”€â”€
 
           function drawChamber(canvas) {
 
@@ -40092,7 +33080,7 @@ var d = labToolData || {};
 
 
 
-            // ─ Light indicator (top-left) ─
+            // â”€ Light indicator (top-left) â”€
 
             if (blLevel === 5 || blLevel === 6) {
 
@@ -40122,7 +33110,7 @@ var d = labToolData || {};
 
 
 
-            // ─ Lever (right side) with depression animation ─
+            // â”€ Lever (right side) with depression animation â”€
 
             var leverX = W - 70;
 
@@ -40196,7 +33184,7 @@ var d = labToolData || {};
 
 
 
-            // ─ Food tray (bottom-left) ─
+            // â”€ Food tray (bottom-left) â”€
 
             var trayX = 55;
 
@@ -40366,7 +33354,7 @@ var d = labToolData || {};
 
 
 
-            // ─ Dust motes (ambient particles) ─
+            // â”€ Dust motes (ambient particles) â”€
 
             for (var dm = 0; dm < 6; dm++) {
 
@@ -40392,7 +33380,7 @@ var d = labToolData || {};
 
 
 
-            // ─ Mouse sprite ─
+            // â”€ Mouse sprite â”€
 
             var mx = blMouseX;
 
@@ -40634,7 +33622,7 @@ var d = labToolData || {};
 
             var tailWag = Math.sin(Date.now() / tailBaseFreq) * 6;
 
-            var isHappy = blMoodEmoji === '😊';
+            var isHappy = blMoodEmoji === 'ðŸ˜Š';
 
             var recentFood = blFoodVisible || (blFoodTime && (Date.now() - blFoodTime) < 2000);
 
@@ -40740,7 +33728,7 @@ var d = labToolData || {};
 
 
 
-            // ─ Mood emoji indicator ─
+            // â”€ Mood emoji indicator â”€
 
             ctx.font = '16px sans-serif';
 
@@ -40750,7 +33738,7 @@ var d = labToolData || {};
 
 
 
-            // ─ Action label ─
+            // â”€ Action label â”€
 
             var actionLabel = ACTION_LABELS[blMouseAction] || blMouseAction;
 
@@ -40764,7 +33752,7 @@ var d = labToolData || {};
 
 
 
-            // ─ Tick counter ─
+            // â”€ Tick counter â”€
 
             ctx.fillStyle = '#94a3b8';
 
@@ -40780,7 +33768,7 @@ var d = labToolData || {};
 
 
 
-            // ─ PAUSED overlay ─
+            // â”€ PAUSED overlay â”€
 
             if (blPaused) {
 
@@ -40802,7 +33790,7 @@ var d = labToolData || {};
 
 
 
-          // ── Cumulative Record Drawing ──
+          // â”€â”€ Cumulative Record Drawing â”€â”€
 
           function drawCumRecord(canvas) {
 
@@ -40976,7 +33964,7 @@ var d = labToolData || {};
 
               var burstLabelX = W * 0.7;
 
-              ctx.fillText('EXTINCTION BURST ↑', burstLabelX, 28);
+              ctx.fillText('EXTINCTION BURST â†‘', burstLabelX, 28);
 
             }
 
@@ -41028,7 +34016,7 @@ var d = labToolData || {};
 
 
 
-          // ── Render canvases via setTimeout (no hooks in conditional IIFE) ──
+          // â”€â”€ Render canvases via setTimeout (no hooks in conditional IIFE) â”€â”€
 
           setTimeout(function () {
 
@@ -41040,7 +34028,7 @@ var d = labToolData || {};
 
             drawCumRecord(cumCv);
 
-            // ── Smooth mouse interpolation (async to avoid render-phase setState) ──
+            // â”€â”€ Smooth mouse interpolation (async to avoid render-phase setState) â”€â”€
 
             var _lerpRate = 0.15;
 
@@ -41056,7 +34044,7 @@ var d = labToolData || {};
 
             }
 
-            // ── Auto-advance timer (speed-adjusted, async) ──
+            // â”€â”€ Auto-advance timer (speed-adjusted, async) â”€â”€
 
             var _tickDelay = (d.blSpeed || 1) === 3 ? 1200 : (d.blSpeed || 1) === 2 ? 2200 : 3200;
 
@@ -41070,7 +34058,7 @@ var d = labToolData || {};
 
 
 
-          // ── Weight bar chart data ──
+          // â”€â”€ Weight bar chart data â”€â”€
 
           var sortedWeights = Object.keys(blWeights).map(function (k) {
 
@@ -41084,7 +34072,7 @@ var d = labToolData || {};
 
 
 
-          // ═══════════ RENDER ═══════════
+          // â•â•â•â•â•â•â•â•â•â•â• RENDER â•â•â•â•â•â•â•â•â•â•â•
 
           // Intro Phase
 
@@ -41256,7 +34244,7 @@ var d = labToolData || {};
 
 
 
-          // ── Pulsing helper: is the current action the target? ──
+          // â”€â”€ Pulsing helper: is the current action the target? â”€â”€
 
           var isTargetActive = blPhase === 'running' && blLastAction === (blLevel === 6 ? blSandboxTarget : (currentLevel.target || 'pressLever'));
 
@@ -41264,7 +34252,7 @@ var d = labToolData || {};
 
 
 
-          // ── FR counter for Level 4 ──
+          // â”€â”€ FR counter for Level 4 â”€â”€
 
           var frRatio = 3;
 
@@ -41272,7 +34260,7 @@ var d = labToolData || {};
 
 
 
-          // ── Glass style shorthand ──
+          // â”€â”€ Glass style shorthand â”€â”€
 
           var glass = { backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)' };
 
@@ -41282,7 +34270,7 @@ var d = labToolData || {};
 
           return React.createElement("div", { className: "p-4 space-y-3", style: { maxWidth: 720, margin: '0 auto' } },
 
-            // ── Inject keyframe animation for pulse ──
+            // â”€â”€ Inject keyframe animation for pulse â”€â”€
 
             React.createElement("style", null,
 
@@ -41294,7 +34282,7 @@ var d = labToolData || {};
 
 
 
-            // ── Header row ──
+            // â”€â”€ Header row â”€â”€
 
             React.createElement("div", {
 
@@ -41320,7 +34308,7 @@ var d = labToolData || {};
 
               ),
 
-              // ── Speed segmented control ──
+              // â”€â”€ Speed segmented control â”€â”€
 
               React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-slate-600/50", style: { fontSize: 11 } },
 
@@ -41342,7 +34330,7 @@ var d = labToolData || {};
 
               ),
 
-              // ── Sound toggle ──
+              // â”€â”€ Sound toggle â”€â”€
 
               React.createElement("button", {
 
@@ -41356,7 +34344,7 @@ var d = labToolData || {};
 
               }, blSoundOn ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
 
-              // ── Pause button ──
+              // â”€â”€ Pause button â”€â”€
 
               React.createElement("button", {
 
@@ -41370,7 +34358,7 @@ var d = labToolData || {};
 
 
 
-            // ── Level progress bar ──
+            // â”€â”€ Level progress bar â”€â”€
 
             currentLevel.goal > 0 && React.createElement("div", { className: "relative", style: { height: 10, borderRadius: 6, overflow: 'hidden', background: 'rgba(30,41,59,0.8)', border: '1px solid rgba(99,102,241,0.15)' } },
 
@@ -41402,7 +34390,7 @@ var d = labToolData || {};
 
 
 
-            // ── Contextual hint banner ──
+            // â”€â”€ Contextual hint banner â”€â”€
 
             blHint && React.createElement("div", {
 
@@ -41416,7 +34404,7 @@ var d = labToolData || {};
 
 
 
-            // ── Completion results card ──
+            // â”€â”€ Completion results card â”€â”€
 
             blPhase === 'complete' && React.createElement("div", {
 
@@ -41434,7 +34422,7 @@ var d = labToolData || {};
 
                 return React.createElement("p", { className: "text-2xl text-center mb-1", style: { letterSpacing: 4, textShadow: '0 0 12px rgba(251,191,36,0.5)' } },
 
-                  '⭐'.repeat(stars) + '☆'.repeat(3 - stars)
+                  'â­'.repeat(stars) + 'â˜†'.repeat(3 - stars)
 
                 );
 
@@ -41504,11 +34492,11 @@ var d = labToolData || {};
 
               ),
 
-              // ── Knowledge Quiz ──
+              // â”€â”€ Knowledge Quiz â”€â”€
 
               QUIZ_BANK[blLevel] && React.createElement("div", { className: "bg-gradient-to-br from-indigo-900/40 to-purple-900/30 rounded-xl p-4 border border-indigo-500/30" },
 
-                React.createElement("p", { className: "text-xs font-bold text-indigo-300 mb-2" }, "🧠 Knowledge Check"),
+                React.createElement("p", { className: "text-xs font-bold text-indigo-300 mb-2" }, "ðŸ§  Knowledge Check"),
 
                 React.createElement("p", { className: "text-sm text-slate-200 font-semibold mb-3" }, QUIZ_BANK[blLevel].q),
 
@@ -41552,11 +34540,11 @@ var d = labToolData || {};
 
                           if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 5, 'Quiz correct: Level ' + blLevel);
 
-                          if (addToast) addToast('✅ Correct! +5 XP bonus!', 'success');
+                          if (addToast) addToast('âœ… Correct! +5 XP bonus!', 'success');
 
                         } else {
 
-                          if (addToast) addToast('❌ Not quite — read the explanation below.', 'error');
+                          if (addToast) addToast('âŒ Not quite â€” read the explanation below.', 'error');
 
                         }
 
@@ -41576,7 +34564,7 @@ var d = labToolData || {};
 
                 },
 
-                  React.createElement("p", { className: "font-bold mb-1" }, blQuizCorrect ? '✅ Correct!' : '❌ Incorrect'),
+                  React.createElement("p", { className: "font-bold mb-1" }, blQuizCorrect ? 'âœ… Correct!' : 'âŒ Incorrect'),
 
                   React.createElement("p", null, QUIZ_BANK[blLevel].explain)
 
@@ -41648,7 +34636,7 @@ var d = labToolData || {};
 
 
 
-            // ── Chamber Canvas ──
+            // â”€â”€ Chamber Canvas â”€â”€
 
             React.createElement("div", {
 
@@ -41668,7 +34656,7 @@ var d = labToolData || {};
 
 
 
-            // ── Behavior frequency heatmap strip ──
+            // â”€â”€ Behavior frequency heatmap strip â”€â”€
 
             blRecentActions.length > 0 && React.createElement("div", {
 
@@ -41714,7 +34702,7 @@ var d = labToolData || {};
 
 
 
-            // ── Controls row ──
+            // â”€â”€ Controls row â”€â”€
 
             React.createElement("div", { className: "flex gap-2 flex-wrap items-center" },
 
@@ -41824,7 +34812,7 @@ var d = labToolData || {};
 
 
 
-            // ── Level 7: Chain Progress Tracker ──
+            // â”€â”€ Level 7: Chain Progress Tracker â”€â”€
 
             blLevel === 7 && blPhase === 'running' && React.createElement("div", {
 
@@ -41842,7 +34830,7 @@ var d = labToolData || {};
 
                   var isCurrent = si === blChainStep;
 
-                  var stepLabel = step === 'sniff' ? '👃 Sniff' : step === 'rearUp' ? '🐭 Rear Up' : '⚡ Press Lever';
+                  var stepLabel = step === 'sniff' ? 'ðŸ‘ƒ Sniff' : step === 'rearUp' ? 'ðŸ­ Rear Up' : 'âš¡ Press Lever';
 
                   return React.createElement(React.Fragment, { key: si },
 
@@ -41850,7 +34838,7 @@ var d = labToolData || {};
 
                       className: "text-sm font-bold " + (isDone ? 'text-emerald-400' : 'text-slate-600')
 
-                    }, "➜"),
+                    }, "âžœ"),
 
                     React.createElement("div", {
 
@@ -41862,7 +34850,7 @@ var d = labToolData || {};
 
                             'bg-slate-800/60 text-slate-500 border border-slate-700/40')
 
-                    }, (isDone ? '✅ ' : isCurrent ? '⏳ ' : '') + stepLabel)
+                    }, (isDone ? 'âœ… ' : isCurrent ? 'â³ ' : '') + stepLabel)
 
                   );
 
@@ -41872,7 +34860,7 @@ var d = labToolData || {};
 
                   className: "ml-2 px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-500 text-white animate-pulse shadow-lg shadow-amber-500/30"
 
-                }, "🍕 REINFORCE NOW!")
+                }, "ðŸ• REINFORCE NOW!")
 
               ),
 
@@ -41884,7 +34872,7 @@ var d = labToolData || {};
 
 
 
-            // ── Level 8: DRO Timer Panel ──
+            // â”€â”€ Level 8: DRO Timer Panel â”€â”€
 
             blLevel === 8 && blPhase === 'running' && React.createElement("div", {
 
@@ -41936,7 +34924,7 @@ var d = labToolData || {};
 
                 React.createElement("p", { className: "text-[10px] text-cyan-300/60 italic" },
 
-                  blDroTimer === 0 ? 'Timer started — no lever presses needed!' : 'Keep waiting...')
+                  blDroTimer === 0 ? 'Timer started â€” no lever presses needed!' : 'Keep waiting...')
 
               )
 
@@ -41944,7 +34932,7 @@ var d = labToolData || {};
 
 
 
-            // ── Level 9: Classical Conditioning Panel ──
+            // â”€â”€ Level 9: Classical Conditioning Panel â”€â”€
 
             blLevel === 9 && blPhase === 'running' && React.createElement("div", {
 
@@ -42112,7 +35100,7 @@ var d = labToolData || {};
 
                     } else if (blCcPhase === 'test') {
 
-                      // Test phase: bell alone — if association > 30, CR occurs
+                      // Test phase: bell alone â€” if association > 30, CR occurs
 
                       if (blAssocStrength > 30) {
 
@@ -42120,7 +35108,7 @@ var d = labToolData || {};
 
                         upd('blSalivateTime', Date.now());
 
-                        bellLog.unshift({ tick: blTick, a: '\uD83D\uDD14 Bell (CS)', b: 'Dog hears bell alone', c: '\uD83E\uDD24 Salivation! (CR — conditioned response!)', t: Date.now() });
+                        bellLog.unshift({ tick: blTick, a: '\uD83D\uDD14 Bell (CS)', b: 'Dog hears bell alone', c: '\uD83E\uDD24 Salivation! (CR â€” conditioned response!)', t: Date.now() });
 
                         upd('blAbcLog', bellLog.slice(0, 50));
 
@@ -42254,11 +35242,11 @@ var d = labToolData || {};
 
                     var pairLog = blAbcLog.slice();
 
-                    pairLog.unshift({ tick: blTick, a: '\uD83D\uDD14 Bell + \uD83C\uDF55 Food (US)', b: 'Dog eats food', c: '\uD83E\uDD24 Salivation (UR) — Pair ' + newPairCount + '/5', t: Date.now() });
+                    pairLog.unshift({ tick: blTick, a: '\uD83D\uDD14 Bell + \uD83C\uDF55 Food (US)', b: 'Dog eats food', c: '\uD83E\uDD24 Salivation (UR) â€” Pair ' + newPairCount + '/5', t: Date.now() });
 
                     upd('blAbcLog', pairLog.slice(0, 50));
 
-                    if (addToast) addToast('\uD83D\uDD14 + \uD83C\uDF55 Pair ' + newPairCount + '/5 — association building (' + newAssocP + '%)', 'success');
+                    if (addToast) addToast('\uD83D\uDD14 + \uD83C\uDF55 Pair ' + newPairCount + '/5 â€” association building (' + newAssocP + '%)', 'success');
 
                     if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 1, 'CS-US pairing trial');
 
@@ -42294,7 +35282,7 @@ var d = labToolData || {};
 
                 blCcPhase === 'pairing' ? 'Pair the bell with food 5 times to build the association!' :
 
-                blCcPhase === 'test' ? 'Ring the bell ALONE — does the dog salivate? (Conditioned Response)' :
+                blCcPhase === 'test' ? 'Ring the bell ALONE â€” does the dog salivate? (Conditioned Response)' :
 
                 blCcPhase === 'extinction' ? 'Ring the bell WITHOUT food to weaken the association' : '')
 
@@ -42302,7 +35290,7 @@ var d = labToolData || {};
 
 
 
-            // ── Current action + stats ──
+            // â”€â”€ Current action + stats â”€â”€
 
             React.createElement("div", { className: "grid grid-cols-2 gap-3" },
 
@@ -42346,7 +35334,7 @@ var d = labToolData || {};
 
 
 
-            // ── Probability Weights bar chart ──
+            // â”€â”€ Probability Weights bar chart â”€â”€
 
             React.createElement("div", {
 
@@ -42402,7 +35390,7 @@ var d = labToolData || {};
 
 
 
-            // ── Cumulative Record ──
+            // â”€â”€ Cumulative Record â”€â”€
 
             React.createElement("div", {
 
@@ -42422,7 +35410,7 @@ var d = labToolData || {};
 
 
 
-            // ── ABC Log with CSV export ──
+            // â”€â”€ ABC Log with CSV export â”€â”€
 
             blAbcLog.length > 0 && React.createElement("div", {
 
@@ -42494,7 +35482,7 @@ var d = labToolData || {};
 
 
 
-            // ── Contingency diagram ──
+            // â”€â”€ Contingency diagram â”€â”€
 
             React.createElement("div", {
 
@@ -42543,1727 +35531,15 @@ var d = labToolData || {};
     }
   });
 
-  // ═══ 🔬 plateTectonics (plateTectonics) ═══
-  window.StemLab.registerTool('plateTectonics', {
-    icon: '🔬',
-    label: 'plateTectonics',
-    desc: '',
-    color: 'slate',
-    category: 'science',
-    render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
-      var React = ctx.React;
-      var h = React.createElement;
-      var labToolData = ctx.toolData;
-      var setLabToolData = ctx.setToolData;
-      var setStemLabTool = ctx.setStemLabTool;
-      var setStemLabTab = ctx.setStemLabTab;
-      var stemLabTab = ctx.stemLabTab || 'explore';
-      var stemLabTool = ctx.stemLabTool;
-      var toolSnapshots = ctx.toolSnapshots;
-      var setToolSnapshots = ctx.setToolSnapshots;
-      var addToast = ctx.addToast;
-      var t = ctx.t;
-      var ArrowLeft = ctx.icons.ArrowLeft;
-      var Calculator = ctx.icons.Calculator;
-      var Sparkles = ctx.icons.Sparkles;
-      var X = ctx.icons.X;
-      var GripVertical = ctx.icons.GripVertical;
-      var announceToSR = ctx.announceToSR;
-      var awardStemXP = ctx.awardXP;
-      var getStemXP = ctx.getXP;
-      var stemCelebrate = ctx.celebrate;
-      var stemBeep = ctx.beep;
-      var callGemini = ctx.callGemini;
-      var callTTS = ctx.callTTS;
-      var callImagen = ctx.callImagen;
-      var callGeminiVision = ctx.callGeminiVision;
-      var gradeLevel = ctx.gradeLevel;
-      var srOnly = ctx.srOnly;
-      var a11yClick = ctx.a11yClick;
-      var canvasA11yDesc = ctx.canvasA11yDesc;
-      var props = ctx.props;
-
-      // ── Tool body (plateTectonics) ──
-      return (function() {
-var d = labToolData.plateTectonics || {};
-
-          var simTab = d.simTab || 'sim';
-
-          var speed = d.speed != null ? d.speed : 1;
-
-          var showLabels = d.showLabels !== false;
-
-          var showConvection = d.showConvection !== false;
-
-          var selectedPlate = d.selectedPlate || null;
-
-          var eqMagnitude = d.eqMagnitude || 5;
-
-          var timelineEra = d.timelineEra || 0;
-
-          var showEdu = d.showEdu || false;
-
-          var quizIdx = d.quizIdx || 0;
-
-          var quizAnswer = d.quizAnswer || null;
-
-
-
-          var upd = function(patch) {
-
-            setLabToolData(function(prev) {
-
-              return Object.assign({}, prev, { plateTectonics: Object.assign({}, prev.plateTectonics || {}, patch) });
-
-            });
-
-          };
-
-
-
-          // ── Plate data ──
-
-          var PLATES = [
-
-            { id: 'pacific',    name: 'Pacific',       type: 'oceanic',      x: 0.0,  w: 0.18, color: '#1e3a5f', thick: 25 },
-
-            { id: 'nazca',      name: 'Nazca',         type: 'oceanic',      x: 0.18, w: 0.14, color: '#2a4a6f', thick: 25 },
-
-            { id: 'samerican',  name: 'S. American',   type: 'continental',  x: 0.32, w: 0.15, color: '#8b6914', thick: 50 },
-
-            { id: 'african',    name: 'African',       type: 'continental',  x: 0.47, w: 0.16, color: '#a0522d', thick: 50 },
-
-            { id: 'eurasian',   name: 'Eurasian',      type: 'continental',  x: 0.63, w: 0.17, color: '#6b8e23', thick: 50 },
-
-            { id: 'indian',     name: 'Indian',        type: 'oceanic',      x: 0.80, w: 0.08, color: '#cd853f', thick: 30 },
-
-            { id: 'namerican',  name: 'N. American',   type: 'continental',  x: 0.88, w: 0.12, color: '#556b2f', thick: 50 }
-
-          ];
-
-
-
-          // ── Timeline eras ──
-
-          var ERAS = [
-
-            { name: 'Hadean', mya: '4,600 Ma', desc: 'Molten magma ocean, no solid crust yet', offsets: [0,0,0,0,0,0,0] },
-
-            { name: 'Archean', mya: '3,500 Ma', desc: 'First proto-continents (cratons) form', offsets: [0,0,0.02,0.01,0,-0.01,0] },
-
-            { name: 'Rodinia', mya: '1,100 Ma', desc: 'First supercontinent assembles', offsets: [0,0.05,0.12,0.12,0.08,0.02,0] },
-
-            { name: 'Pangaea', mya: '335 Ma', desc: 'All continents unite into Pangaea', offsets: [0,0.08,0.18,0.15,0.05,-0.02,-0.05] },
-
-            { name: 'Breakup', mya: '200 Ma', desc: 'Pangaea splits: Laurasia + Gondwana', offsets: [0,0.04,0.10,0.08,0.02,-0.01,-0.02] },
-
-            { name: 'Modern', mya: 'Present', desc: 'Current plate arrangement', offsets: [0,0,0,0,0,0,0] }
-
-          ];
-
-
-
-          // ── Quiz data ──
-
-          var QUIZZES = [
-
-            { q: 'What type of boundary creates the Himalayas?', opts: ['Divergent','Convergent','Transform','Subduction'], ans: 1, explain: 'The Indian plate collides with the Eurasian plate, pushing up the Himalayas.' },
-
-            { q: 'Which seismic wave arrives first at a station?', opts: ['S-wave','Surface wave','P-wave','Love wave'], ans: 2, explain: 'P-waves (primary) are compression waves that travel fastest through rock.' },
-
-            { q: 'What forms at a divergent boundary?', opts: ['Mountains','Trenches','Mid-ocean ridges','Volcanoes only'], ans: 2, explain: 'Plates pull apart, magma rises, and new oceanic crust forms a ridge.' },
-
-            { q: 'The Ring of Fire encircles which ocean?', opts: ['Atlantic','Indian','Arctic','Pacific'], ans: 3, explain: 'The Ring of Fire borders the Pacific Ocean with ~75% of the world\'s volcanoes.' },
-
-            { q: 'What drives tectonic plate movement?', opts: ['Gravity alone','Convection currents','Wind erosion','Solar energy'], ans: 1, explain: 'Convection currents in the mantle create drag that moves plates.' },
-
-            { q: 'What is subduction?', opts: ['Plates sliding past','One plate diving under another','Plates pulling apart','Plates rotating'], ans: 1, explain: 'An oceanic plate dives beneath a continental plate, forming trenches and volcanoes.' },
-
-            { q: 'What scale measures earthquake magnitude?', opts: ['Beaufort','Mohs','Richter/Moment','Kelvin'], ans: 2, explain: 'The Richter (or Moment Magnitude) scale measures earthquake energy release.' },
-
-            { q: 'Pangaea means...', opts: ['All land','All water','All fire','All air'], ans: 0, explain: 'Pangaea comes from Greek: "pan" (all) + "gaia" (earth/land).' }
-
-          ];
-
-
-
-          var _gRed = 'linear-gradient(135deg, #dc2626, #ef4444, #f87171)';
-
-          var _gCard = 'linear-gradient(135deg, #fef2f2, #fee2e2, #fef2f2)';
-
-
-
-          // ── Canvas ref callback ──
-
-          var canvasRef = function(canvasEl) {
-
-            if (!canvasEl) {
-
-              if (canvasRef._last && canvasRef._last._ptAnim) {
-
-                cancelAnimationFrame(canvasRef._last._ptAnim);
-
-                canvasRef._last._ptInit = false;
-
-                canvasRef._last = null;
-
-              }
-
-              return;
-
-            }
-
-            if (canvasEl._ptInit) return;
-
-            canvasEl._ptInit = true;
-
-            canvasRef._last = canvasEl;
-
-
-
-            var cW = canvasEl.width = canvasEl.offsetWidth * 2;
-
-            var cH = canvasEl.height = canvasEl.offsetHeight * 2;
-
-            var ctx = canvasEl.getContext('2d');
-
-            var tick = 0;
-
-
-
-            // plate positions (copy from PLATES, offset by timeline)
-
-            var plates = PLATES.map(function(p, i) {
-
-              var era = ERAS[timelineEra] || ERAS[5];
-
-              return { id: p.id, name: p.name, type: p.type, x: (p.x + (era.offsets[i] || 0)) * cW, w: p.w * cW, color: p.color, thick: p.thick, vx: 0 };
-
-            });
-
-
-
-            // particles
-
-            var quakeParticles = [];
-
-            var volcanoParticles = [];
-
-            var convectionDots = [];
-
-            for (var ci = 0; ci < 40; ci++) {
-
-              convectionDots.push({ x: Math.random() * cW, y: cH * 0.45 + Math.random() * cH * 0.3, angle: Math.random() * Math.PI * 2, speed: 0.3 + Math.random() * 0.4, cell: Math.floor(Math.random() * 4) });
-
-            }
-
-
-
-            // drag state
-
-            var dragIdx = -1, dragStartX = 0, dragPlateStartX = 0;
-
-
-
-            canvasEl.addEventListener('mousedown', function(e) {
-
-              var rect = canvasEl.getBoundingClientRect();
-
-              var mx = (e.clientX - rect.left) * (cW / rect.width);
-
-              var my = (e.clientY - rect.top) * (cH / rect.height);
-
-              var crustY = cH * 0.30;
-
-              for (var i = plates.length - 1; i >= 0; i--) {
-
-                var p = plates[i];
-
-                if (mx >= p.x && mx <= p.x + p.w && my >= crustY - p.thick && my <= crustY + 20) {
-
-                  dragIdx = i; dragStartX = mx; dragPlateStartX = p.x;
-
-                  break;
-
-                }
-
-              }
-
-            });
-
-            canvasEl.addEventListener('mousemove', function(e) {
-
-              if (dragIdx < 0) return;
-
-              var rect = canvasEl.getBoundingClientRect();
-
-              var mx = (e.clientX - rect.left) * (cW / rect.width);
-
-              var dx = mx - dragStartX;
-
-              plates[dragIdx].x = Math.max(0, Math.min(cW - plates[dragIdx].w, dragPlateStartX + dx));
-
-              plates[dragIdx].vx = dx > 0 ? 1 : dx < 0 ? -1 : 0;
-
-            });
-
-            var mouseUp = function() {
-
-              if (dragIdx >= 0) {
-
-                // Check boundary interactions
-
-                var dp = plates[dragIdx];
-
-                for (var j = 0; j < plates.length; j++) {
-
-                  if (j === dragIdx) continue;
-
-                  var op = plates[j];
-
-                  var gap = Math.abs((dp.x + dp.w / 2) - (op.x + op.w / 2)) - (dp.w + op.w) / 2;
-
-                  if (gap < 15) {
-
-                    // Collision — spawn earthquake + volcano
-
-                    var bx = (dp.x + dp.w / 2 + op.x + op.w / 2) / 2;
-
-                    var by = cH * 0.30;
-
-                    for (var eq = 0; eq < 8; eq++) {
-
-                      quakeParticles.push({ x: bx, y: by, radius: 2, maxRadius: 40 + Math.random() * 60, alpha: 1 });
-
-                    }
-
-                    if (dp.type !== op.type || Math.random() > 0.4) {
-
-                      for (var vp = 0; vp < 15; vp++) {
-
-                        volcanoParticles.push({ x: bx + (Math.random() - 0.5) * 20, y: by - 20, vx: (Math.random() - 0.5) * 3, vy: -2 - Math.random() * 4, life: 60 + Math.random() * 40, maxLife: 100, type: Math.random() > 0.5 ? 'lava' : 'smoke' });
-
-                      }
-
-                    }
-
-                    if (typeof awardStemXP === 'function') awardStemXP('plateTectonics', 3, 'Boundary interaction');
-
-                  }
-
-                }
-
-              }
-
-              dragIdx = -1;
-
-            };
-
-            canvasEl.addEventListener('mouseup', mouseUp);
-
-            canvasEl.addEventListener('mouseleave', mouseUp);
-
-
-
-            // Touch support
-
-            canvasEl.addEventListener('touchstart', function(e) {
-
-              e.preventDefault();
-
-              var t = e.touches[0]; var rect = canvasEl.getBoundingClientRect();
-
-              var mx = (t.clientX - rect.left) * (cW / rect.width);
-
-              var my = (t.clientY - rect.top) * (cH / rect.height);
-
-              var crustY = cH * 0.30;
-
-              for (var i = plates.length - 1; i >= 0; i--) {
-
-                var p = plates[i];
-
-                if (mx >= p.x && mx <= p.x + p.w && my >= crustY - p.thick && my <= crustY + 20) {
-
-                  dragIdx = i; dragStartX = mx; dragPlateStartX = p.x; break;
-
-                }
-
-              }
-
-            }, { passive: false });
-
-            canvasEl.addEventListener('touchmove', function(e) {
-
-              if (dragIdx < 0) return; e.preventDefault();
-
-              var t = e.touches[0]; var rect = canvasEl.getBoundingClientRect();
-
-              var mx = (t.clientX - rect.left) * (cW / rect.width);
-
-              plates[dragIdx].x = Math.max(0, Math.min(cW - plates[dragIdx].w, dragPlateStartX + (mx - dragStartX)));
-
-              plates[dragIdx].vx = mx > dragStartX ? 1 : -1;
-
-            }, { passive: false });
-
-            canvasEl.addEventListener('touchend', mouseUp);
-
-
-
-            function draw() {
-
-              tick++;
-
-              ctx.clearRect(0, 0, cW, cH);
-
-              var crustY = cH * 0.30;
-
-
-
-              // ── Sky / Atmosphere ──
-
-              var skyGrad = ctx.createLinearGradient(0, 0, 0, crustY - 60);
-
-              skyGrad.addColorStop(0, '#87CEEB');
-
-              skyGrad.addColorStop(0.4, '#b0d4f1');
-
-              skyGrad.addColorStop(1, '#d4edfc');
-
-              ctx.fillStyle = skyGrad;
-
-              ctx.fillRect(0, 0, cW, crustY - 60);
-
-
-
-              // clouds
-
-              ctx.fillStyle = 'rgba(255,255,255,0.6)';
-
-              for (var cl = 0; cl < 5; cl++) {
-
-                var cx = ((cl * cW / 4) + tick * 0.2 * speed) % (cW + 100) - 50;
-
-                var cy = 15 + cl * 12;
-
-                ctx.beginPath();
-
-                ctx.ellipse(cx, cy, 30 + cl * 5, 8 + cl * 2, 0, 0, Math.PI * 2);
-
-                ctx.fill();
-
-              }
-
-
-
-              // ── Ocean surface ──
-
-              ctx.fillStyle = 'rgba(30,90,160,0.4)';
-
-              ctx.fillRect(0, crustY - 60, cW, 60);
-
-              // Animated waves
-
-              ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-
-              ctx.lineWidth = 1.5;
-
-              for (var wv = 0; wv < 3; wv++) {
-
-                ctx.beginPath();
-
-                for (var wx = 0; wx < cW; wx += 4) {
-
-                  var wy = crustY - 40 + wv * 12 + Math.sin(wx * 0.015 + tick * 0.03 * speed + wv) * 4;
-
-                  if (wx === 0) ctx.moveTo(wx, wy); else ctx.lineTo(wx, wy);
-
-                }
-
-                ctx.stroke();
-
-              }
-
-
-
-              // ── Earth layers (bottom up) ──
-
-              // Inner core
-
-              var icGrad = ctx.createRadialGradient(cW / 2, cH + cH * 0.1, 0, cW / 2, cH + cH * 0.1, cH * 0.35);
-
-              icGrad.addColorStop(0, '#ffcc00');
-
-              icGrad.addColorStop(0.5, '#ff8c00');
-
-              icGrad.addColorStop(1, '#cc4400');
-
-              ctx.fillStyle = icGrad;
-
-              ctx.fillRect(0, cH * 0.82, cW, cH * 0.18);
-
-
-
-              // Outer core
-
-              var ocGrad = ctx.createLinearGradient(0, cH * 0.68, 0, cH * 0.82);
-
-              ocGrad.addColorStop(0, '#b8520a');
-
-              ocGrad.addColorStop(1, '#d4650d');
-
-              ctx.fillStyle = ocGrad;
-
-              ctx.fillRect(0, cH * 0.68, cW, cH * 0.14);
-
-
-
-              // Lower mantle
-
-              var lmGrad = ctx.createLinearGradient(0, cH * 0.50, 0, cH * 0.68);
-
-              lmGrad.addColorStop(0, '#8B2500');
-
-              lmGrad.addColorStop(1, '#a03000');
-
-              ctx.fillStyle = lmGrad;
-
-              ctx.fillRect(0, cH * 0.50, cW, cH * 0.18);
-
-
-
-              // Upper mantle
-
-              var umGrad = ctx.createLinearGradient(0, crustY, 0, cH * 0.50);
-
-              umGrad.addColorStop(0, '#6b3a1f');
-
-              umGrad.addColorStop(1, '#7a3520');
-
-              ctx.fillStyle = umGrad;
-
-              ctx.fillRect(0, crustY, cW, cH * 0.20);
-
-
-
-              // Layer labels
-
-              if (showLabels) {
-
-                ctx.fillStyle = 'rgba(255,255,255,0.7)';
-
-                ctx.font = 'bold ' + (cW > 600 ? '14' : '10') + 'px system-ui';
-
-                ctx.textAlign = 'center';
-
-                ctx.fillText('Upper Mantle', cW / 2, crustY + cH * 0.10);
-
-                ctx.fillText('Lower Mantle', cW / 2, cH * 0.60);
-
-                ctx.fillText('Outer Core (liquid)', cW / 2, cH * 0.76);
-
-                ctx.fillText('Inner Core (solid)', cW / 2, cH * 0.92);
-
-              }
-
-
-
-              // ── Convection currents ──
-
-              if (showConvection) {
-
-                for (var di = 0; di < convectionDots.length; di++) {
-
-                  var dot = convectionDots[di];
-
-                  var cellW = cW / 4;
-
-                  var cellCx = (dot.cell + 0.5) * cellW;
-
-                  var cellCy = cH * 0.55;
-
-                  var rx = cellW * 0.35;
-
-                  var ry = cH * 0.12;
-
-                  dot.angle += 0.008 * speed * (dot.cell % 2 === 0 ? 1 : -1);
-
-                  dot.x = cellCx + Math.cos(dot.angle) * rx;
-
-                  dot.y = cellCy + Math.sin(dot.angle) * ry;
-
-                  var alpha = 0.4 + 0.3 * Math.sin(dot.angle);
-
-                  ctx.fillStyle = 'rgba(255,140,0,' + alpha + ')';
-
-                  ctx.beginPath();
-
-                  ctx.arc(dot.x, dot.y, 3, 0, Math.PI * 2);
-
-                  ctx.fill();
-
-                  // Arrow head at top of rotation
-
-                  if (Math.abs(Math.sin(dot.angle)) < 0.15 && Math.cos(dot.angle) * (dot.cell % 2 === 0 ? 1 : -1) > 0) {
-
-                    ctx.fillStyle = 'rgba(255,200,50,0.7)';
-
-                    ctx.beginPath();
-
-                    var aDir = dot.cell % 2 === 0 ? 1 : -1;
-
-                    ctx.moveTo(dot.x + 6 * aDir, dot.y);
-
-                    ctx.lineTo(dot.x - 2 * aDir, dot.y - 4);
-
-                    ctx.lineTo(dot.x - 2 * aDir, dot.y + 4);
-
-                    ctx.fill();
-
-                  }
-
-                }
-
-              }
-
-
-
-              // ── Tectonic plates ──
-
-              for (var pi = 0; pi < plates.length; pi++) {
-
-                var pl = plates[pi];
-
-                var pGrad = ctx.createLinearGradient(pl.x, crustY - pl.thick, pl.x, crustY);
-
-                pGrad.addColorStop(0, pl.color);
-
-                pGrad.addColorStop(1, '#333');
-
-                ctx.fillStyle = pGrad;
-
-
-
-                // Plate body
-
-                ctx.fillRect(pl.x + 2, crustY - pl.thick, pl.w - 4, pl.thick);
-
-
-
-                // Surface features
-
-                if (pl.type === 'continental') {
-
-                  // Mountains
-
-                  ctx.fillStyle = pl.color;
-
-                  for (var mt = 0; mt < 4; mt++) {
-
-                    var mx2 = pl.x + pl.w * 0.2 + mt * pl.w * 0.18;
-
-                    var mh = 8 + Math.sin(mt * 1.7 + pi) * 6;
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(mx2 - 8, crustY - pl.thick);
-
-                    ctx.lineTo(mx2, crustY - pl.thick - mh);
-
-                    ctx.lineTo(mx2 + 8, crustY - pl.thick);
-
-                    ctx.fill();
-
-                  }
-
-                  // Snow caps
-
-                  ctx.fillStyle = '#fff';
-
-                  for (var mt2 = 0; mt2 < 4; mt2++) {
-
-                    var mx3 = pl.x + pl.w * 0.2 + mt2 * pl.w * 0.18;
-
-                    var mh2 = 8 + Math.sin(mt2 * 1.7 + pi) * 6;
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(mx3 - 2, crustY - pl.thick - mh2 + 3);
-
-                    ctx.lineTo(mx3, crustY - pl.thick - mh2);
-
-                    ctx.lineTo(mx3 + 2, crustY - pl.thick - mh2 + 3);
-
-                    ctx.fill();
-
-                  }
-
-                } else {
-
-                  // Ocean water on top of oceanic plates
-
-                  ctx.fillStyle = 'rgba(30,90,180,0.35)';
-
-                  ctx.fillRect(pl.x + 2, crustY - pl.thick - 10, pl.w - 4, 10);
-
-                }
-
-
-
-                // Plate label
-
-                if (showLabels) {
-
-                  ctx.fillStyle = '#fff';
-
-                  ctx.font = 'bold ' + (cW > 600 ? '11' : '8') + 'px system-ui';
-
-                  ctx.textAlign = 'center';
-
-                  ctx.fillText(pl.name, pl.x + pl.w / 2, crustY - pl.thick / 2 + 4);
-
-                }
-
-
-
-                // Boundary glow between plates
-
-                if (pi < plates.length - 1) {
-
-                  var next = plates[pi + 1];
-
-                  var gapX = pl.x + pl.w;
-
-                  var gapW = next.x - gapX;
-
-                  if (Math.abs(gapW) < 30) {
-
-                    // Magma glow at boundary
-
-                    var mgGrad = ctx.createRadialGradient(gapX + gapW / 2, crustY - 10, 0, gapX + gapW / 2, crustY - 10, 25);
-
-                    mgGrad.addColorStop(0, 'rgba(255,100,0,0.8)');
-
-                    mgGrad.addColorStop(0.5, 'rgba(255,50,0,0.4)');
-
-                    mgGrad.addColorStop(1, 'rgba(255,0,0,0)');
-
-                    ctx.fillStyle = mgGrad;
-
-                    ctx.fillRect(gapX - 15, crustY - 30, gapW + 30, 40);
-
-                    // Boundary type indicator
-
-                    if (showLabels) {
-
-                      ctx.fillStyle = '#ff6600';
-
-                      ctx.font = 'bold 9px system-ui';
-
-                      ctx.textAlign = 'center';
-
-                      var btype = (pl.type !== next.type) ? 'Subduction' : (gapW < 0 ? 'Convergent' : 'Divergent');
-
-                      ctx.fillText(btype, gapX + gapW / 2, crustY - 35);
-
-                    }
-
-                  }
-
-                }
-
-              }
-
-
-
-              // ── Earthquake particles ──
-
-              for (var ei = quakeParticles.length - 1; ei >= 0; ei--) {
-
-                var ep = quakeParticles[ei];
-
-                ep.radius += 1.5 * speed;
-
-                ep.alpha = 1 - ep.radius / ep.maxRadius;
-
-                if (ep.alpha <= 0) { quakeParticles.splice(ei, 1); continue; }
-
-                ctx.strokeStyle = 'rgba(255,255,0,' + ep.alpha + ')';
-
-                ctx.lineWidth = 2;
-
-                ctx.beginPath();
-
-                ctx.arc(ep.x, ep.y, ep.radius, 0, Math.PI * 2);
-
-                ctx.stroke();
-
-              }
-
-
-
-              // ── Volcano particles ──
-
-              for (var vi = volcanoParticles.length - 1; vi >= 0; vi--) {
-
-                var vp2 = volcanoParticles[vi];
-
-                vp2.x += vp2.vx * speed;
-
-                vp2.y += vp2.vy * speed;
-
-                vp2.vy += 0.05;
-
-                vp2.life -= speed;
-
-                if (vp2.life <= 0) { volcanoParticles.splice(vi, 1); continue; }
-
-                var vAlpha = vp2.life / vp2.maxLife;
-
-                if (vp2.type === 'lava') {
-
-                  ctx.fillStyle = 'rgba(255,' + Math.floor(80 + vp2.life) + ',0,' + vAlpha + ')';
-
-                  ctx.beginPath(); ctx.arc(vp2.x, vp2.y, 3, 0, Math.PI * 2); ctx.fill();
-
-                } else {
-
-                  ctx.fillStyle = 'rgba(100,100,100,' + (vAlpha * 0.5) + ')';
-
-                  ctx.beginPath(); ctx.arc(vp2.x, vp2.y, 4 + (1 - vAlpha) * 6, 0, Math.PI * 2); ctx.fill();
-
-                }
-
-              }
-
-
-
-              // ── Drag hint ──
-
-              if (tick < 120) {
-
-                var hAlpha = 0.5 + 0.3 * Math.sin(tick * 0.08);
-
-                ctx.fillStyle = 'rgba(255,255,255,' + hAlpha + ')';
-
-                ctx.font = 'bold 14px system-ui';
-
-                ctx.textAlign = 'center';
-
-                ctx.fillText('\u2B05 Drag plates to see interactions \u27A1', cW / 2, crustY - 70);
-
-              }
-
-
-
-              canvasEl._ptAnim = requestAnimationFrame(draw);
-
-            }
-
-            draw();
-
-          };
-
-
-
-          // ── Seismograph canvas ──
-
-          var seismoRef = function(canvasEl) {
-
-            if (!canvasEl) {
-
-              if (seismoRef._last && seismoRef._last._seisAnim) { cancelAnimationFrame(seismoRef._last._seisAnim); seismoRef._last._seisInit = false; }
-
-              return;
-
-            }
-
-            if (canvasEl._seisInit) return;
-
-            canvasEl._seisInit = true;
-
-            seismoRef._last = canvasEl;
-
-            var sW = canvasEl.width = canvasEl.offsetWidth * 2;
-
-            var sH = canvasEl.height = canvasEl.offsetHeight * 2;
-
-            var sCtx = canvasEl.getContext('2d');
-
-            var sTick = 0;
-
-            function drawSeis() {
-
-              sTick++;
-
-              sCtx.fillStyle = '#fefce8';
-
-              sCtx.fillRect(0, 0, sW, sH);
-
-              // Grid lines
-
-              sCtx.strokeStyle = 'rgba(0,0,0,0.08)';
-
-              sCtx.lineWidth = 1;
-
-              for (var gy = 0; gy < sH; gy += sH / 8) { sCtx.beginPath(); sCtx.moveTo(0, gy); sCtx.lineTo(sW, gy); sCtx.stroke(); }
-
-              // Seismograph trace
-
-              var mag = eqMagnitude;
-
-              var amp = (mag / 9) * sH * 0.4;
-
-              var freq = 0.02 + (mag / 9) * 0.06;
-
-              sCtx.strokeStyle = '#dc2626';
-
-              sCtx.lineWidth = 2;
-
-              sCtx.beginPath();
-
-              for (var sx = 0; sx < sW; sx += 2) {
-
-                var decay = Math.max(0, 1 - Math.abs(sx - sW * 0.5) / (sW * 0.35));
-
-                var sy = sH / 2 + Math.sin((sx + sTick * 2) * freq) * amp * decay * (1 + 0.3 * Math.sin(sx * 0.1));
-
-                if (sx === 0) sCtx.moveTo(sx, sy); else sCtx.lineTo(sx, sy);
-
-              }
-
-              sCtx.stroke();
-
-              // Labels
-
-              sCtx.fillStyle = '#991b1b';
-
-              sCtx.font = 'bold 12px system-ui';
-
-              sCtx.textAlign = 'left';
-
-              sCtx.fillText('M ' + mag.toFixed(1), 10, 20);
-
-              sCtx.textAlign = 'right';
-
-              sCtx.fillText('Seismograph', sW - 10, 20);
-
-              canvasEl._seisAnim = requestAnimationFrame(drawSeis);
-
-            }
-
-            drawSeis();
-
-          };
-
-
-
-          // ── render ──
-
-          return React.createElement("div", { className: "max-w-4xl mx-auto" },
-
-            // Header
-
-            React.createElement("div", { className: "mb-6 text-center" },
-
-              React.createElement("div", { className: "inline-flex items-center gap-3 px-6 py-3 rounded-2xl mb-3", style: { background: _gRed, boxShadow: '0 8px 32px rgba(220,38,38,0.3)' } },
-
-                React.createElement("span", { style: { fontSize: '32px' } }, "\uD83C\uDF0B"),
-
-                React.createElement("h2", { className: "text-2xl font-black text-white tracking-tight" }, "Plate Tectonics"),
-
-                React.createElement("span", { className: "text-red-200 text-sm font-bold ml-2" }, "Interactive Earth")
-
-              ),
-
-              // Tabs
-
-              React.createElement("div", { className: "flex justify-center gap-2 mt-4" },
-
-                [['sim', '\uD83C\uDF0D', 'Simulation'], ['earthquake', '\uD83D\uDCC8', 'Earthquake Lab'], ['timeline', '\u23F3', 'Timeline'], ['quiz', '\u2753', 'Quiz']].map(function(tab) {
-
-                  var active = simTab === tab[0];
-
-                  return React.createElement("button", {
-
-                    key: tab[0],
-
-                    onClick: function() { upd({ simTab: tab[0] }); },
-
-                    className: "px-4 py-2 rounded-xl text-sm font-bold transition-all " + (active ? "text-white shadow-lg scale-105" : "text-red-600 bg-red-50 hover:bg-red-100"),
-
-                    style: active ? { background: _gRed, boxShadow: '0 4px 14px rgba(220,38,38,0.3)' } : {}
-
-                  }, tab[1] + " " + tab[2]);
-
-                })
-
-              )
-
-            ),
-
-
-
-            // ═══ TAB 1: SIMULATION ═══
-
-            simTab === 'sim' && React.createElement("div", { className: "space-y-4" },
-
-              React.createElement("div", { className: "rounded-2xl overflow-hidden border-2 border-red-200 shadow-lg" },
-
-                React.createElement("canvas", {
-
-                  ref: canvasRef,
-
-                  className: "w-full cursor-grab active:cursor-grabbing",
-
-                  style: { height: '400px', display: 'block', background: '#1a1a2e' }
-
-                })
-
-              ),
-
-              // Controls
-
-              React.createElement("div", { className: "flex flex-wrap gap-3 items-center justify-center p-3 rounded-xl border border-red-200 bg-red-50" },
-
-                React.createElement("label", { className: "text-xs font-bold text-red-700" }, "\u23F1 Speed:"),
-
-                React.createElement("input", { type: "range", min: "0.5", max: "4", step: "0.5", value: speed, onChange: function(e) { upd({ speed: parseFloat(e.target.value) }); }, className: "w-24 accent-red-500" }),
-
-                React.createElement("span", { className: "text-xs font-bold text-red-500" }, speed + "\u00D7"),
-
-                React.createElement("button", {
-
-                  onClick: function() { upd({ showLabels: !showLabels }); },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (showLabels ? "bg-red-600 text-white" : "bg-white text-red-600 border border-red-200")
-
-                }, "\uD83C\uDFF7 Labels"),
-
-                React.createElement("button", {
-
-                  onClick: function() { upd({ showConvection: !showConvection }); },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (showConvection ? "bg-red-600 text-white" : "bg-white text-red-600 border border-red-200")
-
-                }, "\uD83C\uDF00 Currents")
-
-              )
-
-            ),
-
-
-
-            // ═══ TAB 2: EARTHQUAKE LAB ═══
-
-            simTab === 'earthquake' && React.createElement("div", { className: "space-y-4" },
-
-              React.createElement("div", { className: "p-5 rounded-2xl border-2 border-red-200", style: { background: _gCard } },
-
-                React.createElement("div", { className: "flex items-center gap-2 mb-4" },
-
-                  React.createElement("span", { style: { fontSize: '24px' } }, "\uD83D\uDCC8"),
-
-                  React.createElement("h3", { className: "font-black text-red-900" }, "Earthquake Magnitude Simulator")
-
-                ),
-
-                // Magnitude slider
-
-                React.createElement("div", { className: "flex items-center gap-3 mb-4" },
-
-                  React.createElement("span", { className: "text-xs font-bold text-red-600 w-20" }, "Magnitude:"),
-
-                  React.createElement("input", { type: "range", min: "1", max: "9", step: "0.1", value: eqMagnitude, onChange: function(e) { upd({ eqMagnitude: parseFloat(e.target.value) }); }, className: "flex-1 accent-red-500" }),
-
-                  React.createElement("span", { className: "text-lg font-black px-3 py-1 rounded-lg", style: { background: eqMagnitude >= 7 ? '#dc2626' : eqMagnitude >= 5 ? '#f59e0b' : '#22c55e', color: 'white' } }, eqMagnitude.toFixed(1))
-
-                ),
-
-                // Damage scale
-
-                React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-4" },
-
-                  [
-
-                    { range: '1-3', label: 'Minor', desc: 'Barely felt', color: '#22c55e', icon: '\u2705' },
-
-                    { range: '4-5', label: 'Light', desc: 'Rattling, minor damage', color: '#f59e0b', icon: '\u26A0\uFE0F' },
-
-                    { range: '6-7', label: 'Strong', desc: 'Structural damage', color: '#ef4444', icon: '\uD83C\uDFDA\uFE0F' },
-
-                  ].map(function(d2) {
-
-                    var isActive = (d2.range === '1-3' && eqMagnitude < 4) || (d2.range === '4-5' && eqMagnitude >= 4 && eqMagnitude < 6) || (d2.range === '6-7' && eqMagnitude >= 6);
-
-                    return React.createElement("div", { key: d2.range, className: "p-3 rounded-xl border-2 text-center transition-all " + (isActive ? "shadow-lg scale-105" : "opacity-60"), style: { borderColor: d2.color, background: isActive ? d2.color + '15' : 'white' } },
-
-                      React.createElement("div", { className: "text-lg" }, d2.icon),
-
-                      React.createElement("div", { className: "text-xs font-black", style: { color: d2.color } }, d2.label + " (" + d2.range + ")"),
-
-                      React.createElement("div", { className: "text-[10px] text-slate-500" }, d2.desc)
-
-                    );
-
-                  })
-
-                ),
-
-                // Wave types
-
-                React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-4" },
-
-                  [
-
-                    { name: 'P-wave', desc: 'Compression (fastest)', icon: '\u2192\u2190', color: '#3b82f6' },
-
-                    { name: 'S-wave', desc: 'Shear (medium)', icon: '\u2195', color: '#8b5cf6' },
-
-                    { name: 'Surface', desc: 'Rolling (slowest, most damage)', icon: '\u223F', color: '#ef4444' }
-
-                  ].map(function(w2) {
-
-                    return React.createElement("div", { key: w2.name, className: "p-3 rounded-xl border text-center", style: { borderColor: w2.color + '44', background: w2.color + '08' } },
-
-                      React.createElement("div", { className: "text-lg font-mono" }, w2.icon),
-
-                      React.createElement("div", { className: "text-xs font-black", style: { color: w2.color } }, w2.name),
-
-                      React.createElement("div", { className: "text-[10px] text-slate-500" }, w2.desc)
-
-                    );
-
-                  })
-
-                ),
-
-                // Seismograph
-
-                React.createElement("div", { className: "rounded-xl overflow-hidden border-2 border-red-200" },
-
-                  React.createElement("canvas", { ref: seismoRef, className: "w-full", style: { height: '120px', display: 'block' } })
-
-                )
-
-              )
-
-            ),
-
-
-
-            // ═══ TAB 3: TIMELINE ═══
-
-            simTab === 'timeline' && React.createElement("div", { className: "space-y-4" },
-
-              React.createElement("div", { className: "p-5 rounded-2xl border-2 border-red-200", style: { background: _gCard } },
-
-                React.createElement("div", { className: "flex items-center gap-2 mb-4" },
-
-                  React.createElement("span", { style: { fontSize: '24px' } }, "\u23F3"),
-
-                  React.createElement("h3", { className: "font-black text-red-900" }, "Geology Timeline")
-
-                ),
-
-                React.createElement("input", { type: "range", min: "0", max: String(ERAS.length - 1), step: "1", value: timelineEra, onChange: function(e) { upd({ timelineEra: parseInt(e.target.value) }); }, className: "w-full accent-red-500 mb-4" }),
-
-                // Era cards
-
-                React.createElement("div", { className: "grid grid-cols-3 md:grid-cols-6 gap-2 mb-4" },
-
-                  ERAS.map(function(era, ei) {
-
-                    var isActive = ei === timelineEra;
-
-                    return React.createElement("button", {
-
-                      key: ei,
-
-                      onClick: function() { upd({ timelineEra: ei }); if (typeof awardStemXP === 'function') awardStemXP('plateTectonics', 2, 'Timeline explored'); },
-
-                      className: "p-2 rounded-xl text-center transition-all " + (isActive ? "ring-2 ring-red-500 shadow-lg" : "hover:shadow-md"),
-
-                      style: { background: isActive ? 'linear-gradient(135deg, #fecaca, #fca5a5)' : 'white', border: '2px solid ' + (isActive ? '#ef4444' : '#fecaca') }
-
-                    },
-
-                      React.createElement("div", { className: "text-[10px] font-black " + (isActive ? "text-red-700" : "text-slate-500") }, era.name),
-
-                      React.createElement("div", { className: "text-[9px] text-slate-400" }, era.mya)
-
-                    );
-
-                  })
-
-                ),
-
-                // Active era description
-
-                React.createElement("div", { className: "p-4 bg-white rounded-xl border border-red-200" },
-
-                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-
-                    React.createElement("span", { className: "text-lg font-black text-red-700" }, ERAS[timelineEra].name),
-
-                    React.createElement("span", { className: "text-xs font-bold text-red-400 bg-red-50 px-2 py-0.5 rounded-full" }, ERAS[timelineEra].mya)
-
-                  ),
-
-                  React.createElement("p", { className: "text-sm text-slate-600" }, ERAS[timelineEra].desc),
-
-                  React.createElement("p", { className: "text-xs text-slate-400 mt-2 italic" }, "\uD83D\uDCA1 Switch to the Simulation tab to see how plates move during this era.")
-
-                )
-
-              )
-
-            ),
-
-
-
-            // ═══ EARTH TIMELAPSE CANVAS ═══
-
-            React.createElement("div", { className: "rounded-2xl border-2 border-red-200 overflow-hidden mt-4", style: { background: 'linear-gradient(135deg, #0c0a2a, #1e1b4b)' } },
-
-              React.createElement("div", { className: "p-4" },
-
-                React.createElement("div", { className: "flex items-center gap-2 mb-3" },
-
-                  React.createElement("span", { style: { fontSize: 22 } }, "\u{1F30D}"),
-
-                  React.createElement("h4", { className: "font-black text-white text-sm" }, "Earth Through Time"),
-
-                  React.createElement("span", { className: "text-[10px] text-indigo-300 font-bold bg-indigo-900/50 px-2 py-0.5 rounded-full" }, ERAS[timelineEra].name)
-
-                ),
-
-                React.createElement("canvas", {
-
-                  id: "geology-earth-canvas",
-
-                  width: 520, height: 320,
-
-                  className: "w-full rounded-xl",
-
-                  style: { background: '#050520' }
-
-                }),
-
-                React.createElement("p", { className: "text-[10px] text-indigo-300/60 mt-2 italic text-center" }, "\u{1F4A1} Drag the timeline slider to see how Earth's continents have shifted over billions of years")
-
-              )
-
-            ),
-
-            // ─── Earth canvas renderer (async) ───
-
-            (function () {
-
-              setTimeout(function () {
-
-                var canvas = document.getElementById('geology-earth-canvas');
-
-                if (!canvas) return;
-
-                if (canvas._geoAnim) cancelAnimationFrame(canvas._geoAnim);
-
-                var ctx = canvas.getContext('2d');
-
-                var W = canvas.width, H = canvas.height;
-
-                var cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 30;
-
-                var tick = 0;
-
-                var ERA_CONTINENTS = [
-
-                  { name: 'Hadean', ocean: '#1a0a3e', land: '#8b4513', continents: [] },
-
-                  { name: 'Archean', ocean: '#0a2463', land: '#556b2f', continents: [{ cx: 0, cy: 0, r: 0.3, shape: 'circle' }] },
-
-                  { name: 'Proterozoic', ocean: '#0a3d62', land: '#6b8e23', continents: [{ cx: -0.1, cy: 0.1, r: 0.35, shape: 'blob', label: 'Rodinia' }] },
-
-                  { name: 'Cambrian', ocean: '#0e4d92', land: '#8fbc8f', continents: [{ cx: 0.15, cy: 0.2, r: 0.3, shape: 'blob', label: 'Gondwana' }, { cx: -0.25, cy: -0.2, r: 0.12, shape: 'blob', label: 'Laurentia' }, { cx: 0.3, cy: -0.15, r: 0.08, shape: 'blob', label: 'Baltica' }] },
-
-                  { name: 'Carboniferous', ocean: '#1565c0', land: '#228b22', continents: [{ cx: 0, cy: 0.05, r: 0.45, shape: 'pangaea_forming', label: 'Pangaea forming' }] },
-
-                  { name: 'Permian/Triassic', ocean: '#1976d2', land: '#2e8b57', continents: [{ cx: 0, cy: 0, r: 0.5, shape: 'pangaea', label: 'Pangaea' }] },
-
-                  { name: 'Jurassic', ocean: '#1e88e5', land: '#3cb371', continents: [{ cx: -0.15, cy: -0.15, r: 0.25, shape: 'blob', label: 'Laurasia' }, { cx: 0.1, cy: 0.2, r: 0.28, shape: 'blob', label: 'Gondwana' }] },
-
-                  { name: 'Cretaceous', ocean: '#42a5f5', land: '#66cdaa', continents: [{ cx: -0.3, cy: -0.15, r: 0.15, shape: 'blob', label: 'N. America' }, { cx: 0.1, cy: -0.2, r: 0.13, shape: 'blob', label: 'Eurasia' }, { cx: -0.1, cy: 0.25, r: 0.18, shape: 'blob', label: 'S. America+Africa' }, { cx: 0.25, cy: 0.3, r: 0.12, shape: 'blob', label: 'Antarctica+Australia' }, { cx: 0.3, cy: 0.05, r: 0.08, shape: 'blob', label: 'India' }] },
-
-                  { name: 'Modern', ocean: '#2196f3', land: '#4caf50', continents: [{ cx: -0.35, cy: -0.15, r: 0.13, shape: 'blob', label: 'N. Am' }, { cx: -0.2, cy: 0.22, r: 0.11, shape: 'blob', label: 'S. Am' }, { cx: 0.05, cy: -0.05, r: 0.12, shape: 'blob', label: 'Africa' }, { cx: 0.15, cy: -0.25, r: 0.18, shape: 'blob', label: 'Eurasia' }, { cx: 0.35, cy: 0.3, r: 0.09, shape: 'blob', label: 'Australia' }, { cx: 0.0, cy: 0.45, r: 0.1, shape: 'blob', label: 'Antarctica' }, { cx: 0.25, cy: 0.05, r: 0.06, shape: 'blob', label: 'India' }] }
-
-                ];
-
-                // Map timeline era index to continent config
-
-                var eraMap = [0, 1, 2, 3, 3, 4, 5, 5, 6, 7, 7, 8];
-
-                function drawEarth() {
-
-                  canvas._geoAnim = requestAnimationFrame(drawEarth);
-
-                  tick += 0.5;
-
-                  ctx.clearRect(0, 0, W, H);
-
-                  // Read the active era from the slider
-
-                  var eraIdx = 0;
-
-                  var slider = canvas.parentElement ? canvas.parentElement.parentElement.parentElement.querySelector('input[type="range"]') : null;
-
-                  if (slider) eraIdx = parseInt(slider.value) || 0;
-
-                  var configIdx = Math.min(eraIdx, eraMap.length - 1);
-
-                  var era = ERA_CONTINENTS[eraMap[configIdx]];
-
-                  // Stars
-
-                  if (!canvas._stars) {
-
-                    canvas._stars = [];
-
-                    for (var si = 0; si < 80; si++) canvas._stars.push({ x: Math.random() * W, y: Math.random() * H, s: Math.random() * 1.5 + 0.5, b: Math.random() });
-
-                  }
-
-                  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-
-                  canvas._stars.forEach(function (star) {
-
-                    var twinkle = 0.5 + 0.5 * Math.sin(tick * 0.03 + star.b * 10);
-
-                    ctx.globalAlpha = twinkle * 0.7;
-
-                    ctx.beginPath();
-
-                    ctx.arc(star.x, star.y, star.s, 0, Math.PI * 2);
-
-                    ctx.fill();
-
-                  });
-
-                  ctx.globalAlpha = 1;
-
-                  // Atmosphere glow
-
-                  var glow = ctx.createRadialGradient(cx, cy, R * 0.9, cx, cy, R * 1.3);
-
-                  glow.addColorStop(0, era.ocean + 'aa');
-
-                  glow.addColorStop(0.5, era.ocean + '44');
-
-                  glow.addColorStop(1, 'transparent');
-
-                  ctx.fillStyle = glow;
-
-                  ctx.fillRect(0, 0, W, H);
-
-                  // Earth sphere
-
-                  ctx.save();
-
-                  ctx.beginPath();
-
-                  ctx.arc(cx, cy, R, 0, Math.PI * 2);
-
-                  ctx.clip();
-
-                  // Ocean gradient
-
-                  var oceanGrad = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, 0, cx, cy, R);
-
-                  oceanGrad.addColorStop(0, era.ocean);
-
-                  var darkerOcean = era.ocean.replace(/[0-9a-f]{2}$/i, function (h) { return Math.max(0, parseInt(h, 16) - 40).toString(16).padStart(2, '0'); });
-
-                  oceanGrad.addColorStop(1, darkerOcean || era.ocean);
-
-                  ctx.fillStyle = oceanGrad;
-
-                  ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
-
-                  // Continents
-
-                  era.continents.forEach(function (c) {
-
-                    var contX = cx + c.cx * R;
-
-                    var contY = cy + c.cy * R;
-
-                    var contR = c.r * R;
-
-                    // Slight rotation drift
-
-                    var drift = Math.sin(tick * 0.005) * 5;
-
-                    contX += drift;
-
-                    ctx.save();
-
-                    ctx.translate(contX, contY);
-
-                    // Draw continent blob
-
-                    ctx.fillStyle = era.land;
-
-                    ctx.shadowColor = 'rgba(0,0,0,0.3)';
-
-                    ctx.shadowBlur = 8;
-
-                    ctx.beginPath();
-
-                    if (c.shape === 'circle') {
-
-                      ctx.arc(0, 0, contR, 0, Math.PI * 2);
-
-                    } else if (c.shape === 'pangaea') {
-
-                      // Large irregular mass
-
-                      for (var a = 0; a < Math.PI * 2; a += 0.15) {
-
-                        var rr = contR * (0.7 + 0.3 * Math.sin(a * 3 + 1) + 0.15 * Math.cos(a * 5 + 2));
-
-                        var px = Math.cos(a) * rr;
-
-                        var py = Math.sin(a) * rr;
-
-                        if (a === 0) ctx.moveTo(px, py);
-
-                        else ctx.lineTo(px, py);
-
-                      }
-
-                      ctx.closePath();
-
-                    } else if (c.shape === 'pangaea_forming') {
-
-                      for (var a = 0; a < Math.PI * 2; a += 0.15) {
-
-                        var rr = contR * (0.6 + 0.25 * Math.sin(a * 4) + 0.15 * Math.cos(a * 7 + 3));
-
-                        var px = Math.cos(a) * rr;
-
-                        var py = Math.sin(a) * rr;
-
-                        if (a === 0) ctx.moveTo(px, py);
-
-                        else ctx.lineTo(px, py);
-
-                      }
-
-                      ctx.closePath();
-
-                    } else {
-
-                      // Blob shape
-
-                      for (var a = 0; a < Math.PI * 2; a += 0.2) {
-
-                        var rr = contR * (0.75 + 0.25 * Math.sin(a * 3 + c.cx * 5) + 0.1 * Math.cos(a * 5 + c.cy * 3));
-
-                        var px = Math.cos(a) * rr;
-
-                        var py = Math.sin(a) * rr;
-
-                        if (a === 0) ctx.moveTo(px, py);
-
-                        else ctx.lineTo(px, py);
-
-                      }
-
-                      ctx.closePath();
-
-                    }
-
-                    ctx.fill();
-
-                    ctx.shadowBlur = 0;
-
-                    // Mountain-like highlights
-
-                    ctx.fillStyle = 'rgba(255,255,255,0.08)';
-
-                    ctx.beginPath();
-
-                    ctx.arc(-contR * 0.2, -contR * 0.2, contR * 0.4, 0, Math.PI * 2);
-
-                    ctx.fill();
-
-                    // Label
-
-                    if (c.label) {
-
-                      ctx.fillStyle = 'rgba(255,255,255,0.85)';
-
-                      ctx.font = 'bold ' + Math.max(8, Math.min(11, contR * 0.3)) + 'px Inter, system-ui';
-
-                      ctx.textAlign = 'center';
-
-                      ctx.fillText(c.label, 0, contR * 0.15);
-
-                    }
-
-                    ctx.restore();
-
-                  });
-
-                  // Sphere shading (3D effect)
-
-                  var shading = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.35, 0, cx, cy, R);
-
-                  shading.addColorStop(0, 'rgba(255,255,255,0.12)');
-
-                  shading.addColorStop(0.5, 'transparent');
-
-                  shading.addColorStop(0.8, 'rgba(0,0,0,0.2)');
-
-                  shading.addColorStop(1, 'rgba(0,0,0,0.5)');
-
-                  ctx.fillStyle = shading;
-
-                  ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
-
-                  ctx.restore();
-
-                  // Ring border
-
-                  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-
-                  ctx.lineWidth = 2;
-
-                  ctx.beginPath();
-
-                  ctx.arc(cx, cy, R, 0, Math.PI * 2);
-
-                  ctx.stroke();
-
-                  // Era label
-
-                  ctx.fillStyle = 'rgba(255,255,255,0.7)';
-
-                  ctx.font = 'bold 13px Inter, system-ui';
-
-                  ctx.textAlign = 'left';
-
-                  ctx.fillText(era.name, 15, H - 15);
-
-                }
-
-                drawEarth();
-
-              }, 50);
-
-              return null;
-
-            })(),
-
-            // ═══ TAB 4: QUIZ ═══
-
-            simTab === 'quiz' && (function() {
-
-              var qz = QUIZZES[quizIdx % QUIZZES.length];
-
-              return React.createElement("div", { className: "p-6 rounded-2xl border-2 border-red-200", style: { background: _gCard } },
-
-                React.createElement("div", { className: "flex items-center gap-2 mb-4" },
-
-                  React.createElement("span", { className: "text-2xl" }, "\u2753"),
-
-                  React.createElement("h3", { className: "font-black text-red-900" }, "Plate Tectonics Quiz"),
-
-                  React.createElement("span", { className: "ml-auto text-xs font-bold text-red-400" }, (quizIdx % QUIZZES.length + 1) + " / " + QUIZZES.length)
-
-                ),
-
-                React.createElement("div", { className: "p-4 bg-white rounded-xl border border-red-200 mb-4 text-sm font-bold text-slate-700" }, qz.q),
-
-                quizAnswer === null && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-
-                  qz.opts.map(function(opt, oi) {
-
-                    return React.createElement("button", {
-
-                      key: oi,
-
-                      onClick: function() {
-
-                        var correct = oi === qz.ans;
-
-                        upd({ quizAnswer: correct ? 'correct' : 'wrong_' + oi });
-
-                        if (correct && typeof awardStemXP === 'function') awardStemXP('plateTectonics', 3, 'Quiz correct');
-
-                      },
-
-                      className: "p-3 rounded-xl text-sm font-bold border-2 border-red-200 bg-white hover:bg-red-50 hover:border-red-400 transition-all text-left text-slate-700"
-
-                    }, String.fromCharCode(65 + oi) + ". " + opt);
-
-                  })
-
-                ),
-
-                quizAnswer && React.createElement("div", { className: "space-y-2" },
-
-                  React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-
-                    qz.opts.map(function(opt, oi) {
-
-                      var isCorrect = oi === qz.ans;
-
-                      var wasSelected = quizAnswer === 'correct' ? isCorrect : quizAnswer === 'wrong_' + oi;
-
-                      return React.createElement("div", {
-
-                        key: oi,
-
-                        className: "p-3 rounded-xl text-sm font-bold border-2 transition-all text-left " + (isCorrect ? "border-emerald-400 bg-emerald-50 text-emerald-700" : wasSelected ? "border-red-400 bg-red-50 text-red-600" : "border-slate-200 bg-white text-slate-400")
-
-                      }, (isCorrect ? "\u2705 " : wasSelected ? "\u274C " : "") + String.fromCharCode(65 + oi) + ". " + opt);
-
-                    })
-
-                  ),
-
-                  React.createElement("div", { className: "p-3 rounded-xl border " + (quizAnswer === 'correct' ? "bg-emerald-50 border-emerald-300" : "bg-amber-50 border-amber-300") },
-
-                    React.createElement("div", { className: "text-xs font-bold " + (quizAnswer === 'correct' ? "text-emerald-700" : "text-amber-700") }, quizAnswer === 'correct' ? "\uD83C\uDF89 Correct!" : "\uD83E\uDD14 Not quite!"),
-
-                    React.createElement("div", { className: "text-xs text-slate-600 mt-1" }, qz.explain)
-
-                  ),
-
-                  React.createElement("div", { className: "text-center" },
-
-                    React.createElement("button", {
-
-                      onClick: function() { upd({ quizIdx: quizIdx + 1, quizAnswer: null }); },
-
-                      className: "px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-all"
-
-                    }, "Next Question \u2192")
-
-                  )
-
-                )
-
-              );
-
-            })(),
-
-
-
-            // ═══ EDUCATIONAL PANEL ═══
-
-            React.createElement("div", { className: "mt-6" },
-
-              React.createElement("button", {
-
-                onClick: function() { upd({ showEdu: !showEdu }); if (!showEdu && typeof awardStemXP === 'function') awardStemXP('plateTectonics', 5, 'Learned about tectonics'); },
-
-                className: "w-full p-4 rounded-2xl border-2 border-red-200 text-left transition-all hover:shadow-md flex items-center gap-3",
-
-                style: { background: showEdu ? 'linear-gradient(135deg, #fef2f2, #fee2e2)' : 'white' }
-
-              },
-
-                React.createElement("span", { className: "text-xl" }, "\uD83D\uDCD6"),
-
-                React.createElement("span", { className: "font-black text-red-900 text-sm flex-1" }, "Learn: Earth's Layers & Plate Boundaries"),
-
-                React.createElement("span", { className: "text-red-400 font-bold text-xs" }, showEdu ? "\u25B2 Hide" : "\u25BC Show")
-
-              ),
-
-              showEdu && React.createElement("div", { className: "mt-2 p-5 rounded-2xl border border-red-200 space-y-4 text-sm text-slate-700 leading-relaxed", style: { background: _gCard } },
-
-                React.createElement("div", null,
-
-                  React.createElement("h4", { className: "font-black text-red-800 mb-1" }, "Earth's Layers"),
-
-                  React.createElement("p", null, "Earth has four main layers: the ", React.createElement("strong", null, "inner core"), " (solid iron, 5,200\u00B0C), ", React.createElement("strong", null, "outer core"), " (liquid iron), ", React.createElement("strong", null, "mantle"), " (hot rock that flows slowly), and the thin ", React.createElement("strong", null, "crust"), " we live on.")
-
-                ),
-
-                React.createElement("div", null,
-
-                  React.createElement("h4", { className: "font-black text-red-800 mb-1" }, "Plate Boundaries"),
-
-                  React.createElement("table", { className: "w-full text-xs" },
-
-                    React.createElement("tbody", null,
-
-                      [['Convergent (\u2192\u2190)','Plates collide','Mountains, earthquakes, volcanoes'],['Divergent (\u2190\u2192)','Plates separate','Mid-ocean ridges, rift valleys'],['Transform (\u2191\u2193)','Plates slide past','Earthquakes (San Andreas Fault)'],['Subduction','Oceanic dives under continental','Deep trenches, volcanic arcs']].map(function(r) {
-
-                        return React.createElement("tr", { key: r[0], className: "border-b border-red-100" },
-
-                          React.createElement("td", { className: "py-1.5 font-bold text-red-700 w-36" }, r[0]),
-
-                          React.createElement("td", { className: "py-1.5 text-slate-600 w-32" }, r[1]),
-
-                          React.createElement("td", { className: "py-1.5 text-slate-500" }, r[2])
-
-                        );
-
-                      })
-
-                    )
-
-                  )
-
-                ),
-
-                React.createElement("div", null,
-
-                  React.createElement("h4", { className: "font-black text-red-800 mb-1" }, "Key Facts"),
-
-                  React.createElement("p", null, "\uD83C\uDF0B The Ring of Fire circles the Pacific Ocean with 75% of Earth's volcanoes. The Himalayas grow ~1cm/year as India pushes into Eurasia. The Mid-Atlantic Ridge is pulling Europe and N. America apart at ~2.5cm/year.")
-
-                )
-
-              )
-
-            ),
-
-
-
-            // ═══ BACK BUTTON ═══
-
-            React.createElement("div", { className: "mt-6 text-center" },
-
-              React.createElement("button", {
-
-                onClick: function() { setStemLabTool(null); },
-
-                className: "px-6 py-2.5 text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl transition-all"
-
-              }, "\u2190 Back to Tools")
-
-            )
-
-          );
-      })();
-    }
-  });
-
-  // ═══ 🔬 gameStudio (gameStudio) ═══
+  // â•â•â• ðŸ”¬ gameStudio (gameStudio) â•â•â•
   window.StemLab.registerTool('gameStudio', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'gameStudio',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -44296,9 +35572,9 @@ var d = labToolData.plateTectonics || {};
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (gameStudio) ──
+      // â”€â”€ Tool body (gameStudio) â”€â”€
       return (function() {
-// ── State ──
+// â”€â”€ State â”€â”€
 
   var _gs = labToolData && labToolData.gameStudio || {};
 
@@ -44376,43 +35652,43 @@ var d = labToolData.plateTectonics || {};
 
 
 
-  // ── Tile Palette ──
+  // â”€â”€ Tile Palette â”€â”€
 
   var TILE_PALETTE = [
 
     { id: 'empty', label: 'Empty', emoji: '', color: '#f8fafc' },
 
-    { id: 'grass', label: 'Grass', emoji: '🟩', color: '#22c55e' },
+    { id: 'grass', label: 'Grass', emoji: 'ðŸŸ©', color: '#22c55e' },
 
-    { id: 'water', label: 'Water', emoji: '🟦', color: '#3b82f6' },
+    { id: 'water', label: 'Water', emoji: 'ðŸŸ¦', color: '#3b82f6' },
 
-    { id: 'wall', label: 'Wall', emoji: '⬛', color: '#374151' },
+    { id: 'wall', label: 'Wall', emoji: 'â¬›', color: '#374151' },
 
-    { id: 'lava', label: 'Lava', emoji: '🟧', color: '#ef4444' },
+    { id: 'lava', label: 'Lava', emoji: 'ðŸŸ§', color: '#ef4444' },
 
-    { id: 'ice', label: 'Ice', emoji: '🩵', color: '#a5f3fc' },
+    { id: 'ice', label: 'Ice', emoji: 'ðŸ©µ', color: '#a5f3fc' },
 
-    { id: 'path', label: 'Path', emoji: '🟫', color: '#a16207' },
+    { id: 'path', label: 'Path', emoji: 'ðŸŸ«', color: '#a16207' },
 
-    { id: 'door', label: 'Door', emoji: '🚪', color: '#92400e' },
+    { id: 'door', label: 'Door', emoji: 'ðŸšª', color: '#92400e' },
 
-    { id: 'key', label: 'Key', emoji: '🔑', color: '#eab308' },
+    { id: 'key', label: 'Key', emoji: 'ðŸ”‘', color: '#eab308' },
 
-    { id: 'coin', label: 'Coin', emoji: '🪙', color: '#fbbf24' },
+    { id: 'coin', label: 'Coin', emoji: 'ðŸª™', color: '#fbbf24' },
 
-    { id: 'flag', label: 'Flag', emoji: '🚩', color: '#16a34a' },
+    { id: 'flag', label: 'Flag', emoji: 'ðŸš©', color: '#16a34a' },
 
-    { id: 'spikes', label: 'Spikes', emoji: '⚠️', color: '#dc2626' },
+    { id: 'spikes', label: 'Spikes', emoji: 'âš ï¸', color: '#dc2626' },
 
-    { id: 'platform', label: 'Platform', emoji: '➖', color: '#6b7280' },
+    { id: 'platform', label: 'Platform', emoji: 'âž–', color: '#6b7280' },
 
-    { id: 'player', label: 'Player', emoji: '🧑', color: '#8b5cf6' },
+    { id: 'player', label: 'Player', emoji: 'ðŸ§‘', color: '#8b5cf6' },
 
-    { id: 'enemy', label: 'Enemy', emoji: '👾', color: '#f43f5e' },
+    { id: 'enemy', label: 'Enemy', emoji: 'ðŸ‘¾', color: '#f43f5e' },
 
-    { id: 'npc', label: 'NPC', emoji: '🧙', color: '#6366f1' },
+    { id: 'npc', label: 'NPC', emoji: 'ðŸ§™', color: '#6366f1' },
 
-    { id: 'treasure', label: 'Treasure', emoji: '💎', color: '#06b6d4' }
+    { id: 'treasure', label: 'Treasure', emoji: 'ðŸ’Ž', color: '#06b6d4' }
 
   ];
 
@@ -44424,7 +35700,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-  // ── Flood fill helper ──
+  // â”€â”€ Flood fill helper â”€â”€
 
   function floodFill(tilesCopy, x, y, targetId, fillId, w, h) {
 
@@ -44464,19 +35740,19 @@ var d = labToolData.plateTectonics || {};
 
 
 
-  // ── Tab buttons ──
+  // â”€â”€ Tab buttons â”€â”€
 
   var _tabs = [
 
-    { id: 'map', icon: '🗺️', label: 'Map' },
+    { id: 'map', icon: 'ðŸ—ºï¸', label: 'Map' },
 
-    { id: 'sprite', icon: '🎨', label: 'Sprites' },
+    { id: 'sprite', icon: 'ðŸŽ¨', label: 'Sprites' },
 
-    { id: 'events', icon: '⚡', label: 'Events' },
+    { id: 'events', icon: 'âš¡', label: 'Events' },
 
-    { id: 'play', icon: '▶️', label: 'Play' },
+    { id: 'play', icon: 'â–¶ï¸', label: 'Play' },
 
-    { id: 'projects', icon: '💾', label: 'Projects' }
+    { id: 'projects', icon: 'ðŸ’¾', label: 'Projects' }
 
   ];
 
@@ -44492,13 +35768,13 @@ var d = labToolData.plateTectonics || {};
 
 
 
-    // ── Header ──
+    // â”€â”€ Header â”€â”€
 
     React.createElement("div", { className: "mb-4 p-4 rounded-2xl border-2 border-rose-200", style: { background: _gBg } },
 
       React.createElement("div", { className: "flex items-center gap-3" },
 
-        React.createElement("span", { style: { fontSize: '28px' } }, "🎮"),
+        React.createElement("span", { style: { fontSize: '28px' } }, "ðŸŽ®"),
 
         React.createElement("div", { className: "flex-1" },
 
@@ -44514,7 +35790,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-    // ── Tab bar ──
+    // â”€â”€ Tab bar â”€â”€
 
     React.createElement("div", { className: "flex gap-1 mb-4 p-1 bg-rose-50 rounded-xl border border-rose-200" },
 
@@ -44540,11 +35816,11 @@ var d = labToolData.plateTectonics || {};
 
 
 
-    // ═══════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-    // ███ MAP EDITOR TAB ███
+    // â–ˆâ–ˆâ–ˆ MAP EDITOR TAB â–ˆâ–ˆâ–ˆ
 
-    // ═══════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
     gsTab === 'map' && React.createElement("div", { className: "space-y-4" },
 
@@ -44592,11 +35868,11 @@ var d = labToolData.plateTectonics || {};
 
         },
 
-          React.createElement("option", { value: 'topdown' }, "🔽 Top-Down"),
+          React.createElement("option", { value: 'topdown' }, "ðŸ”½ Top-Down"),
 
-          React.createElement("option", { value: 'platformer' }, "🏃 Platformer"),
+          React.createElement("option", { value: 'platformer' }, "ðŸƒ Platformer"),
 
-          React.createElement("option", { value: 'puzzle' }, "🧩 Puzzle")
+          React.createElement("option", { value: 'puzzle' }, "ðŸ§© Puzzle")
 
         ),
 
@@ -44628,13 +35904,13 @@ var d = labToolData.plateTectonics || {};
 
                 var parsed = JSON.parse(clean);
 
-                if (parsed.tiles) upd({ tiles: parsed.tiles, aiLoading: false, aiResult: '✅ Map generated!' });
+                if (parsed.tiles) upd({ tiles: parsed.tiles, aiLoading: false, aiResult: 'âœ… Map generated!' });
 
-                else upd({ aiLoading: false, aiResult: '⚠️ Invalid format' });
+                else upd({ aiLoading: false, aiResult: 'âš ï¸ Invalid format' });
 
-              } catch (e) { upd({ aiLoading: false, aiResult: '❌ Parse error: ' + e.message }); }
+              } catch (e) { upd({ aiLoading: false, aiResult: 'âŒ Parse error: ' + e.message }); }
 
-            }).catch(function () { upd({ aiLoading: false, aiResult: '❌ AI error' }); });
+            }).catch(function () { upd({ aiLoading: false, aiResult: 'âŒ AI error' }); });
 
           },
 
@@ -44644,7 +35920,7 @@ var d = labToolData.plateTectonics || {};
 
             (aiLoading ? "bg-gray-400" : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-md")
 
-        }, aiLoading ? "⏳ Generating..." : "✨ AI Generate Map"),
+        }, aiLoading ? "â³ Generating..." : "âœ¨ AI Generate Map"),
 
         callGemini && React.createElement("input", {
 
@@ -44664,7 +35940,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-      aiResult && React.createElement("div", { className: "text-xs font-bold " + (aiResult.startsWith('✅') ? 'text-green-600' : 'text-red-500') }, aiResult),
+      aiResult && React.createElement("div", { className: "text-xs font-bold " + (aiResult.startsWith('âœ…') ? 'text-green-600' : 'text-red-500') }, aiResult),
 
 
 
@@ -44682,13 +35958,13 @@ var d = labToolData.plateTectonics || {};
 
             [
 
-              { id: 'brush', icon: '✏️' },
+              { id: 'brush', icon: 'âœï¸' },
 
-              { id: 'fill', icon: '🪣' },
+              { id: 'fill', icon: 'ðŸª£' },
 
-              { id: 'eraser', icon: '🧹' },
+              { id: 'eraser', icon: 'ðŸ§¹' },
 
-              { id: 'eyedropper', icon: '💧' }
+              { id: 'eyedropper', icon: 'ðŸ’§' }
 
             ].map(function (bt) {
 
@@ -44882,15 +36158,15 @@ var d = labToolData.plateTectonics || {};
 
       React.createElement("div", { className: "flex flex-wrap gap-3 text-[10px] text-rose-500 font-bold" },
 
-        React.createElement("span", null, "📐 " + gridW + "×" + gridH + " = " + (gridW * gridH) + " tiles"),
+        React.createElement("span", null, "ðŸ“ " + gridW + "Ã—" + gridH + " = " + (gridW * gridH) + " tiles"),
 
-        React.createElement("span", null, "🧑 Players: " + Object.values(tiles).filter(function (t) { return t === 'player'; }).length),
+        React.createElement("span", null, "ðŸ§‘ Players: " + Object.values(tiles).filter(function (t) { return t === 'player'; }).length),
 
-        React.createElement("span", null, "👾 Enemies: " + Object.values(tiles).filter(function (t) { return t === 'enemy'; }).length),
+        React.createElement("span", null, "ðŸ‘¾ Enemies: " + Object.values(tiles).filter(function (t) { return t === 'enemy'; }).length),
 
-        React.createElement("span", null, "🪙 Coins: " + Object.values(tiles).filter(function (t) { return t === 'coin'; }).length),
+        React.createElement("span", null, "ðŸª™ Coins: " + Object.values(tiles).filter(function (t) { return t === 'coin'; }).length),
 
-        React.createElement("span", null, "🚩 Flags: " + Object.values(tiles).filter(function (t) { return t === 'flag'; }).length)
+        React.createElement("span", null, "ðŸš© Flags: " + Object.values(tiles).filter(function (t) { return t === 'flag'; }).length)
 
       )
 
@@ -44898,11 +36174,11 @@ var d = labToolData.plateTectonics || {};
 
 
 
-    // ═══════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-    // ███ SPRITE EDITOR TAB ███
+    // â–ˆâ–ˆâ–ˆ SPRITE EDITOR TAB â–ˆâ–ˆâ–ˆ
 
-    // ═══════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
     gsTab === 'sprite' && React.createElement("div", { className: "space-y-4" },
 
@@ -44928,7 +36204,7 @@ var d = labToolData.plateTectonics || {};
 
                 (activeSprite === sp.id ? "border-rose-400 bg-rose-50 shadow-md" : "border-gray-200 hover:border-rose-300")
 
-            }, "🎨 " + sp.name);
+            }, "ðŸŽ¨ " + sp.name);
 
           }),
 
@@ -44938,7 +36214,7 @@ var d = labToolData.plateTectonics || {};
 
             className: "px-3 py-2 rounded-lg border-2 border-dashed border-rose-300 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-all"
 
-          }, "➕ New")
+          }, "âž• New")
 
         )
 
@@ -45112,7 +36388,7 @@ var d = labToolData.plateTectonics || {};
 
             React.createElement("div", { className: "flex gap-1" },
 
-              [{ id: 'draw', icon: '✏️' }, { id: 'erase', icon: '🧹' }, { id: 'fill', icon: '🪣' }].map(function (t) {
+              [{ id: 'draw', icon: 'âœï¸' }, { id: 'erase', icon: 'ðŸ§¹' }, { id: 'fill', icon: 'ðŸª£' }].map(function (t) {
 
                 return React.createElement("button", {
 
@@ -45142,7 +36418,7 @@ var d = labToolData.plateTectonics || {};
 
               }),
 
-              "Mirror ↔️"
+              "Mirror â†”ï¸"
 
             )
 
@@ -45154,7 +36430,7 @@ var d = labToolData.plateTectonics || {};
 
           callImagen && React.createElement("div", { className: "p-3 rounded-xl border border-purple-200 bg-purple-50 space-y-2" },
 
-            React.createElement("div", { className: "text-xs font-bold text-purple-700" }, "🤖 AI Sprite Tools"),
+            React.createElement("div", { className: "text-xs font-bold text-purple-700" }, "ðŸ¤– AI Sprite Tools"),
 
             React.createElement("input", {
 
@@ -45218,17 +36494,17 @@ var d = labToolData.plateTectonics || {};
 
                       }
 
-                      upd({ spritePixels: newPx, aiLoading: false, aiResult: '✅ Sprite generated!' });
+                      upd({ spritePixels: newPx, aiLoading: false, aiResult: 'âœ… Sprite generated!' });
 
                     };
 
-                    img.onerror = function () { upd({ aiLoading: false, aiResult: '❌ Image load error' }); };
+                    img.onerror = function () { upd({ aiLoading: false, aiResult: 'âŒ Image load error' }); };
 
                     img.src = imgUrl;
 
                   })
 
-                  .catch(function (e) { upd({ aiLoading: false, aiResult: '❌ ' + e.message }); });
+                  .catch(function (e) { upd({ aiLoading: false, aiResult: 'âŒ ' + e.message }); });
 
               },
 
@@ -45238,7 +36514,7 @@ var d = labToolData.plateTectonics || {};
 
                 (aiLoading ? "bg-gray-400" : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600")
 
-            }, aiLoading ? "⏳ Generating..." : "✨ AI Generate Sprite")
+            }, aiLoading ? "â³ Generating..." : "âœ¨ AI Generate Sprite")
 
           ),
 
@@ -45252,7 +36528,7 @@ var d = labToolData.plateTectonics || {};
 
             className: "w-full py-1.5 text-xs font-bold text-rose-500 border border-rose-200 rounded-lg hover:bg-rose-50 transition-all"
 
-          }, "🗑️ Clear Canvas")
+          }, "ðŸ—‘ï¸ Clear Canvas")
 
         )
 
@@ -45260,7 +36536,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-      aiResult && React.createElement("div", { className: "text-xs font-bold " + (aiResult.startsWith('✅') ? 'text-green-600' : 'text-red-500') }, aiResult)
+      aiResult && React.createElement("div", { className: "text-xs font-bold " + (aiResult.startsWith('âœ…') ? 'text-green-600' : 'text-red-500') }, aiResult)
 
     ),
 
@@ -45268,11 +36544,11 @@ var d = labToolData.plateTectonics || {};
 
 
 
-    // ═══════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-    // ███ EVENTS TAB ███
+    // â–ˆâ–ˆâ–ˆ EVENTS TAB â–ˆâ–ˆâ–ˆ
 
-    // ═══════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
     gsTab === 'events' && React.createElement("div", { className: "space-y-4" },
 
@@ -45282,7 +36558,7 @@ var d = labToolData.plateTectonics || {};
 
       React.createElement("div", { className: "flex items-center justify-between" },
 
-        React.createElement("h3", { className: "text-sm font-black text-rose-800" }, "⚡ Event Rules"),
+        React.createElement("h3", { className: "text-sm font-black text-rose-800" }, "âš¡ Event Rules"),
 
         React.createElement("label", { className: "flex items-center gap-2 text-xs font-bold text-rose-600 cursor-pointer" },
 
@@ -45296,7 +36572,7 @@ var d = labToolData.plateTectonics || {};
 
           }),
 
-          "💻 Show Code"
+          "ðŸ’» Show Code"
 
         )
 
@@ -45324,7 +36600,7 @@ var d = labToolData.plateTectonics || {};
 
               (activeSprite === sid ? "border-rose-400 bg-rose-100 shadow-md" : "border-gray-200 hover:border-rose-300"),
 
-          }, (sid === 'player' ? '🧑' : sid === 'enemy' ? '👾' : sid === 'npc' ? '🧙' : '💎') +
+          }, (sid === 'player' ? 'ðŸ§‘' : sid === 'enemy' ? 'ðŸ‘¾' : sid === 'npc' ? 'ðŸ§™' : 'ðŸ’Ž') +
 
             " " + sid.charAt(0).toUpperCase() + sid.slice(1) + " (" + sprEvents.length + " rules)");
 
@@ -45490,7 +36766,7 @@ var d = labToolData.plateTectonics || {};
 
                   className: "text-xs border border-rose-200 rounded px-1.5 py-1"
 
-                }, React.createElement("option", { value: '' }, "—"),
+                }, React.createElement("option", { value: '' }, "â€”"),
 
                   ((TRIGGERS.find(function (t) { return t.id === rule.trigger; }) || {}).params || []).map(function (p) {
 
@@ -45502,7 +36778,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-                React.createElement("span", { className: "text-xs font-bold text-slate-500" }, "→"),
+                React.createElement("span", { className: "text-xs font-bold text-slate-500" }, "â†’"),
 
 
 
@@ -45556,7 +36832,7 @@ var d = labToolData.plateTectonics || {};
 
                   className: "text-xs border border-rose-200 rounded px-1.5 py-1"
 
-                }, React.createElement("option", { value: '' }, "—"),
+                }, React.createElement("option", { value: '' }, "â€”"),
 
                   ((ACTIONS.find(function (a) { return a.id === rule.action; }) || {}).params || []).map(function (p) {
 
@@ -45588,7 +36864,7 @@ var d = labToolData.plateTectonics || {};
 
                   className: "ml-auto text-rose-300 hover:text-red-500 transition-colors text-sm font-bold"
 
-                }, "✕")
+                }, "âœ•")
 
               ),
 
@@ -45628,7 +36904,7 @@ var d = labToolData.plateTectonics || {};
 
             className: "w-full py-2 rounded-xl border-2 border-dashed border-rose-300 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-all"
 
-          }, "➕ Add Rule (" + sprEvents.length + "/8)")
+          }, "âž• Add Rule (" + sprEvents.length + "/8)")
 
         );
 
@@ -45638,11 +36914,11 @@ var d = labToolData.plateTectonics || {};
 
 
 
-    // ═══════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-    // ███ PLAY MODE TAB ███
+    // â–ˆâ–ˆâ–ˆ PLAY MODE TAB â–ˆâ–ˆâ–ˆ
 
-    // ═══════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
     gsTab === 'play' && React.createElement("div", { className: "space-y-4" },
 
@@ -45652,17 +36928,17 @@ var d = labToolData.plateTectonics || {};
 
       React.createElement("div", { className: "flex items-center gap-4 p-3 rounded-xl border border-rose-200 bg-white" },
 
-        React.createElement("span", { className: "text-xs font-bold text-rose-700" }, "🪙 Score: " + playScore),
+        React.createElement("span", { className: "text-xs font-bold text-rose-700" }, "ðŸª™ Score: " + playScore),
 
         React.createElement("span", { className: "text-xs font-bold text-red-600" },
 
-          "❤️ " + Array.from({ length: Math.max(0, playLives) }, function () { return '♥'; }).join(' ')
+          "â¤ï¸ " + Array.from({ length: Math.max(0, playLives) }, function () { return 'â™¥'; }).join(' ')
 
         ),
 
         React.createElement("span", { className: "text-xs font-bold text-slate-500 ml-auto" },
 
-          gameType === 'topdown' ? '🔽 Top-Down' : gameType === 'platformer' ? '🏃 Platformer' : '🧩 Puzzle'
+          gameType === 'topdown' ? 'ðŸ”½ Top-Down' : gameType === 'platformer' ? 'ðŸƒ Platformer' : 'ðŸ§© Puzzle'
 
         )
 
@@ -45738,7 +37014,7 @@ var d = labToolData.plateTectonics || {};
 
             if (typeof awardStemXP === 'function') awardStemXP('gameStudio', 10, 'game won');
 
-            if (addToast) addToast('🏆 You Win! Score: ' + (newScore), 'success');
+            if (addToast) addToast('ðŸ† You Win! Score: ' + (newScore), 'success');
 
             upd({ isPlaying: false, playScore: newScore });
 
@@ -45752,7 +37028,7 @@ var d = labToolData.plateTectonics || {};
 
             if (newLives <= 0) {
 
-              if (addToast) addToast('💀 Game Over! Score: ' + newScore, 'error');
+              if (addToast) addToast('ðŸ’€ Game Over! Score: ' + newScore, 'error');
 
               upd({ isPlaying: false, playScore: 0, playLives: 3 });
 
@@ -45850,7 +37126,7 @@ var d = labToolData.plateTectonics || {};
 
             (isPlaying ? "bg-red-500 hover:bg-red-600" : "bg-green-500 hover:bg-green-600") + " shadow-md"
 
-        }, isPlaying ? "⏹ Stop" : "▶️ Play"),
+        }, isPlaying ? "â¹ Stop" : "â–¶ï¸ Play"),
 
         React.createElement("button", {
 
@@ -45858,7 +37134,7 @@ var d = labToolData.plateTectonics || {};
 
           className: "px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-all"
 
-        }, "🔄 Reset Score"),
+        }, "ðŸ”„ Reset Score"),
 
         React.createElement("div", { className: "text-[10px] text-slate-400 self-center ml-2" }, "Click the game area, then use Arrow keys / WASD to move")
 
@@ -45884,9 +37160,9 @@ var d = labToolData.plateTectonics || {};
 
               'Game state: ' + gameState)
 
-              .then(function (res) { upd({ aiLoading: false, aiResult: '🧠 ' + res }); })
+              .then(function (res) { upd({ aiLoading: false, aiResult: 'ðŸ§  ' + res }); })
 
-              .catch(function () { upd({ aiLoading: false, aiResult: '❌ AI error' }); });
+              .catch(function () { upd({ aiLoading: false, aiResult: 'âŒ AI error' }); });
 
           },
 
@@ -45896,9 +37172,9 @@ var d = labToolData.plateTectonics || {};
 
             (aiLoading ? "bg-gray-400" : "bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600")
 
-        }, aiLoading ? "⏳ Analyzing..." : "🧠 AI Review My Game"),
+        }, aiLoading ? "â³ Analyzing..." : "ðŸ§  AI Review My Game"),
 
-        aiResult && aiResult.startsWith('🧠') && React.createElement("div", {
+        aiResult && aiResult.startsWith('ðŸ§ ') && React.createElement("div", {
 
           className: "mt-2 p-3 rounded-lg bg-white border border-purple-200 text-xs text-slate-700 whitespace-pre-wrap leading-relaxed"
 
@@ -45910,11 +37186,11 @@ var d = labToolData.plateTectonics || {};
 
 
 
-    // ═══════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-    // ███ PROJECTS TAB ███
+    // â–ˆâ–ˆâ–ˆ PROJECTS TAB â–ˆâ–ˆâ–ˆ
 
-    // ═══════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
     gsTab === 'projects' && React.createElement("div", { className: "space-y-4" },
 
@@ -45964,7 +37240,7 @@ var d = labToolData.plateTectonics || {};
 
             a.click(); URL.revokeObjectURL(url);
 
-            if (addToast) addToast('📤 Game exported as .allogame!', 'success');
+            if (addToast) addToast('ðŸ“¤ Game exported as .allogame!', 'success');
 
             if (typeof awardStemXP === 'function') awardStemXP('gameStudio', 5, 'export game');
 
@@ -45974,7 +37250,7 @@ var d = labToolData.plateTectonics || {};
 
         },
 
-          React.createElement("div", { className: "text-2xl mb-1" }, "📤"),
+          React.createElement("div", { className: "text-2xl mb-1" }, "ðŸ“¤"),
 
           React.createElement("div", { className: "text-xs font-bold text-rose-700" }, "Export")
 
@@ -46020,9 +37296,9 @@ var d = labToolData.plateTectonics || {};
 
                   });
 
-                  if (addToast) addToast('📥 Game imported!', 'success');
+                  if (addToast) addToast('ðŸ“¥ Game imported!', 'success');
 
-                } catch (err) { if (addToast) addToast('❌ Invalid file: ' + err.message, 'error'); }
+                } catch (err) { if (addToast) addToast('âŒ Invalid file: ' + err.message, 'error'); }
 
               };
 
@@ -46038,7 +37314,7 @@ var d = labToolData.plateTectonics || {};
 
         },
 
-          React.createElement("div", { className: "text-2xl mb-1" }, "📥"),
+          React.createElement("div", { className: "text-2xl mb-1" }, "ðŸ“¥"),
 
           React.createElement("div", { className: "text-xs font-bold text-rose-700" }, "Import")
 
@@ -46058,7 +37334,7 @@ var d = labToolData.plateTectonics || {};
 
             navigator.clipboard.writeText(code).then(function () {
 
-              if (addToast) addToast('📋 Share code copied to clipboard!', 'success');
+              if (addToast) addToast('ðŸ“‹ Share code copied to clipboard!', 'success');
 
             });
 
@@ -46068,7 +37344,7 @@ var d = labToolData.plateTectonics || {};
 
         },
 
-          React.createElement("div", { className: "text-2xl mb-1" }, "📋"),
+          React.createElement("div", { className: "text-2xl mb-1" }, "ðŸ“‹"),
 
           React.createElement("div", { className: "text-xs font-bold text-rose-700" }, "Share Code")
 
@@ -46082,7 +37358,7 @@ var d = labToolData.plateTectonics || {};
 
       React.createElement("div", { className: "p-3 rounded-xl border border-rose-200 bg-white" },
 
-        React.createElement("div", { className: "text-xs font-bold text-rose-700 mb-2" }, "📋 Import from Share Code"),
+        React.createElement("div", { className: "text-xs font-bold text-rose-700 mb-2" }, "ðŸ“‹ Import from Share Code"),
 
         React.createElement("div", { className: "flex gap-2" },
 
@@ -46128,9 +37404,9 @@ var d = labToolData.plateTectonics || {};
 
                 el.value = '';
 
-                if (addToast) addToast('📥 Game loaded from share code!', 'success');
+                if (addToast) addToast('ðŸ“¥ Game loaded from share code!', 'success');
 
-              } catch (err) { if (addToast) addToast('❌ Invalid share code', 'error'); }
+              } catch (err) { if (addToast) addToast('âŒ Invalid share code', 'error'); }
 
             },
 
@@ -46148,7 +37424,7 @@ var d = labToolData.plateTectonics || {};
 
       React.createElement("div", { className: "p-3 rounded-xl border border-rose-200 bg-white" },
 
-        React.createElement("div", { className: "text-xs font-bold text-rose-700 mb-2" }, "🎮 Starter Projects"),
+        React.createElement("div", { className: "text-xs font-bold text-rose-700 mb-2" }, "ðŸŽ® Starter Projects"),
 
         React.createElement("div", { className: "grid grid-cols-3 gap-2" },
 
@@ -46156,7 +37432,7 @@ var d = labToolData.plateTectonics || {};
 
             {
 
-              name: 'Coin Collector', type: 'topdown', icon: '🪙',
+              name: 'Coin Collector', type: 'topdown', icon: 'ðŸª™',
 
               desc: 'Navigate a maze, collect all coins',
 
@@ -46206,7 +37482,7 @@ var d = labToolData.plateTectonics || {};
 
             {
 
-              name: 'Sky Jumper', type: 'platformer', icon: '🏃',
+              name: 'Sky Jumper', type: 'platformer', icon: 'ðŸƒ',
 
               desc: 'Jump across platforms, avoid spikes',
 
@@ -46254,7 +37530,7 @@ var d = labToolData.plateTectonics || {};
 
             {
 
-              name: 'Puzzle Dungeon', type: 'puzzle', icon: '🧩',
+              name: 'Puzzle Dungeon', type: 'puzzle', icon: 'ðŸ§©',
 
               desc: 'Find keys to unlock doors',
 
@@ -46324,7 +37600,7 @@ var d = labToolData.plateTectonics || {};
 
                 });
 
-                if (addToast) addToast('🎮 Loaded "' + starter.name + '"!', 'success');
+                if (addToast) addToast('ðŸŽ® Loaded "' + starter.name + '"!', 'success');
 
               },
 
@@ -46350,7 +37626,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-    // ═══ BACK BUTTON ═══
+    // â•â•â• BACK BUTTON â•â•â•
 
     React.createElement("div", { className: "mt-6 text-center" },
 
@@ -46360,7 +37636,7 @@ var d = labToolData.plateTectonics || {};
 
         className: "px-6 py-2.5 text-sm font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl transition-all"
 
-      }, "← Back to Tools")
+      }, "â† Back to Tools")
 
     )
 
@@ -46370,15 +37646,15 @@ var d = labToolData.plateTectonics || {};
     }
   });
 
-  // ═══ 🔬 circuit (circuit) ═══
+  // â•â•â• ðŸ”¬ circuit (circuit) â•â•â•
   window.StemLab.registerTool('circuit', {
-    icon: '🔬',
+    icon: 'ðŸ”¬',
     label: 'circuit',
     desc: '',
     color: 'slate',
     category: 'science',
     render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
+      // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -46411,7 +37687,7 @@ var d = labToolData.plateTectonics || {};
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
 
-      // ── Tool body (circuit) ──
+      // â”€â”€ Tool body (circuit) â”€â”€
       return (function() {
 var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_isCircuit) { React.useEffect(function(){}, []); return null; }
 
@@ -46581,7 +37857,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
               ),
 
-              // Components — Series
+              // Components â€” Series
 
               mode === 'series'
 
@@ -46713,7 +37989,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
                 })
 
-                // Components — Parallel
+                // Components â€” Parallel
 
                 : d.components.map(function (comp, i) {
 
@@ -47047,7 +38323,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
             ),
 
-            // ── Ohm's Law Quiz ──
+            // â”€â”€ Ohm's Law Quiz â”€â”€
 
             (() => {
 
@@ -47061,17 +38337,17 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
                 var qTypes = [
 
-                  function () { var V = [3, 5, 6, 9, 12, 24][Math.floor(Math.random() * 6)]; var R = [10, 20, 50, 100, 200, 500][Math.floor(Math.random() * 6)]; var I = V / R; return { q: 'A ' + V + 'V battery drives current through a ' + R + 'Ω resistor. What is the current?', a: parseFloat(I.toFixed(3)), unit: 'A', formula: 'I = V/R = ' + V + '/' + R + ' = ' + I.toFixed(3) + 'A' }; },
+                  function () { var V = [3, 5, 6, 9, 12, 24][Math.floor(Math.random() * 6)]; var R = [10, 20, 50, 100, 200, 500][Math.floor(Math.random() * 6)]; var I = V / R; return { q: 'A ' + V + 'V battery drives current through a ' + R + 'Î© resistor. What is the current?', a: parseFloat(I.toFixed(3)), unit: 'A', formula: 'I = V/R = ' + V + '/' + R + ' = ' + I.toFixed(3) + 'A' }; },
 
-                  function () { var I2 = [0.1, 0.2, 0.5, 1, 2, 3][Math.floor(Math.random() * 6)]; var R2 = [10, 20, 50, 100, 200][Math.floor(Math.random() * 5)]; var V2 = I2 * R2; return { q: 'A current of ' + I2 + 'A flows through a ' + R2 + 'Ω resistor. What voltage is required?', a: parseFloat(V2.toFixed(1)), unit: 'V', formula: 'V = IR = ' + I2 + '×' + R2 + ' = ' + V2.toFixed(1) + 'V' }; },
+                  function () { var I2 = [0.1, 0.2, 0.5, 1, 2, 3][Math.floor(Math.random() * 6)]; var R2 = [10, 20, 50, 100, 200][Math.floor(Math.random() * 5)]; var V2 = I2 * R2; return { q: 'A current of ' + I2 + 'A flows through a ' + R2 + 'Î© resistor. What voltage is required?', a: parseFloat(V2.toFixed(1)), unit: 'V', formula: 'V = IR = ' + I2 + 'Ã—' + R2 + ' = ' + V2.toFixed(1) + 'V' }; },
 
-                  function () { var V3 = [6, 9, 12, 24][Math.floor(Math.random() * 4)]; var I3 = [0.1, 0.2, 0.5, 1, 2][Math.floor(Math.random() * 5)]; var R3 = V3 / I3; return { q: 'A ' + V3 + 'V source pushes ' + I3 + 'A of current. What is the resistance?', a: parseFloat(R3.toFixed(1)), unit: 'Ω', formula: 'R = V/I = ' + V3 + '/' + I3 + ' = ' + R3.toFixed(1) + 'Ω' }; },
+                  function () { var V3 = [6, 9, 12, 24][Math.floor(Math.random() * 4)]; var I3 = [0.1, 0.2, 0.5, 1, 2][Math.floor(Math.random() * 5)]; var R3 = V3 / I3; return { q: 'A ' + V3 + 'V source pushes ' + I3 + 'A of current. What is the resistance?', a: parseFloat(R3.toFixed(1)), unit: 'Î©', formula: 'R = V/I = ' + V3 + '/' + I3 + ' = ' + R3.toFixed(1) + 'Î©' }; },
 
-                  function () { var V4 = [6, 9, 12][Math.floor(Math.random() * 3)]; var I4 = [0.5, 1, 2, 3][Math.floor(Math.random() * 4)]; var P4 = V4 * I4; return { q: 'A ' + V4 + 'V circuit draws ' + I4 + 'A. What is the power consumed?', a: parseFloat(P4.toFixed(1)), unit: 'W', formula: 'P = IV = ' + I4 + '×' + V4 + ' = ' + P4.toFixed(1) + 'W' }; },
+                  function () { var V4 = [6, 9, 12][Math.floor(Math.random() * 3)]; var I4 = [0.5, 1, 2, 3][Math.floor(Math.random() * 4)]; var P4 = V4 * I4; return { q: 'A ' + V4 + 'V circuit draws ' + I4 + 'A. What is the power consumed?', a: parseFloat(P4.toFixed(1)), unit: 'W', formula: 'P = IV = ' + I4 + 'Ã—' + V4 + ' = ' + P4.toFixed(1) + 'W' }; },
 
-                  function () { var R5a = [50, 100, 200][Math.floor(Math.random() * 3)]; var R5b = [50, 100, 200][Math.floor(Math.random() * 3)]; var Rtot = R5a + R5b; return { q: 'Two resistors (' + R5a + 'Ω and ' + R5b + 'Ω) are in series. What is the total resistance?', a: parseFloat(Rtot.toFixed(1)), unit: 'Ω', formula: 'R_total = R₁ + R₂ = ' + R5a + ' + ' + R5b + ' = ' + Rtot + 'Ω' }; },
+                  function () { var R5a = [50, 100, 200][Math.floor(Math.random() * 3)]; var R5b = [50, 100, 200][Math.floor(Math.random() * 3)]; var Rtot = R5a + R5b; return { q: 'Two resistors (' + R5a + 'Î© and ' + R5b + 'Î©) are in series. What is the total resistance?', a: parseFloat(Rtot.toFixed(1)), unit: 'Î©', formula: 'R_total = Râ‚ + Râ‚‚ = ' + R5a + ' + ' + R5b + ' = ' + Rtot + 'Î©' }; },
 
-                  function () { var R6a = [100, 200, 300][Math.floor(Math.random() * 3)]; var R6b = [100, 200, 300][Math.floor(Math.random() * 3)]; var Rpar = (R6a * R6b) / (R6a + R6b); return { q: 'Two resistors (' + R6a + 'Ω and ' + R6b + 'Ω) are in parallel. What is the total resistance?', a: parseFloat(Rpar.toFixed(1)), unit: 'Ω', formula: 'R = (R₁×R₂)/(R₁+R₂) = (' + R6a + '×' + R6b + ')/(' + R6a + '+' + R6b + ') = ' + Rpar.toFixed(1) + 'Ω' }; }
+                  function () { var R6a = [100, 200, 300][Math.floor(Math.random() * 3)]; var R6b = [100, 200, 300][Math.floor(Math.random() * 3)]; var Rpar = (R6a * R6b) / (R6a + R6b); return { q: 'Two resistors (' + R6a + 'Î© and ' + R6b + 'Î©) are in parallel. What is the total resistance?', a: parseFloat(Rpar.toFixed(1)), unit: 'Î©', formula: 'R = (Râ‚Ã—Râ‚‚)/(Râ‚+Râ‚‚) = (' + R6a + 'Ã—' + R6b + ')/(' + R6a + '+' + R6b + ') = ' + Rpar.toFixed(1) + 'Î©' }; }
 
                 ];
 
@@ -47101,11 +38377,11 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
                     className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (cq ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : 'bg-blue-600 text-white hover:bg-blue-700')
 
-                  }, cq ? '🔄 Next Question' : '⚡ Ohm\'s Law Quiz'),
+                  }, cq ? 'ðŸ”„ Next Question' : 'âš¡ Ohm\'s Law Quiz'),
 
-                  cqScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + cqScore + ' correct'),
+                  cqScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, 'â­ ' + cqScore + ' correct'),
 
-                  cqStreak > 1 && React.createElement("span", { className: "text-xs font-bold text-orange-600" }, '🔥 ' + cqStreak + ' streak')
+                  cqStreak > 1 && React.createElement("span", { className: "text-xs font-bold text-orange-600" }, 'ðŸ”¥ ' + cqStreak + ' streak')
 
                 ),
 
@@ -47129,9 +38405,9 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
                           upd('ohmStreak', correct ? cqStreak + 1 : 0);
 
-                          if (correct) { addToast('⚡ Correct! ' + cq.formula, 'success'); awardStemXP('circuit', 10, 'Ohm\'s Law Quiz'); }
+                          if (correct) { addToast('âš¡ Correct! ' + cq.formula, 'success'); awardStemXP('circuit', 10, 'Ohm\'s Law Quiz'); }
 
-                          else { addToast('❌ ' + cq.formula, 'error'); }
+                          else { addToast('âŒ ' + cq.formula, 'error'); }
 
                         }, className: "px-3 py-2.5 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all"
 
@@ -47145,9 +38421,9 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
                 cq && cq.answered && React.createElement("div", { className: "p-3 rounded-lg text-sm font-bold " + (Math.abs(cq.chosen - cq.answer) < 0.01 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
 
-                  Math.abs(cq.chosen - cq.answer) < 0.01 ? '✅ Correct!' : '❌ Answer: ' + cq.answer + cq.unit,
+                  Math.abs(cq.chosen - cq.answer) < 0.01 ? 'âœ… Correct!' : 'âŒ Answer: ' + cq.answer + cq.unit,
 
-                  React.createElement("p", { className: "text-xs font-normal mt-1 " + (Math.abs(cq.chosen - cq.answer) < 0.01 ? 'text-emerald-600' : 'text-red-600') }, '📐 ' + cq.formula)
+                  React.createElement("p", { className: "text-xs font-normal mt-1 " + (Math.abs(cq.chosen - cq.answer) < 0.01 ? 'text-emerald-600' : 'text-red-600') }, 'ðŸ“ ' + cq.formula)
 
                 )
 
@@ -47162,5 +38438,5 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
     }
   });
 
-  console.log('[StemLab] stem_tool_science.js loaded — 29 tools');
+  console.log('[StemLab] stem_tool_science.js loaded â€” 29 tools');
 })();
