@@ -327,41 +327,40 @@ if (!window._galaxyHasLoadedOnce) {
 
 
 
-          // ── Stellar lifecycle data ──
+          // ── Stellar lifecycle data (Dynamic) ──
 
-          var LIFECYCLE = {
-
-            stages: [
-
-              { name: t('stem.galaxy.nebula'), emoji: '\u2601\uFE0F', desc: t('stem.galaxy.a_vast_cloud_of_gas'), color: '#a855f7' },
-
-              { name: t('stem.galaxy.protostar'), emoji: '\uD83D\uDFE0', desc: t('stem.galaxy.core_heats_up_from_gravitational'), color: '#fb923c' },
-
-              { name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: 'Hydrogen fusion ignites! Stable for millions to billions of years.', color: '#fbbf24' },
-
-              { name: t('stem.galaxy.red_giant'), emoji: '\uD83D\uDD34', desc: t('stem.galaxy.core_contracts_outer_layers_expand'), color: '#ef4444' }
-
-            ],
-
-            lowMass: [
-
-              { name: t('stem.galaxy.planetary_nebula'), emoji: '\uD83D\uDFE3', desc: t('stem.galaxy.outer_layers_shed_gently_into'), color: '#818cf8' },
-
-              { name: t('stem.galaxy.white_dwarf'), emoji: '\u26AA', desc: t('stem.galaxy.dense_stellar_core_slowly_cools'), color: '#e2e8f0' }
-
-            ],
-
-            highMass: [
-
-              { name: t('stem.galaxy.supernova'), emoji: '\uD83D\uDCA5', desc: 'Core collapses! A catastrophic explosion outshining entire galaxies.', color: '#fbbf24' },
-
-              { name: t('stem.galaxy.neutron_star'), emoji: '\u2B50', desc: t('stem.galaxy.ultradense_remnant_a_teaspoon_weighs'), color: '#38bdf8', maxMass: 25 },
-
-              { name: t('stem.galaxy.black_hole'), emoji: '\uD83D\uDD73\uFE0F', desc: t('stem.galaxy.gravity_so_strong_nothing_escapes'), color: '#1e1b4b', minMass: 25 }
-
-            ]
-
-          };
+          function getStagesForMass(mass) {
+            var stages = [
+              { id: 'nebula', name: t('stem.galaxy.nebula'), emoji: '\u2601\uFE0F', desc: t('stem.galaxy.a_vast_cloud_of_gas'), color: '#a855f7' },
+              { id: 'protostar', name: t('stem.galaxy.protostar'), emoji: '\uD83D\uDFE0', desc: t('stem.galaxy.core_heats_up_from_gravitational'), color: '#fb923c' }
+            ];
+            if (mass < 0.5) {
+              stages.push({ id: 'main_sequence', name: 'Brown Dwarf', emoji: '\uD83E\uDDF4', desc: 'Too small for hydrogen fusion. Glows faintly from gravitational contraction.', color: '#a16207' });
+              stages.push({ id: 'black_dwarf', name: 'Black Dwarf', emoji: '\u26AB', desc: 'A cold, dead ember wandering the cosmos forever.', color: '#18181b' });
+            } else if (mass < 0.8) {
+              stages.push({ id: 'main_sequence', name: 'Red Dwarf', emoji: '\uD83D\uDD34', desc: 'Burns slowly for hundreds of billions of years.', color: '#dc2626' });
+              stages.push({ id: 'blue_dwarf', name: 'Blue Dwarf', emoji: '\uD83D\uDD35', desc: 'Theoretical phase where a red dwarf heats up as its opacity changes.', color: '#3b82f6' });
+              stages.push({ id: 'white_dwarf', name: t('stem.galaxy.white_dwarf'), emoji: '\u26AA', desc: t('stem.galaxy.dense_stellar_core_slowly_cools'), color: '#e2e8f0' });
+              stages.push({ id: 'black_dwarf', name: 'Black Dwarf', emoji: '\u26AB', desc: 'A cold, dead ember wandering the cosmos forever.', color: '#18181b' });
+            } else if (mass < 8) {
+              stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: 'Hydrogen fusion ignites! Stable for billions of years.', color: '#fbbf24' });
+              stages.push({ id: 'red_giant', name: t('stem.galaxy.red_giant'), emoji: '\uD83D\uDD34', desc: t('stem.galaxy.core_contracts_outer_layers_expand'), color: '#ef4444' });
+              stages.push({ id: 'planetary_nebula', name: t('stem.galaxy.planetary_nebula'), emoji: '\uD83D\uDFE3', desc: t('stem.galaxy.outer_layers_shed_gently_into'), color: '#818cf8' });
+              stages.push({ id: 'white_dwarf', name: t('stem.galaxy.white_dwarf'), emoji: '\u26AA', desc: t('stem.galaxy.dense_stellar_core_slowly_cools'), color: '#e2e8f0' });
+              stages.push({ id: 'black_dwarf', name: 'Black Dwarf', emoji: '\u26AB', desc: 'A cold, dead ember wandering the cosmos forever.', color: '#18181b' });
+            } else if (mass < 25) {
+              stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: 'Hot and enormous. Burns through fuel in millions of years.', color: '#60a5fa' });
+              stages.push({ id: 'red_supergiant', name: 'Red Supergiant', emoji: '\uD83D\uDD34', desc: 'Expands to massive proportions, large enough to swallow Jupiter!', color: '#b91c1c' });
+              stages.push({ id: 'supernova', name: t('stem.galaxy.supernova'), emoji: '\uD83D\uDCA5', desc: 'Core collapses! A catastrophic explosion outshining entire galaxies.', color: '#fbbf24' });
+              stages.push({ id: 'neutron_star', name: t('stem.galaxy.neutron_star'), emoji: '\u2B50', desc: t('stem.galaxy.ultradense_remnant_a_teaspoon_weighs'), color: '#38bdf8' });
+            } else {
+              stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: 'An ultra-hot blue giant blazing with intense radiation.', color: '#818cf8' });
+              stages.push({ id: 'blue_supergiant', name: 'Blue Supergiant', emoji: '\uD83D\uDD35', desc: 'Sheds immense mass through violent stellar winds.', color: '#3b82f6' });
+              stages.push({ id: 'supernova', name: t('stem.galaxy.supernova'), emoji: '\uD83D\uDCA5', desc: 'A hypernova explosion obliterates the star.', color: '#fbbf24' });
+              stages.push({ id: 'black_hole', name: t('stem.galaxy.black_hole'), emoji: '\uD83D\uDD73\uFE0F', desc: t('stem.galaxy.gravity_so_strong_nothing_escapes'), color: '#1e1b4b' });
+            }
+            return stages;
+          }
 
 
 
@@ -787,6 +786,45 @@ if (!window._galaxyHasLoadedOnce) {
 
             })();
 
+            // ── Volumetric Emission Gas Clouds ──
+            var gasGroup = new THREE.Group(); gasGroup.name = 'gas';
+            scene.add(gasGroup);
+            (function () {
+              var gasCount = 8000;
+              var gasGeo = new THREE.BufferGeometry();
+              var gasPos = new Float32Array(gasCount * 3);
+              var gasCol = new Float32Array(gasCount * 3);
+              for (var gi = 0; gi < gasCount; gi++) {
+                var gArm = gi % (gType.arms || 4);
+                var gArmAngle = (gArm / (gType.arms || 4)) * Math.PI * 2;
+                var gDist = Math.pow(Math.random(), 0.6) * 0.9;
+                var gWind = gType.windTightness || 2.5;
+                var gOffset = (Math.random() - 0.5) * 0.15;
+                var gAngle = gArmAngle + gDist * gWind + gOffset;
+                gasPos[gi * 3] = Math.cos(gAngle) * gDist + (Math.random() - 0.5) * 0.05;
+                gasPos[gi * 3 + 1] = (Math.random() - 0.5) * 0.03;
+                gasPos[gi * 3 + 2] = Math.sin(gAngle) * gDist + (Math.random() - 0.5) * 0.05;
+                
+                var hue = Math.random() < 0.6 ? 330 : 190;
+                var c = new THREE.Color().setHSL(hue / 360, Math.random() * 0.5 + 0.5, 0.4);
+                gasCol[gi * 3] = c.r; gasCol[gi * 3 + 1] = c.g; gasCol[gi * 3 + 2] = c.b;
+              }
+              gasGeo.setAttribute('position', new THREE.BufferAttribute(gasPos, 3));
+              gasGeo.setAttribute('color', new THREE.BufferAttribute(gasCol, 3));
+              
+              var gasCv = document.createElement('canvas'); gasCv.width = 32; gasCv.height = 32;
+              var gCtx = gasCv.getContext('2d');
+              var gGrad = gCtx.createRadialGradient(16,16,0,16,16,16);
+              gGrad.addColorStop(0, 'rgba(255,255,255,1)');
+              gGrad.addColorStop(0.4, 'rgba(255,255,255,0.4)');
+              gGrad.addColorStop(1, 'rgba(0,0,0,0)');
+              gCtx.fillStyle = gGrad; gCtx.fillRect(0,0,32,32);
+              var gasTex = new THREE.CanvasTexture(gasCv);
+              
+              var gasMat = new THREE.PointsMaterial({ size: 0.15, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false, vertexColors: true, map: gasTex });
+              gasGroup.add(new THREE.Points(gasGeo, gasMat));
+            })();
+
 
 
             // Black hole + enhanced accretion disk
@@ -912,7 +950,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             // Store layer references on canvas for toggle access
 
-            canvasEl._layers = { bgStars: bgGroup, arms: armGroup, bulge: bulgeGroup, blackHole: bhGroup, nebulae: nebGroup, grid: gridGroup, labels: labelGroup, dust: dustGroup };
+            canvasEl._layers = { bgStars: bgGroup, arms: armGroup, bulge: bulgeGroup, blackHole: bhGroup, nebulae: nebGroup, grid: gridGroup, labels: labelGroup, dust: dustGroup, gas: gasGroup };
 
 
 
@@ -1142,6 +1180,8 @@ if (!window._galaxyHasLoadedOnce) {
 
               if (dustGroup.visible) dustGroup.children.forEach(function (c) { c.rotation.y += 0.0003; });
 
+              if (gasGroup.visible) gasGroup.children.forEach(function (c) { c.rotation.y += 0.0003; });
+
               nebulaSprites.forEach(function (s, i) { s.material.opacity = 0.25 + 0.15 * Math.sin(elapsed * 0.5 + i * 1.8); });
 
               if (bhGroup.visible) {
@@ -1254,7 +1294,9 @@ if (!window._galaxyHasLoadedOnce) {
 
             { key: 'labels', icon: '\uD83C\uDFF7\uFE0F', label: t('stem.galaxy.labels') },
 
-            { key: 'dust', icon: '\uD83C\uDF2B\uFE0F', label: 'Dust Lanes' }
+            { key: 'dust', icon: '\uD83C\uDF2B\uFE0F', label: 'Dust Lanes' },
+
+            { key: 'gas', icon: '\uD83C\uDF0C', label: 'Gas Clouds' }
 
           ];
 
@@ -2145,9 +2187,97 @@ if (!window._galaxyHasLoadedOnce) {
                         ctx.globalAlpha = 1;
                       }
 
+                      // ── BLACK DWARF: cold dead ember ──
+                      else if (stage === 'black_dwarf') {
+                        stageLabel = '⚫ Black Dwarf';
+                        var bdR = baseR * 0.1;
+                        // Faint deep purple/grey glow
+                        var bdg = ctx.createRadialGradient(cx, cy, bdR, cx, cy, bdR * 3);
+                        bdg.addColorStop(0, 'rgba(30,27,75,0.4)'); bdg.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, bdR * 3, 0, Math.PI * 2);
+                        ctx.fillStyle = bdg; ctx.fill();
+                        // Core
+                        var bdc = ctx.createRadialGradient(cx, cy, 0, cx, cy, bdR);
+                        bdc.addColorStop(0, '#312e81'); bdc.addColorStop(0.8, '#1e1b4b'); bdc.addColorStop(1, '#0f172a');
+                        ctx.beginPath(); ctx.arc(cx, cy, bdR, 0, Math.PI * 2);
+                        ctx.fillStyle = bdc; ctx.fill();
+                      }
+
+                      // ── BLUE DWARF: intensely hot tiny star ──
+                      else if (stage === 'blue_dwarf') {
+                        stageLabel = '🔵 Blue Dwarf';
+                        var bldr = baseR * 0.4;
+                        var bldPulse = 1 + 0.05 * Math.sin(tick * 0.1);
+                        bldr *= bldPulse;
+                        var bldg = ctx.createRadialGradient(cx, cy, bldr, cx, cy, bldr * 4);
+                        bldg.addColorStop(0, 'rgba(59,130,246,0.6)'); bldg.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, bldr * 4, 0, Math.PI * 2);
+                        ctx.fillStyle = bldg; ctx.fill();
+                        var bldc = ctx.createRadialGradient(cx, cy, 0, cx, cy, bldr);
+                        bldc.addColorStop(0, '#ffffff'); bldc.addColorStop(0.4, '#93c5fd'); bldc.addColorStop(1, '#3b82f6');
+                        ctx.beginPath(); ctx.arc(cx, cy, bldr, 0, Math.PI * 2);
+                        ctx.fillStyle = bldc; ctx.fill();
+                      }
+
+                      // ── RED SUPERGIANT: extremely massive, turbulent ──
+                      else if (stage === 'red_supergiant') {
+                        stageLabel = '🔴 Red Supergiant';
+                        var rsR = baseR * 3.5;
+                        var rsPulse = 1 + 0.15 * Math.sin(tick * 0.02) + 0.05 * Math.sin(tick * 0.05);
+                        rsR *= rsPulse;
+                        // Massive violent corona
+                        var rsCorona = ctx.createRadialGradient(cx, cy, rsR * 0.4, cx, cy, rsR * 2.5);
+                        rsCorona.addColorStop(0, 'rgba(220,38,38,0.4)'); rsCorona.addColorStop(0.5, 'rgba(153,27,27,0.1)'); rsCorona.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, rsR * 2.5, 0, Math.PI * 2);
+                        ctx.fillStyle = rsCorona; ctx.fill();
+                        // Deep crimson body
+                        var rsBody = ctx.createRadialGradient(cx - rsR * 0.2, cy - rsR * 0.2, rsR * 0.1, cx, cy, rsR);
+                        rsBody.addColorStop(0, '#fcd34d'); rsBody.addColorStop(0.2, '#f59e0b'); rsBody.addColorStop(0.6, '#b91c1c'); rsBody.addColorStop(1, '#7f1d1d');
+                        ctx.beginPath(); ctx.arc(cx, cy, rsR, 0, Math.PI * 2);
+                        ctx.fillStyle = rsBody; ctx.fill();
+                        // Giant convection cells
+                        for (var rsc = 0; rsc < 18; rsc++) {
+                          var rsca = (rsc / 18) * Math.PI * 2 + tick * 0.002 + Math.sin(rsc);
+                          var rscr = rsR * (0.2 + 0.6 * Math.sin(tick * 0.005 + rsc));
+                          var rscx = cx + Math.cos(rsca) * rscr;
+                          var rscy = cy + Math.sin(rsca) * rscr;
+                          var rscg = ctx.createRadialGradient(rscx, rscy, 0, rscx, rscy, rsR * 0.35);
+                          rscg.addColorStop(0, 'rgba(251,146,60,0.25)'); rscg.addColorStop(1, 'transparent');
+                          ctx.beginPath(); ctx.arc(rscx, rscy, rsR * 0.35, 0, Math.PI * 2);
+                          ctx.fillStyle = rscg; ctx.fill();
+                        }
+                      }
+
+                      // ── BLUE SUPERGIANT: hyper-luminous, fast winds ──
+                      else if (stage === 'blue_supergiant') {
+                        stageLabel = '🔵 Blue Supergiant';
+                        var bsR = baseR * 2.5;
+                        var bsPulse = 1 + 0.02 * Math.sin(tick * 0.15);
+                        bsR *= bsPulse;
+                        // Intense ultraviolet halo
+                        var bsHalo = ctx.createRadialGradient(cx, cy, bsR * 0.8, cx, cy, bsR * 4);
+                        bsHalo.addColorStop(0, 'rgba(129,140,248,0.5)'); bsHalo.addColorStop(0.4, 'rgba(99,102,241,0.15)'); bsHalo.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, bsR * 4, 0, Math.PI * 2);
+                        ctx.fillStyle = bsHalo; ctx.fill();
+                        // Blinding core
+                        var bsBody = ctx.createRadialGradient(cx, cy, 0, cx, cy, bsR);
+                        bsBody.addColorStop(0, '#ffffff'); bsBody.addColorStop(0.3, '#e0e7ff'); bsBody.addColorStop(0.8, '#818cf8'); bsBody.addColorStop(1, '#4f46e5');
+                        ctx.beginPath(); ctx.arc(cx, cy, bsR, 0, Math.PI * 2);
+                        ctx.fillStyle = bsBody; ctx.fill();
+                        // Violent stellar winds (fast particles)
+                        for (var bsw = 0; bsw < 25; bsw++) {
+                           var bswa = (bsw / 25) * Math.PI * 2 + tick * 0.05;
+                           var bswd = bsR + (tick * 2 + bsw * 15) % (bsR * 2.5);
+                           var bswx = cx + Math.cos(bswa) * bswd;
+                           var bswy = cy + Math.sin(bswa) * bswd;
+                           ctx.fillStyle = 'rgba(255,255,255,' + Math.max(0, 1 - (bswd - bsR)/(bsR * 2.5)) + ')';
+                           ctx.fillRect(bswx, bswy, 2, 2);
+                        }
+                      }
+
                       // ── MAIN SEQUENCE (default): normal star ──
                       else {
-                        stageLabel = '\u2B50 Main Sequence';
+                        stageLabel = '⭐ Main Sequence';
                         var msR = baseR;
                         var msPulse = 1 + 0.03 * Math.sin(tick * 0.04);
                         msR *= msPulse;
@@ -2345,107 +2475,56 @@ if (!window._galaxyHasLoadedOnce) {
 
                 ),
 
-                // Common stages
+                // Dynamic stages
+                React.createElement("div", { className: "space-y-1" },
+                  getStagesForMass(lifecycleMass).map(function (s, idx, arr) {
+                    var isActive = activeStage === s.id;
+                    
+                    // Identify if we need a branch indicator BEFORE this item
+                    var showBranch = false;
+                    var branchLabel = "", branchEmoji = "";
+                    if (s.id === 'planetary_nebula') { showBranch = true; branchLabel = 'Gentle death \u2014 outer layers drift away'; branchEmoji = '\u2B07\uFE0F'; }
+                    else if (s.id === 'supernova') { showBranch = true; branchLabel = 'Violent death \u2014 core collapse!'; branchEmoji = '\uD83D\uDCA5'; }
+                    else if (s.id === 'black_dwarf' && lifecycleMass < 0.5) { showBranch = true; branchLabel = 'Cooling phase \u2014 fades to black'; branchEmoji = '\u2B07\uFE0F'; }
 
-                React.createElement("div", { className: "space-y-2" },
+                    var isDeathBranch = false;
+                    if (s.id === 'planetary_nebula' || s.id === 'white_dwarf' || s.id === 'black_dwarf' || s.id === 'supernova' || s.id === 'neutron_star' || s.id === 'black_hole' || (s.id === 'blue_dwarf' && lifecycleMass < 0.8)) {
+                       isDeathBranch = true;
+                    }
 
-                  LIFECYCLE.stages.map(function (s, idx) {
-                    var stageIds = ['nebula', 'protostar', 'main_sequence', 'red_giant'];
-                    var stageId = stageIds[idx] || 'main_sequence';
-                    var isActive = activeStage === stageId;
-                    return React.createElement("div", { key: s.name },
+                    return React.createElement("div", { key: s.id },
+                      showBranch ? React.createElement("div", { className: "flex justify-center py-2" },
+                        React.createElement("div", { className: "flex items-center gap-2 px-4 py-1 rounded-full border", style: { borderColor: lifecycleMass < 8 ? '#818cf855' : '#f59e0b55', background: lifecycleMass < 8 ? '#818cf815' : '#f59e0b15' } },
+                          React.createElement("span", { className: "text-sm" }, branchEmoji),
+                          React.createElement("span", { className: "text-[10px] font-bold", style: { color: lifecycleMass < 8 ? '#a5b4fc' : '#fbbf24' } }, branchLabel)
+                        )
+                      ) : null,
 
-                      React.createElement("div", { onClick: function() { upd('activeStage', stageId); }, className: "flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer " + (isActive ? "scale-[1.03] ring-2 ring-offset-1 ring-amber-400 shadow-lg" : "hover:scale-[1.01]"), style: { borderColor: isActive ? s.color : s.color + '55', background: isActive ? s.color + '25' : s.color + '15' } },
-
-                        React.createElement("div", { className: "w-10 h-10 rounded-xl flex items-center justify-center text-2xl flex-shrink-0", style: { background: s.color + '25' } }, s.emoji),
-
+                      React.createElement("div", { onClick: function() { upd('activeStage', s.id); }, className: "flex items-center gap-3 p-2 rounded-xl border transition-all cursor-pointer " + (isDeathBranch ? "ml-6 " : "") + (isActive ? "scale-[1.03] ring-2 ring-offset-1 ring-amber-400 shadow-lg" : "hover:scale-[1.01]"), style: { borderColor: isActive ? s.color : s.color + '55', background: isActive ? s.color + '25' : s.color + '15' } },
+                        React.createElement("div", { className: "w-8 h-8 rounded-lg flex items-center justify-center text-xl flex-shrink-0", style: { background: s.color + '25' } }, s.emoji),
                         React.createElement("div", { className: "flex-1 min-w-0" },
-
-                          React.createElement("p", { className: "text-xs font-bold", style: { color: s.color } }, s.name),
-
-                          React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed" }, s.desc)
-
+                          React.createElement("p", { className: "text-[11px] font-bold leading-tight", style: { color: s.color } }, s.name),
+                          React.createElement("p", { className: "text-[9px] text-slate-400 leading-tight" }, s.desc)
                         ),
-
-                        React.createElement("span", { className: "text-[9px] text-slate-600 flex-shrink-0" },
-
-                          idx === 0 ? "" :
-
-                            idx === 1 ? "~100K yr" :
-
-                              idx === 2 ? (lifecycleMass < 2 ? "~10 Gyr" : lifecycleMass < 8 ? "~1 Gyr" : lifecycleMass < 25 ? "~10 Myr" : "~3 Myr") :
-
-                                (lifecycleMass < 2 ? "~1 Gyr" : "~100 Myr"))
-
+                        React.createElement("span", { className: "text-[8px] text-slate-600 flex-shrink-0" },
+                          s.id === 'nebula' ? "" :
+                          s.id === 'protostar' ? "~100K yr" :
+                          s.id === 'main_sequence' ? (lifecycleMass < 0.8 ? "~Trillions of yr" : lifecycleMass < 2 ? "~10 Gyr" : lifecycleMass < 8 ? "~1 Gyr" : lifecycleMass < 25 ? "~10 Myr" : "~3 Myr") :
+                          s.id === 'red_giant' ? (lifecycleMass < 2 ? "~1 Gyr" : "~100 Myr") :
+                          s.id === 'red_supergiant' || s.id === 'blue_supergiant' ? "~1 Myr" :
+                          s.id === 'planetary_nebula' ? "~10,000 yr" :
+                          s.id === 'supernova' ? "~Months" :
+                          "Forever"
+                        )
                       ),
-
-                      idx < LIFECYCLE.stages.length - 1 ? React.createElement("div", { className: "flex justify-center py-1" },
-
-                        React.createElement("div", { className: "w-0.5 h-4 rounded-full", style: { background: 'linear-gradient(to bottom, ' + s.color + '60, ' + LIFECYCLE.stages[idx + 1].color + '60)' } })
-
-                      ) : null
-
+                      
+                      (idx < arr.length - 1 && !(arr[idx+1].id === 'planetary_nebula' || arr[idx+1].id === 'supernova' || (lifecycleMass < 0.5 && arr[idx+1].id === 'black_dwarf'))) ? 
+                        React.createElement("div", { className: "flex justify-center py-0.5" },
+                          React.createElement("div", { className: "w-0.5 h-3 rounded-full" + (isDeathBranch ? " ml-6" : ""), style: { background: 'linear-gradient(to bottom, ' + s.color + '60, ' + arr[idx + 1].color + '60)' } })
+                        ) 
+                      : null
                     );
-
                   })
-
-                ),
-
-
-
-                // Branch indicator
-
-                React.createElement("div", { className: "flex justify-center py-2" },
-
-                  React.createElement("div", { className: "flex items-center gap-2 px-4 py-1.5 rounded-full border", style: { borderColor: lifecycleMass < 8 ? '#818cf855' : '#f59e0b55', background: lifecycleMass < 8 ? '#818cf815' : '#f59e0b15' } },
-
-                    React.createElement("span", { className: "text-sm" }, lifecycleMass < 8 ? "\u2B07\uFE0F" : "\uD83D\uDCA5"),
-
-                    React.createElement("span", { className: "text-[10px] font-bold", style: { color: lifecycleMass < 8 ? '#a5b4fc' : '#fbbf24' } },
-
-                      lifecycleMass < 8 ? "Gentle death — outer layers drift away" : "Violent death — core collapse!")
-
-                  )
-
-                ),
-
-
-
-                // End-state stages
-
-                React.createElement("div", { className: "space-y-2" },
-
-                  (lifecycleMass < 8 ? LIFECYCLE.lowMass : LIFECYCLE.highMass.filter(function (s) {
-
-                    if (s.minMass && lifecycleMass < s.minMass) return false;
-
-                    if (s.maxMass && lifecycleMass > s.maxMass) return false;
-
-                    return true;
-
-                  })).map(function (s, idx) {
-
-                    var endStageMap = {'Planetary Nebula': 'planetary_nebula', 'White Dwarf': 'white_dwarf', 'Supernova': 'supernova', 'Neutron Star': 'neutron_star', 'Black Hole': 'black_hole'};
-                    var endStageId = null;
-                    for (var ek in endStageMap) { if (s.name.indexOf(ek) >= 0 || s.name === ek) { endStageId = endStageMap[ek]; break; } }
-                    if (!endStageId) { var eidx2 = idx; endStageId = eidx2 === 0 ? (lifecycleMass < 8 ? 'planetary_nebula' : 'supernova') : eidx2 === 1 ? (lifecycleMass < 8 ? 'white_dwarf' : (lifecycleMass < 25 ? 'neutron_star' : 'black_hole')) : 'black_hole'; }
-                    var isEndActive = activeStage === endStageId;
-                    return React.createElement("div", { key: s.name, onClick: function() { upd('activeStage', endStageId); }, className: "flex items-center gap-3 p-3 rounded-xl border ml-6 transition-all cursor-pointer " + (isEndActive ? "scale-[1.03] ring-2 ring-offset-1 ring-amber-400 shadow-lg" : "hover:scale-[1.01]"), style: { borderColor: isEndActive ? s.color : s.color + '55', background: isEndActive ? s.color + '25' : s.color + '15' } },
-
-                      React.createElement("div", { className: "w-10 h-10 rounded-xl flex items-center justify-center text-2xl flex-shrink-0", style: { background: s.color + '25' } }, s.emoji),
-
-                      React.createElement("div", { className: "flex-1 min-w-0" },
-
-                        React.createElement("p", { className: "text-xs font-bold", style: { color: s.color } }, s.name),
-
-                        React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed" }, s.desc)
-
-                      )
-
-                    );
-
-                  })
-
                 )
 
               ),
