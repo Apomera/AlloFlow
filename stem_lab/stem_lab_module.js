@@ -36114,7 +36114,35 @@
             srOnly: function(text) { return React.createElement('span', { className: 'sr-only' }, text); },
             a11yClick: function(handler) { return { onClick: handler, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(e); } }, role: 'button', tabIndex: 0 }; },
             canvasA11yDesc: function(desc) { return { role: 'img', 'aria-label': desc }; },
-            props: props || {}
+            props: props || {},
+            // ── Shared explore state ──
+            exploreScore: exploreScore || { correct: 0, total: 0 },
+            setExploreScore: typeof setExploreScore === 'function' ? setExploreScore : function() {},
+            exploreDifficulty: exploreDifficulty,
+            setExploreDifficulty: typeof setExploreDifficulty === 'function' ? setExploreDifficulty : function() {},
+            // ── Angle Explorer state ──
+            angleValue: typeof angleValue !== 'undefined' ? angleValue : 45,
+            setAngleValue: typeof setAngleValue === 'function' ? setAngleValue : function() {},
+            angleChallenge: typeof angleChallenge !== 'undefined' ? angleChallenge : null,
+            setAngleChallenge: typeof setAngleChallenge === 'function' ? setAngleChallenge : function() {},
+            angleFeedback: typeof angleFeedback !== 'undefined' ? angleFeedback : null,
+            setAngleFeedback: typeof setAngleFeedback === 'function' ? setAngleFeedback : function() {},
+            // ── Multiplication Table state ──
+            multTableAnswer: typeof multTableAnswer !== 'undefined' ? multTableAnswer : '',
+            setMultTableAnswer: typeof setMultTableAnswer === 'function' ? setMultTableAnswer : function() {},
+            multTableChallenge: typeof multTableChallenge !== 'undefined' ? multTableChallenge : null,
+            setMultTableChallenge: typeof setMultTableChallenge === 'function' ? setMultTableChallenge : function() {},
+            multTableFeedback: typeof multTableFeedback !== 'undefined' ? multTableFeedback : null,
+            setMultTableFeedback: typeof setMultTableFeedback === 'function' ? setMultTableFeedback : function() {},
+            multTableHidden: typeof multTableHidden !== 'undefined' ? multTableHidden : false,
+            setMultTableHidden: typeof setMultTableHidden === 'function' ? setMultTableHidden : function() {},
+            multTableHover: typeof multTableHover !== 'undefined' ? multTableHover : null,
+            setMultTableHover: typeof setMultTableHover === 'function' ? setMultTableHover : function() {},
+            multTableRevealed: typeof multTableRevealed !== 'undefined' ? multTableRevealed : new Set(),
+            setMultTableRevealed: typeof setMultTableRevealed === 'function' ? setMultTableRevealed : function() {},
+            // ── Shared labToolData ──
+            labToolData: labToolData || {},
+            setLabToolData: typeof setLabToolData === 'function' ? setLabToolData : function() {}
           };
 
           try {

@@ -5913,6 +5913,8 @@ const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('s
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var exploreScore = ctx.exploreScore || { correct: 0, total: 0 };
+      var setExploreScore = ctx.setExploreScore || function() {};
 
       // ── Tool body (geometryProver) ──
       return (function() {
