@@ -76,9 +76,9 @@ var d = labToolData.brainAtlas || {};
 
                 { id: 'brainstem', name: 'Brainstem', x: 0.62, y: 0.68, w: 0.10, fn: 'Midbrain + pons + medulla oblongata. Contains cranial nerve nuclei (III\u2013XII), reticular activating system (consciousness), vital centers (cardiac, respiratory, vasomotor). All ascending/descending tracts pass through.', brodmann: 'N/A', blood: 'Basilar artery, vertebral arteries, PICA, AICA', conditions: 'Locked-in syndrome (ventral pons lesion): conscious but can only move eyes. Brainstem death = legal death criterion. Central pontine myelinolysis from rapid Na correction.', damage: 'Coma, cranial nerve palsies, respiratory failure, cardiovascular collapse. "Crossed" signs: ipsilateral CN deficit + contralateral body weakness.' },
 
-                { id: 'brocas', name: t('stem.synth_ui.brocau2019s_area'), x: 0.25, y: 0.48, w: 0.08, fn: 'Left inferior frontal gyrus (pars opercularis + triangularis). Speech production and language processing. Part of larger language network connecting to Wernicke\u2019s via arcuate fasciculus.', brodmann: 'BA 44, 45', blood: 'Middle cerebral artery (superior division)', conditions: 'Broca\u2019s aphasia: non-fluent speech, telegraphic output ("want... water..."), intact comprehension, patient frustrated. Often accompanied by right hemiparesis (adjacent motor cortex).', damage: 'Expressive (motor) aphasia. Patient understands language but cannot produce fluent speech.' },
+                { id: 'brocas', name: 'Broca\'s Area', x: 0.25, y: 0.48, w: 0.08, fn: 'Left inferior frontal gyrus (pars opercularis + triangularis). Speech production and language processing. Part of larger language network connecting to Wernicke\'s via arcuate fasciculus.', brodmann: 'BA 44, 45', blood: 'Middle cerebral artery (superior division)', conditions: 'Broca\'s aphasia: non-fluent speech, telegraphic output ("want... water..."), intact comprehension, patient frustrated. Often accompanied by right hemiparesis (adjacent motor cortex).', damage: 'Expressive (motor) aphasia. Patient understands language but cannot produce fluent speech.' },
 
-                { id: 'wernickes', name: t('stem.synth_ui.wernickeu2019s_area'), x: 0.55, y: 0.50, w: 0.10, fn: 'Left posterior superior temporal gyrus. Receptive language processing \u2014 comprehension of spoken and written language. Connected to Broca\u2019s area via arcuate fasciculus.', brodmann: 'BA 22 (posterior part)', blood: 'Middle cerebral artery (inferior division)', conditions: 'Wernicke\u2019s aphasia: fluent but meaningless speech (word salad/neologisms), severely impaired comprehension. Patient often unaware of deficit. Conduction aphasia if arcuate fasciculus damaged.', damage: 'Receptive (sensory) aphasia. Patient speaks fluently but output is meaningless; poor comprehension and repetition.' },
+                { id: 'wernickes', name: 'Wernicke\'s Area', x: 0.55, y: 0.50, w: 0.10, fn: 'Left posterior superior temporal gyrus. Receptive language processing \u2014 comprehension of spoken and written language. Connected to Broca\'s area via arcuate fasciculus.', brodmann: 'BA 22 (posterior part)', blood: 'Middle cerebral artery (inferior division)', conditions: 'Wernicke\'s aphasia: fluent but meaningless speech (word salad/neologisms), severely impaired comprehension. Patient often unaware of deficit. Conduction aphasia if arcuate fasciculus damaged.', damage: 'Receptive (sensory) aphasia. Patient speaks fluently but output is meaningless; poor comprehension and repetition.' },
 
                 { id: 'insular', name: 'Insular Cortex (Insula)', x: 0.42, y: 0.45, w: 0.10, fn: 'Hidden deep to lateral sulcus, covered by opercula. Integrates interoceptive awareness (body state), taste (gustatory cortex), pain, empathy, disgust, addiction craving. Anterior insula: subjective emotional experience. Posterior insula: somatosensory integration.', brodmann: 'BA 13, 14, 15, 16', blood: 'Middle cerebral artery (insular branches, M2 segment)', conditions: 'Insular stroke: gustatory dysfunction, autonomic dysregulation (cardiac arrhythmias), loss of interoceptive awareness. Insular involvement in addiction: damage reduces nicotine craving. Temporal lobe epilepsy often involves insula. Role in anxiety and panic disorder.', damage: 'Loss of taste, impaired interoception, autonomic instability, reduced empathy, altered pain perception, disrupted addiction circuits.' },
 
@@ -2383,15 +2383,15 @@ var d = labToolData.brainAtlas || {};
 
 
 
-                // Labels
+                // Labels (enlarged text)
 
-                ctx.save(); ctx.font=(6*fontScale)+'px Inter,system-ui,sans-serif';
+                ctx.save(); ctx.font='bold '+(9*fontScale)+'px Inter,system-ui,sans-serif';
 
-                ctx.fillStyle='#64748b'; ctx.textAlign='center';
+                ctx.fillStyle='#475569'; ctx.textAlign='center';
 
-                ctx.fillText('Myelin Sheath',W*0.50,H*0.35);
+                ctx.fillText('Myelin Sheath',W*0.50,H*0.34);
 
-                ctx.fillText('Nodes of Ranvier',W*0.50,H*0.60);
+                ctx.fillText('Nodes of Ranvier',W*0.50,H*0.61);
 
                 ctx.beginPath(); ctx.moveTo(W*0.50,H*0.355); ctx.lineTo(W*0.50,H*0.40);
 
@@ -2403,47 +2403,59 @@ var d = labToolData.brainAtlas || {};
 
 
 
-                // Voltage graph overlay
+                // Voltage graph overlay (enlarged)
 
                 ctx.save();
 
-                var gx2=W*0.60,gy2=H*0.68,gw2=W*0.36,gh2=H*0.28;
+                var gx2=W*0.55,gy2=H*0.64,gw2=W*0.42,gh2=H*0.33;
 
-                ctx.fillStyle='#ffffffee'; ctx.beginPath(); ctx.roundRect(gx2,gy2,gw2,gh2,6); ctx.fill();
+                ctx.fillStyle='#ffffffee'; ctx.beginPath(); ctx.roundRect(gx2,gy2,gw2,gh2,8); ctx.fill();
 
                 ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1; ctx.stroke();
 
-                ctx.font='bold '+(7*fontScale)+'px Inter,system-ui,sans-serif';
+                ctx.font='bold '+(10*fontScale)+'px Inter,system-ui,sans-serif';
 
-                ctx.fillStyle='#334155'; ctx.textAlign='left'; ctx.fillText('Membrane Potential',gx2+6,gy2+10);
+                ctx.fillStyle='#334155'; ctx.textAlign='left'; ctx.fillText('Membrane Potential (mV)',gx2+8,gy2+14);
 
-                var px2=gx2+gw2*0.15,py2=gy2+16,pw2=gw2*0.80,ph2=gh2-24;
+                var px2=gx2+gw2*0.15,py2=gy2+22,pw2=gw2*0.80,ph2=gh2-30;
 
                 ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=0.5;
 
                 ctx.beginPath(); ctx.moveTo(px2,py2); ctx.lineTo(px2,py2+ph2); ctx.lineTo(px2+pw2,py2+ph2); ctx.stroke();
 
-                ctx.font=(5*fontScale)+'px Inter,system-ui,sans-serif'; ctx.fillStyle='#94a3b8'; ctx.textAlign='right';
+                ctx.font='bold '+(7*fontScale)+'px Inter,system-ui,sans-serif'; ctx.fillStyle='#64748b'; ctx.textAlign='right';
 
-                ctx.fillText('+30',px2-2,py2+ph2*0.15); ctx.fillText('0',px2-2,py2+ph2*0.38);
+                ctx.fillText('+30 mV',px2-3,py2+ph2*0.15); ctx.fillText('0 mV',px2-3,py2+ph2*0.38);
 
-                ctx.fillText('-55',px2-2,py2+ph2*0.58); ctx.fillText('-70',px2-2,py2+ph2*0.70);
+                ctx.fillText('-55 mV',px2-3,py2+ph2*0.58); ctx.fillText('-70 mV',px2-3,py2+ph2*0.70);
 
-                ctx.beginPath(); ctx.setLineDash([2,2]);
+                // Resting potential line
+                ctx.beginPath(); ctx.setLineDash([3,3]);
+                ctx.moveTo(px2,py2+ph2*0.70); ctx.lineTo(px2+pw2,py2+ph2*0.70);
+                ctx.strokeStyle='#3b82f650'; ctx.stroke();
+                ctx.font=(6*fontScale)+'px Inter,system-ui,sans-serif';
+                ctx.fillStyle='#3b82f6'; ctx.textAlign='left'; ctx.fillText('Resting',px2+pw2+3,py2+ph2*0.70);
+                ctx.setLineDash([]);
 
+                // Threshold line
+                ctx.beginPath(); ctx.setLineDash([3,3]);
                 ctx.moveTo(px2,py2+ph2*0.58); ctx.lineTo(px2+pw2,py2+ph2*0.58);
+                ctx.strokeStyle='#ef444460'; ctx.stroke(); ctx.setLineDash([]);
+                ctx.font='bold '+(7*fontScale)+'px Inter,system-ui,sans-serif';
+                ctx.fillStyle='#ef4444'; ctx.textAlign='left'; ctx.fillText('Threshold',px2+pw2+3,py2+ph2*0.58);
 
-                ctx.strokeStyle='#ef444450'; ctx.stroke(); ctx.setLineDash([]);
-
-                ctx.font=(5*fontScale)+'px Inter,system-ui,sans-serif';
-
-                ctx.fillStyle='#ef4444'; ctx.textAlign='left'; ctx.fillText('Threshold',px2+pw2+2,py2+ph2*0.58);
-
+                // Action potential curve labels
                 var apP=[[0,0.70],[0.15,0.70],[0.25,0.68],[0.35,0.58],[0.42,0.15],[0.48,0.10],[0.55,0.50],[0.65,0.82],[0.78,0.72],[1.0,0.70]];
 
-                ctx.beginPath(); ctx.strokeStyle='#7c3aed'; ctx.lineWidth=2;
+                ctx.beginPath(); ctx.strokeStyle='#7c3aed'; ctx.lineWidth=2.5;
 
                 apP.forEach(function(p,i){var ppx2=px2+p[0]*pw2,ppy2=py2+p[1]*ph2;if(i===0)ctx.moveTo(ppx2,ppy2);else ctx.lineTo(ppx2,ppy2);}); ctx.stroke();
+
+                // Phase labels on curve
+                ctx.font=(6*fontScale)+'px Inter,system-ui,sans-serif'; ctx.textAlign='center';
+                ctx.fillStyle='#7c3aed'; ctx.fillText('Depolarization',px2+0.38*pw2,py2+ph2*0.05);
+                ctx.fillStyle='#22c55e'; ctx.fillText('Repolarization',px2+0.58*pw2,py2+ph2*0.42);
+                ctx.fillStyle='#f59e0b'; ctx.fillText('Hyperpol.',px2+0.72*pw2,py2+ph2*0.90);
 
                 var df=phase/6,di2=Math.min(apP.length-2,Math.floor(df*(apP.length-1))),dt2=(df*(apP.length-1))-di2;
 
@@ -2451,49 +2463,59 @@ var d = labToolData.brainAtlas || {};
 
                 var dpy=py2+(apP[di2][1]+(apP[di2+1][1]-apP[di2][1])*dt2)*ph2;
 
-                ctx.beginPath(); ctx.arc(dpx,dpy,4,0,Math.PI*2); ctx.fillStyle='#7c3aed'; ctx.fill();
+                ctx.beginPath(); ctx.arc(dpx,dpy,5,0,Math.PI*2); ctx.fillStyle='#7c3aed'; ctx.fill();
 
-                ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
-
-                ctx.restore();
-
-
-
-                // Ion legend
-
-                ctx.save(); ctx.font='bold '+(7*fontScale)+'px Inter,system-ui,sans-serif'; ctx.textAlign='left';
-
-                ctx.beginPath(); ctx.arc(W*0.04,H*0.72,4,0,Math.PI*2); ctx.fillStyle=naColor; ctx.fill();
-
-                ctx.fillStyle='#1e40af'; ctx.fillText('Na\u207A (in)',W*0.06,H*0.725);
-
-                ctx.beginPath(); ctx.arc(W*0.04,H*0.78,4,0,Math.PI*2); ctx.fillStyle=kColor; ctx.fill();
-
-                ctx.fillStyle='#166534'; ctx.fillText('K\u207A (out)',W*0.06,H*0.785);
-
-                ctx.beginPath(); ctx.arc(W*0.04,H*0.84,4,0,Math.PI*2); ctx.fillStyle='#fbbf24'; ctx.fill();
-
-                ctx.fillStyle='#92400e'; ctx.fillText('Signal',W*0.06,H*0.845);
+                ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
 
                 ctx.restore();
 
 
 
-                // Phase name overlay
+                // Ion legend (enlarged)
+
+                ctx.save(); ctx.font='bold '+(9*fontScale)+'px Inter,system-ui,sans-serif'; ctx.textAlign='left';
+
+                ctx.beginPath(); ctx.arc(W*0.04,H*0.68,5,0,Math.PI*2); ctx.fillStyle=naColor; ctx.fill();
+
+                ctx.fillStyle='#1e40af'; ctx.fillText('Na\u207A ions (rush in)',W*0.07,H*0.685);
+
+                ctx.beginPath(); ctx.arc(W*0.04,H*0.74,5,0,Math.PI*2); ctx.fillStyle=kColor; ctx.fill();
+
+                ctx.fillStyle='#166534'; ctx.fillText('K\u207A ions (flow out)',W*0.07,H*0.745);
+
+                ctx.beginPath(); ctx.arc(W*0.04,H*0.80,5,0,Math.PI*2); ctx.fillStyle='#fbbf24'; ctx.fill();
+
+                ctx.fillStyle='#92400e'; ctx.fillText('Signal propagation',W*0.07,H*0.805);
+
+                // Key concept: all-or-nothing
+                ctx.font='bold '+(8*fontScale)+'px Inter,system-ui,sans-serif';
+                ctx.fillStyle='#7c3aed';
+                ctx.fillText('\u26A1 All-or-Nothing:',W*0.04,H*0.87);
+                ctx.font=(7*fontScale)+'px Inter,system-ui,sans-serif';
+                ctx.fillStyle='#475569';
+                ctx.fillText('Once threshold (-55mV) is reached,',W*0.04,H*0.90);
+                ctx.fillText('the neuron fires at full strength.',W*0.04,H*0.93);
+                ctx.fillText('No partial signals!',W*0.04,H*0.96);
+
+                ctx.restore();
+
+
+
+                // Phase name overlay (enlarged)
 
                 ctx.save(); var pn=phaseNames[Math.floor(phase)];
 
-                ctx.font='bold '+(9*fontScale)+'px Inter,system-ui,sans-serif';
+                ctx.font='bold '+(12*fontScale)+'px Inter,system-ui,sans-serif';
 
-                var pnW2=ctx.measureText(pn).width+16;
+                var pnW2=ctx.measureText(pn).width+20;
 
-                ctx.beginPath(); ctx.roundRect(W-pnW2-8,6,pnW2,18,6);
+                ctx.beginPath(); ctx.roundRect(W-pnW2-10,6,pnW2,24,8);
 
                 var pc=phase<1?'#64748b':phase<2?'#eab308':phase<4?'#f97316':phase<5?'#22c55e':'#3b82f6';
 
                 ctx.fillStyle=pc+'20'; ctx.fill(); ctx.strokeStyle=pc+'60'; ctx.lineWidth=1; ctx.stroke();
 
-                ctx.fillStyle=pc; ctx.textAlign='center'; ctx.fillText(pn,W-pnW2/2,19);
+                ctx.fillStyle=pc; ctx.textAlign='center'; ctx.fillText(pn,W-pnW2/2,23);
 
                 ctx.restore();
 
@@ -2670,23 +2692,55 @@ var d = labToolData.brainAtlas || {};
 
               } else if (currentView.isEEG) {
 
-                // ── EEG Waves Real-Time Animation ──
+                // ── EEG Waves Real-Time Animation with Activity Modes ──
                 var eT = canvas._brainTick;
                 var eSpeed = 0.03;
 
-                // Wave definitions: [name, freq(Hz approx visual), amplitude, color, yCenter fraction]
+                // Activity mode amplitude multipliers: [delta, theta, alpha, beta, gamma]
+                var EEG_ACTIVITIES = {
+                  resting:     { label: 'Resting',     mults: [0.3, 0.5, 1.0, 0.4, 0.2] },
+                  sleeping:    { label: 'Sleeping',    mults: [1.0, 0.7, 0.2, 0.1, 0.05] },
+                  studying:    { label: 'Studying',    mults: [0.1, 0.3, 0.4, 1.0, 0.7] },
+                  exercise:    { label: 'Exercise',    mults: [0.1, 0.2, 0.3, 1.0, 0.5] },
+                  meditating:  { label: 'Meditating',  mults: [0.4, 0.9, 1.0, 0.2, 0.6] }
+                };
+                var eegActivity = canvas._eegActivity || 'resting';
+                var actMults = EEG_ACTIVITIES[eegActivity].mults;
+
+                // Base wave definitions modulated by activity
                 var eegBands = [
-                  { name: 'Delta (0.5\u20134 Hz)', freq: 1.5, amp: 0.08, color: '#4338ca', yc: 0.12, desc: 'Deep Sleep' },
-                  { name: 'Theta (4\u20138 Hz)', freq: 4, amp: 0.06, color: '#0ea5e9', yc: 0.32, desc: 'Drowsiness' },
-                  { name: 'Alpha (8\u201313 Hz)', freq: 8, amp: 0.045, color: '#22c55e', yc: 0.52, desc: 'Relaxed' },
-                  { name: 'Beta (13\u201330 Hz)', freq: 16, amp: 0.03, color: '#f59e0b', yc: 0.72, desc: 'Active' },
-                  { name: 'Gamma (30\u2013100 Hz)', freq: 35, amp: 0.018, color: '#ef4444', yc: 0.90, desc: 'Focus' }
+                  { name: 'Delta (0.5\u20134 Hz)', freq: 1.5, amp: 0.08 * actMults[0], color: '#4338ca', yc: 0.12, desc: EEG_ACTIVITIES[eegActivity].label === 'Sleeping' ? '\u2B06 Dominant' : 'Deep Sleep' },
+                  { name: 'Theta (4\u20138 Hz)', freq: 4, amp: 0.06 * actMults[1], color: '#0ea5e9', yc: 0.32, desc: EEG_ACTIVITIES[eegActivity].label === 'Meditating' ? '\u2B06 Enhanced' : 'Drowsiness' },
+                  { name: 'Alpha (8\u201313 Hz)', freq: 8, amp: 0.045 * actMults[2], color: '#22c55e', yc: 0.52, desc: EEG_ACTIVITIES[eegActivity].label === 'Resting' ? '\u2B06 Dominant' : 'Relaxed' },
+                  { name: 'Beta (13\u201330 Hz)', freq: 16, amp: 0.03 * actMults[3], color: '#f59e0b', yc: 0.72, desc: (eegActivity === 'studying' || eegActivity === 'exercise') ? '\u2B06 Dominant' : 'Active' },
+                  { name: 'Gamma (30\u2013100 Hz)', freq: 35, amp: 0.018 * actMults[4], color: '#ef4444', yc: 0.90, desc: eegActivity === 'studying' ? '\u2B06 Enhanced' : 'Focus' }
                 ];
 
-                // Title
+                // Title with activity mode
                 ctx.font = 'bold ' + Math.round(14 * fontScale) + 'px Inter, system-ui, sans-serif';
                 ctx.fillStyle = '#334155'; ctx.textAlign = 'center';
-                ctx.fillText('Electroencephalogram (EEG) \u2014 Brain Wave Patterns', W * 0.5, H * 0.04);
+                ctx.fillText('EEG \u2014 ' + EEG_ACTIVITIES[eegActivity].label + ' Brain Activity', W * 0.5, H * 0.04);
+
+                // Activity mode selector buttons (drawn on canvas)
+                var actKeys = Object.keys(EEG_ACTIVITIES);
+                var actBtnW = W * 0.14;
+                var actBtnH = 16;
+                var actBtnY = H * 0.055;
+                var actTotalW = actKeys.length * actBtnW + (actKeys.length - 1) * 6;
+                var actStartX = (W - actTotalW) / 2;
+                canvas._eegBtnRects = [];
+                ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                actKeys.forEach(function(ak, ai) {
+                  var bx = actStartX + ai * (actBtnW + 6);
+                  var isAct = eegActivity === ak;
+                  ctx.beginPath(); ctx.roundRect(bx, actBtnY, actBtnW, actBtnH, 4);
+                  ctx.fillStyle = isAct ? '#7c3aed' : '#f1f5f9';
+                  ctx.fill();
+                  ctx.strokeStyle = isAct ? '#6d28d9' : '#cbd5e1'; ctx.lineWidth = 1; ctx.stroke();
+                  ctx.fillStyle = isAct ? '#fff' : '#64748b'; ctx.textAlign = 'center';
+                  ctx.fillText(EEG_ACTIVITIES[ak].label, bx + actBtnW / 2, actBtnY + 11);
+                  canvas._eegBtnRects.push({ key: ak, x: bx / W, y: actBtnY / H, w: actBtnW / W, h: actBtnH / H });
+                });
 
                 // Draw each EEG channel
                 var eMarginL = W * 0.18;
@@ -2778,8 +2832,8 @@ var d = labToolData.brainAtlas || {};
 
 
 
-              // ── Enhanced Region Markers ──
-
+              // ── Enhanced Region Markers (anatomical views only) ──
+              if (!currentView.isNeuron && !currentView.isNT && !currentView.isSleep && !currentView.isEEG)
               filtered.forEach(function (r) {
 
                 var px = r.x * W, py = r.y * H;
@@ -2931,6 +2985,18 @@ var d = labToolData.brainAtlas || {};
             var cx = (e.clientX - rect.left) / rect.width;
 
             var cy = (e.clientY - rect.top) / rect.height;
+
+            // EEG activity mode button click detection
+            var canvas = e.target;
+            if (canvas._eegBtnRects && currentView.isEEG) {
+              for (var bi = 0; bi < canvas._eegBtnRects.length; bi++) {
+                var btn = canvas._eegBtnRects[bi];
+                if (cx >= btn.x && cx <= btn.x + btn.w && cy >= btn.y && cy <= btn.y + btn.h) {
+                  canvas._eegActivity = btn.key;
+                  return; // handled by EEG button
+                }
+              }
+            }
 
             var closest = null, minD = 0.08;
 
@@ -3098,6 +3164,29 @@ var d = labToolData.brainAtlas || {};
 
                 )
 
+              ),
+
+              // ─── Action Potential Education Panel (Neuron view only) ───
+              currentView.isNeuron && React.createElement("div", {
+                className: "rounded-xl border-2 border-purple-200 p-4 space-y-3",
+                style: { background: 'linear-gradient(135deg, #faf5ff, #f0f0ff)' }
+              },
+                React.createElement("h4", { className: "text-sm font-black text-purple-800 flex items-center gap-2" }, "\u26A1 How Neurons Fire: The Action Potential"),
+                React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2" },
+                  React.createElement("div", { className: "rounded-lg bg-white p-3 border border-purple-100" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-purple-600 uppercase mb-1" }, "\uD83E\uDDEA Ion Chemistry"),
+                    React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "At rest, the neuron is polarized at -70mV. Na\u207A (sodium) is concentrated outside; K\u207A (potassium) inside. The Na\u207A/K\u207A pump maintains this gradient using ATP energy (3 Na\u207A out, 2 K\u207A in).")
+                  ),
+                  React.createElement("div", { className: "rounded-lg bg-white p-3 border border-purple-100" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-orange-600 uppercase mb-1" }, "\u26A1 All-or-Nothing Firing"),
+                    React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "When stimulation reaches threshold (-55mV), voltage-gated Na\u207A channels open and the neuron fires at FULL strength. There is no \u201Chalf\u201D signal \u2014 it either fires completely or not at all. Stronger stimuli increase firing RATE, not intensity.")
+                  ),
+                  React.createElement("div", { className: "rounded-lg bg-white p-3 border border-purple-100" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-green-600 uppercase mb-1" }, "\uD83D\uDD04 Recovery Cycle"),
+                    React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "After firing: Na\u207A channels close, K\u207A channels open \u2192 repolarization. The membrane briefly overshoots to -80mV (hyperpolarization), creating a refractory period where the neuron cannot fire again. This ensures one-way signal travel.")
+                  )
+                ),
+                React.createElement("p", { className: "text-[10px] text-purple-500 italic text-center" }, "Saltatory conduction: signals \u201Cjump\u201D between Nodes of Ranvier along the myelinated axon, increasing speed from ~2 m/s to ~120 m/s.")
               ),
 
               // ─── Detail panel (below canvas) ───
