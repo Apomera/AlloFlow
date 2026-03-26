@@ -36610,7 +36610,8 @@
             base10: true, moneyMath: true,
             coordinate: true, protractor: true,
             archStudio: true, artStudio: true, dataStudio: true, cyberDefense: true,
-            galaxy: true, brainAtlas: true
+            galaxy: true, brainAtlas: true,
+            funcGrapher: true, physics: true
           };
           if (!_pluginOnlyTools[stemLabTool]) return null;
 
@@ -36657,7 +36658,16 @@
               }
             },
             renderTutorial: typeof renderTutorial === 'function' ? renderTutorial : function() { return null; },
-            _tutGalaxy: typeof _tutGalaxy !== 'undefined' ? _tutGalaxy : []
+            _tutGalaxy: typeof _tutGalaxy !== 'undefined' ? _tutGalaxy : [],
+            beep: typeof stemBeep === 'function' ? stemBeep : function() {},
+            callTTS: typeof callTTS === 'function' ? callTTS : null,
+            callImagen: typeof callImagen === 'function' ? callImagen : null,
+            callGeminiVision: typeof callGeminiVision === 'function' ? callGeminiVision : null,
+            gradeLevel: gradeLevel || '5th Grade',
+            srOnly: function(text) { return React.createElement('span', { className: 'sr-only' }, text); },
+            a11yClick: function(handler) { return { onClick: handler, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(e); } }, role: 'button', tabIndex: 0 }; },
+            canvasA11yDesc: function(desc) { return { role: 'img', 'aria-label': desc }; },
+            props: props || {}
           };
 
           try {

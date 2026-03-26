@@ -387,13 +387,15 @@ var d = labToolData.brainAtlas || {};
 
             if (!canvas) return;
 
-            // If view changed, cancel the old animation so we restart with the new view
+            // If view or sim scenario changed, cancel the old animation so we restart with fresh closures
 
-            if (canvas._brainAnim && canvas._brainViewKey === viewKey) return;
+            var _cacheKey = viewKey + '|' + simScenario;
+
+            if (canvas._brainAnim && canvas._brainViewKey === _cacheKey) return;
 
             if (canvas._brainAnim) { cancelAnimationFrame(canvas._brainAnim); canvas._brainAnim = null; }
 
-            canvas._brainViewKey = viewKey;
+            canvas._brainViewKey = _cacheKey;
 
             var ctx = canvas.getContext('2d');
 
@@ -995,11 +997,11 @@ var d = labToolData.brainAtlas || {};
 
                     ctx.restore();
 
-                    ctx.font = 'bold ' + Math.round(12 * fontScale) + 'px Inter, system-ui, sans-serif';
+                    ctx.font = 'bold ' + Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
 
                     ctx.fillStyle = '#16a34a'; ctx.textAlign = 'center';
 
-                    ctx.fillText('\u2B06 ENHANCED', rx, ry + 36);
+                    ctx.fillText('\u2B06 ENHANCED', rx, ry + 46);
 
                   }
 
@@ -1017,11 +1019,11 @@ var d = labToolData.brainAtlas || {};
 
                     ctx.restore();
 
-                    ctx.font = 'bold ' + Math.round(12 * fontScale) + 'px Inter, system-ui, sans-serif';
+                    ctx.font = 'bold ' + Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
 
                     ctx.fillStyle = '#ef4444'; ctx.textAlign = 'center';
 
-                    ctx.fillText('\u2B07 BLOCKED', rx, ry + 36);
+                    ctx.fillText('\u2B07 BLOCKED', rx, ry + 46);
 
                   }
 
@@ -1029,7 +1031,7 @@ var d = labToolData.brainAtlas || {};
 
                   ctx.fillStyle = rd.color; ctx.textAlign = 'center';
 
-                  ctx.fillText(rd.name, rx, ry + 28);
+                  ctx.fillText(rd.name, rx, ry + 30);
 
                 }
 
@@ -3131,36 +3133,51 @@ var d = labToolData.brainAtlas || {};
                 ctx.ellipse(brCx - brRx * 0.45, brCy - brRy * 0.15, brRx * 0.22, brRy * 0.45, 0, 0, Math.PI * 2);
                 ctx.fillStyle = '#f59e0b'; ctx.fill();
                 ctx.restore();
-                ctx.font = 'bold ' + Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.fillStyle = '#b4590090'; ctx.textAlign = 'center';
-                ctx.fillText('Broca\u2019s', brCx - brRx * 0.55, brCy - brRy * 0.40);
-                ctx.fillText('Wernicke\u2019s', brCx - brRx * 0.35, brCy + brRy * 0.15);
+                ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillStyle = '#b45900cc'; ctx.textAlign = 'center';
+                ctx.fillText('Broca\u2019s', brCx - brRx * 0.65, brCy - brRy * 0.50);
+                ctx.fillText('Wernicke\u2019s', brCx - brRx * 0.25, brCy + brRy * 0.25);
 
-                // ── Legend ──
-                var legY = H * 0.90;
+                // ── Legend (two rows to avoid cramping) ──
                 var legItems = [
                   { color: '#ef4444', label: 'Motor (corticospinal)' },
                   { color: '#3b82f6', label: 'Sensory (DCML)' },
                   { color: '#22c55e', label: 'Visual (optic)' },
                   { color: '#f59e0b', label: 'Language (left-dominant)' }
                 ];
-                ctx.font = Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
-                var legTotalW = 0;
-                legItems.forEach(function(li) { legTotalW += ctx.measureText(li.label).width + 28; });
-                var legX = (W - legTotalW) / 2;
-                legItems.forEach(function(li) {
-                  ctx.beginPath(); ctx.arc(legX + 5, legY, 4, 0, Math.PI * 2);
+                ctx.font = Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
+                // Row 1: Motor + Sensory
+                var legRow1 = legItems.slice(0, 2);
+                var legRow1W = 0;
+                legRow1.forEach(function(li) { legRow1W += ctx.measureText(li.label).width + 30; });
+                var legX1 = (W - legRow1W) / 2;
+                var legY1 = H * 0.82;
+                legRow1.forEach(function(li) {
+                  ctx.beginPath(); ctx.arc(legX1 + 5, legY1, 4, 0, Math.PI * 2);
                   ctx.fillStyle = li.color; ctx.fill();
                   ctx.fillStyle = '#64748b'; ctx.textAlign = 'left';
-                  ctx.fillText(li.label, legX + 13, legY + 3.5);
-                  legX += ctx.measureText(li.label).width + 28;
+                  ctx.fillText(li.label, legX1 + 13, legY1 + 4);
+                  legX1 += ctx.measureText(li.label).width + 30;
+                });
+                // Row 2: Visual + Language
+                var legRow2 = legItems.slice(2, 4);
+                var legRow2W = 0;
+                legRow2.forEach(function(li) { legRow2W += ctx.measureText(li.label).width + 30; });
+                var legX2 = (W - legRow2W) / 2;
+                var legY2 = H * 0.86;
+                legRow2.forEach(function(li) {
+                  ctx.beginPath(); ctx.arc(legX2 + 5, legY2, 4, 0, Math.PI * 2);
+                  ctx.fillStyle = li.color; ctx.fill();
+                  ctx.fillStyle = '#64748b'; ctx.textAlign = 'left';
+                  ctx.fillText(li.label, legX2 + 13, legY2 + 4);
+                  legX2 += ctx.measureText(li.label).width + 30;
                 });
 
                 // Body silhouette labels at bottom
                 ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
                 ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
-                ctx.fillText('\u2190 LEFT BODY', brCx - W * 0.25, H * 0.97);
-                ctx.fillText('RIGHT BODY \u2192', brCx + W * 0.25, H * 0.97);
+                ctx.fillText('\u2190 LEFT BODY', brCx - W * 0.25, H * 0.93);
+                ctx.fillText('RIGHT BODY \u2192', brCx + W * 0.25, H * 0.93);
 
               }
 
@@ -3496,7 +3513,25 @@ var d = labToolData.brainAtlas || {};
 
                     }, activeSim.name + ' Mode'),
 
-                    React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, activeSim.desc)
+                    React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, activeSim.desc),
+
+                    simScenario !== 'normal' && React.createElement("div", {
+
+                      className: "mt-2 rounded-lg p-2 border",
+
+                      style: { background: '#fef3c720', borderColor: '#f59e0b33' }
+
+                    },
+
+                      React.createElement("p", { className: "text-[10px] font-bold text-amber-700 uppercase mb-0.5" }, "\u26A0\uFE0F Tolerance \u0026 Receptor Desensitization"),
+
+                      React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" },
+
+                        "With repeated exposure, postsynaptic receptors undergo downregulation \u2014 the cell reduces receptor density or sensitivity (internalization) to compensate for excess stimulation. This means higher doses are needed to achieve the same effect, driving the cycle of tolerance and dependence. Abrupt cessation can cause withdrawal as the nervous system has adapted to the drug\u2019s presence."
+
+                      )
+
+                    )
 
                   )
 
