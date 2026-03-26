@@ -545,24 +545,7 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.fillText('PRESYNAPTIC TERMINAL', W * 0.5, H * 0.10);
 
-                // ── Active Drug Banner (non-Normal only) ──
-                if (activeSim.id !== 'normal') {
-                  var banW = W * 0.72, banH = 22, banX = W * 0.5 - banW / 2, banY = H * 0.125;
-                  ctx.save();
-                  ctx.shadowColor = activeSim.color + '40'; ctx.shadowBlur = 8;
-                  ctx.beginPath(); ctx.roundRect(banX, banY, banW, banH, 6);
-                  ctx.fillStyle = activeSim.color; ctx.fill();
-                  ctx.restore();
-                  ctx.font = 'bold ' + Math.round(13 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
-                  var banText = activeSim.icon + ' ' + activeSim.name.toUpperCase();
-                  ctx.fillText(banText, W * 0.5, banY + 15);
-                  // Short mechanism note below banner
-                  ctx.font = Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillStyle = activeSim.color;
-                  var mechMap = { ssri: 'Blocks SERT reuptake \u2192 \u2191 serotonin in cleft', snri: 'Blocks SERT+NET \u2192 \u2191 serotonin & norepinephrine', benzo: 'Enhances GABA-A Cl\u207B channel opening', cocaine: 'Blocks DAT+NET+SERT \u2192 massive DA accumulation', opioid: 'Activates \u03BC-opioid receptors \u2192 analgesia & euphoria', alcohol: 'Enhances GABA-A + blocks NMDA glutamate' };
-                  ctx.fillText(mechMap[activeSim.id] || '', W * 0.5, banY + banH + 12);
-                }
+                // (Drug banner moved to end of draw loop for z-order)
 
 
 
@@ -1224,6 +1207,34 @@ var d = labToolData.brainAtlas || {};
                 ctx.restore();
 
 
+
+                // ── Active Drug Banner (drawn last for z-order) ──
+                if (activeSim.id !== 'normal') {
+                  var banW = W * 0.72, banH = 22, banX = W * 0.5 - banW / 2, banY = H * 0.125;
+                  ctx.save();
+                  ctx.shadowColor = activeSim.color + '40'; ctx.shadowBlur = 8;
+                  ctx.beginPath(); ctx.roundRect(banX, banY, banW, banH, 6);
+                  ctx.fillStyle = activeSim.color; ctx.fill();
+                  ctx.restore();
+                  ctx.font = 'bold ' + Math.round(13 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+                  var banText = activeSim.icon + ' ' + activeSim.name.toUpperCase();
+                  ctx.fillText(banText, W * 0.5, banY + 15);
+                  // Frosted backdrop behind mechanism note
+                  var mechMap = { ssri: 'Blocks SERT reuptake \u2192 \u2191 serotonin in cleft', snri: 'Blocks SERT+NET \u2192 \u2191 serotonin & norepinephrine', benzo: 'Enhances GABA-A Cl\u207B channel opening', cocaine: 'Blocks DAT+NET+SERT \u2192 massive DA accumulation', opioid: 'Activates \u03BC-opioid receptors \u2192 analgesia & euphoria', alcohol: 'Enhances GABA-A + blocks NMDA glutamate' };
+                  var mechText = mechMap[activeSim.id] || '';
+                  if (mechText) {
+                    ctx.font = Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
+                    var mechW = ctx.measureText(mechText).width + 16;
+                    ctx.save();
+                    ctx.globalAlpha = 0.85;
+                    ctx.beginPath(); ctx.roundRect(W * 0.5 - mechW / 2, banY + banH + 1, mechW, 14, 3);
+                    ctx.fillStyle = '#fff'; ctx.fill();
+                    ctx.restore();
+                    ctx.fillStyle = activeSim.color;
+                    ctx.fillText(mechText, W * 0.5, banY + banH + 12);
+                  }
+                }
 
                 // ── View Label (styled) ──
 

@@ -70,6 +70,8 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var renderTutorial = ctx.renderTutorial || function() { return null; };
+      var _tutGalaxy = ctx._tutGalaxy || [];
 
       // ── Tool body (galaxy) ──
       return (function() {
@@ -636,7 +638,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 '  vType = aStarType;',
 
-                '  float sz = 8.0 - aStarType * 0.8;',
+                '  float sz = 5.0 - aStarType * 0.5;',
 
                 '  float twinkleSpeed = 0.8 + aStarType * 0.3;',
 
@@ -644,7 +646,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
 
-                '  gl_PointSize = min(sz * uPR * (120.0 / max(-mv.z, 1.0)), 24.0);',
+                '  gl_PointSize = min(sz * uPR * (80.0 / max(-mv.z, 1.0)), 14.0);',
 
                 '  gl_Position = projectionMatrix * mv;',
 
@@ -666,15 +668,15 @@ if (!window._galaxyHasLoadedOnce) {
 
                 '  if (d > 1.0) discard;',
 
-                '  float glow = exp(-d * d * 4.5);',
+                '  float glow = exp(-d * d * 8.0);',
 
                 '  float core = smoothstep(1.0, 0.0, d);',
 
-                '  float brightness = mix(0.9, 0.35, vType / 6.0);',
+                '  float brightness = mix(1.0, 0.5, vType / 6.0);',
 
                 '  vec3 col = vSC * (0.2 + 0.8 * glow) * brightness;',
 
-                '  gl_FragColor = vec4(col, core * vA * 0.55);',
+                '  gl_FragColor = vec4(col, core * vA * 0.75);',
 
                 '}'
 
@@ -780,7 +782,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
 
-              var dustMat = new THREE.PointsMaterial({ color: 0x030305, size: 0.045, transparent: true, opacity: 0.12 });
+              var dustMat = new THREE.PointsMaterial({ color: 0x030305, size: 0.025, transparent: true, opacity: 0.12 });
 
               dustGroup.add(new THREE.Points(dustGeo, dustMat));
 
@@ -821,7 +823,7 @@ if (!window._galaxyHasLoadedOnce) {
               gCtx.fillStyle = gGrad; gCtx.fillRect(0,0,32,32);
               var gasTex = new THREE.CanvasTexture(gasCv);
               
-              var gasMat = new THREE.PointsMaterial({ size: 0.15, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false, vertexColors: true, map: gasTex });
+              var gasMat = new THREE.PointsMaterial({ size: 0.06, transparent: true, opacity: 0.06, blending: THREE.AdditiveBlending, depthWrite: false, vertexColors: true, map: gasTex });
               gasGroup.add(new THREE.Points(gasGeo, gasMat));
             })();
 
@@ -984,7 +986,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               composer.addPass(new THREE.RenderPass(scene, camera));
 
-              var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(W, H), 2.2, 0.4, 0.85);
+              var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(W, H), 1.2, 0.25, 0.9);
 
               composer.addPass(bloomPass);
 
@@ -1867,19 +1869,19 @@ if (!window._galaxyHasLoadedOnce) {
 
             // ══════════════════════════════════════════════
 
-            !d.quizMode && simMode === 'star' && React.createElement("div", { className: "animate-in fade-in duration-300", style: { display: "flex", gap: "16px", alignItems: "flex-start" } },
+            !d.quizMode && simMode === 'star' && React.createElement("div", { className: "animate-in fade-in duration-300", style: { display: "flex", gap: "16px", alignItems: "stretch" } },
 
 
 
               // ── RIGHT COLUMN: Star Visualization (sticky) ──
 
-              React.createElement("div", { style: { flex: "1 1 58%", position: "sticky", top: "16px", display: "flex", flexDirection: "column", gap: "16px", order: 2 } },
+              React.createElement("div", { style: { flex: "1 1 65%", position: "sticky", top: "16px", alignSelf: "flex-start", display: "flex", flexDirection: "column", gap: "16px", order: 2, minHeight: "520px" } },
 
 
 
               // ── Animated Star Canvas ──
 
-              React.createElement("div", { className: "w-full flex-1 relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210] shadow-2xl shadow-indigo-500/10", style: { height: 'calc(85vh - 40px)', minHeight: '400px' } },
+              React.createElement("div", { className: "w-full flex-1 relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210] shadow-2xl shadow-indigo-500/10", style: { flex: '1 1 auto', minHeight: '520px', position: 'relative' } },
 
                 React.createElement("canvas", {
 
@@ -1922,7 +1924,8 @@ if (!window._galaxyHasLoadedOnce) {
                       var mass = cvEl._stellarMass || 1;
                       var stage = cvEl._stellarStage || 'main_sequence';
                       var cx = W * 0.5, cy = H * 0.5;
-                      var baseR = Math.max(18, Math.min(W * 0.18, Math.pow(mass, 0.6) * (W * 0.04)));
+                      var dim = Math.min(W, H);
+                      var baseR = Math.max(dim * 0.06, Math.min(dim * 0.35, Math.pow(mass, 0.55) * (dim * 0.09)));
 
                       // Determine star color based on mass
                       var coreColor, glowColor, coronaColor;
@@ -2347,7 +2350,10 @@ if (!window._galaxyHasLoadedOnce) {
 
                   style: { width: '100%', height: '100%' }
 
-                })
+                }),
+
+                // ── Snapshot button (overlay, bottom-right of canvas) ──
+                React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: 'Star Life: ' + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Star life snapshot saved!', 'success'); }, className: "px-3 py-1.5 text-[10px] font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all", style: { position: 'absolute', bottom: '12px', right: '12px', zIndex: 10 } }, "\uD83D\uDCF8 Snapshot")
 
               )
 
@@ -2357,7 +2363,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               // ── LEFT COLUMN: Controls & Timeline ──
 
-              React.createElement("div", { style: { flex: "0 0 42%", maxHeight: "85vh", overflowY: "auto", display: "flex", flexDirection: "column", gap: "16px", order: 1 } },
+              React.createElement("div", { style: { flex: "0 0 38%", maxHeight: "85vh", overflowY: "auto", display: "flex", flexDirection: "column", gap: "16px", order: 1 } },
 
 
 
@@ -2751,13 +2757,7 @@ if (!window._galaxyHasLoadedOnce) {
 
 
 
-              // ── Snapshot ──
-
-              React.createElement("div", { className: "flex justify-end", style: { width: "100%", order: 3 } },
-
-                React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: 'Star Life: ' + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Star life snapshot saved!', 'success'); }, className: "px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
-
-              )
+              // (Snapshot button moved inside canvas container)
 
             ),
 
