@@ -285,6 +285,32 @@ var d = labToolData.brainAtlas || {};
 
               ]
 
+            },
+
+            crossLateral: {
+
+              name: '\uD83D\uDD00 Cross-Lateralization', desc: 'How each hemisphere controls the opposite side of the body',
+
+              isCrossLateral: true,
+
+              regions: [
+
+                { id: 'motor_decuss', name: 'Motor Decussation (Pyramids)', x: 0.50, y: 0.82, w: 0.08, fn: 'The corticospinal (pyramidal) tract crosses at the medullary pyramids. ~85\u201390% of fibers cross (lateral corticospinal tract) to control contralateral limb movement. ~10\u201315% remain ipsilateral (anterior corticospinal tract, controlling proximal/axial muscles). This crossing is why a left hemisphere stroke causes right-sided weakness (contralateral hemiparesis).', conditions: 'Medullary lesion at pyramids: contralateral hemiparesis below the lesion. Brown-S\u00E9quard syndrome (hemisection of spinal cord): ipsilateral motor loss + contralateral pain/temp loss. Wallenberg syndrome: ipsilateral face + contralateral body deficits.', damage: 'Unilateral pyramidal lesion produces contralateral upper motor neuron signs: weakness, spasticity, hyperreflexia, Babinski sign. Bilateral lesion causes quadriplegia.' },
+
+                { id: 'sensory_decuss', name: 'Sensory Decussation (Medial Lemniscus)', x: 0.50, y: 0.72, w: 0.08, fn: 'The dorsal column\u2013medial lemniscus (DCML) pathway carries fine touch, proprioception, and vibration. First-order neurons ascend ipsilaterally in the dorsal columns to the gracile/cuneate nuclei of the medulla. Second-order neurons cross as internal arcuate fibers forming the medial lemniscus, then ascend to the contralateral thalamus (VPL nucleus). This means the left somatosensory cortex processes right-body sensation.', conditions: 'Posterior cord syndrome: bilateral loss of proprioception and fine touch (dorsal column damage). Tabes dorsalis (neurosyphilis): dorsal column degeneration \u2192 sensory ataxia, Romberg sign. Vitamin B12 deficiency: subacute combined degeneration (dorsal columns + corticospinal tracts).', damage: 'Medullary lesion at sensory decussation causes contralateral loss of fine touch and proprioception. Cortical lesion causes contralateral sensory loss with cortical signs (astereognosis, agraphesthesia).' },
+
+                { id: 'optic_chiasm_cross', name: 'Optic Chiasm (Visual Crossing)', x: 0.50, y: 0.52, w: 0.08, fn: 'Partial decussation of visual signals: nasal retinal fibers (receiving temporal visual field) cross to the contralateral optic tract. Temporal retinal fibers (receiving nasal visual field) remain ipsilateral. Result: each occipital lobe processes the contralateral visual field. Left occipital cortex sees the right visual field, and vice versa. This partial crossing enables binocular vision and depth perception.', conditions: 'Pituitary adenoma compressing chiasm from below: bitemporal hemianopia (loss of both temporal fields). Craniopharyngioma compressing from above: variable field cuts. Optic tract lesion: contralateral homonymous hemianopia (both eyes lose same visual field). Optic neuritis (MS): unilateral vision loss with afferent pupillary defect.', damage: 'Chiasm compression causes bitemporal hemianopia. Post-chiasm lesions cause homonymous defects. Complete optic nerve lesion causes monocular blindness.' },
+
+                { id: 'corpus_callosum_cross', name: 'Corpus Callosum', x: 0.50, y: 0.30, w: 0.10, fn: 'Largest white matter commissure (~200 million axons) connecting homologous regions of left and right cortex. Enables interhemispheric communication: transfers sensory, motor, and cognitive information between hemispheres. Anterior portion (genu): prefrontal connections. Body: motor/somatosensory. Splenium (posterior): visual/parietal connections. Develops fully by age 10\u201312; continues myelination through adolescence.', conditions: 'Agenesis of corpus callosum: can be asymptomatic or cause disconnect syndromes. Split-brain surgery (callosotomy for epilepsy): each hemisphere operates independently \u2014 left hand does not know what right hand does. Marchiafava-Bignami disease (alcoholism): callosal demyelination. MS frequently affects callosal fibers (Dawson fingers on MRI).', damage: 'Callosal lesions cause disconnection syndromes: alien hand, ideomotor apraxia of left hand, left hemialexia (cannot read words in left visual field), tactile anomia of left hand.' },
+
+                { id: 'language_lateral', name: 'Language Lateralization', x: 0.28, y: 0.35, w: 0.08, fn: 'Language is strongly lateralized to the left hemisphere in ~95% of right-handers and ~70% of left-handers. Broca\u2019s area (left inferior frontal gyrus, BA 44/45): speech production and grammar. Wernicke\u2019s area (left superior temporal gyrus, BA 22): speech comprehension. Connected by the arcuate fasciculus. Right hemisphere contributes prosody (emotional tone), pragmatics, humor, and metaphor interpretation.', conditions: 'Broca\u2019s aphasia: non-fluent, effortful speech with preserved comprehension. Wernicke\u2019s aphasia: fluent but meaningless speech (word salad) with impaired comprehension. Conduction aphasia: arcuate fasciculus lesion \u2192 intact fluency and comprehension but poor repetition. Global aphasia: massive left hemisphere stroke destroying both areas.', damage: 'Left hemisphere damage in language-dominant individuals causes aphasia. Right hemisphere damage causes aprosodia (flat emotional speech), difficulty with sarcasm, metaphor, and social pragmatics.' },
+
+                { id: 'handedness_lat', name: 'Handedness & Motor Dominance', x: 0.72, y: 0.35, w: 0.08, fn: 'Hand preference is determined primarily by contralateral motor cortex specialization. Left hemisphere motor cortex controls the right hand (dominant in ~90% of humans). The dominant hemisphere shows larger cortical representation for the preferred hand (expanded motor homunculus). Handedness correlates with but does not perfectly predict language lateralization. Mixed handedness (ambidexterity) is associated with subtle differences in interhemispheric connectivity.', conditions: 'Forced handedness change: historically attempted, now recognized as harmful. Pathological left-handedness: early left-hemisphere damage causing shift to left-hand dominance. Mirror writing (Leonardo da Vinci): more natural for left-handers, facilitated by right-hemisphere spatial processing.', damage: 'Lesion to dominant motor cortex causes contralateral hand weakness/clumsiness. Recovery depends on plasticity and interhemispheric compensation via corpus callosum.' },
+
+                { id: 'split_brain', name: 'Split-Brain Phenomenon', x: 0.50, y: 0.18, w: 0.10, fn: 'When the corpus callosum is severed (callosotomy, performed for intractable epilepsy), each hemisphere operates independently. In split-brain patients: objects presented to the right visual field (left hemisphere) can be named verbally, but objects in the left visual field (right hemisphere) cannot be named but can be identified by touch with the left hand. Demonstrates the modular nature of hemispheric specialization and that consciousness may have dual aspects.', conditions: 'Split-brain syndrome: cannot verbally name objects in left visual field, left-hand tactile anomia, inability to match objects across visual fields. Alien hand syndrome: one hand acts contrary to conscious intention (usually left hand). These effects are most dramatic in lab testing \u2014 daily life compensation is remarkably good.', damage: 'Callosotomy eliminates interhemispheric seizure spread (therapeutic) but creates disconnection: each hemisphere has independent awareness, emotional responses, and decision-making.' }
+
+              ]
+
             }
 
           };
@@ -511,11 +537,30 @@ var d = labToolData.brainAtlas || {};
 
                 // Label
 
-                ctx.font = 'bold ' + Math.round(16 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.font = 'bold ' + Math.round(18 * fontScale) + 'px Inter, system-ui, sans-serif';
 
                 ctx.fillStyle = '#7c3aed'; ctx.textAlign = 'center';
 
                 ctx.fillText('PRESYNAPTIC TERMINAL', W * 0.5, H * 0.10);
+
+                // ── Active Drug Banner (non-Normal only) ──
+                if (activeSim.id !== 'normal') {
+                  var banW = W * 0.72, banH = 22, banX = W * 0.5 - banW / 2, banY = H * 0.125;
+                  ctx.save();
+                  ctx.shadowColor = activeSim.color + '40'; ctx.shadowBlur = 8;
+                  ctx.beginPath(); ctx.roundRect(banX, banY, banW, banH, 6);
+                  ctx.fillStyle = activeSim.color; ctx.fill();
+                  ctx.restore();
+                  ctx.font = 'bold ' + Math.round(13 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+                  var banText = activeSim.icon + ' ' + activeSim.name.toUpperCase();
+                  ctx.fillText(banText, W * 0.5, banY + 15);
+                  // Short mechanism note below banner
+                  ctx.font = Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = activeSim.color;
+                  var mechMap = { ssri: 'Blocks SERT reuptake \u2192 \u2191 serotonin in cleft', snri: 'Blocks SERT+NET \u2192 \u2191 serotonin & norepinephrine', benzo: 'Enhances GABA-A Cl\u207B channel opening', cocaine: 'Blocks DAT+NET+SERT \u2192 massive DA accumulation', opioid: 'Activates \u03BC-opioid receptors \u2192 analgesia & euphoria', alcohol: 'Enhances GABA-A + blocks NMDA glutamate' };
+                  ctx.fillText(mechMap[activeSim.id] || '', W * 0.5, banY + banH + 12);
+                }
 
 
 
@@ -543,7 +588,7 @@ var d = labToolData.brainAtlas || {};
 
                 }
 
-                ctx.font = Math.round(12 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.font = 'bold ' + Math.round(14 * fontScale) + 'px Inter, system-ui, sans-serif';
 
                 ctx.fillStyle = '#b45900'; ctx.textAlign = 'center';
 
@@ -579,7 +624,7 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.strokeStyle = '#0891b2'; ctx.lineWidth = 1; ctx.stroke();
 
-                ctx.font = 'bold ' + Math.round(12 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.font = 'bold ' + Math.round(14 * fontScale) + 'px Inter, system-ui, sans-serif';
 
                 ctx.fillStyle = '#0e7490'; ctx.textAlign = 'center';
 
@@ -592,6 +637,15 @@ var d = labToolData.brainAtlas || {};
                 var vesColors = ['#c084fc', '#a78bfa', '#8b5cf6', '#7c3aed'];
 
                 var vesicleCount = Math.round(8 * activeSim.vesicleRate);
+
+                // Vesicle rate callout (drug effect)
+                if (activeSim.id !== 'normal' && activeSim.vesicleRate !== 1) {
+                  ctx.save();
+                  ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = activeSim.color; ctx.textAlign = 'right';
+                  ctx.fillText(activeSim.vesicleRate < 1 ? '\u2B07 Fewer vesicles' : '\u2B06 More vesicles', W * 0.90, H * 0.175);
+                  ctx.restore();
+                }
 
                 for (var vi = 0; vi < vesicleCount; vi++) {
 
@@ -687,23 +741,33 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.save();
 
-                var cleftLabelW = 80;
+                var cleftLabelW = 110;
 
                 ctx.fillStyle = '#f1f5f9'; ctx.globalAlpha = 0.7;
 
                 ctx.beginPath();
 
-                ctx.roundRect(W * 0.5 - cleftLabelW / 2, H * 0.485, cleftLabelW, 14, 4);
+                ctx.roundRect(W * 0.5 - cleftLabelW / 2, H * 0.482, cleftLabelW, 18, 5);
 
                 ctx.fill();
 
                 ctx.restore();
 
-                ctx.font = 'bold ' + Math.round(14 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.font = 'bold ' + Math.round(16 * fontScale) + 'px Inter, system-ui, sans-serif';
 
-                ctx.fillStyle = '#64748b'; ctx.textAlign = 'center';
+                ctx.fillStyle = '#475569'; ctx.textAlign = 'center';
 
                 ctx.fillText('SYNAPTIC CLEFT (~20nm)', W * 0.5, H * 0.50);
+
+                // ── NT particle count callout (drug effect) ──
+                if (activeSim.id !== 'normal') {
+                  var pmLabel = activeSim.particleMult > 1 ? '\u2B06 ' + activeSim.particleMult + '\u00D7 NT in cleft' : activeSim.particleMult < 1 ? '\u2B07 NT reduced' : '';
+                  if (pmLabel) {
+                    ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
+                    ctx.fillStyle = activeSim.color; ctx.textAlign = 'left';
+                    ctx.fillText(pmLabel, W * 0.06, H * 0.475);
+                  }
+                }
 
 
 
@@ -831,7 +895,7 @@ var d = labToolData.brainAtlas || {};
 
 
 
-                ctx.font = 'bold ' + Math.round(14 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.font = 'bold ' + Math.round(16 * fontScale) + 'px Inter, system-ui, sans-serif';
 
                 ctx.fillStyle = '#92400e'; ctx.textAlign = 'center';
 
@@ -931,11 +995,11 @@ var d = labToolData.brainAtlas || {};
 
                     ctx.restore();
 
-                    ctx.font = 'bold ' + Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
+                    ctx.font = 'bold ' + Math.round(12 * fontScale) + 'px Inter, system-ui, sans-serif';
 
                     ctx.fillStyle = '#16a34a'; ctx.textAlign = 'center';
 
-                    ctx.fillText('\u2B06 ENHANCED', rx, ry + 34);
+                    ctx.fillText('\u2B06 ENHANCED', rx, ry + 36);
 
                   }
 
@@ -953,19 +1017,19 @@ var d = labToolData.brainAtlas || {};
 
                     ctx.restore();
 
-                    ctx.font = 'bold ' + Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
+                    ctx.font = 'bold ' + Math.round(12 * fontScale) + 'px Inter, system-ui, sans-serif';
 
                     ctx.fillStyle = '#ef4444'; ctx.textAlign = 'center';
 
-                    ctx.fillText('\u2B07 BLOCKED', rx, ry + 34);
+                    ctx.fillText('\u2B07 BLOCKED', rx, ry + 36);
 
                   }
 
-                  ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.font = 'bold ' + Math.round(13 * fontScale) + 'px Inter, system-ui, sans-serif';
 
                   ctx.fillStyle = rd.color; ctx.textAlign = 'center';
 
-                  ctx.fillText(rd.name, rx, ry + 26);
+                  ctx.fillText(rd.name, rx, ry + 28);
 
                 }
 
@@ -1043,13 +1107,13 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.restore();
 
-                ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.font = 'bold ' + Math.round(13 * fontScale) + 'px Inter, system-ui, sans-serif';
 
                 ctx.fillStyle = activeSim.reuptakeBlocked ? '#ef4444' : '#16a34a'; ctx.textAlign = 'center';
 
-                ctx.fillText(activeSim.reuptakeBlocked ? 'BLOCKED' : 'Reuptake', W * 0.88, H * 0.41 + 20);
+                ctx.fillText(activeSim.reuptakeBlocked ? 'BLOCKED' : 'Reuptake', W * 0.88, H * 0.41 + 22);
 
-                ctx.fillText(activeSim.reuptakeBlocked ? 'Reuptake' : 'Transporter', W * 0.88, H * 0.41 + 29);
+                ctx.fillText(activeSim.reuptakeBlocked ? 'Reuptake' : 'Transporter', W * 0.88, H * 0.41 + 33);
 
 
 
@@ -1081,13 +1145,13 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.restore();
 
-                ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.font = 'bold ' + Math.round(13 * fontScale) + 'px Inter, system-ui, sans-serif';
 
                 ctx.fillStyle = '#dc2626'; ctx.textAlign = 'center';
 
-                ctx.fillText('MAO/COMT', W * 0.12, H * 0.50 + 18);
+                ctx.fillText('MAO/COMT', W * 0.12, H * 0.50 + 20);
 
-                ctx.fillText('Enzyme', W * 0.12, H * 0.50 + 25);
+                ctx.fillText('Enzyme', W * 0.12, H * 0.50 + 31);
 
 
 
@@ -1147,11 +1211,11 @@ var d = labToolData.brainAtlas || {};
 
                   ctx.strokeStyle = cascadeColors[ci] + '40'; ctx.lineWidth = 0.5; ctx.stroke();
 
-                  ctx.font = 'bold ' + Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
 
                   ctx.fillStyle = cascadeColors[ci]; ctx.textAlign = 'center';
 
-                  ctx.fillText(cascadeLabels[ci], W * 0.5, cascadeY[ci] + 2);
+                  ctx.fillText(cascadeLabels[ci], W * 0.5, cascadeY[ci] + 3);
 
                 }
 
@@ -1171,7 +1235,7 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 0.5; ctx.stroke();
 
-                ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
+                ctx.font = 'bold ' + Math.round(13 * fontScale) + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
 
                 ctx.fillText('NEUROTRANSMITTER SYNAPSE', W * 0.5, H - 8);
 
@@ -1213,27 +1277,45 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.save();
 
-                ctx.globalAlpha = 0.18;
+                ctx.globalAlpha = 0.22;
 
                 ctx.strokeStyle = '#9b7fb8';
 
-                ctx.lineWidth = 0.7;
+                ctx.lineWidth = 0.8;
+
+                // Seeded deterministic pseudo-random for stable gyri across frames
+                var _gyriSeed = Math.round(cx * 100 + cy * 7 + count * 13);
+                function gyriRand() { _gyriSeed = (_gyriSeed * 16807 + 0) % 2147483647; return (_gyriSeed & 0x7fffffff) / 2147483647; }
 
                 for (var gi = 0; gi < count; gi++) {
 
-                  var angle = (gi / count) * Math.PI * 2 + canvas._brainTick * 0.001;
+                  var angle = (gi / count) * Math.PI * 2;
 
-                  var r1 = radius * (0.3 + Math.random() * 0.5);
+                  var r1 = radius * (0.3 + gyriRand() * 0.5);
 
                   var gx = cx + Math.cos(angle) * r1;
 
                   var gy = cy + Math.sin(angle) * r1;
 
+                  // Primary sulcus curve
+                  var arcLen = spread * (0.6 + gyriRand() * 0.4);
                   ctx.beginPath();
-
-                  ctx.arc(gx, gy, spread * (0.6 + Math.random() * 0.4), angle, angle + Math.PI * (0.5 + Math.random() * 0.8));
-
+                  ctx.arc(gx, gy, arcLen, angle, angle + Math.PI * (0.5 + gyriRand() * 0.8));
                   ctx.stroke();
+
+                  // Secondary micro-ridges branching off primary
+                  if (gi % 2 === 0) {
+                    var brAngle = angle + gyriRand() * Math.PI * 0.6;
+                    var brLen = spread * 0.4;
+                    ctx.globalAlpha = 0.14;
+                    ctx.lineWidth = 0.5;
+                    ctx.beginPath();
+                    ctx.moveTo(gx, gy);
+                    ctx.quadraticCurveTo(gx + Math.cos(brAngle) * brLen * 0.5, gy + Math.sin(brAngle) * brLen * 0.5 + 2, gx + Math.cos(brAngle) * brLen, gy + Math.sin(brAngle) * brLen);
+                    ctx.stroke();
+                    ctx.globalAlpha = 0.22;
+                    ctx.lineWidth = 0.8;
+                  }
 
                 }
 
@@ -1359,13 +1441,13 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.save();
 
-                ctx.shadowColor = 'rgba(100,70,130,0.15)';
+                ctx.shadowColor = 'rgba(80,50,120,0.22)';
 
-                ctx.shadowBlur = 10;
+                ctx.shadowBlur = 14;
 
-                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetX = 4;
 
-                ctx.shadowOffsetY = 4;
+                ctx.shadowOffsetY = 5;
 
                 ctx.beginPath();
 
@@ -1391,11 +1473,40 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.restore();
 
+                // Gray/white matter inner border
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(W * 0.15, H * 0.45);
+                ctx.quadraticCurveTo(W * 0.12, H * 0.20, W * 0.35, H * 0.12);
+                ctx.quadraticCurveTo(W * 0.55, H * 0.08, W * 0.72, H * 0.15);
+                ctx.quadraticCurveTo(W * 0.88, H * 0.25, W * 0.90, H * 0.42);
+                ctx.quadraticCurveTo(W * 0.88, H * 0.55, W * 0.78, H * 0.60);
+                ctx.quadraticCurveTo(W * 0.70, H * 0.72, W * 0.62, H * 0.76);
+                ctx.quadraticCurveTo(W * 0.50, H * 0.78, W * 0.42, H * 0.72);
+                ctx.quadraticCurveTo(W * 0.30, H * 0.62, W * 0.20, H * 0.55);
+                ctx.quadraticCurveTo(W * 0.14, H * 0.50, W * 0.15, H * 0.45);
+                ctx.clip();
+                // Inner white-matter glow (lighter center)
+                var wmGrad = ctx.createRadialGradient(W * 0.48, H * 0.42, W * 0.06, W * 0.48, H * 0.42, W * 0.32);
+                wmGrad.addColorStop(0, '#f8f4ffb0');
+                wmGrad.addColorStop(0.4, '#f0eaf800');
+                wmGrad.addColorStop(1, '#00000000');
+                ctx.fillStyle = wmGrad;
+                ctx.fillRect(0, 0, W, H);
+                // Cortical rim (darker outer ring = gray matter)
+                var gmGrad = ctx.createRadialGradient(W * 0.48, H * 0.42, W * 0.25, W * 0.48, H * 0.42, W * 0.45);
+                gmGrad.addColorStop(0, '#00000000');
+                gmGrad.addColorStop(0.6, '#00000000');
+                gmGrad.addColorStop(1, '#c8b8dc30');
+                ctx.fillStyle = gmGrad;
+                ctx.fillRect(0, 0, W, H);
+                ctx.restore();
+
 
 
                 // Lobe coloring (Frontal – blue, Parietal – green, Temporal – yellow, Occipital – red)
 
-                ctx.save(); ctx.globalAlpha = 0.12;
+                ctx.save(); ctx.globalAlpha = 0.16;
 
                 // Frontal lobe region
 
@@ -1493,7 +1604,7 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.quadraticCurveTo(W * 0.14, H * 0.50, W * 0.15, H * 0.45);
 
-                ctx.strokeStyle = '#8b6fc0'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.strokeStyle = '#7c5eaf'; ctx.lineWidth = 2.5; ctx.stroke();
 
 
 
@@ -1517,7 +1628,7 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.quadraticCurveTo(W * 0.42, H * 0.48, W * 0.40, H * 0.55);
 
-                ctx.strokeStyle = '#6d5a8f'; ctx.lineWidth = 1.2; ctx.stroke();
+                ctx.strokeStyle = '#5a4580'; ctx.lineWidth = 1.6; ctx.stroke();
 
                 // Lateral sulcus (Sylvian fissure — deeper curve)
 
@@ -1529,7 +1640,7 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.quadraticCurveTo(W * 0.58, H * 0.44, W * 0.65, H * 0.42);
 
-                ctx.strokeStyle = '#6d5a8f'; ctx.lineWidth = 1.2; ctx.stroke();
+                ctx.strokeStyle = '#5a4580'; ctx.lineWidth = 1.6; ctx.stroke();
 
                 // Parieto-occipital sulcus
 
@@ -1539,7 +1650,7 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.quadraticCurveTo(W * 0.75, H * 0.28, W * 0.72, H * 0.38);
 
-                ctx.strokeStyle = '#8b7faa'; ctx.lineWidth = 0.8; ctx.stroke();
+                ctx.strokeStyle = '#7b6fa0'; ctx.lineWidth = 1.2; ctx.stroke();
 
                 ctx.setLineDash([]); ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2;
 
@@ -1547,7 +1658,7 @@ var d = labToolData.brainAtlas || {};
 
                 // Additional sulci (precentral, postcentral)
 
-                ctx.save(); ctx.globalAlpha = 0.15; ctx.strokeStyle = '#9b87c0'; ctx.lineWidth = 0.6;
+                ctx.save(); ctx.globalAlpha = 0.20; ctx.strokeStyle = '#8b72b0'; ctx.lineWidth = 0.7;
 
                 // Precentral sulcus
 
@@ -2824,6 +2935,233 @@ var d = labToolData.brainAtlas || {};
                 ctx.stroke();
                 ctx.restore();
 
+              } else if (currentView.isCrossLateral) {
+
+                // ── Cross-Lateralization (Coronal View) ──
+                var clT = canvas._brainTick;
+
+                // Background — faint grid
+                ctx.save(); ctx.globalAlpha = 0.04; ctx.strokeStyle = '#6d5a8f';
+                for (var gx = 0; gx < W; gx += 30) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
+                for (var gy = 0; gy < H; gy += 30) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
+                ctx.restore();
+
+                // Title
+                ctx.font = 'bold ' + Math.round(16 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillStyle = '#7c3aed'; ctx.textAlign = 'center';
+                ctx.fillText('CROSS-LATERALIZATION', W * 0.5, H * 0.05);
+                ctx.font = Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillStyle = '#94a3b8';
+                ctx.fillText('Each hemisphere controls the OPPOSITE side of the body', W * 0.5, H * 0.08);
+
+                // ── Coronal brain silhouette ──
+                var brCx = W * 0.5, brCy = H * 0.32, brRx = W * 0.30, brRy = H * 0.22;
+
+                // Left hemisphere
+                ctx.save();
+                ctx.shadowColor = 'rgba(100,70,160,0.15)'; ctx.shadowBlur = 12;
+                ctx.beginPath();
+                ctx.ellipse(brCx - brRx * 0.52, brCy, brRx * 0.52, brRy, 0, 0, Math.PI * 2);
+                var lhGrad = ctx.createRadialGradient(brCx - brRx * 0.52, brCy - brRy * 0.2, brRx * 0.1, brCx - brRx * 0.52, brCy, brRx * 0.52);
+                lhGrad.addColorStop(0, '#f3eeff'); lhGrad.addColorStop(1, '#e0d4f5');
+                ctx.fillStyle = lhGrad; ctx.fill();
+                ctx.strokeStyle = '#8b6fc0'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.restore();
+
+                // Right hemisphere
+                ctx.save();
+                ctx.shadowColor = 'rgba(100,70,160,0.15)'; ctx.shadowBlur = 12;
+                ctx.beginPath();
+                ctx.ellipse(brCx + brRx * 0.52, brCy, brRx * 0.52, brRy, 0, 0, Math.PI * 2);
+                var rhGrad = ctx.createRadialGradient(brCx + brRx * 0.52, brCy - brRy * 0.2, brRx * 0.1, brCx + brRx * 0.52, brCy, brRx * 0.52);
+                rhGrad.addColorStop(0, '#f3eeff'); rhGrad.addColorStop(1, '#e0d4f5');
+                ctx.fillStyle = rhGrad; ctx.fill();
+                ctx.strokeStyle = '#8b6fc0'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.restore();
+
+                // Midline fissure
+                ctx.save();
+                ctx.beginPath(); ctx.setLineDash([4, 3]);
+                ctx.moveTo(brCx, brCy - brRy - 5); ctx.lineTo(brCx, brCy + brRy + 5);
+                ctx.strokeStyle = '#6d4a8e'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.restore();
+
+                // Hemisphere labels
+                ctx.font = 'bold ' + Math.round(13 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillStyle = '#7c3aed'; ctx.textAlign = 'center';
+                ctx.fillText('LEFT', brCx - brRx * 0.52, brCy - brRy - 8);
+                ctx.fillText('RIGHT', brCx + brRx * 0.52, brCy - brRy - 8);
+
+                // Corpus callosum (connecting bridge)
+                ctx.save();
+                ctx.beginPath();
+                ctx.ellipse(brCx, brCy - brRy * 0.05, brRx * 0.30, brRy * 0.12, 0, 0, Math.PI * 2);
+                var ccGrad = ctx.createLinearGradient(brCx - brRx * 0.3, brCy, brCx + brRx * 0.3, brCy);
+                ccGrad.addColorStop(0, '#ddd6fe'); ccGrad.addColorStop(0.5, '#f5f3ff'); ccGrad.addColorStop(1, '#ddd6fe');
+                ctx.fillStyle = ccGrad; ctx.fill();
+                ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.font = Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillStyle = '#7c3aed80'; ctx.textAlign = 'center';
+                ctx.fillText('Corpus Callosum', brCx, brCy + 3);
+                ctx.restore();
+
+                // Brainstem + medulla below
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(brCx - 12, brCy + brRy);
+                ctx.quadraticCurveTo(brCx - 14, brCy + brRy + 40, brCx - 8, H * 0.78);
+                ctx.lineTo(brCx + 8, H * 0.78);
+                ctx.quadraticCurveTo(brCx + 14, brCy + brRy + 40, brCx + 12, brCy + brRy);
+                ctx.closePath();
+                var bsGrad = ctx.createLinearGradient(brCx, brCy + brRy, brCx, H * 0.78);
+                bsGrad.addColorStop(0, '#e8e0f0'); bsGrad.addColorStop(1, '#d4c8e8');
+                ctx.fillStyle = bsGrad; ctx.fill();
+                ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1.5; ctx.stroke();
+                // Medulla pyramids label
+                ctx.font = Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillStyle = '#7c3aed80'; ctx.textAlign = 'center';
+                ctx.fillText('Medulla', brCx, H * 0.74);
+                ctx.fillText('Pyramids', brCx, H * 0.76);
+                ctx.restore();
+
+                // ── Crossing Pathways with animated pulses ──
+                function drawCrossingPathway(fromX, fromY, crossY, toX, toY, color, label, pulseOffset) {
+                  // Upper segment (ipsilateral)
+                  ctx.beginPath();
+                  ctx.moveTo(fromX, fromY);
+                  ctx.quadraticCurveTo(fromX, crossY - 15, brCx, crossY);
+                  ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.7; ctx.stroke();
+
+                  // Lower segment (contralateral — crosses midline)
+                  ctx.beginPath();
+                  ctx.moveTo(brCx, crossY);
+                  ctx.quadraticCurveTo(toX, crossY + 15, toX, toY);
+                  ctx.stroke();
+                  ctx.globalAlpha = 1;
+
+                  // Animated pulse
+                  var pulsePhase = ((clT * 0.012 + pulseOffset) % 2.0);
+                  if (pulsePhase < 1) {
+                    var t = pulsePhase;
+                    var px, py;
+                    if (t < 0.5) {
+                      // Upper segment
+                      var t2 = t * 2;
+                      px = fromX + (brCx - fromX) * t2;
+                      py = fromY + (crossY - fromY) * t2;
+                    } else {
+                      // Lower segment
+                      var t2 = (t - 0.5) * 2;
+                      px = brCx + (toX - brCx) * t2;
+                      py = crossY + (toY - crossY) * t2;
+                    }
+                    // Glow
+                    ctx.save();
+                    var pGlow = ctx.createRadialGradient(px, py, 1, px, py, 8);
+                    pGlow.addColorStop(0, color); pGlow.addColorStop(1, color.slice(0, 7) + '00');
+                    ctx.beginPath(); ctx.arc(px, py, 8, 0, Math.PI * 2);
+                    ctx.fillStyle = pGlow; ctx.fill();
+                    // Core dot
+                    ctx.beginPath(); ctx.arc(px, py, 3.5, 0, Math.PI * 2);
+                    ctx.fillStyle = '#fff'; ctx.fill();
+                    ctx.beginPath(); ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+                    ctx.fillStyle = color; ctx.fill();
+                    ctx.restore();
+                  }
+
+                  // Crossing node (X mark at midline)
+                  ctx.save();
+                  ctx.beginPath();
+                  ctx.arc(brCx, crossY, 4, 0, Math.PI * 2);
+                  ctx.fillStyle = color; ctx.globalAlpha = 0.5; ctx.fill();
+                  ctx.restore();
+                }
+
+                ctx.save();
+                // Motor pathway: Left motor cortex → crosses at medullary pyramids → Right body
+                drawCrossingPathway(
+                  brCx - brRx * 0.35, brCy - brRy * 0.6,  // Left motor cortex
+                  H * 0.72,  // Cross at medullary pyramids
+                  brCx + W * 0.25, H * 0.92,  // Right body
+                  '#ef4444', 'Motor', 0
+                );
+                // Motor: Right motor cortex → Left body
+                drawCrossingPathway(
+                  brCx + brRx * 0.35, brCy - brRy * 0.6,
+                  H * 0.72,
+                  brCx - W * 0.25, H * 0.92,
+                  '#ef4444', 'Motor', 0.7
+                );
+
+                // Sensory pathway: Right body → crosses at medial lemniscus → Left cortex
+                drawCrossingPathway(
+                  brCx + W * 0.22, H * 0.88,
+                  H * 0.64,
+                  brCx - brRx * 0.40, brCy + brRy * 0.1,
+                  '#3b82f6', 'Sensory', 0.35
+                );
+                // Sensory: Left body → Right cortex
+                drawCrossingPathway(
+                  brCx - W * 0.22, H * 0.88,
+                  H * 0.64,
+                  brCx + brRx * 0.40, brCy + brRy * 0.1,
+                  '#3b82f6', 'Sensory', 1.05
+                );
+
+                // Visual pathway: partial crossing at optic chiasm
+                drawCrossingPathway(
+                  brCx - W * 0.28, brCy + brRy * 0.5,  // Left eye
+                  brCy + brRy + 10,  // Optic chiasm
+                  brCx + brRx * 0.45, brCy,  // Right occipital
+                  '#22c55e', 'Visual (nasal)', 0.5
+                );
+                drawCrossingPathway(
+                  brCx + W * 0.28, brCy + brRy * 0.5,
+                  brCy + brRy + 10,
+                  brCx - brRx * 0.45, brCy,
+                  '#22c55e', 'Visual (nasal)', 1.2
+                );
+                ctx.restore();
+
+                // ── Language lateralization highlight (left hemisphere) ──
+                ctx.save();
+                ctx.globalAlpha = 0.12;
+                ctx.beginPath();
+                ctx.ellipse(brCx - brRx * 0.45, brCy - brRy * 0.15, brRx * 0.22, brRy * 0.45, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#f59e0b'; ctx.fill();
+                ctx.restore();
+                ctx.font = 'bold ' + Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillStyle = '#b4590090'; ctx.textAlign = 'center';
+                ctx.fillText('Broca\u2019s', brCx - brRx * 0.55, brCy - brRy * 0.40);
+                ctx.fillText('Wernicke\u2019s', brCx - brRx * 0.35, brCy + brRy * 0.15);
+
+                // ── Legend ──
+                var legY = H * 0.90;
+                var legItems = [
+                  { color: '#ef4444', label: 'Motor (corticospinal)' },
+                  { color: '#3b82f6', label: 'Sensory (DCML)' },
+                  { color: '#22c55e', label: 'Visual (optic)' },
+                  { color: '#f59e0b', label: 'Language (left-dominant)' }
+                ];
+                ctx.font = Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
+                var legTotalW = 0;
+                legItems.forEach(function(li) { legTotalW += ctx.measureText(li.label).width + 28; });
+                var legX = (W - legTotalW) / 2;
+                legItems.forEach(function(li) {
+                  ctx.beginPath(); ctx.arc(legX + 5, legY, 4, 0, Math.PI * 2);
+                  ctx.fillStyle = li.color; ctx.fill();
+                  ctx.fillStyle = '#64748b'; ctx.textAlign = 'left';
+                  ctx.fillText(li.label, legX + 13, legY + 3.5);
+                  legX += ctx.measureText(li.label).width + 28;
+                });
+
+                // Body silhouette labels at bottom
+                ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
+                ctx.fillText('\u2190 LEFT BODY', brCx - W * 0.25, H * 0.97);
+                ctx.fillText('RIGHT BODY \u2192', brCx + W * 0.25, H * 0.97);
+
               }
 
 
@@ -3120,9 +3458,9 @@ var d = labToolData.brainAtlas || {};
 
                   ref: canvasRef,
 
-                  width: (currentView.isNT || currentView.isNeuron || currentView.isSleep || currentView.isEEG) ? 600 : 520,
+                  width: (currentView.isNT || currentView.isNeuron || currentView.isSleep || currentView.isEEG || currentView.isCrossLateral) ? 600 : 520,
 
-                  height: (currentView.isNT || currentView.isNeuron || currentView.isSleep || currentView.isEEG) ? 500 : 460,
+                  height: (currentView.isNT || currentView.isNeuron || currentView.isSleep || currentView.isEEG || currentView.isCrossLateral) ? 500 : 460,
 
                   onClick: handleClick,
 
