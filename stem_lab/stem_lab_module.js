@@ -37857,7 +37857,8 @@
             fractionViz: true, fractions: true,
             base10: true, moneyMath: true,
             coordinate: true, protractor: true,
-            archStudio: true, artStudio: true, dataStudio: true, cyberDefense: true
+            archStudio: true, artStudio: true, dataStudio: true, cyberDefense: true,
+            galaxy: true
           };
           if (!_pluginOnlyTools[stemLabTool]) return null;
 
@@ -37894,7 +37895,7 @@
             celebrate: typeof stemCelebrate === 'function' ? stemCelebrate : function() {},
             callGemini: typeof callGemini === 'function' ? callGemini : null,
             t: typeof t === 'function' ? t : function(k) { return k; },
-            icons: { ArrowLeft: ArrowLeft },
+            icons: { ArrowLeft: ArrowLeft, Calculator: Calculator, Sparkles: Sparkles, X: X, GripVertical: GripVertical },
             _codingCanvasRef: typeof _codingCanvasRef !== 'undefined' ? _codingCanvasRef : null,
             saveSnapshot: function(toolId, label, data) {
               if (typeof setToolSnapshots === 'function') {
