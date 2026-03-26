@@ -1209,7 +1209,7 @@ var d = labToolData.galaxy || {};
 
           var selNeb = d.selectedNebula ? NEBULAE.find(function (n) { return n.name === d.selectedNebula; }) : null;
 
-          var quizQ = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? QUIZ_BANK[d.quizIdx || 0] : null;
+          var ACTIVE_BANK = d.dynamicQuiz || QUIZ_BANK; var quizQ = d.quizMode && ACTIVE_BANK[d.quizIdx || 0] ? ACTIVE_BANK[d.quizIdx || 0] : null;
 
 
 
@@ -1275,7 +1275,30 @@ var d = labToolData.galaxy || {};
 
                     key: m.key, onClick: function () {
 
-                      if (m.key === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); }
+                      if (m.key === 'quiz') { 
+                        upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); 
+                        upd("isGeneratingQuiz", true);
+                        upd("dynamicQuiz", null);
+                        var prompt = "Generate 5 challenging multiple-choice questions about stars, galaxies, and astrophysics. Return ONLY valid JSON format exactly like this: [{\"q\": \"Question...\", \"a\": \"Correct Answer\", \"options\": [\"Correct Answer\", \"Opt2\", \"Opt3\", \"Opt4\"]}]. Ensure no markdown backticks wrap the output.";
+                        if (typeof callGemini === 'function') {
+                            callGemini(prompt, function(res) {
+                                upd("isGeneratingQuiz", false);
+                                if (res && res.text) {
+                                    try {
+                                        var cleaned = res.text.replace(/```json/gi, "").replace(/```/g, "").trim();
+                                        var qList = JSON.parse(cleaned);
+                                        if (Array.isArray(qList) && qList.length > 0) {
+                                            upd("dynamicQuiz", qList);
+                                        }
+                                    } catch(e) {
+                                        console.error("Gemini JSON Parse Error:", e, res.text);
+                                    }
+                                }
+                            });
+                        } else {
+                            upd("isGeneratingQuiz", false);
+                        }
+                      }
 
                       else { upd("quizMode", false); upd("simMode", m.key); }
 
@@ -1719,13 +1742,24 @@ var d = labToolData.galaxy || {};
 
 
 
-              // ── Quiz mode ──
+              // ── Snapshot button ──
 
-              d.quizMode && quizQ && React.createElement("div", { className: "mt-3 bg-indigo-50 rounded-xl border-2 border-indigo-200 p-4 animate-in fade-in" },
+              React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
+
+                React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: t('stem.galaxy.galaxy') + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+
+              )
+
+            ), // end Galaxy Simulation mode wrapper
+
+// ── Quiz mode ──
+
+              d.quizMode && d.isGeneratingQuiz && React.createElement("div", { className: "flex flex-col items-center justify-center p-12 mt-6 max-w-2xl mx-auto rounded-2xl bg-indigo-50 border-2 border-indigo-300 animate-pulse"}, React.createElement("h2", {className: "text-lg font-bold text-indigo-600 mb-2"}, "✨ Gemini is Generating Astrophysic Questions..."), React.createElement("p", {className: "text-sm text-indigo-400"}, "Parsing deep space databases...")),
+              d.quizMode && !d.isGeneratingQuiz && quizQ && React.createElement("div", { className: "mt-6 max-w-2xl mx-auto bg-white shadow-xl rounded-2xl border border-slate-200 p-8 animate-in fade-in slide-in-from-bottom-4" },
 
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
-                  React.createElement("p", { className: "text-xs font-bold text-indigo-700" }, "\uD83E\uDDE0 Question " + ((d.quizIdx || 0) + 1) + "/" + QUIZ_BANK.length),
+                  React.createElement("p", { className: "text-xs font-bold text-indigo-700" }, "\uD83E\uDDE0 Question " + ((d.quizIdx || 0) + 1) + "/" + ACTIVE_BANK.length),
 
                   React.createElement("div", { className: "flex items-center gap-2 text-xs" },
 
@@ -1769,23 +1803,12 @@ var d = labToolData.galaxy || {};
 
                   d.quizFeedback.msg,
 
-                  React.createElement("button", { onClick: function () { upd("quizIdx", ((d.quizIdx || 0) + 1) % QUIZ_BANK.length); upd("quizFeedback", null); }, className: "ml-3 px-2 py-0.5 bg-indigo-600 text-white rounded text-xs" }, "Next \u2192")
+                  React.createElement("button", { onClick: function () { upd("quizIdx", ((d.quizIdx || 0) + 1) % ACTIVE_BANK.length); upd("quizFeedback", null); }, className: "ml-3 px-2 py-0.5 bg-indigo-600 text-white rounded text-xs" }, "Next \u2192")
 
                 )
 
               ),
 
-
-
-              // ── Snapshot button ──
-
-              React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
-
-                React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: t('stem.galaxy.galaxy') + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
-
-              )
-
-            ), // end Galaxy Simulation mode wrapper
 
 
 
@@ -1807,7 +1830,7 @@ var d = labToolData.galaxy || {};
 
               // ── Animated Star Canvas ──
 
-              React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210] shadow-2xl shadow-indigo-500/10", style: { height: 'calc(85vh - 40px)', minHeight: '400px' } },
+              React.createElement("div", { className: "w-full flex-1 relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210] shadow-2xl shadow-indigo-500/10", style: { height: 'calc(85vh - 40px)', minHeight: '400px' } },
 
                 React.createElement("canvas", {
 
