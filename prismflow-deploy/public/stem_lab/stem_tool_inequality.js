@@ -43,6 +43,36 @@ window.StemLab = window.StemLab || {
       var range = d.range || { min: -10, max: 10 };
       var toSX = function(x) { return pad + ((x - range.min) / (range.max - range.min)) * (W - 2 * pad); };
 
+      // ── Mode: 1D number line or 2D Cartesian ──
+      var graphMode = d.graphMode || '1d';
+
+      // ── History / Undo ──
+      var exprHistory = d.exprHistory || [];
+      var addToHistory = function(expr) {
+        if (!expr) return;
+        var h2 = exprHistory.filter(function(e) { return e !== expr; });
+        h2.unshift(expr);
+        if (h2.length > 10) h2 = h2.slice(0, 10);
+        upd('exprHistory', h2);
+      };
+
+      // ── 2D Parser: y > 2x + 1, y <= -x + 3 etc. ──
+      var parse2D = function(expr) {
+        if (!expr) return null;
+        var m = expr.match(/y\s*([<>]=?|[\u2264\u2265])\s*(-?\d*\.?\d*)\s*\*?\s*x\s*([+-]\s*\d+\.?\d*)?/);
+        if (!m) return null;
+        var op = m[1].replace('\u2264', '<=').replace('\u2265', '>=');
+        var slope = m[2] === '' || m[2] === '+' ? 1 : m[2] === '-' ? -1 : parseFloat(m[2]);
+        var intercept = m[3] ? parseFloat(m[3].replace(/\s/g, '')) : 0;
+        return { slope: slope, intercept: intercept, op: op };
+      };
+
+      // ── 2D Graph constants ──
+      var W2 = 400, H2 = 400, pad2 = 40;
+      var gRange = { xMin: -10, xMax: 10, yMin: -10, yMax: 10 };
+      var toGX = function(x) { return pad2 + ((x - gRange.xMin) / (gRange.xMax - gRange.xMin)) * (W2 - 2 * pad2); };
+      var toGY = function(y) { return H2 - pad2 - ((y - gRange.yMin) / (gRange.yMax - gRange.yMin)) * (H2 - 2 * pad2); };
+
       // ══════════════════════════════
       // PARSER — simple + compound
       // ══════════════════════════════
@@ -54,6 +84,17 @@ window.StemLab = window.StemLab || {
           var op1 = cm[2].replace('≤', '<=').replace('≥', '>=');
           var op2 = cm[4].replace('≤', '<=').replace('≥', '>=');
           return { compound: true, lo: parseFloat(cm[1]), op1: op1, v: cm[3], op2: op2, hi: parseFloat(cm[5]) };
+        }
+        // Absolute value: |x - 3| < 5 or |x + 2| >= 4
+        var absM = expr.match(/\|([a-z])\s*([+-])\s*(\d+\.?\d*)\|\s*([<>]=?|[≤≥])\s*(\d+\.?\d*)/);
+        if (absM) {
+          var av = absM[1], sign = absM[2], offset = parseFloat(absM[3]), absOp = absM[4].replace('≤', '<=').replace('≥', '>='), bound = parseFloat(absM[5]);
+          var center = sign === '-' ? offset : -offset;
+          if (absOp === '<' || absOp === '<=') {
+            return { compound: true, lo: center - bound, op1: absOp, v: av, op2: absOp, hi: center + bound, absSource: expr };
+          } else {
+            return { compound: false, v: av, op: absOp.replace('<', '>').replace('<=', '>='), val: center - bound, absSource: expr, absRight: { v: av, op: absOp, val: center + bound } };
+          }
         }
         // Simple: x > 3 or x <= -2
         var sm = expr.match(/([a-z])\s*([<>]=?|[≤≥])\s*(-?\d+\.?\d*)/);
@@ -121,6 +162,8 @@ window.StemLab = window.StemLab || {
         { label: '1 \u2264 x < 7', expr: '1 <= x < 7' },
         { label: '-5 \u2264 x \u2264 5', expr: '-5 <= x <= 5' },
         { label: '0 < x < 10', expr: '0 < x < 10' },
+        { label: '|x - 3| < 5', expr: '|x - 3| < 5' },
+        { label: '|x + 2| \u2264 4', expr: '|x + 2| <= 4' },
       ];
 
       // ══════════════════════════════
@@ -184,6 +227,48 @@ window.StemLab = window.StemLab || {
       var shiftRange = function(delta) {
         upd('range', { min: range.min + delta, max: range.max + delta });
       };
+      // ══════════════════════════════
+      // STEP-BY-STEP SOLVER
+      // ══════════════════════════════
+      var solverExpr = d.solverExpr || '';
+      var solverSteps = d.solverSteps || null;
+      var solverRevealIdx = d.solverRevealIdx || 0;
+
+      var solveInequality = function(raw) {
+        if (!raw) return null;
+        var steps = [];
+        var s = raw.replace(/\s+/g, '');
+        // Match: ax + b op c  or  ax - b op c
+        var m = s.match(/(-?\d*)([a-z])([+-]\d+\.?\d*)([<>]=?|[≤≥])(-?\d+\.?\d*)/);
+        if (!m) return null;
+        var aStr = m[1], v = m[2], bStr = m[3], opRaw = m[4], cStr = m[5];
+        var a = aStr === '' || aStr === '+' ? 1 : aStr === '-' ? -1 : parseFloat(aStr);
+        var b = parseFloat(bStr);
+        var c = parseFloat(cStr);
+        var op = opRaw.replace('≤', '<=').replace('≥', '>=');
+        steps.push({ text: 'Start: ' + raw, highlight: false });
+        // Step 1: subtract b from both sides
+        var rhs1 = c - b;
+        var bDisp = b < 0 ? '+ ' + Math.abs(b) : '- ' + b;
+        steps.push({ text: 'Subtract ' + (b > 0 ? b : '(' + b + ')') + ' from both sides:', highlight: false });
+        steps.push({ text: (a === 1 ? '' : a === -1 ? '-' : a) + v + ' ' + op + ' ' + rhs1, highlight: true });
+        // Step 2: divide by a
+        if (a !== 1) {
+          var flipOp = op;
+          if (a < 0) {
+            flipOp = op.replace('<', 'TEMP').replace('>', '<').replace('TEMP', '>');
+            steps.push({ text: 'Divide both sides by ' + a + ' — FLIP the inequality sign!', highlight: false, warning: true });
+          } else {
+            steps.push({ text: 'Divide both sides by ' + a + ':', highlight: false });
+          }
+          var result = rhs1 / a;
+          var resultStr = Number.isInteger(result) ? String(result) : result.toFixed(2);
+          steps.push({ text: v + ' ' + flipOp + ' ' + resultStr, highlight: true });
+        }
+        steps.push({ text: '\u2705 Solution found!', highlight: false, final: true });
+        return steps;
+      };
+
       var zoomRange = function(factor) {
         var mid = (range.min + range.max) / 2;
         var half = Math.round((range.max - range.min) * factor / 2);
@@ -205,14 +290,32 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'px-2 py-0.5 bg-fuchsia-100 text-fuchsia-700 text-[10px] font-bold rounded-full' }, 'INTERACTIVE')
         ),
         h('p', { className: 'text-xs text-slate-500 italic -mt-1 mb-3' },
-          'Type an inequality like x > 3 or a compound like -2 < x \u2264 5 to visualize it on a number line.'),
+          graphMode === '2d'
+            ? 'Type a two-variable inequality like y > 2x + 1 to graph on the Cartesian plane.'
+            : 'Type an inequality like x > 3 or a compound like -2 < x \u2264 5 to visualize it on a number line.'),
+
+        // ── Mode tabs: 1D / 2D ──
+        h('div', { className: 'flex gap-1 mb-3', role: 'tablist', 'aria-label': 'Graph mode' },
+          ['1d', '2d'].map(function(m) {
+            var labels = { '1d': '\uD83D\uDCCF Number Line', '2d': '\uD83D\uDCC8 2D Graph' };
+            return h('button', {
+              key: m, role: 'tab', 'aria-selected': graphMode === m,
+              onClick: function() { upd('graphMode', m); },
+              className: 'px-3 py-1.5 text-xs font-bold rounded-lg transition-all ' +
+                (graphMode === m ? 'bg-fuchsia-600 text-white shadow' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+            }, labels[m]);
+          })
+        ),
 
         // ── Input + presets ──
         h('div', { className: 'flex items-center gap-2 mb-3' },
           h('input', {
-            type: 'text', value: d.expr || '', placeholder: 'x > 3 or -2 < x \u2264 5',
+            type: 'text', value: d.expr || '',
+            placeholder: graphMode === '2d' ? 'y > 2x + 1' : 'x > 3 or -2 < x \u2264 5',
             onChange: function(e) { upd('expr', e.target.value); },
-            className: 'px-4 py-2 border-2 border-fuchsia-300 rounded-lg font-mono text-lg text-center w-52 focus:ring-2 focus:ring-fuchsia-400 outline-none'
+            onKeyDown: function(e) { if (e.key === 'Enter') addToHistory(d.expr); },
+            className: 'px-4 py-2 border-2 border-fuchsia-300 rounded-lg font-mono text-lg text-center w-52 focus:ring-2 focus:ring-fuchsia-400 outline-none',
+            'aria-label': 'Inequality expression input'
           })
         ),
         h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
@@ -225,8 +328,8 @@ window.StemLab = window.StemLab || {
           })
         ),
 
-        // ── SVG Number line ──
-        h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full bg-white rounded-xl border-2 border-fuchsia-200 shadow-sm' },
+        // ── SVG Number line (1D mode) ──
+        graphMode === '1d' && h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full bg-white rounded-xl border-2 border-fuchsia-200 shadow-sm', role: 'img', 'aria-label': 'Number line inequality graph' },
 
           // Shaded region — simple
           ineq && !ineq.compound && (function() {
@@ -298,6 +401,50 @@ window.StemLab = window.StemLab || {
             return null;
           })()
         ),
+
+        // ── 2D Cartesian Graph ──
+        graphMode === '2d' && (function() {
+          var ineq2d = parse2D(d.expr);
+          var gridLines = [];
+          for (var gi = gRange.xMin; gi <= gRange.xMax; gi++) {
+            gridLines.push(h('line', { key: 'gx' + gi, x1: toGX(gi), y1: pad2, x2: toGX(gi), y2: H2 - pad2, stroke: gi === 0 ? '#475569' : '#e2e8f0', strokeWidth: gi === 0 ? 2 : 0.5 }));
+          }
+          for (var gj = gRange.yMin; gj <= gRange.yMax; gj++) {
+            gridLines.push(h('line', { key: 'gy' + gj, x1: pad2, y1: toGY(gj), x2: W2 - pad2, y2: toGY(gj), stroke: gj === 0 ? '#475569' : '#e2e8f0', strokeWidth: gj === 0 ? 2 : 0.5 }));
+          }
+          // Axis labels
+          var axLabels = [];
+          for (var al = gRange.xMin; al <= gRange.xMax; al += 2) {
+            if (al !== 0) axLabels.push(h('text', { key: 'xl' + al, x: toGX(al), y: toGY(0) + 14, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '8px' } }, al));
+          }
+          for (var bl = gRange.yMin; bl <= gRange.yMax; bl += 2) {
+            if (bl !== 0) axLabels.push(h('text', { key: 'yl' + bl, x: toGX(0) - 10, y: toGY(bl) + 3, textAnchor: 'end', fill: '#64748b', style: { fontSize: '8px' } }, bl));
+          }
+          // Boundary line + shading
+          var boundaryEls = [];
+          if (ineq2d) {
+            var sl = ineq2d.slope, ic = ineq2d.intercept, op2d = ineq2d.op;
+            var isDashed = !op2d.includes('=');
+            // Clip polygon for shaded region
+            var clipPts = [];
+            var above = op2d.includes('>');
+            // Sample boundary line points
+            var lx1 = gRange.xMin, ly1 = sl * lx1 + ic, lx2 = gRange.xMax, ly2 = sl * lx2 + ic;
+            if (above) {
+              clipPts = [toGX(lx1)+','+toGY(ly1), toGX(lx2)+','+toGY(ly2), toGX(lx2)+','+pad2, toGX(lx1)+','+pad2];
+            } else {
+              clipPts = [toGX(lx1)+','+toGY(ly1), toGX(lx2)+','+toGY(ly2), toGX(lx2)+','+(H2-pad2), toGX(lx1)+','+(H2-pad2)];
+            }
+            boundaryEls.push(h('polygon', { key: 'shade', points: clipPts.join(' '), fill: 'rgba(217,70,239,0.12)' }));
+            boundaryEls.push(h('line', { key: 'bline', x1: toGX(lx1), y1: toGY(ly1), x2: toGX(lx2), y2: toGY(ly2), stroke: '#d946ef', strokeWidth: 2.5, strokeDasharray: isDashed ? '6,4' : 'none' }));
+          }
+          return h('svg', { viewBox: '0 0 ' + W2 + ' ' + H2, className: 'w-full bg-white rounded-xl border-2 border-fuchsia-200 shadow-sm', style: { maxWidth: 420 }, role: 'img', 'aria-label': '2D inequality graph' },
+            gridLines, axLabels, boundaryEls,
+            h('text', { x: W2 - pad2 + 5, y: toGY(0) + 4, fill: '#475569', style: { fontSize: '11px', fontWeight: 'bold' } }, 'x'),
+            h('text', { x: toGX(0) + 5, y: pad2 - 5, fill: '#475569', style: { fontSize: '11px', fontWeight: 'bold' } }, 'y'),
+            !ineq2d && h('text', { x: W2 / 2, y: H2 / 2, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '13px' } }, 'Enter y > mx + b to plot')
+          );
+        })(),
 
         // ── Legend — improved, outside SVG (#2) ──
         h('div', { className: 'flex items-center justify-center gap-6 mt-2 text-xs' },
@@ -423,6 +570,79 @@ window.StemLab = window.StemLab || {
           d.quiz && d.quiz.answered && h('div', { className: 'p-3 rounded-xl text-sm font-bold ' + (d.quiz.correct ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
             d.quiz.correct ? '\u2705 Correct!' : '\u274C Answer: ' + d.quiz.a.replace(/</g, '\u003c').replace(/>=/g, '\u2265').replace(/<=/g, '\u2264'),
             d.quiz.streak > 2 && d.quiz.correct && h('span', { className: 'ml-2 text-xs text-amber-600' }, '\uD83D\uDD25 ' + d.quiz.streak + ' in a row!'))
+        ),
+
+        // ── Absolute Value Decomposition ──
+        ineq && ineq.absSource && h('div', { className: 'mt-3 bg-purple-50 rounded-lg p-3 border border-purple-200' },
+          h('p', { className: 'text-[10px] font-bold text-purple-600 uppercase tracking-wider mb-2' }, '\uD83D\uDD0D Absolute Value Decomposition'),
+          h('p', { className: 'text-xs text-purple-800' }, ineq.absSource + ' decomposes to:'),
+          ineq.compound
+            ? h('p', { className: 'text-sm font-bold text-purple-900 font-mono mt-1' },
+                ineq.lo + ' ' + (ineq.op1.includes('=') ? '\u2264' : '<') + ' ' + ineq.v + ' ' + (ineq.op2.includes('=') ? '\u2264' : '<') + ' ' + ineq.hi)
+            : h('p', { className: 'text-sm font-bold text-purple-900 font-mono mt-1' },
+                ineq.v + ' ' + ineq.op + ' ' + ineq.val + '  OR  ' + ineq.absRight.v + ' ' + ineq.absRight.op + ' ' + ineq.absRight.val)
+        ),
+
+        // ── Step-by-Step Solver panel ──
+        h('div', { className: 'mt-3 bg-teal-50 rounded-lg p-3 border border-teal-200' },
+          h('p', { className: 'text-[10px] font-bold text-teal-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDE0 Step-by-Step Solver'),
+          h('p', { className: 'text-[10px] text-teal-500 italic mb-2' }, 'Enter an inequality like 3x - 7 \u2265 5 or -2x + 4 < 10'),
+          h('div', { className: 'flex items-center gap-2 mb-2' },
+            h('input', {
+              type: 'text', value: solverExpr, placeholder: '3x - 7 \u2265 5',
+              onChange: function(e) { upd('solverExpr', e.target.value); },
+              className: 'px-3 py-1.5 border-2 border-teal-300 rounded-lg font-mono text-sm w-48 text-center focus:ring-2 focus:ring-teal-400 outline-none'
+            }),
+            h('button', {
+              onClick: function() {
+                var steps = solveInequality(solverExpr);
+                if (steps) {
+                  upd({ solverSteps: steps, solverRevealIdx: 1 });
+                } else {
+                  addToast('Could not parse. Try format: 3x - 7 \u2265 5', 'error');
+                }
+              },
+              className: 'px-3 py-1.5 text-xs font-bold bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-all'
+            }, '\uD83D\uDD0D Solve'),
+            solverSteps && h('button', {
+              onClick: function() { upd({ solverSteps: null, solverRevealIdx: 0 }); },
+              className: 'px-2 py-1 text-[10px] font-bold text-teal-500 hover:text-teal-700'
+            }, '\u21BA Reset')
+          ),
+          solverSteps && h('div', { className: 'space-y-1.5' },
+            solverSteps.slice(0, solverRevealIdx).map(function(step, i) {
+              var cls = 'text-xs px-2 py-1 rounded ';
+              if (step.warning) cls += 'bg-amber-100 text-amber-800 font-bold border border-amber-300';
+              else if (step.highlight) cls += 'bg-teal-100 text-teal-800 font-mono font-bold';
+              else if (step.final) cls += 'bg-emerald-100 text-emerald-700 font-bold';
+              else cls += 'text-teal-700';
+              return h('div', { key: i, className: cls, style: { animation: 'fadeIn 0.3s ease' } }, step.text);
+            }),
+            solverRevealIdx < solverSteps.length && h('button', {
+              onClick: function() { upd('solverRevealIdx', solverRevealIdx + 1); },
+              className: 'px-3 py-1 text-[10px] font-bold bg-teal-100 text-teal-700 rounded hover:bg-teal-200 transition-all mt-1'
+            }, '\u25B6 Next Step (' + solverRevealIdx + '/' + (solverSteps.length - 1) + ')')
+          )
+        ),
+
+        // ── History / Undo ──
+        exprHistory.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-lg p-3 border border-slate-200' },
+          h('div', { className: 'flex items-center justify-between mb-2' },
+            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider' }, '\uD83D\uDD53 Recent Expressions'),
+            h('button', {
+              onClick: function() { upd('exprHistory', []); },
+              className: 'text-[10px] text-slate-400 hover:text-slate-600'
+            }, 'Clear')
+          ),
+          h('div', { className: 'flex flex-wrap gap-1.5' },
+            exprHistory.map(function(ex, i) {
+              return h('button', {
+                key: i,
+                onClick: function() { upd('expr', ex); },
+                className: 'px-2 py-1 text-[10px] font-mono font-bold bg-white text-slate-600 rounded border border-slate-200 hover:bg-fuchsia-50 hover:border-fuchsia-300 transition-all'
+              }, ex);
+            })
+          )
         ),
 
         // ── Snapshot button ──
