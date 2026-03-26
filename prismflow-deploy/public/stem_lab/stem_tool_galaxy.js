@@ -74,6 +74,13 @@ window.StemLab = window.StemLab || {
       // ── Tool body (galaxy) ──
       return (function() {
 var d = labToolData.galaxy || {};
+if (!window._galaxyHasLoadedOnce) {
+    window._galaxyHasLoadedOnce = true;
+    if (d.simMode && d.simMode !== 'galaxy') {
+        setTimeout(function() { ctx.setToolData(function(prev) { return Object.assign({}, prev, { galaxy: Object.assign({}, prev.galaxy || {}, {simMode: 'galaxy'})}); })}, 10);
+        d.simMode = 'galaxy';
+    }
+}
 
           var upd = function (key, val) { setLabToolData(function (prev) { return Object.assign({}, prev, { galaxy: Object.assign({}, prev.galaxy || {}, (function () { var o = {}; o[key] = val; return o; })()) }); }); };
 
@@ -744,7 +751,7 @@ var d = labToolData.galaxy || {};
 
             (function () {
 
-              var dustCount = 400;
+              var dustCount = 12000;
 
               var dustGeo = new THREE.BufferGeometry();
 
@@ -774,7 +781,7 @@ var d = labToolData.galaxy || {};
 
               dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
 
-              var dustMat = new THREE.PointsMaterial({ color: 0x0a0a15, size: 0.015, transparent: true, opacity: 0.35 });
+              var dustMat = new THREE.PointsMaterial({ color: 0x030305, size: 0.045, transparent: true, opacity: 0.12 });
 
               dustGroup.add(new THREE.Points(dustGeo, dustMat));
 
@@ -1450,7 +1457,7 @@ var d = labToolData.galaxy || {};
 
                 React.createElement("input", {
 
-                  type: "range", min: 1000, max: 10000, step: 1000, value: starCount,
+                  type: "range", min: 2500, max: 100000, step: 2500, value: starCount,
 
                   onChange: function (e) {
 
@@ -1468,7 +1475,7 @@ var d = labToolData.galaxy || {};
 
                 }),
 
-                React.createElement("span", { className: "text-[10px] text-slate-400 w-12 text-right" }, starCount >= 8000 ? "Dense" : starCount >= 4000 ? "Normal" : "Sparse")
+                React.createElement("span", { className: "text-[10px] text-slate-400 w-12 text-right" }, starCount >= 50000 ? "Dense" : starCount >= 15000 ? "Normal" : "Sparse")
 
               ),
 
@@ -1837,8 +1844,11 @@ var d = labToolData.galaxy || {};
                   "data-star-life-canvas": "true",
 
                   ref: function (cvEl) {
+                    if (!cvEl) return;
+                    cvEl._stellarMass = lifecycleMass;
+                    cvEl._stellarStage = activeStage;
 
-                    if (!cvEl || cvEl._starLifeInit) return;
+                    if (cvEl._starLifeInit) return;
 
                     cvEl._starLifeInit = true;
 
@@ -1867,8 +1877,8 @@ var d = labToolData.galaxy || {};
                       }
                       ctx.globalAlpha = 1;
 
-                      var mass = lifecycleMass;
-                      var stage = activeStage;
+                      var mass = cvEl._stellarMass || 1;
+                      var stage = cvEl._stellarStage || 'main_sequence';
                       var cx = W * 0.5, cy = H * 0.5;
                       var baseR = Math.max(18, Math.min(W * 0.18, Math.pow(mass, 0.6) * (W * 0.04)));
 
