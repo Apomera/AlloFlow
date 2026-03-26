@@ -35323,9 +35323,13 @@
         })(),
 
         // ════════════════════════════════════════════════════════════════════
-        // 🛡️  CYBER DEFENSE LAB
+        // 🛡️  CYBER DEFENSE LAB — rendered via plugin registry fallback
         // ════════════════════════════════════════════════════════════════════
-        (function _cyberDefenseLab() {
+        (function _cyberDefenseLab() { return null; })(/* inline removed — see stem_tool_cyberdefense.js */),
+        /* REMOVED: inline CyberDefense IIFE (~700 lines) — now handled by
+           _pluginFallback via stem_tool_cyberdefense.js plugin file.
+           Original inline code caused React Error #310 (hooks in plain function). */
+        (function _cyberDefenseStub() {
           var _isCyber = stemLabTab === 'explore' && stemLabTool === 'cyberDefense';
           if (!_isCyber) { return null; }
 
