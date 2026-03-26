@@ -70,6 +70,8 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var renderTutorial = ctx.renderTutorial || function() { return null; };
+      var _tutGalaxy = ctx._tutGalaxy || [];
 
       // ── Tool body (galaxy) ──
       return (function() {

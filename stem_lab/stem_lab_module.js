@@ -37903,7 +37903,9 @@
                   return (prev || []).concat([{ id: toolId + '-' + Date.now(), tool: toolId, label: label, data: data, ts: Date.now() }]);
                 });
               }
-            }
+            },
+            renderTutorial: typeof renderTutorial === 'function' ? renderTutorial : function() { return null; },
+            _tutGalaxy: typeof _tutGalaxy !== 'undefined' ? _tutGalaxy : []
           };
 
           try {
