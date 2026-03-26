@@ -19,30 +19,40 @@
     var React = ctx.React;
     var el = React.createElement;
 
-          // â”€â”€ State â”€â”€
-          var _s = React.useState('phish');     var cyberTab = _s[0];     var setCyberTab = _s[1];
-          var _s2 = React.useState(0);          var phishIdx = _s2[0];    var setPhishIdx = _s2[1];
-          var _s3 = React.useState(null);       var phishAnswer = _s3[0]; var setPhishAnswer = _s3[1];
-          var _s4 = React.useState(0);          var phishScore = _s4[0];  var setPhishScore = _s4[1];
-          var _s5 = React.useState(0);          var phishStreak = _s5[0]; var setPhishStreak = _s5[1];
-          var _s6 = React.useState('');         var pwInput = _s6[0];     var setPwInput = _s6[1];
-          var _s7 = React.useState('caesar');   var cipherMode = _s7[0];  var setCipherMode = _s7[1];
-          var _s8 = React.useState('');         var cipherInput = _s8[0]; var setCipherInput = _s8[1];
-          var _s9 = React.useState(3);          var caesarShift = _s9[0]; var setCaesarShift = _s9[1];
-          var _s10 = React.useState(true);      var cipherEncode = _s10[0]; var setCipherEncode = _s10[1];
-          var _s11 = React.useState('');        var cipherChallenge = _s11[0]; var setCipherChallenge = _s11[1];
-          var _s12 = React.useState(false);     var challengeSolved = _s12[0]; var setChallengeSolved = _s12[1];
-          var _s13 = React.useState('medium');  var difficulty = _s13[0]; var setDifficulty = _s13[1];
-          var _s14 = React.useState(false);     var pwChallengeDone = _s14[0]; var setPwChallengeDone = _s14[1];
-          var _s15 = React.useState('investigate'); var phishMode = _s15[0]; var setPhishMode = _s15[1];
-          var _s16 = React.useState([]);           var cluesFound = _s16[0]; var setCluesFound = _s16[1];
-          var _s17 = React.useState(0);            var casesClosed = _s17[0]; var setCasesClosed = _s17[1];
-          var _s18 = React.useState(15);           var triageTimeLeft = _s18[0]; var setTriageTimeLeft = _s18[1];
-          var _s19 = React.useState(false);        var triageActive = _s19[0]; var setTriageActive = _s19[1];
-          var _s20 = React.useState(false);        var evidenceExpanded = _s20[0]; var setEvidenceExpanded = _s20[1];
-          var _s21 = React.useState(false);        var aiEmailLoading = _s21[0]; var setAiEmailLoading = _s21[1];
-          var _s22 = React.useState(null);         var aiGeneratedEmail = _s22[0]; var setAiGeneratedEmail = _s22[1];
-          var _s23 = React.useState([]);           var aiEmailHistory = _s23[0]; var setAiEmailHistory = _s23[1];
+          // ── State (hook-free: reads from ctx.toolData) ──
+          var d = (ctx.toolData && ctx.toolData.cyberDefense) || {};
+          var upd = function(key, val) {
+            ctx.setToolData(function(prev) {
+              return Object.assign({}, prev, {
+                cyberDefense: Object.assign({}, (prev && prev.cyberDefense) || {},
+                  typeof key === 'object' ? key : (function() { var o = {}; o[key] = val; return o; })())
+              });
+            });
+          };
+
+          var cyberTab       = d.cyberTab || 'phish';
+          var phishIdx        = d.phishIdx || 0;
+          var phishAnswer     = d.phishAnswer || null;
+          var phishScore      = d.phishScore || 0;
+          var phishStreak     = d.phishStreak || 0;
+          var pwInput         = d.pwInput || '';
+          var cipherMode      = d.cipherMode || 'caesar';
+          var cipherInput     = d.cipherInput || '';
+          var caesarShift      = d.caesarShift != null ? d.caesarShift : 3;
+          var cipherEncode    = d.cipherEncode != null ? d.cipherEncode : true;
+          var cipherChallenge = d.cipherChallenge || '';
+          var challengeSolved = d.challengeSolved || false;
+          var difficulty      = d.difficulty || 'medium';
+          var pwChallengeDone = d.pwChallengeDone || false;
+          var phishMode       = d.phishMode || 'investigate';
+          var cluesFound      = d.cluesFound || [];
+          var casesClosed     = d.casesClosed || 0;
+          var triageTimeLeft  = d.triageTimeLeft != null ? d.triageTimeLeft : 15;
+          var triageActive    = d.triageActive || false;
+          var evidenceExpanded = d.evidenceExpanded || false;
+          var aiEmailLoading  = d.aiEmailLoading || false;
+          var aiGeneratedEmail = d.aiGeneratedEmail || null;
+          var aiEmailHistory  = d.aiEmailHistory || [];
 
           // â”€â”€ Phishing Email Data (with investigation clues) â”€â”€
           var phishEmails = [
@@ -151,24 +161,20 @@
             if (detectiveRanks[ni].min > casesClosed) { nextRank = detectiveRanks[ni]; break; }
           }
 
-          // â”€â”€ Triage Timer Effect â”€â”€
-          React.useEffect(function() {
-            if (phishMode !== 'triage' || !triageActive || phishAnswer) return;
-            if (triageTimeLeft <= 0) {
-              setPhishAnswer('timeout');
-              setPhishStreak(0);
-              return;
-            }
-            var timer = setTimeout(function() {
-              setTriageTimeLeft(function(t) { return t - 1; });
+          // ── Triage Timer (hook-free: state-driven setTimeout) ──
+          if (window._cyberTriageTimer) { clearTimeout(window._cyberTriageTimer); window._cyberTriageTimer = null; }
+          if (phishMode === 'triage' && triageActive && !phishAnswer && triageTimeLeft > 0) {
+            window._cyberTriageTimer = setTimeout(function() {
+              upd('triageTimeLeft', triageTimeLeft - 1);
             }, 1000);
-            return function() { clearTimeout(timer); };
-          }, [phishMode, triageActive, triageTimeLeft, phishAnswer]);
+          } else if (phishMode === 'triage' && triageActive && !phishAnswer && triageTimeLeft <= 0) {
+            upd({ phishAnswer: 'timeout', phishStreak: 0 });
+          }
 
           // â”€â”€ Clue discovery helper â”€â”€
           function handleClueClick(clueIdx) {
             if (cluesFound.indexOf(clueIdx) === -1) {
-              setCluesFound(function(prev) { return prev.concat([clueIdx]); });
+              upd('cluesFound', cluesFound.concat([clueIdx]));
             }
           }
 
@@ -179,25 +185,25 @@
             var evidenceBonus = cluesFound.length >= (activeEmail.clues || []).length ? 2 : (cluesFound.length >= 2 ? 1 : 0);
             var streakBonus = phishStreak >= 2 ? 1 : 0;
             var speedBonus = (phishMode === 'triage' && triageTimeLeft >= 10) ? 2 : 0;
-            setPhishAnswer(isCorrect ? 'correct' : 'wrong');
+            upd('phishAnswer', isCorrect ? 'correct' : 'wrong');
             if (isCorrect) {
-              setPhishScore(function(p) { return p + 1; });
-              setPhishStreak(function(p) { return p + 1; });
+              upd('phishScore', phishScore + 1);
+              upd('phishStreak', phishStreak + 1);
               ctx.awardXP('cyberDefense', baseXP + evidenceBonus + streakBonus + speedBonus);
             } else {
-              setPhishStreak(0);
+              upd('phishStreak', 0);
             }
-            setCasesClosed(function(c) { return c + 1; });
+            upd('casesClosed', casesClosed + 1);
           }
 
           // â”€â”€ Advance to Next Case â”€â”€
           function advanceCase() {
-            setPhishIdx(function(p) { return p + 1; });
-            setPhishAnswer(null);
-            setCluesFound([]);
-            setTriageTimeLeft(15);
-            setAiGeneratedEmail(null); // clear AI email so next defaults to static pool
-            if (phishMode === 'triage') setTriageActive(true);
+            upd('phishIdx', phishIdx + 1);
+            upd('phishAnswer', null);
+            upd('cluesFound', []);
+            upd('triageTimeLeft', 15);
+            upd('aiGeneratedEmail', null); // clear AI email so next defaults to static pool
+            if (phishMode === 'triage') upd('triageActive', true);
           }
 
           // â”€â”€ AI Email Generator (Gemini-powered with static fallback) â”€â”€
@@ -206,13 +212,13 @@
             if (!ctx.callGemini) {
               // No Gemini available â€” silently use next static email
               if (ctx.addToast) ctx.addToast('AI unavailable â€” using practice email', 'info');
-              setAiGeneratedEmail(null);
-              setPhishIdx(function(p) { return p + 1; });
-              setPhishAnswer(null);
-              setCluesFound([]);
+              upd('aiGeneratedEmail', null);
+              upd('phishIdx', phishIdx + 1);
+              upd('phishAnswer', null);
+              upd('cluesFound', []);
               return;
             }
-            setAiEmailLoading(true);
+            upd('aiEmailLoading', true);
             var diffLabel = difficulty === 'easy' ? 'Easy (obvious red flags)' : difficulty === 'medium' ? 'Medium (subtle cues)' : 'Hard (very realistic, tricky)';
             var avoidList = aiEmailHistory.length > 0 ? '\nAvoid repeating these scenarios: ' + aiEmailHistory.slice(-8).join(', ') + '.' : '';
             var prompt = 'You are a cybersecurity educator generating a realistic email scenario for students to analyze. ' +
@@ -245,29 +251,29 @@
                   parsed.isPhish = !!parsed.isPhish;
                   parsed.difficulty = parsed.difficulty || difficulty;
                   parsed._aiGenerated = true;
-                  setAiGeneratedEmail(parsed);
-                  setPhishAnswer(null);
-                  setCluesFound([]);
-                  setTriageTimeLeft(15);
-                  if (phishMode === 'triage') setTriageActive(true);
-                  setAiEmailHistory(function(prev) { return prev.concat([parsed.subject.substring(0, 40)]); });
-                  setAiEmailLoading(false);
+                  upd('aiGeneratedEmail', parsed);
+                  upd('phishAnswer', null);
+                  upd('cluesFound', []);
+                  upd('triageTimeLeft', 15);
+                  if (phishMode === 'triage') upd('triageActive', true);
+                  upd('aiEmailHistory', aiEmailHistory.concat([parsed.subject.substring(0, 40)]));
+                  upd('aiEmailLoading', false);
                   return;
                 }
               } catch (e) { /* fall through to fallback */ }
               // Fallback: use next static email
-              setAiGeneratedEmail(null);
-              setPhishIdx(function(p) { return p + 1; });
-              setPhishAnswer(null);
-              setCluesFound([]);
-              setAiEmailLoading(false);
+              upd('aiGeneratedEmail', null);
+              upd('phishIdx', phishIdx + 1);
+              upd('phishAnswer', null);
+              upd('cluesFound', []);
+              upd('aiEmailLoading', false);
               if (ctx.addToast) ctx.addToast('AI generation failed â€” here\'s a practice email instead', 'info');
             }).catch(function() {
-              setAiGeneratedEmail(null);
-              setPhishIdx(function(p) { return p + 1; });
-              setPhishAnswer(null);
-              setCluesFound([]);
-              setAiEmailLoading(false);
+              upd('aiGeneratedEmail', null);
+              upd('phishIdx', phishIdx + 1);
+              upd('phishAnswer', null);
+              upd('cluesFound', []);
+              upd('aiEmailLoading', false);
               if (ctx.addToast) ctx.addToast('AI generation failed â€” here\'s a practice email instead', 'info');
             });
           }
@@ -364,9 +370,6 @@
             else if (cipherMode === 'atbash') cipherOutput = atbashCipher(cipherInput);
             else cipherOutput = cipherEncode ? btoa(xorCipher(cipherInput, 42)) : (function() { try { return xorCipher(atob(cipherInput), 42); } catch(e) { return '[Invalid XOR input]'; } })();
           }
-
-          // â”€â”€ Main Render â”€â”€
-          var el = React.createElement;
           return el('div', { className: 'animate-in fade-in duration-300', style: { background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)', borderRadius: 16, minHeight: '70vh', padding: 0, boxShadow: '0 0 40px rgba(99,102,241,0.15)' } },
             // Header
             el('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },
@@ -378,9 +381,9 @@
               ),
               el('div', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 } },
                 el('span', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, textTransform: 'uppercase' } }, 'Level:'),
-                ['easy', 'medium', 'hard'].map(function(d) {
-                  return el('button', { key: d, onClick: function() { setDifficulty(d); setPhishIdx(0); setPhishAnswer(null); },
-                    style: { padding: '4px 10px', borderRadius: 6, border: difficulty === d ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: difficulty === d ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)', color: difficulty === d ? '#a5b4fc' : '#64748b', fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'capitalize' } }, d);
+                ['easy', 'medium', 'hard'].map(function(dl) {
+                  return el('button', { key: dl, onClick: function() { upd({ difficulty: dl, phishIdx: 0, phishAnswer: null }); },
+                    style: { padding: '4px 10px', borderRadius: 6, border: difficulty === dl ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: difficulty === dl ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)', color: difficulty === dl ? '#a5b4fc' : '#64748b', fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'capitalize' } }, dl);
                 }),
                 el('div', { style: { marginLeft: 12, padding: '4px 12px', borderRadius: 20, background: 'linear-gradient(135deg, #f59e0b, #eab308)', fontSize: 11, fontWeight: 900, color: '#1e293b' } }, '\u2B50 ' + ctx.getXP('cyberDefense') + ' XP')
               )
@@ -390,7 +393,7 @@
             el('div', { style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', padding: '0 24px' } },
               [{ id: 'phish', icon: '\uD83D\uDD75\uFE0F', label: 'Cyber Detective' }, { id: 'password', icon: '\uD83D\uDD10', label: 'Password Forge' }, { id: 'cipher', icon: '\uD83D\uDD11', label: 'Cipher Playground' }].map(function(tab) {
                 var isActive = cyberTab === tab.id;
-                return el('button', { key: tab.id, onClick: function() { setCyberTab(tab.id); },
+                return el('button', { key: tab.id, onClick: function() { upd('cyberTab', tab.id); },
                   style: { padding: '12px 20px', border: 'none', borderBottom: isActive ? '2px solid #6366f1' : '2px solid transparent', background: 'none', color: isActive ? '#a5b4fc' : '#64748b', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' } },
                   el('span', null, tab.icon), tab.label);
               })
@@ -421,10 +424,10 @@
 
                 // Mode Toggle
                 el('div', { style: { display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' } },
-                  el('button', { onClick: function() { setPhishMode('investigate'); setTriageActive(false); setCluesFound([]); setPhishAnswer(null); },
+                  el('button', { onClick: function() { upd({ phishMode: 'investigate', triageActive: false, cluesFound: [], phishAnswer: null }); upd('cluesFound', []); upd('phishAnswer', null); },
                     style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: phishMode === 'investigate' ? '2px solid #6366f1' : '2px solid rgba(255,255,255,0.1)', background: phishMode === 'investigate' ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.04)', color: phishMode === 'investigate' ? '#a5b4fc' : '#64748b', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' } },
                     el('span', null, '\uD83D\uDD0D'), 'Investigation Mode'),
-                  el('button', { onClick: function() { setPhishMode('triage'); setCluesFound([]); setPhishAnswer(null); setTriageTimeLeft(15); setTriageActive(true); },
+                  el('button', { onClick: function() { setPhishMode('triage'); upd('cluesFound', []); upd('phishAnswer', null); upd('triageTimeLeft', 15); setTriageActive(true); },
                     style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: phishMode === 'triage' ? '2px solid #f59e0b' : '2px solid rgba(255,255,255,0.1)', background: phishMode === 'triage' ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.04)', color: phishMode === 'triage' ? '#fbbf24' : '#64748b', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' } },
                     el('span', null, '\u23F1\uFE0F'), 'Inbox Triage'),
                   // AI Case Generator Button
@@ -620,7 +623,7 @@
                   !pwChallengeDone && pwStrength.entropy > 60 && el('div', { style: { marginTop: 16, padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.1))', border: '1px solid rgba(245,158,11,0.3)', textAlign: 'center' } },
                     el('div', { style: { fontSize: 14, fontWeight: 900, color: '#fbbf24', marginBottom: 4 } }, '\uD83C\uDFC6 Challenge Complete!'),
                     el('div', { style: { fontSize: 12, color: '#fcd34d' } }, 'Your password would take ' + pwStrength.crackTime + ' to crack!'),
-                    el('button', { onClick: function() { ctx.awardXP('cyberDefense', 5); setPwChallengeDone(true); if (ctx.addToast) ctx.addToast('\uD83D\uDEE1\uFE0F +5 XP! Password Master!', 'success'); },
+                    el('button', { onClick: function() { ctx.awardXP('cyberDefense', 5); upd('pwChallengeDone', true); if (ctx.addToast) ctx.addToast('\uD83D\uDEE1\uFE0F +5 XP! Password Master!', 'success'); },
                       style: { marginTop: 10, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #f59e0b, #eab308)', color: '#1e293b', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Claim +5 XP \u2B50')
                   )
                 ),
@@ -644,7 +647,7 @@
                 // Cipher type selector
                 el('div', { style: { display: 'flex', gap: 8, marginBottom: 20 } },
                   [{ id: 'caesar', label: 'Caesar Cipher', icon: '\uD83D\uDD04' }, { id: 'atbash', label: 'Atbash Cipher', icon: '\uD83D\uDD00' }, { id: 'xor', label: 'XOR Cipher', icon: '\u2295' }].map(function(c) {
-                    return el('button', { key: c.id, onClick: function() { setCipherMode(c.id); },
+                    return el('button', { key: c.id, onClick: function() { upd('cipherMode', c.id); },
                       style: { flex: 1, padding: '10px 14px', borderRadius: 10, border: cipherMode === c.id ? '2px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: cipherMode === c.id ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.04)', color: cipherMode === c.id ? '#a5b4fc' : '#64748b', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
                       el('span', null, c.icon), c.label);
                   })
@@ -652,14 +655,14 @@
                 // Encode/Decode toggle
                 el('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 16 } },
                   el('div', { style: { display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' } },
-                    el('button', { onClick: function() { setCipherEncode(true); }, style: { padding: '6px 18px', border: 'none', background: cipherEncode ? '#6366f1' : 'rgba(255,255,255,0.04)', color: cipherEncode ? 'white' : '#64748b', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD12 Encode'),
-                    el('button', { onClick: function() { setCipherEncode(false); }, style: { padding: '6px 18px', border: 'none', background: !cipherEncode ? '#6366f1' : 'rgba(255,255,255,0.04)', color: !cipherEncode ? 'white' : '#64748b', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD13 Decode')
+                    el('button', { onClick: function() { upd('cipherEncode', true); }, style: { padding: '6px 18px', border: 'none', background: cipherEncode ? '#6366f1' : 'rgba(255,255,255,0.04)', color: cipherEncode ? 'white' : '#64748b', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD12 Encode'),
+                    el('button', { onClick: function() { upd('cipherEncode', false); }, style: { padding: '6px 18px', border: 'none', background: !cipherEncode ? '#6366f1' : 'rgba(255,255,255,0.04)', color: !cipherEncode ? 'white' : '#64748b', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD13 Decode')
                   )
                 ),
                 // Caesar shift control
                 cipherMode === 'caesar' && el('div', { style: { marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 } },
                   el('span', { style: { color: '#94a3b8', fontSize: 12, fontWeight: 600 } }, 'Shift:'),
-                  el('input', { type: 'range', min: 1, max: 25, value: caesarShift, onChange: function(e) { setCaesarShift(parseInt(e.target.value)); },
+                  el('input', { type: 'range', min: 1, max: 25, value: caesarShift, onChange: function(e) { upd('caesarShift', parseInt(e.target.value)); },
                     style: { width: 180, accentColor: '#6366f1' } }),
                   el('span', { style: { color: '#a5b4fc', fontSize: 16, fontWeight: 900, fontFamily: 'monospace', minWidth: 28, textAlign: 'center' } }, caesarShift)
                 ),
@@ -683,7 +686,7 @@
                 el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 } },
                   el('div', null,
                     el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, cipherEncode ? 'Plain Text' : 'Encoded Text'),
-                    el('textarea', { value: cipherInput, onChange: function(e) { setCipherInput(e.target.value.toUpperCase()); }, placeholder: cipherEncode ? 'Type your message...' : 'Paste encoded text...',
+                    el('textarea', { value: cipherInput, onChange: function(e) { upd('cipherInput', e.target.value.toUpperCase()); }, placeholder: cipherEncode ? 'Type your message...' : 'Paste encoded text...',
                       style: { width: '100%', height: 100, padding: 12, borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, outline: 'none', resize: 'none', boxSizing: 'border-box' } })
                   ),
                   el('div', null,
@@ -708,9 +711,9 @@
                   el('div', { style: { padding: '10px 14px', borderRadius: 8, background: 'rgba(0,0,0,0.3)', fontFamily: 'monospace', fontSize: 14, fontWeight: 700, color: '#fbbf24', letterSpacing: 2, marginBottom: 10 } }, activeChallengeData.encoded),
                   el('input', { value: cipherChallenge, onChange: function(e) {
                     var val = e.target.value.toUpperCase();
-                    setCipherChallenge(val);
-                    if (val.trim() === activeChallengeData.answer) { setChallengeSolved(true); ctx.awardXP('cyberDefense', 5); if (ctx.addToast) ctx.addToast('\uD83D\uDD11 +5 XP! Cipher cracked!', 'success'); }
-                    else { setChallengeSolved(false); }
+                    upd('cipherChallenge', val);
+                    if (val.trim() === activeChallengeData.answer) { upd('challengeSolved', true); ctx.awardXP('cyberDefense', 5); if (ctx.addToast) ctx.addToast('\uD83D\uDD11 +5 XP! Cipher cracked!', 'success'); }
+                    else { upd('challengeSolved', false); }
                   }, placeholder: 'Type the decoded message...', disabled: challengeSolved,
                     style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '2px solid ' + (challengeSolved ? '#22c55e' : 'rgba(255,255,255,0.1)'), background: challengeSolved ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.06)', color: challengeSolved ? '#4ade80' : '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, outline: 'none', boxSizing: 'border-box' } }),
                   challengeSolved && el('div', { style: { marginTop: 8, color: '#4ade80', fontSize: 13, fontWeight: 800, textAlign: 'center' } }, '\u2705 Decoded! The message is: "' + activeChallengeData.answer + '"')

@@ -4,6 +4,15 @@
 // Extracted from stem_lab_module.js L11191-11422
 // ═══════════════════════════════════════════
 
+// Inject fadeIn keyframe if not already present
+(function() {
+  if (document.getElementById('ineq-keyframes')) return;
+  var style = document.createElement('style');
+  style.id = 'ineq-keyframes';
+  style.textContent = '@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}';
+  document.head.appendChild(style);
+})();
+
 window.StemLab = window.StemLab || {
   _registry: {}, _order: [],
   registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
@@ -56,15 +65,24 @@ window.StemLab = window.StemLab || {
         upd('exprHistory', h2);
       };
 
-      // ── 2D Parser: y > 2x + 1, y <= -x + 3 etc. ──
+      // ── 2D Parser: y > 2x + 1, y <= -x + 3, y >= 3, y < x etc. ──
       var parse2D = function(expr) {
         if (!expr) return null;
+        // Try full form: y op [coeff]x [+/- const]
         var m = expr.match(/y\s*([<>]=?|[\u2264\u2265])\s*(-?\d*\.?\d*)\s*\*?\s*x\s*([+-]\s*\d+\.?\d*)?/);
-        if (!m) return null;
-        var op = m[1].replace('\u2264', '<=').replace('\u2265', '>=');
-        var slope = m[2] === '' || m[2] === '+' ? 1 : m[2] === '-' ? -1 : parseFloat(m[2]);
-        var intercept = m[3] ? parseFloat(m[3].replace(/\s/g, '')) : 0;
-        return { slope: slope, intercept: intercept, op: op };
+        if (m) {
+          var op = m[1].replace('\u2264', '<=').replace('\u2265', '>=');
+          var slopeStr = m[2];
+          var slope = (slopeStr === '' || slopeStr === '+') ? 1 : slopeStr === '-' ? -1 : parseFloat(slopeStr);
+          var intercept = m[3] ? parseFloat(m[3].replace(/\s/g, '')) : 0;
+          return { slope: slope, intercept: intercept, op: op };
+        }
+        // Constant form: y op number (horizontal line, e.g. y > 3)
+        var m2 = expr.match(/y\s*([<>]=?|[\u2264\u2265])\s*(-?\d+\.?\d*)\s*$/);
+        if (m2) {
+          return { slope: 0, intercept: parseFloat(m2[2]), op: m2[1].replace('\u2264', '<=').replace('\u2265', '>=') };
+        }
+        return null;
       };
 
       // ── 2D Graph constants ──
@@ -91,9 +109,13 @@ window.StemLab = window.StemLab || {
           var av = absM[1], sign = absM[2], offset = parseFloat(absM[3]), absOp = absM[4].replace('≤', '<=').replace('≥', '>='), bound = parseFloat(absM[5]);
           var center = sign === '-' ? offset : -offset;
           if (absOp === '<' || absOp === '<=') {
+            // |x - c| < b  →  c - b < x < c + b (AND)
             return { compound: true, lo: center - bound, op1: absOp, v: av, op2: absOp, hi: center + bound, absSource: expr };
           } else {
-            return { compound: false, v: av, op: absOp.replace('<', '>').replace('<=', '>='), val: center - bound, absSource: expr, absRight: { v: av, op: absOp, val: center + bound } };
+            // |x - c| > b  →  x < c - b OR x > c + b
+            var leftOp = absOp === '>' ? '<' : '<=';
+            var rightOp = absOp;
+            return { compound: false, v: av, op: leftOp, val: center - bound, absSource: expr, absRight: { v: av, op: rightOp, val: center + bound } };
           }
         }
         // Simple: x > 3 or x <= -2
@@ -153,7 +175,7 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════
       // PRESETS
       // ══════════════════════════════
-      var PRESETS = [
+      var PRESETS_1D = [
         { label: 'x > 3', expr: 'x > 3' },
         { label: 'x < -2', expr: 'x < -2' },
         { label: 'x \u2265 0', expr: 'x >= 0' },
@@ -165,6 +187,15 @@ window.StemLab = window.StemLab || {
         { label: '|x - 3| < 5', expr: '|x - 3| < 5' },
         { label: '|x + 2| \u2264 4', expr: '|x + 2| <= 4' },
       ];
+      var PRESETS_2D = [
+        { label: 'y > x + 1', expr: 'y > x + 1' },
+        { label: 'y < -x + 3', expr: 'y < -x + 3' },
+        { label: 'y \u2265 2x - 1', expr: 'y >= 2x - 1' },
+        { label: 'y \u2264 -0.5x + 4', expr: 'y <= -0.5x + 4' },
+        { label: 'y > 3', expr: 'y > 3' },
+        { label: 'y < x', expr: 'y < x' },
+      ];
+      var PRESETS = graphMode === '2d' ? PRESETS_2D : PRESETS_1D;
 
       // ══════════════════════════════
       // QUIZ — tiered difficulty (#4)
@@ -266,6 +297,13 @@ window.StemLab = window.StemLab || {
           steps.push({ text: v + ' ' + flipOp + ' ' + resultStr, highlight: true });
         }
         steps.push({ text: '\u2705 Solution found!', highlight: false, final: true });
+        // Attach the final solution expression for auto-graphing
+        var finalOp2 = a < 0
+          ? op.replace('<', 'TEMP').replace('>', '<').replace('TEMP', '>')
+          : op;
+        var finalResult = rhs1 / a;
+        var finalResultStr = Number.isInteger(finalResult) ? String(finalResult) : finalResult.toFixed(2);
+        steps.solution = v + ' ' + finalOp2 + ' ' + finalResultStr;
         return steps;
       };
 
@@ -604,6 +642,15 @@ window.StemLab = window.StemLab || {
               },
               className: 'px-3 py-1.5 text-xs font-bold bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-all'
             }, '\uD83D\uDD0D Solve'),
+            // Auto-graph button: apply solver solution to the number line
+            solverSteps && solverSteps.solution && h('button', {
+              onClick: function() {
+                upd({ expr: solverSteps.solution, graphMode: '1d' });
+                addToHistory(solverSteps.solution);
+                addToast('\uD83D\uDCC8 Graphed the solution!', 'success');
+              },
+              className: 'px-3 py-1.5 text-[10px] font-bold bg-fuchsia-100 text-fuchsia-700 rounded-lg hover:bg-fuchsia-200 transition-all'
+            }, '\uD83D\uDCC8 Graph It'),
             solverSteps && h('button', {
               onClick: function() { upd({ solverSteps: null, solverRevealIdx: 0 }); },
               className: 'px-2 py-1 text-[10px] font-bold text-teal-500 hover:text-teal-700'

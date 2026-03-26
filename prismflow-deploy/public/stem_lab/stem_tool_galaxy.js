@@ -1869,19 +1869,19 @@ if (!window._galaxyHasLoadedOnce) {
 
             // ══════════════════════════════════════════════
 
-            !d.quizMode && simMode === 'star' && React.createElement("div", { className: "animate-in fade-in duration-300", style: { display: "flex", gap: "16px", alignItems: "flex-start" } },
+            !d.quizMode && simMode === 'star' && React.createElement("div", { className: "animate-in fade-in duration-300", style: { display: "flex", gap: "16px", alignItems: "stretch" } },
 
 
 
               // ── RIGHT COLUMN: Star Visualization (sticky) ──
 
-              React.createElement("div", { style: { flex: "1 1 62%", position: "sticky", top: "16px", display: "flex", flexDirection: "column", gap: "16px", order: 2 } },
+              React.createElement("div", { style: { flex: "1 1 65%", position: "sticky", top: "16px", alignSelf: "flex-start", display: "flex", flexDirection: "column", gap: "16px", order: 2, minHeight: "520px" } },
 
 
 
               // ── Animated Star Canvas ──
 
-              React.createElement("div", { className: "w-full flex-1 relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210] shadow-2xl shadow-indigo-500/10", style: { height: 'calc(85vh - 40px)', minHeight: '400px' } },
+              React.createElement("div", { className: "w-full flex-1 relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210] shadow-2xl shadow-indigo-500/10", style: { flex: '1 1 auto', minHeight: '520px', position: 'relative' } },
 
                 React.createElement("canvas", {
 
@@ -2350,7 +2350,10 @@ if (!window._galaxyHasLoadedOnce) {
 
                   style: { width: '100%', height: '100%' }
 
-                })
+                }),
+
+                // ── Snapshot button (overlay, bottom-right of canvas) ──
+                React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: 'Star Life: ' + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Star life snapshot saved!', 'success'); }, className: "px-3 py-1.5 text-[10px] font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all", style: { position: 'absolute', bottom: '12px', right: '12px', zIndex: 10 } }, "\uD83D\uDCF8 Snapshot")
 
               )
 
@@ -2754,13 +2757,7 @@ if (!window._galaxyHasLoadedOnce) {
 
 
 
-              // ── Snapshot ──
-
-              React.createElement("div", { className: "flex justify-end", style: { width: "100%", order: 3 } },
-
-                React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: 'Star Life: ' + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Star life snapshot saved!', 'success'); }, className: "px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
-
-              )
+              // (Snapshot button moved inside canvas container)
 
             ),
 

@@ -5913,6 +5913,8 @@ const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('s
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
+      var exploreScore = ctx.exploreScore || { correct: 0, total: 0 };
+      var setExploreScore = ctx.setExploreScore || function() {};
 
       // ── Tool body (geometryProver) ──
       return (function() {
@@ -6406,6 +6408,158 @@ const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('s
 
 
 
+            // ── Guided Proof Templates ──
+
+            const GUIDED_PROOFS = [
+
+              {
+
+                id: 'tri_angle_sum', title: '△ Triangle Angle Sum Theorem',
+
+                setup: 'triangle',
+
+                theorem: 'The sum of the interior angles of any triangle equals 180°.',
+
+                steps: [
+
+                  { statement: 'Let △ABC be any triangle.', reason: 'Given', options: ['Given', 'Definition', 'Postulate'] },
+
+                  { statement: 'Draw line ℓ through A parallel to BC.', reason: 'Parallel Postulate', options: ['Parallel Postulate', 'Given', 'Angle Addition'] },
+
+                  { statement: '∠DAB ≅ ∠ABC (alternate interior angles).', reason: 'Alternate Interior Angles', options: ['Alternate Interior Angles', 'Corresponding Angles', 'Vertical Angles'] },
+
+                  { statement: '∠EAC ≅ ∠ACB (alternate interior angles).', reason: 'Alternate Interior Angles', options: ['Alternate Interior Angles', 'Supplementary Angles', 'Vertical Angles'] },
+
+                  { statement: '∠DAB + ∠BAC + ∠EAC = 180° (straight line).', reason: 'Linear Pair / Straight Angle', options: ['Linear Pair / Straight Angle', 'Triangle Inequality', 'Angle Addition'] },
+
+                  { statement: '∴ ∠ABC + ∠BAC + ∠ACB = 180°.', reason: 'Substitution', options: ['Substitution', 'Reflexive Property', 'Transitive Property'] }
+
+                ]
+
+              },
+
+              {
+
+                id: 'vertical_angles', title: '✖ Vertical Angles Theorem',
+
+                setup: 'vertical',
+
+                theorem: 'Vertical angles formed by two intersecting lines are congruent.',
+
+                steps: [
+
+                  { statement: 'Lines AB and CD intersect at point O.', reason: 'Given', options: ['Given', 'Construction', 'Postulate'] },
+
+                  { statement: '∠AOC + ∠COB = 180° (linear pair).', reason: 'Linear Pair / Straight Angle', options: ['Linear Pair / Straight Angle', 'Vertical Angles', 'Angle Addition'] },
+
+                  { statement: '∠COB + ∠BOD = 180° (linear pair).', reason: 'Linear Pair / Straight Angle', options: ['Linear Pair / Straight Angle', 'Corresponding Angles', 'Supplementary Angles'] },
+
+                  { statement: '∠AOC + ∠COB = ∠COB + ∠BOD.', reason: 'Transitive Property', options: ['Transitive Property', 'Reflexive Property', 'Substitution'] },
+
+                  { statement: '∴ ∠AOC ≅ ∠BOD.', reason: 'Subtraction Property', options: ['Subtraction Property', 'Addition Property', 'Substitution'] }
+
+                ]
+
+              },
+
+              {
+
+                id: 'isosceles', title: '△ Isosceles Triangle Theorem',
+
+                setup: 'triangle',
+
+                theorem: 'If two sides of a triangle are equal, their opposite angles are equal.',
+
+                steps: [
+
+                  { statement: 'In △ABC, let AB = AC.', reason: 'Given', options: ['Given', 'Definition', 'Construction'] },
+
+                  { statement: 'Draw AD, the bisector of ∠BAC.', reason: 'Angle Bisector Construction', options: ['Angle Bisector Construction', 'Perpendicular Bisector', 'Given'] },
+
+                  { statement: '∠BAD ≅ ∠CAD.', reason: 'Definition of Bisector', options: ['Definition of Bisector', 'Alternate Interior Angles', 'Given'] },
+
+                  { statement: 'AD ≅ AD.', reason: 'Reflexive Property', options: ['Reflexive Property', 'Symmetric Property', 'Transitive Property'] },
+
+                  { statement: '△ABD ≅ △ACD (by SAS).', reason: 'SAS Congruence', options: ['SAS Congruence', 'SSS Congruence', 'ASA Congruence'] },
+
+                  { statement: '∴ ∠ABC ≅ ∠ACB (CPCTC).', reason: 'CPCTC', options: ['CPCTC', 'Substitution', 'Definition'] }
+
+                ]
+
+              }
+
+            ];
+
+
+
+            const gpGuided = gp.guided || null; // { proofId, answers: {}, completed: false }
+
+            const loadGuidedProof = (proofId) => {
+
+              const proof = GUIDED_PROOFS.find(p => p.id === proofId);
+
+              if (!proof) return;
+
+              // Load the geometric construction
+
+              if (proof.setup === 'triangle') loadTriangle();
+
+              else if (proof.setup === 'vertical') {
+
+                gpUpd('points', [{ x: 250, y: 210 }, { x: 370, y: 130 }, { x: 130, y: 290 }, { x: 400, y: 210 }, { x: 100, y: 210 }]);
+
+                gpUpd('segments', [{ from: 1, to: 2 }, { from: 3, to: 4 }]);
+
+              }
+
+              gpUpd('mode', 'guided');
+
+              gpUpd('guided', { proofId: proofId, answers: {}, completed: false });
+
+              gpUpd('feedback', null);
+
+              gpUpd('challenge', null);
+
+            };
+
+
+
+            const checkGuidedStep = (stepIdx, selectedReason) => {
+
+              if (!gpGuided) return;
+
+              const proof = GUIDED_PROOFS.find(p => p.id === gpGuided.proofId);
+
+              if (!proof) return;
+
+              const step = proof.steps[stepIdx];
+
+              const correct = selectedReason === step.reason;
+
+              const newAnswers = { ...gpGuided.answers, [stepIdx]: { selected: selectedReason, correct: correct } };
+
+              const allDone = Object.keys(newAnswers).length === proof.steps.length;
+
+              const allCorrect = allDone && Object.values(newAnswers).every(a => a.correct);
+
+              gpUpd('guided', { ...gpGuided, answers: newAnswers, completed: allDone });
+
+              if (correct && typeof awardStemXP === 'function') awardStemXP('geometryProver', 3, proof.id + ' step');
+
+              if (allCorrect) {
+
+                addToast('🎉 Proof complete! +15 XP', 'success');
+
+                if (typeof awardStemXP === 'function') awardStemXP('geometryProver', 15, proof.id + ' proof complete');
+
+                setExploreScore(prev => ({ correct: prev.correct + 1, total: prev.total + 1 }));
+
+              }
+
+            };
+
+
+
             // ── Mouse handlers ──
 
             const handleCanvasMouseDown = (e) => {
@@ -6614,7 +6768,9 @@ const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('s
 
                   { id: 'parallel', label: '\u2225 Parallel Lines', color: 'teal' },
 
-                  { id: 'bisector', label: '\u2221 Bisector', color: 'amber' }
+                  { id: 'bisector', label: '\u2221 Bisector', color: 'amber' },
+
+                  { id: 'guided', label: '\uD83D\uDCDD Guided Proof', color: 'emerald' }
 
                 ].map(m => React.createElement("button", {
 
@@ -6628,7 +6784,9 @@ const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('s
 
                     else if (m.id === 'bisector') loadBisector();
 
-                    else { gpUpd('mode', 'freeform'); gpUpd('points', []); gpUpd('segments', []); gpUpd('connecting', null); gpUpd('feedback', null); gpUpd('challenge', null); }
+                    else if (m.id === 'guided') { loadGuidedProof('tri_angle_sum'); }
+
+                    else { gpUpd('mode', 'freeform'); gpUpd('points', []); gpUpd('segments', []); gpUpd('connecting', null); gpUpd('feedback', null); gpUpd('challenge', null); gpUpd('guided', null); }
 
                   },
 
@@ -7126,7 +7284,195 @@ const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('s
 
                 React.createElement("p", { className: "text-[9px] text-slate-400 mt-1" }, "Place points \u2022 Draw segments \u2022 Drag to explore \u2022 Discover theorems")
 
-              )
+              ),
+
+
+
+              // ── Guided Proof Panel ──
+
+              gpMode === 'guided' && gpGuided && (function () {
+
+                const proof = GUIDED_PROOFS.find(p => p.id === gpGuided.proofId);
+
+                if (!proof) return null;
+
+                const answers = gpGuided.answers || {};
+
+                const completedCount = Object.values(answers).filter(a => a.correct).length;
+
+                const totalSteps = proof.steps.length;
+
+                const pct = Math.round((completedCount / totalSteps) * 100);
+
+
+
+                return React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-4 border-2 border-emerald-300 shadow-lg" },
+
+
+
+                  // Header
+
+                  React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+
+                    React.createElement("div", { className: "w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-lg shadow" }, "\uD83D\uDCDD"),
+
+                    React.createElement("div", { className: "flex-1" },
+
+                      React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, proof.title),
+
+                      React.createElement("p", { className: "text-[10px] text-emerald-600 italic" }, proof.theorem)
+
+                    ),
+
+                    React.createElement("div", { className: "text-xs font-bold px-2 py-1 rounded-full " + (pct === 100 ? 'bg-emerald-500 text-white' : 'bg-emerald-100 text-emerald-700') }, pct + '%')
+
+                  ),
+
+
+
+                  // Progress bar
+
+                  React.createElement("div", { className: "w-full h-1.5 bg-emerald-200 rounded-full mb-3 overflow-hidden" },
+
+                    React.createElement("div", { className: "h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-500", style: { width: pct + '%' } })
+
+                  ),
+
+
+
+                  // Proof selector
+
+                  React.createElement("div", { className: "flex gap-1.5 mb-3 flex-wrap" },
+
+                    GUIDED_PROOFS.map(p => React.createElement("button", {
+
+                      key: p.id,
+
+                      onClick: () => loadGuidedProof(p.id),
+
+                      className: "px-2 py-1 text-[10px] font-bold rounded-lg transition-all " + (gpGuided.proofId === p.id ? 'bg-emerald-600 text-white shadow' : 'bg-white text-emerald-700 hover:bg-emerald-100 border border-emerald-200')
+
+                    }, p.title.split(' ').slice(0, 2).join(' ')))
+
+                  ),
+
+
+
+                  // Proof table
+
+                  React.createElement("div", { className: "bg-white rounded-xl border border-emerald-200 overflow-hidden" },
+
+                    // Table header
+
+                    React.createElement("div", { className: "grid grid-cols-12 bg-emerald-100 text-[10px] font-bold text-emerald-800 border-b border-emerald-200" },
+
+                      React.createElement("div", { className: "col-span-1 p-2 text-center" }, "#"),
+
+                      React.createElement("div", { className: "col-span-6 p-2" }, "Statement"),
+
+                      React.createElement("div", { className: "col-span-4 p-2" }, "Reason"),
+
+                      React.createElement("div", { className: "col-span-1 p-2 text-center" }, "\u2713")
+
+                    ),
+
+                    // Steps
+
+                    proof.steps.map((step, si) => {
+
+                      const ans = answers[si];
+
+                      const isAnswered = !!ans;
+
+                      const isCorrect = ans && ans.correct;
+
+                      const isLocked = isAnswered && isCorrect;
+
+                      const bgClass = isCorrect ? 'bg-emerald-50' : (isAnswered && !isCorrect) ? 'bg-red-50' : (si === 0 || (answers[si - 1] && answers[si - 1].correct)) ? 'bg-white' : 'bg-slate-50 opacity-60';
+
+                      const canAnswer = !isLocked && (si === 0 || (answers[si - 1] && answers[si - 1].correct));
+
+
+
+                      return React.createElement("div", {
+
+                        key: 'step-' + si,
+
+                        className: "grid grid-cols-12 border-b border-emerald-100 last:border-0 " + bgClass
+
+                      },
+
+                        React.createElement("div", { className: "col-span-1 p-2 text-center text-xs font-bold text-emerald-600" }, si + 1),
+
+                        React.createElement("div", { className: "col-span-6 p-2 text-[11px] text-slate-700 font-medium" }, step.statement),
+
+                        React.createElement("div", { className: "col-span-4 p-1.5" },
+
+                          isLocked
+
+                            ? React.createElement("div", { className: "text-[10px] font-bold text-emerald-600 bg-emerald-100 rounded px-2 py-1" }, step.reason)
+
+                            : canAnswer
+
+                              ? React.createElement("select", {
+
+                                  value: (ans && ans.selected) || '',
+
+                                  onChange: e => checkGuidedStep(si, e.target.value),
+
+                                  className: "w-full text-[10px] font-bold border-2 rounded-lg px-1.5 py-1 outline-none " + (isAnswered && !isCorrect ? 'border-red-300 text-red-600 bg-red-50' : 'border-emerald-300 text-emerald-700 focus:border-emerald-500')
+
+                                },
+
+                                  React.createElement('option', { value: '', disabled: true }, 'Select reason...'),
+
+                                  step.options.map(opt => React.createElement('option', { key: opt, value: opt }, opt))
+
+                                )
+
+                              : React.createElement("div", { className: "text-[10px] text-slate-400 italic px-2 py-1" }, '\uD83D\uDD12 Locked')
+
+                        ),
+
+                        React.createElement("div", { className: "col-span-1 p-2 text-center text-sm" },
+
+                          isCorrect ? '\u2705' : isAnswered ? '\u274C' : canAnswer ? '\u2B55' : '\u23F3'
+
+                        )
+
+                      );
+
+                    })
+
+                  ),
+
+
+
+                  // Completion message
+
+                  gpGuided.completed && Object.values(answers).every(a => a.correct) && React.createElement("div", { className: "mt-3 p-3 bg-emerald-100 rounded-xl border border-emerald-300 text-center" },
+
+                    React.createElement("p", { className: "text-sm font-bold text-emerald-700" }, "\uD83C\uDF89 Proof Complete! Q.E.D."),
+
+                    React.createElement("p", { className: "text-[10px] text-emerald-600 mt-1" }, "You successfully proved: ", proof.theorem)
+
+                  ),
+
+
+
+                  // Wrong answer hint
+
+                  Object.values(answers).some(a => !a.correct) && React.createElement("div", { className: "mt-2 p-2 bg-amber-50 rounded-lg border border-amber-200" },
+
+                    React.createElement("p", { className: "text-[10px] text-amber-700" }, "\uD83D\uDCA1 Hint: Re-read the statement carefully and think about which geometric property justifies it. You can change your answer!")
+
+                  )
+
+
+
+                );
+
+              })()
 
             );
       })();

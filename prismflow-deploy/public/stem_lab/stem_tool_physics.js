@@ -909,11 +909,17 @@ const d = labToolData.physics;
 
                 if (ball.mY <= 0) {
 
+                  // Interpolate exact ground intersection for precise hit detection
+                  var prevMY = ball.mY - ball.mVy * dt + ball.grav * dt; // reconstruct prev mY
+                  var frac = (prevMY > 0 && prevMY !== ball.mY) ? prevMY / (prevMY - ball.mY) : 1;
+                  if (frac < 0) frac = 0; if (frac > 1) frac = 1;
+                  var exactLandX = ball.mX - ball.mVx * dt * (1 - frac);
+                  ball.mX = exactLandX;
                   ball.mY = 0;
 
                   launched = false;
 
-                  canvasEl.dataset.lastRange = ball.mX.toFixed(1);
+                  canvasEl.dataset.lastRange = exactLandX.toFixed(1);
 
                   canvasEl.dataset.lastMaxH = '0';
 
@@ -928,7 +934,7 @@ const d = labToolData.physics;
                   // ── Target Mode: check hit ──
                   if (canvasEl.dataset.targetMode === 'true') {
                     // Dispatch target hit check (deferred to avoid re-render during draw)
-                    if (canvasEl._onTargetLand) canvasEl._onTargetLand(ball.mX);
+                    if (canvasEl._onTargetLand) canvasEl._onTargetLand(exactLandX);
                   }
 
                   // Spawn enhanced explosion particles (in screen-px space)
@@ -1628,7 +1634,7 @@ const d = labToolData.physics;
 
             React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-3" },
 
-              [{ k: 'angle', label: t('stem.physics.angle_u00b0'), min: 5, max: 85, step: 1 }, { k: 'velocity', label: t('stem.physics.velocity_ms'), min: 5, max: 50, step: 1 }, { k: 'gravity', label: t('stem.physics.gravity_msu00b2'), min: 1, max: 25, step: 0.1 }].map(function (s) {
+              [{ k: 'angle', label: 'Angle (\u00B0)', min: 5, max: 85, step: 1 }, { k: 'velocity', label: 'Velocity (m/s)', min: 5, max: 50, step: 1 }, { k: 'gravity', label: 'Gravity (m/s\u00B2)', min: 1, max: 25, step: 0.1 }].map(function (s) {
                 var isLocked = d.targetMode && d.targetConstraint && (
                   (d.targetConstraint.type === 'fixedAngle' && s.k === 'angle') ||
                   (d.targetConstraint.type === 'fixedVelocity' && s.k === 'velocity')
@@ -1777,8 +1783,8 @@ const d = labToolData.physics;
                 d.targetConstraint && React.createElement("div", { className: "flex items-center gap-2 bg-red-100 rounded-lg px-3 py-1.5" },
                   React.createElement("span", { className: "text-xs font-bold text-red-700" },
                     d.targetConstraint.type === 'fixedAngle'
-                      ? "\u{1F512} Angle LOCKED at " + d.targetConstraint.value + "\u00B0 — adjust velocity to hit the target"
-                      : "\u{1F512} Velocity LOCKED at " + d.targetConstraint.value + " m/s — adjust angle to hit the target"
+                      ? "\u{1F512} Angle LOCKED at " + d.targetConstraint.value + "\u00B0 \u2014 adjust velocity or gravity to hit the target"
+                      : "\u{1F512} Velocity LOCKED at " + d.targetConstraint.value + " m/s \u2014 adjust angle or gravity to hit the target"
                   )
                 ),
 

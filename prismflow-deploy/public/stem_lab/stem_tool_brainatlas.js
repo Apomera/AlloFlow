@@ -545,24 +545,7 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.fillText('PRESYNAPTIC TERMINAL', W * 0.5, H * 0.10);
 
-                // ── Active Drug Banner (non-Normal only) ──
-                if (activeSim.id !== 'normal') {
-                  var banW = W * 0.72, banH = 22, banX = W * 0.5 - banW / 2, banY = H * 0.125;
-                  ctx.save();
-                  ctx.shadowColor = activeSim.color + '40'; ctx.shadowBlur = 8;
-                  ctx.beginPath(); ctx.roundRect(banX, banY, banW, banH, 6);
-                  ctx.fillStyle = activeSim.color; ctx.fill();
-                  ctx.restore();
-                  ctx.font = 'bold ' + Math.round(13 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
-                  var banText = activeSim.icon + ' ' + activeSim.name.toUpperCase();
-                  ctx.fillText(banText, W * 0.5, banY + 15);
-                  // Short mechanism note below banner
-                  ctx.font = Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillStyle = activeSim.color;
-                  var mechMap = { ssri: 'Blocks SERT reuptake \u2192 \u2191 serotonin in cleft', snri: 'Blocks SERT+NET \u2192 \u2191 serotonin & norepinephrine', benzo: 'Enhances GABA-A Cl\u207B channel opening', cocaine: 'Blocks DAT+NET+SERT \u2192 massive DA accumulation', opioid: 'Activates \u03BC-opioid receptors \u2192 analgesia & euphoria', alcohol: 'Enhances GABA-A + blocks NMDA glutamate' };
-                  ctx.fillText(mechMap[activeSim.id] || '', W * 0.5, banY + banH + 12);
-                }
+                // (Drug banner moved to end of draw loop for z-order)
 
 
 
@@ -1224,6 +1207,34 @@ var d = labToolData.brainAtlas || {};
                 ctx.restore();
 
 
+
+                // ── Active Drug Banner (drawn last for z-order) ──
+                if (activeSim.id !== 'normal') {
+                  var banW = W * 0.72, banH = 22, banX = W * 0.5 - banW / 2, banY = H * 0.125;
+                  ctx.save();
+                  ctx.shadowColor = activeSim.color + '40'; ctx.shadowBlur = 8;
+                  ctx.beginPath(); ctx.roundRect(banX, banY, banW, banH, 6);
+                  ctx.fillStyle = activeSim.color; ctx.fill();
+                  ctx.restore();
+                  ctx.font = 'bold ' + Math.round(13 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+                  var banText = activeSim.icon + ' ' + activeSim.name.toUpperCase();
+                  ctx.fillText(banText, W * 0.5, banY + 15);
+                  // Frosted backdrop behind mechanism note
+                  var mechMap = { ssri: 'Blocks SERT reuptake \u2192 \u2191 serotonin in cleft', snri: 'Blocks SERT+NET \u2192 \u2191 serotonin & norepinephrine', benzo: 'Enhances GABA-A Cl\u207B channel opening', cocaine: 'Blocks DAT+NET+SERT \u2192 massive DA accumulation', opioid: 'Activates \u03BC-opioid receptors \u2192 analgesia & euphoria', alcohol: 'Enhances GABA-A + blocks NMDA glutamate' };
+                  var mechText = mechMap[activeSim.id] || '';
+                  if (mechText) {
+                    ctx.font = Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
+                    var mechW = ctx.measureText(mechText).width + 16;
+                    ctx.save();
+                    ctx.globalAlpha = 0.85;
+                    ctx.beginPath(); ctx.roundRect(W * 0.5 - mechW / 2, banY + banH + 1, mechW, 14, 3);
+                    ctx.fillStyle = '#fff'; ctx.fill();
+                    ctx.restore();
+                    ctx.fillStyle = activeSim.color;
+                    ctx.fillText(mechText, W * 0.5, banY + banH + 12);
+                  }
+                }
 
                 // ── View Label (styled) ──
 
@@ -2951,10 +2962,10 @@ var d = labToolData.brainAtlas || {};
                 // Title
                 ctx.font = 'bold ' + Math.round(16 * fontScale) + 'px Inter, system-ui, sans-serif';
                 ctx.fillStyle = '#7c3aed'; ctx.textAlign = 'center';
-                ctx.fillText('CROSS-LATERALIZATION', W * 0.5, H * 0.05);
-                ctx.font = Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('CROSS-LATERALIZATION', W * 0.5, H * 0.045);
+                ctx.font = Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
                 ctx.fillStyle = '#94a3b8';
-                ctx.fillText('Each hemisphere controls the OPPOSITE side of the body', W * 0.5, H * 0.08);
+                ctx.fillText('Each hemisphere controls the OPPOSITE side of the body', W * 0.5, H * 0.075);
 
                 // ── Coronal brain silhouette ──
                 var brCx = W * 0.5, brCy = H * 0.32, brRx = W * 0.30, brRy = H * 0.22;
@@ -2989,11 +3000,11 @@ var d = labToolData.brainAtlas || {};
                 ctx.setLineDash([]);
                 ctx.restore();
 
-                // Hemisphere labels
-                ctx.font = 'bold ' + Math.round(13 * fontScale) + 'px Inter, system-ui, sans-serif';
+                // Hemisphere labels — positioned well above the brain ellipses
+                ctx.font = 'bold ' + Math.round(12 * fontScale) + 'px Inter, system-ui, sans-serif';
                 ctx.fillStyle = '#7c3aed'; ctx.textAlign = 'center';
-                ctx.fillText('LEFT', brCx - brRx * 0.52, brCy - brRy - 8);
-                ctx.fillText('RIGHT', brCx + brRx * 0.52, brCy - brRy - 8);
+                ctx.fillText('LEFT', brCx - brRx * 0.52, brCy - brRy - 14);
+                ctx.fillText('RIGHT', brCx + brRx * 0.52, brCy - brRy - 14);
 
                 // Corpus callosum (connecting bridge)
                 ctx.save();
@@ -3020,11 +3031,18 @@ var d = labToolData.brainAtlas || {};
                 bsGrad.addColorStop(0, '#e8e0f0'); bsGrad.addColorStop(1, '#d4c8e8');
                 ctx.fillStyle = bsGrad; ctx.fill();
                 ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1.5; ctx.stroke();
-                // Medulla pyramids label
-                ctx.font = Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.fillStyle = '#7c3aed80'; ctx.textAlign = 'center';
-                ctx.fillText('Medulla', brCx, H * 0.74);
-                ctx.fillText('Pyramids', brCx, H * 0.76);
+                // Medulla pyramids label — offset to the right to avoid pathway overlap
+                ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillStyle = '#7c3aed'; ctx.textAlign = 'left';
+                var medLabelX = brCx + 16;
+                var medLabelY = H * 0.73;
+                // Background pill for readability
+                var medTW = ctx.measureText('Medulla Pyramids').width + 8;
+                ctx.beginPath(); ctx.roundRect(medLabelX - 4, medLabelY - 8, medTW, 13, 3);
+                ctx.fillStyle = '#f5f3ffdd'; ctx.fill();
+                ctx.strokeStyle = '#a78bfa40'; ctx.lineWidth = 0.5; ctx.stroke();
+                ctx.fillStyle = '#7c3aedb0'; ctx.textAlign = 'left';
+                ctx.fillText('Medulla Pyramids', medLabelX, medLabelY + 2);
                 ctx.restore();
 
                 // ── Crossing Pathways with animated pulses ──
@@ -3173,11 +3191,11 @@ var d = labToolData.brainAtlas || {};
                   legX2 += ctx.measureText(li.label).width + 30;
                 });
 
-                // Body silhouette labels at bottom
+                // Body silhouette labels at bottom — pushed below legend rows
                 ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
                 ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
-                ctx.fillText('\u2190 LEFT BODY', brCx - W * 0.25, H * 0.93);
-                ctx.fillText('RIGHT BODY \u2192', brCx + W * 0.25, H * 0.93);
+                ctx.fillText('\u2190 LEFT BODY', brCx - W * 0.30, H * 0.92);
+                ctx.fillText('RIGHT BODY \u2192', brCx + W * 0.30, H * 0.92);
 
               }
 

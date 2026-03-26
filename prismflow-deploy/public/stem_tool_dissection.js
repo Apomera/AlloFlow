@@ -5700,70 +5700,19 @@ var d = labToolData.dissection || {};
           // â”€â”€ Render â”€â”€
 
           return React.createElement("div", { className: "space-y-3 max-h-[calc(100vh-180px)] overflow-y-auto pr-1" },
-                      upd('labelMode', 'hidden');
-
-                      upd('quizMode', true);
-
-                      upd('quizIdx', 0);
-
-                      upd('quizScore', 0);
-
-                      upd('quizTotal', 0);
-
-                      upd('quizFeedback', null);
-
-                      // Start countdown
-
-                      var tmr = setInterval(function () {
-
-                        var t = (d.practicalTimer || 120) - 1;
-
-                        if (t <= 0) { clearInterval(tmr); upd('practicalMode', false); upd('labelMode', 'show'); if (addToast) addToast('\u23F0 ' + t('stem.dissection.times_up') + ' ' + (d.quizScore || 0), 'info'); }
-
-                        upd('practicalTimer', t);
-
-                      }, 1000);
-
-                      upd('_practicalInterval', tmr);
-
-                    } else {
-
-                      clearInterval(d._practicalInterval);
-
-                      upd('practicalMode', false);
-
-                      upd('labelMode', 'show');
-
-                      upd('quizMode', false);
-
-                    }
-
-                  },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.practicalMode ? 'bg-red-600 text-white animate-pulse' : 'bg-orange-100 text-orange-700')
-
-                }, d.practicalMode ? '\u23F0 ' + Math.floor((d.practicalTimer || 0) / 60) + ':' + String((d.practicalTimer || 0) % 60).padStart(2, '0') : '\u23F1 ' + t('stem.dissection.practical'))
-
-              )
-
-            ),
-
-
 
             // Specimen selector
-
             React.createElement("div", { className: "flex gap-1 bg-slate-50 rounded-xl p-1 overflow-x-auto" },
-
               SPEC_KEYS.map(function (sk) {
-
                 var sp = SPECIMENS[sk];
-
                 var isActive = sk === specimen;
-
                 return React.createElement("button", {
+                  key: sk,
+                  onClick: function () { upd('specimen', sk); upd('currentLayer', 0); upd('selectedOrgan', null); },
+                  className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all " + (isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200')
+                }, sp.emoji + ' ' + sp.name);
+              })
             ),
-
-
 
 
             // ── Toolbar ── collapsible dropdown groups
@@ -5974,28 +5923,23 @@ var d = labToolData.dissection || {};
                       if (Math.abs(dx) > 3 || Math.abs(dy) > 3) canvas._wasPanning = true;
 
                       var newPanX = (canvas._panOrigX || 0) + dx;
-                    var canvas = e.currentTarget;
-
-                    if ((canvas._zoom || 1) > 1.01 && !d.annotateMode && !d.rulerMode) {
-
-                      canvas._isPanning = true;
-
-                      canvas._panStartX = e.clientX;
-
-                      canvas._panStartY = e.clientY;
-
-                      canvas._panOrigX = canvas._panX || 0;
-
-                      canvas._panOrigY = canvas._panY || 0;
-
-                      canvas._wasPanning = false;
-
-                      canvas.style.cursor = 'grabbing';
-
-                      e.preventDefault();
-
+                      var newPanY = (canvas._panOrigY || 0) + dy;
+                      upd('canvasPanX', newPanX); upd('canvasPanY', newPanY);
                     }
-
+                    canvasHover(e);
+                  },
+                  onMouseDown: function (e) {
+                    var canvas = e.currentTarget;
+                    if ((d.canvasZoom || 1) > 1.01 && !d.annotateMode && !d.rulerMode) {
+                      canvas._isPanning = true;
+                      canvas._panStartX = e.clientX;
+                      canvas._panStartY = e.clientY;
+                      canvas._panOrigX = d.canvasPanX || 0;
+                      canvas._panOrigY = d.canvasPanY || 0;
+                      canvas._wasPanning = false;
+                      canvas.style.cursor = 'grabbing';
+                      e.preventDefault();
+                    }
                   },
 
                   onMouseUp: function (e) {
@@ -6024,12 +5968,23 @@ var d = labToolData.dissection || {};
 
                 }),
 
-                // Zoom control bar â€” always visible
-
+                // Zoom control bar
                 React.createElement("div", { className: "flex items-center justify-center gap-2 mt-1.5 py-1 px-2 rounded-lg bg-slate-100 border border-slate-200" },
+                  React.createElement("button", {
+                    onClick: function () { var z = Math.max(0.5, (d.canvasZoom || 1) - 0.25); upd('canvasZoom', z); },
+                    className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-300 hover:bg-slate-50"
+                  }, '\u2796'),
+                  React.createElement("span", { className: "text-[11px] font-mono text-slate-600 min-w-[40px] text-center" }, Math.round((d.canvasZoom || 1) * 100) + '%'),
+                  React.createElement("button", {
+                    onClick: function () { var z = Math.min(3, (d.canvasZoom || 1) + 0.25); upd('canvasZoom', z); },
+                    className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-300 hover:bg-slate-50"
+                  }, '\u2795'),
+                  (d.canvasZoom || 1) !== 1 ? React.createElement("button", {
+                    onClick: function () { upd('canvasZoom', 1); upd('canvasPanX', 0); upd('canvasPanY', 0); },
+                    className: "px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200"
                   }, '\u21BA 100%') : null
-
                 ),
+
 
                 React.createElement("button", {
 
