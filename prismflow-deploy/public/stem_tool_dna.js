@@ -178,28 +178,29 @@ window.StemLab = window.StemLab || {
         { name: 'Collagen', seq: 'ATGGGACCACGAGGACCAGGCCCACCAGGC', desc: 'Structural protein; Gly-Pro-X repeat pattern.' }
       ];
 
-      // ── Canvas: DNA Helix ──
-      var _dnaCanvasRef = React.useRef(null);
+      // ── Module-level cleanup tracker (avoids hooks) ──
+      if (!window._dnaCleanup) window._dnaCleanup = {};
 
-      React.useEffect(function() {
-        if (tab !== 'build' && tab !== 'transcribe') return;
-        var cv = _dnaCanvasRef.current;
+      // ── Canvas: DNA Helix (callback ref) ──
+      var _dnaCanvasRef = function(cv) {
+        if (window._dnaCleanup.dnaAnim) { window._dnaCleanup.dnaAnim(); window._dnaCleanup.dnaAnim = null; }
         if (!cv) return;
+        if (tab !== 'build' && tab !== 'transcribe') return;
         var ctx2d = cv.getContext('2d');
         if (!ctx2d) return;
         var W = cv.width = cv.offsetWidth * 2;
         var H = cv.height = cv.offsetHeight * 2;
         ctx2d.scale(2, 2);
-        var w = W/2, h = H/2;
+        var w = W/2, hh = H/2;
         var _tick = 0;
         var _animId = null;
         var currentAnimStep = animStep;
 
         function draw() {
-          ctx2d.clearRect(0, 0, w, h);
+          ctx2d.clearRect(0, 0, w, hh);
           var baseW = Math.min(32, (w - 80) / dnaSeq.length);
           var startX = (w - dnaSeq.length * baseW) / 2;
-          var midY = h / 2;
+          var midY = hh / 2;
           var helixAmp = 18;
 
           ctx2d.strokeStyle = '#94a3b8'; ctx2d.lineWidth = 2;
@@ -271,33 +272,31 @@ window.StemLab = window.StemLab || {
           _animId = requestAnimationFrame(draw);
         }
         draw();
-        return function() { if (_animId) cancelAnimationFrame(_animId); };
-      }, [tab, dnaSeq, animStep]);
+        window._dnaCleanup.dnaAnim = function() { if (_animId) cancelAnimationFrame(_animId); };
+      };
 
-      // Transcription timer
-      React.useEffect(function() {
-        if (tab !== 'transcribe' || !animPlaying) return;
+      // Transcription timer (driven by state, no useEffect)
+      if (tab === 'transcribe' && animPlaying) {
         if (animStep >= dnaSeq.length) {
           updMulti({ animPlaying: false, mRNA: fullMRNA });
           announceToSR('Transcription complete. mRNA: ' + fullMRNA);
           awardStemXP('dnaLab', 10, 'Completed transcription');
-          return;
+        } else {
+          if (window._dnaCleanup.transcribeTimer) clearTimeout(window._dnaCleanup.transcribeTimer);
+          window._dnaCleanup.transcribeTimer = setTimeout(function() {
+            updMulti({ animStep: animStep + 1, mRNA: fullMRNA.substring(0, animStep + 1) });
+          }, 600 / speed);
         }
-        var timer = setTimeout(function() {
-          updMulti({ animStep: animStep + 1, mRNA: fullMRNA.substring(0, animStep + 1) });
-        }, 600 / speed);
-        return function() { clearTimeout(timer); };
-      }, [tab, animPlaying, animStep, speed]);
+      }
 
       // ── Replication Canvas + Timer ──
-      var _replCanvasRef = React.useRef(null);
       var replStep = d.replStep || 0;
       var replPlaying = !!d.replPlaying;
 
-      React.useEffect(function() {
-        if (tab !== 'replicate') return;
-        var cv = _replCanvasRef.current;
+      var _replCanvasRef = function(cv) {
+        if (window._dnaCleanup.replAnim) { window._dnaCleanup.replAnim(); window._dnaCleanup.replAnim = null; }
         if (!cv) return;
+        if (tab !== 'replicate') return;
         var ctx2d = cv.getContext('2d');
         if (!ctx2d) return;
         var W = cv.width = cv.offsetWidth * 2;
@@ -314,11 +313,9 @@ window.StemLab = window.StemLab || {
           var midY = h2 / 2;
           var helixAmp = 14;
 
-          // Title
           ctx2d.fillStyle = '#e2e8f0'; ctx2d.font = 'bold 10px sans-serif'; ctx2d.textAlign = 'left';
           ctx2d.fillText('DNA Replication Fork', 10, 14);
 
-          // Draw each base position
           for (var i = 0; i < dnaSeq.length; i++) {
             var x = startX + i * baseW + baseW/2;
             var yOff = Math.sin((i * 0.5) + _tick * 0.02) * helixAmp;
@@ -328,7 +325,6 @@ window.StemLab = window.StemLab || {
             var bottomY = midY + 22 - yOff;
 
             if (i >= currentReplStep) {
-              // Unreplicated: show original double helix
               ctx2d.fillStyle = BASE_COLORS[base] || '#888';
               ctx2d.beginPath(); ctx2d.arc(x, topY, baseW * 0.35, 0, Math.PI * 2); ctx2d.fill();
               ctx2d.fillStyle = '#fff'; ctx2d.font = 'bold ' + Math.max(8, baseW * 0.5) + 'px monospace'; ctx2d.textAlign = 'center'; ctx2d.textBaseline = 'middle';
@@ -342,30 +338,24 @@ window.StemLab = window.StemLab || {
               ctx2d.beginPath(); ctx2d.arc(x, bottomY, baseW * 0.35, 0, Math.PI * 2); ctx2d.fill();
               ctx2d.fillStyle = '#fff'; ctx2d.fillText(comp, x, bottomY);
             } else {
-              // Replicated: show two daughter strands (separated)
               var spreadTop = midY - 48 + yOff;
               var spreadBot = midY + 48 - yOff;
-              // Leading strand (top copy)
               ctx2d.fillStyle = BASE_COLORS[base] || '#888';
               ctx2d.beginPath(); ctx2d.arc(x, spreadTop, baseW * 0.32, 0, Math.PI * 2); ctx2d.fill();
               ctx2d.fillStyle = '#fff'; ctx2d.fillText(base, x, spreadTop);
-              // New complementary base (top)
               ctx2d.fillStyle = BASE_COLORS[comp] || '#888'; ctx2d.globalAlpha = 0.7;
               ctx2d.beginPath(); ctx2d.arc(x, spreadTop + baseW * 0.9, baseW * 0.32, 0, Math.PI * 2); ctx2d.fill();
               ctx2d.fillStyle = '#fff'; ctx2d.fillText(comp, x, spreadTop + baseW * 0.9);
               ctx2d.globalAlpha = 1;
-              // Lagging strand (bottom copy)
               ctx2d.fillStyle = BASE_COLORS[comp] || '#888';
               ctx2d.beginPath(); ctx2d.arc(x, spreadBot, baseW * 0.32, 0, Math.PI * 2); ctx2d.fill();
               ctx2d.fillStyle = '#fff'; ctx2d.fillText(comp, x, spreadBot);
-              // New complementary base (bottom)
               ctx2d.fillStyle = BASE_COLORS[base] || '#888'; ctx2d.globalAlpha = 0.7;
               ctx2d.beginPath(); ctx2d.arc(x, spreadBot - baseW * 0.9, baseW * 0.32, 0, Math.PI * 2); ctx2d.fill();
               ctx2d.fillStyle = '#fff'; ctx2d.fillText(base, x, spreadBot - baseW * 0.9);
               ctx2d.globalAlpha = 1;
             }
 
-            // Replication fork marker (helicase)
             if (i === currentReplStep && currentReplStep < dnaSeq.length) {
               ctx2d.fillStyle = 'rgba(168, 85, 247, 0.25)';
               ctx2d.beginPath(); ctx2d.arc(x, midY, baseW * 2, 0, Math.PI * 2); ctx2d.fill();
@@ -376,7 +366,6 @@ window.StemLab = window.StemLab || {
             }
           }
 
-          // Direction arrows
           ctx2d.fillStyle = '#94a3b8'; ctx2d.font = 'bold 9px sans-serif'; ctx2d.textAlign = 'right';
           ctx2d.fillText("5' \u2192 3' (Leading)", w - 10, midY - 55);
           ctx2d.textAlign = 'left';
@@ -386,52 +375,50 @@ window.StemLab = window.StemLab || {
           _animId = requestAnimationFrame(drawRepl);
         }
         drawRepl();
-        return function() { if (_animId) cancelAnimationFrame(_animId); };
-      }, [tab, dnaSeq, replStep]);
+        window._dnaCleanup.replAnim = function() { if (_animId) cancelAnimationFrame(_animId); };
+      };
 
-      // Replication step timer
-      React.useEffect(function() {
-        if (tab !== 'replicate' || !replPlaying) return;
+      // Replication step timer (driven by state, no useEffect)
+      if (tab === 'replicate' && replPlaying) {
         if (replStep >= dnaSeq.length) {
           updMulti({ replPlaying: false });
           announceToSR('DNA replication complete! Two identical copies created.');
           awardStemXP('dnaLab', 15, 'Completed DNA replication');
           addToast('\uD83E\uDDEC Replication complete! Two daughter strands formed.', 'success');
           if (typeof stemCelebrate === 'function') stemCelebrate();
-          return;
+        } else {
+          if (window._dnaCleanup.replTimer) clearTimeout(window._dnaCleanup.replTimer);
+          window._dnaCleanup.replTimer = setTimeout(function() {
+            upd('replStep', replStep + 1);
+          }, 500 / speed);
         }
-        var timer = setTimeout(function() {
-          upd('replStep', replStep + 1);
-        }, 500 / speed);
-        return function() { clearTimeout(timer); };
-      }, [tab, replPlaying, replStep, speed]);
+      }
 
-      // Translation
-      var _transStep = React.useRef(0);
-      var [transPlaying, setTransPlaying] = React.useState(false);
-      var [builtProtein, setBuiltProtein] = React.useState([]);
-      var transStep = _transStep.current;
+      // Translation (all state in ctx.toolData — no hooks)
+      var transStep = d.transStep || 0;
+      var transPlaying = !!d.transPlaying;
+      var builtProtein = d.builtProtein || [];
 
-      React.useEffect(function() {
-        if (tab !== 'translate' || !transPlaying) return;
-        var pos = _transStep.current * 3;
-        if (pos + 3 > fullMRNA.length) { setTransPlaying(false); return; }
-        var codon = fullMRNA.substring(pos, pos + 3);
-        var aa = CODON_TABLE[codon];
-        if (!aa || aa === 'Stop') {
-          setTransPlaying(false);
-          updMulti({ protein: builtProtein });
-          announceToSR('Translation complete. Protein has ' + builtProtein.length + ' amino acids.');
-          awardStemXP('dnaLab', 15, 'Completed translation');
-          return;
+      if (tab === 'translate' && transPlaying) {
+        var tPos = transStep * 3;
+        if (tPos + 3 > fullMRNA.length) {
+          updMulti({ transPlaying: false });
+        } else {
+          var tCodon = fullMRNA.substring(tPos, tPos + 3);
+          var tAA = CODON_TABLE[tCodon];
+          if (!tAA || tAA === 'Stop') {
+            updMulti({ transPlaying: false, protein: builtProtein });
+            announceToSR('Translation complete. Protein has ' + builtProtein.length + ' amino acids.');
+            awardStemXP('dnaLab', 15, 'Completed translation');
+          } else {
+            if (window._dnaCleanup.transTimer) clearTimeout(window._dnaCleanup.transTimer);
+            window._dnaCleanup.transTimer = setTimeout(function() {
+              updMulti({ transStep: transStep + 1, builtProtein: builtProtein.concat([{ codon: tCodon, aa: tAA, pos: tPos }]) });
+              announceToSR('Codon ' + tCodon + ' = ' + (AA_PROPS[tAA] ? AA_PROPS[tAA].full : tAA));
+            }, 800 / speed);
+          }
         }
-        var timer = setTimeout(function() {
-          setBuiltProtein(function(prev) { return prev.concat([{ codon: codon, aa: aa, pos: pos }]); });
-          _transStep.current += 1;
-          announceToSR('Codon ' + codon + ' = ' + (AA_PROPS[aa] ? AA_PROPS[aa].full : aa));
-        }, 800 / speed);
-        return function() { clearTimeout(timer); };
-      }, [tab, transPlaying, builtProtein, speed]);
+      }
 
       // Challenge
       function generateChallenge() {
@@ -492,7 +479,6 @@ window.StemLab = window.StemLab || {
       }
 
       // ── CRISPR-Cas9 Simulator ──
-      var _crisprCanvasRef = React.useRef(null);
       var crisprPhase = d.crisprPhase || 'design'; // design | scanning | cut | repair | done
       var crisprScanPos = d.crisprScanPos || 0;
       var crisprGuideLen = 6;
@@ -525,13 +511,11 @@ window.StemLab = window.StemLab || {
         var cutPos = selectedPAMSite.cutSite;
         var resultSeq, desc;
         if (type === 'nhej') {
-          // NHEJ: random deletion of 1-3 bases at cut site (error-prone)
           var delLen = Math.floor(Math.random() * 3) + 1;
           var deleted = seq.splice(Math.max(0, cutPos - 1), delLen);
           resultSeq = seq.join('');
           desc = 'NHEJ: deleted ' + deleted.join('') + ' at pos ' + cutPos + ' (error-prone, may cause frameshift)';
         } else {
-          // HDR: precise replacement (user-defined or templated)
           var newBase = 'ATGC'[Math.floor(Math.random() * 4)];
           seq[cutPos] = newBase;
           resultSeq = seq.join('');
@@ -547,29 +531,31 @@ window.StemLab = window.StemLab || {
         if (typeof stemCelebrate === 'function') stemCelebrate();
       }
 
-      // CRISPR scanning animation timer
-      React.useEffect(function() {
-        if (tab !== 'crispr' || crisprPhase !== 'scanning') return;
-        if (!selectedPAMSite) { updMulti({ crisprPhase: 'design' }); return; }
-        var targetPos = selectedPAMSite.cutSite;
-        if (crisprScanPos >= targetPos) {
-          updMulti({ crisprPhase: 'cut' });
-          announceToSR('Cas9 found target! PAM site located. Ready to cut.');
-          addToast('\uD83C\uDFAF Cas9 found the target PAM site!', 'success');
-          stemBeep && stemBeep();
-          return;
+      // CRISPR scanning timer (state-driven, no useEffect)
+      if (tab === 'crispr' && crisprPhase === 'scanning') {
+        if (!selectedPAMSite) {
+          updMulti({ crisprPhase: 'design' });
+        } else {
+          var targetPos = selectedPAMSite.cutSite;
+          if (crisprScanPos >= targetPos) {
+            updMulti({ crisprPhase: 'cut' });
+            announceToSR('Cas9 found target! PAM site located. Ready to cut.');
+            addToast('\uD83C\uDFAF Cas9 found the target PAM site!', 'success');
+            stemBeep && stemBeep();
+          } else {
+            if (window._dnaCleanup.crisprTimer) clearTimeout(window._dnaCleanup.crisprTimer);
+            window._dnaCleanup.crisprTimer = setTimeout(function() {
+              upd('crisprScanPos', crisprScanPos + 1);
+            }, 200 / speed);
+          }
         }
-        var timer = setTimeout(function() {
-          upd('crisprScanPos', crisprScanPos + 1);
-        }, 200 / speed);
-        return function() { clearTimeout(timer); };
-      }, [tab, crisprPhase, crisprScanPos, speed]);
+      }
 
-      // CRISPR canvas
-      React.useEffect(function() {
-        if (tab !== 'crispr') return;
-        var cv = _crisprCanvasRef.current;
+      // CRISPR canvas (callback ref, no useEffect)
+      var _crisprCanvasRef = function(cv) {
+        if (window._dnaCleanup.crisprAnim) { window._dnaCleanup.crisprAnim(); window._dnaCleanup.crisprAnim = null; }
         if (!cv) return;
+        if (tab !== 'crispr') return;
         var ctx2d = cv.getContext('2d');
         if (!ctx2d) return;
         var W = cv.width = cv.offsetWidth * 2;
@@ -584,23 +570,19 @@ window.StemLab = window.StemLab || {
           var startX = (w - dnaSeq.length * baseW) / 2;
           var midY = h2 / 2;
 
-          // Title
           ctx2d.fillStyle = '#e2e8f0'; ctx2d.font = 'bold 10px sans-serif'; ctx2d.textAlign = 'left';
           ctx2d.fillText('CRISPR-Cas9 Gene Editor', 10, 14);
 
-          // Draw DNA
           for (var i = 0; i < dnaSeq.length; i++) {
             var x = startX + i * baseW + baseW / 2;
             var yOff = Math.sin((i * 0.4) + _tick * 0.015) * 10;
             var base = dnaSeq[i];
             var comp = complementStrand[i];
 
-            // Highlight PAM site
             var isPAM = selectedPAMSite && (i >= selectedPAMSite.pamStart && i < selectedPAMSite.pamStart + 3);
             var isGuide = selectedPAMSite && (i >= selectedPAMSite.cutSite - crisprGuideLen && i < selectedPAMSite.cutSite);
             var isCutSite = selectedPAMSite && i === selectedPAMSite.cutSite;
 
-            // Cut visualization
             if (crisprPhase === 'cut' && isCutSite) {
               ctx2d.strokeStyle = '#ef4444'; ctx2d.lineWidth = 2;
               ctx2d.setLineDash([4, 2]);
@@ -610,7 +592,6 @@ window.StemLab = window.StemLab || {
               ctx2d.fillText('\u2702 CUT', x, midY - 40 + yOff);
             }
 
-            // Background highlights
             if (isPAM) {
               ctx2d.fillStyle = 'rgba(239,68,68,0.15)';
               ctx2d.fillRect(x - baseW / 2, midY - 30 + yOff, baseW, 60);
@@ -619,43 +600,36 @@ window.StemLab = window.StemLab || {
               ctx2d.fillRect(x - baseW / 2, midY - 30 + yOff, baseW, 60);
             }
 
-            // Top strand
             ctx2d.fillStyle = isPAM ? '#ef4444' : isGuide ? '#3b82f6' : (BASE_COLORS[base] || '#888');
             ctx2d.beginPath(); ctx2d.arc(x, midY - 16 + yOff, baseW * 0.35, 0, Math.PI * 2); ctx2d.fill();
             ctx2d.fillStyle = '#fff'; ctx2d.font = 'bold ' + Math.max(7, baseW * 0.45) + 'px monospace'; ctx2d.textAlign = 'center'; ctx2d.textBaseline = 'middle';
             ctx2d.fillText(base, x, midY - 16 + yOff);
 
-            // H-bonds
             ctx2d.setLineDash([2, 2]); ctx2d.strokeStyle = isCutSite && crisprPhase === 'cut' ? 'rgba(239,68,68,0.3)' : 'rgba(148,163,184,0.4)';
             ctx2d.beginPath(); ctx2d.moveTo(x, midY - 16 + yOff + baseW * 0.35); ctx2d.lineTo(x, midY + 16 - yOff - baseW * 0.35); ctx2d.stroke();
             ctx2d.setLineDash([]);
 
-            // Bottom strand
             ctx2d.fillStyle = isPAM ? '#ef4444' : isGuide ? '#3b82f6' : (BASE_COLORS[comp] || '#888');
             ctx2d.beginPath(); ctx2d.arc(x, midY + 16 - yOff, baseW * 0.35, 0, Math.PI * 2); ctx2d.fill();
             ctx2d.fillStyle = '#fff'; ctx2d.fillText(comp, x, midY + 16 - yOff);
           }
 
-          // Cas9 protein (during scanning or at target)
           var cas9Pos = crisprPhase === 'scanning' ? crisprScanPos : (selectedPAMSite ? selectedPAMSite.cutSite : 0);
           if (crisprPhase === 'scanning' || crisprPhase === 'cut') {
             var cas9X = startX + cas9Pos * baseW + baseW / 2;
             var cas9Y = midY;
-            // Cas9 body
             ctx2d.fillStyle = 'rgba(168,85,247,0.2)';
             ctx2d.beginPath(); ctx2d.ellipse(cas9X, cas9Y, baseW * 3, 30, 0, 0, Math.PI * 2); ctx2d.fill();
             ctx2d.strokeStyle = '#7c3aed'; ctx2d.lineWidth = 1.5;
             ctx2d.beginPath(); ctx2d.ellipse(cas9X, cas9Y, baseW * 3, 30, 0, 0, Math.PI * 2); ctx2d.stroke();
             ctx2d.fillStyle = '#7c3aed'; ctx2d.font = 'bold 9px sans-serif'; ctx2d.textAlign = 'center';
             ctx2d.fillText('Cas9', cas9X, cas9Y - 34);
-            // Guide RNA label
             if (crisprPhase === 'cut') {
               ctx2d.fillStyle = '#2563eb'; ctx2d.font = 'bold 7px sans-serif';
               ctx2d.fillText('gRNA', cas9X - baseW * 2, cas9Y + 38);
             }
           }
 
-          // Legend
           ctx2d.font = 'bold 8px sans-serif'; ctx2d.textAlign = 'left';
           ctx2d.fillStyle = '#3b82f6'; ctx2d.fillText('\u25CF Guide RNA target', 10, h2 / 2 + 48);
           ctx2d.fillStyle = '#ef4444'; ctx2d.fillText('\u25CF PAM site (NGG)', 10, h2 / 2 + 58);
@@ -665,8 +639,8 @@ window.StemLab = window.StemLab || {
           _animId = requestAnimationFrame(drawCRISPR);
         }
         drawCRISPR();
-        return function() { if (_animId) cancelAnimationFrame(_animId); };
-      }, [tab, dnaSeq, crisprPhase, crisprScanPos]);
+        window._dnaCleanup.crisprAnim = function() { if (_animId) cancelAnimationFrame(_animId); };
+      };
 
       var tabs = [
         { id: 'build', icon: '\uD83E\uDDEC', label: 'Build' },
@@ -816,8 +790,8 @@ window.StemLab = window.StemLab || {
             h("div", { className: "font-mono text-xs break-all mb-3 p-3 bg-slate-50 rounded-lg" },
               h("span", { className: "text-[10px] font-bold text-violet-600 block mb-1" }, "mRNA:"),
               (fullMRNA.match(/.{1,3}/g) || []).map(function(codon, idx) {
-                var isActive = idx === _transStep.current && transPlaying;
-                var isPast = idx < _transStep.current;
+                var isActive = idx === transStep && transPlaying;
+                var isPast = idx < transStep;
                 return h("span", { key: idx, className: "inline-block px-1 py-0.5 mx-0.5 rounded text-xs font-bold " + (isActive ? "bg-violet-600 text-white scale-110" : isPast ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-500"), title: codon + ' \u2192 ' + (CODON_TABLE[codon] || '?') }, codon);
               })
             ),
@@ -827,8 +801,8 @@ window.StemLab = window.StemLab || {
               builtProtein.length === 0 && h("span", { className: "text-[10px] text-slate-400 italic" }, "Press Start to begin...")
             ),
             h("div", { className: "flex items-center gap-3 mt-4" },
-              h("button", { onClick: function() { if (transPlaying) setTransPlaying(false); else { _transStep.current = 0; setBuiltProtein([]); setTransPlaying(true); } }, className: "px-4 py-2 text-sm font-bold rounded-xl " + (transPlaying ? "bg-amber-500 text-white" : "bg-emerald-600 text-white hover:bg-emerald-700") }, transPlaying ? "\u23F8 Pause" : "\u25B6 Translate"),
-              h("button", { onClick: function() { _transStep.current = 0; setBuiltProtein([]); setTransPlaying(false); }, className: "px-3 py-2 text-sm font-bold bg-slate-200 text-slate-600 rounded-xl" }, "\u21BA Reset")
+              h("button", { onClick: function() { if (transPlaying) updMulti({ transPlaying: false }); else { updMulti({ transStep: 0, builtProtein: [], transPlaying: true }); } }, className: "px-4 py-2 text-sm font-bold rounded-xl " + (transPlaying ? "bg-amber-500 text-white" : "bg-emerald-600 text-white hover:bg-emerald-700") }, transPlaying ? "\u23F8 Pause" : "\u25B6 Translate"),
+              h("button", { onClick: function() { updMulti({ transStep: 0, builtProtein: [], transPlaying: false }); }, className: "px-3 py-2 text-sm font-bold bg-slate-200 text-slate-600 rounded-xl" }, "\u21BA Reset")
             )
           )
         ),
