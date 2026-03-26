@@ -18984,13 +18984,13 @@
             // ══════════════════════════════════════════════
             // ── Star Lifespan Simulation Mode ──
             // ══════════════════════════════════════════════
-            !d.quizMode && simMode === 'star' && React.createElement("div", { className: "animate-in fade-in duration-300", style: { display: "flex", gap: "16px", alignItems: "flex-start" } },
+            !d.quizMode && simMode === 'star' && React.createElement("div", { className: "animate-in fade-in duration-300", style: { display: "flex", gap: "16px", alignItems: "stretch" } },
 
               // ── RIGHT COLUMN: Star Visualization (sticky) ──
-              React.createElement("div", { style: { flex: "1 1 58%", position: "sticky", top: "16px", display: "flex", flexDirection: "column", gap: "16px", order: 2 } },
+              React.createElement("div", { style: { flex: "1 1 58%", position: "sticky", top: "16px", alignSelf: "flex-start", display: "flex", flexDirection: "column", gap: "16px", order: 2, minHeight: "450px" } },
 
               // ── Animated Star Canvas ──
-              React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210] shadow-2xl shadow-indigo-500/10", style: { height: '450px', minHeight: '450px' } },
+              React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210] shadow-2xl shadow-indigo-500/10", style: { flex: '1 1 auto', minHeight: '450px' } },
                 React.createElement("canvas", {
                   "data-star-life-canvas": "true",
                   ref: function (cvEl) {
