@@ -638,7 +638,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 '  vType = aStarType;',
 
-                '  float sz = 8.0 - aStarType * 0.8;',
+                '  float sz = 5.0 - aStarType * 0.5;',
 
                 '  float twinkleSpeed = 0.8 + aStarType * 0.3;',
 
@@ -646,7 +646,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
 
-                '  gl_PointSize = min(sz * uPR * (120.0 / max(-mv.z, 1.0)), 24.0);',
+                '  gl_PointSize = min(sz * uPR * (80.0 / max(-mv.z, 1.0)), 14.0);',
 
                 '  gl_Position = projectionMatrix * mv;',
 
@@ -668,15 +668,15 @@ if (!window._galaxyHasLoadedOnce) {
 
                 '  if (d > 1.0) discard;',
 
-                '  float glow = exp(-d * d * 4.5);',
+                '  float glow = exp(-d * d * 8.0);',
 
                 '  float core = smoothstep(1.0, 0.0, d);',
 
-                '  float brightness = mix(0.9, 0.35, vType / 6.0);',
+                '  float brightness = mix(1.0, 0.5, vType / 6.0);',
 
                 '  vec3 col = vSC * (0.2 + 0.8 * glow) * brightness;',
 
-                '  gl_FragColor = vec4(col, core * vA * 0.55);',
+                '  gl_FragColor = vec4(col, core * vA * 0.75);',
 
                 '}'
 
@@ -782,7 +782,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
 
-              var dustMat = new THREE.PointsMaterial({ color: 0x030305, size: 0.045, transparent: true, opacity: 0.12 });
+              var dustMat = new THREE.PointsMaterial({ color: 0x030305, size: 0.025, transparent: true, opacity: 0.12 });
 
               dustGroup.add(new THREE.Points(dustGeo, dustMat));
 
@@ -823,7 +823,7 @@ if (!window._galaxyHasLoadedOnce) {
               gCtx.fillStyle = gGrad; gCtx.fillRect(0,0,32,32);
               var gasTex = new THREE.CanvasTexture(gasCv);
               
-              var gasMat = new THREE.PointsMaterial({ size: 0.15, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false, vertexColors: true, map: gasTex });
+              var gasMat = new THREE.PointsMaterial({ size: 0.06, transparent: true, opacity: 0.06, blending: THREE.AdditiveBlending, depthWrite: false, vertexColors: true, map: gasTex });
               gasGroup.add(new THREE.Points(gasGeo, gasMat));
             })();
 
@@ -986,7 +986,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               composer.addPass(new THREE.RenderPass(scene, camera));
 
-              var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(W, H), 2.2, 0.4, 0.85);
+              var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(W, H), 1.2, 0.25, 0.9);
 
               composer.addPass(bloomPass);
 
@@ -1875,7 +1875,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               // ── RIGHT COLUMN: Star Visualization (sticky) ──
 
-              React.createElement("div", { style: { flex: "1 1 58%", position: "sticky", top: "16px", display: "flex", flexDirection: "column", gap: "16px", order: 2 } },
+              React.createElement("div", { style: { flex: "1 1 62%", position: "sticky", top: "16px", display: "flex", flexDirection: "column", gap: "16px", order: 2 } },
 
 
 
@@ -1924,7 +1924,8 @@ if (!window._galaxyHasLoadedOnce) {
                       var mass = cvEl._stellarMass || 1;
                       var stage = cvEl._stellarStage || 'main_sequence';
                       var cx = W * 0.5, cy = H * 0.5;
-                      var baseR = Math.max(18, Math.min(W * 0.18, Math.pow(mass, 0.6) * (W * 0.04)));
+                      var dim = Math.min(W, H);
+                      var baseR = Math.max(dim * 0.06, Math.min(dim * 0.35, Math.pow(mass, 0.55) * (dim * 0.09)));
 
                       // Determine star color based on mass
                       var coreColor, glowColor, coronaColor;
@@ -2359,7 +2360,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               // ── LEFT COLUMN: Controls & Timeline ──
 
-              React.createElement("div", { style: { flex: "0 0 42%", maxHeight: "85vh", overflowY: "auto", display: "flex", flexDirection: "column", gap: "16px", order: 1 } },
+              React.createElement("div", { style: { flex: "0 0 38%", maxHeight: "85vh", overflowY: "auto", display: "flex", flexDirection: "column", gap: "16px", order: 1 } },
 
 
 
