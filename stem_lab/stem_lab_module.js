@@ -36611,7 +36611,8 @@
             coordinate: true, protractor: true,
             archStudio: true, artStudio: true, dataStudio: true, cyberDefense: true,
             galaxy: true, brainAtlas: true,
-            funcGrapher: true, physics: true
+            funcGrapher: true, physics: true,
+            inequality: true, multtable: true, geoSandbox: true
           };
           if (!_pluginOnlyTools[stemLabTool]) return null;
 

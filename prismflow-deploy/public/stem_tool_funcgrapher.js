@@ -79,7 +79,9 @@ window.StemLab = window.StemLab || {
               return Object.assign({}, prev, { funcGrapher: {
                 type: 'linear', a: 1, b: 0, c: 0,
                 showDeriv: false, showArea: false,
-                traceX: 0, showTable: false, showLearn: false
+                traceX: 0, showTable: false, showLearn: false,
+                compare: false, compareType: 'linear', compareA: 1, compareB: 0, compareC: 0,
+                aiExplain: '', aiExplainLoading: false
               }});
             });
             return React.createElement('div', { className: 'p-8 text-center text-slate-400' }, 'Loading...');
@@ -98,6 +100,18 @@ window.StemLab = window.StemLab || {
           const toSX = x => pad + ((x - xR.xMin) / (xR.xMax - xR.xMin)) * (W - 2 * pad);
 
           const toSY = y => (H - pad) - ((y - yR.yMin) / (yR.yMax - yR.yMin)) * (H - 2 * pad);
+
+          // ── Comparison function evaluator ──
+          const evalF2 = d.compare ? function(x) {
+            var ct = d.compareType || 'linear', ca = d.compareA || 1, cb = d.compareB || 0, cc = d.compareC || 0;
+            if (ct === 'linear') return ca * x + cb;
+            if (ct === 'quadratic') return ca * x * x + cb * x + cc;
+            if (ct === 'trig') return ca * Math.sin(cb * x + cc);
+            if (ct === 'cubic') return ca * x * x * x + cb * x + cc;
+            if (ct === 'exponential') return ca * Math.pow(Math.E, cb * x) + cc;
+            if (ct === 'absolute') return ca * Math.abs(x + cb) + cc;
+            return ca * x + cb;
+          } : null;
 
 
 
@@ -141,6 +155,8 @@ window.StemLab = window.StemLab || {
 
           const areaPts = [];
 
+          const comparePts = [];
+
           for (var px = 0; px <= W - 2 * pad; px += 2) {
 
             var x = xR.xMin + (px / (W - 2 * pad)) * (xR.xMax - xR.xMin);
@@ -154,6 +170,8 @@ window.StemLab = window.StemLab || {
             if (dy >= yR.yMin && dy <= yR.yMax) derivPts.push(toSX(x) + ',' + toSY(dy));
 
             if (d.showArea && y >= yR.yMin && y <= yR.yMax && x >= 0) areaPts.push({ sx: toSX(x), sy: toSY(y) });
+
+            if (evalF2) { var y2c = evalF2(x); if (y2c >= yR.yMin && y2c <= yR.yMax) comparePts.push(toSX(x) + ',' + toSY(y2c)); }
 
           }
 
@@ -185,21 +203,89 @@ window.StemLab = window.StemLab || {
 
 
 
-          // Build equation string
+          // Build equation string (clean formatting — suppress ×1, +0, etc.)
+          function fmtCoeff(val, varPart, isFirst) {
+            if (val === 0) return '';
+            var s = '';
+            if (isFirst) {
+              if (val === -1 && varPart) s = '-';
+              else if (val === 1 && varPart) s = '';
+              else s = '' + val;
+            } else {
+              if (val < 0) {
+                if (val === -1 && varPart) s = ' - ';
+                else s = ' - ' + Math.abs(val);
+              } else {
+                if (val === 1 && varPart) s = ' + ';
+                else s = ' + ' + val;
+              }
+            }
+            return s + varPart;
+          }
+          function fmtConst(val, isFirst) {
+            if (val === 0) return '';
+            if (isFirst) return '' + val;
+            return val < 0 ? ' - ' + Math.abs(val) : ' + ' + val;
+          }
 
-          var eqStr = '';
+          var eqStr = 'f(x) = ';
+          if (d.type === 'linear') {
+            var parts = fmtCoeff(d.a, 'x', true) + fmtConst(d.b, d.a === 0);
+            eqStr += parts || '0';
+          } else if (d.type === 'quadratic') {
+            var parts = fmtCoeff(d.a, 'x\u00B2', true) + fmtCoeff(d.b, 'x', d.a === 0) + fmtConst(d.c, d.a === 0 && d.b === 0);
+            eqStr += parts || '0';
+          } else if (d.type === 'trig') {
+            var amp = d.a === 1 ? '' : d.a === -1 ? '-' : '' + d.a;
+            var freq = d.b === 1 ? 'x' : d.b === -1 ? '-x' : d.b + 'x';
+            var phase = d.c === 0 ? '' : d.c > 0 ? ' + ' + d.c : ' - ' + Math.abs(d.c);
+            eqStr += amp + 'sin(' + freq + phase + ')';
+          } else if (d.type === 'cubic') {
+            var parts = fmtCoeff(d.a, 'x\u00B3', true) + fmtCoeff(d.b, 'x', d.a === 0) + fmtConst(d.c, d.a === 0 && d.b === 0);
+            eqStr += parts || '0';
+          } else if (d.type === 'exponential') {
+            var amp = d.a === 1 ? '' : d.a === -1 ? '-' : '' + d.a;
+            var exp = d.b === 1 ? 'x' : d.b === -1 ? '-x' : d.b + 'x';
+            eqStr += amp + 'e^(' + exp + ')' + fmtConst(d.c, false);
+          } else if (d.type === 'absolute') {
+            var amp = d.a === 1 ? '' : d.a === -1 ? '-' : '' + d.a;
+            var inner = d.b === 0 ? 'x' : d.b > 0 ? 'x + ' + d.b : 'x - ' + Math.abs(d.b);
+            eqStr += amp + '|' + inner + '|' + fmtConst(d.c, false);
+          }
 
-          if (d.type === 'linear') eqStr = 'f(x) = ' + d.a + 'x + ' + d.b;
+          // Build comparison equation string
+          var eqStr2 = '';
+          if (d.compare) {
+            var ca = d.compareA || 0, cb = d.compareB || 0, cc = d.compareC || 0, ct = d.compareType || 'linear';
+            eqStr2 = 'g(x) = ';
+            if (ct === 'linear') { var p = fmtCoeff(ca, 'x', true) + fmtConst(cb, ca === 0); eqStr2 += p || '0'; }
+            else if (ct === 'quadratic') { var p = fmtCoeff(ca, 'x\u00B2', true) + fmtCoeff(cb, 'x', ca === 0) + fmtConst(cc, ca === 0 && cb === 0); eqStr2 += p || '0'; }
+            else if (ct === 'trig') { eqStr2 += (ca === 1 ? '' : ca === -1 ? '-' : ca) + 'sin(' + (cb === 1 ? 'x' : cb + 'x') + (cc === 0 ? '' : cc > 0 ? ' + ' + cc : ' - ' + Math.abs(cc)) + ')'; }
+            else if (ct === 'cubic') { var p = fmtCoeff(ca, 'x\u00B3', true) + fmtCoeff(cb, 'x', ca === 0) + fmtConst(cc, ca === 0 && cb === 0); eqStr2 += p || '0'; }
+            else if (ct === 'exponential') { eqStr2 += (ca === 1 ? '' : ca) + 'e^(' + (cb === 1 ? 'x' : cb + 'x') + ')' + fmtConst(cc, false); }
+            else if (ct === 'absolute') { eqStr2 += (ca === 1 ? '' : ca) + '|' + (cb === 0 ? 'x' : cb > 0 ? 'x + ' + cb : 'x - ' + Math.abs(cb)) + '|' + fmtConst(cc, false); }
+          }
 
-          else if (d.type === 'quadratic') eqStr = 'f(x) = ' + d.a + 'x\u00B2 + ' + d.b + 'x + ' + d.c;
-
-          else if (d.type === 'trig') eqStr = 'f(x) = ' + d.a + 'sin(' + d.b + 'x + ' + d.c + ')';
-
-          else if (d.type === 'cubic') eqStr = 'f(x) = ' + d.a + 'x\u00B3 + ' + d.b + 'x + ' + d.c;
-
-          else if (d.type === 'exponential') eqStr = 'f(x) = ' + d.a + 'e^(' + d.b + 'x) + ' + d.c;
-
-          else if (d.type === 'absolute') eqStr = 'f(x) = ' + d.a + '|x + ' + d.b + '| + ' + d.c;
+          // ── Transformation labels ──
+          var transformLabels = [];
+          if (d.a !== 1 && d.a !== 0) {
+            if (d.a === -1) transformLabels.push({ text: 'Reflected over x-axis', color: 'text-rose-600 bg-rose-50 border-rose-200' });
+            else if (d.a < 0) transformLabels.push({ text: 'Reflected & scaled \u00D7' + Math.abs(d.a), color: 'text-rose-600 bg-rose-50 border-rose-200' });
+            else if (Math.abs(d.a) > 1) transformLabels.push({ text: 'Vertical stretch \u00D7' + d.a, color: 'text-violet-600 bg-violet-50 border-violet-200' });
+            else transformLabels.push({ text: 'Vertical compression \u00D7' + d.a, color: 'text-violet-600 bg-violet-50 border-violet-200' });
+          }
+          if (d.type === 'trig' && d.b !== 0 && d.b !== 1) {
+            transformLabels.push({ text: 'Period = 2\u03C0/' + Math.abs(d.b).toFixed(1), color: 'text-sky-600 bg-sky-50 border-sky-200' });
+          }
+          if (d.type === 'linear' && d.a !== 0) {
+            transformLabels.push({ text: 'Slope = ' + d.a, color: 'text-blue-600 bg-blue-50 border-blue-200' });
+          }
+          if (d.c !== 0 && d.type !== 'linear') {
+            transformLabels.push({ text: 'Shifted ' + (d.c > 0 ? 'up' : 'down') + ' ' + Math.abs(d.c) + ' units', color: 'text-teal-600 bg-teal-50 border-teal-200' });
+          }
+          if (d.b !== 0 && d.type === 'linear') {
+            transformLabels.push({ text: 'y-intercept = ' + d.b, color: 'text-green-600 bg-green-50 border-green-200' });
+          }
 
 
 
@@ -239,13 +325,13 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
 
-              TYPES.map(t => React.createElement("button", {
+              TYPES.map(function(tp) { return React.createElement("button", {
 
-                key: t.id, onClick: () => upd("type", t.id),
+                key: tp.id, onClick: function() { upd("type", tp.id); },
 
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.type === t.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.type === tp.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50')
 
-              }, t.emoji + " " + t.label))
+              }, tp.emoji + " " + tp.label); })
 
             ),
 
@@ -320,6 +406,9 @@ window.StemLab = window.StemLab || {
               // Main curve
 
               pts.length > 1 && React.createElement("polyline", { points: pts.join(" "), fill: "none", stroke: "#4f46e5", strokeWidth: 2.5 }),
+
+              // Comparison curve (orange)
+              d.compare && comparePts.length > 1 && React.createElement("polyline", { points: comparePts.join(" "), fill: "none", stroke: "#f97316", strokeWidth: 2, strokeDasharray: "8 4" }),
 
               // Tangent line at traceX
               tangentInRange && (function() {
@@ -398,8 +487,31 @@ window.StemLab = window.StemLab || {
 
               // Equation label
 
-              React.createElement("text", { x: W / 2, y: H - 5, textAnchor: "middle", fill: "#4f46e5", style: { fontSize: '10px', fontWeight: 'bold' } }, eqStr)
+              React.createElement("text", { x: d.compare ? W / 3 : W / 2, y: H - 5, textAnchor: "middle", fill: "#4f46e5", style: { fontSize: '10px', fontWeight: 'bold' } }, eqStr),
 
+              // Comparison equation label
+              d.compare && eqStr2 && React.createElement("text", { x: W * 2 / 3, y: H - 5, textAnchor: "middle", fill: "#f97316", style: { fontSize: '10px', fontWeight: 'bold' } }, eqStr2)
+
+            ),
+
+            // ── Zoom / Pan Controls ──
+            React.createElement("div", { className: "flex items-center gap-1.5 mt-2 mb-1 flex-wrap" },
+              React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1" }, "\uD83D\uDD0D View"),
+              React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = (xR.xMax - xR.xMin) / 4, hh = (yR.yMax - yR.yMin) / 4; upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-200 transition-all", 'aria-label': 'Zoom in' }, "\u2795 Zoom In"),
+              React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = (xR.xMax - xR.xMin), hh = (yR.yMax - yR.yMin); upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-200 transition-all", 'aria-label': 'Zoom out' }, "\u2796 Zoom Out"),
+              React.createElement("button", { onClick: function() { var dx = (xR.xMax - xR.xMin) * 0.25; upd('range', { xMin: xR.xMin - dx, xMax: xR.xMax - dx, yMin: yR.yMin, yMax: yR.yMax }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-200 transition-all", 'aria-label': 'Pan left' }, "\u2B05"),
+              React.createElement("button", { onClick: function() { var dx = (xR.xMax - xR.xMin) * 0.25; upd('range', { xMin: xR.xMin + dx, xMax: xR.xMax + dx, yMin: yR.yMin, yMax: yR.yMax }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-200 transition-all", 'aria-label': 'Pan right' }, "\u27A1"),
+              React.createElement("button", { onClick: function() { var dy = (yR.yMax - yR.yMin) * 0.25; upd('range', { xMin: xR.xMin, xMax: xR.xMax, yMin: yR.yMin + dy, yMax: yR.yMax + dy }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-200 transition-all", 'aria-label': 'Pan up' }, "\u2B06"),
+              React.createElement("button", { onClick: function() { var dy = (yR.yMax - yR.yMin) * 0.25; upd('range', { xMin: xR.xMin, xMax: xR.xMax, yMin: yR.yMin - dy, yMax: yR.yMax - dy }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-200 transition-all", 'aria-label': 'Pan down' }, "\u2B07"),
+              React.createElement("button", { onClick: function() { upd('range', { xMin: -10, xMax: 10, yMin: -10, yMax: 10 }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200 transition-all", 'aria-label': 'Reset view' }, "\u21BA Reset"),
+              React.createElement("span", { className: "text-[9px] text-slate-400 ml-1" }, "x:[" + xR.xMin.toFixed(0) + "," + xR.xMax.toFixed(0) + "] y:[" + yR.yMin.toFixed(0) + "," + yR.yMax.toFixed(0) + "]")
+            ),
+
+            // ── Transformation Labels ──
+            transformLabels.length > 0 && React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-1" },
+              transformLabels.map(function(tl, ti) {
+                return React.createElement("span", { key: ti, className: "px-2 py-0.5 rounded-full text-[10px] font-bold border " + tl.color }, tl.text);
+              })
             ),
 
             // Toggles
@@ -493,7 +605,7 @@ window.StemLab = window.StemLab || {
               )
             ),
 
-            // Sliders
+            // Sliders (f(x))
 
             React.createElement("div", { className: "grid grid-cols-3 gap-3 mt-2" },
 
@@ -509,6 +621,53 @@ window.StemLab = window.StemLab || {
 
               )
 
+            ),
+
+            // ── Compare Mode Toggle + Sliders ──
+            React.createElement("div", { className: "mt-2 flex items-center gap-2" },
+              React.createElement("button", { onClick: function() { upd('compare', !d.compare); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.compare ? 'bg-orange-500 text-white shadow-md' : 'bg-orange-50 text-orange-600 border border-orange-200') }, d.compare ? '\u2705 Comparing' : '\uD83D\uDD00 Compare'),
+              d.compare && React.createElement("div", { className: "flex gap-1.5" },
+                TYPES.map(function(tp) {
+                  return React.createElement("button", { key: 'cmp-' + tp.id, onClick: function() { upd('compareType', tp.id); }, className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + (d.compareType === tp.id ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-500') }, tp.emoji);
+                })
+              )
+            ),
+            d.compare && React.createElement("div", { className: "grid grid-cols-3 gap-3 mt-1" },
+              [{ k: 'compareA', label: 'a\u2082', min: -5, max: 5, step: 0.1 }, { k: 'compareB', label: 'b\u2082', min: -5, max: 5, step: 0.1 }, { k: 'compareC', label: 'c\u2082', min: -5, max: 5, step: 0.1 }].map(function(s) {
+                return React.createElement("div", { key: s.k, className: "text-center bg-orange-50 rounded-lg p-2 border border-orange-200" },
+                  React.createElement("label", { className: "text-xs font-bold text-orange-600" }, s.label + ' = ' + (d[s.k] || 0)),
+                  React.createElement("input", { type: 'range', min: s.min, max: s.max, step: s.step, value: d[s.k] || 0, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, className: 'w-full accent-orange-500', 'aria-label': 'Compare parameter ' + s.label })
+                );
+              })
+            ),
+
+            // ── AI Explain Button ──
+            callGemini && React.createElement("div", { className: "mt-2" },
+              React.createElement("button", { onClick: function() {
+                if (d.aiExplainLoading) return;
+                upd('aiExplainLoading', true);
+                upd('aiExplain', '');
+                var prompt = 'You are a math tutor. Explain the behavior of this function to a ' + (gradeLevel || '5th Grade') + ' student in 3-4 short, friendly sentences. ' +
+                  'Function: ' + eqStr + '. Type: ' + d.type + '. ' +
+                  'Parameters: a=' + d.a + ', b=' + d.b + ', c=' + d.c + '. ' +
+                  'Roots at x=' + (roots.length > 0 ? roots.map(function(r) { return r.toFixed(2); }).join(', ') : 'none visible') + '. ' +
+                  'Y-intercept: ' + yIntercept.toFixed(2) + '. ' +
+                  'Visible range: x=[' + xR.xMin + ',' + xR.xMax + '], y=[' + yR.yMin + ',' + yR.yMax + ']. ' +
+                  'Describe the shape, key features, and what happens as x increases. Use simple language.';
+                callGemini(prompt, true, false, 0.7).then(function(resp) {
+                  upd('aiExplain', typeof resp === 'string' ? resp : 'Could not generate explanation.');
+                  upd('aiExplainLoading', false);
+                }).catch(function() {
+                  upd('aiExplain', 'Explanation unavailable right now.');
+                  upd('aiExplainLoading', false);
+                });
+              }, disabled: d.aiExplainLoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.aiExplainLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-600 hover:to-indigo-600 shadow-md') }, d.aiExplainLoading ? '\u23F3 Thinking...' : '\u2728 Explain This Graph'),
+              d.aiExplain && React.createElement("div", { className: "mt-2 p-3 bg-purple-50 rounded-xl border border-purple-200 text-xs text-purple-900 leading-relaxed" },
+                React.createElement("div", { className: "flex items-center gap-1.5 mb-1" },
+                  React.createElement("span", { className: "text-[10px] font-bold text-purple-600 uppercase tracking-wider" }, "\uD83E\uDDE0 AI Explanation")
+                ),
+                d.aiExplain
+              )
             ),
 
             // Presets
@@ -545,7 +704,7 @@ window.StemLab = window.StemLab || {
 
                       upd('type', p.type); upd('a', p.a); upd('b', p.b); upd('c', p.c);
 
-                      addToast(t('stem.func_grapher.ud83dudcc8') + p.tip, 'success');
+                      addToast('\uD83D\uDCC8 ' + p.tip, 'success');
 
                     }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-all"
 
@@ -564,6 +723,8 @@ window.StemLab = window.StemLab || {
               React.createElement("span", null, "\u2014\u2014 f(x)"),
 
               d.showDeriv && React.createElement("span", null, "- - - f\u2032(x)"),
+
+              d.compare && React.createElement("span", { style: { color: '#f97316' } }, "- \u2500 - g(x)"),
 
               React.createElement("span", null, "\uD83D\uDD34 Roots"),
 

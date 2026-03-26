@@ -325,13 +325,13 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
 
-              TYPES.map(t => React.createElement("button", {
+              TYPES.map(function(tp) { return React.createElement("button", {
 
-                key: t.id, onClick: () => upd("type", t.id),
+                key: tp.id, onClick: function() { upd("type", tp.id); },
 
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.type === t.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.type === tp.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50')
 
-              }, t.emoji + " " + t.label))
+              }, tp.emoji + " " + tp.label); })
 
             ),
 
@@ -704,7 +704,7 @@ window.StemLab = window.StemLab || {
 
                       upd('type', p.type); upd('a', p.a); upd('b', p.b); upd('c', p.c);
 
-                      addToast(t('stem.func_grapher.ud83dudcc8') + p.tip, 'success');
+                      addToast('\uD83D\uDCC8 ' + p.tip, 'success');
 
                     }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-all"
 
