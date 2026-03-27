@@ -19609,6 +19609,17 @@
           );
         })(),
         /* dissection: removed — see stem_tool_dissection.js */
+        stemLabTab === 'explore' && stemLabTool === 'dissection' && !window.StemLab.isRegistered('dissection') && (function() {
+          return React.createElement('div', { style: { padding: 40, textAlign: 'center' } },
+            React.createElement('p', { style: { fontSize: 32, marginBottom: 12 } }, '\uD83D\uDD2C'),
+            React.createElement('p', { style: { fontWeight: 700, fontSize: 14, color: '#1e293b', marginBottom: 8 } }, 'Loading Dissection Lab\u2026'),
+            React.createElement('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 16 } }, 'If this persists, the plugin may have failed to load from CDN.'),
+            React.createElement('button', {
+              onClick: function() { setStemLabTool(null); },
+              style: { marginTop: 16, padding: '8px 20px', borderRadius: 8, background: '#3b82f6', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
+            }, '\u2190 Back to Tools')
+          );
+        })(),
 
 
 

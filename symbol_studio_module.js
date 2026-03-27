@@ -14,7 +14,7 @@
   // ── Print CSS injection ───────────────────────────────────────────────────
   (function injectPrintStyles() {
     var style = document.createElement('style');
-    style.textContent = '@media print{body *{visibility:hidden}#ss-print-area,#ss-print-area *{visibility:visible}#ss-print-area{position:absolute;left:0;top:0;width:100%}.ss-no-print{display:none!important}}';
+    style.textContent = '@media print{body *{visibility:hidden}#ss-pb,#ss-pb *,#ss-ps,#ss-ps *,#ss-py,#ss-py *{visibility:visible}#ss-pb,#ss-ps,#ss-py{position:absolute;left:0;top:0;width:100%}.ss-no-print{display:none!important}}';
     document.head.appendChild(style);
   })();
 
@@ -43,6 +43,113 @@
     { id: 'board', icon: '📋', label: 'Board Builder' },
     { id: 'schedule', icon: '📅', label: 'Visual Schedule' },
     { id: 'stories', icon: '📖', label: 'Social Stories' },
+  ];
+
+  var BOARD_TEMPLATES = [
+    { id: 'core', label: 'Core Vocab', icon: '💬', words: [
+      { label: 'more', category: 'other', description: 'wanting more of something' },
+      { label: 'stop', category: 'verb', description: 'ceasing an action' },
+      { label: 'go', category: 'verb', description: 'moving or starting' },
+      { label: 'want', category: 'verb', description: 'expressing desire' },
+      { label: 'help', category: 'verb', description: 'requesting assistance' },
+      { label: 'like', category: 'verb', description: 'expressing preference' },
+      { label: 'no', category: 'other', description: 'refusal or disagreement' },
+      { label: 'yes', category: 'other', description: 'agreement or confirmation' },
+      { label: 'all done', category: 'other', description: 'finished with activity' },
+      { label: 'come here', category: 'verb', description: 'requesting someone approach' },
+      { label: 'look', category: 'verb', description: 'directing attention' },
+      { label: 'wait', category: 'verb', description: 'pausing for a turn' },
+    ] },
+    { id: 'feelings', label: 'Feelings', icon: '😊', words: [
+      { label: 'happy', category: 'adjective', description: 'feeling joyful' },
+      { label: 'sad', category: 'adjective', description: 'feeling unhappy' },
+      { label: 'angry', category: 'adjective', description: 'feeling mad or upset' },
+      { label: 'scared', category: 'adjective', description: 'feeling afraid' },
+      { label: 'surprised', category: 'adjective', description: 'feeling shocked' },
+      { label: 'tired', category: 'adjective', description: 'feeling exhausted' },
+      { label: 'frustrated', category: 'adjective', description: 'feeling stuck or annoyed' },
+      { label: 'excited', category: 'adjective', description: 'feeling enthusiastic' },
+      { label: 'worried', category: 'adjective', description: 'feeling anxious' },
+      { label: 'bored', category: 'adjective', description: 'feeling uninterested' },
+      { label: 'proud', category: 'adjective', description: 'feeling good about an accomplishment' },
+      { label: 'silly', category: 'adjective', description: 'feeling playful and funny' },
+    ] },
+    { id: 'classroom', label: 'Classroom', icon: '🏫', words: [
+      { label: 'help me', category: 'verb', description: 'requesting teacher assistance' },
+      { label: 'bathroom', category: 'noun', description: 'needing to use the restroom' },
+      { label: 'water', category: 'noun', description: 'requesting a drink' },
+      { label: 'finished', category: 'other', description: 'completed an assignment' },
+      { label: 'break', category: 'noun', description: 'needing a sensory break' },
+      { label: 'sit down', category: 'verb', description: 'finding a seat' },
+      { label: 'listen', category: 'verb', description: 'paying attention' },
+      { label: 'quiet', category: 'adjective', description: 'being silent' },
+      { label: 'raise hand', category: 'verb', description: 'waiting to be called on' },
+      { label: 'line up', category: 'verb', description: 'forming a line' },
+      { label: 'good job', category: 'other', description: 'praise for effort' },
+      { label: 'try again', category: 'verb', description: 'making another attempt' },
+    ] },
+    { id: 'mealtime', label: 'Mealtime', icon: '🍽️', words: [
+      { label: 'eat', category: 'verb', description: 'consuming food' },
+      { label: 'drink', category: 'verb', description: 'consuming liquid' },
+      { label: 'hungry', category: 'adjective', description: 'needing food' },
+      { label: 'thirsty', category: 'adjective', description: 'needing water' },
+      { label: 'more food', category: 'noun', description: 'requesting additional food' },
+      { label: 'all done', category: 'other', description: 'finished eating' },
+      { label: 'spoon', category: 'noun', description: 'eating utensil' },
+      { label: 'fork', category: 'noun', description: 'eating utensil' },
+      { label: 'cup', category: 'noun', description: 'drinking vessel' },
+      { label: 'plate', category: 'noun', description: 'dish for food' },
+      { label: 'yummy', category: 'adjective', description: 'food tastes good' },
+      { label: 'yucky', category: 'adjective', description: 'food is disliked' },
+    ] },
+    { id: 'playground', label: 'Playground', icon: '🛝', words: [
+      { label: 'play', category: 'verb', description: 'engaging in play' },
+      { label: 'swing', category: 'noun', description: 'playground swing set' },
+      { label: 'slide', category: 'noun', description: 'playground slide' },
+      { label: 'run', category: 'verb', description: 'moving fast on feet' },
+      { label: 'jump', category: 'verb', description: 'leaping off the ground' },
+      { label: 'friend', category: 'noun', description: 'a person to play with' },
+      { label: 'my turn', category: 'other', description: 'taking a turn' },
+      { label: 'share', category: 'verb', description: 'letting others use something' },
+      { label: 'climb', category: 'verb', description: 'going up on equipment' },
+      { label: 'ball', category: 'noun', description: 'round toy for games' },
+      { label: 'tag', category: 'noun', description: 'chasing game' },
+      { label: 'fun', category: 'adjective', description: 'something enjoyable' },
+    ] },
+    { id: 'morning', label: 'Morning Routine', icon: '🌅', words: [
+      { label: 'wake up', category: 'verb', description: 'getting out of bed' },
+      { label: 'brush teeth', category: 'verb', description: 'dental hygiene' },
+      { label: 'get dressed', category: 'verb', description: 'putting on clothes' },
+      { label: 'eat breakfast', category: 'verb', description: 'morning meal' },
+      { label: 'backpack', category: 'noun', description: 'school bag' },
+      { label: 'school bus', category: 'noun', description: 'transportation to school' },
+      { label: 'wash face', category: 'verb', description: 'cleaning face' },
+      { label: 'comb hair', category: 'verb', description: 'styling hair' },
+      { label: 'shoes', category: 'noun', description: 'footwear' },
+      { label: 'coat', category: 'noun', description: 'outer garment' },
+      { label: 'goodbye', category: 'other', description: 'farewell' },
+      { label: 'ready', category: 'adjective', description: 'prepared to go' },
+    ] },
+  ];
+
+  var STORY_TEMPLATES = [
+    { label: 'Waiting My Turn', situation: 'waiting for a turn during group activities at school', details: 'Sometimes it can be hard to wait. This story helps practice patience.' },
+    { label: 'Feeling Angry', situation: 'feeling angry and learning safe ways to calm down', details: 'When we feel angry our body might feel hot or tight. There are safe ways to feel better.' },
+    { label: 'Making Friends', situation: 'how to make a new friend on the playground', details: 'Meeting new people can feel exciting and a little scary at the same time.' },
+    { label: 'Doctor Visit', situation: 'going to the doctor for a checkup', details: 'The doctor helps us stay healthy. Some parts might feel a little uncomfortable but it will be over soon.' },
+    { label: 'Haircut', situation: 'getting a haircut at the salon or barbershop', details: 'The sound of scissors and clippers can be loud. The hairdresser will be gentle and quick.' },
+    { label: 'Schedule Changes', situation: 'when the daily schedule changes unexpectedly', details: 'Sometimes plans change and that is okay. Change can feel hard at first but things will be alright.' },
+    { label: 'Lunchtime', situation: 'eating lunch in the school cafeteria with other students', details: 'The cafeteria can be busy and noisy. There are good steps to follow at lunchtime.' },
+    { label: 'Asking for Help', situation: 'asking a teacher or adult for help when something feels hard', details: 'Everyone needs help sometimes. Asking for help is a smart and brave thing to do.' },
+    { label: 'Sharing & Turns', situation: 'sharing toys and taking turns with classmates during play', details: 'Sharing can feel hard when we really like something. Taking turns is a way to be a good friend.' },
+    { label: 'New School', situation: 'starting at a new school for the very first time', details: 'A new school means new friends, new teachers, and a new building to explore.' },
+  ];
+
+  var QUICK_SETS = [
+    { label: 'Emotions', icon: '😊', items: ['happy', 'sad', 'angry', 'scared', 'surprised', 'tired', 'frustrated', 'excited', 'worried', 'proud'] },
+    { label: 'Classroom', icon: '🏫', items: ['help', 'bathroom', 'water', 'finished', 'break', 'sit down', 'quiet', 'listen', 'raise hand', 'line up'] },
+    { label: 'Daily Living', icon: '🏠', items: ['eat', 'drink', 'sleep', 'wash hands', 'brush teeth', 'get dressed', 'go outside', 'take a bath', 'comb hair', 'put on shoes'] },
+    { label: 'AAC Core', icon: '💬', items: ['more', 'stop', 'go', 'yes', 'no', 'want', 'like', 'all done', 'come here', 'look', 'help', 'wait'] },
   ];
 
   // ── Storage helpers ───────────────────────────────────────────────────────
@@ -117,7 +224,7 @@
   }
 
   async function batchGenerate(items, onCallImagen, onCallGeminiImageEdit, autoClean, avatarBase64, style, onProgress) {
-    var results = [];
+    var results = []; var failed = [];
     for (var i = 0; i < items.length; i += BATCH_SIZE) {
       var batch = items.slice(i, i + BATCH_SIZE);
       var batchResults = await Promise.all(batch.map(async function (item) {
@@ -128,13 +235,14 @@
           return Object.assign({}, item, { image: imageUrl });
         } catch (e) {
           warnLog('Failed for "' + (item.label || '') + '":', e.message);
+          failed.push(item.label || '?');
           return Object.assign({}, item, { image: null });
         }
       }));
       results = results.concat(batchResults);
       if (i + BATCH_SIZE < items.length) await new Promise(function (r) { setTimeout(r, BATCH_DELAY); });
     }
-    return results;
+    return { results: results, failed: failed };
   }
 
   // ── Main component ────────────────────────────────────────────────────────
@@ -151,6 +259,7 @@
     var e = React.createElement;
     var useState = React.useState;
     var useCallback = React.useCallback;
+    var useEffect = React.useEffect;
     var useRef = React.useRef;
 
     // Shared state
@@ -165,6 +274,7 @@
     var _autoClean = useState(true); var autoClean = _autoClean[0]; var setAutoClean = _autoClean[1];
     var fileInputRef = useRef(null);
     var scheduleFileRef = useRef(null);
+    var importFileRef = useRef(null);
 
     // Symbols tab state
     var _gallery = useState(function () { return load(STORAGE_GALLERY, []); });
@@ -177,6 +287,8 @@
     var _symLoading = useState({}); var symLoading = _symLoading[0]; var setSymLoading = _symLoading[1];
     var _symRefine = useState({}); var symRefine = _symRefine[0]; var setSymRefine = _symRefine[1];
     var _symFilter = useState(''); var symFilter = _symFilter[0]; var setSymFilter = _symFilter[1];
+    var _symCategory = useState(''); var symCategory = _symCategory[0]; var setSymCategory = _symCategory[1];
+    var _symShowFavs = useState(false); var symShowFavs = _symShowFavs[0]; var setSymShowFavs = _symShowFavs[1];
 
     // Board Builder state
     var _boardTopic = useState(''); var boardTopic = _boardTopic[0]; var setBoardTopic = _boardTopic[1];
@@ -199,6 +311,7 @@
     var _schedNowId = useState(null); var schedNowId = _schedNowId[0]; var setSchedNowId = _schedNowId[1];
     var _savedSchedules = useState(function () { return load(STORAGE_SCHEDULES, []); });
     var savedSchedules = _savedSchedules[0]; var setSavedSchedules = _savedSchedules[1];
+    var _showSchedGallery = useState(false); var showSchedGallery = _showSchedGallery[0]; var setShowSchedGallery = _showSchedGallery[1];
 
     // Social Stories state
     var _storySituation = useState(''); var storySituation = _storySituation[0]; var setStorySituation = _storySituation[1];
@@ -209,6 +322,9 @@
     var _storyGenerating = useState(false); var storyGenerating = _storyGenerating[0]; var setStoryGenerating = _storyGenerating[1];
     var _storyIllustrating = useState({}); var storyIllustrating = _storyIllustrating[0]; var setStoryIllustrating = _storyIllustrating[1];
     var _storySpeaking = useState(false); var storySpeaking = _storySpeaking[0]; var setStorySpeaking = _storySpeaking[1];
+
+    // Sync story student name when avatar name changes
+    useEffect(function () { if (avatarName) setStoryStudentName(avatarName); }, [avatarName]);
 
     if (!isOpen) return null;
 
@@ -265,7 +381,7 @@
       try {
         var prompt = buildSymbolPrompt(symLabel, symDesc, globalStyle, avatarRef ? avatarDesc : '');
         var imageUrl = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 400);
-        var entry = { id: uid(), label: symLabel.trim(), description: symDesc.trim(), image: imageUrl, style: globalStyle || 'flat vector', createdAt: Date.now() };
+        var entry = { id: uid(), label: symLabel.trim(), description: symDesc.trim(), image: imageUrl, style: globalStyle || 'flat vector', category: symCategory || 'other', isFavorite: false, createdAt: Date.now() };
         var updated = [entry].concat(gallery);
         setGallery(updated); store(STORAGE_GALLERY, updated);
         setSelectedId(entry.id);
@@ -283,16 +399,19 @@
       var loadMap = {};
       items.forEach(function (i) { loadMap[i.id] = true; });
       setSymLoading(function (p) { return Object.assign({}, p, loadMap); });
-      var results = await batchGenerate(
+      var batchOut = await batchGenerate(
         items, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, globalStyle,
         function (id) { setSymLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
       );
-      var valid = results.filter(function (r) { return r.image; });
+      var valid = batchOut.results.filter(function (r) { return r.image; });
       if (valid.length > 0) {
         var updated = valid.concat(gallery);
         setGallery(updated); store(STORAGE_GALLERY, updated);
         setSelectedId(valid[0].id);
         addToast && addToast({ message: valid.length + ' symbol(s) created!', type: 'success' });
+      }
+      if (batchOut.failed.length > 0) {
+        addToast && addToast({ message: 'Failed to generate: ' + batchOut.failed.join(', '), type: 'error' });
       }
       setSymLoading({});
     }, [symBatch, globalStyle, gallery, autoClean, avatarRef, onCallImagen, onCallGeminiImageEdit, addToast]);
@@ -343,6 +462,84 @@
       gallery.forEach(function (item, i) { setTimeout(function () { var a = document.createElement('a'); a.href = item.image; a.download = (i + 1) + '_' + item.label.replace(/\s+/g, '_') + '.png'; a.click(); }, i * 250); });
     }, [gallery]);
 
+    var toggleFavorite = useCallback(function (id) {
+      var updated = gallery.map(function (i) { return i.id === id ? Object.assign({}, i, { isFavorite: !i.isFavorite }) : i; });
+      setGallery(updated); store(STORAGE_GALLERY, updated);
+    }, [gallery]);
+
+    var clearGallery = useCallback(function () {
+      if (!window.confirm('Clear all ' + gallery.length + ' symbols from the gallery? This cannot be undone.')) return;
+      setGallery([]); store(STORAGE_GALLERY, []);
+      setSelectedId(null);
+      addToast && addToast({ message: 'Gallery cleared', type: 'info' });
+    }, [gallery, addToast]);
+
+    var exportData = useCallback(function () {
+      var data = {
+        version: 3,
+        exportDate: new Date().toISOString(),
+        gallery: gallery,
+        boards: savedBoards,
+        schedules: savedSchedules,
+        avatar: { image: studentAvatar.image, name: studentAvatar.name, description: studentAvatar.description },
+      };
+      var json = JSON.stringify(data, null, 2);
+      var blob = new Blob([json], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'symbol_studio_' + new Date().toISOString().slice(0, 10) + '.json';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+      addToast && addToast({ message: 'Backup downloaded!', type: 'success' });
+    }, [gallery, savedBoards, savedSchedules, studentAvatar, addToast]);
+
+    var importData = useCallback(function (ev) {
+      var file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function (e2) {
+        try {
+          var data = JSON.parse(e2.target.result);
+          var summary = [];
+          if (Array.isArray(data.gallery) && data.gallery.length) {
+            // Merge: keep existing items not already in the imported set (match by id)
+            var importedIds = {};
+            data.gallery.forEach(function (g) { importedIds[g.id] = true; });
+            var merged = data.gallery.concat(gallery.filter(function (g) { return !importedIds[g.id]; }));
+            setGallery(merged); store(STORAGE_GALLERY, merged);
+            summary.push(data.gallery.length + ' symbol(s)');
+          }
+          if (Array.isArray(data.boards) && data.boards.length) {
+            var importedBoardIds = {};
+            data.boards.forEach(function (b) { importedBoardIds[b.id] = true; });
+            var mergedBoards = data.boards.concat(savedBoards.filter(function (b) { return !importedBoardIds[b.id]; }));
+            setSavedBoards(mergedBoards); store(STORAGE_BOARDS, mergedBoards);
+            summary.push(data.boards.length + ' board(s)');
+          }
+          if (Array.isArray(data.schedules) && data.schedules.length) {
+            var importedSchedIds = {};
+            data.schedules.forEach(function (s) { importedSchedIds[s.id] = true; });
+            var mergedScheds = data.schedules.concat(savedSchedules.filter(function (s) { return !importedSchedIds[s.id]; }));
+            setSavedSchedules(mergedScheds); store(STORAGE_SCHEDULES, mergedScheds);
+            summary.push(data.schedules.length + ' schedule(s)');
+          }
+          if (data.avatar && (data.avatar.image || data.avatar.name)) {
+            var av = { image: data.avatar.image || null, name: data.avatar.name || '', description: data.avatar.description || '' };
+            setStudentAvatar(av); store(STORAGE_AVATAR, av);
+            setAvatarName(av.name); setAvatarDesc(av.description || '');
+            summary.push('student avatar');
+          }
+          addToast && addToast({ message: summary.length ? 'Imported: ' + summary.join(', ') : 'Nothing found to import', type: summary.length ? 'success' : 'info' });
+        } catch (err) {
+          warnLog('Import failed:', err);
+          addToast && addToast({ message: 'Import failed — check that this is a valid Symbol Studio backup file', type: 'error' });
+        }
+      };
+      reader.readAsText(file);
+      ev.target.value = '';
+    }, [gallery, savedBoards, savedSchedules, addToast]);
+
     // ── Board Builder actions ─────────────────────────────────────────────
     var generateBoardFromTopic = useCallback(async function () {
       if (!boardTopic.trim() || !onCallGemini) return;
@@ -372,17 +569,20 @@
       var loadMap = {};
       items.forEach(function (i) { loadMap[i.id] = true; });
       setBoardLoading(function (p) { return Object.assign({}, p, loadMap); });
-      var results = await batchGenerate(
+      var batchOut = await batchGenerate(
         items, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, globalStyle,
         function (id) { setBoardLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
       );
       setBoardWords(function (prev) {
         var map = {};
-        results.forEach(function (r) { map[r.id] = r; });
+        batchOut.results.forEach(function (r) { map[r.id] = r; });
         return prev.map(function (w) { return map[w.id] ? Object.assign({}, w, { image: map[w.id].image }) : w; });
       });
       setBoardLoading({});
       addToast && addToast({ message: 'Board images generated!', type: 'success' });
+      if (batchOut.failed.length > 0) {
+        addToast && addToast({ message: 'Failed: ' + batchOut.failed.join(', '), type: 'error' });
+      }
     }, [boardWords, autoClean, avatarRef, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     var regenBoardCell = useCallback(async function (id) {
@@ -406,6 +606,27 @@
       addToast && addToast({ message: 'Board saved!', type: 'success' });
     }, [boardWords, boardTitle, boardTopic, boardCols, savedBoards, addToast]);
 
+    var applyBoardTemplate = useCallback(function (template) {
+      var words = template.words.map(function (w) { return Object.assign({}, w, { id: uid(), image: null }); });
+      setBoardWords(words);
+      setBoardTitle(template.label);
+      setBoardTopic(template.label);
+      addToast && addToast({ message: template.label + ' template loaded — click ✨ Generate Images to start!', type: 'success' });
+    }, [addToast]);
+
+    var loadBoard = useCallback(function (board) {
+      setBoardWords(board.words.map(function (w) { return Object.assign({}, w); }));
+      setBoardTitle(board.title || '');
+      setBoardCols(board.cols || 4);
+      setShowBoardGallery(false);
+      addToast && addToast({ message: 'Board loaded!', type: 'success' });
+    }, [addToast]);
+
+    var deleteSavedBoard = useCallback(function (id) {
+      var updated = savedBoards.filter(function (b) { return b.id !== id; });
+      setSavedBoards(updated); store(STORAGE_BOARDS, updated);
+    }, [savedBoards]);
+
     var printBoard = useCallback(function () {
       window.print();
     }, []);
@@ -425,13 +646,16 @@
       var loadMap = {};
       items.forEach(function (i) { loadMap[i.id] = true; });
       try {
-        var results = await batchGenerate(
+        var batchOut = await batchGenerate(
           items, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, globalStyle,
           null
         );
-        setSchedItems(results);
-        setSchedNowId(results[0] ? results[0].id : null);
+        setSchedItems(batchOut.results);
+        setSchedNowId(batchOut.results[0] ? batchOut.results[0].id : null);
         addToast && addToast({ message: 'Schedule generated!', type: 'success' });
+        if (batchOut.failed.length > 0) {
+          addToast && addToast({ message: 'Failed: ' + batchOut.failed.join(', '), type: 'error' });
+        }
       } catch (e) {
         addToast && addToast({ message: 'Schedule generation failed', type: 'error' });
       } finally { setSchedGenerating(false); }
@@ -460,6 +684,20 @@
       setSchedItems(function (prev) { return prev.map(function (i) { return Object.assign({}, i, { complete: false }); }); });
       setSchedNowId(schedItems.length ? schedItems[0].id : null);
     }, [schedItems]);
+
+    var loadSchedule = useCallback(function (sched) {
+      setSchedItems(sched.items.map(function (i) { return Object.assign({}, i); }));
+      setSchedTitle(sched.title || '');
+      setSchedOrientation(sched.orientation || 'horizontal');
+      setSchedNowId(sched.items.length ? sched.items[0].id : null);
+      setShowSchedGallery(false);
+      addToast && addToast({ message: 'Schedule loaded!', type: 'success' });
+    }, [addToast]);
+
+    var deleteSavedSchedule = useCallback(function (id) {
+      var updated = savedSchedules.filter(function (s) { return s.id !== id; });
+      setSavedSchedules(updated); store(STORAGE_SCHEDULES, updated);
+    }, [savedSchedules]);
 
     // ── Social Story actions ──────────────────────────────────────────────
     var generateStory = useCallback(async function () {
@@ -609,6 +847,20 @@
             e('span', null, 'Auto-clean text from images')
           ),
           e('p', { style: { fontSize: '10px', color: '#9ca3af', margin: '3px 0 0' } }, 'Runs a second AI pass to strip any embedded labels')
+        ),
+        // Backup & Restore
+        e('div', { style: S.card },
+          sectionLabel('Backup & Restore'),
+          e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '0 0 8px' } },
+            gallery.length + ' symbol' + (gallery.length !== 1 ? 's' : '') + ' · ' +
+            savedBoards.length + ' board' + (savedBoards.length !== 1 ? 's' : '') + ' · ' +
+            savedSchedules.length + ' schedule' + (savedSchedules.length !== 1 ? 's' : '')
+          ),
+          e('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px' } },
+            e('button', { onClick: exportData, style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { textAlign: 'left' }) }, '⬇️ Export Backup'),
+            e('button', { onClick: function () { importFileRef.current && importFileRef.current.click(); }, style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { textAlign: 'left' }) }, '📂 Import Backup')
+          ),
+          e('input', { type: 'file', accept: '.json', ref: importFileRef, style: { display: 'none' }, onChange: importData })
         )
       );
     }
@@ -616,7 +868,11 @@
     // ── Symbol Gallery tab ─────────────────────────────────────────────────
     function renderSymbolsTab() {
       var selectedItem = gallery.find(function (i) { return i.id === selectedId; }) || null;
-      var filtered = symFilter.trim() ? gallery.filter(function (i) { return i.label.toLowerCase().includes(symFilter.toLowerCase()); }) : gallery;
+      var filtered = gallery.filter(function (i) {
+        if (symShowFavs && !i.isFavorite) return false;
+        if (symFilter.trim() && !i.label.toLowerCase().includes(symFilter.toLowerCase())) return false;
+        return true;
+      });
       var isLoading = Object.keys(symLoading).length > 0;
       return e('div', { style: { display: 'flex', gap: '14px', padding: '16px', flex: 1, overflow: 'hidden' } },
         // Input panel
@@ -630,17 +886,35 @@
           symMode === 'single'
             ? e('div', { style: { display: 'flex', flexDirection: 'column', gap: '7px' } },
                 e('div', null, e('label', { style: S.lbl }, 'Label'), e('input', { type: 'text', value: symLabel, onChange: function (ev) { setSymLabel(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') genSingle(); }, placeholder: 'e.g. wash hands', style: S.input, autoFocus: true })),
-                e('div', null, e('label', { style: S.lbl }, 'Context (optional)'), e('input', { type: 'text', value: symDesc, onChange: function (ev) { setSymDesc(ev.target.value); }, placeholder: 'e.g. hygiene routine', style: S.input }))
+                e('div', null, e('label', { style: S.lbl }, 'Context (optional)'), e('input', { type: 'text', value: symDesc, onChange: function (ev) { setSymDesc(ev.target.value); }, placeholder: 'e.g. hygiene routine', style: S.input })),
+                e('div', null,
+                  e('label', { style: S.lbl }, 'Category'),
+                  e('select', { value: symCategory, onChange: function (ev) { setSymCategory(ev.target.value); }, style: S.input },
+                    e('option', { value: '' }, 'other'),
+                    ['emotions', 'classroom', 'daily living', 'food', 'social', 'actions', 'places', 'objects'].map(function (c) { return e('option', { key: c, value: c }, c); })
+                  )
+                )
               )
             : e('div', null,
                 e('label', { style: S.lbl }, 'One label per line'),
-                e('textarea', { value: symBatch, onChange: function (ev) { setSymBatch(ev.target.value); }, placeholder: 'brush teeth\nget dressed\neat breakfast', style: Object.assign({}, S.textarea, { height: '90px' }) }),
-                e('p', { style: { fontSize: '10px', color: '#9ca3af', margin: '2px 0 0' } }, symBatch.split('\n').filter(function (l) { return l.trim(); }).length + ' queued')
+                e('textarea', { value: symBatch, onChange: function (ev) { setSymBatch(ev.target.value); }, placeholder: 'brush teeth\nget dressed\neat breakfast', style: Object.assign({}, S.textarea, { height: '70px' }) }),
+                e('p', { style: { fontSize: '10px', color: '#9ca3af', margin: '2px 0 0' } }, symBatch.split('\n').filter(function (l) { return l.trim(); }).length + ' queued'),
+                e('div', { style: { marginTop: '6px' } },
+                  e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, 'Quick Sets'),
+                  e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+                    QUICK_SETS.map(function (qs) {
+                      return e('button', { key: qs.label, onClick: function () { setSymBatch(qs.items.join('\n')); }, style: { padding: '3px 7px', background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '10px', cursor: 'pointer', color: '#374151', display: 'flex', alignItems: 'center', gap: '3px' } },
+                        e('span', null, qs.icon), qs.label
+                      );
+                    })
+                  )
+                )
               ),
           e('button', { onClick: symMode === 'single' ? genSingle : genBatch, disabled: isLoading || (symMode === 'single' ? !symLabel.trim() : !symBatch.trim()), style: S.btn(PURPLE, '#fff', isLoading || (symMode === 'single' ? !symLabel.trim() : !symBatch.trim())) },
             isLoading ? '⏳ Generating...' : '✨ Generate' + (symMode === 'batch' ? ' Batch' : '')
           ),
-          gallery.length > 0 && e('button', { onClick: downloadAll, style: S.btn('#f3f4f6', '#374151', false) }, '⬇️ Download All (' + gallery.length + ')')
+          gallery.length > 0 && e('button', { onClick: downloadAll, style: S.btn('#f3f4f6', '#374151', false) }, '⬇️ Download All (' + gallery.length + ')'),
+          gallery.length > 0 && e('button', { onClick: clearGallery, style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️ Clear All')
         ),
         // Preview + gallery
         e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', gap: '10px' } },
@@ -666,22 +940,24 @@
           ),
           // Gallery grid
           e('div', { style: { flex: 1, overflowY: 'auto' } },
-            e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } },
+            e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' } },
               e('span', { style: { fontWeight: 600, fontSize: '12px', color: '#374151' } }, 'Gallery (' + gallery.length + ')'),
-              e('input', { type: 'text', value: symFilter, onChange: function (ev) { setSymFilter(ev.target.value); }, placeholder: 'Filter...', style: { border: '1px solid #e5e7eb', borderRadius: '6px', padding: '3px 8px', fontSize: '11px', outline: 'none', marginLeft: 'auto', width: '100px' } })
+              e('button', { onClick: function () { setSymShowFavs(!symShowFavs); }, style: { padding: '3px 8px', border: '1px solid ' + (symShowFavs ? PURPLE : '#e5e7eb'), borderRadius: '12px', background: symShowFavs ? LIGHT_PURPLE : '#fff', color: symShowFavs ? PURPLE : '#6b7280', fontSize: '11px', cursor: 'pointer', fontWeight: symShowFavs ? 700 : 400 } }, '⭐ Favs'),
+              e('input', { type: 'text', value: symFilter, onChange: function (ev) { setSymFilter(ev.target.value); }, placeholder: 'Search...', style: { border: '1px solid #e5e7eb', borderRadius: '6px', padding: '3px 8px', fontSize: '11px', outline: 'none', marginLeft: 'auto', width: '90px' } })
             ),
             filtered.length > 0
-              ? e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(82px, 1fr))', gap: '7px' } },
+              ? e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(95px, 1fr))', gap: '7px' } },
                   filtered.map(function (item) {
-                    return e('div', { key: item.id, onClick: function () { setSelectedId(item.id); }, style: { cursor: 'pointer', borderRadius: '8px', border: item.id === selectedId ? '2px solid ' + PURPLE : '2px solid #e5e7eb', background: item.id === selectedId ? LIGHT_PURPLE : '#fafafa', padding: '7px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', transition: 'border-color 0.15s' } },
+                    return e('div', { key: item.id, onClick: function () { setSelectedId(item.id); }, style: { cursor: 'pointer', borderRadius: '8px', border: item.id === selectedId ? '2px solid ' + PURPLE : '2px solid #e5e7eb', background: item.id === selectedId ? LIGHT_PURPLE : '#fafafa', padding: '7px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', transition: 'border-color 0.15s', position: 'relative' } },
                       symLoading[item.id]
-                        ? e('div', { style: { width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb', borderRadius: '6px' } }, spinner(20))
-                        : e('img', { src: item.image, alt: item.label, style: { width: 56, height: 56, objectFit: 'contain', borderRadius: '6px', background: '#fff' } }),
-                      e('span', { style: { fontSize: '10px', color: '#4b5563', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.3 } }, item.label)
+                        ? e('div', { style: { width: 72, height: 72, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb', borderRadius: '6px' } }, spinner(20))
+                        : e('img', { src: item.image, alt: item.label, style: { width: 72, height: 72, objectFit: 'contain', borderRadius: '6px', background: '#fff' } }),
+                      e('span', { style: { fontSize: '10px', color: '#4b5563', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.3 } }, item.label),
+                      e('button', { onClick: function (ev) { ev.stopPropagation(); toggleFavorite(item.id); }, style: { position: 'absolute', top: 3, right: 3, background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', opacity: item.isFavorite ? 1 : 0.3, padding: '1px' }, title: item.isFavorite ? 'Remove from favorites' : 'Add to favorites' }, '⭐')
                     );
                   })
                 )
-              : e('div', { style: { textAlign: 'center', color: '#9ca3af', padding: '30px 0', fontSize: '13px' } }, gallery.length === 0 ? 'Generate your first symbol using the panel on the left.' : 'No symbols match "' + symFilter + '"')
+              : e('div', { style: { textAlign: 'center', color: '#9ca3af', padding: '30px 0', fontSize: '13px' } }, gallery.length === 0 ? 'Generate your first symbol using the panel on the left.' : (symShowFavs ? 'No favorite symbols yet — click ⭐ on any card.' : 'No symbols match "' + symFilter + '"'))
           )
         )
       );
@@ -692,6 +968,21 @@
       var hasImages = boardWords.some(function (w) { return w.image; });
       var isLoading = Object.keys(boardLoading).length > 0 || boardGenerating;
       return e('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', padding: '16px', gap: '12px' } },
+        // Template picker row
+        e('div', { style: { flexShrink: 0 } },
+          e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, 'Quick Templates'),
+          e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+            BOARD_TEMPLATES.map(function (t) {
+              return e('button', {
+                key: t.id,
+                onClick: function () { applyBoardTemplate(t); },
+                style: { padding: '5px 10px', border: '1px solid #e5e7eb', borderRadius: '20px', background: '#fff', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: '#374151', fontWeight: 500, whiteSpace: 'nowrap', transition: 'background 0.1s' },
+                onMouseOver: function (ev) { ev.currentTarget.style.background = LIGHT_PURPLE; ev.currentTarget.style.borderColor = PURPLE; ev.currentTarget.style.color = PURPLE; },
+                onMouseOut: function (ev) { ev.currentTarget.style.background = '#fff'; ev.currentTarget.style.borderColor = '#e5e7eb'; ev.currentTarget.style.color = '#374151'; }
+              }, e('span', null, t.icon), t.label);
+            })
+          )
+        ),
         // Controls row
         e('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap', flexShrink: 0 } },
           e('div', { style: { flex: 1, minWidth: '200px' } },
@@ -711,13 +1002,29 @@
           hasImages && e('div', { style: { display: 'flex', gap: '6px' } },
             e('button', { onClick: saveBoard, style: S.btn('#f3f4f6', '#374151', false) }, '💾 Save'),
             e('button', { onClick: printBoard, style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print')
+          ),
+          savedBoards.length > 0 && e('button', { onClick: function () { setShowBoardGallery(!showBoardGallery); }, style: S.btn(showBoardGallery ? LIGHT_PURPLE : '#f3f4f6', showBoardGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedBoards.length + ')')
+        ),
+        // Saved boards panel
+        showBoardGallery && e('div', { style: { flexShrink: 0, borderBottom: '1px solid #e5e7eb', paddingBottom: '10px' } },
+          e('div', { style: { display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' } },
+            savedBoards.map(function (b) {
+              return e('div', { key: b.id, style: { flexShrink: 0, border: '1px solid #e5e7eb', borderRadius: '8px', padding: '8px 12px', background: '#fff', display: 'flex', alignItems: 'center', gap: '10px' } },
+                e('div', null,
+                  e('div', { style: { fontWeight: 600, fontSize: '12px', color: '#1f2937' } }, b.title || 'Untitled Board'),
+                  e('div', { style: { fontSize: '10px', color: '#9ca3af' } }, b.words.length + ' words')
+                ),
+                e('button', { onClick: function () { loadBoard(b); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
+                e('button', { onClick: function () { deleteSavedBoard(b.id); }, style: { background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '14px', padding: '2px 4px' } }, '🗑️')
+              );
+            })
           )
         ),
         // Board title
         boardWords.length > 0 && e('input', { type: 'text', value: boardTitle, onChange: function (ev) { setBoardTitle(ev.target.value); }, placeholder: 'Board title (optional)', style: Object.assign({}, S.input, { fontWeight: 700, fontSize: '15px', maxWidth: '400px' }) }),
         // Board grid (also serves as print area)
         boardWords.length > 0
-          ? e('div', { id: 'ss-print-area', style: { flex: 1, overflowY: 'auto' } },
+          ? e('div', { id: 'ss-pb', style: { flex: 1, overflowY: 'auto' } },
               boardTitle && e('h2', { style: { fontWeight: 800, fontSize: '18px', color: '#1f2937', margin: '0 0 10px' } }, boardTitle),
               e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(' + boardCols + ', 1fr)', gap: '8px' } },
                 boardWords.map(function (word) {
@@ -774,13 +1081,29 @@
             e('button', { onClick: resetSchedule, style: S.btn('#f3f4f6', '#374151', false) }, '🔄 Reset'),
             e('button', { onClick: saveSchedule, style: S.btn('#f3f4f6', '#374151', false) }, '💾 Save'),
             e('button', { onClick: function () { window.print(); }, style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print')
+          ),
+          savedSchedules.length > 0 && e('button', { onClick: function () { setShowSchedGallery(!showSchedGallery); }, style: S.btn(showSchedGallery ? LIGHT_PURPLE : '#f3f4f6', showSchedGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedSchedules.length + ')')
+        ),
+        // Saved schedules panel
+        showSchedGallery && e('div', { style: { flexShrink: 0, borderBottom: '1px solid #e5e7eb', paddingBottom: '10px' } },
+          e('div', { style: { display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' } },
+            savedSchedules.map(function (s) {
+              return e('div', { key: s.id, style: { flexShrink: 0, border: '1px solid #e5e7eb', borderRadius: '8px', padding: '8px 12px', background: '#fff', display: 'flex', alignItems: 'center', gap: '10px' } },
+                e('div', null,
+                  e('div', { style: { fontWeight: 600, fontSize: '12px', color: '#1f2937' } }, s.title || 'Untitled Schedule'),
+                  e('div', { style: { fontSize: '10px', color: '#9ca3af' } }, s.items.length + ' activities')
+                ),
+                e('button', { onClick: function () { loadSchedule(s); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
+                e('button', { onClick: function () { deleteSavedSchedule(s.id); }, style: { background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '14px', padding: '2px 4px' } }, '🗑️')
+              );
+            })
           )
         ),
         // Schedule title
         schedItems.length > 0 && e('input', { type: 'text', value: schedTitle, onChange: function (ev) { setSchedTitle(ev.target.value); }, placeholder: 'Schedule title, e.g. Marcus\'s Morning Routine', style: Object.assign({}, S.input, { fontWeight: 700, fontSize: '14px', maxWidth: '400px' }) }),
         // Schedule strip
         schedItems.length > 0
-          ? e('div', { id: 'ss-print-area', style: { flex: 1, overflowY: 'auto', overflowX: schedOrientation === 'horizontal' ? 'auto' : 'hidden' } },
+          ? e('div', { id: 'ss-ps', style: { flex: 1, overflowY: 'auto', overflowX: schedOrientation === 'horizontal' ? 'auto' : 'hidden' } },
               schedTitle && e('h2', { style: { fontWeight: 800, fontSize: '16px', color: '#1f2937', margin: '0 0 12px' } }, schedTitle),
               e('div', { style: {
                 display: 'flex',
@@ -846,8 +1169,22 @@
             e('input', { type: 'text', value: storyStudentName, onChange: function (ev) { setStoryStudentName(ev.target.value); }, placeholder: 'e.g. Marcus', style: S.input })
           ),
           e('div', null,
-            e('label', { style: S.lbl }, 'Situation / Goal'),
-            e('textarea', { value: storySituation, onChange: function (ev) { setStorySituation(ev.target.value); }, placeholder: 'e.g. Marcus is learning to wait his turn during group time\ne.g. Jaylen feels frustrated when the schedule changes', style: Object.assign({}, S.textarea, { height: '80px' }) })
+            e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' } },
+              e('label', { style: S.lbl }, 'Situation / Goal'),
+              e('span', { style: { fontSize: '10px', color: '#9ca3af' } }, 'or pick a template ↓')
+            ),
+            e('textarea', { value: storySituation, onChange: function (ev) { setStorySituation(ev.target.value); }, placeholder: 'e.g. Marcus is learning to wait his turn during group time', style: Object.assign({}, S.textarea, { height: '65px' }) }),
+            e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '5px' } },
+              STORY_TEMPLATES.map(function (t) {
+                return e('button', {
+                  key: t.label,
+                  onClick: function () { setStorySituation(t.situation); setStoryDetails(t.details); },
+                  style: { padding: '3px 8px', background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '10px', cursor: 'pointer', color: '#374151', whiteSpace: 'nowrap', transition: 'background 0.1s' },
+                  onMouseOver: function (ev) { ev.currentTarget.style.background = LIGHT_PURPLE; ev.currentTarget.style.borderColor = PURPLE; ev.currentTarget.style.color = PURPLE; },
+                  onMouseOut: function (ev) { ev.currentTarget.style.background = '#f3f4f6'; ev.currentTarget.style.borderColor = '#e5e7eb'; ev.currentTarget.style.color = '#374151'; }
+                }, t.label);
+              })
+            )
           ),
           e('div', null,
             e('label', { style: S.lbl }, 'Additional context (optional)'),
@@ -861,7 +1198,7 @@
         ),
         // Right: story viewer
         hasStory
-          ? e('div', { id: 'ss-print-area', style: { flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column' } },
+          ? e('div', { id: 'ss-py', style: { flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column' } },
               // Page navigation
               e('div', { className: 'ss-no-print', style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' } },
                 e('button', { onClick: function () { setStoryCurrent(function (p) { return Math.max(0, p - 1); }); }, disabled: storyCurrent === 0, style: S.btn('#f3f4f6', '#374151', storyCurrent === 0) }, '← Prev'),
