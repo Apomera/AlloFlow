@@ -14,7 +14,7 @@
   // ── Print CSS injection ───────────────────────────────────────────────────
   (function injectPrintStyles() {
     var style = document.createElement('style');
-    style.textContent = '@media print{body *{visibility:hidden}#ss-pb,#ss-pb *,#ss-ps,#ss-ps *,#ss-py,#ss-py *,#ss-pq,#ss-pq *{visibility:visible}#ss-pb,#ss-ps,#ss-py,#ss-pq{position:absolute;left:0;top:0;width:100%}.ss-no-print{display:none!important}}';
+    style.textContent = '@media print{body *{visibility:hidden}#ss-pb,#ss-pb *,#ss-ps,#ss-ps *,#ss-py,#ss-py *,#ss-pq,#ss-pq *,#ss-pq-calming,#ss-pq-calming *,#ss-pq-sensory,#ss-pq-sensory *{visibility:visible}#ss-pb,#ss-ps,#ss-py,#ss-pq,#ss-pq-calming,#ss-pq-sensory{position:absolute;left:0;top:0;width:100%}.ss-no-print{display:none!important}}';
     document.head.appendChild(style);
   })();
 
@@ -25,6 +25,7 @@
   var STORAGE_SCHEDULES = 'alloSchedules';
   var STORAGE_PROFILES = 'alloStudentProfiles';
   var STORAGE_ACTIVE_PROFILE = 'alloActiveProfileId';
+  var STORAGE_BOOKS = 'alloActivitySets';
   var MAX_PROFILES = 8;
   var BATCH_SIZE = 4;
   var BATCH_DELAY = 700;
@@ -36,6 +37,7 @@
     { value: 'friendly cartoon, vibrant colors', label: 'Cartoon' },
     { value: 'soft watercolor, gentle washes', label: 'Watercolor' },
     { value: 'bold comic book, thick outlines', label: 'Bold Comic' },
+    { value: 'high contrast black and white, bold thick outlines, no color fill, simple silhouette', label: 'High Contrast (B&W Print)' },
   ];
 
   var CAT_COLORS = { noun: '#fef9c3', verb: '#dcfce7', adjective: '#dbeafe', other: '#f3f4f6' };
@@ -47,6 +49,7 @@
     { id: 'schedule', icon: '📅', label: 'Visual Schedule' },
     { id: 'stories', icon: '📖', label: 'Social Stories' },
     { id: 'quickboards', icon: '⚡', label: 'Quick Boards' },
+    { id: 'books', icon: '📚', label: 'Activity Sets' },
   ];
 
   var BOARD_TEMPLATES = [
@@ -134,6 +137,62 @@
       { label: 'goodbye', category: 'other', description: 'farewell' },
       { label: 'ready', category: 'adjective', description: 'prepared to go' },
     ] },
+    { id: 'hygiene', label: 'Hygiene', icon: '🪥', words: [
+      { label: 'wash hands', category: 'verb', description: 'cleaning hands with soap and water' },
+      { label: 'soap', category: 'noun', description: 'cleaning product used on hands' },
+      { label: 'brush teeth', category: 'verb', description: 'cleaning teeth with a toothbrush' },
+      { label: 'toothbrush', category: 'noun', description: 'tool for brushing teeth' },
+      { label: 'toothpaste', category: 'noun', description: 'paste used to clean teeth' },
+      { label: 'towel', category: 'noun', description: 'cloth for drying hands or body' },
+      { label: 'comb hair', category: 'verb', description: 'styling and tidying hair' },
+      { label: 'shower', category: 'verb', description: 'washing the whole body with water' },
+      { label: 'flush', category: 'verb', description: 'flushing the toilet after use' },
+      { label: 'deodorant', category: 'noun', description: 'product to prevent body odor' },
+      { label: 'clean', category: 'adjective', description: 'free from dirt or germs' },
+      { label: 'germs', category: 'noun', description: 'tiny organisms that cause illness' },
+    ] },
+    { id: 'community', label: 'Community', icon: '🏘️', words: [
+      { label: 'grocery store', category: 'noun', description: 'place to buy food and supplies' },
+      { label: 'library', category: 'noun', description: 'place to borrow books for free' },
+      { label: 'doctor', category: 'noun', description: 'person who helps when you are sick' },
+      { label: 'fire station', category: 'noun', description: 'where firefighters and trucks are kept' },
+      { label: 'park', category: 'noun', description: 'outdoor area for recreation and play' },
+      { label: 'restaurant', category: 'noun', description: 'place to order and eat a meal' },
+      { label: 'pharmacy', category: 'noun', description: 'place to pick up medicine' },
+      { label: 'crosswalk', category: 'noun', description: 'safe place to cross the street' },
+      { label: 'wait in line', category: 'verb', description: 'standing in a queue for your turn' },
+      { label: 'quiet voice', category: 'adjective', description: 'speaking softly in public spaces' },
+      { label: 'inside voice', category: 'adjective', description: 'calm, moderate volume for indoors' },
+      { label: 'excuse me', category: 'other', description: 'polite phrase to get past someone' },
+    ] },
+    { id: 'medical', label: 'Medical / Health', icon: '🏥', words: [
+      { label: 'hurt', category: 'adjective', description: 'feeling physical pain' },
+      { label: 'head', category: 'noun', description: 'top part of the body where the brain is' },
+      { label: 'stomach', category: 'noun', description: 'belly area, can hurt when sick' },
+      { label: 'medicine', category: 'noun', description: 'substance taken to feel better when sick' },
+      { label: 'bandage', category: 'noun', description: 'covering applied to a wound or cut' },
+      { label: 'ice pack', category: 'noun', description: 'cold pack applied to reduce swelling' },
+      { label: 'rest', category: 'verb', description: 'lying down quietly to feel better' },
+      { label: 'drink water', category: 'verb', description: 'staying hydrated when sick or hurt' },
+      { label: 'sick', category: 'adjective', description: 'feeling unwell or ill' },
+      { label: 'better', category: 'adjective', description: 'feeling improved after being sick' },
+      { label: 'deep breath', category: 'verb', description: 'taking a slow, calming breath' },
+      { label: 'thermometer', category: 'noun', description: 'tool to measure body temperature' },
+    ] },
+    { id: 'bedtime', label: 'Bedtime', icon: '🌙', words: [
+      { label: 'bath time', category: 'noun', description: 'washing in the bathtub before bed' },
+      { label: 'pajamas', category: 'noun', description: 'comfortable clothes worn to sleep' },
+      { label: 'brush teeth', category: 'verb', description: 'cleaning teeth before bed' },
+      { label: 'read book', category: 'verb', description: 'nighttime reading routine before sleep' },
+      { label: 'lights out', category: 'verb', description: 'turning off the bedroom light' },
+      { label: 'blanket', category: 'noun', description: 'warm soft covering for sleeping' },
+      { label: 'pillow', category: 'noun', description: 'soft cushion for the head during sleep' },
+      { label: 'quiet time', category: 'noun', description: 'calm, peaceful time before sleep' },
+      { label: 'goodnight', category: 'other', description: 'farewell said at bedtime' },
+      { label: 'sleep', category: 'verb', description: 'resting through the night' },
+      { label: 'dream', category: 'noun', description: 'images and stories that happen during sleep' },
+      { label: 'tomorrow', category: 'other', description: 'the next day, when we wake up' },
+    ] },
   ];
 
   var STORY_TEMPLATES = [
@@ -147,6 +206,11 @@
     { label: 'Asking for Help', situation: 'asking a teacher or adult for help when something feels hard', details: 'Everyone needs help sometimes. Asking for help is a smart and brave thing to do.' },
     { label: 'Sharing & Turns', situation: 'sharing toys and taking turns with classmates during play', details: 'Sharing can feel hard when we really like something. Taking turns is a way to be a good friend.' },
     { label: 'New School', situation: 'starting at a new school for the very first time', details: 'A new school means new friends, new teachers, and a new building to explore.' },
+    { label: 'Losing the Game', situation: 'learning to handle losing a game or contest with good sportsmanship', details: 'Losing can feel disappointing or frustrating. This story helps practice staying calm and being a good sport.' },
+    { label: 'Fire Drill', situation: 'what happens during a fire drill at school and why we practice it', details: 'A fire drill is practice for keeping everyone safe. The alarm is loud but it will stop soon.' },
+    { label: 'Grocery Store', situation: 'going to the grocery store with a family member and following the rules', details: 'The grocery store can be busy and crowded. Walking calmly and staying close makes the trip go smoothly.' },
+    { label: 'Substitute Teacher', situation: 'having a substitute teacher instead of the regular teacher for the day', details: 'Sometimes the regular teacher cannot come to school. A substitute teacher will be in charge for the day and things will still be okay.' },
+    { label: 'Getting a Shot', situation: 'getting a vaccination or flu shot at the doctor or clinic', details: 'Shots help keep our bodies healthy and protect others too. It might sting for a moment, but it will be over very quickly.' },
   ];
 
   var QUICK_SETS = [
@@ -154,6 +218,10 @@
     { label: 'Classroom', icon: '🏫', items: ['help', 'bathroom', 'water', 'finished', 'break', 'sit down', 'quiet', 'listen', 'raise hand', 'line up'] },
     { label: 'Daily Living', icon: '🏠', items: ['eat', 'drink', 'sleep', 'wash hands', 'brush teeth', 'get dressed', 'go outside', 'take a bath', 'comb hair', 'put on shoes'] },
     { label: 'AAC Core', icon: '💬', items: ['more', 'stop', 'go', 'yes', 'no', 'want', 'like', 'all done', 'come here', 'look', 'help', 'wait'] },
+    { label: 'Colors', icon: '🎨', items: ['red', 'blue', 'yellow', 'green', 'orange', 'purple', 'pink', 'brown', 'black', 'white'] },
+    { label: 'Numbers', icon: '🔢', items: ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'] },
+    { label: 'Animals', icon: '🐾', items: ['dog', 'cat', 'bird', 'fish', 'rabbit', 'bear', 'horse', 'cow', 'sheep', 'duck'] },
+    { label: 'Weather', icon: '☀️', items: ['sunny', 'cloudy', 'rainy', 'windy', 'snowy', 'foggy', 'hot', 'cold', 'stormy', 'rainbow'] },
   ];
 
   // ── Storage helpers ───────────────────────────────────────────────────────
@@ -304,6 +372,7 @@
     var fileInputRef = useRef(null);
     var scheduleFileRef = useRef(null);
     var importFileRef = useRef(null);
+    var importBoardRef = useRef(null);
     var qbUploadRef = useRef(null);
 
     // Symbols tab state
@@ -331,6 +400,23 @@
     var _savedBoards = useState(function () { return load(STORAGE_BOARDS, []); });
     var savedBoards = _savedBoards[0]; var setSavedBoards = _savedBoards[1];
     var _showBoardGallery = useState(false); var showBoardGallery = _showBoardGallery[0]; var setShowBoardGallery = _showBoardGallery[1];
+    var _boardProfileFilter = useState(''); var boardProfileFilter = _boardProfileFilter[0]; var setBoardProfileFilter = _boardProfileFilter[1];
+    // Board drag-to-reorder
+    var _dragBoardId = useState(null); var dragBoardId = _dragBoardId[0]; var setDragBoardId = _dragBoardId[1];
+    var _dragOverBoardId = useState(null); var dragOverBoardId = _dragOverBoardId[0]; var setDragOverBoardId = _dragOverBoardId[1];
+    // Board display options
+    var _boardTextPos = useState('below'); var boardTextPos = _boardTextPos[0]; var setBoardTextPos = _boardTextPos[1];
+    var _boardTextSize = useState(11); var boardTextSize = _boardTextSize[0]; var setBoardTextSize = _boardTextSize[1];
+    var _boardCellSz = useState('medium'); var boardCellSz = _boardCellSz[0]; var setBoardCellSz = _boardCellSz[1];
+    var _showPrintSettings = useState(false); var showPrintSettings = _showPrintSettings[0]; var setShowPrintSettings = _showPrintSettings[1];
+    // Gallery picker (add symbol to board)
+    var _showGalleryPicker = useState(false); var showGalleryPicker = _showGalleryPicker[0]; var setShowGalleryPicker = _showGalleryPicker[1];
+    var _gpFilter = useState(''); var gpFilter = _gpFilter[0]; var setGpFilter = _gpFilter[1];
+    // Activity Sets (multi-board books)
+    var _books = useState(function () { return load(STORAGE_BOOKS, []); });
+    var books = _books[0]; var setBooks = _books[1];
+    var _activeBookId = useState(null); var activeBookId = _activeBookId[0]; var setActiveBookId = _activeBookId[1];
+    var _newBookTitle = useState(''); var newBookTitle = _newBookTitle[0]; var setNewBookTitle = _newBookTitle[1];
 
     // Schedule state
     var _schedItems = useState([]); var schedItems = _schedItems[0]; var setSchedItems = _schedItems[1];
@@ -380,6 +466,38 @@
     var _tokenRewardImage = useState(null); var tokenRewardImage = _tokenRewardImage[0]; var setTokenRewardImage = _tokenRewardImage[1];
     var _tokenRewardLoading = useState(false); var tokenRewardLoading = _tokenRewardLoading[0]; var setTokenRewardLoading = _tokenRewardLoading[1];
     var _qbUploadTarget = useState(null); var qbUploadTarget = _qbUploadTarget[0]; var setQbUploadTarget = _qbUploadTarget[1];
+    // Calming Corner state
+    var _cmItems = useState(function () {
+      return [
+        { id: 'cm1', label: 'Take deep breaths', image: null },
+        { id: 'cm2', label: 'Count to 10', image: null },
+        { id: 'cm3', label: 'Take a walk', image: null },
+        { id: 'cm4', label: 'Squeeze a stress ball', image: null },
+        { id: 'cm5', label: 'Ask for help', image: null },
+        { id: 'cm6', label: 'Drink some water', image: null },
+        { id: 'cm7', label: 'Listen to music', image: null },
+        { id: 'cm8', label: 'Draw or color', image: null },
+      ];
+    });
+    var cmItems = _cmItems[0]; var setCmItems = _cmItems[1];
+    var _cmLoading = useState({}); var cmLoading = _cmLoading[0]; var setCmLoading = _cmLoading[1];
+
+    var _snItems = useState(function () {
+      return [
+        { id: 'sn1', label: 'Too loud', image: null },
+        { id: 'sn2', label: 'Too bright', image: null },
+        { id: 'sn3', label: 'Too crowded', image: null },
+        { id: 'sn4', label: 'Need headphones', image: null },
+        { id: 'sn5', label: 'Need sunglasses', image: null },
+        { id: 'sn6', label: 'Need fidget', image: null },
+        { id: 'sn7', label: 'Need to move', image: null },
+        { id: 'sn8', label: 'Need a break', image: null },
+        { id: 'sn9', label: 'Feel overwhelmed', image: null },
+        { id: 'sn10', label: 'Need quiet', image: null },
+      ];
+    });
+    var snItems = _snItems[0]; var setSnItems = _snItems[1];
+    var _snLoading = useState({}); var snLoading = _snLoading[0]; var setSnLoading = _snLoading[1];
 
     // Sync story student name when avatar name changes
     useEffect(function () { if (avatarName) setStoryStudentName(avatarName); }, [avatarName]);
@@ -558,12 +676,13 @@
 
     var exportData = useCallback(function () {
       var data = {
-        version: 4,
+        version: 5,
         exportDate: new Date().toISOString(),
         gallery: gallery,
         boards: savedBoards,
         schedules: savedSchedules,
         profiles: profiles,
+        books: books,
       };
       var json = JSON.stringify(data, null, 2);
       var blob = new Blob([json], { type: 'application/json' });
@@ -574,7 +693,7 @@
       document.body.appendChild(a); a.click();
       document.body.removeChild(a); URL.revokeObjectURL(url);
       addToast && addToast({ message: 'Backup downloaded!', type: 'success' });
-    }, [gallery, savedBoards, savedSchedules, profiles, addToast]);
+    }, [gallery, savedBoards, savedSchedules, profiles, books, addToast]);
 
     var importData = useCallback(function (ev) {
       var file = ev.target.files && ev.target.files[0];
@@ -623,6 +742,13 @@
             setAvatarName(legacyProf.name); setAvatarDesc(legacyProf.description);
             summary.push('student profile');
           }
+          if (Array.isArray(data.books) && data.books.length) {
+            var impBookIds = {};
+            data.books.forEach(function (b) { impBookIds[b.id] = true; });
+            var mergedBooks = data.books.concat(books.filter(function (b) { return !impBookIds[b.id]; }));
+            setBooks(mergedBooks); store(STORAGE_BOOKS, mergedBooks);
+            summary.push(data.books.length + ' activity set(s)');
+          }
           addToast && addToast({ message: summary.length ? 'Imported: ' + summary.join(', ') : 'Nothing found to import', type: summary.length ? 'success' : 'info' });
         } catch (err) {
           warnLog('Import failed:', err);
@@ -631,7 +757,7 @@
       };
       reader.readAsText(file);
       ev.target.value = '';
-    }, [gallery, savedBoards, savedSchedules, profiles, addToast]);
+    }, [gallery, savedBoards, savedSchedules, profiles, books, addToast]);
 
     // ── Cloud sync actions ────────────────────────────────────────────────
     var syncToCloud = useCallback(async function () {
@@ -760,11 +886,28 @@
       if (!boardWords.length || !onCallImagen) return;
       var items = boardWords.filter(function (w) { return !w.image; });
       if (!items.length) { addToast && addToast({ message: 'All images already generated', type: 'info' }); return; }
+      // ── Symbol reuse: check gallery before calling Imagen ──────────────
+      var galleryMap = {};
+      gallery.forEach(function (g) { if (g.image) galleryMap[g.label.toLowerCase().trim()] = g.image; });
+      var preMatched = []; var toGenerate = [];
+      items.forEach(function (item) {
+        var cached = galleryMap[item.label.toLowerCase().trim()];
+        if (cached) preMatched.push({ id: item.id, image: cached });
+        else toGenerate.push(item);
+      });
+      if (preMatched.length) {
+        setBoardWords(function (prev) {
+          var map = {}; preMatched.forEach(function (r) { map[r.id] = r.image; });
+          return prev.map(function (w) { return map[w.id] ? Object.assign({}, w, { image: map[w.id] }) : w; });
+        });
+        addToast && addToast({ message: preMatched.length + ' symbol(s) reused from gallery \u2013 saving API calls!', type: 'info' });
+      }
+      if (!toGenerate.length) { addToast && addToast({ message: 'All images ready!', type: 'success' }); return; }
       var loadMap = {};
-      items.forEach(function (i) { loadMap[i.id] = true; });
+      toGenerate.forEach(function (i) { loadMap[i.id] = true; });
       setBoardLoading(function (p) { return Object.assign({}, p, loadMap); });
       var batchOut = await batchGenerate(
-        items, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, globalStyle,
+        toGenerate, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, globalStyle,
         function (id) { setBoardLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
       );
       setBoardWords(function (prev) {
@@ -777,7 +920,7 @@
       if (batchOut.failed.length > 0) {
         addToast && addToast({ message: 'Failed: ' + batchOut.failed.join(', '), type: 'error' });
       }
-    }, [boardWords, autoClean, avatarRef, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
+    }, [boardWords, gallery, autoClean, avatarRef, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     var regenBoardCell = useCallback(async function (id) {
       var word = boardWords.find(function (w) { return w.id === id; });
@@ -794,12 +937,12 @@
 
     var saveBoard = useCallback(function () {
       if (!boardWords.length) return;
-      var saved = { id: uid(), title: boardTitle || boardTopic, words: boardWords, cols: boardCols, createdAt: Date.now() };
+      var saved = { id: uid(), title: boardTitle || boardTopic, words: boardWords, cols: boardCols, profileId: activeProfileId || null, createdAt: Date.now() };
       var updated = [saved].concat(savedBoards);
       setSavedBoards(updated); store(STORAGE_BOARDS, updated);
       addToast && addToast({ message: 'Board saved!', type: 'success' });
       if (cloudSync) setTimeout(function () { syncToCloud(); }, 300);
-    }, [boardWords, boardTitle, boardTopic, boardCols, savedBoards, cloudSync, syncToCloud, addToast]);
+    }, [boardWords, boardTitle, boardTopic, boardCols, activeProfileId, savedBoards, cloudSync, syncToCloud, addToast]);
 
     var applyBoardTemplate = useCallback(function (template) {
       var words = template.words.map(function (w) { return Object.assign({}, w, { id: uid(), image: null }); });
@@ -821,6 +964,132 @@
       var updated = savedBoards.filter(function (b) { return b.id !== id; });
       setSavedBoards(updated); store(STORAGE_BOARDS, updated);
     }, [savedBoards]);
+
+    var exportBoard = useCallback(function (board) {
+      var data = { version: 1, type: 'alloBoard', board: board };
+      var json = JSON.stringify(data, null, 2);
+      var blob = new Blob([json], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      var safeName = (board.title || 'board').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      a.download = 'alloboard_' + safeName + '.json';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+      addToast && addToast({ message: '"' + (board.title || 'Board') + '" exported!', type: 'success' });
+    }, [addToast]);
+
+    var importSingleBoard = useCallback(function (ev) {
+      var file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function (e2) {
+        try {
+          var data = JSON.parse(e2.target.result);
+          // Support both wrapped { type:'alloBoard', board:{...} } and raw board objects
+          var board = (data.type === 'alloBoard' && data.board) ? data.board : data;
+          if (!board || !Array.isArray(board.words)) throw new Error('Not a valid board file');
+          var imported = Object.assign({}, board, { id: uid(), importedAt: Date.now() });
+          var updated = [imported].concat(savedBoards);
+          setSavedBoards(updated); store(STORAGE_BOARDS, updated);
+          setShowBoardGallery(true);
+          addToast && addToast({ message: 'Board imported: "' + (imported.title || 'Untitled') + '"', type: 'success' });
+        } catch (err) {
+          addToast && addToast({ message: 'Import failed — not a valid board file', type: 'error' });
+        }
+      };
+      reader.readAsText(file);
+      ev.target.value = '';
+    }, [savedBoards, addToast]);
+
+    var tagBoardProfile = useCallback(function (boardId, profileId) {
+      var updated = savedBoards.map(function (b) { return b.id === boardId ? Object.assign({}, b, { profileId: profileId || null }) : b; });
+      setSavedBoards(updated); store(STORAGE_BOARDS, updated);
+    }, [savedBoards]);
+
+    var addFromGallery = useCallback(function (item) {
+      var newWord = { id: uid(), label: item.label, description: item.label, category: 'other', image: item.image };
+      setBoardWords(function (prev) { return prev.concat([newWord]); });
+      addToast && addToast({ message: '\u201c' + item.label + '\u201d added to board', type: 'success' });
+    }, [addToast]);
+
+    // Sized print: injects a temporary @media print rule then calls window.print()
+    var CELL_SIZES = { small: 144, medium: 192, large: 240 }; // px at 96dpi = 1.5", 2", 2.5"
+    var printBoardSized = useCallback(function () {
+      var sz = CELL_SIZES[boardCellSz] || 192;
+      var imgSz = sz - 28;
+      var styleId = 'ss-print-sz-override';
+      var prev = document.getElementById(styleId); if (prev) prev.parentNode.removeChild(prev);
+      var style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = '@media print { .ss-board-cell { width: ' + sz + 'px !important; height: ' + sz + 'px !important; min-height: unset !important; box-sizing: border-box !important; } .ss-board-cell img { width: ' + imgSz + 'px !important; height: ' + imgSz + 'px !important; } }';
+      document.head.appendChild(style);
+      window.print();
+      setTimeout(function () { var el = document.getElementById(styleId); if (el) el.parentNode.removeChild(el); }, 2000);
+    }, [boardCellSz]);
+
+    // ── Activity Sets (multi-board books) ─────────────────────────────────
+    var createBook = useCallback(function () {
+      if (!newBookTitle.trim()) return;
+      var book = { id: uid(), title: newBookTitle.trim(), profileId: activeProfileId || null, boardIds: [], createdAt: Date.now() };
+      var updated = [book].concat(books);
+      setBooks(updated); store(STORAGE_BOOKS, updated);
+      setNewBookTitle(''); setActiveBookId(book.id);
+      addToast && addToast({ message: 'Activity Set \u201c' + book.title + '\u201d created!', type: 'success' });
+    }, [newBookTitle, activeProfileId, books, addToast]);
+
+    var deleteBook = useCallback(function (bookId) {
+      var updated = books.filter(function (b) { return b.id !== bookId; });
+      setBooks(updated); store(STORAGE_BOOKS, updated);
+      if (activeBookId === bookId) setActiveBookId(null);
+    }, [books, activeBookId]);
+
+    var toggleBoardInBook = useCallback(function (bookId, boardId) {
+      var updated = books.map(function (book) {
+        if (book.id !== bookId) return book;
+        var ids = book.boardIds.includes(boardId)
+          ? book.boardIds.filter(function (id) { return id !== boardId; })
+          : book.boardIds.concat([boardId]);
+        return Object.assign({}, book, { boardIds: ids });
+      });
+      setBooks(updated); store(STORAGE_BOOKS, updated);
+    }, [books]);
+
+    var tagBookProfile = useCallback(function (bookId, profileId) {
+      var updated = books.map(function (b) { return b.id === bookId ? Object.assign({}, b, { profileId: profileId || null }) : b; });
+      setBooks(updated); store(STORAGE_BOOKS, updated);
+    }, [books]);
+
+    var printBook = useCallback(function (book) {
+      var boardsInSet = book.boardIds.map(function (id) { return savedBoards.find(function (b) { return b.id === id; }); }).filter(Boolean);
+      if (!boardsInSet.length) { addToast && addToast({ message: 'No boards in this set yet', type: 'error' }); return; }
+      var sz = CELL_SIZES[boardCellSz] || 192;
+      var imgSz = sz - 28;
+      var styleId = 'ss-print-sz-override';
+      var prev = document.getElementById(styleId); if (prev) prev.parentNode.removeChild(prev);
+      var style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = '@media print { .ss-board-cell { width: ' + sz + 'px !important; height: ' + sz + 'px !important; min-height: unset !important; box-sizing: border-box !important; } .ss-board-cell img { width: ' + imgSz + 'px !important; height: ' + imgSz + 'px !important; } }';
+      document.head.appendChild(style);
+      // Build a temporary print iframe with all boards in sequence
+      var html = '<!DOCTYPE html><html><head><style>body{font-family:sans-serif;margin:20px}.board-section{page-break-after:always}.board-title{font-size:18px;font-weight:800;margin-bottom:12px}.board-grid{display:grid;grid-template-columns:repeat(' + (boardsInSet[0].cols || 4) + ',1fr);gap:8px}.ss-board-cell{border:2px solid #e5e7eb;border-radius:10px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:5px;width:' + sz + 'px;height:' + sz + 'px;box-sizing:border-box}.ss-board-cell img{width:' + imgSz + 'px;height:' + imgSz + 'px;object-fit:contain}.cell-label{font-size:11px;font-weight:700;text-align:center;line-height:1.3}</style></head><body>';
+      boardsInSet.forEach(function (board, idx) {
+        html += '<div class="board-section"><div class="board-title">' + (board.title || 'Board ' + (idx + 1)) + '</div><div class="board-grid">';
+        board.words.forEach(function (w) {
+          html += '<div class="ss-board-cell">';
+          if (w.image) html += '<img src="' + w.image + '" alt="' + w.label + '">';
+          html += '<span class="cell-label">' + w.label + '</span></div>';
+        });
+        html += '</div></div>';
+      });
+      html += '</body></html>';
+      var iframe = document.createElement('iframe');
+      iframe.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1px;height:1px';
+      document.body.appendChild(iframe);
+      iframe.contentDocument.write(html);
+      iframe.contentDocument.close();
+      setTimeout(function () { iframe.contentWindow.print(); setTimeout(function () { document.body.removeChild(iframe); var el = document.getElementById(styleId); if (el) el.parentNode.removeChild(el); }, 1500); }, 500);
+    }, [books, savedBoards, boardCellSz, addToast]);
 
     var printBoard = useCallback(function () {
       window.print();
@@ -1022,11 +1291,79 @@
           setCbItems(function (prev) { return prev.map(function (it) { return it.id === qbUploadTarget.id ? Object.assign({}, it, { image: img }) : it; }); });
         } else if (qbUploadTarget.type === 'token') {
           setTokenRewardImage(img);
+        } else if (qbUploadTarget.type === 'cm') {
+          setCmItems(function (prev) { return prev.map(function (it) { return it.id === qbUploadTarget.id ? Object.assign({}, it, { image: img }) : it; }); });
+        } else if (qbUploadTarget.type === 'sn') {
+          setSnItems(function (prev) { return prev.map(function (it) { return it.id === qbUploadTarget.id ? Object.assign({}, it, { image: img }) : it; }); });
         }
       };
       reader.readAsDataURL(file);
       ev.target.value = ''; setQbUploadTarget(null);
     }, [qbUploadTarget]);
+
+    // ── Calming Corner actions ─────────────────────────────────────────────
+    var genCmItem = useCallback(async function (id) {
+      var item = cmItems.find(function (it) { return it.id === id; });
+      if (!item || !onCallImagen) return;
+      setCmLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
+      try {
+        var prompt = buildSymbolPrompt(item.label, 'a calming self-regulation strategy for children, peaceful and soothing scene', globalStyle, '');
+        var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
+        setCmItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
+      } catch (e) { addToast && addToast({ message: 'Generation failed', type: 'error' }); }
+      finally { setCmLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
+    }, [cmItems, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
+
+    var genAllCmItems = useCallback(async function () {
+      var items = cmItems.filter(function (it) { return !it.image; });
+      if (!items.length || !onCallImagen) return;
+      var loadMap = {};
+      items.forEach(function (i) { loadMap[i.id] = true; });
+      setCmLoading(function (p) { return Object.assign({}, p, loadMap); });
+      var batchOut = await batchGenerate(
+        items, onCallImagen, onCallGeminiImageEdit, autoClean, null, globalStyle,
+        function (id) { setCmLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
+      );
+      setCmItems(function (prev) {
+        var map = {};
+        batchOut.results.forEach(function (r) { map[r.id] = r; });
+        return prev.map(function (it) { return map[it.id] ? Object.assign({}, it, { image: map[it.id].image }) : it; });
+      });
+      setCmLoading({});
+      addToast && addToast({ message: 'Calming Corner images ready!', type: 'success' });
+    }, [cmItems, autoClean, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
+
+    // ── Sensory Needs actions ──────────────────────────────────────────────
+    var genSnItem = useCallback(async function (id) {
+      var item = snItems.find(function (it) { return it.id === id; });
+      if (!item || !onCallImagen) return;
+      setSnLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
+      try {
+        var prompt = buildSymbolPrompt(item.label, 'a sensory regulation need for a child with sensory sensitivities, clear and simple AAC-style symbol', globalStyle, '');
+        var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
+        setSnItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
+      } catch (e) { addToast && addToast({ message: 'Generation failed', type: 'error' }); }
+      finally { setSnLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
+    }, [snItems, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
+
+    var genAllSnItems = useCallback(async function () {
+      var items = snItems.filter(function (it) { return !it.image; });
+      if (!items.length || !onCallImagen) return;
+      var loadMap = {};
+      items.forEach(function (i) { loadMap[i.id] = true; });
+      setSnLoading(function (p) { return Object.assign({}, p, loadMap); });
+      var batchOut = await batchGenerate(
+        items, onCallImagen, onCallGeminiImageEdit, autoClean, null, globalStyle,
+        function (id) { setSnLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
+      );
+      setSnItems(function (prev) {
+        var map = {};
+        batchOut.results.forEach(function (r) { map[r.id] = r; });
+        return prev.map(function (it) { return map[it.id] ? Object.assign({}, it, { image: map[it.id].image }) : it; });
+      });
+      setSnLoading({});
+      addToast && addToast({ message: 'Sensory Needs images ready!', type: 'success' });
+    }, [snItems, autoClean, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     // ── Styles ─────────────────────────────────────────────────────────────
     var PURPLE = '#7c3aed'; var DARK_PURPLE = '#5b21b6'; var LIGHT_PURPLE = '#ede9fe';
@@ -1070,6 +1407,8 @@
         { id: 'firstthen', icon: '➡️', label: 'First-Then' },
         { id: 'choice', icon: '🔵', label: 'Choice Board' },
         { id: 'token', icon: '⭐', label: 'Token Economy' },
+        { id: 'calming', icon: '🌿', label: 'Calming Corner' },
+        { id: 'sensory', icon: '🎧', label: 'Sensory Needs' },
       ];
 
       function qbUploadBtn(target) {
@@ -1210,12 +1549,113 @@
         );
       }
 
+      // ── Calming Corner ──
+      function renderCalmingCorner() {
+        var TEAL = '#0d9488'; var TEAL_LIGHT = '#f0fdfa'; var TEAL_BORDER = '#99f6e4';
+        var cmLoadingAny = Object.keys(cmLoading).length > 0;
+        return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1, overflow: 'hidden' } },
+          // Controls bar
+          e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
+            e('p', { style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, 'Tap any card to speak the strategy aloud • Edit labels directly on each card'),
+            e('button', {
+              onClick: genAllCmItems,
+              disabled: !onCallImagen || cmLoadingAny,
+              style: Object.assign({}, S.btn(TEAL, '#fff', !onCallImagen || cmLoadingAny), { marginLeft: 'auto' })
+            }, cmLoadingAny ? '⏳ Generating...' : '✨ Generate All Images')
+          ),
+          // Strategy grid
+          e('div', { id: 'ss-pq-calming', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '12px', overflowY: 'auto', flex: 1 } },
+            cmItems.map(function (item) {
+              var isLoading = !!cmLoading[item.id];
+              return e('div', {
+                key: item.id,
+                onClick: function () { if (onCallTTS) onCallTTS(item.label, selectedVoice || 'Kore', 1); },
+                style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '14px 10px 10px', border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', background: TEAL_LIGHT, cursor: 'pointer', transition: 'transform 0.1s, box-shadow 0.1s', position: 'relative' },
+                onMouseOver: function (ev) { ev.currentTarget.style.boxShadow = '0 4px 14px rgba(13,148,136,0.2)'; ev.currentTarget.style.transform = 'translateY(-2px)'; },
+                onMouseOut: function (ev) { ev.currentTarget.style.boxShadow = 'none'; ev.currentTarget.style.transform = 'none'; }
+              },
+                // Image area
+                e('div', { style: { width: 100, height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '10px', background: '#fff', border: '1px solid ' + TEAL_BORDER, overflow: 'hidden', flexShrink: 0 } },
+                  isLoading ? spinner(28) :
+                  item.image ? e('img', { src: item.image, alt: item.label, style: { width: '100%', height: '100%', objectFit: 'contain', padding: '6px' } }) :
+                  e('div', { style: { fontSize: '38px' } }, '🌿')
+                ),
+                // Label (editable)
+                e('input', {
+                  type: 'text', value: item.label,
+                  onClick: function (ev) { ev.stopPropagation(); },
+                  onChange: function (ev) { var v = ev.target.value; setCmItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); },
+                  style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '12px', color: '#064e3b', textAlign: 'center', width: '100%', outline: 'none', cursor: 'text', lineHeight: 1.4 }
+                }),
+                // Action buttons
+                e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px' } },
+                  e('button', { title: 'Generate image', onClick: function (ev) { ev.stopPropagation(); genCmItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '✨'),
+                  e('button', { title: 'Upload image', onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'cm', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '📷')
+                )
+              );
+            })
+          ),
+          // Tip
+          e('p', { className: 'ss-no-print', style: { fontSize: '11px', color: '#6b7280', margin: 0, flexShrink: 0 } }, 'Print as a laminated "Calming Menu" poster for the calming corner, breakroom, or student desk strip.')
+        );
+      }
+
+      function renderSensoryNeeds() {
+        var AMBER = '#d97706'; var AMBER_LIGHT = '#fffbeb'; var AMBER_BORDER = '#fcd34d';
+        var snLoadingAny = Object.keys(snLoading).length > 0;
+        return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1, overflow: 'hidden' } },
+          // Controls bar
+          e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
+            e('p', { style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, 'Tap any card to say the need aloud • Helps non-verbal students communicate sensory overload'),
+            e('button', {
+              onClick: genAllSnItems,
+              disabled: !onCallImagen || snLoadingAny,
+              style: Object.assign({}, S.btn(AMBER, '#fff', !onCallImagen || snLoadingAny), { marginLeft: 'auto' })
+            }, snLoadingAny ? '⏳ Generating...' : '✨ Generate All Images')
+          ),
+          // Sensory grid
+          e('div', { id: 'ss-pq-sensory', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', overflowY: 'auto', flex: 1 } },
+            snItems.map(function (item) {
+              var isLoading = !!snLoading[item.id];
+              return e('div', {
+                key: item.id,
+                onClick: function () { if (onCallTTS) onCallTTS(item.label, selectedVoice || 'Kore', 1); },
+                style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '14px 10px 10px', border: '2px solid ' + AMBER_BORDER, borderRadius: '14px', background: AMBER_LIGHT, cursor: 'pointer', transition: 'transform 0.1s, box-shadow 0.1s', position: 'relative' },
+                onMouseOver: function (ev) { ev.currentTarget.style.boxShadow = '0 4px 14px rgba(217,119,6,0.2)'; ev.currentTarget.style.transform = 'translateY(-2px)'; },
+                onMouseOut: function (ev) { ev.currentTarget.style.boxShadow = 'none'; ev.currentTarget.style.transform = 'none'; }
+              },
+                // Image area
+                e('div', { style: { width: 90, height: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '10px', background: '#fff', border: '1px solid ' + AMBER_BORDER, overflow: 'hidden', flexShrink: 0 } },
+                  isLoading ? spinner(28) :
+                  item.image ? e('img', { src: item.image, alt: item.label, style: { width: '100%', height: '100%', objectFit: 'contain', padding: '6px' } }) :
+                  e('div', { style: { fontSize: '34px' } }, '🎧')
+                ),
+                // Label (editable)
+                e('input', {
+                  type: 'text', value: item.label,
+                  onClick: function (ev) { ev.stopPropagation(); },
+                  onChange: function (ev) { var v = ev.target.value; setSnItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); },
+                  style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '12px', color: '#78350f', textAlign: 'center', width: '100%', outline: 'none', cursor: 'text', lineHeight: 1.4 }
+                }),
+                // Action buttons
+                e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px' } },
+                  e('button', { title: 'Generate image', onClick: function (ev) { ev.stopPropagation(); genSnItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '✨'),
+                  e('button', { title: 'Upload image', onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'sn', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '📷')
+                )
+              );
+            })
+          ),
+          // Tip
+          e('p', { className: 'ss-no-print', style: { fontSize: '11px', color: '#6b7280', margin: 0, flexShrink: 0 } }, 'Print as a personal "How I Feel" card or laminated desk reference for students who struggle to verbalize sensory needs.')
+        );
+      }
+
       return e('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' } },
         // Sub-mode switcher
-        e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px', padding: '10px 12px 0', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' } },
+        e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px', padding: '10px 12px 0', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', overflowX: 'auto' } },
           subModes.map(function (sm) {
             var active = qbMode === sm.id;
-            return e('button', { key: sm.id, onClick: function () { setQbMode(sm.id); }, style: { padding: '7px 14px', borderRadius: '8px 8px 0 0', border: active ? '2px solid #e5e7eb' : '2px solid transparent', borderBottom: active ? '2px solid #fff' : '2px solid transparent', background: active ? '#fff' : 'transparent', color: active ? PURPLE : '#6b7280', fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', marginBottom: active ? '-2px' : '0', position: 'relative' } },
+            return e('button', { key: sm.id, onClick: function () { setQbMode(sm.id); }, style: { padding: '7px 14px', borderRadius: '8px 8px 0 0', border: active ? '2px solid #e5e7eb' : '2px solid transparent', borderBottom: active ? '2px solid #fff' : '2px solid transparent', background: active ? '#fff' : 'transparent', color: active ? PURPLE : '#6b7280', fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', marginBottom: active ? '-2px' : '0', position: 'relative', whiteSpace: 'nowrap', flexShrink: 0 } },
               e('span', null, sm.icon), sm.label);
           })
         ),
@@ -1223,7 +1663,9 @@
         e('div', { id: 'ss-pq', style: { flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' } },
           qbMode === 'firstthen' && renderFirstThen(),
           qbMode === 'choice' && renderChoiceBoard(),
-          qbMode === 'token' && renderTokenEconomy()
+          qbMode === 'token' && renderTokenEconomy(),
+          qbMode === 'calming' && renderCalmingCorner(),
+          qbMode === 'sensory' && renderSensoryNeeds()
         ),
         // Print bar
         e('div', { className: 'ss-no-print', style: { padding: '10px 14px', borderTop: '1px solid #e5e7eb', background: '#f9fafb', display: 'flex', justifyContent: 'flex-end', gap: '8px' } },
@@ -1461,36 +1903,121 @@
             e('input', { type: 'checkbox', checked: boardColor, onChange: function (ev) { setBoardColor(ev.target.checked); } }),
             'Color coding'
           ),
+          e('button', { onClick: function () { setShowGalleryPicker(!showGalleryPicker); }, style: S.btn(showGalleryPicker ? LIGHT_PURPLE : '#f3f4f6', showGalleryPicker ? PURPLE : '#374151', false), title: 'Add a symbol from your gallery directly to the board' }, '🖼️ From Gallery'),
           hasImages && e('div', { style: { display: 'flex', gap: '6px' } },
             e('button', { onClick: saveBoard, style: S.btn('#f3f4f6', '#374151', false) }, '💾 Save'),
-            e('button', { onClick: printBoard, style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print')
+            e('button', { onClick: function () { setShowPrintSettings(!showPrintSettings); }, style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print\u2026')
           ),
-          savedBoards.length > 0 && e('button', { onClick: function () { setShowBoardGallery(!showBoardGallery); }, style: S.btn(showBoardGallery ? LIGHT_PURPLE : '#f3f4f6', showBoardGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedBoards.length + ')')
+          savedBoards.length > 0 && e('button', { onClick: function () { setShowBoardGallery(!showBoardGallery); }, style: S.btn(showBoardGallery ? LIGHT_PURPLE : '#f3f4f6', showBoardGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedBoards.length + ')'),
+          e('button', { onClick: function () { importBoardRef.current && importBoardRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false), title: 'Import a board from a .json file' }, '📥 Import Board'),
+          e('input', { type: 'file', accept: '.json', ref: importBoardRef, style: { display: 'none' }, onChange: importSingleBoard })
         ),
         // Saved boards panel
-        showBoardGallery && e('div', { style: { flexShrink: 0, borderBottom: '1px solid #e5e7eb', paddingBottom: '10px' } },
-          e('div', { style: { display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' } },
-            savedBoards.map(function (b) {
-              return e('div', { key: b.id, style: { flexShrink: 0, border: '1px solid #e5e7eb', borderRadius: '8px', padding: '8px 12px', background: '#fff', display: 'flex', alignItems: 'center', gap: '10px' } },
-                e('div', null,
-                  e('div', { style: { fontWeight: 600, fontSize: '12px', color: '#1f2937' } }, b.title || 'Untitled Board'),
-                  e('div', { style: { fontSize: '10px', color: '#9ca3af' } }, b.words.length + ' words')
-                ),
-                e('button', { onClick: function () { loadBoard(b); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
-                liveSession && liveSession.active && e('button', {
-                  title: 'Push to student screens (images excluded)',
-                  onClick: function () {
-                    var stripped = b.words.map(function (w) { return { word: w.word, wordType: w.wordType }; });
-                    liveSession.push({ type: 'board', title: b.title, words: stripped, cols: b.cols || 4 })
-                      .then(function () { addToast('Board pushed to students!', 'success'); })
-                      .catch(function () { addToast('Push failed — check session connection', 'error'); });
-                  },
-                  style: S.btn('#ecfdf5', '#065f46', false)
-                }, '📡'),
-                e('button', { onClick: function () { deleteSavedBoard(b.id); }, style: { background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '14px', padding: '2px 4px' } }, '🗑️')
+        showBoardGallery && e('div', { style: { flexShrink: 0, borderBottom: '1px solid #e5e7eb', paddingBottom: '10px', paddingTop: '6px' } },
+          // Profile filter chips
+          profiles.length > 1 && e('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap', padding: '0 0 8px', borderBottom: '1px solid #f3f4f6', marginBottom: '8px' } },
+            e('button', {
+              onClick: function () { setBoardProfileFilter(''); },
+              style: Object.assign({}, S.chip(boardProfileFilter === '' ? PURPLE : '#f3f4f6', boardProfileFilter === '' ? '#fff' : '#6b7280'), { border: 'none' })
+            }, 'All students'),
+            profiles.map(function (prof) {
+              var active = boardProfileFilter === prof.id;
+              return e('button', {
+                key: prof.id,
+                onClick: function () { setBoardProfileFilter(active ? '' : prof.id); },
+                style: Object.assign({}, S.chip(active ? PURPLE : '#ede9fe', active ? '#fff' : PURPLE), { border: 'none', display: 'flex', alignItems: 'center', gap: '3px' })
+              },
+                prof.image ? e('img', { src: prof.image, style: { width: 12, height: 12, borderRadius: '50%', objectFit: 'cover' } }) : '👤',
+                prof.name || 'Student'
               );
             })
+          ),
+          e('div', { style: { display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' } },
+            savedBoards
+              .filter(function (b) { return !boardProfileFilter || b.profileId === boardProfileFilter; })
+              .map(function (b) {
+                var taggedProf = profiles.find(function (p) { return p.id === b.profileId; }) || null;
+                return e('div', { key: b.id, style: { flexShrink: 0, border: '1px solid #e5e7eb', borderRadius: '8px', padding: '8px 12px', background: '#fff', display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '160px', maxWidth: '220px' } },
+                  // Title + word count
+                  e('div', null,
+                    e('div', { style: { fontWeight: 600, fontSize: '12px', color: '#1f2937', marginBottom: '2px' } }, b.title || 'Untitled Board'),
+                    e('div', { style: { fontSize: '10px', color: '#9ca3af' } }, b.words.length + ' words')
+                  ),
+                  // Profile tag selector
+                  e('select', {
+                    value: b.profileId || '',
+                    onChange: function (ev) { tagBoardProfile(b.id, ev.target.value || null); },
+                    style: { fontSize: '10px', border: '1px solid #e5e7eb', borderRadius: '5px', padding: '2px 4px', color: b.profileId ? PURPLE : '#9ca3af', background: b.profileId ? LIGHT_PURPLE : '#f9fafb', cursor: 'pointer', width: '100%' },
+                    title: 'Assign board to a student'
+                  },
+                    e('option', { value: '' }, '— No student —'),
+                    profiles.map(function (p) { return e('option', { key: p.id, value: p.id }, (p.name || 'Student')); })
+                  ),
+                  // Action buttons row
+                  e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                    e('button', { onClick: function () { loadBoard(b); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
+                    e('button', { onClick: function () { exportBoard(b); }, title: 'Export this board as a .json file', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️'),
+                    liveSession && liveSession.active && e('button', {
+                      title: 'Push to student screens',
+                      onClick: function () {
+                        var stripped = b.words.map(function (w) { return { word: w.word, wordType: w.wordType }; });
+                        liveSession.push({ type: 'board', title: b.title, words: stripped, cols: b.cols || 4 })
+                          .then(function () { addToast('Board pushed to students!', 'success'); })
+                          .catch(function () { addToast('Push failed — check session connection', 'error'); });
+                      },
+                      style: S.btn('#ecfdf5', '#065f46', false)
+                    }, '📡'),
+                    e('button', { onClick: function () { deleteSavedBoard(b.id); }, style: { background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '14px', padding: '2px 4px' } }, '🗑️')
+                  )
+                );
+              })
           )
+        ),
+        // Gallery picker panel
+        showGalleryPicker && gallery.length > 0 && e('div', { style: { flexShrink: 0, background: '#faf5ff', border: '1px solid #ede9fe', borderRadius: '10px', padding: '10px', maxHeight: '160px', overflowY: 'auto' } },
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } },
+            e('span', { style: { fontSize: '11px', fontWeight: 600, color: PURPLE } }, 'Gallery \u2014 click any symbol to add it to the board'),
+            e('input', { type: 'text', value: gpFilter, onChange: function (ev) { setGpFilter(ev.target.value); }, placeholder: 'Filter\u2026', style: { border: '1px solid #d8b4fe', borderRadius: '5px', padding: '3px 7px', fontSize: '11px', outline: 'none', marginLeft: 'auto', width: '80px' } })
+          ),
+          e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))', gap: '6px' } },
+            gallery
+              .filter(function (g) { return !gpFilter || g.label.toLowerCase().includes(gpFilter.toLowerCase()); })
+              .map(function (item) {
+                return e('div', { key: item.id, onClick: function () { addFromGallery(item); }, style: { cursor: 'pointer', border: '1px solid #d8b4fe', borderRadius: '7px', padding: '5px', background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', transition: 'background 0.1s' }, title: 'Add \u201c' + item.label + '\u201d to board',
+                  onMouseOver: function (ev) { ev.currentTarget.style.background = LIGHT_PURPLE; },
+                  onMouseOut: function (ev) { ev.currentTarget.style.background = '#fff'; }
+                },
+                  e('img', { src: item.image, alt: item.label, style: { width: 44, height: 44, objectFit: 'contain', borderRadius: '5px' } }),
+                  e('span', { style: { fontSize: '9px', color: '#374151', textAlign: 'center', lineHeight: 1.2, wordBreak: 'break-word' } }, item.label)
+                );
+              })
+          )
+        ),
+        showGalleryPicker && gallery.length === 0 && e('div', { style: { flexShrink: 0, background: '#faf5ff', border: '1px solid #ede9fe', borderRadius: '10px', padding: '12px', textAlign: 'center', fontSize: '12px', color: '#7c3aed' } }, 'Your symbol gallery is empty. Generate symbols in the Symbols tab first, then add them here.'),
+        // Print settings panel
+        showPrintSettings && e('div', { style: { flexShrink: 0, background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '10px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' } },
+          e('span', { style: { fontSize: '12px', fontWeight: 600, color: '#1e40af' } }, 'Print Settings'),
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+            e('label', { style: Object.assign({}, S.lbl, { margin: 0 }) }, 'Cell size:'),
+            e('select', { value: boardCellSz, onChange: function (ev) { setBoardCellSz(ev.target.value); }, style: { border: '1px solid #93c5fd', borderRadius: '5px', padding: '4px 8px', fontSize: '12px', outline: 'none' } },
+              e('option', { value: 'small' }, 'Small (1.5\u2033)'),
+              e('option', { value: 'medium' }, 'Medium (2\u2033)'),
+              e('option', { value: 'large' }, 'Large (2.5\u2033)')
+            )
+          ),
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+            e('label', { style: Object.assign({}, S.lbl, { margin: 0 }) }, 'Label:'),
+            e('select', { value: boardTextPos, onChange: function (ev) { setBoardTextPos(ev.target.value); }, style: { border: '1px solid #93c5fd', borderRadius: '5px', padding: '4px 8px', fontSize: '12px', outline: 'none' } },
+              e('option', { value: 'below' }, 'Below image'),
+              e('option', { value: 'above' }, 'Above image'),
+              e('option', { value: 'none' }, 'Hidden (image only)')
+            )
+          ),
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+            e('label', { style: Object.assign({}, S.lbl, { margin: 0 }) }, 'Text size:'),
+            e('input', { type: 'number', min: 8, max: 18, value: boardTextSize, onChange: function (ev) { setBoardTextSize(Number(ev.target.value)); }, style: { width: '50px', border: '1px solid #93c5fd', borderRadius: '5px', padding: '4px 7px', fontSize: '12px', outline: 'none' } })
+          ),
+          e('button', { onClick: printBoardSized, style: S.btn('#1e40af', '#fff', false) }, '\uD83D\uDDB6 Print Now')
         ),
         // Board title
         boardWords.length > 0 && e('input', { type: 'text', value: boardTitle, onChange: function (ev) { setBoardTitle(ev.target.value); }, placeholder: 'Board title (optional)', style: Object.assign({}, S.input, { fontWeight: 700, fontSize: '15px', maxWidth: '400px' }) }),
@@ -1501,15 +2028,45 @@
               e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(' + boardCols + ', 1fr)', gap: '8px' } },
                 boardWords.map(function (word) {
                   var bg = boardColor ? (CAT_COLORS[word.category] || '#f9fafb') : '#fff';
-                  var border = boardColor ? ('2px solid ' + (CAT_BORDER[word.category] || '#e5e7eb')) : '2px solid #e5e7eb';
-                  return e('div', { key: word.id, onClick: function () { speakCell(word.label); }, style: { background: bg, border: border, borderRadius: '10px', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'pointer', minHeight: '100px', transition: 'transform 0.1s', position: 'relative' } },
+                  var isDragTarget = dragOverBoardId === word.id && dragBoardId !== word.id;
+                  var border = isDragTarget ? '2px dashed ' + PURPLE : (boardColor ? ('2px solid ' + (CAT_BORDER[word.category] || '#e5e7eb')) : '2px solid #e5e7eb');
+                  var imgSz = 64;
+                  return e('div', {
+                    key: word.id,
+                    className: 'ss-board-cell',
+                    draggable: true,
+                    onDragStart: function (ev) { ev.dataTransfer.effectAllowed = 'move'; setDragBoardId(word.id); },
+                    onDragOver: function (ev) { ev.preventDefault(); ev.dataTransfer.dropEffect = 'move'; setDragOverBoardId(word.id); },
+                    onDrop: function (ev) {
+                      ev.preventDefault();
+                      if (!dragBoardId || dragBoardId === word.id) return;
+                      setBoardWords(function (prev) {
+                        var from = prev.findIndex(function (w) { return w.id === dragBoardId; });
+                        var to = prev.findIndex(function (w) { return w.id === word.id; });
+                        var next = prev.slice(); next.splice(to, 0, next.splice(from, 1)[0]); return next;
+                      });
+                      setDragBoardId(null); setDragOverBoardId(null);
+                    },
+                    onDragEnd: function () { setDragBoardId(null); setDragOverBoardId(null); },
+                    onClick: function () { speakCell(word.label); },
+                    style: { background: bg, border: border, borderRadius: '10px', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'grab', minHeight: '100px', transition: 'border-color 0.1s, opacity 0.1s', position: 'relative', opacity: dragBoardId === word.id ? 0.45 : 1 }
+                  },
+                    // Drag handle indicator
+                    e('div', { className: 'ss-no-print', style: { position: 'absolute', top: 3, left: 4, fontSize: '10px', color: '#d1d5db', lineHeight: 1, userSelect: 'none' } }, '\u28FF'),
+                    // Label above image
+                    boardTextPos === 'above' && e('span', { style: { fontSize: boardTextSize + 'px', fontWeight: 700, color: '#1f2937', textAlign: 'center', lineHeight: 1.3 } }, word.label),
+                    // Image
                     boardLoading[word.id]
-                      ? e('div', { style: { width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, spinner(24))
+                      ? e('div', { style: { width: imgSz, height: imgSz, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, spinner(24))
                       : word.image
-                        ? e('img', { src: word.image, alt: word.label, style: { width: 64, height: 64, objectFit: 'contain', borderRadius: '6px', background: '#fff' } })
-                        : e('div', { style: { width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', borderRadius: '6px', fontSize: '11px', color: '#9ca3af', textAlign: 'center', padding: '4px' } }, 'Click ✨'),
-                    e('span', { style: { fontSize: '11px', fontWeight: 700, color: '#1f2937', textAlign: 'center', lineHeight: 1.3 } }, word.label),
-                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); regenBoardCell(word.id); }, style: { position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px' } }, '🔄')
+                        ? e('img', { src: word.image, alt: word.label, style: { width: imgSz, height: imgSz, objectFit: 'contain', borderRadius: '6px', background: '#fff' } })
+                        : e('div', { style: { width: imgSz, height: imgSz, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', borderRadius: '6px', fontSize: '11px', color: '#9ca3af', textAlign: 'center', padding: '4px' } }, 'Click \u2728'),
+                    // Label below image (default)
+                    boardTextPos === 'below' && e('span', { style: { fontSize: boardTextSize + 'px', fontWeight: 700, color: '#1f2937', textAlign: 'center', lineHeight: 1.3 } }, word.label),
+                    // Regen button
+                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); regenBoardCell(word.id); }, style: { position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px' } }, '\uD83D\uDD04'),
+                    // Remove button
+                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); setBoardWords(function (prev) { return prev.filter(function (w) { return w.id !== word.id; }); }); }, style: { position: 'absolute', bottom: 4, right: 4, background: 'rgba(220,38,38,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px', color: '#dc2626' } }, '\u00d7')
                   );
                 })
               ),
@@ -1525,7 +2082,7 @@
           : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', flexDirection: 'column', gap: '10px' } },
               e('div', { style: { fontSize: '48px' } }, '📋'),
               e('p', { style: { fontWeight: 600 } }, 'Enter a topic and generate a complete communication board'),
-              e('p', { style: { fontSize: '12px', maxWidth: '380px', textAlign: 'center' } }, 'AI writes the word list, you generate symbols, and export a print-ready board. Click any cell to hear TTS. Color coding follows AAC conventions.')
+              e('p', { style: { fontSize: '12px', maxWidth: '380px', textAlign: 'center' } }, 'AI writes the word list, you generate symbols, and export a print-ready board. Drag cells to reorder. Color coding follows AAC conventions.')
             )
       );
     }
@@ -1736,6 +2293,118 @@
       );
     }
 
+    // ── Activity Sets tab ──────────────────────────────────────────────────
+    function renderBooksTab() {
+      var activeBook = books.find(function (b) { return b.id === activeBookId; }) || null;
+      return e('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', padding: '16px', gap: '14px' } },
+        // Create new set row
+        e('div', { style: { display: 'flex', gap: '8px', alignItems: 'flex-end', flexShrink: 0, flexWrap: 'wrap' } },
+          e('div', { style: { flex: 1, minWidth: '200px' } },
+            e('label', { style: S.lbl }, 'New Activity Set Name'),
+            e('input', { type: 'text', value: newBookTitle, onChange: function (ev) { setNewBookTitle(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') createBook(); }, placeholder: 'e.g. Marcus \u2014 School Day Boards', style: S.input })
+          ),
+          e('button', { onClick: createBook, disabled: !newBookTitle.trim(), style: S.btn(PURPLE, '#fff', !newBookTitle.trim()) }, '+ Create Set')
+        ),
+        // Body: left = set list, right = set contents
+        e('div', { style: { display: 'flex', gap: '14px', flex: 1, overflow: 'hidden' } },
+          // Left: list of books
+          e('div', { style: { width: '220px', flexShrink: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' } },
+            books.length === 0
+              ? e('div', { style: { color: '#9ca3af', fontSize: '13px', padding: '20px 0', textAlign: 'center' } }, 'No activity sets yet.\nCreate one above and add your saved boards.')
+              : books.map(function (book) {
+                  var isActive = book.id === activeBookId;
+                  var taggedProf = profiles.find(function (p) { return p.id === book.profileId; }) || null;
+                  return e('div', {
+                    key: book.id,
+                    onClick: function () { setActiveBookId(isActive ? null : book.id); },
+                    style: { border: '2px solid ' + (isActive ? PURPLE : '#e5e7eb'), borderRadius: '10px', padding: '10px', background: isActive ? LIGHT_PURPLE : '#fff', cursor: 'pointer', transition: 'border-color 0.1s' }
+                  },
+                    e('div', { style: { fontWeight: 700, fontSize: '13px', color: isActive ? PURPLE : '#1f2937', marginBottom: '3px' } }, book.title),
+                    e('div', { style: { fontSize: '10px', color: '#6b7280' } }, book.boardIds.length + ' board' + (book.boardIds.length !== 1 ? 's' : '') + (taggedProf ? ' \u00b7 ' + (taggedProf.name || 'Student') : ''))
+                  );
+                })
+          ),
+          // Right: active book detail
+          activeBook
+            ? e('div', { style: { flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' } },
+                // Book header
+                e('div', { style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
+                  e('div', { style: { flex: 1 } },
+                    e('h3', { style: { fontWeight: 800, fontSize: '16px', color: '#1f2937', margin: '0 0 6px' } }, activeBook.title),
+                    e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+                      e('span', { style: { fontSize: '11px', color: '#6b7280' } }, 'Student:'),
+                      e('select', {
+                        value: activeBook.profileId || '',
+                        onChange: function (ev) { tagBookProfile(activeBook.id, ev.target.value || null); },
+                        style: { fontSize: '11px', border: '1px solid #e5e7eb', borderRadius: '5px', padding: '2px 5px', color: activeBook.profileId ? PURPLE : '#9ca3af', background: activeBook.profileId ? LIGHT_PURPLE : '#f9fafb' }
+                      },
+                        e('option', { value: '' }, '— None —'),
+                        profiles.map(function (p) { return e('option', { key: p.id, value: p.id }, p.name || 'Student'); })
+                      )
+                    )
+                  ),
+                  e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                    e('button', { onClick: function () { printBook(activeBook); }, disabled: activeBook.boardIds.length === 0, style: S.btn('#dbeafe', '#1e40af', activeBook.boardIds.length === 0) }, '\uD83D\uDDB6 Print All (' + activeBook.boardIds.length + ')'),
+                    e('button', { onClick: function () { deleteBook(activeBook.id); }, style: S.btn('#fee2e2', '#dc2626', false) }, '\uD83D\uDDD1\uFE0F Delete Set')
+                  )
+                ),
+                // Board list within this set
+                e('div', { style: { flexShrink: 0 } },
+                  e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, 'Boards in this set \u2014 drag to reorder, click + to add'),
+                  activeBook.boardIds.length === 0
+                    ? e('div', { style: { color: '#9ca3af', fontSize: '12px', padding: '12px 0' } }, 'No boards added yet. Pick boards from your saved library below.')
+                    : e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+                        activeBook.boardIds.map(function (boardId, idx) {
+                          var board = savedBoards.find(function (b) { return b.id === boardId; });
+                          if (!board) return null;
+                          var preview = board.words.slice(0, 4);
+                          return e('div', { key: boardId, style: { border: '1px solid #e5e7eb', borderRadius: '10px', padding: '10px', background: '#fff', width: '140px', flexShrink: 0 } },
+                            // Mini thumbnail grid
+                            e('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px', marginBottom: '7px' } },
+                              preview.map(function (w) {
+                                return e('div', { key: w.id, style: { width: '100%', aspectRatio: '1', background: '#f9fafb', borderRadius: '4px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+                                  w.image ? e('img', { src: w.image, alt: w.label, style: { width: '100%', height: '100%', objectFit: 'contain', padding: '2px' } }) : e('span', { style: { fontSize: '8px', color: '#9ca3af' } }, w.label)
+                                );
+                              })
+                            ),
+                            e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#1f2937', marginBottom: '5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, board.title || 'Untitled'),
+                            e('div', { style: { display: 'flex', gap: '4px' } },
+                              e('button', { onClick: function () { loadBoard(board); setTab('board'); }, style: Object.assign({}, S.btn(LIGHT_PURPLE, PURPLE, false), { flex: 1, fontSize: '10px', padding: '4px' }) }, 'Open'),
+                              e('button', { onClick: function () { toggleBoardInBook(activeBook.id, boardId); }, style: Object.assign({}, S.btn('#fee2e2', '#dc2626', false), { padding: '4px 8px', fontSize: '10px' }) }, '\u00d7')
+                            )
+                          );
+                        })
+                      )
+                ),
+                // Add boards from saved library
+                savedBoards.length > 0 && e('div', { style: { flexShrink: 0 } },
+                  e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, 'Add from saved boards'),
+                  e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                    savedBoards
+                      .filter(function (b) { return !activeBook.boardIds.includes(b.id); })
+                      .map(function (b) {
+                        return e('button', {
+                          key: b.id,
+                          onClick: function () { toggleBoardInBook(activeBook.id, b.id); },
+                          style: { padding: '5px 10px', border: '1px dashed #d1d5db', borderRadius: '20px', background: '#f9fafb', fontSize: '11px', cursor: 'pointer', color: '#374151', display: 'flex', alignItems: 'center', gap: '4px' },
+                          onMouseOver: function (ev) { ev.currentTarget.style.borderColor = PURPLE; ev.currentTarget.style.color = PURPLE; ev.currentTarget.style.background = LIGHT_PURPLE; },
+                          onMouseOut: function (ev) { ev.currentTarget.style.borderColor = '#d1d5db'; ev.currentTarget.style.color = '#374151'; ev.currentTarget.style.background = '#f9fafb'; }
+                        }, '+ ', b.title || 'Untitled');
+                      })
+                  )
+                )
+              )
+            : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', flexDirection: 'column', gap: '10px' } },
+                e('div', { style: { fontSize: '52px' } }, '📚'),
+                e('p', { style: { fontWeight: 600 } }, 'Activity Sets bundle your boards into student-specific sets'),
+                e('div', { style: { maxWidth: '400px', fontSize: '13px', lineHeight: 1.7, textAlign: 'center' } },
+                  e('p', null, 'Create a set for each student, add their boards, and print the whole set in one click \u2014 all boards in the correct order with consistent cell sizing.')
+                )
+              )
+        )
+      );
+    }
+
     // ── Main render ────────────────────────────────────────────────────────
     return e('div', { style: S.overlay, onClick: function (ev) { if (ev.target === ev.currentTarget) onClose && onClose(); } },
       // Spinner keyframes
@@ -1764,7 +2433,8 @@
             tab === 'board' && renderBoardTab(),
             tab === 'schedule' && renderScheduleTab(),
             tab === 'stories' && renderStoriesTab(),
-            tab === 'quickboards' && renderQuickBoardsTab()
+            tab === 'quickboards' && renderQuickBoardsTab(),
+            tab === 'books' && renderBooksTab()
           )
         )
       )

@@ -26575,6 +26575,81 @@
           var gradeDifficultyMap = { 'K-2': 'very easy, age 5-7, use simple words', '3-5': 'easy, age 8-10, elementary level', '6-8': 'medium, age 11-13, middle school level', '9-12': 'challenging, age 14-17, high school level', 'College': 'advanced, undergraduate university level' };
           var stats = d.colonyStats || { questionsAnswered: 0, correct: 0, buildingsConstructed: 0, anomaliesExplored: 0, turnsPlayed: 0 };
 
+          // ══ HoMM-Inspired Turn Phase System ══
+          var turnPhase = d.turnPhase || (turn > 0 ? 'day' : null);
+          var actionPoints = d.actionPoints !== undefined ? d.actionPoints : 3;
+          var maxAP = 3 + (buildings.indexOf('comms') >= 0 ? 1 : 0);
+          var fateRoll = d.fateRoll || null;
+          var dawnData = d.dawnData || null;
+          var mapPickups = d.mapPickups || {};
+          var fateAnimating = d.fateAnimating || false;
+          var builtThisTurn = d.builtThisTurn || false;
+
+          var fateTable = [
+            { min: 1, max: 5, type: 'disaster', label: 'Catastrophe!', icon: '\uD83D\uDCA5', color: '#ef4444' },
+            { min: 6, max: 15, type: 'hazard', label: 'Hazard', icon: '\u26A0\uFE0F', color: '#f97316' },
+            { min: 16, max: 30, type: 'challenge', label: 'Challenge', icon: '\uD83C\uDFAF', color: '#eab308' },
+            { min: 31, max: 50, type: 'calm', label: 'Peaceful Day', icon: '\u2600\uFE0F', color: '#22c55e' },
+            { min: 51, max: 70, type: 'discovery', label: 'Discovery!', icon: '\uD83D\uDD0D', color: '#3b82f6' },
+            { min: 71, max: 85, type: 'windfall', label: 'Windfall!', icon: '\uD83C\uDF81', color: '#8b5cf6' },
+            { min: 86, max: 95, type: 'settlers', label: 'New Arrivals!', icon: '\uD83D\uDE80', color: '#06b6d4' },
+            { min: 96, max: 100, type: 'jackpot', label: 'JACKPOT!', icon: '\u2B50', color: '#f59e0b' }
+          ];
+          var lootByTerrain = {
+            plains: { common: { res: 'food', amt: 3, label: '+3 Food' }, rare: { res: 'food', amt: 10, label: 'Seed Vault!' }, epic: { res: 'food', amt: 20, label: 'Fertile Oasis!' } },
+            mountain: { common: { res: 'materials', amt: 3, label: '+3 Materials' }, rare: { res: 'materials', amt: 8, label: 'Mineral Deposit!' }, epic: { res: 'materials', amt: 18, label: 'Ancient Mine!' } },
+            volcanic: { common: { res: 'energy', amt: 3, label: '+3 Energy' }, rare: { res: 'energy', amt: 8, label: 'Geothermal Vent!' }, epic: { res: 'energy', amt: 18, label: 'Lava Forge!' } },
+            ice: { common: { res: 'water', amt: 3, label: '+3 Water' }, rare: { res: 'water', amt: 8, label: 'Ice Cavern!' }, epic: { res: 'water', amt: 18, label: 'Cryo Reserve!' } },
+            desert: { common: { res: 'materials', amt: 3, label: '+3 Materials' }, rare: { res: 'science', amt: 6, label: 'Fossil Site!' }, epic: { res: 'science', amt: 15, label: 'Ancient Ruins!' } },
+            ocean: { common: { res: 'water', amt: 3, label: '+3 Water' }, rare: { res: 'food', amt: 8, label: 'Kelp Forest!' }, epic: { res: 'water', amt: 15, label: 'Underwater City!' } },
+            radiation: { common: { res: 'science', amt: 3, label: '+3 Science' }, rare: { res: 'science', amt: 8, label: 'Data Cache!' }, epic: { res: 'science', amt: 15, label: 'Alien Archive!' } }
+          };
+          var tutorialGuide = [
+            { turn: 1, hint: 'Explore tiles around your colony to discover resources!', icon: '\uD83D\uDDFA' },
+            { turn: 2, hint: 'Build your first structure! Try Hydroponics for food.', icon: '\uD83C\uDFD7' },
+            { turn: 3, hint: 'You have ' + maxAP + ' Action Points per turn. Plan wisely!', icon: '\u26A1' },
+            { turn: 5, hint: 'Research unlocks permanent bonuses!', icon: '\uD83E\uDDEC' },
+            { turn: 8, hint: 'Choose a governance policy to shape your colony.', icon: '\uD83C\uDFDB' }
+          ];
+          function getAdvisorMessage() {
+            if (turn > 30) return null;
+            if (resources.food <= 5 && buildings.indexOf('hydroponics') < 0)
+              return { settler: settlers[0] || { name: 'Dr. Vasquez', icon: '\uD83C\uDF31', role: 'Botanist' }, msg: 'Food critical! Build Hydroponics (15 mats, 5 energy) for +3 food/turn.', action: 'build' };
+            if (resources.energy <= 3 && buildings.indexOf('solar') < 0)
+              return { settler: settlers[4] || { name: 'Prof. Patel', icon: '\u269B', role: 'Physicist' }, msg: 'Energy critical! Build Solar Array for +3 energy/turn.', action: 'build' };
+            if (buildings.length === 0 && turn >= 2)
+              return { settler: settlers[1] || { name: 'Cmdr. Chen', icon: '\u2699', role: 'Engineer' }, msg: 'We need our first building. Try Hydroponics or Solar Array.', action: 'build' };
+            var guide = tutorialGuide.find(function(g) { return g.turn === turn; });
+            if (guide) return { settler: settlers[Math.floor(Math.random() * Math.min(6, settlers.length))], msg: guide.hint };
+            return null;
+          }
+          function performFateRoll() {
+            var buildingBonus = Math.min(15, buildings.length * 2);
+            if (buildings.indexOf('shield') >= 0) buildingBonus += 5;
+            if (buildings.indexOf('lab') >= 0) buildingBonus += 3;
+            var raw = Math.floor(Math.random() * 100) + 1;
+            var modified = Math.min(100, raw + buildingBonus);
+            var result = fateTable.find(function(f) { return modified >= f.min && modified <= f.max; }) || fateTable[3];
+            return { raw: raw, modified: modified, bonus: buildingBonus, result: result };
+          }
+          function spendAP(cost) {
+            if (actionPoints < cost) { if (addToast) addToast('Not enough Action Points!', 'error'); return false; }
+            upd('actionPoints', actionPoints - cost); return true;
+          }
+          function generatePickups(tiles) {
+            var pk = {};
+            for (var pi = 0; pi < tiles.length; pi++) {
+              if (tiles[pi].type === 'colony') continue;
+              var rx = pi % mapSize, ry = Math.floor(pi / mapSize);
+              if (Math.random() < 0.07) {
+                var loot = lootByTerrain[tiles[pi].type] || lootByTerrain.plains;
+                var rr = Math.random();
+                pk[rx + ',' + ry] = rr < 0.05 ? Object.assign({ rarity: 'epic' }, loot.epic) : rr < 0.25 ? Object.assign({ rarity: 'rare' }, loot.rare) : Object.assign({ rarity: 'common' }, loot.common);
+              }
+            }
+            return pk;
+          }
+
           // ── Rover & Exploration Units ──
           var rovers = d.colonyRovers || [];
           var selectedRover = d.selectedRover || null;
@@ -27401,26 +27476,39 @@
                 React.createElement('h2', { className: 'text-xl font-bold text-white' }, '\uD83D\uDE80 Kepler Colony'),
                 React.createElement('span', { className: 'text-[9px] text-indigo-400 bg-indigo-900 px-2 py-0.5 rounded-full' }, 'Turn-Based Strategy')
               ),
-              colony && React.createElement('div', { className: 'flex gap-3 text-[10px]' },
-                React.createElement('span', { className: 'text-green-400' }, '\uD83C\uDF3E ' + resources.food),
-                React.createElement('span', { className: 'text-yellow-400' }, '\u26A1 ' + resources.energy),
-                React.createElement('span', { className: 'text-cyan-400' }, '\uD83D\uDCA7 ' + resources.water),
-                React.createElement('span', { className: 'text-slate-300' }, '\uD83E\uDEA8 ' + resources.materials),
-                React.createElement('span', { className: 'text-purple-400' }, '\uD83D\uDD2C ' + resources.science),
-                React.createElement('span', { className: 'text-amber-300 font-bold' }, 'Turn ' + turn),
+              colony && React.createElement('div', { className: 'flex gap-1 text-[10px] items-center flex-wrap' },
+                [
+                  ['\uD83C\uDF3E','food',resources.food,'#4ade80','#166534'],
+                  ['\u26A1','energy',resources.energy,'#facc15','#854d0e'],
+                  ['\uD83D\uDCA7','water',resources.water,'#38bdf8','#0c4a6e'],
+                  ['\uD83E\uDEA8','materials',resources.materials,'#94a3b8','#334155'],
+                  ['\uD83D\uDD2C','science',resources.science,'#a78bfa','#4c1d95']
+                ].map(function(r) {
+                  var pct = Math.min(100, Math.round(r[2] / 80 * 100));
+                  return React.createElement('div', { key: r[1], className: 'flex items-center gap-0.5', title: r[1] + ': ' + r[2] },
+                    React.createElement('span', { className: 'text-xs' }, r[0]),
+                    React.createElement('div', { className: 'relative w-10 h-2.5 rounded-full overflow-hidden', style: { backgroundColor: r[4] + '40' } },
+                      React.createElement('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: pct + '%', backgroundColor: r[3], animation: 'kp-barFill 0.8s ease-out' } })
+                    ),
+                    React.createElement('span', { className: 'text-[9px] font-bold', style: { color: r[3], minWidth: '16px' } }, r[2])
+                  );
+                }),
+                React.createElement('span', { className: 'text-amber-300 font-bold ml-1' }, 'T' + turn),
                 React.createElement('span', { className: 'text-[9px] px-1.5 py-0.5 rounded-full', style: { backgroundColor: currentEra.color + '33', color: currentEra.color } }, currentEra.icon + ' ' + currentEra.name),
-                React.createElement('span', { className: 'text-[9px] text-cyan-300' }, (seasonDefs[seasonCycle.index] || {}).icon + ' ' + (seasonDefs[seasonCycle.index] || {}).name + ' (' + seasonCycle.turnsLeft + 't)')
+                React.createElement('span', { className: 'text-[9px] text-cyan-300' }, (seasonDefs[seasonCycle.index] || {}).icon + ' ' + (seasonDefs[seasonCycle.index] || {}).name + ' (' + seasonCycle.turnsLeft + 't)'),
+                turnPhase === 'day' && React.createElement('span', { className: 'flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold', style: { background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: '#e0e7ff', animation: 'kp-glow 2s infinite' } }, '\u26A1 ' + actionPoints + '/' + maxAP + ' AP'),
+                turnPhase && React.createElement('span', { className: 'px-1.5 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider', style: { background: turnPhase === 'dawn' ? '#f59e0b30' : turnPhase === 'dusk' ? '#6366f130' : '#22c55e30', color: turnPhase === 'dawn' ? '#fbbf24' : turnPhase === 'dusk' ? '#818cf8' : '#4ade80' } }, turnPhase === 'dawn' ? '\u2600\uFE0F Dawn' : turnPhase === 'day' ? '\u2600 Day' : '\uD83C\uDF19 Dusk')
               )
             ),
             // SETUP
             colonyPhase === 'setup' && React.createElement('div', { className: 'text-center py-10' },
-              React.createElement('div', { className: 'text-6xl mb-4' }, '\uD83D\uDE80'),
-              React.createElement('h3', { className: 'text-2xl font-bold text-white mb-2' }, 'Welcome to Kepler-442b'),
+              React.createElement('div', { className: 'text-7xl mb-4', style: { animation: 'kp-float 3s ease-in-out infinite', filter: 'drop-shadow(0 0 20px rgba(99,102,241,0.4))' } }, '\uD83D\uDE80'),
+              React.createElement('h3', { className: 'text-3xl font-black mb-2', style: { background: 'linear-gradient(135deg, #e0e7ff, #c4b5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } }, 'Welcome to Kepler-442b'),
               React.createElement('p', { className: 'text-slate-400 text-sm max-w-lg mx-auto mb-6' },
-                'You have arrived at a habitable exoplanet 1,206 light-years from Earth. Build a self-sustaining colony by mastering real science. Every building requires passing a science challenge. Your 6 settlers are counting on you!'
+                'You have arrived at a habitable exoplanet 1,206 light-years from Earth. Build a self-sustaining colony by mastering real science. Every building requires passing a science challenge. Every turn brings new surprises from the Fate Roll. Your 6 settlers are counting on you, Commander!'
               ),
               React.createElement('div', { className: 'grid grid-cols-3 gap-3 max-w-md mx-auto mb-6 text-slate-300 text-[10px]' },
-                [['\uD83C\uDF0D', 'Explore', 'Reveal the alien planet tile by tile'], ['\uD83D\uDD2C', 'Learn', 'Pass science challenges to build'], ['\uD83E\uDD1D', 'Cooperate', '6 specialists with unique skills']].map(function (item) {
+                [['\uD83C\uDF0D', 'Explore', 'Reveal tiles, find loot & anomalies'], ['\u26A1', '3 Actions/Turn', 'Build, research, or explore each day'], ['\uD83C\uDFB2', 'Fate Roll', 'Random events every turn!']].map(function (item) {
                   return React.createElement('div', { key: item[1], className: 'bg-slate-800 rounded-xl p-3 border border-slate-700 text-center' },
                     React.createElement('div', { className: 'text-2xl mb-1' }, item[0]),
                     React.createElement('div', { className: 'font-bold' }, item[1]),
@@ -27481,7 +27569,11 @@
               React.createElement('button', {
                 onClick: function () {
                   var startMap = generateMap();
+                  var initPickups = generatePickups(startMap.tiles);
+                  upd('mapPickups', initPickups);
                   upd('colonyMap', startMap); upd('colonyPhase', 'playing'); upd('colonyTurn', 1);
+                  upd('turnPhase', 'dawn'); upd('actionPoints', 3); upd('builtThisTurn', false);
+                  upd('dawnData', { turn: 1, income: {}, weather: null, discovery: null, isFirst: true });
                   upd('colonyZoom', 1.0);
                   upd('colonyCamX', Math.max(0, startMap.colonyPos.x - 10));
                   upd('colonyCamY', Math.max(0, startMap.colonyPos.y - 10));
@@ -27501,6 +27593,48 @@
             ),
             // PLAYING
             colonyPhase === 'playing' && mapData && React.createElement('div', null,
+              React.createElement('style', null, '@keyframes kp-fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes kp-pulse{0%,100%{opacity:1}50%{opacity:.6}}@keyframes kp-glow{0%,100%{box-shadow:0 0 5px rgba(99,102,241,.3)}50%{box-shadow:0 0 20px rgba(99,102,241,.6)}}@keyframes kp-fateRoll{0%{transform:scale(.5) rotate(0);opacity:0}50%{transform:scale(1.3) rotate(180deg);opacity:1}100%{transform:scale(1) rotate(360deg);opacity:1}}@keyframes kp-barFill{from{width:0}}@keyframes kp-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes kp-slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}'),
+              // ══ DAWN PHASE OVERLAY ══
+              turnPhase === 'dawn' && React.createElement('div', {
+                className: 'relative mb-4 rounded-2xl overflow-hidden',
+                style: { background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 30%, #f59e0b20 100%)', animation: 'kp-fadeIn 0.5s ease-out' }
+              },
+                React.createElement('div', { className: 'absolute inset-0 opacity-10', style: { background: 'radial-gradient(circle at 80% 20%, #f59e0b 0%, transparent 50%)' } }),
+                React.createElement('div', { className: 'relative p-5' },
+                  React.createElement('div', { className: 'flex items-center justify-between mb-4' },
+                    React.createElement('div', null,
+                      React.createElement('div', { className: 'text-3xl mb-1', style: { animation: 'kp-float 3s ease-in-out infinite' } }, '\u2600\uFE0F'),
+                      React.createElement('h2', { className: 'text-xl font-bold text-amber-200' }, 'Dawn \u2014 Turn ' + turn),
+                      React.createElement('div', { className: 'text-[10px] text-amber-400/70' }, (seasonDefs[seasonCycle.index] || {}).icon + ' ' + (seasonDefs[seasonCycle.index] || {}).name + ' | ' + (eraData[era] || {}).icon + ' ' + (eraData[era] || {}).name + ' Era')
+                    ),
+                    React.createElement('div', { className: 'text-right' },
+                      React.createElement('div', { className: 'text-4xl font-black text-amber-300', style: { textShadow: '0 0 20px rgba(245,158,11,0.4)' } }, '\u26A1 ' + maxAP),
+                      React.createElement('div', { className: 'text-[10px] text-amber-400' }, 'Action Points Today')
+                    )
+                  ),
+                  dawnData && !dawnData.isFirst && React.createElement('div', { className: 'bg-black/20 rounded-xl p-3 mb-3 border border-amber-900/30' },
+                    React.createElement('div', { className: 'text-[9px] font-bold text-amber-300/80 uppercase tracking-wider mb-2' }, '\uD83D\uDCCA Income This Turn'),
+                    React.createElement('div', { className: 'grid grid-cols-5 gap-2' },
+                      [['\uD83C\uDF3E','Food',(dawnData.income||{}).food||0,'#4ade80'],['\u26A1','Energy',(dawnData.income||{}).energy||0,'#facc15'],['\uD83D\uDCA7','Water',(dawnData.income||{}).water||0,'#38bdf8'],['\uD83E\uDEA8','Mats',(dawnData.income||{}).materials||0,'#94a3b8'],['\uD83D\uDD2C','Sci',(dawnData.income||{}).science||0,'#a78bfa']].map(function(rd){return React.createElement('div',{key:rd[1],className:'text-center p-1.5 rounded-lg',style:{backgroundColor:rd[3]+'15',border:'1px solid '+rd[3]+'25'}},React.createElement('div',{className:'text-lg'},rd[0]),React.createElement('div',{className:'text-sm font-bold',style:{color:rd[3]}},(rd[2]>=0?'+':'')+rd[2]),React.createElement('div',{className:'text-[8px] text-slate-400'},rd[1]))})
+                    )
+                  ),
+                  dawnData && dawnData.discovery && React.createElement('div', { className: 'bg-purple-900/30 rounded-xl p-3 mb-3 border border-purple-700/30', style: { animation: 'kp-fadeIn 0.8s ease-out' } },
+                    React.createElement('div', { className: 'flex items-center gap-2' },
+                      React.createElement('span', { className: 'text-2xl', style: { animation: 'kp-pulse 2s infinite' } }, (dawnData.discovery||{}).icon || '\uD83D\uDD0D'),
+                      React.createElement('div', null,
+                        React.createElement('div', { className: 'text-[10px] font-bold text-purple-300' }, (dawnData.discovery||{}).label),
+                        React.createElement('div', { className: 'text-[9px] text-purple-400' }, (dawnData.discovery||{}).desc)
+                      )
+                    )
+                  ),
+                  (function(){ var adv = getAdvisorMessage(); return adv ? React.createElement('div', { className: 'bg-indigo-900/30 rounded-lg p-2 mb-3 border border-indigo-700/30 flex items-center gap-2' }, React.createElement('span', { className: 'text-lg' }, (adv.settler||{}).icon||'\uD83D\uDCA1'), React.createElement('div', { className: 'text-[9px] text-indigo-300 flex-1' }, React.createElement('span', { className: 'font-bold text-indigo-200' }, ((adv.settler||{}).name||'Advisor') + ': '), adv.msg)) : null; })(),
+                  React.createElement('button', {
+                    onClick: function() { upd('turnPhase', 'day'); upd('actionPoints', maxAP); upd('builtThisTurn', false); upd('dawnData', null); if (d.colonyTTS) colonySpeak('Day ' + turn + ' begins. You have ' + maxAP + ' action points.', 'narrator'); },
+                    className: 'w-full py-3 rounded-xl text-sm font-bold text-amber-900 transition-all hover:scale-[1.02]',
+                    style: { background: 'linear-gradient(135deg, #f59e0b, #fbbf24)', boxShadow: '0 4px 15px rgba(245,158,11,0.3)' }
+                  }, '\u2600\uFE0F Begin Day \u2014 ' + maxAP + ' Actions Available')
+                )
+              ),
               React.createElement('div', { className: 'flex justify-between items-center mb-1' },
                 React.createElement('div', { className: 'flex gap-1 items-center' },
                   React.createElement('button', { onClick: function () { upd('colonyCamX', Math.max(0, camX - 10)); }, className: 'px-2 py-1 bg-slate-700 text-white rounded text-[10px] hover:bg-slate-600', title: 'Scroll Left' }, '\u2190'),

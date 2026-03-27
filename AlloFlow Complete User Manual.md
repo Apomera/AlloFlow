@@ -128,6 +128,17 @@ These settings act as a "lens" that the AI applies to all subsequent generation.
 | **Standards Alignment** | Input CCSS, NGSS, or CASEL codes; AI audits its output for alignment. Use "AI Match" to find codes automatically. |
 | **Fullpack Generation** | Single button generates Glossary + Leveled Text + Scaffolds + Quizzes simultaneously with current settings. |
 
+### Smart Profiles
+
+**Smart Profiles** save your full configuration snapshot as a named preset so you can switch contexts in one click instead of re-entering settings for every new lesson.
+
+- **Save** — Click the profile icon in the left panel → "Save Current Profile" → name it (e.g., "Grade 5 ESL", "3rd Grade ADHD Group", "AP Bio").
+- **Load** — Select a saved profile from the dropdown; all settings (grade, language, interests, format, DOK level) are restored instantly.
+- **Share** — Export a profile as JSON to send to a co-teacher. They import it and immediately use your configuration.
+- **Profiles are stored locally** — they live in localStorage and are never synced to the cloud (FERPA-safe).
+
+> 💡 **PRO TIP:** Create one profile per intervention group in your RTI caseload. Switching from your Tier 2 reading group to your Tier 3 math group takes a single click.
+
 > 💡 **PRO TIP:** Set Text Format to *Dialogue Script* and Student Interest to *Minecraft* to turn a historical article into an engaging Reader's Theater script instantly.
 
 ---
@@ -753,6 +764,18 @@ See Section 13: School IT Administration.
 
 ---
 
+### 🗣️ Workflow E: Speech-Language Pathologist / AAC Specialist
+**Goal:** Create a custom AAC communication board and a social story for a non-verbal student who is transitioning to a new classroom.
+
+1. **Unlock Symbol Studio** — Educator Tools Hub → Symbol Studio (requires TeacherGate).
+2. **Set up a student profile** — Select "Add Profile" → name the profile (use a pseudonym, e.g., "Student A") → set vocabulary level and preferred symbol style (e.g., Flat Vector).
+3. **Build a custom board** — Board Builder tab → drag cells into a 3×4 layout → type each vocabulary word → AI generates a PCS-style symbol for each. Color-coding auto-applies by grammar category.
+4. **Add core vocabulary** — Quick Boards tab → load the "Core Vocabulary" preset (12 high-frequency words) → merge into the custom board.
+5. **Create a social story** — Social Stories tab → select "New School" template → personalize the student pronoun and setting details → AI generates a 5-frame narrative with illustrations.
+6. **Print and share** — Export both the board and social story as PDFs for the classroom, home, and therapy binder.
+
+---
+
 ## 13. School IT Administration (The "School Box")
 
 AlloFlow can be deployed entirely on district hardware — no cloud AI APIs required.
@@ -822,6 +845,21 @@ A: Ensure the browser tab is not muted. The Web Audio API requires a user gestur
 
 **Q: I can't Tab out of a game.**
 A: Press **Esc** to close the game modal and return to the main interface.
+
+**Q: What browsers does AlloFlow support?**
+A: Google Chrome and Microsoft Edge (Desktop) are fully supported and recommended. Firefox and Safari work for most features but do not support the Web Audio API's full feature set used by Kokoro TTS; Piper TTS will be used as a fallback. Mobile Chrome (Android) is supported; iOS Safari has limitations with IndexedDB and Web Audio. Chromebook (Chrome OS) is fully supported.
+
+**Q: How many students can join a Live Session at once?**
+A: In Gemini Canvas, the WebSocket connection supports 30–35 concurrent students reliably on a standard school network. Firebase and School Box deployments can be scaled with Nginx load balancing for larger deployments.
+
+**Q: What happens to my work if I close the browser tab?**
+A: AlloFlow auto-saves input text to localStorage continuously. If you close the tab before clicking "Save as JSON", your typed source text and most settings are recovered on next load. Generated content (leveled text, glossary, quizzes) is held in memory during the session — use "Save as JSON" or "Export HTML Bundle" to persist it permanently.
+
+**Q: Can students access BehaviorLens or Report Writer?**
+A: No. All TeacherGate-protected tools are completely invisible in Student View. Students can only see the engagement tools their teacher explicitly activates (leveled text, games, adventure, quizzes).
+
+**Q: What should I do if the Content Safety Monitor flags a student response?**
+A: A notification appears in your Teacher View with the flagged text and severity category. Review the context before escalating. For self-harm or harm-to-others flags, follow your district's mandatory reporting protocols — the tool's alert is a signal to investigate, not a formal clinical assessment. Export the flagged session for documentation if needed.
 
 ---
 
@@ -911,56 +949,11 @@ AlloFlow complies with WCAG 2.1 AA standards for keyboard navigation and screen 
 
 ## Appendix B: Quick Reference Card (Print-Ready)
 
-### For Teachers — 30 Seconds to Start
-1. Paste your lesson text into the **Source Material** box (left panel).
-2. Set Grade Level and any Output Languages.
-3. Click **Fullpack** to generate everything at once.
-4. Click **Start Live Class** to push to student devices.
+See **[QuickReferenceCards.md](./QuickReferenceCards.md)** for the full print-ready reference — a two-sided card for teachers and a separate card for students. Designed to be printed and kept at your desk or posted in the classroom.
 
-### Core Tool Icons at a Glance
-| Icon | Tool | Shortcut |
-| :--- | :--- | :--- |
-| 📖 Book | Leveled Text Reader | — |
-| 🌍 Globe | Glossary & Games | — |
-| 🔍 Search | Analyze Source | — |
-| ⚔️ Sword | Adventure Mode | — |
-| ☑️ Checkbox | Exit Ticket / Quiz | — |
-| 🧮 Abacus | STEM Lab | — |
-| 🗣️ Speaker | Word Sounds Studio | — |
-| 📐 Ruler | Visual Organizer | — |
-| 📋 Clipboard | Lesson Plan | — |
-| 👁️ Lens | BehaviorLens (TeacherGate) | — |
-| 📑 Report | Report Writer (TeacherGate) | — |
-| 🎨 Symbol | Symbol Studio (TeacherGate) | — |
+The teacher card covers: Getting Started, Core Tool Icons, Keyboard Shortcuts, Accessibility Toggles, Live Session Modes, Export Options, Word Sounds Activity Types, and Troubleshooting.
 
-### Accessibility Quick Toggles
-| Toggle | Location |
-| :--- | :--- |
-| Bionic Reading | Settings → Eye icon |
-| Syllabification | Settings |
-| Line Focus / Reading Ruler | Reader Toolbar |
-| Color Overlay | Settings → Palette |
-| OpenDyslexic Font | Text Settings → Font |
-| Dark Mode | Theme Settings |
-| Global Mute | Header → Speaker icon |
-| AlloBot Show/Hide | Settings |
-
-### Export Quick Reference
-| Format | Use |
-| :--- | :--- |
-| HTML Bundle | Offline student access |
-| PDF | Paper handouts |
-| PPTX | Classroom slides |
-| QTI | Canvas/Schoology quiz import |
-| IMS Package | LMS upload (Canvas, Moodle) |
-| JSON | Save, share, resume |
-
-### Troubleshooting in 10 Seconds
-- **Not loading?** → Shift + Refresh (hard cache clear)
-- **Audio silent?** → Click anywhere first (browser gesture required)
-- **Stuck in game?** → Press Esc
-- **AlloBot gone?** → Settings → Reset Onboarding
-- **Live Session dropped?** → End session + new code
+The student card covers: Joining a Live Session, Icon Legend, XP Earning, Accessibility Options, Adventure Mode Tips, and Word Sounds Tips.
 
 ---
 

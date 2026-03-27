@@ -34,6 +34,20 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 
 ---
 
+## 📸 Screenshots
+
+| Main Interface | Live Session | STEM Lab |
+|:-:|:-:|:-:|
+| ![Main interface showing source text input and generated leveled reading](docs/screenshots/main-interface.png) | ![Live Session mode with Boss Battle active on student devices](docs/screenshots/live-session.png) | ![STEM Lab grid showing 55 interactive simulation tiles](docs/screenshots/stem-lab.png) |
+
+| Adventure Mode | BehaviorLens | Word Sounds |
+|:-:|:-:|:-:|
+| ![Adventure Mode RPG scene with inventory and dice](docs/screenshots/adventure-mode.png) | ![BehaviorLens ABC data collection form](docs/screenshots/behavior-lens.png) | ![Word Sounds phonemic awareness activity with Elkonin boxes](docs/screenshots/word-sounds.png) |
+
+> To contribute screenshots, place PNGs in `docs/screenshots/` matching the filenames above and open a PR. You can capture them from the [live Canvas deployment](https://gemini.google.com/share/c8baf80a46cc).
+
+---
+
 ## ✨ Key Features
 
 ### 🎓 For Teachers
@@ -190,6 +204,7 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 | Resource | Link |
 |----------|------|
 | 📖 Complete User Manual | [AlloFlow Complete User Manual.md](./AlloFlow%20Complete%20User%20Manual.md) |
+| 🖨️ Quick Reference Cards | [QuickReferenceCards.md](./QuickReferenceCards.md) |
 | 🏗️ Architecture Overview | [architecture.md](./architecture.md) |
 | 🚀 Firebase Deployment | [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md) |
 | 🔒 Security Policy | [SECURITY.md](./SECURITY.md) |
@@ -212,6 +227,22 @@ firebase deploy
 # Local development (School Box)
 docker-compose up -d
 ```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome — especially new STEM tools, accessibility improvements, and additional language support.
+
+1. Read [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules (Hub-and-Spoke pattern, CDN hash pinning, STEM plugin template).
+2. Read [architecture.md](./architecture.md) for a full technical overview.
+3. Open a descriptive PR explaining which UDL checkpoint or clinical workflow your change enhances.
+
+**Quick wins for new contributors:**
+- Add a new STEM tool (`stem_lab/stem_tool_yourname.js`) — self-contained, no core file changes needed
+- Improve i18n strings in `ui_strings.js` for an underrepresented language
+- Add keyboard navigation to an existing game
+- Fix an issue tagged `good first issue` on [GitHub Issues](https://github.com/Apomera/AlloFlow/issues)
 
 ---
 

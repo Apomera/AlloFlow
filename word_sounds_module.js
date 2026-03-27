@@ -2228,6 +2228,10 @@
             const [wordBank, setWordBank] = React.useState([]);
             const [activeIndex, setActiveIndex] = React.useState(null);
             const lastOptionsKey = React.useRef("");
+            // Refs track the active timer/listener so they survive re-renders and
+            // can be cancelled precisely: on content change or on unmount.
+            const safetyTimerRef = React.useRef(null);
+            const instrDoneListenerRef = React.useRef(null);
             React.useEffect(() => {
               if (data.options && data.distractors) {
                 const newKey =
@@ -2235,6 +2239,10 @@
                   "|" +
                   JSON.stringify([...data.distractors].sort());
                 if (newKey !== lastOptionsKey.current) {
+                  // Options content changed — cancel any in-flight listener/timer
+                  // before registering new ones.
+                  if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
+                  if (instrDoneListenerRef.current) window.removeEventListener('wordSoundsInstructionDone', instrDoneListenerRef.current);
                   lastOptionsKey.current = newKey;
                   const mixed = [
                     ...(data.options || []).map((w) => ({
@@ -2262,17 +2270,40 @@
                       await new Promise((r) => setTimeout(r, 200));
                     }
                   };
-                  // Wait for instruction audio to finish before auto-playing options
-                  const onInstrDone = () => { playAllOptions(); };
-                  window.addEventListener('wordSoundsInstructionDone', onInstrDone, { once: true });
-                  // Safety fallback: if no instruction event fires within 5s, play anyway
-                  const safetyTimer = setTimeout(() => {
-                    window.removeEventListener('wordSoundsInstructionDone', onInstrDone);
+                  // Wait for instruction audio to finish before auto-playing options.
+                  // clearTimeout on the ref prevents double-play if both event and
+                  // timer would otherwise fire.
+                  const onInstrDone = () => {
+                    clearTimeout(safetyTimerRef.current);
+                    safetyTimerRef.current = null;
+                    instrDoneListenerRef.current = null;
                     playAllOptions();
-                  }, 5000);
+                  };
+                  instrDoneListenerRef.current = onInstrDone;
+                  window.addEventListener('wordSoundsInstructionDone', onInstrDone, { once: true });
+                  // Safety fallback: if no instruction event fires within 12s, play anyway.
+                  // 12s accommodates the ~800ms initial delay + up to ~3s sound_match_start
+                  // audio + TTS generation time for "as in" and the target word.
+                  safetyTimerRef.current = setTimeout(() => {
+                    window.removeEventListener('wordSoundsInstructionDone', instrDoneListenerRef.current);
+                    instrDoneListenerRef.current = null;
+                    safetyTimerRef.current = null;
+                    playAllOptions();
+                  }, 12000);
                 }
               }
+              // No cleanup return here — removing the listener on every re-render
+              // (caused by new array references from the parent) would silently
+              // delete it before wordSoundsInstructionDone fires.
             }, [data.options, data.distractors]);
+            // Separate unmount-only effect to cancel any pending timer/listener
+            // when the component is removed (e.g. word advances, activity changes).
+            React.useEffect(() => {
+              return () => {
+                if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
+                if (instrDoneListenerRef.current) window.removeEventListener('wordSoundsInstructionDone', instrDoneListenerRef.current);
+              };
+            }, []);
             const handleWordClick = (item) => {
               if (foundWords.includes(item.text) || isComplete) return;
               onPlayAudio(item.text);
@@ -5235,6 +5266,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           if (typeof window !== "undefined" && window._CACHE_WORD_AUDIO_BANK) {
             delete window._CACHE_WORD_AUDIO_BANK[targetWord.toLowerCase()];
           }
+          if (typeof window.__clearAlloTtsCacheForWord === "function") {
+            window.__clearAlloTtsCacheForWord(targetWord);
+          }
           if (preloadedWordCache.current) {
             preloadedWordCache.current.delete(targetWord.toLowerCase());
           }
@@ -5349,6 +5383,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         if (audioCache.current) audioCache.current.clear();
         if (wordDataCache.current) wordDataCache.current.clear();
         if (preloadedWordCache.current) preloadedWordCache.current.clear();
+        if (typeof window.__clearAlloTtsCacheForWord === "function") {
+          window.__clearAlloTtsCacheForWord();
+        }
         if (!preloadedWords || preloadedWords.length === 0) {
           warnLog("No words to regenerate");
           addToast?.("No words to regenerate", "error");
@@ -6830,7 +6867,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             ) {
               await new Promise((r) => setTimeout(r, 200));
               if (cancelled) return;
-              await playBlending();
+              // Resolve options BEFORE playBlending so TTS preloading runs during
+              // phoneme playback instead of after, eliminating the post-blend gap.
               let effectiveBlendingOptions = blendingOptionsRef.current;
               if (
                 !effectiveBlendingOptions ||
@@ -6848,18 +6886,27 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   }
                 }
               }
+              // Kick off TTS generation for all options now — fire-and-forget so
+              // playBlending() and TTS preloading run concurrently.
+              const optionsPreloadPromise =
+                effectiveBlendingOptions && effectiveBlendingOptions.length > 0
+                  ? Promise.all(
+                      effectiveBlendingOptions.map((o) =>
+                        handleAudio(
+                          typeof o === "string" ? o : o.text,
+                          false,
+                        ).catch(() => { }),
+                      ),
+                    )
+                  : Promise.resolve();
+              await playBlending();
+              // By the time phoneme playback finishes (~3-5s), TTS should be cached.
+              await optionsPreloadPromise;
+              if (cancelled) return;
               if (
                 effectiveBlendingOptions &&
                 effectiveBlendingOptions.length > 0
               ) {
-                await Promise.all(
-                  effectiveBlendingOptions.map((o) =>
-                    handleAudio(
-                      typeof o === "string" ? o : o.text,
-                      false,
-                    ).catch(() => { }),
-                  ),
-                );
                 await new Promise((r) => setTimeout(r, 100));
                 for (let i = 0; i < effectiveBlendingOptions.length; i++) {
                   if (cancelled) break;
@@ -6889,11 +6936,25 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 }
               }
               if (rhymeOptionsRef.current && rhymeOptionsRef.current.length > 0) {
+                // Snapshot options so the loop and preload use a stable reference.
+                const rhymeSnapshot = [...rhymeOptionsRef.current];
                 await new Promise((r) => setTimeout(r, 200));
-                for (let i = 0; i < rhymeOptionsRef.current.length; i++) {
+                if (cancelled) return;
+                // Preload TTS for all options before the play loop — mirrors
+                // isolation pattern; ensures audio is cached when the loop starts.
+                await Promise.all(
+                  rhymeSnapshot.map((o) =>
+                    handleAudio(
+                      typeof o === "string" ? o : o.text,
+                      false,
+                    ).catch(() => { }),
+                  ),
+                );
+                if (cancelled) return;
+                for (let i = 0; i < rhymeSnapshot.length; i++) {
                   if (cancelled) break;
                   setHighlightedRhymeIndex(i);
-                  await handleAudio(rhymeOptionsRef.current[i]);
+                  await handleAudio(rhymeSnapshot[i]);
                   if (cancelled) return;
                   await new Promise((r) => setTimeout(r, 350));
                 }
