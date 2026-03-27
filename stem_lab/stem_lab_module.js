@@ -554,48 +554,9 @@
         window.addEventListener('keyup', onKeyUp);
         return function () { window.removeEventListener('keydown', onKeyDown); window.removeEventListener('keyup', onKeyUp); };
       }, [stemLabTab, stemLabTool, labToolData]);
-      // ── Companion Planting: Canvas data-attribute sync (MUST be at top level) ──
-      React.useEffect(function () {
-        if (stemLabTab !== 'explore' || stemLabTool !== 'companionPlanting') return;
-        var _cpd = (labToolData && labToolData.companionPlanting) || {};
-        var cv = document.querySelector('[data-companion-canvas]');
-        if (cv) {
-          cv.setAttribute('data-growth', _cpd.growthTime || 0);
-          cv.setAttribute('data-corn', _cpd.cornPlanted ? '1' : '0');
-          cv.setAttribute('data-beans', _cpd.beansPlanted ? '1' : '0');
-          cv.setAttribute('data-squash', _cpd.squashPlanted ? '1' : '0');
-          cv.setAttribute('data-compare', _cpd.compareMode ? '1' : '0');
-          cv.setAttribute('data-season', String(Math.floor(((_cpd.day || 0) % 120) / 30)));
-          cv.setAttribute('data-day', String(_cpd.day || 0));
-          cv.setAttribute('data-moisture', String(Math.round(typeof _cpd.moisture === 'number' ? _cpd.moisture : 60)));
-          cv.setAttribute('data-pest', String(Math.round(typeof _cpd.pestPressure === 'number' ? _cpd.pestPressure : 10)));
-          cv.setAttribute('data-weed', String(Math.round(typeof _cpd.weedCover === 'number' ? _cpd.weedCover : 15)));
-          cv.setAttribute('data-health', String(Math.round(typeof _cpd.plantHealth === 'number' ? _cpd.plantHealth : 100)));
-        }
-      }, [stemLabTab, stemLabTool, labToolData]);
-      // ── Graphing Calculator: Load math.js on demand (MUST be at top level) ──
-      React.useEffect(function () {
-        if (stemLabTab !== 'explore' || stemLabTool !== 'graphCalc') return;
-        if (window.math) return;
-        var s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/mathjs@13.2.2/lib/browser/math.min.js';
-        s.async = true;
-        s.onload = function () { if (typeof addToast === 'function') addToast('\uD83E\uDDEE Math engine loaded', 'info'); setLabToolData(function (prev) { return Object.assign({}, prev, { graphCalc: Object.assign({}, prev.graphCalc || {}, { _mathReady: true }) }); }); };
-        document.head.appendChild(s);
-      }, [stemLabTab, stemLabTool]);
-      // ── Graphing Calculator: Render graph on Canvas (MUST be at top level) ──
-      React.useEffect(function () {
-        if (stemLabTab !== 'explore' || stemLabTool !== 'graphCalc') return;
-        var _gcd = (labToolData && labToolData.graphCalc) || {};
-        var _funcs = _gcd.funcs || [{ expr: 'sin(x)', color: '#38bdf8' }, { expr: '', color: '#f472b6' }, { expr: '', color: '#34d399' }, { expr: '', color: '#fbbf24' }, { expr: '', color: '#a78bfa' }, { expr: '', color: '#fb923c' }];
-        var _win = _gcd.window || { xmin: -6, xmax: 6, ymin: -4, ymax: 4 };
-        var cv = document.getElementById('graph-calc-canvas');
-        if (!cv || !window.math) return;
-        var ctx = cv.getContext('2d');
-        var W = cv.width, H = cv.height;
-        var xr = _win.xmax - _win.xmin, yr = _win.ymax - _win.ymin;
-        var toScreenX = function (x) { return ((x - _win.xmin) / xr) * W; };
-        var toScreenY = function (y) { return H - ((y - _win.ymin) / yr) * H; };
+      /* companionPlanting canvas sync: removed — see stem_tool_companionplanting.js */
+      /* graphCalc math.js loader: removed — see stem_tool_graphcalc.js */
+      /* graphCalc canvas renderer: removed — see stem_tool_graphcalc.js */
         // Clear
         ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
         // Grid
@@ -11288,7 +11249,12 @@
             funcGrapher: true, physics: true,
             inequality: true, multtable: true, geoSandbox: true,
             waterCycle: true, dissection: true, rocks: true, creative: true,
-            rockCycle: true, science: true, math: true
+            rockCycle: true, science: true, math: true,
+            calculus: true, cell: true, chemBalance: true, punnett: true,
+            circuit: true, molecule: true, decomposer: true, solarSystem: true,
+            universe: true, ecosystem: true, unitConvert: true,
+            anatomy: true, companionPlanting: true, graphCalc: true,
+            algebraCAS: true, aquarium: true, economicsLab: true, behaviorLab: true
           };
           console.log('[StemLab Fallback] Attempting to render plugin: ' + stemLabTool + ' (registered: ' + window.StemLab.isRegistered(stemLabTool) + ')');
           if (!_pluginOnlyTools[stemLabTool]) return null;

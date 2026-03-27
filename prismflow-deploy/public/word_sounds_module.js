@@ -7490,6 +7490,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               sound_sort: "inst_sound_sort",
               word_families: "inst_word_families",
               mapping: "mapping",
+              manipulation: "inst_manipulation",
+              syllable_blending: "inst_syllable_blending",
+              syllable_counting: "inst_syllable_counting",
             };
             const instKey =
               INST_KEY_MAP[wordSoundsActivity] || wordSoundsActivity;
@@ -7754,6 +7757,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 if (cancelled) return;
                 await handleAudio(currentWordSoundsWord);
               }
+            } else if (wordSoundsActivity === "syllable_blending") {
+              instructionText = ts(`word_sounds.syllable_blending_prompt`) || "Listen to the syllables and blend them together";
+            } else if (wordSoundsActivity === "syllable_counting") {
+              instructionText = ts(`word_sounds.syllable_counting_prompt`) || "How many syllables do you hear? Clap for each one";
+            } else if (wordSoundsActivity === "manipulation") {
+              // Manipulation plays its own Gemini-generated instruction in the block below; skip generic instruction
+              instructionText = null;
             } else {
               instructionText = ts(`word_sounds.${wordSoundsActivity}_prompt`);
             }

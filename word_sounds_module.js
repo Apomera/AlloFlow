@@ -7761,6 +7761,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 if (cancelled) return;
                 await handleAudio(currentWordSoundsWord);
               }
+            } else if (wordSoundsActivity === "syllable_blending") {
+              instructionText = ts(`word_sounds.syllable_blending_prompt`) || "Listen to the syllables and blend them together";
+            } else if (wordSoundsActivity === "syllable_counting") {
+              instructionText = ts(`word_sounds.syllable_counting_prompt`) || "How many syllables do you hear? Clap for each one";
+            } else if (wordSoundsActivity === "manipulation") {
+              // Manipulation plays its own Gemini-generated instruction in the block below; skip generic instruction
+              instructionText = null;
             } else {
               instructionText = ts(`word_sounds.${wordSoundsActivity}_prompt`);
             }
