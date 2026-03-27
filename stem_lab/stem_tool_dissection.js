@@ -5249,7 +5249,7 @@ var d = labToolData.dissection || {};
 
               ctx.font = '11px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)';
 
-              ctx.fillText(spec.icon + ' ' + spec.name + (d.viewAngle === 'dorsal' ? '  ' + t('stem.dissection.dorsal_view') : '  ' + t('stem.dissection.ventral_view')), 14, 20);
+              ctx.fillText(spec.icon + ' ' + spec.name + (d.viewAngle === 'dorsal' ? '  ' + '(Dorsal View)' : '  ' + '(Ventral View)'), 14, 20);
 
               // System color legend (top-right)
 
@@ -5712,7 +5712,7 @@ var d = labToolData.dissection || {};
                   key: sk,
                   onClick: function () { upd('specimen', sk); upd('currentLayer', 0); upd('selectedOrgan', null); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all " + (isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200')
-                }, sp.emoji + ' ' + sp.name);
+                }, sp.icon + ' ' + sp.name);
               })
             ),
 
@@ -5745,15 +5745,15 @@ var d = labToolData.dissection || {};
 
               React.createElement("button", {
                 onClick: function () { var m = d.labelMode === 'show' ? 'hidden' : 'show'; upd('labelMode', m); },
-                title: t('stem.dissection.labels') + ' — Toggle organ name labels on the canvas',
+                title: 'Labels' + ' — Toggle organ name labels on the canvas',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.labelMode !== 'hidden' ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-100')
-              }, '\uD83C\uDFF7 ' + t('stem.dissection.labels')),
+              }, '\uD83C\uDFF7 ' + 'Labels'),
 
               React.createElement("button", {
                 onClick: function () { upd('highContrast', !d.highContrast); },
-                title: t('stem.dissection.high_contrast') + ' — Enhance colors for accessibility',
+                title: 'Hi-Con' + ' — Enhance colors for accessibility',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.highContrast ? 'bg-yellow-500 text-black' : 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-100')
-              }, '\u2600 ' + t('stem.dissection.high_contrast')),
+              }, '\u2600 ' + 'Hi-Con'),
 
               React.createElement("button", {
                 onClick: function () { upd('viewDorsal', !d.viewDorsal); },
@@ -5763,9 +5763,9 @@ var d = labToolData.dissection || {};
 
               React.createElement("button", {
                 onClick: function () { try { var c = document.querySelector('[data-diss-canvas]'); if (c && c.requestFullscreen) c.requestFullscreen(); } catch (e) {} },
-                title: t('stem.dissection.fullscreen') + ' — Expand canvas to full screen',
+                title: 'Fullscreen' + ' — Expand canvas to full screen',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all"
-              }, '\u26F6 ' + t('stem.dissection.fullscreen')),
+              }, '\u26F6 ' + 'Fullscreen'),
 
               React.createElement("button", {
                 onClick: function () { var s = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', s); },
@@ -5832,9 +5832,9 @@ var d = labToolData.dissection || {};
                   upd('labelMode', 'show'); upd('highContrast', false);
                   if (addToast) addToast('\u21BA ' + t('stem.dissection.reset_done'), 'info');
                 },
-                title: t('stem.dissection.reset') + ' — Reset all settings for this specimen',
+                title: 'Reset' + ' — Reset all settings for this specimen',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-red-600 border border-red-200 hover:bg-red-50 transition-all"
-              }, '\u21BA ' + t('stem.dissection.reset'))
+              }, '\u21BA ' + 'Reset')
 
             ),
 
@@ -5843,9 +5843,9 @@ var d = labToolData.dissection || {};
 
               React.createElement("button", {
                 onClick: function () { upd('quizMode', !d.quizMode); if (!d.quizMode) { upd('quizIdx', 0); upd('quizScore', 0); upd('quizTotal', 0); upd('quizFeedback', null); } },
-                title: t('stem.dissection.quiz') + ' — Test your knowledge of organ identification',
+                title: 'Quiz' + ' — Test your knowledge of organ identification',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.quizMode ? 'bg-amber-600 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
-              }, '\uD83E\uDDE0 ' + t('stem.dissection.quiz')),
+              }, '\uD83E\uDDE0 ' + 'Quiz'),
 
               React.createElement("button", {
                 onClick: function () { upd('flashcardMode', !d.flashcardMode); if (!d.flashcardMode) { upd('flashcardIdx', 0); upd('flashcardFlipped', false); } },
@@ -5861,9 +5861,9 @@ var d = labToolData.dissection || {};
 
               React.createElement("button", {
                 onClick: function () { upd('compareMode', !d.compareMode); },
-                title: t('stem.dissection.compare') + ' — Compare organs across specimens',
+                title: 'Compare' + ' — Compare organs across specimens',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.compareMode ? 'bg-cyan-600 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
-              }, '\uD83D\uDD0D ' + t('stem.dissection.compare')),
+              }, '\uD83D\uDD0D ' + 'Compare'),
 
               React.createElement("button", {
                 onClick: function () {
@@ -6306,7 +6306,7 @@ var d = labToolData.dissection || {};
 
                   sel.clinical && React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" },
 
-                    React.createElement("span", { className: "text-[10px] font-bold text-amber-700" }, '\uD83C\uDFEB ' + t('stem.dissection.fun_fact')),
+                    React.createElement("span", { className: "text-[10px] font-bold text-amber-700" }, '\uD83C\uDFEB ' + 'Did You Know?'),
 
                     React.createElement("p", { className: "text-[10px] text-amber-600 leading-relaxed mt-0.5" }, sel.clinical)
 
@@ -6390,7 +6390,7 @@ var d = labToolData.dissection || {};
 
                     return related ? React.createElement("div", { className: "text-[9px] text-slate-400 mt-1" },
 
-                      React.createElement("span", { className: "font-bold" }, '\uD83D\uDD17 ' + t('stem.dissection.related') + ': '),
+                      React.createElement("span", { className: "font-bold" }, '\uD83D\uDD17 ' + 'Related' + ': '),
 
                       related.join(', ')
 
@@ -6420,7 +6420,7 @@ var d = labToolData.dissection || {};
 
                       className: "flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:from-violet-600 hover:to-purple-600"
 
-                    }, '\uD83E\uDD16 ' + t('stem.dissection.ai_explain')),
+                    }, '\uD83E\uDD16 ' + 'AI Explain'),
 
                     React.createElement("button", {
 
@@ -6432,7 +6432,7 @@ var d = labToolData.dissection || {};
 
                         if (navigator.clipboard) navigator.clipboard.writeText(text);
 
-                        if (addToast) addToast('\uD83D\uDCCB ' + t('stem.dissection.copied_info') + ' ' + sel.name + ' info!', 'success');
+                        if (addToast) addToast('\uD83D\uDCCB ' + 'Copied' + ' ' + sel.name + ' info!', 'success');
 
                       },
 
@@ -6576,7 +6576,7 @@ var d = labToolData.dissection || {};
 
                           if (correct) awardStemXP('dissection', 2, 'Correct quiz answer');
 
-                          addToast(correct ? '\u2705 ' + t('stem.dissection.correct') : '\u274C ' + t('stem.dissection.it_was') + ' ' + quizQ.name, correct ? 'success' : 'error');
+                          addToast(correct ? '\u2705 ' + 'Correct!' : '\u274C ' + 'It was' + ' ' + quizQ.name, correct ? 'success' : 'error');
                           upd('quizExplanation', quizQ.fn.split('.').slice(0, 2).join('.') + '.');
 
                         },
@@ -6595,7 +6595,7 @@ var d = labToolData.dissection || {};
 
                     className: "w-full mt-2 py-1.5 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700"
 
-                  }, t('stem.dissection.next_question') + ' \u2192'),
+                  }, 'Next Question' + ' \u2192'),
 
                   d.quizExplanation && React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-white border border-amber-200" },
                     React.createElement("span", { className: "text-[9px] font-bold text-amber-600" }, '\uD83D\uDCA1 '),
@@ -6733,7 +6733,7 @@ var d = labToolData.dissection || {};
 
                         cert += '\u2500'.repeat(40) + '\n';
 
-                        cert += t('stem.dissection.specimen_label') + ': ' + spec.icon + ' ' + spec.name + '\n';
+                        cert += 'Specimen' + ': ' + spec.icon + ' ' + spec.name + '\n';
 
                         cert += t('stem.dissection.cert_structures') + ': ' + totalOrgansInSpecimen + '/' + totalOrgansInSpecimen + '\n';
 
