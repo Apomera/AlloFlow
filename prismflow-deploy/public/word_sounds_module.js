@@ -959,6 +959,14 @@
       }, [manipulationOptions]);
       const [isGeneratingManipulation, setIsGeneratingManipulation] =
         React.useState(false);
+      const [syllableData, setSyllableData] = React.useState(null);
+      const syllableDataRef = React.useRef(null);
+      React.useEffect(() => { syllableDataRef.current = syllableData; }, [syllableData]);
+      const [isGeneratingSyllable, setIsGeneratingSyllable] = React.useState(false);
+      const [highlightedSyllableIndex, setHighlightedSyllableIndex] = React.useState(null);
+      const [highlightedSyllableOptionIndex, setHighlightedSyllableOptionIndex] = React.useState(null);
+      const [syllableTapCount, setSyllableTapCount] = React.useState(0);
+      const lastWordForSyllable = React.useRef(null);
       const [blendingProgress, setBlendingProgress] = React.useState(0);
       const [blendingOptions, setBlendingOptions] = React.useState([]);
       const blendingOptionsRef = React.useRef([]);
@@ -1099,12 +1107,13 @@
           ...(rhymeOptions || []),
           ...(blendingOptions || []),
           ...(manipulationOptions || []),
+          ...(syllableData?.blendingOptions || []),
         ]
           .filter(Boolean)
           .map((o) => (typeof o === "string" ? o : o.text))
           .filter(Boolean);
         if (words.length) generateOptionImages(words);
-      }, [aacMode, rhymeOptions, blendingOptions, manipulationOptions, generateOptionImages]);
+      }, [aacMode, rhymeOptions, blendingOptions, manipulationOptions, syllableData, generateOptionImages]);
       // Isolation view: map phoneme options to Jolly-Phonics key words for Imagen.
       React.useEffect(() => {
         if (!aacMode || !isolationState?.isoOptions) return;
@@ -1194,6 +1203,75 @@
         },
         [callGemini],
       );
+      const generateSyllableData = React.useCallback(
+        async (word) => {
+          if (!word) return;
+          setIsGeneratingSyllable(true);
+          try {
+            let result = null;
+            if (typeof callGemini === "function") {
+              const prompt = `You are a reading specialist. For the word "${word}", return ONLY valid JSON with no markdown:\n{"syllables":["syl","la","bles"],"blendingOptions":["${word}","word2","word3","word4"]}\nsyllables: the syllables of "${word}" as an array of strings\nblendingOptions: exactly 4 words — "${word}" first, then 3 distractors of similar syllable count and general topic`;
+              try {
+                const raw = await callGemini(prompt);
+                const match = raw.match(/\{[\s\S]*?\}/);
+                if (match) result = JSON.parse(match[0]);
+              } catch (e) {
+                warnLog("[Syllable] Gemini failed:", e?.message);
+              }
+            }
+            if (!result || !Array.isArray(result.syllables) || !result.syllables.length) {
+              const cleaned = word.toLowerCase().replace(/[^a-z]/g, "");
+              const groups = cleaned.match(/[aeiouy]+/g) || ["a"];
+              let cnt = groups.length;
+              if (cleaned.endsWith("e") && cnt > 1) cnt--;
+              cnt = Math.max(1, cnt);
+              const partLen = Math.ceil(word.length / cnt);
+              const syls = [];
+              for (let i = 0; i < cnt; i++) {
+                syls.push(word.slice(i * partLen, Math.min((i + 1) * partLen, word.length)));
+              }
+              result = { syllables: syls, blendingOptions: null };
+            }
+            const data = {
+              syllables: result.syllables,
+              count: result.syllables.length,
+              blendingOptions:
+                Array.isArray(result.blendingOptions) && result.blendingOptions.length >= 2
+                  ? fisherYatesShuffle([...result.blendingOptions]).slice(0, 4)
+                  : null,
+            };
+            setSyllableData(data);
+            syllableDataRef.current = data;
+          } catch (err) {
+            warnLog("[Syllable] generateSyllableData failed:", err);
+          } finally {
+            setIsGeneratingSyllable(false);
+          }
+        },
+        [callGemini],
+      );
+      // Trigger syllable data generation whenever word changes in syllable activities.
+      React.useEffect(() => {
+        if (
+          wordSoundsActivity !== "syllable_blending" &&
+          wordSoundsActivity !== "syllable_counting"
+        )
+          return;
+        const currentWord = currentWordSoundsWord || wordSoundsPhonemes?.word;
+        if (!currentWord) return;
+        if (lastWordForSyllable.current === currentWord && syllableData) return;
+        lastWordForSyllable.current = currentWord;
+        setSyllableData(null);
+        syllableDataRef.current = null;
+        setSyllableTapCount(0);
+        generateSyllableData(currentWord);
+      }, [
+        wordSoundsActivity,
+        currentWordSoundsWord,
+        wordSoundsPhonemes,
+        generateSyllableData,
+        syllableData,
+      ]);
       // Trigger generation whenever the word changes while in manipulation mode.
       React.useEffect(() => {
         if (wordSoundsActivity !== "manipulation") return;
@@ -2464,6 +2542,269 @@
           );
         },
       );
+      // SyllableBlendingView — hear syllables played separately, pick the whole word.
+      const SyllableBlendingView = React.memo(
+        ({
+          data,
+          isLoading,
+          highlightedSyllableIndex,
+          highlightedOptionIndex,
+          showLetterHints,
+          onPlayAudio,
+          isEditing,
+          onUpdateOption,
+          isAudioBusy,
+          optionImages,
+          onCheckAnswer,
+        }) => {
+          const syllables = data?.syllables || [];
+          const blendingOptions = data?.blendingOptions || null;
+          if (isLoading && !syllables.length) {
+            return React.createElement(
+              "div",
+              { className: "flex flex-col items-center gap-4 py-8" },
+              React.createElement("div", {
+                className:
+                  "w-10 h-10 border-4 border-sky-400 border-t-transparent rounded-full animate-spin",
+              }),
+              React.createElement(
+                "p",
+                { className: "text-slate-500 text-sm" },
+                "Building syllable activity\u2026",
+              ),
+            );
+          }
+          return React.createElement(
+            "div",
+            { className: "flex flex-col gap-5" },
+            React.createElement(
+              "div",
+              {
+                className:
+                  "bg-sky-50 border border-sky-200 rounded-2xl p-4 flex flex-col gap-3",
+              },
+              React.createElement(
+                "p",
+                {
+                  className:
+                    "text-xs font-semibold text-sky-600 uppercase tracking-wide text-center",
+                },
+                "Listen to the syllables",
+              ),
+              React.createElement(
+                "div",
+                { className: "flex flex-wrap justify-center gap-2" },
+                ...syllables.map((syl, i) =>
+                  React.createElement(
+                    "div",
+                    {
+                      key: i,
+                      className: `px-4 py-2 rounded-xl text-xl font-bold transition-all duration-200 ${
+                        highlightedSyllableIndex === i
+                          ? "bg-sky-500 text-white scale-110 shadow-lg"
+                          : "bg-white border-2 border-sky-200 text-sky-700"
+                      }`,
+                    },
+                    syl,
+                    i < syllables.length - 1
+                      ? React.createElement(
+                          "span",
+                          { className: "text-sky-300 ml-2" },
+                          "\u00b7",
+                        )
+                      : null,
+                  ),
+                ),
+              ),
+              React.createElement(
+                "button",
+                {
+                  onClick: () =>
+                    syllables.forEach((syl, i) =>
+                      setTimeout(() => onPlayAudio?.(syl), i * 650),
+                    ),
+                  disabled: isAudioBusy,
+                  className:
+                    "mx-auto flex items-center gap-2 px-4 py-2 bg-sky-100 hover:bg-sky-200 text-sky-700 rounded-full text-sm font-semibold transition-colors disabled:opacity-50",
+                },
+                "\u25b6 Play Syllables",
+              ),
+            ),
+            blendingOptions && blendingOptions.length > 0
+              ? React.createElement(
+                  "div",
+                  { className: "grid grid-cols-2 gap-3" },
+                  ...blendingOptions.map((opt, i) => {
+                    const imgSrc = optionImages?.[opt];
+                    return isEditing
+                      ? React.createElement("input", {
+                          key: i,
+                          defaultValue: opt,
+                          className:
+                            "border-2 border-sky-200 rounded-xl px-3 py-2 text-center font-semibold",
+                          onBlur: (e) => onUpdateOption?.(i, e.target.value),
+                        })
+                      : React.createElement(
+                          "button",
+                          {
+                            key: i,
+                            onClick: () => onCheckAnswer?.(opt),
+                            disabled: isAudioBusy,
+                            className: `flex flex-col items-center gap-1 p-3 rounded-2xl border-2 font-bold text-lg transition-all bg-white hover:bg-sky-50 border-sky-200 hover:border-sky-400 hover:scale-105 active:scale-95 shadow-sm${
+                              highlightedOptionIndex === i
+                                ? " ring-4 ring-sky-400 scale-105 bg-sky-50"
+                                : ""
+                            }`,
+                          },
+                          imgSrc
+                            ? React.createElement("img", {
+                                src: imgSrc,
+                                alt: opt,
+                                className:
+                                  "w-20 h-20 object-contain rounded-lg",
+                              })
+                            : null,
+                          showLetterHints
+                            ? React.createElement(
+                                "span",
+                                { className: "flex items-center gap-1" },
+                                opt,
+                                React.createElement(
+                                  "button",
+                                  {
+                                    onClick: (e) => {
+                                      e.stopPropagation();
+                                      onPlayAudio?.(opt);
+                                    },
+                                    className:
+                                      "text-sky-400 hover:text-sky-600 text-sm ml-1",
+                                    "aria-label": `Hear ${opt}`,
+                                  },
+                                  "\ud83d\udd0a",
+                                ),
+                              )
+                            : React.createElement(
+                                "span",
+                                { className: "text-sky-400 text-2xl" },
+                                "\ud83d\udd0a",
+                              ),
+                        );
+                  }),
+                )
+              : React.createElement(
+                  "p",
+                  { className: "text-center text-slate-400 text-sm py-4" },
+                  "Speak your answer or tap the mic below",
+                ),
+          );
+        },
+      );
+      // SyllableCountingView — tap once per syllable, then submit the count.
+      const SyllableCountingView = React.memo(
+        ({
+          data,
+          isLoading,
+          tapCount,
+          onTap,
+          onReset,
+          onCheckAnswer,
+          onPlayAudio,
+          isAudioBusy,
+          word,
+        }) => {
+          if (isLoading && !data) {
+            return React.createElement(
+              "div",
+              { className: "flex flex-col items-center gap-4 py-8" },
+              React.createElement("div", {
+                className:
+                  "w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin",
+              }),
+              React.createElement(
+                "p",
+                { className: "text-slate-500 text-sm" },
+                "Getting ready\u2026",
+              ),
+            );
+          }
+          return React.createElement(
+            "div",
+            { className: "flex flex-col items-center gap-5" },
+            React.createElement(
+              "div",
+              {
+                className:
+                  "bg-amber-50 border border-amber-200 rounded-2xl p-4 w-full text-center",
+              },
+              React.createElement(
+                "p",
+                {
+                  className:
+                    "text-xs font-semibold text-amber-600 uppercase tracking-wide mb-2",
+                },
+                "Tap once for each syllable you hear",
+              ),
+              React.createElement(
+                "button",
+                {
+                  onClick: () => onPlayAudio?.(word),
+                  disabled: isAudioBusy,
+                  className:
+                    "flex items-center gap-2 mx-auto px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-full font-semibold text-sm transition-colors disabled:opacity-50",
+                },
+                "\ud83d\udd0a Hear the word again",
+              ),
+            ),
+            React.createElement(
+              "div",
+              {
+                className:
+                  "text-6xl font-black text-amber-500 w-24 h-24 rounded-full bg-amber-50 border-4 border-amber-200 flex items-center justify-center select-none",
+              },
+              tapCount > 0 ? String(tapCount) : "?",
+            ),
+            React.createElement(
+              "button",
+              {
+                onClick: onTap,
+                className:
+                  "w-32 h-32 rounded-full bg-amber-400 hover:bg-amber-500 active:scale-90 text-white text-5xl shadow-lg transition-all select-none",
+                "aria-label": "Tap to count syllables",
+              },
+              "\ud83d\udc4f",
+            ),
+            React.createElement(
+              "button",
+              {
+                onClick: onReset,
+                className:
+                  "text-xs text-slate-400 hover:text-slate-600 underline",
+              },
+              "Reset",
+            ),
+            tapCount > 0
+              ? React.createElement(
+                  "div",
+                  { className: "flex flex-col items-center gap-2 w-full" },
+                  React.createElement(
+                    "p",
+                    { className: "text-sm text-slate-500" },
+                    `You tapped ${tapCount} ${tapCount === 1 ? "time" : "times"}. Submit?`,
+                  ),
+                  React.createElement(
+                    "button",
+                    {
+                      onClick: () => onCheckAnswer?.(tapCount),
+                      className:
+                        "px-8 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold shadow transition-all hover:scale-105",
+                    },
+                    "Submit \u2713",
+                  ),
+                )
+              : null,
+          );
+        },
+      );
       const OrthographyView = React.memo(
         ({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption }) => {
           const [userSpelling, setUserSpelling] = React.useState("");
@@ -3413,6 +3754,26 @@
           description:
             ts("word_sounds.manipulation_desc") ||
             "Delete or change sounds in words",
+          tier: "phonological",
+        },
+        {
+          id: "syllable_blending",
+          label:
+            ts("word_sounds.activity_syllable_blending") || "Syllable Blending",
+          icon: "🔗",
+          description:
+            ts("word_sounds.syllable_blending_desc") ||
+            "Blend syllables into whole words",
+          tier: "phonological",
+        },
+        {
+          id: "syllable_counting",
+          label:
+            ts("word_sounds.activity_syllable_counting") || "Syllable Claps",
+          icon: "👏",
+          description:
+            ts("word_sounds.syllable_counting_desc") ||
+            "Count the syllables in words",
           tier: "phonological",
         },
         {
@@ -6681,6 +7042,43 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   setHighlightedManipIndex(null);
                 }
               }
+              if (wordSoundsActivity === "syllable_blending") {
+                if (!syllableDataRef.current?.syllables?.length) {
+                  for (let sWait = 0; sWait < 30; sWait++) {
+                    await new Promise((r) => setTimeout(r, 200));
+                    if (cancelled || audioCancelledRef.current) return;
+                    if (syllableDataRef.current?.syllables?.length) break;
+                  }
+                }
+                const syls = syllableDataRef.current?.syllables || [];
+                if (syls.length) {
+                  await new Promise((r) => setTimeout(r, 150));
+                  for (let i = 0; i < syls.length; i++) {
+                    if (cancelled || audioCancelledRef.current) return;
+                    setHighlightedSyllableIndex(i);
+                    await handleAudio(syls[i]);
+                    await new Promise((r) => setTimeout(r, 350));
+                  }
+                  setHighlightedSyllableIndex(null);
+                  await new Promise((r) => setTimeout(r, 300));
+                }
+                const opts = syllableDataRef.current?.blendingOptions || [];
+                for (let i = 0; i < opts.length; i++) {
+                  if (cancelled || audioCancelledRef.current) return;
+                  setHighlightedSyllableOptionIndex(i);
+                  await handleAudio(opts[i]);
+                  await new Promise((r) => setTimeout(r, 250));
+                }
+                setHighlightedSyllableOptionIndex(null);
+              }
+              if (wordSoundsActivity === "syllable_counting") {
+                const countWord = currentWordSoundsWord || wordSoundsPhonemes?.word;
+                if (countWord) {
+                  await new Promise((r) => setTimeout(r, 200));
+                  if (cancelled || audioCancelledRef.current) return;
+                  await handleAudio(countWord);
+                }
+              }
             } catch (e) {
               warnLog("Unhandled error in timer:", e);
             }
@@ -7516,6 +7914,52 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 setHighlightedManipIndex(null);
               }
             }
+            if (
+              (wordSoundsActivity === "syllable_blending" ||
+                wordSoundsActivity === "syllable_counting") &&
+              currentWordSoundsWord
+            ) {
+              if (!syllableDataRef.current) {
+                for (let sWait = 0; sWait < 30; sWait++) {
+                  await new Promise((r) => setTimeout(r, 200));
+                  if (cancelled) return;
+                  if (syllableDataRef.current) break;
+                }
+              }
+              if (syllableDataRef.current) {
+                await new Promise((r) => setTimeout(r, 300));
+                if (cancelled) return;
+                await handleAudio(currentWordSoundsWord);
+                if (cancelled) return;
+                await new Promise((r) => setTimeout(r, 400));
+                if (wordSoundsActivity === "syllable_blending") {
+                  const syls = syllableDataRef.current.syllables || [];
+                  for (let i = 0; i < syls.length; i++) {
+                    if (cancelled) break;
+                    setHighlightedSyllableIndex(i);
+                    await handleAudio(syls[i]);
+                    if (cancelled) return;
+                    await new Promise((r) => setTimeout(r, 350));
+                  }
+                  setHighlightedSyllableIndex(null);
+                  const opts = syllableDataRef.current.blendingOptions || [];
+                  if (opts.length) {
+                    await Promise.all(
+                      opts.map((o) => handleAudio(o, false).catch(() => {})),
+                    );
+                    if (cancelled) return;
+                    for (let i = 0; i < opts.length; i++) {
+                      if (cancelled) break;
+                      setHighlightedSyllableOptionIndex(i);
+                      await handleAudio(opts[i]);
+                      if (cancelled) return;
+                      await new Promise((r) => setTimeout(r, 350));
+                    }
+                    setHighlightedSyllableOptionIndex(null);
+                  }
+                }
+              }
+            }
             if (wordSoundsActivity === "isolation" && currentWordSoundsWord) {
               await new Promise((r) => setTimeout(r, 400));
               if (cancelled) return;
@@ -7853,7 +8297,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 const nextActivity = uniqueActivities[currentIdx + 1];
                 setWordSoundsFeedback({
                   type: "success",
-                  message: `✅ Activity complete! Moving to ${nextActivity.replace("_", " ")}! 🎉`,
+                  message: `✅ Activity complete! Moving to ${nextActivity.replace(/_/g, " ")}! 🎉`,
                 });
                 setWordSoundsScore((prev) => ({ ...prev, streak: 0 }));
                 if (setWordSoundsStreak) setWordSoundsStreak(0);
@@ -9012,6 +9456,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           const newOptions = [...manipulationOptions];
           newOptions[index] = newValue;
           setManipulationOptions(newOptions);
+        } else if (wordSoundsActivity === "syllable_blending") {
+          const newOpts = [...(syllableData?.blendingOptions || [])];
+          newOpts[index] = newValue;
+          setSyllableData((prev) => ({ ...prev, blendingOptions: newOpts }));
         } else if (wordSoundsActivity === "sound_sort") {
           const newPhonemes = { ...wordSoundsPhonemes };
           const family =
@@ -11062,6 +11510,65 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 /*#__PURE__*/ React.createElement(Mic, { size: 20 }),
                 " Use Microphone",
               ),
+            );
+          }
+          case "syllable_blending": {
+            return /*#__PURE__*/ React.createElement(
+              "div",
+              { className: "flex flex-col gap-4" },
+              renderPrompt(),
+              /*#__PURE__*/ React.createElement(SyllableBlendingView, {
+                data: syllableData,
+                isLoading: isGeneratingSyllable && !syllableData,
+                highlightedSyllableIndex: highlightedSyllableIndex,
+                highlightedOptionIndex: highlightedSyllableOptionIndex,
+                showLetterHints: showLetterHints,
+                onPlayAudio: handleAudio,
+                isEditing: isEditing,
+                onUpdateOption: handleOptionUpdate,
+                isAudioBusy: isPlayingAudio,
+                optionImages: aacMode ? optionImages : null,
+                onCheckAnswer: (ans) => {
+                  const word =
+                    currentWordSoundsWord || wordSoundsPhonemes?.word || "";
+                  const isCorrect =
+                    ans?.toLowerCase() === word.toLowerCase();
+                  checkAnswer(isCorrect ? "correct" : "incorrect", "correct");
+                },
+              }),
+              /*#__PURE__*/ React.createElement(
+                "button",
+                {
+                  "aria-label": t("common.voice_input"),
+                  onClick: handleMicInput,
+                  className:
+                    "mx-auto flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors",
+                },
+                /*#__PURE__*/ React.createElement(Mic, { size: 20 }),
+                " Use Microphone",
+              ),
+            );
+          }
+          case "syllable_counting": {
+            return /*#__PURE__*/ React.createElement(
+              "div",
+              { className: "flex flex-col gap-4" },
+              renderPrompt(),
+              /*#__PURE__*/ React.createElement(SyllableCountingView, {
+                data: syllableData,
+                isLoading: isGeneratingSyllable && !syllableData,
+                tapCount: syllableTapCount,
+                onTap: () => setSyllableTapCount((prev) => prev + 1),
+                onReset: () => setSyllableTapCount(0),
+                onPlayAudio: handleAudio,
+                isAudioBusy: isPlayingAudio,
+                word: currentWordSoundsWord || wordSoundsPhonemes?.word || "",
+                onCheckAnswer: (taps) => {
+                  const correct = syllableData?.count || 1;
+                  const isCorrect = taps === correct;
+                  checkAnswer(isCorrect ? "correct" : "incorrect", "correct");
+                },
+              }),
             );
           }
           case "rhyming": {

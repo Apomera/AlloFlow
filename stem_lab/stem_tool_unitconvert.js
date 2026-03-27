@@ -2,10 +2,46 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 (function() {
   'use strict';
 
+  // ── Sound effects (badge fanfare only — quiz uses ctx.beep) ──
+  var _audioCtx = null;
+  function getAudioCtx() {
+    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return _audioCtx;
+  }
+  function playBadgeSound() {
+    try {
+      var ac = getAudioCtx();
+      var notes = [440, 554, 659, 880];
+      notes.forEach(function(f, i) {
+        var o = ac.createOscillator(); var g = ac.createGain();
+        o.connect(g); g.connect(ac.destination);
+        o.frequency.value = f; o.type = 'sine';
+        var t0 = ac.currentTime + 0.1 * i;
+        g.gain.setValueAtTime(0.1, t0);
+        g.gain.exponentialRampToValueAtTime(0.01, t0 + 0.15);
+        o.start(t0); o.stop(t0 + 0.15);
+      });
+    } catch (e) { /* audio not available */ }
+  }
+
+  // ── Badge definitions ──
+  var BADGES = [
+    { id: 'firstConvert',   icon: '\u2B50',       label: 'First Convert',    desc: 'Make your first unit conversion' },
+    { id: 'quizStreak5',    icon: '\uD83D\uDD25', label: 'On Fire',          desc: '5 quiz answers in a row' },
+    { id: 'quizStreak10',   icon: '\u26A1',       label: 'Lightning',        desc: '10 quiz answers in a row' },
+    { id: 'quizMaster',     icon: '\uD83E\uDDE0', label: 'Quiz Master',      desc: 'Answer 20 quiz questions' },
+    { id: 'allCategories',  icon: '\uD83C\uDF0D', label: 'World Explorer',   desc: 'Use all 9 unit categories' },
+    { id: 'speedster',      icon: '\uD83D\uDE80', label: 'Speedster',        desc: 'Answer a quiz in under 3 seconds' },
+    { id: 'wordProblem',    icon: '\uD83D\uDCDD', label: 'Word Wizard',      desc: 'Generate an AI word problem' },
+    { id: 'pinCollector',   icon: '\uD83D\uDCCC', label: 'Pin Collector',    desc: 'Pin 5 conversions' },
+    { id: 'historian',      icon: '\uD83D\uDCBE', label: 'Historian',        desc: 'Save 10 conversions to history' },
+    { id: 'tempMaster',     icon: '\uD83C\uDF21\uFE0F', label: 'Temp Master', desc: 'Convert between all 3 temperature units' }
+  ];
+
   window.StemLab.registerTool('unitConvert', {
     icon: '\uD83D\uDCCF',
     label: 'Unit Converter',
-    desc: 'Convert units with visual comparison, multi-unit table, quiz, and AI word problems',
+    desc: 'Convert units with visual comparison, quiz, AI word problems, badges & keyboard shortcuts',
     color: 'cyan',
     category: 'math',
     render: function(ctx) {
@@ -28,11 +64,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
         var upd = function(key, val) {
           setLabToolData(function(prev) {
-            return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { [key]: val }) });
+            return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, typeof key === 'object' ? key : { [key]: val }) });
           });
         };
 
-        // ── CATEGORIES ──────────────────────────────────────────────────────
+        // ── CATEGORIES ──
         var CATEGORIES = {
           length:      { label: '\uD83D\uDCCF Length',   units: { mm: 0.001, cm: 0.01, m: 1, km: 1000, 'in': 0.0254, ft: 0.3048, yd: 0.9144, mi: 1609.34 } },
           weight:      { label: '\u2696\uFE0F Weight',   units: { mg: 0.001, g: 1, kg: 1000, oz: 28.3495, lb: 453.592, ton: 907185 } },
@@ -47,7 +83,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
         var cat = CATEGORIES[d.category] || CATEGORIES.length;
 
-        // ── CONVERSION ──────────────────────────────────────────────────────
+        // ── CONVERSION ──
         var convert = function(val, from, to, catKey) {
           catKey = catKey || d.category;
           if (catKey === 'temperature') {
@@ -73,7 +109,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         var result = convert(d.value, d.fromUnit, d.toUnit);
         var fmtResult = fmt(result);
 
-        // ── FORMULA ─────────────────────────────────────────────────────────
+        // ── FORMULA ──
         var getFormula = function() {
           if (d.category === 'temperature') {
             if (d.fromUnit === '\u00B0C' && d.toUnit === '\u00B0F') return 'F = C \u00D7 9/5 + 32';
@@ -86,11 +122,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           }
           var fF = cat.units[d.fromUnit] || 1;
           var tF = cat.units[d.toUnit] || 1;
-          if (fF === tF) return 'Same unit — result equals input';
+          if (fF === tF) return 'Same unit \u2014 result equals input';
           return d.value + ' ' + d.fromUnit + ' \u00D7 ' + fmt(fF / tF) + ' = ' + fmtResult + ' ' + d.toUnit;
         };
 
-        // ── REAL-WORLD REFERENCES ────────────────────────────────────────────
+        // ── REAL-WORLD REFERENCES ──
         var REFS = {
           length: function(m) {
             if (m < 0.01) return '\uD83D\uDC1C About ' + (m * 1000).toFixed(1) + ' ant lengths';
@@ -141,7 +177,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           },
         };
 
-        // ── FUN FACTS ────────────────────────────────────────────────────────
+        // ── FUN FACTS ──
         var FACTS = {
           length:      ['\uD83C\uDF1F A light-year is 9.46 trillion km', '\uD83E\uDDAB Human DNA stretched out: ~2 m long', '\uD83D\uDE80 ISS orbits at 408 km altitude'],
           weight:      ['\uD83E\uDD8B A blue whale\'s heart weighs ~180 kg', '\uD83C\uDF6B A M&M weighs exactly 1 gram', '\uD83C\uDF0D Earth\'s atmosphere weighs 5.15 \u00D7 10\u00B9\u2078 kg'],
@@ -154,7 +190,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           energy:      ['\uD83C\uDF31 A tree absorbs ~22 kg CO\u2082/year via photosynthesis', '\uD83E\uDDB4 The human brain uses ~20 W', '\u26A1 Lightning heats air to ~30,000 K'],
         };
 
-        // ── QUIZ QUESTIONS ────────────────────────────────────────────────────
+        // ── QUIZ QUESTIONS ──
         var QUIZ_QS = [
           { q: 'How many centimeters in 1 meter?',              a: 100,    unit: 'cm'  },
           { q: 'How many grams in 1 kilogram?',                 a: 1000,   unit: 'g'   },
@@ -187,14 +223,102 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         var baseValue = d.category === 'temperature' ? d.value : d.value * (cat.units[d.fromUnit] || 1);
         var refText = REFS[d.category] ? REFS[d.category](baseValue) : null;
 
-        // ── CSS ANIMATIONS ───────────────────────────────────────────────────
+        // ── Badge state ──
+        var badges = d.badges || {};
+        var showBadges = d.showBadges || false;
+        var showTutor = d.showTutor || false;
+        var tutorResponse = d.tutorResponse || '';
+        var tutorLoading = d.tutorLoading || false;
+        var catsUsed = d.catsUsed || {};
+        var tempUnitsUsed = d.tempUnitsUsed || {};
+        var quizTotal = d.quizTotal || 0;
+        var historySaveCount = d.historySaveCount || 0;
+
+        // ── Badge checker ──
+        function checkBadges(updates) {
+          var changed = {};
+          var newBadges = Object.assign({}, badges);
+          Object.keys(updates).forEach(function(key) {
+            if (updates[key] && !newBadges[key]) {
+              changed[key] = true;
+              newBadges[key] = true;
+            }
+          });
+          if (Object.keys(changed).length > 0) {
+            upd('badges', newBadges);
+            Object.keys(changed).forEach(function(bid) {
+              var badge = BADGES.find(function(b) { return b.id === bid; });
+              if (badge) {
+                playBadgeSound();
+                addToast(badge.icon + ' Badge: ' + badge.label + '!', 'success');
+                if (typeof awardStemXP === 'function') awardStemXP('unitConvert', 15, 'badge');
+              }
+            });
+          }
+        }
+
+        // Track category usage for badge
+        function trackCategory(catKey) {
+          var newCats = Object.assign({}, catsUsed);
+          newCats[catKey] = true;
+          upd('catsUsed', newCats);
+          if (Object.keys(newCats).length >= 9) checkBadges({ allCategories: true });
+        }
+
+        // ── AI Tutor ──
+        function askTutor() {
+          if (tutorLoading) return;
+          upd({ showTutor: true, tutorLoading: true, tutorResponse: '' });
+          var catLabel = cat.label.replace(/[^\w\s]/g, '').trim();
+          var prompt = 'You are a friendly math tutor helping a student learn unit conversions. ';
+          prompt += 'They are converting ' + catLabel + ' units: ' + d.value + ' ' + d.fromUnit + ' to ' + d.toUnit + ' (= ' + fmtResult + '). ';
+          if (d.quiz && d.quiz.answered && !d.quiz.correct) {
+            prompt += 'They just got a quiz question wrong: "' + d.quiz.q + '". The answer was ' + d.quiz.a + ' ' + d.quiz.unit + '. ';
+            prompt += 'Explain this conversion step by step with a memory trick. Keep it to 2-3 sentences.';
+          } else {
+            prompt += 'Give a helpful tip about converting ' + catLabel + ' units, or share an interesting real-world application. Keep it to 2-3 sentences.';
+          }
+          callGemini(prompt, false, false, 0.7).then(function(resp) {
+            upd({ tutorResponse: resp || 'No response received.', tutorLoading: false });
+          }).catch(function() {
+            upd({ tutorResponse: 'AI tutor is unavailable right now. Try again later!', tutorLoading: false });
+          });
+        }
+
+        // ── Keyboard shortcuts ──
+        React.useEffect(function() {
+          function handleKey(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+            var key = e.key;
+            if (key === '1') { e.preventDefault(); upd('tab', 'convert'); }
+            if (key === '2') { e.preventDefault(); upd('tab', 'table'); }
+            if (key === '3') { e.preventDefault(); upd('tab', 'quiz'); }
+            if (key === '4') { e.preventDefault(); upd('tab', 'wordproblem'); }
+            if (key.toLowerCase() === 'n' && tab === 'quiz') {
+              e.preventDefault();
+              var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
+              upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
+              stemBeep && stemBeep('click');
+            }
+            if (key === '?' || (e.shiftKey && key === '/')) { e.preventDefault(); askTutor(); }
+            if (key.toLowerCase() === 'b') { e.preventDefault(); upd('showBadges', !showBadges); }
+          }
+          window.addEventListener('keydown', handleKey);
+          return function() { window.removeEventListener('keydown', handleKey); };
+        });
+
+        // ── Earned badges count ──
+        var earnedBadges = BADGES.filter(function(b) { return badges[b.id]; });
+        var earnedCount = earnedBadges.length;
+
+        // ── CSS ANIMATIONS ──
         var css = '@keyframes ucResultPop{0%{transform:scale(0.8);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}' +
           '@keyframes ucCorrect{0%{background:#dcfce7}50%{background:#86efac}100%{background:#dcfce7}}' +
           '@keyframes ucWrong{0%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}100%{transform:translateX(0)}}' +
           '@keyframes ucFactSlide{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}' +
           '@keyframes spin{to{transform:rotate(360deg)}}';
 
-        // ── RENDER ────────────────────────────────────────────────────────────
+        // ── RENDER ──
         return h('div', { className: 'max-w-2xl mx-auto animate-in fade-in duration-200' },
 
           h('style', null, css),
@@ -206,7 +330,58 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
             h('h3', { className: 'text-lg font-bold text-slate-800' }, '\uD83D\uDCCF Unit Converter'),
             h('span', { className: 'px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[10px] font-bold rounded-full' }, 'INTERACTIVE'),
-            (d.score || 0) > 0 && h('span', { className: 'ml-auto px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full' }, '\u2B50 ' + d.score + ' XP')
+            (d.score || 0) > 0 && h('span', { className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full' }, '\u2B50 ' + d.score + ' XP'),
+            (d.streak || 0) >= 2 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-bold rounded-full animate-pulse' }, '\uD83D\uDD25 ' + d.streak),
+            earnedCount > 0 && h('button', {
+              onClick: function() { upd('showBadges', !showBadges); },
+              className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all',
+              title: 'View badges (B)'
+            }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
+            h('button', {
+              onClick: askTutor,
+              className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
+              title: 'AI Tutor (?)'
+            }, '\uD83E\uDDE0 AI')
+          ),
+
+          // ── Badge panel ──
+          showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200 mb-3' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
+              h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
+              h('button', { onClick: function() { upd('showBadges', false); }, className: 'text-xs text-slate-400 hover:text-slate-600' }, '\u2715')
+            ),
+            h('div', { className: 'grid grid-cols-3 sm:grid-cols-5 gap-2' },
+              BADGES.map(function(badge) {
+                var earned = !!badges[badge.id];
+                return h('div', {
+                  key: badge.id,
+                  className: 'text-center p-2 rounded-lg border transition-all ' +
+                    (earned ? 'bg-white border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-50'),
+                  title: badge.desc
+                },
+                  h('div', { className: 'text-xl' }, earned ? badge.icon : '\uD83D\uDD12'),
+                  h('div', { className: 'text-[9px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-400') }, badge.label)
+                );
+              })
+            )
+          ),
+
+          // ── AI Tutor panel ──
+          showTutor && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200 mb-3' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
+              h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Unit Tutor'),
+              h('button', { onClick: function() { upd('showTutor', false); }, className: 'text-xs text-slate-400 hover:text-slate-600' }, '\u2715')
+            ),
+            tutorLoading
+              ? h('div', { className: 'flex items-center gap-2' },
+                  h('div', { className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin' }),
+                  h('span', { className: 'text-xs text-purple-600' }, 'Thinking...')
+                )
+              : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, tutorResponse),
+            !tutorLoading && h('button', {
+              onClick: askTutor,
+              className: 'mt-2 text-[10px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-200 transition-all'
+            }, '\uD83D\uDD04 Ask Again')
           ),
 
           // Category selector
@@ -220,6 +395,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   setLabToolData(function(prev) {
                     return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { category: k, fromUnit: units[0], toUnit: units[1] || units[0] }) });
                   });
+                  trackCategory(k);
+                  checkBadges({ firstConvert: true });
                 },
                 className: 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all ' + (d.category === k ? 'bg-cyan-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50')
               }, v.label);
@@ -228,16 +405,17 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
           // Tool tabs
           h('div', { className: 'flex gap-0 mb-3 border-b border-slate-200' },
-            [['convert', '\uD83D\uDD04 Convert'], ['table', '\uD83D\uDCCA All Units'], ['quiz', '\uD83E\uDDE0 Quiz'], ['wordproblem', '\uD83D\uDCDD Word Problem']].map(function(item) {
+            [['convert', '\uD83D\uDD04 Convert'], ['table', '\uD83D\uDCCA All Units'], ['quiz', '\uD83E\uDDE0 Quiz'], ['wordproblem', '\uD83D\uDCDD Word Problem']].map(function(item, idx) {
               return h('button', {
                 key: item[0],
                 onClick: function() { upd('tab', item[0]); },
-                className: 'px-3 py-1.5 text-xs font-bold transition-all ' + (tab === item[0] ? 'border-b-2 border-cyan-600 text-cyan-700 -mb-px' : 'text-slate-500 hover:text-slate-700')
+                className: 'px-3 py-1.5 text-xs font-bold transition-all ' + (tab === item[0] ? 'border-b-2 border-cyan-600 text-cyan-700 -mb-px' : 'text-slate-500 hover:text-slate-700'),
+                title: (idx + 1) + ' key'
               }, item[1]);
             })
           ),
 
-          // ═══ TAB: CONVERT ═══════════════════════════════════════════════
+          // ═══ TAB: CONVERT ═══
           tab === 'convert' && h('div', { key: 'convert' },
 
             h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-6 shadow-sm' },
@@ -247,7 +425,17 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('div', { className: 'text-center' },
                   h('input', {
                     type: 'number', value: d.value,
-                    onChange: function(e) { upd('value', parseFloat(e.target.value) || 0); },
+                    onChange: function(e) {
+                      upd('value', parseFloat(e.target.value) || 0);
+                      checkBadges({ firstConvert: true });
+                      // Track temp units for badge
+                      if (d.category === 'temperature') {
+                        var tu = Object.assign({}, tempUnitsUsed);
+                        tu[d.fromUnit] = true; tu[d.toUnit] = true;
+                        upd('tempUnitsUsed', tu);
+                        if (Object.keys(tu).length >= 3) checkBadges({ tempMaster: true });
+                      }
+                    },
                     className: 'w-32 text-center text-2xl font-bold border-b-2 border-cyan-300 outline-none py-1',
                     step: '0.01'
                   }),
@@ -287,16 +475,18 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('span', { className: 'text-[11px] font-mono text-slate-500' }, '\uD83D\uDCCA ' + getFormula())
               ),
 
-              // Save / Pin buttons
+              // Save / Pin / AI buttons
               h('div', { className: 'flex justify-center gap-2 mt-3' },
                 h('button', {
                   onClick: function() {
                     var entry = { from: d.value + ' ' + d.fromUnit, to: fmtResult + ' ' + d.toUnit, ts: Date.now() };
+                    var newSaveCount = historySaveCount + 1;
                     setLabToolData(function(prev) {
-                      return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { history: [entry].concat((prev.unitConvert.history || []).slice(0, 9)) }) });
+                      return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { history: [entry].concat((prev.unitConvert.history || []).slice(0, 9)), historySaveCount: newSaveCount }) });
                     });
                     stemBeep && stemBeep('success');
                     addToast('\u2705 Saved to history', 'success');
+                    if (newSaveCount >= 10) checkBadges({ historian: true });
                   },
                   className: 'px-4 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold hover:bg-indigo-100 transition-all'
                 }, '\uD83D\uDCBE Save'),
@@ -306,11 +496,17 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     if (pinned.length >= 10) { addToast('Max 10 pinned conversions', 'warning'); return; }
                     var key = d.category + '_' + d.fromUnit + '_' + d.toUnit;
                     if (pinned.find(function(p) { return p.key === key; })) { addToast('Already pinned', 'warning'); return; }
-                    upd('pinnedConversions', pinned.concat([{ key: key, from: d.fromUnit, to: d.toUnit, category: d.category, label: d.fromUnit + ' \u2192 ' + d.toUnit }]));
+                    var newPinned = pinned.concat([{ key: key, from: d.fromUnit, to: d.toUnit, category: d.category, label: d.fromUnit + ' \u2192 ' + d.toUnit }]);
+                    upd('pinnedConversions', newPinned);
                     addToast('\uD83D\uDCCC Pinned!', 'success');
+                    if (newPinned.length >= 5) checkBadges({ pinCollector: true });
                   },
                   className: 'px-4 py-1 bg-amber-50 text-amber-600 rounded-full text-xs font-bold hover:bg-amber-100 transition-all'
-                }, '\uD83D\uDCCC Pin')
+                }, '\uD83D\uDCCC Pin'),
+                h('button', {
+                  onClick: askTutor,
+                  className: 'px-4 py-1 bg-purple-50 text-purple-600 rounded-full text-xs font-bold hover:bg-purple-100 transition-all'
+                }, '\uD83E\uDDE0 Tutor')
               )
             ),
 
@@ -446,7 +642,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
           ),
 
-          // ═══ TAB: ALL UNITS TABLE ════════════════════════════════════════
+          // ═══ TAB: ALL UNITS TABLE ═══
           tab === 'table' && h('div', { key: 'table' },
             h('div', { className: 'bg-white rounded-xl border border-slate-200 overflow-hidden' },
               h('div', { className: 'bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-center justify-between' },
@@ -502,7 +698,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             )
           ),
 
-          // ═══ TAB: QUIZ ══════════════════════════════════════════════════
+          // ═══ TAB: QUIZ ═══
           tab === 'quiz' && h('div', { key: 'quiz' },
 
             h('div', { className: 'flex items-center justify-between mb-3' },
@@ -517,7 +713,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
                   stemBeep && stemBeep('click');
                 },
-                className: 'px-3 py-1.5 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-all'
+                className: 'px-3 py-1.5 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-all',
+                title: 'Next question (N)'
               }, d.quiz ? '\uD83D\uDD04 Next' : '\uD83E\uDDE0 Start Quiz')
             ),
 
@@ -546,6 +743,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         var xp = correct ? (elapsed < 5 ? 3 : elapsed < 10 ? 2 : 1) : 0;
                         var newStreak = correct ? (d.streak || 0) + 1 : 0;
                         var newBest = Math.max(d.bestStreak || 0, newStreak);
+                        var newQTotal = quizTotal + 1;
                         if (correct) {
                           stemBeep && stemBeep('success');
                           if (newStreak >= 5) { stemCelebrate && stemCelebrate(); }
@@ -560,12 +758,25 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                             score: (prev.unitConvert.score || 0) + xp,
                             streak: newStreak,
                             bestStreak: newBest,
+                            quizTotal: newQTotal,
                             quiz: Object.assign({}, prev.unitConvert.quiz, { answered: true, userAns: ans, correct: correct, xp: xp, elapsed: elapsed.toFixed(1) })
                           }) });
                         });
+                        // Badge checks
+                        checkBadges({
+                          quizStreak5: correct && newStreak >= 5,
+                          quizStreak10: correct && newStreak >= 10,
+                          speedster: correct && elapsed < 3,
+                          quizMaster: newQTotal >= 20
+                        });
                       }
                     }),
-                    h('span', { className: 'text-xs text-slate-400 shrink-0' }, d.quiz.unit + ' — Enter')
+                    h('span', { className: 'text-xs text-slate-400 shrink-0' }, d.quiz.unit + ' \u2014 Enter'),
+                    h('button', {
+                      onClick: askTutor,
+                      className: 'px-2 py-2 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm',
+                      title: 'Get a hint from AI'
+                    }, '\uD83E\uDDE0')
                   )
                 : h('div', { style: { animation: d.quiz.correct ? 'ucCorrect 0.5s ease' : 'ucWrong 0.4s ease' } },
                     h('p', { className: 'text-base font-bold mb-1 ' + (d.quiz.correct ? 'text-emerald-600' : 'text-red-500') },
@@ -574,20 +785,26 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         : '\u274C Answer was: ' + d.quiz.a + ' ' + d.quiz.unit
                     ),
                     d.quiz.correct && d.quiz.xp > 0 && h('p', { className: 'text-xs text-emerald-400 mb-2' }, '+' + d.quiz.xp + ' XP earned'),
-                    h('button', {
-                      onClick: function() {
-                        var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
-                        upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
-                        stemBeep && stemBeep('click');
-                      },
-                      className: 'px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-all'
-                    }, '\uD83D\uDD04 Next Question')
+                    h('div', { className: 'flex gap-2' },
+                      h('button', {
+                        onClick: function() {
+                          var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
+                          upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
+                          stemBeep && stemBeep('click');
+                        },
+                        className: 'px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-all'
+                      }, '\uD83D\uDD04 Next Question'),
+                      !d.quiz.correct && h('button', {
+                        onClick: askTutor,
+                        className: 'px-4 py-2 bg-purple-100 text-purple-600 rounded-lg text-xs font-bold hover:bg-purple-200 transition-all'
+                      }, '\uD83E\uDDE0 Explain')
+                    )
                   )
             )
 
           ),
 
-          // ═══ TAB: WORD PROBLEM ══════════════════════════════════════════
+          // ═══ TAB: WORD PROBLEM ═══
           tab === 'wordproblem' && h('div', { key: 'wp' },
 
             h('div', { className: 'flex items-center justify-between mb-3' },
@@ -608,6 +825,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     upd('wordProblem', resp);
                     upd('loadingWP', false);
                     awardStemXP && awardStemXP(2);
+                    checkBadges({ wordProblem: true });
                   }).catch(function() {
                     upd('loadingWP', false);
                     addToast('Could not generate problem. Try again.', 'error');
@@ -669,6 +887,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               )
             )
 
+          ),
+
+          // ── Keyboard shortcuts legend ──
+          h('div', { className: 'text-[10px] text-slate-400 text-center mt-3 space-x-3' },
+            h('span', null, '1-4 Tabs'),
+            h('span', null, 'N Next Quiz'),
+            h('span', null, 'B Badges'),
+            h('span', null, '? AI Tutor')
           )
 
         );
