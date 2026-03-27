@@ -85,6 +85,128 @@ function getPiperDownload(platform, arch) {
   };
 }
 
+// ── Python / Flux helpers ──────────────────────────────────────────────────────
+
+/**
+ * Detect a usable Python 3 interpreter.
+ * Returns the absolute path or null.
+ */
+function findPython() {
+  const { execSync } = require('child_process');
+  const candidates = process.platform === 'win32'
+    ? ['python', 'python3', 'py -3']
+    : ['python3', 'python'];
+
+  for (const cmd of candidates) {
+    try {
+      const ver = execSync(`${cmd} --version`, { stdio: 'pipe', encoding: 'utf-8' }).trim();
+      if (ver.startsWith('Python 3')) {
+        // Resolve full path
+        const which = process.platform === 'win32' ? 'where' : 'which';
+        const full = execSync(`${which} ${cmd.split(' ')[0]}`, { stdio: 'pipe', encoding: 'utf-8' }).trim().split('\n')[0].trim();
+        console.log(`[native-pm] Found Python: ${full} (${ver})`);
+        return full;
+      }
+    } catch { /* next */ }
+  }
+  return null;
+}
+
+/**
+ * Check whether the Flux venv + server script exist.
+ */
+function isFluxInstalled() {
+  const venvDir = path.join(BINARIES_DIR, 'flux', 'venv');
+  const pip = process.platform === 'win32'
+    ? path.join(venvDir, 'Scripts', 'pip.exe')
+    : path.join(venvDir, 'bin', 'pip');
+  const script = path.join(BINARIES_DIR, 'flux', 'flux_server.py');
+  return fs.existsSync(pip) && fs.existsSync(script);
+}
+
+/**
+ * Install Flux: create venv, pip-install deps, copy server script.
+ */
+async function installFlux(onProgress) {
+  const pythonPath = findPython();
+  if (!pythonPath) {
+    throw new Error(
+      'Python 3 is required for Flux image generation but was not found.\n' +
+      'Please install Python 3.10+ from https://www.python.org/downloads/ and try again.'
+    );
+  }
+
+  const fluxDir = path.join(BINARIES_DIR, 'flux');
+  const venvDir = path.join(fluxDir, 'venv');
+  if (!fs.existsSync(fluxDir)) fs.mkdirSync(fluxDir, { recursive: true });
+
+  // 1. Create venv
+  if (!fs.existsSync(venvDir)) {
+    onProgress({ status: 'Creating Python environment...', progress: 5 });
+    await runCommand(pythonPath, ['-m', 'venv', venvDir]);
+  }
+
+  const pipBin = process.platform === 'win32'
+    ? path.join(venvDir, 'Scripts', 'pip.exe')
+    : path.join(venvDir, 'bin', 'pip');
+  const pythonBin = process.platform === 'win32'
+    ? path.join(venvDir, 'Scripts', 'python.exe')
+    : path.join(venvDir, 'bin', 'python');
+
+  // 2. Upgrade pip
+  onProgress({ status: 'Upgrading pip...', progress: 10 });
+  await runCommand(pythonBin, ['-m', 'pip', 'install', '--upgrade', 'pip']);
+
+  // 3. Install PyTorch + torch-directml (AMD on Windows) or plain torch
+  onProgress({ status: 'Installing PyTorch (this may take a while)...', progress: 15 });
+  // torch-directml gives AMD GPU support on native Windows
+  await runCommand(pipBin, ['install', 'torch', 'torch-directml'], { timeout: 600000 });
+
+  // 4. Install remaining requirements
+  onProgress({ status: 'Installing Flux dependencies...', progress: 50 });
+  const reqs = ['diffusers>=0.30.0', 'transformers', 'accelerate', 'safetensors',
+                'sentencepiece', 'protobuf', 'fastapi', 'uvicorn[standard]', 'Pillow'];
+  await runCommand(pipBin, ['install', ...reqs], { timeout: 600000 });
+
+  // 5. Copy flux_server.py into the install directory
+  onProgress({ status: 'Installing Flux server...', progress: 90 });
+  const isDev = !require('electron').app.isPackaged;
+  const srcScript = isDev
+    ? path.join(__dirname, '..', 'docker_templates', 'flux-server', 'flux_server.py')
+    : path.join(process.resourcesPath, 'docker_templates', 'flux-server', 'flux_server.py');
+
+  if (fs.existsSync(srcScript)) {
+    fs.copyFileSync(srcScript, path.join(fluxDir, 'flux_server.py'));
+  } else {
+    console.warn('[native-pm] flux_server.py source not found at', srcScript);
+    throw new Error('flux_server.py not found. Cannot install Flux.');
+  }
+
+  onProgress({ status: 'Flux installed', progress: 100 });
+}
+
+/**
+ * Run a command and return a promise. Logs output.
+ */
+function runCommand(cmd, args, opts = {}) {
+  return new Promise((resolve, reject) => {
+    console.log(`[native-pm:run] ${cmd} ${args.join(' ')}`);
+    const proc = spawn(cmd, args, {
+      windowsHide: true,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      ...opts
+    });
+    let stderr = '';
+    proc.stdout.on('data', d => console.log(`[pip] ${d.toString().trim()}`));
+    proc.stderr.on('data', d => { stderr += d.toString(); });
+    proc.on('close', code => {
+      if (code !== 0) reject(new Error(`Command failed (exit ${code}): ${stderr.slice(-500)}`));
+      else resolve();
+    });
+    proc.on('error', reject);
+  });
+}
+
 // ── Directory Setup ───────────────────────────────────────────────────────────
 
 function ensureDirectories() {
@@ -206,6 +328,9 @@ function extractTar(tarPath, destDir) {
  * Check if a service binary is already installed.
  */
 function isServiceInstalled(serviceId) {
+  if (serviceId === 'flux') return isFluxInstalled();
+  if (serviceId === 'search') return true; // built-in
+
   const downloads = getDownloadInfo();
   const info = downloads[serviceId];
   if (!info) return false;
@@ -230,6 +355,9 @@ function isServiceInstalled(serviceId) {
  */
 async function installService(serviceId, onProgress) {
   ensureDirectories();
+  if (serviceId === 'search') return; // built-in, nothing to install
+  if (serviceId === 'flux') return installFlux(onProgress);
+
   const downloads = getDownloadInfo();
   const info = downloads[serviceId];
 
@@ -382,17 +510,41 @@ function startService(serviceId) {
       break;
 
     case 'piper': {
-      // Piper: run as a Wyoming protocol server
-      // Piper doesn't have a built-in HTTP server — we need the Wyoming wrapper
-      // or just keep it available for on-demand invocation.
-      // For now, we note that Piper is CLI-based: echo "text" | piper --model ... --output_file ...
-      // We'll start a thin wrapper that accepts HTTP requests.
-      // For simplicity, mark Piper as "available" without a persistent process.
-      // The flux_server.py pattern could work here too, but Piper is fast enough for on-demand.
       console.log(`[native-pm] Piper is CLI-based, no persistent process needed`);
       console.log(`[native-pm] Binary at: ${binaryPath}`);
       return -1; // Sentinel: no persistent process
     }
+
+    case 'flux': {
+      // Flux: run flux_server.py with the venv Python
+      const fluxDir = path.join(BINARIES_DIR, 'flux');
+      const venvPython = process.platform === 'win32'
+        ? path.join(fluxDir, 'venv', 'Scripts', 'python.exe')
+        : path.join(fluxDir, 'venv', 'bin', 'python');
+      const script = path.join(fluxDir, 'flux_server.py');
+
+      if (!fs.existsSync(venvPython) || !fs.existsSync(script)) {
+        throw new Error('Flux is not installed. Run install first.');
+      }
+
+      proc = spawn(venvPython, [script], {
+        env: {
+          ...process.env,
+          PORT: '7860',
+          FLUX_MODEL: 'black-forest-labs/FLUX.1-schnell',
+          MAX_IMAGE_SIZE: '1024',
+          HF_HOME: path.join(getServiceDataDir('flux'), 'models')
+        },
+        cwd: fluxDir,
+        windowsHide: true,
+        stdio: ['ignore', 'pipe', 'pipe']
+      });
+      break;
+    }
+
+    case 'search':
+      // Built-in module — nothing to spawn
+      return -1;
 
     default:
       throw new Error(`Unknown service: ${serviceId}`);
@@ -444,7 +596,8 @@ function stopAllServices() {
 async function checkServiceHealth(serviceId) {
   const healthEndpoints = {
     ollama: 'http://127.0.0.1:11434/api/tags',
-    pocketbase: 'http://127.0.0.1:8090/api/health'
+    pocketbase: 'http://127.0.0.1:8090/api/health',
+    flux: 'http://127.0.0.1:7860/health'
   };
 
   const endpoint = healthEndpoints[serviceId];

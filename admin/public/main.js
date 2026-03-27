@@ -367,13 +367,6 @@ async function startDeployment(setupData, onProgress) {
       const svcDef = SERVICE_DEFINITIONS[serviceId];
       if (!svcDef) continue;
       
-      // Skip Flux for now (needs Python — handled separately)
-      if (svcDef.needsPython) {
-        console.log(`[deploy:start] Skipping ${serviceId} (needs Python, handled separately)`);
-        installed++;
-        continue;
-      }
-      
       const baseProgress = 10 + (installed / totalToInstall) * 60;
       
       if (nativePM.isServiceInstalled(serviceId)) {
@@ -407,7 +400,7 @@ async function startDeployment(setupData, onProgress) {
     
     for (const serviceId of servicesToInstall) {
       const svcDef = SERVICE_DEFINITIONS[serviceId];
-      if (!svcDef || svcDef.needsPython) continue;
+      if (!svcDef) continue;
       
       onProgress({
         phase: 'starting',
@@ -428,7 +421,7 @@ async function startDeployment(setupData, onProgress) {
     
     for (const serviceId of servicesToInstall) {
       const svcDef = SERVICE_DEFINITIONS[serviceId];
-      if (!svcDef || !svcDef.healthCheck || svcDef.needsPython) continue;
+      if (!svcDef || !svcDef.healthCheck) continue;
       
       onProgress({
         phase: 'healthcheck',

@@ -1,6 +1,6 @@
 {
   "name": "alloflow-admin",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "AlloFlow Admin - Setup Wizard & Management",
   "main": "public/main.js",
   "author": "AlloFlow Team",
@@ -52,7 +52,9 @@
     "extraMetadata": {
       "main": "public/main.js"
     },
-
+    "extraResources": [
+      "docker_templates/flux-server/flux_server.py"
+    ],
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
