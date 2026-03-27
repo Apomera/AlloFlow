@@ -557,10 +557,10 @@
         var patchedProfiles = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { image: img, name: avatarName, description: avatarDesc }) : p; });
         setProfiles(patchedProfiles); store(STORAGE_PROFILES, patchedProfiles);
         setStoryStudentName(avatarName);
-        addToast && addToast({ message: 'Avatar created for ' + (avatarName || 'student') + '!', type: 'success' });
+        addToast && addToast('Avatar created for ' + (avatarName || 'student') + '!', 'success');
       } catch (e) {
         warnLog("Avatar generation failed:", e);
-        addToast && addToast({ message: 'Avatar generation failed', type: 'error' });
+        addToast && addToast('Avatar generation failed', 'error');
       } finally { setAvatarGenerating(false); }
     }, [avatarDesc, avatarName, activeProfileId, profiles, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -572,7 +572,7 @@
         var img = e2.target.result;
         var patchedProfiles = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { image: img }) : p; });
         setProfiles(patchedProfiles); store(STORAGE_PROFILES, patchedProfiles);
-        addToast && addToast({ message: 'Avatar photo uploaded!', type: 'success' });
+        addToast && addToast('Avatar photo uploaded!', 'success');
       };
       reader.readAsDataURL(file);
     }, [activeProfileId, profiles, addToast]);
@@ -622,9 +622,9 @@
         var updated = [entry].concat(gallery);
         setGallery(updated); store(STORAGE_GALLERY, updated);
         setSelectedId(entry.id);
-        addToast && addToast({ message: 'Symbol created!', type: 'success' });
+        addToast && addToast('Symbol created!', 'success');
       } catch (e) {
-        addToast && addToast({ message: 'Generation failed: ' + e.message, type: 'error' });
+        addToast && addToast('Generation failed: ' + e.message, 'error');
       } finally { setSymLoading(function (p) { var n = Object.assign({}, p); delete n[tid]; return n; }); }
     }, [symLabel, symDesc, globalStyle, gallery, autoClean, avatarRef, avatarDesc, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -645,10 +645,10 @@
         var updated = valid.concat(gallery);
         setGallery(updated); store(STORAGE_GALLERY, updated);
         setSelectedId(valid[0].id);
-        addToast && addToast({ message: valid.length + ' symbol(s) created!', type: 'success' });
+        addToast && addToast(valid.length + ' symbol(s) created!', 'success');
       }
       if (batchOut.failed.length > 0) {
-        addToast && addToast({ message: 'Failed to generate: ' + batchOut.failed.join(', '), type: 'error' });
+        addToast && addToast('Failed to generate: ' + batchOut.failed.join(', '), 'error');
       }
       setSymLoading({});
     }, [symBatch, globalStyle, gallery, autoClean, avatarRef, onCallImagen, onCallGeminiImageEdit, addToast]);
@@ -663,7 +663,7 @@
         var updated = gallery.map(function (i) { return i.id === id ? Object.assign({}, i, { image: imageUrl }) : i; });
         setGallery(updated); store(STORAGE_GALLERY, updated);
       } catch (e) {
-        addToast && addToast({ message: 'Regen failed', type: 'error' });
+        addToast && addToast('Regen failed', 'error');
       } finally { setSymLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [gallery, autoClean, avatarRef, avatarDesc, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -680,7 +680,7 @@
           setSymRefine(function (p) { var n = Object.assign({}, p); n[id] = ''; return n; });
         }
       } catch (e) {
-        addToast && addToast({ message: 'Refinement failed', type: 'error' });
+        addToast && addToast('Refinement failed', 'error');
       } finally { setSymLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [gallery, onCallGeminiImageEdit, addToast]);
 
@@ -708,7 +708,7 @@
       if (!window.confirm('Clear all ' + gallery.length + ' symbols from the gallery? This cannot be undone.')) return;
       setGallery([]); store(STORAGE_GALLERY, []);
       setSelectedId(null);
-      addToast && addToast({ message: 'Gallery cleared', type: 'info' });
+      addToast && addToast('Gallery cleared', 'info');
     }, [gallery, addToast]);
 
     var exportData = useCallback(function () {
@@ -729,7 +729,7 @@
       a.download = 'symbol_studio_' + new Date().toISOString().slice(0, 10) + '.json';
       document.body.appendChild(a); a.click();
       document.body.removeChild(a); URL.revokeObjectURL(url);
-      addToast && addToast({ message: 'Backup downloaded!', type: 'success' });
+      addToast && addToast('Backup downloaded!', 'success');
     }, [gallery, savedBoards, savedSchedules, profiles, books, addToast]);
 
     var importData = useCallback(function (ev) {
@@ -786,10 +786,10 @@
             setBooks(mergedBooks); store(STORAGE_BOOKS, mergedBooks);
             summary.push(data.books.length + ' activity set(s)');
           }
-          addToast && addToast({ message: summary.length ? 'Imported: ' + summary.join(', ') : 'Nothing found to import', type: summary.length ? 'success' : 'info' });
+          addToast && addToast(summary.length ? 'Imported: ' + summary.join(', ') : 'Nothing found to import', summary.length ? 'success' : 'info');
         } catch (err) {
           warnLog('Import failed:', err);
-          addToast && addToast({ message: 'Import failed — check that this is a valid Symbol Studio backup file', type: 'error' });
+          addToast && addToast('Import failed — check that this is a valid Symbol Studio backup file', 'error');
         }
       };
       reader.readAsText(file);
@@ -818,11 +818,11 @@
         };
         await cloudSync.save(data);
         setLastSynced(data.lastSynced); setSyncStatus('synced');
-        addToast && addToast({ message: '☁️ Synced to cloud!', type: 'success' });
+        addToast && addToast('☁️ Synced to cloud!', 'success');
       } catch (e) {
         warnLog('Cloud sync failed:', e);
         setSyncStatus('error');
-        addToast && addToast({ message: 'Cloud sync failed: ' + e.message, type: 'error' });
+        addToast && addToast('Cloud sync failed: ' + e.message, 'error');
       }
     }, [cloudSync, profiles, savedBoards, savedSchedules, gallery, addToast]);
 
@@ -833,7 +833,7 @@
         var data = await cloudSync.load();
         if (!data) {
           setSyncStatus('idle');
-          addToast && addToast({ message: 'No cloud backup found', type: 'info' }); return;
+          addToast && addToast('No cloud backup found', 'info'); return;
         }
         var summary = [];
         // Profiles: merge cloud metadata with local images
@@ -889,11 +889,11 @@
         }
         if (data.lastSynced) setLastSynced(data.lastSynced);
         setSyncStatus('synced');
-        addToast && addToast({ message: '☁️ Loaded from cloud: ' + (summary.length ? summary.join(', ') : 'up to date'), type: 'success' });
+        addToast && addToast('☁️ Loaded from cloud: ' + (summary.length ? summary.join(', ') : 'up to date'), 'success');
       } catch (e) {
         warnLog('Cloud load failed:', e);
         setSyncStatus('error');
-        addToast && addToast({ message: 'Cloud load failed: ' + e.message, type: 'error' });
+        addToast && addToast('Cloud load failed: ' + e.message, 'error');
       }
     }, [cloudSync, profiles, savedBoards, savedSchedules, addToast]);
 
@@ -912,17 +912,17 @@
         if (!Array.isArray(parsed) || !parsed.length) throw new Error('Could not parse word list');
         setBoardTitle(boardTopic.trim());
         setBoardWords(parsed.map(function (w) { return Object.assign({ id: uid(), image: null }, w); }));
-        addToast && addToast({ message: parsed.length + ' words ready — click Generate Images!', type: 'success' });
+        addToast && addToast(parsed.length + ' words ready — click Generate Images!', 'success');
       } catch (e) {
         warnLog("Board word gen failed:", e);
-        addToast && addToast({ message: 'Word list generation failed: ' + e.message, type: 'error' });
+        addToast && addToast('Word list generation failed: ' + e.message, 'error');
       } finally { setBoardGenerating(false); }
     }, [boardTopic, onCallGemini, addToast]);
 
     var generateBoardImages = useCallback(async function () {
       if (!boardWords.length || !onCallImagen) return;
       var items = boardWords.filter(function (w) { return !w.image; });
-      if (!items.length) { addToast && addToast({ message: 'All images already generated', type: 'info' }); return; }
+      if (!items.length) { addToast && addToast('All images already generated', 'info'); return; }
       // ── Symbol reuse: check gallery before calling Imagen ──────────────
       var galleryMap = {};
       gallery.forEach(function (g) { if (g.image) galleryMap[g.label.toLowerCase().trim()] = g.image; });
@@ -937,9 +937,9 @@
           var map = {}; preMatched.forEach(function (r) { map[r.id] = r.image; });
           return prev.map(function (w) { return map[w.id] ? Object.assign({}, w, { image: map[w.id] }) : w; });
         });
-        addToast && addToast({ message: preMatched.length + ' symbol(s) reused from gallery \u2013 saving API calls!', type: 'info' });
+        addToast && addToast(preMatched.length + ' symbol(s) reused from gallery \u2013 saving API calls!', 'info');
       }
-      if (!toGenerate.length) { addToast && addToast({ message: 'All images ready!', type: 'success' }); return; }
+      if (!toGenerate.length) { addToast && addToast('All images ready!', 'success'); return; }
       var loadMap = {};
       toGenerate.forEach(function (i) { loadMap[i.id] = true; });
       setBoardLoading(function (p) { return Object.assign({}, p, loadMap); });
@@ -953,9 +953,9 @@
         return prev.map(function (w) { return map[w.id] ? Object.assign({}, w, { image: map[w.id].image }) : w; });
       });
       setBoardLoading({});
-      addToast && addToast({ message: 'Board images generated!', type: 'success' });
+      addToast && addToast('Board images generated!', 'success');
       if (batchOut.failed.length > 0) {
-        addToast && addToast({ message: 'Failed: ' + batchOut.failed.join(', '), type: 'error' });
+        addToast && addToast('Failed: ' + batchOut.failed.join(', '), 'error');
       }
     }, [boardWords, gallery, autoClean, avatarRef, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -968,7 +968,7 @@
         var imageUrl = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 300);
         setBoardWords(function (prev) { return prev.map(function (w) { return w.id === id ? Object.assign({}, w, { image: imageUrl }) : w; }); });
       } catch (e) {
-        addToast && addToast({ message: 'Image failed for ' + (word.label || ''), type: 'error' });
+        addToast && addToast('Image failed for ' + (word.label || ''), 'error');
       } finally { setBoardLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [boardWords, globalStyle, autoClean, avatarRef, avatarDesc, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -977,7 +977,7 @@
       var saved = { id: uid(), title: boardTitle || boardTopic, words: boardWords, cols: boardCols, profileId: activeProfileId || null, createdAt: Date.now() };
       var updated = [saved].concat(savedBoards);
       setSavedBoards(updated); store(STORAGE_BOARDS, updated);
-      addToast && addToast({ message: 'Board saved!', type: 'success' });
+      addToast && addToast('Board saved!', 'success');
       if (cloudSync) setTimeout(function () { syncToCloud(); }, 300);
     }, [boardWords, boardTitle, boardTopic, boardCols, activeProfileId, savedBoards, cloudSync, syncToCloud, addToast]);
 
@@ -986,7 +986,7 @@
       setBoardWords(words);
       setBoardTitle(template.label);
       setBoardTopic(template.label);
-      addToast && addToast({ message: template.label + ' template loaded — click ✨ Generate Images to start!', type: 'success' });
+      addToast && addToast(template.label + ' template loaded — click ✨ Generate Images to start!', 'success');
     }, [addToast]);
 
     var loadBoard = useCallback(function (board) {
@@ -994,7 +994,7 @@
       setBoardTitle(board.title || '');
       setBoardCols(board.cols || 4);
       setShowBoardGallery(false);
-      addToast && addToast({ message: 'Board loaded!', type: 'success' });
+      addToast && addToast('Board loaded!', 'success');
     }, [addToast]);
 
     var deleteSavedBoard = useCallback(function (id) {
@@ -1013,7 +1013,7 @@
       a.download = 'alloboard_' + safeName + '.json';
       document.body.appendChild(a); a.click();
       document.body.removeChild(a); URL.revokeObjectURL(url);
-      addToast && addToast({ message: '"' + (board.title || 'Board') + '" exported!', type: 'success' });
+      addToast && addToast('"' + (board.title || 'Board') + '" exported!', 'success');
     }, [addToast]);
 
     var importSingleBoard = useCallback(function (ev) {
@@ -1030,9 +1030,9 @@
           var updated = [imported].concat(savedBoards);
           setSavedBoards(updated); store(STORAGE_BOARDS, updated);
           setShowBoardGallery(true);
-          addToast && addToast({ message: 'Board imported: "' + (imported.title || 'Untitled') + '"', type: 'success' });
+          addToast && addToast('Board imported: "' + (imported.title || 'Untitled') + '"', 'success');
         } catch (err) {
-          addToast && addToast({ message: 'Import failed — not a valid board file', type: 'error' });
+          addToast && addToast('Import failed — not a valid board file', 'error');
         }
       };
       reader.readAsText(file);
@@ -1047,7 +1047,7 @@
     var addFromGallery = useCallback(function (item) {
       var newWord = { id: uid(), label: item.label, description: item.label, category: 'other', image: item.image };
       setBoardWords(function (prev) { return prev.concat([newWord]); });
-      addToast && addToast({ message: '\u201c' + item.label + '\u201d added to board', type: 'success' });
+      addToast && addToast('\u201c' + item.label + '\u201d added to board', 'success');
     }, [addToast]);
 
     // Sized print: injects a temporary @media print rule then calls window.print()
@@ -1072,7 +1072,7 @@
       var updated = [book].concat(books);
       setBooks(updated); store(STORAGE_BOOKS, updated);
       setNewBookTitle(''); setActiveBookId(book.id);
-      addToast && addToast({ message: 'Activity Set \u201c' + book.title + '\u201d created!', type: 'success' });
+      addToast && addToast('Activity Set \u201c' + book.title + '\u201d created!', 'success');
     }, [newBookTitle, activeProfileId, books, addToast]);
 
     var deleteBook = useCallback(function (bookId) {
@@ -1099,7 +1099,7 @@
 
     var printBook = useCallback(function (book) {
       var boardsInSet = book.boardIds.map(function (id) { return savedBoards.find(function (b) { return b.id === id; }); }).filter(Boolean);
-      if (!boardsInSet.length) { addToast && addToast({ message: 'No boards in this set yet', type: 'error' }); return; }
+      if (!boardsInSet.length) { addToast && addToast('No boards in this set yet', 'error'); return; }
       var sz = CELL_SIZES[boardCellSz] || 192;
       var imgSz = sz - 28;
       var styleId = 'ss-print-sz-override';
@@ -1153,12 +1153,12 @@
         );
         setSchedItems(batchOut.results);
         setSchedNowId(batchOut.results[0] ? batchOut.results[0].id : null);
-        addToast && addToast({ message: 'Schedule generated!', type: 'success' });
+        addToast && addToast('Schedule generated!', 'success');
         if (batchOut.failed.length > 0) {
-          addToast && addToast({ message: 'Failed: ' + batchOut.failed.join(', '), type: 'error' });
+          addToast && addToast('Failed: ' + batchOut.failed.join(', '), 'error');
         }
       } catch (e) {
-        addToast && addToast({ message: 'Schedule generation failed', type: 'error' });
+        addToast && addToast('Schedule generation failed', 'error');
       } finally { setSchedGenerating(false); }
     }, [schedInput, autoClean, avatarRef, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -1178,7 +1178,7 @@
       var saved = { id: uid(), title: schedTitle || 'Schedule', items: schedItems, orientation: schedOrientation, createdAt: Date.now() };
       var updated = [saved].concat(savedSchedules);
       setSavedSchedules(updated); store(STORAGE_SCHEDULES, updated);
-      addToast && addToast({ message: 'Schedule saved!', type: 'success' });
+      addToast && addToast('Schedule saved!', 'success');
       if (cloudSync) setTimeout(function () { syncToCloud(); }, 300);
     }, [schedItems, schedTitle, schedOrientation, savedSchedules, cloudSync, syncToCloud, addToast]);
 
@@ -1193,7 +1193,7 @@
       setSchedOrientation(sched.orientation || 'horizontal');
       setSchedNowId(sched.items.length ? sched.items[0].id : null);
       setShowSchedGallery(false);
-      addToast && addToast({ message: 'Schedule loaded!', type: 'success' });
+      addToast && addToast('Schedule loaded!', 'success');
     }, [addToast]);
 
     var deleteSavedSchedule = useCallback(function (id) {
@@ -1225,7 +1225,7 @@
         if (!Array.isArray(parsed) || !parsed.length) throw new Error('Could not parse story');
         var pages = parsed.map(function (p) { return { id: uid(), text: p.text || '', imagePrompt: p.imagePrompt || '', image: null }; });
         setStoryPages(pages);
-        addToast && addToast({ message: 'Story written! Generating illustrations...', type: 'success' });
+        addToast && addToast('Story written! Generating illustrations...', 'success');
         // Auto-generate illustrations
         if (onCallImagen) {
           var illMap = {};
@@ -1251,7 +1251,7 @@
         }
       } catch (e) {
         warnLog("Story generation failed:", e);
-        addToast && addToast({ message: 'Story generation failed: ' + e.message, type: 'error' });
+        addToast && addToast('Story generation failed: ' + e.message, 'error');
       } finally { setStoryGenerating(false); }
     }, [storySituation, storyStudentName, storyDetails, avatarRef, onCallGemini, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -1270,7 +1270,7 @@
         var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, false, avatarRef, 600);
         setStoryPages(function (prev) { return prev.map(function (pp) { return pp.id === pageId ? Object.assign({}, pp, { image: img }) : pp; }); });
       } catch (e) {
-        addToast && addToast({ message: 'Illustration failed', type: 'error' });
+        addToast && addToast('Illustration failed', 'error');
       } finally { setStoryIllustrating(function (p) { var n = Object.assign({}, p); delete n[pageId]; return n; }); }
     }, [storyPages, avatarRef, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -1283,7 +1283,7 @@
         var prompt = buildSymbolPrompt(label, '', globalStyle, avatarRef ? avatarDesc : '');
         var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 400);
         which === 'first' ? setFtFirstImage(img) : setFtThenImage(img);
-      } catch (e) { addToast && addToast({ message: 'Generation failed', type: 'error' }); }
+      } catch (e) { addToast && addToast('Generation failed', 'error'); }
       finally { which === 'first' ? setFtFirstLoading(false) : setFtThenLoading(false); }
     }, [ftFirstLabel, ftThenLabel, globalStyle, avatarRef, avatarDesc, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -1295,7 +1295,7 @@
         var prompt = buildSymbolPrompt(item.label, '', globalStyle, avatarRef ? avatarDesc : '');
         var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 400);
         setCbItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
-      } catch (e) { addToast && addToast({ message: 'Generation failed', type: 'error' }); }
+      } catch (e) { addToast && addToast('Generation failed', 'error'); }
       finally { setCbLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [cbItems, globalStyle, avatarRef, avatarDesc, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -1306,7 +1306,7 @@
         var prompt = buildSymbolPrompt(tokenRewardLabel, 'a reward or prize', globalStyle, '');
         var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
         setTokenRewardImage(img);
-      } catch (e) { addToast && addToast({ message: 'Generation failed', type: 'error' }); }
+      } catch (e) { addToast && addToast('Generation failed', 'error'); }
       finally { setTokenRewardLoading(false); }
     }, [tokenRewardLabel, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -1347,7 +1347,7 @@
         var prompt = buildSymbolPrompt(item.label, 'a calming self-regulation strategy for children, peaceful and soothing scene', globalStyle, '');
         var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
         setCmItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
-      } catch (e) { addToast && addToast({ message: 'Generation failed', type: 'error' }); }
+      } catch (e) { addToast && addToast('Generation failed', 'error'); }
       finally { setCmLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [cmItems, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -1367,7 +1367,7 @@
         return prev.map(function (it) { return map[it.id] ? Object.assign({}, it, { image: map[it.id].image }) : it; });
       });
       setCmLoading({});
-      addToast && addToast({ message: 'Calming Corner images ready!', type: 'success' });
+      addToast && addToast('Calming Corner images ready!', 'success');
     }, [cmItems, autoClean, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     // ── Sensory Needs actions ──────────────────────────────────────────────
@@ -1379,7 +1379,7 @@
         var prompt = buildSymbolPrompt(item.label, 'a sensory regulation need for a child with sensory sensitivities, clear and simple AAC-style symbol', globalStyle, '');
         var img = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
         setSnItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
-      } catch (e) { addToast && addToast({ message: 'Generation failed', type: 'error' }); }
+      } catch (e) { addToast && addToast('Generation failed', 'error'); }
       finally { setSnLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [snItems, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
 
@@ -1399,7 +1399,7 @@
         return prev.map(function (it) { return map[it.id] ? Object.assign({}, it, { image: map[it.id].image }) : it; });
       });
       setSnLoading({});
-      addToast && addToast({ message: 'Sensory Needs images ready!', type: 'success' });
+      addToast && addToast('Sensory Needs images ready!', 'success');
     }, [snItems, autoClean, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     // ── Styles ─────────────────────────────────────────────────────────────
