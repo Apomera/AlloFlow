@@ -482,7 +482,15 @@ var d = labToolData || {};
 
           var geoLandmarkIdx = d.geoLandmarkIdx || 0;
 
+          // Distance challenge state
+          var geoDistA = d.geoDistA || null;
+          var geoDistB = d.geoDistB || null;
+          var geoDistGuess = d.geoDistGuess || '';
+          var geoDistFeedback = d.geoDistFeedback || null;
+          var geoDistCorrect = d.geoDistCorrect || 0;
 
+          // Badge state
+          var geoBadges = d.geoBadges || {};
 
           // Filter countries by region
 
@@ -560,6 +568,9 @@ var d = labToolData || {};
 
               upd('geoFeedback', { correct: true, msg: '\u2705 Correct! +' + (pts + bonus) + ' pts' + (bonus > 0 ? ' (\uD83D\uDD25 streak!)' : '') });
 
+              if (typeof stemBeep === 'function') stemBeep('correct');
+              if (newStreak >= 5 && typeof stemCelebrate === 'function') stemCelebrate();
+
               if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', pts, 'Identified ' + geoTarget.name);
 
               setTimeout(function() { pickTarget(geoTab); }, 1500);
@@ -569,6 +580,8 @@ var d = labToolData || {};
               var clicked = countries.find(function(c) { return c.iso === clickedIso; });
 
               upd('geoStreak', 0);
+
+              if (typeof stemBeep === 'function') stemBeep('wrong');
 
               upd('geoFeedback', { correct: false, msg: '\u274C That was ' + (clicked ? clicked.name : 'unknown') + '. The answer is ' + geoTarget.name + '.' });
 
@@ -598,6 +611,8 @@ var d = labToolData || {};
 
               upd('geoFeedback', { correct: true, msg: '\u2705 Correct! The capital of ' + geoTarget.name + ' is ' + geoTarget.capital });
 
+              if (typeof stemBeep === 'function') stemBeep('correct');
+
               if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', 10, 'Knew capital of ' + geoTarget.name);
 
               setTimeout(function() { pickTarget('capitals'); }, 1500);
@@ -605,6 +620,8 @@ var d = labToolData || {};
             } else {
 
               upd('geoStreak', 0);
+
+              if (typeof stemBeep === 'function') stemBeep('wrong');
 
               upd('geoFeedback', { correct: false, msg: '\u274C The capital of ' + geoTarget.name + ' is ' + geoTarget.capital + ', not "' + input.trim() + '".' });
 
@@ -899,6 +916,7 @@ var d = labToolData || {};
 
               upd('geoFeedback', { correct: true, msg: '\u2705 Correct! ' + bigger.name + ' (' + bigger.area.toLocaleString() + ' km\u00b2) is bigger!' });
 
+              if (typeof stemBeep === 'function') stemBeep('correct');
               if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', 10, 'Size compare');
 
               setTimeout(pickSizePair, 1500);
@@ -915,6 +933,80 @@ var d = labToolData || {};
 
           }
 
+
+          // ── Haversine distance (km) ──
+          function haversineKm(lat1, lon1, lat2, lon2) {
+            var R = 6371;
+            var dLat = (lat2 - lat1) * Math.PI / 180;
+            var dLon = (lon2 - lon1) * Math.PI / 180;
+            var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          }
+
+          // ── Distance Challenge helpers ──
+          function pickDistancePair() {
+            var pool = filteredCountries.filter(function(c) { return c.area > 10000; });
+            var a = pool[Math.floor(Math.random() * pool.length)];
+            var b = pool[Math.floor(Math.random() * pool.length)];
+            while (b.iso === a.iso) b = pool[Math.floor(Math.random() * pool.length)];
+            upd('geoDistA', a); upd('geoDistB', b);
+            upd('geoDistGuess', ''); upd('geoDistFeedback', null);
+          }
+
+          if (geoTab === 'distance' && !geoDistA) setTimeout(pickDistancePair, 0);
+
+          function checkDistanceAnswer() {
+            if (!geoDistA || !geoDistB) return;
+            var actual = Math.round(haversineKm(geoDistA.lat, geoDistA.lng, geoDistB.lat, geoDistB.lng));
+            var guess = parseInt(geoDistGuess, 10);
+            if (isNaN(guess) || guess <= 0) {
+              upd('geoDistFeedback', { correct: false, msg: '⚠️ Enter a valid number in km' });
+              return;
+            }
+            var pctOff = Math.abs(guess - actual) / actual;
+            if (pctOff <= 0.15) {
+              var pts = pctOff <= 0.05 ? 20 : pctOff <= 0.10 ? 15 : 10;
+              upd('geoScore', geoScore + pts);
+              upd('geoStreak', geoStreak + 1);
+              upd('geoDistCorrect', geoDistCorrect + 1);
+              upd('geoDistFeedback', { correct: true, msg: '✅ Great! Actual: ' + actual.toLocaleString() + ' km (you were ' + Math.round(pctOff * 100) + '% off) +' + pts + ' pts' });
+              if (typeof awardStemXP === 'function') awardStemXP('geoQuiz', pts, 'Distance estimate');
+              setTimeout(pickDistancePair, 2000);
+            } else {
+              upd('geoStreak', 0);
+              upd('geoDistFeedback', { correct: false, msg: '❌ Actual distance: ' + actual.toLocaleString() + ' km. You guessed ' + guess.toLocaleString() + ' km (' + Math.round(pctOff * 100) + '% off). Within 15% to score!' });
+              setTimeout(pickDistancePair, 3000);
+            }
+          }
+
+          // ── Badge definitions ──
+          var GEO_BADGES = [
+            { id: 'explorer', icon: '🧭', name: 'Explorer', desc: 'Answer 10 questions', check: function() { return geoAnswered.length >= 10; } },
+            { id: 'streak5', icon: '🔥', name: 'On Fire', desc: '5x streak', check: function() { return geoStreak >= 5; } },
+            { id: 'century', icon: '💯', name: 'Century', desc: 'Reach 100 points', check: function() { return geoScore >= 100; } },
+            { id: 'distPro', icon: '📍', name: 'Distance Pro', desc: 'Nail 5 distance challenges', check: function() { return geoDistCorrect >= 5; } },
+            { id: 'globetrotter', icon: '✈️', name: 'Globetrotter', desc: 'Answer 25 questions', check: function() { return geoAnswered.length >= 25; } },
+            { id: 'streak10', icon: '⚡', name: 'Lightning', desc: '10x streak', check: function() { return geoStreak >= 10; } }
+          ];
+
+          function checkGeoBadges() {
+            var newBadges = Object.assign({}, geoBadges);
+            var earned = false;
+            GEO_BADGES.forEach(function(b) {
+              if (!newBadges[b.id] && b.check()) {
+                newBadges[b.id] = true;
+                earned = true;
+                if (addToast) addToast(b.icon + ' Badge: ' + b.name + '!', 'success');
+                if (typeof stemCelebrate === 'function') stemCelebrate();
+              }
+            });
+            if (earned) upd('geoBadges', newBadges);
+          }
+
+          // Check badges whenever score/streak changes
+          if (geoScore > 0 || geoStreak > 0 || geoDistCorrect > 0) setTimeout(checkGeoBadges, 100);
 
 
           // ── Tab definitions ──
@@ -933,7 +1025,9 @@ var d = labToolData || {};
 
             { id: 'globeView', icon: '\uD83C\uDF10', label: 'Globe View' },
 
-            { id: 'quizBuilder', icon: '\uD83C\uDFC6', label: 'Quiz Builder' }
+            { id: 'quizBuilder', icon: '\uD83C\uDFC6', label: 'Quiz Builder' },
+
+            { id: 'distance', icon: '\uD83D\uDCCD', label: 'Distance' }
 
           ];
 
@@ -1601,6 +1695,72 @@ var d = labToolData || {};
 
 
 
+            // ── Distance tab content ──
+            geoTab === 'distance' && React.createElement('div', { className: 'p-5 space-y-4' },
+              React.createElement('h3', { className: 'text-sm font-bold text-teal-700' }, '\uD83D\uDCCD Distance Challenge'),
+              React.createElement('p', { className: 'text-xs text-slate-500' }, 'Estimate the distance between two countries (within 15% to score!)'),
+
+              geoDistA && geoDistB ? React.createElement('div', { className: 'space-y-4' },
+                // Country cards
+                React.createElement('div', { className: 'flex items-center gap-3 justify-center' },
+                  React.createElement('div', { className: 'bg-teal-50 border-2 border-teal-300 rounded-xl px-4 py-3 text-center min-w-[120px]' },
+                    React.createElement('div', { className: 'text-2xl' }, '\uD83C\uDFD9\uFE0F'),
+                    React.createElement('div', { className: 'font-bold text-sm text-teal-800' }, geoDistA.name),
+                    React.createElement('div', { className: 'text-[10px] text-teal-600' }, geoDistA.capital)
+                  ),
+                  React.createElement('div', { className: 'text-2xl text-slate-300' }, '\u2194\uFE0F'),
+                  React.createElement('div', { className: 'bg-cyan-50 border-2 border-cyan-300 rounded-xl px-4 py-3 text-center min-w-[120px]' },
+                    React.createElement('div', { className: 'text-2xl' }, '\uD83C\uDFD9\uFE0F'),
+                    React.createElement('div', { className: 'font-bold text-sm text-cyan-800' }, geoDistB.name),
+                    React.createElement('div', { className: 'text-[10px] text-cyan-600' }, geoDistB.capital)
+                  )
+                ),
+
+                // Input row
+                React.createElement('div', { className: 'flex items-center gap-2 justify-center' },
+                  React.createElement('input', {
+                    type: 'number',
+                    value: geoDistGuess,
+                    onChange: function(e) { upd('geoDistGuess', e.target.value); },
+                    onKeyDown: function(e) { if (e.key === 'Enter') checkDistanceAnswer(); },
+                    placeholder: 'Distance in km...',
+                    className: 'w-48 px-3 py-2 rounded-lg border border-teal-200 text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal-400'
+                  }),
+                  React.createElement('span', { className: 'text-xs text-slate-400 font-bold' }, 'km'),
+                  React.createElement('button', {
+                    onClick: checkDistanceAnswer,
+                    className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-bold hover:bg-teal-700 transition-colors'
+                  }, 'Check'),
+                  React.createElement('button', {
+                    onClick: pickDistancePair,
+                    className: 'px-3 py-2 bg-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-300'
+                  }, 'Skip')
+                ),
+
+                // Feedback
+                geoDistFeedback && React.createElement('div', {
+                  className: 'text-center py-2 px-4 rounded-lg text-sm font-medium ' + (geoDistFeedback.correct ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200')
+                }, geoDistFeedback.msg),
+
+                // Stats
+                React.createElement('div', { className: 'text-center text-xs text-slate-400' },
+                  '\uD83C\uDFAF Distance challenges nailed: ' + geoDistCorrect
+                )
+              ) : React.createElement('div', { className: 'text-center py-8 text-slate-400' }, 'Loading...')
+            ),
+
+            // ── Badge shelf ──
+            React.createElement('div', { className: 'px-4 py-2 border-t border-slate-100 flex flex-wrap gap-1 items-center' },
+              React.createElement('span', { className: 'text-[10px] text-slate-400 mr-1' }, 'Badges:'),
+              GEO_BADGES.map(function(b) {
+                return React.createElement('span', {
+                  key: b.id,
+                  title: b.name + ' — ' + b.desc,
+                  className: 'text-sm ' + (geoBadges[b.id] ? '' : 'grayscale opacity-30')
+                }, b.icon);
+              })
+            ),
+
             // ── Bottom stats ──
 
             React.createElement('div', { className: 'px-4 py-3 bg-gradient-to-r from-slate-50 to-teal-50 border-t flex justify-between items-center text-[10px] text-slate-500' },
@@ -1611,7 +1771,7 @@ var d = labToolData || {};
 
               React.createElement('button', {
 
-                onClick: function() { upd('geoScore', 0); upd('geoStreak', 0); upd('geoAnswered', []); upd('geoTarget', null); upd('geoRound', 0); if (addToast) addToast('\u267B Score reset!', 'info'); },
+                onClick: function() { upd('geoScore', 0); upd('geoStreak', 0); upd('geoAnswered', []); upd('geoTarget', null); upd('geoRound', 0); upd('geoDistCorrect', 0); upd('geoBadges', {}); if (addToast) addToast('\u267B Score reset!', 'info'); },
 
                 className: 'text-teal-600 hover:text-teal-800 font-bold'
 
@@ -1624,6 +1784,9 @@ var d = labToolData || {};
     }
   });
 
+
+  // Mutable drag tracker — avoids React re-renders during drag operations
+  var _gpDrag = { reason: null, matchId: null, angleIdx: null };
 
   // ═══ 📐 geometryProver ═══
   window.StemLab.registerTool('geometryProver', {
@@ -1643,6 +1806,8 @@ var d = labToolData || {};
       const setExploreScore = ctx.setExploreScore || (() => {});
       const exploreScore = ctx.exploreScore || { correct: 0, total: 0 };
       const setToolSnapshots = ctx.setToolSnapshots;
+      const stemCelebrate = ctx.celebrate;
+      const stemBeep = ctx.beep;
 
       return (function() {
         const gp = (labToolData && labToolData.geometryProver) || {};
@@ -1863,7 +2028,158 @@ var d = labToolData || {};
           if (allCorrect) { addToast('🎉 Proof complete! +15 XP','success'); if (typeof awardStemXP==='function') awardStemXP('geometryProver',15,proof.id); setExploreScore(prev=>({correct:prev.correct+1,total:prev.total+1})); }
         };
 
-        // Discover missions (4 missions)
+        // ── Theorem Match Game ──
+        const MATCH_PAIRS = [
+          {id:0, theorem:'Triangle Angle Sum', desc:'Interior angles of a triangle always equal 180°', icon:'△'},
+          {id:1, theorem:'Pythagorean Theorem', desc:'In a right triangle, a² + b² = c²', icon:'⊾'},
+          {id:2, theorem:'Vertical Angles', desc:'Angles opposite each other at an intersection are equal', icon:'✖'},
+          {id:3, theorem:'Isosceles Triangle', desc:'Equal sides produce equal opposite angles', icon:'▲'},
+          {id:4, theorem:'Exterior Angle', desc:'Exterior angle = sum of two non-adjacent interior angles', icon:'📐'}
+        ];
+        const startMatchGame = () => {
+          const shuffled = [...Array(5).keys()].sort(()=>Math.random()-0.5);
+          gpUpd('matchGame',{shuffled, matches:{}, wrong:null, done:false});
+          gpUpd('challenge',{type:'theorem_match',question:'Drag each theorem name to its matching description!'});
+          gpUpd('feedback',null); gpUpd('challengeAnswer','');
+        };
+        const checkMatch = (theoremId, descSlot) => {
+          const mg = gp.matchGame; if(!mg) return;
+          const correct = MATCH_PAIRS[mg.shuffled[descSlot]].id===theoremId;
+          if(correct) {
+            const newMatches = {...mg.matches, [theoremId]:descSlot};
+            const allDone = Object.keys(newMatches).length===5;
+            gpUpd('matchGame',{...mg, matches:newMatches, wrong:null, done:allDone});
+            if(typeof stemBeep==='function') stemBeep(523,0.12);
+            if(typeof awardStemXP==='function') awardStemXP('geometryProver',4,'theorem_match');
+            if(allDone) { addToast('🎉 All theorems matched! +20 XP','success'); if(typeof stemCelebrate==='function') stemCelebrate(); if(typeof awardStemXP==='function') awardStemXP('geometryProver',20,'match_complete'); setExploreScore(prev=>({correct:prev.correct+1,total:prev.total+1})); }
+          } else {
+            gpUpd('matchGame',{...mg, wrong:descSlot});
+            if(typeof stemBeep==='function') stemBeep(180,0.2);
+            setTimeout(()=>gpUpd('matchGame',{...(gp.matchGame||mg), wrong:null}),600);
+          }
+        };
+        const renderMatchGame = () => {
+          const mg = gp.matchGame; if(!mg) return null;
+          const matches = mg.matches||{};
+          const matchedIds = new Set(Object.keys(matches).map(Number));
+          return React.createElement('div',{className:'space-y-3'},
+            React.createElement('style',null,'@keyframes matchPop{0%{transform:scale(.85);opacity:.6}50%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}} .gp-match-pop{animation:matchPop .35s ease}'),
+            React.createElement('p',{className:'text-sm font-bold text-violet-800 mb-1'},'🧩 Drag each theorem to its description:'),
+            // Theorem chips (left)
+            React.createElement('div',{className:'flex flex-wrap gap-2 mb-3'},
+              MATCH_PAIRS.filter(p=>!matchedIds.has(p.id)).map(p=>React.createElement('div',{
+                key:p.id, draggable:true,
+                onDragStart:e=>{ _gpDrag.matchId=p.id; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',p.theorem);}catch(ex){} },
+                onDragEnd:()=>{ _gpDrag.matchId=null; },
+                onClick:()=>gpUpd('selectedMatch',gp.selectedMatch===p.id?null:p.id),
+                className:`px-3 py-2 text-xs font-bold rounded-xl cursor-grab active:cursor-grabbing select-none shadow-sm hover:shadow-md hover:scale-105 transition-all ${gp.selectedMatch===p.id?'bg-violet-500 text-white ring-2 ring-violet-300':'bg-white border-2 border-violet-200 text-violet-700 hover:border-violet-400'}`,
+                style:{touchAction:'none'}
+              }, p.icon+' '+p.theorem))
+            ),
+            // Description slots (right)
+            React.createElement('div',{className:'space-y-2'},
+              mg.shuffled.map((pairIdx,slot)=>{
+                const pair = MATCH_PAIRS[pairIdx];
+                const matchedBy = Object.entries(matches).find(([,s])=>s===slot);
+                const isMatched = !!matchedBy;
+                const matchedPair = isMatched ? MATCH_PAIRS[parseInt(matchedBy[0])] : null;
+                const isWrong = mg.wrong===slot;
+                return React.createElement('div',{key:'slot'+slot,
+                  onDragOver:e=>{ if(!isMatched){e.preventDefault();e.dataTransfer.dropEffect='move';gpUpd('matchDragOver',slot);} },
+                  onDragLeave:()=>{ if(gp.matchDragOver===slot) gpUpd('matchDragOver',null); },
+                  onDrop:e=>{ e.preventDefault(); if(!isMatched&&_gpDrag.matchId!=null){checkMatch(_gpDrag.matchId,slot);_gpDrag.matchId=null;} gpUpd('matchDragOver',null); },
+                  onClick:()=>{ if(!isMatched&&gp.selectedMatch!=null){checkMatch(gp.selectedMatch,slot);gpUpd('selectedMatch',null);} },
+                  className:`p-3 rounded-xl border-2 transition-all ${isMatched?'border-emerald-300 bg-emerald-50 gp-match-pop':isWrong?'border-red-400 bg-red-50 gp-shake':gp.matchDragOver===slot?'border-violet-400 bg-violet-50 shadow-md':'border-slate-200 bg-white hover:border-slate-300'}`
+                },
+                  isMatched
+                    ? React.createElement('div',{className:'flex items-center gap-2'}, React.createElement('span',{className:'text-lg'},matchedPair.icon), React.createElement('span',{className:'text-xs font-bold text-emerald-700'},matchedPair.theorem), React.createElement('span',{className:'text-xs text-emerald-500 ml-auto'},'✅'))
+                    : React.createElement('div',{className:'flex items-center gap-2'}, React.createElement('span',{className:'text-[10px] text-slate-400 font-bold'},(slot+1)+'.'), React.createElement('span',{className:'text-xs text-slate-600'},pair.desc), !isMatched&&React.createElement('span',{className:'text-[10px] text-violet-400 ml-auto italic'},gp.matchDragOver===slot?'⬇ Drop!':gp.selectedMatch!=null?'👆 Click':'🧩 Drop'))
+                );
+              })
+            ),
+            mg.done&&React.createElement('div',{className:'p-3 bg-emerald-100 rounded-xl border border-emerald-300 text-center mt-2 gp-match-pop'}, React.createElement('p',{className:'text-sm font-bold text-emerald-700'},'🎉 Perfect Match! All theorems connected!'))
+          );
+        };
+
+        // ── Angle Sorter ──
+        const ANGLE_CATEGORIES = ['Acute (0°-90°)','Right (90°)','Obtuse (90°-180°)','Straight (180°)','Reflex (180°-360°)'];
+        const classifyAngle = deg => deg===90?1:deg===180?3:deg<90?0:deg<180?2:4;
+        const startAngleSorter = () => {
+          const degs = [15+Math.floor(Math.random()*70), 90, 95+Math.floor(Math.random()*80), 180, 185+Math.floor(Math.random()*170), 5+Math.floor(Math.random()*80), 100+Math.floor(Math.random()*75), 270];
+          gpUpd('sorter',{angles:degs.map((d,i)=>({deg:d,id:i})).sort(()=>Math.random()-0.5), sorted:{}, streak:0, wrong:null});
+        };
+        const sortAngle = (angleId, bucketIdx) => {
+          const sr=gp.sorter; if(!sr) return;
+          const angle = sr.angles.find(a=>a.id===angleId);
+          if(!angle) return;
+          const correct = classifyAngle(angle.deg)===bucketIdx;
+          if(correct) {
+            const newSorted = {...sr.sorted, [angleId]:bucketIdx};
+            const newStreak = sr.streak+1;
+            gpUpd('sorter',{...sr, sorted:newSorted, streak:newStreak, wrong:null});
+            if(typeof stemBeep==='function') stemBeep(440+newStreak*40,0.1);
+            if(typeof awardStemXP==='function') awardStemXP('geometryProver',2,'angle_sort');
+            if(Object.keys(newSorted).length===sr.angles.length) { addToast('🎉 All angles sorted! +15 XP','success'); if(typeof stemCelebrate==='function') stemCelebrate(); if(typeof awardStemXP==='function') awardStemXP('geometryProver',15,'sort_complete'); setExploreScore(prev=>({correct:prev.correct+1,total:prev.total+1})); }
+          } else {
+            gpUpd('sorter',{...sr, streak:0, wrong:angleId});
+            if(typeof stemBeep==='function') stemBeep(180,0.2);
+            setTimeout(()=>{ const cur=gp.sorter||sr; gpUpd('sorter',{...cur, wrong:null}); },600);
+          }
+        };
+        const renderAngleSorter = () => {
+          const sr=gp.sorter;
+          if(!sr) return React.createElement('div',{className:'text-center p-4'},
+            React.createElement('p',{className:'text-sm text-slate-600 mb-3'},'Drag each angle into the correct category bucket!'),
+            React.createElement('button',{onClick:startAngleSorter,className:'px-6 py-2 bg-violet-500 text-white font-bold rounded-lg text-sm hover:bg-violet-600 transition-all'},'🎯 Start Angle Sorter')
+          );
+          const sorted=sr.sorted||{}, unsorted=sr.angles.filter(a=>!sorted.hasOwnProperty(a.id));
+          const allDone = Object.keys(sorted).length===sr.angles.length;
+          return React.createElement('div',{className:'space-y-3'},
+            React.createElement('style',null,'@keyframes sortBounce{0%{transform:scale(.8)}50%{transform:scale(1.1)}100%{transform:scale(1)}} .gp-sort-bounce{animation:sortBounce .3s ease}'),
+            // Streak
+            sr.streak>=3&&React.createElement('div',{className:'text-center text-xs font-bold text-orange-500'},'🔥 '+sr.streak+'x Streak!'),
+            // Angle cards
+            React.createElement('div',{className:'flex flex-wrap gap-2 justify-center mb-2'},
+              unsorted.map(a=>React.createElement('div',{key:a.id,
+                draggable:true,
+                onDragStart:e=>{ _gpDrag.angleIdx=a.id; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',String(a.deg));}catch(ex){} },
+                onDragEnd:()=>{ _gpDrag.angleIdx=null; },
+                onClick:()=>gpUpd('selectedAngle',gp.selectedAngle===a.id?null:a.id),
+                className:`flex flex-col items-center p-2 rounded-xl cursor-grab active:cursor-grabbing select-none shadow-sm hover:shadow-lg hover:scale-110 transition-all border-2 ${sr.wrong===a.id?'border-red-400 bg-red-50 gp-shake':gp.selectedAngle===a.id?'border-violet-400 bg-violet-50 scale-105':'border-slate-200 bg-white'}`,
+                style:{touchAction:'none',width:'70px'}
+              },
+                // Mini SVG arc
+                React.createElement('svg',{width:50,height:40,viewBox:'0 0 50 40'},
+                  React.createElement('line',{x1:25,y1:35,x2:48,y2:35,stroke:'#6d28d9',strokeWidth:2}),
+                  (()=>{ const rad=a.deg*Math.PI/180; const ex=25+22*Math.cos(-rad),ey=35+22*Math.sin(-rad); return React.createElement(React.Fragment,null,
+                    React.createElement('line',{x1:25,y1:35,x2:ex,y2:ey,stroke:'#6d28d9',strokeWidth:2}),
+                    React.createElement('path',{d:`M 38 35 A 13 13 0 ${a.deg>180?1:0} 0 ${25+13*Math.cos(-rad)} ${35+13*Math.sin(-rad)}`,fill:'hsla(270,80%,60%,0.15)',stroke:'#8b5cf6',strokeWidth:1.5})
+                  ); })()
+                ),
+                React.createElement('span',{className:'text-xs font-bold text-violet-800 mt-0.5'},a.deg+'°')
+              ))
+            ),
+            // Category buckets
+            React.createElement('div',{className:'grid grid-cols-5 gap-1.5'},
+              ANGLE_CATEGORIES.map((cat,ci)=>{
+                const inBucket = sr.angles.filter(a=>sorted[a.id]===ci);
+                return React.createElement('div',{key:ci,
+                  onDragOver:e=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; gpUpd('sorterDragOver',ci); },
+                  onDragLeave:()=>{ if(gp.sorterDragOver===ci) gpUpd('sorterDragOver',null); },
+                  onDrop:e=>{ e.preventDefault(); if(_gpDrag.angleIdx!=null){sortAngle(_gpDrag.angleIdx,ci);_gpDrag.angleIdx=null;} gpUpd('sorterDragOver',null); },
+                  onClick:()=>{ if(gp.selectedAngle!=null){sortAngle(gp.selectedAngle,ci);gpUpd('selectedAngle',null);} },
+                  className:`p-2 rounded-xl border-2 min-h-[70px] transition-all text-center ${gp.sorterDragOver===ci?'border-violet-400 bg-violet-50 shadow-md':'border-slate-200 bg-slate-50 hover:border-slate-300'}`
+                },
+                  React.createElement('p',{className:'text-[9px] font-bold text-slate-500 mb-1'},cat),
+                  inBucket.map(a=>React.createElement('div',{key:a.id,className:'text-[10px] font-bold text-emerald-600 bg-emerald-100 rounded px-1 py-0.5 mb-0.5 gp-sort-bounce'},a.deg+'° ✅'))
+                );
+              })
+            ),
+            allDone&&React.createElement('div',{className:'p-3 bg-emerald-100 rounded-xl border border-emerald-300 text-center gp-sort-bounce'}, React.createElement('p',{className:'text-sm font-bold text-emerald-700'},'🎉 All angles sorted correctly!'), React.createElement('button',{onClick:startAngleSorter,className:'mt-2 px-4 py-1.5 bg-violet-500 text-white font-bold rounded-lg text-xs hover:bg-violet-600'},'🔄 New Round'))
+          );
+        };
+
+        // Discover missions (5 missions)
         const MISSIONS = [
           { id:'tri_sum', icon:'△', title:'Triangle Angle Sum',
             bigIdea:'The three angles of ANY triangle ALWAYS sum to exactly 180°. Drag it into any shape — the sum never changes!',
@@ -1987,34 +2303,75 @@ var d = labToolData || {};
           );
         };
 
-        // Guided proof panel
+        // Guided proof panel — drag-and-drop reason chips
         const renderGuidedProof = () => {
           if (!gpGuided) return null;
           const proof = GUIDED_PROOFS.find(p=>p.id===gpGuided.proofId);
           if (!proof) return null;
           const answers=gpGuided.answers||{}, done=Object.values(answers).filter(a=>a.correct).length, pct=Math.round(done/proof.steps.length*100);
+          // Collect all unique reasons from this proof, excluding already-placed correct ones
+          const usedReasons = new Set(Object.entries(answers).filter(([,a])=>a.correct).map(([si])=>proof.steps[parseInt(si)].reason));
+          const allReasons = [];
+          proof.steps.forEach(s => { s.options.forEach(o => { if (allReasons.indexOf(o)===-1) allReasons.push(o); }); });
+          const availableReasons = allReasons.filter(r=>!usedReasons.has(r));
+          const selectedChip = gp.selectedChip || null;
+          const dragOverStep = gp.dragOverStep;
+          // Place chip via click fallback
+          const placeChip = (si, reason) => { checkGuidedStep(si, reason); gpUpd('selectedChip',null); gpUpd('dragOverStep',null); if(typeof stemBeep==='function') stemBeep(523,0.12); };
           return React.createElement('div',{className:'bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-4 border-2 border-emerald-300 mt-3'},
+            // CSS for DnD animations
+            React.createElement('style',null,'@keyframes gpSnapIn{0%{transform:scale(.8);opacity:.5}100%{transform:scale(1);opacity:1}} @keyframes gpShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}} .gp-snap{animation:gpSnapIn .3s ease} .gp-shake{animation:gpShake .4s ease}'),
+            // Header
             React.createElement('div',{className:'flex items-center gap-2 mb-3'}, React.createElement('div',{className:'w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-base'},'📝'), React.createElement('div',{className:'flex-1'}, React.createElement('h4',{className:'text-sm font-bold text-emerald-800'},proof.title), React.createElement('p',{className:'text-[10px] text-emerald-600 italic'},proof.theorem)), React.createElement('div',{className:`text-xs font-bold px-2 py-1 rounded-full ${pct===100?'bg-emerald-500 text-white':'bg-emerald-100 text-emerald-700'}`},pct+'%')),
             React.createElement('div',{className:'w-full h-1.5 bg-emerald-200 rounded-full mb-3 overflow-hidden'}, React.createElement('div',{className:'h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-500',style:{width:pct+'%'}})),
+            // Proof selector
             React.createElement('div',{className:'flex gap-1.5 mb-3 flex-wrap'}, GUIDED_PROOFS.map(p=>React.createElement('button',{key:p.id,onClick:()=>loadGuidedProof(p.id),className:`px-2 py-1 text-[10px] font-bold rounded-lg transition-all ${gpGuided.proofId===p.id?'bg-emerald-600 text-white':'bg-white text-emerald-700 hover:bg-emerald-100 border border-emerald-200'}`},p.title.split(' ').slice(0,3).join(' ')))),
+            // ── Reason Chip Bank (draggable) ──
+            React.createElement('div',{className:'mb-3'},
+              React.createElement('p',{className:'text-[10px] font-bold text-emerald-700 uppercase mb-1.5'},'🧩 Drag a reason to the correct row (or click to select, then click the row):'),
+              React.createElement('div',{className:'flex flex-wrap gap-1.5'},
+                availableReasons.map(reason => React.createElement('div',{
+                  key:reason,
+                  draggable:true,
+                  onDragStart:e=>{ _gpDrag.reason=reason; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',reason);}catch(ex){} },
+                  onDragEnd:()=>{ _gpDrag.reason=null; },
+                  onClick:()=>{ gpUpd('selectedChip', selectedChip===reason?null:reason); },
+                  className:`px-2.5 py-1.5 text-[10px] font-bold rounded-lg cursor-grab active:cursor-grabbing select-none transition-all shadow-sm hover:shadow-md hover:scale-105 ${selectedChip===reason?'bg-violet-500 text-white ring-2 ring-violet-300 scale-105':'bg-white text-emerald-700 border border-emerald-200 hover:border-emerald-400'}`,
+                  style:{touchAction:'none'}
+                }, '🧩 '+reason))
+              )
+            ),
+            // ── Proof Table ──
             React.createElement('div',{className:'bg-white rounded-xl border border-emerald-200 overflow-hidden'},
               React.createElement('div',{className:'grid grid-cols-12 bg-emerald-100 text-[10px] font-bold text-emerald-800 border-b border-emerald-200'}, React.createElement('div',{className:'col-span-1 p-2 text-center'},'#'), React.createElement('div',{className:'col-span-6 p-2'},'Statement'), React.createElement('div',{className:'col-span-4 p-2'},'Reason'), React.createElement('div',{className:'col-span-1 p-2 text-center'},'✓')),
               proof.steps.map((step,si)=>{
                 const ans=answers[si],isCorrect=ans&&ans.correct,canAnswer=!isCorrect&&(si===0||(answers[si-1]&&answers[si-1].correct));
-                return React.createElement('div',{key:'s'+si,className:`grid grid-cols-12 border-b border-emerald-100 last:border-0 ${isCorrect?'bg-emerald-50':ans&&!isCorrect?'bg-red-50':canAnswer?'bg-white':'bg-slate-50 opacity-60'}`},
+                const isHovered = dragOverStep===si;
+                return React.createElement('div',{key:'s'+si,
+                  className:`grid grid-cols-12 border-b border-emerald-100 last:border-0 transition-all ${isCorrect?'bg-emerald-50':ans&&!isCorrect?'bg-red-50 gp-shake':isHovered?'bg-violet-50 ring-2 ring-violet-300 ring-inset':canAnswer?'bg-white':'bg-slate-50 opacity-60'}`,
+                  onDragOver:e=>{ if(canAnswer){ e.preventDefault(); e.dataTransfer.dropEffect='move'; gpUpd('dragOverStep',si); } },
+                  onDragLeave:()=>{ if(dragOverStep===si) gpUpd('dragOverStep',null); },
+                  onDrop:e=>{ e.preventDefault(); if(canAnswer&&_gpDrag.reason){ placeChip(si,_gpDrag.reason); _gpDrag.reason=null; } gpUpd('dragOverStep',null); },
+                  onClick:()=>{ if(canAnswer&&selectedChip){ placeChip(si,selectedChip); } }
+                },
                   React.createElement('div',{className:'col-span-1 p-2 text-center text-xs font-bold text-emerald-600'},si+1),
                   React.createElement('div',{className:'col-span-6 p-2 text-[11px] text-slate-700 font-medium'},step.statement),
                   React.createElement('div',{className:'col-span-4 p-1.5'},
-                    isCorrect ? React.createElement('div',{className:'text-[10px] font-bold text-emerald-600 bg-emerald-100 rounded px-2 py-1'},step.reason)
-                    : canAnswer ? React.createElement('select',{value:(ans&&ans.selected)||'',onChange:e=>checkGuidedStep(si,e.target.value),className:`w-full text-[10px] font-bold border-2 rounded-lg px-1.5 py-1 outline-none ${ans&&!isCorrect?'border-red-300 text-red-600 bg-red-50':'border-emerald-300 text-emerald-700'}`}, React.createElement('option',{value:'',disabled:true},'Select reason...'), step.options.map(opt=>React.createElement('option',{key:opt,value:opt},opt)))
+                    isCorrect ? React.createElement('div',{className:'text-[10px] font-bold text-emerald-600 bg-emerald-100 rounded px-2 py-1 gp-snap'},'✅ '+step.reason)
+                    : canAnswer ? React.createElement('div',{className:`h-8 flex items-center justify-center rounded-lg border-2 border-dashed transition-all ${isHovered?'border-violet-400 bg-violet-50 text-violet-600':'border-emerald-200 text-emerald-400'} ${ans&&!isCorrect?'border-red-300 text-red-500':''} text-[10px] font-semibold`},
+                        ans&&!isCorrect ? '❌ Try again — drag the correct reason here' : isHovered ? '⬇ Drop here!' : selectedChip ? '👆 Click to place' : '🧩 Drag reason here')
                     : React.createElement('div',{className:'text-[10px] text-slate-400 italic px-2 py-1'},'🔒 Locked')
                   ),
                   React.createElement('div',{className:'col-span-1 p-2 text-center text-sm'},isCorrect?'✅':ans?'❌':canAnswer?'⭕':'⏳')
                 );
               })
             ),
-            gpGuided.completed&&Object.values(answers).every(a=>a.correct)&&React.createElement('div',{className:'mt-3 p-3 bg-emerald-100 rounded-xl border border-emerald-300 text-center'}, React.createElement('p',{className:'text-sm font-bold text-emerald-700'},'🎉 Proof Complete! Q.E.D.'), React.createElement('p',{className:'text-[10px] text-emerald-600 mt-1'},proof.theorem)),
-            Object.values(answers).some(a=>!a.correct)&&React.createElement('div',{className:'mt-2 p-2 bg-amber-50 rounded-lg border border-amber-200'}, React.createElement('p',{className:'text-[10px] text-amber-700'},'💡 Re-read the statement carefully — which property directly justifies it? You can change your answer.'))
+            // Completion
+            gpGuided.completed&&Object.values(answers).every(a=>a.correct)&&React.createElement('div',{className:'mt-3 p-3 bg-emerald-100 rounded-xl border border-emerald-300 text-center gp-snap'},
+              React.createElement('p',{className:'text-sm font-bold text-emerald-700'},'🎉 Proof Complete! Q.E.D.'),
+              React.createElement('p',{className:'text-[10px] text-emerald-600 mt-1'},proof.theorem)
+            ),
+            Object.values(answers).some(a=>!a.correct)&&React.createElement('div',{className:'mt-2 p-2 bg-amber-50 rounded-lg border border-amber-200'}, React.createElement('p',{className:'text-[10px] text-amber-700'},'💡 Drag a different reason chip from the bank above. Think about which property directly justifies the statement.'))
           );
         };
 
@@ -2026,7 +2383,22 @@ var d = labToolData || {};
             React.createElement('div',{className:'space-y-2'}, MISSIONS.map(m=>React.createElement('button',{key:m.id,onClick:()=>startMission(m.id),className:'w-full flex items-center gap-3 p-3 bg-white border-2 border-violet-100 rounded-xl hover:border-violet-400 hover:bg-violet-50 text-left transition-all'},
               React.createElement('span',{className:'text-2xl w-10 text-center shrink-0'},m.icon),
               React.createElement('div',null, React.createElement('p',{className:'text-sm font-bold text-violet-800'},m.title), React.createElement('p',{className:'text-[11px] text-slate-500'},'Discover the rule yourself through measurement & prediction'))
-            )))
+            ))),
+            React.createElement('div',{className:'mt-3 pt-3 border-t-2 border-violet-100'},
+              React.createElement('p',{className:'text-sm font-bold text-orange-700 mb-2'},'🎲 Quick Activities'),
+              React.createElement('button',{onClick:function(){gpUpd('mission',{id:'angle_sorter',step:0,data:{}});startAngleSorter();},className:'w-full flex items-center gap-3 p-3 bg-white border-2 border-orange-100 rounded-xl hover:border-orange-400 hover:bg-orange-50 text-left transition-all'},
+                React.createElement('span',{className:'text-2xl w-10 text-center shrink-0'},'📐'),
+                React.createElement('div',null,React.createElement('p',{className:'text-sm font-bold text-orange-700'},'Angle Sorter'),React.createElement('p',{className:'text-[11px] text-slate-500'},'Drag angles into the correct category — acute, right, obtuse, straight, or reflex!'))
+              )
+            )
+          );
+          if (gpMission.id==='angle_sorter') return React.createElement('div',{className:'space-y-3'},
+            React.createElement('div',{className:'flex items-center gap-2'},
+              React.createElement('span',{className:'text-xl'},'📐'),
+              React.createElement('p',{className:'text-sm font-bold text-orange-700 flex-1'},'Angle Sorter'),
+              React.createElement('button',{onClick:function(){gpUpd('mission',null);gpUpd('sorter',null);},className:'text-[10px] text-slate-400 hover:text-slate-600 underline'},'Exit')
+            ),
+            renderAngleSorter()
           );
           const mission=MISSIONS.find(m=>m.id===gpMission.id);
           if (!mission) return null;
@@ -2116,9 +2488,11 @@ var d = labToolData || {};
             React.createElement('p',{className:'text-xs text-slate-500'},'Answer without looking up the formula — use what you know from exploring!'),
             React.createElement('div',{className:'flex gap-2'},
               React.createElement('button',{onClick:generateChallenge,className:'flex-1 py-2 bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold rounded-lg text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md'},'🎯 New Challenge'),
-              React.createElement('button',{onClick:()=>{gpUpd('challenge',null);gpUpd('feedback',null);gpUpd('challengeAnswer','');},disabled:!gpChallenge,className:'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all disabled:opacity-40'},'↺ Reset')
+              React.createElement('button',{onClick:startMatchGame,className:'flex-1 py-2 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold rounded-lg text-sm hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md'},'🧩 Theorem Match'),
+              React.createElement('button',{onClick:()=>{gpUpd('challenge',null);gpUpd('feedback',null);gpUpd('challengeAnswer','');gpUpd('matchGame',null);},disabled:!gpChallenge,className:'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all disabled:opacity-40'},'↺ Reset')
             ),
-            gpChallenge&&React.createElement('div',{className:'bg-violet-50 rounded-xl p-4 border-2 border-violet-200'},
+            gpChallenge&&gpChallenge.type==='theorem_match'&&renderMatchGame(),
+            gpChallenge&&gpChallenge.type!=='theorem_match'&&React.createElement('div',{className:'bg-violet-50 rounded-xl p-4 border-2 border-violet-200'},
               React.createElement('p',{className:'text-sm font-bold text-violet-800 mb-3'},'🎯 '+gpChallenge.question),
               gpChallenge.type==='polygon_sum'&&React.createElement('p',{className:'text-[11px] text-violet-600 italic mb-2'},'💡 How many triangles fit inside the polygon?'),
               React.createElement('div',{className:'flex gap-2'},
@@ -2130,7 +2504,7 @@ var d = labToolData || {};
             !gpChallenge&&React.createElement('div',{className:'bg-violet-50 rounded-xl p-4 border border-violet-200 text-center'},
               React.createElement('p',{className:'text-xs text-violet-600 mb-2'},'Challenges cover:'),
               React.createElement('div',{className:'flex flex-wrap gap-1.5 justify-center'},
-                ['Triangle angle sum','Vertical angles','Missing angle','Exterior angle theorem','Polygon angle sums'].map(t=>React.createElement('span',{key:t,className:'text-[10px] bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-semibold'},t))
+                ['Triangle angle sum','Vertical angles','Missing angle','Exterior angle','Polygon sums','Theorem Match'].map(t=>React.createElement('span',{key:t,className:'text-[10px] bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-semibold'},t))
               )
             )
           ),

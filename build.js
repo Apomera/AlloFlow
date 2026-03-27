@@ -82,6 +82,11 @@ const MODULES = [
         name: 'GamesBundle',
         filename: 'games_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'SelHub',
+        filename: 'sel_hub/sel_hub_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 
@@ -110,7 +115,10 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_physics.js',
     'stem_lab/stem_tool_watercycle.js',
     'stem_lab/stem_tool_rocks.js',
-    'stem_lab/stem_tool_dissection.js'
+    'stem_lab/stem_tool_dissection.js',
+    'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
+    'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_mindfulness.js',
+    'sel_hub/sel_tool_social.js'
 ];
 
 // ── Read source ─────────────────────────────────────────────────

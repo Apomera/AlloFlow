@@ -53,6 +53,26 @@
           var aiEmailLoading  = d.aiEmailLoading || false;
           var aiGeneratedEmail = d.aiGeneratedEmail || null;
           var aiEmailHistory  = d.aiEmailHistory || [];
+          // Password Forge enhancements
+          var pwShowPassword  = d.pwShowPassword || false;
+          var pwBruteAnim     = d.pwBruteAnim || null; // { running, attempts, speed, found }
+          var pwBreachResult  = d.pwBreachResult || null; // { checked, breached, count }
+          var pwGenLength     = d.pwGenLength || 16;
+          var pwGenInclude    = d.pwGenInclude || { upper: true, lower: true, digits: true, symbols: true };
+          // Network traffic analyzer
+          var netPackets      = d.netPackets || [];
+          var netFlagged      = d.netFlagged || [];
+          var netScore        = d.netScore || 0;
+          var netRound        = d.netRound || 0;
+          var netShowAnswer   = d.netShowAnswer || false;
+          // Social engineering quiz
+          var seQuizIdx       = d.seQuizIdx || 0;
+          var seQuizAnswer    = d.seQuizAnswer || null;
+          var seQuizScore     = d.seQuizScore || 0;
+          var seQuizStreak    = d.seQuizStreak || 0;
+          // AI threat briefing
+          var threatBriefing  = d.threatBriefing || null;
+          var threatLoading   = d.threatLoading || false;
 
           // â”€â”€ Phishing Email Data (with investigation clues) â”€â”€
           var phishEmails = [
@@ -363,6 +383,139 @@
 
           var pwStrength = calcPasswordStrength(pwInput);
 
+          // ── Password Generator ──
+          function generatePassword(len, include) {
+            var chars = '';
+            if (include.lower) chars += 'abcdefghijkmnopqrstuvwxyz';
+            if (include.upper) chars += 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+            if (include.digits) chars += '23456789';
+            if (include.symbols) chars += '!@#$%^&*()-_=+[]{}|;:,.<>?';
+            if (!chars) chars = 'abcdefghijkmnopqrstuvwxyz';
+            var pw = '';
+            for (var i = 0; i < len; i++) pw += chars.charAt(Math.floor(Math.random() * chars.length));
+            return pw;
+          }
+
+          // ── Brute Force Simulator ──
+          function startBruteForce() {
+            var target = pwInput;
+            if (!target || target.length < 1) return;
+            var strength = calcPasswordStrength(target);
+            var totalGuesses = Math.pow(2, strength.entropy);
+            var speeds = [
+              { label: 'Old laptop', rate: 1e4, icon: '\uD83D\uDCBB' },
+              { label: 'Gaming PC', rate: 1e8, icon: '\uD83D\uDDA5\uFE0F' },
+              { label: 'Cloud cluster', rate: 1e10, icon: '\u2601\uFE0F' },
+              { label: 'Nation-state', rate: 1e14, icon: '\uD83C\uDFDB\uFE0F' }
+            ];
+            var charSets = [];
+            if (/[a-z]/.test(target)) charSets.push('a-z');
+            if (/[A-Z]/.test(target)) charSets.push('A-Z');
+            if (/\d/.test(target)) charSets.push('0-9');
+            if (/[^a-zA-Z0-9]/.test(target)) charSets.push('symbols');
+            upd('pwBruteAnim', { running: true, target: target, entropy: strength.entropy, totalGuesses: totalGuesses, speeds: speeds, charSets: charSets, crackTime: strength.crackTime });
+          }
+
+          // ── Simulated Breach Database ──
+          var breachedPasswords = ['password', '123456', '12345678', 'qwerty', 'abc123', 'monkey', 'letmein', 'dragon', 'shadow', 'master', 'welcome', 'football', 'iloveyou', 'trustno1', 'sunshine', 'password1', 'password123', 'admin', 'login', 'batman', 'ninja', 'mustang', 'charlie', 'donald', 'princess', 'summer', 'flower', 'cheese', 'cookie', 'soccer', 'hockey', 'winter2024', 'Spring2025!', 'P@ssw0rd', 'Passw0rd!', 'Welcome1', 'Hello123', 'Test1234'];
+          function checkBreach(pw) {
+            if (!pw) return null;
+            var lower = pw.toLowerCase();
+            var found = breachedPasswords.some(function(b) { return b.toLowerCase() === lower; });
+            var count = found ? (Math.floor(Math.random() * 500000) + 10000) : 0;
+            return { checked: true, breached: found, count: count, password: pw };
+          }
+
+          function formatSeconds(sec) {
+            if (sec < 1) return '< 1 second';
+            if (sec < 60) return Math.round(sec) + 's';
+            if (sec < 3600) return Math.round(sec / 60) + ' min';
+            if (sec < 86400) return Math.round(sec / 3600) + ' hrs';
+            if (sec < 86400 * 365) return Math.round(sec / 86400) + ' days';
+            if (sec < 86400 * 365 * 1000) return Math.round(sec / (86400 * 365)) + ' yrs';
+            if (sec < 86400 * 365 * 1e6) return Math.round(sec / (86400 * 365 * 1000)) + 'K yrs';
+            if (sec < 86400 * 365 * 1e9) return Math.round(sec / (86400 * 365 * 1e6)) + 'M yrs';
+            return Math.round(sec / (86400 * 365 * 1e9)) + 'B yrs';
+          }
+
+          // ── Network Traffic Data ──
+          var packetTemplates = {
+            safe: [
+              { proto: 'HTTPS', src: '192.168.1.42', dst: '142.250.80.46', port: 443, payload: 'TLS 1.3 Encrypted Application Data', size: 1420, suspicious: false, reason: 'Normal encrypted web traffic to Google' },
+              { proto: 'HTTPS', src: '192.168.1.42', dst: '151.101.1.69', port: 443, payload: 'TLS 1.3 Handshake ClientHello', size: 517, suspicious: false, reason: 'Encrypted connection to Reddit CDN' },
+              { proto: 'DNS', src: '192.168.1.42', dst: '8.8.8.8', port: 53, payload: 'Query: A docs.google.com', size: 64, suspicious: false, reason: 'Standard DNS lookup to Google DNS' },
+              { proto: 'HTTPS', src: '192.168.1.42', dst: '13.107.42.14', port: 443, payload: 'TLS 1.3 Application Data [Teams]', size: 890, suspicious: false, reason: 'Encrypted Microsoft Teams traffic' },
+              { proto: 'NTP', src: '192.168.1.1', dst: '129.6.15.28', port: 123, payload: 'NTP v4 Client Request', size: 76, suspicious: false, reason: 'Normal time sync from router' },
+              { proto: 'HTTPS', src: '192.168.1.42', dst: '104.16.249.249', port: 443, payload: 'TLS 1.3 Application Data [Cloudflare]', size: 1100, suspicious: false, reason: 'Encrypted Cloudflare CDN traffic' }
+            ],
+            bad: [
+              { proto: 'HTTP', src: '192.168.1.42', dst: '45.33.32.156', port: 80, payload: 'POST /login.php username=admin&password=hunter2', size: 256, suspicious: true, reason: 'Unencrypted HTTP sending login credentials in plaintext!' },
+              { proto: 'DNS', src: '192.168.1.105', dst: '185.243.115.8', port: 53, payload: 'Query: TXT aGVsbG8gd29ybGQ.evil-c2.ru', size: 128, suspicious: true, reason: 'DNS tunneling! Base64 data hidden in DNS queries to a suspicious domain' },
+              { proto: 'TCP', src: '192.168.1.42', dst: '103.224.182.250', port: 4444, payload: 'BINARY [reverse shell payload detected]', size: 2048, suspicious: true, reason: 'Port 4444 is commonly used by Metasploit. This looks like a reverse shell!' },
+              { proto: 'SMTP', src: '192.168.1.200', dst: '91.134.128.50', port: 25, payload: 'MAIL FROM: <ceo@company.com> Subject: Wire Transfer Urgent', size: 4096, suspicious: true, reason: 'Email spoofing CEO address about wire transfer (Business Email Compromise attack)' },
+              { proto: 'HTTP', src: '10.0.0.55', dst: '192.168.1.42', port: 80, payload: 'GET /../../etc/passwd HTTP/1.1', size: 180, suspicious: true, reason: 'Path traversal attack! Attempting to read system password file' },
+              { proto: 'TCP', src: '192.168.1.42', dst: '198.51.100.7', port: 6667, payload: 'JOIN #botnet-c2 PRIVMSG: DDOS 203.0.113.5', size: 320, suspicious: true, reason: 'IRC botnet C2! Machine receiving DDoS commands' },
+              { proto: 'ICMP', src: '10.0.0.1', dst: '192.168.1.255', port: 0, payload: 'Echo Request (oversized: 65535 bytes)', size: 65535, suspicious: true, reason: 'Ping of Death! Oversized ICMP packet targeting broadcast address' },
+              { proto: 'HTTP', src: '192.168.1.42', dst: '172.67.182.31', port: 80, payload: 'GET /search?q=' + String.fromCharCode(60) + 'script' + String.fromCharCode(62) + 'document.cookie' + String.fromCharCode(60) + '/script' + String.fromCharCode(62), size: 210, suspicious: true, reason: 'Cross-Site Scripting (XSS) attempt! Injected script to steal cookies' },
+              { proto: 'FTP', src: '192.168.1.42', dst: '45.77.65.211', port: 21, payload: 'STOR confidential_financials_2026.xlsx', size: 15200, suspicious: true, reason: 'Data exfiltration via unencrypted FTP to external server!' }
+            ]
+          };
+          function generateNetRound() {
+            var safe = packetTemplates.safe.slice();
+            var bad = packetTemplates.bad.slice();
+            var shuffled = [];
+            var badCount = 2 + Math.floor(Math.random() * 2);
+            for (var i = 0; i < badCount; i++) shuffled.push(bad.splice(Math.floor(Math.random() * bad.length), 1)[0]);
+            for (var j = 0; j < 6 - badCount; j++) shuffled.push(safe[Math.floor(Math.random() * safe.length)]);
+            for (var k = shuffled.length - 1; k > 0; k--) { var r = Math.floor(Math.random() * (k + 1)); var tmp = shuffled[k]; shuffled[k] = shuffled[r]; shuffled[r] = tmp; }
+            return shuffled.map(function(p, idx) { return Object.assign({}, p, { id: idx }); });
+          }
+
+          // ── Social Engineering Scenarios ──
+          var seScenarios = [
+            { scenario: 'You get a phone call from someone claiming to be IT support. They say your computer has a virus and need your password to fix it.', correct: 'refuse', options: [
+              { id: 'comply', label: 'Give them your password so they can help', feedback: 'Never share passwords over the phone! Real IT can reset your password without knowing it.' },
+              { id: 'refuse', label: 'Hang up and call IT directly using the official number', feedback: 'Correct! Always verify by calling the official number. This is a classic vishing (voice phishing) attack.' },
+              { id: 'partial', label: 'Give them your old password instead', feedback: 'Sharing any password is risky. Old passwords reveal your pattern to attackers.' }
+            ], type: 'Vishing', lesson: 'Legitimate IT departments never ask for your password. They can reset it from their admin console.' },
+            { scenario: 'You find a USB drive in the parking lot labeled “Final Exam Answers 2026”.', correct: 'report', options: [
+              { id: 'plug', label: 'Plug it into your computer to check', feedback: 'USB baiting attack! Malicious USB drives can auto-run malware the moment they\'re plugged in.' },
+              { id: 'report', label: 'Turn it in to security without plugging it in', feedback: 'Correct! The Stuxnet worm that damaged Iran\'s nuclear program spread via USB drives.' },
+              { id: 'friend', label: 'Give it to a friend to try', feedback: 'This just puts your friend at risk. Never plug in unknown USB devices.' }
+            ], type: 'USB Baiting', lesson: 'In a study, 48% of USB drives dropped on a university campus were plugged in by finders.' },
+            { scenario: 'Someone in a delivery uniform asks you to hold the secure office door open because their hands are full.', correct: 'verify', options: [
+              { id: 'hold', label: 'Hold the door \u2014 they look legitimate', feedback: 'Tailgating! Attackers dress as delivery workers or employees to gain physical access.' },
+              { id: 'verify', label: 'Ask them to badge in or contact reception', feedback: 'Correct! Everyone must authenticate individually. Physical security matters!' },
+              { id: 'ignore', label: 'Walk away without saying anything', feedback: 'Better than letting them in, but alerting security is the best practice.' }
+            ], type: 'Tailgating', lesson: 'Physical access is game over. Once inside, an attacker can install keyloggers or access unlocked computers.' },
+            { scenario: 'Your “boss” texts from an unknown number, urgently asking you to buy gift cards and send the codes.', correct: 'verify', options: [
+              { id: 'buy', label: 'Rush to buy the gift cards', feedback: 'Gift card scam! No legitimate boss asks for gift card codes via text.' },
+              { id: 'verify', label: 'Contact your boss through usual channels to verify', feedback: 'Correct! Always verify unusual requests through established channels.' },
+              { id: 'reply', label: 'Ask the texter for proof they are your boss', feedback: 'Attackers can fake proof. Only trust communication through verified channels.' }
+            ], type: 'Pretexting', lesson: 'The FBI reported $241 million lost to gift card scams in 2023. Urgency + authority = red flags.' },
+            { scenario: 'You get an email saying you won a $500 Amazon gift card. Just fill out a survey with your credit card for “shipping.”', correct: 'delete', options: [
+              { id: 'fill', label: 'Fill out the survey to claim your prize', feedback: 'Phishing scam. Legitimate prizes never require credit card info for shipping.' },
+              { id: 'delete', label: 'Delete it \u2014 you never entered a contest', feedback: 'Correct! If you didn\'t enter, you can\'t win. This harvests personal and financial data.' },
+              { id: 'forward', label: 'Forward it to friends', feedback: 'Forwarding phishing spreads the attack. You\'d help the scammer reach more victims.' }
+            ], type: 'Phishing/Baiting', lesson: '”You\'ve won!” emails are almost always scams. Real companies don\'t require credit cards for prizes.' },
+            { scenario: 'A friendly “journalist” at a coffee shop asks detailed questions about your school\'s network, software, and server room.', correct: 'decline', options: [
+              { id: 'help', label: 'Answer their questions \u2014 they seem nice', feedback: 'Reconnaissance! Attackers gather info through casual conversation before launching attacks.' },
+              { id: 'decline', label: 'Suggest they contact the school\'s press office', feedback: 'Correct! Redirect info requests to official channels that can verify the person.' },
+              { id: 'some', label: 'Answer some but not technical questions', feedback: 'Even non-technical details help build spear-phishing profiles. Names, schedules, software \u2014 all valuable.' }
+            ], type: 'Reconnaissance', lesson: 'Information is the currency of social engineering. Every detail shared helps craft a more convincing attack.' },
+            { scenario: 'A pop-up screams “YOUR COMPUTER IS INFECTED! Call Microsoft Support at 1-800-555-0199 immediately!”', correct: 'close', options: [
+              { id: 'call', label: 'Call the number for help', feedback: 'Tech support scam! Microsoft never shows phone numbers in pop-ups. The “technicians” install remote access malware.' },
+              { id: 'close', label: 'Close the tab and run your actual antivirus', feedback: 'Correct! These are fake warnings. Real security alerts come from your installed antivirus, not browser pop-ups.' },
+              { id: 'pay', label: 'Pay for their removal service', feedback: 'You\'d be paying scammers who may install more malware.' }
+            ], type: 'Tech Support Scam', lesson: 'Over 100,000 tech support scam reports in 2023. Real warnings come from YOUR installed software.' },
+            { scenario: 'A classmate borrows your phone “for a second” and walks around a corner with it.', correct: 'watch', options: [
+              { id: 'let', label: 'Let them go \u2014 they\'ll be right back', feedback: 'A few seconds with your unlocked phone = access to all accounts, messages, and payment apps.' },
+              { id: 'watch', label: 'Stay with them and watch', feedback: 'Correct! Never let unlocked devices out of sight. Seconds of access can install spyware.' },
+              { id: 'lock', label: 'Lock it first then hand over', feedback: 'Better, but they could shoulder-surf your PIN next time. Look things up for them yourself.' }
+            ], type: 'Physical Access', lesson: 'The “evil maid” attack: brief physical access to a device can compromise all data on it.' }
+          ];
+          var activeSeScenario = seScenarios[seQuizIdx % seScenarios.length];
+
           // â”€â”€ Cipher output â”€â”€
           var cipherOutput = '';
           if (cipherInput) {
@@ -391,7 +544,7 @@
 
             // Tab Bar
             el('div', { style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', padding: '0 24px' } },
-              [{ id: 'phish', icon: '\uD83D\uDD75\uFE0F', label: 'Cyber Detective' }, { id: 'password', icon: '\uD83D\uDD10', label: 'Password Forge' }, { id: 'cipher', icon: '\uD83D\uDD11', label: 'Cipher Playground' }].map(function(tab) {
+              [{ id: 'phish', icon: '\uD83D\uDD75\uFE0F', label: 'Cyber Detective' }, { id: 'password', icon: '\uD83D\uDD10', label: 'Password Forge' }, { id: 'cipher', icon: '\uD83D\uDD11', label: 'Cipher Lab' }, { id: 'network', icon: '\uD83D\uDCE1', label: 'Traffic Analyzer' }, { id: 'social', icon: '\uD83C\uDFAD', label: 'Social Engineering' }].map(function(tab) {
                 var isActive = cyberTab === tab.id;
                 return el('button', { key: tab.id, onClick: function() { upd('cyberTab', tab.id); },
                   style: { padding: '12px 20px', border: 'none', borderBottom: isActive ? '2px solid #6366f1' : '2px solid transparent', background: 'none', color: isActive ? '#a5b4fc' : '#64748b', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' } },
@@ -591,16 +744,54 @@
                   )
                 ),
 
-              // â•â•â•â•â•â•â• PASSWORD FORGE â•â•â•â•â•â•â•
+              // ======= PASSWORD FORGE =======
               cyberTab === 'password' && el('div', { style: { maxWidth: 640, margin: '0 auto' } },
-                  el('span', { style: { color: '#64748b', fontSize: 11, fontWeight: 600 } }, 'Entropy: ' + pwStrength.entropy + ' bits'),
+                  // Password input + controls
+                  el('div', { style: { marginBottom: 16 } },
+                    el('div', { style: { color: '#a5b4fc', fontSize: 13, fontWeight: 800, marginBottom: 8 } }, '\uD83D\uDD10 Enter a Password to Test'),
+                    el('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
+                      el('div', { style: { flex: 1, position: 'relative' } },
+                        el('input', { value: pwInput, type: pwShowPassword ? 'text' : 'password',
+                          onChange: function(e) { upd({ pwInput: e.target.value, pwBruteAnim: null, pwBreachResult: null }); },
+                          placeholder: 'Type a password to analyze...',
+                          style: { width: '100%', padding: '12px 40px 12px 14px', borderRadius: 10, border: '2px solid ' + (pwInput ? pwStrength.color : 'rgba(255,255,255,0.1)'), background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', fontSize: 14, fontWeight: 600, outline: 'none', boxSizing: 'border-box', fontFamily: pwShowPassword ? 'monospace' : 'inherit' } }),
+                        el('button', { onClick: function() { upd('pwShowPassword', !pwShowPassword); },
+                          style: { position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', fontSize: 16, padding: 4 } },
+                          pwShowPassword ? '\uD83D\uDC41\uFE0F' : '\uD83D\uDEE1\uFE0F')
+                      ),
+                      el('button', { onClick: function() { var gp = generatePassword(pwGenLength, pwGenInclude); upd({ pwInput: gp, pwShowPassword: true, pwBruteAnim: null, pwBreachResult: null }); },
+                        style: { padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' } },
+                        '\uD83C\uDFB2 Generate')
+                    ),
+                    // Generator config
+                    el('div', { style: { display: 'flex', gap: 8, marginTop: 8, alignItems: 'center', flexWrap: 'wrap' } },
+                      el('span', { style: { color: '#64748b', fontSize: 10, fontWeight: 700 } }, 'LENGTH:'),
+                      [8, 12, 16, 20, 24].map(function(len) {
+                        return el('button', { key: len, onClick: function() { upd('pwGenLength', len); },
+                          style: { padding: '3px 8px', borderRadius: 6, border: pwGenLength === len ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.08)', background: pwGenLength === len ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.03)', color: pwGenLength === len ? '#a5b4fc' : '#64748b', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, String(len));
+                      }),
+                      el('span', { style: { color: '#475569', margin: '0 4px' } }, '|'),
+                      ['upper', 'lower', 'digits', 'symbols'].map(function(cat) {
+                        var labels = { upper: 'A-Z', lower: 'a-z', digits: '0-9', symbols: '!@#' };
+                        var on = pwGenInclude[cat];
+                        return el('button', { key: cat, onClick: function() { var ni = Object.assign({}, pwGenInclude); ni[cat] = !ni[cat]; upd('pwGenInclude', ni); },
+                          style: { padding: '3px 8px', borderRadius: 6, border: on ? '1px solid #22c55e' : '1px solid rgba(255,255,255,0.08)', background: on ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.03)', color: on ? '#4ade80' : '#64748b', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, labels[cat]);
+                      })
+                    )
+                  ),
+                  // Strength display
+                  pwInput && el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                    el('span', { style: { fontSize: 16, fontWeight: 900, color: pwStrength.color } }, pwStrength.label),
+                    el('span', { style: { color: '#64748b', fontSize: 11, fontWeight: 600 } }, pwStrength.entropy + ' bits entropy'),
+                    el('span', { style: { color: '#64748b', fontSize: 11 } }, '\u2022 Pool: ' + (pwStrength.checks.poolSize || 0) + ' chars')
+                  ),
                   // Strength bar
-                  el('div', { style: { width: '100%', height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
-                    el('div', { style: { width: (pwStrength.score / 5 * 100) + '%', height: '100%', borderRadius: 4, background: pwStrength.color, transition: 'all 0.5s ease-out', boxShadow: '0 0 10px ' + pwStrength.color + '60' } })
+                  el('div', { style: { width: '100%', height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
+                    el('div', { style: { width: (pwStrength.score / 5 * 100) + '%', height: '100%', borderRadius: 5, background: pwStrength.color, transition: 'all 0.5s ease-out', boxShadow: '0 0 10px ' + pwStrength.color + '60' } })
                   ),
                   // Crack time
                   el('div', { style: { marginTop: 12, padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' } },
-                    el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '\u231B Time to crack (10 billion guesses/sec):'),
+                    el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '\u231B Time to crack (10B guesses/sec):'),
                     el('div', { style: { color: pwStrength.color, fontSize: 18, fontWeight: 900 } }, pwStrength.crackTime)
                   ),
                   // Checklist
@@ -619,29 +810,73 @@
                         el('span', { style: { fontSize: 11, fontWeight: 600, color: check.ok ? '#86efac' : '#64748b' } }, check.label));
                     })
                   ),
+                  // Action buttons
+                  pwInput && el('div', { style: { display: 'flex', gap: 8, marginTop: 14 } },
+                    el('button', { onClick: startBruteForce,
+                      style: { flex: 1, padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(244,63,94,0.3)', background: 'rgba(244,63,94,0.1)', color: '#fb7185', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
+                      '\u26A1 Brute Force Sim'),
+                    el('button', { onClick: function() { upd('pwBreachResult', checkBreach(pwInput)); },
+                      style: { flex: 1, padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.1)', color: '#c084fc', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
+                      '\uD83D\uDD0D Breach Check')
+                  ),
+                  // Brute Force Visualization
+                  pwBruteAnim && el('div', { style: { marginTop: 14, padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(244,63,94,0.08), rgba(239,68,68,0.05))', border: '1px solid rgba(244,63,94,0.2)' } },
+                    el('div', { style: { color: '#fb7185', fontSize: 13, fontWeight: 900, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 } }, '\u26A1 Brute Force Attack Simulation'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 8 } },
+                      pwBruteAnim.entropy + ' bits entropy \u2022 Character sets: ' + pwBruteAnim.charSets.join(', ')),
+                    el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Attack Speed Comparison:'),
+                    pwBruteAnim.speeds.map(function(spd, si) {
+                      var secs = pwBruteAnim.totalGuesses / spd.rate;
+                      var timeStr = formatSeconds(secs);
+                      var barPct = Math.min(100, Math.max(2, (1 - Math.min(1, Math.log10(secs + 1) / 20)) * 100));
+                      var barColor = secs < 60 ? '#ef4444' : secs < 3600 ? '#f97316' : secs < 86400 * 365 ? '#eab308' : '#22c55e';
+                      return el('div', { key: si, style: { marginBottom: 8, padding: '8px 10px', borderRadius: 8, background: 'rgba(0,0,0,0.2)' } },
+                        el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 } },
+                          el('span', { style: { color: '#94a3b8', fontSize: 11, fontWeight: 700 } }, spd.icon + ' ' + spd.label),
+                          el('span', { style: { color: '#64748b', fontSize: 9, fontWeight: 600 } }, spd.rate.toExponential(0) + ' guesses/sec')
+                        ),
+                        el('div', { style: { width: '100%', height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
+                          el('div', { style: { width: barPct + '%', height: '100%', borderRadius: 3, background: barColor, transition: 'width 0.8s ease-out' } })
+                        ),
+                        el('div', { style: { color: barColor, fontSize: 12, fontWeight: 900, marginTop: 3 } }, timeStr)
+                      );
+                    }),
+                    el('div', { style: { marginTop: 8, padding: '8px 12px', borderRadius: 8, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#a5b4fc', fontSize: 11, fontWeight: 600 } },
+                      '\uD83D\uDCA1 Every additional character multiplies crack time exponentially!')
+                  ),
+                  // Breach Check Results
+                  pwBreachResult && el('div', { style: { marginTop: 14, padding: 16, borderRadius: 12, background: pwBreachResult.breached ? 'linear-gradient(135deg, rgba(239,68,68,0.1), rgba(220,38,38,0.05))' : 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(22,163,74,0.05))', border: '1px solid ' + (pwBreachResult.breached ? 'rgba(239,68,68,0.3)' : 'rgba(34,197,94,0.3)') } },
+                    el('div', { style: { fontSize: 28, textAlign: 'center', marginBottom: 6 } }, pwBreachResult.breached ? '\uD83D\uDEA8' : '\u2705'),
+                    el('div', { style: { textAlign: 'center', color: pwBreachResult.breached ? '#fca5a5' : '#86efac', fontSize: 15, fontWeight: 900, marginBottom: 4 } },
+                      pwBreachResult.breached ? 'PASSWORD FOUND IN BREACH DATABASE!' : 'Not Found in Known Breaches'),
+                    pwBreachResult.breached && el('div', { style: { textAlign: 'center', color: '#f87171', fontSize: 12, marginBottom: 8 } },
+                      'This password appeared in ' + pwBreachResult.count.toLocaleString() + ' breaches! Do NOT use it.'),
+                    !pwBreachResult.breached && el('div', { style: { textAlign: 'center', color: '#6ee7b7', fontSize: 12, marginBottom: 8 } },
+                      'Not found in our simulated breach database. Always use unique passwords per site.'),
+                    el('div', { style: { padding: '8px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.2)', color: '#94a3b8', fontSize: 10, lineHeight: 1.6 } },
+                      '\uD83D\uDD12 Real services like "Have I Been Pwned" use k-anonymity to check passwords against billions of breached credentials without seeing your full password.')
+                  ),
                   // Challenge
                   !pwChallengeDone && pwStrength.entropy > 60 && el('div', { style: { marginTop: 16, padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.1))', border: '1px solid rgba(245,158,11,0.3)', textAlign: 'center' } },
                     el('div', { style: { fontSize: 14, fontWeight: 900, color: '#fbbf24', marginBottom: 4 } }, '\uD83C\uDFC6 Challenge Complete!'),
                     el('div', { style: { fontSize: 12, color: '#fcd34d' } }, 'Your password would take ' + pwStrength.crackTime + ' to crack!'),
                     el('button', { onClick: function() { ctx.awardXP('cyberDefense', 5); upd('pwChallengeDone', true); if (ctx.addToast) ctx.addToast('\uD83D\uDEE1\uFE0F +5 XP! Password Master!', 'success'); },
                       style: { marginTop: 10, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #f59e0b, #eab308)', color: '#1e293b', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Claim +5 XP \u2B50')
+                  ),
+                  // Tips
+                  el('div', { style: { marginTop: 16, padding: 16, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)' } },
+                    el('div', { style: { color: '#818cf8', fontSize: 12, fontWeight: 800, marginBottom: 8 } }, '\uD83D\uDCA1 Password Tips'),
+                    ['Use a passphrase: combine 4+ random words (e.g., "correct-horse-battery-staple")',
+                     'Never reuse passwords across different sites',
+                     'Add symbols and numbers between words, not just at the end',
+                     'Longer is always stronger \u2014 aim for 16+ characters',
+                     'Consider using a password manager to generate and store strong passwords'
+                    ].map(function(tip, ti) {
+                      return el('div', { key: ti, style: { color: '#94a3b8', fontSize: 11, padding: '3px 0', display: 'flex', gap: 6, alignItems: 'flex-start' } },
+                        el('span', { style: { color: '#6366f1', fontSize: 8, marginTop: 4 } }, '\u25C6'), tip);
+                    })
                   )
-                ),
-                // Tips panel
-                el('div', { style: { marginTop: 16, padding: 16, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)' } },
-                  el('div', { style: { color: '#818cf8', fontSize: 12, fontWeight: 800, marginBottom: 8 } }, '\uD83D\uDCA1 Password Tips'),
-                  ['Use a passphrase: combine 4+ random words (e.g., "correct-horse-battery-staple")',
-                   'Never reuse passwords across different sites',
-                   'Add symbols and numbers between words, not just at the end',
-                   'Longer is always stronger \u2014 aim for 16+ characters',
-                   'Consider using a password manager to generate and store strong passwords'
-                  ].map(function(tip, ti) {
-                    return el('div', { key: ti, style: { color: '#94a3b8', fontSize: 11, padding: '3px 0', display: 'flex', gap: 6, alignItems: 'flex-start' } },
-                      el('span', { style: { color: '#6366f1', fontSize: 8, marginTop: 4 } }, '\u25C6'), tip);
-                  })
-                )
               ),
-
               // â•â•â•â•â•â•â• CIPHER PLAYGROUND â•â•â•â•â•â•â•
               cyberTab === 'cipher' && el('div', { style: { maxWidth: 640, margin: '0 auto' } },
                 // Cipher type selector
@@ -717,6 +952,173 @@
                   }, placeholder: 'Type the decoded message...', disabled: challengeSolved,
                     style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '2px solid ' + (challengeSolved ? '#22c55e' : 'rgba(255,255,255,0.1)'), background: challengeSolved ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.06)', color: challengeSolved ? '#4ade80' : '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, outline: 'none', boxSizing: 'border-box' } }),
                   challengeSolved && el('div', { style: { marginTop: 8, color: '#4ade80', fontSize: 13, fontWeight: 800, textAlign: 'center' } }, '\u2705 Decoded! The message is: "' + activeChallengeData.answer + '"')
+                )
+              )
+              ),
+
+              // ======= NETWORK TRAFFIC ANALYZER =======
+              cyberTab === 'network' && el('div', { style: { maxWidth: 700, margin: '0 auto' } },
+                el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 } },
+                  el('div', null,
+                    el('div', { style: { color: '#a5b4fc', fontSize: 14, fontWeight: 900 } }, '\uD83D\uDCE1 Network Traffic Analyzer'),
+                    el('div', { style: { color: '#64748b', fontSize: 11, marginTop: 2 } }, 'Inspect packets and flag suspicious traffic')
+                  ),
+                  el('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
+                    el('div', { style: { padding: '4px 10px', borderRadius: 8, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#4ade80', fontSize: 11, fontWeight: 700 } }, '\u2705 ' + netScore + ' correct'),
+                    el('button', { onClick: function() { var pkts = generateNetRound(); upd({ netPackets: pkts, netFlagged: [], netShowAnswer: false, netRound: netRound + 1 }); },
+                      style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
+                      netPackets.length === 0 ? '\uD83D\uDCE1 Start Capture' : '\uD83D\uDD04 New Capture')
+                  )
+                ),
+                // Packet list
+                netPackets.length > 0 && el('div', { style: { borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(99,102,241,0.15)' } },
+                  // Header
+                  el('div', { style: { display: 'grid', gridTemplateColumns: '70px 120px 120px 50px 1fr', gap: 0, background: 'rgba(99,102,241,0.1)', padding: '8px 12px' } },
+                    el('span', { style: { color: '#a5b4fc', fontSize: 10, fontWeight: 800 } }, 'PROTO'),
+                    el('span', { style: { color: '#a5b4fc', fontSize: 10, fontWeight: 800 } }, 'SOURCE'),
+                    el('span', { style: { color: '#a5b4fc', fontSize: 10, fontWeight: 800 } }, 'DESTINATION'),
+                    el('span', { style: { color: '#a5b4fc', fontSize: 10, fontWeight: 800 } }, 'PORT'),
+                    el('span', { style: { color: '#a5b4fc', fontSize: 10, fontWeight: 800 } }, 'PAYLOAD')
+                  ),
+                  // Packet rows
+                  netPackets.map(function(pkt, pi) {
+                    var isFlagged = netFlagged.indexOf(pkt.id) !== -1;
+                    var protoColors = { HTTPS: '#22c55e', HTTP: '#f97316', DNS: '#60a5fa', TCP: '#a78bfa', SMTP: '#f472b6', FTP: '#fbbf24', ICMP: '#94a3b8', NTP: '#64748b' };
+                    var pColor = protoColors[pkt.proto] || '#94a3b8';
+                    return el('div', { key: pi, onClick: function() {
+                        if (netShowAnswer) return;
+                        var newFlagged = isFlagged ? netFlagged.filter(function(f) { return f !== pkt.id; }) : netFlagged.concat([pkt.id]);
+                        upd('netFlagged', newFlagged);
+                      },
+                      style: { display: 'grid', gridTemplateColumns: '70px 120px 120px 50px 1fr', gap: 0, padding: '8px 12px', cursor: netShowAnswer ? 'default' : 'pointer', background: netShowAnswer ? (pkt.suspicious ? 'rgba(239,68,68,0.06)' : 'rgba(34,197,94,0.03)') : isFlagged ? 'rgba(244,63,94,0.08)' : 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.2s' } },
+                      el('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
+                        isFlagged && el('span', { style: { color: '#f43f5e', fontSize: 10 } }, '\u26A0\uFE0F'),
+                        netShowAnswer && pkt.suspicious && el('span', { style: { color: '#ef4444', fontSize: 10 } }, '\uD83D\uDEA8'),
+                        netShowAnswer && !pkt.suspicious && el('span', { style: { color: '#22c55e', fontSize: 10 } }, '\u2705'),
+                        el('span', { style: { color: pColor, fontSize: 11, fontWeight: 700, fontFamily: 'monospace' } }, pkt.proto)
+                      ),
+                      el('span', { style: { color: '#94a3b8', fontSize: 10, fontFamily: 'monospace' } }, pkt.src),
+                      el('span', { style: { color: '#94a3b8', fontSize: 10, fontFamily: 'monospace' } }, pkt.dst),
+                      el('span', { style: { color: '#64748b', fontSize: 10, fontFamily: 'monospace' } }, String(pkt.port)),
+                      el('div', null,
+                        el('div', { style: { color: '#cbd5e1', fontSize: 10, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, pkt.payload),
+                        netShowAnswer && el('div', { style: { color: pkt.suspicious ? '#fca5a5' : '#6ee7b7', fontSize: 9, marginTop: 2, fontWeight: 600 } }, pkt.reason)
+                      )
+                    );
+                  })
+                ),
+                // Submit / Results
+                netPackets.length > 0 && !netShowAnswer && el('div', { style: { marginTop: 14, textAlign: 'center' } },
+                  el('div', { style: { color: '#64748b', fontSize: 11, marginBottom: 8 } }, 'Click packets you think are suspicious, then submit your analysis'),
+                  el('button', { onClick: function() {
+                      var correct = 0;
+                      netPackets.forEach(function(pkt) {
+                        var flagged = netFlagged.indexOf(pkt.id) !== -1;
+                        if (flagged === pkt.suspicious) correct++;
+                      });
+                      var xp = Math.round(correct / netPackets.length * 10);
+                      ctx.awardXP('cyberDefense', xp);
+                      if (ctx.addToast) ctx.addToast('\uD83D\uDCE1 +' + xp + ' XP! ' + correct + '/' + netPackets.length + ' correct', 'success');
+                      upd({ netShowAnswer: true, netScore: netScore + correct });
+                    },
+                    style: { padding: '10px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
+                    '\uD83D\uDD0D Submit Analysis (' + netFlagged.length + ' flagged)')
+                ),
+                netShowAnswer && el('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)' } },
+                  el('div', { style: { color: '#818cf8', fontSize: 12, fontWeight: 800, marginBottom: 8 } }, '\uD83D\uDCA1 Network Security Tips'),
+                  ['HTTPS (port 443) encrypts data in transit \u2014 HTTP (port 80) sends everything in plaintext',
+                   'Unusual ports (4444, 6667) often indicate malware or botnet activity',
+                   'DNS tunneling hides data inside DNS queries to bypass firewalls',
+                   'Always verify email sender domains \u2014 spoofed emails enable BEC attacks',
+                   'FTP sends files unencrypted \u2014 use SFTP or SCP for sensitive data'
+                  ].map(function(tip, ti) {
+                    return el('div', { key: ti, style: { color: '#94a3b8', fontSize: 11, padding: '3px 0', display: 'flex', gap: 6 } },
+                      el('span', { style: { color: '#6366f1', fontSize: 8, marginTop: 4 } }, '\u25C6'), tip);
+                  })
+                ),
+                // Empty state
+                netPackets.length === 0 && el('div', { style: { textAlign: 'center', padding: '40px 20px' } },
+                  el('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDCE1'),
+                  el('div', { style: { color: '#64748b', fontSize: 13, fontWeight: 600 } }, 'Click "Start Capture" to intercept network packets'),
+                  el('div', { style: { color: '#475569', fontSize: 11, marginTop: 4 } }, 'Analyze traffic and identify threats like a SOC analyst')
+                )
+              ),
+
+              // ======= SOCIAL ENGINEERING QUIZ =======
+              cyberTab === 'social' && el('div', { style: { maxWidth: 640, margin: '0 auto' } },
+                el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 } },
+                  el('div', null,
+                    el('div', { style: { color: '#a5b4fc', fontSize: 14, fontWeight: 900 } }, '\uD83C\uDFAD Social Engineering Defense'),
+                    el('div', { style: { color: '#64748b', fontSize: 11, marginTop: 2 } }, 'Scenario ' + (seQuizIdx + 1) + ' of ' + seScenarios.length)
+                  ),
+                  el('div', { style: { display: 'flex', gap: 8 } },
+                    el('div', { style: { padding: '4px 10px', borderRadius: 8, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', color: '#fbbf24', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDD25 Streak: ' + seQuizStreak),
+                    el('div', { style: { padding: '4px 10px', borderRadius: 8, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#4ade80', fontSize: 11, fontWeight: 700 } }, '\u2705 ' + seQuizScore + '/' + seScenarios.length)
+                  )
+                ),
+                // Attack type badge
+                el('div', { style: { display: 'inline-block', padding: '4px 12px', borderRadius: 20, background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.2)', color: '#fb7185', fontSize: 11, fontWeight: 700, marginBottom: 12 } },
+                  '\uD83C\uDFAF Attack Type: ' + (seQuizAnswer ? activeSeScenario.type : '???')),
+                // Scenario
+                el('div', { style: { padding: 20, borderRadius: 12, background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))', border: '1px solid rgba(99,102,241,0.2)', marginBottom: 16 } },
+                  el('div', { style: { color: '#e2e8f0', fontSize: 14, fontWeight: 600, lineHeight: 1.7 } }, activeSeScenario.scenario)
+                ),
+                // Options
+                activeSeScenario.options.map(function(opt, oi) {
+                  var isSelected = seQuizAnswer === opt.id;
+                  var isCorrect = opt.id === activeSeScenario.correct;
+                  var showResult = seQuizAnswer !== null;
+                  var borderColor = showResult ? (isCorrect ? 'rgba(34,197,94,0.5)' : isSelected ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.06)') : isSelected ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.1)';
+                  var bgColor = showResult ? (isCorrect ? 'rgba(34,197,94,0.08)' : isSelected ? 'rgba(239,68,68,0.06)' : 'rgba(255,255,255,0.02)') : 'rgba(255,255,255,0.04)';
+                  return el('div', { key: oi, style: { marginBottom: 10 } },
+                    el('button', { onClick: function() {
+                        if (seQuizAnswer) return;
+                        var correct = opt.id === activeSeScenario.correct;
+                        var xp = correct ? 8 : 2;
+                        var newStreak = correct ? seQuizStreak + 1 : 0;
+                        if (newStreak >= 3) xp += 3;
+                        ctx.awardXP('cyberDefense', xp);
+                        if (ctx.addToast) ctx.addToast(correct ? '\u2705 +' + xp + ' XP! Correct!' : '\u274C +2 XP \u2014 Study the feedback', correct ? 'success' : 'error');
+                        upd({ seQuizAnswer: opt.id, seQuizScore: seQuizScore + (correct ? 1 : 0), seQuizStreak: newStreak });
+                      },
+                      disabled: seQuizAnswer !== null,
+                      style: { width: '100%', padding: '12px 16px', borderRadius: 10, border: '2px solid ' + borderColor, background: bgColor, color: showResult && isCorrect ? '#4ade80' : showResult && isSelected ? '#fca5a5' : '#e2e8f0', fontSize: 13, fontWeight: 600, cursor: seQuizAnswer ? 'default' : 'pointer', textAlign: 'left', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 8 } },
+                      showResult && isCorrect && el('span', null, '\u2705'),
+                      showResult && isSelected && !isCorrect && el('span', null, '\u274C'),
+                      opt.label
+                    ),
+                    showResult && (isSelected || isCorrect) && el('div', { style: { padding: '8px 14px', marginTop: 4, borderRadius: 8, background: isCorrect ? 'rgba(34,197,94,0.05)' : 'rgba(239,68,68,0.05)', color: isCorrect ? '#86efac' : '#fca5a5', fontSize: 11, fontWeight: 600, lineHeight: 1.5 } },
+                      opt.feedback)
+                  );
+                }),
+                // Lesson + Next
+                seQuizAnswer && el('div', { style: { marginTop: 16 } },
+                  el('div', { style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(245,158,11,0.08), rgba(234,179,8,0.05))', border: '1px solid rgba(245,158,11,0.2)' } },
+                    el('div', { style: { color: '#fbbf24', fontSize: 12, fontWeight: 800, marginBottom: 4 } }, '\uD83D\uDCDA Did You Know?'),
+                    el('div', { style: { color: '#fcd34d', fontSize: 12, lineHeight: 1.6 } }, activeSeScenario.lesson)
+                  ),
+                  el('button', { onClick: function() { upd({ seQuizAnswer: null, seQuizIdx: seQuizIdx + 1 }); },
+                    style: { marginTop: 12, padding: '10px 24px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 } },
+                    '\uD83C\uDFAD Next Scenario \u2192')
+                ),
+                // AI Threat Briefing
+                el('div', { style: { marginTop: 20, padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(168,85,247,0.04))', border: '1px solid rgba(99,102,241,0.15)' } },
+                  el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+                    el('div', { style: { color: '#a5b4fc', fontSize: 13, fontWeight: 800 } }, '\uD83E\uDD16 AI Threat Briefing'),
+                    el('button', { onClick: function() {
+                        if (threatLoading || !ctx.aiChat) return;
+                        upd('threatLoading', true);
+                        ctx.aiChat('You are a cybersecurity educator. Generate a brief, engaging "Daily Threat Briefing" for a student. Include: 1) A real-world attack type (name it), 2) How it works in 2-3 sentences, 3) One defense tip. Keep it under 120 words. Use a serious but approachable tone. Format with line breaks.', function(resp) {
+                          upd({ threatBriefing: resp, threatLoading: false });
+                          ctx.awardXP('cyberDefense', 3);
+                          if (ctx.addToast) ctx.addToast('\uD83E\uDD16 +3 XP! Threat briefing received', 'info');
+                        });
+                      },
+                      style: { padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.3)', background: threatLoading ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: threatLoading ? 'wait' : 'pointer' } },
+                      threatLoading ? '\u23F3 Generating...' : '\uD83D\uDCE1 Get Briefing')
+                  ),
+                  threatBriefing ? el('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.7, whiteSpace: 'pre-line' } }, threatBriefing)
+                    : el('div', { style: { color: '#475569', fontSize: 11, fontStyle: 'italic' } }, 'Click "Get Briefing" for an AI-generated cybersecurity threat report')
                 )
               )
             )

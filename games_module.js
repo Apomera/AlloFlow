@@ -30,6 +30,7 @@
   var LanguageContext = window.AlloLanguageContext;
   var fisherYatesShuffle = window.fisherYatesShuffle;
   var getGlobalAudioContext = window.getGlobalAudioContext || function() { return null; };
+  var warnLog = (typeof window.__alloWarnLog === 'function') ? window.__alloWarnLog : function() { console.warn.apply(console, arguments); };
 
   // ── Lucide icons from host app ──
   var _icons = window.AlloIcons || {};
@@ -55,6 +56,7 @@
   var Plus = _icons.Plus || function() { return null; };
   var Printer = _icons.Printer || function() { return null; };
   var RefreshCw = _icons.RefreshCw || function() { return null; };
+  var Search = _icons.Search || function() { return null; };
   var Star = _icons.Star || function() { return null; };
   var StopCircle = _icons.StopCircle || function() { return null; };
   var Trophy = _icons.Trophy || function() { return null; };
@@ -94,12 +96,23 @@ var MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete }) =
   const [gameMode, setGameMode] = useState("smart");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [announcement, setAnnouncement] = useState("");
+  const [difficulty, setDifficulty] = useState("medium");
+  const [combo, setCombo] = useState(0);
+  const [bestCombo, setBestCombo] = useState(0);
+  const [startTime, setStartTime] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const timerRef = useRef(null);
   const cardRefs = useRef([]);
   useEffect(() => {
     initializeGame();
-  }, [data, gameMode]);
+  }, [data, gameMode, difficulty]);
+  useEffect(() => {
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, []);
   const initializeGame = () => {
-    const gameItems = data.slice(0, 10);
+    const pairCounts = { easy: 4, medium: 6, hard: 10 };
+    const maxPairs = pairCounts[difficulty] || 6;
+    const gameItems = data.slice(0, maxPairs);
     const deck = gameItems.flatMap((item, index) => {
       const pairId = index;
       let strategy = gameMode;
@@ -167,6 +180,12 @@ var MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete }) =
     setMoves(0);
     setScore(0);
     setIsWon(false);
+    setCombo(0);
+    setBestCombo(0);
+    setElapsedTime(0);
+    setStartTime(Date.now());
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => setElapsedTime(e => e + 1), 1000);
     setAnnouncement(`Game started. ${deck.length} cards. Use arrow keys or tab to navigate. Press Enter or Space to flip.`);
     cardRefs.current = cardRefs.current.slice(0, deck.length);
   };
@@ -181,7 +200,11 @@ var MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete }) =
       const card1 = cards[newFlipped[0]];
       const card2 = cards[newFlipped[1]];
       if (card1.pairId === card2.pairId) {
-        setScore((s) => s + 30);
+        const newCombo = combo + 1;
+        setCombo(newCombo);
+        if (newCombo > bestCombo) setBestCombo(newCombo);
+        const comboBonus = newCombo >= 3 ? 20 : newCombo >= 2 ? 10 : 0;
+        setScore((s) => s + 30 + comboBonus);
         setTimeout(() => {
           setMatchedPairs((prev) => {
             const newSet = new Set(prev);
@@ -189,9 +212,10 @@ var MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete }) =
             return newSet;
           });
           setFlippedIndices([]);
-          setAnnouncement(t("memory.announcement_match"));
+          setAnnouncement(t("memory.announcement_match") + (comboBonus > 0 ? ` Combo x${newCombo}! +${comboBonus} bonus!` : ''));
         }, 500);
       } else {
+        setCombo(0);
         setScore((s) => Math.max(0, s - 5));
         setTimeout(() => {
           setFlippedIndices([]);
@@ -241,6 +265,7 @@ var MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete }) =
   useEffect(() => {
     if (!isWon && cards.length > 0 && matchedPairs.size === cards.length / 2) {
       setIsWon(true);
+      if (timerRef.current) clearInterval(timerRef.current);
       if (onScoreUpdate) onScoreUpdate(score, "Memory Match Complete");
       if (onGameComplete) {
         onGameComplete("memory", {
@@ -252,7 +277,18 @@ var MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete }) =
       }
     }
   }, [matchedPairs, cards.length, isWon, onScoreUpdate, score]);
-  return /* @__PURE__ */ React.createElement("div", { className: `bg-slate-100 p-6 transition-all duration-300 ${isFullscreen ? "fixed inset-0 z-[100] overflow-y-auto h-screen w-screen rounded-none" : "rounded-xl border-2 border-indigo-200 shadow-inner mb-6 relative"}` }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: `flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 ${isFullscreen ? "sticky top-0 z-30 bg-slate-100/90 backdrop-blur-sm py-2 border-b border-slate-200" : ""}` }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-900 text-lg flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Brain, { size: 20 }), " ", t("memory.title")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 text-xs text-slate-500 mt-1" }, /* @__PURE__ */ React.createElement("span", null, t("memory.moves"), ": ", moves), /* @__PURE__ */ React.createElement("span", { className: "w-px h-3 bg-slate-300" }), /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-bold" }, t("memory.score"), ": ", score), /* @__PURE__ */ React.createElement("span", { className: "w-px h-3 bg-slate-300" }), /* @__PURE__ */ React.createElement("span", null, t("memory.pairs"), ": ", matchedPairs.size, "/", cards.length / 2))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: `bg-slate-100 p-6 transition-all duration-300 ${isFullscreen ? "fixed inset-0 z-[100] overflow-y-auto h-screen w-screen rounded-none" : "rounded-xl border-2 border-indigo-200 shadow-inner mb-6 relative"}` }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: `flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 ${isFullscreen ? "sticky top-0 z-30 bg-slate-100/90 backdrop-blur-sm py-2 border-b border-slate-200" : ""}` }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-900 text-lg flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Brain, { size: 20 }), " ", t("memory.title")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 text-xs text-slate-500 mt-1" }, /* @__PURE__ */ React.createElement("span", null, t("memory.moves"), ": ", moves), /* @__PURE__ */ React.createElement("span", { className: "w-px h-3 bg-slate-300" }), /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-bold" }, t("memory.score"), ": ", score), /* @__PURE__ */ React.createElement("span", { className: "w-px h-3 bg-slate-300" }), /* @__PURE__ */ React.createElement("span", null, t("memory.pairs"), ": ", matchedPairs.size, "/", cards.length / 2), /* @__PURE__ */ React.createElement("span", { className: "w-px h-3 bg-slate-300" }), /* @__PURE__ */ React.createElement("span", null, "\u23F1\uFE0F ", Math.floor(elapsedTime / 60), ":", ("0" + (elapsedTime % 60)).slice(-2)), combo >= 2 && /* @__PURE__ */ React.createElement("span", { className: "text-orange-500 font-black animate-pulse" }, "\uD83D\uDD25 x", combo))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__  */ React.createElement(
+    "select",
+    {
+      "aria-label": "Difficulty",
+      value: difficulty,
+      onChange: (e) => setDifficulty(e.target.value),
+      className: "text-xs font-bold text-emerald-700 bg-white border border-emerald-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-200 cursor-pointer shadow-sm"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "easy" }, "\uD83C\uDF1F Easy (4 pairs)"),
+    /* @__PURE__ */ React.createElement("option", { value: "medium" }, "\u2B50 Medium (6 pairs)"),
+    /* @__PURE__ */ React.createElement("option", { value: "hard" }, "\uD83D\uDD25 Hard (10 pairs)")
+  ), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -287,7 +323,7 @@ var MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete }) =
       "data-help-key": "memory_fullscreen_btn"
     },
     isFullscreen ? /* @__PURE__ */ React.createElement(Minimize, { size: 18 }) : /* @__PURE__ */ React.createElement(Maximize, { size: 18 })
-  ), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "text-slate-500 hover:text-slate-600 p-1", "aria-label": t("memory.close_aria") }, /* @__PURE__ */ React.createElement(X, { size: 18 })))), isWon ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center justify-center py-12 text-center animate-in zoom-in duration-300" }, /* @__PURE__ */ React.createElement(ConfettiExplosion, null), /* @__PURE__ */ React.createElement("div", { className: "w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 mb-4 shadow-lg" }, /* @__PURE__ */ React.createElement(Trophy, { size: 40, className: "fill-current" })), /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black text-slate-800 mb-2" }, t("memory.victory")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-indigo-600 mb-4 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-100" }, t("memory.final_score"), ": ", score), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-6" }, t("memory.cleared_message", { moves })), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "text-slate-500 hover:text-slate-600 p-1", "aria-label": t("memory.close_aria") }, /* @__PURE__ */ React.createElement(X, { size: 18 })))), isWon ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center justify-center py-12 text-center animate-in zoom-in duration-300" }, /* @__PURE__ */ React.createElement(ConfettiExplosion, null), /* @__PURE__ */ React.createElement("div", { className: "w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 mb-4 shadow-lg" }, /* @__PURE__ */ React.createElement(Trophy, { size: 40, className: "fill-current" })), /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black text-slate-800 mb-2" }, t("memory.victory")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-indigo-600 mb-4 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-100" }, t("memory.final_score"), ": ", score), /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 text-sm text-slate-500 mb-2" }, /* @__PURE__  */ React.createElement("span", null, "\u23F1\uFE0F ", Math.floor(elapsedTime / 60), ":", ("0" + (elapsedTime % 60)).slice(-2)), bestCombo >= 2 && /* @__PURE__ */ React.createElement("span", null, "\uD83D\uDD25 Best combo: x", bestCombo)), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-6" }, t("memory.cleared_message", { moves })), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.start_game"),
@@ -757,6 +793,44 @@ var TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGame
   const handleDragEnd = () => {
     setDraggingIdx(null);
   };
+  // ── Touch support for mobile/tablet ──
+  const touchDragIdx = useRef(null);
+  const touchStartY = useRef(0);
+  const handleTouchStart = (e, index) => {
+    if (isWon) return;
+    touchDragIdx.current = index;
+    touchStartY.current = e.touches[0].clientY;
+    setDraggingIdx(index);
+  };
+  const handleTouchMove = useCallback((e) => {
+    if (touchDragIdx.current === null) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const currentIdx = touchDragIdx.current;
+    // Find which item element the finger is over
+    const elements = itemRefs.current.filter(Boolean);
+    for (let i = 0; i < elements.length; i++) {
+      if (i === currentIdx) continue;
+      const rect = elements[i].getBoundingClientRect();
+      if (touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+        // Swap items
+        setItems((prev) => {
+          const next = [...prev];
+          const dragged = next[currentIdx];
+          next.splice(currentIdx, 1);
+          next.splice(i, 0, dragged);
+          return next;
+        });
+        touchDragIdx.current = i;
+        setDraggingIdx(i);
+        break;
+      }
+    }
+  }, []);
+  const handleTouchEnd = useCallback(() => {
+    touchDragIdx.current = null;
+    setDraggingIdx(null);
+  }, []);
   const moveItem = (index, direction) => {
     const newItems = [...items];
     const itemToMove = newItems[index];
@@ -869,6 +943,9 @@ var TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGame
         onDragStart: (e) => handleDragStart(e, idx),
         onDragOver: (e) => handleDragOver(e, idx),
         onDragEnd: handleDragEnd,
+        onTouchStart: (e) => handleTouchStart(e, idx),
+        onTouchMove: handleTouchMove,
+        onTouchEnd: handleTouchEnd,
         className: `relative z-10 sm:flex sm:items-center sm:justify-between group transition-all duration-300 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 focus:ring-offset-4 ${isDragging ? "opacity-20 scale-95" : "opacity-100"} ${isLifted ? "z-50 scale-105 ring-4 ring-yellow-400 ring-offset-4 shadow-2xl" : ""}`,
         "data-help-key": "timeline_draggable_item"
       },
@@ -1375,18 +1452,18 @@ var VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComp
       /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "venn_move_a", onClick: () => handleKeyboardMove("setA"), className: "px-4 py-3 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-xl font-bold text-xs transition-colors border border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-500" }, getTitle("setA")), /* @__PURE__ */ React.createElement("button", { "data-help-key": "venn_move_b", onClick: () => handleKeyboardMove("setB"), className: "px-4 py-3 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-xl font-bold text-xs transition-colors border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500" }, getTitle("setB")), /* @__PURE__ */ React.createElement("button", { "data-help-key": "venn_move_shared", onClick: () => handleKeyboardMove("shared"), className: "col-span-2 px-4 py-3 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-xl font-bold text-xs transition-colors border border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500" }, getTitle("shared") || t("concept_map.venn.shared_fallback")), /* @__PURE__ */ React.createElement("button", { "data-help-key": "venn_move_bank", onClick: () => handleKeyboardMove("bank"), className: "col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-300 mt-2 focus:outline-none focus:ring-2 focus:ring-slate-500" }, t("concept_map.venn.return_bank"))),
       /* @__PURE__ */ React.createElement("button", { "data-help-key": "venn_move_cancel", onClick: () => setKeyboardSelectedItemId(null), className: "mt-2 text-xs text-slate-500 hover:text-slate-600 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded" }, t("concept_map.venn.cancel_selection"))
     )
-  ), /* @__PURE__ */ React.createElement("div", { className: "w-full max-w-[800px] flex justify-between px-4 md:px-12 mb-2 z-20 pointer-events-none" }, /* @__PURE__ */ React.createElement("div", { className: "bg-rose-100/90 backdrop-blur-sm border-2 border-rose-300 text-rose-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm max-w-[300px] text-center pointer-events-auto transform -rotate-2" }, getTitle("setA")), /* @__PURE__ */ React.createElement("div", { className: "bg-blue-100/90 backdrop-blur-sm border-2 border-blue-300 text-blue-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm max-w-[300px] text-center pointer-events-auto transform rotate-2" }, getTitle("setB"))), /* @__PURE__ */ React.createElement("div", { className: "relative w-full max-w-[800px] h-[300px] md:h-[500px] flex items-center justify-center select-none scale-[0.6] md:scale-100 origin-center" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "w-full max-w-[800px] flex justify-between px-4 md:px-12 mb-2 z-20 pointer-events-none" }, /* @__PURE__ */ React.createElement("div", { className: "bg-rose-100/90 backdrop-blur-sm border-2 border-rose-300 text-rose-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm max-w-[300px] text-center pointer-events-auto transform -rotate-2" }, getTitle("setA")), /* @__PURE__ */ React.createElement("div", { className: "bg-blue-100/90 backdrop-blur-sm border-2 border-blue-300 text-blue-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm max-w-[300px] text-center pointer-events-auto transform rotate-2" }, getTitle("setB"))), /* @__PURE__ */ React.createElement("div", { className: "relative w-full max-w-[800px] h-[280px] sm:h-[400px] md:h-[500px] flex items-center justify-center select-none origin-center" }, /* @__PURE__ */ React.createElement(
     "div",
     {
       onDrop: (e) => handleDrop(e, "setA"),
       onDragOver: (e) => handleDragOver(e, "setA"),
       onDragLeave: handleDragLeave,
-      className: `absolute left-0 w-[500px] h-[500px] rounded-full border-4 flex flex-col items-start justify-center pl-24 transition-all duration-300
+      className: `absolute left-0 w-[280px] h-[280px] sm:w-[400px] sm:h-[400px] md:w-[500px] md:h-[500px] rounded-full border-4 flex flex-col items-start justify-center pl-8 sm:pl-16 md:pl-24 transition-all duration-300
                         ${activeDropZone === "setA" ? "bg-rose-200/60 border-rose-500 scale-[1.02] z-10 shadow-[0_0_30px_rgba(244,63,94,0.3)]" : "bg-gradient-to-br from-rose-100/50 to-rose-200/30 border-rose-300"}
                       `,
       "data-help-key": "venn_drop_zone_a"
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 w-64 content-center justify-center pr-12 h-64 overflow-y-auto custom-scrollbar" }, vennSetA.map((item) => /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1 sm:gap-2 w-36 sm:w-48 md:w-64 content-center justify-center pr-4 sm:pr-8 md:pr-12 h-36 sm:h-48 md:h-64 overflow-y-auto custom-scrollbar" }, vennSetA.map((item) => /* @__PURE__ */ React.createElement(
       "div",
       {
         key: item.id,
@@ -1414,12 +1491,12 @@ var VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComp
       onDrop: (e) => handleDrop(e, "setB"),
       onDragOver: (e) => handleDragOver(e, "setB"),
       onDragLeave: handleDragLeave,
-      className: `absolute right-0 w-[500px] h-[500px] rounded-full border-4 flex flex-col items-end justify-center pr-24 transition-all duration-300
+      className: `absolute right-0 w-[280px] h-[280px] sm:w-[400px] sm:h-[400px] md:w-[500px] md:h-[500px] rounded-full border-4 flex flex-col items-end justify-center pr-8 sm:pr-16 md:pr-24 transition-all duration-300
                         ${activeDropZone === "setB" ? "bg-blue-200/60 border-blue-500 scale-[1.02] z-10 shadow-[0_0_30px_rgba(59,130,246,0.3)]" : "bg-gradient-to-bl from-blue-100/50 to-blue-200/30 border-blue-300"}
                       `,
       "data-help-key": "venn_drop_zone_b"
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 w-64 content-center justify-center pl-12 h-64 overflow-y-auto custom-scrollbar" }, vennSetB.map((item) => /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1 sm:gap-2 w-36 sm:w-48 md:w-64 content-center justify-center pl-4 sm:pl-8 md:pl-12 h-36 sm:h-48 md:h-64 overflow-y-auto custom-scrollbar" }, vennSetB.map((item) => /* @__PURE__ */ React.createElement(
       "div",
       {
         key: item.id,
@@ -2565,6 +2642,7 @@ var StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete })
   }, [data]);
   const toggleCell = (r, c) => {
     const key = `${r}-${c}`;
+    if (key === "2-2") return;
     const newMarks = new Set(marks);
     if (newMarks.has(key)) {
       newMarks.delete(key);
@@ -2651,6 +2729,10 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
   const [feedback, setFeedback] = useState("idle");
   const [score, setScore] = useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
+  const [streak, setStreak] = useState(0);
+  const [bestStreak, setBestStreak] = useState(0);
+  const [hintsUsed, setHintsUsed] = useState(0);
+  const [revealedLetters, setRevealedLetters] = useState([]);
   useEffect(() => {
     if (!data) return;
     const items = data.filter((item) => item.term && item.term.length > 2);
@@ -2664,6 +2746,10 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
     setIsGameOver(false);
     setFeedback("idle");
     setGuess("");
+    setStreak(0);
+    setBestStreak(0);
+    setHintsUsed(0);
+    setRevealedLetters([]);
     if (items.length > 0) {
       setScrambled(scrambleWord(items[0].term));
     }
@@ -2675,6 +2761,8 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
       setScrambled(scrambleWord(gameItems[nextIdx].term));
       setGuess("");
       setFeedback("idle");
+      setHintsUsed(0);
+      setRevealedLetters([]);
     } else {
       setIsGameOver(true);
       if (onScoreUpdate) onScoreUpdate(currentScore, "Word Scramble Complete");
@@ -2689,7 +2777,11 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
     if (userGuess === target) {
       if (playSound) playSound("correct");
       setFeedback("correct");
-      const newScore = score + 10;
+      const newStreak = streak + 1;
+      setStreak(newStreak);
+      if (newStreak > bestStreak) setBestStreak(newStreak);
+      const pts = Math.max(1, 10 + newStreak * 2 - hintsUsed * 3);
+      const newScore = score + pts;
       setScore(newScore);
       setTimeout(() => {
         nextRound(newScore);
@@ -2697,10 +2789,25 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
     } else {
       if (playSound) playSound("incorrect");
       setFeedback("incorrect");
+      setStreak(0);
       setTimeout(() => setFeedback("idle"), 800);
     }
   };
+  const handleHint = () => {
+    const currentItem = gameItems[currentIndex];
+    if (!currentItem) return;
+    const word = currentItem.term;
+    const unrevealed = [];
+    for (let i = 0; i < word.length; i++) {
+      if (!revealedLetters.includes(i)) unrevealed.push(i);
+    }
+    if (unrevealed.length === 0) return;
+    const pick = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+    setRevealedLetters([...revealedLetters, pick]);
+    setHintsUsed(hintsUsed + 1);
+  };
   const handleSkip = () => {
+    setStreak(0);
     nextRound(score);
   };
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in zoom-in-95" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col relative p-8 text-center border-4 border-indigo-500" }, /* @__PURE__ */ React.createElement(
@@ -2711,7 +2818,7 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
       "aria-label": t("common.close")
     },
     /* @__PURE__ */ React.createElement(X, { size: 24 })
-  ), /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("div", { className: "w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600" }, /* @__PURE__ */ React.createElement(Type, { size: 32 })), /* @__PURE__ */ React.createElement("h2", { className: "text-3xl font-black text-indigo-900 mb-2" }, t("games.scramble.title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 font-medium" }, t("games.scramble.subtitle"))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow flex flex-col items-center justify-center min-h-[300px] bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 p-6 gap-6" }, isGameOver ? /* @__PURE__ */ React.createElement("div", { className: "text-center animate-in zoom-in" }, /* @__PURE__ */ React.createElement(ConfettiExplosion, null), /* @__PURE__ */ React.createElement(Trophy, { size: 64, className: "text-yellow-500 mx-auto mb-4" }), /* @__PURE__ */ React.createElement("h2", { className: "text-3xl font-black text-slate-800 mb-2" }, t("games.syntax.complete")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-indigo-600 mb-6 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-100 inline-block" }, t("games.scramble.score"), ": ", score), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("div", { className: "w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600" }, /* @__PURE__ */ React.createElement(Type, { size: 32 })), /* @__PURE__ */ React.createElement("h2", { className: "text-3xl font-black text-indigo-900 mb-2" }, t("games.scramble.title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 font-medium" }, t("games.scramble.subtitle"))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow flex flex-col items-center justify-center min-h-[300px] bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 p-6 gap-6" }, isGameOver ? /* @__PURE__ */ React.createElement("div", { className: "text-center animate-in zoom-in" }, /* @__PURE__ */ React.createElement(ConfettiExplosion, null), /* @__PURE__ */ React.createElement(Trophy, { size: 64, className: "text-yellow-500 mx-auto mb-4" }), /* @__PURE__ */ React.createElement("h2", { className: "text-3xl font-black text-slate-800 mb-2" }, t("games.syntax.complete")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-indigo-600 mb-4 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-100 inline-block" }, t("games.scramble.score"), ": ", score), bestStreak >= 2 && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-orange-600 mb-4" }, "\uD83D\uDD25 Best streak: ", bestStreak, "x"), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.search"),
@@ -2719,7 +2826,7 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
       className: "w-full bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform"
     },
     t("common.close")
-  )) : gameItems.length > 0 ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between w-full px-4 border-b border-slate-200 pb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-500 uppercase tracking-wider" }, t("games.scramble.progress", { current: currentIndex + 1, total: gameItems.length })), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold text-sm" }, t("flashcards.score_label"), " ", score)), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-200 shadow-sm max-w-lg w-full" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1 justify-center" }, /* @__PURE__ */ React.createElement(Search, { size: 12 }), " ", t("games.scramble.hint_label")), /* @__PURE__ */ React.createElement("p", { className: "text-lg font-medium text-slate-700 leading-relaxed" }, '"', gameItems[currentIndex].def, '"')), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-center gap-2" }, scrambled.split("").map((char, idx) => /* @__PURE__ */ React.createElement(
+  )) : gameItems.length > 0 ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between w-full px-4 border-b border-slate-200 pb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-500 uppercase tracking-wider" }, t("games.scramble.progress", { current: currentIndex + 1, total: gameItems.length })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold text-sm" }, t("flashcards.score_label"), " ", score), streak >= 2 && /* @__PURE__ */ React.createElement("div", { className: "bg-orange-100 text-orange-700 px-3 py-1 rounded-full font-bold text-sm animate-pulse" }, "\uD83D\uDD25 ", streak, "x"), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-400" }, gameItems[currentIndex].term.length, " letters"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-200 shadow-sm max-w-lg w-full" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1 justify-center" }, /* @__PURE__ */ React.createElement(Search, { size: 12 }), " ", t("games.scramble.hint_label")), /* @__PURE__ */ React.createElement("p", { className: "text-lg font-medium text-slate-700 leading-relaxed" }, '"', gameItems[currentIndex].def, '"')), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-center gap-2" }, scrambled.split("").map((char, idx) => /* @__PURE__ */ React.createElement(
     "div",
     {
       key: idx,
@@ -2727,7 +2834,7 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
       style: { animationDelay: `${idx * 50}ms` }
     },
     char.toUpperCase()
-  ))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 w-full max-w-xs animate-in slide-in-from-bottom-4 fade-in" }, /* @__PURE__ */ React.createElement(
+  ))), revealedLetters.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-center gap-1" }, gameItems[currentIndex].term.split("").map((ch, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: "w-8 h-8 flex items-center justify-center text-sm font-black rounded border " + (revealedLetters.includes(i) ? "bg-green-100 border-green-300 text-green-700" : "bg-slate-100 border-slate-200 text-slate-300") }, revealedLetters.includes(i) ? ch.toUpperCase() : "_"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 w-full max-w-xs animate-in slide-in-from-bottom-4 fade-in" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -2750,6 +2857,14 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
       className: "flex-1 py-3 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors"
     },
     t("games.scramble.skip")
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      "aria-label": "Hint",
+      onClick: handleHint,
+      className: "flex-1 py-3 rounded-xl font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors"
+    },
+    "\uD83D\uDCA1 Hint"
   ), /* @__PURE__ */ React.createElement(
     "button",
     {

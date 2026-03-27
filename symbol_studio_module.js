@@ -39,6 +39,7 @@
     { value: 'soft watercolor, gentle washes', label: 'Watercolor' },
     { value: 'bold comic book, thick outlines', label: 'Bold Comic' },
     { value: 'high contrast black and white, bold thick outlines, no color fill, simple silhouette', label: 'High Contrast (B&W Print)' },
+    { value: '__custom__', label: '✏️ Custom Style...' },
   ];
 
   var CAT_COLORS = { noun: '#fef9c3', verb: '#dcfce7', adjective: '#dbeafe', other: '#f3f4f6' };
@@ -368,7 +369,10 @@
     var _avatarGenerating = useState(false); var avatarGenerating = _avatarGenerating[0]; var setAvatarGenerating = _avatarGenerating[1];
     var _avatarDesc = useState(activeProfile.description || ''); var avatarDesc = _avatarDesc[0]; var setAvatarDesc = _avatarDesc[1];
     var _avatarName = useState(activeProfile.name || ''); var avatarName = _avatarName[0]; var setAvatarName = _avatarName[1];
-    var _globalStyle = useState(''); var globalStyle = _globalStyle[0]; var setGlobalStyle = _globalStyle[1];
+    var _globalStyleSel = useState(''); var globalStyleSel = _globalStyleSel[0]; var setGlobalStyleSel = _globalStyleSel[1];
+    var _customStyle = useState(''); var customStyle = _customStyle[0]; var setCustomStyle = _customStyle[1];
+    var globalStyle = globalStyleSel === '__custom__' ? customStyle : globalStyleSel;
+    var setGlobalStyle = function(v) { if (v === '__custom__') { setGlobalStyleSel('__custom__'); } else { setGlobalStyleSel(v); } };
     var _autoClean = useState(true); var autoClean = _autoClean[0]; var setAutoClean = _autoClean[1];
     var fileInputRef = useRef(null);
     var scheduleFileRef = useRef(null);
@@ -2313,9 +2317,15 @@
         e('div', { style: S.card },
           sectionLabel('Global Settings'),
           e('label', { style: S.lbl }, 'Art Style'),
-          e('select', { value: globalStyle, onChange: function (ev) { setGlobalStyle(ev.target.value); }, style: Object.assign({}, S.input, { marginBottom: '8px' }) },
+          e('select', { value: globalStyleSel, onChange: function (ev) { setGlobalStyle(ev.target.value); }, style: Object.assign({}, S.input, { marginBottom: globalStyleSel === '__custom__' ? '4px' : '8px' }) },
             STYLE_OPTIONS.map(function (o) { return e('option', { key: o.value, value: o.value }, o.label); })
           ),
+          globalStyleSel === '__custom__' && e('input', {
+            type: 'text', value: customStyle,
+            onChange: function (ev) { setCustomStyle(ev.target.value); },
+            placeholder: 'e.g. pastel crayon, realistic pencil sketch, pixel art...',
+            style: Object.assign({}, S.input, { marginBottom: '8px', fontSize: '11px' })
+          }),
           e('label', { style: { display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', fontSize: '12px', color: '#374151' } },
             e('input', { type: 'checkbox', checked: autoClean, onChange: function (ev) { setAutoClean(ev.target.checked); } }),
             e('span', null, 'Auto-clean text from images')

@@ -30,6 +30,7 @@
   var LanguageContext = window.AlloLanguageContext;
   var fisherYatesShuffle = window.fisherYatesShuffle;
   var getGlobalAudioContext = window.getGlobalAudioContext || function() { return null; };
+  var warnLog = (typeof window.__alloWarnLog === 'function') ? window.__alloWarnLog : function() { console.warn.apply(console, arguments); };
 
   // ── Lucide icons from host app ──
   var _icons = window.AlloIcons || {};
@@ -55,6 +56,7 @@
   var Plus = _icons.Plus || function() { return null; };
   var Printer = _icons.Printer || function() { return null; };
   var RefreshCw = _icons.RefreshCw || function() { return null; };
+  var Search = _icons.Search || function() { return null; };
   var Star = _icons.Star || function() { return null; };
   var StopCircle = _icons.StopCircle || function() { return null; };
   var Trophy = _icons.Trophy || function() { return null; };
@@ -95,11 +97,25 @@ var MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete }) =
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [announcement, setAnnouncement] = useState("");
   const cardRefs = useRef([]);
+  const [difficulty, setDifficulty] = useState("medium");
+  const [startTime, setStartTime] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const timerRef = useRef(null);
+  useEffect(() => {
+    if (startTime && !isWon) {
+      timerRef.current = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+      }, 1000);
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [startTime, isWon]);
   useEffect(() => {
     initializeGame();
-  }, [data, gameMode]);
+  }, [data, gameMode, difficulty]);
   const initializeGame = () => {
-    const gameItems = data.slice(0, 10);
+    const pairCounts = { easy: 4, medium: 6, hard: 10 };
+    const numPairs = pairCounts[difficulty] || 6;
+    const gameItems = data.slice(0, numPairs);
     const deck = gameItems.flatMap((item, index) => {
       const pairId = index;
       let strategy = gameMode;
@@ -167,6 +183,9 @@ var MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete }) =
     setMoves(0);
     setScore(0);
     setIsWon(false);
+    if (timerRef.current) clearInterval(timerRef.current);
+    setElapsedTime(0);
+    setStartTime(Date.now());
     setAnnouncement(`Game started. ${deck.length} cards. Use arrow keys or tab to navigate. Press Enter or Space to flip.`);
     cardRefs.current = cardRefs.current.slice(0, deck.length);
   };
@@ -757,6 +776,44 @@ var TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGame
   const handleDragEnd = () => {
     setDraggingIdx(null);
   };
+  // ── Touch support for mobile/tablet ──
+  const touchDragIdx = useRef(null);
+  const touchStartY = useRef(0);
+  const handleTouchStart = (e, index) => {
+    if (isWon) return;
+    touchDragIdx.current = index;
+    touchStartY.current = e.touches[0].clientY;
+    setDraggingIdx(index);
+  };
+  const handleTouchMove = useCallback((e) => {
+    if (touchDragIdx.current === null) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const currentIdx = touchDragIdx.current;
+    // Find which item element the finger is over
+    const elements = itemRefs.current.filter(Boolean);
+    for (let i = 0; i < elements.length; i++) {
+      if (i === currentIdx) continue;
+      const rect = elements[i].getBoundingClientRect();
+      if (touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+        // Swap items
+        setItems((prev) => {
+          const next = [...prev];
+          const dragged = next[currentIdx];
+          next.splice(currentIdx, 1);
+          next.splice(i, 0, dragged);
+          return next;
+        });
+        touchDragIdx.current = i;
+        setDraggingIdx(i);
+        break;
+      }
+    }
+  }, []);
+  const handleTouchEnd = useCallback(() => {
+    touchDragIdx.current = null;
+    setDraggingIdx(null);
+  }, []);
   const moveItem = (index, direction) => {
     const newItems = [...items];
     const itemToMove = newItems[index];
@@ -869,6 +926,9 @@ var TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGame
         onDragStart: (e) => handleDragStart(e, idx),
         onDragOver: (e) => handleDragOver(e, idx),
         onDragEnd: handleDragEnd,
+        onTouchStart: (e) => handleTouchStart(e, idx),
+        onTouchMove: handleTouchMove,
+        onTouchEnd: handleTouchEnd,
         className: `relative z-10 sm:flex sm:items-center sm:justify-between group transition-all duration-300 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 focus:ring-offset-4 ${isDragging ? "opacity-20 scale-95" : "opacity-100"} ${isLifted ? "z-50 scale-105 ring-4 ring-yellow-400 ring-offset-4 shadow-2xl" : ""}`,
         "data-help-key": "timeline_draggable_item"
       },
@@ -2565,6 +2625,7 @@ var StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete })
   }, [data]);
   const toggleCell = (r, c) => {
     const key = `${r}-${c}`;
+    if (key === "2-2") return;
     const newMarks = new Set(marks);
     if (newMarks.has(key)) {
       newMarks.delete(key);
@@ -2651,6 +2712,10 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
   const [feedback, setFeedback] = useState("idle");
   const [score, setScore] = useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
+  const [streak, setStreak] = useState(0);
+  const [bestStreak, setBestStreak] = useState(0);
+  const [hintsUsed, setHintsUsed] = useState(0);
+  const [revealedLetters, setRevealedLetters] = useState([]);
   useEffect(() => {
     if (!data) return;
     const items = data.filter((item) => item.term && item.term.length > 2);
@@ -2664,6 +2729,9 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
     setIsGameOver(false);
     setFeedback("idle");
     setGuess("");
+    setHintsUsed(0);
+    setRevealedLetters([]);
+    setStreak(0);
     if (items.length > 0) {
       setScrambled(scrambleWord(items[0].term));
     }
@@ -2675,6 +2743,8 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
       setScrambled(scrambleWord(gameItems[nextIdx].term));
       setGuess("");
       setFeedback("idle");
+      setHintsUsed(0);
+      setRevealedLetters([]);
     } else {
       setIsGameOver(true);
       if (onScoreUpdate) onScoreUpdate(currentScore, "Word Scramble Complete");
@@ -2689,18 +2759,40 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
     if (userGuess === target) {
       if (playSound) playSound("correct");
       setFeedback("correct");
-      const newScore = score + 10;
+      const streakBonus = streak * 2;
+      const hintPenalty = hintsUsed * 3;
+      const points = Math.max(1, 10 + streakBonus - hintPenalty);
+      const newScore = score + points;
       setScore(newScore);
+      const newStreak = streak + 1;
+      setStreak(newStreak);
+      if (newStreak > bestStreak) setBestStreak(newStreak);
       setTimeout(() => {
         nextRound(newScore);
       }, 1e3);
     } else {
       if (playSound) playSound("incorrect");
       setFeedback("incorrect");
+      setStreak(0);
       setTimeout(() => setFeedback("idle"), 800);
     }
   };
+  const handleHint = () => {
+    const currentItem = gameItems[currentIndex];
+    if (!currentItem) return;
+    const term = currentItem.term;
+    const available = [];
+    for (let i = 0; i < term.length; i++) {
+      if (term[i] !== " " && !revealedLetters.includes(i)) available.push(i);
+    }
+    if (available.length <= 1) return;
+    const pos = available[Math.floor(Math.random() * available.length)];
+    setRevealedLetters([...revealedLetters, pos]);
+    setHintsUsed(hintsUsed + 1);
+    if (playSound) playSound("click");
+  };
   const handleSkip = () => {
+    setStreak(0);
     nextRound(score);
   };
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in zoom-in-95" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col relative p-8 text-center border-4 border-indigo-500" }, /* @__PURE__ */ React.createElement(
@@ -2719,7 +2811,7 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
       className: "w-full bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform"
     },
     t("common.close")
-  )) : gameItems.length > 0 ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between w-full px-4 border-b border-slate-200 pb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-500 uppercase tracking-wider" }, t("games.scramble.progress", { current: currentIndex + 1, total: gameItems.length })), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold text-sm" }, t("flashcards.score_label"), " ", score)), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-200 shadow-sm max-w-lg w-full" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1 justify-center" }, /* @__PURE__ */ React.createElement(Search, { size: 12 }), " ", t("games.scramble.hint_label")), /* @__PURE__ */ React.createElement("p", { className: "text-lg font-medium text-slate-700 leading-relaxed" }, '"', gameItems[currentIndex].def, '"')), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-center gap-2" }, scrambled.split("").map((char, idx) => /* @__PURE__ */ React.createElement(
+  )) : gameItems.length > 0 ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between w-full px-4 border-b border-slate-200 pb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-500 uppercase tracking-wider" }, t("games.scramble.progress", { current: currentIndex + 1, total: gameItems.length })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, streak > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-bold text-xs" }, "\uD83D\uDD25 ", streak), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold text-sm" }, t("flashcards.score_label"), " ", score))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-200 shadow-sm max-w-lg w-full" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1 justify-center" }, /* @__PURE__ */ React.createElement(Search, { size: 12 }), " ", t("games.scramble.hint_label")), /* @__PURE__ */ React.createElement("p", { className: "text-lg font-medium text-slate-700 leading-relaxed" }, '"', gameItems[currentIndex].def, '"')), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-center gap-2" }, scrambled.split("").map((char, idx) => /* @__PURE__ */ React.createElement(
     "div",
     {
       key: idx,
@@ -2727,7 +2819,7 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
       style: { animationDelay: `${idx * 50}ms` }
     },
     char.toUpperCase()
-  ))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 w-full max-w-xs animate-in slide-in-from-bottom-4 fade-in" }, /* @__PURE__ */ React.createElement(
+  ))), revealedLetters.length > 0 && gameItems[currentIndex] && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-center gap-1" }, gameItems[currentIndex].term.split("").map((ch, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: "w-8 h-8 flex items-center justify-center text-lg font-black rounded " + (revealedLetters.includes(i) ? "text-green-600 bg-green-50 border border-green-200" : ch === " " ? "" : "text-slate-300 border-b-2 border-slate-300") }, revealedLetters.includes(i) ? ch.toUpperCase() : ch === " " ? "\u00A0" : "_"))), gameItems[currentIndex] && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-400 font-medium" }, gameItems[currentIndex].term.length, " letters", hintsUsed > 0 ? " \u2022 " + hintsUsed + " hint" + (hintsUsed > 1 ? "s" : "") + " used" : ""), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 w-full max-w-xs animate-in slide-in-from-bottom-4 fade-in" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -2750,6 +2842,15 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
       className: "flex-1 py-3 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors"
     },
     t("games.scramble.skip")
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      "aria-label": "Hint",
+      onClick: handleHint,
+      disabled: feedback === "correct" || !gameItems[currentIndex] || revealedLetters.length >= (gameItems[currentIndex] ? gameItems[currentIndex].term.replace(/ /g, "").length - 1 : 0),
+      className: "flex-1 py-3 rounded-xl font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors disabled:opacity-40"
+    },
+    "\uD83D\uDCA1 Hint"
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
