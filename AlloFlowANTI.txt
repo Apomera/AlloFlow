@@ -275,6 +275,7 @@ const getGlobalAudioContext = () => {
     }
     return globalAudioCtx;
 };
+window.getGlobalAudioContext = getGlobalAudioContext;
 const setGlobalMute = (muted) => {
     globalMuteEnabled = muted;
     safeSetItem('alloflow-global-muted', muted ? 'true' : 'false');

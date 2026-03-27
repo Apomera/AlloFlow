@@ -1095,12 +1095,16 @@
       // Re-generate images whenever options change while AAC mode is active.
       React.useEffect(() => {
         if (!aacMode) return;
-        const words = [...(rhymeOptions || []), ...(blendingOptions || [])]
+        const words = [
+          ...(rhymeOptions || []),
+          ...(blendingOptions || []),
+          ...(manipulationOptions || []),
+        ]
           .filter(Boolean)
           .map((o) => (typeof o === "string" ? o : o.text))
           .filter(Boolean);
         if (words.length) generateOptionImages(words);
-      }, [aacMode, rhymeOptions, blendingOptions, generateOptionImages]);
+      }, [aacMode, rhymeOptions, blendingOptions, manipulationOptions, generateOptionImages]);
       // Isolation view: map phoneme options to Jolly-Phonics key words for Imagen.
       React.useEffect(() => {
         if (!aacMode || !isolationState?.isoOptions) return;
@@ -6657,6 +6661,26 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   setHighlightedRhymeIndex(null);
                 }
               }
+              if (wordSoundsActivity === "manipulation") {
+                // Wait for Gemini generation to finish (up to 6s)
+                if (!manipulationOptionsRef.current || manipulationOptionsRef.current.length === 0) {
+                  for (let mWait = 0; mWait < 30; mWait++) {
+                    await new Promise((r) => setTimeout(r, 200));
+                    if (cancelled || audioCancelledRef.current) return;
+                    if (manipulationOptionsRef.current && manipulationOptionsRef.current.length > 0) break;
+                  }
+                }
+                if (manipulationOptionsRef.current && manipulationOptionsRef.current.length > 0) {
+                  await new Promise((r) => setTimeout(r, 150));
+                  for (let i = 0; i < manipulationOptionsRef.current.length; i++) {
+                    setHighlightedManipIndex(i);
+                    const opt = manipulationOptionsRef.current[i];
+                    await handleAudio(typeof opt === "string" ? opt : opt.text);
+                    await new Promise((r) => setTimeout(r, 250));
+                  }
+                  setHighlightedManipIndex(null);
+                }
+              }
             } catch (e) {
               warnLog("Unhandled error in timer:", e);
             }
@@ -7442,6 +7466,54 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   await new Promise((r) => setTimeout(r, 350));
                 }
                 setHighlightedRhymeIndex(null);
+              }
+            }
+            if (wordSoundsActivity === "manipulation") {
+              // Wait for Gemini generation (up to 6s)
+              if (
+                !manipulationStateRef.current ||
+                !manipulationOptionsRef.current?.length
+              ) {
+                for (let mWait = 0; mWait < 30; mWait++) {
+                  await new Promise((r) => setTimeout(r, 200));
+                  if (cancelled || audioCancelledRef.current) return;
+                  if (
+                    manipulationStateRef.current &&
+                    manipulationOptionsRef.current?.length > 0
+                  )
+                    break;
+                }
+              }
+              if (
+                manipulationStateRef.current &&
+                manipulationOptionsRef.current?.length > 0
+              ) {
+                // Play the task instruction via TTS
+                const instruction = manipulationStateRef.current.instruction;
+                if (instruction) {
+                  await handleAudio(instruction);
+                  if (cancelled) return;
+                  await new Promise((r) => setTimeout(r, 400));
+                }
+                // Snapshot + preload option TTS
+                const manipSnapshot = [...manipulationOptionsRef.current];
+                await Promise.all(
+                  manipSnapshot.map((o) =>
+                    handleAudio(
+                      typeof o === "string" ? o : o.text,
+                      false,
+                    ).catch(() => {}),
+                  ),
+                );
+                if (cancelled) return;
+                for (let i = 0; i < manipSnapshot.length; i++) {
+                  if (cancelled) break;
+                  setHighlightedManipIndex(i);
+                  await handleAudio(manipSnapshot[i]);
+                  if (cancelled) return;
+                  await new Promise((r) => setTimeout(r, 350));
+                }
+                setHighlightedManipIndex(null);
               }
             }
             if (wordSoundsActivity === "isolation" && currentWordSoundsWord) {
@@ -8909,6 +8981,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             setWordSoundsPhonemes((prev) => ({ ...prev, rhymeWord: newValue }));
             debugLog("✏️ Teacher set correct rhyme answer to:", newValue);
             addToast?.(`✅ Correct answer set to "${newValue}"`, "success");
+          } else if (wordSoundsActivity === "manipulation") {
+            setManipulationState((prev) => ({ ...prev, answer: newValue }));
+            debugLog("✏️ Teacher set correct manipulation answer to:", newValue);
+            addToast?.(`✅ Correct answer set to "${newValue}"`, "success");
           } else if (wordSoundsActivity === "isolation") {
             setIsolationState((prev) => ({
               ...prev,
@@ -8932,6 +9008,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           const newOptions = [...rhymeOptions];
           newOptions[index] = newValue;
           setRhymeOptions(newOptions);
+        } else if (wordSoundsActivity === "manipulation") {
+          const newOptions = [...manipulationOptions];
+          newOptions[index] = newValue;
+          setManipulationOptions(newOptions);
         } else if (wordSoundsActivity === "sound_sort") {
           const newPhonemes = { ...wordSoundsPhonemes };
           const family =
@@ -10944,6 +11024,44 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       : ts("word_sounds.mic_switch_mic") || "Use Microphone",
                   ),
                 ),
+            );
+          }
+          case "manipulation": {
+            return /*#__PURE__*/ React.createElement(
+              "div",
+              { className: "flex flex-col gap-4" },
+              renderPrompt(),
+              /*#__PURE__*/ React.createElement(ManipulationView, {
+                data: {
+                  ...manipulationState,
+                  options: manipulationOptions,
+                },
+                isLoading: isGeneratingManipulation && !manipulationOptions.length,
+                highlightedIndex: highlightedManipIndex,
+                showLetterHints: showLetterHints,
+                onPlayAudio: handleAudio,
+                isEditing: isEditing,
+                onUpdateOption: handleOptionUpdate,
+                isAudioBusy: isPlayingAudio,
+                optionImages: aacMode ? optionImages : null,
+                onCheckAnswer: (ans) => {
+                  const isCorrect =
+                    ans?.toLowerCase() ===
+                    manipulationState?.answer?.toLowerCase();
+                  checkAnswer(isCorrect ? "correct" : "incorrect", "correct");
+                },
+              }),
+              /*#__PURE__*/ React.createElement(
+                "button",
+                {
+                  "aria-label": t("common.voice_input"),
+                  onClick: handleMicInput,
+                  className:
+                    "mx-auto flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors",
+                },
+                /*#__PURE__*/ React.createElement(Mic, { size: 20 }),
+                " Use Microphone",
+              ),
             );
           }
           case "rhyming": {

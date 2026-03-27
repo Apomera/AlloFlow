@@ -77,6 +77,11 @@ const MODULES = [
         name: 'SymbolStudio',
         filename: 'symbol_studio_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'GamesBundle',
+        filename: 'games_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 
