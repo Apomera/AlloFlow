@@ -96,7 +96,7 @@ const iconList = [
     'Eye', 'EyeOff', 'Filter', 'Gamepad2', 'GitMerge', 'GripVertical',
     'HelpCircle', 'ImageIcon', 'Layout', 'ListOrdered', 'Maximize',
     'Mic', 'Minimize', 'MonitorPlay', 'Plus', 'Printer', 'RefreshCw',
-    'Star', 'StopCircle', 'Trophy', 'Volume2', 'X'
+    'Star', 'StopCircle', 'Trophy', 'Type', 'Volume2', 'X'
 ];
 
 const gameNames = GAMES.map(g => g.name);

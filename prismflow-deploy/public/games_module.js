@@ -59,6 +59,7 @@
   var StopCircle = _icons.StopCircle || function() { return null; };
   var Trophy = _icons.Trophy || function() { return null; };
   var Volume2 = _icons.Volume2 || function() { return null; };
+  var Type = _icons.Type || function() { return null; };
   var X = _icons.X || function() { return null; };
 
   // ── Shared components from host app ──
