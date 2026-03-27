@@ -25,6 +25,7 @@
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
+      var callGemini = ctx.callGemini;
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -6428,13 +6429,18 @@ var d = labToolData.dissection || {};
 
                       onClick: function () {
 
-                        if (typeof window.aiChat === 'function') {
+                        if (typeof callGemini === 'function') {
 
-                          window.aiChat('Explain the ' + sel.name + ' in a ' + spec.name + ' in simple terms for a biology student. Include: function, location, clinical significance, and one interesting fact.');
+                          var _aiPrompt = 'Explain the ' + sel.name + ' in a ' + spec.name + ' in simple terms for a biology student. Include: function, location, clinical significance, and one interesting fact.';
+                          callGemini(_aiPrompt).then(function(res) {
+                            if (addToast) addToast('\uD83E\uDD16 ' + sel.name + ': ' + (res || 'Response received'), 'info', 8000);
+                          }).catch(function(err) {
+                            if (addToast) addToast('\uD83E\uDD16 AI unavailable: ' + (err.message || err), 'error');
+                          });
 
                         } else if (addToast) {
 
-                          addToast('\uD83E\uDD16 AI: The ' + sel.name + ' ' + sel.fn.split('.')[0] + '.', 'info');
+                          addToast('\uD83E\uDD16 AI not available. ' + sel.name + ': ' + sel.fn.split('.')[0] + '.', 'info');
 
                         }
 
