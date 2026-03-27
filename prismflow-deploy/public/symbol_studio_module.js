@@ -507,6 +507,13 @@
     var scanIntervalRef = useRef(null);
     var autoLoadedRef = useRef(false);
 
+    // Direct-use AAC mode state
+    var _useBoardId = useState(null); var useBoardId = _useBoardId[0]; var setUseBoardId = _useBoardId[1];
+    var _strip = useState([]); var strip = _strip[0]; var setStrip = _strip[1];
+    var _stripSpeaking = useState(false); var stripSpeaking = _stripSpeaking[0]; var setStripSpeaking = _stripSpeaking[1];
+    var _commLog = useState([]); var commLog = _commLog[0]; var setCommLog = _commLog[1];
+    var _showCommLog = useState(false); var showCommLog = _showCommLog[0]; var setShowCommLog = _showCommLog[1];
+
     // Sync story student name when avatar name changes
     useEffect(function () { if (avatarName) setStoryStudentName(avatarName); }, [avatarName]);
 
@@ -524,6 +531,17 @@
       var t = setTimeout(syncToCloud, 5000);
       return function () { clearTimeout(t); };
     }, [syncToCloud]); // syncToCloud ref changes whenever profiles/boards/schedules/gallery change
+
+    // Keyboard handler for use mode (Escape = exit, Backspace = delete last word)
+    useEffect(function () {
+      if (!useBoardId) return;
+      var handler = function (ev) {
+        if (ev.code === 'Escape') { setUseBoardId(null); setStrip([]); setShowCommLog(false); }
+        else if (ev.code === 'Backspace') { setStrip(function (s) { return s.slice(0, -1); }); }
+      };
+      window.addEventListener('keydown', handler);
+      return function () { window.removeEventListener('keydown', handler); };
+    }, [useBoardId]);
 
     // Scanning interval — auto-advance highlighted cell
     useEffect(function () {
@@ -1994,10 +2012,15 @@
                   e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                     e('button', { onClick: function () { loadBoard(b); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
                     b.words && b.words.some(function (w) { return w.image; }) && e('button', {
+                      onClick: function () { setUseBoardId(b.id); setStrip([]); setShowCommLog(false); },
+                      title: 'Use this board — tap symbols to speak and build messages',
+                      style: S.btn('#eff6ff', '#1d4ed8', false)
+                    }, '\u25b6 Use'),
+                    b.words && b.words.some(function (w) { return w.image; }) && e('button', {
                       onClick: function () { setScanBoardId(b.id); setScanIndex(0); setScanPaused(false); },
-                      title: 'Partner-assisted scanning mode',
+                      title: 'Partner-assisted single-switch scanning mode',
                       style: S.btn('#ecfdf5', '#065f46', false)
-                    }, '♿ Use'),
+                    }, '\u267f Scan'),
                     e('button', { onClick: function () { exportBoard(b); }, title: 'Export this board as a .json file', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️'),
                     liveSession && liveSession.active && e('button', {
                       title: 'Push to student screens',
@@ -2448,6 +2471,140 @@
     }
 
     // ── Main render ────────────────────────────────────────────────────────
+
+    // ── Direct-use AAC overlay ────────────────────────────────────────────
+    if (useBoardId) {
+      var useBoard = savedBoards.find(function (b) { return b.id === useBoardId; });
+      var useCells = useBoard ? (useBoard.words || []).filter(function (w) { return w.image; }) : [];
+      var exitUse = function () { setUseBoardId(null); setStrip([]); setShowCommLog(false); };
+      var speakWordFn = function (label) {
+        if (onCallTTS && selectedVoice) {
+          onCallTTS(label, selectedVoice).catch(function () {
+            if (window.speechSynthesis) window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(label));
+          });
+        } else if (window.speechSynthesis) {
+          window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(label));
+        }
+      };
+      var speakPhraseFn = function (words) {
+        var phrase = words.map(function (w) { return w.label; }).join(' ');
+        if (!phrase) return;
+        setStripSpeaking(true);
+        var done = function () { setStripSpeaking(false); };
+        if (onCallTTS && selectedVoice) {
+          onCallTTS(phrase, selectedVoice).then(done).catch(done);
+        } else if (window.speechSynthesis) {
+          var utt = new window.SpeechSynthesisUtterance(phrase);
+          utt.onend = done; utt.onerror = done;
+          window.speechSynthesis.speak(utt);
+        } else { done(); }
+      };
+      var tapCell = function (cell) {
+        var boardTitle = useBoard ? (useBoard.title || 'Board') : 'Board';
+        setStrip(function (s) { return s.concat([{ label: cell.label, image: cell.image }]); });
+        setCommLog(function (log) { return log.concat([{ label: cell.label, image: cell.image, boardTitle: boardTitle, ts: new Date().toISOString() }]); });
+        speakWordFn(cell.label);
+      };
+      var exportLog = function () {
+        var rows = ['Time,Word,Board'];
+        commLog.forEach(function (en) {
+          var t = new Date(en.ts);
+          rows.push('"' + t.toLocaleTimeString() + '","' + en.label.replace(/"/g, '""') + '","' + (en.boardTitle || '').replace(/"/g, '""') + '"');
+        });
+        var blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'comm_log_' + new Date().toISOString().slice(0, 10) + '.csv';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      };
+      var useCols = Math.min(useBoard ? (useBoard.cols || 4) : 4, useCells.length || 1);
+      return e('div', { style: { position: 'fixed', inset: 0, zIndex: 9999, background: '#0f172a', display: 'flex', flexDirection: 'column' } },
+        // ── Header ──
+        e('div', { style: { background: '#1e293b', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 } },
+          e('span', { style: { color: '#a78bfa', fontSize: '18px' } }, '▶'),
+          e('span', { style: { color: '#fff', fontWeight: 800, fontSize: '15px', marginRight: 'auto' } }, useBoard ? (useBoard.title || 'Communication Board') : 'Communication Board'),
+          e('button', {
+            onClick: function () { setShowCommLog(function (v) { return !v; }); },
+            style: { background: showCommLog ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+          }, '📋 Log (' + commLog.length + ')'),
+          e('button', { onClick: exitUse, style: { background: '#ef4444', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' } }, '✕ Exit')
+        ),
+        // ── Sentence strip ──
+        e('div', { style: { background: '#1a1a2e', borderBottom: '2px solid #312e81', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, minHeight: '58px', flexWrap: 'wrap' } },
+          strip.length === 0
+            ? e('span', { style: { color: '#475569', fontSize: '14px', fontStyle: 'italic' } }, 'Tap symbols below to build a message\u2026')
+            : strip.map(function (w, i) {
+                return e('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: '4px', background: '#312e81', borderRadius: '8px', padding: '4px 10px' } },
+                  w.image && e('img', { src: w.image, style: { width: '26px', height: '26px', objectFit: 'contain', borderRadius: '4px' } }),
+                  e('span', { style: { color: '#e0e7ff', fontWeight: 700, fontSize: '13px' } }, w.label)
+                );
+              }),
+          e('div', { style: { marginLeft: 'auto', display: 'flex', gap: '6px', flexShrink: 0 } },
+            strip.length > 0 && e('button', {
+              onClick: function () { speakPhraseFn(strip); },
+              disabled: stripSpeaking,
+              style: { background: stripSpeaking ? '#6b7280' : '#4f46e5', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+            }, stripSpeaking ? '\u2026' : '\uD83D\uDD0A Speak'),
+            strip.length > 0 && e('button', {
+              onClick: function () { setStrip(function (s) { return s.slice(0, -1); }); },
+              style: { background: '#374151', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+            }, '\u2190 Del'),
+            strip.length > 0 && e('button', {
+              onClick: function () { setStrip([]); },
+              style: { background: '#374151', color: '#cbd5e1', border: 'none', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontSize: '13px' }
+            }, '\uD83D\uDDD1')
+          )
+        ),
+        // ── Body: cells + optional log panel ──
+        e('div', { style: { flex: 1, display: 'flex', overflow: 'hidden' } },
+          // Cell grid
+          e('div', { style: { flex: 1, display: 'grid', gridTemplateColumns: 'repeat(' + useCols + ', 1fr)', gap: '14px', padding: '18px', overflowY: 'auto', alignContent: 'start' } },
+            useCells.length === 0
+              ? e('p', { style: { color: '#475569', gridColumn: '1/-1', textAlign: 'center', paddingTop: '40px' } }, 'No generated symbols yet — go to Board Builder and generate images first.')
+              : useCells.map(function (cell, idx) {
+                  return e('div', {
+                    key: cell.id || idx,
+                    onClick: function () { tapCell(cell); },
+                    style: { border: '3px solid #334155', borderRadius: '14px', padding: '14px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: '#1e293b', cursor: 'pointer', transition: 'transform 0.1s, background 0.1s', userSelect: 'none' },
+                    onMouseDown: function (ev) { ev.currentTarget.style.transform = 'scale(0.93)'; ev.currentTarget.style.background = '#293548'; },
+                    onMouseUp: function (ev) { ev.currentTarget.style.transform = 'scale(1)'; ev.currentTarget.style.background = '#1e293b'; },
+                    onMouseLeave: function (ev) { ev.currentTarget.style.transform = 'scale(1)'; ev.currentTarget.style.background = '#1e293b'; },
+                    onTouchStart: function (ev) { ev.currentTarget.style.transform = 'scale(0.93)'; ev.currentTarget.style.background = '#293548'; },
+                    onTouchEnd: function (ev) { ev.currentTarget.style.transform = 'scale(1)'; ev.currentTarget.style.background = '#1e293b'; tapCell(cell); ev.preventDefault(); },
+                  },
+                    e('img', { src: cell.image, alt: cell.label, style: { width: '80px', height: '80px', objectFit: 'contain', borderRadius: '8px', pointerEvents: 'none' } }),
+                    e('span', { style: { color: '#e2e8f0', fontWeight: 700, fontSize: '14px', textAlign: 'center', lineHeight: 1.3, pointerEvents: 'none' } }, cell.label)
+                  );
+                })
+          ),
+          // Comm log side panel
+          showCommLog && e('div', { style: { width: '280px', background: '#0a0f1e', borderLeft: '2px solid #1e293b', display: 'flex', flexDirection: 'column', flexShrink: 0 } },
+            e('div', { style: { padding: '12px 16px', borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
+              e('span', { style: { color: '#a78bfa', fontWeight: 800, fontSize: '13px' } }, '\uD83D\uDCCB Session Log'),
+              e('div', { style: { display: 'flex', gap: '6px' } },
+                commLog.length > 0 && e('button', { onClick: exportLog, style: { background: '#1e293b', color: '#94a3b8', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDCBE CSV'),
+                commLog.length > 0 && e('button', { onClick: function () { setCommLog([]); }, style: { background: '#1e293b', color: '#ef4444', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDDD1 Clear')
+              )
+            ),
+            e('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
+              commLog.length === 0
+                ? e('p', { style: { color: '#475569', fontSize: '12px', textAlign: 'center', padding: '20px 0' } }, 'No communication yet')
+                : commLog.slice().reverse().map(function (en, i) {
+                    var t = new Date(en.ts);
+                    return e('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', borderRadius: '8px', marginBottom: '4px', background: i === 0 ? '#1e293b' : 'transparent' } },
+                      en.image && e('img', { src: en.image, style: { width: '32px', height: '32px', objectFit: 'contain', borderRadius: '4px', flexShrink: 0 } }),
+                      e('div', null,
+                        e('div', { style: { color: '#e2e8f0', fontWeight: 700, fontSize: '13px' } }, en.label),
+                        e('div', { style: { color: '#475569', fontSize: '10px' } }, t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' \u00b7 ' + (en.boardTitle || ''))
+                      )
+                    );
+                  })
+            )
+          )
+        )
+      );
+    }
+
     // ── Partner-assisted scanning overlay ────────────────────────────────
     if (scanBoardId) {
       var scanBoard = savedBoards.find(function (b) { return b.id === scanBoardId; });
