@@ -10,6 +10,19 @@
     const debugLog = (...args) => {
       if (typeof console !== "undefined") console.log("[WS-DBG]", ...args);
     };
+    // Maps each phoneme/letter to a concrete "key word" for Imagen generation
+    // in AAC mode on the isolation activity (mirrors Jolly Phonics key-word approach).
+    const PHONEME_KEYWORDS = {
+      a: "apple", b: "ball", c: "cat", d: "dog", e: "egg",
+      f: "fish", g: "goat", h: "hat", i: "igloo", j: "jet",
+      k: "kite", l: "lion", m: "moon", n: "nest", o: "octopus",
+      p: "pig", q: "queen", r: "ring", s: "sun", t: "tree",
+      u: "umbrella", v: "van", w: "web", x: "fox", y: "yarn",
+      z: "zebra",
+      sh: "ship", ch: "chair", th: "thumb", wh: "whale",
+      ng: "ring", ck: "duck", ph: "phone", oo: "moon", ee: "bee",
+      ai: "rain", ay: "play", oa: "boat", ow: "owl", ou: "cloud",
+    };
     const WordSoundsReviewPanel =
       typeof window.WordSoundsReviewPanel !== "undefined"
         ? window.WordSoundsReviewPanel
@@ -661,6 +674,7 @@
       probeGradeLevel = "K",
       onProbeComplete,
       getWordSoundsString,
+      isParentMode = false,
     }) => {
       const estimateFirstPhoneme = (word) => {
         if (!word) return "";
@@ -931,6 +945,20 @@
         React.useState(null);
       const [highlightedBlendIndex, setHighlightedBlendIndex] =
         React.useState(null);
+      const [highlightedManipIndex, setHighlightedManipIndex] =
+        React.useState(null);
+      const [manipulationState, setManipulationState] = React.useState(null);
+      const manipulationStateRef = React.useRef(null);
+      React.useEffect(() => {
+        manipulationStateRef.current = manipulationState;
+      }, [manipulationState]);
+      const [manipulationOptions, setManipulationOptions] = React.useState([]);
+      const manipulationOptionsRef = React.useRef([]);
+      React.useEffect(() => {
+        manipulationOptionsRef.current = manipulationOptions;
+      }, [manipulationOptions]);
+      const [isGeneratingManipulation, setIsGeneratingManipulation] =
+        React.useState(false);
       const [blendingProgress, setBlendingProgress] = React.useState(0);
       const [blendingOptions, setBlendingOptions] = React.useState([]);
       const blendingOptionsRef = React.useRef([]);
@@ -950,6 +978,7 @@
       const isolationPositionRef = React.useRef(null);
       const lastWordForIsolation = React.useRef(null);
       const lastWordForRhyming = React.useRef(null);
+      const lastWordForManipulation = React.useRef(null);
       const lastWordForOrthography = React.useRef(null);
       const lastWordForBlending = React.useRef(null);
       const autoDirectorCooldown = React.useRef(false);
@@ -983,6 +1012,10 @@
       const [masteryStats, setMasteryStats] = React.useState({});
       const [revisitQueue, setRevisitQueue] = React.useState([]);
       const sequenceIndexRef = React.useRef(0);
+      // AAC symbol overlay
+      const [aacMode, setAacMode] = React.useState(false);
+      const [optionImages, setOptionImages] = React.useState({});
+      const optionImagesCache = React.useRef(new Map());
       const shouldAdvanceActivity = React.useCallback(
         (activityId, lessonPlanConfig) => {
           if (!lessonPlanConfig || !lessonPlanConfig.activities) return false;
@@ -1033,6 +1066,153 @@
         },
         [],
       );
+      // Generate Imagen symbols for response option words in AAC mode.
+      // Results are cached in optionImagesCache so each word is only generated once.
+      const generateOptionImages = React.useCallback(
+        async (words) => {
+          if (!aacMode || typeof callImagen !== "function") return;
+          const uncached = words.filter(
+            (w) => w && !optionImagesCache.current.has(w),
+          );
+          if (!uncached.length) return;
+          await Promise.all(
+            uncached.map(async (word) => {
+              try {
+                const prompt = `Simple flat vector icon of "${word}", minimal educational illustration, white background, no text or labels`;
+                const img = await callImagen(prompt);
+                if (img) {
+                  optionImagesCache.current.set(word, img);
+                  setOptionImages((prev) => ({ ...prev, [word]: img }));
+                }
+              } catch (_err) {
+                // silent — never block the activity over a missing image
+              }
+            }),
+          );
+        },
+        [aacMode, callImagen],
+      );
+      // Re-generate images whenever options change while AAC mode is active.
+      React.useEffect(() => {
+        if (!aacMode) return;
+        const words = [...(rhymeOptions || []), ...(blendingOptions || [])]
+          .filter(Boolean)
+          .map((o) => (typeof o === "string" ? o : o.text))
+          .filter(Boolean);
+        if (words.length) generateOptionImages(words);
+      }, [aacMode, rhymeOptions, blendingOptions, generateOptionImages]);
+      // Isolation view: map phoneme options to Jolly-Phonics key words for Imagen.
+      React.useEffect(() => {
+        if (!aacMode || !isolationState?.isoOptions) return;
+        const keywords = isolationState.isoOptions
+          .map((p) => {
+            const clean = p.replace(/\//g, "").toLowerCase();
+            return PHONEME_KEYWORDS[clean];
+          })
+          .filter(Boolean);
+        if (keywords.length) generateOptionImages(keywords);
+      }, [aacMode, isolationState, generateOptionImages]);
+      // Small static table for the most common phonics words — guarantees a good
+      // experience even without Gemini available.
+      const MANIPULATION_FALLBACKS = {
+        cat: { type: "deletion", instruction: "Say 'cat'. Now say it again, but leave out the /k/ sound.", targetPhoneme: "k", answer: "at", distractors: ["hat", "bat", "mat"] },
+        hat: { type: "deletion", instruction: "Say 'hat'. Now say it again, but leave out the /h/ sound.", targetPhoneme: "h", answer: "at", distractors: ["cat", "bat", "sat"] },
+        dog: { type: "substitution", instruction: "Say 'dog'. Now change the /d/ to /l/.", targetPhoneme: "d", answer: "log", distractors: ["fog", "hog", "bog"] },
+        stop: { type: "deletion", instruction: "Say 'stop'. Now say it again, but leave out the /s/ sound.", targetPhoneme: "s", answer: "top", distractors: ["hop", "mop", "pop"] },
+        clap: { type: "deletion", instruction: "Say 'clap'. Now say it again, but leave out the /k/ sound.", targetPhoneme: "k", answer: "lap", distractors: ["map", "tap", "cap"] },
+        train: { type: "deletion", instruction: "Say 'train'. Now say it again, but leave out the /t/ sound.", targetPhoneme: "t", answer: "rain", distractors: ["main", "gain", "pain"] },
+        plane: { type: "deletion", instruction: "Say 'plane'. Now say it again, but leave out the /p/ sound.", targetPhoneme: "p", answer: "lane", distractors: ["cane", "bane", "mane"] },
+        smile: { type: "deletion", instruction: "Say 'smile'. Now say it again, but leave out the /s/ sound.", targetPhoneme: "s", answer: "mile", distractors: ["file", "pile", "tile"] },
+        black: { type: "deletion", instruction: "Say 'black'. Now say it again, but leave out the /b/ sound.", targetPhoneme: "b", answer: "lack", distractors: ["back", "hack", "pack"] },
+        flat: { type: "deletion", instruction: "Say 'flat'. Now say it again, but leave out the /f/ sound.", targetPhoneme: "f", answer: "lat", distractors: ["hat", "mat", "bat"] },
+      };
+      // Generates a phoneme manipulation task (deletion/substitution) for the
+      // current word using Gemini, with a static fallback for common words.
+      const generateManipulationData = React.useCallback(
+        async (word, phonemes) => {
+          if (!word) return;
+          setIsGeneratingManipulation(true);
+          try {
+            // 1. Static fallback table first (instant, no API call)
+            const fallbackKey = word.toLowerCase();
+            if (MANIPULATION_FALLBACKS[fallbackKey]) {
+              const fb = MANIPULATION_FALLBACKS[fallbackKey];
+              const opts = fisherYatesShuffle([fb.answer, ...fb.distractors.slice(0, 3)]);
+              setManipulationState(fb);
+              manipulationStateRef.current = fb;
+              setManipulationOptions(opts);
+              manipulationOptionsRef.current = opts;
+              return;
+            }
+            // 2. Gemini generation
+            let result = null;
+            if (typeof callGemini === "function") {
+              const phonemeStr = (phonemes || []).join(", ") || "unknown";
+              const prompt =
+                `You are a speech-language pathology educator creating a phoneme manipulation exercise.\n` +
+                `Word: "${word}"\nPhonemes: ${phonemeStr}\n\n` +
+                `Choose DELETION (remove one phoneme) OR SUBSTITUTION (swap one phoneme), whichever produces a common English word.\n` +
+                `Return ONLY valid JSON — no markdown, no explanation:\n` +
+                `{"type":"deletion","instruction":"Say '${word}'. Now say it again, but leave out the /k/ sound.","targetPhoneme":"k","answer":"at","distractors":["hat","bat","mat"]}\n\n` +
+                `Rules: answer and all distractors must be real common English words; instruction must be child-friendly; targetPhoneme in plain text without slashes.`;
+              try {
+                const raw = await callGemini(prompt);
+                const jsonMatch = (raw || "").match(/\{[\s\S]*?\}/);
+                if (jsonMatch) result = JSON.parse(jsonMatch[0]);
+              } catch (geminiErr) {
+                warnLog("[Manipulation] Gemini failed:", geminiErr?.message);
+              }
+            }
+            // 3. Algorithmic fallback — delete first letter
+            if (!result || !result.answer || !result.distractors) {
+              const answer = word.slice(1);
+              result = {
+                type: "deletion",
+                instruction: `Say '${word}'. Now say it again, but leave out the first sound.`,
+                targetPhoneme: phonemes?.[0] || word[0],
+                answer,
+                distractors: ["at", "on", "in"].filter((d) => d !== answer),
+              };
+            }
+            const opts = fisherYatesShuffle([
+              result.answer,
+              ...(result.distractors || []).slice(0, 3),
+            ]);
+            setManipulationState(result);
+            manipulationStateRef.current = result;
+            setManipulationOptions(opts);
+            manipulationOptionsRef.current = opts;
+          } catch (err) {
+            warnLog("[Manipulation] generateManipulationData failed:", err);
+          } finally {
+            setIsGeneratingManipulation(false);
+          }
+        },
+        [callGemini],
+      );
+      // Trigger generation whenever the word changes while in manipulation mode.
+      React.useEffect(() => {
+        if (wordSoundsActivity !== "manipulation") return;
+        const currentWord = currentWordSoundsWord || wordSoundsPhonemes?.word;
+        if (!currentWord) return;
+        if (
+          lastWordForManipulation.current === currentWord &&
+          manipulationOptions.length > 0
+        )
+          return;
+        lastWordForManipulation.current = currentWord;
+        setManipulationState(null);
+        setManipulationOptions([]);
+        manipulationStateRef.current = null;
+        manipulationOptionsRef.current = [];
+        const phonemes = wordSoundsPhonemes?.phonemes || [];
+        generateManipulationData(currentWord, phonemes);
+      }, [
+        wordSoundsActivity,
+        currentWordSoundsWord,
+        wordSoundsPhonemes,
+        generateManipulationData,
+      ]);
       React.useEffect(() => {
         console.error(
           `[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: ${initialShowReviewPanel}, activity: ${wordSoundsActivity}`,
@@ -1579,6 +1759,7 @@
           isEditing,
           onUpdateOption,
           highlightedIndex: externalHighlightedIndex,
+          optionImages,
         }) => {
           const [playingIndex, setPlayingIndex] = React.useState(null);
           const [isSequencing, setIsSequencing] = React.useState(false);
@@ -1826,19 +2007,36 @@
                         {
                           "aria-label": t("common.volume"),
                           onClick: () => onCheckAnswer(opt),
-                          className: `w-full h-32 rounded-2xl font-bold text-4xl flex items-center justify-center shadow-sm transition-all active:scale-95 ${playingIndex === idx || externalHighlightedIndex === idx ? "bg-violet-50 border-violet-400 text-violet-700 ring-4 ring-violet-200 scale-105" : "bg-white border-b-4 border-slate-200 text-slate-700 hover:shadow-md hover:scale-[1.02] hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700"}`,
+                          className: `w-full h-32 rounded-2xl font-bold flex items-center justify-center shadow-sm transition-all active:scale-95 ${optionImages ? "flex-col gap-1 text-lg" : "text-4xl"} ${playingIndex === idx || externalHighlightedIndex === idx ? "bg-violet-50 border-violet-400 text-violet-700 ring-4 ring-violet-200 scale-105" : "bg-white border-b-4 border-slate-200 text-slate-700 hover:shadow-md hover:scale-[1.02] hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700"}`,
                         },
-                        showLetterHints
-                          ? opt
-                          : /*#__PURE__*/ React.createElement(
-                            "span",
-                            {
-                              className:
-                                "text-sm text-slate-400 font-normal",
-                            },
-                            "Sound ",
-                            idx + 1,
-                          ),
+                        (() => {
+                          const clean = opt.replace(/\//g, "").toLowerCase();
+                          const keyword = PHONEME_KEYWORDS[clean];
+                          const img = optionImages && keyword && optionImages[keyword];
+                          if (img) {
+                            return [
+                              /*#__PURE__*/ React.createElement("img", {
+                                key: "img",
+                                src: `data:image/png;base64,${img}`,
+                                alt: keyword,
+                                className: "w-14 h-14 object-contain rounded-lg",
+                              }),
+                              /*#__PURE__*/ React.createElement(
+                                "span",
+                                { key: "lbl", className: "text-sm font-bold" },
+                                showLetterHints ? opt : `Sound ${idx + 1}`,
+                              ),
+                            ];
+                          }
+                          return showLetterHints
+                            ? opt
+                            : /*#__PURE__*/ React.createElement(
+                                "span",
+                                { className: "text-sm text-slate-400 font-normal" },
+                                "Sound ",
+                                idx + 1,
+                              );
+                        })(),
                       ),
                         /*#__PURE__*/ React.createElement(
                         "button",
@@ -1875,6 +2073,7 @@
           onUpdateOption,
           highlightedIndex,
           isAudioBusy,
+          optionImages,
         }) => {
           const [playingIndex, setPlayingIndex] = React.useState(null);
           const activeIndex = playingIndex ?? highlightedIndex;
@@ -1961,19 +2160,205 @@
                           onCheckAnswer(opt);
                         }
                       },
-                      className: `p-6 rounded-2xl transition-all group text-left cursor-pointer outline-none focus:ring-2 focus:ring-orange-400 ${activeIndex === i ? "border-orange-500 bg-orange-200 ring-4 ring-orange-400 scale-[1.05] shadow-xl font-black z-10 relative" : "bg-white border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50"}`,
+                      className: `${optionImages ? "p-4 flex-col" : "p-6"} rounded-2xl transition-all group text-left cursor-pointer outline-none focus:ring-2 focus:ring-orange-400 ${activeIndex === i ? "border-orange-500 bg-orange-200 ring-4 ring-orange-400 scale-[1.05] shadow-xl font-black z-10 relative" : "bg-white border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50"}`,
                     },
-                      /*#__PURE__*/ React.createElement(
+                    optionImages && optionImages[opt]
+                      ? /*#__PURE__*/ React.createElement(
+                          "div",
+                          { className: "flex flex-col items-center gap-2" },
+                          /*#__PURE__*/ React.createElement("img", {
+                            src: `data:image/png;base64,${optionImages[opt]}`,
+                            alt: opt,
+                            className: "w-20 h-20 object-contain rounded-xl",
+                          }),
+                          /*#__PURE__*/ React.createElement(
+                            "div",
+                            { className: "flex items-center justify-between w-full" },
+                            /*#__PURE__*/ React.createElement(
+                              "span",
+                              {
+                                className: `text-base font-bold text-slate-700 ${!showLetterHints && "blur-sm"}`,
+                              },
+                              opt,
+                            ),
+                            /*#__PURE__*/ React.createElement(
+                              "button",
+                              {
+                                "aria-label": t("common.volume"),
+                                onClick: (e) => {
+                                  e.stopPropagation();
+                                  onPlayAudio(opt, true);
+                                },
+                                className:
+                                  "w-8 h-8 rounded-full hover:bg-orange-200 text-slate-500 hover:text-orange-600 flex items-center justify-center transition-colors z-10",
+                                title: ts("common.listen") || "Listen",
+                              },
+                              /*#__PURE__*/ React.createElement(Volume2, {
+                                size: 16,
+                              }),
+                            ),
+                          ),
+                        )
+                      : /*#__PURE__*/ React.createElement(
+                          "div",
+                          { className: "flex items-center justify-between" },
+                          /*#__PURE__*/ React.createElement(
+                            "span",
+                            {
+                              className: `text-xl font-bold text-slate-700 ${!showLetterHints && "blur-sm"}`,
+                            },
+                            opt,
+                          ),
+                          /*#__PURE__*/ React.createElement(
+                            "button",
+                            {
+                              "aria-label": t("common.volume"),
+                              onClick: (e) => {
+                                e.stopPropagation();
+                                onPlayAudio(opt, true);
+                              },
+                              className:
+                                "w-10 h-10 rounded-full hover:bg-orange-200 text-slate-500 hover:text-orange-600 flex items-center justify-center transition-colors z-10",
+                              title: ts("common.listen") || "Listen",
+                            },
+                            /*#__PURE__*/ React.createElement(Volume2, {
+                              size: 20,
+                            }),
+                          ),
+                        ),
+                  ),
+              ),
+            ),
+          );
+        },
+      );
+      // ManipulationView — phoneme deletion / substitution activity.
+      // Shows the manipulation task instruction card + 4 option buttons.
+      const ManipulationView = React.memo(
+        ({
+          data,
+          showLetterHints,
+          onPlayAudio,
+          onCheckAnswer,
+          isEditing,
+          onUpdateOption,
+          highlightedIndex,
+          isAudioBusy,
+          optionImages,
+          isLoading,
+        }) => {
+          const [playingIndex, setPlayingIndex] = React.useState(null);
+          const activeIndex = playingIndex ?? highlightedIndex;
+          if (isLoading) {
+            return /*#__PURE__*/ React.createElement(
+              "div",
+              { className: "flex flex-col items-center gap-4 py-10" },
+              /*#__PURE__*/ React.createElement("div", {
+                className:
+                  "w-12 h-12 rounded-full border-4 border-violet-300 border-t-violet-600 animate-spin",
+              }),
+              /*#__PURE__*/ React.createElement(
+                "p",
+                { className: "text-slate-500 text-sm font-medium animate-pulse" },
+                "Building your Sound Swap task\u2026",
+              ),
+            );
+          }
+          if (!data || !data.instruction) {
+            return /*#__PURE__*/ React.createElement(
+              "div",
+              { className: "text-center text-slate-400 text-sm py-6" },
+              "Loading task\u2026",
+            );
+          }
+          return /*#__PURE__*/ React.createElement(
+            "div",
+            {
+              className:
+                "flex flex-col items-center gap-6 animate-in slide-in-from-right duration-500",
+            },
+            // Task instruction card
+            /*#__PURE__*/ React.createElement(
+              "div",
+              {
+                className:
+                  "w-full max-w-lg bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5 text-center",
+              },
+              /*#__PURE__*/ React.createElement(
+                "span",
+                {
+                  className:
+                    "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold mb-3 " +
+                    (data.type === "deletion"
+                      ? "bg-rose-100 text-rose-700"
+                      : "bg-amber-100 text-amber-700"),
+                },
+                data.type === "deletion"
+                  ? "\u2702\uFE0F Phoneme Deletion"
+                  : "\uD83D\uDD04 Phoneme Substitution",
+              ),
+              /*#__PURE__*/ React.createElement(
+                "p",
+                { className: "text-slate-700 font-semibold text-lg leading-snug" },
+                data.instruction,
+              ),
+              /*#__PURE__*/ React.createElement(
+                "button",
+                {
+                  "aria-label": "Listen to instruction",
+                  onClick: () => onPlayAudio(data.instruction, true),
+                  className:
+                    "mt-3 inline-flex items-center gap-2 px-4 py-2 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded-full text-sm font-medium transition-colors",
+                },
+                /*#__PURE__*/ React.createElement(Volume2, { size: 16 }),
+                "Listen Again",
+              ),
+            ),
+            // Options grid
+            /*#__PURE__*/ React.createElement(
+              "div",
+              { className: "grid grid-cols-2 gap-4 w-full max-w-lg" },
+              (data.options || []).map((opt, i) =>
+                isEditing
+                  ? /*#__PURE__*/ React.createElement(
                       "div",
-                      { className: "flex items-center justify-between" },
-                        /*#__PURE__*/ React.createElement(
-                        "span",
+                      {
+                        key: i,
+                        className: `p-4 rounded-2xl bg-white border-2 shadow-md flex items-center gap-2 relative ${opt?.toLowerCase() === data.answer?.toLowerCase() ? "border-green-400 ring-2 ring-green-200" : "border-amber-200"}`,
+                      },
+                      /*#__PURE__*/ React.createElement(
+                        "button",
                         {
-                          className: `text-xl font-bold text-slate-700 ${!showLetterHints && "blur-sm"}`,
+                          "aria-label":
+                            opt?.toLowerCase() === data.answer?.toLowerCase()
+                              ? "Correct answer"
+                              : "Set as correct",
+                          onClick: (e) => {
+                            e.stopPropagation();
+                            onUpdateOption &&
+                              onUpdateOption(i, opt, "set_correct");
+                          },
+                          className: `p-1 rounded-full transition-colors flex-shrink-0 ${opt?.toLowerCase() === data.answer?.toLowerCase() ? "text-green-500" : "text-slate-300 hover:text-green-400"}`,
+                          title:
+                            opt?.toLowerCase() === data.answer?.toLowerCase()
+                              ? "\u2713 Correct answer"
+                              : "Click to set as correct",
                         },
-                        opt,
+                        opt?.toLowerCase() === data.answer?.toLowerCase()
+                          ? /*#__PURE__*/ React.createElement(Check, { size: 20 })
+                          : /*#__PURE__*/ React.createElement(Star, { size: 18 }),
                       ),
-                        /*#__PURE__*/ React.createElement(
+                      /*#__PURE__*/ React.createElement("input", {
+                        "aria-label": t("common.enter_opt"),
+                        type: "text",
+                        value: opt,
+                        onChange: (e) =>
+                          onUpdateOption && onUpdateOption(i, e.target.value),
+                        className:
+                          "w-full px-3 py-2 text-lg font-bold text-slate-700 bg-slate-50 rounded-lg outline-none focus:ring-2 focus:ring-amber-400",
+                        onKeyDown: (e) => e.stopPropagation(),
+                      }),
+                      /*#__PURE__*/ React.createElement(
                         "button",
                         {
                           "aria-label": t("common.volume"),
@@ -1982,15 +2367,94 @@
                             onPlayAudio(opt, true);
                           },
                           className:
-                            "w-10 h-10 rounded-full hover:bg-orange-200 text-slate-500 hover:text-orange-600 flex items-center justify-center transition-colors z-10",
-                          title: ts("common.listen") || "Listen",
+                            "absolute right-2 top-2 p-2 text-slate-400 hover:text-indigo-600",
                         },
-                          /*#__PURE__*/ React.createElement(Volume2, {
-                          size: 20,
-                        }),
+                        /*#__PURE__*/ React.createElement(Volume2, { size: 16 }),
                       ),
+                    )
+                  : /*#__PURE__*/ React.createElement(
+                      "div",
+                      {
+                        key: i,
+                        role: "button",
+                        tabIndex: 0,
+                        onClick: () => onCheckAnswer(opt),
+                        onKeyDown: (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onCheckAnswer(opt);
+                          }
+                        },
+                        className: `${optionImages ? "p-4 flex-col" : "p-6"} rounded-2xl transition-all cursor-pointer outline-none focus:ring-2 focus:ring-violet-400 ${activeIndex === i ? "border-violet-500 bg-violet-200 ring-4 ring-violet-400 scale-[1.05] shadow-xl font-black z-10 relative" : "bg-white border-2 border-slate-100 hover:border-violet-400 hover:bg-violet-50"}`,
+                      },
+                      optionImages && optionImages[opt]
+                        ? /*#__PURE__*/ React.createElement(
+                            "div",
+                            { className: "flex flex-col items-center gap-2" },
+                            /*#__PURE__*/ React.createElement("img", {
+                              src: `data:image/png;base64,${optionImages[opt]}`,
+                              alt: opt,
+                              className: "w-20 h-20 object-contain rounded-xl",
+                            }),
+                            /*#__PURE__*/ React.createElement(
+                              "div",
+                              {
+                                className:
+                                  "flex items-center justify-between w-full",
+                              },
+                              /*#__PURE__*/ React.createElement(
+                                "span",
+                                {
+                                  className: `text-base font-bold text-slate-700 ${!showLetterHints && "blur-sm"}`,
+                                },
+                                opt,
+                              ),
+                              /*#__PURE__*/ React.createElement(
+                                "button",
+                                {
+                                  "aria-label": t("common.volume"),
+                                  onClick: (e) => {
+                                    e.stopPropagation();
+                                    onPlayAudio(opt, true);
+                                  },
+                                  className:
+                                    "w-8 h-8 rounded-full hover:bg-violet-200 text-slate-500 hover:text-violet-600 flex items-center justify-center transition-colors z-10",
+                                  title: "Listen",
+                                },
+                                /*#__PURE__*/ React.createElement(Volume2, {
+                                  size: 16,
+                                }),
+                              ),
+                            ),
+                          )
+                        : /*#__PURE__*/ React.createElement(
+                            "div",
+                            { className: "flex items-center justify-between" },
+                            /*#__PURE__*/ React.createElement(
+                              "span",
+                              {
+                                className: `text-xl font-bold text-slate-700 ${!showLetterHints && "blur-sm"}`,
+                              },
+                              opt,
+                            ),
+                            /*#__PURE__*/ React.createElement(
+                              "button",
+                              {
+                                "aria-label": t("common.volume"),
+                                onClick: (e) => {
+                                  e.stopPropagation();
+                                  onPlayAudio(opt, true);
+                                },
+                                className:
+                                  "w-10 h-10 rounded-full hover:bg-violet-200 text-slate-500 hover:text-violet-600 flex items-center justify-center transition-colors z-10",
+                                title: "Listen",
+                              },
+                              /*#__PURE__*/ React.createElement(Volume2, {
+                                size: 20,
+                              }),
+                            ),
+                          ),
                     ),
-                  ),
               ),
             ),
           );
@@ -2936,6 +3400,15 @@
           label: ts("word_sounds.activity_rhyming"),
           icon: "🎵",
           description: ts("word_sounds.rhyming_desc"),
+          tier: "phonological",
+        },
+        {
+          id: "manipulation",
+          label: ts("word_sounds.activity_manipulation") || "Sound Swap",
+          icon: "✂️",
+          description:
+            ts("word_sounds.manipulation_desc") ||
+            "Delete or change sounds in words",
           tier: "phonological",
         },
         {
@@ -9405,6 +9878,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 isEditing: isEditing,
                 onUpdateOption: handleOptionUpdate,
                 highlightedIndex: highlightedIsoIndex,
+                optionImages: aacMode ? optionImages : null,
               }),
               /*#__PURE__*/ React.createElement(
                 "div",
@@ -9801,8 +10275,16 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                   );
                                 },
                                 className:
-                                  "w-full px-8 py-6 bg-white border-2 border-slate-200 rounded-xl font-bold text-xl shadow-md hover:border-violet-400 hover:scale-105 hover:shadow-lg transition-all capitalize",
+                                  "w-full px-8 py-6 bg-white border-2 border-slate-200 rounded-xl font-bold text-xl shadow-md hover:border-violet-400 hover:scale-105 hover:shadow-lg transition-all capitalize flex flex-col items-center gap-2",
                               },
+                              aacMode && optionImages[word]
+                                ? /*#__PURE__*/ React.createElement("img", {
+                                    src: `data:image/png;base64,${optionImages[word]}`,
+                                    alt: word,
+                                    className:
+                                      "w-16 h-16 object-contain rounded-xl",
+                                  })
+                                : null,
                               showLetterHints
                                 ? word
                                 : /*#__PURE__*/ React.createElement(
@@ -10529,6 +11011,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 isEditing: isEditing,
                 onUpdateOption: handleOptionUpdate,
                 isAudioBusy: isPlayingAudio,
+                optionImages: aacMode ? optionImages : null,
                 onCheckAnswer: (ans) => {
                   const isRhyme =
                     ans?.toLowerCase() ===
@@ -11103,22 +11586,28 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               /*#__PURE__*/ React.createElement(
                 "h2",
                 { className: "text-3xl font-black mb-2" },
-                ts("word_sounds.session_complete") || "Session Complete!",
+                isParentMode
+                  ? (accuracy >= 80
+                    ? "\uD83C\uDF1F Amazing home practice!"
+                    : "\uD83C\uDFE0 Great home practice!")
+                  : (ts("word_sounds.session_complete") || "Session Complete!"),
               ),
               /*#__PURE__*/ React.createElement(
                 "p",
                 { className: "text-white/70" },
-                accuracy >= 90
-                  ? ts("word_sounds.session_msg_outstanding") ||
-                  "Outstanding work! You're a phonics champion!"
-                  : accuracy >= 70
-                    ? ts("word_sounds.session_msg_great") ||
-                    "Great job with this activity!"
-                    : accuracy >= 50
-                      ? ts("word_sounds.session_msg_good") ||
-                      "Good effort! Keep practicing!"
-                      : ts("word_sounds.session_msg_nice") ||
-                      "Nice try! Every practice makes you stronger!",
+                isParentMode
+                  ? `Your child practiced ${wordSoundsScore.total} word${wordSoundsScore.total === 1 ? "" : "s"} today \u2014 share this summary with their teacher!`
+                  : (accuracy >= 90
+                    ? ts("word_sounds.session_msg_outstanding") ||
+                    "Outstanding work! You're a phonics champion!"
+                    : accuracy >= 70
+                      ? ts("word_sounds.session_msg_great") ||
+                      "Great job with this activity!"
+                      : accuracy >= 50
+                        ? ts("word_sounds.session_msg_good") ||
+                        "Good effort! Keep practicing!"
+                        : ts("word_sounds.session_msg_nice") ||
+                        "Nice try! Every practice makes you stronger!"),
               ),
               wordSoundsLevel > 1 &&
                 /*#__PURE__*/ React.createElement(
@@ -11280,6 +11769,42 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             /*#__PURE__*/ React.createElement(
               "div",
               { className: "p-6 flex flex-col gap-3" },
+              isParentMode &&
+                /*#__PURE__*/ React.createElement(
+                "button",
+                {
+                  onClick: () => {
+                    const date = new Date().toLocaleDateString();
+                    const actLabel = wordSoundsActivity
+                      ? wordSoundsActivity.charAt(0).toUpperCase() +
+                        wordSoundsActivity.slice(1)
+                      : "Word Sounds";
+                    const wordLines = [
+                      ...new Map(
+                        sessionWordResults.current.map((r) => [r.word, r]),
+                      ).values(),
+                    ]
+                      .map((r) => `  ${r.correct ? "\u2713" : "\u2717"} ${r.word}`)
+                      .join("\n");
+                    const summary =
+                      `Home Practice Summary \u2014 ${date}\n` +
+                      `Activity: ${actLabel}\n` +
+                      `Score: ${wordSoundsScore.correct}/${wordSoundsScore.total} (${accuracy}%)\n` +
+                      (wordLines ? `\nWords practiced:\n${wordLines}` : "");
+                    navigator.clipboard
+                      .writeText(summary)
+                      .then(() =>
+                        addToast?.("\uD83D\uDCCB Summary copied! Paste it into a message for the teacher.", "success"),
+                      )
+                      .catch(() =>
+                        addToast?.("Copy failed \u2014 try long-pressing the summary.", "error"),
+                      );
+                  },
+                  className:
+                    "w-full py-4 bg-amber-400 text-amber-900 rounded-full font-bold text-lg shadow-lg hover:scale-105 transition-transform",
+                },
+                "\uD83D\uDCCB Copy Summary for Teacher",
+              ),
               sessionWordResults.current.filter((r) => !r.correct).length > 0 &&
                 /*#__PURE__*/ React.createElement(
                 "button",
@@ -11345,7 +11870,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "w-full py-4 bg-white text-violet-600 rounded-full font-bold text-lg shadow-lg hover:scale-105 transition-transform",
                 },
                 "\uD83D\uDD04 ",
-                ts("word_sounds.play_again") || "Play Again",
+                isParentMode
+                  ? "Practice Again"
+                  : (ts("word_sounds.play_again") || "Play Again"),
               ),
               /*#__PURE__*/ React.createElement(
                 "button",
@@ -11381,7 +11908,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   className:
                     "w-full py-2 text-white/60 hover:text-white transition-colors",
                 },
-                ts("common.close") || "Close",
+                isParentMode ? "\u2705 All Done for Today" : (ts("common.close") || "Close"),
               ),
             ),
           ),
@@ -12182,7 +12709,17 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             },
               /*#__PURE__*/ React.createElement(
               "div",
-              { className: "flex gap-2" },
+              { className: "flex gap-2 items-center" },
+              isParentMode &&
+                /*#__PURE__*/ React.createElement(
+                "span",
+                {
+                  className:
+                    "flex items-center gap-1 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold border border-amber-200 whitespace-nowrap mr-1",
+                  title: "Home Practice Mode",
+                },
+                "\uD83C\uDFE0 Home Practice",
+              ),
               ACTIVITIES.map((activity) =>
                   /*#__PURE__*/ React.createElement(
                 "button",
@@ -12203,6 +12740,19 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   activity.label,
                 ),
               ),
+              ),
+              typeof callImagen === "function" &&
+                /*#__PURE__*/ React.createElement(
+                "button",
+                {
+                  onClick: () => setAacMode((prev) => !prev),
+                  className: `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto ${aacMode ? "bg-teal-500 text-white shadow-md ring-2 ring-teal-300" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
+                  title: aacMode
+                    ? "AAC Symbol Overlay ON — click to turn off"
+                    : "Turn on AAC Symbol Overlay (generates images for answer choices)",
+                },
+                /*#__PURE__*/ React.createElement("span", null, "\uD83D\uDDBC\uFE0F"),
+                /*#__PURE__*/ React.createElement("span", null, "AAC"),
               ),
             ),
           ),
