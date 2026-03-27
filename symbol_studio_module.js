@@ -275,6 +275,7 @@
     var onClose = props.onClose;
     var isOpen = props.isOpen;
     var cloudSync = props.cloudSync || null; // { save: async(data)=>void, load: async()=>data|null }
+    var liveSession = props.liveSession || null; // { active, sessionCode, push: async(payload)=>void, clear: async()=>void }
 
     var e = React.createElement;
     var useState = React.useState;
@@ -1476,6 +1477,16 @@
                   e('div', { style: { fontSize: '10px', color: '#9ca3af' } }, b.words.length + ' words')
                 ),
                 e('button', { onClick: function () { loadBoard(b); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
+                liveSession && liveSession.active && e('button', {
+                  title: 'Push to student screens (images excluded)',
+                  onClick: function () {
+                    var stripped = b.words.map(function (w) { return { word: w.word, wordType: w.wordType }; });
+                    liveSession.push({ type: 'board', title: b.title, words: stripped, cols: b.cols || 4 })
+                      .then(function () { addToast('Board pushed to students!', 'success'); })
+                      .catch(function () { addToast('Push failed — check session connection', 'error'); });
+                  },
+                  style: S.btn('#ecfdf5', '#065f46', false)
+                }, '📡'),
                 e('button', { onClick: function () { deleteSavedBoard(b.id); }, style: { background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '14px', padding: '2px 4px' } }, '🗑️')
               );
             })
@@ -1555,6 +1566,16 @@
                   e('div', { style: { fontSize: '10px', color: '#9ca3af' } }, s.items.length + ' activities')
                 ),
                 e('button', { onClick: function () { loadSchedule(s); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
+                liveSession && liveSession.active && e('button', {
+                  title: 'Push to student screens (images excluded)',
+                  onClick: function () {
+                    var stripped = s.items.map(function (item) { return { label: item.label }; });
+                    liveSession.push({ type: 'schedule', title: s.title, items: stripped, nowIndex: 0 })
+                      .then(function () { addToast('Schedule pushed to students!', 'success'); })
+                      .catch(function () { addToast('Push failed — check session connection', 'error'); });
+                  },
+                  style: S.btn('#ecfdf5', '#065f46', false)
+                }, '📡'),
                 e('button', { onClick: function () { deleteSavedSchedule(s.id); }, style: { background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '14px', padding: '2px 4px' } }, '🗑️')
               );
             })

@@ -5,36 +5,103 @@
   **Adaptive Levels, Layers, & Outputs ➔ Flexible Learning Options for Whole-Student Education**
 
   [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
-  [![Local-First Architecture](https://img.shields.io/badge/Architecture-Local--First-brightgreen.svg)](#school-box-deployment)
+  [![Local-First Architecture](https://img.shields.io/badge/Architecture-Local--First-brightgreen.svg)](#-local-first-the-school-box)
   [![Privacy: FERPA & COPPA](https://img.shields.io/badge/Privacy-FERPA_Compatible-red.svg)](#-privacy--ferpa-compliance)
+  [![Accessibility: WCAG 2.1 AA](https://img.shields.io/badge/Accessibility-WCAG_2.1_AA-blue.svg)](#-accessibility)
+  [![UDL Aligned](https://img.shields.io/badge/UDL-Aligned-purple.svg)](#-udl-alignment)
 </div>
 
 ---
 
 ## 🚀 What is AlloFlow?
 
-AlloFlow is an **open-source, privacy-first AI differentiation engine** built explicitly for specialized education, Response to Intervention (RTI) scaling, and clinical behavior support. 
+AlloFlow is an **open-source, privacy-first AI differentiation engine** built for educators, special education teams, and school psychologists. It runs inside Google Gemini Canvas — **no install required** — and instantly transforms any source material into a full suite of interactive, gamified, and accessible learning resources.
 
-Originally a simple text-adaptation tool, **Version 1.0** features a **Hub-and-Spoke Microservice Architecture** encompassing 450+ interactive STEM Lab modules, built-in Tier 1/2/3 Response to Intervention (RTI) screening, and a secure Clinical Reasoning Suite engineered specifically for Special Educators, Board Certified Behavior Analysts (BCBAs), and School Psychologists.
+**No subscriptions. No student accounts. No PII collected.**
 
-### 📚 Core Pedagogical Differentiators
-- **Instant Leveled Texts & Scaffolds:** Generate bilingual interactive readers, cloze passages, and gamified reviews (Jeopardy, Escape Rooms, Adventure Modes).
-- **🗣️ Word Sounds Studio:** 13 interactive phonemic awareness drills ranging from syllable segmentation to digital letter-tracing.
-- **🧮 STEM & Visual Lab:** 450+ dynamic HTML5 manipulations (Calculus Graphing, Neuroanatomy Viewers, Star Systems, and Coding Playgrounds).
-- **📋 BehaviorLens (Clinical):** Gated ABA data collection (ABC tracking, MSWO Preference Assessments, Frequency/Interval counting) with automated DRO logic and IOA calculations.
-- **🧠 Report Writer Wizard:** A high-privacy, "Fact-Chunk" pipeline that prevents AI hallucination when synthesizing standardized assessments into bilingual psychoeducational reports.
+🔗 **[Launch AlloFlow](https://gemini.google.com/share/c8baf80a46cc)**
 
 ---
 
-## 🏛️ Local-First Architecture (The "School Box")
+## ⚡ Quick Start
 
-AlloFlow represents a paradigm shift away from cloud reliance. Our mission is to eliminate continuous API licensing costs for underfunded school districts via the **School Box Deployment**.
+1. **[Click to launch](https://gemini.google.com/share/c8baf80a46cc)** — opens directly in Gemini Canvas (free Google account required)
+2. **Paste your lesson text** into the Source Material box, or let the AI generate from a topic
+3. **Click Fullpack** — leveled text, glossary, quizzes, and scaffolds generated in one click
+4. **Start a Live Session** to push resources to student devices in real-time
 
-By utilizing the `aiProvider.js` integration and Docker, School IT departments can run AlloFlow **entirely offline** on local intranet hardware (e.g., an RTX 3090/4090 workstation). 
+> 💡 For self-hosted deployment on district hardware, see [School Box](#-local-first-the-school-box) below.
 
-1. **Frontend Host:** The React UI (`AlloFlowANTI.txt`) processes all student interactions and gamification locally in the browser utilizing LZ-String compressed caching.
-2. **Ollama Inference:** Routes all generative LLM requests to local, open-source models (Llama 3.1, Phi-3.5) hosted on the school's own hardware.
-3. **Dual-Engine TTS:** The system utilizes an ultra-high-quality offline English engine (Kokoro) and multi-lingual fallback (Piper) executing securely within the browser namespace, ensuring text-to-speech audio never hits cloud APIs. 
+---
+
+## ✨ Key Features
+
+### 🎓 For Teachers
+
+| Feature | Description |
+|---------|-------------|
+| **Leveled Text & Scaffolds** | Instantly rewrite any source to K–Graduate reading level with bilingual side-by-side views, cloze passages, and scaffolded writing frames |
+| **Fullpack Generation** | One click generates glossary, leveled reader, quiz, visual organizer, and lesson plan simultaneously |
+| **Live Session (Classroom Sync)** | Push your screen to all student devices in real-time — Teacher Paced or Student Paced modes |
+| **Group Differentiation** | Assign different resources to different student groups simultaneously during a live session |
+| **Lesson Plan Builder** | Auto-synthesizes all generated resources into a scripted, standard-aligned lesson plan |
+| **Standards Alignment** | Align to CCSS, NGSS, CASEL, or any state standard; AI audits its own output for compliance |
+| **Smart Profiles** | Save configurations (e.g., "Grade 5 + ESL") for one-click switching across lessons |
+| **Multimodal Input** | Source from text paste, URL, PDF/image OCR, audio/video transcription, or AI generation |
+
+### 🎮 For Students
+
+| Feature | Description |
+|---------|-------------|
+| **Adventure Mode** | Choose-your-own-adventure RPG with XP, inventory, dynamic Imagen-generated scenes, and Storybook export |
+| **Boss Battle** | Whole-class cooperative quiz game — correct answers deal damage to the boss |
+| **Escape Room** | Team-based puzzle challenges with teacher-controlled hints and timed escape tracking |
+| **Review Game** | Jeopardy-style competitive review with teams and real-time scoring |
+| **Democracy Mode** | Class votes on the answer; majority response is submitted |
+| **Gamification Engine** | XP, levels, streaks, and badges earned across all activities |
+| **Interactive Glossary** | Memory Match, Word Search, Crossword, Bingo, Scramble — all generated instantly from the vocabulary list |
+| **Immersive Reader** | RSVP speed reader, karaoke highlighting, bionic reading, and adjustable reading ruler |
+
+### 🩺 For Special Educators & BCBAs
+
+| Feature | Description |
+|---------|-------------|
+| **BehaviorLens** | Full FBA/BIP suite — ABC data collection, frequency/interval tracking, IOA calculator (5 methods), scatterplot analysis, preference assessments (MSWO, Paired, Free Operant) |
+| **Quick-Fill AI** | Type a natural language observation; AI auto-structures it into Antecedent, Behavior, Consequence with function hypothesis |
+| **Intervention Templates** | DRO protocols, token economies, behavior contracts, SMART goals, FCT templates, de-escalation toolkit |
+| **Restorative Language** | Affirmative Glossary translates clinical ABA terms to person-first language throughout; Restorative Questions generated from each logged incident |
+| **Symbol Studio** | AI-generated PCS-style communication boards, visual schedules, social stories, and Quick Boards — 6 pre-built templates, 10 social story templates, up to 8 student profiles |
+| **Word Sounds Studio** | 8 phonemic awareness activity types (segmentation, blending, isolation, rhyming, mapping, spelling, word families) with grade-normed adaptive difficulty and 6 achievement badges |
+
+### 🧠 For School Psychologists
+
+| Feature | Description |
+|---------|-------------|
+| **Report Writer Wizard** | 10-step guided wizard for synthesizing standardized assessment data into bilingual psychoeducational reports |
+| **Fact-Chunk Pipeline** | Immutable PII-scrubbing layer prevents AI hallucination or statistical misinterpretation during report generation |
+| **15+ Assessment Presets** | WISC-V, WIAT-4, BASC-3, Vineland-3, BRIEF-2, Conners-4, WJ-IV, KABC-II, CELF-5, KTEA-3, and more |
+| **Student Analytics (RTI)** | Automated Tier 1/2/3 classification; ORF, Math Fluency, and Literacy CBM probes; anomaly flagging; CSV export |
+| **Math Fluency Probes** | K–8 grade-normed DCPM arithmetic drills (addition, subtraction, multiplication, division) with error analysis |
+
+---
+
+## 🧮 STEM Lab (55 Interactive Simulations)
+
+The STEM Lab is a dynamically-loaded suite of **55 browser-based interactive tools** spanning:
+
+| Domain | Tools |
+|--------|-------|
+| **Math Fundamentals** | Fraction Lab, Area Model, Multiplication Table, Number Line, Math Manipulatives, Money Math, Coordinate Grid, Angle Explorer, 3D Volume Explorer, 3D Geometry Sandbox |
+| **Advanced Math** | Function Grapher, Inequality Grapher, Calculus Visualizer, Algebra Solver, Graphing Calculator, Probability Explorer, Unit Converter |
+| **Life Science & Biology** | Cell Simulator, Human Anatomy, Brain Atlas, DNA Lab, Punnett Square, Virtual Dissection, Decomposer, Companion Planting Lab, Aquaculture & Ocean Lab, Ecosystem Simulator |
+| **Earth & Space Science** | Rocks & Minerals, Water Cycle, Rock Cycle, Plate Tectonics, Solar System, Universe Timelapse, Galaxy Explorer |
+| **Physics & Chemistry** | Wave Simulator, Physics Simulator, Circuit Builder, Equation Balancer, Molecule Builder, Titration Lab, Data Plotter |
+| **Technology & CS** | Coding Playground, Cyber Defense Lab |
+| **Creative & Music** | Architecture Studio, Art & Design Studio, Music Synthesizer |
+| **Social Studies** | Economics Lab, Life Skills Lab |
+| **Simulation** | Kepler Colony, Behavior Shaping Lab |
+
+Each tool supports **Generate Drill** for instant related practice sets and saves/restores state with the session.
 
 ---
 
@@ -42,46 +109,117 @@ By utilizing the `aiProvider.js` integration and Docker, School IT departments c
 
 **No student data leaves your school.**
 
-AlloFlow is designed to be **FERPA-compatible** by default:
-- **Zero API Telemetry:** By deploying the School Box architecture, absolutely no student PII is transmitted to Google, OpenAI, or other 3rd party servers.
-- **On-Device Storage:** High-speed persistence happens via the browser's encrypted local storage JSON objects.
-- **TeacherGate Security:** Grading rubrics, answer keys, and the Clinical Reasoning Suite are isolated behind rigorous educator verification gating, separating authoring mode from the student-facing consumption interface.
+| Principle | Implementation |
+|-----------|----------------|
+| **Zero PII Required** | The tool never requires names, IDs, or identifying information |
+| **On-Device Storage** | All student data persists in the browser's local storage — never written to cloud databases |
+| **TeacherGate** | Clinical tools, grading rubrics, and answer keys are isolated behind educator verification |
+| **Dual-Engine Offline TTS** | Both Kokoro (English) and Piper (40+ languages) run entirely inside the browser — audio never hits cloud APIs |
+| **Air-Gap Option** | School Box deployment physically disconnects from all external APIs |
+
+> For districts using **Google Workspace for Education**: Firebase Hosting (the cloud deployment path) uses only static file delivery — no student data is written to Google's servers. Your existing Google Workspace agreement covers this.
 
 ---
 
-## ♿ UDL & Accessibility Priority
+## 🏫 Local-First: The "School Box"
 
-Every element of AlloFlow inherently maps to Universal Design for Learning (UDL) checkpoints:
-- **Dyslexia fonts** (OpenDyslexic) and Bionic Reading overlays.
-- **Offline Text-to-Speech (TTS)** with word-for-word audio tracking.
-- **Color overlays** for Irlen Syndrome support (Peach, Blue, Yellow).
-- **Line focus / Reading ruler** visual isolation bars.
-- Complete voice-dictation natively supported on all input fields.
-
----
-
-## 🛠️ Installation & Getting Started
-
-Because AlloFlow distributes complex interactive modules via localized scripts and CDN commit-hash pinning, developers and IT admins can launch the platform seamlessly:
+For districts that need **complete data sovereignty and zero ongoing API costs**, AlloFlow runs entirely on local intranet hardware via Docker.
 
 ```bash
-# 1. Clone the repository
+# Clone the repository
 git clone https://github.com/apomera/AlloFlow.git
 
-# 2. Deploy the core frontend to Firebase Hosting (Cloud Option) 
-# OR spin up the School Box (Local Option)
+# Start all services (Ollama LLM + TTS + local database + search)
 docker-compose up -d
 
-# 3. Access the platform at local HTTP port
+# Access at http://localhost:3000
 ```
 
-For comprehensive tutorials, pedagogical workflows, and advanced configurations, please refer to the extensively documented [**AlloFlow v1.0 Comprehensive User Manual.md**](./AlloFlow%20v1.0%20Comprehensive%20User%20Manual.md) included in this repository.
+**What runs locally:**
+- **Ollama** — LLM inference (Llama 3.1, Phi-3.5) on your own GPU
+- **PocketBase** — local database replacing Firebase
+- **Piper / Edge TTS** — offline text-to-speech
+- **SearXNG** — local web search for fact verification
+- **Nginx** — reverse proxy and SSL
+
+Recommended hardware: 32GB RAM + NVIDIA RTX 3090/4090. See [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md) for the full Firebase cloud deployment guide.
 
 ---
 
-## 📄 Licensing & Contribution
+## ♿ Accessibility
 
-AlloFlow is distributed under the **AGPL v3 License** — free and open source forever, to ensure educational technology remains a public good.
+AlloFlow is **WCAG 2.1 AA compliant**. All interactive elements — including games — are fully operable without a mouse.
+
+- **Dyslexia Fonts** — OpenDyslexic, Lexend, Atkinson Hyperlegible
+- **Bionic Reading** — bolds initial letters to guide decoding
+- **Offline TTS** — word-for-word tracking in 40+ languages (Kokoro + Piper)
+- **Color Overlays** — Peach, Blue, Yellow tints for Irlen syndrome support
+- **Reading Ruler** — mouse-following line isolation bar
+- **High Contrast & Dark Mode**
+- **Voice Dictation** — speech-to-text on all input fields
+- **Full Keyboard Navigation** — every game and tool accessible via Tab/Enter/Arrow keys
+
+---
+
+## 💵 Is It Really Free?
+
+**Yes.** AlloFlow is free and open-source under AGPL v3.
+
+| Path | Cost | What You Need |
+|------|------|---------------|
+| **Gemini Canvas** | Free | A Google account (uses your free daily Gemini quota) |
+| **Firebase Hosting** | Free tier available | A Firebase project; see [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md) |
+| **School Box (Docker)** | Hardware cost only | Local server; no recurring API fees ever |
+
+---
+
+## 🎯 UDL Alignment
+
+Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
+
+| UDL Principle | AlloFlow Tools |
+|---------------|----------------|
+| **Engagement** | Adventure Mode, Boss Battle, Escape Room, Democracy Mode, Student Interests, Gamification Engine |
+| **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab, TTS (40+ languages), Color Overlays, Bionic Reading |
+| **Action & Expression** | Writing Scaffolds, Auto-Grader, Rubrics, Oral Fluency Coach, Dictation, QTI Export, Symbol Studio |
+
+---
+
+## 📚 Documentation
+
+| Resource | Link |
+|----------|------|
+| 📖 Complete User Manual | [AlloFlow Complete User Manual.md](./AlloFlow%20Complete%20User%20Manual.md) |
+| 🏗️ Architecture Overview | [architecture.md](./architecture.md) |
+| 🚀 Firebase Deployment | [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md) |
+| 🔒 Security Policy | [SECURITY.md](./SECURITY.md) |
+| 🤝 Contributing | [CONTRIBUTING.md](./CONTRIBUTING.md) |
+| 🐛 Report Issues | [GitHub Issues](https://github.com/Apomera/AlloFlow/issues) |
+
+---
+
+## 🔧 For Developers
+
+AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator component (`App.jsx`) dynamically loads spoke modules (STEM Lab, BehaviorLens, Report Writer, Symbol Studio, Word Sounds, Student Analytics) on demand. See [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules and contribution guidelines.
+
+```bash
+# Cloud deployment (Firebase)
+cd prismflow-deploy
+npm install
+npm run build
+firebase deploy
+
+# Local development (School Box)
+docker-compose up -d
+```
+
+---
+
+## 📄 License & Credits
+
+**AGPL v3** — free and open source forever, ensuring educational technology remains a public good.
+
+© 2026 Aaron Pomeranz, PsyD
 
 <p align="center">
   <strong>Built by a school psychologist, for educators.</strong><br>
