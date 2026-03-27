@@ -66,6 +66,18 @@
   var ConfettiExplosion = _mods.ConfettiExplosion || function() { return null; };
   var MatchVisuals = _mods.MatchVisuals || function() { return null; };
 
+  // ── Local utilities ──
+  var scrambleWord = function(word) {
+    if (!word || word.length < 2) return word;
+    var arr = word.split('');
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    var result = arr.join('');
+    return result === word ? scrambleWord(word) : result;
+  };
+
   // ═══════════════════════════════════════════════════════════════
   // GAME COMPONENTS (JSX pre-transformed by esbuild)
   // ═══════════════════════════════════════════════════════════════
@@ -2753,6 +2765,7 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
   // REGISTRATION
   // ═══════════════════════════════════════════════════════════════
   window.AlloModules = window.AlloModules || {};
+  window.AlloModules.GamesBundle = true;
   window.AlloModules.MemoryGame = MemoryGame;
   window.AlloModules.MatchingGame = MatchingGame;
   window.AlloModules.TimelineGame = TimelineGame;

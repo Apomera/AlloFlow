@@ -2374,7 +2374,8 @@
                   ),
                   e('div', { style: { flex: 1, background: '#faf5ff', borderRadius: '7px', padding: '6px', textAlign: 'center' } },
                     e('div', { style: { fontSize: '16px', fontWeight: 800, color: PURPLE } }, thisWeekEntries),
-                    e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'this week' + (lastWeekEntries > 0 ? (thisWeekEntries >= lastWeekEntries ? ' ▲' : ' ▼') : '') }))
+                    e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'this week' + (lastWeekEntries > 0 ? (thisWeekEntries >= lastWeekEntries ? ' ▲' : ' ▼') : '')))
+
                 ),
                 // Top words
                 topWords.length > 0 && e('div', { style: { marginBottom: '8px' } },
