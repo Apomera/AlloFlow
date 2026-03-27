@@ -6662,6 +6662,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 }
               }
               if (wordSoundsActivity === "manipulation") {
+                // Wait for Gemini generation to finish (up to 6s)
                 if (!manipulationOptionsRef.current || manipulationOptionsRef.current.length === 0) {
                   for (let mWait = 0; mWait < 30; mWait++) {
                     await new Promise((r) => setTimeout(r, 200));
@@ -7468,6 +7469,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }
             }
             if (wordSoundsActivity === "manipulation") {
+              // Wait for Gemini generation (up to 6s)
               if (
                 !manipulationStateRef.current ||
                 !manipulationOptionsRef.current?.length
@@ -7486,12 +7488,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 manipulationStateRef.current &&
                 manipulationOptionsRef.current?.length > 0
               ) {
+                // Play the task instruction via TTS
                 const instruction = manipulationStateRef.current.instruction;
                 if (instruction) {
                   await handleAudio(instruction);
                   if (cancelled) return;
                   await new Promise((r) => setTimeout(r, 400));
                 }
+                // Snapshot + preload option TTS
                 const manipSnapshot = [...manipulationOptionsRef.current];
                 await Promise.all(
                   manipSnapshot.map((o) =>
@@ -8977,6 +8981,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             setWordSoundsPhonemes((prev) => ({ ...prev, rhymeWord: newValue }));
             debugLog("✏️ Teacher set correct rhyme answer to:", newValue);
             addToast?.(`✅ Correct answer set to "${newValue}"`, "success");
+          } else if (wordSoundsActivity === "manipulation") {
+            setManipulationState((prev) => ({ ...prev, answer: newValue }));
+            debugLog("✏️ Teacher set correct manipulation answer to:", newValue);
+            addToast?.(`✅ Correct answer set to "${newValue}"`, "success");
           } else if (wordSoundsActivity === "isolation") {
             setIsolationState((prev) => ({
               ...prev,
@@ -8989,10 +8997,6 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             setCurrentWordSoundsWord(newValue);
             debugLog("✏️ Teacher set correct blending answer to:", newValue);
             addToast?.(`✅ Correct answer set to "${newValue}"`, "success");
-          } else if (wordSoundsActivity === "manipulation") {
-            setManipulationState((prev) => ({ ...prev, answer: newValue }));
-            debugLog("✏️ Teacher set correct manipulation answer to:", newValue);
-            addToast?.(`✅ Correct answer set to "${newValue}"`, "success");
           }
           return;
         }
@@ -9004,6 +9008,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           const newOptions = [...rhymeOptions];
           newOptions[index] = newValue;
           setRhymeOptions(newOptions);
+        } else if (wordSoundsActivity === "manipulation") {
+          const newOptions = [...manipulationOptions];
+          newOptions[index] = newValue;
+          setManipulationOptions(newOptions);
         } else if (wordSoundsActivity === "sound_sort") {
           const newPhonemes = { ...wordSoundsPhonemes };
           const family =
@@ -9061,10 +9069,6 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             }
             return newChips;
           });
-        } else if (wordSoundsActivity === "manipulation") {
-          const newOptions = [...manipulationOptions];
-          newOptions[index] = newValue;
-          setManipulationOptions(newOptions);
         }
       };
       const LetterTraceView = React.memo(({ letter, word, onComplete }) => {
