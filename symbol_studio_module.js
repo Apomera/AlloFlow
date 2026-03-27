@@ -872,7 +872,8 @@
       var updated = [saved].concat(savedSchedules);
       setSavedSchedules(updated); store(STORAGE_SCHEDULES, updated);
       addToast && addToast({ message: 'Schedule saved!', type: 'success' });
-    }, [schedItems, schedTitle, schedOrientation, savedSchedules, addToast]);
+      if (cloudSync) setTimeout(function () { syncToCloud(); }, 300);
+    }, [schedItems, schedTitle, schedOrientation, savedSchedules, cloudSync, syncToCloud, addToast]);
 
     var resetSchedule = useCallback(function () {
       setSchedItems(function (prev) { return prev.map(function (i) { return Object.assign({}, i, { complete: false }); }); });
@@ -1308,7 +1309,19 @@
             e('button', { onClick: exportData, style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { textAlign: 'left' }) }, '⬇️ Export Backup'),
             e('button', { onClick: function () { importFileRef.current && importFileRef.current.click(); }, style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { textAlign: 'left' }) }, '📂 Import Backup')
           ),
-          e('input', { type: 'file', accept: '.json', ref: importFileRef, style: { display: 'none' }, onChange: importData })
+          e('input', { type: 'file', accept: '.json', ref: importFileRef, style: { display: 'none' }, onChange: importData }),
+          cloudSync && e('div', { style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #f3f4f6' } },
+            e('div', { style: { display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '5px' } },
+              e('span', { style: { fontSize: '10px', color: syncStatus === 'synced' ? '#16a34a' : syncStatus === 'error' ? '#dc2626' : '#9ca3af' } },
+                syncStatus === 'syncing' ? '⏳ Syncing...' : syncStatus === 'synced' ? '✓ Cloud synced' : syncStatus === 'error' ? '✗ Sync error' : '☁️ Cloud backup'
+              ),
+              lastSynced && e('span', { style: { fontSize: '9px', color: '#9ca3af', marginLeft: 'auto' } }, new Date(lastSynced).toLocaleDateString())
+            ),
+            e('div', { style: { display: 'flex', gap: '4px' } },
+              e('button', { onClick: syncToCloud, disabled: syncStatus === 'syncing', style: Object.assign({}, S.btn(PURPLE, '#fff', syncStatus === 'syncing'), { flex: 1, fontSize: '11px' }) }, '☁️ Sync Now'),
+              e('button', { onClick: loadFromCloud, disabled: syncStatus === 'syncing', style: Object.assign({}, S.btn('#f3f4f6', '#374151', syncStatus === 'syncing'), { flex: 1, fontSize: '11px' }) }, '📥 Load')
+            )
+          )
         )
       );
     }

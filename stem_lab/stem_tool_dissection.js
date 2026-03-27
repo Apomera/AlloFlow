@@ -2948,55 +2948,62 @@ var d = labToolData.dissection || {};
 
                 // â”€â”€ Spiny dorsal fin â”€â”€
 
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy - H * 0.14);
-
-                for (var ds = 0; ds < 8; ds++) {
-
-                  var dsx = cx - W * 0.10 + ds * W * 0.025;
-
-                  ctx.lineTo(dsx, cy - H * 0.14 - (ds < 4 ? ds : 7 - ds) * H * 0.015 - H * 0.04);
-
-                  ctx.lineTo(dsx + W * 0.012, cy - H * 0.14);
-
-                }
-
+                // Spiny dorsal — membrane fin contoured to body
+                ctx.beginPath();
+                // Base follows the dorsal body contour
+                ctx.moveTo(cx - W * 0.10, cy - H * 0.14);
+                // Membrane rises with curved envelope
+                ctx.bezierCurveTo(cx - W * 0.08, cy - H * 0.24, cx - W * 0.02, cy - H * 0.28, cx + W * 0.02, cy - H * 0.26);
+                ctx.bezierCurveTo(cx + W * 0.06, cy - H * 0.24, cx + W * 0.08, cy - H * 0.21, cx + W * 0.10, cy - H * 0.13);
                 ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.5; ctx.fill();
-
+                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.35; ctx.fill();
                 ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke(); ctx.globalAlpha = 1;
+                // Spine rays within fin membrane
+                ctx.globalAlpha = 0.4;
+                for (var ds = 0; ds < 9; ds++) {
+                  var dsProgress = ds / 8;
+                  var dsBaseX = cx - W * 0.10 + dsProgress * W * 0.20;
+                  // Spine base Y follows body contour
+                  var dsBaseY = cy - H * (0.14 + dsProgress * (dsProgress < 0.5 ? 0.01 : -0.01));
+                  // Spine tip Y follows the envelope
+                  var dsHeight = Math.sin(dsProgress * Math.PI) * H * 0.14 + H * 0.04;
+                  var dsTipY = dsBaseY - dsHeight;
+                  ctx.beginPath();
+                  ctx.moveTo(dsBaseX, dsBaseY);
+                  ctx.lineTo(dsBaseX, dsTipY);
+                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.6; ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
 
                 // â”€â”€ Soft dorsal â”€â”€
 
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.12, cy - H * 0.11);
-
-                for (var sd = 0; sd < 5; sd++) {
-
-                  var sdx = cx + W * 0.12 + sd * W * 0.02;
-
-                  ctx.lineTo(sdx, cy - H * 0.16 - sd * H * 0.003);
-
-                  ctx.lineTo(sdx + W * 0.01, cy - H * 0.11);
-
-                }
-
+                // Soft dorsal — rounded membrane fin
+                ctx.beginPath();
+                ctx.moveTo(cx + W * 0.12, cy - H * 0.11);
+                ctx.bezierCurveTo(cx + W * 0.13, cy - H * 0.18, cx + W * 0.16, cy - H * 0.20, cx + W * 0.19, cy - H * 0.18);
+                ctx.bezierCurveTo(cx + W * 0.21, cy - H * 0.16, cx + W * 0.22, cy - H * 0.13, cx + W * 0.22, cy - H * 0.10);
                 ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.5; ctx.fill();
-
-                ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
+                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.35; ctx.fill();
+                ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke(); ctx.globalAlpha = 1;
+                // Soft fin rays
+                ctx.globalAlpha = 0.3;
+                for (var sd = 0; sd < 6; sd++) {
+                  var sdP = sd / 5;
+                  var sdBx = cx + W * (0.12 + sdP * 0.10);
+                  var sdBy = cy - H * (0.11 + sdP * (sdP < 0.5 ? 0.01 : -0.01));
+                  var sdTy = sdBy - Math.sin(sdP * Math.PI) * H * 0.08 - H * 0.02;
+                  ctx.beginPath(); ctx.moveTo(sdBx, sdBy); ctx.lineTo(sdBx, sdTy);
+                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.4; ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
 
                 // â”€â”€ Anal fin â”€â”€
 
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.10, cy + H * 0.11);
-
-                for (var af = 0; af < 4; af++) {
-
-                  var afx = cx + W * 0.10 + af * W * 0.02;
-
-                  ctx.lineTo(afx, cy + H * 0.17); ctx.lineTo(afx + W * 0.01, cy + H * 0.11);
-
-                }
+                // Anal fin — membrane contoured to ventral body
+                ctx.beginPath();
+                ctx.moveTo(cx + W * 0.10, cy + H * 0.11);
+                ctx.bezierCurveTo(cx + W * 0.11, cy + H * 0.18, cx + W * 0.14, cy + H * 0.19, cx + W * 0.17, cy + H * 0.16);
+                ctx.bezierCurveTo(cx + W * 0.18, cy + H * 0.14, cx + W * 0.18, cy + H * 0.12, cx + W * 0.18, cy + H * 0.10);
 
                 ctx.closePath();
 
@@ -3006,27 +3013,45 @@ var d = labToolData.dissection || {};
 
                 // â”€â”€ Pelvic fin â”€â”€
 
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy + H * 0.10);
-
-                ctx.lineTo(cx - W * 0.12, cy + H * 0.18); ctx.lineTo(cx - W * 0.06, cy + H * 0.16);
-
+                // Pelvic fin — fan-shaped, emerges from lower body
+                ctx.beginPath();
+                ctx.moveTo(cx - W * 0.08, cy + H * 0.12);
+                ctx.bezierCurveTo(cx - W * 0.10, cy + H * 0.16, cx - W * 0.13, cy + H * 0.20, cx - W * 0.11, cy + H * 0.22);
+                ctx.bezierCurveTo(cx - W * 0.08, cy + H * 0.21, cx - W * 0.05, cy + H * 0.18, cx - W * 0.04, cy + H * 0.14);
                 ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.4; ctx.fill();
-
-                ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
+                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.35; ctx.fill();
+                ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.7; ctx.stroke(); ctx.globalAlpha = 1;
+                // Pelvic fin rays
+                ctx.globalAlpha = 0.25;
+                for (var pv = 0; pv < 4; pv++) {
+                  var pvA = -0.3 + pv * 0.25;
+                  ctx.beginPath();
+                  ctx.moveTo(cx - W * 0.08, cy + H * 0.12);
+                  ctx.lineTo(cx - W * (0.10 + Math.cos(pvA) * 0.04), cy + H * (0.16 + Math.sin(pvA) * 0.06));
+                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.4; ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
 
                 // â”€â”€ Pectoral fin â”€â”€
 
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.16, cy + H * 0.02);
-
-                ctx.bezierCurveTo(cx - W * 0.18, cy + H * 0.06, cx - W * 0.16, cy + H * 0.10, cx - W * 0.13, cy + H * 0.08);
-
-                ctx.bezierCurveTo(cx - W * 0.14, cy + H * 0.05, cx - W * 0.15, cy + H * 0.03, cx - W * 0.16, cy + H * 0.02);
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.5; ctx.fill();
-
-                ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
+                // Pectoral fin — larger paddle shape behind operculum
+                ctx.beginPath();
+                ctx.moveTo(cx - W * 0.17, cy + H * 0.01);
+                ctx.bezierCurveTo(cx - W * 0.20, cy + H * 0.04, cx - W * 0.22, cy + H * 0.10, cx - W * 0.18, cy + H * 0.14);
+                ctx.bezierCurveTo(cx - W * 0.15, cy + H * 0.12, cx - W * 0.13, cy + H * 0.08, cx - W * 0.14, cy + H * 0.04);
+                ctx.closePath();
+                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.35; ctx.fill();
+                ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.7; ctx.stroke(); ctx.globalAlpha = 1;
+                // Pectoral fin rays
+                ctx.globalAlpha = 0.2;
+                for (var pf = 0; pf < 5; pf++) {
+                  var pfA = -0.6 + pf * 0.35;
+                  ctx.beginPath();
+                  ctx.moveTo(cx - W * 0.17, cy + H * 0.01);
+                  ctx.lineTo(cx - W * (0.18 + Math.cos(pfA) * 0.05), cy + H * (0.06 + Math.sin(pfA) * 0.08));
+                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.3; ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
 
                 // â”€â”€ Scale pattern â”€â”€
 
