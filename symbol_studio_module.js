@@ -499,8 +499,45 @@
     var snItems = _snItems[0]; var setSnItems = _snItems[1];
     var _snLoading = useState({}); var snLoading = _snLoading[0]; var setSnLoading = _snLoading[1];
 
+    // Partner-assisted scanning state
+    var _scanBoardId = useState(null); var scanBoardId = _scanBoardId[0]; var setScanBoardId = _scanBoardId[1];
+    var _scanIndex = useState(0); var scanIndex = _scanIndex[0]; var setScanIndex = _scanIndex[1];
+    var _scanPaused = useState(false); var scanPaused = _scanPaused[0]; var setScanPaused = _scanPaused[1];
+    var _scanSpeed = useState(2000); var scanSpeed = _scanSpeed[0]; var setScanSpeed = _scanSpeed[1];
+    var scanIntervalRef = useRef(null);
+    var autoLoadedRef = useRef(false);
+
     // Sync story student name when avatar name changes
     useEffect(function () { if (avatarName) setStoryStudentName(avatarName); }, [avatarName]);
+
+    // Auto-load from cloud on mount (once, when cloudSync becomes available)
+    useEffect(function () {
+      if (cloudSync && !autoLoadedRef.current) {
+        autoLoadedRef.current = true;
+        loadFromCloud();
+      }
+    }, [cloudSync]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Auto-save to cloud 5 s after any data change (debounced via syncToCloud identity)
+    useEffect(function () {
+      if (!cloudSync) return;
+      var t = setTimeout(syncToCloud, 5000);
+      return function () { clearTimeout(t); };
+    }, [syncToCloud]); // syncToCloud ref changes whenever profiles/boards/schedules/gallery change
+
+    // Scanning interval — auto-advance highlighted cell
+    useEffect(function () {
+      if (scanIntervalRef.current) clearInterval(scanIntervalRef.current);
+      if (!scanBoardId || scanPaused) return;
+      var board = savedBoards.find(function (b) { return b.id === scanBoardId; });
+      if (!board) return;
+      var cells = (board.words || []).filter(function (w) { return w.image; });
+      if (!cells.length) return;
+      scanIntervalRef.current = setInterval(function () {
+        setScanIndex(function (prev) { return (prev + 1) % cells.length; });
+      }, scanSpeed);
+      return function () { clearInterval(scanIntervalRef.current); };
+    }, [scanBoardId, scanPaused, scanSpeed, savedBoards]);
 
     if (!isOpen) return null;
 
@@ -1956,6 +1993,11 @@
                   // Action buttons row
                   e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                     e('button', { onClick: function () { loadBoard(b); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
+                    b.words && b.words.some(function (w) { return w.image; }) && e('button', {
+                      onClick: function () { setScanBoardId(b.id); setScanIndex(0); setScanPaused(false); },
+                      title: 'Partner-assisted scanning mode',
+                      style: S.btn('#ecfdf5', '#065f46', false)
+                    }, '♿ Use'),
                     e('button', { onClick: function () { exportBoard(b); }, title: 'Export this board as a .json file', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️'),
                     liveSession && liveSession.active && e('button', {
                       title: 'Push to student screens',
@@ -2406,6 +2448,90 @@
     }
 
     // ── Main render ────────────────────────────────────────────────────────
+    // ── Partner-assisted scanning overlay ────────────────────────────────
+    if (scanBoardId) {
+      var scanBoard = savedBoards.find(function (b) { return b.id === scanBoardId; });
+      var scanCells = scanBoard ? (scanBoard.words || []).filter(function (w) { return w.image; }) : [];
+      var safeIdx = scanCells.length ? scanIndex % scanCells.length : 0;
+      var exitScan = function () { setScanBoardId(null); setScanIndex(0); setScanPaused(false); };
+      var activateCell = function () {
+        var cell = scanCells[safeIdx];
+        if (!cell) return;
+        if (onCallTTS && selectedVoice) {
+          onCallTTS(cell.label, selectedVoice).catch(function () {});
+        } else if (window.speechSynthesis) {
+          var utt = new window.SpeechSynthesisUtterance(cell.label);
+          window.speechSynthesis.speak(utt);
+        }
+      };
+      var handleScanKeyDown = function (ev) {
+        if (ev.code === 'Space' || ev.code === 'Enter') { ev.preventDefault(); activateCell(); }
+        if (ev.code === 'Escape') exitScan();
+      };
+      return e('div', {
+        style: { position: 'fixed', inset: 0, zIndex: 9999, background: '#0f172a', display: 'flex', flexDirection: 'column', outline: 'none' },
+        tabIndex: 0,
+        ref: function (el) { if (el) el.focus(); },
+        onKeyDown: handleScanKeyDown
+      },
+        // Scanning header bar
+        e('div', { style: { background: '#1e293b', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 } },
+          e('span', { style: { color: '#fff', fontWeight: 800, fontSize: '15px' } }, '♿ ' + (scanBoard ? scanBoard.title || 'Board' : 'Board')),
+          e('span', { style: { color: '#94a3b8', fontSize: '12px', marginRight: 'auto' } }, 'Space or tap to speak highlighted cell'),
+          e('label', { style: { color: '#94a3b8', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' } },
+            'Speed:',
+            e('select', {
+              value: scanSpeed,
+              onChange: function (ev) { setScanSpeed(Number(ev.target.value)); setScanIndex(0); },
+              style: { fontSize: '12px', background: '#334155', color: '#fff', border: '1px solid #475569', borderRadius: '5px', padding: '2px 6px', cursor: 'pointer' }
+            },
+              e('option', { value: 1000 }, '1 s'),
+              e('option', { value: 2000 }, '2 s'),
+              e('option', { value: 3000 }, '3 s'),
+              e('option', { value: 4000 }, '4 s')
+            )
+          ),
+          e('button', {
+            onClick: function () { setScanPaused(function (p) { return !p; }); },
+            style: { background: scanPaused ? '#22c55e' : '#f59e0b', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+          }, scanPaused ? '▶ Resume' : '⏸ Pause'),
+          e('button', {
+            onClick: exitScan,
+            style: { background: '#ef4444', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+          }, '✕ Exit')
+        ),
+        // Cell grid
+        e('div', {
+          style: { flex: 1, display: 'grid', gridTemplateColumns: 'repeat(' + Math.min(scanBoard ? (scanBoard.cols || 4) : 4, scanCells.length) + ', 1fr)', gap: '16px', padding: '20px', overflowY: 'auto', alignContent: 'start' }
+        },
+          scanCells.map(function (cell, idx) {
+            var isHighlighted = idx === safeIdx;
+            return e('div', {
+              key: cell.id || idx,
+              onClick: function () { setScanIndex(idx); activateCell(); },
+              style: {
+                border: isHighlighted ? '5px solid #facc15' : '3px solid #334155',
+                borderRadius: '14px',
+                padding: '12px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '8px',
+                background: isHighlighted ? '#1c1917' : '#1e293b',
+                cursor: 'pointer',
+                transform: isHighlighted ? 'scale(1.06)' : 'scale(1)',
+                transition: 'all 0.15s ease',
+                boxShadow: isHighlighted ? '0 0 0 4px rgba(250,204,21,0.3)' : 'none',
+              }
+            },
+              e('img', { src: cell.image, alt: cell.label, style: { width: '80px', height: '80px', objectFit: 'contain', borderRadius: '8px' } }),
+              e('span', { style: { color: isHighlighted ? '#facc15' : '#cbd5e1', fontWeight: 700, fontSize: '14px', textAlign: 'center' } }, cell.label)
+            );
+          })
+        )
+      );
+    }
+
     return e('div', { style: S.overlay, onClick: function (ev) { if (ev.target === ev.currentTarget) onClose && onClose(); } },
       // Spinner keyframes
       e('style', null, '@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}'),
