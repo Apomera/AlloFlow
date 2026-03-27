@@ -157,18 +157,28 @@ async function installFlux(onProgress) {
   onProgress({ status: 'Upgrading pip...', progress: 10 });
   await runCommand(pythonBin, ['-m', 'pip', 'install', '--upgrade', 'pip']);
 
-  // 3. Install PyTorch + torch-directml (AMD on Windows) or plain torch
+  // 3. Install PyTorch
   onProgress({ status: 'Installing PyTorch (this may take a while)...', progress: 15 });
-  // torch-directml gives AMD GPU support on native Windows
-  await runCommand(pipBin, ['install', 'torch', 'torch-directml'], { timeout: 600000 });
+  await runCommand(pipBin, ['install', 'torch'], { timeout: 600000 });
 
-  // 4. Install remaining requirements
+  // 4. Try torch-directml for AMD GPU support (optional — CPU fallback works fine)
+  if (process.platform === 'win32') {
+    onProgress({ status: 'Checking DirectML support...', progress: 40 });
+    try {
+      await runCommand(pipBin, ['install', 'torch-directml'], { timeout: 120000 });
+      console.log('[native-pm] torch-directml installed — AMD GPU acceleration available');
+    } catch (err) {
+      console.warn('[native-pm] torch-directml not available, falling back to CPU:', err.message);
+    }
+  }
+
+  // 6. Install remaining requirements
   onProgress({ status: 'Installing Flux dependencies...', progress: 50 });
   const reqs = ['diffusers>=0.30.0', 'transformers', 'accelerate', 'safetensors',
                 'sentencepiece', 'protobuf', 'fastapi', 'uvicorn[standard]', 'Pillow'];
   await runCommand(pipBin, ['install', ...reqs], { timeout: 600000 });
 
-  // 5. Copy flux_server.py into the install directory
+  // 7. Copy flux_server.py into the install directory
   onProgress({ status: 'Installing Flux server...', progress: 90 });
   const isDev = !require('electron').app.isPackaged;
   const srcScript = isDev
