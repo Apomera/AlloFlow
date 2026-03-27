@@ -866,6 +866,304 @@
     var maxShapeCount = Math.max.apply(null, bomShapeEntries.map(function (e) { return e.count; }).concat([1]));
 
     // ══════════════════════════════════════════════════════════════
+    // ── Gravity Simulation (drop floating blocks) ──
+    // ══════════════════════════════════════════════════════════════
+    var applyGravity = function () {
+      if (blocks.length === 0) return;
+      var newUndo = pushUndo(blocks);
+      // Sort blocks by Y ascending; drop each floating block to nearest support
+      var sorted = blocks.slice().sort(function (a, b) { return a.y - b.y; });
+      var occupied = {};
+      var groundY = minY;
+      var settled = [];
+      var moved = 0;
+      sorted.forEach(function (b) {
+        // Find lowest available Y for this (x,z) column
+        var targetY = groundY;
+        while (occupied[b.x + ',' + targetY + ',' + b.z]) targetY++;
+        if (targetY !== b.y) moved++;
+        var nb = Object.assign({}, b, { y: targetY });
+        settled.push(nb);
+        occupied[nb.x + ',' + nb.y + ',' + nb.z] = true;
+      });
+      ctx.setToolData(function (p) {
+        var a = Object.assign({}, p.archStudio || {});
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: settled, undoStack: newUndo, redoStack: [] }) });
+      });
+      if (ctx.addToast) ctx.addToast('\u2B07\uFE0F Gravity applied! ' + moved + ' block' + (moved !== 1 ? 's' : '') + ' dropped.', 'info');
+      playTone(200, 0.3, 'sine', 0.1);
+      setTimeout(function () { playTone(120, 0.4, 'sine', 0.08); }, 150);
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Random Build Generator ──
+    // ══════════════════════════════════════════════════════════════
+    var showRandomGen = d.showRandomGen || false;
+    var randomPresets = [
+      { id: 'tower', name: 'Random Tower', icon: '\uD83C\uDFD7\uFE0F', desc: 'Tall narrow structure' },
+      { id: 'house', name: 'Random House', icon: '\uD83C\uDFE0', desc: 'Simple house with roof' },
+      { id: 'wall', name: 'Random Wall', icon: '\uD83E\uDDF1', desc: 'Defensive wall segment' },
+      { id: 'pyramid', name: 'Random Pyramid', icon: '\uD83D\uDD3A', desc: 'Layered pyramid' },
+      { id: 'castle', name: 'Random Castle', icon: '\uD83C\uDFF0', desc: 'Castle with towers' },
+      { id: 'bridge', name: 'Random Bridge', icon: '\uD83C\uDF09', desc: 'Bridge with arches' }
+    ];
+
+    var generateRandom = function (presetId) {
+      var newUndo = pushUndo(blocks);
+      var gen = [];
+      var matPool = ['stone', 'brick', 'wood', 'marble', 'metal'];
+      var rMat = function () { return matPool[Math.floor(Math.random() * matPool.length)]; };
+      var rColor = function (mid) { return matColorLookup[mid] || '#94a3b8'; };
+
+      if (presetId === 'tower') {
+        var tw = 2 + Math.floor(Math.random() * 2), td = tw, th = 6 + Math.floor(Math.random() * 8);
+        var tMat = rMat();
+        for (var ty = 0; ty < th; ty++) for (var tx = 0; tx < tw; tx++) for (var tz = 0; tz < td; tz++) {
+          if (ty < th - 1 && tx > 0 && tx < tw - 1 && tz > 0 && tz < td - 1) continue;
+          gen.push({ x: tx, y: ty, z: tz, shape: ty === th - 1 ? 'slab' : 'block', material: tMat, color: rColor(tMat) });
+        }
+      } else if (presetId === 'house') {
+        var hw = 4 + Math.floor(Math.random() * 3), hd = 3 + Math.floor(Math.random() * 2);
+        for (var hx = 0; hx < hw; hx++) for (var hz = 0; hz < hd; hz++) gen.push({ x: hx, y: 0, z: hz, shape: 'slab', material: 'stone', color: rColor('stone') });
+        for (var wy = 1; wy <= 2; wy++) {
+          for (var wx = 0; wx < hw; wx++) { gen.push({ x: wx, y: wy, z: 0, shape: 'block', material: 'brick', color: rColor('brick') }); gen.push({ x: wx, y: wy, z: hd - 1, shape: 'block', material: 'brick', color: rColor('brick') }); }
+          for (var wz = 1; wz < hd - 1; wz++) { gen.push({ x: 0, y: wy, z: wz, shape: 'block', material: 'brick', color: rColor('brick') }); gen.push({ x: hw - 1, y: wy, z: wz, shape: 'block', material: 'brick', color: rColor('brick') }); }
+        }
+        gen = gen.filter(function (b) { return !(b.x === Math.floor(hw / 2) && b.z === 0 && b.y === 1); });
+        gen.push({ x: Math.floor(hw / 2), y: 1, z: 0, shape: 'door', material: 'wood', color: rColor('wood') });
+        for (var rx = 0; rx < hw; rx++) for (var rz = 0; rz < hd; rz++) gen.push({ x: rx, y: 3, z: rz, shape: 'roof', material: 'brick', color: '#b45309' });
+      } else if (presetId === 'wall') {
+        var ww = 8 + Math.floor(Math.random() * 6), wh = 3 + Math.floor(Math.random() * 3);
+        var wMat = Math.random() > 0.5 ? 'stone' : 'brick';
+        for (var yx = 0; yx < ww; yx++) for (var yy = 0; yy < wh; yy++) gen.push({ x: yx, y: yy, z: 0, shape: 'block', material: wMat, color: rColor(wMat) });
+        gen.push({ x: 0, y: wh, z: 0, shape: 'slab', material: wMat, color: rColor(wMat) });
+        gen.push({ x: ww - 1, y: wh, z: 0, shape: 'slab', material: wMat, color: rColor(wMat) });
+      } else if (presetId === 'pyramid') {
+        var ps = 5 + Math.floor(Math.random() * 4);
+        for (var py = 0; py < Math.ceil(ps / 2); py++) {
+          var layerStart = py, layerEnd = ps - 1 - py;
+          for (var px = layerStart; px <= layerEnd; px++) for (var pz = layerStart; pz <= layerEnd; pz++)
+            gen.push({ x: px, y: py, z: pz, shape: py === Math.ceil(ps / 2) - 1 ? 'pyramid' : 'block', material: 'stone', color: rColor('stone') });
+        }
+      } else if (presetId === 'castle') {
+        // Base platform
+        for (var cx = 0; cx < 7; cx++) for (var cz = 0; cz < 7; cz++) gen.push({ x: cx, y: 0, z: cz, shape: 'slab', material: 'stone', color: rColor('stone') });
+        // Walls
+        for (var cy = 1; cy <= 3; cy++) {
+          for (var cwx = 0; cwx < 7; cwx++) { gen.push({ x: cwx, y: cy, z: 0, shape: 'block', material: 'stone', color: rColor('stone') }); gen.push({ x: cwx, y: cy, z: 6, shape: 'block', material: 'stone', color: rColor('stone') }); }
+          for (var cwz = 1; cwz < 6; cwz++) { gen.push({ x: 0, y: cy, z: cwz, shape: 'block', material: 'stone', color: rColor('stone') }); gen.push({ x: 6, y: cy, z: cwz, shape: 'block', material: 'stone', color: rColor('stone') }); }
+        }
+        // Corner towers
+        [[0,0],[0,6],[6,0],[6,6]].forEach(function (c) {
+          gen.push({ x: c[0], y: 4, z: c[1], shape: 'column', material: 'stone', color: rColor('stone') });
+          gen.push({ x: c[0], y: 5, z: c[1], shape: 'pyramid', material: 'stone', color: rColor('stone') });
+        });
+        // Gate
+        gen = gen.filter(function (b) { return !(b.x === 3 && b.z === 0 && b.y === 1); });
+        gen.push({ x: 3, y: 1, z: 0, shape: 'arch', material: 'stone', color: rColor('stone') });
+      } else if (presetId === 'bridge') {
+        var bl = 8 + Math.floor(Math.random() * 4);
+        for (var bx = 0; bx < bl; bx++) gen.push({ x: bx, y: 2, z: 0, shape: 'slab', material: 'stone', color: rColor('stone') });
+        gen.push({ x: 0, y: 0, z: 0, shape: 'column', material: 'stone', color: rColor('stone') }); gen.push({ x: 0, y: 1, z: 0, shape: 'column', material: 'stone', color: rColor('stone') });
+        gen.push({ x: bl - 1, y: 0, z: 0, shape: 'column', material: 'stone', color: rColor('stone') }); gen.push({ x: bl - 1, y: 1, z: 0, shape: 'column', material: 'stone', color: rColor('stone') });
+        var midB = Math.floor(bl / 2);
+        gen.push({ x: midB, y: 0, z: 0, shape: 'column', material: 'stone', color: rColor('stone') }); gen.push({ x: midB, y: 1, z: 0, shape: 'arch', material: 'stone', color: rColor('stone') });
+        gen.push({ x: 0, y: 3, z: 0, shape: 'column', material: 'metal', color: rColor('metal') }); gen.push({ x: bl - 1, y: 3, z: 0, shape: 'column', material: 'metal', color: rColor('metal') });
+      }
+
+      ctx.setToolData(function (p) {
+        var a = Object.assign({}, p.archStudio || {});
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: gen, undoStack: newUndo, redoStack: [] }) });
+      });
+      if (ctx.addToast) ctx.addToast('\uD83C\uDFB2 Generated ' + gen.length + ' blocks!', 'success');
+      if (soundEnabled) sfxLoad();
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Custom Color Palette ──
+    // ══════════════════════════════════════════════════════════════
+    var showColorPicker = d.showColorPicker || false;
+    var customColor = d.customColor || activeColor;
+    var colorSwatches = [
+      '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e',
+      '#14b8a6', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7',
+      '#d946ef', '#ec4899', '#f43f5e', '#78716c', '#94a3b8', '#f1f5f9',
+      '#1e293b', '#0f172a', '#fbbf24', '#fb923c', '#4ade80', '#38bdf8'
+    ];
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Cross-Section Slicer (Z-depth) ──
+    // ══════════════════════════════════════════════════════════════
+    var showSlice = d.showSlice || false;
+    var sliceZ = d.sliceZ != null ? d.sliceZ : -1; // -1 = all, else a specific Z
+    var sliceBlocks = sliceZ >= 0 ? blocks.filter(function (b) { return b.z === sliceZ; }) : [];
+    var sliceZLevels = [];
+    if (totalBlocks > 0) {
+      var zSet = {};
+      blocks.forEach(function (b) { zSet[b.z] = true; });
+      sliceZLevels = Object.keys(zSet).map(Number).sort(function (a, b) { return a - b; });
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Structural Load Heatmap ──
+    // ══════════════════════════════════════════════════════════════
+    var showHeatmap = d.showHeatmap || false;
+    var blockLoads = {}; // key => load value
+    if (showHeatmap && totalBlocks > 0) {
+      // Compute load: each block bears its own weight + weight of all blocks directly above in same (x,z) column
+      var columnBlocks = {}; // 'x,z' => [blocks sorted by y asc]
+      blocks.forEach(function (b) {
+        var key = b.x + ',' + b.z;
+        if (!columnBlocks[key]) columnBlocks[key] = [];
+        columnBlocks[key].push(b);
+      });
+      Object.keys(columnBlocks).forEach(function (key) {
+        var col = columnBlocks[key].sort(function (a, b) { return a.y - b.y; });
+        var cumWeight = 0;
+        for (var ci = col.length - 1; ci >= 0; ci--) {
+          var bw = (volLookup[col[ci].shape || 'block'] || 1) * (matWeightLookup[col[ci].material || 'stone'] || 2.0);
+          cumWeight += bw;
+          blockLoads[col[ci].x + ',' + col[ci].y + ',' + col[ci].z] = cumWeight;
+        }
+      });
+    }
+    var maxLoad = 0;
+    Object.keys(blockLoads).forEach(function (k) { if (blockLoads[k] > maxLoad) maxLoad = blockLoads[k]; });
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Time-Lapse Replay ──
+    // ══════════════════════════════════════════════════════════════
+    var showReplay = d.showReplay || false;
+    var replayStep = d.replayStep != null ? d.replayStep : -1; // -1 = not replaying
+    var replayFrames = (undoStack || []).length;
+
+    var startReplay = function () {
+      if (!undoStack || undoStack.length === 0) { if (ctx.addToast) ctx.addToast('\u26A0\uFE0F No undo history to replay!', 'error'); return; }
+      upd({ showReplay: true, replayStep: 0 });
+    };
+
+    var stepReplay = function (dir) {
+      var maxStep = replayFrames; // includes current state as last frame
+      var next = Math.max(0, Math.min(maxStep, replayStep + dir));
+      upd('replayStep', next);
+    };
+
+    var replayBlocks = replayStep >= 0 && replayStep < replayFrames ? undoStack[replayStep] : blocks;
+    var replayLabel = replayStep >= 0 ? 'Step ' + (replayStep + 1) + '/' + (replayFrames + 1) : '';
+
+    var exitReplay = function () { upd({ showReplay: false, replayStep: -1 }); };
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Block Search / Filter ──
+    // ══════════════════════════════════════════════════════════════
+    var showFilter = d.showFilter || false;
+    var filterMaterial = d.filterMaterial || '';
+    var filterShape = d.filterShape || '';
+    var filteredBlocks = blocks.filter(function (b) {
+      if (filterMaterial && (b.material || 'stone') !== filterMaterial) return false;
+      if (filterShape && (b.shape || 'block') !== filterShape) return false;
+      return true;
+    });
+    var filterActive = !!(filterMaterial || filterShape);
+    var filterCount = filterActive ? filteredBlocks.length : totalBlocks;
+
+    var deleteFiltered = function () {
+      if (!filterActive || filteredBlocks.length === 0) return;
+      var newUndo = pushUndo(blocks);
+      var removeSet = {};
+      filteredBlocks.forEach(function (b) { removeSet[b.x + ',' + b.y + ',' + b.z] = true; });
+      var remaining = blocks.filter(function (b) { return !removeSet[b.x + ',' + b.y + ',' + b.z]; });
+      ctx.setToolData(function (p) {
+        var a = Object.assign({}, p.archStudio || {});
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: remaining, undoStack: newUndo, redoStack: [] }) });
+      });
+      if (ctx.addToast) ctx.addToast('\uD83D\uDDD1\uFE0F Removed ' + filteredBlocks.length + ' matching blocks', 'info');
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Achievement Badges ──
+    // ══════════════════════════════════════════════════════════════
+    var showBadges = d.showBadges || false;
+    var earnedBadges = d.earnedBadges || {};
+    var badges = [
+      { id: 'first_block', icon: '\uD83E\uDDF1', name: 'First Block', desc: 'Place your very first block', check: function () { return totalBlocks >= 1; } },
+      { id: 'hundred_club', icon: '\uD83D\uDCAF', name: '100 Club', desc: 'Have 100+ blocks in one build', check: function () { return totalBlocks >= 100; } },
+      { id: 'all_shapes', icon: '\u2B50', name: 'Shape Master', desc: 'Use all 12 shape types in one build', check: function () { return Object.keys(shapeCount).length >= 12; } },
+      { id: 'all_mats', icon: '\uD83C\uDFA8', name: 'Material Maven', desc: 'Use all 6 materials in one build', check: function () { return analysis.materialCount >= 6; } },
+      { id: 'sky_high', icon: '\uD83D\uDE80', name: 'Sky High', desc: 'Build 20+ blocks tall', check: function () { return buildH >= 20; } },
+      { id: 'rock_solid', icon: '\uD83E\uDEA8', name: 'Rock Solid', desc: '50+ blocks with 95%+ stability', check: function () { return totalBlocks >= 50 && analysis.stability >= 95; } },
+      { id: 'perfect_sym', icon: '\uD83E\uDE9E', name: 'Perfectly Balanced', desc: 'Symmetry score 100%', check: function () { return totalBlocks >= 10 && analysis.symmetry >= 100; } },
+      { id: 'quake_proof', icon: '\uD83C\uDF0B', name: 'Quake-Proof', desc: 'Survive intensity 10 earthquake', check: function () { var qr = d.quakeResult; return qr && qr.intensity >= 10 && qr.pct >= 80; } },
+      { id: 'five_saves', icon: '\uD83D\uDCBE', name: 'Collector', desc: 'Save 5+ builds to gallery', check: function () { return galleryItems.length >= 5; } },
+      { id: 'challenger', icon: '\uD83C\uDFC6', name: 'Challenger', desc: 'Complete all 10 challenges', check: function () { return completedCount >= 10; } },
+      { id: 'mega_build', icon: '\uD83C\uDFF0', name: 'Mega Build', desc: '200+ blocks in one build', check: function () { return totalBlocks >= 200; } },
+      { id: 'minimalist', icon: '\u2728', name: 'Minimalist', desc: 'Build stable (70%+) with exactly 5 blocks', check: function () { return totalBlocks === 5 && analysis.stability >= 70; } }
+    ];
+
+    // Check for newly earned badges
+    var newBadges = [];
+    badges.forEach(function (badge) {
+      if (!earnedBadges[badge.id] && badge.check()) {
+        newBadges.push(badge);
+      }
+    });
+    if (newBadges.length > 0) {
+      var updatedBadges = Object.assign({}, earnedBadges);
+      newBadges.forEach(function (b) {
+        updatedBadges[b.id] = Date.now();
+        if (ctx.addToast) ctx.addToast('\uD83C\uDFC5 Badge Earned: ' + b.icon + ' ' + b.name + '!', 'success');
+        if (ctx.awardXP) ctx.awardXP('archStudio_badge_' + b.id, 5, 'Badge: ' + b.name);
+      });
+      // defer state update to avoid render loop
+      setTimeout(function () { upd('earnedBadges', updatedBadges); }, 0);
+    }
+    var badgeCount = Object.keys(earnedBadges).length;
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Wind Resistance Analyzer ──
+    // ══════════════════════════════════════════════════════════════
+    var windAnalysis = { frontalArea: 0, sideArea: 0, dragCoeff: 0, rating: 'N/A', emoji: '\u2B1C' };
+    if (totalBlocks > 0) {
+      // Frontal area (projection on X-Y plane)
+      var frontProj = {};
+      blocks.forEach(function (b) { frontProj[b.x + ',' + b.y] = true; });
+      windAnalysis.frontalArea = Object.keys(frontProj).length;
+      // Side area (projection on Z-Y plane)
+      var sideProj = {};
+      blocks.forEach(function (b) { sideProj[b.z + ',' + b.y] = true; });
+      windAnalysis.sideArea = Object.keys(sideProj).length;
+      // Simplified drag coefficient based on shape
+      var aeroShapes = { pyramid: 0.5, dome: 0.4, cylinder: 0.47, roof: 0.6, ramp: 0.55 };
+      var dragSum = 0;
+      blocks.forEach(function (b) { dragSum += aeroShapes[b.shape || 'block'] || 1.0; });
+      windAnalysis.dragCoeff = (dragSum / totalBlocks).toFixed(2);
+      // Aspect ratio penalty (tall + narrow = bad)
+      var aspectRatio = buildH / Math.max(1, Math.min(buildW, buildD));
+      var windScore = Math.max(0, Math.min(100, Math.round(100 - (parseFloat(windAnalysis.dragCoeff) * 30) - (aspectRatio > 3 ? (aspectRatio - 3) * 10 : 0))));
+      if (windScore >= 70) { windAnalysis.rating = 'Wind-Resistant'; windAnalysis.emoji = '\uD83D\uDFE2'; }
+      else if (windScore >= 40) { windAnalysis.rating = 'Moderate'; windAnalysis.emoji = '\uD83D\uDFE1'; }
+      else { windAnalysis.rating = 'Vulnerable'; windAnalysis.emoji = '\uD83D\uDD34'; }
+      windAnalysis.score = windScore;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Multi-Floor Plan View ──
+    // ══════════════════════════════════════════════════════════════
+    var showFloorPlans = d.showFloorPlans || false;
+    var floorPlans = [];
+    if (showFloorPlans && totalBlocks > 0) {
+      var byFloor = {};
+      blocks.forEach(function (b) { if (!byFloor[b.y]) byFloor[b.y] = []; byFloor[b.y].push(b); });
+      var floors = Object.keys(byFloor).map(Number).sort(function (a, b) { return a - b; });
+      floors.forEach(function (y) {
+        var floorBlocks = byFloor[y];
+        var grid = {};
+        floorBlocks.forEach(function (b) { grid[b.x + ',' + b.z] = b; });
+        floorPlans.push({ y: y, blocks: floorBlocks, count: floorBlocks.length, grid: grid });
+      });
+    }
+
+    // ══════════════════════════════════════════════════════════════
     // ── STL Export ──
     // ══════════════════════════════════════════════════════════════
     var exportSTL = function () {
@@ -1065,6 +1363,15 @@
         pillBtn('\uD83C\uDFDB\uFE0F Styles', showStyleGuide, 'rgba(251,146,60,.2)', '#fb923c', '#fdba74', function () { upd('showStyleGuide', !showStyleGuide); }),
         pillBtn('\uD83C\uDFD7\uFE0F Phases', showPhases, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', function () { upd('showPhases', !showPhases); }),
         pillBtn('\uD83D\uDCE4 Share', showShare, 'rgba(129,140,248,.2)', '#818cf8', '#a5b4fc', function () { upd('showShare', !showShare); }),
+        pillBtn('\uD83C\uDFB2 Generate', showRandomGen, 'rgba(168,85,247,.2)', '#a855f7', '#c084fc', function () { upd('showRandomGen', !showRandomGen); }),
+        pillBtn('\uD83C\uDFA8 Colors', showColorPicker, 'rgba(244,114,182,.2)', '#f472b6', '#f9a8d4', function () { upd('showColorPicker', !showColorPicker); }),
+        pillBtn('\uD83D\uDD2C Slice', showSlice, 'rgba(34,211,238,.2)', '#22d3ee', '#67e8f9', function () { upd('showSlice', !showSlice); }),
+        pillBtn('\uD83D\uDD25 Heatmap', showHeatmap, 'rgba(239,68,68,.2)', '#ef4444', '#fca5a5', function () { upd('showHeatmap', !showHeatmap); }),
+        pillBtn('\u23EA Replay', showReplay, 'rgba(251,191,36,.2)', '#fbbf24', '#fde68a', function () { if (!showReplay) startReplay(); else exitReplay(); }),
+        pillBtn('\uD83D\uDD0D Filter', showFilter, 'rgba(96,165,250,.2)', '#60a5fa', '#93c5fd', function () { upd('showFilter', !showFilter); }),
+        pillBtn('\uD83C\uDFC5 ' + badgeCount + '/' + badges.length, showBadges, 'rgba(251,146,60,.2)', '#fb923c', '#fdba74', function () { upd('showBadges', !showBadges); }),
+        pillBtn('\uD83C\uDF2C\uFE0F Wind', false, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', function () { upd('showFloorPlans', !showFloorPlans); }),
+        el('button', { onClick: applyGravity, disabled: !blocks.length, title: 'Apply gravity (drop floating blocks)', style: { background: blocks.length && analysis.unsupported > 0 ? 'rgba(239,68,68,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (blocks.length && analysis.unsupported > 0 ? '#ef4444' : '#475569'), color: blocks.length && analysis.unsupported > 0 ? '#fca5a5' : '#94a3b8', borderRadius: 20, padding: '4px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\u2B07\uFE0F Gravity'),
         // Screenshot + Sound
         el('button', { onClick: takeScreenshot, title: 'Screenshot', style: { background: 'rgba(71,85,105,.3)', border: '1px solid #475569', color: '#94a3b8', borderRadius: 20, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCF8'),
         el('button', { onClick: function () { upd('soundEnabled', !soundEnabled); }, title: 'Sound effects', style: { background: 'transparent', border: 'none', color: soundEnabled ? '#94a3b8' : '#475569', cursor: 'pointer', fontSize: 14, padding: '2px 6px' } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
@@ -1447,7 +1754,221 @@
             el('div', { style: { fontSize: 8, color: '#475569', lineHeight: 1.6 } },
               el('div', null, 'Ctrl+Z Undo \u2022 Ctrl+Y Redo'),
               el('div', null, '1-9 Select shape \u2022 P/E/T Mode'),
-              el('div', null, 'S Screenshot')
+              el('div', null, 'S Screenshot \u2022 G Gravity')
+            )
+          ),
+
+          // ── Random Build Generator ──
+          showRandomGen && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#c084fc', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFB2 Random Generator'),
+            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
+              randomPresets.map(function (preset) {
+                return el('button', { key: preset.id, onClick: function () { generateRandom(preset.id); }, style: {
+                  display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 8,
+                  background: 'rgba(30,41,59,.5)', border: '1px solid #334155', cursor: 'pointer', width: '100%', textAlign: 'left'
+                } },
+                  el('span', { style: { fontSize: 14 } }, preset.icon),
+                  el('div', null,
+                    el('div', { style: { fontSize: 10, fontWeight: 700, color: '#e2e8f0' } }, preset.name),
+                    el('div', { style: { fontSize: 8, color: '#64748b' } }, preset.desc)
+                  )
+                );
+              })
+            )
+          ),
+
+          // ── Custom Color Palette ──
+          showColorPicker && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f9a8d4', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFA8 Color Palette'),
+            el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 3, marginBottom: 6 } },
+              colorSwatches.map(function (c) {
+                return el('button', { key: c, onClick: function () { upd({ activeColor: c, customColor: c }); }, style: {
+                  width: 18, height: 18, borderRadius: 4, border: customColor === c ? '2px solid #fff' : '1px solid #475569',
+                  background: c, cursor: 'pointer', padding: 0
+                } });
+              })
+            ),
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
+              el('input', { type: 'color', value: customColor, onChange: function (e) { upd({ activeColor: e.target.value, customColor: e.target.value }); }, style: { width: 28, height: 22, border: 'none', padding: 0, cursor: 'pointer', background: 'transparent' } }),
+              el('span', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'monospace' } }, customColor),
+              el('button', { onClick: function () { upd({ activeColor: customColor, mode: 'paint' }); }, style: {
+                marginLeft: 'auto', padding: '3px 8px', borderRadius: 6, border: 'none',
+                background: 'linear-gradient(135deg,#ec4899,#f472b6)', color: '#fff', fontWeight: 700, fontSize: 9, cursor: 'pointer'
+              } }, '\uD83C\uDFA8 Paint')
+            )
+          ),
+
+          // ── Cross-Section Slicer ──
+          showSlice && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#67e8f9', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD2C Cross-Section (Z)'),
+            el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2, marginBottom: 4 } },
+              el('button', { onClick: function () { upd('sliceZ', -1); }, style: {
+                padding: '3px 8px', borderRadius: 6, fontSize: 9, fontWeight: 600, cursor: 'pointer',
+                background: sliceZ === -1 ? 'rgba(34,211,238,.2)' : 'transparent', border: sliceZ === -1 ? '1px solid #22d3ee' : '1px solid #334155', color: sliceZ === -1 ? '#67e8f9' : '#64748b'
+              } }, 'All'),
+              sliceZLevels.map(function (z) {
+                return el('button', { key: z, onClick: function () { upd('sliceZ', z); }, style: {
+                  padding: '3px 6px', borderRadius: 6, fontSize: 9, fontWeight: 600, cursor: 'pointer',
+                  background: sliceZ === z ? 'rgba(34,211,238,.2)' : 'transparent', border: sliceZ === z ? '1px solid #22d3ee' : '1px solid #334155', color: sliceZ === z ? '#67e8f9' : '#64748b'
+                } }, 'Z=' + z);
+              })
+            ),
+            sliceZ >= 0 && el('div', { style: { fontSize: 9, color: '#94a3b8', padding: '4px 6px', background: 'rgba(30,41,59,.5)', borderRadius: 6 } },
+              '\uD83D\uDD2C Slice Z=' + sliceZ + ': ' + sliceBlocks.length + ' block' + (sliceBlocks.length !== 1 ? 's' : ''),
+              el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2, marginTop: 3 } },
+                sliceBlocks.map(function (b, i) {
+                  var sh = shapes.find(function (s) { return s.id === (b.shape || 'block'); });
+                  return el('span', { key: i, style: { fontSize: 8, padding: '1px 4px', background: 'rgba(30,41,59,.8)', borderRadius: 4, color: '#cbd5e1' } },
+                    (sh ? sh.icon : '') + ' (' + b.x + ',' + b.y + ')'
+                  );
+                })
+              )
+            )
+          ),
+
+          // ── Structural Load Heatmap Legend ──
+          showHeatmap && totalBlocks > 0 && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD25 Load Heatmap'),
+            el('div', { style: { fontSize: 9, color: '#94a3b8', lineHeight: 1.5, marginBottom: 4 } },
+              'Shows load (weight supported) per block column. Blocks at the base carry the most load.'
+            ),
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 } },
+              el('div', { style: { flex: 1, height: 8, borderRadius: 4, background: 'linear-gradient(90deg, #22c55e, #eab308, #ef4444)' } }),
+              el('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', position: 'absolute', fontSize: 7, color: '#64748b', pointerEvents: 'none' } })
+            ),
+            el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 8, color: '#64748b' } },
+              el('span', null, 'Low'),
+              el('span', null, 'Max: ' + maxLoad.toFixed(1))
+            ),
+            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 2, marginTop: 4, maxHeight: 120, overflowY: 'auto' } },
+              Object.keys(blockLoads).sort(function (a, b) { return blockLoads[b] - blockLoads[a]; }).slice(0, 10).map(function (key) {
+                var load = blockLoads[key];
+                var pct = maxLoad > 0 ? Math.round((load / maxLoad) * 100) : 0;
+                var heatColor = pct > 66 ? '#ef4444' : pct > 33 ? '#eab308' : '#22c55e';
+                return el('div', { key: key, style: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 8 } },
+                  el('span', { style: { color: '#64748b', minWidth: 50, fontFamily: 'monospace' } }, key),
+                  el('div', { style: { flex: 1, height: 4, background: '#0f172a', borderRadius: 2, overflow: 'hidden' } },
+                    el('div', { style: { height: '100%', width: pct + '%', background: heatColor, borderRadius: 2 } })
+                  ),
+                  el('span', { style: { color: heatColor, fontWeight: 600, minWidth: 30, textAlign: 'right' } }, load.toFixed(1))
+                );
+              })
+            )
+          ),
+
+          // ── Time-Lapse Replay Controls ──
+          showReplay && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#fde68a', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\u23EA Construction Replay'),
+            replayFrames === 0
+              ? el('div', { style: { fontSize: 9, color: '#64748b' } }, 'No undo history yet. Build something first!')
+              : el('div', null,
+                  el('div', { style: { fontSize: 9, color: '#94a3b8', marginBottom: 4, textAlign: 'center', fontWeight: 600 } }, replayLabel),
+                  el('div', { style: { display: 'flex', gap: 4, justifyContent: 'center' } },
+                    el('button', { onClick: function () { upd('replayStep', 0); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', cursor: 'pointer', fontSize: 10 } }, '\u23EE'),
+                    el('button', { onClick: function () { stepReplay(-1); }, disabled: replayStep <= 0, style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: replayStep > 0 ? '#e2e8f0' : '#475569', cursor: replayStep > 0 ? 'pointer' : 'default', fontSize: 10 } }, '\u25C0'),
+                    el('button', { onClick: function () { stepReplay(1); }, disabled: replayStep >= replayFrames, style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: replayStep < replayFrames ? '#e2e8f0' : '#475569', cursor: replayStep < replayFrames ? 'pointer' : 'default', fontSize: 10 } }, '\u25B6'),
+                    el('button', { onClick: function () { upd('replayStep', replayFrames); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', cursor: 'pointer', fontSize: 10 } }, '\u23ED')
+                  ),
+                  el('div', { style: { marginTop: 4 } },
+                    el('input', { type: 'range', min: 0, max: replayFrames, value: replayStep >= 0 ? replayStep : replayFrames, onChange: function (e) { upd('replayStep', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#fbbf24' } })
+                  ),
+                  el('div', { style: { fontSize: 9, color: '#64748b', textAlign: 'center', marginTop: 2 } },
+                    (replayStep >= 0 && replayStep < replayFrames ? replayBlocks.length : totalBlocks) + ' blocks at this step'
+                  ),
+                  el('button', { onClick: exitReplay, style: { width: '100%', marginTop: 4, padding: '5px 10px', borderRadius: 6, border: 'none', background: 'rgba(71,85,105,.3)', color: '#94a3b8', fontWeight: 600, fontSize: 9, cursor: 'pointer' } }, '\u2716 Exit Replay')
+                )
+          ),
+
+          // ── Block Search / Filter ──
+          showFilter && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD0D Block Filter'),
+            el('div', { style: { marginBottom: 4 } },
+              el('div', { style: { fontSize: 9, color: '#64748b', marginBottom: 2 } }, 'Material:'),
+              el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2 } },
+                el('button', { onClick: function () { upd('filterMaterial', ''); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: !filterMaterial ? '1px solid #60a5fa' : '1px solid #334155', background: !filterMaterial ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterMaterial ? '#93c5fd' : '#64748b', cursor: 'pointer' } }, 'All'),
+                materials.map(function (m) {
+                  return el('button', { key: m.id, onClick: function () { upd('filterMaterial', m.id); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: filterMaterial === m.id ? '1px solid #60a5fa' : '1px solid #334155', background: filterMaterial === m.id ? 'rgba(96,165,250,.15)' : 'transparent', color: filterMaterial === m.id ? '#93c5fd' : '#64748b', cursor: 'pointer' } }, m.icon + ' ' + m.label);
+                })
+              )
+            ),
+            el('div', { style: { marginBottom: 4 } },
+              el('div', { style: { fontSize: 9, color: '#64748b', marginBottom: 2 } }, 'Shape:'),
+              el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2 } },
+                el('button', { onClick: function () { upd('filterShape', ''); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: !filterShape ? '1px solid #60a5fa' : '1px solid #334155', background: !filterShape ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterShape ? '#93c5fd' : '#64748b', cursor: 'pointer' } }, 'All'),
+                shapes.map(function (s) {
+                  return el('button', { key: s.id, onClick: function () { upd('filterShape', s.id); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: filterShape === s.id ? '1px solid #60a5fa' : '1px solid #334155', background: filterShape === s.id ? 'rgba(96,165,250,.15)' : 'transparent', color: filterShape === s.id ? '#93c5fd' : '#64748b', cursor: 'pointer' } }, s.icon);
+                })
+              )
+            ),
+            el('div', { style: { padding: '4px 8px', background: filterActive ? 'rgba(96,165,250,.1)' : 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 9, color: filterActive ? '#93c5fd' : '#64748b', fontWeight: 600 } },
+              '\uD83D\uDD0D ' + filterCount + ' block' + (filterCount !== 1 ? 's' : '') + ' match' + (filterCount === 1 ? 'es' : '')
+            ),
+            filterActive && el('button', { onClick: deleteFiltered, style: {
+              width: '100%', marginTop: 4, padding: '5px 10px', borderRadius: 6, border: 'none',
+              background: 'linear-gradient(135deg,#ef4444,#dc2626)', color: '#fff', fontWeight: 700, fontSize: 9, cursor: 'pointer'
+            } }, '\uD83D\uDDD1\uFE0F Remove ' + filterCount + ' Matching Blocks')
+          ),
+
+          // ── Achievement Badges ──
+          showBadges && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#fdba74', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFC5 Badges (' + badgeCount + '/' + badges.length + ')'),
+            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3, maxHeight: 280, overflowY: 'auto' } },
+              badges.map(function (badge) {
+                var earned = !!earnedBadges[badge.id];
+                return el('div', { key: badge.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', background: earned ? 'rgba(251,146,60,.08)' : 'rgba(30,41,59,.4)', borderRadius: 8, border: earned ? '1px solid rgba(251,146,60,.3)' : '1px solid #1e293b', opacity: earned ? 1 : 0.6 } },
+                  el('span', { style: { fontSize: 16, filter: earned ? 'none' : 'grayscale(1)' } }, badge.icon),
+                  el('div', { style: { flex: 1 } },
+                    el('div', { style: { fontSize: 10, fontWeight: 700, color: earned ? '#f8fafc' : '#64748b' } }, badge.name),
+                    el('div', { style: { fontSize: 8, color: earned ? '#94a3b8' : '#475569' } }, badge.desc)
+                  ),
+                  earned && el('span', { style: { fontSize: 10, color: '#fb923c' } }, '\u2713')
+                );
+              })
+            )
+          ),
+
+          // ── Wind Resistance ──
+          totalBlocks > 0 && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#5eead4', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDF2C\uFE0F Wind Resistance'),
+            el('div', { style: { fontSize: 9, color: '#cbd5e1', lineHeight: 1.6, background: 'rgba(30,41,59,.5)', borderRadius: 8, padding: '6px 8px' } },
+              el('div', null, windAnalysis.emoji + ' Rating: ' + windAnalysis.rating + (windAnalysis.score != null ? ' (' + windAnalysis.score + '%)' : '')),
+              el('div', null, '\uD83D\uDCD0 Frontal area: ' + windAnalysis.frontalArea + ' u\u00B2'),
+              el('div', null, '\uD83D\uDCD0 Side area: ' + windAnalysis.sideArea + ' u\u00B2'),
+              el('div', null, '\uD83C\uDF2C\uFE0F Drag coeff: ' + windAnalysis.dragCoeff),
+              el('div', { style: { marginTop: 2, fontSize: 8, color: '#64748b' } },
+                parseFloat(windAnalysis.dragCoeff) > 0.8 ? '\uD83D\uDCA1 Use domes, pyramids, or cylinders to reduce drag!' :
+                parseFloat(windAnalysis.dragCoeff) > 0.5 ? '\uD83D\uDCA1 Good mix of aerodynamic shapes!' :
+                '\u2705 Very aerodynamic design!')
+            )
+          ),
+
+          // ── Multi-Floor Plan View ──
+          showFloorPlans && floorPlans.length > 0 && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFE2 Floor Plans'),
+            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 300, overflowY: 'auto' } },
+              floorPlans.map(function (floor) {
+                // Mini grid for each floor
+                var fMinX = Infinity, fMaxX = -Infinity, fMinZ = Infinity, fMaxZ = -Infinity;
+                floor.blocks.forEach(function (b) { if (b.x < fMinX) fMinX = b.x; if (b.x > fMaxX) fMaxX = b.x; if (b.z < fMinZ) fMinZ = b.z; if (b.z > fMaxZ) fMaxZ = b.z; });
+                var fW = fMaxX - fMinX + 1, fD = fMaxZ - fMinZ + 1;
+                var cellPx = Math.min(12, Math.floor(140 / Math.max(fW, fD, 1)));
+                var cells = [];
+                for (var fz = fMinZ; fz <= fMaxZ; fz++) for (var fx = fMinX; fx <= fMaxX; fx++) {
+                  var fb = floor.grid[fx + ',' + fz];
+                  cells.push(el('div', { key: fx + ',' + fz, style: {
+                    width: cellPx, height: cellPx, borderRadius: 1,
+                    background: fb ? (fb.color || matColorLookup[fb.material || 'stone'] || '#94a3b8') : 'rgba(30,41,59,.3)',
+                    border: fb ? 'none' : '1px solid rgba(51,65,85,.3)'
+                  } }));
+                }
+                return el('div', { key: floor.y, style: { padding: '5px 8px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid #334155' } },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 3 } },
+                    el('span', { style: { fontSize: 10, fontWeight: 700, color: '#f8fafc' } }, 'Y=' + floor.y),
+                    el('span', { style: { fontSize: 8, color: '#64748b' } }, floor.count + ' blocks')
+                  ),
+                  el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(' + fW + ', ' + cellPx + 'px)', gap: 1, justifyContent: 'center' } }, cells)
+                );
+              })
             )
           )
         ),
