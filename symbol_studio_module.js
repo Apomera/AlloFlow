@@ -570,6 +570,17 @@
     var _commLog = useState([]); var commLog = _commLog[0]; var setCommLog = _commLog[1];
     var _showCommLog = useState(false); var showCommLog = _showCommLog[0]; var setShowCommLog = _showCommLog[1];
 
+    // Word prediction state (Use mode)
+    var _predictions = useState([]); var predictions = _predictions[0]; var setPredictions = _predictions[1];
+    var _predLoading = useState(false); var predLoading = _predLoading[0]; var setPredLoading = _predLoading[1];
+    var predTimerRef = useRef(null);
+
+    // Text-to-symbols state (Board Builder)
+    var _sentenceInput = useState(''); var sentenceInput = _sentenceInput[0]; var setSentenceInput = _sentenceInput[1];
+    var _sentenceMapping = useState([]); var sentenceMapping = _sentenceMapping[0]; var setSentenceMapping = _sentenceMapping[1];
+    var _sentenceParsing = useState(false); var sentenceParsing = _sentenceParsing[0]; var setSentenceParsing = _sentenceParsing[1];
+    var _showSentencePanel = useState(false); var showSentencePanel = _showSentencePanel[0]; var setShowSentencePanel = _showSentencePanel[1];
+
     // Sync story student name when avatar name changes
     useEffect(function () { if (avatarName) setStoryStudentName(avatarName); }, [avatarName]);
 
@@ -1089,6 +1100,156 @@
       document.body.removeChild(a); URL.revokeObjectURL(url);
       addToast && addToast('"' + (board.title || 'Board') + '" exported!', 'success');
     }, [addToast]);
+
+    // ── HTML board export ─────────────────────────────────────────────────
+    var exportBoardHTML = useCallback(function (board) {
+      var cells = (board.words || []).filter(function (w) { return w.image; });
+      var cols = board.cols || 4;
+      var cellsHTML = cells.map(function (w) {
+        var bg = CAT_COLORS[w.category] || '#f9fafb';
+        var border = CAT_BORDER[w.category] || '#e5e7eb';
+        return '<div class="cell" onclick="tap(this)" data-label="' + w.label.replace(/"/g, '&quot;') + '" style="background:' + bg + ';border:2px solid ' + border + '">'
+          + '<img src="' + w.image + '" alt="' + w.label.replace(/"/g, '&quot;') + '">'
+          + '<span>' + w.label + '</span></div>';
+      }).join('');
+      var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
+        + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        + '<title>' + (board.title || 'AAC Board') + '</title>'
+        + '<style>'
+        + 'body{font-family:system-ui,sans-serif;margin:0;background:#f8fafc;user-select:none;-webkit-tap-highlight-color:transparent}'
+        + 'header{background:linear-gradient(135deg,#7c3aed,#4338ca);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:12px}'
+        + 'header h1{margin:0;font-size:18px;font-weight:800}'
+        + '#strip{background:#1a1a2e;min-height:54px;padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}'
+        + '#strip .word{background:#312e81;color:#e0e7ff;font-weight:700;font-size:13px;padding:5px 10px;border-radius:8px;display:flex;align-items:center;gap:4px}'
+        + '#strip .word img{width:24px;height:24px;object-fit:contain;border-radius:3px}'
+        + '#strip .placeholder{color:#475569;font-style:italic;font-size:13px}'
+        + '#strip-btns{display:flex;gap:8px;margin-left:auto;flex-shrink:0}'
+        + '#strip-btns button{border:none;border-radius:7px;padding:6px 12px;font-weight:700;font-size:13px;cursor:pointer}'
+        + '#speak-btn{background:#4f46e5;color:#fff}'
+        + '#del-btn{background:#374151;color:#fff}'
+        + '#clear-btn{background:#374151;color:#cbd5e1}'
+        + '.grid{display:grid;grid-template-columns:repeat(' + cols + ',1fr);gap:12px;padding:16px}'
+        + '.cell{border-radius:12px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;transition:transform .12s,box-shadow .12s;-webkit-tap-highlight-color:transparent}'
+        + '.cell:active{transform:scale(0.93)}'
+        + '.cell img{width:72px;height:72px;object-fit:contain;border-radius:6px}'
+        + '.cell span{font-weight:700;font-size:13px;text-align:center;line-height:1.3;color:#1f2937}'
+        + '.cell.flash{box-shadow:0 0 0 4px #fbbf24;transform:scale(1.06)}'
+        + 'footer{text-align:center;padding:12px;color:#94a3b8;font-size:11px}'
+        + '</style></head><body>'
+        + '<header><span style="font-size:22px">▶</span><h1>' + (board.title || 'AAC Board') + '</h1></header>'
+        + '<div id="strip"><span class="placeholder" id="placeholder">Tap symbols to build a message\u2026</span><div id="strip-btns">'
+        + '<button id="speak-btn" onclick="speakStrip()" style="display:none">🔊 Speak</button>'
+        + '<button id="del-btn" onclick="delLast()" style="display:none">\u2190 Del</button>'
+        + '<button id="clear-btn" onclick="clearStrip()" style="display:none">🗑</button></div></div>'
+        + '<div class="grid">' + cellsHTML + '</div>'
+        + '<footer>AlloFlow Symbol Studio \u2022 Standalone AAC Board \u2022 Generated ' + new Date().toLocaleDateString() + '</footer>'
+        + '<script>'
+        + 'var words=[];'
+        + 'function tap(el){'
+        + '  var lbl=el.dataset.label;var img=el.querySelector("img");var src=img?img.src:"";'
+        + '  words.push({label:lbl,src:src});render();'
+        + '  el.classList.add("flash");setTimeout(function(){el.classList.remove("flash")},300);'
+        + '  speak(lbl);'
+        + '}'
+        + 'function speak(t){if(window.speechSynthesis){window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);window.speechSynthesis.speak(u);}}'
+        + 'function speakStrip(){speak(words.map(function(w){return w.label;}).join(" "));}'
+        + 'function delLast(){words.pop();render();}'
+        + 'function clearStrip(){words=[];render();}'
+        + 'function render(){'
+        + '  var strip=document.getElementById("strip");'
+        + '  var chips=strip.querySelectorAll(".word");chips.forEach(function(c){c.remove();});'
+        + '  var ph=document.getElementById("placeholder");'
+        + '  ph.style.display=words.length?"none":"";'
+        + '  var btns=document.getElementById("strip-btns");'
+        + '  btns.querySelectorAll("button").forEach(function(b){b.style.display=words.length?"":"none";});'
+        + '  var ref=document.getElementById("strip-btns");'
+        + '  words.forEach(function(w){'
+        + '    var d=document.createElement("div");d.className="word";'
+        + '    if(w.src){var i=document.createElement("img");i.src=w.src;d.appendChild(i);}'
+        + '    d.appendChild(document.createTextNode(w.label));'
+        + '    strip.insertBefore(d,ref);'
+        + '  });'
+        + '}'
+        + '<\/script></body></html>';
+      var blob = new Blob([html], { type: 'text/html' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      var safeName = (board.title || 'board').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      a.download = 'aacboard_' + safeName + '.html';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      addToast && addToast('"' + (board.title || 'Board') + '" saved as standalone HTML — open in any browser!', 'success');
+    }, [addToast]);
+
+    // ── Text-to-symbols ───────────────────────────────────────────────────
+    var parseTextToSymbols = useCallback(async function () {
+      if (!sentenceInput.trim() || !onCallGemini) return;
+      setSentenceParsing(true);
+      setSentenceMapping([]);
+      try {
+        var galleryMap = {};
+        gallery.forEach(function (g) { if (g.image) galleryMap[g.label.toLowerCase().trim()] = g; });
+        var prompt = 'You are an AAC (Augmentative and Alternative Communication) symbol mapper.\n'
+          + 'Sentence: "' + sentenceInput.trim() + '"\n'
+          + 'Task: Map this sentence to AAC symbols. For each meaningful word or concept:\n'
+          + '- If it is a function word (the, a, an, is, are, was, to, of, in, on, at, etc.) that is rarely symbolized in AAC, set skip:true\n'
+          + '- Otherwise create a clear AAC symbol entry\n'
+          + 'Return ONLY a valid JSON array, no markdown, like:\n'
+          + '[{"word":"I","label":"I","category":"other","description":"first person pronoun","skip":false},'
+          + '{"word":"want","label":"want","category":"verb","description":"expressing desire","skip":false},'
+          + '{"word":"the","label":"the","category":"other","description":"article","skip":true}]\n'
+          + 'Categories must be: noun, verb, adjective, or other.';
+        var raw = await onCallGemini(prompt, false, null, 800);
+        var clean = raw.replace(/```json|```/g, '').trim();
+        var items = JSON.parse(clean);
+        var mapped = items.map(function (item) {
+          var key = (item.label || item.word || '').toLowerCase().trim();
+          var galleryMatch = galleryMap[key] || null;
+          return Object.assign({}, item, { id: uid(), selected: !item.skip, galleryMatch: galleryMatch });
+        });
+        setSentenceMapping(mapped);
+      } catch (err) {
+        warnLog('Text-to-symbols failed:', err);
+        addToast && addToast('Mapping failed — try rephrasing the sentence', 'error');
+      } finally { setSentenceParsing(false); }
+    }, [sentenceInput, gallery, onCallGemini, addToast]);
+
+    var applySentenceMapping = useCallback(function () {
+      var selected = sentenceMapping.filter(function (m) { return m.selected && !m.skip; });
+      if (!selected.length) return;
+      var newWords = selected.map(function (m) {
+        var img = m.galleryMatch ? m.galleryMatch.image : null;
+        return { id: uid(), label: m.label || m.word, category: m.category || 'other', description: m.description || '', image: img };
+      });
+      setBoardWords(function (prev) { return prev.concat(newWords); });
+      setShowSentencePanel(false);
+      setSentenceInput('');
+      setSentenceMapping([]);
+      var needsGen = newWords.filter(function (w) { return !w.image; }).length;
+      addToast && addToast('Added ' + newWords.length + ' symbol' + (newWords.length !== 1 ? 's' : '') + (needsGen ? ' (' + needsGen + ' need images — click ✨)' : ' from gallery!'), 'success');
+    }, [sentenceMapping, addToast]);
+
+    // ── Word prediction ────────────────────────────────────────────────────
+    var fetchPredictions = useCallback(async function (currentStrip, availableLabels) {
+      if (!onCallGemini || currentStrip.length === 0) { setPredictions([]); return; }
+      setPredLoading(true);
+      try {
+        var context = currentStrip.map(function (w) { return w.label; }).join(' ');
+        var prompt = 'AAC word prediction task.\n'
+          + 'Student has tapped these symbols: "' + context + '"\n'
+          + 'Available symbols on the board: ' + availableLabels.join(', ') + '\n'
+          + 'Predict the 4 most likely NEXT words/symbols this student wants to communicate.\n'
+          + 'Prefer words from the available symbols list when relevant.\n'
+          + 'Return ONLY a JSON array of 4 short strings, e.g. ["more","please","go","help"].\n'
+          + 'No markdown, no explanation.';
+        var raw = await onCallGemini(prompt, false, null, 200);
+        var clean = raw.replace(/```json|```/g, '').trim();
+        var preds = JSON.parse(clean);
+        setPredictions(Array.isArray(preds) ? preds.slice(0, 4) : []);
+      } catch (e) {
+        setPredictions([]);
+      } finally { setPredLoading(false); }
+    }, [onCallGemini]);
 
     var importSingleBoard = useCallback(function (ev) {
       var file = ev.target.files && ev.target.files[0];
@@ -2262,6 +2423,7 @@
               }, t.label);
             })
           ),
+          e('button', { onClick: function () { setShowSentencePanel(!showSentencePanel); if (!showSentencePanel) { setSentenceMapping([]); setSentenceInput(''); } }, style: S.btn(showSentencePanel ? LIGHT_PURPLE : '#f3f4f6', showSentencePanel ? PURPLE : '#374151', false), title: 'Type a sentence and let AI map each word to an AAC symbol' }, '🔤 From Sentence'),
           e('button', { onClick: function () { setShowGalleryPicker(!showGalleryPicker); }, style: S.btn(showGalleryPicker ? LIGHT_PURPLE : '#f3f4f6', showGalleryPicker ? PURPLE : '#374151', false), title: 'Add a symbol from your gallery directly to the board' }, '🖼️ From Gallery'),
           hasImages && e('div', { style: { display: 'flex', gap: '6px' } },
             e('button', { onClick: saveBoard, style: S.btn('#f3f4f6', '#374151', false) }, '💾 Save'),
@@ -2326,6 +2488,7 @@
                       style: S.btn('#ecfdf5', '#065f46', false)
                     }, '\u267f Scan'),
                     e('button', { onClick: function () { exportBoard(b); }, title: 'Export this board as a .json file', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️'),
+                    b.words && b.words.some(function (w) { return w.image; }) && e('button', { onClick: function () { exportBoardHTML(b); }, title: 'Export standalone HTML board — opens in any browser without AlloFlow', style: S.btn('#fef9c3', '#92400e', false) }, '🌐'),
                     liveSession && liveSession.active && e('button', {
                       title: 'Push to student screens',
                       onClick: function () {
@@ -2363,6 +2526,66 @@
           )
         ),
         showGalleryPicker && gallery.length === 0 && e('div', { style: { flexShrink: 0, background: '#faf5ff', border: '1px solid #ede9fe', borderRadius: '10px', padding: '12px', textAlign: 'center', fontSize: '12px', color: '#7c3aed' } }, 'Your symbol gallery is empty. Generate symbols in the Symbols tab first, then add them here.'),
+        // ── Sentence-to-symbols panel ──
+        showSentencePanel && e('div', { style: { flexShrink: 0, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' } },
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+            e('span', { style: { fontSize: '12px', fontWeight: 700, color: '#065f46' } }, '🔤 Text → Symbols'),
+            e('span', { style: { fontSize: '11px', color: '#6b7280' } }, 'Type a sentence and AI will map each word to an AAC symbol')
+          ),
+          e('div', { style: { display: 'flex', gap: '8px', alignItems: 'flex-end' } },
+            e('input', {
+              type: 'text',
+              value: sentenceInput,
+              onChange: function (ev) { setSentenceInput(ev.target.value); },
+              onKeyDown: function (ev) { if (ev.key === 'Enter') parseTextToSymbols(); },
+              placeholder: 'e.g. I want to go to the park today',
+              style: Object.assign({}, S.input, { flex: 1, borderColor: '#86efac' })
+            }),
+            e('button', { onClick: parseTextToSymbols, disabled: !sentenceInput.trim() || sentenceParsing || !onCallGemini, style: S.btn('#059669', '#fff', !sentenceInput.trim() || sentenceParsing || !onCallGemini) },
+              sentenceParsing ? '⏳ Mapping…' : '🤖 Map Symbols'
+            )
+          ),
+          sentenceMapping.length > 0 && e('div', null,
+            e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#065f46', marginBottom: '6px' } },
+              'Review mapping — uncheck words to skip, then click Add to Board:'
+            ),
+            e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' } },
+              sentenceMapping.map(function (m, mi) {
+                var bg = m.skip ? '#f9fafb' : (m.galleryMatch ? '#dcfce7' : '#fef9c3');
+                var border = m.skip ? '#e5e7eb' : (m.galleryMatch ? '#86efac' : '#fde68a');
+                return e('div', {
+                  key: m.id,
+                  style: { border: '1px solid ' + border, borderRadius: '8px', padding: '6px 10px', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', minWidth: '70px', opacity: m.skip ? 0.45 : 1 }
+                },
+                  m.galleryMatch && m.galleryMatch.image && e('img', { src: m.galleryMatch.image, style: { width: 36, height: 36, objectFit: 'contain', borderRadius: '5px' } }),
+                  !m.galleryMatch && !m.skip && e('div', { style: { width: 36, height: 36, borderRadius: '5px', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' } }, '✨'),
+                  e('span', { style: { fontSize: '11px', fontWeight: 700, color: '#1f2937', textAlign: 'center' } }, m.label || m.word),
+                  e('span', { style: { fontSize: '9px', color: '#6b7280' } }, m.galleryMatch ? '✓ gallery' : (m.skip ? 'skipped' : 'needs gen')),
+                  !m.skip && e('label', { style: { display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', cursor: 'pointer', color: '#374151' } },
+                    e('input', {
+                      type: 'checkbox',
+                      checked: !!m.selected,
+                      onChange: function (ev) {
+                        setSentenceMapping(function (prev) {
+                          return prev.map(function (item, ii) { return ii === mi ? Object.assign({}, item, { selected: ev.target.checked }) : item; });
+                        });
+                      }
+                    }),
+                    'include'
+                  )
+                );
+              })
+            ),
+            e('div', { style: { display: 'flex', gap: '8px' } },
+              e('button', {
+                onClick: applySentenceMapping,
+                disabled: !sentenceMapping.some(function (m) { return m.selected && !m.skip; }),
+                style: S.btn('#059669', '#fff', !sentenceMapping.some(function (m) { return m.selected && !m.skip; }))
+              }, '✅ Add to Board (' + sentenceMapping.filter(function (m) { return m.selected && !m.skip; }).length + ')'),
+              e('button', { onClick: function () { setSentenceMapping([]); setSentenceInput(''); }, style: S.btn('#f3f4f6', '#374151', false) }, '↩ Reset')
+            )
+          )
+        ),
         // Print settings panel
         showPrintSettings && e('div', { style: { flexShrink: 0, background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '10px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' } },
           e('span', { style: { fontSize: '12px', fontWeight: 600, color: '#1e40af' } }, 'Print Settings'),
@@ -2816,9 +3039,16 @@
       };
       var tapCell = function (cell) {
         var boardTitle = useBoard ? (useBoard.title || 'Board') : 'Board';
-        setStrip(function (s) { return s.concat([{ label: cell.label, image: cell.image }]); });
+        var newStrip = strip.concat([{ label: cell.label, image: cell.image }]);
+        setStrip(newStrip);
         setCommLog(function (log) { return log.concat([{ label: cell.label, image: cell.image, boardTitle: boardTitle, ts: new Date().toISOString() }]); });
         speakWordFn(cell.label);
+        // Debounced word prediction
+        if (predTimerRef.current) clearTimeout(predTimerRef.current);
+        predTimerRef.current = setTimeout(function () {
+          var availableLabels = useCells.map(function (c) { return c.label; });
+          fetchPredictions(newStrip, availableLabels);
+        }, 700);
       };
       var exportLog = function () {
         var rows = ['Time,Word,Board'];
@@ -2869,6 +3099,23 @@
               style: { background: '#374151', color: '#cbd5e1', border: 'none', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontSize: '13px' }
             }, '\uD83D\uDDD1')
           )
+        ),
+        // ── Word prediction chips ──
+        (predictions.length > 0 || predLoading) && e('div', { style: { background: '#0f172a', borderBottom: '1px solid #1e293b', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 } },
+          e('span', { style: { color: '#64748b', fontSize: '11px', fontWeight: 600, flexShrink: 0 } }, predLoading ? '🤖 Predicting…' : '💡 Next:'),
+          predictions.map(function (pred, pi) {
+            var matchCell = useCells.find(function (c) { return c.label.toLowerCase() === pred.toLowerCase(); });
+            return e('button', {
+              key: pi,
+              onClick: function () { if (matchCell) tapCell(matchCell); else tapCell({ label: pred, image: null }); },
+              style: { display: 'flex', alignItems: 'center', gap: '5px', background: '#1e293b', border: '1px solid #334155', borderRadius: '7px', padding: '4px 10px', cursor: 'pointer', color: '#e2e8f0', fontSize: '12px', fontWeight: 600, transition: 'background 0.1s' },
+              onMouseOver: function (ev) { ev.currentTarget.style.background = '#312e81'; ev.currentTarget.style.borderColor = '#4f46e5'; },
+              onMouseOut: function (ev) { ev.currentTarget.style.background = '#1e293b'; ev.currentTarget.style.borderColor = '#334155'; }
+            },
+              matchCell && matchCell.image && e('img', { src: matchCell.image, style: { width: '20px', height: '20px', objectFit: 'contain', borderRadius: '3px' } }),
+              pred
+            );
+          })
         ),
         // ── Body: cells + optional log panel ──
         e('div', { style: { flex: 1, display: 'flex', overflow: 'hidden' } },
