@@ -14,7 +14,7 @@
   // ── Print CSS injection ───────────────────────────────────────────────────
   (function injectPrintStyles() {
     var style = document.createElement('style');
-    style.textContent = '@media print{body *{visibility:hidden}#ss-pb,#ss-pb *,#ss-ps,#ss-ps *,#ss-py,#ss-py *,#ss-pq,#ss-pq *,#ss-pq-calming,#ss-pq-calming *,#ss-pq-sensory,#ss-pq-sensory *{visibility:visible}#ss-pb,#ss-ps,#ss-py,#ss-pq,#ss-pq-calming,#ss-pq-sensory{position:absolute;left:0;top:0;width:100%}.ss-no-print{display:none!important}}';
+    style.textContent = '@media print{body *{visibility:hidden}#ss-pb,#ss-pb *,#ss-ps,#ss-ps *,#ss-py,#ss-py *,#ss-pq,#ss-pq *,#ss-pq-calming,#ss-pq-calming *,#ss-pq-sensory,#ss-pq-sensory *,#ss-pq-askme,#ss-pq-askme *,#ss-pq-bodycheck,#ss-pq-bodycheck *,#ss-pq-transition,#ss-pq-transition *{visibility:visible}#ss-pb,#ss-ps,#ss-py,#ss-pq,#ss-pq-calming,#ss-pq-sensory,#ss-pq-askme,#ss-pq-bodycheck,#ss-pq-transition{position:absolute;left:0;top:0;width:100%}.ss-no-print{display:none!important}}';
     document.head.appendChild(style);
   })();
 
@@ -498,6 +498,62 @@
     });
     var snItems = _snItems[0]; var setSnItems = _snItems[1];
     var _snLoading = useState({}); var snLoading = _snLoading[0]; var setSnLoading = _snLoading[1];
+
+    // Ask Me Board state
+    var _amItems = useState(function () { return [
+      { id: 'am1', label: 'Can I have...?', image: null },
+      { id: 'am2', label: 'Where is...?', image: null },
+      { id: 'am3', label: 'What is...?', image: null },
+      { id: 'am4', label: 'I want to...', image: null },
+      { id: 'am5', label: 'Can you help me?', image: null },
+      { id: 'am6', label: 'I need...', image: null },
+      { id: 'am7', label: 'When is...?', image: null },
+      { id: 'am8', label: 'I don\'t know', image: null },
+      { id: 'am9', label: 'I don\'t understand', image: null },
+      { id: 'am10', label: 'Can I go?', image: null },
+    ]; });
+    var amItems = _amItems[0]; var setAmItems = _amItems[1];
+    var _amLoading = useState({}); var amLoading = _amLoading[0]; var setAmLoading = _amLoading[1];
+
+    // Body Check state
+    var _bcItems = useState(function () { return [
+      { id: 'bc1', label: 'Head', image: null },
+      { id: 'bc2', label: 'Eyes', image: null },
+      { id: 'bc3', label: 'Ears', image: null },
+      { id: 'bc4', label: 'Throat', image: null },
+      { id: 'bc5', label: 'Stomach', image: null },
+      { id: 'bc6', label: 'Arm', image: null },
+      { id: 'bc7', label: 'Back', image: null },
+      { id: 'bc8', label: 'Leg', image: null },
+    ]; });
+    var bcItems = _bcItems[0]; var setBcItems = _bcItems[1];
+    var _bcLoading = useState({}); var bcLoading = _bcLoading[0]; var setBcLoading = _bcLoading[1];
+    var _bcPainLevel = useState(null); var bcPainLevel = _bcPainLevel[0]; var setBcPainLevel = _bcPainLevel[1];
+
+    // Transition Warning state
+    var _twItems = useState(function () { return [
+      { id: 'tw1', label: '5 minutes left', image: null },
+      { id: 'tw2', label: '3 minutes left', image: null },
+      { id: 'tw3', label: '1 minute left', image: null },
+      { id: 'tw4', label: 'Almost time!', image: null },
+      { id: 'tw5', label: 'Time to stop', image: null },
+      { id: 'tw6', label: 'Clean up', image: null },
+      { id: 'tw7', label: 'Line up', image: null },
+      { id: 'tw8', label: 'New activity starts', image: null },
+    ]; });
+    var twItems = _twItems[0]; var setTwItems = _twItems[1];
+    var _twLoading = useState({}); var twLoading = _twLoading[0]; var setTwLoading = _twLoading[1];
+    var _twStep = useState(0); var twStep = _twStep[0]; var setTwStep = _twStep[1];
+
+    // Customizable category colors
+    var STORAGE_CAT_COLORS = 'alloSymbolCatColors';
+    var STORAGE_BOARD_THEME = 'alloSymbolTheme';
+    var _catFill = useState(function () { return load(STORAGE_CAT_COLORS + '_fill', null) || CAT_COLORS; });
+    var catFill = _catFill[0]; var setCatFill = _catFill[1];
+    var _catBorder = useState(function () { return load(STORAGE_CAT_COLORS + '_border', null) || CAT_BORDER; });
+    var catBorder = _catBorder[0]; var setCatBorder = _catBorder[1];
+    var _boardTheme = useState(function () { return load(STORAGE_BOARD_THEME, 'default'); });
+    var boardTheme = _boardTheme[0]; var setBoardTheme = _boardTheme[1];
 
     // Partner-assisted scanning state
     var _scanBoardId = useState(null); var scanBoardId = _scanBoardId[0]; var setScanBoardId = _scanBoardId[1];
@@ -1350,11 +1406,86 @@
           setCmItems(function (prev) { return prev.map(function (it) { return it.id === qbUploadTarget.id ? Object.assign({}, it, { image: img }) : it; }); });
         } else if (qbUploadTarget.type === 'sn') {
           setSnItems(function (prev) { return prev.map(function (it) { return it.id === qbUploadTarget.id ? Object.assign({}, it, { image: img }) : it; }); });
+        } else if (qbUploadTarget.type === 'am') {
+          setAmItems(function (prev) { return prev.map(function (it) { return it.id === qbUploadTarget.id ? Object.assign({}, it, { image: img }) : it; }); });
+        } else if (qbUploadTarget.type === 'bc') {
+          setBcItems(function (prev) { return prev.map(function (it) { return it.id === qbUploadTarget.id ? Object.assign({}, it, { image: img }) : it; }); });
+        } else if (qbUploadTarget.type === 'tw') {
+          setTwItems(function (prev) { return prev.map(function (it) { return it.id === qbUploadTarget.id ? Object.assign({}, it, { image: img }) : it; }); });
         }
       };
       reader.readAsDataURL(file);
       ev.target.value = ''; setQbUploadTarget(null);
     }, [qbUploadTarget]);
+
+    // ── Ask Me Board actions ───────────────────────────────────────────────
+    var genAmItem = useCallback(async function (id) {
+      var item = amItems.find(function (it) { return it.id === id; });
+      if (!item || !onCallImagen) return;
+      setAmLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
+      try {
+        var img = await genWithRetry(buildSymbolPrompt(item.label, 'a child asking a question, speech bubble, communication initiation, simple AAC-style symbol', globalStyle, ''), onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
+        setAmItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
+      } catch (e) { addToast && addToast('Generation failed', 'error'); }
+      finally { setAmLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
+    }, [amItems, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
+
+    var genAllAmItems = useCallback(async function () {
+      var items = amItems.filter(function (it) { return !it.image; });
+      if (!items.length || !onCallImagen) return;
+      var loadMap = {}; items.forEach(function (i) { loadMap[i.id] = true; });
+      setAmLoading(function (p) { return Object.assign({}, p, loadMap); });
+      var batchOut = await batchGenerate(items, onCallImagen, onCallGeminiImageEdit, autoClean, null, globalStyle, function (id) { setAmLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); });
+      setAmItems(function (prev) { var map = {}; batchOut.results.forEach(function (r) { map[r.id] = r; }); return prev.map(function (it) { return map[it.id] ? Object.assign({}, it, { image: map[it.id].image }) : it; }); });
+      setAmLoading({});
+      addToast && addToast('Ask Me Board images ready!', 'success');
+    }, [amItems, autoClean, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
+
+    // ── Body Check actions ─────────────────────────────────────────────────
+    var genBcItem = useCallback(async function (id) {
+      var item = bcItems.find(function (it) { return it.id === id; });
+      if (!item || !onCallImagen) return;
+      setBcLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
+      try {
+        var img = await genWithRetry(buildSymbolPrompt(item.label, 'body part for medical communication with a child, simple clear anatomy AAC-style symbol, white background', globalStyle, ''), onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
+        setBcItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
+      } catch (e) { addToast && addToast('Generation failed', 'error'); }
+      finally { setBcLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
+    }, [bcItems, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
+
+    var genAllBcItems = useCallback(async function () {
+      var items = bcItems.filter(function (it) { return !it.image; });
+      if (!items.length || !onCallImagen) return;
+      var loadMap = {}; items.forEach(function (i) { loadMap[i.id] = true; });
+      setBcLoading(function (p) { return Object.assign({}, p, loadMap); });
+      var batchOut = await batchGenerate(items, onCallImagen, onCallGeminiImageEdit, autoClean, null, globalStyle, function (id) { setBcLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); });
+      setBcItems(function (prev) { var map = {}; batchOut.results.forEach(function (r) { map[r.id] = r; }); return prev.map(function (it) { return map[it.id] ? Object.assign({}, it, { image: map[it.id].image }) : it; }); });
+      setBcLoading({});
+      addToast && addToast('Body Check images ready!', 'success');
+    }, [bcItems, autoClean, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
+
+    // ── Transition Warning actions ─────────────────────────────────────────
+    var genTwItem = useCallback(async function (id) {
+      var item = twItems.find(function (it) { return it.id === id; });
+      if (!item || !onCallImagen) return;
+      setTwLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
+      try {
+        var img = await genWithRetry(buildSymbolPrompt(item.label, 'visual schedule transition warning for children, timer or activity change concept, simple AAC-style symbol', globalStyle, ''), onCallImagen, onCallGeminiImageEdit, autoClean, null, 400);
+        setTwItems(function (prev) { return prev.map(function (it) { return it.id === id ? Object.assign({}, it, { image: img }) : it; }); });
+      } catch (e) { addToast && addToast('Generation failed', 'error'); }
+      finally { setTwLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
+    }, [twItems, globalStyle, autoClean, onCallImagen, onCallGeminiImageEdit, addToast]);
+
+    var genAllTwItems = useCallback(async function () {
+      var items = twItems.filter(function (it) { return !it.image; });
+      if (!items.length || !onCallImagen) return;
+      var loadMap = {}; items.forEach(function (i) { loadMap[i.id] = true; });
+      setTwLoading(function (p) { return Object.assign({}, p, loadMap); });
+      var batchOut = await batchGenerate(items, onCallImagen, onCallGeminiImageEdit, autoClean, null, globalStyle, function (id) { setTwLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); });
+      setTwItems(function (prev) { var map = {}; batchOut.results.forEach(function (r) { map[r.id] = r; }); return prev.map(function (it) { return map[it.id] ? Object.assign({}, it, { image: map[it.id].image }) : it; }); });
+      setTwLoading({});
+      addToast && addToast('Transition Warning images ready!', 'success');
+    }, [twItems, autoClean, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
 
     // ── Calming Corner actions ─────────────────────────────────────────────
     var genCmItem = useCallback(async function (id) {
@@ -1455,6 +1586,16 @@
       return e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, text);
     }
 
+    var BOARD_THEMES = {
+      default:       { id: 'default',       label: 'Default',       gridBg: '#ffffff', cellBg: null,      textColor: '#1f2937', borderOverride: null },
+      pastel:        { id: 'pastel',        label: 'Pastel',        gridBg: '#faf5ff', cellBg: '#f3e8ff', textColor: '#3b0764', borderOverride: '#e9d5ff' },
+      dark:          { id: 'dark',          label: 'Dark',          gridBg: '#1e293b', cellBg: '#334155', textColor: '#f1f5f9', borderOverride: '#475569' },
+      highcontrast:  { id: 'highcontrast',  label: 'High Contrast', gridBg: '#000000', cellBg: '#000000', textColor: '#ffffff', borderOverride: '#ffffff' },
+      warm:          { id: 'warm',          label: 'Warm',          gridBg: '#fffbeb', cellBg: null,      textColor: '#78350f', borderOverride: '#fde68a' },
+      cool:          { id: 'cool',          label: 'Cool',          gridBg: '#eff6ff', cellBg: null,      textColor: '#1e3a5f', borderOverride: '#bfdbfe' },
+    };
+    var theme = BOARD_THEMES[boardTheme] || BOARD_THEMES.default;
+
     // ── Quick Boards tab ───────────────────────────────────────────────────
     function renderQuickBoardsTab() {
       var ORANGE = '#f97316'; var GREEN = '#22c55e'; var BLUE = '#3b82f6';
@@ -1464,6 +1605,9 @@
         { id: 'token', icon: '⭐', label: 'Token Economy' },
         { id: 'calming', icon: '🌿', label: 'Calming Corner' },
         { id: 'sensory', icon: '🎧', label: 'Sensory Needs' },
+        { id: 'askme', icon: '🙋', label: 'Ask Me' },
+        { id: 'bodycheck', icon: '🩺', label: 'Body Check' },
+        { id: 'transition', icon: '⏰', label: 'Transition' },
       ];
 
       function qbUploadBtn(target) {
@@ -1705,6 +1849,151 @@
         );
       }
 
+      // ── Ask Me Board ──
+      function renderAskMe() {
+        var BLUE = '#2563eb'; var BLUE_LIGHT = '#eff6ff'; var BLUE_BORDER = '#bfdbfe';
+        var amLoadingAny = Object.keys(amLoading).length > 0;
+        return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1, overflow: 'hidden' } },
+          e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
+            e('p', { style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, 'Questions a student can initiate \u2014 tap any card to speak it aloud'),
+            e('button', { onClick: genAllAmItems, disabled: !onCallImagen || amLoadingAny, style: Object.assign({}, S.btn(BLUE, '#fff', !onCallImagen || amLoadingAny), { marginLeft: 'auto' }) }, amLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate All Images')
+          ),
+          e('div', { id: 'ss-pq-askme', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))', gap: '12px', overflowY: 'auto', flex: 1 } },
+            amItems.map(function (item) {
+              var isLoading = !!amLoading[item.id];
+              return e('div', {
+                key: item.id,
+                onClick: function () { if (onCallTTS) onCallTTS(item.label, selectedVoice || 'Kore', 1); },
+                style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '14px 10px 10px', border: '2px solid ' + BLUE_BORDER, borderRadius: '14px', background: BLUE_LIGHT, cursor: 'pointer', transition: 'transform 0.1s, box-shadow 0.1s', position: 'relative' },
+                onMouseOver: function (ev) { ev.currentTarget.style.boxShadow = '0 4px 14px rgba(37,99,235,0.18)'; ev.currentTarget.style.transform = 'translateY(-2px)'; },
+                onMouseOut: function (ev) { ev.currentTarget.style.boxShadow = 'none'; ev.currentTarget.style.transform = 'none'; }
+              },
+                e('div', { style: { width: 90, height: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '10px', background: '#fff', border: '1px solid ' + BLUE_BORDER, overflow: 'hidden', flexShrink: 0 } },
+                  isLoading ? spinner(28) : item.image ? e('img', { src: item.image, alt: item.label, style: { width: '100%', height: '100%', objectFit: 'contain', padding: '6px' } }) : e('div', { style: { fontSize: '34px' } }, '\uD83D\uDE4B')
+                ),
+                e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setAmItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '12px', color: '#1e3a8a', textAlign: 'center', width: '100%', outline: 'none', cursor: 'text', lineHeight: 1.4 } }),
+                e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px' } },
+                  e('button', { title: 'Generate image', onClick: function (ev) { ev.stopPropagation(); genAmItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
+                  e('button', { title: 'Upload image', onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'am', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
+                )
+              );
+            })
+          ),
+          e('p', { className: 'ss-no-print', style: { fontSize: '11px', color: '#6b7280', margin: 0, flexShrink: 0 } }, 'Print as a laminated card in a communication binder, or display on a tablet for students to initiate questions independently.')
+        );
+      }
+
+      // ── Body Check / Pain Scale ──
+      function renderBodyCheck() {
+        var ROSE = '#e11d48'; var ROSE_LIGHT = '#fff1f2'; var ROSE_BORDER = '#fecdd3';
+        var bcLoadingAny = Object.keys(bcLoading).length > 0;
+        var PAIN_COLORS = ['#22c55e','#4ade80','#86efac','#fde047','#fb923c','#f87171','#ef4444','#dc2626','#b91c1c','#7f1d1d'];
+        var PAIN_LABELS = ['1\nNo pain','2\nA little','3\nSome','4\nMild','5\nModerate','6\nMore','7\nStrong','8\nVery bad','9\nSevere','10\nWorst'];
+        return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1, overflow: 'hidden' } },
+          e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
+            e('p', { style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, 'Help students communicate pain level and location without words'),
+            e('button', { onClick: genAllBcItems, disabled: !onCallImagen || bcLoadingAny, style: Object.assign({}, S.btn(ROSE, '#fff', !onCallImagen || bcLoadingAny), { marginLeft: 'auto' }) }, bcLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate Body Parts')
+          ),
+          // Pain scale
+          e('div', { id: 'ss-pq-bodycheck', style: { overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' } },
+            e('div', null,
+              e('div', { style: { fontWeight: 700, fontSize: '12px', color: '#374151', marginBottom: '8px' } }, 'Pain Scale \u2014 tap to select'),
+              e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                PAIN_LABELS.map(function (lbl, i) {
+                  var level = i + 1;
+                  var isSelected = bcPainLevel === level;
+                  return e('div', {
+                    key: level,
+                    onClick: function () { setBcPainLevel(isSelected ? null : level); if (onCallTTS) onCallTTS(lbl.replace('\n', ', '), selectedVoice || 'Kore', 1); },
+                    style: { width: 52, padding: '8px 4px', borderRadius: '10px', background: PAIN_COLORS[i], border: isSelected ? '3px solid #1e293b' : '3px solid transparent', cursor: 'pointer', textAlign: 'center', boxShadow: isSelected ? '0 0 0 3px rgba(0,0,0,0.2)' : 'none', transition: 'transform 0.1s', transform: isSelected ? 'scale(1.12)' : 'scale(1)' }
+                  },
+                    e('div', { style: { fontWeight: 800, fontSize: '16px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.4)' } }, level),
+                    e('div', { style: { fontSize: '9px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.4)', lineHeight: 1.3, whiteSpace: 'pre-line' } }, lbl.split('\n')[1])
+                  );
+                })
+              ),
+              bcPainLevel && e('p', { style: { marginTop: '8px', fontSize: '13px', fontWeight: 700, color: ROSE } }, 'Selected: Pain level ' + bcPainLevel + ' \u2014 ' + PAIN_LABELS[bcPainLevel - 1].split('\n')[1])
+            ),
+            // Body parts grid
+            e('div', null,
+              e('div', { style: { fontWeight: 700, fontSize: '12px', color: '#374151', marginBottom: '8px' } }, 'Where does it hurt? \u2014 tap to speak'),
+              e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px' } },
+                bcItems.map(function (item) {
+                  var isLoading = !!bcLoading[item.id];
+                  return e('div', {
+                    key: item.id,
+                    onClick: function () { if (onCallTTS) onCallTTS(item.label, selectedVoice || 'Kore', 1); },
+                    style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 8px 8px', border: '2px solid ' + ROSE_BORDER, borderRadius: '12px', background: ROSE_LIGHT, cursor: 'pointer', transition: 'transform 0.1s' },
+                    onMouseOver: function (ev) { ev.currentTarget.style.transform = 'translateY(-2px)'; },
+                    onMouseOut: function (ev) { ev.currentTarget.style.transform = 'none'; }
+                  },
+                    e('div', { style: { width: 80, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', background: '#fff', border: '1px solid ' + ROSE_BORDER, overflow: 'hidden' } },
+                      isLoading ? spinner(24) : item.image ? e('img', { src: item.image, alt: item.label, style: { width: '100%', height: '100%', objectFit: 'contain', padding: '5px' } }) : e('div', { style: { fontSize: '30px' } }, '\uD83E\uDDB4')
+                    ),
+                    e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setBcItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '11px', color: '#9f1239', textAlign: 'center', width: '100%', outline: 'none', cursor: 'text' } }),
+                    e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '3px' } },
+                      e('button', { onClick: function (ev) { ev.stopPropagation(); genBcItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
+                      e('button', { onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'bc', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
+                    )
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ── Transition Warning ──
+      function renderTransitionWarning() {
+        var INDIGO = '#4338ca'; var INDIGO_LIGHT = '#eef2ff'; var INDIGO_BORDER = '#c7d2fe';
+        var twLoadingAny = Object.keys(twLoading).length > 0;
+        var currentItem = twItems[twStep] || null;
+        return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1, overflow: 'hidden' } },
+          e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
+            e('p', { style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, 'Show one step at a time \u2014 use arrows to advance through the transition sequence'),
+            e('button', { onClick: genAllTwItems, disabled: !onCallImagen || twLoadingAny, style: Object.assign({}, S.btn(INDIGO, '#fff', !onCallImagen || twLoadingAny), { marginLeft: 'auto' }) }, twLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate All Images')
+          ),
+          // Live presentation step
+          e('div', { id: 'ss-pq-transition', style: { overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' } },
+            // Big current step display
+            currentItem && e('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', background: INDIGO_LIGHT, border: '3px solid ' + INDIGO_BORDER, borderRadius: '16px', padding: '24px', flexShrink: 0 } },
+              e('div', { style: { fontSize: '11px', fontWeight: 700, color: INDIGO, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Current Step ' + (twStep + 1) + ' of ' + twItems.length),
+              e('div', { style: { width: 120, height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', background: '#fff', border: '2px solid ' + INDIGO_BORDER, overflow: 'hidden' } },
+                twLoading[currentItem.id] ? spinner(32) : currentItem.image ? e('img', { src: currentItem.image, alt: currentItem.label, style: { width: '100%', height: '100%', objectFit: 'contain', padding: '8px' } }) : e('div', { style: { fontSize: '48px' } }, '\u23F0')
+              ),
+              e('div', { style: { fontWeight: 800, fontSize: '20px', color: '#312e81', textAlign: 'center' } }, currentItem.label),
+              e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '10px', marginTop: '4px' } },
+                e('button', { onClick: function () { setTwStep(function (s) { return Math.max(0, s - 1); }); }, disabled: twStep === 0, style: S.btn('#e0e7ff', INDIGO, twStep === 0) }, '\u2190 Prev'),
+                e('button', { onClick: function () { if (onCallTTS) onCallTTS(currentItem.label, selectedVoice || 'Kore', 1); }, style: S.btn(INDIGO, '#fff', false) }, '\uD83D\uDD0A Speak'),
+                e('button', { onClick: function () { setTwStep(function (s) { return Math.min(twItems.length - 1, s + 1); }); }, disabled: twStep === twItems.length - 1, style: S.btn('#e0e7ff', INDIGO, twStep === twItems.length - 1) }, 'Next \u2192')
+              )
+            ),
+            // All steps grid
+            e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px' } },
+              twItems.map(function (item, idx) {
+                var isLoading = !!twLoading[item.id];
+                var isCurrent = idx === twStep;
+                return e('div', {
+                  key: item.id,
+                  onClick: function () { setTwStep(idx); if (onCallTTS) onCallTTS(item.label, selectedVoice || 'Kore', 1); },
+                  style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '10px 8px 8px', border: '2px solid ' + (isCurrent ? INDIGO : INDIGO_BORDER), borderRadius: '12px', background: isCurrent ? INDIGO_LIGHT : '#fff', cursor: 'pointer', outline: isCurrent ? '2px solid ' + INDIGO : 'none', transition: 'all 0.1s' }
+                },
+                  e('div', { style: { fontSize: '9px', fontWeight: 700, color: isCurrent ? INDIGO : '#9ca3af', marginBottom: '2px' } }, 'STEP ' + (idx + 1)),
+                  e('div', { style: { width: 70, height: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', background: '#f9fafb', border: '1px solid #e5e7eb', overflow: 'hidden' } },
+                    isLoading ? spinner(20) : item.image ? e('img', { src: item.image, alt: item.label, style: { width: '100%', height: '100%', objectFit: 'contain', padding: '4px' } }) : e('div', { style: { fontSize: '24px' } }, '\u23F0')
+                  ),
+                  e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setTwItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, style: { border: 'none', background: 'transparent', fontWeight: 600, fontSize: '10px', color: isCurrent ? '#312e81' : '#374151', textAlign: 'center', width: '100%', outline: 'none', cursor: 'text', lineHeight: 1.4 } }),
+                  e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '3px' } },
+                    e('button', { onClick: function (ev) { ev.stopPropagation(); genTwItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
+                    e('button', { onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'tw', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
+                  )
+                );
+              })
+            )
+          )
+        );
+      }
+
       return e('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' } },
         // Sub-mode switcher
         e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px', padding: '10px 12px 0', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', overflowX: 'auto' } },
@@ -1720,7 +2009,10 @@
           qbMode === 'choice' && renderChoiceBoard(),
           qbMode === 'token' && renderTokenEconomy(),
           qbMode === 'calming' && renderCalmingCorner(),
-          qbMode === 'sensory' && renderSensoryNeeds()
+          qbMode === 'sensory' && renderSensoryNeeds(),
+          qbMode === 'askme' && renderAskMe(),
+          qbMode === 'bodycheck' && renderBodyCheck(),
+          qbMode === 'transition' && renderTransitionWarning()
         ),
         // Print bar
         e('div', { className: 'ss-no-print', style: { padding: '10px 14px', borderTop: '1px solid #e5e7eb', background: '#f9fafb', display: 'flex', justifyContent: 'flex-end', gap: '8px' } },
@@ -1958,6 +2250,18 @@
             e('input', { type: 'checkbox', checked: boardColor, onChange: function (ev) { setBoardColor(ev.target.checked); } }),
             'Color coding'
           ),
+          // Theme selector
+          e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' } },
+            e('span', { style: { fontSize: '10px', color: '#9ca3af', fontWeight: 600 } }, 'Theme:'),
+            Object.values(BOARD_THEMES).map(function (t) {
+              var active = boardTheme === t.id;
+              return e('button', {
+                key: t.id,
+                onClick: function () { setBoardTheme(t.id); store(STORAGE_BOARD_THEME, t.id); },
+                style: { fontSize: '10px', padding: '3px 8px', borderRadius: '5px', border: active ? '2px solid ' + PURPLE : '1px solid #d1d5db', background: active ? LIGHT_PURPLE : '#f9fafb', color: active ? PURPLE : '#374151', fontWeight: active ? 700 : 400, cursor: 'pointer' }
+              }, t.label);
+            })
+          ),
           e('button', { onClick: function () { setShowGalleryPicker(!showGalleryPicker); }, style: S.btn(showGalleryPicker ? LIGHT_PURPLE : '#f3f4f6', showGalleryPicker ? PURPLE : '#374151', false), title: 'Add a symbol from your gallery directly to the board' }, '🖼️ From Gallery'),
           hasImages && e('div', { style: { display: 'flex', gap: '6px' } },
             e('button', { onClick: saveBoard, style: S.btn('#f3f4f6', '#374151', false) }, '💾 Save'),
@@ -2088,13 +2392,14 @@
         boardWords.length > 0 && e('input', { type: 'text', value: boardTitle, onChange: function (ev) { setBoardTitle(ev.target.value); }, placeholder: 'Board title (optional)', style: Object.assign({}, S.input, { fontWeight: 700, fontSize: '15px', maxWidth: '400px' }) }),
         // Board grid (also serves as print area)
         boardWords.length > 0
-          ? e('div', { id: 'ss-pb', style: { flex: 1, overflowY: 'auto' } },
-              boardTitle && e('h2', { style: { fontWeight: 800, fontSize: '18px', color: '#1f2937', margin: '0 0 10px' } }, boardTitle),
+          ? e('div', { id: 'ss-pb', style: { flex: 1, overflowY: 'auto', background: theme.gridBg, padding: '8px', borderRadius: '8px', transition: 'background 0.2s' } },
+              boardTitle && e('h2', { style: { fontWeight: 800, fontSize: '18px', color: theme.textColor, margin: '0 0 10px' } }, boardTitle),
               e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(' + boardCols + ', 1fr)', gap: '8px' } },
                 boardWords.map(function (word) {
-                  var bg = boardColor ? (CAT_COLORS[word.category] || '#f9fafb') : '#fff';
+                  var bg = theme.cellBg || (boardColor ? (catFill[word.category] || '#f9fafb') : '#fff');
                   var isDragTarget = dragOverBoardId === word.id && dragBoardId !== word.id;
-                  var border = isDragTarget ? '2px dashed ' + PURPLE : (boardColor ? ('2px solid ' + (CAT_BORDER[word.category] || '#e5e7eb')) : '2px solid #e5e7eb');
+                  var baseBorder = theme.borderOverride || (boardColor ? (catBorder[word.category] || '#e5e7eb') : '#e5e7eb');
+                  var border = isDragTarget ? '2px dashed ' + PURPLE : '2px solid ' + baseBorder;
                   var imgSz = 64;
                   return e('div', {
                     key: word.id,
@@ -2119,7 +2424,7 @@
                     // Drag handle indicator
                     e('div', { className: 'ss-no-print', style: { position: 'absolute', top: 3, left: 4, fontSize: '10px', color: '#d1d5db', lineHeight: 1, userSelect: 'none' } }, '\u28FF'),
                     // Label above image
-                    boardTextPos === 'above' && e('span', { style: { fontSize: boardTextSize + 'px', fontWeight: 700, color: '#1f2937', textAlign: 'center', lineHeight: 1.3 } }, word.label),
+                    boardTextPos === 'above' && e('span', { style: { fontSize: boardTextSize + 'px', fontWeight: 700, color: theme.textColor, textAlign: 'center', lineHeight: 1.3 } }, word.label),
                     // Image
                     boardLoading[word.id]
                       ? e('div', { style: { width: imgSz, height: imgSz, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, spinner(24))
@@ -2127,7 +2432,7 @@
                         ? e('img', { src: word.image, alt: word.label, style: { width: imgSz, height: imgSz, objectFit: 'contain', borderRadius: '6px', background: '#fff' } })
                         : e('div', { style: { width: imgSz, height: imgSz, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', borderRadius: '6px', fontSize: '11px', color: '#9ca3af', textAlign: 'center', padding: '4px' } }, 'Click \u2728'),
                     // Label below image (default)
-                    boardTextPos === 'below' && e('span', { style: { fontSize: boardTextSize + 'px', fontWeight: 700, color: '#1f2937', textAlign: 'center', lineHeight: 1.3 } }, word.label),
+                    boardTextPos === 'below' && e('span', { style: { fontSize: boardTextSize + 'px', fontWeight: 700, color: theme.textColor, textAlign: 'center', lineHeight: 1.3 } }, word.label),
                     // Regen button
                     e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); regenBoardCell(word.id); }, style: { position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px' } }, '\uD83D\uDD04'),
                     // Remove button
@@ -2135,13 +2440,23 @@
                   );
                 })
               ),
-              boardColor && e('div', { style: { display: 'flex', gap: '10px', marginTop: '10px', flexWrap: 'wrap' } },
-                [['noun', 'Noun'], ['verb', 'Verb'], ['adjective', 'Adjective'], ['other', 'Other']].map(function (pair) {
-                  return e('div', { key: pair[0], style: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: '#374151' } },
-                    e('div', { style: { width: 12, height: 12, borderRadius: '2px', background: CAT_COLORS[pair[0]], border: '1px solid ' + CAT_BORDER[pair[0]] } }),
+              boardColor && e('div', { style: { display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap', alignItems: 'center' } },
+                e('span', { style: { fontSize: '10px', color: '#9ca3af', fontWeight: 600 } }, 'Colors:'),
+                [['noun', 'Noun'], ['verb', 'Verb'], ['adjective', 'Adj'], ['other', 'Other']].map(function (pair) {
+                  return e('label', { key: pair[0], style: { display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', color: '#374151', cursor: 'pointer', userSelect: 'none' } },
+                    e('input', {
+                      type: 'color', value: catFill[pair[0]] || '#f9fafb',
+                      onChange: function (ev) { var v = ev.target.value; setCatFill(function (prev) { var n = Object.assign({}, prev); n[pair[0]] = v; store(STORAGE_CAT_COLORS + '_fill', n); return n; }); },
+                      title: 'Click to change ' + pair[1] + ' fill color',
+                      style: { width: 18, height: 18, padding: 0, border: '1px solid #d1d5db', borderRadius: '3px', cursor: 'pointer' }
+                    }),
                     pair[1]
                   );
-                })
+                }),
+                e('button', {
+                  onClick: function () { setCatFill(CAT_COLORS); setCatBorder(CAT_BORDER); store(STORAGE_CAT_COLORS + '_fill', CAT_COLORS); store(STORAGE_CAT_COLORS + '_border', CAT_BORDER); },
+                  style: { fontSize: '10px', color: '#9ca3af', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }
+                }, 'Reset')
               )
             )
           : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', flexDirection: 'column', gap: '10px' } },
