@@ -1,13 +1,12 @@
 {
   "name": "alloflow-admin",
-  "version": "0.1.14",
+  "version": "0.2.0",
   "description": "AlloFlow Admin - Setup Wizard & Management",
   "main": "public/main.js",
   "author": "AlloFlow Team",
   "license": "MIT",
   "homepage": "./",
   "dependencies": {
-    "js-yaml": "^4.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1"
@@ -53,9 +52,7 @@
     "extraMetadata": {
       "main": "public/main.js"
     },
-    "extraResources": [
-      "docker_templates/**/*"
-    ],
+
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,

@@ -7,23 +7,23 @@ const DEPLOYMENT_TYPES = [
     description: 'Use cloud AI resources (OpenAI, Anthropic, etc.) via API keys',
     icon: '☁️',
     requires: ['apiKey', 'provider'],
-    dockerNeeded: false
+    needsLocal: false
   },
   {
     id: 'hybrid',
     label: 'Hybrid',
-    description: 'Local Docker + cloud AI fallback with API keys',
+    description: 'Local AI services + cloud API fallback',
     icon: '🔗',
-    requires: ['apiKey', 'dockerDir'],
-    dockerNeeded: true
+    requires: ['apiKey'],
+    needsLocal: true
   },
   {
     id: 'local',
     label: 'Local',
-    description: 'Full local setup with Docker containers (ollama, piper, flux, etc.)',
+    description: 'Full local setup — AI services run natively on your machine',
     icon: '🏠',
-    requires: ['dockerDir'],
-    dockerNeeded: true
+    requires: [],
+    needsLocal: true
   },
   {
     id: 'cluster',
@@ -31,7 +31,7 @@ const DEPLOYMENT_TYPES = [
     description: 'Connect to existing AlloFlow instance in your network',
     icon: '🌐',
     requires: ['clusterIP', 'clusterPort', 'clusterToken'],
-    dockerNeeded: false
+    needsLocal: false
   }
 ];
 
@@ -58,38 +58,12 @@ export default function SetupWizard({ onComplete }) {
     const deployment = DEPLOYMENT_TYPES.find(d => d.id === typeId);
     
     // For cloud/cluster deployments, skip hardware/services checks
-    if (!deployment.dockerNeeded) {
-      console.log('[SetupWizard] Docker not needed, skipping hardware check');
+    if (!deployment.needsLocal) {
+      console.log('[SetupWizard] No local services needed, skipping hardware check');
       setStep('config');
     } else {
-      // Check Docker first
-      console.log('[SetupWizard] Docker required, checking...');
-      checkDockerStatus(typeId);
-    }
-  };
-
-  // Check Docker status
-  const checkDockerStatus = async (deploymentType) => {
-    try {
-      setLoading(true);
-      const result = await window.alloAPI.setup.checkDocker(deploymentType);
-      console.log('[SetupWizard] Docker check result:', result);
-      
-      if (result.required && !result.installed) {
-        setError(
-          'Docker is not installed. Please install Docker Desktop before continuing.\n\n' +
-          'Download: https://www.docker.com/products/docker-desktop'
-        );
-        return;
-      }
-      
-      // Proceed to hardware detection
+      // Go straight to hardware detection
       detectHardware();
-    } catch (err) {
-      console.error('[SetupWizard] Error checking Docker:', err);
-      setError('Failed to check Docker: ' + err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -172,22 +146,6 @@ export default function SetupWizard({ onComplete }) {
   const handleConfigChange = (field, value) => {
     console.log('[SetupWizard] Config change:', field, '=', value);
     setConfig({ ...config, [field]: value });
-  };
-
-  // Browse for docker directory
-  const browseDockerDir = async () => {
-    try {
-      console.log('[SetupWizard] Opening folder browser');
-      const result = await window.alloAPI.setup.browseFolder(config.dockerDir);
-      
-      if (!result.canceled && result.path) {
-        console.log('[SetupWizard] Selected folder:', result.path);
-        handleConfigChange('dockerDir', result.path);
-      }
-    } catch (err) {
-      console.error('[SetupWizard] Error browsing folder:', err);
-      setError('Failed to open folder browser: ' + err.message);
-    }
   };
 
   // Start deployment
@@ -513,27 +471,6 @@ export default function SetupWizard({ onComplete }) {
             {selectedType === 'hybrid' && (
               <>
                 <div className="form-group">
-                  <label>Docker Directory</label>
-                  <div className="input-with-button">
-                    <input
-                      type="text"
-                      value={config.dockerDir || ''}
-                      onChange={(e) => handleConfigChange('dockerDir', e.target.value)}
-                      placeholder="e.g., C:\\docker or /home/user/docker"
-                    />
-                    <button
-                      type="button"
-                      className="btn-browse"
-                      onClick={browseDockerDir}
-                      title="Browse for folder"
-                    >
-                      Browse...
-                    </button>
-                  </div>
-                  <small>Directory where docker-compose files will be created</small>
-                </div>
-
-                <div className="form-group">
                   <label>Cloud API Provider</label>
                   <select
                     value={config.provider || ''}
@@ -552,43 +489,36 @@ export default function SetupWizard({ onComplete }) {
                     type="password"
                     value={config.apiKey || ''}
                     onChange={(e) => handleConfigChange('apiKey', e.target.value)}
-                    placeholder="Enter your API key for fallback"
+                    placeholder="Enter your API key for cloud fallback"
                   />
-                </div>
-              </>
-            )}
-
-            {selectedType === 'local' && (
-              <>
-                <div className="form-group">
-                  <label>Docker Directory</label>
-                  <div className="input-with-button">
-                    <input
-                      type="text"
-                      value={config.dockerDir || ''}
-                      onChange={(e) => handleConfigChange('dockerDir', e.target.value)}
-                      placeholder="e.g., C:\\docker or /home/user/docker"
-                    />
-                    <button
-                      type="button"
-                      className="btn-browse"
-                      onClick={browseDockerDir}
-                      title="Browse for folder"
-                    >
-                      Browse...
-                    </button>
-                  </div>
-                  <small>Directory where docker-compose files will be created</small>
                 </div>
 
                 <div className="info-box">
                   <strong>Your Services:</strong>
                   <ul>
                     {config.selectedServices && config.selectedServices.map(svc => {
-                      const svcDef = services.find(s => s.id === svc);
+                      const svcDef = services && services.find(s => s.id === svc);
                       return svcDef ? <li key={svc}>{svcDef.icon} {svcDef.name}</li> : null;
                     })}
                   </ul>
+                </div>
+              </>
+            )}
+
+            {selectedType === 'local' && (
+              <>
+                <div className="info-box">
+                  <strong>Your Services:</strong>
+                  <ul>
+                    {config.selectedServices && config.selectedServices.map(svc => {
+                      const svcDef = services && services.find(s => s.id === svc);
+                      return svcDef ? <li key={svc}>{svcDef.icon} {svcDef.name}</li> : null;
+                    })}
+                  </ul>
+                  <p style={{marginTop: '10px', fontSize: '0.9rem'}}>
+                    Services will be downloaded and run natively on your machine.
+                    Data stored in <code>~/.alloflow/</code>
+                  </p>
                 </div>
               </>
             )}
@@ -666,8 +596,8 @@ export default function SetupWizard({ onComplete }) {
           )}
 
           <div className="info-box">
-            <p>⏳ This may take several minutes on first run as Docker images are pulled and services initialize.</p>
-            <p style={{marginTop: '10px'}}>Please don't close this window during deployment.</p>
+            <p>⏳ This may take several minutes on first run as services are downloaded and initialized.</p>
+            <p style={{marginTop: '10px'}}>Please don't close this window during setup.</p>
           </div>
 
           {error && <div className="error-message">{error}</div>}
@@ -693,9 +623,8 @@ export default function SetupWizard({ onComplete }) {
 
           {(selectedType === 'local' || selectedType === 'hybrid') && (
             <div className="info-box">
-              <p>Docker services are running at:</p>
-              <code>{config.dockerDir}/docker-compose.yml</code>
-              <p style={{marginTop: '10px'}}>Your services are now ready to use!</p>
+              <p>Services are running natively on your machine.</p>
+              <p style={{marginTop: '10px'}}>Data stored in <code>~/.alloflow/</code></p>
             </div>
           )}
 

@@ -1,10 +1,10 @@
 /**
  * AlloFlow Service Definitions
- * Defines service configurations, hardware requirements, and descriptions
+ * Defines service configurations for native process management.
+ * Services run as child processes spawned by the Electron app — no Docker required.
  */
 
 const SERVICE_DEFINITIONS = {
-  // Always included services
   pocketbase: {
     id: 'pocketbase',
     name: 'PocketBase',
@@ -13,20 +13,19 @@ const SERVICE_DEFINITIONS = {
     required: true,
     optional: false,
     defaultEnabled: true,
-    image: 'ghcr.io/muchobien/pocketbase:latest',
+    native: true,
     port: 8090,
-    internalPort: 8090,
     healthCheck: {
-      endpoint: 'http://localhost:8090/api/health',
+      endpoint: 'http://127.0.0.1:8090/api/health',
       method: 'GET',
       timeout: 10000,
       maxRetries: 30,
       retryInterval: 1000
     },
     resources: {
-      minRAM: 512, // MB
+      minRAM: 512,
       minCPU: 1,
-      minDisk: 1000 // MB
+      minDisk: 1000
     },
     description_detailed: `
       **Database & API Backend**
@@ -47,20 +46,19 @@ const SERVICE_DEFINITIONS = {
     required: true,
     optional: false,
     defaultEnabled: true,
-    image: 'ollama/ollama:latest',
+    native: true,
     port: 11434,
-    internalPort: 11434,
     healthCheck: {
-      endpoint: 'http://localhost:11434/api/tags',
+      endpoint: 'http://127.0.0.1:11434/api/tags',
       method: 'GET',
       timeout: 15000,
       maxRetries: 30,
       retryInterval: 2000
     },
     resources: {
-      minRAM: 2048, // MB
+      minRAM: 2048,
       minCPU: 2,
-      minDisk: 20000, // MB (20GB for base + models)
+      minDisk: 20000,
       recommendedRAM: 8192
     },
     hardwareTiers: {
@@ -84,8 +82,7 @@ const SERVICE_DEFINITIONS = {
       **AI Chat Model Engine**
       - Run LLMs completely offline, no API keys needed
       - Models available: Mistral, Llama2, Neural Chat, Code Llama, and more
-      - Perfectly suited for educational content generation
-      - Speech-to-text integration for accessibility features
+      - GPU-accelerated on AMD (Vulkan) and NVIDIA (CUDA) automatically
       - Pulls models from Ollama registry (automatic, on-demand)
       
       *Entry-level systems limited to 7B models for performance*
@@ -100,16 +97,9 @@ const SERVICE_DEFINITIONS = {
     required: true,
     optional: false,
     defaultEnabled: true,
-    image: 'rhasspy/wyoming-piper:latest',
-    port: 10400,
-    internalPort: 10400,
-    healthCheck: {
-      endpoint: 'http://localhost:10400/',
-      method: 'GET',
-      timeout: 10000,
-      maxRetries: 20,
-      retryInterval: 500
-    },
+    native: true,
+    port: null, // CLI-based, no persistent server
+    healthCheck: null, // No health endpoint — validated by binary existence
     resources: {
       minRAM: 512,
       minCPU: 1,
@@ -120,74 +110,69 @@ const SERVICE_DEFINITIONS = {
       - Generate audio from text completely offline
       - 50+ voices across multiple languages
       - Essential for accessibility in educational settings
-      - Real-time audio streaming for fluent reading
       - No API costs or internet dependency
-      - Supports phoneme-level control for literacy instruction
       
       *Lightweight - works on all hardware tiers*
     `
   },
 
-  searxng: {
-    id: 'searxng',
-    name: 'SearXNG (Search)',
-    description: 'Privacy-focused meta-search engine for research and knowledge integration',
+  search: {
+    id: 'search',
+    name: 'Web Search',
+    description: 'Built-in web search via DuckDuckGo (runs inside the app, no external server needed)',
     icon: '🔍',
-    required: false,
-    optional: false, // Always included but can be discussed
+    required: true,
+    optional: false,
     defaultEnabled: true,
-    image: 'searxng/searxng:latest',
+    native: true,
+    builtin: true, // Runs in-process, no binary needed
     port: 8888,
-    internalPort: 8080,
     healthCheck: {
-      endpoint: 'http://localhost:8888/',
+      endpoint: 'http://127.0.0.1:8888/health',
       method: 'GET',
-      timeout: 10000,
-      maxRetries: 20,
-      retryInterval: 1000
+      timeout: 5000,
+      maxRetries: 5,
+      retryInterval: 500
     },
     resources: {
-      minRAM: 256,
-      minCPU: 1,
-      minDisk: 500
+      minRAM: 0,
+      minCPU: 0,
+      minDisk: 0
     },
     description_detailed: `
-      **Meta-Search Engine**
-      - Search across multiple sources (Google, Bing, DuckDuckGo-compatible)
-      - Privacy-respecting, no tracking
-      - Useful for research and knowledge integration
-      - Can augment AI responses with real-time information
-      - Minimal resource overhead
+      **Web Search (Built-in)**
+      - Search the web via DuckDuckGo, no external server needed
+      - Runs inside the app — zero additional resources
+      - Provides real-time web results for AI-augmented responses
       
-      *Always included - very lightweight*
+      *Always included — zero overhead*
     `
   },
 
   flux: {
     id: 'flux',
     name: 'Flux (Image Generation)',
-    description: 'AI-powered image generation from text descriptions (builds locally, requires GPU for reasonable speed)',
+    description: 'AI-powered image generation from text descriptions (requires GPU for reasonable speed)',
     icon: '🎨',
     required: false,
     optional: true,
     defaultEnabled: false,
-    buildContext: 'flux-server', // Built from local Dockerfile, not pulled from registry
-    image: 'alloflow-flux:latest', // Local image tag after build
+    native: true,
+    needsPython: true, // Requires Python + torch for execution
     port: 7860,
-    internalPort: 7860,
     healthCheck: {
-      endpoint: 'http://localhost:7860/health',
+      endpoint: 'http://127.0.0.1:7860/health',
       method: 'GET',
       timeout: 30000,
       maxRetries: 30,
       retryInterval: 3000
     },
     resources: {
-      minRAM: 4096, // 4GB minimum
-      minGPU_VRAM: 6000, // 6GB VRAM minimum
+      minRAM: 4096,
+      minGPU_VRAM: 6000,
       minCPU: 2,
       minDisk: 10000,
-      recommendedGPU_VRAM: 12000, // 12GB recommended
+      recommendedGPU_VRAM: 12000,
       cpuOnlyWarning: 'VERY slow on CPU (minutes per image). Enable only if you have 16GB+ RAM and patience.'
     },
     hardwareTiers: {
@@ -197,7 +182,7 @@ const SERVICE_DEFINITIONS = {
       },
       midRange: {
         enabled: true,
-        requirement: 'Requires NVIDIA GPU with 8GB+ VRAM',
+        requirement: 'Requires GPU with 8GB+ VRAM',
         cpuWarning: 'CPU-only generation takes 10-40 minutes per image',
         warning: '⚠️  Only enable if you have a dedicated GPU'
       },
@@ -215,11 +200,10 @@ const SERVICE_DEFINITIONS = {
       - REQUIRES discrete GPU for reasonable speed
       
       ⚠️  **Hardware Requirements:**
-      - NVIDIA GPU with 8GB+ VRAM (recommended 12GB+)
+      - GPU with 8GB+ VRAM (recommended 12GB+)
       - OR 16GB+ system RAM for CPU inference (VERY slow)
       
-      *Image generation takes 2-5 seconds with GPU, 10-40 minutes on CPU*
-      *This is optional - you can create powerful AlloFlow without it*
+      *This is optional — you can run AlloFlow without it*
     `
   }
 };
@@ -242,7 +226,7 @@ const HARDWARE_PROFILES = {
       minDisk: 20000, // MB
       maxRAM: 4096
     },
-    servicesToInclude: ['pocketbase', 'ollama', 'piper', 'searxng'], // No Flux
+    servicesToInclude: ['pocketbase', 'ollama', 'piper', 'search'], // No Flux
     limitations: [
       'Smaller LLMs only (7B models)',
       'No image generation',
@@ -274,7 +258,7 @@ const HARDWARE_PROFILES = {
       maxRAM: 16384,
       optionalGPU_VRAM: 4000
     },
-    servicesToInclude: ['pocketbase', 'ollama', 'piper', 'searxng'], // Flux optional
+    servicesToInclude: ['pocketbase', 'ollama', 'piper', 'search'], // Flux optional
     limitations: [
       'Up to 13B LLMs recommended',
       'Image generation optional (GPU-dependent)',
@@ -305,7 +289,7 @@ const HARDWARE_PROFILES = {
       recommendedRAM: 32768,
       recommendedGPU_VRAM: 12000
     },
-    servicesToInclude: ['pocketbase', 'ollama', 'piper', 'searxng', 'flux'],
+    servicesToInclude: ['pocketbase', 'ollama', 'piper', 'search', 'flux'],
     limitations: [],
     recommendations: [
       'Run large models (13B, 70B) for better quality',
