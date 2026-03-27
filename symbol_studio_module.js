@@ -274,6 +274,7 @@
     var addToast = props.addToast;
     var onClose = props.onClose;
     var isOpen = props.isOpen;
+    var cloudSync = props.cloudSync || null; // { save: async(data)=>void, load: async()=>data|null }
 
     var e = React.createElement;
     var useState = React.useState;
@@ -350,6 +351,10 @@
     var _storyGenerating = useState(false); var storyGenerating = _storyGenerating[0]; var setStoryGenerating = _storyGenerating[1];
     var _storyIllustrating = useState({}); var storyIllustrating = _storyIllustrating[0]; var setStoryIllustrating = _storyIllustrating[1];
     var _storySpeaking = useState(false); var storySpeaking = _storySpeaking[0]; var setStorySpeaking = _storySpeaking[1];
+
+    // Cloud sync state
+    var _syncStatus = useState('idle'); var syncStatus = _syncStatus[0]; var setSyncStatus = _syncStatus[1];
+    var _lastSynced = useState(null); var lastSynced = _lastSynced[0]; var setLastSynced = _lastSynced[1];
 
     // Quick Boards state
     var _qbMode = useState('firstthen'); var qbMode = _qbMode[0]; var setQbMode = _qbMode[1];
@@ -627,6 +632,107 @@
       ev.target.value = '';
     }, [gallery, savedBoards, savedSchedules, profiles, addToast]);
 
+    // ── Cloud sync actions ────────────────────────────────────────────────
+    var syncToCloud = useCallback(async function () {
+      if (!cloudSync) return;
+      setSyncStatus('syncing');
+      try {
+        var data = {
+          profiles: profiles.map(function (p) { return { id: p.id, name: p.name, description: p.description }; }),
+          boards: savedBoards.map(function (b) {
+            return { id: b.id, title: b.title, createdAt: b.createdAt, cols: b.cols || 4,
+              words: (b.words || []).map(function (w) { return { label: w.label, category: w.category || 'other', description: w.description || '' }; }) };
+          }),
+          schedules: savedSchedules.map(function (s) {
+            return { id: s.id, title: s.title, createdAt: s.createdAt, orientation: s.orientation || 'horizontal',
+              items: (s.items || []).map(function (it) { return { id: it.id, label: it.label }; }) };
+          }),
+          galleryMeta: gallery.map(function (g) {
+            return { id: g.id, label: g.label, category: g.category || 'other', style: g.style || '', isFavorite: g.isFavorite || false, createdAt: g.createdAt };
+          }),
+          lastSynced: new Date().toISOString(),
+        };
+        await cloudSync.save(data);
+        setLastSynced(data.lastSynced); setSyncStatus('synced');
+        addToast && addToast({ message: '☁️ Synced to cloud!', type: 'success' });
+      } catch (e) {
+        warnLog('Cloud sync failed:', e);
+        setSyncStatus('error');
+        addToast && addToast({ message: 'Cloud sync failed: ' + e.message, type: 'error' });
+      }
+    }, [cloudSync, profiles, savedBoards, savedSchedules, gallery, addToast]);
+
+    var loadFromCloud = useCallback(async function () {
+      if (!cloudSync) return;
+      setSyncStatus('syncing');
+      try {
+        var data = await cloudSync.load();
+        if (!data) {
+          setSyncStatus('idle');
+          addToast && addToast({ message: 'No cloud backup found', type: 'info' }); return;
+        }
+        var summary = [];
+        // Profiles: merge cloud metadata with local images
+        if (Array.isArray(data.profiles) && data.profiles.length) {
+          var localProfMap = {};
+          profiles.forEach(function (p) { localProfMap[p.id] = p; });
+          var mergedProfs = data.profiles.map(function (cp) {
+            var lp = localProfMap[cp.id];
+            return { id: cp.id, name: cp.name, description: cp.description, image: lp ? lp.image : null };
+          });
+          var cloudProfIds = {};
+          data.profiles.forEach(function (p) { cloudProfIds[p.id] = true; });
+          profiles.forEach(function (lp) { if (!cloudProfIds[lp.id]) mergedProfs.push(lp); });
+          mergedProfs = mergedProfs.slice(0, MAX_PROFILES);
+          setProfiles(mergedProfs); store(STORAGE_PROFILES, mergedProfs);
+          summary.push(data.profiles.length + ' profile(s)');
+        }
+        // Boards: merge cloud structure with local images
+        if (Array.isArray(data.boards) && data.boards.length) {
+          var localBoardMap = {};
+          savedBoards.forEach(function (b) { localBoardMap[b.id] = b; });
+          var mergedBoards = data.boards.map(function (cb) {
+            var lb = localBoardMap[cb.id];
+            return { id: cb.id, title: cb.title, createdAt: cb.createdAt, cols: cb.cols || 4,
+              words: (cb.words || []).map(function (cw, idx) {
+                var lw = lb && lb.words && lb.words[idx] && lb.words[idx].label === cw.label ? lb.words[idx] : null;
+                return Object.assign({}, cw, { id: uid(), image: lw ? lw.image : null });
+              })};
+          });
+          var cloudBoardIds = {};
+          data.boards.forEach(function (b) { cloudBoardIds[b.id] = true; });
+          savedBoards.forEach(function (lb) { if (!cloudBoardIds[lb.id]) mergedBoards.push(lb); });
+          setSavedBoards(mergedBoards); store(STORAGE_BOARDS, mergedBoards);
+          summary.push(data.boards.length + ' board(s)');
+        }
+        // Schedules: same pattern
+        if (Array.isArray(data.schedules) && data.schedules.length) {
+          var localSchedMap = {};
+          savedSchedules.forEach(function (s) { localSchedMap[s.id] = s; });
+          var mergedScheds = data.schedules.map(function (cs) {
+            var ls = localSchedMap[cs.id];
+            return { id: cs.id, title: cs.title, createdAt: cs.createdAt, orientation: cs.orientation || 'horizontal',
+              items: (cs.items || []).map(function (ci) {
+                var li = ls && ls.items && ls.items.find(function (i) { return i.id === ci.id; });
+                return Object.assign({}, ci, { image: li ? li.image : null });
+              })};
+          });
+          var cloudSchedIds = {};
+          data.schedules.forEach(function (s) { cloudSchedIds[s.id] = true; });
+          savedSchedules.forEach(function (ls) { if (!cloudSchedIds[ls.id]) mergedScheds.push(ls); });
+          setSavedSchedules(mergedScheds); store(STORAGE_SCHEDULES, mergedScheds);
+          summary.push(data.schedules.length + ' schedule(s)');
+        }
+        if (data.lastSynced) setLastSynced(data.lastSynced);
+        setSyncStatus('synced');
+        addToast && addToast({ message: '☁️ Loaded from cloud: ' + (summary.length ? summary.join(', ') : 'up to date'), type: 'success' });
+      } catch (e) {
+        warnLog('Cloud load failed:', e);
+        setSyncStatus('error');
+        addToast && addToast({ message: 'Cloud load failed: ' + e.message, type: 'error' });
+      }
+    }, [cloudSync, profiles, savedBoards, savedSchedules, addToast]);
+
     // ── Board Builder actions ─────────────────────────────────────────────
     var generateBoardFromTopic = useCallback(async function () {
       if (!boardTopic.trim() || !onCallGemini) return;
@@ -691,7 +797,8 @@
       var updated = [saved].concat(savedBoards);
       setSavedBoards(updated); store(STORAGE_BOARDS, updated);
       addToast && addToast({ message: 'Board saved!', type: 'success' });
-    }, [boardWords, boardTitle, boardTopic, boardCols, savedBoards, addToast]);
+      if (cloudSync) setTimeout(function () { syncToCloud(); }, 300);
+    }, [boardWords, boardTitle, boardTopic, boardCols, savedBoards, cloudSync, syncToCloud, addToast]);
 
     var applyBoardTemplate = useCallback(function (template) {
       var words = template.words.map(function (w) { return Object.assign({}, w, { id: uid(), image: null }); });
@@ -1622,7 +1729,8 @@
             tab === 'symbols' && renderSymbolsTab(),
             tab === 'board' && renderBoardTab(),
             tab === 'schedule' && renderScheduleTab(),
-            tab === 'stories' && renderStoriesTab()
+            tab === 'stories' && renderStoriesTab(),
+            tab === 'quickboards' && renderQuickBoardsTab()
           )
         )
       )
