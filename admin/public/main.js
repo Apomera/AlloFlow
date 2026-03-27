@@ -572,3 +572,24 @@ ipcMain.handle('setup:start-deployment', async (event, setupData) => {
     return { success: false, error: err.message };
   }
 });
+
+// IPC Handler: Uninstall all services
+ipcMain.handle('setup:uninstall', async (event) => {
+  try {
+    console.log('[ipc:uninstall] Starting full uninstall...');
+    
+    // Stop search server
+    stopSearchServer();
+    
+    await nativePM.uninstallAll((progress) => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('uninstall:progress', progress);
+      }
+    });
+    
+    return { success: true };
+  } catch (err) {
+    console.error('[ipc:uninstall] Error:', err.message);
+    return { success: false, error: err.message };
+  }
+});

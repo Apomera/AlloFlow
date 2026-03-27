@@ -568,15 +568,35 @@ function startService(serviceId) {
  */
 function stopService(serviceId) {
   const proc = processes[serviceId];
-  if (!proc) return;
-
-  console.log(`[native-pm] Stopping ${serviceId} (PID ${proc.pid})`);
+  
   if (process.platform === 'win32') {
-    // On Windows, spawn taskkill to kill the process tree
-    spawn('taskkill', ['/PID', proc.pid.toString(), '/T', '/F'], { windowsHide: true });
+    // Windows: kill by process tree first, then by name as fallback
+    if (proc) {
+      console.log(`[native-pm] Stopping ${serviceId} (PID ${proc.pid})`);
+      try {
+        spawn('taskkill', ['/PID', proc.pid.toString(), '/T', '/F'], { windowsHide: true });
+      } catch {}
+    }
+    
+    // Ollama installs a tray app + background runner — kill those too
+    if (serviceId === 'ollama') {
+      console.log('[native-pm] Killing Ollama system processes...');
+      for (const name of ['ollama.exe', 'ollama app.exe', 'ollama_runners.exe']) {
+        try {
+          spawn('taskkill', ['/IM', name, '/F'], { windowsHide: true });
+        } catch {}
+      }
+    }
   } else {
-    proc.kill('SIGTERM');
+    if (proc) {
+      console.log(`[native-pm] Stopping ${serviceId} (PID ${proc.pid})`);
+      proc.kill('SIGTERM');
+    }
+    if (serviceId === 'ollama') {
+      try { spawn('pkill', ['-f', 'ollama']); } catch {}
+    }
   }
+  
   delete processes[serviceId];
 }
 
@@ -585,8 +605,16 @@ function stopService(serviceId) {
  */
 function stopAllServices() {
   console.log('[native-pm] Stopping all services...');
+  
+  // Stop any services we have a handle on
   for (const serviceId of Object.keys(processes)) {
     stopService(serviceId);
+  }
+  
+  // Also force-kill Ollama even if we don't have a process handle 
+  // (it may have been started by the system installer tray app)
+  if (!processes['ollama']) {
+    stopService('ollama');
   }
 }
 
@@ -629,6 +657,103 @@ function getServiceStatuses() {
   return statuses;
 }
 
+/**
+ * Uninstall a single service — stop it, remove binaries, remove data.
+ */
+async function uninstallService(serviceId) {
+  console.log(`[native-pm] Uninstalling ${serviceId}...`);
+  
+  // Stop it first
+  stopService(serviceId);
+  // Small delay to let processes die
+  await new Promise(r => setTimeout(r, 1000));
+  
+  if (serviceId === 'ollama') {
+    // Ollama on Windows was installed via its own installer — run silent uninstall
+    if (process.platform === 'win32') {
+      const uninstaller = path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'Ollama', 'unins000.exe');
+      if (fs.existsSync(uninstaller)) {
+        console.log('[native-pm] Running Ollama uninstaller...');
+        await new Promise((resolve) => {
+          const proc = spawn(uninstaller, ['/VERYSILENT', '/NORESTART'], { windowsHide: true });
+          proc.on('close', resolve);
+          proc.on('error', () => resolve());
+        });
+        // Wait for uninstaller to finish
+        await new Promise(r => setTimeout(r, 3000));
+      }
+      // Clean up the Ollama AppData directory
+      const ollamaAppData = path.join(os.homedir(), '.ollama');
+      rmDirSafe(ollamaAppData);
+    } else {
+      // Linux/macOS: remove the binary
+      try {
+        const { execSync } = require('child_process');
+        const binPath = execSync('which ollama', { stdio: 'pipe', encoding: 'utf-8' }).trim();
+        if (binPath) fs.unlinkSync(binPath);
+      } catch {}
+    }
+  }
+  
+  // Remove our binary directory
+  const serviceDir = path.join(BINARIES_DIR, serviceId);
+  rmDirSafe(serviceDir);
+  
+  // Remove our data directory
+  const dataDir = path.join(DATA_DIR, serviceId);
+  rmDirSafe(dataDir);
+  
+  console.log(`[native-pm] ${serviceId} uninstalled`);
+}
+
+/**
+ * Uninstall ALL services and remove the ~/.alloflow directory entirely.
+ */
+async function uninstallAll(onProgress) {
+  const allServices = ['ollama', 'pocketbase', 'piper', 'flux'];
+  const total = allServices.length;
+  
+  for (let i = 0; i < total; i++) {
+    const serviceId = allServices[i];
+    if (onProgress) {
+      onProgress({
+        status: `Uninstalling ${serviceId}...`,
+        progress: Math.round((i / total) * 80)
+      });
+    }
+    try {
+      await uninstallService(serviceId);
+    } catch (err) {
+      console.error(`[native-pm] Error uninstalling ${serviceId}:`, err.message);
+    }
+  }
+  
+  // Remove the entire .alloflow directory
+  if (onProgress) {
+    onProgress({ status: 'Removing AlloFlow data...', progress: 90 });
+  }
+  rmDirSafe(ALLOFLOW_DIR);
+  
+  if (onProgress) {
+    onProgress({ status: 'Uninstall complete', progress: 100 });
+  }
+  console.log('[native-pm] Full uninstall complete');
+}
+
+/**
+ * Recursively remove a directory — tolerates files in use.
+ */
+function rmDirSafe(dirPath) {
+  try {
+    if (fs.existsSync(dirPath)) {
+      fs.rmSync(dirPath, { recursive: true, force: true });
+      console.log(`[native-pm] Removed: ${dirPath}`);
+    }
+  } catch (err) {
+    console.warn(`[native-pm] Could not fully remove ${dirPath}: ${err.message}`);
+  }
+}
+
 module.exports = {
   ensureDirectories,
   getDownloadInfo,
@@ -640,6 +765,8 @@ module.exports = {
   checkServiceHealth,
   getServiceStatuses,
   getServiceBinaryPath,
+  uninstallService,
+  uninstallAll,
   BINARIES_DIR,
   DATA_DIR,
   ALLOFLOW_DIR

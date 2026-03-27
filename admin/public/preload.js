@@ -47,6 +47,15 @@ contextBridge.exposeInMainWorld('alloAPI', {
         callback({ type: 'error', ...data });
       });
       return unsubscribe;
+    },
+    uninstall: () => {
+      console.log('[preload:setup:uninstall] Starting uninstall');
+      return ipcRenderer.invoke('setup:uninstall');
+    },
+    onUninstallProgress: (callback) => {
+      ipcRenderer.on('uninstall:progress', (event, data) => {
+        callback(data);
+      });
     }
   }
 });
