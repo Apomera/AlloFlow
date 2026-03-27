@@ -26,6 +26,7 @@
   var STORAGE_PROFILES = 'alloStudentProfiles';
   var STORAGE_ACTIVE_PROFILE = 'alloActiveProfileId';
   var STORAGE_BOOKS = 'alloActivitySets';
+  var STORAGE_USAGE = 'alloAACUsage';
   var MAX_PROFILES = 8;
   var BATCH_SIZE = 4;
   var BATCH_DELAY = 700;
@@ -386,12 +387,18 @@
     var _symLoading = useState({}); var symLoading = _symLoading[0]; var setSymLoading = _symLoading[1];
     var _symRefine = useState({}); var symRefine = _symRefine[0]; var setSymRefine = _symRefine[1];
     var _symFilter = useState(''); var symFilter = _symFilter[0]; var setSymFilter = _symFilter[1];
+    var _symCatFilter = useState(''); var symCatFilter = _symCatFilter[0]; var setSymCatFilter = _symCatFilter[1];
     var _symCategory = useState(''); var symCategory = _symCategory[0]; var setSymCategory = _symCategory[1];
     var _symShowFavs = useState(false); var symShowFavs = _symShowFavs[0]; var setSymShowFavs = _symShowFavs[1];
 
     // Board Builder state
     var _boardTopic = useState(''); var boardTopic = _boardTopic[0]; var setBoardTopic = _boardTopic[1];
     var _boardWords = useState([]); var boardWords = _boardWords[0]; var setBoardWords = _boardWords[1];
+    // Multi-page boards — activePage = index of the page currently being edited
+    var _activePageIdx = useState(0); var activePageIdx = _activePageIdx[0]; var setActivePageIdx = _activePageIdx[1];
+    var _boardPages = useState(null); var boardPages = _boardPages[0]; var setBoardPages = _boardPages[1];
+    // Use-mode page navigation
+    var _usePageIdx = useState(0); var usePageIdx = _usePageIdx[0]; var setUsePageIdx = _usePageIdx[1];
     var _boardCols = useState(4); var boardCols = _boardCols[0]; var setBoardCols = _boardCols[1];
     var _boardLoading = useState({}); var boardLoading = _boardLoading[0]; var setBoardLoading = _boardLoading[1];
     var _boardGenerating = useState(false); var boardGenerating = _boardGenerating[0]; var setBoardGenerating = _boardGenerating[1];
@@ -569,6 +576,8 @@
     var _stripSpeaking = useState(false); var stripSpeaking = _stripSpeaking[0]; var setStripSpeaking = _stripSpeaking[1];
     var _commLog = useState([]); var commLog = _commLog[0]; var setCommLog = _commLog[1];
     var _showCommLog = useState(false); var showCommLog = _showCommLog[0]; var setShowCommLog = _showCommLog[1];
+    var _usageLog = useState(function () { return load(STORAGE_USAGE, {}); }); var usageLog = _usageLog[0]; var setUsageLog = _usageLog[1];
+    var _showAnalytics = useState(false); var showAnalytics = _showAnalytics[0]; var setShowAnalytics = _showAnalytics[1];
 
     // Word prediction state (Use mode)
     var _predictions = useState([]); var predictions = _predictions[0]; var setPredictions = _predictions[1];
@@ -1057,14 +1066,75 @@
       } finally { setBoardLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [boardWords, globalStyle, autoClean, avatarRef, avatarDesc, onCallImagen, onCallGeminiImageEdit, addToast]);
 
+    // ── Multi-page board helpers ───────────────────────────────────────────
+    // boardPages = null (single page) or array of { id, title, words, cols }
+    // activePageIdx = which page is currently loaded into boardWords/boardCols
+
+    var commitCurrentPage = useCallback(function (pages, idx, words, cols, pageTitle) {
+      // Returns a new pages array with the current editor state flushed to pages[idx]
+      if (!pages) return pages;
+      return pages.map(function (p, i) {
+        return i === idx ? Object.assign({}, p, { words: words, cols: cols, title: pageTitle || p.title }) : p;
+      });
+    }, []);
+
+    var switchPage = useCallback(function (idx) {
+      setBoardPages(function (prev) {
+        var flushed = commitCurrentPage(prev, activePageIdx, boardWords, boardCols, null);
+        if (flushed && flushed[idx]) {
+          setBoardWords(flushed[idx].words || []);
+          setBoardCols(flushed[idx].cols || 4);
+        }
+        setActivePageIdx(idx);
+        return flushed;
+      });
+    }, [activePageIdx, boardWords, boardCols, commitCurrentPage]);
+
+    var addPage = useCallback(function () {
+      setBoardPages(function (prev) {
+        var flushed = commitCurrentPage(prev || [], activePageIdx, boardWords, boardCols, null) || [];
+        var newPage = { id: uid(), title: 'Page ' + (flushed.length + 1), words: [], cols: boardCols };
+        var updated = flushed.concat([newPage]);
+        setBoardWords([]);
+        setBoardCols(boardCols);
+        setActivePageIdx(updated.length - 1);
+        return updated;
+      });
+    }, [activePageIdx, boardWords, boardCols, commitCurrentPage]);
+
+    var deletePage = useCallback(function (idx) {
+      setBoardPages(function (prev) {
+        if (!prev || prev.length <= 1) return prev;
+        var updated = prev.filter(function (_, i) { return i !== idx; });
+        var newIdx = Math.min(idx, updated.length - 1);
+        setBoardWords(updated[newIdx].words || []);
+        setBoardCols(updated[newIdx].cols || 4);
+        setActivePageIdx(newIdx);
+        return updated;
+      });
+    }, []);
+
+    var enablePages = useCallback(function () {
+      // Convert current single-page state to multi-page
+      var page1 = { id: uid(), title: boardTitle || boardTopic || 'Page 1', words: boardWords, cols: boardCols };
+      setBoardPages([page1]);
+      setActivePageIdx(0);
+      addToast && addToast('Multi-page mode enabled — add more pages below', 'info');
+    }, [boardWords, boardCols, boardTitle, boardTopic, addToast]);
+
     var saveBoard = useCallback(function () {
-      if (!boardWords.length) return;
-      var saved = { id: uid(), title: boardTitle || boardTopic, words: boardWords, cols: boardCols, profileId: activeProfileId || null, createdAt: Date.now() };
+      if (!boardWords.length && (!boardPages || boardPages.every(function (p) { return !p.words.length; }))) return;
+      var finalPages = boardPages ? commitCurrentPage(boardPages, activePageIdx, boardWords, boardCols, null) : null;
+      var saved = {
+        id: uid(), title: boardTitle || boardTopic, profileId: activeProfileId || null, createdAt: Date.now(),
+        words: boardWords, cols: boardCols,
+        pages: finalPages || null
+      };
       var updated = [saved].concat(savedBoards);
       setSavedBoards(updated); store(STORAGE_BOARDS, updated);
-      addToast && addToast('Board saved!', 'success');
+      addToast && addToast('Board saved!' + (finalPages && finalPages.length > 1 ? ' (' + finalPages.length + ' pages)' : ''), 'success');
       if (cloudSync) setTimeout(function () { syncToCloud(); }, 300);
-    }, [boardWords, boardTitle, boardTopic, boardCols, activeProfileId, savedBoards, cloudSync, syncToCloud, addToast]);
+    }, [boardWords, boardPages, activePageIdx, boardTitle, boardTopic, boardCols, activeProfileId, savedBoards, cloudSync, syncToCloud, commitCurrentPage, addToast]);
 
     var applyBoardTemplate = useCallback(function (template) {
       var words = template.words.map(function (w) { return Object.assign({}, w, { id: uid(), image: null }); });
@@ -1075,11 +1145,15 @@
     }, [addToast]);
 
     var loadBoard = useCallback(function (board) {
-      setBoardWords(board.words.map(function (w) { return Object.assign({}, w); }));
+      var pages = board.pages && board.pages.length > 0 ? board.pages : null;
+      var firstPage = pages ? pages[0] : board;
+      setBoardWords((firstPage.words || []).map(function (w) { return Object.assign({}, w); }));
       setBoardTitle(board.title || '');
-      setBoardCols(board.cols || 4);
+      setBoardCols(firstPage.cols || board.cols || 4);
+      setBoardPages(pages);
+      setActivePageIdx(0);
       setShowBoardGallery(false);
-      addToast && addToast('Board loaded!', 'success');
+      addToast && addToast('Board loaded!' + (pages && pages.length > 1 ? ' (' + pages.length + ' pages)' : ''), 'success');
     }, [addToast]);
 
     var deleteSavedBoard = useCallback(function (id) {
@@ -2261,6 +2335,80 @@
             e('button', { onClick: function () { importFileRef.current && importFileRef.current.click(); }, style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { textAlign: 'left' }) }, '📂 Import Backup')
           ),
           e('input', { type: 'file', accept: '.json', ref: importFileRef, style: { display: 'none' }, onChange: importData }),
+          // ── Analytics card (inside Backup panel) ──
+          (function () {
+            var pid = activeProfileId || '__global__';
+            var profLog = usageLog[pid] || { sessions: [] };
+            var allSessions = profLog.sessions || [];
+            var now = Date.now();
+            var weekMs = 7 * 24 * 3600 * 1000;
+            var thisWeekEntries = 0; var lastWeekEntries = 0;
+            var wordCount = {};
+            allSessions.forEach(function (s) {
+              var st = new Date(s.date).getTime();
+              (s.entries || []).forEach(function (en) {
+                var lbl = en.label;
+                wordCount[lbl] = (wordCount[lbl] || 0) + 1;
+                if (now - st < weekMs) thisWeekEntries++;
+                else if (now - st < 2 * weekMs) lastWeekEntries++;
+              });
+            });
+            var totalUtterances = Object.values(wordCount).reduce(function (a, b) { return a + b; }, 0);
+            var topWords = Object.keys(wordCount).sort(function (a, b) { return wordCount[b] - wordCount[a]; }).slice(0, 8);
+            return e('div', { style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #f3f4f6' } },
+              e('button', {
+                onClick: function () { setShowAnalytics(function (v) { return !v; }); },
+                style: { background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', width: '100%', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: '#374151', marginBottom: showAnalytics ? '8px' : 0 }
+              }, '📊 AAC Usage Analytics ', e('span', { style: { color: '#9ca3af', fontWeight: 400, marginLeft: 'auto', fontSize: '10px' } }, showAnalytics ? '▲ hide' : '▼ show')),
+              showAnalytics && allSessions.length === 0 && e('p', { style: { fontSize: '10px', color: '#9ca3af', margin: 0 } }, 'No sessions recorded yet. Use a board in Use mode to start tracking.'),
+              showAnalytics && allSessions.length > 0 && e('div', null,
+                // Summary row
+                e('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
+                  e('div', { style: { flex: 1, background: '#f0fdf4', borderRadius: '7px', padding: '6px', textAlign: 'center' } },
+                    e('div', { style: { fontSize: '16px', fontWeight: 800, color: '#059669' } }, totalUtterances),
+                    e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'total')
+                  ),
+                  e('div', { style: { flex: 1, background: '#eff6ff', borderRadius: '7px', padding: '6px', textAlign: 'center' } },
+                    e('div', { style: { fontSize: '16px', fontWeight: 800, color: '#2563eb' } }, allSessions.length),
+                    e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'sessions')
+                  ),
+                  e('div', { style: { flex: 1, background: '#faf5ff', borderRadius: '7px', padding: '6px', textAlign: 'center' } },
+                    e('div', { style: { fontSize: '16px', fontWeight: 800, color: PURPLE } }, thisWeekEntries),
+                    e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'this week' + (lastWeekEntries > 0 ? (thisWeekEntries >= lastWeekEntries ? ' ▲' : ' ▼') : '') }))
+                ),
+                // Top words
+                topWords.length > 0 && e('div', { style: { marginBottom: '8px' } },
+                  e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#374151', marginBottom: '5px' } }, 'Top words:'),
+                  e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+                    topWords.map(function (w) {
+                      var pct = Math.round((wordCount[w] / totalUtterances) * 100);
+                      return e('div', { key: w, style: { background: LIGHT_PURPLE, borderRadius: '5px', padding: '2px 7px', fontSize: '10px', color: PURPLE, fontWeight: 600 } },
+                        w, e('span', { style: { fontWeight: 400, color: '#6b7280', marginLeft: '3px' } }, wordCount[w])
+                      );
+                    })
+                  )
+                ),
+                // Recent sessions
+                e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#374151', marginBottom: '4px' } }, 'Recent sessions:'),
+                allSessions.slice(-5).reverse().map(function (s, i) {
+                  return e('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#6b7280', padding: '2px 0', borderBottom: '1px solid #f3f4f6' } },
+                    e('span', null, s.boardTitle || 'Board'),
+                    e('span', null, (s.entries || []).length + ' words · ' + new Date(s.date).toLocaleDateString([], { month: 'short', day: 'numeric' }))
+                  );
+                }),
+                // Clear button
+                e('button', {
+                  onClick: function () {
+                    var updated = Object.assign({}, usageLog);
+                    delete updated[pid];
+                    store(STORAGE_USAGE, updated);
+                    setUsageLog(updated);
+                  },
+                  style: Object.assign({}, S.btn('#fee2e2', '#dc2626', false), { fontSize: '10px', padding: '3px 8px', marginTop: '6px' })
+                }, '🗑️ Clear Analytics')
+              )
+            );
+          })(),
           cloudSync && e('div', { style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #f3f4f6' } },
             e('div', { style: { display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '5px' } },
               e('span', { style: { fontSize: '10px', color: syncStatus === 'synced' ? '#16a34a' : syncStatus === 'error' ? '#dc2626' : '#9ca3af' } },
@@ -2283,6 +2431,7 @@
       var filtered = gallery.filter(function (i) {
         if (symShowFavs && !i.isFavorite) return false;
         if (symFilter.trim() && !i.label.toLowerCase().includes(symFilter.toLowerCase())) return false;
+        if (symCatFilter && i.category !== symCatFilter) return false;
         return true;
       });
       var isLoading = Object.keys(symLoading).length > 0;
@@ -2352,10 +2501,23 @@
           ),
           // Gallery grid
           e('div', { style: { flex: 1, overflowY: 'auto' } },
-            e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' } },
-              e('span', { style: { fontWeight: 600, fontSize: '12px', color: '#374151' } }, 'Gallery (' + gallery.length + ')'),
-              e('button', { onClick: function () { setSymShowFavs(!symShowFavs); }, style: { padding: '3px 8px', border: '1px solid ' + (symShowFavs ? PURPLE : '#e5e7eb'), borderRadius: '12px', background: symShowFavs ? LIGHT_PURPLE : '#fff', color: symShowFavs ? PURPLE : '#6b7280', fontSize: '11px', cursor: 'pointer', fontWeight: symShowFavs ? 700 : 400 } }, '⭐ Favs'),
-              e('input', { type: 'text', value: symFilter, onChange: function (ev) { setSymFilter(ev.target.value); }, placeholder: 'Search...', style: { border: '1px solid #e5e7eb', borderRadius: '6px', padding: '3px 8px', fontSize: '11px', outline: 'none', marginLeft: 'auto', width: '90px' } })
+            e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '8px' } },
+              e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+                e('span', { style: { fontWeight: 600, fontSize: '12px', color: '#374151' } }, 'Gallery (' + filtered.length + (filtered.length !== gallery.length ? '/' + gallery.length : '') + ')'),
+                e('input', { type: 'text', value: symFilter, onChange: function (ev) { setSymFilter(ev.target.value); }, placeholder: '🔍 Search symbols…', style: { border: '1px solid #e5e7eb', borderRadius: '6px', padding: '3px 10px', fontSize: '11px', outline: 'none', flex: 1 } }),
+                e('button', { onClick: function () { setSymShowFavs(!symShowFavs); }, style: { padding: '3px 8px', border: '1px solid ' + (symShowFavs ? PURPLE : '#e5e7eb'), borderRadius: '12px', background: symShowFavs ? LIGHT_PURPLE : '#fff', color: symShowFavs ? PURPLE : '#6b7280', fontSize: '11px', cursor: 'pointer', fontWeight: symShowFavs ? 700 : 400, flexShrink: 0 } }, '⭐')
+              ),
+              e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                [['', 'All'], ['noun', 'Nouns'], ['verb', 'Verbs'], ['adjective', 'Adjectives'], ['other', 'Other']].map(function (pair) {
+                  var cat = pair[0]; var lbl = pair[1];
+                  var active = symCatFilter === cat;
+                  return e('button', {
+                    key: cat,
+                    onClick: function () { setSymCatFilter(cat); },
+                    style: { padding: '2px 8px', border: '1px solid ' + (active ? PURPLE : '#e5e7eb'), borderRadius: '10px', background: active ? LIGHT_PURPLE : '#f9fafb', color: active ? PURPLE : '#6b7280', fontSize: '10px', cursor: 'pointer', fontWeight: active ? 700 : 400 }
+                  }, lbl);
+                })
+              )
             ),
             filtered.length > 0
               ? e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(95px, 1fr))', gap: '7px' } },
@@ -2425,6 +2587,24 @@
           ),
           e('button', { onClick: function () { setShowSentencePanel(!showSentencePanel); if (!showSentencePanel) { setSentenceMapping([]); setSentenceInput(''); } }, style: S.btn(showSentencePanel ? LIGHT_PURPLE : '#f3f4f6', showSentencePanel ? PURPLE : '#374151', false), title: 'Type a sentence and let AI map each word to an AAC symbol' }, '🔤 From Sentence'),
           e('button', { onClick: function () { setShowGalleryPicker(!showGalleryPicker); }, style: S.btn(showGalleryPicker ? LIGHT_PURPLE : '#f3f4f6', showGalleryPicker ? PURPLE : '#374151', false), title: 'Add a symbol from your gallery directly to the board' }, '🖼️ From Gallery'),
+          boardWords.length > 0 && !boardPages && e('button', {
+            onClick: enablePages,
+            title: 'Enable multi-page mode — add linked pages to this board',
+            style: S.btn('#fef9c3', '#92400e', false)
+          }, '📄 + Pages'),
+          boardPages && e('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', background: '#fef9c3', border: '1px solid #fde68a', borderRadius: '8px', padding: '3px 8px' } },
+            e('span', { style: { fontSize: '11px', color: '#92400e', fontWeight: 700 } }, '📄 Pages:'),
+            boardPages.map(function (pg, pi) {
+              var active = pi === activePageIdx;
+              return e('button', {
+                key: pg.id,
+                onClick: function () { if (!active) switchPage(pi); },
+                style: { padding: '2px 8px', border: '1px solid ' + (active ? '#92400e' : '#fde68a'), borderRadius: '6px', background: active ? '#92400e' : 'transparent', color: active ? '#fff' : '#92400e', fontSize: '10px', fontWeight: active ? 700 : 400, cursor: active ? 'default' : 'pointer' }
+              }, pg.title || ('Page ' + (pi + 1)));
+            }),
+            e('button', { onClick: addPage, title: 'Add a new page', style: { background: 'none', border: '1px dashed #92400e', borderRadius: '6px', padding: '2px 7px', color: '#92400e', fontSize: '11px', cursor: 'pointer' } }, '+'),
+            boardPages.length > 1 && e('button', { onClick: function () { deletePage(activePageIdx); }, title: 'Delete current page', style: { background: 'none', border: 'none', color: '#dc2626', fontSize: '12px', cursor: 'pointer', padding: '0 2px' } }, '✕')
+          ),
           hasImages && e('div', { style: { display: 'flex', gap: '6px' } },
             e('button', { onClick: saveBoard, style: S.btn('#f3f4f6', '#374151', false) }, '💾 Save'),
             e('button', { onClick: function () { setShowPrintSettings(!showPrintSettings); }, style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print\u2026')
@@ -2478,7 +2658,7 @@
                   e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                     e('button', { onClick: function () { loadBoard(b); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
                     b.words && b.words.some(function (w) { return w.image; }) && e('button', {
-                      onClick: function () { setUseBoardId(b.id); setStrip([]); setShowCommLog(false); },
+                      onClick: function () { setUseBoardId(b.id); setStrip([]); setShowCommLog(false); setUsePageIdx(0); setPredictions([]); },
                       title: 'Use this board — tap symbols to speak and build messages',
                       style: S.btn('#eff6ff', '#1d4ed8', false)
                     }, '\u25b6 Use'),
@@ -3013,8 +3193,31 @@
     // ── Direct-use AAC overlay ────────────────────────────────────────────
     if (useBoardId) {
       var useBoard = savedBoards.find(function (b) { return b.id === useBoardId; });
-      var useCells = useBoard ? (useBoard.words || []).filter(function (w) { return w.image; }) : [];
-      var exitUse = function () { setUseBoardId(null); setStrip([]); setShowCommLog(false); };
+      var usePages = useBoard && useBoard.pages && useBoard.pages.length > 1 ? useBoard.pages : null;
+      var safeUsePageIdx = usePages ? Math.min(usePageIdx, usePages.length - 1) : 0;
+      var usePageData = usePages ? usePages[safeUsePageIdx] : useBoard;
+      var useCells = usePageData ? (usePageData.words || []).filter(function (w) { return w.image; }) : [];
+      var exitUse = function () {
+        // Persist session to usage log before clearing
+        if (commLog.length > 0) {
+          var pid = activeProfileId || '__global__';
+          var session = {
+            date: new Date().toISOString(),
+            boardId: useBoardId,
+            boardTitle: useBoard ? (useBoard.title || 'Board') : 'Board',
+            entries: commLog.map(function (e) { return { label: e.label, ts: e.ts }; })
+          };
+          setUsageLog(function (prev) {
+            var profLog = prev[pid] || { sessions: [] };
+            var updated = Object.assign({}, prev, {
+              [pid]: { sessions: profLog.sessions.concat([session]) }
+            });
+            store(STORAGE_USAGE, updated);
+            return updated;
+          });
+        }
+        setUseBoardId(null); setStrip([]); setShowCommLog(false); setPredictions([]);
+      };
       var speakWordFn = function (label) {
         if (onCallTTS && selectedVoice) {
           onCallTTS(label, selectedVoice).catch(function () {
@@ -3062,7 +3265,7 @@
         a.download = 'comm_log_' + new Date().toISOString().slice(0, 10) + '.csv';
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
       };
-      var useCols = Math.min(useBoard ? (useBoard.cols || 4) : 4, useCells.length || 1);
+      var useCols = Math.min(usePageData ? (usePageData.cols || useBoard.cols || 4) : 4, useCells.length || 1);
       return e('div', { style: { position: 'fixed', inset: 0, zIndex: 9999, background: '#0f172a', display: 'flex', flexDirection: 'column' } },
         // ── Header ──
         e('div', { style: { background: '#1e293b', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 } },
@@ -3073,6 +3276,17 @@
             style: { background: showCommLog ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
           }, '📋 Log (' + commLog.length + ')'),
           e('button', { onClick: exitUse, style: { background: '#ef4444', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' } }, '✕ Exit')
+        ),
+        // ── Page tabs (multi-page boards) ──
+        usePages && e('div', { style: { background: '#0f172a', borderBottom: '1px solid #1e293b', padding: '6px 16px', display: 'flex', gap: '6px', flexShrink: 0, overflowX: 'auto' } },
+          usePages.map(function (pg, pi) {
+            var active = pi === safeUsePageIdx;
+            return e('button', {
+              key: pg.id,
+              onClick: function () { setUsePageIdx(pi); setPredictions([]); },
+              style: { padding: '5px 14px', border: 'none', borderRadius: '7px', background: active ? '#4f46e5' : '#1e293b', color: active ? '#fff' : '#94a3b8', fontWeight: active ? 700 : 400, fontSize: '12px', cursor: active ? 'default' : 'pointer', flexShrink: 0 }
+            }, pg.title || ('Page ' + (pi + 1)));
+          })
         ),
         // ── Sentence strip ──
         e('div', { style: { background: '#1a1a2e', borderBottom: '2px solid #312e81', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, minHeight: '58px', flexWrap: 'wrap' } },
