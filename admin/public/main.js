@@ -354,6 +354,10 @@ async function startDeployment(setupData, onProgress) {
     const servicesToInstall = selectedServices.filter(
       id => SERVICE_DEFINITIONS[id] && !SERVICE_DEFINITIONS[id].builtin
     );
+
+    // Detect GPU info to pass to Flux installer
+    const hardware = detectHardware();
+    const gpuInfo = hardware.gpu || null;
     
     // PHASE 1: Pre-flight
     onProgress({ phase: 'preflight', status: 'Checking system requirements...', progress: 5 });
@@ -387,9 +391,10 @@ async function startDeployment(setupData, onProgress) {
           onProgress({
             phase: 'install',
             status: p.status,
-            progress: baseProgress + (p.progress / 100) * (60 / totalToInstall)
+            progress: baseProgress + (p.progress / 100) * (60 / totalToInstall),
+            gpuStrategy: p.gpuStrategy || undefined
           });
-        });
+        }, gpuInfo);
       }
       
       installed++;
@@ -455,6 +460,39 @@ async function startDeployment(setupData, onProgress) {
         console.warn(`[deploy:start] ${serviceId} may not be fully healthy yet`);
       }
     }
+
+    // PHASE 4b: Check Flux GPU status if Flux was deployed
+    let fluxGpuStatus = null;
+    if (servicesToInstall.includes('flux')) {
+      try {
+        const httpMod = require('http');
+        const fluxHealth = await new Promise((resolve, reject) => {
+          const req = httpMod.get('http://127.0.0.1:7860/health', (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+              try { resolve(JSON.parse(data)); }
+              catch { resolve(null); }
+            });
+          });
+          req.on('error', () => resolve(null));
+          req.setTimeout(5000, () => { req.destroy(); resolve(null); });
+        });
+
+        if (fluxHealth) {
+          fluxGpuStatus = {
+            gpu_accelerated: fluxHealth.gpu_accelerated,
+            device: fluxHealth.device,
+            gpu_type: fluxHealth.gpu_type,
+            gpu_name: fluxHealth.gpu_name,
+            fallback_reason: fluxHealth.fallback_reason
+          };
+          console.log('[deploy:start] Flux GPU status:', JSON.stringify(fluxGpuStatus));
+        }
+      } catch (err) {
+        console.warn('[deploy:start] Could not query Flux GPU status:', err.message);
+      }
+    }
     
     // PHASE 5: Save config
     onProgress({ phase: 'config', status: 'Saving configuration...', progress: 95 });
@@ -465,10 +503,15 @@ async function startDeployment(setupData, onProgress) {
       ...setupData
     });
     
-    onProgress({ phase: 'complete', status: 'Setup complete!', progress: 100 });
+    onProgress({
+      phase: 'complete',
+      status: 'Setup complete!',
+      progress: 100,
+      fluxGpuStatus
+    });
     
     console.log('[deploy:start] Native deployment completed successfully');
-    return { success: true };
+    return { success: true, fluxGpuStatus };
   } catch (err) {
     console.error('[deploy:start] Deployment failed:', err.message);
     return { success: false, error: err.message };

@@ -125,9 +125,128 @@ function isFluxInstalled() {
 }
 
 /**
- * Install Flux: create venv, pip-install deps, copy server script.
+ * Detect the Python version from a given interpreter path.
+ * Returns an object like { major: 3, minor: 12, patch: 1 } or null.
  */
-async function installFlux(onProgress) {
+function detectPythonVersion(pythonPath) {
+  try {
+    const { execSync } = require('child_process');
+    const ver = execSync(`"${pythonPath}" --version`, { stdio: 'pipe', encoding: 'utf-8' }).trim();
+    const match = ver.match(/Python (\d+)\.(\d+)\.(\d+)/);
+    if (match) return { major: parseInt(match[1]), minor: parseInt(match[2]), patch: parseInt(match[3]) };
+  } catch {}
+  return null;
+}
+
+/**
+ * Determine the best GPU acceleration strategy based on hardware info and platform.
+ * Returns { strategy, packages, indexUrl, label, warning }.
+ *
+ * @param {object|null} gpuInfo  - { type: 'NVIDIA'|'AMD'|'Intel'|'Unknown', name, vramGB }
+ * @param {string} platform      - os.platform() value
+ * @param {object|null} pyVer    - { major, minor, patch } from detectPythonVersion
+ */
+function determineGpuStrategy(gpuInfo, platform, pyVer) {
+  const gpuType = gpuInfo ? gpuInfo.type : null;
+  const pyMinor = pyVer ? pyVer.minor : 0;
+
+  // NVIDIA on any platform → CUDA (requires Python ≤ 3.12 for best compat)
+  if (gpuType === 'NVIDIA') {
+    if (pyMinor >= 13) {
+      return {
+        strategy: 'cuda-limited',
+        packages: ['torch', 'onnxruntime-directml', 'optimum[onnxruntime]'],
+        indexUrl: null,
+        label: `NVIDIA ${gpuInfo.name} detected but Python ${pyVer.major}.${pyVer.minor} may lack CUDA wheel support. Installing DirectML as fallback.`,
+        warning: `Your Python ${pyVer.major}.${pyVer.minor} is too new for official CUDA wheels. ` +
+                 `Consider Python 3.11 or 3.12 for full NVIDIA CUDA support. ` +
+                 `Using DirectML which also works with NVIDIA GPUs.`
+      };
+    }
+    return {
+      strategy: 'cuda',
+      packages: ['torch', '--index-url', 'https://download.pytorch.org/whl/cu124'],
+      indexUrl: 'https://download.pytorch.org/whl/cu124',
+      label: `NVIDIA ${gpuInfo.name} — installing CUDA GPU acceleration`,
+      warning: null
+    };
+  }
+
+  // AMD on Windows → DirectML via ONNX Runtime
+  if (gpuType === 'AMD' && platform === 'win32') {
+    return {
+      strategy: 'directml',
+      packages: ['torch', 'onnxruntime-directml', 'optimum[onnxruntime]'],
+      indexUrl: null,
+      label: `AMD ${gpuInfo.name} on Windows — installing DirectML GPU acceleration`,
+      warning: null
+    };
+  }
+
+  // AMD on Linux → ROCm (requires Python ≤ 3.12)
+  if (gpuType === 'AMD' && platform === 'linux') {
+    if (pyMinor >= 13) {
+      return {
+        strategy: 'cpu',
+        packages: ['torch'],
+        indexUrl: null,
+        label: `AMD ${gpuInfo.name} on Linux with Python ${pyVer.major}.${pyVer.minor}`,
+        warning: `ROCm requires Python 3.10-3.12. Your Python ${pyVer.major}.${pyVer.minor} is too new. ` +
+                 `Flux will run on CPU only. Install Python 3.11 or 3.12 for AMD GPU support on Linux.`
+      };
+    }
+    return {
+      strategy: 'rocm',
+      packages: ['torch', '--index-url', 'https://download.pytorch.org/whl/rocm6.2'],
+      indexUrl: 'https://download.pytorch.org/whl/rocm6.2',
+      label: `AMD ${gpuInfo.name} on Linux — installing ROCm GPU acceleration`,
+      warning: null
+    };
+  }
+
+  // Intel Arc on Windows → DirectML
+  if (gpuType === 'Intel' && platform === 'win32') {
+    return {
+      strategy: 'directml',
+      packages: ['torch', 'onnxruntime-directml', 'optimum[onnxruntime]'],
+      indexUrl: null,
+      label: `Intel ${gpuInfo.name} on Windows — installing DirectML GPU acceleration`,
+      warning: null
+    };
+  }
+
+  // Intel on Linux → OpenVINO is possible but complex; fall back to CPU with warning
+  if (gpuType === 'Intel' && platform === 'linux') {
+    return {
+      strategy: 'cpu',
+      packages: ['torch'],
+      indexUrl: null,
+      label: `Intel ${gpuInfo.name} on Linux — GPU acceleration not yet supported`,
+      warning: `Intel GPU acceleration on Linux requires OpenVINO which is not yet supported by this installer. ` +
+               `Flux will run on CPU. For Intel GPU support, use Windows with DirectML.`
+    };
+  }
+
+  // No GPU detected or unknown type → CPU with clear warning
+  return {
+    strategy: 'cpu',
+    packages: ['torch'],
+    indexUrl: null,
+    label: gpuInfo ? `${gpuInfo.name} — no compatible GPU acceleration available` : 'No dedicated GPU detected',
+    warning: gpuInfo
+      ? `GPU "${gpuInfo.name}" was detected but is not a supported type (NVIDIA, AMD, or Intel Arc). Flux will use CPU only and will be very slow.`
+      : 'No dedicated GPU was detected. Flux will run on CPU only and will be very slow. ' +
+        'A GPU with at least 6 GB VRAM is strongly recommended for image generation.'
+  };
+}
+
+/**
+ * Install Flux: create venv, pip-install deps (GPU-adaptive), copy server script.
+ *
+ * @param {function} onProgress - Progress callback
+ * @param {object|null} gpuInfo - GPU info from detectHardware() { type, name, vramGB }
+ */
+async function installFlux(onProgress, gpuInfo) {
   const pythonPath = findPython();
   if (!pythonPath) {
     throw new Error(
@@ -135,6 +254,26 @@ async function installFlux(onProgress) {
       'Please install Python 3.10+ from https://www.python.org/downloads/ and try again.'
     );
   }
+
+  const pyVer = detectPythonVersion(pythonPath);
+  const platform = os.platform();
+  const gpuStrategy = determineGpuStrategy(gpuInfo, platform, pyVer);
+
+  console.log(`[native-pm] GPU strategy: ${gpuStrategy.strategy} — ${gpuStrategy.label}`);
+  if (gpuStrategy.warning) {
+    console.warn(`[native-pm] GPU WARNING: ${gpuStrategy.warning}`);
+  }
+
+  // Report GPU strategy to the progress callback so the UI can display it
+  onProgress({
+    status: gpuStrategy.label,
+    progress: 2,
+    gpuStrategy: {
+      strategy: gpuStrategy.strategy,
+      label: gpuStrategy.label,
+      warning: gpuStrategy.warning
+    }
+  });
 
   const fluxDir = path.join(BINARIES_DIR, 'flux');
   const venvDir = path.join(fluxDir, 'venv');
@@ -157,14 +296,25 @@ async function installFlux(onProgress) {
   onProgress({ status: 'Upgrading pip...', progress: 10 });
   await runCommand(pythonBin, ['-m', 'pip', 'install', '--upgrade', 'pip']);
 
-  // 3. Install PyTorch
+  // 3. Install PyTorch (with appropriate index URL for CUDA/ROCm if needed)
   onProgress({ status: 'Installing PyTorch (this may take a while)...', progress: 15 });
-  await runCommand(pipBin, ['install', 'torch'], { timeout: 600000 });
+  if (gpuStrategy.indexUrl) {
+    await runCommand(pipBin, ['install', 'torch', '--index-url', gpuStrategy.indexUrl], { timeout: 600000 });
+  } else {
+    await runCommand(pipBin, ['install', 'torch'], { timeout: 600000 });
+  }
 
-  // 4. Install ONNX Runtime with DirectML for GPU acceleration (AMD/Intel/NVIDIA)
-  onProgress({ status: 'Installing DirectML GPU support...', progress: 35 });
-  await runCommand(pipBin, ['install', 'onnxruntime-directml', 'optimum[onnxruntime]'],
-    { timeout: 300000 });
+  // 4. Install GPU acceleration packages (strategy-dependent)
+  if (gpuStrategy.strategy === 'directml' || gpuStrategy.strategy === 'cuda-limited') {
+    onProgress({ status: 'Installing DirectML GPU support...', progress: 35 });
+    await runCommand(pipBin, ['install', 'onnxruntime-directml', 'optimum[onnxruntime]'],
+      { timeout: 300000 });
+  } else if (gpuStrategy.strategy === 'cuda') {
+    onProgress({ status: 'Installing CUDA GPU support...', progress: 35 });
+    // torch with CUDA is already installed above; nothing extra needed
+  } else {
+    onProgress({ status: 'Skipping GPU packages (CPU mode)...', progress: 35 });
+  }
 
   // 5. Install remaining requirements
   onProgress({ status: 'Installing Flux dependencies...', progress: 55 });
@@ -172,7 +322,20 @@ async function installFlux(onProgress) {
                 'sentencepiece', 'protobuf', 'fastapi', 'uvicorn[standard]', 'Pillow'];
   await runCommand(pipBin, ['install', ...reqs], { timeout: 600000 });
 
-  // 6. Copy flux_server.py into the install directory
+  // 6. Save GPU strategy to a file so flux_server.py can read it
+  const strategyFile = path.join(fluxDir, 'gpu_strategy.json');
+  fs.writeFileSync(strategyFile, JSON.stringify({
+    strategy: gpuStrategy.strategy,
+    gpuType: gpuInfo ? gpuInfo.type : null,
+    gpuName: gpuInfo ? gpuInfo.name : null,
+    vramGB: gpuInfo ? gpuInfo.vramGB : null,
+    platform,
+    pythonVersion: pyVer ? `${pyVer.major}.${pyVer.minor}.${pyVer.patch}` : 'unknown',
+    warning: gpuStrategy.warning,
+    installedAt: new Date().toISOString()
+  }, null, 2));
+
+  // 7. Copy flux_server.py into the install directory
   onProgress({ status: 'Installing Flux server...', progress: 90 });
   const isDev = !require('electron').app.isPackaged;
   const srcScript = isDev
@@ -186,7 +349,11 @@ async function installFlux(onProgress) {
     throw new Error('flux_server.py not found. Cannot install Flux.');
   }
 
-  onProgress({ status: 'Flux installed', progress: 100 });
+  onProgress({ status: 'Flux installed', progress: 100, gpuStrategy: {
+    strategy: gpuStrategy.strategy,
+    label: gpuStrategy.label,
+    warning: gpuStrategy.warning
+  }});
 }
 
 /**
@@ -356,11 +523,14 @@ function isServiceInstalled(serviceId) {
 
 /**
  * Install a service (download + extract).
+ * @param {string} serviceId
+ * @param {function} onProgress
+ * @param {object|null} gpuInfo - GPU info from detectHardware(), passed to Flux installer
  */
-async function installService(serviceId, onProgress) {
+async function installService(serviceId, onProgress, gpuInfo) {
   ensureDirectories();
   if (serviceId === 'search') return; // built-in, nothing to install
-  if (serviceId === 'flux') return installFlux(onProgress);
+  if (serviceId === 'flux') return installFlux(onProgress, gpuInfo);
 
   const downloads = getDownloadInfo();
   const info = downloads[serviceId];

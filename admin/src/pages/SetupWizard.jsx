@@ -48,6 +48,7 @@ export default function SetupWizard({ onComplete }) {
   const [services, setServices] = useState(null);
   const [selectedServices, setSelectedServices] = useState([]);
   const [deploymentProgress, setDeploymentProgress] = useState(null);
+  const [gpuStatus, setGpuStatus] = useState(null); // { strategy, label, warning } or { gpu_accelerated, device, fallback_reason }
 
   // Handle deployment type selection
   const handleSelectDeployment = async (typeId) => {
@@ -179,12 +180,24 @@ export default function SetupWizard({ onComplete }) {
           console.log('[SetupWizard] Deployment progress:', event);
           if (event.type === 'progress') {
             setDeploymentProgress(event);
+            // Capture GPU strategy info from Flux install progress
+            if (event.gpuStrategy) {
+              setGpuStatus(event.gpuStrategy);
+            }
+            // Capture Flux GPU status from completion progress
+            if (event.fluxGpuStatus) {
+              setGpuStatus(prev => ({ ...prev, ...event.fluxGpuStatus }));
+            }
           } else if (event.type === 'complete') {
             if (event.success === false) {
               setError('Deployment failed: ' + (event.error || 'Unknown error'));
               setLoading(false);
             } else {
               console.log('[SetupWizard] Deployment complete');
+              // Capture final Flux GPU status from deployment result
+              if (event.fluxGpuStatus) {
+                setGpuStatus(prev => ({ ...prev, ...event.fluxGpuStatus }));
+              }
               handleDeploymentComplete(setupData);
             }
           } else if (event.type === 'error') {
@@ -595,6 +608,16 @@ export default function SetupWizard({ onComplete }) {
             </div>
           )}
 
+          {gpuStatus && gpuStatus.warning && (
+            <div className="warning-box" style={{
+              background: '#fff3cd', border: '1px solid #ffc107', borderRadius: '8px',
+              padding: '16px', margin: '16px 0', color: '#856404'
+            }}>
+              <p style={{fontWeight: 'bold', margin: '0 0 8px 0'}}>⚠️ GPU Warning</p>
+              <p style={{margin: 0}}>{gpuStatus.warning}</p>
+            </div>
+          )}
+
           <div className="info-box">
             <p>⏳ This may take several minutes on first run as services are downloaded and initialized.</p>
             <p style={{marginTop: '10px'}}>Please don't close this window during setup.</p>
@@ -609,6 +632,10 @@ export default function SetupWizard({ onComplete }) {
   // STEP 6: Success
   if (step === 'success') {
     const deployment = DEPLOYMENT_TYPES.find(d => d.id === selectedType);
+    const fluxSelected = selectedServices.includes('flux');
+    const gpuAccelerated = gpuStatus && gpuStatus.gpu_accelerated;
+    const cpuFallback = fluxSelected && gpuStatus && gpuStatus.gpu_accelerated === false;
+
     return (
       <div className="setup-wizard">
         <div className="setup-container success">
@@ -625,6 +652,50 @@ export default function SetupWizard({ onComplete }) {
             <div className="info-box">
               <p>Services are running natively on your machine.</p>
               <p style={{marginTop: '10px'}}>Data stored in <code>~/.alloflow/</code></p>
+            </div>
+          )}
+
+          {fluxSelected && gpuAccelerated && (
+            <div style={{
+              background: '#d4edda', border: '1px solid #28a745', borderRadius: '8px',
+              padding: '16px', margin: '16px 0', color: '#155724'
+            }}>
+              <p style={{fontWeight: 'bold', margin: '0 0 8px 0'}}>🟢 Flux is using GPU acceleration</p>
+              <p style={{margin: 0}}>
+                Device: {gpuStatus.device || 'GPU'}{gpuStatus.gpu_name ? ` (${gpuStatus.gpu_name})` : ''}
+              </p>
+            </div>
+          )}
+
+          {cpuFallback && (
+            <div style={{
+              background: '#f8d7da', border: '1px solid #dc3545', borderRadius: '8px',
+              padding: '16px', margin: '16px 0', color: '#721c24'
+            }}>
+              <p style={{fontWeight: 'bold', margin: '0 0 8px 0'}}>🔴 Flux is running on CPU only</p>
+              <p style={{margin: '0 0 8px 0'}}>
+                Image generation will be very slow without GPU acceleration.
+              </p>
+              {gpuStatus.fallback_reason && (
+                <p style={{margin: '0 0 8px 0', fontSize: '0.9em'}}>
+                  Reason: {gpuStatus.fallback_reason}
+                </p>
+              )}
+              {gpuStatus.warning && (
+                <p style={{margin: 0, fontSize: '0.9em'}}>
+                  {gpuStatus.warning}
+                </p>
+              )}
+            </div>
+          )}
+
+          {fluxSelected && gpuStatus && gpuStatus.warning && !cpuFallback && (
+            <div style={{
+              background: '#fff3cd', border: '1px solid #ffc107', borderRadius: '8px',
+              padding: '16px', margin: '16px 0', color: '#856404'
+            }}>
+              <p style={{fontWeight: 'bold', margin: '0 0 8px 0'}}>⚠️ GPU Note</p>
+              <p style={{margin: 0}}>{gpuStatus.warning}</p>
             </div>
           )}
 

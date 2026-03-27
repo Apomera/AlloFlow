@@ -5,10 +5,10 @@ OpenAI-compatible API for local image generation and editing.
 Endpoints:
   POST /v1/images/generations  — text-to-image (Flux.1-schnell)
   POST /v1/images/edits        — image-to-image editing
-  GET  /health                 — health check
+  GET  /health                 — health check (includes GPU status + fallback reason)
 
 Uses ONNX Runtime + DirectML for GPU acceleration on AMD/Intel/NVIDIA.
-Falls back to CPU ONNX Runtime if DirectML is unavailable.
+Falls back to CPU with clear reporting if GPU is unavailable.
 """
 
 import asyncio
@@ -34,14 +34,35 @@ MODEL_ID = os.getenv("FLUX_MODEL", "black-forest-labs/FLUX.1-schnell")
 PORT = int(os.getenv("PORT", "7860"))
 MAX_SIZE = int(os.getenv("MAX_IMAGE_SIZE", "1024"))
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+log = logging.getLogger("flux-server")
+
+# ── GPU Strategy (written by the installer) ────────────────────
+GPU_STRATEGY = None
+STRATEGY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gpu_strategy.json")
+if os.path.exists(STRATEGY_FILE):
+    try:
+        with open(STRATEGY_FILE, "r") as f:
+            GPU_STRATEGY = json.load(f)
+        log.info(f"📋 Loaded GPU strategy from installer: {GPU_STRATEGY.get('strategy')}")
+    except Exception as e:
+        log.warning(f"⚠️  Could not read gpu_strategy.json: {e}")
+
 # Device detection: CUDA → DirectML (ONNX Runtime) → CPU
 USE_DIRECTML = False
 USE_CUDA = False
+FALLBACK_REASON = None
 
 if torch.cuda.is_available():
     USE_CUDA = True
     DEVICE = "cuda"
     DTYPE = torch.float16
+    log.info("=" * 60)
+    log.info("🟢 GPU DETECTED: NVIDIA CUDA")
+    log.info(f"   GPU: {torch.cuda.get_device_name(0)}")
+    log.info(f"   VRAM: {torch.cuda.get_device_properties(0).total_mem / 1024**3:.1f} GB")
+    log.info("   Flux will run with full GPU acceleration.")
+    log.info("=" * 60)
 else:
     try:
         import onnxruntime as ort
@@ -50,16 +71,60 @@ else:
             USE_DIRECTML = True
             DEVICE = "directml"
             DTYPE = torch.float16
-            log._dml_note = "ONNX Runtime DirectML"
+            log.info("=" * 60)
+            log.info("🟢 GPU DETECTED: DirectML (ONNX Runtime)")
+            log.info(f"   Available providers: {providers}")
+            if GPU_STRATEGY and GPU_STRATEGY.get("gpuName"):
+                log.info(f"   GPU: {GPU_STRATEGY['gpuName']}")
+            log.info("   Flux will run with DirectML GPU acceleration.")
+            log.info("=" * 60)
         else:
             DEVICE = "cpu"
             DTYPE = torch.float32
+            FALLBACK_REASON = (
+                f"ONNX Runtime is installed but DmlExecutionProvider is not available. "
+                f"Available providers: {providers}. "
+                "This usually means no compatible GPU driver is installed."
+            )
     except ImportError:
         DEVICE = "cpu"
         DTYPE = torch.float32
+        FALLBACK_REASON = (
+            "onnxruntime-directml is not installed. "
+            "GPU acceleration requires the onnxruntime-directml package."
+        )
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-log = logging.getLogger("flux-server")
+    if not USE_DIRECTML:
+        # Check if CUDA was expected but failed
+        cuda_reason = ""
+        try:
+            cuda_reason = f" torch.cuda.is_available() = False."
+            if hasattr(torch.version, 'cuda') and torch.version.cuda:
+                cuda_reason += f" CUDA toolkit version: {torch.version.cuda}."
+            else:
+                cuda_reason += " PyTorch was built WITHOUT CUDA support."
+        except Exception:
+            pass
+
+        if not FALLBACK_REASON:
+            FALLBACK_REASON = f"No GPU acceleration available.{cuda_reason}"
+
+        log.warning("=" * 60)
+        log.warning("🔴 WARNING: RUNNING ON CPU — NO GPU ACCELERATION")
+        log.warning("")
+        log.warning("   Image generation will be EXTREMELY SLOW on CPU.")
+        log.warning("   A single image may take 5-15+ minutes instead of seconds.")
+        log.warning("")
+        log.warning(f"   Reason: {FALLBACK_REASON}")
+        log.warning("")
+        if GPU_STRATEGY and GPU_STRATEGY.get("warning"):
+            log.warning(f"   Installer note: {GPU_STRATEGY['warning']}")
+            log.warning("")
+        log.warning("   To fix this:")
+        log.warning("   • NVIDIA: Install CUDA toolkit + reinstall with Python 3.11/3.12")
+        log.warning("   • AMD/Intel (Windows): Ensure latest GPU drivers are installed")
+        log.warning("   • AMD (Linux): Install ROCm + reinstall with Python 3.11/3.12")
+        log.warning("=" * 60)
 
 # ── Models (loaded at startup) ─────────────────────────────────
 pipe_txt2img = None
@@ -86,7 +151,15 @@ async def lifespan(app: FastAPI):
             log.info("✅ ONNX+DirectML text-to-image pipeline ready (GPU accelerated)")
         except Exception as e:
             log.error(f"❌ Failed to load ONNX+DirectML pipeline: {e}")
-            log.info("   Falling back to PyTorch CPU pipeline...")
+            log.warning("=" * 60)
+            log.warning("🔴 DirectML FAILED — FALLING BACK TO CPU")
+            log.warning(f"   Error: {e}")
+            log.warning("   Image generation will be EXTREMELY SLOW.")
+            log.warning("   Check your GPU drivers are up to date.")
+            log.warning("=" * 60)
+            global FALLBACK_REASON, DEVICE
+            FALLBACK_REASON = f"DirectML pipeline failed to load: {e}. Fell back to CPU."
+            DEVICE = "cpu"
             from diffusers import FluxPipeline
             pipe_txt2img = FluxPipeline.from_pretrained(MODEL_ID, torch_dtype=torch.float32)
             log.info("✅ CPU text-to-image pipeline ready (slow)")
@@ -197,6 +270,9 @@ async def health():
         "model": MODEL_ID,
         "device": DEVICE,
         "gpu_accelerated": USE_DIRECTML or USE_CUDA,
+        "gpu_type": "cuda" if USE_CUDA else ("directml" if USE_DIRECTML else "cpu"),
+        "gpu_name": GPU_STRATEGY.get("gpuName") if GPU_STRATEGY else None,
+        "fallback_reason": FALLBACK_REASON,
         "txt2img": pipe_txt2img is not None,
         "img2img": pipe_img2img is not None,
     }
