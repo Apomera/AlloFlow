@@ -3,6 +3,7 @@
 // Uses window.StemLab.registerTool() plugin architecture
 
   // â•â•â• ðŸ”¬ dissection (dissection) â•â•â•
+  console.log('[Dissection Plugin] Registering dissection tool...');
   window.StemLab.registerTool('dissection', {
     icon: 'ðŸ”¬',
     label: 'dissection',
@@ -10,6 +11,7 @@
     color: 'slate',
     category: 'science',
     render: function(ctx) {
+      console.log('[Dissection Plugin] render() called, has React:', !!ctx.React, 'has toolData:', !!ctx.toolData);
       // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
