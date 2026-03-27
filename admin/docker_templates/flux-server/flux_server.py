@@ -7,8 +7,8 @@ Endpoints:
   POST /v1/images/edits        — image-to-image editing
   GET  /health                 — health check
 
-Designed to run in Docker with GPU support.
-Falls back to CPU (slow but functional) if no GPU.
+Uses ONNX Runtime + DirectML for GPU acceleration on AMD/Intel/NVIDIA.
+Falls back to CPU ONNX Runtime if DirectML is unavailable.
 """
 
 import asyncio
@@ -25,7 +25,7 @@ import torch
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field
 from typing import Optional
 from PIL import Image
 
@@ -34,20 +34,27 @@ MODEL_ID = os.getenv("FLUX_MODEL", "black-forest-labs/FLUX.1-schnell")
 PORT = int(os.getenv("PORT", "7860"))
 MAX_SIZE = int(os.getenv("MAX_IMAGE_SIZE", "1024"))
 
-# Device detection: CUDA > DirectML > CPU
-dml_device = None
+# Device detection: CUDA → DirectML (ONNX Runtime) → CPU
+USE_DIRECTML = False
+USE_CUDA = False
+
 if torch.cuda.is_available():
+    USE_CUDA = True
     DEVICE = "cuda"
     DTYPE = torch.float16
 else:
     try:
-        import torch_directml
-        dml_device = torch_directml.device()
-        DEVICE = "privateuseone"  # DirectML device type in PyTorch
-        DTYPE = torch.float16
-    except Exception:
-        # ImportError (not installed), OSError (libd3d12 missing),
-        # RuntimeError (no DML devices found) — fall back to CPU
+        import onnxruntime as ort
+        providers = ort.get_available_providers()
+        if "DmlExecutionProvider" in providers:
+            USE_DIRECTML = True
+            DEVICE = "directml"
+            DTYPE = torch.float16
+            log._dml_note = "ONNX Runtime DirectML"
+        else:
+            DEVICE = "cpu"
+            DTYPE = torch.float32
+    except ImportError:
         DEVICE = "cpu"
         DTYPE = torch.float32
 
@@ -65,41 +72,48 @@ async def lifespan(app: FastAPI):
     global pipe_txt2img, pipe_img2img
 
     log.info(f"🎨 Loading Flux model: {MODEL_ID}")
-    log.info(f"   Device: {DEVICE}{' (DirectML)' if dml_device else ''} | Dtype: {DTYPE}")
+    log.info(f"   Device: {DEVICE} | Dtype: {DTYPE}")
 
-    from diffusers import FluxPipeline, FluxImg2ImgPipeline
-
-    target_device = dml_device if dml_device else DEVICE
-
-    # Text-to-image pipeline
-    pipe_txt2img = FluxPipeline.from_pretrained(
-        MODEL_ID,
-        torch_dtype=DTYPE,
-    )
-    pipe_txt2img = pipe_txt2img.to(target_device)
-    if DEVICE == "cuda":
+    if USE_DIRECTML:
+        # Use ONNX Runtime with DirectML — GPU-accelerated on AMD/Intel/NVIDIA
+        try:
+            from optimum.onnxruntime import ORTFluxPipeline
+            pipe_txt2img = ORTFluxPipeline.from_pretrained(
+                MODEL_ID,
+                export=True,
+                provider="DmlExecutionProvider",
+            )
+            log.info("✅ ONNX+DirectML text-to-image pipeline ready (GPU accelerated)")
+        except Exception as e:
+            log.error(f"❌ Failed to load ONNX+DirectML pipeline: {e}")
+            log.info("   Falling back to PyTorch CPU pipeline...")
+            from diffusers import FluxPipeline
+            pipe_txt2img = FluxPipeline.from_pretrained(MODEL_ID, torch_dtype=torch.float32)
+            log.info("✅ CPU text-to-image pipeline ready (slow)")
+    elif USE_CUDA:
+        from diffusers import FluxPipeline, FluxImg2ImgPipeline
+        pipe_txt2img = FluxPipeline.from_pretrained(MODEL_ID, torch_dtype=DTYPE)
+        pipe_txt2img = pipe_txt2img.to("cuda")
         pipe_txt2img.enable_model_cpu_offload()
-    log.info("✅ Text-to-image pipeline ready")
+        log.info("✅ CUDA text-to-image pipeline ready")
 
-    # Image-to-image pipeline (shares the same model weights)
-    try:
-        pipe_img2img = FluxImg2ImgPipeline.from_pretrained(
-            MODEL_ID,
-            torch_dtype=DTYPE,
-        )
-        pipe_img2img = pipe_img2img.to(target_device)
-        if DEVICE == "cuda":
+        try:
+            pipe_img2img = FluxImg2ImgPipeline.from_pretrained(MODEL_ID, torch_dtype=DTYPE)
+            pipe_img2img = pipe_img2img.to("cuda")
             pipe_img2img.enable_model_cpu_offload()
-        log.info("✅ Image-to-image pipeline ready")
-    except Exception as e:
-        log.warning(f"⚠️ Img2Img pipeline not available for this model: {e}")
-        pipe_img2img = None
+            log.info("✅ CUDA image-to-image pipeline ready")
+        except Exception as e:
+            log.warning(f"⚠️ Img2Img pipeline not available: {e}")
+    else:
+        from diffusers import FluxPipeline
+        pipe_txt2img = FluxPipeline.from_pretrained(MODEL_ID, torch_dtype=torch.float32)
+        log.info("✅ CPU text-to-image pipeline ready (slow)")
 
     yield
 
     # Cleanup
     del pipe_txt2img, pipe_img2img
-    if DEVICE == "cuda":
+    if USE_CUDA:
         torch.cuda.empty_cache()
 
 
@@ -181,7 +195,8 @@ async def health():
     return {
         "status": "ok",
         "model": MODEL_ID,
-        "device": "DirectML" if dml_device else DEVICE,
+        "device": DEVICE,
+        "gpu_accelerated": USE_DIRECTML or USE_CUDA,
         "txt2img": pipe_txt2img is not None,
         "img2img": pipe_img2img is not None,
     }
