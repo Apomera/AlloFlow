@@ -23,6 +23,9 @@
   var STORAGE_AVATAR = 'alloStudentAvatar';
   var STORAGE_BOARDS = 'alloSymbolBoards';
   var STORAGE_SCHEDULES = 'alloSchedules';
+  var STORAGE_PROFILES = 'alloStudentProfiles';
+  var STORAGE_ACTIVE_PROFILE = 'alloActiveProfileId';
+  var MAX_PROFILES = 8;
   var BATCH_SIZE = 4;
   var BATCH_DELAY = 700;
   var MAX_RETRIES = 3;
@@ -157,6 +160,21 @@
   function load(key, def) { try { return JSON.parse(localStorage.getItem(key) || 'null') || def; } catch (e) { return def; } }
   function uid() { return (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('id-' + Date.now() + '-' + Math.random().toString(36).slice(2)); }
 
+  // Load profiles with migration from legacy single-avatar format
+  function loadProfiles() {
+    var saved = load(STORAGE_PROFILES, null);
+    if (saved && saved.length) return saved;
+    var legacy = load(STORAGE_AVATAR, null);
+    var profs;
+    if (legacy && (legacy.name || legacy.image)) {
+      profs = [{ id: uid(), name: legacy.name || 'Student 1', description: legacy.description || '', image: legacy.image || null }];
+    } else {
+      profs = [{ id: uid(), name: 'Student 1', description: '', image: null }];
+    }
+    store(STORAGE_PROFILES, profs); // persist so activeProfileId init can read it
+    return profs;
+  }
+
   // ── JSON helper (mirrors cleanJson from main app) ─────────────────────────
   function cleanJson(text) {
     if (!text) return '[]';
@@ -264,12 +282,20 @@
 
     // Shared state
     var _tab = useState('symbols'); var tab = _tab[0]; var setTab = _tab[1];
-    var _studentAvatar = useState(function () { return load(STORAGE_AVATAR, { image: null, name: '', description: '' }); });
-    var studentAvatar = _studentAvatar[0]; var setStudentAvatar = _studentAvatar[1];
+    var _profiles = useState(function () { return loadProfiles(); });
+    var profiles = _profiles[0]; var setProfiles = _profiles[1];
+    var _activeProfileId = useState(function () {
+      var profs = load(STORAGE_PROFILES, null) || [];
+      var saved = load(STORAGE_ACTIVE_PROFILE, null);
+      if (saved && profs.find(function (p) { return p.id === saved; })) return saved;
+      return profs[0] ? profs[0].id : null;
+    });
+    var activeProfileId = _activeProfileId[0]; var setActiveProfileId = _activeProfileId[1];
+    var activeProfile = profiles.find(function (p) { return p.id === activeProfileId; }) || profiles[0] || { id: null, image: null, name: '', description: '' };
     var _showAvatar = useState(false); var showAvatar = _showAvatar[0]; var setShowAvatar = _showAvatar[1];
     var _avatarGenerating = useState(false); var avatarGenerating = _avatarGenerating[0]; var setAvatarGenerating = _avatarGenerating[1];
-    var _avatarDesc = useState(studentAvatar.description || ''); var avatarDesc = _avatarDesc[0]; var setAvatarDesc = _avatarDesc[1];
-    var _avatarName = useState(studentAvatar.name || ''); var avatarName = _avatarName[0]; var setAvatarName = _avatarName[1];
+    var _avatarDesc = useState(activeProfile.description || ''); var avatarDesc = _avatarDesc[0]; var setAvatarDesc = _avatarDesc[1];
+    var _avatarName = useState(activeProfile.name || ''); var avatarName = _avatarName[0]; var setAvatarName = _avatarName[1];
     var _globalStyle = useState(''); var globalStyle = _globalStyle[0]; var setGlobalStyle = _globalStyle[1];
     var _autoClean = useState(true); var autoClean = _autoClean[0]; var setAutoClean = _autoClean[1];
     var fileInputRef = useRef(null);
@@ -315,7 +341,7 @@
 
     // Social Stories state
     var _storySituation = useState(''); var storySituation = _storySituation[0]; var setStorySituation = _storySituation[1];
-    var _storyStudentName = useState(studentAvatar.name || ''); var storyStudentName = _storyStudentName[0]; var setStoryStudentName = _storyStudentName[1];
+    var _storyStudentName = useState(activeProfile.name || ''); var storyStudentName = _storyStudentName[0]; var setStoryStudentName = _storyStudentName[1];
     var _storyDetails = useState(''); var storyDetails = _storyDetails[0]; var setStoryDetails = _storyDetails[1];
     var _storyPages = useState([]); var storyPages = _storyPages[0]; var setStoryPages = _storyPages[1];
     var _storyCurrent = useState(0); var storyCurrent = _storyCurrent[0]; var setStoryCurrent = _storyCurrent[1];
