@@ -18629,7 +18629,11 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_dissection.js', 'stem_lab/stem_tool_cyberdefense.js',
         'stem_lab/stem_tool_probability.js', 'stem_lab/stem_tool_logiclab.js',
         'stem_lab/stem_tool_calculus.js', 'stem_lab/stem_tool_unitconvert.js',
-        'sel_hub/sel_tool_zones.js'
+        'sel_hub/sel_tool_zones.js',
+        'stem_lab/stem_tool_cell.js', 'stem_lab/stem_tool_chembalance.js',
+        'stem_lab/stem_tool_punnett.js', 'stem_lab/stem_tool_semiconductor.js',
+        'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_emotions.js',
+        'sel_hub/sel_tool_mindfulness.js', 'sel_hub/sel_tool_social.js'
       ];
       toolModules.forEach(function(mod) {
         var s = document.createElement('script');
