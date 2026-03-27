@@ -1082,7 +1082,6 @@
         };
       }, [stemLabTool]);
       /* companionPlanting day ticker: removed — see stem_tool_companionplanting.js */
-      }, [stemLabTab, stemLabTool, labToolData]);
       // ── Coding Playground: Canvas ref (MUST be at top level) ──
       var _codingCanvasRef = React.useRef(null);
       // ── Coding Playground: Canvas drawing is handled by enhanced useEffect below ──
