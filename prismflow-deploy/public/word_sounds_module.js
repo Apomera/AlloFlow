@@ -6687,10 +6687,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 await new Promise((r) => setTimeout(r, 200));
                 const letterNameKey = "letter_" + lowLet;
                 if (
+                  typeof window.__ALLO_LETTER_NAME_AUDIO_BANK !== "undefined" &&
+                  window.__ALLO_LETTER_NAME_AUDIO_BANK[lowLet]
+                ) {
+                  // Dedicated letter NAME bank — "ay", "bee", "see", etc.
+                  await handleAudio(window.__ALLO_LETTER_NAME_AUDIO_BANK[lowLet]);
+                } else if (
                   typeof window.__ALLO_INSTRUCTION_AUDIO !== "undefined" &&
                   window.__ALLO_INSTRUCTION_AUDIO[letterNameKey]
                 ) {
-                  // Use letter NAME audio (letter_a, letter_b, etc.)
                   await handleAudio(window.__ALLO_INSTRUCTION_AUDIO[letterNameKey]);
                 } else if (
                   typeof LETTER_NAME_AUDIO !== "undefined" &&
@@ -6715,6 +6720,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 } else {
                   await handleAudio(currentWordSoundsWord);
                 }
+              } else if (
+                typeof window.__ALLO_LETTER_NAME_AUDIO_BANK !== "undefined" &&
+                window.__ALLO_LETTER_NAME_AUDIO_BANK[lowLet]
+              ) {
+                instructionAudioSrc = window.__ALLO_LETTER_NAME_AUDIO_BANK[lowLet];
               } else if (
                 typeof window.__ALLO_INSTRUCTION_AUDIO !== "undefined" &&
                 window.__ALLO_INSTRUCTION_AUDIO["letter_" + lowLet]
