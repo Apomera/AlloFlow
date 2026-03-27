@@ -2,7 +2,10 @@
  * stem_tool_archstudio.js — Architecture Studio / Brick Builder
  *
  * 3D building simulator with shapes, materials, STL export,
- * blueprint SVG export, structural analysis, and progressive coach tips.
+ * blueprint SVG export, structural analysis, progressive coach tips,
+ * AI architect advisor, undo/redo history, save/load gallery,
+ * templates, mirror/symmetry, block rotation, layer view,
+ * material budget, side-view blueprint, and sound effects.
  *
  * Registered tool ID: "archStudio"
  * Registry: window.StemLab.registerTool()
@@ -11,21 +14,204 @@
   'use strict';
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
+  // ══════════════════════════════════════════════════════════════
+  // ── Sound Effects Engine (Web Audio API) ──
+  // ══════════════════════════════════════════════════════════════
+  var _audioCtx = null;
+  function getAudioCtx() {
+    if (!_audioCtx) {
+      try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { /* silent */ }
+    }
+    return _audioCtx;
+  }
+  function playTone(freq, dur, type, vol) {
+    var ac = getAudioCtx(); if (!ac) return;
+    try {
+      var osc = ac.createOscillator();
+      var gain = ac.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(vol || 0.12, ac.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.15));
+      osc.connect(gain); gain.connect(ac.destination);
+      osc.start(); osc.stop(ac.currentTime + (dur || 0.15));
+    } catch (e) { /* silent */ }
+  }
+  function sfxPlace() { playTone(520, 0.08, 'square', 0.08); setTimeout(function () { playTone(680, 0.06, 'square', 0.06); }, 40); }
+  function sfxErase() { playTone(400, 0.1, 'sawtooth', 0.07); setTimeout(function () { playTone(280, 0.12, 'sawtooth', 0.05); }, 50); }
+  function sfxUndo() { playTone(350, 0.06, 'triangle', 0.06); }
+  function sfxRedo() { playTone(450, 0.06, 'triangle', 0.06); }
+  function sfxSave() { playTone(600, 0.08, 'sine', 0.08); setTimeout(function () { playTone(800, 0.1, 'sine', 0.08); }, 80); }
+  function sfxLoad() { playTone(500, 0.06, 'sine', 0.07); setTimeout(function () { playTone(650, 0.08, 'sine', 0.07); }, 60); setTimeout(function () { playTone(800, 0.06, 'sine', 0.06); }, 120); }
+  // Expose sfx on window so main module's Three.js click handlers can use them
+  window._archStudioSfx = { place: sfxPlace, erase: sfxErase };
+
+  function sfxChallenge() {
+    playTone(523, 0.15, 'sine', 0.1);
+    setTimeout(function () { playTone(659, 0.15, 'sine', 0.1); }, 120);
+    setTimeout(function () { playTone(784, 0.2, 'sine', 0.12); }, 240);
+    setTimeout(function () { playTone(1047, 0.3, 'sine', 0.1); }, 400);
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Gallery Storage ──
+  // ══════════════════════════════════════════════════════════════
+  var STORAGE_KEY = 'alloflow_archstudio_builds';
+  function loadGallery() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (e) { return []; }
+  }
+  function saveGallery(arr) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); } catch (e) { /* quota */ }
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Template Definitions ──
+  // ══════════════════════════════════════════════════════════════
+  function makeTemplates() {
+    // Helper: fill perimeter at given y
+    function perim(w, d, y, shape, mat, color) {
+      var out = [];
+      for (var x = 0; x < w; x++) { out.push({ x: x, y: y, z: 0, shape: shape, material: mat, color: color }); out.push({ x: x, y: y, z: d - 1, shape: shape, material: mat, color: color }); }
+      for (var z = 1; z < d - 1; z++) { out.push({ x: 0, y: y, z: z, shape: shape, material: mat, color: color }); out.push({ x: w - 1, y: y, z: z, shape: shape, material: mat, color: color }); }
+      return out;
+    }
+    return [
+      {
+        id: 'cottage', name: 'Cottage', icon: '\uD83C\uDFE0', desc: 'Cozy house with stone base, wood walls, and a roof',
+        blocks: function () {
+          var b = [];
+          // Stone foundation y=0
+          for (var x = 0; x < 5; x++) for (var z = 0; z < 4; z++) b.push({ x: x, y: 0, z: z, shape: 'slab', material: 'stone', color: '#94a3b8' });
+          // Wood walls y=1,2
+          b = b.concat(perim(5, 4, 1, 'block', 'wood', '#92400e'));
+          b = b.concat(perim(5, 4, 2, 'block', 'wood', '#92400e'));
+          // Door (replace front center)
+          b = b.filter(function (bl) { return !(bl.x === 2 && bl.z === 0 && bl.y >= 1); });
+          b.push({ x: 2, y: 1, z: 0, shape: 'door', material: 'wood', color: '#78350f' });
+          // Windows on sides
+          b = b.filter(function (bl) { return !(bl.x === 1 && bl.z === 0 && bl.y === 2) && !(bl.x === 3 && bl.z === 0 && bl.y === 2); });
+          b.push({ x: 1, y: 2, z: 0, shape: 'window', material: 'glass', color: '#38bdf8' });
+          b.push({ x: 3, y: 2, z: 0, shape: 'window', material: 'glass', color: '#38bdf8' });
+          // Back windows
+          b = b.filter(function (bl) { return !(bl.x === 1 && bl.z === 3 && bl.y === 2) && !(bl.x === 3 && bl.z === 3 && bl.y === 2); });
+          b.push({ x: 1, y: 2, z: 3, shape: 'window', material: 'glass', color: '#38bdf8' });
+          b.push({ x: 3, y: 2, z: 3, shape: 'window', material: 'glass', color: '#38bdf8' });
+          // Roof y=3
+          for (var rx = 0; rx < 5; rx++) for (var rz = 0; rz < 4; rz++) b.push({ x: rx, y: 3, z: rz, shape: 'roof', material: 'brick', color: '#b45309' });
+          return b;
+        }
+      },
+      {
+        id: 'temple', name: 'Greek Temple', icon: '\uD83C\uDFDB\uFE0F', desc: 'Classical marble temple with columns and arches',
+        blocks: function () {
+          var b = [];
+          // Marble platform y=0
+          for (var x = 0; x < 7; x++) for (var z = 0; z < 4; z++) b.push({ x: x, y: 0, z: z, shape: 'slab', material: 'marble', color: '#f1f5f9' });
+          // Columns at corners + midpoints y=1,2,3
+          var colPositions = [[0, 0], [0, 3], [3, 0], [3, 3], [6, 0], [6, 3]];
+          colPositions.forEach(function (p) {
+            for (var cy = 1; cy <= 3; cy++) b.push({ x: p[0], y: cy, z: p[1], shape: 'column', material: 'marble', color: '#f1f5f9' });
+          });
+          // Arches between front columns y=3
+          b.push({ x: 1, y: 3, z: 0, shape: 'arch', material: 'marble', color: '#f1f5f9' });
+          b.push({ x: 2, y: 3, z: 0, shape: 'arch', material: 'marble', color: '#f1f5f9' });
+          b.push({ x: 4, y: 3, z: 0, shape: 'arch', material: 'marble', color: '#f1f5f9' });
+          b.push({ x: 5, y: 3, z: 0, shape: 'arch', material: 'marble', color: '#f1f5f9' });
+          // Roof y=4 (triangular with pyramid at peak)
+          for (var rx = 0; rx < 7; rx++) for (var rz = 0; rz < 4; rz++) b.push({ x: rx, y: 4, z: rz, shape: 'slab', material: 'marble', color: '#e2e8f0' });
+          b.push({ x: 2, y: 5, z: 1, shape: 'pyramid', material: 'marble', color: '#f1f5f9' });
+          b.push({ x: 3, y: 5, z: 1, shape: 'pyramid', material: 'marble', color: '#f1f5f9' });
+          b.push({ x: 4, y: 5, z: 1, shape: 'pyramid', material: 'marble', color: '#f1f5f9' });
+          b.push({ x: 2, y: 5, z: 2, shape: 'pyramid', material: 'marble', color: '#f1f5f9' });
+          b.push({ x: 3, y: 5, z: 2, shape: 'pyramid', material: 'marble', color: '#f1f5f9' });
+          b.push({ x: 4, y: 5, z: 2, shape: 'pyramid', material: 'marble', color: '#f1f5f9' });
+          return b;
+        }
+      },
+      {
+        id: 'tower', name: 'Castle Tower', icon: '\uD83C\uDFF0', desc: 'Tall stone tower with battlements',
+        blocks: function () {
+          var b = [];
+          // Base platform
+          for (var x = 0; x < 4; x++) for (var z = 0; z < 4; z++) b.push({ x: x, y: 0, z: z, shape: 'block', material: 'stone', color: '#94a3b8' });
+          // Walls y=1..6
+          for (var wy = 1; wy <= 6; wy++) b = b.concat(perim(4, 4, wy, 'block', 'stone', '#94a3b8'));
+          // Door
+          b = b.filter(function (bl) { return !(bl.x === 1 && bl.z === 0 && (bl.y === 1 || bl.y === 2)); });
+          b.push({ x: 1, y: 1, z: 0, shape: 'door', material: 'wood', color: '#78350f' });
+          // Arrow slits (windows)
+          b = b.filter(function (bl) { return !(bl.x === 1 && bl.z === 3 && bl.y === 4) && !(bl.x === 2 && bl.z === 0 && bl.y === 4); });
+          b.push({ x: 1, y: 4, z: 3, shape: 'window', material: 'glass', color: '#38bdf8' });
+          b.push({ x: 2, y: 4, z: 0, shape: 'window', material: 'glass', color: '#38bdf8' });
+          // Battlements y=7 (alternating)
+          [[0, 0], [0, 2], [2, 0], [2, 3], [3, 1], [3, 3], [1, 3]].forEach(function (p) {
+            b.push({ x: p[0], y: 7, z: p[1], shape: 'block', material: 'stone', color: '#94a3b8' });
+          });
+          return b;
+        }
+      },
+      {
+        id: 'bridge', name: 'Arch Bridge', icon: '\uD83C\uDF09', desc: 'Stone bridge with arches spanning a gap',
+        blocks: function () {
+          var b = [];
+          // Left pillar
+          for (var y = 0; y <= 3; y++) { b.push({ x: 0, y: y, z: 0, shape: 'block', material: 'stone', color: '#94a3b8' }); b.push({ x: 0, y: y, z: 1, shape: 'block', material: 'stone', color: '#94a3b8' }); }
+          // Right pillar
+          for (var ry = 0; ry <= 3; ry++) { b.push({ x: 5, y: ry, z: 0, shape: 'block', material: 'stone', color: '#94a3b8' }); b.push({ x: 5, y: ry, z: 1, shape: 'block', material: 'stone', color: '#94a3b8' }); }
+          // Center pillar
+          for (var cy = 0; cy <= 2; cy++) { b.push({ x: 2, y: cy, z: 0, shape: 'block', material: 'stone', color: '#94a3b8' }); b.push({ x: 3, y: cy, z: 0, shape: 'block', material: 'stone', color: '#94a3b8' }); b.push({ x: 2, y: cy, z: 1, shape: 'block', material: 'stone', color: '#94a3b8' }); b.push({ x: 3, y: cy, z: 1, shape: 'block', material: 'stone', color: '#94a3b8' }); }
+          // Arches
+          b.push({ x: 1, y: 3, z: 0, shape: 'arch', material: 'stone', color: '#94a3b8' });
+          b.push({ x: 1, y: 3, z: 1, shape: 'arch', material: 'stone', color: '#94a3b8' });
+          b.push({ x: 4, y: 3, z: 0, shape: 'arch', material: 'stone', color: '#94a3b8' });
+          b.push({ x: 4, y: 3, z: 1, shape: 'arch', material: 'stone', color: '#94a3b8' });
+          // Road surface y=4
+          for (var dx = 0; dx <= 5; dx++) { b.push({ x: dx, y: 4, z: 0, shape: 'slab', material: 'stone', color: '#cbd5e1' }); b.push({ x: dx, y: 4, z: 1, shape: 'slab', material: 'stone', color: '#cbd5e1' }); }
+          // Railings
+          [0, 2, 4].forEach(function (rx) {
+            b.push({ x: rx, y: 5, z: 0, shape: 'column', material: 'metal', color: '#cbd5e1' });
+            b.push({ x: rx, y: 5, z: 1, shape: 'column', material: 'metal', color: '#cbd5e1' });
+          });
+          return b;
+        }
+      },
+      {
+        id: 'pyramid', name: 'Great Pyramid', icon: '\uD83D\uDD3A', desc: 'Classic pyramid with stone and sandstone layers',
+        blocks: function () {
+          var b = [];
+          var layers = [[0, 4], [1, 3], [2, 2]];
+          layers.forEach(function (lr, yi) {
+            var start = lr[0], end = lr[1];
+            for (var x = start; x <= end; x++) for (var z = start; z <= end; z++) {
+              b.push({ x: x, y: yi, z: z, shape: yi < 2 ? 'block' : 'pyramid', material: 'stone', color: yi === 0 ? '#94a3b8' : yi === 1 ? '#d4a76a' : '#fbbf24' });
+            }
+          });
+          // Top cap
+          b.push({ x: 2, y: 3, z: 2, shape: 'pyramid', material: 'marble', color: '#f1f5f9' });
+          return b;
+        }
+      }
+    ];
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // ── REGISTER TOOL ──
+  // ══════════════════════════════════════════════════════════════
   window.StemLab.registerTool('archStudio', {
     name: 'Architecture Studio',
     icon: '\uD83C\uDFD7\uFE0F',
     category: 'explore',
     render: function (ctx) {
     var React = ctx.React;
+    var el = React.createElement;
     var d = (ctx.toolData && ctx.toolData.archStudio) || {};
     var upd = function (key, val) {
-      if (typeof key === 'object') {
-        ctx.updateMulti('archStudio', key);
-      } else {
-        ctx.update('archStudio', key, val);
-      }
+      if (typeof key === 'object') { ctx.updateMulti('archStudio', key); }
+      else { ctx.update('archStudio', key, val); }
     };
+    var callGemini = ctx.callGemini || window.callGemini;
 
+    // ── State ──
     var blocks = d.blocks || [];
     var activeShape = d.activeShape || 'block';
     var activeMaterial = d.activeMaterial || 'stone';
@@ -38,6 +224,21 @@
     var activeChallenge = d.activeChallenge != null ? d.activeChallenge : -1;
     var completedChallenges = d.completedChallenges || {};
     var threeReady = ctx.toolData && ctx.toolData._threeLoaded;
+
+    // New state
+    var undoStack = d.undoStack || [];
+    var redoStack = d.redoStack || [];
+    var activeRotation = d.activeRotation || 0;
+    var symmetryMode = d.symmetryMode || false;
+    var showGallery = d.showGallery || false;
+    var showTemplates = d.showTemplates || false;
+    var viewLayer = d.viewLayer != null ? d.viewLayer : -1; // -1 = all layers
+    var budgetEnabled = d.budgetEnabled || false;
+    var budget = d.budget != null ? d.budget : 200;
+    var aiAdvice = d.aiAdvice || '';
+    var aiLoading = d.aiLoading || false;
+    var showAI = d.showAI || false;
+    var soundEnabled = d.soundEnabled != null ? d.soundEnabled : true;
 
     // ── Shape definitions (12 shapes) ──
     var shapes = [
@@ -55,14 +256,14 @@
       { id: 'door', icon: '\uD83D\uDEAA', label: 'Door', vol: 0.4 }
     ];
 
-    // ── Material definitions ──
+    // ── Material definitions with costs ──
     var materials = [
-      { id: 'stone', label: 'Stone', color: '#94a3b8', icon: '\uD83E\uDEA8', weight: 2.3 },
-      { id: 'brick', label: 'Brick', color: '#b45309', icon: '\uD83E\uDDF1', weight: 1.9 },
-      { id: 'wood', label: 'Wood', color: '#92400e', icon: '\uD83E\uDEB5', weight: 0.6 },
-      { id: 'glass', label: 'Glass', color: '#38bdf8', icon: '\uD83E\uDE9F', weight: 2.5 },
-      { id: 'marble', label: 'Marble', color: '#f1f5f9', icon: '\u26AA', weight: 2.7 },
-      { id: 'metal', label: 'Metal', color: '#cbd5e1', icon: '\u2699\uFE0F', weight: 7.8 }
+      { id: 'stone', label: 'Stone', color: '#94a3b8', icon: '\uD83E\uDEA8', weight: 2.3, cost: 5 },
+      { id: 'brick', label: 'Brick', color: '#b45309', icon: '\uD83E\uDDF1', weight: 1.9, cost: 8 },
+      { id: 'wood', label: 'Wood', color: '#92400e', icon: '\uD83E\uDEB5', weight: 0.6, cost: 3 },
+      { id: 'glass', label: 'Glass', color: '#38bdf8', icon: '\uD83E\uDE9F', weight: 2.5, cost: 12 },
+      { id: 'marble', label: 'Marble', color: '#f1f5f9', icon: '\u26AA', weight: 2.7, cost: 15 },
+      { id: 'metal', label: 'Metal', color: '#cbd5e1', icon: '\u2699\uFE0F', weight: 7.8, cost: 20 }
     ];
 
     // ── Tool modes ──
@@ -72,12 +273,21 @@
       { id: 'paint', label: 'Paint', icon: '\uD83C\uDFA8' }
     ];
 
+    // ── Rotation options ──
+    var rotations = [
+      { deg: 0, label: '0\u00B0', icon: '\u2B06\uFE0F' },
+      { deg: 90, label: '90\u00B0', icon: '\u27A1\uFE0F' },
+      { deg: 180, label: '180\u00B0', icon: '\u2B07\uFE0F' },
+      { deg: 270, label: '270\u00B0', icon: '\u2B05\uFE0F' }
+    ];
+
     // ── Lookups ──
     var volLookup = {};
     shapes.forEach(function (s) { volLookup[s.id] = s.vol; });
     var matColorLookup = {};
     var matWeightLookup = {};
-    materials.forEach(function (m) { matColorLookup[m.id] = m.color; matWeightLookup[m.id] = m.weight; });
+    var matCostLookup = {};
+    materials.forEach(function (m) { matColorLookup[m.id] = m.color; matWeightLookup[m.id] = m.weight; matCostLookup[m.id] = m.cost; });
 
     // ── Basic Stats ──
     var totalBlocks = blocks.length;
@@ -88,18 +298,17 @@
     blocks.forEach(function (b) { footprintSet[b.x + ',' + b.z] = true; });
     var footprint = Object.keys(footprintSet).length;
 
-    // Surface area (rough estimate: 6 faces per block - 2 per shared face)
+    // Surface area
     var blockMap = {};
     blocks.forEach(function (b) { blockMap[b.x + ',' + b.y + ',' + b.z] = true; });
     var surfaceArea = 0;
     blocks.forEach(function (b) {
-      var neighbors = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
-      neighbors.forEach(function (n) {
+      [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]].forEach(function (n) {
         if (!blockMap[(b.x + n[0]) + ',' + (b.y + n[1]) + ',' + (b.z + n[2])]) surfaceArea += 1;
       });
     });
 
-    // Bounding box dimensions
+    // Bounding box
     var buildW = 0, buildD = 0, buildH = 0;
     var minX = 0, maxX = 0, minY = 0, maxY = 0, minZ = 0, maxZ = 0;
     if (blocks.length > 0) {
@@ -112,14 +321,19 @@
       buildW = maxX - minX + 1; buildD = maxZ - minZ + 1; buildH = maxY - minY + 1;
     }
 
+    // ── Material Budget ──
+    var totalCost = blocks.reduce(function (s, b) { return s + (matCostLookup[b.material || 'stone'] || 5); }, 0);
+    var budgetRemaining = budget - totalCost;
+    var budgetPct = budget > 0 ? Math.round((totalCost / budget) * 100) : 0;
+    var overBudget = budgetEnabled && budgetRemaining < 0;
+
     // ══════════════════════════════════════════════════════════════
-    // ── UPGRADE 3: Structural Analysis Engine ──
+    // ── Structural Analysis Engine ──
     // ══════════════════════════════════════════════════════════════
     var analysis = { cogX: 0, cogY: 0, cogZ: 0, stability: 0, stabilityLabel: 'N/A', stabilityEmoji: '\u2B1C',
       supportedPct: 100, unsupported: 0, materialCount: 0, symmetry: 0, totalWeight: 0, tip: '' };
 
     if (totalBlocks > 0) {
-      // Center of gravity (volume-weighted)
       var sumWX = 0, sumWY = 0, sumWZ = 0, sumW = 0;
       var matSet = {};
       blocks.forEach(function (b) {
@@ -133,7 +347,6 @@
       analysis.totalWeight = sumW.toFixed(1);
       analysis.materialCount = Object.keys(matSet).length;
 
-      // Unsupported blocks (no block below and not on ground level)
       var groundY = minY;
       var floating = 0;
       blocks.forEach(function (b) {
@@ -142,12 +355,9 @@
       analysis.unsupported = floating;
       analysis.supportedPct = totalBlocks > 0 ? Math.round(((totalBlocks - floating) / totalBlocks) * 100) : 100;
 
-      // Stability score: ratio of footprint width to CoG height
-      // Higher footprint relative to CoG = more stable
       var cogHeight = parseFloat(analysis.cogY) - minY;
       var footprintWidth = Math.max(buildW, buildD);
       var rawStability = footprintWidth > 0 && cogHeight >= 0 ? Math.min(100, Math.round((footprintWidth / (cogHeight + 1)) * 30)) : 100;
-      // Penalize floating blocks
       var floatPenalty = Math.round((floating / Math.max(1, totalBlocks)) * 40);
       analysis.stability = Math.max(0, Math.min(100, rawStability - floatPenalty));
 
@@ -155,306 +365,659 @@
       else if (analysis.stability >= 40) { analysis.stabilityLabel = 'Moderate'; analysis.stabilityEmoji = '\uD83D\uDFE1'; }
       else { analysis.stabilityLabel = 'Unstable'; analysis.stabilityEmoji = '\uD83D\uDD34'; }
 
-      // Symmetry score: compare left vs right halves
       var midX = (minX + maxX) / 2;
-      var leftCount = 0, rightCount = 0, mirroredCount = 0;
+      var leftCount = 0, mirroredCount = 0;
       blocks.forEach(function (b) {
         if (b.x < midX) { leftCount++; var mirrorX = Math.round(midX + (midX - b.x)); if (blockMap[mirrorX + ',' + b.y + ',' + b.z]) mirroredCount++; }
-        else if (b.x > midX) { rightCount++; }
-        else { leftCount++; rightCount++; mirroredCount++; }
+        else if (b.x === midX) { leftCount++; mirroredCount++; }
       });
       analysis.symmetry = leftCount > 0 ? Math.round((mirroredCount / leftCount) * 100) : 100;
 
-      // Adaptive structural analysis tip
       if (floating > 0 && floating > totalBlocks * 0.3) {
-        analysis.tip = '\u26A0\uFE0F ' + floating + ' blocks are floating! In real architecture, gravity pulls unsupported blocks down. Add supports below them.';
+        analysis.tip = '\u26A0\uFE0F ' + floating + ' blocks are floating! Add supports below them.';
       } else if (analysis.stability < 40) {
-        analysis.tip = '\uD83C\uDFD7\uFE0F Your center of gravity is high (' + analysis.cogY + '). Try widening the base \u2014 pyramids are the most stable shape because their wide base keeps the CoG low!';
+        analysis.tip = '\uD83C\uDFD7\uFE0F Center of gravity is high (' + analysis.cogY + '). Widen the base!';
       } else if (analysis.symmetry < 50) {
-        analysis.tip = '\uD83C\uDFDB\uFE0F Your structure is asymmetric (symmetry: ' + analysis.symmetry + '%). Classical buildings use symmetry for both beauty and even load distribution.';
+        analysis.tip = '\uD83C\uDFDB\uFE0F Asymmetric structure (symmetry: ' + analysis.symmetry + '%). Try mirroring!';
       } else if (analysis.materialCount === 1) {
-        analysis.tip = '\uD83C\uDFA8 Try mixing materials! Real buildings use stone foundations, wooden frames, and glass windows for different structural purposes.';
+        analysis.tip = '\uD83C\uDFA8 Mix materials for structural variety!';
       } else {
-        analysis.tip = '\u2705 Excellent structure! Stability: ' + analysis.stability + '%, Symmetry: ' + analysis.symmetry + '%. You\'re building like a real architect!';
+        analysis.tip = '\u2705 Great structure! Stability: ' + analysis.stability + '%, Symmetry: ' + analysis.symmetry + '%';
       }
     }
 
     // ══════════════════════════════════════════════════════════════
-    // ── CHALLENGE SYSTEM (10 progressive challenges) ──
+    // ── Challenge System (10 progressive challenges) ──
     // ══════════════════════════════════════════════════════════════
     var shapeCount = {};
     blocks.forEach(function (b) { var sid = b.shape || 'block'; shapeCount[sid] = (shapeCount[sid] || 0) + 1; });
-    var uniqueShapeCount = Object.keys(shapeCount).length;
     var volToSurf = surfaceArea > 0 ? (parseFloat(totalVolume) / surfaceArea) : 0;
 
     var challenges = [
       { id: 0, title: 'First Wall', icon: '\uD83E\uDDF1', desc: 'Build a wall: 3+ wide, 3+ tall', xp: 10,
         check: function () { return buildW >= 3 && buildH >= 3; },
-        fact: 'The earliest known brick wall dates to ~7500 BCE in Jericho. Sun-dried mud bricks were the first manufactured building material!' },
-      { id: 1, title: 'Stable Tower', icon: '\uD83C\uDFD7\uFE0F', desc: 'Build 6+ blocks high with stability > 60%', xp: 15,
+        fact: 'The earliest known brick wall dates to ~7500 BCE in Jericho!' },
+      { id: 1, title: 'Stable Tower', icon: '\uD83C\uDFD7\uFE0F', desc: '6+ high, stability > 60%', xp: 15,
         check: function () { return buildH >= 6 && analysis.stability > 60; },
-        fact: 'The Leaning Tower of Pisa has a 3.97\u00B0 lean because its foundation is only 3 meters deep on soft clay soil. Engineers in 2001 removed soil to stabilize it!' },
+        fact: 'The Leaning Tower of Pisa has a 3.97\u00B0 lean due to shallow foundations!' },
       { id: 2, title: 'Material Mix', icon: '\uD83C\uDFA8', desc: 'Use 3+ different materials', xp: 10,
         check: function () { return analysis.materialCount >= 3; },
-        fact: 'The Parthenon in Athens used Pentelic marble, limestone, and iron clamps. Different materials serve different structural purposes!' },
-      { id: 3, title: 'Roman Arch', icon: '\uD83C\uDFDB\uFE0F', desc: 'Use 2+ arches and 2+ columns', xp: 20,
+        fact: 'The Parthenon used marble, limestone, and iron clamps!' },
+      { id: 3, title: 'Roman Arch', icon: '\uD83C\uDFDB\uFE0F', desc: '2+ arches and 2+ columns', xp: 20,
         check: function () { return (shapeCount.arch || 0) >= 2 && (shapeCount.column || 0) >= 2; },
-        fact: 'Roman arches distribute weight outward to columns, allowing buildings to span wide openings. The Colosseum has 80 arched entrances!' },
-      { id: 4, title: 'Symmetry Master', icon: '\u2696\uFE0F', desc: 'Build with symmetry score > 80%', xp: 15,
+        fact: 'The Colosseum has 80 arched entrances!' },
+      { id: 4, title: 'Symmetry Master', icon: '\u2696\uFE0F', desc: 'Symmetry score > 80%', xp: 15,
         check: function () { return totalBlocks >= 6 && analysis.symmetry > 80; },
-        fact: 'The Taj Mahal is perfectly symmetrical along its central axis. Symmetry in architecture creates visual harmony and distributes loads evenly.' },
-      { id: 5, title: 'Bridge Builder', icon: '\uD83C\uDF09', desc: 'Span 4+ wide, 3+ high, no floaters', xp: 25,
+        fact: 'The Taj Mahal is perfectly symmetrical along its central axis.' },
+      { id: 5, title: 'Bridge Builder', icon: '\uD83C\uDF09', desc: '4+ wide, 3+ high, no floaters', xp: 25,
         check: function () { return buildW >= 4 && buildH >= 3 && analysis.unsupported === 0; },
-        fact: 'The longest bridge span is the 1915 \u00C7anakkale Bridge in Turkey at 2,023 meters. Suspension bridges use cables to distribute the load!' },
-      { id: 6, title: 'Efficient Design', icon: '\uD83D\uDCCA', desc: '20+ blocks, vol/surface ratio > 0.5', xp: 20,
+        fact: 'The 1915 \u00C7anakkale Bridge spans 2,023 meters!' },
+      { id: 6, title: 'Efficient Design', icon: '\uD83D\uDCCA', desc: '20+ blocks, vol/surface > 0.5', xp: 20,
         check: function () { return totalBlocks >= 20 && volToSurf > 0.5; },
-        fact: 'A sphere has the best volume-to-surface ratio. Igloos use dome shapes to minimize heat loss through their surface!' },
-      { id: 7, title: 'Skyscraper', icon: '\uD83C\uDFD9\uFE0F', desc: '10+ height with stability > 50%', xp: 25,
+        fact: 'Igloos use dome shapes to minimize heat loss!' },
+      { id: 7, title: 'Skyscraper', icon: '\uD83C\uDFD9\uFE0F', desc: '10+ height, stability > 50%', xp: 25,
         check: function () { return buildH >= 10 && analysis.stability > 50; },
-        fact: 'The Burj Khalifa (828m) uses a Y-shaped floor plan to reduce wind forces. Skyscrapers need deep foundations and a wide base!' },
-      { id: 8, title: 'The Pyramid', icon: '\uD83D\uDD3A', desc: 'Use pyramid/ramp shapes, stability > 90%', xp: 20,
+        fact: 'The Burj Khalifa (828m) uses a Y-shaped floor plan!' },
+      { id: 8, title: 'The Pyramid', icon: '\uD83D\uDD3A', desc: 'Pyramid/ramp shapes, stability > 90%', xp: 20,
         check: function () { return ((shapeCount.pyramid || 0) + (shapeCount.ramp || 0)) >= 3 && analysis.stability > 90; },
-        fact: 'The Great Pyramid of Giza contains 2.3 million stone blocks. Its wide base and low center of gravity make it incredibly stable \u2014 it\'s survived 4,500 years!' },
-      { id: 9, title: 'Dream Home', icon: '\uD83C\uDFE0', desc: '30+ blocks, 4+ materials, use doors & windows', xp: 30,
+        fact: 'The Great Pyramid contains 2.3 million stone blocks!' },
+      { id: 9, title: 'Dream Home', icon: '\uD83C\uDFE0', desc: '30+ blocks, 4+ mats, doors & windows', xp: 30,
         check: function () { return totalBlocks >= 30 && analysis.materialCount >= 4 && (shapeCount.door || 0) >= 1 && (shapeCount.window || 0) >= 1; },
-        fact: 'A well-designed home balances form and function. Architects consider light, ventilation, structural integrity, and aesthetics all at once!' }
+        fact: 'Architects balance light, ventilation, integrity, and aesthetics!' }
     ];
 
-    // Evaluate active challenge
     var challengeProgress = null;
     var justCompleted = false;
     if (activeChallenge >= 0 && activeChallenge < challenges.length) {
       var ch = challenges[activeChallenge];
       var passed = ch.check();
       challengeProgress = { challenge: ch, passed: passed };
-      if (passed && !completedChallenges[ch.id]) {
-        justCompleted = true;
-      }
+      if (passed && !completedChallenges[ch.id]) justCompleted = true;
     }
     var completedCount = Object.keys(completedChallenges).length;
 
-    // Auto-complete handler
     var completeChallenge = function () {
       if (!challengeProgress || !challengeProgress.passed) return;
-      var ch = challengeProgress.challenge;
+      var chx = challengeProgress.challenge;
       var newCompleted = Object.assign({}, completedChallenges);
-      newCompleted[ch.id] = Date.now();
+      newCompleted[chx.id] = Date.now();
       upd('completedChallenges', newCompleted);
-      if (ctx.awardXP) ctx.awardXP('archStudio_challenge_' + ch.id, ch.xp, 'Challenge: ' + ch.title);
-      if (ctx.addToast) ctx.addToast('\uD83C\uDFC6 Challenge Complete: ' + ch.title + '! +' + ch.xp + ' XP', 'success');
+      if (ctx.awardXP) ctx.awardXP('archStudio_challenge_' + chx.id, chx.xp, 'Challenge: ' + chx.title);
+      if (ctx.addToast) ctx.addToast('\uD83C\uDFC6 Challenge Complete: ' + chx.title + '! +' + chx.xp + ' XP', 'success');
+      if (soundEnabled) sfxChallenge();
     };
 
     // ══════════════════════════════════════════════════════════════
-    // ── STL export ──
+    // ── Multi-Level Undo/Redo ──
+    // ══════════════════════════════════════════════════════════════
+    var pushUndo = function (currentBlocks) {
+      var stack = (undoStack || []).slice();
+      stack.push(JSON.parse(JSON.stringify(currentBlocks)));
+      if (stack.length > 50) stack = stack.slice(-50);
+      return stack;
+    };
+
+    var doUndo = function () {
+      if (!undoStack || undoStack.length === 0) return;
+      var stack = undoStack.slice();
+      var prev = stack.pop();
+      var redo = (redoStack || []).slice();
+      redo.push(JSON.parse(JSON.stringify(blocks)));
+      if (redo.length > 50) redo = redo.slice(-50);
+      ctx.setToolData(function (p) {
+        var a = Object.assign({}, p.archStudio || {});
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: prev, undoStack: stack, redoStack: redo }) });
+      });
+      if (soundEnabled) sfxUndo();
+    };
+
+    var doRedo = function () {
+      if (!redoStack || redoStack.length === 0) return;
+      var stack = redoStack.slice();
+      var next = stack.pop();
+      var undo = (undoStack || []).slice();
+      undo.push(JSON.parse(JSON.stringify(blocks)));
+      if (undo.length > 50) undo = undo.slice(-50);
+      ctx.setToolData(function (p) {
+        var a = Object.assign({}, p.archStudio || {});
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: next, undoStack: undo, redoStack: stack }) });
+      });
+      if (soundEnabled) sfxRedo();
+    };
+
+    // Clear all (with undo snapshot)
+    var clearAll = function () {
+      if (blocks.length === 0) return;
+      var newUndo = pushUndo(blocks);
+      ctx.setToolData(function (p) {
+        var a = Object.assign({}, p.archStudio || {});
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: [], undoStack: newUndo, redoStack: [] }) });
+      });
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Save / Load Gallery ──
+    // ══════════════════════════════════════════════════════════════
+    var galleryItems = loadGallery();
+
+    var saveBuild = function () {
+      if (blocks.length === 0) return;
+      var name = (styleMode === 'bricks' ? 'Brick Build' : 'Build') + ' #' + (galleryItems.length + 1);
+      var item = {
+        id: 'arch_' + Date.now(),
+        name: name,
+        blocks: JSON.parse(JSON.stringify(blocks)),
+        blockCount: blocks.length,
+        dims: buildW + '\u00D7' + buildD + '\u00D7' + buildH,
+        stability: analysis.stability,
+        timestamp: Date.now()
+      };
+      var updated = galleryItems.concat([item]);
+      saveGallery(updated);
+      upd('_galleryRefresh', Date.now());
+      if (ctx.addToast) ctx.addToast('\uD83D\uDCBE Build saved: ' + name, 'success');
+      if (soundEnabled) sfxSave();
+    };
+
+    var loadBuild = function (item) {
+      var newUndo = pushUndo(blocks);
+      ctx.setToolData(function (p) {
+        var a = Object.assign({}, p.archStudio || {});
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: item.blocks, undoStack: newUndo, redoStack: [] }) });
+      });
+      if (ctx.addToast) ctx.addToast('\uD83D\uDCE5 Loaded: ' + item.name, 'info');
+      if (soundEnabled) sfxLoad();
+    };
+
+    var deleteBuild = function (id) {
+      var updated = galleryItems.filter(function (g) { return g.id !== id; });
+      saveGallery(updated);
+      upd('_galleryRefresh', Date.now());
+      if (ctx.addToast) ctx.addToast('\uD83D\uDDD1\uFE0F Build deleted', 'info');
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Template System ──
+    // ══════════════════════════════════════════════════════════════
+    var templates = makeTemplates();
+
+    var loadTemplate = function (tpl) {
+      var newBlocks = tpl.blocks();
+      var newUndo = pushUndo(blocks);
+      ctx.setToolData(function (p) {
+        var a = Object.assign({}, p.archStudio || {});
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: newBlocks, undoStack: newUndo, redoStack: [] }) });
+      });
+      if (ctx.addToast) ctx.addToast('\uD83D\uDCC2 Template loaded: ' + tpl.name, 'info');
+      if (soundEnabled) sfxLoad();
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Mirror / Symmetry ──
+    // ══════════════════════════════════════════════════════════════
+    var mirrorBuildX = function () {
+      if (blocks.length === 0) return;
+      var newUndo = pushUndo(blocks);
+      var mid = (minX + maxX) / 2;
+      var mirrored = blocks.map(function (b) {
+        return Object.assign({}, b, { x: Math.round(mid + (mid - b.x)) });
+      });
+      // Merge: keep original + add non-overlapping mirrored
+      var existing = {};
+      blocks.forEach(function (b) { existing[b.x + ',' + b.y + ',' + b.z] = true; });
+      var added = mirrored.filter(function (b) { return !existing[b.x + ',' + b.y + ',' + b.z]; });
+      var merged = blocks.concat(added);
+      ctx.setToolData(function (p) {
+        var a = Object.assign({}, p.archStudio || {});
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: merged, undoStack: newUndo, redoStack: [] }) });
+      });
+      if (ctx.addToast) ctx.addToast('\uD83E\uDE9E Mirrored along X axis! +' + added.length + ' blocks', 'info');
+      if (soundEnabled) sfxPlace();
+    };
+
+    var mirrorBuildZ = function () {
+      if (blocks.length === 0) return;
+      var newUndo = pushUndo(blocks);
+      var mid = (minZ + maxZ) / 2;
+      var mirrored = blocks.map(function (b) {
+        return Object.assign({}, b, { z: Math.round(mid + (mid - b.z)) });
+      });
+      var existing = {};
+      blocks.forEach(function (b) { existing[b.x + ',' + b.y + ',' + b.z] = true; });
+      var added = mirrored.filter(function (b) { return !existing[b.x + ',' + b.y + ',' + b.z]; });
+      var merged = blocks.concat(added);
+      ctx.setToolData(function (p) {
+        var a = Object.assign({}, p.archStudio || {});
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: merged, undoStack: newUndo, redoStack: [] }) });
+      });
+      if (ctx.addToast) ctx.addToast('\uD83E\uDE9E Mirrored along Z axis! +' + added.length + ' blocks', 'info');
+      if (soundEnabled) sfxPlace();
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    // ── AI Architect Advisor ──
+    // ══════════════════════════════════════════════════════════════
+    var askAIArchitect = function () {
+      if (!callGemini || aiLoading) return;
+      upd({ aiLoading: true, showAI: true });
+
+      var desc = totalBlocks === 0
+        ? 'The student has not placed any blocks yet.'
+        : 'The student built a structure: ' + totalBlocks + ' blocks, dimensions ' + buildW + '\u00D7' + buildD + '\u00D7' + buildH +
+          ', stability ' + analysis.stability + '%, symmetry ' + analysis.symmetry + '%, ' + analysis.materialCount + ' material(s), ' +
+          analysis.unsupported + ' floating blocks, shapes used: ' + Object.keys(shapeCount).join(', ') +
+          '. Total weight: ' + analysis.totalWeight + 't. Volume: ' + totalVolume + ' u\u00B3.';
+
+      var prompt = 'You are an AI Architect advisor in a kids\' educational building game. ' + desc +
+        ' Give 2-3 SHORT, encouraging tips (1-2 sentences each) about how to improve the structure. ' +
+        'Include one real-world architecture fact. Use emoji. Keep it fun and educational for ages 8-14. ' +
+        'Return JSON: { "tips": ["tip1", "tip2", "tip3"], "funFact": "..." }';
+
+      callGemini(prompt, true, false, 0.8).then(function (resp) {
+        try {
+          var parsed = typeof resp === 'string' ? JSON.parse(resp.replace(/```json\s*/g, '').replace(/```/g, '').trim()) : resp;
+          var advice = '';
+          if (parsed.tips) parsed.tips.forEach(function (t, i) { advice += (i > 0 ? '\n' : '') + t; });
+          if (parsed.funFact) advice += '\n\n\uD83C\uDFDB\uFE0F ' + parsed.funFact;
+          upd({ aiAdvice: advice, aiLoading: false });
+        } catch (e) {
+          upd({ aiAdvice: typeof resp === 'string' ? resp : 'Ask me again!', aiLoading: false });
+        }
+      }).catch(function () {
+        upd({ aiAdvice: '\u26A0\uFE0F Could not reach AI advisor. Try again later!', aiLoading: false });
+      });
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Earthquake Simulator ──
+    // ══════════════════════════════════════════════════════════════
+    var quakeIntensity = d.quakeIntensity || 5; // 1-10 Richter-ish scale
+    var quakeResult = d.quakeResult || null;
+
+    var runEarthquake = function () {
+      if (blocks.length === 0) return;
+      var newUndo = pushUndo(blocks);
+      var intensity = quakeIntensity / 10; // 0.1 - 1.0
+      // Blocks survive based on: support (ground or block below), stability contribution, and randomness
+      var survivors = [];
+      var fallen = 0;
+      // Sort by Y ascending so we evaluate from ground up
+      var sorted = blocks.slice().sort(function (a, b) { return a.y - b.y; });
+      var keepMap = {};
+      sorted.forEach(function (b) {
+        var onGround = b.y === minY;
+        var supported = onGround || keepMap[b.x + ',' + (b.y - 1) + ',' + b.z];
+        var hasNeighbors = 0;
+        [[1,0,0],[-1,0,0],[0,0,1],[0,0,-1]].forEach(function (n) {
+          if (blockMap[(b.x+n[0])+','+(b.y+n[1])+','+(b.z+n[2])]) hasNeighbors++;
+        });
+        var survivalChance = supported ? 0.95 - (intensity * 0.4) + (hasNeighbors * 0.08) : 0.3 - (intensity * 0.25);
+        // Heavy materials (metal, marble) are more stable; glass is fragile
+        if (b.material === 'glass') survivalChance -= 0.15;
+        if (b.material === 'metal' || b.material === 'stone') survivalChance += 0.05;
+        // Pyramids and domes are more earthquake resistant
+        if (b.shape === 'pyramid' || b.shape === 'dome') survivalChance += 0.1;
+        if (Math.random() < Math.max(0.05, Math.min(0.99, survivalChance))) {
+          survivors.push(b);
+          keepMap[b.x + ',' + b.y + ',' + b.z] = true;
+        } else {
+          fallen++;
+        }
+      });
+      var pctSurvived = totalBlocks > 0 ? Math.round((survivors.length / totalBlocks) * 100) : 100;
+      var rating = pctSurvived >= 90 ? 'Earthquake-proof!' : pctSurvived >= 70 ? 'Minor damage' : pctSurvived >= 40 ? 'Significant damage' : 'Catastrophic failure';
+      ctx.setToolData(function (p) {
+        var a = Object.assign({}, p.archStudio || {});
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, {
+          blocks: survivors, undoStack: newUndo, redoStack: [],
+          quakeResult: { fallen: fallen, survived: survivors.length, pct: pctSurvived, rating: rating, intensity: quakeIntensity }
+        }) });
+      });
+      if (ctx.addToast) ctx.addToast('\uD83C\uDF0B Earthquake ' + quakeIntensity + '/10: ' + rating + ' (' + fallen + ' blocks fell)', pctSurvived >= 70 ? 'success' : 'error');
+      // Shake sound
+      playTone(80, 0.4, 'sawtooth', 0.15);
+      setTimeout(function () { playTone(60, 0.5, 'sawtooth', 0.12); }, 200);
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Screenshot to PNG ──
+    // ══════════════════════════════════════════════════════════════
+    var takeScreenshot = function () {
+      var canvas = document.getElementById('arch-studio-canvas');
+      if (!canvas) { if (ctx.addToast) ctx.addToast('\u26A0\uFE0F Canvas not ready', 'error'); return; }
+      try {
+        var url = canvas.toDataURL('image/png');
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'archstudio_screenshot_' + Date.now() + '.png';
+        a.click();
+        if (ctx.addToast) ctx.addToast('\uD83D\uDCF8 Screenshot saved!', 'success');
+      } catch (e) {
+        if (ctx.addToast) ctx.addToast('\u26A0\uFE0F Screenshot failed (canvas security)', 'error');
+      }
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Bill of Materials ──
+    // ══════════════════════════════════════════════════════════════
+    var showBOM = d.showBOM || false;
+    var bomByMaterial = {};
+    var bomByShape = {};
+    blocks.forEach(function (b) {
+      var mid = b.material || 'stone';
+      var sid = b.shape || 'block';
+      bomByMaterial[mid] = (bomByMaterial[mid] || 0) + 1;
+      bomByShape[sid] = (bomByShape[sid] || 0) + 1;
+    });
+    var bomMaterialEntries = Object.keys(bomByMaterial).map(function (mid) {
+      var mat = materials.find(function (m) { return m.id === mid; }) || { icon: '', label: mid, cost: 5 };
+      return { id: mid, icon: mat.icon, label: mat.label, count: bomByMaterial[mid], cost: bomByMaterial[mid] * mat.cost };
+    }).sort(function (a, b) { return b.count - a.count; });
+    var bomShapeEntries = Object.keys(bomByShape).map(function (sid) {
+      var sh = shapes.find(function (s) { return s.id === sid; }) || { icon: '', label: sid };
+      return { id: sid, icon: sh.icon, label: sh.label, count: bomByShape[sid] };
+    }).sort(function (a, b) { return b.count - a.count; });
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Real-World Scale Calculator ──
+    // ══════════════════════════════════════════════════════════════
+    var BLOCK_METERS = 1; // 1 block = 1 meter
+    var realW = buildW * BLOCK_METERS;
+    var realD = buildD * BLOCK_METERS;
+    var realH = buildH * BLOCK_METERS;
+    var realWFt = (realW * 3.281).toFixed(1);
+    var realHFt = (realH * 3.281).toFixed(1);
+    var realVolM3 = parseFloat(totalVolume) * (BLOCK_METERS * BLOCK_METERS * BLOCK_METERS);
+    var realWeightTons = parseFloat(analysis.totalWeight) * 0.001; // rough
+    var scaleComparisons = [];
+    if (realH >= 1 && realH < 3) scaleComparisons.push('About the height of a door');
+    else if (realH >= 3 && realH < 6) scaleComparisons.push('Height of a 1-story building');
+    else if (realH >= 6 && realH < 15) scaleComparisons.push('Height of a 2-4 story building');
+    else if (realH >= 15 && realH < 50) scaleComparisons.push('Height of a large apartment building');
+    else if (realH >= 50) scaleComparisons.push('Skyscraper territory!');
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Build Sharing (Import/Export JSON) ──
+    // ══════════════════════════════════════════════════════════════
+    var showShare = d.showShare || false;
+    var shareCode = d.shareCode || '';
+
+    var exportShareCode = function () {
+      if (blocks.length === 0) return;
+      try {
+        var data = { v: 1, b: blocks.map(function (b) { return [b.x, b.y, b.z, b.shape || 'block', b.material || 'stone', b.color || '', b.rotation || 0]; }) };
+        var json = JSON.stringify(data);
+        var code = btoa(json);
+        upd({ shareCode: code, showShare: true });
+        // Copy to clipboard
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(code).then(function () {
+            if (ctx.addToast) ctx.addToast('\uD83D\uDCCB Share code copied to clipboard!', 'success');
+          });
+        } else {
+          if (ctx.addToast) ctx.addToast('\uD83D\uDCE4 Share code generated! Copy it below.', 'info');
+        }
+      } catch (e) {
+        if (ctx.addToast) ctx.addToast('\u26A0\uFE0F Export failed', 'error');
+      }
+    };
+
+    var importShareCode = function (code) {
+      if (!code) return;
+      try {
+        var json = atob(code.trim());
+        var data = JSON.parse(json);
+        if (!data.b || !Array.isArray(data.b)) throw new Error('Invalid');
+        var imported = data.b.map(function (arr) {
+          return { x: arr[0], y: arr[1], z: arr[2], shape: arr[3] || 'block', material: arr[4] || 'stone', color: arr[5] || '#94a3b8', rotation: arr[6] || 0 };
+        });
+        var newUndo = pushUndo(blocks);
+        ctx.setToolData(function (p) {
+          var a = Object.assign({}, p.archStudio || {});
+          return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: imported, undoStack: newUndo, redoStack: [] }) });
+        });
+        if (ctx.addToast) ctx.addToast('\uD83D\uDCE5 Imported ' + imported.length + ' blocks!', 'success');
+        if (soundEnabled) sfxLoad();
+      } catch (e) {
+        if (ctx.addToast) ctx.addToast('\u26A0\uFE0F Invalid share code!', 'error');
+      }
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Architecture Styles Guide ──
+    // ══════════════════════════════════════════════════════════════
+    var showStyleGuide = d.showStyleGuide || false;
+    var archStyles = [
+      { name: 'Classical', icon: '\uD83C\uDFDB\uFE0F', era: '800 BCE \u2013 500 CE', features: 'Columns, symmetry, pediments, marble. Think Parthenon, Colosseum.',
+        tips: 'Use columns + arches, marble material, high symmetry' },
+      { name: 'Gothic', icon: '\u26EA', era: '1100 \u2013 1500 CE', features: 'Pointed arches, tall spires, flying buttresses, stained glass.',
+        tips: 'Build tall! Use arches, glass windows, stone walls' },
+      { name: 'Art Deco', icon: '\uD83C\uDFD9\uFE0F', era: '1920s \u2013 1940s', features: 'Geometric shapes, stepped facades, metallic accents, bold symmetry.',
+        tips: 'Use metal + glass, stepped pyramid shapes, strict symmetry' },
+      { name: 'Modern', icon: '\uD83C\uDFE2', era: '1920s \u2013 present', features: 'Clean lines, glass curtain walls, open plans, "less is more".',
+        tips: 'Use glass + metal, flat roofs (slabs), minimal decoration' },
+      { name: 'Japanese', icon: '\u26E9\uFE0F', era: 'Traditional', features: 'Wooden frames, curved roofs, harmony with nature, tatami proportions.',
+        tips: 'Use wood, roof shapes, low profiles, symmetry' },
+      { name: 'Brutalist', icon: '\uD83D\uDDFF', era: '1950s \u2013 1970s', features: 'Raw concrete, massive forms, geometric repetition, fortress-like.',
+        tips: 'Use stone only, blocky shapes, L-beams, no decoration' }
+    ];
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Copy Region (Duplicate + Offset) ──
+    // ══════════════════════════════════════════════════════════════
+    var duplicateBuild = function (dx, dy, dz) {
+      if (blocks.length === 0) return;
+      var newUndo = pushUndo(blocks);
+      var duped = blocks.map(function (b) {
+        return Object.assign({}, b, { x: b.x + dx, y: b.y + dy, z: b.z + dz });
+      });
+      var existing = {};
+      blocks.forEach(function (b) { existing[b.x + ',' + b.y + ',' + b.z] = true; });
+      var added = duped.filter(function (b) { return !existing[b.x + ',' + b.y + ',' + b.z]; });
+      var merged = blocks.concat(added);
+      ctx.setToolData(function (p) {
+        var a = Object.assign({}, p.archStudio || {});
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: merged, undoStack: newUndo, redoStack: [] }) });
+      });
+      if (ctx.addToast) ctx.addToast('\uD83D\uDCCB Duplicated +' + added.length + ' blocks (offset ' + dx + ',' + dy + ',' + dz + ')', 'info');
+      if (soundEnabled) sfxPlace();
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Construction Phase Viewer ──
+    // ══════════════════════════════════════════════════════════════
+    var showPhases = d.showPhases || false;
+    var phases = [];
+    if (totalBlocks > 0) {
+      // Group blocks by Y level
+      var byY = {};
+      blocks.forEach(function (b) { if (!byY[b.y]) byY[b.y] = []; byY[b.y].push(b); });
+      var yLevels = Object.keys(byY).map(Number).sort(function (a, b) { return a - b; });
+      var phaseNames = ['Foundation', 'Ground Floor', 'First Floor', 'Second Floor', 'Third Floor', 'Upper Floors', 'Roof Structure', 'Crown/Spire'];
+      yLevels.forEach(function (y, i) {
+        var phaseName = i < phaseNames.length ? phaseNames[i] : 'Level ' + (i + 1);
+        var phaseBlocks = byY[y];
+        var matBreakdown = {};
+        phaseBlocks.forEach(function (b) { var mid = b.material || 'stone'; matBreakdown[mid] = (matBreakdown[mid] || 0) + 1; });
+        phases.push({ name: phaseName, y: y, count: phaseBlocks.length, mats: matBreakdown, cumulative: blocks.filter(function (b) { return b.y <= y; }).length });
+      });
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Keyboard Shortcuts ──
+    // ══════════════════════════════════════════════════════════════
+    // Note: Keyboard event handling requires a side-effect (addEventListener).
+    // We expose the handlers on window so the main module's useEffect can bind them.
+    window._archStudioKeys = {
+      undo: doUndo,
+      redo: doRedo,
+      shapes: shapes.map(function (s) { return s.id; }),
+      setShape: function (id) { upd('activeShape', id); },
+      modes: ['place', 'erase', 'paint'],
+      setMode: function (id) { upd('mode', id); },
+      screenshot: takeScreenshot
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    // ── Block Statistics (for chart rendering) ──
+    // ══════════════════════════════════════════════════════════════
+    var showStats = d.showStats || false;
+    var maxMatCount = Math.max.apply(null, bomMaterialEntries.map(function (e) { return e.count; }).concat([1]));
+    var maxShapeCount = Math.max.apply(null, bomShapeEntries.map(function (e) { return e.count; }).concat([1]));
+
+    // ══════════════════════════════════════════════════════════════
+    // ── STL Export ──
     // ══════════════════════════════════════════════════════════════
     var exportSTL = function () {
       if (!window.THREE || !window._archScene || blocks.length === 0) return;
       var THREE = window.THREE;
       var geos = [];
       window._archScene.blockMeshes.forEach(function (m) {
-        var g = m.geometry.clone();
-        g.applyMatrix4(m.matrixWorld);
-        geos.push(g);
+        var g = m.geometry.clone(); g.applyMatrix4(m.matrixWorld); geos.push(g);
       });
       if (geos.length === 0) return;
-      var positions = [];
-      var normals = [];
+      var positions = [], normals = [];
       geos.forEach(function (g) {
-        var idx = g.index;
-        var pos = g.getAttribute('position');
-        var nrm = g.getAttribute('normal');
-        if (idx) {
-          for (var i = 0; i < idx.count; i++) {
-            var vi = idx.getX(i);
-            positions.push(pos.getX(vi), pos.getY(vi), pos.getZ(vi));
-            if (nrm) normals.push(nrm.getX(vi), nrm.getY(vi), nrm.getZ(vi));
-            else normals.push(0, 1, 0);
-          }
-        } else {
-          for (var j = 0; j < pos.count; j++) {
-            positions.push(pos.getX(j), pos.getY(j), pos.getZ(j));
-            if (nrm) normals.push(nrm.getX(j), nrm.getY(j), nrm.getZ(j));
-            else normals.push(0, 1, 0);
-          }
-        }
+        var idx = g.index, pos = g.getAttribute('position'), nrm = g.getAttribute('normal');
+        if (idx) { for (var i = 0; i < idx.count; i++) { var vi = idx.getX(i); positions.push(pos.getX(vi), pos.getY(vi), pos.getZ(vi)); normals.push(nrm ? nrm.getX(vi) : 0, nrm ? nrm.getY(vi) : 1, nrm ? nrm.getZ(vi) : 0); } }
+        else { for (var j = 0; j < pos.count; j++) { positions.push(pos.getX(j), pos.getY(j), pos.getZ(j)); normals.push(nrm ? nrm.getX(j) : 0, nrm ? nrm.getY(j) : 1, nrm ? nrm.getZ(j) : 0); } }
       });
-      var triCount = positions.length / 9;
-      var bufLen = 84 + triCount * 50;
-      var buf = new ArrayBuffer(bufLen);
-      var dv = new DataView(buf);
+      var triCount = positions.length / 9, bufLen = 84 + triCount * 50;
+      var buf = new ArrayBuffer(bufLen), dv = new DataView(buf);
       for (var h = 0; h < 80; h++) dv.setUint8(h, 0);
       dv.setUint32(80, triCount, true);
       var offset = 84;
       for (var t = 0; t < triCount; t++) {
         var ni = t * 9;
-        dv.setFloat32(offset, normals[ni], true);
-        dv.setFloat32(offset + 4, normals[ni + 1], true);
-        dv.setFloat32(offset + 8, normals[ni + 2], true);
-        offset += 12;
-        for (var v = 0; v < 3; v++) {
-          var pi = t * 9 + v * 3;
-          dv.setFloat32(offset, positions[pi], true);
-          dv.setFloat32(offset + 4, positions[pi + 1], true);
-          dv.setFloat32(offset + 8, positions[pi + 2], true);
-          offset += 12;
-        }
-        dv.setUint16(offset, 0, true);
-        offset += 2;
+        dv.setFloat32(offset, normals[ni], true); dv.setFloat32(offset + 4, normals[ni + 1], true); dv.setFloat32(offset + 8, normals[ni + 2], true); offset += 12;
+        for (var v = 0; v < 3; v++) { var pi = t * 9 + v * 3; dv.setFloat32(offset, positions[pi], true); dv.setFloat32(offset + 4, positions[pi + 1], true); dv.setFloat32(offset + 8, positions[pi + 2], true); offset += 12; }
+        dv.setUint16(offset, 0, true); offset += 2;
       }
-      var blob = new Blob([buf], { type: 'application/octet-stream' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = 'architecture_studio_' + Date.now() + '.stl';
-      a.click();
+      var blob = new Blob([buf], { type: 'application/octet-stream' }), url = URL.createObjectURL(blob);
+      var a = document.createElement('a'); a.href = url; a.download = 'architecture_studio_' + Date.now() + '.stl'; a.click();
       URL.revokeObjectURL(url);
-      if (ctx.addToast) ctx.addToast('\uD83C\uDFD7\uFE0F Building exported as STL!', 'success');
+      if (ctx.addToast) ctx.addToast('\uD83C\uDFD7\uFE0F Exported as STL!', 'success');
     };
 
     // ══════════════════════════════════════════════════════════════
-    // ── UPGRADE 2: Blueprint SVG Export ──
+    // ── Blueprint SVG Export (Top-Down) ──
     // ══════════════════════════════════════════════════════════════
     var exportBlueprint = function () {
       if (blocks.length === 0) return;
-
-      var cellSize = 40;
-      var padding = 60;
-      var legendH = 80;
-      var svgW = buildW * cellSize + padding * 2;
-      var svgH = buildD * cellSize + padding * 2 + legendH;
-
-      // Group blocks by Y-level; show top-down view of the highest Y at each (x,z)
+      var cellSize = 40, padding = 60, legendH = 80;
+      var svgW = buildW * cellSize + padding * 2, svgH = buildD * cellSize + padding * 2 + legendH;
       var topView = {};
-      blocks.forEach(function (b) {
-        var key = b.x + ',' + b.z;
-        if (!topView[key] || b.y > topView[key].y) {
-          topView[key] = b;
-        }
-      });
-
-      // Shape icon lookup
+      blocks.forEach(function (b) { var key = b.x + ',' + b.z; if (!topView[key] || b.y > topView[key].y) topView[key] = b; });
       var shapeIconLookup = {};
       shapes.forEach(function (s) { shapeIconLookup[s.id] = s.icon; });
-
-      var svg = '';
-      svg += '<svg xmlns="http://www.w3.org/2000/svg" width="' + svgW + '" height="' + svgH + '" viewBox="0 0 ' + svgW + ' ' + svgH + '">\n';
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + svgW + '" height="' + svgH + '" viewBox="0 0 ' + svgW + ' ' + svgH + '">\n';
       svg += '<style>text{font-family:Arial,Helvetica,sans-serif;}</style>\n';
       svg += '<rect width="' + svgW + '" height="' + svgH + '" fill="#0f172a"/>\n';
-
-      // Title
-      svg += '<text x="' + (svgW / 2) + '" y="28" text-anchor="middle" fill="#f8fafc" font-size="16" font-weight="bold">';
-      svg += (styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio') + ' \u2014 Floor Plan</text>\n';
-      svg += '<text x="' + (svgW / 2) + '" y="46" text-anchor="middle" fill="#64748b" font-size="11">';
-      svg += buildW + '\u00D7' + buildD + '\u00D7' + buildH + ' \u2022 ' + totalBlocks + ' blocks \u2022 Vol: ' + totalVolume + ' u\u00B3</text>\n';
-
-      // Grid
-      var gridOffX = padding;
-      var gridOffY = padding;
-      for (var gx = 0; gx <= buildW; gx++) {
-        svg += '<line x1="' + (gridOffX + gx * cellSize) + '" y1="' + gridOffY + '" x2="' + (gridOffX + gx * cellSize) + '" y2="' + (gridOffY + buildD * cellSize) + '" stroke="#334155" stroke-width="0.5"/>\n';
-      }
-      for (var gz = 0; gz <= buildD; gz++) {
-        svg += '<line x1="' + gridOffX + '" y1="' + (gridOffY + gz * cellSize) + '" x2="' + (gridOffX + buildW * cellSize) + '" y2="' + (gridOffY + gz * cellSize) + '" stroke="#334155" stroke-width="0.5"/>\n';
-      }
-
-      // Axis labels
-      for (var lx = 0; lx < buildW; lx++) {
-        svg += '<text x="' + (gridOffX + lx * cellSize + cellSize / 2) + '" y="' + (gridOffY - 6) + '" text-anchor="middle" fill="#475569" font-size="9">' + (minX + lx) + '</text>\n';
-      }
-      for (var lz = 0; lz < buildD; lz++) {
-        svg += '<text x="' + (gridOffX - 8) + '" y="' + (gridOffY + lz * cellSize + cellSize / 2 + 3) + '" text-anchor="end" fill="#475569" font-size="9">' + (minZ + lz) + '</text>\n';
-      }
-
-      // Blocks (top-down view)
+      svg += '<text x="' + (svgW / 2) + '" y="28" text-anchor="middle" fill="#f8fafc" font-size="16" font-weight="bold">' + (styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio') + ' \u2014 Floor Plan</text>\n';
+      svg += '<text x="' + (svgW / 2) + '" y="46" text-anchor="middle" fill="#64748b" font-size="11">' + buildW + '\u00D7' + buildD + '\u00D7' + buildH + ' \u2022 ' + totalBlocks + ' blocks \u2022 Vol: ' + totalVolume + ' u\u00B3</text>\n';
+      var gOX = padding, gOY = padding;
+      for (var gx = 0; gx <= buildW; gx++) svg += '<line x1="' + (gOX + gx * cellSize) + '" y1="' + gOY + '" x2="' + (gOX + gx * cellSize) + '" y2="' + (gOY + buildD * cellSize) + '" stroke="#334155" stroke-width="0.5"/>\n';
+      for (var gz = 0; gz <= buildD; gz++) svg += '<line x1="' + gOX + '" y1="' + (gOY + gz * cellSize) + '" x2="' + (gOX + buildW * cellSize) + '" y2="' + (gOY + gz * cellSize) + '" stroke="#334155" stroke-width="0.5"/>\n';
       var usedMaterials = {};
       Object.keys(topView).forEach(function (key) {
-        var b = topView[key];
-        var bx = (b.x - minX) * cellSize + gridOffX;
-        var bz = (b.z - minZ) * cellSize + gridOffY;
+        var b = topView[key], bx = (b.x - minX) * cellSize + gOX, bz = (b.z - minZ) * cellSize + gOY;
         var fillColor = b.color || matColorLookup[b.material || 'stone'] || '#94a3b8';
-        var matId = b.material || 'stone';
-        usedMaterials[matId] = fillColor;
-
+        usedMaterials[b.material || 'stone'] = fillColor;
         svg += '<rect x="' + (bx + 1) + '" y="' + (bz + 1) + '" width="' + (cellSize - 2) + '" height="' + (cellSize - 2) + '" fill="' + fillColor + '" fill-opacity="0.7" stroke="' + fillColor + '" stroke-width="1.5" rx="3"/>\n';
-
-        // Shape icon
-        var icon = shapeIconLookup[b.shape || 'block'] || '\uD83D\uDFE6';
-        svg += '<text x="' + (bx + cellSize / 2) + '" y="' + (bz + cellSize / 2 - 2) + '" text-anchor="middle" font-size="14" dominant-baseline="middle">' + icon + '</text>\n';
-
-        // Y-level label
+        svg += '<text x="' + (bx + cellSize / 2) + '" y="' + (bz + cellSize / 2 - 2) + '" text-anchor="middle" font-size="14" dominant-baseline="middle">' + (shapeIconLookup[b.shape || 'block'] || '\uD83D\uDFE6') + '</text>\n';
         svg += '<text x="' + (bx + cellSize - 5) + '" y="' + (bz + cellSize - 5) + '" text-anchor="end" fill="#fff" font-size="8" font-weight="bold" opacity="0.8">y' + b.y + '</text>\n';
       });
-
-      // Legend
-      var legendY = gridOffY + buildD * cellSize + 20;
-      svg += '<text x="' + gridOffX + '" y="' + legendY + '" fill="#94a3b8" font-size="10" font-weight="bold">MATERIALS</text>\n';
-      var legendIdx = 0;
-      Object.keys(usedMaterials).forEach(function (matId) {
-        var lx = gridOffX + legendIdx * 90;
-        svg += '<rect x="' + lx + '" y="' + (legendY + 6) + '" width="12" height="12" fill="' + usedMaterials[matId] + '" rx="2"/>\n';
-        svg += '<text x="' + (lx + 16) + '" y="' + (legendY + 16) + '" fill="#cbd5e1" font-size="10">' + matId.charAt(0).toUpperCase() + matId.slice(1) + '</text>\n';
-        legendIdx++;
+      var lY = gOY + buildD * cellSize + 20;
+      svg += '<text x="' + gOX + '" y="' + lY + '" fill="#94a3b8" font-size="10" font-weight="bold">MATERIALS</text>\n';
+      var li = 0;
+      Object.keys(usedMaterials).forEach(function (mid) {
+        var lx = gOX + li * 90;
+        svg += '<rect x="' + lx + '" y="' + (lY + 6) + '" width="12" height="12" fill="' + usedMaterials[mid] + '" rx="2"/>\n';
+        svg += '<text x="' + (lx + 16) + '" y="' + (lY + 16) + '" fill="#cbd5e1" font-size="10">' + mid.charAt(0).toUpperCase() + mid.slice(1) + '</text>\n';
+        li++;
       });
-
-      // Stability stamp
-      svg += '<text x="' + (svgW - padding) + '" y="' + legendY + '" text-anchor="end" fill="#64748b" font-size="10">';
-      svg += 'Stability: ' + analysis.stabilityEmoji + ' ' + analysis.stability + '% \u2022 CoG: (' + analysis.cogX + ',' + analysis.cogY + ',' + analysis.cogZ + ')</text>\n';
-
+      svg += '<text x="' + (svgW - padding) + '" y="' + lY + '" text-anchor="end" fill="#64748b" font-size="10">Stability: ' + analysis.stabilityEmoji + ' ' + analysis.stability + '%</text>\n';
       svg += '</svg>';
-
-      var blob = new Blob([svg], { type: 'image/svg+xml' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = 'blueprint_' + Date.now() + '.svg';
-      a.click();
+      var blob = new Blob([svg], { type: 'image/svg+xml' }), url = URL.createObjectURL(blob);
+      var a = document.createElement('a'); a.href = url; a.download = 'blueprint_top_' + Date.now() + '.svg'; a.click();
       URL.revokeObjectURL(url);
-      if (ctx.addToast) ctx.addToast('\uD83D\uDCD0 Blueprint exported as SVG!', 'success');
+      if (ctx.addToast) ctx.addToast('\uD83D\uDCD0 Top-down blueprint exported!', 'success');
     };
 
-    // ── Undo ──
-    var undoBlock = function () {
-      ctx.setToolData(function (p) {
-        var a = Object.assign({}, p.archStudio || {});
-        var nb = (a.blocks || []).slice(0, -1);
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: nb }) });
+    // ══════════════════════════════════════════════════════════════
+    // ── Side-View Blueprint Export (Front Elevation X-Y) ──
+    // ══════════════════════════════════════════════════════════════
+    var exportSideBlueprint = function () {
+      if (blocks.length === 0) return;
+      var cellSize = 40, padding = 60, legendH = 60;
+      var svgW = buildW * cellSize + padding * 2, svgH = buildH * cellSize + padding * 2 + legendH;
+      // Front elevation: for each (x,y) show the frontmost block (lowest z)
+      var frontView = {};
+      blocks.forEach(function (b) {
+        var key = b.x + ',' + b.y;
+        if (!frontView[key] || b.z < frontView[key].z) frontView[key] = b;
       });
-    };
-
-    // ── Clear all ──
-    var clearAll = function () {
-      ctx.setToolData(function (p) {
-        var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: [] }) });
+      var shapeIconLookup = {};
+      shapes.forEach(function (s) { shapeIconLookup[s.id] = s.icon; });
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + svgW + '" height="' + svgH + '" viewBox="0 0 ' + svgW + ' ' + svgH + '">\n';
+      svg += '<style>text{font-family:Arial,Helvetica,sans-serif;}</style>\n';
+      svg += '<rect width="' + svgW + '" height="' + svgH + '" fill="#0f172a"/>\n';
+      svg += '<text x="' + (svgW / 2) + '" y="28" text-anchor="middle" fill="#f8fafc" font-size="16" font-weight="bold">' + (styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio') + ' \u2014 Front Elevation</text>\n';
+      svg += '<text x="' + (svgW / 2) + '" y="46" text-anchor="middle" fill="#64748b" font-size="11">' + buildW + '\u00D7' + buildH + ' \u2022 ' + totalBlocks + ' blocks</text>\n';
+      var gOX = padding, gOY = padding;
+      // Grid
+      for (var gx = 0; gx <= buildW; gx++) svg += '<line x1="' + (gOX + gx * cellSize) + '" y1="' + gOY + '" x2="' + (gOX + gx * cellSize) + '" y2="' + (gOY + buildH * cellSize) + '" stroke="#334155" stroke-width="0.5"/>\n';
+      for (var gy = 0; gy <= buildH; gy++) svg += '<line x1="' + gOX + '" y1="' + (gOY + gy * cellSize) + '" x2="' + (gOX + buildW * cellSize) + '" y2="' + (gOY + gy * cellSize) + '" stroke="#334155" stroke-width="0.5"/>\n';
+      // Blocks (Y inverted so ground is at bottom)
+      Object.keys(frontView).forEach(function (key) {
+        var b = frontView[key];
+        var bx = (b.x - minX) * cellSize + gOX;
+        var by = (maxY - b.y) * cellSize + gOY; // invert Y
+        var fillColor = b.color || matColorLookup[b.material || 'stone'] || '#94a3b8';
+        svg += '<rect x="' + (bx + 1) + '" y="' + (by + 1) + '" width="' + (cellSize - 2) + '" height="' + (cellSize - 2) + '" fill="' + fillColor + '" fill-opacity="0.7" stroke="' + fillColor + '" stroke-width="1.5" rx="3"/>\n';
+        svg += '<text x="' + (bx + cellSize / 2) + '" y="' + (by + cellSize / 2) + '" text-anchor="middle" font-size="14" dominant-baseline="middle">' + (shapeIconLookup[b.shape || 'block'] || '\uD83D\uDFE6') + '</text>\n';
       });
+      // Ground line
+      var groundLineY = gOY + buildH * cellSize;
+      svg += '<line x1="' + (gOX - 10) + '" y1="' + groundLineY + '" x2="' + (gOX + buildW * cellSize + 10) + '" y2="' + groundLineY + '" stroke="#22c55e" stroke-width="2" stroke-dasharray="6,3"/>\n';
+      svg += '<text x="' + (gOX + buildW * cellSize + 15) + '" y="' + (groundLineY + 4) + '" fill="#22c55e" font-size="10">Ground</text>\n';
+      // Height labels
+      for (var hy = 0; hy < buildH; hy++) {
+        svg += '<text x="' + (gOX - 8) + '" y="' + (gOY + (buildH - 1 - hy) * cellSize + cellSize / 2 + 3) + '" text-anchor="end" fill="#475569" font-size="9">y' + (minY + hy) + '</text>\n';
+      }
+      svg += '<text x="' + (svgW - padding) + '" y="' + (gOY + buildH * cellSize + 30) + '" text-anchor="end" fill="#64748b" font-size="10">Stability: ' + analysis.stabilityEmoji + ' ' + analysis.stability + '% \u2022 CoG height: ' + analysis.cogY + '</text>\n';
+      svg += '</svg>';
+      var blob = new Blob([svg], { type: 'image/svg+xml' }), url = URL.createObjectURL(blob);
+      var a = document.createElement('a'); a.href = url; a.download = 'blueprint_side_' + Date.now() + '.svg'; a.click();
+      URL.revokeObjectURL(url);
+      if (ctx.addToast) ctx.addToast('\uD83C\uDFD7\uFE0F Side elevation exported!', 'success');
     };
 
-    // ── Coach tips (challenge-aware → analysis-aware → progressive) ──
+    // ── Coach tips ──
     var coachTip;
     if (justCompleted && challengeProgress) {
       coachTip = '\uD83C\uDFC6 ' + challengeProgress.challenge.title + ' complete! ' + challengeProgress.challenge.fact;
     } else if (challengeProgress && !challengeProgress.passed) {
       coachTip = '\uD83C\uDFAF ' + challengeProgress.challenge.icon + ' ' + challengeProgress.challenge.desc + ' \u2014 keep building!';
+    } else if (overBudget) {
+      coachTip = '\uD83D\uDCB0 Over budget! Remove blocks or switch to cheaper materials. Wood (\uD83D\uDCB2' + matCostLookup.wood + ') is the cheapest material.';
     } else if (showAnalysis && analysis.tip) {
       coachTip = analysis.tip;
     } else if (totalBlocks === 0) {
-      coachTip = '\uD83C\uDFD7\uFE0F Click on the grid to place your first block! Try the \uD83C\uDFC6 Challenges for guided building!';
+      coachTip = '\uD83C\uDFD7\uFE0F Place your first block! Try \uD83C\uDFC6 Challenges or \uD83D\uDCC2 Templates to get started.';
     } else if (totalBlocks < 5) {
-      coachTip = '\uD83D\uDCA1 Tip: Click on the side of an existing block to stack blocks upward. Try building a simple wall!';
+      coachTip = '\uD83D\uDCA1 Stack blocks upward by clicking faces. Try \uD83E\uDE9E Mirror to double your build!';
     } else if (totalBlocks < 15) {
-      coachTip = '\uD83C\uDFDB\uFE0F Try adding columns and arches to give your structure a classical look. Ancient Greeks used columns to support roofs.';
+      coachTip = '\uD83C\uDFDB\uFE0F Add columns and arches for a classical look. Use \uD83D\uDCD0 Analysis to check stability!';
     } else if (totalBlocks < 30) {
-      coachTip = '\uD83C\uDFE0 Great progress! Mix materials for visual contrast \u2014 try a stone foundation with wooden walls and a brick chimney.';
+      coachTip = '\uD83C\uDFE0 Mix materials for contrast! Use \uD83E\uDD16 AI Architect for personalized tips.';
     } else if (totalBlocks < 50) {
-      coachTip = '\uD83C\uDF09 Fun fact: The Roman Colosseum used 80 arched entrances. Try adding arches to your design!';
+      coachTip = '\uD83C\uDF09 The Colosseum had 80 arched entrances! Save your masterpiece with \uD83D\uDCBE Save.';
     } else {
-      coachTip = '\uD83C\uDFF0 You\'re an architect! The Great Wall of China used over 3.8 billion bricks. How big can you build?';
+      coachTip = '\uD83C\uDFF0 Legendary architect! Export your creation as STL for 3D printing!';
     }
 
-    // ── Render Helpers ──
-    var el = React.createElement;
-
-    // Analysis bar renderer helper
+    // ── Render helpers ──
     var analysisBar = function (label, value, max, color, suffix) {
       var pct = max > 0 ? Math.round((value / max) * 100) : 0;
       return el('div', { style: { marginBottom: 8 } },
@@ -468,159 +1031,430 @@
       );
     };
 
+    var pillBtn = function (label, isActive, activeBg, activeBorder, activeColor, onClick) {
+      return el('button', { onClick: onClick, style: {
+        background: isActive ? activeBg : 'rgba(71,85,105,.3)',
+        border: '1px solid ' + (isActive ? activeBorder : '#475569'),
+        color: isActive ? activeColor : '#94a3b8',
+        borderRadius: 20, padding: '4px 12px', cursor: 'pointer', fontSize: 11, fontWeight: 700
+      } }, label);
+    };
+
     // ══════════════════════════════════════════════════════════════
     // ── RENDER ──
     // ══════════════════════════════════════════════════════════════
     return el('div', { key: 'archStudio', style: { display: 'flex', flexDirection: 'column', height: '100%', background: '#0f172a', borderRadius: 16, overflow: 'hidden' } },
+
       // ── Header bar ──
-      el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', background: 'linear-gradient(90deg,#1e293b,#0f172a)', borderBottom: '1px solid #334155', flexWrap: 'wrap' } },
-        el('button', { onClick: function () { ctx.setStemLabTool(''); }, style: { background: 'rgba(71,85,105,.5)', border: 'none', color: '#e2e8f0', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 } }, '\u2190 Back'),
-        el('span', { style: { fontSize: 20 } }, styleMode === 'bricks' ? '\uD83E\uDDF1' : '\uD83C\uDFD7\uFE0F'),
-        el('span', { style: { fontWeight: 700, fontSize: 17, color: '#f8fafc', letterSpacing: 0.5 } }, styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio'),
-        el('span', { style: { fontSize: 11, color: '#64748b', marginLeft: 4 } }, blocks.length + ' blocks'),
-        // Style mode toggle
-        el('button', { onClick: function () { upd('styleMode', styleMode === 'architect' ? 'bricks' : 'architect'); }, style: { background: styleMode === 'bricks' ? 'rgba(239,68,68,.2)' : 'rgba(99,102,241,.15)', border: '1px solid ' + (styleMode === 'bricks' ? '#f87171' : '#6366f1'), color: styleMode === 'bricks' ? '#fca5a5' : '#a5b4fc', borderRadius: 20, padding: '4px 12px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, styleMode === 'bricks' ? '\uD83E\uDDF1 Bricks' : '\uD83C\uDFDB\uFE0F Architect'),
-        // Blueprint toggle
-        el('button', { onClick: function () { upd('blueprintView', !blueprintView); }, style: { background: blueprintView ? 'rgba(34,211,238,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (blueprintView ? '#22d3ee' : '#475569'), color: blueprintView ? '#67e8f9' : '#94a3b8', borderRadius: 20, padding: '4px 12px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, blueprintView ? '\uD83D\uDCD0 Blueprint' : '\uD83C\uDFD7\uFE0F 3D View'),
-        // Challenges toggle
-        el('button', { onClick: function () { upd('showChallenges', !showChallenges); }, style: { background: showChallenges ? 'rgba(245,158,11,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (showChallenges ? '#f59e0b' : '#475569'), color: showChallenges ? '#fbbf24' : '#94a3b8', borderRadius: 20, padding: '4px 12px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\uD83C\uDFC6 Challenges' + (completedCount > 0 ? ' ' + completedCount + '/10' : '')),
-        // Analysis toggle
-        el('button', { onClick: function () { upd('showAnalysis', !showAnalysis); }, style: { background: showAnalysis ? 'rgba(168,85,247,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (showAnalysis ? '#a855f7' : '#475569'), color: showAnalysis ? '#c084fc' : '#94a3b8', borderRadius: 20, padding: '4px 12px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCD0 Analysis'),
+      el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', background: 'linear-gradient(90deg,#1e293b,#0f172a)', borderBottom: '1px solid #334155', flexWrap: 'wrap' } },
+        el('button', { onClick: function () { ctx.setStemLabTool(''); }, style: { background: 'rgba(71,85,105,.5)', border: 'none', color: '#e2e8f0', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13, fontWeight: 600 } }, '\u2190 Back'),
+        el('span', { style: { fontSize: 18 } }, styleMode === 'bricks' ? '\uD83E\uDDF1' : '\uD83C\uDFD7\uFE0F'),
+        el('span', { style: { fontWeight: 700, fontSize: 15, color: '#f8fafc' } }, styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio'),
+        el('span', { style: { fontSize: 10, color: '#64748b' } }, totalBlocks + ' blocks'),
+        // Toggle pills
+        pillBtn(styleMode === 'bricks' ? '\uD83E\uDDF1 Bricks' : '\uD83C\uDFDB\uFE0F Architect', true, styleMode === 'bricks' ? 'rgba(239,68,68,.2)' : 'rgba(99,102,241,.15)', styleMode === 'bricks' ? '#f87171' : '#6366f1', styleMode === 'bricks' ? '#fca5a5' : '#a5b4fc', function () { upd('styleMode', styleMode === 'architect' ? 'bricks' : 'architect'); }),
+        pillBtn(blueprintView ? '\uD83D\uDCD0 Blueprint' : '\uD83C\uDFD7\uFE0F 3D View', blueprintView, 'rgba(34,211,238,.2)', '#22d3ee', '#67e8f9', function () { upd('blueprintView', !blueprintView); }),
+        pillBtn('\uD83C\uDFC6 ' + completedCount + '/10', showChallenges, 'rgba(245,158,11,.2)', '#f59e0b', '#fbbf24', function () { upd('showChallenges', !showChallenges); }),
+        pillBtn('\uD83D\uDCD0 Analysis', showAnalysis, 'rgba(168,85,247,.2)', '#a855f7', '#c084fc', function () { upd('showAnalysis', !showAnalysis); }),
+        pillBtn('\uD83D\uDCBE Gallery', showGallery, 'rgba(34,197,94,.2)', '#22c55e', '#4ade80', function () { upd('showGallery', !showGallery); }),
+        pillBtn('\uD83D\uDCC2 Templates', showTemplates, 'rgba(56,189,248,.2)', '#38bdf8', '#7dd3fc', function () { upd('showTemplates', !showTemplates); }),
+        pillBtn('\uD83E\uDD16 AI Architect', showAI, 'rgba(244,114,182,.2)', '#f472b6', '#f9a8d4', function () { if (!showAI && !aiAdvice && !aiLoading) askAIArchitect(); upd('showAI', !showAI); }),
+        pillBtn('\uD83D\uDCB0 Budget' + (budgetEnabled ? ' ' + budgetRemaining : ''), budgetEnabled, overBudget ? 'rgba(239,68,68,.2)' : 'rgba(245,158,11,.2)', overBudget ? '#ef4444' : '#f59e0b', overBudget ? '#fca5a5' : '#fbbf24', function () { upd('budgetEnabled', !budgetEnabled); }),
+        pillBtn('\uD83D\uDCCB BOM', showBOM, 'rgba(251,191,36,.2)', '#fbbf24', '#fde68a', function () { upd('showBOM', !showBOM); }),
+        pillBtn('\uD83D\uDCCA Stats', showStats, 'rgba(96,165,250,.2)', '#60a5fa', '#93c5fd', function () { upd('showStats', !showStats); }),
+        pillBtn('\uD83C\uDFDB\uFE0F Styles', showStyleGuide, 'rgba(251,146,60,.2)', '#fb923c', '#fdba74', function () { upd('showStyleGuide', !showStyleGuide); }),
+        pillBtn('\uD83C\uDFD7\uFE0F Phases', showPhases, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', function () { upd('showPhases', !showPhases); }),
+        pillBtn('\uD83D\uDCE4 Share', showShare, 'rgba(129,140,248,.2)', '#818cf8', '#a5b4fc', function () { upd('showShare', !showShare); }),
+        // Screenshot + Sound
+        el('button', { onClick: takeScreenshot, title: 'Screenshot', style: { background: 'rgba(71,85,105,.3)', border: '1px solid #475569', color: '#94a3b8', borderRadius: 20, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCF8'),
+        el('button', { onClick: function () { upd('soundEnabled', !soundEnabled); }, title: 'Sound effects', style: { background: 'transparent', border: 'none', color: soundEnabled ? '#94a3b8' : '#475569', cursor: 'pointer', fontSize: 14, padding: '2px 6px' } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         el('div', { style: { flex: 1 } }),
-        el('button', { onClick: undoBlock, disabled: blocks.length === 0, style: { background: 'rgba(71,85,105,.5)', border: 'none', color: blocks.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '6px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 12, fontWeight: 600 } }, '\u21A9 Undo'),
-        el('button', { onClick: clearAll, disabled: blocks.length === 0, style: { background: blocks.length ? 'rgba(239,68,68,.3)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid rgba(239,68,68,.4)' : '1px solid transparent', color: blocks.length ? '#fca5a5' : '#475569', borderRadius: 8, padding: '6px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 12, fontWeight: 600 } }, '\uD83D\uDDD1\uFE0F Clear'),
-        el('button', { onClick: exportBlueprint, disabled: blocks.length === 0, style: { background: blocks.length ? 'rgba(34,211,238,.2)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #22d3ee' : '1px solid transparent', color: blocks.length ? '#67e8f9' : '#475569', borderRadius: 8, padding: '6px 14px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 12, fontWeight: 700 } }, '\uD83D\uDCD0 Blueprint SVG'),
-        el('button', { onClick: exportSTL, disabled: blocks.length === 0, style: { background: blocks.length ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'rgba(71,85,105,.3)', border: 'none', color: blocks.length ? '#fff' : '#475569', borderRadius: 8, padding: '6px 14px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 12, fontWeight: 700 } }, '\uD83D\uDCE5 Export STL')
+        // Undo / Redo / Clear
+        el('button', { onClick: doUndo, disabled: !undoStack.length, title: 'Undo (multi-level)', style: { background: 'rgba(71,85,105,.5)', border: 'none', color: undoStack.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: undoStack.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 600 } }, '\u21A9 Undo' + (undoStack.length ? ' (' + undoStack.length + ')' : '')),
+        el('button', { onClick: doRedo, disabled: !redoStack.length, title: 'Redo', style: { background: 'rgba(71,85,105,.5)', border: 'none', color: redoStack.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: redoStack.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 600 } }, '\u21AA Redo' + (redoStack.length ? ' (' + redoStack.length + ')' : '')),
+        el('button', { onClick: clearAll, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(239,68,68,.3)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid rgba(239,68,68,.4)' : '1px solid transparent', color: blocks.length ? '#fca5a5' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 600 } }, '\uD83D\uDDD1\uFE0F Clear'),
+        el('button', { onClick: saveBuild, disabled: !blocks.length, title: 'Save to gallery', style: { background: blocks.length ? 'rgba(34,197,94,.2)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #22c55e' : '1px solid transparent', color: blocks.length ? '#4ade80' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCBE Save'),
+        // Export buttons
+        el('button', { onClick: exportBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(34,211,238,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #22d3ee' : '1px solid transparent', color: blocks.length ? '#67e8f9' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCD0 Top SVG'),
+        el('button', { onClick: exportSideBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(168,85,247,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #a855f7' : '1px solid transparent', color: blocks.length ? '#c084fc' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83C\uDFD7\uFE0F Side SVG'),
+        el('button', { onClick: exportSTL, disabled: !blocks.length, style: { background: blocks.length ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'rgba(71,85,105,.3)', border: 'none', color: blocks.length ? '#fff' : '#475569', borderRadius: 8, padding: '5px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCE5 STL')
       ),
+
       // ── Main content: sidebar + viewport ──
       el('div', { style: { display: 'flex', flex: 1, overflow: 'hidden' } },
+
+        // ══════════════════════════════════════════════════════════
         // ── Left sidebar ──
-        el('div', { style: { width: 180, background: '#1e293b', padding: '12px 10px', overflowY: 'auto', borderRight: '1px solid #334155', display: 'flex', flexDirection: 'column', gap: 14 } },
-          // Tool mode selector
+        // ══════════════════════════════════════════════════════════
+        el('div', { style: { width: 185, background: '#1e293b', padding: '10px 10px', overflowY: 'auto', borderRight: '1px solid #334155', display: 'flex', flexDirection: 'column', gap: 12 } },
+
+          // Mode selector
           el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 } }, 'Mode'),
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Mode'),
             el('div', { style: { display: 'flex', gap: 4 } },
               modes.map(function (m) {
-                return el('button', {
-                  key: m.id,
-                  onClick: function () { upd('mode', m.id); },
-                  style: {
-                    flex: 1, padding: '6px 4px', fontSize: 11, fontWeight: 600, border: mode === m.id ? '2px solid #f59e0b' : '1px solid #475569',
-                    borderRadius: 8, background: mode === m.id ? 'rgba(245,158,11,.15)' : 'rgba(30,41,59,.8)', color: mode === m.id ? '#fbbf24' : '#94a3b8',
-                    cursor: 'pointer', textAlign: 'center'
-                  }
-                }, m.icon + ' ' + m.label);
+                return el('button', { key: m.id, onClick: function () { upd('mode', m.id); }, style: {
+                  flex: 1, padding: '5px 4px', fontSize: 11, fontWeight: 600,
+                  border: mode === m.id ? '2px solid #f59e0b' : '1px solid #475569',
+                  borderRadius: 8, background: mode === m.id ? 'rgba(245,158,11,.15)' : 'rgba(30,41,59,.8)',
+                  color: mode === m.id ? '#fbbf24' : '#94a3b8', cursor: 'pointer', textAlign: 'center'
+                } }, m.icon + ' ' + m.label);
               })
             )
           ),
-          // Shape palette (12 shapes, 2-col grid)
+
+          // Shape palette
           el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 } }, 'Shapes'),
-            el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 } },
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Shapes'),
+            el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 } },
               shapes.map(function (s) {
-                return el('button', {
-                  key: s.id,
-                  onClick: function () { upd('activeShape', s.id); },
-                  style: {
-                    padding: '8px 4px', fontSize: 11, fontWeight: 600, border: activeShape === s.id ? '2px solid #60a5fa' : '1px solid #334155',
-                    borderRadius: 8, background: activeShape === s.id ? 'rgba(96,165,250,.12)' : 'transparent', color: activeShape === s.id ? '#93c5fd' : '#94a3b8',
-                    cursor: 'pointer', textAlign: 'center', lineHeight: 1.2
-                  }
-                }, el('div', { style: { fontSize: 18 } }, s.icon), s.label);
+                return el('button', { key: s.id, onClick: function () { upd('activeShape', s.id); }, style: {
+                  padding: '6px 3px', fontSize: 10, fontWeight: 600,
+                  border: activeShape === s.id ? '2px solid #60a5fa' : '1px solid #334155',
+                  borderRadius: 8, background: activeShape === s.id ? 'rgba(96,165,250,.12)' : 'transparent',
+                  color: activeShape === s.id ? '#93c5fd' : '#94a3b8', cursor: 'pointer', textAlign: 'center', lineHeight: 1.2
+                } }, el('div', { style: { fontSize: 16 } }, s.icon), s.label);
               })
             )
           ),
+
+          // Rotation selector
+          el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD04 Rotation'),
+            el('div', { style: { display: 'flex', gap: 3 } },
+              rotations.map(function (r) {
+                return el('button', { key: r.deg, onClick: function () { upd('activeRotation', r.deg); }, style: {
+                  flex: 1, padding: '4px 2px', fontSize: 10, fontWeight: 600,
+                  border: activeRotation === r.deg ? '2px solid #f59e0b' : '1px solid #334155',
+                  borderRadius: 6, background: activeRotation === r.deg ? 'rgba(245,158,11,.12)' : 'transparent',
+                  color: activeRotation === r.deg ? '#fbbf24' : '#64748b', cursor: 'pointer', textAlign: 'center'
+                } }, r.icon + ' ' + r.label);
+              })
+            )
+          ),
+
           // Material palette
           el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 } }, 'Materials'),
-            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Materials'),
+            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
               materials.map(function (m) {
-                return el('button', {
-                  key: m.id,
-                  onClick: function () { upd({ activeMaterial: m.id, activeColor: m.color }); },
-                  style: {
-                    display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', fontSize: 11, fontWeight: 600,
-                    border: activeMaterial === m.id ? '2px solid ' + m.color : '1px solid #334155',
-                    borderRadius: 8, background: activeMaterial === m.id ? 'rgba(255,255,255,.06)' : 'transparent',
-                    color: activeMaterial === m.id ? '#f8fafc' : '#94a3b8', cursor: 'pointer', textAlign: 'left'
-                  }
-                },
-                  el('span', { style: { width: 18, height: 18, borderRadius: 4, background: m.color, display: 'inline-block', flexShrink: 0, border: '1px solid rgba(255,255,255,.15)' } }),
-                  m.icon + ' ' + m.label
+                return el('button', { key: m.id, onClick: function () { upd({ activeMaterial: m.id, activeColor: m.color }); }, style: {
+                  display: 'flex', alignItems: 'center', gap: 6, padding: '5px 6px', fontSize: 10, fontWeight: 600,
+                  border: activeMaterial === m.id ? '2px solid ' + m.color : '1px solid #334155',
+                  borderRadius: 8, background: activeMaterial === m.id ? 'rgba(255,255,255,.06)' : 'transparent',
+                  color: activeMaterial === m.id ? '#f8fafc' : '#94a3b8', cursor: 'pointer', textAlign: 'left'
+                } },
+                  el('span', { style: { width: 16, height: 16, borderRadius: 4, background: m.color, display: 'inline-block', flexShrink: 0, border: '1px solid rgba(255,255,255,.15)' } }),
+                  m.icon + ' ' + m.label,
+                  budgetEnabled && el('span', { style: { marginLeft: 'auto', fontSize: 9, color: '#64748b' } }, '\uD83D\uDCB2' + m.cost)
                 );
               })
             )
           ),
+
           // Custom Color Palette
           el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 } }, '\uD83C\uDFA8 Custom Color'),
-            el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFA8 Custom Color'),
+            el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 3 } },
               ['#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#14b8a6','#06b6d4','#3b82f6','#6366f1','#8b5cf6','#a855f7','#ec4899','#f43f5e','#f8fafc','#94a3b8','#64748b','#1e293b'].map(function (c) {
-                return el('button', {
-                  key: c,
-                  onClick: function () { upd('activeColor', c); },
-                  title: c,
-                  style: {
-                    width: 22, height: 22, borderRadius: 6, background: c, cursor: 'pointer',
-                    border: activeColor === c ? '3px solid #fff' : '1px solid rgba(255,255,255,.2)',
-                    boxShadow: activeColor === c ? '0 0 8px ' + c + '88' : 'none',
-                    transform: activeColor === c ? 'scale(1.15)' : 'scale(1)',
-                    transition: 'all 0.15s ease'
-                  }
-                });
+                return el('button', { key: c, onClick: function () { upd('activeColor', c); }, title: c, style: {
+                  width: 20, height: 20, borderRadius: 5, background: c, cursor: 'pointer',
+                  border: activeColor === c ? '3px solid #fff' : '1px solid rgba(255,255,255,.2)',
+                  boxShadow: activeColor === c ? '0 0 6px ' + c + '88' : 'none',
+                  transform: activeColor === c ? 'scale(1.15)' : 'scale(1)', transition: 'all 0.15s ease'
+                } });
               })
-            ),
-            el('div', { style: { marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 } },
-              el('span', { style: { width: 16, height: 16, borderRadius: 4, background: activeColor, display: 'inline-block', border: '1px solid rgba(255,255,255,.3)' } }),
-              el('span', { style: { fontSize: 10, color: '#94a3b8' } }, 'Active: ' + activeColor)
             )
           ),
-          // ── Challenge Panel (sidebar) ──
+
+          // Mirror / Symmetry tools
+          el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83E\uDE9E Mirror & Symmetry'),
+            el('div', { style: { display: 'flex', gap: 3 } },
+              el('button', { onClick: mirrorBuildX, disabled: !blocks.length, style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid #334155', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2194\uFE0F X'),
+              el('button', { onClick: mirrorBuildZ, disabled: !blocks.length, style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid #334155', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2195\uFE0F Z'),
+              el('button', { onClick: function () { upd('symmetryMode', !symmetryMode); }, style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: symmetryMode ? '2px solid #f472b6' : '1px solid #334155', borderRadius: 6, background: symmetryMode ? 'rgba(244,114,182,.15)' : 'transparent', color: symmetryMode ? '#f9a8d4' : '#94a3b8', cursor: 'pointer' } }, symmetryMode ? '\u2705 Sym' : '\uD83E\uDE9E Sym')
+            )
+          ),
+
+          // Budget bar (when enabled)
+          budgetEnabled && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: overBudget ? '#f87171' : '#f59e0b', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCB0 Budget'),
+            el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, marginBottom: 3 } },
+              el('span', { style: { color: '#94a3b8' } }, 'Spent: \uD83D\uDCB2' + totalCost),
+              el('span', { style: { color: overBudget ? '#f87171' : '#4ade80', fontWeight: 700 } }, 'Left: \uD83D\uDCB2' + budgetRemaining)
+            ),
+            el('div', { style: { height: 8, background: '#0f172a', borderRadius: 4, overflow: 'hidden', border: '1px solid #334155' } },
+              el('div', { style: { height: '100%', width: Math.min(100, budgetPct) + '%', background: overBudget ? 'linear-gradient(90deg,#ef4444,#dc2626)' : budgetPct > 75 ? 'linear-gradient(90deg,#f59e0b,#d97706)' : 'linear-gradient(90deg,#22c55e,#16a34a)', borderRadius: 4, transition: 'width 0.3s ease' } })
+            ),
+            // Budget slider
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 } },
+              el('span', { style: { fontSize: 9, color: '#64748b' } }, '\uD83D\uDCB2' + budget),
+              el('input', { type: 'range', min: 50, max: 500, step: 25, value: budget, onChange: function (e) { upd('budget', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#f59e0b' } })
+            )
+          ),
+
+          // Layer View
+          el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDDC2\uFE0F Layer View'),
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
+              el('span', { style: { fontSize: 10, color: viewLayer === -1 ? '#4ade80' : '#f59e0b', fontWeight: 700, minWidth: 28 } }, viewLayer === -1 ? 'All' : 'Y' + viewLayer),
+              el('input', { type: 'range', min: -1, max: Math.max(0, maxY), step: 1, value: viewLayer, onChange: function (e) { upd('viewLayer', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#60a5fa' } })
+            ),
+            viewLayer >= 0 && el('div', { style: { fontSize: 9, color: '#64748b', marginTop: 2 } },
+              blocks.filter(function (b) { return b.y === viewLayer; }).length + ' blocks at Y=' + viewLayer
+            )
+          ),
+
+          // Challenge Panel
           showChallenges && el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 } }, '\uD83C\uDFC6 Challenges (' + completedCount + '/10)'),
-            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3, maxHeight: 240, overflowY: 'auto' } },
-              challenges.map(function (ch) {
-                var done = !!completedChallenges[ch.id];
-                var isActive = activeChallenge === ch.id;
-                var passed = isActive && challengeProgress && challengeProgress.passed;
-                return el('button', {
-                  key: ch.id,
-                  onClick: function () {
-                    if (done) return;
-                    upd('activeChallenge', isActive ? -1 : ch.id);
-                  },
-                  style: {
-                    display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', fontSize: 10, fontWeight: 600,
-                    border: done ? '1px solid #22c55e' : isActive ? '2px solid #f59e0b' : '1px solid #334155',
-                    borderRadius: 8,
-                    background: done ? 'rgba(34,197,94,.1)' : isActive ? 'rgba(245,158,11,.1)' : 'transparent',
-                    color: done ? '#4ade80' : isActive ? '#fbbf24' : '#94a3b8',
-                    cursor: done ? 'default' : 'pointer', textAlign: 'left', width: '100%',
-                    opacity: done ? 0.7 : 1
-                  }
-                },
-                  el('span', { style: { fontSize: 14, flexShrink: 0 } }, done ? '\u2705' : ch.icon),
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFC6 Challenges (' + completedCount + '/10)'),
+            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 2, maxHeight: 200, overflowY: 'auto' } },
+              challenges.map(function (chItem) {
+                var done = !!completedChallenges[chItem.id];
+                var isActive = activeChallenge === chItem.id;
+                return el('button', { key: chItem.id, onClick: function () { if (!done) upd('activeChallenge', isActive ? -1 : chItem.id); }, style: {
+                  display: 'flex', alignItems: 'center', gap: 5, padding: '5px 6px', fontSize: 9, fontWeight: 600,
+                  border: done ? '1px solid #22c55e' : isActive ? '2px solid #f59e0b' : '1px solid #334155',
+                  borderRadius: 8, background: done ? 'rgba(34,197,94,.1)' : isActive ? 'rgba(245,158,11,.1)' : 'transparent',
+                  color: done ? '#4ade80' : isActive ? '#fbbf24' : '#94a3b8', cursor: done ? 'default' : 'pointer', textAlign: 'left', width: '100%', opacity: done ? 0.7 : 1
+                } },
+                  el('span', { style: { fontSize: 13, flexShrink: 0 } }, done ? '\u2705' : chItem.icon),
                   el('div', { style: { flex: 1, minWidth: 0 } },
-                    el('div', { style: { fontWeight: 700, fontSize: 10, lineHeight: 1.2 } }, ch.title),
-                    el('div', { style: { fontSize: 9, color: done ? '#22c55e' : '#64748b', lineHeight: 1.2, marginTop: 1 } }, done ? 'Completed!' : ch.desc)
+                    el('div', { style: { fontWeight: 700, fontSize: 10 } }, chItem.title),
+                    el('div', { style: { fontSize: 8, color: done ? '#22c55e' : '#64748b' } }, done ? 'Done!' : chItem.desc)
                   ),
-                  el('span', { style: { fontSize: 9, color: done ? '#22c55e' : '#f59e0b', fontWeight: 700, flexShrink: 0 } }, done ? '\u2605' : '+' + ch.xp)
+                  el('span', { style: { fontSize: 9, color: done ? '#22c55e' : '#f59e0b', fontWeight: 700, flexShrink: 0 } }, done ? '\u2605' : '+' + chItem.xp)
                 );
               })
             ),
-            // Active challenge completion button
-            justCompleted && challengeProgress && el('button', {
-              onClick: completeChallenge,
-              style: {
-                marginTop: 8, width: '100%', padding: '8px 12px', borderRadius: 10, border: 'none',
-                background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#fff',
-                fontWeight: 700, fontSize: 11, cursor: 'pointer',
-                animation: 'pulse 1.5s ease-in-out infinite'
-              }
-            }, '\uD83C\uDFC6 Claim +' + challengeProgress.challenge.xp + ' XP!')
+            justCompleted && challengeProgress && el('button', { onClick: completeChallenge, style: {
+              marginTop: 6, width: '100%', padding: '7px 10px', borderRadius: 10, border: 'none',
+              background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#fff',
+              fontWeight: 700, fontSize: 11, cursor: 'pointer', animation: 'pulse 1.5s ease-in-out infinite'
+            } }, '\uD83C\uDFC6 Claim +' + challengeProgress.challenge.xp + ' XP!')
+          ),
+
+          // Gallery Panel
+          showGallery && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#4ade80', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCBE Saved Builds (' + galleryItems.length + ')'),
+            galleryItems.length === 0
+              ? el('div', { style: { fontSize: 10, color: '#64748b', padding: 6 } }, 'No saved builds yet. Click \uD83D\uDCBE Save!')
+              : el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3, maxHeight: 200, overflowY: 'auto' } },
+                galleryItems.map(function (item) {
+                  return el('div', { key: item.id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '5px 6px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid #334155' } },
+                    el('div', { style: { flex: 1, minWidth: 0 } },
+                      el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f8fafc' } }, item.name),
+                      el('div', { style: { fontSize: 8, color: '#64748b' } }, item.blockCount + ' blocks \u2022 ' + item.dims)
+                    ),
+                    el('button', { onClick: function () { loadBuild(item); }, style: { background: 'rgba(96,165,250,.15)', border: '1px solid #60a5fa', color: '#93c5fd', borderRadius: 6, padding: '3px 8px', fontSize: 9, fontWeight: 700, cursor: 'pointer' } }, '\u21E9'),
+                    el('button', { onClick: function () { deleteBuild(item.id); }, style: { background: 'rgba(239,68,68,.15)', border: '1px solid #ef4444', color: '#fca5a5', borderRadius: 6, padding: '3px 6px', fontSize: 9, fontWeight: 700, cursor: 'pointer' } }, '\u2715')
+                  );
+                })
+              )
+          ),
+
+          // Templates Panel
+          showTemplates && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCC2 Templates'),
+            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
+              templates.map(function (tpl) {
+                return el('button', { key: tpl.id, onClick: function () { loadTemplate(tpl); }, style: {
+                  display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', fontSize: 10, fontWeight: 600,
+                  border: '1px solid #334155', borderRadius: 8, background: 'transparent',
+                  color: '#94a3b8', cursor: 'pointer', textAlign: 'left', width: '100%'
+                } },
+                  el('span', { style: { fontSize: 16, flexShrink: 0 } }, tpl.icon),
+                  el('div', { style: { flex: 1 } },
+                    el('div', { style: { fontWeight: 700, color: '#f8fafc', fontSize: 11 } }, tpl.name),
+                    el('div', { style: { fontSize: 8, color: '#64748b' } }, tpl.desc)
+                  )
+                );
+              })
+            )
+          ),
+
+          // Earthquake Simulator
+          el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f87171', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDF0B Earthquake Test'),
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 } },
+              el('span', { style: { fontSize: 9, color: '#64748b', minWidth: 20 } }, quakeIntensity + '/10'),
+              el('input', { type: 'range', min: 1, max: 10, value: quakeIntensity, onChange: function (e) { upd('quakeIntensity', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#ef4444' } })
+            ),
+            el('button', { onClick: runEarthquake, disabled: !blocks.length, style: {
+              width: '100%', padding: '6px 10px', borderRadius: 8, border: 'none',
+              background: blocks.length ? 'linear-gradient(135deg,#ef4444,#dc2626)' : 'rgba(71,85,105,.3)',
+              color: blocks.length ? '#fff' : '#475569', fontWeight: 700, fontSize: 10, cursor: blocks.length ? 'pointer' : 'default'
+            } }, '\uD83C\uDF0B Shake! (Intensity ' + quakeIntensity + ')'),
+            quakeResult && el('div', { style: { marginTop: 4, padding: '5px 8px', background: quakeResult.pct >= 70 ? 'rgba(34,197,94,.12)' : 'rgba(239,68,68,.12)', border: '1px solid ' + (quakeResult.pct >= 70 ? 'rgba(34,197,94,.3)' : 'rgba(239,68,68,.3)'), borderRadius: 8, fontSize: 9, color: quakeResult.pct >= 70 ? '#4ade80' : '#fca5a5', lineHeight: 1.4 } },
+              quakeResult.rating + ' \u2022 ' + quakeResult.pct + '% survived \u2022 ' + quakeResult.fallen + ' fell'
+            )
+          ),
+
+          // Copy Region (Duplicate)
+          el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCCB Duplicate Build'),
+            el('div', { style: { display: 'flex', gap: 3 } },
+              el('button', { onClick: function () { duplicateBuild(buildW + 1, 0, 0); }, disabled: !blocks.length, title: 'Copy to the right', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid #334155', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u27A1\uFE0F +X'),
+              el('button', { onClick: function () { duplicateBuild(0, 0, buildD + 1); }, disabled: !blocks.length, title: 'Copy forward', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid #334155', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2B07\uFE0F +Z'),
+              el('button', { onClick: function () { duplicateBuild(0, buildH, 0); }, disabled: !blocks.length, title: 'Copy upward', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid #334155', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2B06\uFE0F +Y')
+            )
+          ),
+
+          // Real-World Scale
+          totalBlocks > 0 && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCCF Real-World Scale'),
+            el('div', { style: { fontSize: 9, color: '#cbd5e1', lineHeight: 1.6, background: 'rgba(30,41,59,.5)', borderRadius: 8, padding: '6px 8px' } },
+              el('div', null, '\uD83D\uDCCF ' + realW + 'm \u00D7 ' + realD + 'm \u00D7 ' + realH + 'm'),
+              el('div', null, '\uD83D\uDCCF ' + realWFt + 'ft wide \u00D7 ' + realHFt + 'ft tall'),
+              el('div', null, '\uD83D\uDCE6 Volume: ' + realVolM3.toFixed(1) + ' m\u00B3'),
+              el('div', null, '\u2696\uFE0F Est. weight: ' + realWeightTons.toFixed(1) + ' tonnes'),
+              scaleComparisons.length > 0 && el('div', { style: { color: '#fbbf24', fontWeight: 600, marginTop: 2 } }, '\uD83C\uDFD7\uFE0F ' + scaleComparisons[0])
+            )
+          ),
+
+          // Bill of Materials
+          showBOM && totalBlocks > 0 && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#fde68a', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCCB Bill of Materials'),
+            el('div', { style: { fontSize: 9, color: '#94a3b8', marginBottom: 2, fontWeight: 600 } }, 'By Material:'),
+            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
+              bomMaterialEntries.map(function (e) {
+                return el('div', { key: e.id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '3px 6px', background: 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 9 } },
+                  el('span', null, e.icon),
+                  el('span', { style: { color: '#e2e8f0', fontWeight: 600, flex: 1 } }, e.label),
+                  el('span', { style: { color: '#94a3b8' } }, '\u00D7' + e.count),
+                  budgetEnabled && el('span', { style: { color: '#fbbf24', fontSize: 8 } }, '\uD83D\uDCB2' + e.cost)
+                );
+              })
+            ),
+            el('div', { style: { fontSize: 9, color: '#94a3b8', marginBottom: 2, marginTop: 6, fontWeight: 600 } }, 'By Shape:'),
+            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
+              bomShapeEntries.map(function (e) {
+                return el('div', { key: e.id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '3px 6px', background: 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 9 } },
+                  el('span', null, e.icon),
+                  el('span', { style: { color: '#e2e8f0', fontWeight: 600, flex: 1 } }, e.label),
+                  el('span', { style: { color: '#94a3b8' } }, '\u00D7' + e.count)
+                );
+              })
+            )
+          ),
+
+          // Block Statistics Chart
+          showStats && totalBlocks > 0 && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCCA Block Stats'),
+            el('div', { style: { fontSize: 9, color: '#94a3b8', marginBottom: 3, fontWeight: 600 } }, 'Material Distribution'),
+            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
+              bomMaterialEntries.map(function (e) {
+                var pct = maxMatCount > 0 ? Math.round((e.count / maxMatCount) * 100) : 0;
+                var mat = materials.find(function (m) { return m.id === e.id; });
+                var barColor = mat ? mat.color : '#94a3b8';
+                return el('div', { key: e.id },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, marginBottom: 1 } },
+                    el('span', { style: { color: '#cbd5e1' } }, e.icon + ' ' + e.label),
+                    el('span', { style: { color: '#94a3b8' } }, e.count)
+                  ),
+                  el('div', { style: { height: 6, background: '#0f172a', borderRadius: 3, overflow: 'hidden' } },
+                    el('div', { style: { height: '100%', width: pct + '%', background: barColor, borderRadius: 3, transition: 'width 0.3s ease' } })
+                  )
+                );
+              })
+            ),
+            el('div', { style: { fontSize: 9, color: '#94a3b8', marginBottom: 3, marginTop: 8, fontWeight: 600 } }, 'Shape Distribution'),
+            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
+              bomShapeEntries.map(function (e) {
+                var pct = maxShapeCount > 0 ? Math.round((e.count / maxShapeCount) * 100) : 0;
+                return el('div', { key: e.id },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, marginBottom: 1 } },
+                    el('span', { style: { color: '#cbd5e1' } }, e.icon + ' ' + e.label),
+                    el('span', { style: { color: '#94a3b8' } }, e.count)
+                  ),
+                  el('div', { style: { height: 6, background: '#0f172a', borderRadius: 3, overflow: 'hidden' } },
+                    el('div', { style: { height: '100%', width: pct + '%', background: '#60a5fa', borderRadius: 3, transition: 'width 0.3s ease' } })
+                  )
+                );
+              })
+            )
+          ),
+
+          // Architecture Styles Guide
+          showStyleGuide && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#fdba74', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFDB\uFE0F Architecture Styles'),
+            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3, maxHeight: 280, overflowY: 'auto' } },
+              archStyles.map(function (st) {
+                return el('div', { key: st.name, style: { padding: '6px 8px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid #334155' } },
+                  el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3 } },
+                    el('span', { style: { fontSize: 14 } }, st.icon),
+                    el('span', { style: { fontWeight: 700, fontSize: 11, color: '#f8fafc' } }, st.name),
+                    el('span', { style: { fontSize: 8, color: '#64748b', marginLeft: 'auto' } }, st.era)
+                  ),
+                  el('div', { style: { fontSize: 9, color: '#94a3b8', lineHeight: 1.4, marginBottom: 3 } }, st.features),
+                  el('div', { style: { fontSize: 9, color: '#60a5fa', fontWeight: 600 } }, '\uD83D\uDCA1 ' + st.tips)
+                );
+              })
+            )
+          ),
+
+          // Construction Phases
+          showPhases && phases.length > 0 && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#5eead4', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFD7\uFE0F Construction Phases'),
+            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3, maxHeight: 220, overflowY: 'auto' } },
+              phases.map(function (ph, pi) {
+                var phPct = totalBlocks > 0 ? Math.round((ph.cumulative / totalBlocks) * 100) : 0;
+                return el('div', { key: pi, style: { padding: '5px 8px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid #334155' } },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 } },
+                    el('span', { style: { fontWeight: 700, fontSize: 10, color: '#f8fafc' } }, (pi + 1) + '. ' + ph.name),
+                    el('span', { style: { fontSize: 9, color: '#64748b' } }, 'Y=' + ph.y + ' \u2022 ' + ph.count + ' blocks')
+                  ),
+                  el('div', { style: { height: 4, background: '#0f172a', borderRadius: 2, overflow: 'hidden', marginBottom: 2 } },
+                    el('div', { style: { height: '100%', width: phPct + '%', background: 'linear-gradient(90deg,#2dd4bf,#14b8a6)', borderRadius: 2 } })
+                  ),
+                  el('div', { style: { fontSize: 8, color: '#64748b' } }, Object.keys(ph.mats).map(function (m) { return m + ':\u00D7' + ph.mats[m]; }).join(' \u2022 '))
+                );
+              })
+            )
+          ),
+
+          // Share / Import-Export
+          showShare && el('div', null,
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCE4 Share Build'),
+            el('button', { onClick: exportShareCode, disabled: !blocks.length, style: {
+              width: '100%', padding: '6px 10px', borderRadius: 8, border: 'none', marginBottom: 4,
+              background: blocks.length ? 'linear-gradient(135deg,#6366f1,#4f46e5)' : 'rgba(71,85,105,.3)',
+              color: blocks.length ? '#fff' : '#475569', fontWeight: 700, fontSize: 10, cursor: blocks.length ? 'pointer' : 'default'
+            } }, '\uD83D\uDCCB Copy Share Code'),
+            shareCode && el('div', { style: { marginBottom: 4 } },
+              el('textarea', { value: shareCode, readOnly: true, onClick: function (e) { e.target.select(); }, style: {
+                width: '100%', height: 50, padding: 6, background: '#0f172a', border: '1px solid #334155', borderRadius: 6,
+                color: '#94a3b8', fontSize: 8, fontFamily: 'monospace', resize: 'none', outline: 'none'
+              } })
+            ),
+            el('div', { style: { fontSize: 9, color: '#64748b', marginBottom: 4 } }, 'Paste a code below to import:'),
+            el('div', { style: { display: 'flex', gap: 3 } },
+              el('input', { type: 'text', placeholder: 'Paste share code...', value: d.importCode || '',
+                onChange: function (e) { upd('importCode', e.target.value); },
+                style: { flex: 1, padding: '5px 8px', background: '#0f172a', border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0', fontSize: 9, outline: 'none' }
+              }),
+              el('button', { onClick: function () { importShareCode(d.importCode); }, style: {
+                padding: '5px 10px', borderRadius: 6, border: 'none',
+                background: 'linear-gradient(135deg,#22c55e,#16a34a)', color: '#fff', fontWeight: 700, fontSize: 9, cursor: 'pointer'
+              } }, '\u21E9')
+            )
+          ),
+
+          // Keyboard Shortcuts Reference
+          el('div', { style: { marginTop: 4, padding: '6px 8px', background: 'rgba(15,23,42,.5)', borderRadius: 8, border: '1px solid #1e293b' } },
+            el('div', { style: { fontSize: 9, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\u2328\uFE0F Shortcuts'),
+            el('div', { style: { fontSize: 8, color: '#475569', lineHeight: 1.6 } },
+              el('div', null, 'Ctrl+Z Undo \u2022 Ctrl+Y Redo'),
+              el('div', null, '1-9 Select shape \u2022 P/E/T Mode'),
+              el('div', null, 'S Screenshot')
+            )
           )
         ),
+
+        // ══════════════════════════════════════════════════════════
         // ── Main viewport area ──
+        // ══════════════════════════════════════════════════════════
         el('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' } },
           // Three.js canvas
           !threeReady
@@ -630,77 +1464,90 @@
                 'Loading 3D engine...'
               )
             )
-            : el('canvas', {
-              id: 'arch-studio-canvas',
-              style: { flex: 1, width: '100%', display: 'block', cursor: mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : 'pointer' }
-            }),
-          // Controls overlay
-          el('div', { style: { position: 'absolute', top: 10, right: 10, background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '8px 12px', fontSize: 10, color: '#64748b', lineHeight: 1.5, backdropFilter: 'blur(8px)', border: '1px solid #1e293b' } },
+            : el('canvas', { id: 'arch-studio-canvas', style: { flex: 1, width: '100%', display: 'block', cursor: mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : 'pointer' } }),
+
+          // Controls overlay (top-right)
+          el('div', { style: { position: 'absolute', top: 8, right: 8, background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '6px 10px', fontSize: 9, color: '#64748b', lineHeight: 1.6, backdropFilter: 'blur(8px)', border: '1px solid #1e293b' } },
             el('div', null, '\uD83D\uDD04 Drag \u2014 Orbit'),
             el('div', null, '\uD83D\uDD0D Scroll \u2014 Zoom'),
             el('div', null, '\u2747\uFE0F Right-drag \u2014 Pan'),
-            el('div', null, '\uD83D\uDC49 Click \u2014 ' + (mode === 'place' ? 'Place block' : mode === 'erase' ? 'Remove block' : 'Paint block'))
-          ),
-          // Mode indicator overlay
-          el('div', { style: { position: 'absolute', top: 10, left: 10, background: mode === 'place' ? 'rgba(34,197,94,.2)' : mode === 'erase' ? 'rgba(239,68,68,.2)' : 'rgba(168,85,247,.2)', border: '1px solid ' + (mode === 'place' ? '#22c55e' : mode === 'erase' ? '#ef4444' : '#a855f7'), borderRadius: 8, padding: '5px 12px', fontSize: 12, fontWeight: 700, color: mode === 'place' ? '#4ade80' : mode === 'erase' ? '#f87171' : '#c084fc' } },
-            (mode === 'place' ? '\u2795 Place' : mode === 'erase' ? '\u274C Erase' : '\uD83C\uDFA8 Paint') + ' Mode'
+            el('div', null, '\uD83D\uDC49 Click \u2014 ' + (mode === 'place' ? 'Place' : mode === 'erase' ? 'Erase' : 'Paint')),
+            symmetryMode && el('div', { style: { color: '#f9a8d4', fontWeight: 700 } }, '\uD83E\uDE9E Symmetry ON')
           ),
 
-          // ── UPGRADE 3: Structural Analysis Panel (overlay, right side) ──
-          showAnalysis && totalBlocks > 0 && el('div', { style: { position: 'absolute', top: 80, right: 10, width: 220, background: 'rgba(15,23,42,.92)', borderRadius: 12, padding: '14px 16px', backdropFilter: 'blur(12px)', border: '1px solid #334155', zIndex: 10 } },
-            el('div', { style: { fontSize: 11, fontWeight: 700, color: '#c084fc', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 } },
-              '\uD83D\uDCD0 Structural Analysis'
+          // Mode indicator (top-left)
+          el('div', { style: { position: 'absolute', top: 8, left: 8, background: mode === 'place' ? 'rgba(34,197,94,.2)' : mode === 'erase' ? 'rgba(239,68,68,.2)' : 'rgba(168,85,247,.2)', border: '1px solid ' + (mode === 'place' ? '#22c55e' : mode === 'erase' ? '#ef4444' : '#a855f7'), borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: mode === 'place' ? '#4ade80' : mode === 'erase' ? '#f87171' : '#c084fc' } },
+            (mode === 'place' ? '\u2795 Place' : mode === 'erase' ? '\u274C Erase' : '\uD83C\uDFA8 Paint') + ' Mode',
+            activeRotation > 0 && el('span', { style: { marginLeft: 6, fontSize: 9, color: '#fbbf24' } }, activeRotation + '\u00B0')
+          ),
+
+          // Analysis overlay (right side)
+          showAnalysis && totalBlocks > 0 && el('div', { style: { position: 'absolute', top: 70, right: 8, width: 210, background: 'rgba(15,23,42,.92)', borderRadius: 12, padding: '12px 14px', backdropFilter: 'blur(12px)', border: '1px solid #334155', zIndex: 10 } },
+            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#c084fc', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 8 } }, '\uD83D\uDCD0 Structural Analysis'),
+            el('div', { style: { textAlign: 'center', marginBottom: 10, padding: '8px 0', background: 'rgba(30,41,59,.6)', borderRadius: 10, border: '1px solid #334155' } },
+              el('div', { style: { fontSize: 24, marginBottom: 2 } }, analysis.stabilityEmoji),
+              el('div', { style: { fontSize: 20, fontWeight: 800, color: analysis.stability >= 70 ? '#4ade80' : analysis.stability >= 40 ? '#fbbf24' : '#f87171' } }, analysis.stability + '%'),
+              el('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 600 } }, analysis.stabilityLabel)
             ),
-            // Stability score (big)
-            el('div', { style: { textAlign: 'center', marginBottom: 12, padding: '10px 0', background: 'rgba(30,41,59,.6)', borderRadius: 10, border: '1px solid #334155' } },
-              el('div', { style: { fontSize: 28, marginBottom: 2 } }, analysis.stabilityEmoji),
-              el('div', { style: { fontSize: 22, fontWeight: 800, color: analysis.stability >= 70 ? '#4ade80' : analysis.stability >= 40 ? '#fbbf24' : '#f87171' } }, analysis.stability + '%'),
-              el('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 600 } }, analysis.stabilityLabel)
-            ),
-            // Metric bars
-            analysisBar('Load Support', analysis.supportedPct, 100, analysis.supportedPct >= 80 ? '#4ade80' : analysis.supportedPct >= 50 ? '#fbbf24' : '#f87171', '%'),
-            analysisBar('Symmetry', analysis.symmetry, 100, analysis.symmetry >= 70 ? '#60a5fa' : analysis.symmetry >= 40 ? '#fbbf24' : '#f87171', '%'),
-            // Detail rows
-            el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 6 } },
+            analysisBar('Load Support', analysis.supportedPct, 100, analysis.supportedPct >= 80 ? '#4ade80' : '#f87171', '%'),
+            analysisBar('Symmetry', analysis.symmetry, 100, analysis.symmetry >= 70 ? '#60a5fa' : '#f87171', '%'),
+            el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginTop: 4 } },
               [
                 { label: 'CoG', value: '(' + analysis.cogX + ',' + analysis.cogY + ',' + analysis.cogZ + ')', icon: '\u2316' },
-                { label: 'Weight', value: analysis.totalWeight + ' t', icon: '\u2696\uFE0F' },
+                { label: 'Weight', value: analysis.totalWeight + 't', icon: '\u2696\uFE0F' },
                 { label: 'Materials', value: analysis.materialCount, icon: '\uD83C\uDFA8' },
                 { label: 'Floating', value: analysis.unsupported, icon: analysis.unsupported > 0 ? '\u26A0\uFE0F' : '\u2705' }
               ].map(function (r) {
-                return el('div', { key: r.label, style: { background: 'rgba(30,41,59,.5)', borderRadius: 8, padding: '6px 8px', textAlign: 'center' } },
-                  el('div', { style: { fontSize: 9, color: '#64748b', fontWeight: 600 } }, r.icon + ' ' + r.label),
-                  el('div', { style: { fontSize: 12, fontWeight: 700, color: r.label === 'Floating' && analysis.unsupported > 0 ? '#f87171' : '#f8fafc' } }, r.value)
+                return el('div', { key: r.label, style: { background: 'rgba(30,41,59,.5)', borderRadius: 8, padding: '4px 6px', textAlign: 'center' } },
+                  el('div', { style: { fontSize: 8, color: '#64748b', fontWeight: 600 } }, r.icon + ' ' + r.label),
+                  el('div', { style: { fontSize: 11, fontWeight: 700, color: r.label === 'Floating' && analysis.unsupported > 0 ? '#f87171' : '#f8fafc' } }, r.value)
                 );
               })
             ),
-            // Floating blocks warning
-            analysis.unsupported > 0 && el('div', { style: { marginTop: 8, padding: '8px 10px', background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.3)', borderRadius: 8, fontSize: 10, color: '#fca5a5', lineHeight: 1.4 } },
-              '\u26A0\uFE0F ' + analysis.unsupported + ' block' + (analysis.unsupported > 1 ? 's' : '') + ' floating with no support below! Real structures need load paths to the ground.'
+            analysis.unsupported > 0 && el('div', { style: { marginTop: 6, padding: '6px 8px', background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.3)', borderRadius: 8, fontSize: 9, color: '#fca5a5', lineHeight: 1.4 } },
+              '\u26A0\uFE0F ' + analysis.unsupported + ' floating block' + (analysis.unsupported > 1 ? 's' : '') + '!'
             )
           ),
 
-          // ── Bottom stats bar ──
-          el('div', { style: { display: 'flex', gap: 16, justifyContent: 'center', padding: '8px 16px', background: 'linear-gradient(0deg,#1e293b,#0f172a)', borderTop: '1px solid #334155', flexWrap: 'wrap' } },
+          // AI Architect overlay (left side, below mode indicator)
+          showAI && el('div', { style: { position: 'absolute', top: 44, left: 8, width: 240, background: 'rgba(15,23,42,.92)', borderRadius: 12, padding: '12px 14px', backdropFilter: 'blur(12px)', border: '1px solid #334155', zIndex: 10 } },
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
+              el('span', { style: { fontSize: 10, fontWeight: 700, color: '#f9a8d4', textTransform: 'uppercase', letterSpacing: 1.2 } }, '\uD83E\uDD16 AI Architect'),
+              el('button', { onClick: askAIArchitect, disabled: aiLoading, style: { marginLeft: 'auto', background: aiLoading ? 'rgba(71,85,105,.5)' : 'linear-gradient(135deg,#f472b6,#ec4899)', border: 'none', color: '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 9, fontWeight: 700, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3 Thinking...' : '\u2728 Ask Again')
+            ),
+            aiLoading && !aiAdvice
+              ? el('div', { style: { textAlign: 'center', padding: 12, color: '#64748b', fontSize: 11 } },
+                el('div', { style: { fontSize: 20, animation: 'spin 2s linear infinite', marginBottom: 4 } }, '\uD83E\uDD16'),
+                'Analyzing your structure...'
+              )
+              : aiAdvice
+                ? el('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.5, whiteSpace: 'pre-line' } }, aiAdvice)
+                : el('div', { style: { fontSize: 11, color: '#64748b', lineHeight: 1.5 } }, 'Click "Ask Again" for personalized architecture tips!')
+          ),
+
+          // Bottom stats bar
+          el('div', { style: { display: 'flex', gap: 12, justifyContent: 'center', padding: '6px 12px', background: 'linear-gradient(0deg,#1e293b,#0f172a)', borderTop: '1px solid #334155', flexWrap: 'wrap' } },
             [
               { label: 'Blocks', value: totalBlocks, icon: '\uD83E\uDDF1' },
-              { label: 'Dimensions', value: blocks.length > 0 ? buildW + '\u00D7' + buildD + '\u00D7' + buildH : '\u2014', icon: '\uD83D\uDCCF' },
-              { label: 'Volume', value: totalVolume + ' u\u00B3', icon: '\uD83D\uDCE6' },
-              { label: 'Footprint', value: footprint + ' u\u00B2', icon: '\uD83D\uDDFA\uFE0F' },
-              { label: 'Surface', value: surfaceArea + ' u\u00B2', icon: '\uD83D\uDCC0' },
-              { label: 'Stability', value: analysis.stabilityEmoji + ' ' + analysis.stability + '%', icon: '\uD83C\uDFD7\uFE0F' },
+              { label: 'Size', value: blocks.length > 0 ? buildW + '\u00D7' + buildD + '\u00D7' + buildH : '\u2014', icon: '\uD83D\uDCCF' },
+              { label: 'Volume', value: totalVolume + 'u\u00B3', icon: '\uD83D\uDCE6' },
+              { label: 'Footprint', value: footprint + 'u\u00B2', icon: '\uD83D\uDDFA\uFE0F' },
+              { label: 'Surface', value: surfaceArea + 'u\u00B2', icon: '\uD83D\uDCC0' },
+              { label: 'Stability', value: analysis.stabilityEmoji + analysis.stability + '%', icon: '\uD83C\uDFD7\uFE0F' },
+              budgetEnabled && { label: 'Cost', value: '\uD83D\uDCB2' + totalCost + '/' + budget, icon: '\uD83D\uDCB0' },
               { label: 'Challenges', value: completedCount + '/10', icon: '\uD83C\uDFC6' }
-            ].map(function (stat) {
+            ].filter(Boolean).map(function (stat) {
               return el('div', { key: stat.label, style: { textAlign: 'center' } },
-                el('div', { style: { fontSize: 11, color: '#64748b', fontWeight: 600 } }, stat.icon + ' ' + stat.label),
-                el('div', { style: { fontSize: 16, fontWeight: 700, color: '#f8fafc' } }, stat.value)
+                el('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 600 } }, stat.icon + ' ' + stat.label),
+                el('div', { style: { fontSize: 14, fontWeight: 700, color: '#f8fafc' } }, stat.value)
               );
             })
           )
         )
       ),
+
       // ── Coach panel ──
-      el('div', { style: { padding: '10px 16px', background: '#1e293b', borderTop: '1px solid #334155', fontSize: 12, color: '#94a3b8', lineHeight: 1.5 } },
+      el('div', { style: { padding: '8px 14px', background: '#1e293b', borderTop: '1px solid #334155', fontSize: 12, color: '#94a3b8', lineHeight: 1.5 } },
         coachTip
       )
     );
