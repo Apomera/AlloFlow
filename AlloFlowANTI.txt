@@ -18594,7 +18594,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // Load AI Backend module (Firebase shim + WebSearchProvider + AIProvider)
     // Custom load (not loadModule) so we get onload callback to upgrade shims
     (function() {
-      const url = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@caedf4e/ai_backend_module.js';
+      const url = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/ai_backend_module.js';
       const s = document.createElement('script');
       s.src = url;
       s.crossOrigin = 'anonymous';
@@ -18608,20 +18608,20 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@caedf4e/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@caedf4e/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@caedf4e/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@caedf4e/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@caedf4e/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@caedf4e/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@caedf4e/games_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/games_module.js');
     loadModule('QuickStartWizard', './quickstart_module.js');
     // ── Load registered STEM Lab tool modules (Plugin Architecture, Phase 2) ──
     // These files self-register via window.StemLab.registerTool()
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@caedf4e/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -18666,7 +18666,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       });
       // Load scripts, then proactively init Kokoro to avoid first-speak latency
       (async () => {
-        await loadTTSScript('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@caedf4e/kokoro_tts_loader.js');
+        await loadTTSScript('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/kokoro_tts_loader.js');
         loadTTSScript('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/piper_tts_loader.js');
         if (window._kokoroTTS) {
           try {
