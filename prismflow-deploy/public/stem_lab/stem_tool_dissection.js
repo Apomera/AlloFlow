@@ -3,6 +3,7 @@
 // Uses window.StemLab.registerTool() plugin architecture
 
   // â•â•â• ðŸ”¬ dissection (dissection) â•â•â•
+  console.log('[Dissection Plugin] Registering dissection tool...');
   window.StemLab.registerTool('dissection', {
     icon: 'ðŸ”¬',
     label: 'dissection',
@@ -10,6 +11,7 @@
     color: 'slate',
     category: 'science',
     render: function(ctx) {
+      console.log('[Dissection Plugin] render() called, has React:', !!ctx.React, 'has toolData:', !!ctx.toolData);
       // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
@@ -23,6 +25,7 @@
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
+      var callGemini = ctx.callGemini;
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -1796,7 +1799,7 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '6px Inter, system-ui'; ctx.fillStyle = 'rgba(254,240,138,0.4)';
 
-                  ctx.fillText(t('stem.dissection.canvas_peritoneum'), cx + W * 0.12, cy + H * 0.22);
+                  ctx.fillText('Peritoneum', cx + W * 0.12, cy + H * 0.22);
 
                   // Mesentery (translucent membrane connecting organs)
 
@@ -2864,9 +2867,110 @@ var d = labToolData.dissection || {};
 
               } else if (spec.bodyShape === 'fish') {
 
-                // â•â• PERCH (Perca) â€” fusiform bony fish â•â•
+                // ══ PERCH (Perca) — fusiform bony fish ══
 
-                // â”€â”€ Body (streamlined fusiform shape) â”€â”€
+                // ======== FINS (drawn first so body covers fin bases) ========
+
+                // ── Spiny dorsal fin (behind body) ──
+                ctx.beginPath();
+                ctx.moveTo(cx - W * 0.10, cy - H * 0.14);
+                // Fin rises from dorsal contour — base merges INTO body
+                ctx.bezierCurveTo(cx - W * 0.08, cy - H * 0.22, cx - W * 0.01, cy - H * 0.26, cx + W * 0.03, cy - H * 0.24);
+                ctx.bezierCurveTo(cx + W * 0.06, cy - H * 0.22, cx + W * 0.08, cy - H * 0.19, cx + W * 0.10, cy - H * 0.13);
+                // Return path dips INTO body so body covers it
+                ctx.lineTo(cx + W * 0.10, cy - H * 0.10);
+                ctx.lineTo(cx - W * 0.10, cy - H * 0.11);
+                ctx.closePath();
+                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.45; ctx.fill();
+                // Only stroke the OUTER edge (not the base that body will cover)
+                ctx.beginPath();
+                ctx.moveTo(cx - W * 0.10, cy - H * 0.14);
+                ctx.bezierCurveTo(cx - W * 0.08, cy - H * 0.22, cx - W * 0.01, cy - H * 0.26, cx + W * 0.03, cy - H * 0.24);
+                ctx.bezierCurveTo(cx + W * 0.06, cy - H * 0.22, cx + W * 0.08, cy - H * 0.19, cx + W * 0.10, cy - H * 0.13);
+                ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke(); ctx.globalAlpha = 1;
+                // Spine rays
+                ctx.globalAlpha = 0.35;
+                for (var ds = 0; ds < 9; ds++) {
+                  var dsP = ds / 8;
+                  var dsX = cx - W * 0.10 + dsP * W * 0.20;
+                  var dsBaseY = cy - H * 0.14;
+                  var dsH = Math.sin(dsP * Math.PI) * H * 0.12 + H * 0.03;
+                  ctx.beginPath(); ctx.moveTo(dsX, dsBaseY); ctx.lineTo(dsX, dsBaseY - dsH);
+                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.5; ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+
+                // ── Soft dorsal fin (behind body) ──
+                ctx.beginPath();
+                ctx.moveTo(cx + W * 0.14, cy - H * 0.11);
+                ctx.bezierCurveTo(cx + W * 0.15, cy - H * 0.17, cx + W * 0.18, cy - H * 0.18, cx + W * 0.21, cy - H * 0.15);
+                ctx.bezierCurveTo(cx + W * 0.22, cy - H * 0.13, cx + W * 0.22, cy - H * 0.10, cx + W * 0.22, cy - H * 0.09);
+                ctx.lineTo(cx + W * 0.22, cy - H * 0.06);
+                ctx.lineTo(cx + W * 0.14, cy - H * 0.08);
+                ctx.closePath();
+                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.40; ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(cx + W * 0.14, cy - H * 0.11);
+                ctx.bezierCurveTo(cx + W * 0.15, cy - H * 0.17, cx + W * 0.18, cy - H * 0.18, cx + W * 0.21, cy - H * 0.15);
+                ctx.bezierCurveTo(cx + W * 0.22, cy - H * 0.13, cx + W * 0.22, cy - H * 0.10, cx + W * 0.22, cy - H * 0.09);
+                ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.7; ctx.stroke(); ctx.globalAlpha = 1;
+                // Soft rays
+                ctx.globalAlpha = 0.25;
+                for (var sd = 0; sd < 5; sd++) {
+                  var sdP = sd / 4;
+                  var sdX = cx + W * (0.14 + sdP * 0.08);
+                  ctx.beginPath(); ctx.moveTo(sdX, cy - H * 0.10);
+                  ctx.lineTo(sdX, cy - H * (0.10 + Math.sin(sdP * Math.PI) * 0.07 + 0.02));
+                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.35; ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+
+                // ── Anal fin (behind body) ──
+                ctx.beginPath();
+                ctx.moveTo(cx + W * 0.12, cy + H * 0.11);
+                ctx.bezierCurveTo(cx + W * 0.13, cy + H * 0.17, cx + W * 0.16, cy + H * 0.18, cx + W * 0.18, cy + H * 0.14);
+                ctx.lineTo(cx + W * 0.18, cy + H * 0.08);
+                ctx.lineTo(cx + W * 0.12, cy + H * 0.08);
+                ctx.closePath();
+                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.40; ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(cx + W * 0.12, cy + H * 0.11);
+                ctx.bezierCurveTo(cx + W * 0.13, cy + H * 0.17, cx + W * 0.16, cy + H * 0.18, cx + W * 0.18, cy + H * 0.14);
+                ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.7; ctx.stroke(); ctx.globalAlpha = 1;
+
+                // ── Pelvic fin (behind body) ──
+                ctx.beginPath();
+                ctx.moveTo(cx - W * 0.06, cy + H * 0.12);
+                ctx.bezierCurveTo(cx - W * 0.08, cy + H * 0.16, cx - W * 0.10, cy + H * 0.19, cx - W * 0.08, cy + H * 0.20);
+                ctx.bezierCurveTo(cx - W * 0.05, cy + H * 0.19, cx - W * 0.03, cy + H * 0.16, cx - W * 0.02, cy + H * 0.13);
+                ctx.lineTo(cx - W * 0.02, cy + H * 0.10);
+                ctx.lineTo(cx - W * 0.06, cy + H * 0.10);
+                ctx.closePath();
+                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.35; ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(cx - W * 0.06, cy + H * 0.12);
+                ctx.bezierCurveTo(cx - W * 0.08, cy + H * 0.16, cx - W * 0.10, cy + H * 0.19, cx - W * 0.08, cy + H * 0.20);
+                ctx.bezierCurveTo(cx - W * 0.05, cy + H * 0.19, cx - W * 0.03, cy + H * 0.16, cx - W * 0.02, cy + H * 0.13);
+                ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.6; ctx.stroke(); ctx.globalAlpha = 1;
+
+                // ── Pectoral fin (behind body) ──
+                ctx.beginPath();
+                ctx.moveTo(cx - W * 0.16, cy + H * 0.02);
+                ctx.bezierCurveTo(cx - W * 0.19, cy + H * 0.06, cx - W * 0.20, cy + H * 0.12, cx - W * 0.17, cy + H * 0.14);
+                ctx.bezierCurveTo(cx - W * 0.14, cy + H * 0.12, cx - W * 0.13, cy + H * 0.08, cx - W * 0.14, cy + H * 0.04);
+                ctx.lineTo(cx - W * 0.14, cy + H * 0.00);
+                ctx.lineTo(cx - W * 0.16, cy + H * 0.00);
+                ctx.closePath();
+                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.35; ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(cx - W * 0.16, cy + H * 0.02);
+                ctx.bezierCurveTo(cx - W * 0.19, cy + H * 0.06, cx - W * 0.20, cy + H * 0.12, cx - W * 0.17, cy + H * 0.14);
+                ctx.bezierCurveTo(cx - W * 0.14, cy + H * 0.12, cx - W * 0.13, cy + H * 0.08, cx - W * 0.14, cy + H * 0.04);
+                ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.6; ctx.stroke(); ctx.globalAlpha = 1;
+
+                // ======== BODY (drawn on top, covers fin bases) ========
+
+                // ── Body (streamlined fusiform shape) ──
 
                 ctx.beginPath();
 
@@ -2916,7 +3020,7 @@ var d = labToolData.dissection || {};
 
                 ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 3; ctx.stroke();
 
-                // â”€â”€ Operculum (gill cover) â”€â”€
+                // ── Operculum (gill cover) ──
 
                 ctx.beginPath();
 
@@ -2926,7 +3030,7 @@ var d = labToolData.dissection || {};
 
                 ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.stroke();
 
-                // â”€â”€ Eye â”€â”€
+                // ── Eye ──
 
                 ctx.beginPath(); ctx.arc(cx - W * 0.23, cy - H * 0.02, 6, 0, Math.PI * 2);
 
@@ -2938,93 +3042,12 @@ var d = labToolData.dissection || {};
 
                 ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fill();
 
-                // â”€â”€ Mouth â”€â”€
+                // ── Mouth ──
 
                 ctx.beginPath(); ctx.moveTo(cx - W * 0.30, cy); ctx.lineTo(cx - W * 0.28, cy + H * 0.02);
 
                 ctx.strokeStyle = layerStroke; ctx.lineWidth = 1; ctx.stroke();
 
-                // â”€â”€ Spiny dorsal fin â”€â”€
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy - H * 0.14);
-
-                for (var ds = 0; ds < 8; ds++) {
-
-                  var dsx = cx - W * 0.10 + ds * W * 0.025;
-
-                  ctx.lineTo(dsx, cy - H * 0.14 - (ds < 4 ? ds : 7 - ds) * H * 0.015 - H * 0.04);
-
-                  ctx.lineTo(dsx + W * 0.012, cy - H * 0.14);
-
-                }
-
-                ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.5; ctx.fill();
-
-                ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke(); ctx.globalAlpha = 1;
-
-                // â”€â”€ Soft dorsal â”€â”€
-
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.12, cy - H * 0.11);
-
-                for (var sd = 0; sd < 5; sd++) {
-
-                  var sdx = cx + W * 0.12 + sd * W * 0.02;
-
-                  ctx.lineTo(sdx, cy - H * 0.16 - sd * H * 0.003);
-
-                  ctx.lineTo(sdx + W * 0.01, cy - H * 0.11);
-
-                }
-
-                ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.5; ctx.fill();
-
-                ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
-
-                // â”€â”€ Anal fin â”€â”€
-
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.10, cy + H * 0.11);
-
-                for (var af = 0; af < 4; af++) {
-
-                  var afx = cx + W * 0.10 + af * W * 0.02;
-
-                  ctx.lineTo(afx, cy + H * 0.17); ctx.lineTo(afx + W * 0.01, cy + H * 0.11);
-
-                }
-
-                ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.4; ctx.fill();
-
-                ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
-
-                // â”€â”€ Pelvic fin â”€â”€
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy + H * 0.10);
-
-                ctx.lineTo(cx - W * 0.12, cy + H * 0.18); ctx.lineTo(cx - W * 0.06, cy + H * 0.16);
-
-                ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.4; ctx.fill();
-
-                ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
-
-                // â”€â”€ Pectoral fin â”€â”€
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.16, cy + H * 0.02);
-
-                ctx.bezierCurveTo(cx - W * 0.18, cy + H * 0.06, cx - W * 0.16, cy + H * 0.10, cx - W * 0.13, cy + H * 0.08);
-
-                ctx.bezierCurveTo(cx - W * 0.14, cy + H * 0.05, cx - W * 0.15, cy + H * 0.03, cx - W * 0.16, cy + H * 0.02);
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.5; ctx.fill();
-
-                ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
 
                 // â”€â”€ Scale pattern â”€â”€
 
@@ -3610,7 +3633,7 @@ var d = labToolData.dissection || {};
 
                 ctx.font = '8px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
 
-                ctx.fillText(t('stem.dissection.canvas_light_ray'), cx - W * 0.44, cy - H * 0.10);
+                ctx.fillText('Light Ray', cx - W * 0.44, cy - H * 0.10);
 
                 ctx.globalAlpha = 1;
 
@@ -3618,9 +3641,9 @@ var d = labToolData.dissection || {};
 
                 ctx.font = '7px Inter, system-ui'; ctx.fillStyle = 'rgba(255,255,255,0.25)';
 
-                ctx.fillText(t('stem.dissection.canvas_aqueous_humor'), cx - W * 0.24, cy + H * 0.06);
+                ctx.fillText('Aqueous Humor', cx - W * 0.24, cy + H * 0.06);
 
-                ctx.fillText(t('stem.dissection.canvas_vitreous_humor'), cx - W * 0.05, cy + H * 0.10);
+                ctx.fillText('Vitreous Humor', cx - W * 0.05, cy + H * 0.10);
 
                 // Ciliary body
 
@@ -3632,7 +3655,7 @@ var d = labToolData.dissection || {};
 
                 ctx.strokeStyle = '#a78bfa'; ctx.stroke();
 
-                ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillText(t('stem.dissection.canvas_ciliary_body'), cx - W * 0.18, cy - H * 0.11);
+                ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillText('Ciliary Body', cx - W * 0.18, cy - H * 0.11);
 
                 // Suspensory ligaments (zonules)
 
@@ -3656,7 +3679,7 @@ var d = labToolData.dissection || {};
 
                 ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1; ctx.stroke();
 
-                ctx.fillStyle = 'rgba(251,191,36,0.3)'; ctx.fillText(t('stem.dissection.canvas_fovea'), cx + W * 0.12, cy - H * 0.02);
+                ctx.fillStyle = 'rgba(251,191,36,0.3)'; ctx.fillText('Fovea', cx + W * 0.12, cy - H * 0.02);
 
                 // Blind spot (optic disc)
 
@@ -3664,7 +3687,7 @@ var d = labToolData.dissection || {};
 
                 ctx.fillStyle = 'rgba(251,191,36,0.4)'; ctx.fill();
 
-                ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillText(t('stem.dissection.canvas_optic_disc'), cx + W * 0.20, cy + H * 0.02);
+                ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillText('Optic Disc', cx + W * 0.20, cy + H * 0.02);
 
                 // Iris sphincter muscle detail
 
@@ -3690,7 +3713,7 @@ var d = labToolData.dissection || {};
 
                 ctx.strokeStyle = 'rgba(251,191,36,0.2)'; ctx.lineWidth = 0.5; ctx.stroke();
 
-                ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fillText(t('stem.dissection.canvas_macula'), cx + W * 0.12, cy + H * 0.03);
+                ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fillText('Macula', cx + W * 0.12, cy + H * 0.03);
 
                 // Rod and cone cell detail on retina
 
@@ -3732,11 +3755,11 @@ var d = labToolData.dissection || {};
 
                 ctx.font = '5px Inter, system-ui'; ctx.fillStyle = 'rgba(255,255,255,0.15)';
 
-                ctx.fillText(t('stem.dissection.canvas_rods'), cx + W * 0.22, cy - H * 0.14);
+                ctx.fillText('Rods', cx + W * 0.22, cy - H * 0.14);
 
                 ctx.fillStyle = 'rgba(59,130,246,0.15)';
 
-                ctx.fillText(t('stem.dissection.canvas_cones'), cx + W * 0.22, cy - H * 0.12);
+                ctx.fillText('Cones', cx + W * 0.22, cy - H * 0.12);
 
               } else if (spec.bodyShape === 'heart') {
 
@@ -3886,7 +3909,7 @@ var d = labToolData.dissection || {};
 
                 ctx.font = '6px Inter, system-ui'; ctx.fillStyle = 'rgba(34,197,94,0.5)';
 
-                ctx.fillText(t('stem.dissection.canvas_ecg_p'), ecgX + ecgW * 0.10, ecgY - 18); ctx.fillText(t('stem.dissection.canvas_ecg_qrs'), ecgX + ecgW * 0.23, ecgY - 18); ctx.fillText(t('stem.dissection.canvas_ecg_t'), ecgX + ecgW * 0.42, ecgY - 18);
+                ctx.fillText('P', ecgX + ecgW * 0.10, ecgY - 18); ctx.fillText('QRS', ecgX + ecgW * 0.23, ecgY - 18); ctx.fillText('T', ecgX + ecgW * 0.42, ecgY - 18);
 
                 // Chamber shading (left side thicker wall)
 
@@ -3932,7 +3955,7 @@ var d = labToolData.dissection || {};
 
                   ctx.fillStyle = saGrad; ctx.fill();
 
-                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#fbbf24'; ctx.fillText(t('stem.dissection.canvas_sa_node'), cx + W * 0.13, cy - H * 0.18);
+                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#fbbf24'; ctx.fillText('SA Node', cx + W * 0.13, cy - H * 0.18);
 
                   // AV Node
 
@@ -3948,7 +3971,7 @@ var d = labToolData.dissection || {};
 
                   ctx.fillStyle = avGrad; ctx.fill();
 
-                  ctx.fillStyle = '#22c55e'; ctx.fillText(t('stem.dissection.canvas_av_node'), cx + W * 0.02, cy - H * 0.06);
+                  ctx.fillStyle = '#22c55e'; ctx.fillText('AV Node', cx + W * 0.02, cy - H * 0.06);
 
                   // Bundle of His
 
@@ -3958,7 +3981,7 @@ var d = labToolData.dissection || {};
 
                   ctx.strokeStyle = 'rgba(59,130,246,' + (0.3 + hisPhase * 0.5) + ')'; ctx.lineWidth = 2; ctx.stroke();
 
-                  ctx.fillStyle = '#3b82f6'; ctx.fillText(t('stem.dissection.canvas_bundle_his'), cx + W * 0.02, cy + H * 0.02);
+                  ctx.fillStyle = '#3b82f6'; ctx.fillText('Bundle of His', cx + W * 0.02, cy + H * 0.02);
 
                   // Left and right bundle branches
 
@@ -3996,7 +4019,7 @@ var d = labToolData.dissection || {};
 
                   }
 
-                  ctx.fillStyle = '#a855f7'; ctx.fillText(t('stem.dissection.canvas_purkinje'), cx - W * 0.14, cy + H * 0.24);
+                  ctx.fillStyle = '#a855f7'; ctx.fillText('Purkinje Fibers', cx - W * 0.14, cy + H * 0.24);
 
                   // Signal propagation indicator
 
@@ -4022,7 +4045,7 @@ var d = labToolData.dissection || {};
 
                   ctx.fillStyle = '#dc2626'; ctx.fill();
 
-                  ctx.font = '8px Inter'; ctx.fillStyle = '#ffffff'; ctx.fillText(t('stem.dissection.canvas_la'), cx - W * 0.11, cy - H * 0.09);
+                  ctx.font = '8px Inter'; ctx.fillStyle = '#ffffff'; ctx.fillText('LA', cx - W * 0.11, cy - H * 0.09);
 
                   // Right atrium
 
@@ -4030,7 +4053,7 @@ var d = labToolData.dissection || {};
 
                   ctx.fillStyle = '#3b82f6'; ctx.fill();
 
-                  ctx.fillStyle = '#ffffff'; ctx.fillText(t('stem.dissection.canvas_ra'), cx + W * 0.09, cy - H * 0.09);
+                  ctx.fillStyle = '#ffffff'; ctx.fillText('RA', cx + W * 0.09, cy - H * 0.09);
 
                   // Left ventricle (thicker wall)
 
@@ -4038,7 +4061,7 @@ var d = labToolData.dissection || {};
 
                   ctx.fillStyle = '#b91c1c'; ctx.fill();
 
-                  ctx.fillStyle = '#ffffff'; ctx.fillText(t('stem.dissection.canvas_lv'), cx - W * 0.09, cy + H * 0.09);
+                  ctx.fillStyle = '#ffffff'; ctx.fillText('LV', cx - W * 0.09, cy + H * 0.09);
 
                   // Right ventricle (thinner wall)
 
@@ -4046,7 +4069,7 @@ var d = labToolData.dissection || {};
 
                   ctx.fillStyle = '#2563eb'; ctx.fill();
 
-                  ctx.fillStyle = '#ffffff'; ctx.fillText(t('stem.dissection.canvas_rv'), cx + W * 0.07, cy + H * 0.09);
+                  ctx.fillStyle = '#ffffff'; ctx.fillText('RV', cx + W * 0.07, cy + H * 0.09);
 
                   // Valve lines
 
@@ -4068,23 +4091,23 @@ var d = labToolData.dissection || {};
 
                   ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2; ctx.stroke();
 
-                  ctx.fillText(t('stem.dissection.canvas_mitral') + (valveOpen > 0 ? ' ' + t('stem.dissection.canvas_valve_open') : ' ' + t('stem.dissection.canvas_valve_closed')), cx - W * 0.14, cy - H * 0.035);
+                  ctx.fillText('Mitral' + (valveOpen > 0 ? ' ' + 'Open' : ' ' + 'Closed'), cx - W * 0.14, cy - H * 0.035);
 
                   // Tricuspid valve
 
                   ctx.beginPath(); ctx.moveTo(cx + W * 0.04, cy - H * 0.02); ctx.lineTo(cx + W * 0.15, cy - H * 0.02); ctx.stroke();
 
-                  ctx.fillText(t('stem.dissection.canvas_tricuspid'), cx + W * 0.05, cy - H * 0.035);
+                  ctx.fillText('Tricuspid', cx + W * 0.05, cy - H * 0.035);
 
                   // Semilunar valves (above ventricles)
 
                   ctx.beginPath(); ctx.arc(cx - W * 0.08, cy - H * 0.05, 3, 0, Math.PI); ctx.stroke();
 
-                  ctx.fillText(t('stem.dissection.canvas_aortic'), cx - W * 0.10, cy - H * 0.07);
+                  ctx.fillText('Aortic', cx - W * 0.10, cy - H * 0.07);
 
                   ctx.beginPath(); ctx.arc(cx + W * 0.06, cy - H * 0.05, 3, 0, Math.PI); ctx.stroke();
 
-                  ctx.fillText(t('stem.dissection.canvas_pulmonary'), cx + W * 0.04, cy - H * 0.07);
+                  ctx.fillText('Pulmonary', cx + W * 0.04, cy - H * 0.07);
 
                   // Papillary muscles (bumps on ventricle walls)
 
@@ -4122,9 +4145,9 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '5px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
 
-                  ctx.fillText(t('stem.dissection.canvas_chordae'), cx - W * 0.14, cy + H * 0.08);
+                  ctx.fillText('Chordae', cx - W * 0.14, cy + H * 0.08);
 
-                  ctx.fillText(t('stem.dissection.canvas_papillary'), cx - W * 0.14, cy + H * 0.14);
+                  ctx.fillText('Papillary', cx - W * 0.14, cy + H * 0.14);
 
                   ctx.globalAlpha = 0.5;
 
@@ -4339,7 +4362,7 @@ var d = labToolData.dissection || {};
 
                 ctx.font = '8px Inter, system-ui'; ctx.fillStyle = 'rgba(236,72,153,0.6)';
 
-                ctx.fillText(t('stem.dissection.canvas_dblclick_clear'), 10, H - 5);
+                ctx.fillText('Double-click to clear', 10, H - 5);
 
               }
 
@@ -4381,7 +4404,7 @@ var d = labToolData.dissection || {};
 
               ctx.fillRect(W - 80, H - 18, 60, 2);
 
-              ctx.font = '8px Inter, system-ui'; ctx.fillText(t('stem.dissection.canvas_scale_bar'), W - 72, H - 7);
+              ctx.font = '8px Inter, system-ui'; ctx.fillText('Scale Bar', W - 72, H - 7);
 
               // Endocrine system overlay
 
@@ -4547,13 +4570,13 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#a855f7';
 
-                  ctx.fillText(t('stem.dissection.canvas_brain'), cx + W * 0.03, cy - H * 0.26);
+                  ctx.fillText('Brain', cx + W * 0.03, cy - H * 0.26);
 
-                  ctx.fillText(t('stem.dissection.canvas_spinal_cord'), cx + W * 0.02, cy);
+                  ctx.fillText('Spinal Cord', cx + W * 0.02, cy);
 
-                  ctx.fillText(t('stem.dissection.canvas_sciatic'), cx + W * 0.08, cy + H * 0.25);
+                  ctx.fillText('Sciatic', cx + W * 0.08, cy + H * 0.25);
 
-                  ctx.fillText(t('stem.dissection.canvas_brachial'), cx + W * 0.06, cy - H * 0.10);
+                  ctx.fillText('Brachial', cx + W * 0.06, cy - H * 0.10);
 
                 } else if (spec.bodyShape === 'worm') {
 
@@ -4593,9 +4616,9 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '6px Inter, system-ui'; ctx.fillStyle = '#a855f7';
 
-                  ctx.fillText(t('stem.dissection.canvas_ventral_nerve_cord'), cx + W * 0.05, H * 0.50);
+                  ctx.fillText('Ventral Nerve Cord', cx + W * 0.05, H * 0.50);
 
-                  ctx.fillText(t('stem.dissection.canvas_segmental_ganglia'), cx + W * 0.05, H * 0.52);
+                  ctx.fillText('Segmental Ganglia', cx + W * 0.05, H * 0.52);
 
                 } else if (spec.bodyShape === 'crayfish') {
 
@@ -4621,9 +4644,9 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '6px Inter, system-ui'; ctx.fillStyle = '#a855f7';
 
-                  ctx.fillText(t('stem.dissection.canvas_brain'), cx - W * 0.22, cy - H * 0.03);
+                  ctx.fillText('Brain', cx - W * 0.22, cy - H * 0.03);
 
-                  ctx.fillText(t('stem.dissection.canvas_ventral_cord'), cx + W * 0.05, cy - H * 0.03);
+                  ctx.fillText('Ventral Cord', cx + W * 0.05, cy - H * 0.03);
 
                 }
 
@@ -4677,13 +4700,13 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#84cc16';
 
-                  ctx.fillText(t('stem.dissection.canvas_kidneys'), cx + W * 0.08, cy + H * 0.09);
+                  ctx.fillText('Kidneys', cx + W * 0.08, cy + H * 0.09);
 
-                  ctx.fillText(t('stem.dissection.canvas_ureters'), cx + W * 0.04, cy + H * 0.13);
+                  ctx.fillText('Ureters', cx + W * 0.04, cy + H * 0.13);
 
-                  ctx.fillText(t('stem.dissection.canvas_bladder'), cx + W * 0.03, cy + H * 0.16);
+                  ctx.fillText('Bladder', cx + W * 0.03, cy + H * 0.16);
 
-                  ctx.fillText(t('stem.dissection.canvas_cloaca'), cx + W * 0.02, cy + H * 0.23);
+                  ctx.fillText('Cloaca', cx + W * 0.02, cy + H * 0.23);
 
                 } else if (spec.bodyShape === 'worm') {
 
@@ -4713,9 +4736,9 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '6px Inter, system-ui'; ctx.fillStyle = '#84cc16';
 
-                  ctx.fillText(t('stem.dissection.canvas_nephridia'), cx - W * 0.09, H * 0.35);
+                  ctx.fillText('Nephridia', cx - W * 0.09, H * 0.35);
 
-                  ctx.fillText(t('stem.dissection.canvas_nephridiopores'), cx - W * 0.10, H * 0.37);
+                  ctx.fillText('Nephridiopores', cx - W * 0.10, H * 0.37);
 
                 } else if (spec.bodyShape === 'pig') {
 
@@ -4733,11 +4756,11 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#84cc16';
 
-                  ctx.fillText(t('stem.dissection.canvas_kidney'), cx + W * 0.09, cy + H * 0.07);
+                  ctx.fillText('Kidney', cx + W * 0.09, cy + H * 0.07);
 
-                  ctx.fillText(t('stem.dissection.canvas_ureter'), cx + W * 0.07, cy + H * 0.13);
+                  ctx.fillText('Ureter', cx + W * 0.07, cy + H * 0.13);
 
-                  ctx.fillText(t('stem.dissection.canvas_bladder'), cx + W * 0.01, cy + H * 0.18);
+                  ctx.fillText('Bladder', cx + W * 0.01, cy + H * 0.18);
 
                 }
 
@@ -4819,11 +4842,11 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '7px Inter, system-ui';
 
-                  ctx.fillStyle = '#ef4444'; ctx.fillText(t('stem.dissection.canvas_arteries_o2'), cx - W * 0.12, cy - H * 0.20);
+                  ctx.fillStyle = '#ef4444'; ctx.fillText('Arteries (O₂)', cx - W * 0.12, cy - H * 0.20);
 
-                  ctx.fillStyle = '#3b82f6'; ctx.fillText(t('stem.dissection.canvas_veins_co2'), cx + W * 0.06, cy + H * 0.20);
+                  ctx.fillStyle = '#3b82f6'; ctx.fillText('Veins (CO₂)', cx + W * 0.06, cy + H * 0.20);
 
-                  ctx.fillStyle = '#a855f7'; ctx.fillText(t('stem.dissection.canvas_pulmonary'), cx - W * 0.14, cy - H * 0.08);
+                  ctx.fillStyle = '#a855f7'; ctx.fillText('Pulmonary', cx - W * 0.14, cy - H * 0.08);
 
                   // Blood cell animation
 
@@ -4873,13 +4896,13 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '7px Inter, system-ui';
 
-                  ctx.fillStyle = '#3b82f6'; ctx.fillText(t('stem.dissection.canvas_svc'), cx + W * 0.16, cy - H * 0.26);
+                  ctx.fillStyle = '#3b82f6'; ctx.fillText('SVC', cx + W * 0.16, cy - H * 0.26);
 
-                  ctx.fillText(t('stem.dissection.canvas_pulm_artery'), cx + W * 0.16, cy - H * 0.16);
+                  ctx.fillText('Pulm. Artery', cx + W * 0.16, cy - H * 0.16);
 
-                  ctx.fillStyle = '#ef4444'; ctx.fillText(t('stem.dissection.canvas_pulm_vein'), cx - W * 0.20, cy - H * 0.22);
+                  ctx.fillStyle = '#ef4444'; ctx.fillText('Pulm. Vein', cx - W * 0.20, cy - H * 0.22);
 
-                  ctx.fillText(t('stem.dissection.canvas_aorta'), cx - W * 0.04, cy - H * 0.30);
+                  ctx.fillText('Aorta', cx - W * 0.04, cy - H * 0.30);
 
                 }
 
@@ -4949,17 +4972,17 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#38bdf8';
 
-                  ctx.fillText(t('stem.dissection.canvas_o2_in'), cx + W * 0.02, cy - H * 0.26);
+                  ctx.fillText('O₂ In', cx + W * 0.02, cy - H * 0.26);
 
                   ctx.fillStyle = '#ef4444';
 
-                  ctx.fillText(t('stem.dissection.canvas_co2_out'), cx + W * 0.02, cy - H * 0.24);
+                  ctx.fillText('CO₂ Out', cx + W * 0.02, cy - H * 0.24);
 
                   // Cutaneous respiration note
 
                   ctx.fillStyle = 'rgba(56,189,248,0.4)'; ctx.font = '6px Inter, system-ui';
 
-                  ctx.fillText(t('stem.dissection.canvas_cutaneous'), cx + W * 0.10, cy + H * 0.05);
+                  ctx.fillText('Cutaneous', cx + W * 0.10, cy + H * 0.05);
 
                 } else if (spec.bodyShape === 'pig') {
 
@@ -4989,11 +5012,11 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#38bdf8';
 
-                  ctx.fillText(t('stem.dissection.canvas_trachea'), cx - W * 0.22, cy - H * 0.05);
+                  ctx.fillText('Trachea', cx - W * 0.22, cy - H * 0.05);
 
-                  ctx.fillText(t('stem.dissection.canvas_l_bronchus'), cx - W * 0.10, cy - H * 0.10);
+                  ctx.fillText('L. Bronchus', cx - W * 0.10, cy - H * 0.10);
 
-                  ctx.fillText(t('stem.dissection.canvas_r_bronchus'), cx - W * 0.10, cy + H * 0.05);
+                  ctx.fillText('R. Bronchus', cx - W * 0.10, cy + H * 0.05);
 
                 } else if (spec.bodyShape === 'fish') {
 
@@ -5021,11 +5044,11 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#38bdf8';
 
-                  ctx.fillText(t('stem.dissection.canvas_water_in'), cx - W * 0.38, cy - H * 0.02);
+                  ctx.fillText('Water In', cx - W * 0.38, cy - H * 0.02);
 
-                  ctx.fillText(t('stem.dissection.canvas_o2_exchange'), cx - W * 0.26, cy - H * 0.06);
+                  ctx.fillText('O₂ Exchange', cx - W * 0.26, cy - H * 0.06);
 
-                  ctx.fillText(t('stem.dissection.canvas_water_out'), cx - W * 0.30, cy + H * 0.06);
+                  ctx.fillText('Water Out', cx - W * 0.30, cy + H * 0.06);
 
                 }
 
@@ -5081,17 +5104,17 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#f59e0b';
 
-                  ctx.fillText(t('stem.dissection.canvas_mouth'), cx + W * 0.02, cy - H * 0.27);
+                  ctx.fillText('Mouth', cx + W * 0.02, cy - H * 0.27);
 
-                  ctx.fillText(t('stem.dissection.canvas_esophagus'), cx + W * 0.04, cy - H * 0.17);
+                  ctx.fillText('Esophagus', cx + W * 0.04, cy - H * 0.17);
 
-                  ctx.fillText(t('stem.dissection.canvas_stomach'), cx + W * 0.07, cy - H * 0.06);
+                  ctx.fillText('Stomach', cx + W * 0.07, cy - H * 0.06);
 
-                  ctx.fillText(t('stem.dissection.canvas_sm_intestine'), cx + W * 0.06, cy + H * 0.08);
+                  ctx.fillText('Sm. Intestine', cx + W * 0.06, cy + H * 0.08);
 
-                  ctx.fillText(t('stem.dissection.canvas_lg_intestine'), cx + W * 0.04, cy + H * 0.18);
+                  ctx.fillText('Lg. Intestine', cx + W * 0.04, cy + H * 0.18);
 
-                  ctx.fillText(t('stem.dissection.canvas_cloaca'), cx + W * 0.02, cy + H * 0.23);
+                  ctx.fillText('Cloaca', cx + W * 0.02, cy + H * 0.23);
 
                 } else if (spec.bodyShape === 'worm') {
 
@@ -5123,17 +5146,17 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#f59e0b';
 
-                  ctx.fillText(t('stem.dissection.canvas_mouth'), cx + W * 0.05, H * 0.065);
+                  ctx.fillText('Mouth', cx + W * 0.05, H * 0.065);
 
-                  ctx.fillText(t('stem.dissection.canvas_pharynx'), cx + W * 0.05, H * 0.11);
+                  ctx.fillText('Pharynx', cx + W * 0.05, H * 0.11);
 
-                  ctx.fillText(t('stem.dissection.canvas_crop'), cx + W * 0.05, H * 0.29);
+                  ctx.fillText('Crop', cx + W * 0.05, H * 0.29);
 
-                  ctx.fillText(t('stem.dissection.canvas_gizzard'), cx + W * 0.05, H * 0.34);
+                  ctx.fillText('Gizzard', cx + W * 0.05, H * 0.34);
 
-                  ctx.fillText(t('stem.dissection.canvas_intestine'), cx + W * 0.05, H * 0.60);
+                  ctx.fillText('Intestine', cx + W * 0.05, H * 0.60);
 
-                  ctx.fillText(t('stem.dissection.canvas_anus'), cx + W * 0.05, H * 0.945);
+                  ctx.fillText('Anus', cx + W * 0.05, H * 0.945);
 
                 } else if (spec.bodyShape === 'pig') {
 
@@ -5155,13 +5178,13 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#f59e0b';
 
-                  ctx.fillText(t('stem.dissection.canvas_mouth'), cx - W * 0.33, cy - H * 0.02);
+                  ctx.fillText('Mouth', cx - W * 0.33, cy - H * 0.02);
 
-                  ctx.fillText(t('stem.dissection.canvas_esophagus'), cx - W * 0.18, cy - H * 0.03);
+                  ctx.fillText('Esophagus', cx - W * 0.18, cy - H * 0.03);
 
-                  ctx.fillText(t('stem.dissection.canvas_stomach'), cx + W * 0.02, cy - H * 0.01);
+                  ctx.fillText('Stomach', cx + W * 0.02, cy - H * 0.01);
 
-                  ctx.fillText(t('stem.dissection.canvas_intestines'), cx + W * 0.09, cy + H * 0.13);
+                  ctx.fillText('Intestines', cx + W * 0.09, cy + H * 0.13);
 
                 } else if (spec.bodyShape === 'fish') {
 
@@ -5183,11 +5206,11 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#f59e0b';
 
-                  ctx.fillText(t('stem.dissection.canvas_mouth'), cx - W * 0.35, cy - H * 0.02);
+                  ctx.fillText('Mouth', cx - W * 0.35, cy - H * 0.02);
 
-                  ctx.fillText(t('stem.dissection.canvas_stomach'), cx - W * 0.04, cy + H * 0.06);
+                  ctx.fillText('Stomach', cx - W * 0.04, cy + H * 0.06);
 
-                  ctx.fillText(t('stem.dissection.canvas_intestine'), cx + W * 0.12, cy + H * 0.07);
+                  ctx.fillText('Intestine', cx + W * 0.12, cy + H * 0.07);
 
                 }
 
@@ -5217,7 +5240,7 @@ var d = labToolData.dissection || {};
 
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = 'rgba(148,163,184,0.3)';
 
-                  ctx.fillText(t('stem.dissection.section') + ' ' + String.fromCharCode(65 + si), 12, sy - 3);
+                  ctx.fillText('Section' + ' ' + String.fromCharCode(65 + si), 12, sy - 3);
 
                 });
 
@@ -5231,29 +5254,31 @@ var d = labToolData.dissection || {};
 
               ctx.fillStyle = 'rgba(100,116,139,0.3)';
 
-              ctx.fillText(t('stem.dissection.anterior'), W / 2 - 20, 14);
+              ctx.fillText('Anterior', W / 2 - 20, 14);
 
-              ctx.fillText(t('stem.dissection.posterior'), W / 2 - 20, H - 4);
+              ctx.fillText('Posterior', W / 2 - 20, H - 4);
 
               ctx.save(); ctx.translate(8, H / 2 + 10); ctx.rotate(-Math.PI / 2);
 
-              ctx.fillText(t('stem.dissection.left_dir'), 0, 0); ctx.restore();
+              ctx.fillText('Left', 0, 0); ctx.restore();
 
               ctx.save(); ctx.translate(W - 4, H / 2 - 10); ctx.rotate(Math.PI / 2);
 
-              ctx.fillText(t('stem.dissection.right_dir'), 0, 0); ctx.restore();
+              ctx.fillText('Right', 0, 0); ctx.restore();
 
               // Specimen label
 
               ctx.font = '11px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)';
 
-              ctx.fillText(spec.icon + ' ' + spec.name + (d.viewAngle === 'dorsal' ? '  ' + t('stem.dissection.dorsal_view') : '  ' + t('stem.dissection.ventral_view')), 14, 20);
+              ctx.fillText(spec.icon + ' ' + spec.name + (d.viewAngle === 'dorsal' ? '  ' + '(Dorsal View)' : '  ' + '(Ventral View)'), 14, 20);
 
               // System color legend (top-right)
 
               var legendSys = ['circulatory', 'digestive', 'respiratory', 'nervous', 'skeletal', 'muscular', 'excretory', 'reproductive'];
 
-              var legendLabels = [t('stem.dissection.legend_circ'), t('stem.dissection.legend_dig'), t('stem.dissection.legend_resp'), t('stem.dissection.legend_nerv'), t('stem.dissection.legend_skel'), t('stem.dissection.legend_musc'), t('stem.dissection.legend_excr'), t('stem.dissection.legend_repr')];
+              var sysColors = { circulatory: '#ef4444', digestive: '#f59e0b', respiratory: '#3b82f6', nervous: '#8b5cf6', skeletal: '#e2e8f0', muscular: '#f87171', excretory: '#a78bfa', reproductive: '#ec4899' };
+
+              var legendLabels = ['Circulatory', 'Digestive', 'Respiratory', 'Nervous', 'Skeletal', 'Muscular', 'Excretory', 'Reproductive'];
 
               ctx.font = '7px Inter, system-ui';
 
@@ -5263,7 +5288,7 @@ var d = labToolData.dissection || {};
 
                 ctx.beginPath(); ctx.arc(lx, ly, 3, 0, Math.PI * 2);
 
-                ctx.fillStyle = sysColors[legendSys[li]]; ctx.fill();
+                ctx.fillStyle = sysColors[legendSys[li]] || '#94a3b8'; ctx.fill();
 
                 ctx.fillStyle = 'rgba(255,255,255,0.4)';
 
@@ -5289,7 +5314,7 @@ var d = labToolData.dissection || {};
 
                 ctx.fillStyle = 'rgba(255,255,255,0.35)';
 
-                ctx.fillText(t('stem.dissection.explored_count_bar').replace('{count}', exploredCount).replace('{total}', totalOrgansInSpecimen).replace('{pct}', progressPct), 14, 42);
+                ctx.fillText('Explored'.replace('{count}', exploredCount).replace('{total}', totalOrgansInSpecimen).replace('{pct}', progressPct), 14, 42);
 
               }
 
@@ -5605,7 +5630,7 @@ var d = labToolData.dissection || {};
 
                 awardStemXP('dissection', 2, 'Found ' + hit.name + ' in guided tour');
 
-                if (addToast) addToast('\uD83D\uDCCD ' + t('stem.dissection.found_organ').replace('{name}', hit.name), 'success');
+                if (addToast) addToast('\uD83D\uDCCD ' + 'Found organ!'.replace('{name}', hit.name), 'success');
 
                 if (guidedStep + 1 >= guidedSteps.length) {
 
@@ -5613,7 +5638,7 @@ var d = labToolData.dissection || {};
 
                   awardStemXP('dissection', 10, 'Completed guided tour');
 
-                  if (addToast) addToast('\uD83C\uDF89 ' + t('stem.dissection.tour_complete'), 'success');
+                  if (addToast) addToast('\uD83C\uDF89 ' + 'Tour Complete!', 'success');
 
                 }
 
@@ -5683,7 +5708,7 @@ var d = labToolData.dissection || {};
 
           var guidedSteps = organs.map(function (org, i) {
 
-            return { organId: org.id, name: org.name, prompt: t('stem.dissection.guided_prompt').replace('{step}', i + 1).replace('{total}', organs.length).replace('{name}', org.name) };
+            return { organId: org.id, name: org.name, prompt: 'Find the next structure'.replace('{step}', i + 1).replace('{total}', organs.length).replace('{name}', org.name) };
 
           });
 
@@ -5710,7 +5735,7 @@ var d = labToolData.dissection || {};
                   key: sk,
                   onClick: function () { upd('specimen', sk); upd('currentLayer', 0); upd('selectedOrgan', null); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all " + (isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200')
-                }, sp.emoji + ' ' + sp.name);
+                }, sp.icon + ' ' + sp.name);
               })
             ),
 
@@ -5743,15 +5768,15 @@ var d = labToolData.dissection || {};
 
               React.createElement("button", {
                 onClick: function () { var m = d.labelMode === 'show' ? 'hidden' : 'show'; upd('labelMode', m); },
-                title: t('stem.dissection.labels') + ' — Toggle organ name labels on the canvas',
+                title: 'Labels' + ' — Toggle organ name labels on the canvas',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.labelMode !== 'hidden' ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-100')
-              }, '\uD83C\uDFF7 ' + t('stem.dissection.labels')),
+              }, '\uD83C\uDFF7 ' + 'Labels'),
 
               React.createElement("button", {
                 onClick: function () { upd('highContrast', !d.highContrast); },
-                title: t('stem.dissection.high_contrast') + ' — Enhance colors for accessibility',
+                title: 'Hi-Con' + ' — Enhance colors for accessibility',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.highContrast ? 'bg-yellow-500 text-black' : 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-100')
-              }, '\u2600 ' + t('stem.dissection.high_contrast')),
+              }, '\u2600 ' + 'Hi-Con'),
 
               React.createElement("button", {
                 onClick: function () { upd('viewDorsal', !d.viewDorsal); },
@@ -5761,9 +5786,9 @@ var d = labToolData.dissection || {};
 
               React.createElement("button", {
                 onClick: function () { try { var c = document.querySelector('[data-diss-canvas]'); if (c && c.requestFullscreen) c.requestFullscreen(); } catch (e) {} },
-                title: t('stem.dissection.fullscreen') + ' — Expand canvas to full screen',
+                title: 'Fullscreen' + ' — Expand canvas to full screen',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all"
-              }, '\u26F6 ' + t('stem.dissection.fullscreen')),
+              }, '\u26F6 ' + 'Fullscreen'),
 
               React.createElement("button", {
                 onClick: function () { var s = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', s); },
@@ -5784,15 +5809,15 @@ var d = labToolData.dissection || {};
 
               React.createElement("button", {
                 onClick: function () { upd('rulerMode', !d.rulerMode); if (!d.rulerMode) upd('annotateMode', false); },
-                title: t('stem.dissection.ruler') + ' — Measure distances on the specimen',
+                title: 'Ruler' + ' — Measure distances on the specimen',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.rulerMode ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
-              }, '\uD83D\uDCCF ' + t('stem.dissection.ruler')),
+              }, '\uD83D\uDCCF ' + 'Ruler'),
 
               React.createElement("button", {
                 onClick: function () { upd('annotateMode', !d.annotateMode); if (!d.annotateMode) upd('rulerMode', false); },
-                title: t('stem.dissection.annotate') + ' — Draw annotations on the canvas',
+                title: 'Annotate' + ' — Draw annotations on the canvas',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.annotateMode ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
-              }, '\u270F ' + t('stem.dissection.annotate')),
+              }, '\u270F ' + 'Annotate'),
 
               React.createElement("button", {
                 onClick: function () {
@@ -5801,9 +5826,9 @@ var d = labToolData.dissection || {};
                     if (c) { var link = document.createElement('a'); link.download = specimen + '_dissection.png'; link.href = c.toDataURL(); link.click(); if (addToast) addToast('\uD83D\uDCF8 Screenshot saved!', 'success'); }
                   } catch (e) { if (addToast) addToast('Screenshot failed', 'error'); }
                 },
-                title: t('stem.dissection.screenshot') + ' — Save the current canvas view',
+                title: 'Screenshot' + ' — Save the current canvas view',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all"
-              }, '\uD83D\uDCF8 ' + t('stem.dissection.screenshot')),
+              }, '\uD83D\uDCF8 ' + 'Screenshot'),
 
               React.createElement("button", {
                 onClick: function () {
@@ -5817,9 +5842,9 @@ var d = labToolData.dissection || {};
                   organs.forEach(function (o) { report += '\u2022 ' + o.name + ': ' + o.fn.substring(0, 80) + '\n'; });
                   try { navigator.clipboard.writeText(report); if (addToast) addToast('\uD83D\uDCCB Lab report copied!', 'success'); } catch (e) {}
                 },
-                title: t('stem.dissection.lab_report') + ' — Generate and copy a summary lab report',
+                title: 'Lab Report' + ' — Generate and copy a summary lab report',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all"
-              }, '\uD83D\uDCCB ' + t('stem.dissection.lab_report')),
+              }, '\uD83D\uDCCB ' + 'Lab Report'),
 
               React.createElement("button", {
                 onClick: function () {
@@ -5828,11 +5853,11 @@ var d = labToolData.dissection || {};
                   upd('traceNervous', false); upd('showEndocrine', false);
                   upd('rulerMode', false); upd('annotateMode', false);
                   upd('labelMode', 'show'); upd('highContrast', false);
-                  if (addToast) addToast('\u21BA ' + t('stem.dissection.reset_done'), 'info');
+                  if (addToast) addToast('\u21BA ' + 'Reset Complete', 'info');
                 },
-                title: t('stem.dissection.reset') + ' — Reset all settings for this specimen',
+                title: 'Reset' + ' — Reset all settings for this specimen',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-red-600 border border-red-200 hover:bg-red-50 transition-all"
-              }, '\u21BA ' + t('stem.dissection.reset'))
+              }, '\u21BA ' + 'Reset')
 
             ),
 
@@ -5841,27 +5866,27 @@ var d = labToolData.dissection || {};
 
               React.createElement("button", {
                 onClick: function () { upd('quizMode', !d.quizMode); if (!d.quizMode) { upd('quizIdx', 0); upd('quizScore', 0); upd('quizTotal', 0); upd('quizFeedback', null); } },
-                title: t('stem.dissection.quiz') + ' — Test your knowledge of organ identification',
+                title: 'Quiz' + ' — Test your knowledge of organ identification',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.quizMode ? 'bg-amber-600 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
-              }, '\uD83E\uDDE0 ' + t('stem.dissection.quiz')),
+              }, '\uD83E\uDDE0 ' + 'Quiz'),
 
               React.createElement("button", {
                 onClick: function () { upd('flashcardMode', !d.flashcardMode); if (!d.flashcardMode) { upd('flashcardIdx', 0); upd('flashcardFlipped', false); } },
-                title: t('stem.dissection.flashcard') + ' — Review organs with flip cards',
+                title: 'Flashcard' + ' — Review organs with flip cards',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.flashcardMode ? 'bg-violet-600 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
-              }, '\uD83C\uDCCF ' + t('stem.dissection.flashcard')),
+              }, '\uD83C\uDCCF ' + 'Flashcard'),
 
               React.createElement("button", {
                 onClick: function () { upd('guidedMode', !d.guidedMode); if (!d.guidedMode) upd('guidedStep', 0); },
-                title: t('stem.dissection.guided') + ' — Follow a step-by-step organ tour',
+                title: 'Guided' + ' — Follow a step-by-step organ tour',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.guidedMode ? 'bg-teal-600 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
-              }, '\uD83E\uDDED ' + t('stem.dissection.guided')),
+              }, '\uD83E\uDDED ' + 'Guided'),
 
               React.createElement("button", {
                 onClick: function () { upd('compareMode', !d.compareMode); },
-                title: t('stem.dissection.compare') + ' — Compare organs across specimens',
+                title: 'Compare' + ' — Compare organs across specimens',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.compareMode ? 'bg-cyan-600 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
-              }, '\uD83D\uDD0D ' + t('stem.dissection.compare')),
+              }, '\uD83D\uDD0D ' + 'Compare'),
 
               React.createElement("button", {
                 onClick: function () {
@@ -5887,9 +5912,9 @@ var d = labToolData.dissection || {};
                     upd('quizMode', false);
                   }
                 },
-                title: t('stem.dissection.practical') + ' — Timed practical exam mode',
+                title: 'Practical' + ' — Timed practical exam mode',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.practicalMode ? 'bg-red-600 text-white animate-pulse' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-100')
-              }, d.practicalMode ? '\u23F0 ' + Math.floor((d.practicalTimer || 0) / 60) + ':' + String((d.practicalTimer || 0) % 60).padStart(2, '0') : '\u23F1 ' + t('stem.dissection.practical'))
+              }, d.practicalMode ? '\u23F0 ' + Math.floor((d.practicalTimer || 0) / 60) + ':' + String((d.practicalTimer || 0) % 60).padStart(2, '0') : '\u23F1 ' + 'Practical')
 
             ),
 
@@ -5992,7 +6017,7 @@ var d = labToolData.dissection || {};
 
                   className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceNervous ? 'bg-purple-500 text-white' : 'bg-purple-50 text-purple-700 border border-purple-200')
 
-                }, d.traceNervous ? '\u23F9 ' + t('stem.dissection.stop_trace') : '\u26A1 ' + t('stem.dissection.trace_nervous')),
+                }, d.traceNervous ? '\u23F9 ' + 'Stop Trace' : '\u26A1 ' + 'Trace Nervous'),
 
                 React.createElement("button", {
 
@@ -6000,7 +6025,7 @@ var d = labToolData.dissection || {};
 
                   className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.showEndocrine ? 'bg-pink-500 text-white' : 'bg-pink-50 text-pink-700 border border-pink-200')
 
-                }, d.showEndocrine ? '\u23F9 ' + t('stem.dissection.endocrine_hide') : '\uD83E\uDDE0 ' + t('stem.dissection.endocrine_show'))
+                }, d.showEndocrine ? '\u23F9 ' + 'Hide Endocrine' : '\uD83E\uDDE0 ' + 'Show Endocrine')
 
               ),
 
@@ -6024,9 +6049,9 @@ var d = labToolData.dissection || {};
 
                       !d.flashcardFlipped && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-sm font-bold text-indigo-700" }, organs[d.flashcardIdx || 0] ? organs[d.flashcardIdx || 0].name : t('stem.dissection.no_organs')),
+                        React.createElement("p", { className: "text-sm font-bold text-indigo-700" }, organs[d.flashcardIdx || 0] ? organs[d.flashcardIdx || 0].name : 'No organs found'),
 
-                        React.createElement("p", { className: "text-[10px] text-indigo-400 mt-1" }, t('stem.dissection.click_reveal'))
+                        React.createElement("p", { className: "text-[10px] text-indigo-400 mt-1" }, 'Click to reveal')
 
                       ),
 
@@ -6050,7 +6075,7 @@ var d = labToolData.dissection || {};
 
                       className: "px-3 py-1 rounded-lg text-xs bg-indigo-100 text-indigo-700"
 
-                    }, '\u25C0 ' + t('stem.dissection.prev')),
+                    }, '\u25C0 ' + 'Prev'),
 
                     React.createElement("span", { className: "text-[10px] text-indigo-400" }, ((d.flashcardIdx || 0) + 1) + ' / ' + organs.length),
 
@@ -6060,7 +6085,7 @@ var d = labToolData.dissection || {};
 
                       className: "px-3 py-1 rounded-lg text-xs bg-indigo-100 text-indigo-700"
 
-                    }, t('stem.dissection.next') + ' \u25B6')
+                    }, 'Next' + ' \u25B6')
 
                   )
 
@@ -6072,7 +6097,7 @@ var d = labToolData.dissection || {};
 
               d.compareMode && sel && React.createElement("div", { className: "mt-2 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl border border-cyan-200 p-3" },
 
-                React.createElement("div", { className: "text-xs font-bold text-cyan-800 mb-2" }, '\uD83D\uDD0D ' + t('stem.dissection.comparing_across') + ': ' + sel.name + ' across specimens'),
+                React.createElement("div", { className: "text-xs font-bold text-cyan-800 mb-2" }, '\uD83D\uDD0D ' + 'Comparing across specimens' + ': ' + sel.name + ' across specimens'),
 
                 React.createElement("div", { className: "space-y-1.5 max-h-48 overflow-y-auto" },
 
@@ -6144,7 +6169,7 @@ var d = labToolData.dissection || {};
 
                 ),
 
-                !sel && React.createElement("p", { className: "text-xs text-cyan-600 italic" }, t('stem.dissection.click_organ_compare'))
+                !sel && React.createElement("p", { className: "text-xs text-cyan-600 italic" }, 'Click organ to compare')
 
               ),
 
@@ -6276,7 +6301,7 @@ var d = labToolData.dissection || {};
 
                     Object.keys(weightMap).forEach(function (k) { if (sn.indexOf(k) >= 0) w = weightMap[k]; });
 
-                    return w ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 text-slate-500 border border-slate-200 mr-1 mb-1" }, '\u2696\uFE0F ' + w + ' ' + t('stem.dissection.human_label')) : null;
+                    return w ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 text-slate-500 border border-slate-200 mr-1 mb-1" }, '\u2696\uFE0F ' + w + ' ' + 'Human') : null;
 
                   })(),
 
@@ -6304,7 +6329,7 @@ var d = labToolData.dissection || {};
 
                   sel.clinical && React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" },
 
-                    React.createElement("span", { className: "text-[10px] font-bold text-amber-700" }, '\uD83C\uDFEB ' + t('stem.dissection.fun_fact')),
+                    React.createElement("span", { className: "text-[10px] font-bold text-amber-700" }, '\uD83C\uDFEB ' + 'Did You Know?'),
 
                     React.createElement("p", { className: "text-[10px] text-amber-600 leading-relaxed mt-0.5" }, sel.clinical)
 
@@ -6388,7 +6413,7 @@ var d = labToolData.dissection || {};
 
                     return related ? React.createElement("div", { className: "text-[9px] text-slate-400 mt-1" },
 
-                      React.createElement("span", { className: "font-bold" }, '\uD83D\uDD17 ' + t('stem.dissection.related') + ': '),
+                      React.createElement("span", { className: "font-bold" }, '\uD83D\uDD17 ' + 'Related' + ': '),
 
                       related.join(', ')
 
@@ -6404,13 +6429,18 @@ var d = labToolData.dissection || {};
 
                       onClick: function () {
 
-                        if (typeof window.aiChat === 'function') {
+                        if (typeof callGemini === 'function') {
 
-                          window.aiChat('Explain the ' + sel.name + ' in a ' + spec.name + ' in simple terms for a biology student. Include: function, location, clinical significance, and one interesting fact.');
+                          var _aiPrompt = 'Explain the ' + sel.name + ' in a ' + spec.name + ' in simple terms for a biology student. Include: function, location, clinical significance, and one interesting fact.';
+                          callGemini(_aiPrompt).then(function(res) {
+                            if (addToast) addToast('\uD83E\uDD16 ' + sel.name + ': ' + (res || 'Response received'), 'info', 8000);
+                          }).catch(function(err) {
+                            if (addToast) addToast('\uD83E\uDD16 AI unavailable: ' + (err.message || err), 'error');
+                          });
 
                         } else if (addToast) {
 
-                          addToast('\uD83E\uDD16 AI: The ' + sel.name + ' ' + sel.fn.split('.')[0] + '.', 'info');
+                          addToast('\uD83E\uDD16 AI not available. ' + sel.name + ': ' + sel.fn.split('.')[0] + '.', 'info');
 
                         }
 
@@ -6418,7 +6448,7 @@ var d = labToolData.dissection || {};
 
                       className: "flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:from-violet-600 hover:to-purple-600"
 
-                    }, '\uD83E\uDD16 ' + t('stem.dissection.ai_explain')),
+                    }, '\uD83E\uDD16 ' + 'AI Explain'),
 
                     React.createElement("button", {
 
@@ -6430,13 +6460,13 @@ var d = labToolData.dissection || {};
 
                         if (navigator.clipboard) navigator.clipboard.writeText(text);
 
-                        if (addToast) addToast('\uD83D\uDCCB ' + t('stem.dissection.copied_info') + ' ' + sel.name + ' info!', 'success');
+                        if (addToast) addToast('\uD83D\uDCCB ' + 'Copied' + ' ' + sel.name + ' info!', 'success');
 
                       },
 
                       className: "px-2 py-1.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200"
 
-                    }, '\uD83D\uDCCB ' + t('stem.dissection.copy'))
+                    }, '\uD83D\uDCCB ' + 'Copy')
 
                   )
 
@@ -6454,7 +6484,7 @@ var d = labToolData.dissection || {};
 
                     type: "text",
 
-                    placeholder: t('stem.dissection.search_organs'),
+                    placeholder: 'Search organs...',
 
                     value: d.organSearch || '',
 
@@ -6538,7 +6568,7 @@ var d = labToolData.dissection || {};
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                    React.createElement("span", { className: "text-xs font-bold text-amber-800" }, '\uD83E\uDDE0 ' + t('stem.dissection.identify')),
+                    React.createElement("span", { className: "text-xs font-bold text-amber-800" }, '\uD83E\uDDE0 ' + 'Identify'),
 
                     d.quizScore > 0 && React.createElement("span", { className: "text-[10px] font-bold text-green-600 ml-auto" }, '\u2B50 ' + d.quizScore + '/' + (d.quizTotal || 0))
 
@@ -6574,7 +6604,7 @@ var d = labToolData.dissection || {};
 
                           if (correct) awardStemXP('dissection', 2, 'Correct quiz answer');
 
-                          addToast(correct ? '\u2705 ' + t('stem.dissection.correct') : '\u274C ' + t('stem.dissection.it_was') + ' ' + quizQ.name, correct ? 'success' : 'error');
+                          addToast(correct ? '\u2705 ' + 'Correct!' : '\u274C ' + 'It was' + ' ' + quizQ.name, correct ? 'success' : 'error');
                           upd('quizExplanation', quizQ.fn.split('.').slice(0, 2).join('.') + '.');
 
                         },
@@ -6593,7 +6623,7 @@ var d = labToolData.dissection || {};
 
                     className: "w-full mt-2 py-1.5 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700"
 
-                  }, t('stem.dissection.next_question') + ' \u2192'),
+                  }, 'Next Question' + ' \u2192'),
 
                   d.quizExplanation && React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-white border border-amber-200" },
                     React.createElement("span", { className: "text-[9px] font-bold text-amber-600" }, '\uD83D\uDCA1 '),
@@ -6608,7 +6638,7 @@ var d = labToolData.dissection || {};
 
                 React.createElement("div", { className: "bg-slate-50 rounded-xl border p-3" },
 
-                  React.createElement("div", { className: "text-[10px] font-bold text-slate-500 mb-1" }, t('stem.dissection.layer_progress')),
+                  React.createElement("div", { className: "text-[10px] font-bold text-slate-500 mb-1" }, 'Layer Progress'),
 
                   spec.layers.map(function (layer) {
 
@@ -6632,7 +6662,7 @@ var d = labToolData.dissection || {};
 
                       spec.kingdom && React.createElement("div", null,
 
-                        React.createElement("span", { className: "text-[8px] font-bold text-slate-400 uppercase" }, t('stem.dissection.kingdom')),
+                        React.createElement("span", { className: "text-[8px] font-bold text-slate-400 uppercase" }, 'Kingdom'),
 
                         React.createElement("p", { className: "text-[9px] text-slate-500" }, spec.kingdom)
 
@@ -6640,7 +6670,7 @@ var d = labToolData.dissection || {};
 
                       spec.phylum && React.createElement("div", null,
 
-                        React.createElement("span", { className: "text-[8px] font-bold text-slate-400 uppercase" }, t('stem.dissection.phylum')),
+                        React.createElement("span", { className: "text-[8px] font-bold text-slate-400 uppercase" }, 'Phylum'),
 
                         React.createElement("p", { className: "text-[9px] text-slate-500" }, spec.phylum)
 
@@ -6648,7 +6678,7 @@ var d = labToolData.dissection || {};
 
                       spec.habitat && React.createElement("div", null,
 
-                        React.createElement("span", { className: "text-[8px] font-bold text-slate-400 uppercase" }, t('stem.dissection.habitat')),
+                        React.createElement("span", { className: "text-[8px] font-bold text-slate-400 uppercase" }, 'Habitat'),
 
                         React.createElement("p", { className: "text-[9px] text-slate-500" }, spec.habitat)
 
@@ -6656,7 +6686,7 @@ var d = labToolData.dissection || {};
 
                       spec.lifespan && React.createElement("div", null,
 
-                        React.createElement("span", { className: "text-[8px] font-bold text-slate-400 uppercase" }, t('stem.dissection.lifespan')),
+                        React.createElement("span", { className: "text-[8px] font-bold text-slate-400 uppercase" }, 'Lifespan'),
 
                         React.createElement("p", { className: "text-[9px] text-slate-500" }, spec.lifespan)
 
@@ -6699,7 +6729,7 @@ var d = labToolData.dissection || {};
 
                   React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                    React.createElement("span", { className: "text-[10px] font-bold text-blue-700" }, '\uD83D\uDCCA ' + t('stem.dissection.exploration')),
+                    React.createElement("span", { className: "text-[10px] font-bold text-blue-700" }, '\uD83D\uDCCA ' + 'Exploration'),
 
                     React.createElement("span", { className: "text-[10px] font-bold " + (progressPct >= 100 ? 'text-green-600' : 'text-blue-600') }, progressPct + '%')
 
@@ -6711,15 +6741,15 @@ var d = labToolData.dissection || {};
 
                   ),
 
-                  React.createElement("div", { className: "mt-1 text-[9px] text-blue-500" }, t('stem.dissection.structures_examined').replace('{count}', exploredCount).replace('{total}', totalOrgansInSpecimen)),
+                  React.createElement("div", { className: "mt-1 text-[9px] text-blue-500" }, 'Structures Examined'.replace('{count}', exploredCount).replace('{total}', totalOrgansInSpecimen)),
 
                   progressPct >= 100 && React.createElement("div", { className: "mt-1" },
 
-                    React.createElement("div", { className: "text-[10px] font-bold text-green-600" }, '\u2B50 ' + t('stem.dissection.specimen_complete')),
+                    React.createElement("div", { className: "text-[10px] font-bold text-green-600" }, '\u2B50 ' + 'Specimen Complete!'),
 
                     React.createElement("div", { className: "text-[9px] text-emerald-500 mt-0.5" },
 
-                      '\uD83C\uDFC6 ' + t('stem.dissection.identified_count').replace('{count}', Object.keys(d.exploredOrgans || {}).length).replace('{total}', totalOrgansInSpecimen)
+                      '\uD83C\uDFC6 ' + 'Identified'.replace('{count}', Object.keys(d.exploredOrgans || {}).length).replace('{total}', totalOrgansInSpecimen)
 
                     ),
 
@@ -6727,33 +6757,33 @@ var d = labToolData.dissection || {};
 
                       onClick: function () {
 
-                        var cert = '\u2728 ' + t('stem.dissection.cert_title') + ' \u2728\n';
+                        var cert = '\u2728 ' + 'Dissection Certificate' + ' \u2728\n';
 
                         cert += '\u2500'.repeat(40) + '\n';
 
-                        cert += t('stem.dissection.specimen_label') + ': ' + spec.icon + ' ' + spec.name + '\n';
+                        cert += 'Specimen' + ': ' + spec.icon + ' ' + spec.name + '\n';
 
-                        cert += t('stem.dissection.cert_structures') + ': ' + totalOrgansInSpecimen + '/' + totalOrgansInSpecimen + '\n';
+                        cert += 'Structures' + ': ' + totalOrgansInSpecimen + '/' + totalOrgansInSpecimen + '\n';
 
-                        cert += t('stem.dissection.cert_layers') + ': ' + spec.layers.length + '\n';
+                        cert += 'Layers' + ': ' + spec.layers.length + '\n';
 
-                        cert += t('stem.dissection.cert_quiz') + ': ' + (d.quizScore || 0) + '\n';
+                        cert += 'Quiz Score' + ': ' + (d.quizScore || 0) + '\n';
 
-                        cert += t('stem.dissection.date_label') + ': ' + new Date().toLocaleDateString() + '\n';
+                        cert += 'Date' + ': ' + new Date().toLocaleDateString() + '\n';
 
                         cert += '\u2500'.repeat(40) + '\n';
 
-                        cert += t('stem.dissection.cert_verified');
+                        cert += 'Verified ✓';
 
                         if (navigator.clipboard) navigator.clipboard.writeText(cert);
 
-                        if (addToast) addToast('\uD83C\uDF93 ' + t('stem.dissection.cert_copied'), 'success');
+                        if (addToast) addToast('\uD83C\uDF93 ' + 'Certificate copied!', 'success');
 
                       },
 
                       className: "mt-1 px-2 py-1 rounded-lg text-[9px] font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white"
 
-                    }, '\uD83C\uDF93 ' + t('stem.dissection.copy_certificate'))
+                    }, '\uD83C\uDF93 ' + 'Copy Certificate')
 
                   )
 
@@ -6765,7 +6795,7 @@ var d = labToolData.dissection || {};
 
                 React.createElement("div", { className: "bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl border border-slate-200 p-3 mb-2" },
 
-                  React.createElement("div", { className: "text-[10px] font-bold text-slate-700 mb-1" }, '\uD83D\uDCC8 ' + t('stem.dissection.specimen_stats')),
+                  React.createElement("div", { className: "text-[10px] font-bold text-slate-700 mb-1" }, '\uD83D\uDCC8 ' + 'Specimen Stats'),
 
                   React.createElement("div", { className: "grid grid-cols-3 gap-2 text-center" },
 
@@ -6773,7 +6803,7 @@ var d = labToolData.dissection || {};
 
                       React.createElement("div", { className: "text-lg font-bold text-blue-600" }, String(totalOrgansInSpecimen)),
 
-                      React.createElement("div", { className: "text-[8px] text-slate-400" }, t('stem.dissection.structures'))
+                      React.createElement("div", { className: "text-[8px] text-slate-400" }, 'Structures')
 
                     ),
 
@@ -6781,7 +6811,7 @@ var d = labToolData.dissection || {};
 
                       React.createElement("div", { className: "text-lg font-bold text-emerald-600" }, String(spec.layers.length)),
 
-                      React.createElement("div", { className: "text-[8px] text-slate-400" }, t('stem.dissection.layers_label'))
+                      React.createElement("div", { className: "text-[8px] text-slate-400" }, 'Layers')
 
                     ),
 
@@ -6789,7 +6819,7 @@ var d = labToolData.dissection || {};
 
                       React.createElement("div", { className: "text-lg font-bold text-amber-600" }, String(d.quizScore || 0)),
 
-                      React.createElement("div", { className: "text-[8px] text-slate-400" }, t('stem.dissection.quiz_score_label'))
+                      React.createElement("div", { className: "text-[8px] text-slate-400" }, 'Quiz Score')
 
                     ),
 
@@ -6803,7 +6833,7 @@ var d = labToolData.dissection || {};
 
                       })()),
 
-                      React.createElement("div", { className: "text-[8px] text-slate-400" }, t('stem.dissection.time_label'))
+                      React.createElement("div", { className: "text-[8px] text-slate-400" }, 'Time')
 
                     )
 
@@ -6821,7 +6851,7 @@ var d = labToolData.dissection || {};
 
                     onClick: function () { upd('showObjectives', !d.showObjectives); }
 
-                  }, '\uD83C\uDF93 ' + t('stem.dissection.learning_objectives') + ' ' + (d.showObjectives ? '\u25B2' : '\u25BC')),
+                  }, '\uD83C\uDF93 ' + 'Learning Objectives' + ' ' + (d.showObjectives ? '\u25B2' : '\u25BC')),
 
                   d.showObjectives && React.createElement("div", { className: "space-y-1" },
 
@@ -6885,7 +6915,7 @@ var d = labToolData.dissection || {};
 
                     onClick: function () { upd('showGlossary', d.showGlossary === false ? true : (d.showGlossary === undefined ? false : !d.showGlossary)); }
 
-                  }, '\uD83D\uDCDA ' + t('stem.dissection.key_terms') + ' ' + (d.showGlossary === false ? '\u25BC' : '\u25B2')),
+                  }, '\uD83D\uDCDA ' + 'Key Terms' + ' ' + (d.showGlossary === false ? '\u25BC' : '\u25B2')),
 
                   (d.showGlossary !== false) && React.createElement("div", { className: "space-y-1 max-h-40 overflow-y-auto" },
 

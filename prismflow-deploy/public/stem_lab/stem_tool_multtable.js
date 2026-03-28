@@ -1,7 +1,8 @@
 // ═══════════════════════════════════════════
 // stem_tool_multtable.js — Multiplication Table Plugin
 // Interactive 12×12 grid with Quick Quiz, Speed Run,
-// streaks, adaptive difficulty, and wrong-answer review
+// streaks, adaptive difficulty, wrong-answer review,
+// sound effects, badges, AI tutor & keyboard shortcuts
 // ═══════════════════════════════════════════
 
 window.StemLab = window.StemLab || {
@@ -23,7 +24,6 @@ window.StemLab = window.StemLab || {
 
   // ── Adaptive engine ──
   function getAdaptiveRange(history) {
-    // history = array of { correct: bool } for last N attempts
     if (!history || history.length < 3) return DIFFICULTY.medium;
     var last5 = history.slice(-5);
     var last3 = history.slice(-3);
@@ -47,9 +47,115 @@ window.StemLab = window.StemLab || {
     return { a: a, b: b };
   }
 
+  // ── Sound effects ──
+  var _audioCtx = null;
+  function getAudioCtx() {
+    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return _audioCtx;
+  }
+  function playSound(type) {
+    try {
+      var ac = getAudioCtx();
+      var o = ac.createOscillator();
+      var g = ac.createGain();
+      o.connect(g); g.connect(ac.destination);
+      g.gain.value = 0.13;
+      switch (type) {
+        case 'correct':
+          o.frequency.value = 523; o.type = 'sine';
+          g.gain.setValueAtTime(0.13, ac.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.25);
+          o.start(); o.stop(ac.currentTime + 0.25);
+          // second tone for chime
+          var o2 = ac.createOscillator(); var g2 = ac.createGain();
+          o2.connect(g2); g2.connect(ac.destination);
+          o2.frequency.value = 659; o2.type = 'sine';
+          g2.gain.setValueAtTime(0.11, ac.currentTime + 0.1);
+          g2.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.35);
+          o2.start(ac.currentTime + 0.1); o2.stop(ac.currentTime + 0.35);
+          break;
+        case 'wrong':
+          o.frequency.value = 200; o.type = 'sawtooth';
+          g.gain.setValueAtTime(0.1, ac.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.3);
+          o.start(); o.stop(ac.currentTime + 0.3);
+          break;
+        case 'streak':
+          o.frequency.value = 587; o.type = 'triangle';
+          g.gain.setValueAtTime(0.12, ac.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.15);
+          o.start(); o.stop(ac.currentTime + 0.15);
+          var o3 = ac.createOscillator(); var g3 = ac.createGain();
+          o3.connect(g3); g3.connect(ac.destination);
+          o3.frequency.value = 784; o3.type = 'triangle';
+          g3.gain.setValueAtTime(0.12, ac.currentTime + 0.12);
+          g3.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.35);
+          o3.start(ac.currentTime + 0.12); o3.stop(ac.currentTime + 0.35);
+          break;
+        case 'badge':
+          o.frequency.value = 440; o.type = 'sine';
+          g.gain.setValueAtTime(0.12, ac.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.12);
+          o.start(); o.stop(ac.currentTime + 0.12);
+          [554, 659, 880].forEach(function(f, i) {
+            var ox = ac.createOscillator(); var gx = ac.createGain();
+            ox.connect(gx); gx.connect(ac.destination);
+            ox.frequency.value = f; ox.type = 'sine';
+            var t0 = ac.currentTime + 0.1 * (i + 1);
+            gx.gain.setValueAtTime(0.1, t0);
+            gx.gain.exponentialRampToValueAtTime(0.01, t0 + 0.15);
+            ox.start(t0); ox.stop(t0 + 0.15);
+          });
+          break;
+        case 'speedStart':
+          o.frequency.value = 392; o.type = 'square';
+          g.gain.setValueAtTime(0.08, ac.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.12);
+          o.start(); o.stop(ac.currentTime + 0.12);
+          [523, 659].forEach(function(f, i) {
+            var ox = ac.createOscillator(); var gx = ac.createGain();
+            ox.connect(gx); gx.connect(ac.destination);
+            ox.frequency.value = f; ox.type = 'square';
+            var t0 = ac.currentTime + 0.12 * (i + 1);
+            gx.gain.setValueAtTime(0.08, t0);
+            gx.gain.exponentialRampToValueAtTime(0.01, t0 + 0.12);
+            ox.start(t0); ox.stop(t0 + 0.12);
+          });
+          break;
+        case 'speedEnd':
+          o.frequency.value = 880; o.type = 'sine';
+          g.gain.setValueAtTime(0.12, ac.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.5);
+          o.start(); o.stop(ac.currentTime + 0.5);
+          break;
+        default:
+          o.frequency.value = 440; o.type = 'sine';
+          g.gain.setValueAtTime(0.1, ac.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.15);
+          o.start(); o.stop(ac.currentTime + 0.15);
+      }
+    } catch (e) { /* audio not available */ }
+  }
+
+  // ── Badge definitions ──
+  var BADGES = [
+    { id: 'firstCorrect',  icon: '\u2B50', label: 'First Star',        desc: 'Answer your first problem correctly' },
+    { id: 'streak5',       icon: '\uD83D\uDD25', label: 'On Fire',     desc: '5 correct answers in a row' },
+    { id: 'streak10',      icon: '\u26A1', label: 'Lightning',          desc: '10 correct answers in a row' },
+    { id: 'streak20',      icon: '\uD83C\uDF1F', label: 'Unstoppable', desc: '20 correct answers in a row' },
+    { id: 'speedRunner',   icon: '\u23F1\uFE0F', label: 'Speed Runner', desc: 'Complete a Speed Run' },
+    { id: 'speedDemon',    icon: '\uD83D\uDE08', label: 'Speed Demon', desc: '20+ correct in a Speed Run' },
+    { id: 'perfectRun',    icon: '\uD83D\uDCAF', label: 'Perfect Run', desc: '100% accuracy in Speed Run (10+ Qs)' },
+    { id: 'squareMaster',  icon: '\uD83D\uDFE6', label: 'Square Master', desc: 'Answer all 12 perfect squares' },
+    { id: 'hiddenHero',    icon: '\uD83D\uDE48', label: 'Hidden Hero', desc: '10 correct in Hidden mode' },
+    { id: 'adaptiveAce',   icon: '\uD83C\uDFAF', label: 'Adaptive Ace', desc: 'Reach Hard difficulty in Adaptive' },
+    { id: 'centurion',     icon: '\uD83C\uDFC5', label: 'Centurion',   desc: '100 total correct answers' },
+    { id: 'mathlete',      icon: '\uD83C\uDFC6', label: 'Mathlete',    desc: '50 correct in one session' }
+  ];
+
   window.StemLab.registerTool('multtable', {
     icon: '\uD83D\uDD22', label: 'Multiplication Table',
-    desc: 'Interactive 12×12 grid with quiz modes, speed runs, and streaks.',
+    desc: 'Interactive 12\u00D712 grid with quiz modes, speed runs, streaks, badges & AI tutor.',
     color: 'pink', category: 'math',
     render: function(ctx) {
       var React = ctx.React;
@@ -60,6 +166,7 @@ window.StemLab = window.StemLab || {
       var awardXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
       var t = ctx.t;
+      var callGemini = ctx.callGemini;
 
       // ── State from ctx ──
       var multTableAnswer = ctx.multTableAnswer || '';
@@ -91,6 +198,14 @@ window.StemLab = window.StemLab || {
         });
       };
 
+      // ── Extended state for badges & AI ──
+      var _ext = labToolData._multExt || { badges: {}, totalCorrect: 0, sessionCorrect: 0, hiddenCorrect: 0, squaresAnswered: {}, rowsAnswered: {}, showAI: false, aiResponse: '', aiLoading: false, showBadges: false };
+      var extUpd = function(obj) {
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { _multExt: Object.assign({}, prev._multExt || _ext, obj) });
+        });
+      };
+
       // Timer tick — ref-based interval
       if (_mt.active && !labToolData._multTimerInterval) {
         var _ivl = setInterval(function() {
@@ -100,7 +215,22 @@ window.StemLab = window.StemLab || {
             var left = Math.max(0, Math.round((tm.endTime - Date.now()) / 1000));
             if (left <= 0) {
               clearInterval(_ivl);
+              playSound('speedEnd');
               addToast('\u23F1\uFE0F Time\'s up! You got ' + tm.score + '/' + tm.total + ' correct!', 'info');
+              // Check speed run badges
+              var ext2 = prev._multExt || _ext;
+              var bUp = {};
+              if (!ext2.badges.speedRunner) bUp.speedRunner = true;
+              if (tm.score >= 20 && !ext2.badges.speedDemon) bUp.speedDemon = true;
+              if (tm.total >= 10 && tm.score === tm.total && !ext2.badges.perfectRun) bUp.perfectRun = true;
+              if (Object.keys(bUp).length > 0) {
+                var newBadges = Object.assign({}, ext2.badges, bUp);
+                Object.keys(bUp).forEach(function(bid) {
+                  var badge = BADGES.find(function(b) { return b.id === bid; });
+                  if (badge) { playSound('badge'); addToast(badge.icon + ' Badge: ' + badge.label + '!', 'success'); if (typeof awardXP === 'function') awardXP('multtable', 15, 'badge'); }
+                });
+                return Object.assign({}, prev, { _multTimer: Object.assign({}, tm, { active: false, timeLeft: 0 }), _multTimerInterval: null, _multExt: Object.assign({}, ext2, { badges: newBadges }) });
+              }
               return Object.assign({}, prev, { _multTimer: Object.assign({}, tm, { active: false, timeLeft: 0 }), _multTimerInterval: null });
             }
             return Object.assign({}, prev, { _multTimer: Object.assign({}, tm, { timeLeft: left }) });
@@ -109,17 +239,40 @@ window.StemLab = window.StemLab || {
         labToolData._multTimerInterval = _ivl;
       }
 
-      // ── Highlight cell state (for wrong-answer visual) ──
+      // ── Highlight cell state ──
       var highlightCell = labToolData._multHighlight || null;
       var setHighlightCell = function(cell) {
         setLabToolData(function(prev) { return Object.assign({}, prev, { _multHighlight: cell }); });
       };
 
-      // ── Input disabled state (prevent carryover keystrokes) ──
+      // ── Input disabled state ──
       var inputDisabled = labToolData._multInputDisabled || false;
       var setInputDisabled = function(val) {
         setLabToolData(function(prev) { return Object.assign({}, prev, { _multInputDisabled: val }); });
       };
+
+      // ── Badge checker ──
+      function checkBadges(updates) {
+        var changed = {};
+        var badges = Object.assign({}, _ext.badges);
+        Object.keys(updates).forEach(function(key) {
+          if (updates[key] && !badges[key]) {
+            changed[key] = true;
+            badges[key] = true;
+          }
+        });
+        if (Object.keys(changed).length > 0) {
+          extUpd({ badges: badges });
+          Object.keys(changed).forEach(function(bid) {
+            var badge = BADGES.find(function(b) { return b.id === bid; });
+            if (badge) {
+              playSound('badge');
+              addToast(badge.icon + ' Badge: ' + badge.label + '!', 'success');
+              if (typeof awardXP === 'function') awardXP('multtable', 15, 'badge');
+            }
+          });
+        }
+      }
 
       // ── Generate next problem ──
       function nextProblem() {
@@ -138,11 +291,17 @@ window.StemLab = window.StemLab || {
         var ok = parseInt(multTableAnswer) === correct;
         announceToSR(ok ? 'Correct!' : 'Incorrect, try again');
 
+        // Sound
+        playSound(ok ? 'correct' : 'wrong');
+
         // Update adaptive history
         var newHistory = (_mt.adaptiveHistory || []).concat([{ correct: ok }]);
         if (newHistory.length > 20) newHistory = newHistory.slice(-20);
 
         var newStreak = ok ? (_mt.streak || 0) + 1 : 0;
+
+        // Streak sound
+        if (ok && newStreak >= 3 && newStreak % 5 === 0) playSound('streak');
 
         setMultTableFeedback(ok ? {
           correct: true,
@@ -170,7 +329,6 @@ window.StemLab = window.StemLab || {
         // Highlight correct cell on wrong answer
         if (!ok) {
           setHighlightCell({ r: multTableChallenge.a, c: multTableChallenge.b });
-          // Also reveal in hidden mode
           if (multTableHidden) {
             setMultTableRevealed(function(prev) {
               var ns = new Set(prev);
@@ -178,6 +336,35 @@ window.StemLab = window.StemLab || {
               return ns;
             });
           }
+        }
+
+        // Badge checks
+        if (ok) {
+          var newTotal = (_ext.totalCorrect || 0) + 1;
+          var newSession = (_ext.sessionCorrect || 0) + 1;
+          var newHidden = multTableHidden ? (_ext.hiddenCorrect || 0) + 1 : (_ext.hiddenCorrect || 0);
+          var newSquares = Object.assign({}, _ext.squaresAnswered || {});
+          if (multTableChallenge.a === multTableChallenge.b) newSquares[multTableChallenge.a] = true;
+          var newRows = Object.assign({}, _ext.rowsAnswered || {});
+          newRows[multTableChallenge.a] = true;
+          newRows[multTableChallenge.b] = true;
+
+          extUpd({ totalCorrect: newTotal, sessionCorrect: newSession, hiddenCorrect: newHidden, squaresAnswered: newSquares, rowsAnswered: newRows });
+
+          // Check adaptive reaching hard
+          var reachedHard = exploreDifficulty === 'adaptive' && getAdaptiveRange(newHistory) === DIFFICULTY.hard;
+
+          checkBadges({
+            firstCorrect: newTotal >= 1,
+            streak5: newStreak >= 5,
+            streak10: newStreak >= 10,
+            streak20: newStreak >= 20,
+            squareMaster: Object.keys(newSquares).length >= 12,
+            hiddenHero: newHidden >= 10,
+            adaptiveAce: reachedHard,
+            centurion: newTotal >= 100,
+            mathlete: newSession >= 50
+          });
         }
 
         // Disable input and auto-advance
@@ -188,9 +375,67 @@ window.StemLab = window.StemLab || {
           var _inp = document.getElementById('multtable-input');
           if (_inp) _inp.focus();
         }, delay);
-        // Store timer ID so Skip button can cancel it
         setLabToolData(function(prev) { return Object.assign({}, prev, { _multAdvanceTimer: _advanceTimer }); });
       }
+
+      // ── AI Tutor ──
+      function askAI() {
+        if (_ext.aiLoading) return;
+        extUpd({ showAI: true, aiLoading: true, aiResponse: '' });
+        var prompt = 'You are a friendly math tutor helping a student practice multiplication. ';
+        if (multTableChallenge) {
+          prompt += 'They are working on ' + multTableChallenge.a + ' \u00D7 ' + multTableChallenge.b + '. ';
+          if (multTableFeedback && !multTableFeedback.correct) {
+            prompt += 'They answered incorrectly (said ' + multTableAnswer + ', correct is ' + (multTableChallenge.a * multTableChallenge.b) + '). ';
+            prompt += 'Give a short, encouraging tip or trick to remember this multiplication fact. Use a memory trick, pattern, or visual strategy. Keep it to 2-3 sentences.';
+          } else {
+            prompt += 'Give a fun math fact or pattern about this multiplication. Keep it to 2-3 sentences.';
+          }
+        } else {
+          var weakFactors = [];
+          var missed = _mt.missed || [];
+          if (missed.length > 0) {
+            var counts = {};
+            missed.forEach(function(m) { var k = m.a + 'x' + m.b; counts[k] = (counts[k] || 0) + 1; });
+            var sorted = Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; });
+            weakFactors = sorted.slice(0, 3);
+          }
+          if (weakFactors.length > 0) {
+            prompt += 'The student struggles with these facts: ' + weakFactors.join(', ').replace(/x/g, '\u00D7') + '. ';
+            prompt += 'Give specific memory tricks or strategies for these facts. Keep it concise (3-4 sentences).';
+          } else {
+            prompt += 'Give a general multiplication tip, trick, or fun pattern (like the 9s finger trick or how to use doubles). Keep it to 2-3 sentences.';
+          }
+        }
+        callGemini(prompt, false, false, 0.7).then(function(resp) {
+          extUpd({ aiResponse: resp || 'No response received.', aiLoading: false });
+        }).catch(function() {
+          extUpd({ aiResponse: 'AI tutor is unavailable right now. Try again later!', aiLoading: false });
+        });
+      }
+
+      // ── Keyboard shortcuts ──
+      React.useEffect(function() {
+        function handleKey(e) {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+          var key = e.key.toLowerCase();
+          if (key === 'q') { e.preventDefault(); nextProblem(); }
+          if (key === 's' && !_mt.active) {
+            e.preventDefault();
+            nextProblem();
+            _mtUpd({ active: true, endTime: Date.now() + 120000, score: 0, total: 0, timeLeft: 120, streak: 0, missed: [], adaptiveHistory: [] });
+            if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval);
+            labToolData._multTimerInterval = null;
+            playSound('speedStart');
+            addToast('\u23F1\uFE0F Speed Run started! 2 minutes on the clock!', 'success');
+          }
+          if (key === 'h') { e.preventDefault(); setMultTableHidden(!multTableHidden); setMultTableRevealed(new Set()); }
+          if (key === '?' || (e.shiftKey && key === '/')) { e.preventDefault(); askAI(); }
+          if (key === 'b') { e.preventDefault(); extUpd({ showBadges: !_ext.showBadges }); }
+        }
+        window.addEventListener('keydown', handleKey);
+        return function() { window.removeEventListener('keydown', handleKey); };
+      });
 
       // ── Difficulty button row ──
       var diffModes = [
@@ -210,6 +455,10 @@ window.StemLab = window.StemLab || {
           return true;
         });
       }
+
+      // ── Count earned badges ──
+      var earnedBadges = BADGES.filter(function(b) { return _ext.badges[b.id]; });
+      var earnedCount = earnedBadges.length;
 
       // ═══════════════════════════════
       // ═══ RENDER ═══
@@ -232,14 +481,73 @@ window.StemLab = window.StemLab || {
             h('button', {
               onClick: function() { setMultTableHidden(!multTableHidden); setMultTableRevealed(new Set()); },
               className: 'text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all ' +
-                (multTableHidden ? 'bg-pink-500 text-white border-pink-500 shadow-sm' : 'text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200')
+                (multTableHidden ? 'bg-pink-500 text-white border-pink-500 shadow-sm' : 'text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200'),
+              title: 'Toggle hidden mode (H)'
             }, multTableHidden ? '\uD83D\uDE48 Hidden' : '\uD83D\uDC41 Visible'),
             h('div', { className: 'text-xs font-bold text-emerald-600' }, exploreScore.correct + '/' + exploreScore.total),
             // Streak badge
             (_mt.streak || 0) >= 2 && h('div', {
               className: 'text-xs font-bold text-orange-500 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse'
-            }, '\uD83D\uDD25 ' + _mt.streak + ' streak!')
+            }, '\uD83D\uDD25 ' + _mt.streak + ' streak!'),
+            // Badge count
+            earnedCount > 0 && h('button', {
+              onClick: function() { extUpd({ showBadges: !_ext.showBadges }); },
+              className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all',
+              title: 'View badges (B)'
+            }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
+            // AI tutor button
+            h('button', {
+              onClick: askAI,
+              className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
+              title: 'AI Tutor (?)'
+            }, '\uD83E\uDDE0 AI')
           )
+        ),
+
+        // ── Badge panel ──
+        _ext.showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200' },
+          h('div', { className: 'flex items-center justify-between mb-2' },
+            h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
+            h('button', {
+              onClick: function() { extUpd({ showBadges: false }); },
+              className: 'text-xs text-slate-400 hover:text-slate-600'
+            }, '\u2715')
+          ),
+          h('div', { className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
+            BADGES.map(function(badge) {
+              var earned = !!_ext.badges[badge.id];
+              return h('div', {
+                key: badge.id,
+                className: 'text-center p-2 rounded-lg border transition-all ' +
+                  (earned ? 'bg-white border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-50'),
+                title: badge.desc
+              },
+                h('div', { className: 'text-xl' }, earned ? badge.icon : '\uD83D\uDD12'),
+                h('div', { className: 'text-[9px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-400') }, badge.label)
+              );
+            })
+          )
+        ),
+
+        // ── AI Tutor panel ──
+        _ext.showAI && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200' },
+          h('div', { className: 'flex items-center justify-between mb-2' },
+            h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Math Tutor'),
+            h('button', {
+              onClick: function() { extUpd({ showAI: false }); },
+              className: 'text-xs text-slate-400 hover:text-slate-600'
+            }, '\u2715')
+          ),
+          _ext.aiLoading
+            ? h('div', { className: 'flex items-center gap-2' },
+                h('div', { className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin' }),
+                h('span', { className: 'text-xs text-purple-600' }, 'Thinking...')
+              )
+            : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, _ext.aiResponse),
+          !_ext.aiLoading && h('button', {
+            onClick: askAI,
+            className: 'mt-2 text-[10px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-200 transition-all'
+          }, '\uD83D\uDD04 Ask Again')
         ),
 
         // ── Difficulty selector ──
@@ -281,6 +589,7 @@ window.StemLab = window.StemLab || {
             onClick: function() {
               _mtUpd({ active: false });
               if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval);
+              playSound('speedEnd');
               addToast('\u23F1\uFE0F Speed Run ended! ' + _mt.score + '/' + _mt.total + ' correct', 'info');
             },
             className: 'px-3 py-1.5 bg-red-500 text-white font-bold rounded-lg text-xs hover:bg-red-600 transition-all'
@@ -307,7 +616,6 @@ window.StemLab = window.StemLab || {
             ),
             h('button', {
               onClick: function() {
-                // Practice missed facts
                 var missed = getUniqueMissed(_mt.missed);
                 var pick = missed[Math.floor(Math.random() * missed.length)];
                 setMultTableChallenge({ a: pick.a, b: pick.b });
@@ -381,23 +689,23 @@ window.StemLab = window.StemLab || {
 
         // ── Action buttons ──
         h('div', { className: 'flex gap-2 flex-wrap' },
-          // Quick Quiz
           h('button', {
             onClick: function() { nextProblem(); },
-            className: 'flex-1 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-lg text-sm hover:from-pink-600 hover:to-rose-600 transition-all shadow-md'
+            className: 'flex-1 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-lg text-sm hover:from-pink-600 hover:to-rose-600 transition-all shadow-md',
+            title: 'Quick Quiz (Q)'
           }, '\uD83C\uDFAF Quick Quiz'),
-          // Speed Run
           h('button', {
             onClick: function() {
               nextProblem();
               _mtUpd({ active: true, endTime: Date.now() + 120000, score: 0, total: 0, timeLeft: 120, streak: 0, missed: [], adaptiveHistory: [] });
               if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval);
               labToolData._multTimerInterval = null;
+              playSound('speedStart');
               addToast('\u23F1\uFE0F Speed Run started! 2 minutes on the clock!', 'success');
             },
-            className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md'
+            className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md',
+            title: 'Speed Run (S)'
           }, '\u23F1\uFE0F Speed Run (2min)'),
-          // Reset
           h('button', {
             onClick: function() {
               setMultTableChallenge(null);
@@ -436,7 +744,13 @@ window.StemLab = window.StemLab || {
               onClick: checkMult,
               disabled: !multTableAnswer || inputDisabled,
               className: 'px-4 py-2 bg-pink-500 text-white font-bold rounded-lg hover:bg-pink-600 transition-all disabled:opacity-40'
-            }, '\u2714 Check')
+            }, '\u2714 Check'),
+            // AI hint button during challenge
+            h('button', {
+              onClick: askAI,
+              className: 'px-3 py-2 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm',
+              title: 'Get a hint from AI'
+            }, '\uD83E\uDDE0')
           ),
           // Feedback
           multTableFeedback && h('p', {
@@ -454,6 +768,15 @@ window.StemLab = window.StemLab || {
               className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-600 hover:bg-pink-200 border border-pink-200 transition-all'
             }, 'Skip \u2192 Next')
           )
+        ),
+
+        // ── Keyboard shortcuts legend ──
+        h('div', { className: 'text-[10px] text-slate-400 text-center space-x-3' },
+          h('span', null, 'Q Quiz'),
+          h('span', null, 'S Speed'),
+          h('span', null, 'H Hidden'),
+          h('span', null, 'B Badges'),
+          h('span', null, '? AI Tutor')
         ),
 
         // ── Legend ──

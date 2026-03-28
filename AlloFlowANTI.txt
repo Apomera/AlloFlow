@@ -26,7 +26,8 @@ import { Activity, Inbox, BookOpen, Globe, Layers, Sparkles, FileText, Layout, H
   Trophy, Flag, GitCompare, Folder, FolderPlus, FolderOpen, FolderInput, Backpack, Zap, ZapOff,
   Calculator, Cpu, Settings, ListOrdered, MessageCircleQuestion, Terminal, AlignJustify, ShoppingBag,
   Unplug, Star, UserCircle2, Scale, Monitor, User, Key, UserCheck, Package, BarChart2, BarChart3,
-  Type, Sun, Moon, Eye, EyeOff, MousePointerClick, ScanSearch, Calendar, TrendingUp
+  Type, Sun, Moon, Eye, EyeOff, MousePointerClick, ScanSearch, Calendar, TrendingUp,
+  Award, Target
 } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously as _fbSignInAnonymously, signInWithCustomToken, onAuthStateChanged as _fbOnAuthStateChanged } from 'firebase/auth';
@@ -770,6 +771,8 @@ window.__alloShared = {
   ShieldCheck, Settings, ChevronLeft, AlertCircle, Check, Save,
   Activity, Users, Search, X
 };
+window.__alloDebugLog = debugLog;
+window.__alloIsGlobalMuted = isGlobalMuted;
 // @section WORD_SOUNDS_STRINGS — Word Sounds i18n string block
 const WORD_SOUNDS_STRINGS = {
     'word_sounds.title': 'Word Sounds',
@@ -18543,12 +18546,15 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     });
     // Icon namespace for CDN-loaded modules
     window.AlloIcons = {
-      AlignJustify, ArrowDown, ArrowRight, ArrowUp, Brain, CheckCircle, CheckCircle2,
-      Download, ExternalLink, Eye, EyeOff, Filter, Gamepad2, GitMerge, Globe,
-      GraduationCap, GripVertical, HelpCircle, ImageIcon, Languages, Layout, Link,
-      ListOrdered, Maximize, MessageSquare, Mic, Minimize, MonitorPlay, Plus,
-      Printer, RefreshCw, Search, ShieldCheck, Sparkles, Star, StopCircle,
-      Trophy, Type, Upload, Volume2, Wrench, X
+      Activity, AlertCircle, AlignJustify, ArrowDown, ArrowRight, ArrowUp, Award,
+      BarChart3, BookOpen, Brain, Calendar, CheckCircle, CheckCircle2, CheckSquare,
+      ChevronDown, ClipboardList, Clock, DoorOpen, Download, ExternalLink, Eye, EyeOff,
+      FileDown, Filter, Gamepad2, GitMerge, Globe, GraduationCap, GripVertical,
+      HelpCircle, History, ImageIcon, Languages, Layers, Layout, Lightbulb, Link,
+      ListOrdered, MapIcon, Maximize, MessageSquare, Mic, MicOff, Minimize, MonitorPlay,
+      Play, Plus, Printer, RefreshCw, Search, Settings, Share2, ShieldCheck, Sparkles,
+      Star, StopCircle, Target, Trash2, TrendingUp, Trophy, Type, Upload, Users,
+      Volume2, VolumeX, Wrench, X
     };
   }, []);
   // Load external modules from GitHub CDN via script tags
@@ -18594,7 +18600,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // Load AI Backend module (Firebase shim + WebSearchProvider + AIProvider)
     // Custom load (not loadModule) so we get onload callback to upgrade shims
     (function() {
-      const url = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/ai_backend_module.js';
+      const url = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/ai_backend_module.js';
       const s = document.createElement('script');
       s.src = url;
       s.crossOrigin = 'anonymous';
@@ -18608,20 +18614,22 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/games_module.js');
-    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/teacher_module.js');
     // ── Load registered STEM Lab tool modules (Plugin Architecture, Phase 2) ──
     // These files self-register via window.StemLab.registerTool()
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -18666,7 +18674,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       });
       // Load scripts, then proactively init Kokoro to avoid first-speak latency
       (async () => {
-        await loadTTSScript('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ebd5e1a/kokoro_tts_loader.js');
+        await loadTTSScript('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/kokoro_tts_loader.js');
         loadTTSScript('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/piper_tts_loader.js');
         if (window._kokoroTTS) {
           try {

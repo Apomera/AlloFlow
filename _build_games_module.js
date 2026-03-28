@@ -11,9 +11,11 @@ const { execSync } = require('child_process');
 const path = require('path');
 
 const SOURCE = path.join(__dirname, 'AlloFlowANTI.txt');
+const SOURCE_JSX = path.join(__dirname, 'games_source.jsx');
 const OUTPUT = path.join(__dirname, 'games_module.js');
 const OUTPUT_PUBLIC = path.join(__dirname, 'prismflow-deploy', 'public', 'games_module.js');
 const TEMP = path.join(__dirname, '_temp_games.jsx');
+const USE_SOURCE_JSX = process.argv.includes('--source') || fs.existsSync(SOURCE_JSX);
 
 // ── Game boundaries (1-indexed, inclusive) ──
 const GAMES = [
@@ -31,21 +33,28 @@ const GAMES = [
 
 console.log('📦 Building games_module.js...\n');
 
-// ── Read source ──
-const allLines = fs.readFileSync(SOURCE, 'utf-8').split('\n');
-console.log(`   Source: ${allLines.length} lines`);
-
-// ── Extract game source ──
 let jsxSource = '';
 let totalLines = 0;
-GAMES.forEach(g => {
-    const chunk = allLines.slice(g.start - 1, g.end);
-    jsxSource += `\n// ═══ ${g.name} (lines ${g.start}-${g.end}) ═══\n`;
-    jsxSource += chunk.join('\n') + '\n';
-    totalLines += chunk.length;
-    console.log(`   ✅ ${g.name}: ${chunk.length} lines (${g.start}-${g.end})`);
-});
-console.log(`\n   Total game source: ${totalLines} lines`);
+
+if (USE_SOURCE_JSX) {
+    // ── Read from games_source.jsx directly ──
+    console.log(`   Source mode: games_source.jsx`);
+    jsxSource = fs.readFileSync(SOURCE_JSX, 'utf-8');
+    totalLines = jsxSource.split('\n').length;
+    console.log(`   Read ${totalLines} lines from games_source.jsx`);
+} else {
+    // ── Extract from AlloFlowANTI.txt by line ranges ──
+    const allLines = fs.readFileSync(SOURCE, 'utf-8').split('\n');
+    console.log(`   Source: ${allLines.length} lines`);
+    GAMES.forEach(g => {
+        const chunk = allLines.slice(g.start - 1, g.end);
+        jsxSource += `\n// ═══ ${g.name} (lines ${g.start}-${g.end}) ═══\n`;
+        jsxSource += chunk.join('\n') + '\n';
+        totalLines += chunk.length;
+        console.log(`   ✅ ${g.name}: ${chunk.length} lines (${g.start}-${g.end})`);
+    });
+    console.log(`\n   Total game source: ${totalLines} lines`);
+}
 
 // ── Write temp JSX file for esbuild ──
 // We need to declare the variables that esbuild's JSX transform will reference.
@@ -96,7 +105,7 @@ const iconList = [
     'Eye', 'EyeOff', 'Filter', 'Gamepad2', 'GitMerge', 'GripVertical',
     'HelpCircle', 'ImageIcon', 'Layout', 'ListOrdered', 'Maximize',
     'Mic', 'Minimize', 'MonitorPlay', 'Plus', 'Printer', 'RefreshCw',
-    'Star', 'StopCircle', 'Trophy', 'Type', 'Volume2', 'X'
+    'Search', 'Star', 'StopCircle', 'Trophy', 'Type', 'Volume2', 'X'
 ];
 
 const gameNames = GAMES.map(g => g.name);
@@ -133,6 +142,19 @@ const iifeHeader = `/**
   var LanguageContext = window.AlloLanguageContext;
   var fisherYatesShuffle = window.fisherYatesShuffle;
   var getGlobalAudioContext = window.getGlobalAudioContext || function() { return null; };
+  var warnLog = (typeof window.__alloWarnLog === 'function') ? window.__alloWarnLog : function() { console.warn.apply(console, arguments); };
+
+  // ── Local utilities ──
+  var scrambleWord = function(word) {
+    if (!word || word.length < 2) return word;
+    var arr = word.split('');
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    var result = arr.join('');
+    return result === word ? scrambleWord(word) : result;
+  };
 
   // ── Lucide icons from host app ──
   var _icons = window.AlloIcons || {};

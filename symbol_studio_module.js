@@ -52,6 +52,7 @@
     { id: 'stories', icon: '📖', label: 'Social Stories' },
     { id: 'quickboards', icon: '⚡', label: 'Quick Boards' },
     { id: 'books', icon: '📚', label: 'Activity Sets' },
+    { id: 'quest', icon: '🎮', label: 'Symbol Quest' },
   ];
 
   var BOARD_TEMPLATES = [
@@ -213,6 +214,20 @@
     { label: 'Grocery Store', situation: 'going to the grocery store with a family member and following the rules', details: 'The grocery store can be busy and crowded. Walking calmly and staying close makes the trip go smoothly.' },
     { label: 'Substitute Teacher', situation: 'having a substitute teacher instead of the regular teacher for the day', details: 'Sometimes the regular teacher cannot come to school. A substitute teacher will be in charge for the day and things will still be okay.' },
     { label: 'Getting a Shot', situation: 'getting a vaccination or flu shot at the doctor or clinic', details: 'Shots help keep our bodies healthy and protect others too. It might sting for a moment, but it will be over very quickly.' },
+    { label: 'Birthday Party', situation: 'going to a birthday party with singing, cake, and presents', details: 'Birthday parties can be noisy and exciting. There will be cake and games. It is okay to take a break if it feels like too much.' },
+    { label: 'Riding the Bus', situation: 'riding the school bus to and from school safely', details: 'The bus can be bumpy and loud. Staying seated with the seatbelt on keeps everyone safe.' },
+    { label: 'Playground Rules', situation: 'following safety rules on the playground during recess', details: 'The playground is a fun place to play. Taking turns on the slide and swings helps everyone have a good time.' },
+    { label: 'Using the Toilet', situation: 'going to the bathroom and following the hygiene routine independently', details: 'Everyone uses the bathroom. Washing hands with soap and water afterward helps keep our bodies clean and healthy.' },
+    { label: 'Wearing a Mask', situation: 'wearing a face mask at school or the doctor when needed', details: 'Sometimes we need to wear a mask to stay safe. It might feel a little strange on our face, but we can practice wearing it.' },
+    { label: 'Saying Goodbye', situation: 'saying goodbye to a parent or caregiver at school drop-off', details: 'Saying goodbye can feel sad, but the grown-up always comes back. School will be fun and the day will go fast.' },
+    { label: 'Loud Noises', situation: 'hearing unexpected loud noises like fire alarms, thunder, or sirens', details: 'Loud noises can be startling and scary. It helps to cover our ears or use headphones. The noise will stop soon.' },
+    { label: 'Going Swimming', situation: 'visiting a swimming pool and following water safety rules', details: 'The pool can feel cold at first but our body gets used to it. We always stay near an adult and follow the pool rules.' },
+    { label: 'Sleepover', situation: 'spending the night at a friend or relative house', details: 'Sleeping in a different place can feel different. Bringing a favorite toy or blanket from home can help feel more comfortable.' },
+    { label: 'Getting Dressed', situation: 'picking clothes and getting dressed independently for the day', details: 'Getting dressed is something we do every day. Checking the weather helps us pick the right clothes.' },
+    { label: 'Assembly Time', situation: 'sitting in the school auditorium for an assembly or performance', details: 'Assemblies can be long and noisy. Sitting still and listening quietly shows respect. There will be time to move afterward.' },
+    { label: 'Visiting Dentist', situation: 'going to the dentist for a cleaning and checkup', details: 'The dentist looks at our teeth to make sure they are healthy. The tools might make buzzing sounds but the dentist is very careful.' },
+    { label: 'Using an iPad', situation: 'following rules for using a tablet or device at school or home', details: 'Devices are fun tools for learning. Setting a timer helps us know when it is time to stop and do other activities.' },
+    { label: 'Personal Space', situation: 'understanding personal space and respecting others boundaries', details: 'Everyone has an invisible bubble around them. Standing too close can make people feel uncomfortable. Arm length distance is a good rule.' },
   ];
 
   var QUICK_SETS = [
@@ -346,6 +361,9 @@
     var isOpen = props.isOpen;
     var cloudSync = props.cloudSync || null; // { save: async(data)=>void, load: async()=>data|null }
     var liveSession = props.liveSession || null; // { active, sessionCode, push: async(payload)=>void, clear: async()=>void }
+    var dashboardData = props.dashboardData || null; // teacher dashboard student array
+    var setDashboardData = props.setDashboardData || null;
+    var selectedStudentId = props.selectedStudentId || null;
 
     var e = React.createElement;
     var useState = React.useState;
@@ -449,6 +467,52 @@
     var _storyGenerating = useState(false); var storyGenerating = _storyGenerating[0]; var setStoryGenerating = _storyGenerating[1];
     var _storyIllustrating = useState({}); var storyIllustrating = _storyIllustrating[0]; var setStoryIllustrating = _storyIllustrating[1];
     var _storySpeaking = useState(false); var storySpeaking = _storySpeaking[0]; var setStorySpeaking = _storySpeaking[1];
+
+    // Custom story templates
+    var STORAGE_CUSTOM_TEMPLATES = 'alloCustomStoryTemplates';
+    var _customTemplates = useState(function () { return load(STORAGE_CUSTOM_TEMPLATES, []); });
+    var customTemplates = _customTemplates[0]; var setCustomTemplates = _customTemplates[1];
+
+    // Global voice picker
+    var STORAGE_VOICE = 'alloSymbolVoice';
+    var _globalVoice = useState(function () { return load(STORAGE_VOICE, 'Kore'); });
+    var globalVoice = _globalVoice[0]; var setGlobalVoice = _globalVoice[1];
+    var _availableVoices = useState([]); var availableVoices = _availableVoices[0]; var setAvailableVoices = _availableVoices[1];
+    useEffect(function () {
+      var loadV = function () {
+        var v = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+        if (v.length) setAvailableVoices(v.map(function (x) { return { name: x.name, lang: x.lang }; }));
+      };
+      loadV();
+      if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = loadV;
+    }, []);
+
+    // ── Multilingual board labels ──
+    var STORAGE_BOARD_LANG = 'alloSymbolBoardLang';
+    var LANG_OPTIONS = [
+      { code: 'en', label: 'English' },
+      { code: 'es', label: 'Español' },
+      { code: 'fr', label: 'Français' },
+      { code: 'de', label: 'Deutsch' },
+      { code: 'pt', label: 'Português' },
+      { code: 'zh', label: '中文' },
+      { code: 'ar', label: 'العربية' },
+      { code: 'hi', label: 'हिन्दी' },
+      { code: 'ja', label: '日本語' },
+      { code: 'ko', label: '한국어' },
+      { code: 'vi', label: 'Tiếng Việt' },
+      { code: 'tl', label: 'Tagalog' },
+      { code: 'ru', label: 'Русский' },
+      { code: 'sw', label: 'Kiswahili' },
+    ];
+    var _boardLang = useState(function () { return load(STORAGE_BOARD_LANG, 'en'); });
+    var boardLang = _boardLang[0]; var setBoardLang = _boardLang[1];
+    var _translating = useState(false); var translating = _translating[0]; var setTranslating = _translating[1];
+
+    // ── IEP Goal Tracking ──
+    var STORAGE_GOALS = 'alloSymbolIEPGoals';
+    var _iepGoals = useState(function () { return load(STORAGE_GOALS, []); });
+    var iepGoals = _iepGoals[0]; var setIepGoals = _iepGoals[1];
 
     // Cloud sync state
     var _syncStatus = useState('idle'); var syncStatus = _syncStatus[0]; var setSyncStatus = _syncStatus[1];
@@ -1070,6 +1134,46 @@
       } finally { setBoardLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [boardWords, globalStyle, autoClean, avatarRef, avatarDesc, onCallImagen, onCallGeminiImageEdit, addToast]);
 
+    // ── Per-cell audio recording ──
+    var _cellRecording = useState(null); var cellRecording = _cellRecording[0]; var setCellRecording = _cellRecording[1];
+    var cellMediaRef = useRef(null);
+    var recordCellAudio = useCallback(function (id) {
+      if (cellRecording === id) {
+        // Stop recording
+        if (cellMediaRef.current) { cellMediaRef.current.stop(); cellMediaRef.current = null; }
+        setCellRecording(null);
+        return;
+      }
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+        setCellRecording(id);
+        var chunks = [];
+        var mr = new MediaRecorder(stream);
+        cellMediaRef.current = mr;
+        mr.ondataavailable = function (ev) { if (ev.data.size > 0) chunks.push(ev.data); };
+        mr.onstop = function () {
+          stream.getTracks().forEach(function (t) { t.stop(); });
+          var blob = new Blob(chunks, { type: 'audio/webm' });
+          var reader = new FileReader();
+          reader.onloadend = function () {
+            var b64 = reader.result;
+            setBoardWords(function (prev) { return prev.map(function (w) { return w.id === id ? Object.assign({}, w, { audioData: b64 }) : w; }); });
+            if (addToast) addToast('🎙️ Audio recorded for cell!', 'success');
+          };
+          reader.readAsDataURL(blob);
+          setCellRecording(null);
+        };
+        mr.start();
+        setTimeout(function () { if (mr.state === 'recording') mr.stop(); }, 10000);
+      }).catch(function () {
+        if (addToast) addToast('Microphone access denied', 'error');
+      });
+    }, [cellRecording, addToast]);
+
+    var playCellAudio = useCallback(function (audioData) {
+      var audio = new Audio(audioData);
+      audio.play().catch(function () {});
+    }, []);
+
     // ── Multi-page board helpers ───────────────────────────────────────────
     // boardPages = null (single page) or array of { id, title, words, cols }
     // activePageIdx = which page is currently loaded into boardWords/boardCols
@@ -1568,9 +1672,96 @@
       } finally { setStoryGenerating(false); }
     }, [storySituation, storyStudentName, storyDetails, avatarRef, onCallGemini, onCallImagen, onCallGeminiImageEdit, addToast]);
 
+    // Helper: set browser TTS voice from globalVoice
+    var applyVoice = function (utt) {
+      if (window.speechSynthesis) {
+        var voices = window.speechSynthesis.getVoices();
+        var match = voices.find(function (v) { return v.name === globalVoice; });
+        if (match) utt.voice = match;
+      }
+      return utt;
+    };
+
+    // ── Multilingual board translation ──
+    var translateBoardLabels = useCallback(async function (words, targetLang) {
+      if (!onCallGemini || targetLang === 'en') return words;
+      setTranslating(true);
+      try {
+        var labels = words.map(function (w) { return w.label; });
+        var langName = (LANG_OPTIONS.find(function (l) { return l.code === targetLang; }) || {}).label || targetLang;
+        var prompt = 'Translate these AAC communication board labels to ' + langName + '. Return ONLY a JSON array of translated strings in the same order, no explanation.\n\n' + JSON.stringify(labels);
+        var result = await onCallGemini(prompt);
+        var text = typeof result === 'string' ? result : (result && result.text ? result.text : '');
+        var cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+        var translated = JSON.parse(cleaned);
+        if (!Array.isArray(translated) || translated.length !== words.length) return words;
+        return words.map(function (w, i) {
+          return Object.assign({}, w, {
+            translatedLabel: translated[i],
+            originalLabel: w.originalLabel || w.label
+          });
+        });
+      } catch (err) {
+        warnLog('Translation failed:', err);
+        addToast && addToast('Translation failed: ' + err.message, 'error');
+        return words;
+      } finally { setTranslating(false); }
+    }, [onCallGemini, addToast]);
+
+    // ── IEP Goal Tracking helpers ──
+    var addIepGoal = useCallback(function (goal) {
+      var g = {
+        id: Date.now().toString(36),
+        text: goal.text || '',
+        type: goal.type || 'expressive',  // expressive | receptive | social
+        targetCount: goal.targetCount || 20,
+        currentCount: 0,
+        trials: [],
+        createdAt: new Date().toISOString(),
+        profileId: activeProfileId || 'default'
+      };
+      setIepGoals(function (prev) { var updated = prev.concat([g]); store(STORAGE_GOALS, updated); return updated; });
+      return g;
+    }, [activeProfileId]);
+
+    var recordIepTrial = useCallback(function (goalId, success, context) {
+      setIepGoals(function (prev) {
+        var updated = prev.map(function (g) {
+          if (g.id !== goalId) return g;
+          var trial = { ts: new Date().toISOString(), success: success, context: context || '' };
+          var newCount = g.currentCount + (success ? 1 : 0);
+          return Object.assign({}, g, { currentCount: newCount, trials: g.trials.concat([trial]) });
+        });
+        store(STORAGE_GOALS, updated);
+
+        // Push to RTI dashboard if available
+        if (setDashboardData && selectedStudentId) {
+          setDashboardData(function (dd) {
+            return dd.map(function (s) {
+              if (s.id !== selectedStudentId) return s;
+              var probe = { date: new Date().toISOString(), type: 'aac', goalId: goalId, success: success, context: context || '' };
+              var hist = (s.probeHistory || []).concat([probe]);
+              return Object.assign({}, s, { probeHistory: hist });
+            });
+          });
+        }
+        return updated;
+      });
+    }, [setDashboardData, selectedStudentId]);
+
+    var removeIepGoal = useCallback(function (goalId) {
+      setIepGoals(function (prev) {
+        var updated = prev.filter(function (g) { return g.id !== goalId; });
+        store(STORAGE_GOALS, updated);
+        return updated;
+      });
+    }, []);
+
+    var activeGoals = iepGoals.filter(function (g) { return g.profileId === (activeProfileId || 'default'); });
+
     var speakPage = useCallback(function (text) {
-      if (onCallTTS) { setStorySpeaking(true); onCallTTS(text, selectedVoice || 'Kore', 1); setTimeout(function () { setStorySpeaking(false); }, 3000); }
-    }, [onCallTTS, selectedVoice]);
+      if (onCallTTS) { setStorySpeaking(true); onCallTTS(text, selectedVoice || globalVoice || 'Kore', 1); setTimeout(function () { setStorySpeaking(false); }, 3000); }
+    }, [onCallTTS, selectedVoice, globalVoice]);
 
     var regenPageIllustration = useCallback(async function (pageId) {
       var page = storyPages.find(function (p) { return p.id === pageId; });
@@ -1832,8 +2023,320 @@
       highcontrast:  { id: 'highcontrast',  label: 'High Contrast', gridBg: '#000000', cellBg: '#000000', textColor: '#ffffff', borderOverride: '#ffffff' },
       warm:          { id: 'warm',          label: 'Warm',          gridBg: '#fffbeb', cellBg: null,      textColor: '#78350f', borderOverride: '#fde68a' },
       cool:          { id: 'cool',          label: 'Cool',          gridBg: '#eff6ff', cellBg: null,      textColor: '#1e3a5f', borderOverride: '#bfdbfe' },
+      nature:        { id: 'nature',        label: 'Nature',        gridBg: '#f0fdf4', cellBg: '#ecfccb', textColor: '#14532d', borderOverride: '#86efac' },
+      ocean:         { id: 'ocean',         label: 'Ocean',         gridBg: '#ecfeff', cellBg: '#cffafe', textColor: '#164e63', borderOverride: '#67e8f9' },
+      sunset:        { id: 'sunset',        label: 'Sunset',        gridBg: '#fff7ed', cellBg: '#ffedd5', textColor: '#7c2d12', borderOverride: '#fdba74' },
+      lavender:      { id: 'lavender',      label: 'Lavender',      gridBg: '#faf5ff', cellBg: '#f5f3ff', textColor: '#4c1d95', borderOverride: '#c4b5fd' },
+      candy:         { id: 'candy',         label: 'Candy',         gridBg: '#fdf2f8', cellBg: '#fce7f3', textColor: '#831843', borderOverride: '#f9a8d4' },
+      earth:         { id: 'earth',         label: 'Earth',         gridBg: '#fefce8', cellBg: '#fef9c3', textColor: '#713f12', borderOverride: '#d9b563' },
     };
     var theme = BOARD_THEMES[boardTheme] || BOARD_THEMES.default;
+
+    // ── Symbol Quest game tab ─────────────────────────────────────────────
+    var _questMode = useState('menu'); var questMode = _questMode[0]; var setQuestMode = _questMode[1];
+    var _questScore = useState(0); var questScore = _questScore[0]; var setQuestScore = _questScore[1];
+    var _questRound = useState(0); var questRound = _questRound[0]; var setQuestRound = _questRound[1];
+    var _questTarget = useState(null); var questTarget = _questTarget[0]; var setQuestTarget = _questTarget[1];
+    var _questOptions = useState([]); var questOptions = _questOptions[0]; var setQuestOptions = _questOptions[1];
+    var _questFeedback = useState(null); var questFeedback = _questFeedback[0]; var setQuestFeedback = _questFeedback[1];
+    var _questStreak = useState(0); var questStreak = _questStreak[0]; var setQuestStreak = _questStreak[1];
+    var _questBest = useState(0); var questBest = _questBest[0]; var setQuestBest = _questBest[1];
+    var _questTotal = useState(0); var questTotal = _questTotal[0]; var setQuestTotal = _questTotal[1];
+    var _questCorrectCount = useState(0); var questCorrectCount = _questCorrectCount[0]; var setQuestCorrectCount = _questCorrectCount[1];
+    var _questInput = useState(''); var questInput = _questInput[0]; var setQuestInput = _questInput[1];
+    var _questBoardPos = useState(0); var questBoardPos = _questBoardPos[0]; var setQuestBoardPos = _questBoardPos[1];
+
+    function questPickRound(mode, pool) {
+      if (pool.length < 2) return;
+      var target = pool[Math.floor(Math.random() * pool.length)];
+      var opts = [target];
+      while (opts.length < Math.min(4, pool.length)) {
+        var r = pool[Math.floor(Math.random() * pool.length)];
+        if (!opts.find(function (o) { return o.id === r.id; })) opts.push(r);
+      }
+      for (var i = opts.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = opts[i]; opts[i] = opts[j]; opts[j] = tmp;
+      }
+      setQuestTarget(target);
+      setQuestOptions(opts);
+      setQuestFeedback(null);
+      setQuestInput('');
+      setQuestRound(function (r) { return r + 1; });
+    }
+
+    function questCheckAnswer(picked) {
+      if (!questTarget) return;
+      var correct = picked.id === questTarget.id;
+      setQuestTotal(function (t) { return t + 1; });
+      // Record IEP trial if receptive goals exist
+      var receptiveGoal = activeGoals.find(function (g) { return g.type === 'receptive' && g.currentCount < g.targetCount; });
+      if (receptiveGoal) recordIepTrial(receptiveGoal.id, correct, 'quest:' + questMode + ':' + questTarget.label);
+      if (correct) {
+        var ns = questStreak + 1;
+        setQuestStreak(ns);
+        if (ns > questBest) setQuestBest(ns);
+        var pts = 10 + (ns >= 5 ? 10 : ns >= 3 ? 5 : 0);
+        setQuestScore(function (s) { return s + pts; });
+        setQuestCorrectCount(function (c) { return c + 1; });
+        setQuestBoardPos(function (p) { return p + 1; });
+        setQuestFeedback({ ok: true, msg: '✅ Correct! +' + pts + (ns >= 3 ? ' 🔥x' + ns : '') });
+        setTimeout(function () { questPickRound(questMode, gallery.filter(function (g) { return g.image; })); }, 1200);
+      } else {
+        setQuestStreak(0);
+        setQuestFeedback({ ok: false, msg: '❌ That was "' + picked.label + '". The answer is "' + questTarget.label + '".' });
+        setTimeout(function () { questPickRound(questMode, gallery.filter(function (g) { return g.image; })); }, 2500);
+      }
+    }
+
+    function renderQuestTab() {
+      var pool = gallery.filter(function (g) { return g.image; });
+      var GAME_MODES = [
+        { id: 'imgToLabel', icon: '🖼️', label: 'See Image → Pick Label', desc: 'See the symbol image and choose the correct label' },
+        { id: 'labelToImg', icon: '🏷️', label: 'See Label → Pick Image', desc: 'Read the label and find the matching symbol' },
+        { id: 'spelling', icon: '✏️', label: 'Spell It', desc: 'See the image and type the correct label' },
+        { id: 'memory', icon: '🧠', label: 'Symbol Memory', desc: 'Match symbol images with their labels' },
+      ];
+      // Board game path length
+      var pathLen = 20;
+      var pctDone = Math.min(100, Math.round((questBoardPos / pathLen) * 100));
+
+      if (pool.length < 3) {
+        return e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px', color: '#6b7280', padding: '40px' } },
+          e('div', { style: { fontSize: '48px' } }, '🎮'),
+          e('h3', { style: { fontWeight: 700, color: '#374151' } }, 'Symbol Quest'),
+          e('p', { style: { fontSize: '13px', textAlign: 'center', maxWidth: '360px' } }, 'Generate at least 3 symbols in the Symbols tab first, then come back to play games that teach you the symbols!')
+        );
+      }
+
+      // Menu screen
+      if (questMode === 'menu') {
+        return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '30px', gap: '16px', overflowY: 'auto' } },
+          e('div', { style: { fontSize: '48px' } }, '🎮'),
+          e('h3', { style: { fontWeight: 800, fontSize: '22px', color: '#374151', margin: 0 } }, 'Symbol Quest'),
+          e('p', { style: { fontSize: '13px', color: '#6b7280', textAlign: 'center', maxWidth: '400px', margin: 0 } }, 'Learn your symbols through fun mini-games! Each correct answer moves you along the board path.'),
+          // Board path progress
+          e('div', { style: { width: '100%', maxWidth: '400px', background: '#f3f4f6', borderRadius: '10px', padding: '10px', textAlign: 'center' } },
+            e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#374151', marginBottom: '6px' } }, '🏁 Board Progress: ' + questBoardPos + '/' + pathLen + ' spaces'),
+            e('div', { style: { height: '12px', background: '#e5e7eb', borderRadius: '6px', overflow: 'hidden' } },
+              e('div', { style: { height: '100%', width: pctDone + '%', background: 'linear-gradient(90deg, ' + PURPLE + ', #a78bfa)', borderRadius: '6px', transition: 'width 0.5s' } })
+            ),
+            questBoardPos >= pathLen && e('div', { style: { marginTop: '8px', fontSize: '14px', fontWeight: 700, color: '#059669' } }, '🏆 Quest Complete! You mastered all symbols!')
+          ),
+          // Stats
+          questTotal > 0 && e('div', { style: { display: 'flex', gap: '8px', width: '100%', maxWidth: '400px' } },
+            e('div', { style: { flex: 1, background: '#f0fdf4', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
+              e('div', { style: { fontSize: '18px', fontWeight: 800, color: '#059669' } }, questCorrectCount),
+              e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'correct')
+            ),
+            e('div', { style: { flex: 1, background: '#faf5ff', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
+              e('div', { style: { fontSize: '18px', fontWeight: 800, color: PURPLE } }, questScore),
+              e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'points')
+            ),
+            e('div', { style: { flex: 1, background: '#fef3c7', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
+              e('div', { style: { fontSize: '18px', fontWeight: 800, color: '#d97706' } }, questBest + 'x'),
+              e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'best streak')
+            )
+          ),
+          // Game mode buttons
+          e('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', width: '100%', maxWidth: '400px' } },
+            GAME_MODES.map(function (gm) {
+              return e('button', {
+                key: gm.id,
+                onClick: function () {
+                  setQuestMode(gm.id);
+                  setQuestRound(0); setQuestStreak(0);
+                  questPickRound(gm.id, pool);
+                },
+                style: { padding: '16px 12px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '12px', cursor: 'pointer', textAlign: 'center', transition: 'border-color 0.15s, box-shadow 0.15s' },
+                onMouseOver: function (ev) { ev.currentTarget.style.borderColor = PURPLE; ev.currentTarget.style.boxShadow = '0 4px 12px rgba(124,58,237,0.15)'; },
+                onMouseOut: function (ev) { ev.currentTarget.style.borderColor = '#e5e7eb'; ev.currentTarget.style.boxShadow = 'none'; }
+              },
+                e('div', { style: { fontSize: '28px', marginBottom: '6px' } }, gm.icon),
+                e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#374151' } }, gm.label),
+                e('div', { style: { fontSize: '10px', color: '#9ca3af', marginTop: '3px' } }, gm.desc)
+              );
+            })
+          ),
+          // Reset progress
+          questTotal > 0 && e('button', {
+            onClick: function () { setQuestScore(0); setQuestBoardPos(0); setQuestTotal(0); setQuestCorrectCount(0); setQuestBest(0); },
+            style: { fontSize: '10px', color: '#9ca3af', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
+          }, '↻ Reset progress')
+        );
+      }
+
+      // Active game screen
+      var backBtn = e('button', { onClick: function () { setQuestMode('menu'); }, style: S.btn('#f3f4f6', '#374151', false) }, '← Back');
+      var scoreBar = e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', color: '#6b7280' } },
+        e('span', { style: { fontWeight: 700, color: PURPLE } }, '⭐ ' + questScore),
+        e('span', null, '🎯 Round ' + questRound),
+        questStreak >= 2 && e('span', { style: { color: '#f97316', fontWeight: 700, animation: 'pulse 1s infinite' } }, '🔥 x' + questStreak),
+        e('span', null, '🏁 ' + questBoardPos + '/' + pathLen)
+      );
+      var feedbackBar = questFeedback && e('div', { style: { padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, textAlign: 'center', background: questFeedback.ok ? '#dcfce7' : '#fee2e2', color: questFeedback.ok ? '#166534' : '#991b1b', border: '1px solid ' + (questFeedback.ok ? '#86efac' : '#fca5a5') } }, questFeedback.msg);
+
+      // ── Image → Label mode ──
+      if (questMode === 'imgToLabel') {
+        return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '14px', alignItems: 'center' } },
+          e('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' } }, backBtn, scoreBar),
+          e('h4', { style: { fontSize: '14px', fontWeight: 600, color: '#374151', margin: 0 } }, '🖼️ What symbol is this?'),
+          questTarget && e('div', { style: { width: '140px', height: '140px', borderRadius: '16px', overflow: 'hidden', border: '3px solid ' + PURPLE, boxShadow: '0 4px 20px rgba(124,58,237,0.2)' } },
+            e('img', { src: questTarget.image, alt: 'symbol', style: { width: '100%', height: '100%', objectFit: 'contain', background: '#fff' } })
+          ),
+          feedbackBar,
+          e('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%', maxWidth: '340px' } },
+            questOptions.map(function (opt) {
+              return e('button', {
+                key: opt.id, onClick: function () { if (!questFeedback) questCheckAnswer(opt); },
+                style: { padding: '12px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', fontWeight: 700, color: '#374151', cursor: questFeedback ? 'default' : 'pointer', opacity: questFeedback ? 0.6 : 1, transition: 'all 0.15s' },
+                onMouseOver: function (ev) { if (!questFeedback) ev.currentTarget.style.borderColor = PURPLE; },
+                onMouseOut: function (ev) { ev.currentTarget.style.borderColor = '#e5e7eb'; }
+              }, opt.label);
+            })
+          )
+        );
+      }
+
+      // ── Label → Image mode ──
+      if (questMode === 'labelToImg') {
+        return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '14px', alignItems: 'center' } },
+          e('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' } }, backBtn, scoreBar),
+          e('h4', { style: { fontSize: '14px', fontWeight: 600, color: '#374151', margin: 0 } }, '🏷️ Find the symbol for:'),
+          questTarget && e('div', { style: { padding: '10px 24px', background: LIGHT_PURPLE, borderRadius: '12px', border: '2px solid ' + PURPLE } },
+            e('span', { style: { fontSize: '20px', fontWeight: 800, color: PURPLE } }, questTarget.label)
+          ),
+          feedbackBar,
+          e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(' + Math.min(questOptions.length, 4) + ', 1fr)', gap: '10px', width: '100%', maxWidth: '400px' } },
+            questOptions.map(function (opt) {
+              return e('button', {
+                key: opt.id, onClick: function () { if (!questFeedback) questCheckAnswer(opt); },
+                style: { padding: '8px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '12px', cursor: questFeedback ? 'default' : 'pointer', opacity: questFeedback ? 0.6 : 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', transition: 'all 0.15s' },
+                onMouseOver: function (ev) { if (!questFeedback) ev.currentTarget.style.borderColor = PURPLE; },
+                onMouseOut: function (ev) { ev.currentTarget.style.borderColor = '#e5e7eb'; }
+              },
+                e('img', { src: opt.image, alt: 'option', style: { width: '70px', height: '70px', objectFit: 'contain', borderRadius: '8px' } })
+              );
+            })
+          )
+        );
+      }
+
+      // ── Spelling mode ──
+      if (questMode === 'spelling') {
+        var checkSpelling = function () {
+          if (!questTarget) return;
+          var correct = questInput.trim().toLowerCase() === questTarget.label.trim().toLowerCase();
+          setQuestTotal(function (t) { return t + 1; });
+          if (correct) {
+            var ns = questStreak + 1;
+            setQuestStreak(ns);
+            if (ns > questBest) setQuestBest(ns);
+            setQuestScore(function (s) { return s + 15; });
+            setQuestCorrectCount(function (c) { return c + 1; });
+            setQuestBoardPos(function (p) { return p + 1; });
+            setQuestFeedback({ ok: true, msg: '✅ Perfect spelling! +15' });
+            setTimeout(function () { questPickRound('spelling', pool); }, 1200);
+          } else {
+            setQuestStreak(0);
+            setQuestFeedback({ ok: false, msg: '❌ It\'s spelled "' + questTarget.label + '"' });
+            setTimeout(function () { questPickRound('spelling', pool); }, 2500);
+          }
+        };
+        return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '14px', alignItems: 'center' } },
+          e('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' } }, backBtn, scoreBar),
+          e('h4', { style: { fontSize: '14px', fontWeight: 600, color: '#374151', margin: 0 } }, '✏️ Spell this symbol:'),
+          questTarget && e('div', { style: { width: '120px', height: '120px', borderRadius: '14px', overflow: 'hidden', border: '3px solid ' + PURPLE } },
+            e('img', { src: questTarget.image, alt: 'symbol', style: { width: '100%', height: '100%', objectFit: 'contain', background: '#fff' } })
+          ),
+          questTarget && e('div', { style: { fontSize: '11px', color: '#9ca3af' } }, questTarget.label.length + ' letters'),
+          feedbackBar,
+          e('div', { style: { display: 'flex', gap: '8px', width: '100%', maxWidth: '300px' } },
+            e('input', {
+              type: 'text', value: questInput, autoFocus: true,
+              onChange: function (ev) { setQuestInput(ev.target.value); },
+              onKeyDown: function (ev) { if (ev.key === 'Enter') checkSpelling(); },
+              placeholder: 'Type the label...',
+              disabled: !!questFeedback,
+              style: Object.assign({}, S.input, { flex: 1, textAlign: 'center', fontSize: '16px', fontWeight: 700, textTransform: 'lowercase' })
+            }),
+            e('button', { onClick: checkSpelling, disabled: !!questFeedback || !questInput.trim(), style: S.btn(PURPLE, '#fff', !!questFeedback || !questInput.trim()) }, 'Check')
+          )
+        );
+      }
+
+      // ── Memory match mode ──
+      if (questMode === 'memory') {
+        var memPool = pool.slice(0, 6);
+        var _memCards = useState([]); var memCards = _memCards[0]; var setMemCards = _memCards[1];
+        var _memFlipped = useState([]); var memFlipped = _memFlipped[0]; var setMemFlipped = _memFlipped[1];
+        var _memMatched = useState([]); var memMatched = _memMatched[0]; var setMemMatched = _memMatched[1];
+        var _memMoves = useState(0); var memMoves = _memMoves[0]; var setMemMoves = _memMoves[1];
+
+        var initMemory = function () {
+          var cards = [];
+          memPool.forEach(function (sym, i) {
+            cards.push({ id: 'img-' + i, pairId: i, type: 'image', content: sym.image, label: sym.label });
+            cards.push({ id: 'txt-' + i, pairId: i, type: 'text', content: sym.label, label: sym.label });
+          });
+          for (var i = cards.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var tmp = cards[i]; cards[i] = cards[j]; cards[j] = tmp;
+          }
+          setMemCards(cards); setMemFlipped([]); setMemMatched([]); setMemMoves(0);
+        };
+        if (memCards.length === 0 && memPool.length >= 2) initMemory();
+
+        var flipCard = function (idx) {
+          if (memFlipped.length >= 2 || memFlipped.includes(idx) || memMatched.includes(memCards[idx].pairId)) return;
+          var nf = memFlipped.concat([idx]);
+          setMemFlipped(nf);
+          if (nf.length === 2) {
+            setMemMoves(function (m) { return m + 1; });
+            if (memCards[nf[0]].pairId === memCards[nf[1]].pairId) {
+              setMemMatched(function (prev) { return prev.concat([memCards[nf[0]].pairId]); });
+              setQuestScore(function (s) { return s + 20; });
+              setQuestBoardPos(function (p) { return p + 1; });
+              setTimeout(function () { setMemFlipped([]); }, 400);
+            } else {
+              setTimeout(function () { setMemFlipped([]); }, 1200);
+            }
+          }
+        };
+        var memWon = memMatched.length === memPool.length && memPool.length > 0;
+
+        return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '14px', alignItems: 'center' } },
+          e('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' } }, backBtn, scoreBar),
+          e('h4', { style: { fontSize: '14px', fontWeight: 600, color: '#374151', margin: 0 } }, '🧠 Match symbols with labels'),
+          e('div', { style: { fontSize: '11px', color: '#6b7280' } }, 'Moves: ' + memMoves + ' · Matched: ' + memMatched.length + '/' + memPool.length),
+          memWon
+            ? e('div', { style: { textAlign: 'center', padding: '20px' } },
+                e('div', { style: { fontSize: '48px', marginBottom: '10px' } }, '🏆'),
+                e('div', { style: { fontSize: '16px', fontWeight: 700, color: '#059669' } }, 'All matched in ' + memMoves + ' moves!'),
+                e('button', { onClick: function () { initMemory(); }, style: Object.assign({}, S.btn(PURPLE, '#fff', false), { marginTop: '12px' }) }, '🔄 Play Again')
+              )
+            : e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', width: '100%', maxWidth: '400px' } },
+                memCards.map(function (card, idx) {
+                  var isUp = memFlipped.includes(idx) || memMatched.includes(card.pairId);
+                  return e('button', {
+                    key: card.id, onClick: function () { flipCard(idx); },
+                    style: { aspectRatio: '1', border: '2px solid ' + (isUp ? PURPLE : '#e5e7eb'), borderRadius: '10px', background: isUp ? '#fff' : LIGHT_PURPLE, cursor: isUp ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', transition: 'all 0.2s', opacity: memMatched.includes(card.pairId) ? 0.5 : 1 }
+                  },
+                    isUp
+                      ? (card.type === 'image'
+                        ? e('img', { src: card.content, alt: '', style: { width: '90%', height: '90%', objectFit: 'contain', borderRadius: '6px' } })
+                        : e('span', { style: { fontSize: '11px', fontWeight: 700, color: '#374151', textAlign: 'center', wordBreak: 'break-word' } }, card.content)
+                      )
+                      : e('span', { style: { fontSize: '24px' } }, '❓')
+                  );
+                })
+              )
+        );
+      }
+
+      // Fallback
+      return e('div', null, 'Unknown mode');
+    }
 
     // ── Quick Boards tab ───────────────────────────────────────────────────
     function renderQuickBoardsTab() {
@@ -2330,7 +2833,49 @@
             e('input', { type: 'checkbox', checked: autoClean, onChange: function (ev) { setAutoClean(ev.target.checked); } }),
             e('span', null, 'Auto-clean text from images')
           ),
-          e('p', { style: { fontSize: '10px', color: '#9ca3af', margin: '3px 0 0' } }, 'Runs a second AI pass to strip any embedded labels')
+          e('p', { style: { fontSize: '10px', color: '#9ca3af', margin: '3px 0 0' } }, 'Runs a second AI pass to strip any embedded labels'),
+          e('label', { style: Object.assign({}, S.lbl, { marginTop: '10px' }) }, 'Category Colors (AAC)'),
+          e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '4px' } },
+            [['noun', 'Noun'], ['verb', 'Verb'], ['adjective', 'Adj'], ['other', 'Other']].map(function (pair) {
+              return e('label', { key: pair[0], style: { display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', color: '#374151', cursor: 'pointer' } },
+                e('input', {
+                  type: 'color', value: catFill[pair[0]] || '#f9fafb',
+                  onChange: function (ev) { var v = ev.target.value; setCatFill(function (prev) { var n = Object.assign({}, prev); n[pair[0]] = v; store(STORAGE_CAT_COLORS + '_fill', n); return n; }); },
+                  style: { width: 18, height: 18, padding: 0, border: '1px solid #d1d5db', borderRadius: '3px', cursor: 'pointer' }
+                }),
+                pair[1]
+              );
+            }),
+            e('button', {
+              onClick: function () { setCatFill(CAT_COLORS); setCatBorder(CAT_BORDER); store(STORAGE_CAT_COLORS + '_fill', CAT_COLORS); store(STORAGE_CAT_COLORS + '_border', CAT_BORDER); },
+              style: { fontSize: '10px', color: '#9ca3af', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
+            }, 'Reset')
+          ),
+          e('p', { style: { fontSize: '10px', color: '#9ca3af', margin: '0' } }, 'Colors apply to boards and symbol cards'),
+          e('label', { style: Object.assign({}, S.lbl, { marginTop: '10px' }) }, 'TTS Voice'),
+          availableVoices.length > 0
+            ? e('select', {
+                value: globalVoice,
+                onChange: function (ev) { setGlobalVoice(ev.target.value); store(STORAGE_VOICE, ev.target.value); },
+                style: Object.assign({}, S.input, { marginBottom: '4px' })
+              },
+              availableVoices.map(function (v) {
+                return e('option', { key: v.name, value: v.name }, v.name + ' (' + v.lang + ')');
+              })
+            )
+            : e('p', { style: { fontSize: '11px', color: '#9ca3af' } }, 'Loading voices...'),
+          e('button', {
+            onClick: function () {
+              if (!window.speechSynthesis) return;
+              var u = new SpeechSynthesisUtterance('Hello! This is how I sound.');
+              var voices = window.speechSynthesis.getVoices();
+              var match = voices.find(function (v) { return v.name === globalVoice; });
+              if (match) u.voice = match;
+              window.speechSynthesis.speak(u);
+            },
+            style: Object.assign({}, { fontSize: '10px', color: PURPLE, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0, marginBottom: '4px' })
+          }, '🔊 Preview voice'),
+          e('p', { style: { fontSize: '10px', color: '#9ca3af', margin: '0' } }, 'Used for read-aloud in stories, boards, and AAC mode')
         ),
         // Backup & Restore
         e('div', { style: S.card },
@@ -2399,6 +2944,51 @@
                     })
                   )
                 ),
+                // 7-day activity bar chart
+                (function () {
+                  var days = []; var dayLabels = [];
+                  for (var di = 6; di >= 0; di--) {
+                    var d = new Date(now - di * 24 * 3600 * 1000);
+                    var key = d.toISOString().slice(0, 10);
+                    dayLabels.push(d.toLocaleDateString([], { weekday: 'short' }).slice(0, 2));
+                    var count = 0;
+                    allSessions.forEach(function (s) {
+                      if ((s.date || '').slice(0, 10) === key) count += (s.entries || []).length;
+                    });
+                    days.push(count);
+                  }
+                  var maxD = Math.max.apply(null, days.concat([1]));
+                  return e('div', { style: { marginBottom: '8px' } },
+                    e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#374151', marginBottom: '5px' } }, '7-Day Activity:'),
+                    e('div', { style: { display: 'flex', alignItems: 'flex-end', gap: '3px', height: '48px' } },
+                      days.map(function (c, i) {
+                        var h = Math.max(3, Math.round((c / maxD) * 44));
+                        return e('div', { key: i, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' } },
+                          c > 0 && e('span', { style: { fontSize: '8px', color: '#6b7280' } }, c),
+                          e('div', { style: { width: '100%', height: h + 'px', background: c > 0 ? PURPLE : '#e5e7eb', borderRadius: '2px', transition: 'height 0.3s' } })
+                        );
+                      })
+                    ),
+                    e('div', { style: { display: 'flex', gap: '3px', marginTop: '2px' } },
+                      dayLabels.map(function (l, i) { return e('div', { key: i, style: { flex: 1, textAlign: 'center', fontSize: '8px', color: '#9ca3af' } }, l); })
+                    )
+                  );
+                })(),
+                // Vocabulary diversity score
+                (function () {
+                  var uniqueWords = Object.keys(wordCount).length;
+                  var diversityPct = totalUtterances > 0 ? Math.round((uniqueWords / totalUtterances) * 100) : 0;
+                  return e('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
+                    e('div', { style: { flex: 1, background: '#fef3c7', borderRadius: '7px', padding: '6px', textAlign: 'center' } },
+                      e('div', { style: { fontSize: '16px', fontWeight: 800, color: '#d97706' } }, uniqueWords),
+                      e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'unique words')
+                    ),
+                    e('div', { style: { flex: 1, background: '#f0fdf4', borderRadius: '7px', padding: '6px', textAlign: 'center' } },
+                      e('div', { style: { fontSize: '16px', fontWeight: 800, color: '#059669' } }, diversityPct + '%'),
+                      e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'diversity')
+                    )
+                  );
+                })(),
                 // Recent sessions
                 e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#374151', marginBottom: '4px' } }, 'Recent sessions:'),
                 allSessions.slice(-5).reverse().map(function (s, i) {
@@ -2432,6 +3022,92 @@
               e('button', { onClick: loadFromCloud, disabled: syncStatus === 'syncing', style: Object.assign({}, S.btn('#f3f4f6', '#374151', syncStatus === 'syncing'), { flex: 1, fontSize: '11px' }) }, '📥 Load')
             )
           )
+        ),
+        // ── IEP Communication Goals ──
+        e('div', { style: S.card },
+          sectionLabel('IEP Communication Goals'),
+          e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '0 0 8px' } }, 'Track AAC & communication goals. Progress syncs with Teacher Dashboard RTI data.'),
+          // Active goals list
+          activeGoals.length > 0 && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' } },
+            activeGoals.map(function (g) {
+              var pct = g.targetCount > 0 ? Math.round((g.currentCount / g.targetCount) * 100) : 0;
+              var recentTrials = (g.trials || []).slice(-10);
+              var recentAcc = recentTrials.length > 0 ? Math.round((recentTrials.filter(function (t) { return t.success; }).length / recentTrials.length) * 100) : 0;
+              var goalTypeColors = { expressive: '#7c3aed', receptive: '#2563eb', social: '#059669' };
+              var typeColor = goalTypeColors[g.type] || '#6b7280';
+              return e('div', { key: g.id, style: { background: '#f9fafb', borderRadius: '8px', padding: '8px 10px', border: '1px solid #e5e7eb' } },
+                e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px' } },
+                  e('span', { style: { fontSize: '9px', background: typeColor, color: '#fff', borderRadius: '4px', padding: '1px 6px', fontWeight: 700, textTransform: 'uppercase' } }, g.type),
+                  e('span', { style: { fontSize: '11px', fontWeight: 700, color: '#374151', flex: 1 } }, g.text),
+                  e('button', { onClick: function () { removeIepGoal(g.id); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '10px', color: '#dc2626', padding: '0 3px' } }, '✕')
+                ),
+                // Progress bar
+                e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+                  e('div', { style: { flex: 1, height: '8px', background: '#e5e7eb', borderRadius: '4px', overflow: 'hidden' } },
+                    e('div', { style: { height: '100%', width: Math.min(100, pct) + '%', background: pct >= 100 ? '#16a34a' : typeColor, borderRadius: '4px', transition: 'width 0.3s' } })
+                  ),
+                  e('span', { style: { fontSize: '10px', fontWeight: 700, color: pct >= 100 ? '#16a34a' : '#374151', minWidth: '36px', textAlign: 'right' } }, g.currentCount + '/' + g.targetCount)
+                ),
+                // Recent accuracy
+                recentTrials.length > 0 && e('div', { style: { display: 'flex', gap: '4px', marginTop: '4px', alignItems: 'center' } },
+                  e('span', { style: { fontSize: '9px', color: '#9ca3af' } }, 'Last 10:'),
+                  recentTrials.map(function (t, ti) {
+                    return e('span', { key: ti, style: { width: '8px', height: '8px', borderRadius: '50%', background: t.success ? '#16a34a' : '#dc2626', display: 'inline-block' } });
+                  }),
+                  e('span', { style: { fontSize: '9px', fontWeight: 700, color: recentAcc >= 80 ? '#16a34a' : recentAcc >= 60 ? '#d97706' : '#dc2626', marginLeft: '4px' } }, recentAcc + '% acc')
+                ),
+                // Manual trial buttons
+                e('div', { style: { display: 'flex', gap: '4px', marginTop: '6px' } },
+                  e('button', {
+                    onClick: function () { recordIepTrial(g.id, true, 'manual'); },
+                    style: { fontSize: '10px', background: '#dcfce7', color: '#16a34a', border: '1px solid #86efac', borderRadius: '5px', padding: '2px 8px', cursor: 'pointer', fontWeight: 600 }
+                  }, '✓ Success'),
+                  e('button', {
+                    onClick: function () { recordIepTrial(g.id, false, 'manual'); },
+                    style: { fontSize: '10px', background: '#fee2e2', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: '5px', padding: '2px 8px', cursor: 'pointer', fontWeight: 600 }
+                  }, '✗ No response')
+                )
+              );
+            })
+          ),
+          activeGoals.length === 0 && e('p', { style: { fontSize: '11px', color: '#9ca3af', fontStyle: 'italic', margin: '0 0 8px' } }, 'No goals set for this profile yet.'),
+          // Add goal form
+          e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+            e('div', { style: { display: 'flex', gap: '6px' } },
+              e('select', {
+                id: 'iep-goal-type',
+                style: { fontSize: '11px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '4px 6px', background: '#fff' }
+              },
+                e('option', { value: 'expressive' }, 'Expressive'),
+                e('option', { value: 'receptive' }, 'Receptive'),
+                e('option', { value: 'social' }, 'Social')
+              ),
+              e('input', {
+                id: 'iep-goal-text',
+                type: 'text',
+                placeholder: 'e.g. Request items using 2-word phrases',
+                style: Object.assign({}, S.input, { flex: 1, margin: 0, fontSize: '11px' })
+              }),
+              e('input', {
+                id: 'iep-goal-target',
+                type: 'number', min: 1, max: 200,
+                placeholder: '# target',
+                style: { width: '60px', fontSize: '11px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '4px 6px', textAlign: 'center' }
+              })
+            ),
+            e('button', {
+              onClick: function () {
+                var text = document.getElementById('iep-goal-text');
+                var type = document.getElementById('iep-goal-type');
+                var target = document.getElementById('iep-goal-target');
+                if (!text || !text.value.trim()) return;
+                addIepGoal({ text: text.value.trim(), type: type ? type.value : 'expressive', targetCount: target ? (parseInt(target.value, 10) || 20) : 20 });
+                text.value = '';
+                if (target) target.value = '';
+              },
+              style: S.btn(PURPLE, '#fff', false)
+            }, '+ Add Goal')
+          )
         )
       );
     }
@@ -2455,6 +3131,26 @@
               return e('button', { key: m, onClick: function () { setSymMode(m); }, style: { flex: 1, padding: '5px', borderRadius: '6px', border: 'none', background: symMode === m ? '#fff' : 'transparent', fontWeight: symMode === m ? 700 : 400, fontSize: '11px', cursor: 'pointer', color: symMode === m ? PURPLE : '#6b7280', boxShadow: symMode === m ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' } }, m === 'single' ? '✏️ Single' : '📋 Batch');
             })
           ),
+          // Context-aware suggestions
+          (function () {
+            var hour = new Date().getHours();
+            var timeSuggestions = hour < 9 ? ['good morning', 'breakfast', 'get dressed', 'brush teeth', 'backpack']
+              : hour < 12 ? ['help', 'bathroom', 'water', 'finished', 'listen', 'read']
+              : hour < 14 ? ['lunch', 'hungry', 'drink', 'napkin', 'more', 'all done']
+              : hour < 16 ? ['play', 'share', 'my turn', 'friend', 'outside', 'art']
+              : ['home', 'snack', 'tired', 'bath', 'dinner', 'goodnight'];
+            var existing = gallery.map(function (g) { return g.label.toLowerCase(); });
+            var filtered = timeSuggestions.filter(function (s) { return existing.indexOf(s) === -1; });
+            if (filtered.length === 0) return null;
+            return e('div', { style: { marginBottom: '4px' } },
+              e('div', { style: { fontSize: '9px', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' } }, '💡 Suggested (' + (hour < 9 ? 'Morning' : hour < 12 ? 'School' : hour < 14 ? 'Lunch' : hour < 16 ? 'Afternoon' : 'Evening') + ')'),
+              e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px' } },
+                filtered.map(function (s) {
+                  return e('button', { key: s, onClick: function () { setSymLabel(s); }, style: { padding: '2px 7px', background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: '10px', fontSize: '9px', cursor: 'pointer', color: '#92400e', fontWeight: 500 } }, s);
+                })
+              )
+            );
+          })(),
           symMode === 'single'
             ? e('div', { style: { display: 'flex', flexDirection: 'column', gap: '7px' } },
                 e('div', null, e('label', { style: S.lbl }, 'Label'), e('input', { type: 'text', value: symLabel, onChange: function (ev) { setSymLabel(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') genSingle(); }, placeholder: 'e.g. wash hands', style: S.input, autoFocus: true })),
@@ -2596,6 +3292,26 @@
               }, t.label);
             })
           ),
+          // Language selector for multilingual boards
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '4px' } },
+            e('span', { style: { fontSize: '10px', color: '#9ca3af', fontWeight: 600 } }, '🌐'),
+            e('select', {
+              value: boardLang,
+              onChange: function (ev) {
+                var lang = ev.target.value;
+                setBoardLang(lang); store(STORAGE_BOARD_LANG, lang);
+                if (lang !== 'en' && boardWords.length > 0) {
+                  translateBoardLabels(boardWords, lang).then(function (translated) { setBoardWords(translated); });
+                } else if (lang === 'en' && boardWords.length > 0) {
+                  setBoardWords(function (prev) { return prev.map(function (w) { return w.originalLabel ? Object.assign({}, w, { label: w.originalLabel, translatedLabel: undefined, originalLabel: undefined }) : w; }); });
+                }
+              },
+              style: { fontSize: '11px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '3px 6px', background: '#fff', cursor: 'pointer' }
+            },
+              LANG_OPTIONS.map(function (l) { return e('option', { key: l.code, value: l.code }, l.label); })
+            ),
+            translating && e('span', { style: { fontSize: '10px', color: PURPLE } }, '⏳')
+          ),
           e('button', { onClick: function () { setShowSentencePanel(!showSentencePanel); if (!showSentencePanel) { setSentenceMapping([]); setSentenceInput(''); } }, style: S.btn(showSentencePanel ? LIGHT_PURPLE : '#f3f4f6', showSentencePanel ? PURPLE : '#374151', false), title: 'Type a sentence and let AI map each word to an AAC symbol' }, '🔤 From Sentence'),
           e('button', { onClick: function () { setShowGalleryPicker(!showGalleryPicker); }, style: S.btn(showGalleryPicker ? LIGHT_PURPLE : '#f3f4f6', showGalleryPicker ? PURPLE : '#374151', false), title: 'Add a symbol from your gallery directly to the board' }, '🖼️ From Gallery'),
           boardWords.length > 0 && !boardPages && e('button', {
@@ -2609,8 +3325,29 @@
               var active = pi === activePageIdx;
               return e('button', {
                 key: pg.id,
+                draggable: true,
+                onDragStart: function (ev) { ev.dataTransfer.setData('text/plain', String(pi)); ev.dataTransfer.effectAllowed = 'move'; },
+                onDragOver: function (ev) { ev.preventDefault(); ev.currentTarget.style.borderColor = PURPLE; },
+                onDragLeave: function (ev) { ev.currentTarget.style.borderColor = active ? '#92400e' : '#fde68a'; },
+                onDrop: function (ev) {
+                  ev.preventDefault();
+                  ev.currentTarget.style.borderColor = active ? '#92400e' : '#fde68a';
+                  var fromIdx = parseInt(ev.dataTransfer.getData('text/plain'), 10);
+                  if (isNaN(fromIdx) || fromIdx === pi) return;
+                  setBoardPages(function (prev) {
+                    var flushed = commitCurrentPage(prev, activePageIdx, boardWords, boardCols, null);
+                    var arr = flushed.slice();
+                    var moved = arr.splice(fromIdx, 1)[0];
+                    arr.splice(pi, 0, moved);
+                    // Update activePageIdx to follow the current page
+                    var newActive = activePageIdx === fromIdx ? pi : (activePageIdx > fromIdx && activePageIdx <= pi ? activePageIdx - 1 : (activePageIdx < fromIdx && activePageIdx >= pi ? activePageIdx + 1 : activePageIdx));
+                    setActivePageIdx(newActive);
+                    return arr;
+                  });
+                },
                 onClick: function () { if (!active) switchPage(pi); },
-                style: { padding: '2px 8px', border: '1px solid ' + (active ? '#92400e' : '#fde68a'), borderRadius: '6px', background: active ? '#92400e' : 'transparent', color: active ? '#fff' : '#92400e', fontSize: '10px', fontWeight: active ? 700 : 400, cursor: active ? 'default' : 'pointer' }
+                style: { padding: '2px 8px', border: '2px solid ' + (active ? '#92400e' : '#fde68a'), borderRadius: '6px', background: active ? '#92400e' : 'transparent', color: active ? '#fff' : '#92400e', fontSize: '10px', fontWeight: active ? 700 : 400, cursor: 'grab', transition: 'border-color 0.15s' },
+                title: 'Drag to reorder pages'
               }, pg.title || ('Page ' + (pi + 1)));
             }),
             e('button', { onClick: addPage, title: 'Add a new page', style: { background: 'none', border: '1px dashed #92400e', borderRadius: '6px', padding: '2px 7px', color: '#92400e', fontSize: '11px', cursor: 'pointer' } }, '+'),
@@ -2838,7 +3575,10 @@
                     // Drag handle indicator
                     e('div', { className: 'ss-no-print', style: { position: 'absolute', top: 3, left: 4, fontSize: '10px', color: '#d1d5db', lineHeight: 1, userSelect: 'none' } }, '\u28FF'),
                     // Label above image
-                    boardTextPos === 'above' && e('span', { style: { fontSize: boardTextSize + 'px', fontWeight: 700, color: theme.textColor, textAlign: 'center', lineHeight: 1.3 } }, word.label),
+                    boardTextPos === 'above' && e('span', { style: { fontSize: boardTextSize + 'px', fontWeight: 700, color: theme.textColor, textAlign: 'center', lineHeight: 1.3 } },
+                      word.translatedLabel || word.label,
+                      word.translatedLabel && word.originalLabel && e('span', { style: { display: 'block', fontSize: Math.max(9, boardTextSize - 3) + 'px', fontWeight: 400, color: '#9ca3af' } }, word.originalLabel)
+                    ),
                     // Image
                     boardLoading[word.id]
                       ? e('div', { style: { width: imgSz, height: imgSz, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, spinner(24))
@@ -2846,9 +3586,16 @@
                         ? e('img', { src: word.image, alt: word.label, style: { width: imgSz, height: imgSz, objectFit: 'contain', borderRadius: '6px', background: '#fff' } })
                         : e('div', { style: { width: imgSz, height: imgSz, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', borderRadius: '6px', fontSize: '11px', color: '#9ca3af', textAlign: 'center', padding: '4px' } }, 'Click \u2728'),
                     // Label below image (default)
-                    boardTextPos === 'below' && e('span', { style: { fontSize: boardTextSize + 'px', fontWeight: 700, color: theme.textColor, textAlign: 'center', lineHeight: 1.3 } }, word.label),
+                    boardTextPos === 'below' && e('span', { style: { fontSize: boardTextSize + 'px', fontWeight: 700, color: theme.textColor, textAlign: 'center', lineHeight: 1.3 } },
+                      word.translatedLabel || word.label,
+                      word.translatedLabel && word.originalLabel && e('span', { style: { display: 'block', fontSize: Math.max(9, boardTextSize - 3) + 'px', fontWeight: 400, color: '#9ca3af' } }, word.originalLabel)
+                    ),
                     // Regen button
                     e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); regenBoardCell(word.id); }, style: { position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px' } }, '\uD83D\uDD04'),
+                    // Record audio button
+                    e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); recordCellAudio(word.id); }, style: { position: 'absolute', top: 4, left: 4, background: cellRecording === word.id ? 'rgba(220,38,38,0.8)' : (word.audioData ? 'rgba(16,185,129,0.2)' : 'rgba(0,0,0,0.1)'), border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px', color: cellRecording === word.id ? '#fff' : undefined } }, cellRecording === word.id ? '⏹' : (word.audioData ? '🎙️' : '🎤')),
+                    // Play custom audio button
+                    word.audioData && e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); playCellAudio(word.audioData); }, style: { position: 'absolute', bottom: 4, left: 4, background: 'rgba(37,99,235,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px' } }, '🔊'),
                     // Remove button
                     e('button', { className: 'ss-no-print', onClick: function (ev) { ev.stopPropagation(); setBoardWords(function (prev) { return prev.filter(function (w) { return w.id !== word.id; }); }); }, style: { position: 'absolute', bottom: 4, right: 4, background: 'rgba(220,38,38,0.1)', border: 'none', borderRadius: '4px', padding: '1px 4px', cursor: 'pointer', fontSize: '10px', color: '#dc2626' } }, '\u00d7')
                   );
@@ -3008,15 +3755,27 @@
             ),
             e('textarea', { value: storySituation, onChange: function (ev) { setStorySituation(ev.target.value); }, placeholder: 'e.g. Marcus is learning to wait his turn during group time', style: Object.assign({}, S.textarea, { height: '65px' }) }),
             e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '5px' } },
-              STORY_TEMPLATES.map(function (t) {
+              STORY_TEMPLATES.concat(customTemplates).map(function (t, i) {
+                var isCustom = i >= STORY_TEMPLATES.length;
                 return e('button', {
-                  key: t.label,
+                  key: t.label + i,
                   onClick: function () { setStorySituation(t.situation); setStoryDetails(t.details); },
-                  style: { padding: '3px 8px', background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '10px', cursor: 'pointer', color: '#374151', whiteSpace: 'nowrap', transition: 'background 0.1s' },
+                  style: { padding: '3px 8px', background: isCustom ? '#fef3c7' : '#f3f4f6', border: '1px solid ' + (isCustom ? '#f59e0b' : '#e5e7eb'), borderRadius: '12px', fontSize: '10px', cursor: 'pointer', color: '#374151', whiteSpace: 'nowrap', transition: 'background 0.1s', position: 'relative' },
                   onMouseOver: function (ev) { ev.currentTarget.style.background = LIGHT_PURPLE; ev.currentTarget.style.borderColor = PURPLE; ev.currentTarget.style.color = PURPLE; },
-                  onMouseOut: function (ev) { ev.currentTarget.style.background = '#f3f4f6'; ev.currentTarget.style.borderColor = '#e5e7eb'; ev.currentTarget.style.color = '#374151'; }
-                }, t.label);
-              })
+                  onMouseOut: function (ev) { ev.currentTarget.style.background = isCustom ? '#fef3c7' : '#f3f4f6'; ev.currentTarget.style.borderColor = isCustom ? '#f59e0b' : '#e5e7eb'; ev.currentTarget.style.color = '#374151'; }
+                }, (isCustom ? '⭐ ' : '') + t.label);
+              }),
+              storySituation.trim() && e('button', {
+                onClick: function () {
+                  var lbl = window.prompt('Template name:', storySituation.slice(0, 40));
+                  if (!lbl) return;
+                  var tmpl = { label: lbl, situation: storySituation, details: storyDetails };
+                  var updated = customTemplates.concat([tmpl]);
+                  setCustomTemplates(updated); store(STORAGE_CUSTOM_TEMPLATES, updated);
+                  if (addToast) addToast('⭐ Template "' + lbl + '" saved!', 'success');
+                },
+                style: { padding: '3px 8px', background: '#dcfce7', border: '1px solid #16a34a', borderRadius: '12px', fontSize: '10px', cursor: 'pointer', color: '#166534', whiteSpace: 'nowrap', fontWeight: 700 }
+              }, '💾 Save as Template')
             )
           ),
           e('div', null,
@@ -3229,13 +3988,15 @@
         }
         setUseBoardId(null); setStrip([]); setShowCommLog(false); setPredictions([]);
       };
-      var speakWordFn = function (label) {
+      var speakWordFn = function (label, audioData) {
+        // Play custom recorded audio if available
+        if (audioData) { var a = new Audio(audioData); a.play().catch(function () {}); return; }
         if (onCallTTS && selectedVoice) {
-          onCallTTS(label, selectedVoice).catch(function () {
-            if (window.speechSynthesis) window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(label));
+          onCallTTS(label, selectedVoice || globalVoice || 'Kore').catch(function () {
+            if (window.speechSynthesis) { var u = new window.SpeechSynthesisUtterance(label); applyVoice(u); window.speechSynthesis.speak(u); }
           });
         } else if (window.speechSynthesis) {
-          window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(label));
+          var u = new window.SpeechSynthesisUtterance(label); applyVoice(u); window.speechSynthesis.speak(u);
         }
       };
       var speakPhraseFn = function (words) {
@@ -3244,9 +4005,10 @@
         setStripSpeaking(true);
         var done = function () { setStripSpeaking(false); };
         if (onCallTTS && selectedVoice) {
-          onCallTTS(phrase, selectedVoice).then(done).catch(done);
+          onCallTTS(phrase, selectedVoice || globalVoice || 'Kore').then(done).catch(done);
         } else if (window.speechSynthesis) {
           var utt = new window.SpeechSynthesisUtterance(phrase);
+          applyVoice(utt);
           utt.onend = done; utt.onerror = done;
           window.speechSynthesis.speak(utt);
         } else { done(); }
@@ -3256,7 +4018,10 @@
         var newStrip = strip.concat([{ label: cell.label, image: cell.image }]);
         setStrip(newStrip);
         setCommLog(function (log) { return log.concat([{ label: cell.label, image: cell.image, boardTitle: boardTitle, ts: new Date().toISOString() }]); });
-        speakWordFn(cell.label);
+        speakWordFn(cell.label, cell.audioData);
+        // IEP: record expressive communication trial
+        var expressiveGoal = activeGoals.find(function (g) { return g.type === 'expressive' && g.currentCount < g.targetCount; });
+        if (expressiveGoal) recordIepTrial(expressiveGoal.id, true, 'aac:' + cell.label);
         // Debounced word prediction
         if (predTimerRef.current) clearTimeout(predTimerRef.current);
         predTimerRef.current = setTimeout(function () {
@@ -3360,7 +4125,10 @@
                     onTouchEnd: function (ev) { ev.currentTarget.style.transform = 'scale(1)'; ev.currentTarget.style.background = '#1e293b'; tapCell(cell); ev.preventDefault(); },
                   },
                     e('img', { src: cell.image, alt: cell.label, style: { width: '80px', height: '80px', objectFit: 'contain', borderRadius: '8px', pointerEvents: 'none' } }),
-                    e('span', { style: { color: '#e2e8f0', fontWeight: 700, fontSize: '14px', textAlign: 'center', lineHeight: 1.3, pointerEvents: 'none' } }, cell.label)
+                    e('span', { style: { color: '#e2e8f0', fontWeight: 700, fontSize: '14px', textAlign: 'center', lineHeight: 1.3, pointerEvents: 'none' } },
+                      cell.translatedLabel || cell.label,
+                      cell.translatedLabel && cell.originalLabel && e('span', { style: { display: 'block', fontSize: '11px', fontWeight: 400, color: '#94a3b8' } }, cell.originalLabel)
+                    )
                   );
                 })
           ),
@@ -3402,11 +4170,15 @@
         var cell = scanCells[safeIdx];
         if (!cell) return;
         if (onCallTTS && selectedVoice) {
-          onCallTTS(cell.label, selectedVoice).catch(function () {});
+          onCallTTS(cell.label, selectedVoice || globalVoice || 'Kore').catch(function () {});
         } else if (window.speechSynthesis) {
           var utt = new window.SpeechSynthesisUtterance(cell.label);
+          applyVoice(utt);
           window.speechSynthesis.speak(utt);
         }
+        // IEP: record expressive communication trial from scanning mode
+        var expressiveGoal = activeGoals.find(function (g) { return g.type === 'expressive' && g.currentCount < g.targetCount; });
+        if (expressiveGoal) recordIepTrial(expressiveGoal.id, true, 'scan:' + cell.label);
       };
       var handleScanKeyDown = function (ev) {
         if (ev.code === 'Space' || ev.code === 'Enter') { ev.preventDefault(); activateCell(); }
@@ -3504,7 +4276,8 @@
             tab === 'schedule' && renderScheduleTab(),
             tab === 'stories' && renderStoriesTab(),
             tab === 'quickboards' && renderQuickBoardsTab(),
-            tab === 'books' && renderBooksTab()
+            tab === 'books' && renderBooksTab(),
+            tab === 'quest' && renderQuestTab()
           )
         )
       )
