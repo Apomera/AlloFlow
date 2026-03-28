@@ -5992,6 +5992,11 @@ const useFocusTrap = (ref, isOpen) => {
     };
   }, [isOpen, ref]);
 };
+// Expose shared hooks & utilities for CDN-loaded modules
+window.__alloHooks = { useFocusTrap };
+window.__alloUtils = window.__alloUtils || {};
+window.__alloUtils.fetchAndCleanUrl = fetchAndCleanUrl;
+window.__alloUtils.isGoogleRedirect = isGoogleRedirect;
 const getIconForType = (type) => {
     switch (type) {
         case 'simplified': return <BookOpen size={16} />;
@@ -18536,13 +18541,14 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       GraduationCap, School, Brain, Calendar, TrendingUp, BarChart2,
       BookOpen, Gamepad2, Heart, History, Shuffle, Send, Share2,
     });
-    // Icon namespace for games_module.js
+    // Icon namespace for CDN-loaded modules
     window.AlloIcons = {
-      ArrowDown, ArrowRight, ArrowUp, Brain, CheckCircle2,
-      Eye, EyeOff, Filter, Gamepad2, GitMerge, GripVertical,
-      HelpCircle, ImageIcon, Layout, ListOrdered, Maximize,
-      Mic, Minimize, MonitorPlay, Plus, Printer, RefreshCw,
-      Star, StopCircle, Trophy, Type, Volume2, X
+      AlignJustify, ArrowDown, ArrowRight, ArrowUp, Brain, CheckCircle, CheckCircle2,
+      Download, ExternalLink, Eye, EyeOff, Filter, Gamepad2, GitMerge, Globe,
+      GraduationCap, GripVertical, HelpCircle, ImageIcon, Languages, Layout, Link,
+      ListOrdered, Maximize, MessageSquare, Mic, Minimize, MonitorPlay, Plus,
+      Printer, RefreshCw, Search, ShieldCheck, Sparkles, Star, StopCircle,
+      Trophy, Type, Upload, Volume2, Wrench, X
     };
   }, []);
   // Load external modules from GitHub CDN via script tags
@@ -18609,6 +18615,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@caedf4e/symbol_studio_module.js');
     loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@caedf4e/sel_hub/sel_hub_module.js');
     loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@caedf4e/games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
     // ── Load registered STEM Lab tool modules (Plugin Architecture, Phase 2) ──
     // These files self-register via window.StemLab.registerTool()
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
@@ -18633,7 +18640,8 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_cell.js', 'stem_lab/stem_tool_chembalance.js',
         'stem_lab/stem_tool_punnett.js', 'stem_lab/stem_tool_semiconductor.js',
         'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_emotions.js',
-        'sel_hub/sel_tool_mindfulness.js', 'sel_hub/sel_tool_social.js'
+        'sel_hub/sel_tool_mindfulness.js', 'sel_hub/sel_tool_social.js',
+        'stem_lab/stem_tool_gamestudio.js'
       ];
       toolModules.forEach(function(mod) {
         var s = document.createElement('script');
