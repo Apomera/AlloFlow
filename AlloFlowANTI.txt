@@ -18600,7 +18600,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // Load AI Backend module (Firebase shim + WebSearchProvider + AIProvider)
     // Custom load (not loadModule) so we get onload callback to upgrade shims
     (function() {
-      const url = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/ai_backend_module.js';
+      const url = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/ai_backend_module.js';
       const s = document.createElement('script');
       s.src = url;
       s.crossOrigin = 'anonymous';
@@ -18614,22 +18614,22 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/teacher_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/teacher_module.js');
     // ── Load registered STEM Lab tool modules (Plugin Architecture, Phase 2) ──
     // These files self-register via window.StemLab.registerTool()
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -18674,8 +18674,8 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       });
       // Load scripts, then proactively init Kokoro to avoid first-speak latency
       (async () => {
-        await loadTTSScript('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/kokoro_tts_loader.js');
-        loadTTSScript('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/piper_tts_loader.js');
+        await loadTTSScript('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/kokoro_tts_loader.js');
+        loadTTSScript('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/piper_tts_loader.js');
         if (window._kokoroTTS) {
           try {
             await window._kokoroTTS.init((progress) => {
