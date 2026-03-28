@@ -2959,5 +2959,6 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
   window.AlloModules.StudentBingoGame = StudentBingoGame;
   window.AlloModules.WordScrambleGame = WordScrambleGame;
 
+  window.AlloModules.GamesBundle = true;
   console.log('[GamesBundle] 10 games registered:', ["MemoryGame","MatchingGame","TimelineGame","ConceptSortGame","VennGame","CrosswordGame","SyntaxScramble","BingoGame","StudentBingoGame","WordScrambleGame"]);
 })();

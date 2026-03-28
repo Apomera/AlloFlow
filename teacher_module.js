@@ -2778,5 +2778,6 @@ var TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardDa
   window.AlloModules.LearnerProgressView = LearnerProgressView;
   window.AlloModules.TeacherDashboard = TeacherDashboard;
 
+  window.AlloModules.TeacherModule = true;
   console.log('[TeacherModule] 10 components registered:', ["RosterKeyPanel","SimpleBarChart","SimpleDonutChart","LongitudinalProgressChart","ConfettiEffect","StudentEscapeRoomOverlay","TeacherLiveQuizControls","calculateAnalyticsMetrics","LearnerProgressView","TeacherDashboard"]);
 })();

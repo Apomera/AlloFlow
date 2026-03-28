@@ -178,6 +178,7 @@ const iifeFooter = `
   // ═══════════════════════════════════════════════════════════════
   window.AlloModules = window.AlloModules || {};
 ${gameNames.map(n => `  window.AlloModules.${n} = ${n};`).join('\n')}
+  window.AlloModules.GamesBundle = true;
 
   console.log('[GamesBundle] ${gameNames.length} games registered:', ${JSON.stringify(gameNames)});
 })();

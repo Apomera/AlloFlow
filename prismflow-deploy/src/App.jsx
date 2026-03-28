@@ -6023,15 +6023,2163 @@ const getIconForType = (type) => {
         default: return <FileText size={16} />;
     }
 };
-// ═══ AlloBot (loaded from CDN allobot_module.js) ═══
-// Proxy component that delegates to CDN-loaded implementation.
-// AlloBot uses forwardRef, so we must forward the ref to the CDN implementation.
-const SpeechBubble = () => null; // stub — loaded in module
-const AlloBot = React.memo(React.forwardRef((props, ref) => {
-  const Impl = window.AlloModules && window.AlloModules.AlloBot;
-  return Impl ? <Impl {...props} ref={ref} /> : null;
+// @section SPEECH_BUBBLE — Allobot speech bubble component
+const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onTyping, soundEnabled, variant = 'speech' }) => {
+  const { t } = useContext(LanguageContext);
+  const bubbleRef = useRef(null);
+  const [placement, setPlacement] = useState('top-right');
+  const [displayedText, setDisplayedText] = useState('');
+  useEffect(() => {
+      if (!isVisible || !text) {
+          setDisplayedText('');
+          if (onTyping) onTyping(false);
+          return;
+      }
+      setDisplayedText('');
+      if (onTyping) onTyping(true);
+      const chars = Array.from(text);
+      let i = 0;
+      const speed = 30;
+      const timer = setInterval(() => {
+          if (i < chars.length) {
+              const char = chars[i];
+              setDisplayedText((prev) => prev + char);
+              if (soundEnabled && i % 3 === 0 && !isGlobalMuted()) {
+                  try {
+                      const ctx = getGlobalAudioContext();
+                      if (ctx) {
+                          if (ctx.state === 'suspended') {
+                              ctx.resume();
+                          }
+                          const osc = ctx.createOscillator();
+                          const gain = ctx.createGain();
+                          osc.connect(gain);
+                          gain.connect(ctx.destination);
+                          osc.type = 'triangle';
+                          osc.frequency.value = 400 + (Math.random() * 150);
+                          gain.gain.setValueAtTime(0.02, ctx.currentTime);
+                          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+                          osc.start();
+                          osc.stop(ctx.currentTime + 0.05);
+                      }
+                  } catch(e) { warnLog('Caught error:', e?.message || e); }
+              }
+              i++;
+          } else {
+              clearInterval(timer);
+              if (onTyping) onTyping(false);
+          }
+      }, speed);
+      return () => {
+          clearInterval(timer);
+      };
+  }, [text, isVisible, onTyping, soundEnabled]);
+  React.useLayoutEffect(() => {
+    if (!isVisible || !bubbleRef.current) return;
+    const rect = bubbleRef.current.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    let newVert = 'top';
+    let newHoriz = variant === 'thought' ? 'left' : 'right';
+    if (rect.top < 10) {
+        newVert = 'bottom';
+    }
+    if (newHoriz === 'right') {
+        if (rect.left < 10) newHoriz = 'left';
+    } else {
+        if (rect.right > viewportWidth - 10) newHoriz = 'right';
+    }
+    setPlacement(`${newVert}-${newHoriz}`);
+  }, [isVisible, text, variant]);
+  const posClasses = {
+      'top-right': `bottom-full right-0 ${variant === 'thought' ? 'mb-1 mr-12' : 'mb-4'} origin-bottom-right`,
+      'top-left': `bottom-full left-0 ${variant === 'thought' ? 'mb-1 ml-12' : 'mb-4'} origin-bottom-left`,
+      'bottom-right': 'top-full right-0 mt-4 origin-top-right',
+      'bottom-left': 'top-full left-0 mt-4 origin-top-left',
+  };
+  const arrowClasses = {
+      'top-right': 'top-full right-6 border-t-[8px] border-x-[6px] border-b-0 border-t-white border-x-transparent',
+      'top-left': 'top-full left-6 border-t-[8px] border-x-[6px] border-b-0 border-t-white border-x-transparent',
+      'bottom-right': 'bottom-full right-6 border-b-[8px] border-x-[6px] border-t-0 border-b-white border-x-transparent',
+      'bottom-left': 'bottom-full left-6 border-b-[8px] border-x-[6px] border-t-0 border-b-white border-x-transparent',
+  };
+  const renderThoughtTrail = () => {
+      const isTop = placement.includes('top');
+      const isRight = placement.includes('right');
+      return (
+          <>
+            <div className={`absolute w-3 h-3 bg-white border border-indigo-100 rounded-full ${isTop ? '-bottom-4' : '-top-4'} ${isRight ? 'right-8' : 'left-8'}`}></div>
+            <div className={`absolute w-1.5 h-1.5 bg-white border border-indigo-100 rounded-full ${isTop ? '-bottom-7' : '-top-7'} ${isRight ? 'right-5' : 'left-5'}`}></div>
+          </>
+      );
+  };
+  return (
+    <div
+        ref={bubbleRef}
+        className={`
+            absolute ${posClasses[placement]}
+            bg-white text-indigo-900 text-xs font-bold px-4 py-3
+            shadow-xl border border-indigo-100
+            transition-all duration-300 ease-out
+            w-max max-w-[200px] z-50 pointer-events-none
+            ${variant === 'thought' ? 'rounded-[2rem]' : 'rounded-2xl'}
+            ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-2'}
+        `}
+    >
+        {displayedText}
+        {isTruncated && displayedText.length === text?.length && (
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    if (onReadMore) onReadMore();
+                }}
+                className="block mt-1 text-[10px] font-black text-indigo-500 hover:text-indigo-700 underline cursor-pointer pointer-events-auto"
+            >
+                {t('common.read_more')}
+            </button>
+        )}
+        {variant === 'speech' ? (
+             <div className={`absolute w-0 h-0 ${arrowClasses[placement]}`}></div>
+        ) : (
+             renderThoughtTrail()
+        )}
+    </div>
+  );
+});
+const LandingDust = ({ active }) => {
+  if (!active) return null;
+  return (
+      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex justify-center items-end w-24 h-12 pointer-events-none z-[-1]">
+           <div className="absolute bottom-2 w-8 h-8 bg-slate-300/40 rounded-full blur-md animate-dust-left" />
+           <div className="absolute bottom-2 w-8 h-8 bg-slate-300/40 rounded-full blur-md animate-dust-right" />
+           <div className="absolute bottom-1 w-6 h-6 bg-white/60 rounded-full blur-sm animate-dust-puff" />
+      </div>
+  );
+};
+const JetpackParticles = ({ active }) => {
+  const [particles, setParticles] = useState([]);
+  useEffect(() => {
+    if (!active) return;
+    const interval = setInterval(() => {
+      const timestamp = Date.now();
+      const speedL = 0.6 + Math.random() * 0.4;
+      const speedR = 0.6 + Math.random() * 0.4;
+      const driftL = (Math.random() - 0.5) * 30;
+      const driftR = (Math.random() - 0.5) * 30;
+      const newPair = [
+          { id: `${timestamp}-L`, side: 'left', offset: Math.random() * 8 - 4, speed: speedL, drift: driftL },
+          { id: `${timestamp}-R`, side: 'right', offset: Math.random() * 8 - 4, speed: speedR, drift: driftR }
+      ];
+      setParticles(prev => [...prev, ...newPair]);
+    }, 25);
+    return () => clearInterval(interval);
+  }, [active]);
+  useEffect(() => {
+      if (particles.length > 80) {
+          setParticles(prev => prev.slice(-50));
+      }
+      if (!active && particles.length > 0) {
+          const timer = setTimeout(() => setParticles([]), 1500);
+          return () => clearTimeout(timer);
+      }
+  }, [particles, active]);
+  return (
+    <div className="absolute inset-0 pointer-events-none z-0">
+        {particles.map(p => (
+            <div
+                key={p.id}
+                className="absolute w-3 h-3 rounded-full blur-[2px] animate-jetpack-smoke"
+                style={{
+                    left: p.side === 'left' ? `calc(20% + ${p.offset}px)` : `calc(80% + ${p.offset}px)`,
+                    top: '82%',
+                    '--drift': `${p.drift}px`,
+                    animationDuration: `${p.speed}s`
+                }}
+                onAnimationEnd={() => setParticles(prev => prev.filter(item => item.id !== p.id))}
+            />
+        ))}
+    </div>
+  );
+};
+const ReactionBubble = ({ emoji, onComplete }) => (
+  <div
+    className="absolute top-0 right-1/2 translate-x-1/2 text-4xl animate-float-reaction pointer-events-none select-none z-50 filter drop-shadow-md"
+    onAnimationEnd={onComplete}
+  >
+    {emoji}
+  </div>
+);
+const BotConfettiBurst = ({ onComplete }) => {
+  const calledRef = useRef(false);
+  const handleEnd = () => {
+    if (!calledRef.current) {
+      calledRef.current = true;
+      if (onComplete) onComplete();
+    }
+  };
+  const particles = React.useMemo(() => Array.from({ length: 24 }).map((_, i) => ({
+      id: i,
+      angle: (i * 15) + (Math.random() * 15),
+      dist: 80 + Math.random() * 50,
+      color: ['#FCD34D', '#F87171', '#60A5FA', '#34D399', '#A78BFA', '#F472B6'][Math.floor(Math.random() * 6)],
+      size: 4 + Math.random() * 4,
+      delay: Math.random() * 0.1
+  })), []);
+  return (
+      <div className="absolute top-1/2 left-1/2 w-0 h-0 z-[-1] pointer-events-none">
+          {particles.map((p, i) => (
+             <div
+                key={p.id}
+                className="absolute rounded-full animate-bot-confetti"
+                style={{
+                    backgroundColor: p.color,
+                    width: p.size,
+                    height: p.size,
+                    '--tx': `${Math.cos(p.angle * Math.PI / 180) * p.dist}px`,
+                    '--ty': `${Math.sin(p.angle * Math.PI / 180) * p.dist}px`,
+                    animationDelay: `${p.delay}s`
+                }}
+                onAnimationEnd={i === 0 ? handleEnd : undefined}
+             />
+          ))}
+      </div>
+  );
+};
+const spokenEventIds = new Set();
+const lastGlobalSpeech = { text: '', time: 0 };
+let introFiredGlobal = false;
+// @section ALLOBOT — Embodied pedagogical tour agent
+const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true }, ref) => {
+  const { t } = useContext(LanguageContext);
+  const [position, setPosition] = useState(() => {
+      try {
+          const saved = safeGetItem('allo_bot_pos_v2');
+          return saved ? JSON.parse(saved) : { x: 24, y: 20 };
+      } catch(e) {
+          return { x: 24, y: 20 };
+      }
+  });
+  const [isHovered, setIsHovered] = useState(false);
+  const [pulseScale, setPulseScale] = useState(1);
+  useEffect(() => {
+      const pulseInterval = setInterval(() => {
+          setPulseScale(prev => prev === 1 ? 1.02 : 1);
+      }, 2000);
+      return () => clearInterval(pulseInterval);
+  }, []);
+  const [eyePosition, setEyePosition] = useState({ x: 0, y: 0 });
+  const [visorPosition, setVisorPosition] = useState({ x: 0, y: 0 });
+  const containerRef = useRef(null);
+  useEffect(() => {
+      const handleMouseMove = (e) => {
+          if (!containerRef.current) return;
+          const rect = containerRef.current.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          const dx = e.clientX - centerX;
+          const dy = e.clientY - centerY;
+          const angle = Math.atan2(dy, dx);
+          const distance = Math.hypot(dx, dy);
+          const sensitivity = 100;
+          const intensity = Math.min(1, distance / sensitivity);
+          const maxVisorRadius = 1.5;
+          const visorOffset = intensity * maxVisorRadius;
+          setVisorPosition({
+              x: Math.cos(angle) * visorOffset,
+              y: Math.sin(angle) * visorOffset
+          });
+          const maxFeatureRadius = 3.5;
+          const featureOffset = intensity * maxFeatureRadius;
+          setEyePosition({
+              x: Math.cos(angle) * featureOffset,
+              y: Math.sin(angle) * featureOffset
+          });
+      };
+      window.addEventListener('mousemove', handleMouseMove);
+      return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+  const [customMessage, setCustomMessage] = useState(null);
+  const [isTruncated, setIsTruncated] = useState(false);
+  const [isTalking, setIsTalking] = useState(false);
+  const isTalkingRef = useRef(false);
+  useEffect(() => { isTalkingRef.current = isTalking; }, [isTalking]);
+  const [idleAnimation, setIdleAnimation] = useState(null);
+  const [internalMood, setInternalMood] = useState(null);
+  const effectiveMood = internalMood || mood;
+  const [viseme, setViseme] = useState('neutral');
+  const [blinkScale, setBlinkScale] = useState(1);
+  const [isSquashed, setIsSquashed] = useState(false);
+  const [isSleeping, setIsSleeping] = useState(false);
+  const [isPoofing, setIsPoofing] = useState(false);
+  const [reactions, setReactions] = useState([]);
+  const [bursts, setBursts] = useState([]);
+  const [localIsFlying, setLocalIsFlying] = useState(false);
+  const [isLanding, setIsLanding] = useState(false);
+  const [moveDuration, setMoveDuration] = useState(700);
+  const speechGenerationRef = useRef(0);
+  const prevDragPos = useRef({ x: 0, y: 0 });
+  const [dragRotation, setDragRotation] = useState(0);
+  const [velocity, setVelocity] = useState({ dx: 0, dy: 0 });
+  const lastPosRef = useRef({ x: position.x, y: position.y, time: Date.now() });
+  const velocityTimerRef = useRef(null);
+  useEffect(() => {
+      const now = Date.now();
+      const dt = Math.max(1, now - lastPosRef.current.time);
+      const dx = ((position.x - lastPosRef.current.x) / dt) * 10;
+      const dy = ((position.y - lastPosRef.current.y) / dt) * 10;
+      setVelocity({ dx, dy });
+      lastPosRef.current = { x: position.x, y: position.y, time: now };
+      if (velocityTimerRef.current) clearTimeout(velocityTimerRef.current);
+      velocityTimerRef.current = setTimeout(() => {
+          setVelocity({ dx: 0, dy: 0 });
+      }, 100);
+      return () => clearTimeout(velocityTimerRef.current);
+  }, [position]);
+  const [antennaAction, setAntennaAction] = useState(null);
+  const [wobbleState, setWobbleState] = useState({ active: false, deg: 0 });
+  const lastRotationRef = useRef(0);
+  const isFlightActive = isFlying || localIsFlying;
+  useEffect(() => {
+    if (isFlying && !isSleeping) {
+      // Fly from bottom-left to resting position over 2s
+      const startX = 5;
+      const startY = 90;
+      const endX = position.x || 24;
+      const endY = position.y || 20;
+      setPosition({ x: startX, y: startY });
+      setLocalIsFlying(true);
+      setMoveDuration(2000);
+      const flyTimer = setTimeout(() => {
+        setPosition({ x: endX, y: endY });
+        setTimeout(() => {
+          setLocalIsFlying(false);
+          setIsLanding(true);
+          setTimeout(() => setIsLanding(false), 600);
+        }, 2000);
+      }, 100);
+      return () => clearTimeout(flyTimer);
+    }
+  }, [isFlying]);
+  const getHeldItem = () => {
+      if (holdingPointer) return 'flashlight';
+      if (isFlightActive || isSleeping) return null;
+      switch (activeView) {
+          case 'math': return 'calculator';
+          case 'adventure': return 'map';
+          case 'quiz': return 'pencil';
+          case 'sentence-frames': return 'pencil';
+          case 'analysis': return 'magnifying-glass';
+          case 'lesson-plan': return 'clipboard';
+          case 'timeline': return 'hourglass';
+          case 'glossary': return 'globe';
+          case 'brainstorm': return 'wand';
+          case 'gemini-bridge': return 'wand';
+          case 'image': return 'paintbrush';
+          case 'simplified': return 'book';
+          case 'concept-sort': return 'pointer';
+          case 'behavior-lens': return 'clipboard';
+          default: return null;
+      }
+  };
+  const heldItem = getHeldItem();
+  const antennaRotation = Math.max(-20, Math.min(20, velocity.dx * 2.5));
+  const propRotation = Math.max(-15, Math.min(15, velocity.dx * 1.5));
+  const isMoving = Math.abs(velocity.dx) > 0.5;
+  if (Math.abs(antennaRotation) > 1) {
+      lastRotationRef.current = antennaRotation;
+  }
+  useEffect(() => {
+      if (!isMoving && Math.abs(lastRotationRef.current) > 2 && !wobbleState.active) {
+           setWobbleState({ active: true, deg: lastRotationRef.current });
+           const timer = setTimeout(() => {
+               setWobbleState({ active: false, deg: 0 });
+               lastRotationRef.current = 0;
+           }, 500);
+           return () => clearTimeout(timer);
+      }
+  }, [isMoving]);
+  const speechTimeoutRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const startPosRef = useRef({ x: 0, y: 0 });
+  const currentAudioRef = useRef(null);
+  const lastAudioUrlRef = useRef(null);
+  const authFailedRef = useRef(false);
+  const soundEnabledRef = useRef(soundEnabled);
+  useEffect(() => {
+      soundEnabledRef.current = soundEnabled;
+      if (!soundEnabled && currentAudioRef.current) {
+          currentAudioRef.current.pause();
+          currentAudioRef.current = null;
+          setIsTalking(false);
+      }
+  }, [soundEnabled]);
+  useEffect(() => {
+      try { safeSetItem('allo_bot_pos_v2', JSON.stringify(position)); } catch(e) { warnLog('localStorage write failed', e); }
+  }, [position]);
+  useEffect(() => {
+      if (isSleeping) {
+          setBlinkScale(1);
+          return;
+      }
+      let timer;
+      const scheduleBlink = () => {
+          const delay = 3000 + Math.random() * 3000;
+          timer = setTimeout(() => {
+              setBlinkScale(0.1);
+              setTimeout(() => {
+                  setBlinkScale(1);
+                  scheduleBlink();
+              }, 150);
+          }, delay);
+      };
+      scheduleBlink();
+      return () => clearTimeout(timer);
+  }, [isSleeping]);
+  useEffect(() => {
+      if (!isTalking) {
+          setViseme('neutral');
+          return;
+      }
+      const mouthShapes = ['o', 'd', 'dash', 'd', 'o'];
+      let index = 0;
+      const interval = setInterval(() => {
+          setViseme(mouthShapes[index]);
+          index = (index + 1) % mouthShapes.length;
+          if (Math.random() > 0.8) index = (index + 1) % mouthShapes.length;
+      }, 120);
+      return () => clearInterval(interval);
+  }, [isTalking]);
+  useEffect(() => {
+      if (isSleeping || isFlightActive || effectiveMood === 'thinking') {
+          setAntennaAction(null);
+          return;
+      }
+      const timer = setInterval(() => {
+          if (Math.random() > 0.3) return;
+          const actionRoll = Math.random();
+          if (actionRoll < 0.5) {
+              setAntennaAction('bounce');
+              setTimeout(() => setAntennaAction(null), 1900);
+          } else {
+              setAntennaAction('signal');
+              setTimeout(() => setAntennaAction(null), 4000);
+          }
+      }, 5000);
+      return () => clearInterval(timer);
+  }, [isSleeping, isFlightActive, effectiveMood]);
+  useEffect(() => {
+      if (isFlightActive && soundEnabled && !isGlobalMuted()) {
+          try {
+              const ctx = getGlobalAudioContext();
+              if (!ctx) return;
+              if (ctx.state === 'suspended') {
+                  ctx.resume();
+              }
+              const now = ctx.currentTime;
+              const bufferSize = ctx.sampleRate * 2.0;
+              const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+              const data = buffer.getChannelData(0);
+              for (let i = 0; i < bufferSize; i++) {
+                  data[i] = Math.random() * 2 - 1;
+              }
+              const noise = ctx.createBufferSource();
+              noise.buffer = buffer;
+              const noiseFilter = ctx.createBiquadFilter();
+              noiseFilter.type = 'lowpass';
+              noiseFilter.frequency.setValueAtTime(2000, now);
+              noiseFilter.frequency.exponentialRampToValueAtTime(100, now + 1.2);
+              const noiseGain = ctx.createGain();
+              noiseGain.gain.setValueAtTime(0.01, now);
+              noiseGain.gain.linearRampToValueAtTime(0.1, now + 0.1);
+              noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+              noise.connect(noiseFilter);
+              noiseFilter.connect(noiseGain);
+              noiseGain.connect(ctx.destination);
+              noise.start(now);
+              noise.stop(now + 1.3);
+              const osc = ctx.createOscillator();
+              osc.type = 'triangle';
+              osc.frequency.setValueAtTime(200, now);
+              osc.frequency.linearRampToValueAtTime(60, now + 1.2);
+              const oscGain = ctx.createGain();
+              oscGain.gain.setValueAtTime(0.01, now);
+              oscGain.gain.linearRampToValueAtTime(0.05, now + 0.1);
+              oscGain.gain.exponentialRampToValueAtTime(0.001, now + 1.0);
+              osc.connect(oscGain);
+              oscGain.connect(ctx.destination);
+              osc.start(now);
+              osc.stop(now + 1.3);
+          } catch (e) {
+              warnLog("Flight sound error", e);
+          }
+      }
+  }, [isFlightActive, soundEnabled]);
+  useEffect(() => {
+      return () => {
+          if (currentAudioRef.current) {
+              currentAudioRef.current.pause();
+          }
+          if (lastAudioUrlRef.current) {
+              URL.revokeObjectURL(lastAudioUrlRef.current);
+          }
+      };
+  }, []);
+  const moveTo = useCallback((targetX, targetY, duration = 1000) => {
+      if (isSleeping) return;
+      setMoveDuration(duration);
+      setLocalIsFlying(true);
+      setIsLanding(false);
+      const newRight = window.innerWidth - targetX - 32;
+      const newTop = Math.max(10, targetY);
+      setPosition({
+          x: Math.max(10, newRight),
+          y: newTop
+      });
+      setTimeout(() => {
+          setLocalIsFlying(false);
+          setIsLanding(true);
+          setTimeout(() => setIsLanding(false), 1000);
+      }, duration);
+  }, [isSleeping]);
+  const triggerReaction = useCallback((emoji) => {
+      const id = Date.now() + Math.random();
+      setReactions(prev => [...prev, { id, emoji }]);
+      if (emoji === '🎉') {
+          const burstId = Date.now() + Math.random();
+          setBursts(prev => [...prev, { id: burstId }]);
+      }
+  }, []);
+  const speak = useCallback(async (text, isSilent = false) => {
+      const safeText = (text || "").toString();
+      const now = Date.now();
+      if (!isSilent && safeText === lastGlobalSpeech.text && (now - lastGlobalSpeech.time) < 2000) {
+          warnLog("AlloBot: Suppressing duplicate speech:", safeText);
+          return;
+      }
+      if (!isSilent) {
+          lastGlobalSpeech.text = safeText;
+          lastGlobalSpeech.time = now;
+      }
+      speechGenerationRef.current += 1;
+      const myGenId = speechGenerationRef.current;
+      if (currentAudioRef.current) {
+          currentAudioRef.current.pause();
+          currentAudioRef.current = null;
+      }
+      if (lastAudioUrlRef.current) {
+          URL.revokeObjectURL(lastAudioUrlRef.current);
+          lastAudioUrlRef.current = null;
+      }
+      if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      if (onSpeechStart) onSpeechStart();
+      setIsSleeping(false);
+      setWobbleState({ active: true, deg: 3 });
+      setTimeout(() => setWobbleState({ active: false, deg: 0 }), 200);
+      let cleanText = safeText
+          .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+          .replace(/\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/g, '')   // superscript citations ⁽³⁾
+          .replace(/\[Source\s+\d+\]/gi, '')            // [Source N] markers
+          .replace(/\[\d+\]/g, '')                      // [1] numeric refs
+          .replace(/\*\*/g, '')
+          .replace(/\*/g, '')
+          .replace(/__|\_/g, '')
+          .replace(/^#+\s/gm, '')
+          .replace(/`/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+      const ttsText = cleanText;
+      const lower = cleanText.toLowerCase();
+      let detectedMood = null;
+      if (/\b(great|success|correct|awesome|good job|yay|perfect|excellent|congrats)\b/.test(lower)) {
+          detectedMood = 'happy';
+      } else if (/\b(error|sorry|failed|wrong|incorrect|oops|unable|sad|apologize)\b/.test(lower)) {
+          detectedMood = 'sad';
+      }
+      if (detectedMood) setInternalMood(detectedMood);
+      const limit = 150;
+      let truncated = false;
+      if (cleanText.length > limit) {
+          cleanText = cleanText.substring(0, limit).trim() + "...";
+          truncated = true;
+      }
+      setCustomMessage(cleanText);
+      setIsTruncated(truncated);
+      const resetState = () => {
+          setCustomMessage(null);
+          setIsTruncated(false);
+          setInternalMood(null);
+          setIsTalking(false);
+          currentAudioRef.current = null;
+          if (onSpeechEnd) onSpeechEnd();
+      };
+      let audioStarted = false;
+      if (!isSilent) {
+          setIsTalking(true);
+      }
+      if (!isSilent && soundEnabledRef.current && !authFailedRef.current) {
+          let cloudSuccess = false;
+          debugLog("AlloBot Speak Debug:", {
+              hasOnGenerate: !!onGenerateAudio,
+              voice: selectedVoice,
+              textLen: ttsText.length
+          });
+          if (onGenerateAudio) {
+              const _hasKokoro = !!window._kokoroTTS;
+              const attemptTTS = async (attemptNum) => {
+                  // Kokoro TTS can take 50-60s on first generation (model warm-up + inference)
+                  // Use 90s timeout when Kokoro is available, otherwise normal 20s/15s
+                  const timeoutMs = _hasKokoro ? 90000 : (attemptNum === 1 ? 20000 : 15000);
+                  debugLog(`🎤 AlloBot TTS attempt ${attemptNum} (${timeoutMs}ms timeout, kokoro=${_hasKokoro})...`);
+                  const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), timeoutMs));
+                  const audioPromise = onGenerateAudio(ttsText, selectedVoice, voiceSpeed, 1);
+                  return Promise.race([audioPromise, timeoutPromise]);
+              };
+              try {
+                  let audioUrl = await attemptTTS(1);
+                  if (!audioUrl) {
+                      console.warn("[TTS] Gemini TTS attempt 1 timed out or returned null — retrying after delay...");
+                      await new Promise(r => setTimeout(r, 1500));
+                      if (myGenId !== speechGenerationRef.current) return;
+                      audioUrl = await attemptTTS(2);
+                  }
+                  if (!audioUrl) {
+                      console.warn("[TTS] ⚠️ Both Gemini TTS attempts failed — showing text only (no browser TTS)");
+                  } else {
+                      debugLog("onGenerateAudio returned: URL Present");
+                  }
+                  if (myGenId !== speechGenerationRef.current) return;
+                  if (!soundEnabledRef.current) {
+                      setIsTalking(false);
+                      resetState();
+                      return;
+                  }
+                  if (audioUrl) {
+                      lastAudioUrlRef.current = audioUrl;
+                      const audio = new Audio(audioUrl);
+                      audio.playbackRate = voiceSpeed;
+                      audio.volume = voiceVolume;
+                      currentAudioRef.current = audio;
+                      if (window._kokoroTTS && window._kokoroTTS.chainPlay) {
+                          window._kokoroTTS.chainPlay(audio, voiceSpeed, voiceVolume, resetState);
+                      } else {
+                          audio.onended = resetState;
+                      }
+                      const handleAudioError = (e) => {
+                           warnLog("Bot audio error/interrupted", e);
+                           resetState();
+                      };
+                      audio.onerror = handleAudioError;
+                      await audio.play().then(() => {
+                          cloudSuccess = true;
+                          audioStarted = true;
+                      }).catch(handleAudioError);
+                  }
+              } catch (e) {
+                  // Only fall through to browser TTS if Kokoro is NOT available.
+                  // If Kokoro exists, it will eventually deliver audio — don't compete.
+                  if (window._kokoroTTS) {
+                      warnLog("⚠️ TTS attempt failed but Kokoro present — skipping browser TTS:", e?.message);
+                  } else {
+                      warnLog("⚠️ Gemini TTS failed, falling back to browser TTS:", e?.message);
+                  }
+              }
+          }
+          if (!cloudSuccess && myGenId === speechGenerationRef.current && !isGlobalMuted()) {
+              // Skip browser TTS fallback when Kokoro is available — Kokoro will
+              // eventually deliver audio; browser TTS would just talk over it.
+              if (window._kokoroTTS) {
+                  debugLog("AlloBot: Kokoro present — skipping browser TTS fallback, showing text bubble only");
+                  // Let the text bubble remain visible; audio will arrive when Kokoro finishes
+              } else {
+                  // Browser TTS fallback — speak via speechSynthesis so user hears something
+                  try {
+                      if (window.speechSynthesis && ttsText && ttsText.length > 0) {
+                          window.speechSynthesis.cancel();
+                          const utter = new SpeechSynthesisUtterance(ttsText);
+                          utter.rate = voiceSpeed || 1;
+                          utter.volume = voiceVolume || 1;
+                          utter.onend = resetState;
+                          utter.onerror = () => { resetState(); };
+                          window.speechSynthesis.speak(utter);
+                          audioStarted = true;
+                          cloudSuccess = true;
+                          debugLog("AlloBot: Using browser TTS fallback");
+                      } else {
+                          warnLog("AlloBot: No browser TTS available — text bubble only");
+                          setIsTalking(false);
+                      }
+                  } catch (fallbackErr) {
+                      warnLog("AlloBot: Browser TTS fallback failed:", fallbackErr);
+                      setIsTalking(false);
+                  }
+              }
+          }
+      }
+      if (!audioStarted) {
+          const duration = Math.min(90000, 4000 + (cleanText.length * 80));
+          speechTimeoutRef.current = setTimeout(resetState, duration);
+      }
+  }, [selectedVoice, voiceSpeed, voiceVolume, onGenerateAudio]);
+  const handleTypingState = useCallback((isTyping) => {
+    if (isTyping) { setIsTalking(true); }
+    else if (!currentAudioRef.current) { setIsTalking(false); }
+  }, []);
+  const summon = useCallback(() => {
+      const now = Date.now();
+      if (now - lastSummonTimeRef.current < 2000) return;
+      lastSummonTimeRef.current = now;
+      setPosition({ x: 24, y: 20 });
+      setIsSleeping(false);
+      setIdleAnimation('wave-hello'); setTimeout(() => setIdleAnimation(null), 1500);
+      speak(t('bot.summon_msg'));
+  }, [speak, t]);
+  const handleSleep = (e) => {
+      e.stopPropagation();
+      setIsPoofing(true);
+      setCustomMessage(null);
+      setTimeout(() => {
+          setIsSleeping(true);
+          setIsPoofing(false);
+      }, 400);
+  };
+  React.useImperativeHandle(ref, () => ({
+      moveTo,
+      speak,
+      summon,
+      triggerReaction,
+      dismissMessage: () => {
+          setCustomMessage(null);
+          setIsTruncated(false);
+          setIsTalking(false);
+      },
+      playAnimation: (animName, durationMs = 1200) => {
+          setIdleAnimation(animName);
+          setTimeout(() => setIdleAnimation(null), durationMs);
+      },
+      flyTo: (targetX, targetY, duration = 2000) => {
+          setLocalIsFlying(true);
+          setMoveDuration(duration);
+          setTimeout(() => {
+              setPosition({ x: targetX, y: targetY });
+              setTimeout(() => {
+                  setLocalIsFlying(false);
+                  setIsLanding(true);
+                  setTimeout(() => setIsLanding(false), 600);
+              }, duration);
+          }, 50);
+      },
+  }));
+  const lastSummonTimeRef = useRef(0);
+  useEffect(() => {
+    if (canPlayIntro && !isTalking && !customMessage && !introFiredGlobal && t('bot_events.intro_greeting') !== 'bot_events.intro_greeting') {
+      if (!introFiredGlobal) {
+        introFiredGlobal = true; window.__introFiredAt = Date.now();
+        setTimeout(() => {
+            const welcomeMsg = t('sidebar.ai_guide_welcome');
+            if (welcomeMsg && welcomeMsg !== 'sidebar.ai_guide_welcome') {
+                speak(welcomeMsg);
+            }
+            setIdleAnimation('wave-hello'); setTimeout(() => setIdleAnimation(null), 2500);
+            if (onBotIntroSeen) onBotIntroSeen();
+        }, 2500);
+      }
+    }
+  }, [canPlayIntro, onBotIntroSeen, speak, isTalking, customMessage, t]);
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+       if (isSleeping) {
+           e.preventDefault();
+           summon();
+       }
+    }
+  };
+  const pendingSpeechTimerRef = useRef(null);
+  useEffect(() => {
+      if (!history || history.length === 0) return;
+      const latest = history[history.length - 1];
+      if (latest.id && !spokenEventIds.has(latest.id)) {
+          spokenEventIds.add(latest.id);
+          if (pendingSpeechTimerRef.current) {
+              clearTimeout(pendingSpeechTimerRef.current);
+              pendingSpeechTimerRef.current = null;
+          }
+          pendingSpeechTimerRef.current = setTimeout(() => {
+              if (isTalkingRef.current || isSystemAudioActive || (introFiredGlobal && Date.now() - (window.__introFiredAt || 0) < 8000)) {
+                  debugLog("AlloBot: Skipping event tip, intro cooldown or already talking.");
+                  return;
+              }
+              const tips = [];
+              const type = latest.type;
+              let message = "";
+              const topicStr = topic ? ` about ${topic}` : "";
+              if (type === 'quiz') {
+                  const questions = latest.data?.questions || [];
+                  const qCount = questions.length;
+                  const questionTexts = questions.map(q => q.question || q.text || '').filter(Boolean);
+                  const hotWords = ['analyze', 'evaluate', 'compare', 'contrast', 'explain why', 'justify', 'predict', 'infer', 'synthesize'];
+                  const hotQuestions = questions.filter(q => {
+                    const qText = (q.question || q.text || '').toLowerCase();
+                    return hotWords.some(w => qText.includes(w));
+                  });
+                  const difficulties = [...new Set(questions.map(q => q.difficulty).filter(Boolean))];
+                  let msg = `I've generated ${qCount} questions${topicStr}.`;
+                  if (hotQuestions.length > 0) {
+                    msg += ` ${hotQuestions.length} of them test higher-order thinking skills like analysis and evaluation.`;
+                  }
+                  if (difficulties.length > 1) {
+                    msg += ` The difficulty ranges from ${difficulties[0]} to ${difficulties[difficulties.length - 1]}.`;
+                  } else if (qCount > 3) {
+                    const avgLen = questionTexts.reduce((sum, q) => sum + q.length, 0) / Math.max(questionTexts.length, 1);
+                    if (avgLen > 80) msg += ` These are detailed, application-level questions.`;
+                    else msg += ` Quick recall questions to check understanding.`;
+                  }
+                  message = msg;
+              } else if (type === 'glossary') {
+                  const terms = Array.isArray(latest.data) ? latest.data : [];
+                  const termCount = terms.length;
+                  const termNames = terms.map(t => t.term || t.word || '').filter(Boolean);
+                  const complexTerms = termNames.filter(t => t.length > 8 || t.includes(' '));
+                  let msg = `I found ${termCount} key terms${topicStr}.`;
+                  if (complexTerms.length > 0 && complexTerms.length <= 3) {
+                    msg += ` Watch for complex vocabulary like ${complexTerms.slice(0, 2).map(t => `"${t}"`).join(' and ')}.`;
+                  } else if (complexTerms.length > 3) {
+                    msg += ` ${complexTerms.length} of these are advanced vocabulary words worth extra attention.`;
+                  }
+                  if (termCount >= 5) msg += ` Try the Bingo game or Memory Match to practice!`;
+                  msg += ` Running a quick quality check on your glossary...`;
+                  message = msg;
+              } else if (type === 'simplified') {
+                  const level = latest.data?.gradeLevel;
+                  const text = typeof latest.data === 'string' ? latest.data : latest.data?.text || '';
+                  const sentenceCount = (text.match(/[.!?]+/g) || []).length;
+                  const wordCount = text.split(/\s+/).filter(Boolean).length;
+                  let msg = level
+                    ? `This text has been adapted to a ${level} level.`
+                    : `This text has been adapted for easier reading.`;
+                  if (sentenceCount > 0 && wordCount > 0) {
+                    const avgWordsPerSentence = Math.round(wordCount / sentenceCount);
+                    msg += ` It has ${sentenceCount} sentences averaging ${avgWordsPerSentence} words each.`;
+                  }
+                  msg += ` Try the Cloze tool or click any word for its definition!`;
+                  message = msg;
+              } else if (type === 'adventure') {
+                  const scene = latest.data?.scene || latest.data;
+                  const optionCount = scene?.options?.length || 0;
+                  if (optionCount > 0) {
+                    message = `Adventure awaits${topicStr}! You have ${optionCount} choices to begin. Every decision shapes your story, so choose wisely!`;
+                  } else {
+                    message = `Adventure awaits! I've set up a simulation${topicStr}. Watch your health and inventory!`;
+                  }
+              } else if (type === 'analysis') {
+                  const rawLevel = latest.data?.readingLevel?.range;
+                  const conceptCount = latest.data?.keyConcepts?.length || latest.data?.concepts?.length || 0;
+                  const vocabCount = latest.data?.vocabulary?.length || latest.data?.tier2Words?.length || 0;
+                  const level = rawLevel ? rawLevel.replace(/[-–—]/g, ' to ').replace(/\s*,\s*/g, ' to ') : rawLevel;
+                  let msg = level
+                    ? t('bot_events.feedback_analysis_result', { level }) || `I've analyzed the text. It reads at a ${level} level.`
+                    : `I've analyzed the text${topicStr}.`;
+                  if (conceptCount > 0) msg += ` I identified ${conceptCount} key concepts.`;
+                  if (vocabCount > 0) msg += ` There are ${vocabCount} vocabulary terms worth teaching.`;
+                  if (!conceptCount && !vocabCount) msg += ` Check the Key Concepts section before moving on.`;
+                  message = msg;
+              } else if (type === 'scaffolds') {
+                  const frames = latest.data?.frames || latest.data || [];
+                  const frameCount = Array.isArray(frames) ? frames.length : 0;
+                  message = frameCount > 0
+                    ? `I've prepared ${frameCount} writing supports${topicStr}. These sentence frames and paragraph starters will help structure student writing!`
+                    : `I've prepared some writing supports${topicStr}. Use these frames to help structure your writing!`;
+              } else if (type === 'faq') {
+                  const questions = latest.data?.questions || latest.data || [];
+                  const faqCount = Array.isArray(questions) ? questions.length : 0;
+                  message = faqCount > 0
+                    ? `I generated ${faqCount} frequently asked questions${topicStr}. These cover the most common points students wonder about. Reveal the answers to study!`
+                    : `I generated some common questions${topicStr}. Revealing the answers is a great way to study.`;
+              } else if (type === 'outline') {
+                  const sections = latest.data?.sections || latest.data?.outline || [];
+                  const sectionCount = Array.isArray(sections) ? sections.length : 0;
+                  message = sectionCount > 0
+                    ? `Here's a ${sectionCount}-section outline${topicStr}. It works as a roadmap for your lesson planning!`
+                    : `Here is a structured outline${topicStr}. It works as a great roadmap for your lesson.`;
+              } else if (type === 'brainstorm') {
+                  const activities = latest.data?.activities || latest.data || [];
+                  const actCount = Array.isArray(activities) ? activities.length : 0;
+                  message = actCount > 0
+                    ? `Brainstorming complete! I found ${actCount} creative activities${topicStr} that connect learning to real-world applications!`
+                    : `Brainstorming complete! I've found some creative activities to connect${topicStr} to the real world.`;
+              } else if (type === 'concept-sort') {
+                  const categories = latest.data?.categories || [];
+                  const itemCount = latest.data?.items?.length || 0;
+                  message = categories.length > 0
+                    ? `Time to categorize! Sort ${itemCount > 0 ? itemCount + ' items' : 'the items'} into ${categories.length} groups${topicStr}. Drag and drop to test your understanding!`
+                    : `Time to categorize! Drag and drop the items to sort${topicStr} correctly.`;
+              } else if (type === 'math') {
+                  const problems = latest.data?.problems || latest.data?.equations || [];
+                  const probCount = Array.isArray(problems) ? problems.length : 0;
+                  message = probCount > 0
+                    ? `I've generated ${probCount} practice problems. Let's crunch some numbers and build those math skills!`
+                    : `I've solved the problem and generated some practice equations. Let's crunch some numbers!`;
+              } else if (type === 'persona') {
+                  const name = latest.data?.name || latest.data?.character?.name;
+                  message = name
+                    ? `${name} is ready for your interview! Ask them anything about the topic and they'll respond in character.`
+                    : `Your interview partner is ready. You can ask them anything about the topic!`;
+              } else if (type === 'alignment') {
+                  message = `I've audited the content against your standards. Check the Rigor Report to see how well it aligns.`;
+              } else {
+                  if (type === 'timeline') tips.push(t('tips.timeline_drag'));
+                  else if (type === 'lesson-plan') tips.push(t('tips.fallback_guide'));
+                  else if (type === 'image') tips.push("I've created a visual support for the topic! You can save it or use it as a discussion starter in class.");
+                  if (tips.length > 0) message = tips[Math.floor(Math.random() * tips.length)];
+              }
+              if (message) {
+                   speak(message, false);
+              }
+          }, 5000);
+          return () => {
+              if (pendingSpeechTimerRef.current) {
+                  clearTimeout(pendingSpeechTimerRef.current);
+                  pendingSpeechTimerRef.current = null;
+              }
+          };
+      }
+  }, [history, speak, t, isTalking]);
+  useEffect(() => {
+    let ambientTimer;
+    let fallbackTimer;
+    let lastActivityTime = Date.now();
+    let hasSpokenFallback = false;
+    const spokenTips = new Set();
+    const getRandomTip = () => {
+        const has = (type) => history && Array.isArray(history) && history.some(h => h && h.type === type);
+        const tips = [];
+        const latestText = history && Array.isArray(history) && history.find(h => h && h.type === 'simplified');
+        const topic = (latestText && latestText.topic) || (typeof generatedContent !== 'undefined' && generatedContent && generatedContent.topic) || '';
+        const glossaryEntry = history && Array.isArray(history) && history.find(h => h && h.type === 'glossary');
+        const glossaryTerms = (glossaryEntry && glossaryEntry.data && glossaryEntry.data.terms) || [];
+        const resourceCount = (history && Array.isArray(history)) ? history.length : 0;
+        const allTypes = ['quiz', 'glossary', 'adventure', 'lesson-plan', 'image', 'timeline', 'brainstorm'];
+        const missingTypes = allTypes.filter(tp => !has(tp));
+        const suggestion = missingTypes.length > 0 ? missingTypes[Math.floor(Math.random() * missingTypes.length)].replace('-', ' ') : 'review game';
+        const randomWord = glossaryTerms.length > 0
+            ? (glossaryTerms[Math.floor(Math.random() * glossaryTerms.length)].term || glossaryTerms[Math.floor(Math.random() * glossaryTerms.length)])
+            : '';
+        const term1 = glossaryTerms.length > 0 ? (glossaryTerms[0].term || glossaryTerms[0]) : '';
+        const term2 = glossaryTerms.length > 1 ? (glossaryTerms[1].term || glossaryTerms[1]) : '';
+        if (activeView === 'simplified') {
+            if (randomWord) {
+                tips.push(t('tips.simplified_def', { word: randomWord }));
+            } else {
+                tips.push(t('tips.simplified_def_fallback') || t('tips.simplified_def'));
+            }
+            if (!has('quiz')) tips.push(t('tips.simplified_quiz'));
+            if (!has('glossary')) {
+                if (term1 && term2) {
+                    tips.push(t('tips.simplified_glossary', { term1, term2 }));
+                } else {
+                    tips.push(t('tips.simplified_glossary_fallback') || t('tips.simplified_glossary'));
+                }
+            }
+        } else if (activeView === 'glossary') {
+            tips.push(t('tips.glossary_bingo'));
+            if (!has('image')) tips.push(t('tips.glossary_visuals'));
+        } else if (activeView === 'quiz') {
+            tips.push(t('tips.quiz_autograder'));
+        } else if (activeView === 'adventure') {
+            if (topic) {
+                tips.push(t('tips.adventure_context', { topic, suggestion }));
+            } else {
+                tips.push(t('tips.adventure_context_fallback') || t('tips.adventure_context'));
+            }
+        } else if (activeView === 'input') {
+            if (history.length === 0) {
+                // input_ready tip removed (inaccurate + repeats excessively)
+            } else {
+                if (topic) {
+                    tips.push(t('tips.input_next', { count: resourceCount, topic, suggestion }));
+                } else {
+                    tips.push(t('tips.input_next_fallback') || t('tips.input_next'));
+                }
+            }
+        }
+        if (typeof userRole !== 'undefined' && userRole === 'parent') {
+            tips.push(t('tips.parent_bedtime'));
+            tips.push(t('tips.parent_adventure'));
+            tips.push(t('tips.parent_read_along'));
+        }
+        if (resourceCount >= 3 && !has('lesson-plan')) {
+            tips.push(t('tips.fallback_lesson_plan'));
+        }
+        if (tips.length === 0) {
+            tips.push(t('tips.fallback_brainstorm'));
+            if (topic && resourceCount > 0) {
+                tips.push(t('tips.fallback_export', { count: resourceCount, topic }));
+            } else {
+                tips.push(t('tips.fallback_export_fallback') || t('tips.fallback_export'));
+            }
+        }
+        const unspoken = tips.filter(t => !spokenTips.has(t));
+        const pool = unspoken.length > 0 ? unspoken : tips;
+        const chosen = pool[Math.floor(Math.random() * pool.length)];
+        spokenTips.add(chosen);
+        return chosen;
+    };
+    const scheduleAmbientAction = () => {
+        const delay = 60000 + Math.random() * 60000;
+        ambientTimer = setTimeout(() => {
+            if (isDragging || isTalkingRef.current || customMessage || isIdleDisabled || isSleeping) {
+                scheduleAmbientAction();
+                return;
+            }
+            const anims = ['wave', 'backflip', 'shrug', 'look-around'];
+            const action = anims[Math.floor(Math.random() * anims.length)];
+            setIdleAnimation(action);
+            setTimeout(() => setIdleAnimation(null), 2000);
+            if (Math.random() < 0.3) {
+                 const tip = getRandomTip();
+                 speak(tip, true);
+            }
+            scheduleAmbientAction();
+        }, delay);
+    };
+    const checkFallbackInactivity = () => {
+        const now = Date.now();
+        if (now - lastActivityTime > 300000 && !hasSpokenFallback) {
+             if (!isDragging && !isTalkingRef.current && !isSystemAudioActive && !customMessage && !isIdleDisabled && !isSleeping) {
+                 const tip = getRandomTip();
+                 speak(tip, false);
+                 hasSpokenFallback = true;
+             }
+             lastActivityTime = Date.now();
+        }
+    };
+    fallbackTimer = setInterval(checkFallbackInactivity, 10000);
+    const resetInactivity = () => {
+        lastActivityTime = Date.now();
+        hasSpokenFallback = false;
+    };
+    window.addEventListener('mousemove', resetInactivity);
+    window.addEventListener('keydown', resetInactivity);
+    window.addEventListener('click', resetInactivity);
+    window.addEventListener('scroll', resetInactivity);
+    scheduleAmbientAction();
+    return () => {
+        clearTimeout(ambientTimer);
+        clearInterval(fallbackTimer);
+        window.removeEventListener('mousemove', resetInactivity);
+        window.removeEventListener('keydown', resetInactivity);
+        window.removeEventListener('click', resetInactivity);
+        window.removeEventListener('scroll', resetInactivity);
+    };
+  }, [speak, isDragging, isTalking, customMessage, isIdleDisabled, isSleeping, activeView, history, isParentMode, t]);
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+    setIsSquashed(true);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    dragStartRef.current = { x: clientX, y: clientY };
+    startPosRef.current = { ...position };
+    prevDragPos.current = { x: clientX, y: clientY };
+  };
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDragging) return;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const deltaX = dragStartRef.current.x - clientX;
+      const deltaY = clientY - dragStartRef.current.y;
+      const velocityX = clientX - prevDragPos.current.x;
+      const rotation = Math.max(-20, Math.min(20, velocityX * -0.5));
+      setDragRotation(rotation);
+      prevDragPos.current = { x: clientX, y: clientY };
+      setPosition({
+        x: Math.max(10, startPosRef.current.x + deltaX),
+        y: Math.max(10, startPosRef.current.y + deltaY)
+      });
+    };
+    const handleMouseUp = (e) => {
+      setIsDragging(false);
+      setIsSquashed(false);
+      setDragRotation(0);
+      const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+      const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+      const dist = Math.hypot(clientX - dragStartRef.current.x, clientY - dragStartRef.current.y);
+      if (dist < 5 && onClick) onClick();
+    };
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleMouseMove, { passive: false });
+      window.addEventListener('touchend', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleMouseMove);
+      window.removeEventListener('touchend', handleMouseUp);
+    };
+  }, [isDragging, onClick]);
+  const moodConfig = {
+      idle: { gradFrom: '#818CF8', gradTo: '#4338CA', eye: '#22D3EE', mouth: '#22D3EE', glow: '#6366F1', msg: t('bot.mood_idle') },
+      happy: { gradFrom: '#34D399', gradTo: '#059669', eye: '#FFFFFF', mouth: '#FFFFFF', glow: '#10B981', msg: t('bot.mood_happy') },
+      thinking: { gradFrom: '#FBBF24', gradTo: '#B45309', eye: '#FEF3C7', mouth: '#FEF3C7', glow: '#F59E0B', msg: t('bot.mood_thinking') },
+      sad: { gradFrom: '#64748B', gradTo: '#334155', eye: '#E2E8F0', mouth: '#E2E8F0', glow: '#94A3B8', msg: t('bot.mood_sad') }
+  };
+  const getColors = () => {
+      const effectiveAccessory = isSleeping ? 'sleep-cap' : accessory;
+      const base = moodConfig[effectiveMood] || moodConfig.idle;
+      if (theme === 'contrast') {
+          return {
+             ...base,
+             gradFrom: '#FACC15',
+             gradTo: '#CA8A04',
+             eye: '#000000',
+             mouth: '#000000',
+             glow: '#FFFFFF',
+             screenBg: '#000000',
+             antenna: '#FACC15',
+             jetpackFill: '#000000',
+             jetpackStroke: '#FACC15',
+          };
+      }
+      let c = { ...base, screenBg: '#1E1B4B', antenna: base.gradTo, jetpackFill: '#94A3B8', jetpackStroke: '#475569' };
+      if (colorOverlay === 'blue') {
+          c = { ...c, gradFrom: '#60A5FA', gradTo: '#2563EB', glow: '#93C5FD', screenBg: '#172554', antenna: '#2563EB', jetpackFill: '#60A5FA' };
+      } else if (colorOverlay === 'peach') {
+          c = { ...c, gradFrom: '#FB923C', gradTo: '#EA580C', glow: '#FDBA74', screenBg: '#431407', antenna: '#EA580C', jetpackFill: '#FB923C' };
+      } else if (colorOverlay === 'yellow') {
+          c = { ...c, gradFrom: '#FACC15', gradTo: '#CA8A04', glow: '#FEF08A', screenBg: '#422006', antenna: '#CA8A04', jetpackFill: '#FACC15' };
+      }
+      if (theme === 'dark' && colorOverlay === 'none') {
+          c.screenBg = '#020617';
+          c.jetpackFill = '#334155';
+          c.jetpackStroke = '#64748B';
+          c.glow = '#A5B4FC';
+          if (effectiveMood === 'idle') {
+              c.gradFrom = '#6366F1';
+              c.gradTo = '#312E81';
+              c.antenna = '#818CF8';
+              c.eye = '#67E8F9';
+              c.mouth = '#67E8F9';
+          }
+      }
+      return c;
+  };
+  const colors = getColors();
+  const effectiveAccessory = isSleeping ? 'sleep-cap' : accessory;
+  const getEyeDimensions = () => {
+    switch (effectiveMood) {
+      case 'happy':
+        return { rx: 8.5, ry: 4 };
+      case 'sad':
+        return { rx: 6, ry: 7.5 };
+      case 'thinking':
+        return { rx: 7, ry: 7 };
+      case 'idle':
+      default:
+        return { rx: 6.5, ry: 6.5 };
+    }
+  };
+  const { rx: eyeRx, ry: eyeRy } = getEyeDimensions();
+  const getMouthPath = () => {
+    if (isTalking) {
+      switch (viseme) {
+        case 'o':
+           return "M 47 57 Q 50 53 53 57 Q 50 61 47 57";
+        case 'd':
+           return "M 44 58 Q 50 58 56 58 Q 50 65 44 58";
+        case 'dash':
+           return "M 46 59 Q 50 59 54 59 Q 50 59 46 59";
+        default:
+           return "M 46 59 Q 50 59 54 59 Q 50 59 46 59";
+      }
+    }
+    switch (effectiveMood) {
+      case 'happy':
+        return "M 43 57 Q 50 59 57 57 Q 50 65 43 57";
+      case 'sad':
+        return "M 45 62 Q 50 56 55 62 Q 50 56 45 62";
+      case 'thinking':
+        return "M 47 59 Q 50 57 53 59 Q 50 61 47 59";
+      case 'idle':
+      default:
+        return "M 45 59 Q 50 61 55 59 Q 50 61 45 59";
+    }
+  };
+  const trailFilter = (isFlying || localIsFlying)
+      ? `drop-shadow(-6px 4px 0px ${colors.gradFrom}40) drop-shadow(-12px 8px 0px ${colors.gradFrom}20)`
+      : 'none';
+  const renderHologramContent = () => {
+      switch (activeView) {
+          case 'math':
+              return (
+                  <g>
+                    <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="12s" repeatCount="indefinite" />
+                    <text x="0" y="4" fontSize="16" fill="#E0F2FE" textAnchor="middle" fontWeight="bold" style={{ fontFamily: 'serif' }}>π</text>
+                    <g>
+                        <animateTransform attributeName="transform" type="rotate" from="360 0 0" to="0 0 0" dur="6s" repeatCount="indefinite" />
+                        <text x="0" y="-12" fontSize="6" fill="#67E8F9" textAnchor="middle">1</text>
+                        <text x="10" y="6" fontSize="6" fill="#67E8F9" textAnchor="middle">2</text>
+                        <text x="-10" y="6" fontSize="6" fill="#67E8F9" textAnchor="middle">3</text>
+                    </g>
+                    <circle r="14" stroke="#22D3EE" strokeWidth="0.5" strokeDasharray="2 1" fill="none" opacity="0.5" />
+                  </g>
+              );
+          case 'adventure':
+          case 'timeline':
+              return (
+                  <g>
+                     <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="8s" repeatCount="indefinite" />
+                     <circle r="10" stroke="#67E8F9" strokeWidth="0.8" fill="rgba(34, 211, 238, 0.1)" />
+                     <ellipse rx="10" ry="4" stroke="#67E8F9" strokeWidth="0.5" fill="none" />
+                     <ellipse rx="4" ry="10" stroke="#67E8F9" strokeWidth="0.5" fill="none" />
+                     <line x1="-10" y1="0" x2="10" y2="0" stroke="#67E8F9" strokeWidth="0.5" />
+                     <line x1="0" y1="-10" x2="0" y2="10" stroke="#67E8F9" strokeWidth="0.5" />
+                  </g>
+              );
+          case 'simplified':
+          case 'sentence-frames':
+          case 'glossary':
+          case 'outline':
+          case 'lesson-plan':
+              return (
+                  <g>
+                      <animateTransform attributeName="transform" type="translate" values="0,0; 0,-3; 0,0" dur="3s" repeatCount="indefinite" />
+                      <rect x="-7" y="-9" width="14" height="18" rx="1" stroke="#E0F2FE" strokeWidth="1" fill="rgba(255, 255, 255, 0.1)" />
+                      <line x1="-4" y1="-5" x2="4" y2="-5" stroke="#67E8F9" strokeWidth="1" />
+                      <line x1="-4" y1="-2" x2="4" y2="-2" stroke="#67E8F9" strokeWidth="1" />
+                      <line x1="-4" y1="1" x2="4" y2="1" stroke="#67E8F9" strokeWidth="1" />
+                      <line x1="-4" y1="4" x2="2" y2="4" stroke="#67E8F9" strokeWidth="1" />
+                      <path d="M 4 4 L 10 10" stroke="#FDBA74" strokeWidth="1.5" strokeLinecap="round" />
+                      <path d="M 10 10 L 12 8 L 14 10 L 12 12 Z" fill="#FDBA74" />
+                  </g>
+              );
+          case 'persona':
+              return (
+                  <g transform="scale(0.8)">
+                      <circle cx="0" cy="0" r="14" stroke="#67E8F9" strokeWidth="1.5" fill="none" />
+                      <path d="M 0 -8 V 0 L 6 4" stroke="#67E8F9" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M -10 -12 L -6 -8 M 6 -12 L 10 -8" stroke="#67E8F9" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
+                  </g>
+              );
+          case 'analysis':
+          case 'image':
+          case 'quiz':
+          default:
+              return (
+                 <g>
+                    <animateTransform
+                        attributeName="transform"
+                        attributeType="XML"
+                        type="rotate"
+                        from="0 0 0"
+                        to="360 0 0"
+                        dur="8s"
+                        repeatCount="indefinite"
+                    />
+                    <circle r="2.5" fill="#E0F2FE" className="animate-pulse" />
+                    <ellipse rx="12" ry="4" stroke="#67E8F9" strokeWidth="0.8" fill="none" />
+                    <ellipse rx="12" ry="4" stroke="#67E8F9" strokeWidth="0.8" fill="none" transform="rotate(60)" />
+                    <ellipse rx="12" ry="4" stroke="#67E8F9" strokeWidth="0.8" fill="none" transform="rotate(120)" />
+                 </g>
+              );
+      }
+  };
+  return (
+    <>
+    <style>{`
+        @keyframes allo-float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+        @keyframes allo-talk { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.6); } }
+        @keyframes allo-backflip { 0% { transform: translateY(0) rotate(0deg); } 40% { transform: translateY(-50px) rotate(-180deg); } 100% { transform: translateY(0) rotate(-360deg); } }
+        @keyframes allo-wave { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-20deg); } 75% { transform: rotate(20deg); } }
+        @keyframes allo-puff { 0% { transform: scale(1); opacity: 1; filter: blur(0px); } 100% { transform: scale(1.5); opacity: 0; filter: blur(4px); } }
+        @keyframes jetpack-flame { 0%, 100% { opacity: 1; transform: scaleY(1); } 50% { opacity: 0.7; transform: scaleY(0.85); } }
+        @keyframes history-pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+        }
+        .pulse-history {
+            animation: history-pulse 2s infinite;
+        }
+        @keyframes bot-fly-tilt {
+            0%, 100% { transform: rotate(12deg) translateY(0px) scale(0.9, 1.1); }
+            50% { transform: rotate(12deg) translateY(-10px) scale(0.92, 1.08); }
+        }
+        @keyframes bot-land {
+            0% { transform: scale(0.9, 1.1); } /* Start stretched */
+            40% { transform: scale(1.25, 0.75) translateY(5px); } /* Squash down */
+            80% { transform: scale(0.95, 1.05) translateY(-2px); } /* Rebound up */
+            100% { transform: scale(1, 1) translateY(0); } /* Settle */
+        }
+        @keyframes jetpack-smoke {
+            0% { transform: translate(0, 0) scale(0.5); background-color: #F59E0B; opacity: 0.9; }
+            40% { background-color: #fbbf24; opacity: 0.7; }
+            100% { transform: translate(var(--drift), 100px) scale(2.5); background-color: #e2e8f0; opacity: 0; }
+        }
+        @keyframes wind-streak {
+            0% { transform: translateX(10px) scaleX(0.2); opacity: 0; }
+            30% { opacity: 0.8; }
+            100% { transform: translateX(-60px) scaleX(1.8); opacity: 0; }
+        }
+        .animate-wind-streak { animation: wind-streak 0.6s linear infinite; }
+        @keyframes tap-pointer {
+            0%, 100% { transform: rotate(0deg); }
+        @keyframes help-glow-pulse {
+            0%, 100% {
+                box-shadow: 0 0 8px 2px rgba(59, 130, 246, 0.6),
+                            0 0 15px 4px rgba(59, 130, 246, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 15px 4px rgba(59, 130, 246, 0.9),
+                            0 0 25px 8px rgba(59, 130, 246, 0.5),
+                            inset 0 0 10px rgba(59, 130, 246, 0.2);
+            }
+        }
+        @keyframes help-breathe {
+            0%, 100% {
+                box-shadow: 0 0 4px 1px rgba(99, 102, 241, 0.15);
+                transform: translateY(-50%) scale(1);
+            }
+            50% {
+                box-shadow: 0 0 8px 3px rgba(99, 102, 241, 0.25);
+                transform: translateY(-50%) scale(1.05);
+            }
+        }
+        @keyframes stemTutorialGlow {
+            0%, 100% { box-shadow: 0 0 10px 2px rgba(99, 102, 241, 0.3), 0 0 20px 4px rgba(99, 102, 241, 0.15); }
+            50% { box-shadow: 0 0 20px 6px rgba(99, 102, 241, 0.6), 0 0 40px 10px rgba(99, 102, 241, 0.3); }
+        }
+        @keyframes spotlightGlowRing {
+            0%, 100% { box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.6), 0 0 20px rgba(139, 92, 246, 0.3); }
+            50% { box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.9), 0 0 40px rgba(139, 92, 246, 0.5), inset 0 0 20px rgba(139, 92, 246, 0.1); }
+        }
+        @keyframes soundwave {
+    0% { height: 4px; }
+    100% { height: 16px; }
+}
+.help-mode-interactive {
+            position: relative;
+            animation: help-glow-pulse 2s ease-in-out infinite;
+            cursor: help !important;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        .help-mode-interactive:hover {
+            animation-duration: 1s; /* Speed up on hover */
+            z-index: 10;
+        }
+            50% { transform: rotate(-12deg); }
+        }
+        @keyframes float-reaction {
+            0% { transform: translateY(0) scale(0.5) translateX(50%); opacity: 0; }
+            20% { transform: translateY(-30px) scale(1.2) translateX(50%); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1) translateX(50%); opacity: 0; }
+        }
+        @keyframes bot-confetti {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+            100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0); opacity: 0; }
+        }
+        @keyframes dust-left {
+            0% { transform: translateX(0) scale(0.5); opacity: 0.6; }
+            100% { transform: translateX(-30px) translateY(-5px) scale(1.5); opacity: 0; }
+        }
+        @keyframes dust-right {
+            0% { transform: translateX(0) scale(0.5); opacity: 0.6; }
+            100% { transform: translateX(30px) translateY(-5px) scale(1.5); opacity: 0; }
+        }
+        @keyframes dust-puff {
+            0% { transform: scale(0.5) translateY(0); opacity: 0.8; }
+            100% { transform: scale(2) translateY(-15px); opacity: 0; }
+        }
+        .animate-dust-left { animation: dust-left 0.6s ease-out forwards; }
+        .animate-dust-right { animation: dust-right 0.6s ease-out forwards; }
+        .animate-dust-puff { animation: dust-puff 0.8s ease-out forwards; }
+        @keyframes antenna-sway {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+        .animate-antenna-sway { animation: antenna-sway 4s ease-in-out infinite; }
+        @keyframes antenna-tri-bounce {
+            0% { transform: translateY(0); }
+            15% { transform: translateY(-12px); animation-timing-function: ease-out; }
+            30% { transform: translateY(0); animation-timing-function: ease-in; }
+            45% { transform: translateY(-12px); animation-timing-function: ease-out; }
+            60% { transform: translateY(0); animation-timing-function: ease-in; }
+            75% { transform: translateY(-12px); animation-timing-function: ease-out; }
+            90% { transform: translateY(0); animation-timing-function: ease-in; }
+            100% { transform: translateY(0); }
+        }
+        .animate-antenna-tri-bounce { animation: antenna-tri-bounce 1.5s ease-in-out forwards; }
+        @keyframes signal-wave {
+            0% { transform: scale(0.5); opacity: 0.8; stroke-width: 4; }
+            50% { opacity: 0.5; }
+            100% { transform: scale(3.5); opacity: 0; stroke-width: 0; }
+        }
+        .animate-signal-wave { animation: signal-wave 2s ease-out infinite; transform-origin: 50px 5px; }
+        @keyframes antenna-spring {
+            0% { transform: rotate(var(--start-deg)); }
+            20% { transform: rotate(calc(var(--start-deg) * -0.6)); }
+            40% { transform: rotate(calc(var(--start-deg) * 0.4)); }
+            60% { transform: rotate(calc(var(--start-deg) * -0.2)); }
+            80% { transform: rotate(calc(var(--start-deg) * 0.1)); }
+            100% { transform: rotate(0deg); }
+        }
+        .animate-antenna-spring {
+            animation: antenna-spring 0.5s ease-out forwards;
+            transform-origin: 50px 15px;
+        }
+        .mouth-transition { transition: d 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes bot-breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02, 0.98); }
+        }
+        .animate-bot-breathe { animation: bot-breathe 3s ease-in-out infinite; }
+        @keyframes shadow-pulse {
+            0%, 100% { transform: translateY(0px) scale(1); opacity: 0.2; }
+            50% { transform: translateY(8px) scale(0.6); opacity: 0.05; }
+        }
+        .animate-shadow-pulse { animation: shadow-pulse 3s ease-in-out infinite; transform-origin: 50px 90px; }
+        @keyframes zzz-float {
+            0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
+            20% { opacity: 1; }
+            100% { transform: translate(20px, -30px) scale(1.2); opacity: 0; }
+        }
+        .animate-zzz { animation: zzz-float 2.5s infinite linear; }
+        .animate-allo-float { animation: allo-float 3s ease-in-out infinite; }
+        .animate-allo-puff { animation: allo-puff 0.4s ease-out forwards; }
+        .animate-jetpack-flame { animation: jetpack-flame 0.1s ease-in-out infinite; transform-origin: top; }
+        .animate-bot-fly-tilt { animation: bot-fly-tilt 2s ease-in-out infinite; }
+        .animate-bot-land { animation: bot-land 0.5s ease-out forwards; }
+        .animate-jetpack-smoke { animation: jetpack-smoke 0.8s ease-out forwards; }
+        .animate-tap-pointer { animation: tap-pointer 0.8s ease-in-out infinite; transform-origin: 75px 65px; }
+        .animate-float-reaction { animation: float-reaction 1.5s ease-out forwards; }
+        .animate-bot-confetti { animation: bot-confetti 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+        @keyframes float-hands {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+        .animate-float-hands { animation: float-hands 3.5s ease-in-out infinite; }
+        @keyframes gesture-left {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(8px, -6px); }
+        }
+        @keyframes gesture-right {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-8px, -6px); }
+        }
+        .animate-gesture-left { animation: gesture-left 0.8s ease-in-out infinite; }
+        .animate-gesture-right { animation: gesture-right 0.8s ease-in-out infinite; }
+        @keyframes wave-hello {
+            0%, 100% { transform: rotate(0deg); }
+            15% { transform: rotate(-14deg); }
+            30% { transform: rotate(14deg); }
+            45% { transform: rotate(-10deg); }
+            60% { transform: rotate(10deg); }
+            75% { transform: rotate(-6deg); }
+            90% { transform: rotate(3deg); }
+        }
+        .animate-wave-hello { animation: wave-hello 1.2s ease-in-out; transform-origin: 70px 50px; }
+        @keyframes happy-nod {
+            0%, 100% { transform: translateY(0) scale(1); }
+            25% { transform: translateY(-6px) scale(1.05); }
+            50% { transform: translateY(0) scale(1); }
+            75% { transform: translateY(-3px) scale(1.02); }
+        }
+        .animate-happy-nod { animation: happy-nod 0.6s ease-in-out; }
+        @keyframes sympathetic-tilt {
+            0%, 100% { transform: rotate(0deg); }
+            30% { transform: rotate(-5deg); }
+            70% { transform: rotate(2deg); }
+        }
+        .animate-sympathetic-tilt { animation: sympathetic-tilt 0.8s ease-in-out; }
+        @keyframes voice-wave {
+            0%, 100% { transform: scaleY(0.4); opacity: 0.7; }
+            50% { transform: scaleY(1.3); opacity: 1; }
+        }
+        @keyframes hologram-spin {
+            0% { transform: rotateY(0deg); }
+            100% { transform: rotateY(360deg); }
+        }
+        .animate-hologram-3d {
+            animation: hologram-spin 8s linear infinite;
+            transform-origin: center;
+            transform-box: fill-box;
+        }
+        @keyframes ken-burns {
+            0% { transform: scale(1.0) translate(0, 0); }
+            100% { transform: scale(1.1) translate(-1%, -1%); }
+        }
+        .animate-ken-burns {
+            animation: ken-burns 20s ease-in-out infinite alternate;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        .sr-only-focusable:focus {
+            position: static;
+            width: auto;
+            height: auto;
+            padding: inherit;
+            margin: inherit;
+            overflow: visible;
+            clip: auto;
+            white-space: normal;
+        }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+`}</style>
+    <div
+      ref={containerRef}
+      tabIndex={0} data-help-key="bot_avatar"
+      aria-label={isSleeping ? t('bot.aria_sleeping') : t('bot.aria_active')}
+      onKeyDown={handleKeyDown}
+      className={`fixed z-[10000] group ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isSleeping ? 'opacity-60 grayscale-[0.5]' : ''} outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 rounded-full`}
+      style={{
+        top: `${position.y}px`,
+        right: `${position.x}px`,
+        transform: `translateY(${isHovered && !isDragging && !isSleeping ? '-5px' : '0px'}) scale(${isSquashed ? '1.1, 0.9' : String(pulseScale)})`,
+        touchAction: 'none',
+        transition: isDragging || isSquashed
+            ? 'transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1)'
+            : `top ${moveDuration}ms, right ${moveDuration}ms, transform ${moveDuration}ms cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s, filter 0.3s`,
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onMouseDown={(e) => {
+          if (isSleeping) {
+              summon();
+          } else {
+              handleMouseDown(e);
+          }
+      }}
+      onTouchStart={(e) => {
+          if (isSleeping) {
+              summon();
+          } else {
+              handleMouseDown(e);
+          }
+      }}
+    >
+      <div
+        className={`${isDragging ? "" : ((isFlying || localIsFlying) ? "animate-bot-fly-tilt" : (isLanding ? "animate-bot-land" : (idleAnimation ? `animate-allo-${idleAnimation}` : (isSleeping ? "" : "animate-allo-float"))))} ${isPoofing ? "animate-allo-puff" : ""}`}
+        style={isDragging ? { transform: `rotate(${dragRotation}deg)`, transition: 'transform 0.2s ease-out' } : (isSleeping ? { transform: 'translateY(10px)' } : undefined)}
+      >
+          <SpeechBubble
+            text={isSleeping ? t('bot.sleeping') : (customMessage || colors.msg)}
+            isVisible={(isHovered || effectiveMood === 'thinking' || !!customMessage || isSleeping) && !isDragging && !isPoofing}
+            isTruncated={!!customMessage && isTruncated}
+            onReadMore={onReadMore}
+            onTyping={handleTypingState}
+            soundEnabled={soundEnabled && !isSleeping}
+            variant={effectiveMood === 'thinking' && !isTalking ? 'thought' : 'speech'}
+          />
+          {reactions.map(r => (
+              <ReactionBubble
+                  key={r.id}
+                  emoji={r.emoji}
+                  onComplete={() => setReactions(prev => prev.filter(item => item.id !== r.id))}
+              />
+          ))}
+          {bursts.map(b => (
+              <BotConfettiBurst
+                  key={b.id}
+                  onComplete={() => setBursts(prev => prev.filter(item => item.id !== b.id))}
+              />
+          ))}
+          <div
+            className={`relative drop-shadow-2xl ${!isFlightActive ? "animate-bot-breathe" : ""}`}
+            style={{
+                filter: trailFilter,
+                transition: 'filter 0.3s ease',
+            }}
+          >
+              <JetpackParticles active={isFlying || localIsFlying} />
+              <LandingDust active={isLanding} />
+              {!isDragging && !isPoofing && !isSleeping && (
+                  <>
+                    <button data-help-key="bot_sleep_btn"
+                        type="button"
+                        onClick={(e) => {
+                             e.preventDefault();
+                             handleSleep(e);
+                        }}
+                        onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
+                        className="absolute -top-2 -right-2 bg-slate-200 hover:bg-red-100 text-slate-500 hover:text-red-500 rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 border-white focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        title={t('bot.sleep_title')}
+                        aria-label={t('bot.sleep_aria')}
+                    >
+                        <X size={12} strokeWidth={3} />
+                    </button>
+                    <button data-help-key="bot_settings_btn"
+                        type="button"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (onVoiceSettingsClick) onVoiceSettingsClick();
+                        }}
+                        onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
+                        className="absolute -top-2 -left-2 bg-white hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 border-indigo-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        title={t('bot.chat_title')}
+                        aria-label={t('bot.chat_aria')}
+                    >
+                        <Settings size={12} strokeWidth={3} />
+                    </button>
+                    {onToggleMute && (
+                        <button data-help-key="bot_mute_btn"
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onToggleMute();
+                            }}
+                            onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
+                            className={`absolute -bottom-1 -right-2 rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${!soundEnabled ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-white hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 border-indigo-100'}`}
+                            title={soundEnabled ? t('bot.mute_on_title') : t('bot.mute_off_title')}
+                            aria-label={soundEnabled ? t('bot.mute_on_aria') : t('bot.mute_off_aria')}
+                        >
+                            {soundEnabled ? <Volume2 size={12} strokeWidth={3} /> : <VolumeX size={12} strokeWidth={3} />}
+                        </button>
+                    )}
+                    {onMicClick && (
+                        <button data-help-key="bot_mic_btn"
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onMicClick();
+                            }}
+                            onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
+                            className={`absolute -bottom-1 -left-2 rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${isListening ? 'bg-red-500 text-white border-red-400 animate-pulse' : 'bg-white hover:bg-indigo-50 text-slate-500 hover:text-indigo-500 border-slate-100'}`}
+                            title={isListening ? t('bot.mic_stop_title') : t('bot.mic_start_title')}
+                            aria-label={isListening ? t('bot.mic_stop_aria') : t('bot.mic_start_aria')}
+                        >
+                            {isListening ? <Mic size={12} strokeWidth={3} /> : <MicOff size={12} strokeWidth={3} />}
+                        </button>
+                    )}
+                  </>
+              )}
+              {isSleeping && (
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    className="absolute inset-0 z-50 cursor-pointer flex items-center justify-center group-hover:bg-white/10 rounded-full transition-colors"
+                    onClick={(e) => { e.stopPropagation(); summon(); }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            summon();
+                        }
+                    }}
+                    title={t('bot.wake_title')}
+                    aria-label={t('bot.wake_title')}
+                  ></div>
+              )}
+              <svg width="64" height="64" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="select-none overflow-visible">
+                {activeView === 'image' && !isFlightActive && !isDragging && (
+                   <g transform="translate(110, 30) scale(0.85) rotate(8)" className="animate-in fade-in zoom-in-95 duration-500" opacity="0.95">
+                      <rect x="8" y="5" width="4" height="55" rx="2" fill="#92400E" stroke="#78350F" strokeWidth="0.5" />
+                      <rect x="38" y="5" width="4" height="55" rx="2" fill="#92400E" stroke="#78350F" strokeWidth="0.5" />
+                      <rect x="22" y="8" width="4" height="52" rx="2" fill="#78350F" transform="rotate(-4 24 35)" />
+                      <rect x="3" y="12" width="45" height="32" rx="3" fill="#1F2937" />
+                      <rect x="6" y="15" width="39" height="26" rx="2" fill="#FEFCE8" stroke="#E5E7EB" strokeWidth="1" />
+                      <circle cx="16" cy="24" r="4" fill="#60A5FA" opacity="0.7" />
+                      <circle cx="28" cy="22" r="3" fill="#F472B6" opacity="0.6" />
+                      <circle cx="36" cy="32" r="3" fill="#34D399" opacity="0.6" />
+                      <ellipse cx="22" cy="33" rx="5" ry="3" fill="#FCD34D" opacity="0.5" />
+                      <rect x="0" y="42" width="50" height="4" rx="2" fill="#92400E" stroke="#78350F" strokeWidth="0.5" />
+                   </g>
+                )}
+                {!isFlightActive && !isDragging && (
+                    <ellipse
+                        cx="50"
+                        cy="90"
+                        rx="18"
+                        ry="4"
+                        fill="#000"
+                        className={isSleeping ? "opacity-20" : "animate-shadow-pulse"}
+                    />
+                )}
+                    <rect x="25" y="42" width="50" height="8" rx="2" fill={colors.jetpackStroke} />
+                    <circle cx="50" cy="46" r="6" fill="#06B6D4" stroke={colors.jetpackStroke} strokeWidth="2" />
+                    <circle cx="50" cy="46" r="3" fill="#67E8F9" className="animate-pulse" />
+                    <path d="M10 36 A10 6 0 0 1 30 36 V 68 L 27 76 H 13 L 10 68 Z" fill={colors.jetpackFill} stroke={colors.jetpackStroke} strokeWidth="2" />
+                    <path d="M10 46 H30 M10 60 H30" stroke={colors.jetpackStroke} strokeWidth="1" fill="none" opacity="0.6" />
+                    <path d="M70 36 A10 6 0 0 1 90 36 V 68 L 87 76 H 73 L 70 68 Z" fill={colors.jetpackFill} stroke={colors.jetpackStroke} strokeWidth="2" />
+                    <path d="M70 46 H90 M70 60 H90" stroke={colors.jetpackStroke} strokeWidth="1" fill="none" opacity="0.6" />
+                    {(isFlying || localIsFlying) && (
+                        <g className="animate-jetpack-flame">
+                             <path d="M14 78 Q20 100 26 78 Z" fill="#F59E0B" />
+                             <path d="M17 78 Q20 90 23 78 Z" fill="#FEF3C7" />
+                             <path d="M74 78 Q80 100 86 78 Z" fill="#F59E0B" />
+                             <path d="M77 78 Q80 90 83 78 Z" fill="#FEF3C7" />
+                        </g>
+                    )}
+                {(isFlying || localIsFlying) && (
+                    <g transform="translate(-10, 0)" className="animate-fade-in" style={{ opacity: 0.6 }}>
+                       <rect x="-20" y="20" width="30" height="2" rx="1" fill="white" className="animate-wind-streak" style={{ animationDuration: '0.4s', animationDelay: '0s' }} />
+                       <rect x="-10" y="50" width="40" height="1" rx="0.5" fill="white" className="animate-wind-streak" style={{ animationDuration: '0.6s', animationDelay: '0.2s' }} />
+                       <rect x="-15" y="80" width="25" height="2" rx="1" fill="white" className="animate-wind-streak" style={{ animationDuration: '0.5s', animationDelay: '0.1s' }} />
+                    </g>
+                )}
+                {effectiveMood === 'thinking' && !isSleeping && (
+                    <g className="animate-pulse" style={{ animationDuration: '2s' }}>
+                        <path
+                            d="M 20 -50 L 80 -50 L 54 5 L 46 5 Z"
+                            fill="url(#hologram-beam)"
+                            style={{ mixBlendMode: 'screen', pointerEvents: 'none' }}
+                            opacity="0.6"
+                        >
+                            <animate attributeName="opacity" values="0.4; 0.7; 0.4" dur="2s" repeatCount="indefinite" />
+                        </path>
+                        <path d="M 25 -45 L 75 -45" stroke="#22D3EE" strokeWidth="1" strokeOpacity="0.8">
+                             <animate attributeName="d" values="M 46 5 L 54 5; M 20 -50 L 80 -50; M 46 5 L 54 5" dur="2s" repeatCount="indefinite" />
+                             <animate attributeName="stroke-opacity" values="0; 1; 0" dur="2s" repeatCount="indefinite" />
+                        </path>
+                        <g transform="translate(50, -25)" opacity="0.9">
+                             <animateTransform
+                                attributeName="transform"
+                                type="translate"
+                                values="50, -25; 50, -32; 50, -25"
+                                dur="3s"
+                                repeatCount="indefinite"
+                             />
+                             <g className="animate-hologram-3d">
+                                {renderHologramContent()}
+                             </g>
+                        </g>
+                    </g>
+                )}
+                {isSleeping && (
+                    <g className="animate-zzz" style={{ transformOrigin: 'top right' }}>
+                        <text x="65" y="10" fontSize="14" fill="#93C5FD" fontWeight="bold" style={{ opacity: 0.8 }}>z</text>
+                        <text x="75" y="-5" fontSize="18" fill="#60A5FA" fontWeight="bold" style={STYLE_ANIMATION_DELAY_HALF}>Z</text>
+                    </g>
+                )}
+                <circle cx="50" cy="50" r="45" fill={colors.glow} fillOpacity="0.2" className={isSleeping ? "" : "animate-pulse"} />
+                <g
+                    className={
+                        isSleeping ? "" :
+                        (isMoving ? "transition-transform duration-100 ease-out" :
+                        (wobbleState.active ? "animate-antenna-spring" : "animate-antenna-sway"))
+                    }
+                    style={{
+                        transformOrigin: '50px 15px',
+                        transform: isMoving ? `rotate(${antennaRotation}deg)` : undefined,
+                        '--start-deg': `${wobbleState.deg}deg`
+                    }}
+                >
+                    <path d="M50 15V5" stroke={colors.antenna} strokeWidth="4" strokeLinecap="round" />
+                    {antennaAction === 'signal' && !isSleeping && effectiveMood !== 'thinking' && (
+                        <g>
+                            <circle cx="50" cy="5" r="10" stroke={colors.antenna} strokeWidth="2" fill="none" className="animate-signal-wave" />
+                            <circle cx="50" cy="5" r="10" stroke={colors.antenna} strokeWidth="2" fill="none" className="animate-signal-wave" style={STYLE_ANIMATION_DELAY_HALF} />
+                            <circle cx="50" cy="5" r="10" stroke={colors.antenna} strokeWidth="2" fill="none" className="animate-signal-wave" style={{ animationDelay: '1.0s' }} />
+                        </g>
+                    )}
+                    <circle
+                        cx="50" cy="5" r="5"
+                        fill={isSleeping ? "#64748B" : "#FACC15"}
+                        className={
+                            effectiveMood === 'thinking' && !isSleeping ? "animate-ping" :
+                            (isTalking ? "animate-pulse" :
+                            (isSleeping ? "" :
+                            (antennaAction === 'bounce' ? "animate-antenna-tri-bounce" : "")))
+                        }
+                    />
+                </g>
+                {effectiveMood === 'thinking' && !isSleeping && (
+                    <g className="animate-pulse" style={{ animationDuration: '1.5s' }}>
+                        <path
+                            d="M 35 40 L 15 5 L 85 5 L 65 40 Z"
+                            fill="url(#hologram-gradient)"
+                            opacity="0.6"
+                        />
+                        <path d="M 15 10 L 85 10" stroke="#22D3EE" strokeWidth="1" opacity="0.4">
+                             <animate attributeName="d" values="M 15 10 L 85 10; M 35 35 L 65 35; M 15 10 L 85 10" dur="2s" repeatCount="indefinite" />
+                             <animate attributeName="opacity" values="0.4; 0.1; 0.4" dur="2s" repeatCount="indefinite" />
+                        </path>
+                    </g>
+                )}
+                <circle cx="50" cy="55" r="35" fill={`url(#bodyGradient-${effectiveMood})`} />
+                <circle cx="50" cy="55" r="35" fill="url(#rimLightGradient)" />
+                {activeView === 'faq' && !isSleeping && (
+                     <g className="animate-bounce" style={{ animationDuration: '2.5s' }}>
+                          <text x="50" y="10" fontSize="24" fill="#F59E0B" stroke="#B45309" strokeWidth="1" textAnchor="middle" fontWeight="bold" style={{ filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.3))' }}>?</text>
+                     </g>
+                )}
+                <g style={{ transform: `translate(${visorPosition.x}px, ${visorPosition.y}px)`, transition: 'transform 0.1s ease-out' }}>
+                    <rect
+                        x="20"
+                        y="30"
+                        width="60"
+                        height="36"
+                        rx="14"
+                        fill={isTalking ? '#312E81' : colors.screenBg}
+                        className="transition-colors duration-200"
+                    />
+                    <path
+                        d="M 23 38 Q 22 32 36 32 L 68 32 Q 74 32 76 36"
+                        fill="none"
+                        stroke="url(#visorReflect)"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        opacity="0.9"
+                    />
+                    <rect
+                        x="20"
+                        y="30"
+                        width="60"
+                        height="36"
+                        rx="14"
+                        fill="none"
+                        stroke={isTalking ? "#6366F1" : "rgba(255,255,255,0.15)"}
+                        strokeWidth="2"
+                    />
+                </g>
+                <g
+                    className={!isSleeping && !isDragging ? (isTalking ? "animate-gesture-left" : "animate-float-hands") : ""}
+                    style={{ animationDelay: isTalking ? '0s' : '0.2s' }}
+                >
+                    <circle cx="10" cy="65" r="6.5" fill={colors.gradFrom} stroke={colors.jetpackStroke} strokeWidth="1.5" />
+                    {activeView === 'image' && !isSleeping && (
+                        <g transform="translate(10, 65) rotate(15)">
+                            <path
+                                d="M -9 0 Q -5 -12 8 -12 Q 18 -10 20 2 Q 22 12 12 16 Q 0 16 -4 10 Q -12 8 -9 0 Z"
+                                fill="#D4A373"
+                                stroke="#A16207"
+                                strokeWidth="1"
+                            />
+                            <circle cx="14" cy="2" r="2" fill="#1E1B4B" />
+                            <circle cx="0" cy="-6" r="2" fill="#EF4444" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" />
+                            <circle cx="6" cy="-8" r="2" fill="#3B82F6" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" />
+                            <circle cx="8" cy="8" r="2" fill="#10B981" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" />
+                            <circle cx="-2" cy="6" r="2" fill="#F59E0B" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" />
+                        </g>
+                    )}
+                    {heldItem === 'flashlight' && (
+                        <g transform="translate(10, 65) rotate(45)">
+                            <path
+                                d="M -4 -10 L 4 -10 L 6 5 L 8 8 L -8 8 L -6 5 Z"
+                                fill="#94A3B8"
+                                stroke="#475569"
+                                strokeWidth="1"
+                            />
+                            <rect x="-2" y="-6" width="4" height="3" rx="1" fill="#334155" />
+                            <path
+                                d="M -8 8 L 8 8 L 6 10 L -6 10 Z"
+                                fill="#FEF08A"
+                                stroke="#475569"
+                                strokeWidth="0.5"
+                            />
+                            <ellipse cx="0" cy="9" rx="6" ry="2" fill="#FACC15" fillOpacity="0.8" className="animate-pulse" />
+                        </g>
+                    )}
+                </g>
+                <g
+                    className={!isSleeping && !isDragging ? (isTalking ? "animate-gesture-right" : "animate-float-hands") : ""}
+                    style={{ animationDelay: isTalking ? '0s' : '0.5s' }}
+                >
+                    <circle cx="90" cy="65" r="6.5" fill={colors.gradFrom} stroke={colors.jetpackStroke} strokeWidth="1.5" />
+                </g>
+                {heldItem && !isSleeping && !isDragging && (
+                    <g
+                        id="held-item"
+                        className={`animate-in fade-in slide-in-from-bottom-2 duration-300 ${isMoving ? "transition-transform duration-100 ease-out" : ""}`}
+                        style={{
+                            transformOrigin: '90px 65px',
+                            transform: isMoving ? `rotate(${propRotation}deg)` : undefined
+                        }}
+                    >
+                        {heldItem === 'pointer' && (
+                            <g className="animate-tap-pointer">
+                                <line x1="90" y1="65" x2="115" y2="25" stroke="#D4A373" strokeWidth="3" strokeLinecap="round" />
+                                <circle cx="115" cy="25" r="4" fill="#EF4444" stroke="#991B1B" strokeWidth="0.5" />
+                            </g>
+                        )}
+                        {heldItem === 'pencil' && activeView !== 'quiz' && (
+                             <g transform="translate(90, 65) rotate(45)">
+                                  <path d="M -3 -15 L 3 -15 L 3 10 L -3 10 Z" fill="#FBBF24" stroke="#D97706" strokeWidth="1" />
+                                  <path d="M -3 -15 L 3 -15 L 0 -22 Z" fill="#FCD34D" />
+                                  <path d="M -1 -19 L 1 -19 L 0 -22 Z" fill="#1F2937" />
+                                  <rect x="-3" y="10" width="6" height="4" rx="1" fill="#EF4444" stroke="#991B1B" strokeWidth="0.5" />
+                                  <rect x="-3" y="8" width="6" height="2" fill="#9CA3AF" />
+                             </g>
+                        )}
+                        {heldItem === 'calculator' && (
+                             <g transform="translate(88, 45) rotate(-10)">
+                                <rect x="0" y="0" width="18" height="24" rx="2" fill="#1F2937" stroke="#374151" strokeWidth="1" />
+                                <rect x="2" y="3" width="14" height="6" fill="#D1FAE5" />
+                                <g fill="#6B7280">
+                                    <circle cx="4.5" cy="14" r="1.5" />
+                                    <circle cx="9" cy="14" r="1.5" />
+                                    <circle cx="13.5" cy="14" r="1.5" />
+                                    <circle cx="4.5" cy="18" r="1.5" />
+                                    <circle cx="9" cy="18" r="1.5" />
+                                    <circle cx="13.5" cy="18" r="1.5" fill="#EF4444" />
+                                </g>
+                             </g>
+                        )}
+                        {heldItem === 'map' && (
+                             <g transform="translate(85, 43) rotate(5)">
+                                <path d="M0 2 C 5 0, 15 0, 22 2 L 22 26 C 15 24, 5 24, 0 26 Z" fill="#FEF3C7" stroke="#D97706" strokeWidth="1" />
+                                <path d="M2 2 C 6 1, 16 1, 20 2" stroke="#D97706" strokeWidth="0.5" fill="none" opacity="0.5" />
+                                <path d="M2 26 C 6 25, 16 25, 20 26" stroke="#D97706" strokeWidth="0.5" fill="none" opacity="0.5" />
+                                <path d="M12 9 L18 15 M18 9 L12 15" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" />
+                                <path d="M4 20 Q 8 14 12 15" stroke="#92400E" strokeWidth="1.5" strokeDasharray="2 1" fill="none" />
+                             </g>
+                        )}
+                        {heldItem === 'clipboard' && (
+                             <g transform="translate(88, 50) rotate(-5)">
+                                <rect x="0" y="0" width="18" height="22" fill="#9CA3AF" rx="1" />
+                                <rect x="2" y="2" width="14" height="18" fill="white" />
+                                <line x1="4" y1="5" x2="14" y2="5" stroke="#CBD5E1" strokeWidth="1" />
+                                <line x1="4" y1="9" x2="14" y2="9" stroke="#CBD5E1" strokeWidth="1" />
+                                <line x1="4" y1="13" x2="14" y2="13" stroke="#CBD5E1" strokeWidth="1" />
+                             </g>
+                        )}
+                        {heldItem === 'hourglass' && (
+                             <g transform="translate(90, 45)">
+                                <path d="M0 0 L14 0 L7 10 L0 0 Z" fill="#93C5FD" stroke="#3B82F6" strokeWidth="1" opacity="0.6"/>
+                                <path d="M0 20 L14 20 L7 10 L0 20 Z" fill="#93C5FD" stroke="#3B82F6" strokeWidth="1" opacity="0.6"/>
+                                <rect x="0" y="0" width="14" height="2" fill="#1F2937" />
+                                <rect x="0" y="18" width="14" height="2" fill="#1F2937" />
+                                <circle cx="7" cy="15" r="1.5" fill="#FCD34D" />
+                             </g>
+                        )}
+                        {heldItem === 'magnifying-glass' && (
+                            <g>
+                                <path d="M90 65 L102 53" stroke="#374151" strokeWidth="4" strokeLinecap="round" />
+                                <circle cx="106" cy="49" r="14" stroke="#94A3B8" strokeWidth="3" fill="rgba(255, 255, 255, 0.1)" />
+                                <circle cx="106" cy="49" r="12" fill="rgba(147, 197, 253, 0.3)" />
+                                <path d="M100 45 Q 104 41 110 45" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+                            </g>
+                        )}
+                        {heldItem === 'book' && (
+                             <g transform="translate(90, 45) rotate(-10)">
+                                <rect x="0" y="0" width="24" height="32" rx="2" fill="#4B5563" stroke="#1F2937" strokeWidth="1"/>
+                                <rect x="3" y="2" width="20" height="28" rx="1" fill="#F8FAFC" />
+                                <line x1="7" y1="8" x2="19" y2="8" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" />
+                                <line x1="7" y1="14" x2="19" y2="14" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" />
+                                <line x1="7" y1="20" x2="19" y2="20" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" />
+                                <line x1="7" y1="26" x2="15" y2="26" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" />
+                             </g>
+                        )}
+                        {heldItem === 'globe' && (
+                            <g transform="translate(88, 45)">
+                                <path d="M10 22 L10 26 M5 26 L15 26" stroke="#4B5563" strokeWidth="2" />
+                                <circle cx="10" cy="12" r="10" fill="#3B82F6" />
+                                <path d="M3 10 Q 7 5 12 8 T 18 12" stroke="#10B981" strokeWidth="3" fill="none" strokeLinecap="round" />
+                                <path d="M5 16 Q 10 18 15 14" stroke="#10B981" strokeWidth="2" fill="none" strokeLinecap="round" />
+                                <circle cx="10" cy="12" r="10" stroke="#1D4ED8" strokeWidth="1" fill="none" opacity="0.3" />
+                                <ellipse cx="10" cy="12" rx="4" ry="10" stroke="#1D4ED8" strokeWidth="1" fill="none" opacity="0.3" />
+                                <line x1="0" y1="12" x2="20" y2="12" stroke="#1D4ED8" strokeWidth="1" opacity="0.3" />
+                            </g>
+                        )}
+                        {heldItem === 'wand' && (
+                            <g transform="translate(82, 44) rotate(10)">
+                                <rect x="8" y="8" width="4" height="24" fill="#1F2937" rx="1" />
+                                <path d="M10 0 L12 6 L18 6 L13 10 L15 16 L10 12 L5 16 L7 10 L2 6 L8 6 Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1" />
+                                <circle cx="4" cy="4" r="1" fill="#FCD34D" className="animate-pulse" />
+                                <circle cx="16" cy="2" r="1" fill="#FCD34D" className="animate-pulse" style={{ animationDelay: '0.2s' }} />
+                            </g>
+                        )}
+                        {(heldItem === 'paintbrush' || activeView === 'image') && (
+                            <g transform="translate(92, 63) rotate(45)">
+                                <rect x="0" y="0" width="4" height="26" rx="1" fill="#D4A373" stroke="#A16207" strokeWidth="0.5" />
+                                <rect x="-0.5" y="-8" width="5" height="8" fill="#94A3B8" stroke="#475569" strokeWidth="0.5" />
+                                <path d="M0 -8 L-1 -16 Q 2 -20 5 -16 L 4 -8 Z" fill="#FCD34D" stroke="#D97706" strokeWidth="0.5" />
+                                <circle cx="2" cy="-18" r="2.5" fill="#3B82F6" className="animate-pulse" />
+                            </g>
+                        )}
+                    </g>
+                )}
+                <g style={{ transform: `translate(${eyePosition.x}px, ${eyePosition.y}px)`, transition: 'transform 0.1s ease-out' }}>
+                    {isSleeping ? (
+                        <g className="transition-all duration-500">
+                            <path d="M34 49 Q39 53 44 49" stroke={colors.eye} strokeWidth="3" fill="none" strokeLinecap="round" />
+                            <path d="M56 49 Q61 53 66 49" stroke={colors.eye} strokeWidth="3" fill="none" strokeLinecap="round" />
+                        </g>
+                    ) : (
+                        <g>
+                            <ellipse
+                                cx="38" cy="48"
+                                rx={eyeRx} ry={eyeRy * blinkScale}
+                                fill={colors.eye}
+                                className="transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                            />
+                            <ellipse
+                                cx="62" cy="48"
+                                rx={eyeRx} ry={eyeRy * blinkScale}
+                                fill={colors.eye}
+                                className="transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                            />
+                            <ellipse
+                                cx="40" cy={48 - (2 * blinkScale)}
+                                rx="2.5" ry={2.5 * blinkScale}
+                                fill="white" opacity="0.8"
+                                className="transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                            />
+                            <ellipse
+                                cx="64" cy={48 - (2 * blinkScale)}
+                                rx="2.5" ry={2.5 * blinkScale}
+                                fill="white" opacity="0.8"
+                                className="transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                            />
+                        </g>
+                    )}
+                    <path
+                        d={getMouthPath()}
+                        stroke={colors.mouth}
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                        className="mouth-transition"
+                    />
+                    {!isSleeping && effectiveMood !== 'idle' && (
+                        <g className="transition-all duration-300">
+                            {effectiveMood === 'happy' && <path d="M33 42 Q38 39 43 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                            {effectiveMood === 'sad' && <path d="M33 39 Q38 41 43 43" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                            {effectiveMood === 'thinking' && <path d="M33 42 Q38 42 43 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                            {effectiveMood === 'happy' && <path d="M57 42 Q62 39 67 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                            {effectiveMood === 'sad' && <path d="M57 43 Q62 41 67 39" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                            {effectiveMood === 'thinking' && <path d="M57 39 Q62 37 67 39" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                        </g>
+                    )}
+                </g>
+                {effectiveAccessory && (
+                    <g id="accessories">
+                         {effectiveAccessory === 'grad-cap' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                <path d="M32 30 Q50 36 68 30 V 22 H 32 V 30 Z" fill="#1F2937" />
+                                <path d="M15 22 L50 8 L85 22 L50 36 Z" fill="#111827" stroke="#374151" strokeWidth="2" />
+                                <path d="M50 22 L82 22 L82 42" stroke="#F59E0B" strokeWidth="2" fill="none" className="drop-shadow-sm"/>
+                                <circle cx="82" cy="42" r="2.5" fill="#F59E0B" />
+                            </g>
+                        )}
+                        {effectiveAccessory === 'explorer-hat' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                <ellipse cx="50" cy="22" rx="38" ry="10" fill="#D2B48C" stroke="#8B4513" strokeWidth="1.5" transform="rotate(-5 50 22)" />
+                                <path d="M32 22 L35 4 Q50 0 65 4 L68 22 Z" fill="#D2B48C" stroke="#8B4513" strokeWidth="1.5" transform="rotate(-5 50 22)" />
+                                <path d="M32 19 Q50 23 68 19" stroke="#3E2723" strokeWidth="4" fill="none" transform="rotate(-5 50 22)" />
+                            </g>
+                        )}
+                        {effectiveAccessory === 'magnifying-glass' && (
+                            <g className="animate-in fade-in slide-in-from-bottom-2 duration-500 origin-bottom-right">
+                                <path d="M72 78 L84 58" stroke="#374151" strokeWidth="4" strokeLinecap="round" />
+                                <circle cx="84" cy="58" r="14" stroke="#94A3B8" strokeWidth="3" fill="rgba(255, 255, 255, 0.1)" />
+                                <circle cx="84" cy="58" r="12" fill="rgba(147, 197, 253, 0.3)" />
+                                <path d="M78 54 Q 82 50 88 54" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+                            </g>
+                        )}
+                        {effectiveAccessory === 'artist' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                <path
+                                    d="M 25 28 Q 15 28 15 20 Q 15 5 45 2 Q 85 -2 90 10 Q 95 22 80 26 Q 70 29 55 27"
+                                    fill="#374151"
+                                    stroke="#1F2937"
+                                    strokeWidth="1.5"
+                                    transform="rotate(-10 50 20)"
+                                />
+                                <path
+                                    d="M 58 4 L 62 0"
+                                    stroke="#374151"
+                                    strokeWidth="3"
+                                    strokeLinecap="round"
+                                    transform="rotate(-10 50 20)"
+                                />
+                            </g>
+                        )}
+                        {effectiveAccessory === 'hard-hat' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                <path d="M25 26 Q25 6 50 4 Q75 6 75 26 Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1.5" />
+                                <path d="M18 26 Q50 32 82 26 Q80 28 50 33 Q20 28 18 26 Z" fill="#D97706" stroke="#B45309" strokeWidth="1" />
+                                <path d="M38 8 Q50 5 62 8" stroke="#FCD34D" strokeWidth="2" fill="none" opacity="0.6" />
+                                <circle cx="50" cy="18" r="5" fill="#374151" stroke="#1F2937" strokeWidth="1" />
+                                <circle cx="50" cy="18" r="3" fill="#FEF3C7" opacity="0.9" />
+                                <circle cx="50" cy="18" r="7" fill="#FEF3C7" opacity="0.15" />
+                            </g>
+                        )}
+                        {effectiveAccessory === 'sleep-cap' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                <path d="M30 24 Q28 12 40 6 Q55 0 70 10 Q85 22 80 40 Q78 48 74 52" fill="#6366F1" stroke="#4F46E5" strokeWidth="1.5" />
+                                <path d="M35 18 Q50 12 65 18" stroke="#818CF8" strokeWidth="2.5" fill="none" opacity="0.5" />
+                                <path d="M40 12 Q52 7 64 14" stroke="#818CF8" strokeWidth="2" fill="none" opacity="0.4" />
+                                <circle cx="74" cy="52" r="6" fill="#C4B5FD" stroke="#A78BFA" strokeWidth="1" />
+                                <circle cx="72" cy="50" r="2" fill="white" opacity="0.4" />
+                                <path d="M28 24 Q50 28 72 22" stroke="#4338CA" strokeWidth="2.5" fill="none" />
+                            </g>
+                        )}
+                        {effectiveAccessory === 'microscope' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-28, 8)">
+                                <ellipse cx="8" cy="82" rx="14" ry="4" fill="#334155" />
+                                <rect x="2" y="78" width="12" height="4" rx="1" fill="#475569" />
+                                <rect x="6" y="38" width="4" height="42" rx="1" fill="#64748B" />
+                                <path d="M8 40 Q8 32 16 28" stroke="#64748B" strokeWidth="4" fill="none" strokeLinecap="round" />
+                                <rect x="13" y="22" width="6" height="18" rx="2" fill="#94A3B8" stroke="#475569" strokeWidth="1" />
+                                <rect x="11" y="18" width="10" height="6" rx="2" fill="#334155" />
+                                <ellipse cx="16" cy="18" rx="5" ry="2" fill="#1e293b" />
+                                <ellipse cx="15" cy="17" rx="2" ry="1" fill="white" opacity="0.3" />
+                                <rect x="14" y="40" width="4" height="5" rx="1" fill="#334155" />
+                                <circle cx="16" cy="46" r="3" fill="#93c5fd" opacity="0.5" stroke="#475569" strokeWidth="1" />
+                                <rect x="4" y="48" width="22" height="3" rx="1" fill="#475569" />
+                                <rect x="8" y="47" width="12" height="2" rx="0.5" fill="rgba(219, 234, 254, 0.6)" stroke="#93c5fd" strokeWidth="0.5" />
+                                <circle cx="2" cy="52" r="3" fill="#64748B" stroke="#475569" strokeWidth="1" />
+                                <circle cx="2" cy="52" r="1.5" fill="#94a3b8" />
+                                <circle cx="16" cy="46" r="6" fill="rgba(147, 197, 253, 0.15)">
+                                    <animate attributeName="opacity" values="0.1;0.25;0.1" dur="3s" repeatCount="indefinite" />
+                                </circle>
+                            </g>
+                        )}
+                    </g>
+                )}
+                <defs>
+                  <radialGradient id={`bodyGradient-${effectiveMood}`} cx="35%" cy="35%" r="65%" fx="30%" fy="30%">
+                    <stop offset="0%" stopColor={colors.gradFrom} />
+                    <stop offset="100%" stopColor={colors.gradTo} />
+                  </radialGradient>
+                  <radialGradient id="rimLightGradient" cx="70%" cy="70%" r="70%">
+                    <stop offset="82%" stopColor="#fff" stopOpacity="0" />
+                    <stop offset="100%" stopColor="#fff" stopOpacity="0.4" />
+                  </radialGradient>
+                  <linearGradient id="hologram-gradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#22D3EE" stopOpacity="0" />
+                    <stop offset="20%" stopColor="#22D3EE" stopOpacity="0.1" />
+                    <stop offset="100%" stopColor="#22D3EE" stopOpacity="0.6" />
+                  </linearGradient>
+                  <linearGradient id="visorReflect" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="white" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="white" stopOpacity="0" />
+                  </linearGradient>
+                  <linearGradient id="hologram-beam" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stopColor="#06B6D4" stopOpacity="0.6" />
+                    <stop offset="100%" stopColor="#06B6D4" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+              </svg>
+          </div>
+      </div>
+    </div>
+    </>
+  );
 }));
-/* [AlloBot + helpers extracted to allobot_module.js — 2,157 lines removed] */
 const GEMINI_VOICES = [
   // ── Confirmed descriptions (from Google documentation) ──
   { id: "Kore",       label: "Kore — Bright, energetic female" },
@@ -9159,49 +11307,5052 @@ const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
     </div>
   );
 });
-// ═══ Teacher Analytics Bundle (loaded from CDN teacher_module.js) ═══
-// Proxy components delegating to CDN-loaded implementations.
-const RosterKeyPanel = React.memo((props) => {
-  const Impl = window.AlloModules && window.AlloModules.RosterKeyPanel;
-  if (!props.isOpen) return null;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-400">Loading roster panel...</div>;
+const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode }) => {
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupColor, setNewGroupColor] = useState('#4F46E5');
+  const [newStudentName, setNewStudentName] = useState('');
+  const [rosterAdj, setRosterAdj] = useState('');
+  const [rosterAnimal, setRosterAnimal] = useState('');
+  const [useCustomName, setUseCustomName] = useState(false);
+  const rosterAdjectives = t('codenames.adjectives') || [];
+  const rosterAnimals = t('codenames.animals') || [];
+  const randomizeRosterName = () => {
+    if (rosterAdjectives.length > 0 && rosterAnimals.length > 0) {
+      setRosterAdj(rosterAdjectives[Math.floor(Math.random() * rosterAdjectives.length)]);
+      setRosterAnimal(rosterAnimals[Math.floor(Math.random() * rosterAnimals.length)]);
+    }
+  };
+  const [newStudentGroup, setNewStudentGroup] = useState('');
+  const [expandedGroup, setExpandedGroup] = useState(null);
+  const [editingField, setEditingField] = useState(null);
+  const [showBatchConfig, setShowBatchConfig] = useState(false);
+  const [batchTypes, setBatchTypes] = useState({ simplified: true, glossary: false, quiz: false, 'sentence-frames': false, brainstorm: false, faq: false, outline: false, adventure: false, 'concept-sort': false, image: false, timeline: false });
+  const fileInputRef = useRef(null);
+  const panelRef = useRef(null);
+  useFocusTrap(panelRef, isOpen);
+  if (!isOpen) return null;
+  const groups = rosterKey?.groups || {};
+  const students = rosterKey?.students || {};
+  const groupIds = Object.keys(groups);
+  const getStudentsInGroup = (gId) => Object.entries(students).filter(([_, g]) => g === gId).map(([name]) => name);
+  const getUnassigned = () => Object.entries(students).filter(([_, g]) => !g || !groups[g]).map(([name]) => name);
+  const handleImport = (e) => {
+    const file = e.target?.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data.groups || data.students) {
+          setRosterKey({ className: data.className || '', groups: data.groups || {}, students: data.students || {} });
+        }
+      } catch(err) { console.error('Invalid roster JSON:', err); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+  const handleExport = () => {
+    const exportData = {
+            ...(rosterKey || { groups: {}, students: {} }),
+            exportVersion: 2,
+            exportDate: new Date().toISOString()
+        };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'roster_key_' + (rosterKey?.className || 'roster').replace(/[^a-zA-Z0-9]/g, '_') + '_' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+  const handleAddGroup = () => {
+    if (!newGroupName.trim()) return;
+    const id = newGroupName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    setRosterKey(prev => ({
+      ...(prev || { students: {} }),
+      className: prev?.className || '',
+      groups: { ...(prev?.groups || {}), [id]: { name: newGroupName.trim(), color: newGroupColor, profile: { gradeLevel: '3rd Grade', leveledTextLanguage: 'English' } } },
+      students: prev?.students || {}
+    }));
+    setNewGroupName('');
+    setExpandedGroup(id);
+  };
+  const handleRemoveGroup = (gId) => {
+    setRosterKey(prev => {
+      const ng = { ...prev.groups }; delete ng[gId];
+      const ns = { ...prev.students };
+      Object.keys(ns).forEach(s => { if (ns[s] === gId) ns[s] = ''; });
+      return { ...prev, groups: ng, students: ns };
+    });
+  };
+  const handleUpdateGroupProfile = (gId, field, value) => {
+    setRosterKey(prev => ({
+      ...prev,
+      groups: { ...prev.groups, [gId]: { ...prev.groups[gId], profile: { ...prev.groups[gId].profile, [field]: value } } }
+    }));
+  };
+  const handleUpdateGroupMeta = (gId, field, value) => {
+    setRosterKey(prev => ({
+      ...prev,
+      groups: { ...prev.groups, [gId]: { ...prev.groups[gId], [field]: value } }
+    }));
+  };
+  const handleAddStudent = () => {
+    const codename = rosterAdj && rosterAnimal ? `${rosterAdj} ${rosterAnimal}` : '';
+    if (!codename) return;
+    const displayName = useCustomName && newStudentName.trim() ? newStudentName.trim() : '';
+    setRosterKey(prev => ({
+      ...(prev || { groups: {} }),
+      className: prev?.className || '',
+      groups: prev?.groups || {},
+      students: { ...(prev?.students || {}), [codename]: newStudentGroup || '' },
+      displayNames: { ...(prev?.displayNames || {}), ...(displayName ? { [codename]: displayName } : {}) }
+    }));
+    setNewStudentName('');
+    randomizeRosterName();
+  };
+  const handleRemoveStudent = (name) => {
+    setRosterKey(prev => {
+      const ns = { ...prev.students }; delete ns[name];
+      return { ...prev, students: ns };
+    });
+  };
+  const handleMoveStudent = (name, toGroup) => {
+    setRosterKey(prev => ({ ...prev, students: { ...prev.students, [name]: toGroup } }));
+  };
+  const COLORS = ['#4F46E5', '#059669', '#D97706', '#DC2626', '#7C3AED', '#0891B2', '#BE185D', '#65A30D'];
+  const GRADE_OPTIONS = ['Pre-K', 'Kindergarten', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade', '6th Grade', '7th Grade', '8th Grade', '9th Grade', '10th Grade', '11th Grade', '12th Grade'];
+  const LANG_OPTIONS = ['English', 'Spanish', 'French', 'Arabic', 'Somali', 'Vietnamese', 'Portuguese', 'Mandarin', 'Korean', 'Tagalog', 'Russian', 'Japanese'];
+  const ProfileField = ({ label, value, field, gId, type = 'text', options }) => (
+    <div className="flex items-center gap-2 text-xs">
+      <span className="font-bold text-slate-500 w-24 shrink-0">{label}:</span>
+      {type === 'select' ? (
+        <select value={value || ''} onChange={e => handleUpdateGroupProfile(gId, field, e.target.value)}
+          className="flex-1 px-2 py-1 rounded-lg border border-slate-200 text-slate-700 text-xs focus:ring-2 focus:ring-indigo-400 outline-none">
+          <option value="">—</option>
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      ) : type === 'range' ? (
+        <div className="flex-1 flex items-center gap-2">
+          <input type="range" min="0.5" max="1.5" step="0.05" value={value || 1}
+            onChange={e => handleUpdateGroupProfile(gId, field, parseFloat(e.target.value))}
+            className="flex-1 accent-indigo-500" />
+          <span className="text-slate-600 font-mono w-10 text-right">{(value || 1).toFixed(2)}x</span>
+        </div>
+      ) : type === 'toggle' ? (
+        <button onClick={() => handleUpdateGroupProfile(gId, field, !value)}
+          className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${value ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+          {value ? 'On' : 'Off'}
+        </button>
+      ) : (
+        <input type="text" value={value || ''} onChange={e => handleUpdateGroupProfile(gId, field, e.target.value)}
+          placeholder="—" className="flex-1 px-2 py-1 rounded-lg border border-slate-200 text-slate-700 text-xs focus:ring-2 focus:ring-indigo-400 outline-none" />
+      )}
+    </div>
+  );
+  return (
+    <div ref={panelRef} role="dialog" aria-modal="true" className="fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border-2 border-indigo-100 animate-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between p-5 border-b border-slate-100">
+          <div data-help-key="roster_panel_header">
+            <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
+              <ClipboardList size={20} className="text-indigo-500" /> {isParentMode ? 'Family Learning Profiles' : (isIndependentMode ? 'My Learning Profile' : (t('roster.title') || 'Class Roster & Progress Tracking'))}
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">{isParentMode ? 'Manage family member profiles and track learning progress' : (isIndependentMode ? 'Manage your learning profile and track your progress' : (t('roster.subtitle') || 'Organize student groups with differentiated profiles for instruction'))}</p>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 transition-colors" aria-label={t('common.close')}>
+            <X size={20} className="text-slate-500" />
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2 px-5 py-3 border-b border-slate-50 bg-slate-50/50">
+          <button onClick={() => fileInputRef.current?.click()} className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors flex items-center gap-1.5">
+            <Upload size={14} /> {t('roster.import') || 'Import JSON'}
+          </button>
+          <button onClick={handleExport} disabled={!rosterKey} className="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors flex items-center gap-1.5 disabled:opacity-40">
+            <Download size={14} /> {t('roster.export') || 'Export JSON'}
+          </button>
+          <button onClick={() => setShowBatchConfig(true)} disabled={!rosterKey || Object.keys(rosterKey?.groups || {}).length === 0} className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 border border-amber-200">
+            <Layers size={14} /> {t('roster.batch_generate') || 'Differentiate by Group'}
+          </button>
+          {activeSessionCode && (
+            <button onClick={onSyncToSession} disabled={!rosterKey || groupIds.length === 0} className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 ml-auto">
+              <RefreshCw size={14} /> {t('roster.sync_session') || 'Sync to Live Session'}
+            </button>
+          )}
+          <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
+        </div>
+        <div className="flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar">
+          <div className="flex items-center gap-2 mb-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('roster.class_name') || 'Class Name'}:</label>
+            <input type="text" value={rosterKey?.className || ''} onChange={e => setRosterKey(prev => ({ ...(prev || { groups: {}, students: {} }), className: e.target.value }))}
+              placeholder={t('common.placeholder_ms_smith_period_3')}
+              className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 outline-none" />
+          </div>
+          {groupIds.map(gId => {
+            const group = groups[gId];
+            const gStudents = getStudentsInGroup(gId);
+            const isExpanded = expandedGroup === gId;
+            return (
+              <div key={gId} className="border border-slate-200 rounded-xl overflow-hidden transition-all hover:border-indigo-200">
+                <button onClick={() => setExpandedGroup(isExpanded ? null : gId)}
+                  className="w-full flex items-center gap-3 p-3 bg-slate-50 hover:bg-slate-100 transition-colors text-left">
+                  <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: group.color || '#4F46E5' }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-sm text-slate-800 truncate">{group.name}</div>
+                    <div className="text-[10px] text-slate-500">{gStudents.length} student{gStudents.length !== 1 ? 's' : ''} · {group.profile?.gradeLevel || '—'} · {group.profile?.leveledTextLanguage || '—'}</div>
+                  </div>
+                  <ChevronDown size={16} className={`text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                </button>
+                {isExpanded && (
+                  <div className="p-4 space-y-3 border-t border-slate-100 bg-white">
+                    <div className="flex gap-2 items-center mb-2">
+                      <input type="text" value={group.name} onChange={e => handleUpdateGroupMeta(gId, 'name', e.target.value)}
+                        className="flex-1 px-2 py-1 rounded-lg border border-slate-200 text-sm font-bold focus:ring-2 focus:ring-indigo-400 outline-none" />
+                      <div className="flex gap-1">
+                        {COLORS.map(c => (
+                          <button key={c} onClick={() => handleUpdateGroupMeta(gId, 'color', c)}
+                            className={`w-5 h-5 rounded-full border-2 transition-all ${group.color === c ? 'border-slate-800 scale-110' : 'border-transparent hover:scale-105'}`}
+                            style={{ backgroundColor: c }} />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2 bg-slate-50 p-3 rounded-xl">
+                      <ProfileField label={t('roster.grade') || 'Grade'} value={group.profile?.gradeLevel} field="gradeLevel" gId={gId} type="select" options={GRADE_OPTIONS} />
+                      <ProfileField label={t('roster.language') || 'Language'} value={group.profile?.leveledTextLanguage} field="leveledTextLanguage" gId={gId} type="select" options={LANG_OPTIONS} />
+                      <ProfileField label={t('roster.reading') || 'Reading Lvl'} value={group.profile?.readingLevel} field="readingLevel" gId={gId} />
+                      <ProfileField label={t('roster.interests') || 'Interests'} value={group.profile?.studentInterests} field="studentInterests" gId={gId} />
+                      <ProfileField label={t('roster.dok') || 'DOK Level'} value={group.profile?.dokLevel} field="dokLevel" gId={gId} type="select" options={['1', '2', '3', '4']} />
+                      <ProfileField label={t('roster.tts_speed') || 'TTS Speed'} value={group.profile?.ttsSpeed} field="ttsSpeed" gId={gId} type="range" />
+                      <ProfileField label={t('roster.karaoke') || 'Karaoke'} value={group.profile?.karaokeMode} field="karaokeMode" gId={gId} type="toggle" />
+                      <ProfileField label={t('roster.simplify') || 'Simplify'} value={group.profile?.simplifyLevel} field="simplifyLevel" gId={gId} type="select" options={['basic', 'intermediate', 'advanced']} />
+                      <ProfileField label={t('roster.custom') || 'Custom Instr.'} value={group.profile?.leveledTextCustomInstructions} field="leveledTextCustomInstructions" gId={gId} />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('roster.students_in_group') || 'Students'}</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {gStudents.map(name => (
+                          <span key={name} className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
+                            {name}
+                            {rosterKey?.progressHistory?.[name]?.length > 0 && (
+                              <span className="text-[9px] bg-indigo-100 text-indigo-500 px-1 py-0.5 rounded-full font-mono" title={`${rosterKey.progressHistory[name].length} sessions`}>
+                                {rosterKey.progressHistory[name].length}s
+                              </span>
+                            )}
+                            <button onClick={() => handleMoveStudent(name, '')} className="hover:text-red-500 transition-colors ml-0.5" aria-label={'Remove ' + name}>
+                              <X size={12} />
+                            </button>
+                          </span>
+                        ))}
+                        {gStudents.length === 0 && <span className="text-xs text-slate-400 italic">{t('roster.no_students') || 'No students assigned'}</span>}
+                      </div>
+                    </div>
+                    <div className="flex gap-2 pt-2 border-t border-slate-100">
+                      <button onClick={() => onApplyGroup(gId)} className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors flex items-center gap-1.5">
+                        <Sparkles size={12} /> {t('roster.apply_to_generator') || 'Apply to Generator'}
+                      </button>
+                      <button onClick={() => handleRemoveGroup(gId)} className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors ml-auto flex items-center gap-1.5">
+                        <Trash2 size={12} /> {t('roster.delete_group') || 'Delete Group'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          <div className="flex gap-2 items-center p-3 border-2 border-dashed border-slate-200 rounded-xl hover:border-indigo-300 transition-colors">
+            <input type="text" value={newGroupName} onChange={e => setNewGroupName(e.target.value)}
+              placeholder={t('roster.new_group_placeholder') || 'New group name...'}
+              onKeyDown={e => e.key === 'Enter' && handleAddGroup()}
+              className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 outline-none" />
+            <div className="flex gap-1">
+              {COLORS.slice(0, 4).map(c => (
+                <button key={c} onClick={() => setNewGroupColor(c)}
+                  className={`w-4 h-4 rounded-full border-2 ${newGroupColor === c ? 'border-slate-800' : 'border-transparent'}`}
+                  style={{ backgroundColor: c }} />
+              ))}
+            </div>
+            <button onClick={handleAddGroup} disabled={!newGroupName.trim()}
+              className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors disabled:opacity-40 flex items-center gap-1">
+              <Plus size={14} /> {t('roster.add_group') || 'Add'}
+            </button>
+          </div>
+           <div className="mt-4 pt-4 border-t border-slate-100">
+             <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+               <Users size={14} /> {t('roster.manage_students') || 'Manage Students'}
+             </div>
+             <div className="flex flex-col gap-2">
+               <div className="flex items-center gap-2 text-[10px]">
+                 <button onClick={() => { setUseCustomName(false); if (!rosterAdj || !rosterAnimal) randomizeRosterName(); }}
+                   className={`px-2 py-1 rounded-full font-bold transition-all ${!useCustomName ? 'bg-teal-100 text-teal-800 border border-teal-300' : 'text-slate-400 hover:text-slate-600'}`}>
+                   🎲 Codename Only
+                 </button>
+                 <button onClick={() => setUseCustomName(true)}
+                   className={`px-2 py-1 rounded-full font-bold transition-all ${useCustomName ? 'bg-teal-100 text-teal-800 border border-teal-300' : 'text-slate-400 hover:text-slate-600'}`}>
+                   ✏️ Codename + Real Name
+                 </button>
+               </div>
+               <div className="flex gap-2 items-center">
+                 <div className="flex-1 flex flex-col gap-1.5">
+                     <div className="flex gap-1.5 items-center">
+                       <select value={rosterAdj} onChange={e => setRosterAdj(e.target.value)}
+                         className="flex-1 px-2 py-1.5 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-teal-400 outline-none">
+                         <option value="">{t('codenames.pick_adjective') || '— Adjective —'}</option>
+                         {rosterAdjectives.map(a => <option key={a} value={a}>{a}</option>)}
+                       </select>
+                       <select value={rosterAnimal} onChange={e => setRosterAnimal(e.target.value)}
+                         className="flex-1 px-2 py-1.5 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-teal-400 outline-none">
+                         <option value="">{t('codenames.pick_animal') || '— Animal —'}</option>
+                         {rosterAnimals.map(a => <option key={a} value={a}>{a}</option>)}
+                       </select>
+                       <button onClick={randomizeRosterName} title={t('common.randomize') || 'Randomize'} className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors">
+                         <RefreshCw size={12} />
+                       </button>
+                     </div>
+                     {useCustomName && (
+                       <input type="text" value={newStudentName} onChange={e => setNewStudentName(e.target.value)}
+                         placeholder={t('roster.display_name_placeholder') || 'Real name (for your reference only)...'}
+                         onKeyDown={e => e.key === 'Enter' && handleAddStudent()}
+                         className="px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50/50 text-sm focus:ring-2 focus:ring-indigo-400 outline-none" />
+                     )}
+                   </div>
+                 <select value={newStudentGroup} onChange={e => setNewStudentGroup(e.target.value)}
+                   className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-indigo-400 outline-none">
+                   <option value="">{t('roster.unassigned') || 'Unassigned'}</option>
+                   {groupIds.map(gId => <option key={gId} value={gId}>{groups[gId].name}</option>)}
+                 </select>
+                 <button onClick={handleAddStudent} disabled={!rosterAdj || !rosterAnimal}
+                   className="px-3 py-1.5 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition-colors disabled:opacity-40 flex items-center gap-1">
+                   <Plus size={14} /> {t('roster.add_student') || 'Add'}
+                 </button>
+               </div>
+               {rosterAdj && rosterAnimal && (
+                 <div className="text-xs text-teal-600 font-medium pl-1">
+                   {useCustomName && newStudentName.trim()
+                     ? <span>Codename: <strong>{rosterAdj} {rosterAnimal}</strong> · Display: <strong>{newStudentName.trim()}</strong></span>
+                     : <span>Codename: <strong>{rosterAdj} {rosterAnimal}</strong></span>}
+                 </div>
+               )}
+             </div>
+           </div>
+          {getUnassigned().length > 0 && (
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl mt-2">
+              <div className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1.5">{t('roster.unassigned_students') || 'Unassigned Students'}</div>
+              <div className="flex flex-wrap gap-1.5">
+                {getUnassigned().map(name => (
+                  <span key={name} className="inline-flex items-center gap-1 px-2.5 py-1 bg-white text-amber-800 rounded-full text-xs font-medium border border-amber-200">
+                    {name}
+                    {rosterKey?.progressHistory?.[name]?.length > 0 && (
+                      <span className="text-[9px] bg-amber-100 text-amber-600 px-1 py-0.5 rounded-full font-mono ml-0.5" title={`${rosterKey.progressHistory[name].length} sessions`}>
+                        {rosterKey.progressHistory[name].length}s
+                      </span>
+                    )}
+                    <select onChange={e => { if (e.target.value) handleMoveStudent(name, e.target.value); }} value=""
+                      className="text-[10px] bg-transparent border-none outline-none cursor-pointer text-amber-600 ml-1 w-4">
+                      <option value="">→</option>
+                      {groupIds.map(gId => <option key={gId} value={gId}>{groups[gId].name}</option>)}
+                    </select>
+                    <button onClick={() => handleRemoveStudent(name)} className="hover:text-red-500 transition-colors" aria-label={'Remove ' + name}>
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {rosterKey && (
+            <div className="flex gap-4 pt-3 border-t border-slate-100 text-[10px] text-slate-400 font-medium">
+              <span>{groupIds.length} group{groupIds.length !== 1 ? 's' : ''}</span>
+              <span>{Object.keys(students).length} student{Object.keys(students).length !== 1 ? 's' : ''}</span>
+              <span>{getUnassigned().length} unassigned</span>
+              <span className="ml-auto flex items-center gap-1"><ShieldCheck size={10} className="text-green-500" /> Local only</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 });
-const SimpleBarChart = React.memo((props) => {
-  const Impl = window.AlloModules && window.AlloModules.SimpleBarChart;
-  return Impl ? <Impl {...props} /> : null;
+// @section CHARTS — Bar charts and longitudinal progress
+const SimpleBarChart = React.memo(({ data, color = "indigo" }) => {
+  const { t } = useContext(LanguageContext);
+  const height = 150;
+  const width = 300;
+  const margin = 20;
+  const chartHeight = height - margin * 2;
+  const chartWidth = width - margin * 2;
+  if (!data || data.length === 0) return <div className="text-xs text-slate-500 italic text-center py-8">{t('dashboard.empty.no_data')}</div>;
+  const maxValue = Math.max(...data.map(d => d.value), 1);
+  const barWidth = Math.min(40, (chartWidth / data.length) * 0.6);
+  const gap = (chartWidth - (barWidth * data.length)) / (data.length + 1);
+  return (
+    <div className="w-full h-full flex items-center justify-center select-none">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto max-h-[160px]" preserveAspectRatio="xMidYMid meet">
+        {data.map((d, i) => {
+          const barHeight = (d.value / maxValue) * chartHeight;
+          const x = gap + i * (barWidth + gap);
+          const y = height - margin - barHeight;
+          return (
+            <g key={i} className="group">
+              <rect
+                x={x}
+                y={y}
+                width={barWidth}
+                height={barHeight}
+                rx="4"
+                className={`fill-${color}-500 group-hover:fill-${color}-600 transition-all duration-300`}
+              />
+              <text
+                x={x + barWidth / 2}
+                y={y - 5}
+                textAnchor="middle"
+                className="fill-slate-500 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                {d.value}
+              </text>
+              <text
+                x={x + barWidth / 2}
+                y={height - 5}
+                textAnchor="middle"
+                className="fill-slate-400 text-[9px] uppercase tracking-wider font-medium"
+              >
+                {d.label.length > 5 ? d.label.substring(0, 4) + '.' : d.label}
+              </text>
+            </g>
+          );
+        })}
+        <line x1="0" y1={height - margin} x2={width} y2={height - margin} stroke="#e2e8f0" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    </div>
+  );
 });
-const LongitudinalProgressChart = React.memo((props) => {
-  const Impl = window.AlloModules && window.AlloModules.LongitudinalProgressChart;
-  return Impl ? <Impl {...props} /> : null;
-});
-const StudentEscapeRoomOverlay = React.memo((props) => {
-  const Impl = window.AlloModules && window.AlloModules.StudentEscapeRoomOverlay;
-  return Impl ? <Impl {...props} /> : null;
-});
-const TeacherLiveQuizControls = React.memo((props) => {
-  const Impl = window.AlloModules && window.AlloModules.TeacherLiveQuizControls;
-  return Impl ? <Impl {...props} /> : null;
-});
-const calculateAnalyticsMetrics = (data) => {
-  const impl = window.AlloModules && window.AlloModules.calculateAnalyticsMetrics;
-  return impl ? impl(data) : { averageScore: 0, quizCompletionRate: 0, topMisconceptions: [], engagementTrend: [], avgTimeOnTask: 0 };
+const SimpleDonutChart = ({ percentage, label, color = "indigo" }) => {
+  const size = 100;
+  const strokeWidth = 10;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const safePercent = Math.min(100, Math.max(0, percentage || 0));
+  const offset = circumference - (safePercent / 100) * circumference;
+  return (
+    <div className="flex flex-col items-center justify-center select-none">
+      <div className="relative w-24 h-24">
+        <svg viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90 w-full h-full">
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            className="stroke-slate-100 fill-none"
+            strokeWidth={strokeWidth}
+          />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            className={`stroke-${color}-500 fill-none transition-all duration-1000 ease-out`}
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className={`text-xl font-black text-${color}-600`}>{Math.round(safePercent)}%</span>
+        </div>
+      </div>
+      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-2 text-center leading-tight">{label}</span>
+    </div>
+  );
 };
-const LearnerProgressView = React.memo((props) => {
-  const Impl = window.AlloModules && window.AlloModules.LearnerProgressView;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-400">Loading progress view...</div>;
+const ConfettiEffect = ({ isActive }) => {
+  if (!isActive) return null;
+  const colors = ['#f43f5e', '#8b5cf6', '#3b82f6', '#22c55e', '#f59e0b', '#ec4899'];
+  const particles = Array.from({ length: 50 }, (_, i) => ({
+    id: i,
+    color: colors[i % colors.length],
+    left: Math.random() * 100,
+    delay: Math.random() * 2,
+    size: Math.random() * 8 + 4,
+    duration: Math.random() * 2 + 2
+  }));
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[10001] overflow-hidden">
+      <style>{`
+        @keyframes confetti-fall {
+          0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        .confetti-particle {
+          position: absolute;
+          top: -20px;
+          animation: confetti-fall linear forwards;
+        }
+      `}</style>
+      {particles.map(p => (
+        <div
+          key={p.id}
+          className="confetti-particle"
+          style={{
+            left: `${p.left}%`,
+            width: p.size,
+            height: p.size,
+            backgroundColor: p.color,
+            animationDelay: `${p.delay}s`,
+            animationDuration: `${p.duration}s`,
+            borderRadius: Math.random() > 0.5 ? '50%' : '0%',
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+// @section ESCAPE_ROOM — Escape Room student overlay
+const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, t, playSound }) => {
+  const escapeState = sessionData?.escapeRoomState;
+  const [selectedPuzzle, setSelectedPuzzle] = useState(null);
+  const [userInput, setUserInput] = useState('');
+  const [sequenceOrder, setSequenceOrder] = useState([]);
+  const [matchingPairs, setMatchingPairs] = useState([]);
+  const [matchingSelected, setMatchingSelected] = useState(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [teamEscapeToast, setTeamEscapeToast] = useState(null);
+  const [lastEscapedTeams, setLastEscapedTeams] = useState([]);
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+  if (!escapeState?.isActive || !escapeState?.room) return null;
+  const isCoopMode = escapeState.isCoopMode || false;
+  const isPaused = escapeState.isPaused || false;
+  const userTeam = escapeState.teams?.[user?.uid];
+  const teamProgress = escapeState.teamProgress?.[userTeam] || { solvedPuzzles: [] };
+  const solvedPuzzlesSet = new Set(teamProgress.solvedPuzzles || []);
+  const allTeams = Object.keys(escapeState.teamProgress || {});
+  const puzzles = escapeState.puzzles || [];
+  const objects = escapeState.objects || [];
+  const timeRemaining = escapeState.timeRemaining || 0;
+  const teamEscaped = teamProgress.isEscaped;
+  const teamColors = {
+    Red: { bg: 'bg-red-500', text: 'text-red-500', border: 'border-red-500', light: 'bg-red-100' },
+    Blue: { bg: 'bg-blue-500', text: 'text-blue-500', border: 'border-blue-500', light: 'bg-blue-100' },
+    Green: { bg: 'bg-green-500', text: 'text-green-500', border: 'border-green-500', light: 'bg-green-100' },
+    Yellow: { bg: 'bg-yellow-500', text: 'text-yellow-500', border: 'border-yellow-500', light: 'bg-yellow-100' },
+    All: { bg: 'bg-purple-500', text: 'text-purple-500', border: 'border-purple-500', light: 'bg-purple-100' }
+  };
+  const myTeamColors = teamColors[userTeam] || teamColors.Blue;
+  useEffect(() => {
+    const escapedTeams = allTeams.filter(team =>
+      escapeState.teamProgress?.[team]?.isEscaped && team !== userTeam
+    );
+    const newEscapes = escapedTeams.filter(t => !lastEscapedTeams.includes(t));
+    if (newEscapes.length > 0 && !teamEscaped) {
+      playSound?.('notification');
+      setTeamEscapeToast(newEscapes[0]);
+      const _toastTimer = setTimeout(() => setTeamEscapeToast(null), 4000);
+      return () => clearTimeout(_toastTimer);
+    }
+    setLastEscapedTeams(escapedTeams);
+  }, [escapeState.teamProgress]);
+  useEffect(() => {
+    if (teamEscaped) {
+      playSound?.('levelUp');
+      setShowConfetti(true);
+      const _confettiTimer = setTimeout(() => setShowConfetti(false), 5000);
+      return () => clearTimeout(_confettiTimer);
+    }
+  }, [teamEscaped]);
+  useEffect(() => {
+    if (escapeState?.isActive && user && activeSessionCode && !userTeam) {
+      const teamOptions = isCoopMode ? ['All'] : ['Red', 'Blue', 'Green', 'Yellow'];
+      const assignedColor = teamOptions[Math.floor(Math.random() * teamOptions.length)];
+      const joinTeam = async () => {
+        try {
+          const effectiveAppId = targetAppId || appId;
+          const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+          await updateDoc(sessionRef, {
+            [`escapeRoomState.teams.${user.uid}`]: assignedColor
+          });
+        } catch (e) {
+          warnLog("Escape room team assignment failed:", e);
+        }
+      };
+      joinTeam();
+    }
+  }, [escapeState?.isActive, user, activeSessionCode, userTeam, targetAppId, isCoopMode]);
+  const handleSubmitAnswer = async (puzzleId, answer, answerType) => {
+    if (!userTeam || !activeSessionCode) return;
+    const puzzle = puzzles.find(p => p.id === puzzleId);
+    if (!puzzle || solvedPuzzlesSet.has(puzzleId)) return;
+    let isCorrect = false;
+    if (answerType === 'mcq') {
+      isCorrect = answer === puzzle.correctIndex;
+    } else if (answerType === 'sequence') {
+      isCorrect = JSON.stringify(answer) === JSON.stringify(puzzle.correctOrder);
+    } else if (answerType === 'cipher' || answerType === 'scramble' || answerType === 'fillin') {
+      const normalizedUser = answer.toLowerCase().trim();
+      const normalizedAnswer = puzzle.answer.toLowerCase().trim();
+      isCorrect = normalizedUser === normalizedAnswer;
+    } else if (answerType === 'matching') {
+      isCorrect = answer.length >= puzzle.pairs.length;
+    }
+    if (isCorrect) {
+      playSound?.('correct');
+      try {
+        const effectiveAppId = targetAppId || appId;
+        const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+        const newSolvedPuzzles = [...(teamProgress.solvedPuzzles || []), puzzleId];
+        const allSolved = newSolvedPuzzles.length >= puzzles.length;
+        const newStreak = (escapeState.streak || 0) + 1;
+        await updateDoc(sessionRef, {
+          [`escapeRoomState.teamProgress.${userTeam}.solvedPuzzles`]: newSolvedPuzzles,
+          [`escapeRoomState.teamProgress.${userTeam}.isEscaped`]: allSolved,
+          [`escapeRoomState.streak`]: newStreak
+        });
+        if (allSolved) {
+          setIsEscapeTimerRunning(false);
+        }
+        setSelectedPuzzle(null);
+        setUserInput('');
+        setSequenceOrder([]);
+        setMatchingPairs([]);
+      } catch (e) {
+        warnLog("Failed to sync puzzle completion:", e);
+      }
+    } else {
+      playSound?.('incorrect');
+      try {
+        const effectiveAppId = targetAppId || appId;
+        const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+        const currentLives = escapeState.lives || 0;
+        const maxLives = escapeState.maxLives || 3;
+        const newLives = maxLives < 99 ? Math.max(0, currentLives - 1) : currentLives;
+        const isGameOver = newLives <= 0 && maxLives < 99;
+        await updateDoc(sessionRef, {
+          [`escapeRoomState.lives`]: newLives,
+          [`escapeRoomState.streak`]: 0,
+          [`escapeRoomState.wrongAttempts`]: (escapeState.wrongAttempts || 0) + 1,
+          [`escapeRoomState.isGameOver`]: isGameOver
+        });
+      } catch (e) {
+        warnLog("Failed to sync life loss:", e);
+      }
+    }
+  };
+  if (!userTeam) {
+    return (
+      <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-center text-white">
+          <RefreshCw className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-400" />
+          <p className="text-xl font-bold">{t('escape_room.waiting_host')}</p>
+        </div>
+      </div>
+    );
+  }
+  if (escapeState.isGameOver) {
+    return (
+      <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justify-center">
+        <div className="text-center text-white animate-in zoom-in duration-500">
+          <div className="text-9xl mb-6 animate-pulse">💀</div>
+          <h2 className="text-5xl font-black mb-4 text-red-400">{t('escape_room.game_over')}</h2>
+          <p className="text-2xl text-slate-500 mb-6">{t('escape_room.life_lost')}</p>
+          <div className="flex gap-4 justify-center text-lg">
+            <span className="px-4 py-2 bg-slate-800 rounded-lg">
+              {t('escape_room.puzzles_remaining')}: {puzzles.length - solvedPuzzlesSet.size}
+            </span>
+            <span className="px-4 py-2 bg-slate-800 rounded-lg">
+              {t('escape_room.wrong_attempts')}: {escapeState.wrongAttempts || 0}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  if (teamEscaped) {
+    const isFirstToEscape = allTeams.filter(team =>
+      escapeState.teamProgress?.[team]?.isEscaped
+    ).length === 1;
+    return (
+      <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center">
+        <ConfettiEffect isActive={showConfetti} />
+        <div className="text-center text-white animate-in zoom-in duration-500">
+          <div className="text-9xl mb-6 animate-bounce">{isFirstToEscape ? '🏆' : '🎉'}</div>
+          <h2 className="text-5xl font-black mb-4">
+            {isCoopMode ? t('escape_room.class_escaped') : (isFirstToEscape ? t('escape_room.first_escape') : t('escape_room.escaped'))}
+          </h2>
+          <p className="text-2xl text-green-200">
+            {isCoopMode ? t('escape_room.everyone_escaped') : t('escape_room.team_escaped', { team: userTeam })}
+          </p>
+          {!isCoopMode && (
+            <div className={`mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full ${myTeamColors.bg} text-white font-bold text-xl`}>
+              {t('escape_room.your_team')}: {userTeam}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+  const currentPuzzle = selectedPuzzle ? puzzles.find(p => p.linkedObjectId === selectedPuzzle || p.id === selectedPuzzle) : null;
+  return (
+    <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 overflow-auto">
+      <div className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-sm border-b border-purple-500/30 p-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <DoorOpen className="text-purple-400" size={24} />
+            <span className="text-white font-bold text-lg">{escapeState.room?.theme || t('escape_room.title')}</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${myTeamColors.bg} text-white font-bold text-sm`} data-help-key="escape_room_team">
+              <Users size={14} />
+              {t(`escape_room.team_${userTeam.toLowerCase()}`, { defaultValue: `${userTeam} Team` })}
+            </div>
+            <div className="text-white font-mono" data-help-key="escape_room_progress">
+              <span className="text-purple-400">{solvedPuzzlesSet.size}</span>
+              <span className="text-slate-400">/{puzzles.length}</span>
+            </div>
+            {escapeState.maxLives < 99 && (
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50" title={t('escape_room.lives')} data-help-key="escape_room_lives">
+                {Array.from({ length: escapeState.maxLives }).map((_, i) => (
+                  <span key={i} className={`text-sm ${i < (escapeState.lives || 0) ? 'text-red-500' : 'text-slate-600'}`}>
+                    ❤️
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50" title={t('escape_room.hints_used')}>
+              <Lightbulb size={14} className="text-yellow-400" />
+              <span className="text-white text-xs font-bold">{escapeState.hintsRemaining || 0}</span>
+            </div>
+            {(escapeState.streak || 0) >= 3 && (
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 font-bold text-xs animate-pulse" data-help-key="escape_room_streak">
+                🔥 x{escapeState.streak}
+              </div>
+            )}
+            <div className={`px-3 py-1.5 rounded-full font-mono font-bold ${timeRemaining < 60 ? 'bg-red-500 text-white animate-pulse' : 'bg-slate-700 text-white'}`} data-help-key="escape_room_timer">
+              <Clock size={14} className="inline mr-1" />
+              {formatTime(timeRemaining)}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="fixed right-4 top-24 bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-purple-500/30 z-40" data-help-key="escape_room_leaderboard">
+        <h4 className="text-xs font-bold text-slate-500 uppercase mb-3">{t('escape_room.live_progress')}</h4>
+        {allTeams.map(team => {
+          const progress = escapeState.teamProgress?.[team] || { solvedPuzzles: [] };
+          const solved = (progress.solvedPuzzles || []).length;
+          const percent = puzzles.length > 0 ? Math.round((solved / puzzles.length) * 100) : 0;
+          const colors = teamColors[team] || teamColors.Blue;
+          const escaped = progress.isEscaped;
+          return (
+            <div key={team} className={`mb-2 ${team === userTeam ? 'ring-2 ring-white/50 rounded-lg p-1' : ''}`}>
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className={`font-bold ${colors.text}`}>{team}</span>
+                <span className="text-slate-400">{solved}/{puzzles.length}</span>
+              </div>
+              <div className="w-32 h-2 bg-slate-700 rounded-full overflow-hidden">
+                <div className={`h-full ${colors.bg} transition-all duration-300`} style={{ width: `${percent}%` }} />
+              </div>
+              {escaped && <span className="text-xs text-green-400">🏆 {t('escape_room.escaped')}</span>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="max-w-4xl mx-auto p-6 mt-4">
+        <p className="text-center text-purple-300 mb-6 italic">{escapeState.room?.description}</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          {objects.map((obj, idx) => {
+            const puzzle = puzzles.find(p => p.linkedObjectId === obj.id) || puzzles[idx];
+            const isSolved = puzzle && solvedPuzzlesSet.has(puzzle.id);
+            return (
+              <button
+                key={obj.id}
+                onClick={() => !isSolved && puzzle && setSelectedPuzzle(obj.id)}
+                disabled={isSolved}
+                data-help-key="escape_room_object"
+                className={`
+                  aspect-square rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all
+                  border-2 ${isSolved
+                    ? 'bg-green-900/50 border-green-500/50 cursor-default'
+                    : 'bg-slate-800 border-purple-500/30 hover:border-purple-400 hover:scale-105 cursor-pointer'
+                  }
+                `}
+              >
+                <span className="text-4xl">{obj.emoji}</span>
+                <span className="text-white text-sm font-bold text-center">{obj.name}</span>
+                {isSolved && <CheckCircle className="text-green-400" size={20} />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      {currentPuzzle && (
+        <div className="fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center p-4">
+          <div className="bg-slate-800 rounded-2xl p-6 max-w-lg w-full border-2 border-purple-500 max-h-[90vh] overflow-auto">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <span className="text-xs px-2 py-0.5 bg-purple-600 text-white rounded-full uppercase font-bold">
+                  {currentPuzzle.type || 'mcq'}
+                </span>
+              </div>
+              <button onClick={() => setSelectedPuzzle(null)} data-help-key="escape_room_close_btn" className="text-slate-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-full p-1" aria-label={t('common.close')}>
+                <X size={24} />
+              </button>
+            </div>
+            <p className="text-xl text-white font-bold mb-4">{currentPuzzle.question}</p>
+            {currentPuzzle.hint && (
+              <div className="mb-4">
+                {escapeState.revealedHints?.[currentPuzzle.id] ? (
+                  <div className="p-3 bg-yellow-500/20 border border-yellow-500/40 rounded-lg text-yellow-200 text-sm animate-in fade-in">
+                    <Lightbulb size={14} className="inline mr-2 text-yellow-400" />
+                    {currentPuzzle.hint}
+                  </div>
+                ) : (
+                  <button
+                    onClick={async () => {
+                      if ((escapeState.hintsRemaining || 0) <= 0) return;
+                      try {
+                        const effectiveAppId = targetAppId || appId;
+                        const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+                        await updateDoc(sessionRef, {
+                          [`escapeRoomState.hintsRemaining`]: (escapeState.hintsRemaining || 0) - 1,
+                          [`escapeRoomState.revealedHints.${currentPuzzle.id}`]: true,
+                          [`escapeRoomState.streak`]: 0
+                        });
+                        playSound?.('notification');
+                      } catch (e) {
+                        warnLog("Failed to use hint:", e);
+                      }
+                    }}
+                    disabled={(escapeState.hintsRemaining || 0) <= 0}
+                    data-help-key="escape_room_hint_button"
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors whitespace-nowrap ${
+                      (escapeState.hintsRemaining || 0) > 0
+                        ? 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 border border-yellow-500/40'
+                        : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <span className="text-sm">💡</span>
+                    {t('escape_room.hint_btn')} ({escapeState.hintsRemaining || 0} {t('escape_room.left')})
+                  </button>
+                )}
+              </div>
+            )}
+            {(!currentPuzzle.type || currentPuzzle.type === 'mcq') && currentPuzzle.options && (
+              <div className="space-y-3">
+                {currentPuzzle.options.map((opt, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSubmitAnswer(currentPuzzle.id, idx, 'mcq')}
+                    data-help-key="escape_room_mcq_option"
+                    className="w-full text-left p-4 bg-slate-700 hover:bg-purple-700 rounded-xl text-white font-medium transition-colors border-2 border-transparent hover:border-purple-400"
+                  >
+                    <span className="inline-block w-8 font-bold text-purple-400">{String.fromCharCode(65+idx)}.</span>
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            )}
+            {currentPuzzle.type === 'cipher' && (
+              <div className="space-y-4">
+                {currentPuzzle.encodedText && (
+                  <div className="bg-slate-900 p-4 rounded-lg font-mono text-purple-300 text-center">
+                    {currentPuzzle.encodedText}
+                  </div>
+                )}
+                <input aria-label={t('common.escape_room_enter_answer')}
+                  type="text"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  placeholder={t('escape_room.enter_answer')}
+                  data-help-key="escape_room_cipher_input"
+                  className="w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 outline-none"
+                />
+                <button
+                  onClick={() => handleSubmitAnswer(currentPuzzle.id, userInput, 'cipher')}
+                  data-help-key="escape_room_cipher_submit"
+                  className="w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
+                >
+                  {t('escape_room.submit_answer')}
+                </button>
+              </div>
+            )}
+            {currentPuzzle.type === 'fillin' && (
+              <div className="space-y-4">
+                {currentPuzzle.sentence && (
+                  <div className="bg-slate-900 p-4 rounded-lg text-white text-center text-lg">
+                    {currentPuzzle.sentence.replace('___', userInput ? `[${userInput}]` : '______')}
+                  </div>
+                )}
+                {currentPuzzle.wordbank && currentPuzzle.wordbank.length > 0 ? (
+                  <div className="space-y-3">
+                    <p className="text-xs text-slate-400 text-center uppercase font-bold">{t('escape_room.select_word') || 'Select the correct word:'}</p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {currentPuzzle.wordbank.map((word, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setUserInput(word)}
+                          className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                            userInput === word
+                              ? 'bg-purple-600 text-white ring-2 ring-purple-300'
+                              : 'bg-slate-700 text-white hover:bg-slate-600'
+                          }`}
+                        >
+                          {word}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <input aria-label={t('common.escape_room_enter_answer')}
+                    type="text"
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    placeholder={t('escape_room.enter_answer')}
+                    data-help-key="escape_room_fillin_input"
+                    className="w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 outline-none"
+                  />
+                )}
+                <button
+                  onClick={() => handleSubmitAnswer(currentPuzzle.id, userInput, 'fillin')}
+                  disabled={!userInput}
+                  data-help-key="escape_room_fillin_submit"
+                  className="w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50"
+                >
+                  {t('escape_room.submit_answer')}
+                </button>
+              </div>
+            )}
+            {currentPuzzle.type === 'scramble' && (
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {(currentPuzzle.displayLetters || currentPuzzle.scrambledWord?.split('')).map((letter, idx) => (
+                    <span key={idx} className="w-10 h-10 flex items-center justify-center bg-purple-700 text-white font-bold rounded-lg text-xl">
+                      {letter}
+                    </span>
+                  ))}
+                </div>
+                <input aria-label={t('common.escape_room_unscramble_placeholder')}
+                  type="text"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value.toUpperCase())}
+                  placeholder={t('escape_room.unscramble_placeholder')}
+                  data-help-key="escape_room_scramble_input"
+                  className="w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 outline-none text-center font-mono text-xl uppercase"
+                />
+                <button
+                  onClick={() => handleSubmitAnswer(currentPuzzle.id, userInput, 'scramble')}
+                  data-help-key="escape_room_scramble_submit"
+                  className="w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
+                >
+                  {t('escape_room.check_word')}
+                </button>
+              </div>
+            )}
+            {currentPuzzle.type === 'sequence' && (
+              <div className="space-y-4" data-help-key="escape_room_sequence_container">
+                <p className="text-sm text-purple-300 italic mb-2">{t('escape_room.sequence_instructions')}</p>
+                <div className="space-y-2" role="list" aria-label={t('escape_room.sequence_list') || 'Sequence items to order'}>
+                  {sequenceOrder.length === 0
+                    ? (currentPuzzle.shuffledItems || currentPuzzle.items || []).map((item, idx) => (
+                        <div key={idx} role="listitem" className="flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white">
+                          <span className="flex-1">{item}</span>
+                        </div>
+                      ))
+                    : sequenceOrder.map((item, idx) => (
+                        <div key={idx} role="listitem" aria-label={`${t('escape_room.position') || 'Position'} ${idx + 1}: ${item}`} className="flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white">
+                          <span className="w-8 h-8 flex items-center justify-center bg-purple-600 rounded-full font-bold" aria-hidden="true">{idx + 1}</span>
+                          <span className="flex-1">{item}</span>
+                          <div className="flex gap-1" role="group" aria-label={t('escape_room.reorder_buttons') || 'Reorder buttons'}>
+                            <button
+                              onClick={() => {
+                                if (idx > 0) {
+                                  const newOrder = [...sequenceOrder];
+                                  [newOrder[idx], newOrder[idx - 1]] = [newOrder[idx - 1], newOrder[idx]];
+                                  setSequenceOrder(newOrder);
+                                }
+                              }}
+                              disabled={idx === 0}
+                              aria-label={`${t('escape_room.move_up') || 'Move up'}: ${item}`}
+                              title={t('escape_room.move_up') || 'Move up'}
+                              className="w-8 h-8 bg-slate-600 hover:bg-slate-500 text-white rounded disabled:opacity-30 focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                            >↑</button>
+                            <button
+                              onClick={() => {
+                                if (idx < sequenceOrder.length - 1) {
+                                  const newOrder = [...sequenceOrder];
+                                  [newOrder[idx], newOrder[idx + 1]] = [newOrder[idx + 1], newOrder[idx]];
+                                  setSequenceOrder(newOrder);
+                                }
+                              }}
+                              disabled={idx === sequenceOrder.length - 1}
+                              aria-label={`${t('escape_room.move_down') || 'Move down'}: ${item}`}
+                              title={t('escape_room.move_down') || 'Move down'}
+                              className="w-8 h-8 bg-slate-600 hover:bg-slate-500 text-white rounded disabled:opacity-30 focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                            >↓</button>
+                          </div>
+                        </div>
+                      ))
+                  }
+                </div>
+                {sequenceOrder.length === 0 && (
+                  <button
+                    onClick={() => setSequenceOrder(currentPuzzle.shuffledItems || currentPuzzle.items || [])}
+                    className="w-full p-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
+                  >
+                    {t('escape_room.start_ordering') || 'Start Ordering'}
+                  </button>
+                )}
+                {sequenceOrder.length > 0 && (
+                  <button
+                    onClick={() => {
+                      const originalItems = currentPuzzle.items || [];
+                      const orderIndices = sequenceOrder.map(item => originalItems.indexOf(item));
+                      handleSubmitAnswer(currentPuzzle.id, orderIndices, 'sequence');
+                    }}
+                    className="w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors"
+                  >
+                    {t('escape_room.check_sequence')}
+                  </button>
+                )}
+              </div>
+            )}
+            {currentPuzzle.type === 'matching' && (
+              <div className="space-y-4" data-help-key="escape_room_matching_container">
+                <p className="text-sm text-purple-300 italic mb-2">{t('escape_room.matching_instructions')}</p>
+                <div className="grid grid-cols-2 gap-4" role="group" aria-label={t('escape_room.matching_columns') || 'Matching columns'}>
+                  <div className="space-y-2" role="group" aria-label={t('escape_room.left_column') || 'Left column options'}>
+                    {(currentPuzzle.leftColumn || currentPuzzle.pairs?.map(p => p.left) || []).map((item, idx) => {
+                      const isMatched = matchingPairs.some(p => p.left === item);
+                      const isSelected = matchingSelected?.side === 'left' && matchingSelected?.item === item;
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            if (isMatched) return;
+                            if (matchingSelected?.side === 'right') {
+                              setMatchingPairs([...matchingPairs, { left: item, right: matchingSelected.item }]);
+                              setMatchingSelected(null);
+                            } else {
+                              setMatchingSelected({ side: 'left', item });
+                            }
+                          }}
+                          disabled={isMatched}
+                          aria-label={isMatched ? `${item} - ${t('escape_room.matched') || 'matched'}` : isSelected ? `${item} - ${t('escape_room.selected') || 'selected'}` : item}
+                          className={`w-full p-3 rounded-lg text-left font-medium transition-all focus:outline-none focus:ring-2 focus:ring-purple-400 ${
+                            isMatched ? 'bg-green-700 text-white opacity-60' :
+                            isSelected ? 'bg-purple-500 text-white ring-2 ring-purple-300' :
+                            'bg-slate-700 text-white hover:bg-slate-600'
+                          }`}
+                        >
+                          {item}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="space-y-2" role="group" aria-label={t('escape_room.right_column') || 'Right column options'}>
+                    {(currentPuzzle.rightColumn || currentPuzzle.pairs?.map(p => p.right) || []).map((item, idx) => {
+                      const isMatched = matchingPairs.some(p => p.right === item);
+                      const isSelected = matchingSelected?.side === 'right' && matchingSelected?.item === item;
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            if (isMatched) return;
+                            if (matchingSelected?.side === 'left') {
+                              setMatchingPairs([...matchingPairs, { left: matchingSelected.item, right: item }]);
+                              setMatchingSelected(null);
+                            } else {
+                              setMatchingSelected({ side: 'right', item });
+                            }
+                          }}
+                          disabled={isMatched}
+                          aria-label={isMatched ? `${item} - ${t('escape_room.matched') || 'matched'}` : isSelected ? `${item} - ${t('escape_room.selected') || 'selected'}` : item}
+                          className={`w-full p-3 rounded-lg text-left font-medium transition-all focus:outline-none focus:ring-2 focus:ring-purple-400 ${
+                            isMatched ? 'bg-green-700 text-white opacity-60' :
+                            isSelected ? 'bg-purple-500 text-white ring-2 ring-purple-300' :
+                            'bg-slate-700 text-white hover:bg-slate-600'
+                          }`}
+                        >
+                          {item}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                {matchingPairs.length > 0 && (
+                  <div className="bg-slate-900 p-3 rounded-lg" role="list" aria-label={t('escape_room.matched_pairs') || 'Matched pairs'}>
+                    <p className="text-xs text-slate-400 mb-2" aria-hidden="true">{t('escape_room.matched_pairs')}</p>
+                    <div className="space-y-1">
+                      {matchingPairs.map((pair, idx) => (
+                        <div key={idx} role="listitem" className="text-sm text-green-400">✓ {pair.left} ↔ {pair.right}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {matchingPairs.length >= (currentPuzzle.pairs?.length || 4) && (
+                  <button
+                    onClick={() => handleSubmitAnswer(currentPuzzle.id, matchingPairs, 'matching')}
+                    className="w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors"
+                  >
+                    {t('escape_room.submit_answer')}
+                  </button>
+                )}
+              </div>
+            )}
+            {currentPuzzle.hint && (
+              <p className="mt-4 text-purple-400 text-sm italic">💡 {currentPuzzle.hint}</p>
+            )}
+          </div>
+        </div>
+      )}
+      {isPaused && (
+        <div className="fixed inset-0 z-[10001] bg-black/80 flex items-center justify-center backdrop-blur-sm">
+          <div className="text-center text-white animate-pulse">
+            <div className="text-8xl mb-6">⏸️</div>
+            <h2 className="text-4xl font-black mb-3">{t('escape_room.game_paused')}</h2>
+            <p className="text-xl text-slate-400">{t('escape_room.waiting_resume')}</p>
+          </div>
+        </div>
+      )}
+      {teamEscapeToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in slide-in-from-bottom duration-300">
+          <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border-2 ${teamColors[teamEscapeToast]?.border || 'border-purple-500'} bg-slate-900`}>
+            <span className="text-3xl">🚪</span>
+            <div>
+              <p className="text-white font-bold">{t('escape_room.team_escaped', { team: teamEscapeToast })}</p>
+              <p className="text-slate-500 text-sm">{t('escape_room.hurry_up')}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 });
-const TeacherDashboard = React.memo((props) => {
-  const Impl = window.AlloModules && window.AlloModules.TeacherDashboard;
-  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-400">Loading dashboard...</div>;
+// @section ESCAPE_ROOM_TEACHER — Escape Room teacher controls
+const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, appId, t, addToast }) => {
+  const escapeState = sessionData?.escapeRoomState;
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
+  useEffect(() => {
+    if (!escapeState?.isActive || !activeSessionCode || !appId) return;
+    if (escapeState.isPaused) return;
+    if (escapeState.timeRemaining <= 0) return;
+    const timer = setInterval(async () => {
+      const newTime = (escapeState.timeRemaining || 0) - 1;
+      if (newTime === 60) {
+        addToast?.(t('escape_room.one_minute_warning'), 'warning');
+      } else if (newTime === 30) {
+        addToast?.(t('escape_room.thirty_seconds_warning'), 'error');
+      }
+      try {
+        const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+        if (newTime <= 0) {
+          await updateDoc(sessionRef, {
+            'escapeRoomState.timeRemaining': 0,
+            'escapeRoomState.isActive': false,
+            'escapeRoomState.isGameOver': true
+          });
+          addToast?.(t('escape_room.time_up'), 'error');
+          clearInterval(timer);
+        } else {
+          await updateDoc(sessionRef, { 'escapeRoomState.timeRemaining': newTime });
+        }
+      } catch (e) {
+        warnLog('Failed to sync timer:', e);
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [escapeState?.isActive, escapeState?.isPaused, escapeState?.timeRemaining, activeSessionCode, appId]);
+  if (!escapeState?.isActive) return null;
+  const isCoopMode = escapeState.isCoopMode || false;
+  const isPaused = escapeState.isPaused || false;
+  const teamColors = {
+    Red: { bg: 'bg-red-500', text: 'text-red-600', light: 'bg-red-100' },
+    Blue: { bg: 'bg-blue-500', text: 'text-blue-600', light: 'bg-blue-100' },
+    Green: { bg: 'bg-green-500', text: 'text-green-600', light: 'bg-green-100' },
+    Yellow: { bg: 'bg-yellow-500', text: 'text-yellow-600', light: 'bg-yellow-100' },
+    All: { bg: 'bg-purple-500', text: 'text-purple-600', light: 'bg-purple-100' }
+  };
+  const allTeams = Object.keys(escapeState.teamProgress || {});
+  const puzzles = escapeState.puzzles || [];
+  const totalPuzzles = puzzles.length;
+  const escapedTeams = useMemo(() => allTeams.filter(t => escapeState.teamProgress?.[t]?.isEscaped), [allTeams, escapeState, isEscaped, teamProgress]);
+  const studentsAssigned = Object.keys(escapeState.teams || {}).length;
+  const handlePauseToggle = async () => {
+    try {
+        const sessionRef = doc(db, 'apps', appId, 'liveSessions', activeSessionCode);
+        await updateDoc(sessionRef, { 'escapeRoomState.isPaused': !isPaused });
+    } catch (e) { warnLog("Unhandled error in handlePauseToggle:", e); }
+  };
+  const handleEndGame = async () => {
+    try {
+        const sessionRef = doc(db, 'apps', appId, 'liveSessions', activeSessionCode);
+        await updateDoc(sessionRef, { 'escapeRoomState.isActive': false });
+        setShowEndConfirm(false);
+    } catch (e) { warnLog("Unhandled error in handleEndGame:", e); }
+  };
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+  return (
+    <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-4 border-2 border-purple-200 shadow-lg mb-4">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <DoorOpen className="text-purple-600" size={20} />
+          <h3 className="font-bold text-purple-900">{escapeState.room?.theme || t('escape_room.title')}</h3>
+          {isCoopMode && (
+            <span className="text-xs bg-purple-200 text-purple-700 px-2 py-0.5 rounded-full font-bold">
+              {t('escape_room.coop_mode')}
+            </span>
+          )}
+          {isPaused && (
+            <span className="text-xs bg-yellow-200 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse">
+              ⏸️ {t('escape_room.game_paused')}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-bold">
+            {studentsAssigned} {t('escape_room.teams_competing', { count: allTeams.length })}
+          </span>
+          <span className={`px-3 py-1 rounded-full font-mono font-bold text-sm ${escapeState.timeRemaining < 60 ? 'bg-red-500 text-white' : 'bg-slate-700 text-white'}`}>
+            <Clock size={12} className="inline mr-1" />
+            {formatTime(escapeState.timeRemaining || 0)}
+          </span>
+          <button
+            onClick={handlePauseToggle}
+            className={`px-4 py-2 rounded-full font-bold text-sm transition-colors whitespace-nowrap ${isPaused ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-yellow-500 hover:bg-yellow-600 text-white'}`}
+          >
+            {isPaused ? '▶️ ' + t('escape_room.resume') : '⏸️ ' + t('escape_room.pause')}
+          </button>
+          <button
+            onClick={() => setShowEndConfirm(true)}
+            className="px-4 py-2 rounded-full font-bold text-sm bg-red-500 hover:bg-red-600 text-white transition-colors whitespace-nowrap"
+          >
+            {t('escape_room.end_game')}
+          </button>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {allTeams.map(team => {
+          const progress = escapeState.teamProgress?.[team] || { solvedPuzzles: [] };
+          const solved = (progress.solvedPuzzles || []).length;
+          const percent = totalPuzzles > 0 ? Math.round((solved / totalPuzzles) * 100) : 0;
+          const colors = teamColors[team] || teamColors.Blue;
+          const escaped = progress.isEscaped;
+          const memberCount = Object.values(escapeState.teams || {}).filter(t => t === team).length;
+          return (
+            <div key={team} className={`p-3 rounded-xl border-2 ${escaped ? 'border-green-400 bg-green-50' : 'border-slate-200 bg-white'}`}>
+              <div className="flex items-center justify-between mb-2">
+                <span className={`font-bold ${colors.text}`}>{team}</span>
+                <span className="text-xs text-slate-500">{memberCount} 👤</span>
+              </div>
+              <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden mb-2">
+                <div className={`h-full ${colors.bg} transition-all duration-500`} style={{ width: `${percent}%` }} />
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-600">{solved}/{totalPuzzles}</span>
+                {escaped && <span className="text-green-600 font-bold">🏆 {t('escape_room.escaped')}</span>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {escapedTeams.length > 0 && (
+        <div className="mt-4 p-3 bg-green-100 rounded-xl border border-green-300 text-center">
+          <span className="text-green-800 font-bold">
+            🎉 {escapedTeams.length === 1
+              ? t('escape_room.first_escape') + ': ' + escapedTeams[0]
+              : t('escape_room.all_teams_done')
+            }
+          </span>
+        </div>
+      )}
+      {showEndConfirm && (
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border-2 border-red-200">
+            <h4 className="text-lg font-bold text-red-600 mb-2 flex items-center gap-2">
+              <X className="text-red-500" size={20} />
+              {t('escape_room.end_game')}
+            </h4>
+            <p className="text-slate-600 mb-4">{t('escape_room.end_game_confirm')}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowEndConfirm(false)}
+                className="flex-1 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-colors"
+              >
+                {t('cancel')}
+              </button>
+              <button
+                onClick={handleEndGame}
+                className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors"
+              >
+                {t('escape_room.end_game')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 });
-// ═══ QuickStartWizard (loaded from CDN quickstart_module.js) ═══
-// Proxy component that delegates to CDN-loaded implementation.
-const QuickStartWizard = React.memo((props) => {
-  const Impl = window.AlloModules && window.AlloModules.QuickStartWizard;
-  if (!props.isOpen) return null;
-  return Impl ? <Impl {...props} /> : <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40"><div className="bg-white rounded-2xl p-8 text-center text-slate-400 shadow-xl">Loading wizard...</div></div>;
+// @section LIVE_QUIZ — Teacher live quiz broadcast controls
+const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup }) => {
+    const { t } = useContext(LanguageContext);
+    const { quizState, roster } = sessionData;
+    const { currentQuestionIndex, phase, responses, mode, bossStats, teamScores } = quizState;
+    const question = generatedContent?.data.questions[currentQuestionIndex];
+    const [showLocalStats, setShowLocalStats] = useState(false);
+    const [bossDifficulty, setBossDifficulty] = useState('normal');
+    const totalStudents = roster ? Object.keys(roster).length : 0;
+    const answeredCount = responses ? Object.keys(responses).length : 0;
+    const percentage = totalStudents > 0 ? Math.round((answeredCount / totalStudents) * 100) : 0;
+    const detailedStats = question.options.map((opt, idx) => {
+        const count = Object.values(responses || {}).filter(r => r === idx).length;
+        const percent = answeredCount > 0 ? Math.round((count / answeredCount) * 100) : 0;
+        return {
+            label: String.fromCharCode(65 + idx),
+            value: count,
+            percent: percent,
+            text: opt,
+            isCorrect: opt === question.correctAnswer
+        };
+    });
+    const renderAnalytics = () => (
+        <div className="flex flex-col h-full w-full animate-in fade-in duration-300">
+            <div className="w-full h-48 mb-6 shrink-0">
+                <SimpleBarChart data={detailedStats} color="indigo" />
+            </div>
+            <div className="flex-grow overflow-y-auto pr-1 custom-scrollbar space-y-2">
+                {detailedStats.map((stat, i) => (
+                    <div
+                        key={i}
+                        className={`flex items-center justify-between p-3 rounded-lg border text-xs transition-all ${
+                            phase === 'revealed' && stat.isCorrect
+                            ? 'bg-green-50 border-green-200 ring-1 ring-green-300'
+                            : 'bg-white border-slate-100 hover:border-indigo-200'
+                        }`}
+                    >
+                        <div className="flex items-center gap-3 overflow-hidden mr-4">
+                            <span className={`font-black w-6 h-6 flex items-center justify-center rounded shrink-0 ${
+                                phase === 'revealed' && stat.isCorrect ? 'bg-green-200 text-green-800' : 'bg-indigo-100 text-indigo-700'
+                            }`}>
+                                {stat.label}
+                            </span>
+                            <span className={`truncate font-medium ${phase === 'revealed' && stat.isCorrect ? 'text-green-900' : 'text-slate-600'}`} title={stat.text}>
+                                {stat.text}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                            <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden hidden sm:block">
+                                <div
+                                    className={`h-full ${phase === 'revealed' && stat.isCorrect ? 'bg-green-500' : 'bg-indigo-500'}`}
+                                    style={{ width: `${stat.percent}%` }}
+                                ></div>
+                            </div>
+                            <div className="text-right min-w-[50px]">
+                                <div className="font-black text-slate-800 text-sm">{stat.value}</div>
+                                <div className="text-[10px] text-slate-500 font-mono">{stat.percent}%</div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
+                <span className="font-bold text-slate-500 uppercase tracking-wider">{t('quiz.total_responses')}</span>
+                <span className="font-mono font-black text-lg text-indigo-600 bg-indigo-50 px-3 py-0.5 rounded-full border border-indigo-100">
+                    {answeredCount}
+                </span>
+            </div>
+        </div>
+    );
+    const generateBossAsset = async () => {
+        if (bossStats?.image || bossStats?.isGenerating) return;
+        try {
+            const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+            await updateDoc(sessionRef, { "quizState.bossStats.isGenerating": true });
+            const topic = generatedContent.meta || "General Knowledge";
+            const prompt = `Pixel art boss monster representing '${topic}'. Retro 8-bit video game sprite. Threatening but cute. White background. Isolated character.`;
+            let imageUrl = await onGenerateImage(prompt, 300, 0.8);
+            if (onRefineImage && imageUrl) {
+                 try {
+                     const rawBase64 = imageUrl.split(',')[1];
+                     const refined = await onRefineImage(
+                         "Remove all text, letters, labels, damage numbers, and UI elements. Remove background to make it transparent. Ensure clean pixel art sprite borders.",
+                         rawBase64
+                     );
+                     if (refined) imageUrl = refined;
+                 } catch (e) {
+                     warnLog("Boss refinement failed, using original", e);
+                 }
+            }
+            await updateDoc(sessionRef, {
+                "quizState.bossStats.image": imageUrl,
+                "quizState.bossStats.isGenerating": false
+            });
+        } catch (e) {
+            warnLog("Boss Gen Failed", e);
+            const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+            try { await updateDoc(sessionRef, { "quizState.bossStats.isGenerating": false }); } catch(e) { warnLog('Firestore sync failed:', e); }
+        }
+    };
+    const triggerBossVisualUpdate = async (currentImageUrl, status) => {
+        if (!onRefineImage || !currentImageUrl) return;
+        try {
+            const rawBase64 = currentImageUrl.split(',')[1];
+            let prompt = "";
+            if (status === 'defeated') {
+                prompt = "Edit this pixel art character to look defeated, collapsed, fainting, or turning into a ghost. Keep the style consistent.";
+            } else {
+                prompt = "Edit this pixel art character to look like it is taking damage, flinching, glowing red, or in pain. Keep the style consistent.";
+            }
+            const newImage = await onRefineImage(prompt, rawBase64);
+            if (newImage) {
+                const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+                await updateDoc(sessionRef, { "quizState.bossStats.image": newImage });
+            }
+        } catch (e) {
+            warnLog("Boss visual update failed", e);
+        }
+    };
+    const handleStartQuestion = async () => {
+        const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+        try { await updateDoc(sessionRef, { "quizState.phase": "answering", "quizState.responses": {}, "quizState.currentQuestionIndex": currentQuestionIndex, "quizState.bossStats.lastDamage": 0 }); } catch(e) { warnLog('Firestore sync failed:', e); }
+    };
+    const handleRevealResults = async () => {
+        try {
+            const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+            let updatePayload = {
+                "quizState.phase": "revealed",
+            };
+            const isCorrect = (responseIndex) => {
+                if (responseIndex === undefined || responseIndex === null) return false;
+                return question.options[responseIndex] === question.correctAnswer;
+            };
+            if (mode === 'boss-battle') {
+                let correctCount = 0;
+                Object.values(responses || {}).forEach(val => {
+                    if (isCorrect(val)) correctCount++;
+                });
+                const totalResponses = Object.keys(responses || {}).length;
+                const wrongCount = totalResponses - correctCount;
+                const damage = correctCount * 10;
+                const currentHP = bossStats?.currentHP || 1000;
+                const newHP = Math.max(0, currentHP - damage);
+                const difficultyMultiplier = bossStats?.difficulty === 'easy' ? 0.5 : bossStats?.difficulty === 'hard' ? 1.5 : 1.0;
+                const baseClassDamage = totalResponses > 0
+                    ? Math.ceil((wrongCount / totalResponses) * 25)
+                    : 0;
+                const classDamage = Math.round(baseClassDamage * difficultyMultiplier);
+                const currentClassHP = bossStats?.classHP ?? 100;
+                const newClassHP = Math.max(0, currentClassHP - classDamage);
+                updatePayload["quizState.bossStats.currentHP"] = newHP;
+                updatePayload["quizState.bossStats.lastDamage"] = damage;
+                updatePayload["quizState.bossStats.classHP"] = newClassHP;
+                updatePayload["quizState.bossStats.lastClassDamage"] = classDamage;
+                const battleLogEntry = {
+                    questionIndex: currentQuestionIndex,
+                    damage,
+                    classDamage,
+                    correctCount,
+                    totalResponses,
+                    accuracy: totalResponses > 0 ? Math.round((correctCount / totalResponses) * 100) : 0
+                };
+                const existingLog = bossStats?.battleLog || [];
+                updatePayload["quizState.bossStats.battleLog"] = [...existingLog, battleLogEntry];
+                if (newHP <= 0 && newClassHP > 0) {
+                    updatePayload["quizState.phase"] = "boss-defeated";
+                } else if (newClassHP <= 0 && newHP > 0) {
+                    updatePayload["quizState.phase"] = "class-defeated";
+                }
+                if (damage > 0 && bossStats?.image) {
+                    triggerBossVisualUpdate(bossStats.image, newHP <= 0 ? 'defeated' : 'hurt');
+                }
+            }
+            else if (mode === 'team-showdown') {
+                const currentScores = sessionData.quizState.teamScores || {};
+                const teamStats = {};
+                Object.entries(responses || {}).forEach(([uid, ansIdx]) => {
+                    const teamColor = sessionData.quizState.teams?.[uid];
+                    if (teamColor) {
+                        if (!teamStats[teamColor]) teamStats[teamColor] = { total: 0, correct: 0 };
+                        teamStats[teamColor].total++;
+                        if (isCorrect(ansIdx)) teamStats[teamColor].correct++;
+                    }
+                });
+                Object.entries(teamStats).forEach(([team, stats]) => {
+                    const percentage = stats.total > 0 ? (stats.correct / stats.total) : 0;
+                    const pointsEarned = Math.round(percentage * 1000);
+                    const oldScore = currentScores[team] || 0;
+                    updatePayload[`quizState.teamScores.${team}`] = oldScore + pointsEarned;
+                    updatePayload[`quizState.lastRoundStats.${team}`] = {
+                        points: pointsEarned,
+                        percent: Math.round(percentage * 100)
+                    };
+                });
+            }
+            try { await updateDoc(sessionRef, updatePayload); } catch(e) { warnLog('Firestore sync failed:', e); }
+        } catch (e) { warnLog("Unhandled error in handleRevealResults:", e); }
+    };
+    const handleNextQuestion = async () => {
+        try {
+            const nextIdx = currentQuestionIndex + 1;
+            if (nextIdx >= generatedContent?.data.questions.length) return;
+            const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+            await updateDoc(sessionRef, {
+                "quizState.currentQuestionIndex": nextIdx,
+                "quizState.phase": "idle",
+                "quizState.responses": {},
+                "quizState.bossStats.lastDamage": 0
+            });
+        } catch (e) { warnLog("Unhandled error in handleNextQuestion:", e); }
+    };
+    const handlePrevQuestion = async () => {
+        try {
+            const prevIdx = currentQuestionIndex - 1;
+            if (prevIdx < 0) return;
+            const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+            await updateDoc(sessionRef, {
+                "quizState.currentQuestionIndex": prevIdx,
+                "quizState.phase": "idle",
+                "quizState.responses": {},
+                "quizState.bossStats.lastDamage": 0
+            });
+        } catch (e) { warnLog("Unhandled error in handlePrevQuestion:", e); }
+    };
+    const handleEndQuiz = async () => {
+        addToast(t('quiz.session_ended_success') || "Session ended successfully.", "success");
+        try {
+            const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+            await updateDoc(sessionRef, {
+                "quizState.isActive": false
+            });
+        } catch (err) {
+            warnLog("Quiz end Firestore failed (Canvas sandbox):", err.message);
+        }
+    };
+    const handleModeChange = async (e) => {
+        const newMode = e.target.value;
+        const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+        const updates = { "quizState.mode": newMode };
+        if (newMode === 'boss-battle') {
+            const qCount = generatedContent?.data.questions.length;
+            const sCount = Math.max(1, totalStudents);
+            const baseHP = (qCount * sCount * 10);
+            const hpMultiplier = bossDifficulty === 'easy' ? 0.5 : bossDifficulty === 'hard' ? 1.5 : 1.0;
+            const maxHP = Math.round(baseHP * hpMultiplier);
+            const existingImage = bossStats?.image || null;
+            updates["quizState.bossStats"] = {
+                maxHP: maxHP,
+                currentHP: maxHP,
+                classHP: 100,
+                classMaxHP: 100,
+                name: t('quiz.boss.default_name'),
+                lastDamage: 0,
+                lastClassDamage: 0,
+                image: existingImage,
+                isGenerating: false,
+                difficulty: bossDifficulty,
+                battleLog: []
+            };
+            if (!existingImage) {
+                setTimeout(generateBossAsset, 100);
+            }
+        }
+        try { await updateDoc(sessionRef, updates); } catch(e) { warnLog('Firestore sync failed:', e); }
+    };
+    const [newGroupName, setNewGroupName] = useState("");
+    const groups = sessionData.groups || {};
+    const handleCreateGroup = async () => {
+        if (!newGroupName.trim()) return;
+        await onCreateGroup(newGroupName.trim());
+        setNewGroupName("");
+    };
+    const handleAssignStudent = onAssignStudent;
+    const handleSetGroupResource = onSetGroupResource;
+    const handleSetGroupLanguage = onSetGroupLanguage;
+    const handleSetGroupProfile = onSetGroupProfile;
+    const handleDeleteGroup = onDeleteGroup;
+    const availableResources = generatedContent?.data.resources || [];
+    const activeGroups = useMemo(() => Object.entries(groups).filter(([_, g]) => g !== null), [groups]);
+    return (
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden mb-6 animate-in slide-in-from-top-4 duration-500">
+            <div className="bg-indigo-900 text-white p-4 flex justify-between items-center flex-wrap gap-4">
+                <h3 className="font-bold flex items-center gap-2"><MonitorPlay size={20} className="text-teal-400"/> {t('quiz.live_control_center')}</h3>
+                <div className="flex items-center gap-4">
+                     <select aria-label={t('common.selection')}
+                        value={mode || 'live-pulse'} data-help-key="quiz_mode_select"
+                        onChange={handleModeChange}
+                        className="bg-indigo-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-indigo-600 outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer"
+                     >
+                         <option value="live-pulse">📊 {t('quiz.modes.live_pulse')}</option>
+                         <option value="boss-battle">⚔️ {t('quiz.modes.boss_battle')}</option>
+                         <option value="team-showdown">🏆 {t('quiz.modes.team_showdown')}</option>
+                     </select>
+                     {mode === 'boss-battle' && (
+                         <select aria-label={t('common.selection')}
+                             value={bossDifficulty}
+                             onChange={(e) => setBossDifficulty(e.target.value)}
+                             disabled={phase !== 'lobby'}
+                             className={`text-xs font-bold px-3 py-1.5 rounded-lg border outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer ${
+                                 bossDifficulty === 'easy' ? 'bg-emerald-600 border-emerald-500 text-white' :
+                                 bossDifficulty === 'hard' ? 'bg-red-600 border-red-500 text-white' :
+                                 'bg-amber-500 border-amber-400 text-white'
+                             } ${phase !== 'lobby' ? 'opacity-60 cursor-not-allowed' : ''}`}
+                             title={phase !== 'lobby' ? t('quiz.boss.difficulty_locked') : t('quiz.boss.select_difficulty')}
+                         >
+                             <option value="easy">🌱 {t('quiz.boss.difficulty_easy')}</option>
+                             <option value="normal">⚔️ {t('quiz.boss.difficulty_normal')}</option>
+                             <option value="hard">💀 {t('quiz.boss.difficulty_hard')}</option>
+                         </select>
+                     )}
+                     {mode !== 'live-pulse' && (
+                         <button
+                             aria-label={t('common.start_game')}
+                             onClick={() => setShowLocalStats(prev => !prev)} data-help-key="quiz_local_stats_btn"
+                             className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 border ${showLocalStats ? 'bg-yellow-400 text-indigo-900 border-yellow-500' : 'bg-indigo-800 text-indigo-200 border-indigo-600 hover:bg-indigo-700'}`}
+                             title={t('quiz.toggle_stats_tooltip')}
+                         >
+                             {showLocalStats ? <Gamepad2 size={14}/> : <Layout size={14}/>}
+                             {showLocalStats ? t('quiz.show_game') : t('quiz.show_stats')}
+                         </button>
+                     )}
+                     <div className="text-xs font-mono bg-indigo-800 px-3 py-1.5 rounded-full font-bold shadow-sm border border-indigo-700">
+                        {t('quiz.answered_status', {
+                            current: answeredCount,
+                            total: totalStudents,
+                            percent: percentage
+                        })}
+                     </div>
+                     <button onClick={handleEndQuiz} className="text-xs bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-white">
+                        {t('quiz.end_quiz')}
+                     </button>
+                </div>
+            </div>
+            <div className="w-full h-1.5 bg-slate-100 relative">
+                <div className="bg-teal-500 h-full transition-all duration-500 ease-out" style={{ width: `${percentage}%` }}></div>
+            </div>
+            <div className="bg-slate-50 border-b border-slate-200 p-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex-1">
+                        <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">{t('groups.title')}</h4>
+                        <div className="flex gap-2 mb-3">
+                             <input aria-label={t('common.new_group_name')}
+                                type="text"
+                                value={newGroupName} data-help-key="quiz_new_group_input"
+                                onChange={(e) => setNewGroupName(e.target.value)}
+                                placeholder={t('groups.new_group_placeholder')}
+                                className="text-sm p-1.5 rounded border border-slate-300 flex-1"
+                             />
+                             <button
+                                onClick={handleCreateGroup} data-help-key="quiz_add_group_btn"
+                                disabled={!newGroupName.trim()}
+                                className="bg-indigo-600 text-white text-xs px-3 py-1.5 rounded hover:bg-indigo-700 disabled:opacity-50 font-bold"
+                             >
+                                 + {t('groups.add_button')}
+                             </button>
+                        </div>
+                        <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
+                            {activeGroups.map(([gid, group]) => (
+                                <div key={gid} className="bg-white p-2 rounded border border-indigo-100 shadow-sm flex flex-col gap-2">
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-bold text-indigo-900">{group.name}</span>
+                                            <button onClick={() => handleDeleteGroup(gid)} className="text-[10px] text-red-400 hover:text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-red-400 rounded">{t('groups.remove_button')}</button>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] uppercase font-bold text-slate-500">{t('groups.resource_label')}</span>
+                                        <select aria-label={t('common.selection')}
+                                            value={group.resourceId || ""} data-help-key="quiz_group_resource_select"
+                                            onChange={(e) => handleSetGroupResource(gid, e.target.value)}
+                                            className="text-xs p-1 rounded border border-slate-200 w-full truncate bg-slate-50"
+                                        >
+                                            <option value="">{t('groups.default_resource')}</option>
+                                            {availableResources.map(r => (
+                                                <option key={r.id} value={r.id}>{r.title || r.type}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] uppercase font-bold text-slate-500">{t('groups.language_label') || 'Quiz Language'}</span>
+                                        <select aria-label={t('common.selection')}
+                                            value={group.language || ""} data-help-key="quiz_group_language_select"
+                                            onChange={(e) => handleSetGroupLanguage(gid, e.target.value)}
+                                            className="text-xs p-1 rounded border border-slate-200 w-full truncate bg-slate-50"
+                                            title={t('groups.language_tooltip') || 'Students see quizzes in this language'}
+                                        >
+                                            <option value="">{t('groups.language_default') || 'English (Default)'}</option>
+                                            <option value="Spanish">Spanish</option>
+                                            <option value="Vietnamese">Vietnamese</option>
+                                            <option value="Mandarin">Mandarin</option>
+                                            <option value="Arabic">Arabic</option>
+                                            <option value="French">French</option>
+                                            <option value="Portuguese">Portuguese</option>
+                                            <option value="Korean">Korean</option>
+                                            <option value="Tagalog">Tagalog</option>
+                                            <option value="Russian">Russian</option>
+                                            <option value="Japanese">Japanese</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] uppercase font-bold text-slate-500">{t('groups.reading_level_label') || 'Reading Level'}</span>
+                                        <select aria-label={t('common.reading_level')}
+                                            value={group.readingLevel || ""} data-help-key="group_reading_level_select"
+                                            onChange={(e) => handleSetGroupProfile(gid, 'readingLevel', e.target.value || null)}
+                                            className="text-xs p-1 rounded border border-slate-200 w-full truncate bg-slate-50"
+                                            title={t('groups.reading_level_tooltip') || 'Set reading level for content simplification'}
+                                        >
+                                            <option value="">{t('groups.class_default') || 'Class Default'}</option>
+                                            <option value="K">K</option>
+                                            <option value="1st">1st Grade</option>
+                                            <option value="2nd">2nd Grade</option>
+                                            <option value="3rd">3rd Grade</option>
+                                            <option value="4th">4th Grade</option>
+                                            <option value="5th">5th Grade</option>
+                                            <option value="6th">6th Grade</option>
+                                            <option value="7th">7th Grade</option>
+                                            <option value="8th">8th Grade</option>
+                                            <option value="9th-12th">9th-12th</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] uppercase font-bold text-slate-500">{t('groups.visual_density_label') || 'Visuals'}</span>
+                                        <select aria-label={t('common.visual_density')}
+                                            value={group.visualDensity || "normal"} data-help-key="group_visual_density_select"
+                                            onChange={(e) => handleSetGroupProfile(gid, 'visualDensity', e.target.value)}
+                                            className="text-xs p-1 rounded border border-slate-200 w-full truncate bg-slate-50"
+                                            title={t('groups.visual_density_tooltip') || 'How much visual support this group receives'}
+                                        >
+                                            <option value="minimal">{t('groups.visuals_minimal') || 'Minimal'}</option>
+                                            <option value="normal">{t('groups.visuals_normal') || 'Normal'}</option>
+                                            <option value="high">{t('groups.visuals_high') || 'High (More images)'}</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] uppercase font-bold text-slate-500">{t('groups.tts_speed_label') || 'TTS Speed'}</span>
+                                        <select aria-label={t('common.tts_speed')}
+                                            value={group.ttsSpeed ?? 1.0} data-help-key="group_tts_speed_select"
+                                            onChange={(e) => handleSetGroupProfile(gid, 'ttsSpeed', parseFloat(e.target.value))}
+                                            className="text-xs p-1 rounded border border-slate-200 w-full truncate bg-slate-50"
+                                            title={t('groups.tts_speed_tooltip') || 'Text-to-speech playback speed for this group'}
+                                        >
+                                            <option value="0.6">0.6x (Very Slow)</option>
+                                            <option value="0.8">0.8x (Slow)</option>
+                                            <option value="1.0">1.0x (Normal)</option>
+                                            <option value="1.2">1.2x (Fast)</option>
+                                            <option value="1.5">1.5x (Very Fast)</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <label className="flex items-center gap-1 text-[10px] font-bold text-slate-500 cursor-pointer" title={t('groups.karaoke_tooltip') || 'Auto-enable word highlighting for this group'}>
+                                            <input type="checkbox" checked={group.karaokeMode || false} onChange={(e) => handleSetGroupProfile(gid, 'karaokeMode', e.target.checked)} className="rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" />
+                                            {t('groups.karaoke_label') || 'Karaoke Mode'}
+                                        </label>
+                                    <div className="flex items-center gap-3 mt-1">
+                                        <label className="flex items-center gap-1 text-[10px] font-bold text-slate-500 cursor-pointer" title={t('common.toggle_emoji_usage_for_this_group')}>
+                                            <input type="checkbox" checked={g.profile?.useEmojis || false} onChange={(e) => handleSetGroupProfile(gid, 'useEmojis', e.target.checked)} className="rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" />
+                                            {t('roster.emojis_label') || 'Use Emojis'}
+                                        </label>
+                                        <select aria-label={t('common.text_format')} value={g.profile?.textFormat || 'Standard Text'} onChange={(e) => handleSetGroupProfile(gid, 'textFormat', e.target.value)} className="text-[10px] p-1 rounded border border-slate-200 bg-slate-50">
+                                            <option value="Standard Text">{t('roster.format_standard') || 'Standard'}</option>
+                                            <option value="Bullet Points">{t('roster.format_bullets') || 'Bullets'}</option>
+                                            <option value="Outline">{t('roster.format_outline') || 'Outline'}</option>
+                                        </select>
+                                    </div>
+                                    </div>
+                                </div>
+                            ))}
+                            {activeGroups.length === 0 && (
+                                <div className="text-xs text-slate-500 italic text-center py-2">{t('groups.no_groups')}</div>
+                            )}
+                        </div>
+                    </div>
+                    <div className="flex-[2] border-l border-slate-200 pl-4">
+                        <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">{t('groups.roster_title')}</h4>
+                        <div className="bg-white rounded border border-slate-200 p-3 max-h-52 overflow-y-auto custom-scrollbar">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                                {Object.entries(roster || {}).map(([uid, student]) => {
+                                    const groupId = student.groupId;
+                                    const groupName = groupId && groups[groupId] ? groups[groupId].name : null;
+                                    return (
+                                        <div key={uid} className={`relative p-2 rounded border text-xs ${groupName ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-100'}`}>
+                                            <div className="font-bold truncate" title={student.displayName}>{student.displayName || "Anonymous"}</div>
+                                            <div className={`mt-1 text-[10px] font-mono truncat ${groupName ? 'text-indigo-600' : 'text-slate-500'}`}>
+                                                {groupName || t('groups.main_class')}
+                                            </div>
+                                            <select aria-label={t('common.selection')}
+                                                onChange={(e) => handleAssignStudent(uid, e.target.value || null)} data-help-key="quiz_assign_student_select"
+                                                value={groupId || ""}
+                                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                title={t('groups.move_to')}
+                                            >
+                                                <option value="">{t('groups.main_class')}</option>
+                                                {activeGroups.map(([gid, grp]) => (
+                                                    <option key={gid} value={gid}>{grp.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                             {(!roster || Object.keys(roster).length === 0) && (
+                                <div className="text-center text-slate-500 italic py-4">{t('groups.waiting_students')}</div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="flex flex-col justify-between h-full">
+                     <div className="mb-6">
+                         <span className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2">
+                             {t('quiz.question_progress', {
+                                 current: currentQuestionIndex + 1,
+                                 total: generatedContent?.data.questions.length
+                             })}
+                         </span>
+                         <h2 className="text-2xl font-bold text-slate-800 leading-tight">{question.question}</h2>
+                     </div>
+                     <div className="space-y-3 mt-auto">
+                         {phase === 'answering' ? (
+                             <button aria-label={t('common.toggle_visibility')}
+                                onClick={handleRevealResults} data-help-key="quiz_reveal_btn"
+                                className="w-full py-4 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-indigo-900 font-black text-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
+                             >
+                                 <Eye size={24}/> {t('quiz.reveal_results')}
+                             </button>
+                         ) : (
+                             <button aria-label={t('common.play')}
+                                onClick={handleStartQuestion} data-help-key="quiz_start_question_btn"
+                                className="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
+                             >
+                                 <Play size={24} className="fill-current"/> {phase === 'revealed' ? t('quiz.restart_question') : t('quiz.start_question')}
+                             </button>
+                         )}
+                         <div className="flex gap-3 pt-2">
+                             <button
+                                onClick={handlePrevQuestion} data-help-key="quiz_prev_question_btn"
+                                disabled={currentQuestionIndex === 0}
+                                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <ArrowDown className="rotate-90" size={16}/> {t('common.prev')}
+                             </button>
+                             <button
+                                onClick={handleNextQuestion} data-help-key="quiz_next_question_btn"
+                                disabled={currentQuestionIndex >= generatedContent?.data.questions.length - 1}
+                                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                            >
+                                {t('common.next')} <ArrowDown className="-rotate-90" size={16}/>
+                             </button>
+                         </div>
+                     </div>
+                </div>
+                <div className="bg-slate-50 rounded-xl border border-slate-200 p-6 flex flex-col items-center justify-center min-h-[300px] relative">
+                     {(showLocalStats || mode === 'live-pulse') ? (
+                         answeredCount > 0 ? renderAnalytics() : (
+                            <div className="text-slate-500 italic flex flex-col items-center gap-2 h-full justify-center">
+                                <Layout size={48} className="opacity-20"/>
+                                <span className="text-sm font-medium">{t('quiz.waiting_responses')}</span>
+                            </div>
+                         )
+                     ) : (
+                         <>
+                            {mode === 'boss-battle' && bossStats ? (
+                                <div className="w-full h-full flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300 relative">
+                                     {phase === 'boss-defeated' && (
+                                         <div className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-900/95 to-emerald-800/95 backdrop-blur-lg rounded-xl animate-in zoom-in duration-500">
+                                             <div className="text-center p-8">
+                                                 <div className="text-7xl mb-4">🎉</div>
+                                                 <h2 className="text-4xl font-black text-white mb-2 drop-shadow-lg">{t('quiz.boss.victory_msg')}</h2>
+                                                 <p className="text-lg text-green-200">{bossStats?.name || "Boss"} has been defeated!</p>
+                                             </div>
+                                         </div>
+                                     )}
+                                     {phase === 'class-defeated' && (
+                                         <div className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-red-900/95 to-rose-800/95 backdrop-blur-lg rounded-xl animate-in zoom-in duration-500">
+                                             <div className="text-center p-8">
+                                                 <div className="text-7xl mb-4">💀</div>
+                                                 <h2 className="text-4xl font-black text-white mb-2 drop-shadow-lg">{t('quiz.boss.class_defeat_msg')}</h2>
+                                                 <p className="text-lg text-red-200">The class has fallen...</p>
+                                             </div>
+                                         </div>
+                                     )}
+                                     <div className={`relative mb-6 ${phase === 'revealed' && bossStats.lastDamage > 0 ? 'animate-shake' : ''}`}>
+                                         {bossStats.image ? (
+                                             <img loading="lazy"
+                                                src={bossStats.image}
+                                                alt="Boss"
+                                                className="w-48 h-48 object-contain pixelated drop-shadow-xl"
+                                                style={STYLE_IMAGE_PIXELATED}
+                                             />
+                                         ) : (
+                                             <div className="w-32 h-32 bg-red-100 rounded-full border-4 border-red-500 flex items-center justify-center text-6xl shadow-xl relative z-10">
+                                                 {bossStats.isGenerating ? <RefreshCw className="animate-spin text-red-500"/> : "👾"}
+                                             </div>
+                                         )}
+                                         {phase === 'revealed' && bossStats.lastDamage > 0 && (
+                                             <div className="absolute top-0 right-[-20px] text-red-600 font-black text-4xl animate-[bounce_0.5s_infinite] z-20 stroke-white drop-shadow-md">
+                                                 -{bossStats.lastDamage}
+                                             </div>
+                                         )}
+                                     </div>
+                                     <h3 className="text-xl font-black text-slate-800 uppercase tracking-widest mb-2">{bossStats.name || t('quiz.boss.default_name')}</h3>
+                                     <div className="w-full max-w-sm bg-slate-300 h-8 rounded-full border-4 border-slate-400 relative overflow-hidden shadow-inner mb-2">
+                                         <div
+                                            className="h-full bg-gradient-to-r from-red-600 to-orange-500 transition-all duration-1000 ease-out"
+                                            style={{ width: `${(bossStats.currentHP / bossStats.maxHP) * 100}%` }}
+                                         ></div>
+                                         <div className="absolute inset-0 flex items-center justify-center text-xs font-black text-white drop-shadow-md">
+                                             {Math.round(bossStats.currentHP)} / {bossStats.maxHP} {t('quiz.hp')}
+                                         </div>
+                                     </div>
+                                     <div className="w-full max-w-sm bg-slate-300 h-6 rounded-full border-4 border-slate-400 relative overflow-hidden shadow-inner mb-2">
+                                         <div
+                                            className="h-full bg-gradient-to-r from-green-600 to-emerald-400 transition-all duration-1000 ease-out"
+                                            style={{ width: `${((bossStats.classHP ?? 100) / (bossStats.classMaxHP || 100)) * 100}%` }}
+                                         ></div>
+                                         <div className="absolute inset-0 flex items-center justify-center text-xs font-black text-white drop-shadow-md">
+                                             {t('quiz.boss.class_hp')}: {Math.round(bossStats.classHP ?? 100)} / {bossStats.classMaxHP || 100}
+                                         </div>
+                                     </div>
+                                     {phase === 'revealed' && bossStats.lastClassDamage > 0 && (
+                                         <div className="text-orange-600 font-bold text-sm mb-2 animate-pulse">
+                                             {t('quiz.boss.counter_attack_msg', { damage: bossStats.lastClassDamage })}
+                                         </div>
+                                     )}
+                                     {phase === 'revealed' && (
+                                         <div className="mt-2 text-center">
+                                             {(bossStats.classHP ?? 100) <= 0 ? (
+                                                 <div className="text-red-600 font-black text-2xl animate-bounce">{t('quiz.boss.class_defeat_msg')}</div>
+                                             ) : bossStats.currentHP <= 0 ? (
+                                                 <div className="text-green-600 font-black text-2xl animate-bounce">{t('quiz.boss.victory_msg')}</div>
+                                             ) : bossStats.lastDamage > 0 ? (
+                                                 <div className="text-red-500 font-bold">{t('quiz.boss.attack_msg', { damage: bossStats.lastDamage })}</div>
+                                             ) : (
+                                                 <div className="text-slate-500 font-bold">{t('quiz.boss.miss_msg')}</div>
+                                             )}
+                                         </div>
+                                     )}
+                                 </div>
+                            ) : mode === 'team-showdown' ? (
+                                <div className="w-full h-full flex flex-col items-center justify-center gap-6">
+                                     <div className="flex items-end justify-center gap-4 w-full h-48 pb-2 border-b-2 border-slate-200">
+                                         {['Red', 'Blue', 'Green', 'Yellow'].map(team => {
+                                             const score = teamScores?.[team] || 0;
+                                             const maxScore = Math.max(2000, ...Object.values(teamScores || {}));
+                                             const height = Math.max(5, (score / maxScore) * 100);
+                                             const colors = {
+                                                 Red: 'bg-red-500', Blue: 'bg-blue-500', Green: 'bg-green-500', Yellow: 'bg-yellow-400',
+                                             };
+                                             return (
+                                                 <div key={team} className="flex flex-col items-center justify-end h-full w-16 group relative">
+                                                     <span className="mb-1 font-black text-slate-700 text-sm">{score}</span>
+                                                     <div
+                                                        className={`w-full rounded-t-lg transition-all duration-700 ease-out ${colors[team]} shadow-lg`}
+                                                        style={{ height: `${height}%` }}
+                                                     ></div>
+                                                     <span className="mt-2 text-xs font-bold uppercase text-slate-500">{t(`quiz.teams.${team.toLowerCase()}`)}</span>
+                                                     {phase === 'revealed' && sessionData.quizState.lastRoundStats?.[team]?.points > 0 && (
+                                                         <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-yellow-300 text-indigo-900 text-xs font-black px-2 py-1 rounded shadow-sm animate-bounce whitespace-nowrap z-10">
+                                                             +{sessionData.quizState.lastRoundStats[team].points}
+                                                         </div>
+                                                     )}
+                                                 </div>
+                                             );
+                                         })}
+                                     </div>
+                                     <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">{t('quiz.team_leaderboard')}</p>
+                                 </div>
+                            ) : null}
+                         </>
+                     )}
+                     {phase === 'revealed' && (
+                         <div className="mt-6 w-full bg-green-100 border border-green-200 text-green-800 p-4 rounded-xl text-center animate-in slide-in-from-bottom-2 shadow-sm z-10">
+                             <span className="block text-[10px] font-black uppercase tracking-widest text-green-600 mb-1">{t('quiz.correct_answer_label')}</span>
+                             <span className="text-lg font-bold">{question.correctAnswer}</span>
+                         </div>
+                     )}
+                </div>
+            </div>
+        </div>
+    );
 });
-/* [QuickStartWizard extracted to quickstart_module.js — 1,111 lines removed] */
+const calculateAnalyticsMetrics = (dashboardData) => {
+  if (!dashboardData || !Array.isArray(dashboardData) || dashboardData.length === 0) {
+    return {
+      averageScore: 0,
+      quizCompletionRate: 0,
+      avgAdventureLevel: 0,
+      misconceptions: []
+    };
+  }
+  let totalQuizPercentage = 0;
+  let totalQuizzesCount = 0;
+  let studentsWithAtLeastOneQuiz = 0;
+  let totalAdventureLevels = 0;
+  let studentsWithAdventureData = 0;
+  const missedQuestionsFrequency = {};
+  dashboardData.forEach(student => {
+    const history = student.history || [];
+    const responses = student.responses || {};
+    let studentHasQuiz = false;
+    const adventureItems = history.filter(h => h.type === 'adventure');
+    if (adventureItems.length > 0) {
+        const lastAdventure = adventureItems[adventureItems.length - 1];
+        const level = lastAdventure.data?.level || 1;
+        if (typeof level === 'number') {
+            totalAdventureLevels += level;
+            studentsWithAdventureData++;
+        }
+    }
+    const quizItems = history.filter(h => h.type === 'quiz');
+    if (quizItems.length > 0) {
+        studentHasQuiz = true;
+        quizItems.forEach(quiz => {
+            const questions = quiz.data?.questions || [];
+            if (questions.length === 0) return;
+            let correctCount = 0;
+            questions.forEach((q, qIdx) => {
+                const studentResponse = responses[quiz.id]?.[qIdx];
+                if (studentResponse !== undefined && studentResponse !== null) {
+                    let selectedOptionText = studentResponse;
+                    if (!isNaN(parseInt(studentResponse)) && q.options && q.options[studentResponse]) {
+                         selectedOptionText = q.options[studentResponse];
+                    }
+                    const cleanSelected = String(selectedOptionText).trim().toLowerCase();
+                    const cleanCorrect = String(q.correctAnswer).trim().toLowerCase();
+                    if (cleanSelected === cleanCorrect) {
+                        correctCount++;
+                    } else {
+                        const qText = q.question;
+                        if (!missedQuestionsFrequency[qText]) {
+                            missedQuestionsFrequency[qText] = 0;
+                        }
+                        missedQuestionsFrequency[qText]++;
+                    }
+                } else {
+                    const qText = q.question;
+                    if (!missedQuestionsFrequency[qText]) {
+                        missedQuestionsFrequency[qText] = 0;
+                    }
+                    missedQuestionsFrequency[qText]++;
+                }
+            });
+            const score = (correctCount / questions.length) * 100;
+            totalQuizPercentage += score;
+            totalQuizzesCount++;
+        });
+    }
+    if (studentHasQuiz) {
+        studentsWithAtLeastOneQuiz++;
+    }
+  });
+  const averageScore = totalQuizzesCount > 0 ? (totalQuizPercentage / totalQuizzesCount) : 0;
+  const quizCompletionRate = dashboardData.length > 0 ? (studentsWithAtLeastOneQuiz / dashboardData.length) * 100 : 0;
+  const avgAdventureLevel = studentsWithAdventureData > 0 ? (totalAdventureLevels / studentsWithAdventureData) : 0;
+  const misconceptions = Object.entries(missedQuestionsFrequency)
+    .map(([question, count]) => ({ question, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+  return {
+    averageScore: Number(averageScore.toFixed(1)),
+    quizCompletionRate: Number(quizCompletionRate.toFixed(1)),
+    avgAdventureLevel: Number(avgAdventureLevel.toFixed(1)),
+    misconceptions
+  };
+};
+const LongitudinalProgressChart = React.memo(({ logs }) => {
+    const { t } = useContext(LanguageContext);
+    if (!logs || logs.length < 2) return (
+        <div className="w-full bg-white p-6 rounded-xl border border-slate-200 shadow-sm mt-4 flex flex-col items-center justify-center text-slate-500 italic gap-2">
+            <History size={24} className="opacity-50"/>
+            <span className="text-xs">{t('dashboard.progress_chart.empty_msg')}</span>
+        </div>
+    );
+    const width = 600;
+    const height = 200;
+    const padding = 30;
+    const maxXP = Math.max(...logs.map(l => l.xp), 100);
+    const minTime = new Date(logs[0].timestamp).getTime();
+    const maxTime = new Date(logs[logs.length - 1].timestamp).getTime();
+    const timeSpan = maxTime - minTime || 1;
+    const points = logs.map(l => {
+        const x = padding + ((new Date(l.timestamp).getTime() - minTime) / timeSpan) * (width - (padding * 2));
+        const y = height - padding - ((l.xp / maxXP) * (height - (padding * 2)));
+        return `${x},${y}`;
+    }).join(" ");
+    return (
+        <div className="w-full bg-white p-6 rounded-xl border border-slate-200 shadow-sm mt-6 animate-in slide-in-from-bottom-2">
+            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-6 flex items-center gap-2">
+                <Trophy size={14} className="text-yellow-500"/> {t('dashboard.progress_chart.title')}
+            </h4>
+            <div className="w-full overflow-x-auto">
+                <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto min-w-[500px] overflow-visible">
+                    <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#e2e8f0" strokeWidth="2" />
+                    <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#e2e8f0" strokeWidth="2" />
+                    <polyline
+                        points={points}
+                        fill="none"
+                        stroke="#6366f1"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="drop-shadow-sm"
+                    />
+                    {logs.map((l, i) => {
+                         const x = padding + ((new Date(l.timestamp).getTime() - minTime) / timeSpan) * (width - (padding * 2));
+                         const y = height - padding - ((l.xp / maxXP) * (height - (padding * 2)));
+                         return (
+                             <g key={i} className="group cursor-pointer">
+                                 <circle cx={x} cy={y} r="5" className="fill-white stroke-indigo-600 stroke-2 transition-all duration-300 group-hover:r-7 group-hover:fill-indigo-50" />
+                                 <foreignObject x={Math.min(width - 120, Math.max(0, x - 60))} y={y - 50} width="120" height="50" className="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                     <div className="bg-slate-800 text-white text-[10px] px-3 py-2 rounded-lg text-center shadow-xl">
+                                         <div className="font-bold">{new Date(l.timestamp).toLocaleDateString()}</div>
+                                         <div className="text-yellow-300 font-mono">{l.xp} XP</div>
+                                     </div>
+                                 </foreignObject>
+                             </g>
+                         )
+                    })}
+                </svg>
+            </div>
+            <div className="flex justify-between text-[10px] text-slate-500 font-medium mt-2 px-2">
+                <span>{t('dashboard.progress_chart.label_start')}: {new Date(logs[0].timestamp).toLocaleDateString()}</span>
+                <span>{t('dashboard.progress_chart.label_current')}: {new Date(logs[logs.length-1].timestamp).toLocaleDateString()}</span>
+            </div>
+        </div>
+    );
+});
+// @section LEARNER_PROGRESS — Student learning journey view
+const LearnerProgressView = React.memo(({
+    globalPoints = 0, globalLevel = 1, globalProgress = 0, currentLevelXP = 0, globalXPNext = 100,
+    history = [], wordSoundsHistory = [], phonemeMastery = {},
+    studentProgressLog = [], pointHistory = [], wordSoundsBadges = {},
+    gameCompletions = [], fluencyAssessments = [], labelChallengeResults = [],
+    wordSoundsScore = { streak: 0 },
+    isParentMode = false, isIndependentMode = false, t, onClose,
+    rosterKey, setRosterKey, onShareWithTeacher
+}) => {
+    const [showDiagnostics, setShowDiagnostics] = useState(() => isIndependentMode);
+    const [selectedChild, setSelectedChild] = useState(null);
+    const childProfiles = useMemo(() => {
+        if (!isParentMode || !rosterKey?.students) return [];
+        return Object.entries(rosterKey.students).map(([name, groupId]) => ({
+            name,
+            groupId,
+            lastSession: rosterKey?.progressHistory?.[name]?.slice(-1)?.[0]?.timestamp || null,
+            sessionCount: rosterKey?.progressHistory?.[name]?.length || 0
+        }));
+    }, [isParentMode, rosterKey]);
+    const stats = useMemo(() => {
+        const quizzes = history.filter(h => h.type === 'quiz');
+        const wsCorrect = wordSoundsHistory.filter(h => h.correct).length;
+        const wsTotal = wordSoundsHistory.length;
+        const wsAccuracy = wsTotal > 0 ? Math.round((wsCorrect / wsTotal) * 100) : 0;
+        const masteredPhonemes = Object.entries(phonemeMastery).filter(([_, v]) => v.accuracy >= 80);
+        const practicingPhonemes = Object.entries(phonemeMastery).filter(([_, v]) => v.accuracy > 0 && v.accuracy < 80);
+        const totalActivities = history.length + (wsTotal > 0 ? 1 : 0) + (gameCompletions?.length || 0);
+        const recentSessions = studentProgressLog.slice(-5);
+        const trend = recentSessions.length >= 2
+            ? recentSessions[recentSessions.length - 1].xp - recentSessions[0].xp
+            : 0;
+        return {
+            quizCount: quizzes.length,
+            wsAccuracy, wsCorrect, wsTotal,
+            masteredPhonemes, practicingPhonemes,
+            totalActivities,
+            gamesPlayed: gameCompletions?.length || 0,
+            fluencyTests: fluencyAssessments?.length || 0,
+            labelChallenges: labelChallengeResults?.length || 0,
+            sessionCount: studentProgressLog.length,
+            trend
+        };
+    }, [history, wordSoundsHistory, phonemeMastery, gameCompletions, fluencyAssessments, labelChallengeResults, studentProgressLog]);
+    const heading = isParentMode
+        ? (selectedChild ? selectedChild + "'s Learning Journey" : "Your Child's Learning Journey")
+        : "My Learning Progress";
+    return (
+        <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-2xl md:text-3xl font-black text-slate-800 flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <TrendingUp size={22} className="text-white" />
+                        </div>
+                        {heading}
+                    </h2>
+                    <p className="text-sm text-slate-500 mt-1 font-medium">
+                        {isParentMode ? "Track your family's learning growth" : "Track your learning growth over time"}
+                    </p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setShowDiagnostics(prev => !prev)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                            showDiagnostics
+                                ? 'bg-indigo-100 text-indigo-700 ring-1 ring-indigo-300'
+                                : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                        }`}
+                        title={showDiagnostics ? "Hide detailed metrics" : "Show detailed metrics"}
+                    >
+                        <BarChart3 size={14} />
+                        {showDiagnostics ? 'Details On' : 'Details'}
+                    </button>
+                    {onClose && (
+                        <button onClick={onClose} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors">
+                            <X size={18} />
+                        </button>
+                    )}
+                </div>
+            </div>
+            {isParentMode && childProfiles.length > 0 && (
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-4 border border-purple-100">
+                    <h3 className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                        <Users size={14} /> Family Members
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                        <button
+                            onClick={() => setSelectedChild(null)}
+                            className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${
+                                !selectedChild ? 'bg-white text-indigo-700 shadow-md ring-2 ring-indigo-300' : 'bg-white/60 text-slate-600 hover:bg-white'
+                            }`}
+                        >
+                            Everyone
+                        </button>
+                        {childProfiles.map(child => (
+                            <button
+                                key={child.name}
+                                onClick={() => setSelectedChild(child.name)}
+                                className={`px-4 py-2 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
+                                    selectedChild === child.name ? 'bg-white text-indigo-700 shadow-md ring-2 ring-indigo-300' : 'bg-white/60 text-slate-600 hover:bg-white'
+                                }`}
+                            >
+                                {child.name}
+                                {child.sessionCount > 0 && (
+                                    <span className="text-[10px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full font-mono">
+                                        {child.sessionCount} sessions
+                                    </span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-indigo-900 shadow-lg relative">
+                            <Trophy size={28} className="text-indigo-900 fill-current" />
+                            <div className="absolute -bottom-2 bg-indigo-900 text-yellow-400 text-[10px] font-black px-2 py-0.5 rounded-full border border-white">
+                                Lvl {globalLevel}
+                            </div>
+                        </div>
+                        <div className="flex-1">
+                            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('learner.total_xp')}</div>
+                            <div className="text-2xl font-black text-indigo-900">{globalPoints.toLocaleString()}</div>
+                        </div>
+                        {stats.trend > 0 && (
+                            <div className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center gap-1">
+                                <TrendingUp size={12} /> +{stats.trend} XP
+                            </div>
+                        )}
+                    </div>
+                    {!isTeacherMode && (wordSoundsScore?.streak > 0 || (() => {
+                        const days = new Set();
+                        pointHistory.forEach(e => { if (e.timestamp) days.add(new Date(e.timestamp).toDateString()); });
+                        const dayList = Array.from(days).sort((a, b) => new Date(b) - new Date(a));
+                        let dayStreak = 0;
+                        const today = new Date();
+                        for (let i = 0; i < dayList.length; i++) {
+                            const expected = new Date(today);
+                            expected.setDate(today.getDate() - i);
+                            if (dayList[i] === expected.toDateString()) dayStreak++;
+                            else break;
+                        }
+                        return dayStreak >= 2;
+                    })()) && (
+                        <div className="flex items-center gap-3 mb-2 px-3 py-2 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl border border-orange-100">
+                            {wordSoundsScore?.streak > 0 && (
+                                <div className="flex items-center gap-1">
+                                    <span className="text-lg">🔥</span>
+                                    <div>
+                                        <div className="text-sm font-black text-orange-600">{wordSoundsScore.streak} Streak</div>
+                                        <div className="text-[9px] text-orange-400 font-bold uppercase">{t('learner.current_run')}</div>
+                                    </div>
+                                </div>
+                            )}
+                            {(() => {
+                                const days = new Set();
+                                pointHistory.forEach(e => { if (e.timestamp) days.add(new Date(e.timestamp).toDateString()); });
+                                const dayList = Array.from(days).sort((a, b) => new Date(b) - new Date(a));
+                                let dayStreak = 0;
+                                const today = new Date();
+                                for (let i = 0; i < dayList.length; i++) {
+                                    const expected = new Date(today);
+                                    expected.setDate(today.getDate() - i);
+                                    if (dayList[i] === expected.toDateString()) dayStreak++;
+                                    else break;
+                                }
+                                return dayStreak >= 2 ? (
+                                    <div className="flex items-center gap-1 ml-auto">
+                                        <span className="text-lg">📅</span>
+                                        <div>
+                                            <div className="text-sm font-black text-red-600">{dayStreak} Days</div>
+                                            <div className="text-[9px] text-red-400 font-bold uppercase">{t('learner.daily_streak')}</div>
+                                        </div>
+                                    </div>
+                                ) : null;
+                            })()}
+                        </div>
+                    )}
+                    <div className="space-y-1.5">
+                        <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase">
+                            <span>Level {globalLevel}</span>
+                            <span>{Math.round(globalProgress)}%</span>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-1000 rounded-full" style={{ width: `${Math.max(5, globalProgress)}%` }} />
+                        </div>
+                        <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                            <span>{currentLevelXP} XP</span>
+                            <span>{globalXPNext} XP to next</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                        <Activity size={14} /> Activities Completed
+                    </h3>
+                    <div className="text-3xl font-black text-slate-800 mb-4">{stats.totalActivities}</div>
+                    <div className="grid grid-cols-2 gap-2">
+                        {[
+                            { label: 'Quizzes', value: stats.quizCount, icon: '📝', color: 'bg-blue-50 text-blue-700' },
+                            { label: 'Words Practiced', value: stats.wsTotal, icon: '🔤', color: 'bg-purple-50 text-purple-700' },
+                            { label: 'Games', value: stats.gamesPlayed, icon: '🎮', color: 'bg-green-50 text-green-700' },
+                            { label: 'Fluency Tests', value: stats.fluencyTests, icon: '⏱️', color: 'bg-orange-50 text-orange-700' },
+                        ].map(item => (
+                            <div key={item.label} className={`${item.color} rounded-lg px-3 py-2 text-center`}>
+                                <div className="text-lg font-black">{item.icon} {item.value}</div>
+                                <div className="text-[10px] font-bold uppercase tracking-wider opacity-80">{item.label}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                        <Target size={14} /> Skills Progress
+                    </h3>
+                    {stats.wsTotal === 0 && Object.keys(phonemeMastery).length === 0 ? (
+                        <div className="text-center py-6 text-slate-400 italic text-sm">
+                            <BookOpen size={32} className="mx-auto mb-2 opacity-40" />
+                            Start practicing to see your skills grow!
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {stats.wsTotal > 0 && (
+                                <div>
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-sm font-bold text-slate-600">{t('learner.ws_accuracy')}</span>
+                                        <span className={`text-sm font-black ${stats.wsAccuracy >= 80 ? 'text-green-600' : stats.wsAccuracy >= 60 ? 'text-yellow-600' : 'text-orange-500'}`}>
+                                            {stats.wsAccuracy}%
+                                        </span>
+                                    </div>
+                                    <div className="w-full bg-slate-100 rounded-full h-2.5">
+                                        <div
+                                            className={`h-full rounded-full transition-all duration-500 ${stats.wsAccuracy >= 80 ? 'bg-green-500' : stats.wsAccuracy >= 60 ? 'bg-yellow-500' : 'bg-orange-400'}`}
+                                            style={{ width: `${stats.wsAccuracy}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                            {stats.masteredPhonemes.length > 0 && (
+                                <div>
+                                    <div className="text-[10px] font-bold text-green-600 uppercase tracking-wider mb-1.5">
+                                        ✨ {stats.masteredPhonemes.length} Sounds Mastered
+                                    </div>
+                                    <div className="flex flex-wrap gap-1">
+                                        {stats.masteredPhonemes.slice(0, 12).map(([phoneme]) => (
+                                            <span key={phoneme} className="px-2 py-0.5 bg-green-50 text-green-700 text-xs font-bold rounded-full border border-green-200">
+                                                /{phoneme}/
+                                            </span>
+                                        ))}
+                                        {stats.masteredPhonemes.length > 12 && (
+                                            <span className="px-2 py-0.5 bg-green-50 text-green-600 text-xs font-bold rounded-full">
+                                                +{stats.masteredPhonemes.length - 12} more
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                            {showDiagnostics && stats.practicingPhonemes.length > 0 && (
+                                <div>
+                                    <div className="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1.5">
+                                        🔄 {stats.practicingPhonemes.length} Sounds In Progress
+                                    </div>
+                                    <div className="flex flex-wrap gap-1">
+                                        {stats.practicingPhonemes.slice(0, 8).map(([phoneme, data]) => (
+                                            <span key={phoneme} className="px-2 py-0.5 bg-amber-50 text-amber-700 text-xs font-bold rounded-full border border-amber-200" title={`${Math.round(data.accuracy)}% accuracy`}>
+                                                /{phoneme}/ <span className="opacity-60">{Math.round(data.accuracy)}%</span>
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                        <Award size={14} /> Achievements
+                    </h3>
+                    {(() => {
+                        const milestones = [
+                            { name: 'First Steps', earned: globalPoints >= 10, icon: '👣', desc: 'Earned your first XP' },
+                            { name: 'Quiz Whiz', earned: stats.quizCount >= 3, icon: '🧠', desc: 'Completed 3 quizzes' },
+                            { name: 'Word Explorer', earned: stats.wsTotal >= 20, icon: '🔍', desc: 'Practiced 20 words' },
+                            { name: 'Game Champion', earned: stats.gamesPlayed >= 5, icon: '🏆', desc: 'Played 5 games' },
+                            { name: 'Level Up!', earned: globalLevel >= 2, icon: '⭐', desc: 'Reached Level 2' },
+                            { name: 'Super Scholar', earned: globalLevel >= 5, icon: '🌟', desc: 'Reached Level 5' },
+                            { name: 'Sound Master', earned: stats.masteredPhonemes.length >= 5, icon: '🎵', desc: 'Mastered 5 phonemes' },
+                            { name: 'Consistent', earned: stats.sessionCount >= 3, icon: '📅', desc: '3 learning sessions' },
+                        ];
+                        const earned = milestones.filter(m => m.earned);
+                        const locked = milestones.filter(m => !m.earned);
+                        return (
+                            <div className="space-y-3">
+                                {earned.length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                        {earned.map(m => (
+                                            <div key={m.name} className="bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2 text-center min-w-[80px] hover:shadow-sm transition-shadow" title={m.desc}>
+                                                <div className="text-xl">{m.icon}</div>
+                                                <div className="text-[10px] font-bold text-yellow-800 mt-0.5">{m.name}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                {earned.length === 0 && (
+                                    <div className="text-center py-4 text-slate-400 italic text-sm">
+                                        Complete activities to earn achievements! 🌟
+                                    </div>
+                                )}
+                                {showDiagnostics && locked.length > 0 && (
+                                    <div>
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('learner.coming_up')}</div>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {locked.slice(0, 4).map(m => (
+                                                <div key={m.name} className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-center opacity-50" title={m.desc}>
+                                                    <div className="text-sm grayscale">{m.icon}</div>
+                                                    <div className="text-[9px] font-bold text-slate-500">{m.name}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })()}
+                </div>
+            </div>
+            {(() => {
+                const today = new Date().toDateString();
+                const todayXP = pointHistory.filter(e => e.timestamp && new Date(e.timestamp).toDateString() === today);
+                const todayWords = wordSoundsHistory.filter(h => h.timestamp && new Date(h.timestamp).toDateString() === today);
+                if (todayXP.length === 0 && todayWords.length === 0) return null;
+                return (
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 p-5">
+                        <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <Clock size={14} /> Today's Activity
+                        </h3>
+                        <div className="grid grid-cols-3 gap-3 mb-3">
+                            <div className="bg-white rounded-xl p-3 text-center border border-blue-100">
+                                <div className="text-lg font-black text-blue-700">{todayXP.reduce((s,e) => s + (e.points || 0), 0)}</div>
+                                <div className="text-[10px] font-bold text-blue-400 uppercase">{t('learner.xp_earned')}</div>
+                            </div>
+                            <div className="bg-white rounded-xl p-3 text-center border border-blue-100">
+                                <div className="text-lg font-black text-blue-700">{todayXP.length}</div>
+                                <div className="text-[10px] font-bold text-blue-400 uppercase">Activities</div>
+                            </div>
+                            <div className="bg-white rounded-xl p-3 text-center border border-blue-100">
+                                <div className="text-lg font-black text-blue-700">{todayWords.filter(w => w.correct).length}/{todayWords.length}</div>
+                                <div className="text-[10px] font-bold text-blue-400 uppercase">{t('learner.words_today')}</div>
+                            </div>
+                        </div>
+                        {todayXP.length > 0 && (
+                            <div className="space-y-1 max-h-24 overflow-y-auto">
+                                {todayXP.slice(0, 8).map((entry, i) => (
+                                    <div key={entry.id || i} className="flex justify-between items-center text-xs px-2 py-1 rounded bg-white/60">
+                                        <span className="text-slate-600 font-medium truncate max-w-[220px]">{entry.activity}</span>
+                                        <span className="font-bold text-green-600 whitespace-nowrap">+{entry.points} XP</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                );
+            })()}
+            {(() => {
+                const now = new Date();
+                const weekAgo = new Date(now);
+                weekAgo.setDate(now.getDate() - 7);
+                const weekXP = pointHistory.filter(e => e.timestamp && new Date(e.timestamp) >= weekAgo);
+                const weekWords = wordSoundsHistory.filter(h => h.timestamp && new Date(h.timestamp) >= weekAgo);
+                const weekGames = gameCompletions?.filter(g => g.timestamp && new Date(g.timestamp) >= weekAgo) || [];
+                const prevWeekStart = new Date(weekAgo);
+                prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+                const prevWeekXP = pointHistory.filter(e => e.timestamp && new Date(e.timestamp) >= prevWeekStart && new Date(e.timestamp) < weekAgo);
+                const weekTotalXP = weekXP.reduce((s, e) => s + (e.points || 0), 0);
+                const prevTotalXP = prevWeekXP.reduce((s, e) => s + (e.points || 0), 0);
+                const xpDelta = weekTotalXP - prevTotalXP;
+                const weekAccuracy = weekWords.length > 0 ? Math.round(weekWords.filter(w => w.correct).length / weekWords.length * 100) : null;
+                if (weekXP.length === 0 && weekWords.length === 0) return null;
+                return (
+                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100 p-5">
+                        <h3 className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <Calendar size={14} /> This Week's Progress
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                            <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
+                                <div className="text-lg font-black text-emerald-700">{weekTotalXP}</div>
+                                <div className="text-[10px] font-bold text-emerald-400 uppercase">{t('learner.xp_this_week')}</div>
+                                {xpDelta !== 0 && (
+                                    <div className={`text-[10px] font-bold mt-0.5 ${xpDelta > 0 ? 'text-green-500' : 'text-red-400'}`}>
+                                        {xpDelta > 0 ? '↑' : '↓'} {Math.abs(xpDelta)} vs last week
+                                    </div>
+                                )}
+                            </div>
+                            <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
+                                <div className="text-lg font-black text-emerald-700">{weekXP.length}</div>
+                                <div className="text-[10px] font-bold text-emerald-400 uppercase">Activities</div>
+                            </div>
+                            <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
+                                <div className="text-lg font-black text-emerald-700">{weekWords.filter(w => w.correct).length}/{weekWords.length}</div>
+                                <div className="text-[10px] font-bold text-emerald-400 uppercase">{t('learner.words_this_week')}</div>
+                            </div>
+                            <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
+                                <div className="text-lg font-black text-emerald-700">{weekAccuracy !== null ? weekAccuracy + '%' : '—'}</div>
+                                <div className="text-[10px] font-bold text-emerald-400 uppercase">Accuracy</div>
+                            </div>
+                        </div>
+                        {weekGames.length > 0 && (
+                            <div className="text-xs text-emerald-600 font-medium bg-white/60 rounded-lg px-3 py-2">
+                                🎮 {weekGames.length} game{weekGames.length !== 1 ? 's' : ''} played this week
+                            </div>
+                        )}
+                    </div>
+                );
+            })()}
+            {studentProgressLog.length >= 2 && (
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <TrendingUp size={14} /> Growth Over Time
+                    </h3>
+                    <LongitudinalProgressChart logs={studentProgressLog} />
+                </div>
+            )}
+            {showDiagnostics && (
+                <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-4 animate-in slide-in-from-top-2 duration-300">
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <BarChart3 size={14} /> Detailed Metrics
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="bg-white rounded-xl p-3 border border-slate-200 text-center">
+                            <div className="text-lg font-black text-slate-700">{stats.wsCorrect}/{stats.wsTotal}</div>
+                            <div className="text-[10px] font-bold text-slate-400 uppercase">{t('learner.words_correct')}</div>
+                        </div>
+                        <div className="bg-white rounded-xl p-3 border border-slate-200 text-center">
+                            <div className="text-lg font-black text-slate-700">{Object.keys(phonemeMastery).length}</div>
+                            <div className="text-[10px] font-bold text-slate-400 uppercase">{t('learner.phonemes_touched')}</div>
+                        </div>
+                        <div className="bg-white rounded-xl p-3 border border-slate-200 text-center">
+                            <div className="text-lg font-black text-slate-700">{stats.sessionCount}</div>
+                            <div className="text-[10px] font-bold text-slate-400 uppercase">Sessions</div>
+                        </div>
+                        <div className="bg-white rounded-xl p-3 border border-slate-200 text-center">
+                            <div className="text-lg font-black text-slate-700">{stats.labelChallenges}</div>
+                            <div className="text-[10px] font-bold text-slate-400 uppercase">{t('learner.label_challenges')}</div>
+                        </div>
+                    </div>
+                    {pointHistory.length > 0 && (
+                        <div>
+                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">{t('learner.recent_activity')}</h4>
+                            <div className="space-y-1 max-h-32 overflow-y-auto">
+                                {pointHistory.slice(0, 10).map((entry, i) => (
+                                    <div key={entry.id || i} className="flex justify-between items-center text-xs px-2 py-1 rounded hover:bg-white">
+                                        <span className="text-slate-600 font-medium truncate max-w-[200px]">{entry.activity}</span>
+                                        <span className="font-bold text-green-600">+{entry.points} XP</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+            <div className="flex flex-wrap justify-center gap-3 pt-2">
+                <button
+                    onClick={() => {
+                        const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        const metricBar = (label, value, max, unit, icon) => {
+                            const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
+                            const barColor = pct >= 80 ? '#16a34a' : pct >= 50 ? '#d97706' : '#e11d48';
+                            return `<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:13px;font-weight:600;color:#334155">${icon} ${label}</span><span style="font-size:14px;font-weight:800;color:${barColor}">${value}${unit}</span></div><div style="background:#f1f5f9;border-radius:6px;height:10px;overflow:hidden"><div style="background:${barColor};height:100%;border-radius:6px;width:${pct}%"></div></div></div>`;
+                        };
+                        const masteredCount = Object.entries(phonemeMastery).filter(([_,v]) => v.accuracy >= 80).length;
+                        const masteredList = Object.entries(phonemeMastery).filter(([_,v]) => v.accuracy >= 80).map(([p]) => '/' + p + '/').join(', ');
+                        const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">` +
+                          `<title>${t('learner.progress_report')}</title>` +
+                          `<style>` +
+                          `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');` +
+                          `*{box-sizing:border-box;margin:0;padding:0}` +
+                          `body{font-family:'Inter',-apple-system,sans-serif;color:#1e293b;background:#f8fafc;padding:32px;line-height:1.5}` +
+                          `.report{max-width:700px;margin:0 auto;background:white;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08);overflow:hidden}` +
+                          `.header{padding:28px 32px;background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);color:white}` +
+                          `.header h1{font-size:22px;font-weight:800;margin-bottom:4px}` +
+                          `.header p{font-size:13px;opacity:.85}` +
+                          `.content{padding:28px 32px}` +
+                          `.section-title{font-size:15px;font-weight:800;color:#334155;margin:20px 0 12px;padding-bottom:6px;border-bottom:2px solid #e2e8f0}` +
+                          `.badge-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}` +
+                          `.badge{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fef9c3;border:1px solid #fcd34d;border-radius:10px;font-size:12px;font-weight:700;color:#92400e}` +
+                          `.footer{padding:16px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center;font-size:11px;color:#94a3b8}` +
+                          `.print-btn{display:block;margin:16px auto;padding:10px 28px;background:#4f46e5;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}` +
+                          `.print-btn:hover{background:#4338ca}` +
+                          `@media print{body{padding:0;background:white}.report{box-shadow:none;border-radius:0}.print-btn{display:none!important}.header{-webkit-print-color-adjust:exact;print-color-adjust:exact}}` +
+                          `</style></head>` +
+                          `<body><div class="report">` +
+                          `<div class="header">` +
+                          `<h1>🌟 ${isParentMode ? "Your Child's" : 'My'} Learning Progress Report</h1>` +
+                          `<p>${isParentMode ? 'Family Progress Overview' : 'Personal Progress Overview'} &bull; ${date}</p>` +
+                          `</div>` +
+                          `<div class="content">` +
+                          `<div style="display:flex;align-items:center;gap:16px;padding:16px;background:linear-gradient(135deg,#fef3c7,#fef9c3);border:2px solid #fcd34d;border-radius:12px;margin-bottom:20px">` +
+                          `<div style="width:56px;height:56px;background:#eab308;border-radius:50%;display:flex;align-items:center;justify-content:center;border:4px solid #1e1b4b;font-size:24px;font-weight:900;color:#1e1b4b">Lv${globalLevel}</div>` +
+                          `<div>` +
+                          `<div style="font-size:20px;font-weight:800;color:#1e1b4b">${globalPoints.toLocaleString()} Total XP</div>` +
+                          `<div style="font-size:12px;color:#92400e;font-weight:600">Level ${globalLevel} Learner &bull; ${Math.round(globalProgress)}% to next level</div>` +
+                          `</div></div>` +
+                          `<div class="section-title">📊 Performance Summary</div>` +
+                          `${metricBar('Word Sounds Accuracy', stats.wsAccuracy, 100, '%', '🔊')}` +
+                          `${metricBar('Quizzes Completed', stats.quizCount, 10, '', '📝')}` +
+                          `${metricBar('Words Practiced', stats.wsTotal, 50, '', '🔤')}` +
+                          `${metricBar('Games Played', stats.gamesPlayed, 10, '', '🎮')}` +
+                          `${metricBar('Fluency Tests', stats.fluencyTests, 5, '', '⏱️')}` +
+                          `${metricBar('Total Activities', stats.totalActivities, 20, '', '📊')}` +
+                          `<div class="section-title">🎯 Skills Mastered</div>` +
+                          `<div style="font-size:13px;color:#475569;margin-bottom:8px"><strong>${masteredCount}</strong> phoneme sounds mastered${masteredCount > 0 ? ':' : ''}</div>` +
+                          `${masteredCount > 0 ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">' + Object.entries(phonemeMastery).filter(([_,v]) => v.accuracy >= 80).map(([p]) => '<span style="padding:4px 12px;background:#dcfce7;color:#16a34a;border:1px solid #86efac;border-radius:20px;font-size:12px;font-weight:700">/' + p + '/</span>').join('') + '</div>' : '<p style="font-size:13px;color:#94a3b8;font-style:italic">Keep practicing to master sounds!</p>'}` +
+                          `<div class="section-title">🏅 Achievements Earned</div>` +
+                          `<div class="badge-row">` +
+                          `${globalPoints >= 10 ? '<div class="badge">👣 First Steps</div>' : ''}` +
+                          `${stats.quizCount >= 3 ? '<div class="badge">🧠 Quiz Whiz</div>' : ''}` +
+                          `${stats.wsTotal >= 20 ? '<div class="badge">🔍 Word Explorer</div>' : ''}` +
+                          `${stats.gamesPlayed >= 5 ? '<div class="badge">🏆 Game Champion</div>' : ''}` +
+                          `${globalLevel >= 2 ? '<div class="badge">⭐ Level Up!</div>' : ''}` +
+                          `${globalLevel >= 5 ? '<div class="badge">🌟 Super Scholar</div>' : ''}` +
+                          `${stats.masteredPhonemes.length >= 5 ? '<div class="badge">🎵 Sound Master</div>' : ''}` +
+                          `${stats.sessionCount >= 3 ? '<div class="badge">📅 Consistent</div>' : ''}` +
+                          `</div></div>` +
+                          `<div class="footer">Generated ${date} &bull; Created with AlloFlow &bull; Learning Progress Report</div>` +
+                          `</div>` +
+                          `<button class="print-btn" onclick="window.print()">🖨️ Print This Report</button>` +
+                          `</body></html>`;
+                        const w = window.open('', '_blank');
+                        if (w) { w.document.write(html); w.document.close(); }
+                    }}
+                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center gap-2 text-sm"
+                >
+                    <Printer size={16} /> Print Progress Report
+                </button>
+                {isParentMode && onShareWithTeacher && (
+                    <button
+                        onClick={onShareWithTeacher}
+                        className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center gap-2 text-sm"
+                    >
+                        <Share2 size={16} /> Share Progress with Teacher
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+});
+// @section TEACHER_DASHBOARD — Main teacher dashboard
+const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast, setSelectedStudentId, setDashboardView, dashboardView, selectedStudentId, generateResourceHTML, onOpenBehaviorLens }) => {
+  const { t } = useContext(LanguageContext);
+  const modalRef = useRef(null);
+  useFocusTrap(modalRef, true);
+  const [gradedIds, setGradedIds] = useState(new Set());
+  const [studentFilter, setStudentFilter] = useState('all');
+  const [activeTab, setActiveTab] = useState('students');
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const toggleGraded = (id) => {
+      setGradedIds(prev => {
+          const next = new Set(prev);
+          if (next.has(id)) {
+              next.delete(id);
+          } else {
+              next.add(id);
+              if (addToast) addToast(t('dashboard.toasts.marked_graded'), "success");
+          }
+          return next;
+      });
+  };
+  const calculateScore = (history) => {
+      if (!history || !Array.isArray(history)) return t('dashboard.status.zero_activities');
+      let quizCount = 0;
+      history.forEach(item => {
+          if (item.type === 'quiz') {
+              quizCount++;
+          }
+      });
+      if (quizCount === 0) return t('dashboard.status.no_quizzes');
+      return quizCount === 1
+        ? t('dashboard.status.quizzes_completed', { count: quizCount })
+        : t('dashboard.status.quizzes_completed_plural', { count: quizCount });
+  };
+  const getStudentLevel = (history) => {
+      if (!history || !Array.isArray(history)) return "N/A";
+      const adventureItem = history.slice().reverse().find(item => item.type === 'adventure');
+      if (adventureItem && adventureItem.data && adventureItem.data.level) {
+          return adventureItem.data.level;
+      }
+      return "N/A";
+  };
+  const getClassMetrics = () => {
+      const count = dashboardData.length;
+      let totalLevels = 0;
+      let studentsWithLevel = 0;
+      dashboardData.forEach(s => {
+          const lvl = getStudentLevel(s.history);
+          if (lvl !== "N/A") {
+              totalLevels += Number(lvl);
+              studentsWithLevel++;
+          }
+      });
+      const avgLevel = studentsWithLevel > 0 ? (totalLevels / studentsWithLevel).toFixed(1) : "-";
+      return { count, avgLevel };
+  };
+  const { count: studentCount, avgLevel: classAvgLevel } = getClassMetrics();
+  const analytics = useMemo(() => calculateAnalyticsMetrics(dashboardData), [dashboardData]);
+  const misconceptionChartData = useMemo(() => analytics.misconceptions.map((m, idx) => ({
+      label: `Q${idx + 1}`,
+      value: m.count
+  })), [analytics.misconceptions]);
+  const selectedStudent = useMemo(() => dashboardData.find(s => s.id === selectedStudentId), [dashboardData, selectedStudentId]);
+  const getStudentAvgScore = (student) => {
+      if (!student) return 0;
+      const history = student.history || [];
+      const responses = student.responses || {};
+      const quizzes = history.filter(h => h.type === 'quiz');
+      if (quizzes.length === 0) return 0;
+      let totalPct = 0;
+      quizzes.forEach(quiz => {
+          const questions = quiz.data?.questions || [];
+          if (!questions.length) return;
+          let correct = 0;
+          questions.forEach((q, i) => {
+              const resp = responses[quiz.id]?.[i];
+              if (resp !== undefined) {
+                   let val = resp;
+                   if (!isNaN(parseInt(resp)) && q.options && q.options[resp]) val = q.options[resp];
+                   if (String(val).trim().toLowerCase() === String(q.correctAnswer).trim().toLowerCase()) correct++;
+              }
+          });
+          totalPct += (correct / questions.length) * 100;
+      });
+      return Math.round(totalPct / quizzes.length);
+  };
+  const studentAvg = selectedStudent ? getStudentAvgScore(selectedStudent) : 0;
+  const handleClearAll = () => {
+      setShowClearConfirm(true);
+  };
+  const confirmClearAll = () => {
+      setDashboardData([]);
+      setGradedIds(new Set());
+      setShowClearConfirm(false);
+      if (addToast) addToast(t('dashboard.toasts.dashboard_cleared'), "info");
+  };
+  const handleExportResearchPDF = async () => {
+    addToast('Generating research report...', 'info');
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const date = new Date().toLocaleDateString();
+    // Compute TAM data
+    const allSurveys = dashboardData.flatMap(s => s.surveyResponses || []);
+    const tamConstructs = { usefulness: [], ease: [], intention: [] };
+    allSurveys.forEach(r => {
+        if (r.construct === 'usefulness' && r.score !== undefined) tamConstructs.usefulness.push(r.score);
+        if (r.construct === 'ease' && r.score !== undefined) tamConstructs.ease.push(r.score);
+        if (r.construct === 'intention' && r.score !== undefined) tamConstructs.intention.push(r.score);
+    });
+    const calcStats = arr => {
+        if (!arr.length) return { n: 0, mean: 'N/A', sd: 'N/A' };
+        const mean = arr.reduce((s, v) => s + v, 0) / arr.length;
+        const sd = Math.sqrt(arr.reduce((s, v) => s + (v - mean) ** 2, 0) / Math.max(1, arr.length - 1));
+        return { n: arr.length, mean: mean.toFixed(2), sd: sd.toFixed(2) };
+    };
+    const useStats = calcStats(tamConstructs.usefulness);
+    const easeStats = calcStats(tamConstructs.ease);
+    const intStats = calcStats(tamConstructs.intention);
+    // Compute probe data
+    const allProbes = dashboardData.flatMap(s => s.probeHistory ? Object.values(s.probeHistory).flat() : []);
+    const wcpmProbes = allProbes.filter(p => p.wcpm !== undefined);
+    const dcpmProbes = allProbes.filter(p => p.dcpm !== undefined);
+    const accProbes = allProbes.filter(p => p.accuracy !== undefined);
+    const wcpmStats = calcStats(wcpmProbes.map(p => p.wcpm));
+    const dcpmStats = calcStats(dcpmProbes.map(p => p.dcpm));
+    const accStats = calcStats(accProbes.map(p => p.accuracy));
+    // Session data
+    const totalSessions = dashboardData.reduce((s, st) => s + (st.sessionCounter || 0), 0);
+    const totalFidelity = dashboardData.reduce((s, st) => s + (st.fidelityLog ? st.fidelityLog.length : 0), 0);
+    const reportHtml = `
+        <div style="font-family: 'Times New Roman', serif; padding: 40px; color: #333; max-width: 800px; margin: 0 auto;">
+            <h1 style="text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 5px;">AlloFlow UDL Platform — Research Data Report</h1>
+            <p style="text-align: center; font-size: 12px; color: #666; margin-bottom: 30px;">Generated: ${date} | N = ${dashboardData.length} students</p>
+            <hr style="border: 1px solid #333; margin-bottom: 25px;">
+            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Table 1. TAM Survey Construct Descriptives</h2>
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
+                        <th style="text-align: left; padding: 6px 8px;">${t('research.construct')}</th>
+                        <th style="text-align: center; padding: 6px 8px;">n</th>
+                        <th style="text-align: center; padding: 6px 8px;">M</th>
+                        <th style="text-align: center; padding: 6px 8px;">SD</th>
+                        <th style="text-align: center; padding: 6px 8px;">${t('research.scale')}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 6px 8px;">${t('research.perceived_usefulness')}</td>
+                        <td style="text-align: center; padding: 6px 8px;">${useStats.n}</td>
+                        <td style="text-align: center; padding: 6px 8px;">${useStats.mean}</td>
+                        <td style="text-align: center; padding: 6px 8px;">${useStats.sd}</td>
+                        <td style="text-align: center; padding: 6px 8px;">1–5</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 6px 8px;">${t('research.perceived_ease')}</td>
+                        <td style="text-align: center; padding: 6px 8px;">${easeStats.n}</td>
+                        <td style="text-align: center; padding: 6px 8px;">${easeStats.mean}</td>
+                        <td style="text-align: center; padding: 6px 8px;">${easeStats.sd}</td>
+                        <td style="text-align: center; padding: 6px 8px;">1–5</td>
+                    </tr>
+                    <tr style="border-bottom: 2px solid #333;">
+                        <td style="padding: 6px 8px;">${t('research.behavioral_intention')}</td>
+                        <td style="text-align: center; padding: 6px 8px;">${intStats.n}</td>
+                        <td style="text-align: center; padding: 6px 8px;">${intStats.mean}</td>
+                        <td style="text-align: center; padding: 6px 8px;">${intStats.sd}</td>
+                        <td style="text-align: center; padding: 6px 8px;">1–5</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Table 2. Oral Reading Fluency Probe Descriptives</h2>
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
+                        <th style="text-align: left; padding: 6px 8px;">${t('research.measure')}</th>
+                        <th style="text-align: center; padding: 6px 8px;">n</th>
+                        <th style="text-align: center; padding: 6px 8px;">M</th>
+                        <th style="text-align: center; padding: 6px 8px;">SD</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 6px 8px;">Words Correct Per Minute (WCPM)</td>
+                        <td style="text-align: center; padding: 6px 8px;">${wcpmStats.n}</td>
+                        <td style="text-align: center; padding: 6px 8px;">${wcpmStats.mean}</td>
+                        <td style="text-align: center; padding: 6px 8px;">${wcpmStats.sd}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 6px 8px;">Digits Correct Per Minute (DCPM)</td>
+                        <td style="text-align: center; padding: 6px 8px;">${dcpmStats.n}</td>
+                        <td style="text-align: center; padding: 6px 8px;">${dcpmStats.mean}</td>
+                        <td style="text-align: center; padding: 6px 8px;">${dcpmStats.sd}</td>
+                    </tr>
+                    <tr style="border-bottom: 2px solid #333;">
+                        <td style="padding: 6px 8px;">Accuracy (%)</td>
+                        <td style="text-align: center; padding: 6px 8px;">${accStats.n}</td>
+                        <td style="text-align: center; padding: 6px 8px;">${accStats.mean}</td>
+                        <td style="text-align: center; padding: 6px 8px;">${accStats.sd}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h2 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Table 3. Implementation Fidelity Summary</h2>
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
+                        <th style="text-align: left; padding: 6px 8px;">${t('research.metric')}</th>
+                        <th style="text-align: center; padding: 6px 8px;">${t('research.value')}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 6px 8px;">${t('class_analytics.total_students')}</td><td style="text-align: center; padding: 6px 8px;">${dashboardData.length}</td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 6px 8px;">${t('class_analytics.total_sessions')}</td><td style="text-align: center; padding: 6px 8px;">${totalSessions}</td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 6px 8px;">${t('research.avg_sessions')}</td><td style="text-align: center; padding: 6px 8px;">${dashboardData.length > 0 ? (totalSessions / dashboardData.length).toFixed(1) : 0}</td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 6px 8px;">${t('research.fidelity_records')}</td><td style="text-align: center; padding: 6px 8px;">${totalFidelity}</td></tr>
+                    <tr style="border-bottom: 2px solid #333;"><td style="padding: 6px 8px;">${t('research.total_probes')}</td><td style="text-align: center; padding: 6px 8px;">${allProbes.length}</td></tr>
+                </tbody>
+            </table>
+            <div style="page-break-before: always;"></div>
+            <h2 style="font-size: 16px; font-weight: bold; margin-top: 30px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 5px;">Appendix A: Individual Student Data</h2>
+            ${dashboardData.filter(s => {
+                                          if (studentFilter === 'probes') return s.probeHistory && Object.keys(s.probeHistory).length > 0;
+                                          if (studentFilter === 'surveys') return s.surveyResponses && s.surveyResponses.length > 0;
+                                          if (studentFilter === 'graded') return gradedIds.has(s.id);
+                                          if (studentFilter === 'ungraded') return !gradedIds.has(s.id);
+                                          return true;
+                                      }).map((student, idx) => {
+                const sProbes = student.probeHistory ? Object.values(student.probeHistory).flat() : [];
+                const sSurveys = student.surveyResponses || [];
+                const sQuizzes = (student.history || []).filter(h => h.type === "quiz");
+                const sExplore = (student.history || []).filter(h => h.type === "explore-challenge");
+                const sSessions = student.sessionCounter || 0;
+                const sProbeWcpm = sProbes.filter(p => p.wcpm !== undefined);
+                const avgWcpm = sProbeWcpm.length > 0 ? (sProbeWcpm.reduce((s,p) => s + p.wcpm, 0) / sProbeWcpm.length).toFixed(1) : "N/A";
+                return `
+                <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; ${idx > 0 ? "page-break-before: auto;" : ""}">
+                    <h3 style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #333;">Student ${idx + 1}: ${student.studentNickname}</h3>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 10px;">
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 4px 6px; color: #666; width: 40%;">${t('research.sessions_completed')}</td>
+                            <td style="padding: 4px 6px; font-weight: bold;">${sSessions}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 4px 6px; color: #666;">${t('research.quiz_responses')}</td>
+                            <td style="padding: 4px 6px; font-weight: bold;">${sQuizzes.length}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 4px 6px; color: #666;">${t('research.probes_administered')}</td>
+                            <td style="padding: 4px 6px; font-weight: bold;">${sProbes.length} (Avg WCPM: ${avgWcpm})</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 4px 6px; color: #666;">${t('research.survey_responses')}</td>
+                            <td style="padding: 4px 6px; font-weight: bold;">${sSurveys.length}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 4px 6px; color: #666;">${t('research.explore_challenges')}</td>
+                            <td style="padding: 4px 6px; font-weight: bold;">${sExplore.length}</td>
+                        </tr>
+                    </table>
+                    ${sProbeWcpm.length > 0 ? `
+                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">Probe History (WCPM):</p>
+                    <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;">
+                        ${sProbeWcpm.map(p => `<span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: ${p.wcpm >= 100 ? "#d1fae5" : p.wcpm >= 60 ? "#fef3c7" : "#fee2e2"}; color: ${p.wcpm >= 100 ? "#065f46" : p.wcpm >= 60 ? "#92400e" : "#991b1b"}; font-weight: bold;">${p.wcpm}${p.date ? " (" + new Date(p.date).toLocaleDateString("en", {month: "short", day: "numeric"}) + ")" : ""}</span>`).join("")}
+                    </div>
+                    ` : ""}
+                    ${sQuizzes.length > 0 ? `
+                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">Quiz Scores:</p>
+                    <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;">
+                        ${sQuizzes.map(q => `<span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #ede9fe; color: #5b21b6; font-weight: bold;">${q.score !== undefined ? q.score : "—"}${q.label ? " " + q.label : ""}</span>`).join("")}
+                    </div>
+                    ` : ""}
+                    ${sSurveys.length > 0 ? `
+                    <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">Survey Responses:</p>
+                    <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                        ${sSurveys.map(s => `<span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #fce7f3; color: #9d174d; font-weight: bold;">${s.construct || "—"}: ${s.score !== undefined ? s.score + "/5" : "—"}</span>`).join("")}
+                    </div>
+                    ` : ""}
+                </div>
+                `;
+            }).join("")}
+                        <div style="margin-top: 40px; font-size: 10px; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 15px;">
+                <p><em>Note.</em> TAM = Technology Acceptance Model (Davis, 1989). WCPM = Words Correct Per Minute. DCPM = Digits Correct Per Minute.</p>
+                <p>Generated by AlloFlow UDL Platform — Research Export Module</p>
+            </div>
+        </div>
+    `;
+    const container = document.createElement('div');
+    container.style.position = 'absolute';
+    container.style.left = '-9999px';
+    container.style.top = '0';
+    container.innerHTML = reportHtml;
+    document.body.appendChild(container);
+    try {
+        await doc.html(container, {
+            callback: (doc) => {
+                doc.save('alloflow_research_report_' + new Date().toISOString().split('T')[0] + '.pdf');
+                addToast('Research report saved!', 'success');
+            },
+            x: 10, y: 10, width: 190,
+            windowWidth: 800,
+        });
+    } catch (err) { addToast('PDF error: ' + err.message, 'error'); }
+    document.body.removeChild(container);
+  };
+  const handleExportAnalyticsPDF = async () => {
+      addToast(t('dashboard.toasts.generating_report'), "info");
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const date = new Date().toLocaleDateString();
+      const reportHtml = `
+        <div style="font-family: Helvetica, sans-serif; padding: 40px; color: #333;">
+            <h1 style="color: #4f46e5; border-bottom: 2px solid #ddd; padding-bottom: 10px;">${t('dashboard.report.title')}</h1>
+            <p style="color: #666; margin-bottom: 30px;">${t('dashboard.insights.generated_date')} ${date}</p>
+            <div style="display: flex; gap: 20px; margin-bottom: 40px;">
+                <div style="flex: 1; padding: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #64748b;">${t('dashboard.report.avg_score')}</div>
+                    <div style="font-size: 32px; font-weight: bold; color: #4f46e5;">${analytics.averageScore}%</div>
+                </div>
+                <div style="flex: 1; padding: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #64748b;">${t('dashboard.report.participation')}</div>
+                    <div style="font-size: 32px; font-weight: bold; color: #0ea5e9;">${Math.round(analytics.quizCompletionRate)}%</div>
+                </div>
+                <div style="flex: 1; padding: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #64748b;">${t('dashboard.report.avg_level')}</div>
+                    <div style="font-size: 32px; font-weight: bold; color: #9333ea;">${analytics.avgAdventureLevel.toFixed(1)}</div>
+                </div>
+            </div>
+            <h2 style="color: #1e293b; margin-bottom: 20px;">${t('dashboard.report.misconceptions')}</h2>
+            ${analytics.misconceptions.length > 0 ? `
+                <ul style="list-style: none; padding: 0;">
+                    ${analytics.misconceptions.map((m, i) => `
+                        <li style="margin-bottom: 15px; padding: 15px; background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 4px;">
+                            <div style="font-weight: bold; color: #991b1b; margin-bottom: 5px;">${t('dashboard.report.question_focus')}:</div>
+                            <div style="font-style: italic; color: #333; margin-bottom: 10px;">"${m.question}"</div>
+                            <div style="font-size: 12px; font-weight: bold; color: #ef4444;">${t('dashboard.report.students_missed', { count: m.count })}</div>
+                        </li>
+                    `).join('')}
+                </ul>
+            ` : `<p style="font-style: italic; color: #666;">${t('dashboard.insights.no_misconceptions')}</p>`}
+            <h2 style="color: #1e293b; margin-top: 40px; margin-bottom: 20px;">📊 Research & Assessment Data</h2>
+            <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+                <div style="flex: 1; padding: 20px; background: #fffbeb; border: 1px solid #fed7aa; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #92400e;">${t('class_analytics.total_probes')}</div>
+                    <div style="font-size: 32px; font-weight: bold; color: #d97706;">${dashboardData.reduce((sum, s) => sum + (s.probeHistory ? Object.values(s.probeHistory).flat().length : 0), 0)}</div>
+                </div>
+                <div style="flex: 1; padding: 20px; background: #f5f3ff; border: 1px solid #e9d5ff; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #6b21a8;">${t('research.survey_responses')}</div>
+                    <div style="font-size: 32px; font-weight: bold; color: #9333ea;">${dashboardData.reduce((sum, s) => sum + (s.surveyResponses ? s.surveyResponses.length : 0), 0)}</div>
+                </div>
+                <div style="flex: 1; padding: 20px; background: #ecfdf5; border: 1px solid #bbf7d0; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #065f46;">${t('class_analytics.total_sessions')}</div>
+                    <div style="font-size: 32px; font-weight: bold; color: #059669;">${dashboardData.reduce((sum, s) => sum + (s.sessionCounter || 0), 0)}</div>
+                </div>
+            </div>
+            <div style="margin-top: 50px; font-size: 10px; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 20px;">
+                ${t('dashboard.report.footer')}
+            </div>
+        </div>
+      `;
+      const container = document.createElement('div');
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      container.style.width = '595px';
+      container.innerHTML = reportHtml;
+      document.body.appendChild(container);
+      try {
+          await doc.html(container, {
+              callback: function(pdf) {
+                  pdf.save('Class_Analytics_Report.pdf');
+                  document.body.removeChild(container);
+                  addToast(t('dashboard.toasts.report_downloaded'), "success");
+              },
+              x: 10,
+              y: 10,
+              width: 190,
+              windowWidth: 650
+          });
+      } catch (e) {
+          warnLog("PDF Export Error", e);
+          addToast(t('toasts.export_failed'), "error");
+          if (document.body.contains(container)) document.body.removeChild(container);
+      }
+  };
+  const handleBatchUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+    const promises = files.map(file => new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const parsed = JSON.parse(ev.target.result);
+                if (parsed && parsed.mode === 'student' && Array.isArray(parsed.history)) {
+                    const validSubmission = {
+                        id: generateUUID(),
+                        ...parsed,
+                        studentNickname: parsed.studentNickname || parsed.settings?.nickname || "Anonymous",
+                        timestamp: parsed.timestamp || new Date().toISOString(),
+                        sourceFilename: file.name
+                    };
+                    resolve(validSubmission);
+                } else {
+                    warnLog("Skipping invalid file (not a student save):", file.name);
+                    resolve(null);
+                }
+            } catch (err) {
+                warnLog("Failed to parse file:", file.name);
+                resolve(null);
+            }
+        };
+        reader.onerror = () => {
+            warnLog("Error reading file:", file.name);
+            resolve(null);
+        };
+        reader.readAsText(file);
+    }));
+    const results = await Promise.all(promises);
+    const validSubmissions = results.filter(item => item !== null);
+    if (validSubmissions.length > 0 && setDashboardData) {
+        setDashboardData(prev => [...prev, ...validSubmissions]);
+        if (addToast) addToast(t('dashboard.toasts.submissions_loaded', { count: validSubmissions.length }), "success");
+    } else if (files.length > 0) {
+        if (addToast) addToast(t('dashboard.toasts.no_files'), "error");
+    }
+    e.target.value = "";
+  };
+  const handleExportCSV = () => {
+    if (!dashboardData || dashboardData.length === 0) return;
+    const headers = [
+        t('dashboard.csv.header_name'),
+        t('dashboard.csv.header_date'),
+        t('dashboard.csv.header_level'),
+        t('dashboard.csv.header_quiz_avg'),
+        t('dashboard.csv.header_total_xp')
+    , 'Probes', 'Avg WCPM', 'Surveys', 'Sessions'];
+    const rows = dashboardData.map(student => {
+        const name = (student.studentNickname || "Anonymous").replace(/"/g, '""');
+        const date = new Date(student.timestamp).toLocaleDateString();
+        const adventureItem = student.history.slice().reverse().find(item => item.type === 'adventure');
+        const level = (adventureItem && adventureItem.data && adventureItem.data.level) ? adventureItem.data.level : "N/A";
+        let totalQuizScore = 0;
+        let quizCount = 0;
+        const quizzes = student.history.filter(h => h.type === 'quiz');
+        quizzes.forEach(quiz => {
+            const questions = quiz.data?.questions || [];
+            if (questions.length === 0) return;
+            let correct = 0;
+            const studentResps = student.responses && student.responses[quiz.id] ? student.responses[quiz.id] : {};
+            questions.forEach((q, i) => {
+                const resp = studentResps[i];
+                if (resp !== undefined && resp !== null) {
+                    let val = resp;
+                    if (!isNaN(parseInt(resp)) && q.options && q.options[resp]) val = q.options[resp];
+                    if (String(val).trim().toLowerCase() === String(q.correctAnswer).trim().toLowerCase()) correct++;
+                }
+            });
+            const score = (correct / questions.length) * 100;
+            totalQuizScore += score;
+            quizCount++;
+        });
+        const quizAvg = quizCount > 0 ? Math.round(totalQuizScore / quizCount) + "%" : "N/A";
+        const xp = student.stats?.totalXP || "N/A";
+        const probeCount = s.probeHistory ? Object.values(s.probeHistory).flat().length : 0;
+        const wcpmProbes = s.probeHistory ? Object.values(s.probeHistory).flat().filter(x => x.wcpm !== undefined) : [];
+        const avgWcpm = wcpmProbes.length > 0 ? (wcpmProbes.reduce((sum,x) => sum + x.wcpm, 0) / wcpmProbes.length).toFixed(0) : 'N/A';
+        const surveyCount = s.surveyResponses ? s.surveyResponses.length : 0;
+        const sessionCount = s.sessionCounter || 0;
+        return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}"`;
+    });
+    const csvContent = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `${t('dashboard.csv.filename_prefix')}${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  const quizHistory = useMemo(() => selectedStudent?.history?.filter(h => h.type === 'quiz') || [], [selectedStudent?.history]);
+  return (
+    <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        className="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300"
+    >
+      <div className="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10 flex flex-col">
+          <div className="p-4 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+                <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600">
+                    <Layout size={24} />
+                </div>
+                <h2 className="text-xl font-black text-slate-800">{t('dashboard.grading_dashboard')}</h2>
+            </div>
+            <div className="flex items-center gap-2">
+                {dashboardData.length > 0 && (<>
+                    <button
+                        onClick={handleExportCSV} data-help-key="dashboard_export_csv_btn"
+                        className="text-xs font-bold text-green-600 hover:text-green-800 hover:bg-green-50 px-3 py-1.5 rounded-full transition-colors mr-2 border border-green-200 shadow-sm flex items-center gap-1"
+                        title={t('dashboard.export_csv_tooltip')}
+                        aria-label={t('dashboard.export_csv_tooltip')}
+                    >
+                        <FileDown size={14} /> {t('dashboard.export_csv')}
+                    
+                    </button>
+                    <button
+                        onClick={handleExportResearchPDF} data-help-key="dashboard_export_research_btn"
+                        className="text-xs font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-3 py-1.5 rounded-full transition-colors mr-2 border border-purple-200 shadow-sm flex items-center gap-1"
+                        title={t('research.export_apa_title')}
+                        aria-label="Export Research Report"
+                    >
+                        <FileDown size={14} /> 📊 Research PDF
+                    </button>
+                </>)}
+                {dashboardData.length > 0 && (
+                    <button
+                        onClick={handleClearAll} data-help-key="dashboard_clear_all_btn"
+                        className="text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-full transition-colors mr-2 border border-transparent hover:border-red-100"
+                        title={t('dashboard.reset_tooltip')}
+                        aria-label={t('dashboard.reset_tooltip')}
+                    >
+                        {t('dashboard.clear_all')}
+                    </button>
+                )}
+                <button
+                onClick={onClose}
+                className="p-2 rounded-full text-slate-500 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                autoFocus
+                aria-label={t('common.close_dashboard')}
+                >
+                <X size={24} />
+                </button>
+            </div>
+          </div>
+          {dashboardData.length > 0 && dashboardView === 'list' && (
+              <div className="flex px-6 gap-6">
+                  <button
+                      onClick={() => setActiveTab('students')}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'students' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                  >
+                      {t('dashboard.tab_students')} ({dashboardData.length})
+                  </button>
+                  <button
+                      onClick={() => setActiveTab('insights')}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'insights' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                  >
+                      {t('dashboard.tab_insights')}
+                  </button>
+                  <button
+                      onClick={() => setActiveTab('behavior')}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'behavior' ? 'border-orange-600 text-orange-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                  >
+                      🔍 {t('behavior_lens.hub.title') || 'Behavior'}
+                  </button>
+                  <button
+                      onClick={() => setActiveTab('stems')}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'stems' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                  >
+                      🔬 STEM Stations
+                  </button>
+              </div>
+          )}
+      </div>
+      <div className="flex-grow p-6 overflow-y-auto bg-slate-100">
+         {dashboardView === 'detail' && selectedStudent ? (
+             <div className="max-w-5xl mx-auto h-full flex flex-col animate-in slide-in-from-right-8 duration-300">
+                 <div className="flex items-center justify-between gap-6 mb-6 border-b border-slate-200 pb-6 sticky top-0 bg-slate-50 z-10 pt-2">
+                     <div className="flex items-center gap-6">
+                         <button
+                             aria-label={t('common.check')}
+                            onClick={() => setDashboardView('list')}
+                            className="flex items-center gap-2 px-4 py-2 bg-white text-slate-600 font-bold rounded-full shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors shrink-0"
+                         >
+                             <ArrowDown className="rotate-90" size={16}/> {t('dashboard.back_button')}
+                         </button>
+                         <div>
+                             <h2 className="text-3xl font-black text-slate-800 flex items-center gap-3">
+                                <div className="relative">
+                                    <div className="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xl shadow-md border-4 border-indigo-100">
+                                        {selectedStudent.studentNickname.charAt(0).toUpperCase()}
+                                    </div>
+                                    {gradedIds.has(selectedStudent.id) && (
+                                        <div className="absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-0.5 border-2 border-white shadow-sm">
+                                            <CheckCircle2 size={14} />
+                                        </div>
+                                    )}
+                                </div>
+                                {selectedStudent.studentNickname}
+                             </h2>
+                             <div className="flex items-center gap-3 mt-2 flex-wrap">
+                                 <p className="text-xs text-slate-500 font-mono bg-slate-100 px-2 py-1 rounded border border-slate-200">
+                                    {new Date(selectedStudent.timestamp).toLocaleString()}
+                                 </p>
+                                 <div className="h-4 w-px bg-slate-300 hidden sm:block"></div>
+                                 <span className="text-xs font-bold bg-purple-100 text-purple-700 px-3 py-1 rounded-full border border-purple-200 flex items-center gap-1">
+                                    <MapIcon size={12} /> {t('dashboard.detail.adventure_badge', { level: getStudentLevel(selectedStudent.history) })}
+                                 </span>
+                                 <span className="text-xs font-bold bg-green-100 text-green-700 px-3 py-1 rounded-full border border-green-200 flex items-center gap-1">
+                                    <CheckSquare size={12} /> {t('dashboard.detail.quiz_badge', { count: quizHistory.length })}
+                                 </span>
+                                 {selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && (
+                                     <span className="text-xs font-bold bg-amber-100 text-amber-700 px-3 py-1 rounded-full border border-amber-200 flex items-center gap-1">
+                                         📊 {Object.values(selectedStudent.probeHistory).flat().length} Probes
+                                     </span>
+                                 )}
+                                 {selectedStudent.surveyResponses && selectedStudent.surveyResponses.length > 0 && (
+                                     <span className="text-xs font-bold bg-purple-100 text-purple-700 px-3 py-1 rounded-full border border-purple-200 flex items-center gap-1">
+                                         📝 {selectedStudent.surveyResponses.length} Surveys
+                                     </span>
+                                 )}
+                             </div>
+                         </div>
+                     </div>
+                     <label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-full border-2 transition-all select-none shadow-sm ${gradedIds.has(selectedStudent.id) ? 'bg-green-50 border-green-500 text-green-800' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'}`}>
+                        <input aria-label={t('common.text_field')}
+                            type="checkbox"
+                            className="hidden"
+                            checked={gradedIds.has(selectedStudent.id)}
+                            onChange={() => toggleGraded(selectedStudent.id)}
+                        />
+                        {gradedIds.has(selectedStudent.id) ? <CheckCircle2 size={18} className="fill-green-500 text-white"/> : <div className="w-4 h-4 rounded-full border-2 border-slate-300"></div>}
+                        <span className="font-bold text-sm">{gradedIds.has(selectedStudent.id) ? t('dashboard.table.graded') : t('dashboard.table.mark_graded')}</span>
+                     </label>
+                 </div>
+                 {selectedStudent.progressLog && (
+                     <LongitudinalProgressChart logs={selectedStudent.progressLog} />
+                 )}
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 mt-6">
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">{t('dashboard.charts.student_vs_class')}</h4>
+                        <div className="flex items-center gap-6">
+                            <div className="w-1/2">
+                                <SimpleBarChart
+                                    data={[
+                                        { label: t('dashboard.charts.student_avg'), value: studentAvg },
+                                        { label: t('dashboard.charts.class_avg'), value: analytics.averageScore }
+                                    ]}
+                                    color={studentAvg >= analytics.averageScore ? "green" : "orange"}
+                                />
+                            </div>
+                            <div className="w-1/2 flex flex-col justify-center gap-2">
+                                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 text-center">
+                                    <div className="text-2xl font-black text-indigo-900">{studentAvg}%</div>
+                                    <div className="text-[10px] font-bold text-slate-500 uppercase">{t('dashboard.charts.student_avg')}</div>
+                                </div>
+                                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 text-center">
+                                    <div className="text-xl font-bold text-slate-600">{analytics.averageScore}%</div>
+                                    <div className="text-[10px] font-bold text-slate-500 uppercase">{t('dashboard.charts.class_avg')}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center">
+                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('dashboard.charts.quiz_participation')}</h4>
+                        <div className="flex items-end gap-2">
+                            <span className="text-4xl font-black text-slate-800">{quizHistory.length}</span>
+                            <span className="text-sm font-medium text-slate-500 mb-1">{t('dashboard.charts.quizzes_taken')}</span>
+                        </div>
+                    </div>
+                 </div>
+                 {(selectedStudent.probeHistory || selectedStudent.interventionLogs || selectedStudent.surveyResponses || selectedStudent.fluencyAssessments) && (
+                     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-6 mt-6">
+                         <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                             📊 Assessment & Research Data
+                         </h4>
+                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                             {selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && (
+                                 <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
+                                     <div className="text-2xl font-black text-amber-700">{Object.values(selectedStudent.probeHistory).flat().length}</div>
+                                     <div className="text-[10px] font-bold text-amber-600 uppercase mt-1">{t('probes.probe_results')}</div>
+                                     <div className="text-[10px] text-slate-500 mt-2">
+                                         {Object.keys(selectedStudent.probeHistory).map(name => (
+                                             <div key={name} className="flex justify-between">
+                                                 <span>{name}</span>
+                                                 <span className="font-bold">{selectedStudent.probeHistory[name].length} probes</span>
+                                             </div>
+                                         ))}
+                                     </div>
+                                 </div>
+                             )}
+                             {selectedStudent.interventionLogs && selectedStudent.interventionLogs.length > 0 && (
+                                 <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                                     <div className="text-2xl font-black text-blue-700">{selectedStudent.interventionLogs.length}</div>
+                                     <div className="text-[10px] font-bold text-blue-600 uppercase mt-1">{t('research.intervention_logs')}</div>
+                                 </div>
+                             )}
+                             {selectedStudent.surveyResponses && selectedStudent.surveyResponses.length > 0 && (
+                                 <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
+                                     <div className="text-2xl font-black text-purple-700">{selectedStudent.surveyResponses.length}</div>
+                                     <div className="text-[10px] font-bold text-purple-600 uppercase mt-1">{t('research.survey_responses')}</div>
+                                     <div className="text-[10px] text-slate-500 mt-2">
+                                         {selectedStudent.surveyResponses.slice(-1).map((r, i) => (
+                                             <div key={i}>Latest: {r.type || 'survey'} ({new Date(r.timestamp || Date.now()).toLocaleDateString()})</div>
+                                         ))}
+                                     </div>
+                                 </div>
+                             )}
+                             {selectedStudent.sessionCounter !== undefined && (
+                                 <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
+                                     <div className="text-2xl font-black text-emerald-700">{selectedStudent.sessionCounter}</div>
+                                     <div className="text-[10px] font-bold text-emerald-600 uppercase mt-1">{t('research.sessions_completed')}</div>
+                                     {selectedStudent.fidelityLog && selectedStudent.fidelityLog.length > 0 && (
+                                         <div className="text-[10px] text-slate-500 mt-2">{selectedStudent.fidelityLog.length} fidelity records</div>
+                                     )}
+                                 </div>
+                             )}
+                         </div>
+                         {selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && (
+                             <div className="mt-4 space-y-2">
+                                 <h5 className="text-[10px] font-bold text-slate-500 uppercase">{t('research.recent_probe_results')}</h5>
+                                 <div className="space-y-1.5">
+                                     {Object.entries(selectedStudent.probeHistory).flatMap(([name, probes]) =>
+                                         probes.slice(-3).map((p, i) => (
+                                             <div key={name + '-' + i} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2 border border-slate-100 text-xs">
+                                                 <span className="font-bold text-slate-700">{name}</span>
+                                                 <div className="flex items-center gap-3">
+                                                     <span className="text-slate-500">{p.probeType || p.type || 'Probe'}</span>
+                                                     {p.wcpm !== undefined && <span className="font-mono font-bold text-amber-700">{p.wcpm} WCPM</span>}
+                                                     {p.dcpm !== undefined && <span className="font-mono font-bold text-amber-700">{p.dcpm} DCPM</span>}
+                                                     {p.accuracy !== undefined && <span className="font-mono font-bold text-emerald-700">{Math.round(p.accuracy * 100)}%</span>}
+                                                     {p.score !== undefined && <span className="font-mono font-bold text-indigo-700">{p.score}</span>}
+                                                     <span className="text-slate-400">{new Date(p.timestamp || p.date || Date.now()).toLocaleDateString()}</span>
+                                                 </div>
+                                             </div>
+                                         ))
+                                     )}
+                                 </div>
+                             </div>
+                         )}
+                         {selectedStudent.externalCBMScores && Object.keys(selectedStudent.externalCBMScores).length > 0 && (
+                             <div className="mt-4">
+                                 <h5 className="text-[10px] font-bold text-slate-500 uppercase mb-2">{t('research.external_cbm_scores')}</h5>
+                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                     {Object.entries(selectedStudent.externalCBMScores).map(([source, scores]) => (
+                                         <div key={source} className="bg-slate-50 rounded-lg px-3 py-2 border border-slate-100">
+                                             <div className="text-[10px] font-bold text-slate-600 uppercase">{source}</div>
+                                             {Array.isArray(scores) ? scores.slice(-1).map((s, i) => (
+                                                 <div key={i} className="text-sm font-bold text-slate-800">{s.score || s.value || JSON.stringify(s)}</div>
+                                             )) : <div className="text-sm font-bold text-slate-800">{JSON.stringify(scores)}</div>}
+                                         </div>
+                                     ))}
+                                 </div>
+                             </div>
+                         )}
+                     </div>
+                 )}
+                 <div className="flex-grow overflow-y-auto custom-scrollbar space-y-6 pb-10">
+                     {(selectedStudent.history || []).map((item, idx) => (
+                        <div key={item.id || idx} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-300 transition-colors">
+                            <div className="flex justify-between items-start mb-3">
+                                <div>
+                                    <h3 className="font-bold text-lg text-slate-800">{item.title || "Untitled Resource"}</h3>
+                                    <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">{item.type}</span>
+                                </div>
+                                <span className="text-xs text-slate-500 font-mono">
+                                    {new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                </span>
+                            </div>
+                            {item.meta && (
+                                <p className="text-sm text-slate-500 italic border-l-2 border-slate-200 pl-3 mb-4">
+                                    {item.meta}
+                                </p>
+                            )}
+                            <div className="bg-slate-50 rounded-lg p-4 border border-slate-100 overflow-x-auto">
+                                <div
+                                    className="prose prose-sm max-w-none text-slate-700 leading-relaxed"
+                                    dangerouslySetInnerHTML={{
+                                        __html: generateResourceHTML
+                                            ? generateResourceHTML(item, true, selectedStudent.responses || {})
+                                    : '<p>Error: Renderer not available.</p>',
+                            }}
+                        />
+                    </div>
+                </div>
+                ))}
+                {selectedStudent.history.length === 0 && (
+                    <div className="text-center py-12 text-slate-500 italic">
+                        {t('dashboard.empty.no_history')}
+                    </div>
+                )}
+            </div>
+        </div>
+    ) : (
+             <>
+                 {dashboardData.length === 0 ? (
+                     <div className="relative flex flex-col items-center justify-center h-full text-slate-500 gap-4 border-4 border-dashed border-slate-300 rounded-3xl hover:bg-slate-100 hover:border-indigo-300 hover:text-indigo-500 transition-all cursor-pointer group min-h-[400px] bg-white">
+                         <div className="bg-slate-50 p-6 rounded-full shadow-sm mb-2 group-hover:scale-110 transition-transform">
+                              <Upload size={48} className="text-slate-500 group-hover:text-indigo-500" />
+                         </div>
+                         <h3 className="text-2xl font-black text-slate-500 group-hover:text-indigo-700">{t('dashboard.drop_files')}</h3>
+                         <p className="text-sm font-bold opacity-70 bg-slate-200 px-3 py-1 rounded-full group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">{t('dashboard.batch_supported')}</p>
+                         <input aria-label={t('common.upload_json_file')}
+                            type="file"
+                            multiple
+                            accept=".json"
+                            onChange={handleBatchUpload} data-help-key="dashboard_drop_zone_input"
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                         />
+                     </div>
+                 ) : (
+                    <>
+                     {activeTab === 'students' && (
+                     <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-left-4">
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
+                                 <div className="bg-blue-100 p-3 rounded-full text-blue-600"><Users size={24}/></div>
+                                 <div>
+                                     <div className="text-2xl font-black text-slate-800">{dashboardData.length}</div>
+                                     <div className="text-xs font-bold text-slate-500 uppercase">{t('dashboard.stats.students_loaded')}</div>
+                                 </div>
+                             </div>
+                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4 relative group cursor-pointer hover:border-indigo-300 transition-colors">
+                                 <div className="bg-green-100 p-3 rounded-full text-green-600"><Upload size={24}/></div>
+                                 <div>
+                                     <div className="text-sm font-bold text-green-700">{t('dashboard.stats.add_files')}</div>
+                                     <div className="text-xs text-slate-500">{t('dashboard.stats.click_upload')}</div>
+                                 </div>
+                                 <input aria-label={t('common.upload_json_file')}
+                                    type="file"
+                                    multiple
+                                    accept=".json"
+                                    onChange={handleBatchUpload} data-help-key="dashboard_add_file_btn_input" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                 />
+                             </div>
+                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors" onClick={handleClearAll} role="button" tabIndex="0" aria-label={t('dashboard.stats.clear_dashboard')} onKeyDown={(e) => e.key === 'Enter' && handleClearAll()}>
+                                 <div className="bg-red-100 p-3 rounded-full text-red-600"><Trash2 size={24}/></div>
+                                 <div>
+                                     <div className="text-sm font-bold text-red-700">{t('dashboard.stats.clear_dashboard')}</div>
+                                     <div className="text-xs text-slate-500">{t('dashboard.stats.clear_desc')}</div>
+                                 </div>
+                             </div>
+                         </div>
+                         <div className="flex items-center gap-2 flex-wrap">
+                             {[
+                                 ["all", "👥 All", dashboardData.length],
+                                 ["probes", "📊 Has Probes", dashboardData.filter(s => s.probeHistory && Object.keys(s.probeHistory).length > 0).length],
+                                 ["surveys", "📝 Has Surveys", dashboardData.filter(s => s.surveyResponses && s.surveyResponses.length > 0).length],
+                                 ["graded", "✅ Graded", dashboardData.filter(s => gradedIds.has(s.id)).length],
+                                 ["ungraded", "⬜ Ungraded", dashboardData.filter(s => !gradedIds.has(s.id)).length],
+                             ].map(([key, label, count]) => (
+                                 <button key={key} onClick={() => setStudentFilter(key)}
+                                     className={"text-xs font-bold px-3 py-1.5 rounded-full transition-all border " + (studentFilter === key ? "bg-indigo-600 text-white border-indigo-600 shadow-sm" : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50")}
+                                 >{label} ({count})</button>
+                             ))}
+                         </div>
+                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+                             <table className="w-full text-left text-sm text-slate-600 min-w-[600px]">
+                                 <thead className="bg-slate-50 text-xs uppercase font-bold text-slate-500">
+                                     <tr>
+                                         <th className="p-4">{t('dashboard.header_nickname')}</th>
+                                         <th className="p-4">{t('dashboard.header_date')}</th>
+                                         <th className="p-4">{t('dashboard.header_progress')}</th>
+                                         <th className="p-4">{t('dashboard.header_level')}</th>
+                                         <th className="p-4 text-right">{t('dashboard.header_actions')}</th>
+                                     </tr>
+                                 </thead>
+                                 <tbody className="divide-y divide-slate-100">
+                                     {dashboardData.map((student, idx) => {
+                                         const level = getStudentLevel(student.history);
+                                         const isGraded = gradedIds.has(student.id);
+                                         return (
+                                             <tr key={idx} className={`hover:bg-slate-50 transition-colors ${isGraded ? 'bg-green-50/30' : ''}`}>
+                                                 <td className="p-4 font-bold text-indigo-900 flex items-center gap-2">
+                                                     <div className="relative">
+                                                         <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs">
+                                                             {student.studentNickname.charAt(0).toUpperCase()}
+                                                         </div>
+                                                         {isGraded && (
+                                                             <div className="absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-0.5 border border-white shadow-sm">
+                                                                 <CheckCircle2 size={8} />
+                                                             </div>
+                                                         )}
+                                                     </div>
+                                                     {student.studentNickname}
+                                                     {isGraded && <span className="text-[10px] font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded ml-2 uppercase tracking-wider">{t('dashboard.table.graded')}</span>}
+                                                 
+                                                      {student.probeHistory && Object.keys(student.probeHistory).length > 0 && <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200" title={Object.values(student.probeHistory).flat().length + ' probes'}>📊</span>}
+                                                      {student.surveyResponses && student.surveyResponses.length > 0 && <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ml-1 border border-purple-200" title={student.surveyResponses.length + ' surveys'}>📝</span>}
+                                                      {student.sessionCounter > 0 && <span className="text-[10px] font-bold text-cyan-700 bg-cyan-50 px-1.5 py-0.5 rounded ml-1 border border-cyan-200" title={student.sessionCounter + ' sessions'}>🔄</span>}
+                                                  </td>
+                                                 <td className="p-4 text-slate-500 font-mono text-xs">
+                                                     {new Date(student.timestamp).toLocaleDateString()} <span className="hidden sm:inline">{new Date(student.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                                 </td>
+                                                 <td className="p-4">
+                                                     <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-bold border border-green-200">
+                                                         {calculateScore(student.history)}
+                                                     </span>
+                                                 </td>
+                                                 <td className="p-4">
+                                                     {level !== "N/A" ? (
+                                                         <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full font-bold border border-purple-200 flex items-center gap-1 w-fit">
+                                                             <MapIcon size={10} /> Lvl {level}
+                                                         </span>
+                                                     ) : (
+                                                         <span className="text-slate-500 text-xs">-</span>
+                                                     )}
+                                                 </td>
+                                                 <td className="p-4 text-right">
+                                                     <button
+                                                        onClick={() => {
+                                                            setSelectedStudentId(student.id);
+                                                            setDashboardView('detail');
+                                                        }} data-help-key="dashboard_review_btn"
+                                                        className="text-indigo-600 hover:text-indigo-800 font-bold text-xs px-3 py-1 rounded-lg hover:bg-indigo-50 border border-transparent hover:border-indigo-200 transition-all"
+                                                     >
+                                                         {t('dashboard.table.review_work')}
+                                                     </button>
+                                                 </td>
+                                             </tr>
+                                         );
+                                     })}
+                                 </tbody>
+                             </table>
+                         </div>
+                     </div>
+                     )}
+                     {activeTab === 'insights' && (
+                         <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4">
+                            <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                                <div>
+                                    <h3 className="font-bold text-lg text-slate-800">{t('dashboard.insights.class_performance')}</h3>
+                                    <p className="text-xs text-slate-500">{t('dashboard.insights.generated_date')} {new Date().toLocaleDateString()}</p>
+                                </div>
+                                <button
+                                    aria-label={t('common.export_file')}
+                                    onClick={handleExportAnalyticsPDF} data-help-key="dashboard_export_pdf_btn"
+                                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm"
+                                >
+                                    <FileDown size={14} /> {t('dashboard.insights.export_report')}
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center">
+                                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">{t('dashboard.insights.avg_score')}</h3>
+                                    <SimpleDonutChart
+                                        percentage={analytics.averageScore}
+                                        label={`${analytics.averageScore}%`}
+                                        color={analytics.averageScore >= 80 ? "green" : analytics.averageScore >= 60 ? "yellow" : "red"}
+                                    />
+                                </div>
+                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center">
+                                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">{t('dashboard.insights.quiz_completion')}</h3>
+                                    <SimpleDonutChart
+                                        percentage={analytics.quizCompletionRate}
+                                        label={`${Math.round(analytics.quizCompletionRate)}%`}
+                                        color="blue"
+                                    />
+                                    <p className="text-xs text-slate-500 mt-2 text-center">{t('dashboard.insights.students_participating')}</p>
+                                </div>
+                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-center">
+                                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">{t('dashboard.insights.avg_adv_level')}</h3>
+                                    <div className="text-5xl font-black text-purple-600 text-center mb-2">{analytics.avgAdventureLevel.toFixed(1)}</div>
+                                    <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                                        <div className="bg-purple-500 h-full" style={{ width: `${Math.min(100, (analytics.avgAdventureLevel / 10) * 100)}%` }}></div>
+                                    </div>
+                                    <p className="text-xs text-slate-500 mt-2 text-center">{t('dashboard.insights.adv_level_desc')}</p>
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                    <AlertCircle size={20} className="text-red-500"/> {t('dashboard.insights.misconceptions_title')}
+                                </h3>
+                                {misconceptionChartData.length > 0 ? (
+                                    <div className="flex flex-col md:flex-row gap-8 items-center">
+                                        <div className="flex-1 w-full">
+                                            <SimpleBarChart data={misconceptionChartData} color="red" />
+                                        </div>
+                                        <div className="flex-1 w-full">
+                                            <ul className="space-y-3">
+                                                {analytics.misconceptions.map((m, i) => (
+                                                    <li key={i} className="text-sm bg-red-50 p-3 rounded-lg border border-red-100">
+                                                        <div className="font-bold text-red-800 mb-1 flex justify-between">
+                                                            <span>Question {i+1}</span>
+                                                            <span className="bg-white px-2 rounded text-red-600 border border-red-200">{m.count} {t('dashboard.insights.misses')}</span>
+                                                        </div>
+                                                        <p className="text-slate-600 italic line-clamp-2">"{m.question}"</p>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-10 text-slate-500 italic">
+                                        {t('dashboard.insights.no_misconceptions')}
+                                    </div>
+                                )}
+                            </div>
+                            {/* Research & Assessment Analytics */}
+                            {(() => {
+                                const allProbes = dashboardData.flatMap(s => 
+                                    s.probeHistory ? Object.values(s.probeHistory).flat() : []
+                                );
+                                const allSurveys = dashboardData.flatMap(s => s.surveyResponses || []);
+                                const totalSessions = dashboardData.reduce((sum, s) => sum + (s.sessionCounter || 0), 0);
+                                const studentsWithProbes = dashboardData.filter(s => s.probeHistory && Object.keys(s.probeHistory).length > 0).length;
+                                const studentsWithSurveys = dashboardData.filter(s => s.surveyResponses && s.surveyResponses.length > 0).length;
+                                
+                                if (allProbes.length === 0 && allSurveys.length === 0 && totalSessions === 0) return null;
+                                
+                                return React.createElement('div', { className: 'space-y-6' },
+                                    React.createElement('h3', { className: 'text-lg font-bold text-slate-800 flex items-center gap-2 mt-4' },
+                                        t('dashboard.insights.research_analytics')),
+                                    
+                                    allProbes.length > 0 && React.createElement('div', { className: 'bg-white p-6 rounded-2xl shadow-sm border border-slate-200' },
+                                        React.createElement('h4', { className: 'text-sm font-bold text-amber-700 uppercase tracking-wider mb-4 flex items-center gap-2' },
+                                            t('dashboard.insights.probe_summary')),
+                                        React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-4' },
+                                            React.createElement('div', { className: 'bg-amber-50 rounded-xl p-4 text-center border border-amber-100' },
+                                                React.createElement('div', { className: 'text-3xl font-black text-amber-700' }, allProbes.length),
+                                                React.createElement('div', { className: 'text-[10px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.total_probes'))),
+                                            React.createElement('div', { className: 'bg-amber-50 rounded-xl p-4 text-center border border-amber-100' },
+                                                React.createElement('div', { className: 'text-3xl font-black text-amber-700' }, studentsWithProbes),
+                                                React.createElement('div', { className: 'text-[10px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.students_assessed'))),
+                                            (() => {
+                                                const wcpmProbes = allProbes.filter(p => p.wcpm !== undefined);
+                                                if (wcpmProbes.length === 0) return null;
+                                                const avgWcpm = Math.round(wcpmProbes.reduce((s,p) => s + p.wcpm, 0) / wcpmProbes.length);
+                                                return React.createElement('div', { className: 'bg-amber-50 rounded-xl p-4 text-center border border-amber-100' },
+                                                    React.createElement('div', { className: 'text-3xl font-black text-amber-700' }, avgWcpm),
+                                                    React.createElement('div', { className: 'text-[10px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.avg_wcpm')));
+                                            })(),
+                                            (() => {
+                                                const dcpmProbes = allProbes.filter(p => p.dcpm !== undefined);
+                                                if (dcpmProbes.length === 0) return null;
+                                                const avgDcpm = Math.round(dcpmProbes.reduce((s,p) => s + p.dcpm, 0) / dcpmProbes.length);
+                                                return React.createElement('div', { className: 'bg-amber-50 rounded-xl p-4 text-center border border-amber-100' },
+                                                    React.createElement('div', { className: 'text-3xl font-black text-amber-700' }, avgDcpm),
+                                                    React.createElement('div', { className: 'text-[10px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.avg_dcpm')));
+                                            })(),
+                                            (() => {
+                                                const accProbes = allProbes.filter(p => p.accuracy !== undefined);
+                                                if (accProbes.length === 0) return null;
+                                                const avgAcc = Math.round(accProbes.reduce((s,p) => s + p.accuracy, 0) / accProbes.length * 100);
+                                                return React.createElement('div', { className: 'bg-amber-50 rounded-xl p-4 text-center border border-amber-100' },
+                                                    React.createElement('div', { className: 'text-3xl font-black text-amber-700' }, avgAcc + '%'),
+                                                    React.createElement('div', { className: 'text-[10px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.avg_accuracy')));
+                                            })()
+                                        )
+                                    ),
+                                    
+                                    allSurveys.length > 0 && React.createElement('div', { className: 'bg-white p-6 rounded-2xl shadow-sm border border-slate-200' },
+                                        React.createElement('h4', { className: 'text-sm font-bold text-purple-700 uppercase tracking-wider mb-4 flex items-center gap-2' },
+                                            t('dashboard.insights.tam_survey_analysis')),
+                                        React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-4 mb-4' },
+                                            React.createElement('div', { className: 'bg-purple-50 rounded-xl p-4 text-center border border-purple-100' },
+                                                React.createElement('div', { className: 'text-3xl font-black text-purple-700' }, allSurveys.length),
+                                                React.createElement('div', { className: 'text-[10px] font-bold text-purple-500 uppercase mt-1' }, t('dashboard.insights.total_responses'))),
+                                            React.createElement('div', { className: 'bg-purple-50 rounded-xl p-4 text-center border border-purple-100' },
+                                                React.createElement('div', { className: 'text-3xl font-black text-purple-700' }, studentsWithSurveys),
+                                                React.createElement('div', { className: 'text-[10px] font-bold text-purple-500 uppercase mt-1' }, t('dashboard.insights.respondents')))
+                                        ),
+                                        (() => {
+                                            const tamIds = ['perceived_usefulness', 'ease_of_use', 'intention'];
+                                            const tamLabels = { perceived_usefulness: t('dashboard.insights.perceived_usefulness'), ease_of_use: t('dashboard.insights.ease_of_use'), intention: t('dashboard.insights.behavioral_intention') };
+                                            const tamColors = { perceived_usefulness: 'text-blue-700', ease_of_use: 'text-green-700', intention: 'text-indigo-700' };
+                                            const tamBgs = { perceived_usefulness: 'bg-blue-50 border-blue-100', ease_of_use: 'bg-green-50 border-green-100', intention: 'bg-indigo-50 border-indigo-100' };
+                                            const constructs = tamIds.map(id => {
+                                                const scores = allSurveys.filter(s => s.answers && s.answers[id] !== undefined).map(s => s.answers[id]);
+                                                if (scores.length === 0) return null;
+                                                const avg = (scores.reduce((a,b) => a+b, 0) / scores.length).toFixed(1);
+                                                return { id, label: tamLabels[id], avg, n: scores.length, color: tamColors[id], bg: tamBgs[id] };
+                                            }).filter(Boolean);
+                                            if (constructs.length === 0) return null;
+                                            return React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
+                                                ...constructs.map(c => 
+                                                    React.createElement('div', { key: c.id, className: 'rounded-xl p-4 border ' + c.bg },
+                                                        React.createElement('div', { className: 'text-xs font-bold text-slate-500 uppercase tracking-wider mb-2' }, c.label),
+                                                        React.createElement('div', { className: 'flex items-end gap-2' },
+                                                            React.createElement('span', { className: 'text-3xl font-black ' + c.color }, c.avg),
+                                                            React.createElement('span', { className: 'text-xs text-slate-400 mb-1' }, '/ 5.0')),
+                                                        React.createElement('div', { className: 'w-full bg-slate-200 rounded-full h-2 mt-2 overflow-hidden' },
+                                                            React.createElement('div', { className: 'h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all', style: { width: (parseFloat(c.avg) / 5 * 100) + '%' } })),
+                                                        React.createElement('div', { className: 'text-[10px] text-slate-400 mt-1' }, 'n = ' + c.n + ' responses')
+                                                    )
+                                                )
+                                            );
+                                        })()
+                                    ),
+                                    
+                                    totalSessions > 0 && React.createElement('div', { className: 'bg-white p-6 rounded-2xl shadow-sm border border-slate-200' },
+                                        React.createElement('h4', { className: 'text-sm font-bold text-emerald-700 uppercase tracking-wider mb-4 flex items-center gap-2' },
+                                            t('dashboard.insights.session_fidelity')),
+                                        React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-4' },
+                                            React.createElement('div', { className: 'bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100' },
+                                                React.createElement('div', { className: 'text-3xl font-black text-emerald-700' }, totalSessions),
+                                                React.createElement('div', { className: 'text-[10px] font-bold text-emerald-500 uppercase mt-1' }, t('dashboard.insights.total_sessions'))),
+                                            React.createElement('div', { className: 'bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100' },
+                                                React.createElement('div', { className: 'text-3xl font-black text-emerald-700' }, 
+                                                    dashboardData.length > 0 ? (totalSessions / dashboardData.length).toFixed(1) : '0'),
+                                                React.createElement('div', { className: 'text-[10px] font-bold text-emerald-500 uppercase mt-1' }, t('dashboard.insights.avg_per_student'))),
+                                            (() => {
+                                                const totalFidelity = dashboardData.reduce((sum, s) => sum + (s.fidelityLog ? s.fidelityLog.length : 0), 0);
+                                                if (totalFidelity === 0) return null;
+                                                return React.createElement('div', { className: 'bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100' },
+                                                    React.createElement('div', { className: 'text-3xl font-black text-emerald-700' }, totalFidelity),
+                                                    React.createElement('div', { className: 'text-[10px] font-bold text-emerald-500 uppercase mt-1' }, t('dashboard.insights.fidelity_records')));
+                                            })()
+                                        )
+                                    ),
+                                    
+                                    allProbes.length > 2 && React.createElement('div', { className: 'bg-white p-6 rounded-2xl shadow-sm border border-slate-200' },
+                                        React.createElement('h4', { className: 'text-sm font-bold text-cyan-700 uppercase tracking-wider mb-4 flex items-center gap-2' },
+                                            '📈 Probe Trends Over Time'),
+                                        (() => {
+                                            const sorted = allProbes.filter(p => p.date && p.wcpm !== undefined).sort((a,b) => new Date(a.date) - new Date(b.date));
+                                            if (sorted.length < 2) return React.createElement('p', { className: 'text-sm text-slate-400 italic' }, 'Need at least 2 probes with dates to show trends.');
+                                            const maxWcpm = Math.max(...sorted.map(p => p.wcpm), 10);
+                                            const chartH = 160;
+                                            const barW = Math.max(20, Math.min(50, 600 / sorted.length));
+                                            return React.createElement('div', { className: 'space-y-3' },
+                                                React.createElement('div', { className: 'flex items-end gap-1 overflow-x-auto pb-2', style: { height: (chartH + 40) + 'px' } },
+                                                    ...sorted.map((p, i) => {
+                                                        const h = Math.max(4, (p.wcpm / maxWcpm) * chartH);
+                                                        const color = p.wcpm >= 100 ? '#059669' : p.wcpm >= 60 ? '#d97706' : '#dc2626';
+                                                        return React.createElement('div', { key: i, className: 'flex flex-col items-center', style: { width: barW + 'px' } },
+                                                            React.createElement('div', { className: 'text-[9px] font-bold mb-1', style: { color } }, p.wcpm),
+                                                            React.createElement('div', { style: { width: (barW - 4) + 'px', height: h + 'px', background: color, borderRadius: '4px 4px 0 0', transition: 'height 0.3s ease' } }),
+                                                            React.createElement('div', { className: 'text-[8px] text-slate-400 mt-1 text-center', style: { width: barW + 'px' } }, 
+                                                                p.date ? new Date(p.date).toLocaleDateString('en', { month: 'short', day: 'numeric' }) : '')
+                                                        );
+                                                    })
+                                                ),
+                                                React.createElement('div', { className: 'flex items-center gap-4 text-[10px] text-slate-500' },
+                                                    React.createElement('span', null, '🟢 ≥100 WCPM'),
+                                                    React.createElement('span', null, '🟡 60-99 WCPM'),
+                                                    React.createElement('span', null, '🔴 <60 WCPM'),
+                                                    React.createElement('span', { className: 'ml-auto font-bold' }, sorted.length + ' probes plotted')
+                                                )
+                                            );
+                                        })()
+                                    )
+                                );
+                            })()}
+                        </div>
+                     )}
+                     {activeTab === 'behavior' && (
+                         <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4">
+                             <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
+                                 <div className="text-5xl mb-4">🔍</div>
+                                 <h3 className="text-2xl font-black text-slate-800 mb-2">{t('behavior_lens.hub.title') || 'BehaviorLens'}</h3>
+                                 <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">{t('behavior_lens.hub.subtitle') || 'Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools.'}</p>
+                                 <button
+                                     onClick={() => { if (onOpenBehaviorLens) onOpenBehaviorLens(); }}
+                                     className="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all text-sm flex items-center gap-2 mx-auto"
+                                 >
+                                     🔍 {t('behavior_lens.hub.open_btn') || 'Open BehaviorLens'}
+                                 </button>
+                             </div>
+                         </div>
+                     )}
+                     {activeTab === 'stems' && (
+                         <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4">
+                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                                 <h3 className="text-lg font-black text-slate-800 flex items-center gap-2 mb-4">
+                                     🔬 STEM Station Activity
+                                 </h3>
+                                 {(() => {
+                                     const stations = JSON.parse(localStorage.getItem('alloflow_stem_stations') || '[]');
+                                     const xpLog = JSON.parse(localStorage.getItem('alloflow_stem_xp_log') || '[]');
+                                     if (stations.length === 0) {
+                                         return (
+                                             <div className="text-center py-8">
+                                                 <div className="text-4xl mb-3">📌</div>
+                                                 <p className="text-sm text-slate-500">No STEM Stations created yet.</p>
+                                                 <p className="text-xs text-slate-400 mt-1">Generate a lesson plan to get AI-recommended STEM tools.</p>
+                                             </div>
+                                         );
+                                     }
+                                     return (
+                                         <div className="space-y-4">
+                                             <div className="grid grid-cols-3 gap-4 mb-4">
+                                                 <div className="bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100">
+                                                     <div className="text-2xl font-black text-emerald-700">{stations.length}</div>
+                                                     <div className="text-xs text-emerald-600 font-bold mt-1">Stations Created</div>
+                                                 </div>
+                                                 <div className="bg-teal-50 rounded-xl p-4 text-center border border-teal-100">
+                                                     <div className="text-2xl font-black text-teal-700">
+                                                         {new Set(stations.flatMap(s => s.tools)).size}
+                                                     </div>
+                                                     <div className="text-xs text-teal-600 font-bold mt-1">Unique Tools Used</div>
+                                                 </div>
+                                                 <div className="bg-indigo-50 rounded-xl p-4 text-center border border-indigo-100">
+                                                     <div className="text-2xl font-black text-indigo-700">
+                                                         {xpLog.filter(e => e.stationId).length}
+                                                     </div>
+                                                     <div className="text-xs text-indigo-600 font-bold mt-1">Station XP Events</div>
+                                                 </div>
+                                             </div>
+                                             {stations.map((st) => {
+                                                 const stationXP = xpLog.filter(e => e.stationId === st.id);
+                                                 const totalXP = stationXP.reduce((s, e) => s + (e.xp || 0), 0);
+                                                 return (
+                                                     <div key={st.id} className="bg-slate-50 rounded-xl p-4 border border-slate-200 hover:border-emerald-300 transition-all">
+                                                         <div className="flex items-center justify-between mb-2">
+                                                             <div className="flex items-center gap-2">
+                                                                 <span className="text-lg">📌</span>
+                                                                 <h4 className="font-bold text-sm text-slate-800">{st.name}</h4>
+                                                                 <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                                                     {st.tools.length} tool{st.tools.length !== 1 ? 's' : ''}
+                                                                 </span>
+                                                             </div>
+                                                             <div className="flex items-center gap-3">
+                                                                 <span className="text-xs text-slate-500">
+                                                                     {new Date(st.createdAt).toLocaleDateString()}
+                                                                 </span>
+                                                                 <span className="bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                                                     {totalXP} XP
+                                                                 </span>
+                                                             </div>
+                                                         </div>
+                                                         <div className="flex flex-wrap gap-1.5 mt-2">
+                                                             {st.tools.map((toolId) => {
+                                                                 const registry = window.STEM_TOOL_REGISTRY || [];
+                                                                 const meta = registry.find(r => r.id === toolId);
+                                                                 return (
+                                                                     <span key={toolId} className="bg-white text-slate-600 text-[10px] font-medium px-2 py-1 rounded-lg border border-slate-200">
+                                                                         🧪 {meta ? meta.name : toolId}
+                                                                     </span>
+                                                                 );
+                                                             })}
+                                                         </div>
+                                                         {st.teacherNote && (
+                                                             <p className="text-xs text-slate-500 italic mt-2">"{st.teacherNote}"</p>
+                                                         )}
+                                                     </div>
+                                                 );
+                                             })}
+                                         </div>
+                                     );
+                                 })()}
+                             </div>
+                         </div>
+                     )}
+                    </>
+                 )}
+             </>
+         )}
+      </div>
+      {showClearConfirm && (
+          <div role="button" tabIndex={0} className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center animate-in fade-in duration-200" onClick={() => setShowClearConfirm(false)}>
+              <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 animate-in zoom-in-95 duration-200" role="dialog" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-3 mb-4">
+                      <div className="bg-red-100 p-3 rounded-full"><Trash2 size={24} className="text-red-600"/></div>
+                      <h3 className="text-lg font-bold text-slate-800">{t('dashboard.clear_all')}</h3>
+                  </div>
+                  <p className="text-slate-600 mb-6">{t('dashboard.clear_confirm')}</p>
+                  <div className="flex gap-3">
+                      <button
+                          onClick={() => setShowClearConfirm(false)}
+                          className="flex-1 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                      >
+                          {t('common.cancel')}
+                      </button>
+                      <button
+                          onClick={confirmClearAll}
+                          className="flex-1 py-2.5 px-4 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 transition-colors"
+                          autoFocus
+                      >
+                          {t('common.confirm')}
+                      </button>
+                  </div>
+              </div>
+          </div>
+      )}
+    </div>
+  );
+});
+// @section QUICKSTART_WIZARD — Onboarding wizard
+const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLookupStandards, onCallGemini, onWebSearch, addToast, isParentMode, isIndependentMode, isHelpMode, setIsHelpMode }) => {
+  const [step, setStep] = useState(1);
+  const { t } = useContext(LanguageContext);
+  const wizardRef = useRef(null);
+  useFocusTrap(wizardRef, isOpen);
+  const [localData, setLocalData] = useState({
+      topic: '',
+      grade: '3rd Grade',
+      materialType: 'text',
+      length: '500',
+      standards: [],
+      languages: [],
+      interests: [],
+      format: 'Standard Text',
+      sourceMode: '',
+      fetchedContent: '',
+      resourceMeta: null,
+      searchQuery: '',
+      searchOptions: [],
+      tone: 'Informative',
+      verification: false,
+      sourceCustomInstructions: '',
+      dokLevel: '',
+      vocabulary: '',
+      citationFormat: 'Links Only',
+  });
+  const [wizLangInput, setWizLangInput] = useState('');
+  const [wizInterestInput, setWizInterestInput] = useState('');
+  const [isFetching, setIsFetching] = useState(false);
+  const [urlInput, setUrlInput] = useState('');
+  const [standardMode, setStandardMode] = useState('ai');
+  const [standardInputValue, setStandardInputValue] = useState('');
+  const [aiStandardRegion, setAiStandardRegion] = useState('');
+  const [aiStandardQuery, setAiStandardQuery] = useState('');
+  const [suggestedStandards, setSuggestedStandards] = useState([]);
+  const [isFindingStandards, setIsFindingStandards] = useState(false);
+  const [learningGoal, setLearningGoal] = useState('');
+  const [region, setRegion] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const standardsListRef = useRef(null);
+  const wizardStepHelp = {
+    1: { title: 'Step 1: Grade Level', text: 'Select the grade level for your content. This determines vocabulary complexity, sentence structure, and concept depth. All generated materials will be calibrated to this level. You can always change it later in settings.' },
+    2: { title: 'Step 2: Source Material', text: 'Choose how to provide your lesson content. You can paste or type text directly, fetch content from a URL, upload a file, or let the AI generate content from a topic. Each option creates a rich source document for all tools to work from.' },
+    3: { title: 'Step 3: Standards & Customization', text: 'Align your content to academic standards (Common Core, NGSS, state-specific). You can search by AI or enter codes manually. Also set DOK level, output format, writing tone, languages, and student interests for personalized content.' },
+    4: { title: 'Step 4: Review & Personalize', text: 'Final review of your settings. Add vocabulary terms, a learning goal, citation preferences, and any custom instructions for the AI. Click Finish to generate your lesson with all configured options applied.' },
+  };
+  if (!isOpen) return null;
+  const handleSkip = () => {
+    safeSetItem('allo_wizard_completed', 'true');
+    setIsHelpMode(false);
+    onClose();
+  };
+  const handleNext = () => {
+    if (step === 1 && !localData.grade) {
+        return;
+    }
+    setStep(prev => prev + 1);
+  };
+  const handleFindStandards = async () => {
+      if (!aiStandardQuery.trim()) {
+          if (addToast) addToast(t('standards.toast_describe_skill'), "info");
+          return;
+      }
+      if (!onLookupStandards) return;
+      setIsFindingStandards(true);
+      try {
+          const results = await onLookupStandards(localData.grade, aiStandardQuery, aiStandardRegion);
+          if (results && Array.isArray(results) && results.length > 0) {
+              setSuggestedStandards(prev => {
+                  const existingCodes = new Set(prev.map(s => s.code));
+                  const newItems = results.filter(r => !existingCodes.has(r.code));
+                  return [...newItems, ...prev];
+              });
+              setTimeout(() => {
+                  if (standardsListRef.current) {
+                      standardsListRef.current.scrollTop = 0;
+                  }
+              }, 100);
+              setAiStandardQuery('');
+          } else {
+             if (addToast) addToast(t('standards.toast_no_standards'), "info");
+          }
+      } catch (e) {
+          warnLog("Standards search error:", e);
+          if (addToast) addToast(t('standards.toast_search_failed'), "error");
+      } finally {
+          setIsFindingStandards(false);
+      }
+  };
+  const handleAddStandard = () => {
+      if (!standardInputValue.trim()) return;
+      if (localData.standards.length >= 3) {
+          if (addToast) addToast(t('standards.toast_max_limit'), "error");
+          return;
+      }
+      if (localData.standards.includes(standardInputValue.trim())) {
+          if (addToast) addToast(t('standards.toast_duplicate'), "info");
+          setStandardInputValue('');
+          return;
+      }
+      setLocalData(prev => ({ ...prev, standards: [...prev.standards, standardInputValue.trim()] }));
+      setStandardInputValue('');
+      if (addToast) addToast(t('standards.toast_added'), "success");
+  };
+  const handleRemoveStandard = (index) => {
+      setLocalData(prev => ({ ...prev, standards: prev.standards.filter((_, i) => i !== index) }));
+  };
+  const addWizLanguage = () => {
+      const val = wizLangInput.trim();
+      if (val && !localData.languages.includes(val) && localData.languages.length < 4) {
+          setLocalData(prev => ({ ...prev, languages: [...prev.languages, val] }));
+          setWizLangInput('');
+      }
+  };
+  const addCommonLanguage = (val) => {
+       if (val && !localData.languages.includes(val) && localData.languages.length < 4) {
+          setLocalData(prev => ({ ...prev, languages: [...prev.languages, val] }));
+      }
+  };
+  const removeWizLanguage = (lang) => {
+      setLocalData(prev => ({ ...prev, languages: prev.languages.filter(l => l !== lang) }));
+  };
+  const addWizInterest = () => {
+      const val = wizInterestInput.trim();
+      if (val && !localData.interests.includes(val) && localData.interests.length < 5) {
+          setLocalData(prev => ({ ...prev, interests: [...prev.interests, val] }));
+          setWizInterestInput('');
+      }
+  };
+  const removeWizInterest = (interest) => {
+      setLocalData(prev => ({ ...prev, interests: prev.interests.filter(i => i !== interest) }));
+  };
+  const handleWizardUrlFetch = async (url) => {
+      if (!url || !url.trim()) return;
+      setIsFetching(true);
+      try {
+          const content = await fetchAndCleanUrl(url, onCallGemini, addToast);
+          if (content) {
+              setLocalData(prev => ({ ...prev, fetchedContent: content }));
+          }
+      } catch (err) {
+          warnLog("Wizard URL Fetch Error:", err);
+          if (addToast && err.message) addToast(err.message, "error");
+      } finally {
+          setIsFetching(false);
+      }
+  };
+  const handleWizardAiSearch = async () => {
+      if (!localData.searchQuery.trim()) return;
+      setIsFetching(true);
+      setLocalData(prev => ({ ...prev, searchOptions: [], fetchedContent: '', resourceMeta: null }));
+      try {
+          let options = [];
+
+          // ── For local backends: use webSearchProvider directly ──
+          if (onWebSearch) {
+              try {
+                  const searchResults = await onWebSearch(`${localData.searchQuery} ${localData.grade} educational resource`);
+                  if (searchResults && searchResults.length > 0) {
+                      options = searchResults.slice(0, 5).map(r => ({
+                          url: r.url,
+                          title: r.title,
+                          description: r.snippet || t('wizard.google_search_result', { title: r.title })
+                      }));
+                  }
+              } catch (searchErr) {
+                  console.warn('[Wizard] Web search provider failed, falling back to Gemini grounding:', searchErr.message);
+              }
+          }
+
+          // ── Fallback: Gemini grounding search ──
+          if (options.length === 0) {
+              const prompt = `Find high-quality, text-based educational resources about: ${localData.searchQuery}. Target audience: ${localData.grade}.`;
+              const result = await onCallGemini(prompt, false, true);
+              if (result && result.groundingMetadata?.groundingChunks) {
+                   const rawChunks = result.groundingMetadata.groundingChunks;
+                   options = rawChunks
+                    .filter(chunk => chunk.web?.uri && chunk.web?.title)
+                    .map(chunk => ({
+                        url: chunk.web.uri,
+                        title: chunk.web.title,
+                        description: t('wizard.google_search_result', { title: chunk.web.title })
+                    }));
+              }
+          }
+
+          const uniqueOptions = Array.from(
+              new Map(options.map(item => [item.url, item])).values()
+          ).slice(0, 5);
+          if (uniqueOptions.length > 0) {
+              setLocalData(prev => ({ ...prev, searchOptions: uniqueOptions }));
+              if (addToast) addToast(t('wizard.resources_found', { count: uniqueOptions.length }), "success");
+          } else {
+              if (addToast) addToast(t('toasts.no_sources_found'), "warning");
+          }
+      } catch (e) {
+          if (addToast) addToast(t('toasts.search_failed'), "error");
+      } finally {
+          setIsFetching(false);
+      }
+  };
+  const selectSearchOption = async (option) => {
+      if (!option || !option.url) return;
+      if (isGoogleRedirect(option.url)) {
+          window.open(option.url, '_blank');
+          setLocalData(prev => ({ ...prev, sourceMode: 'url' }));
+          setUrlInput('');
+          if (addToast) addToast(t('toasts.copy_url_paste'), "info");
+          return;
+      }
+      setUrlInput(option.url);
+      setLocalData(prev => ({ ...prev, sourceMode: 'url' }));
+      await handleWizardUrlFetch(option.url);
+      setLocalData(prev => ({ ...prev, resourceMeta: { title: option.title, description: option.description } }));
+  };
+  const handleGoalSearch = async () => {
+      if (!learningGoal.trim() || !onLookupStandards) return;
+      setIsSearching(true);
+      try {
+          const results = await onLookupStandards(localData.grade, learningGoal, region);
+          if (results && Array.isArray(results)) {
+              setSuggestedStandards(results);
+              setTimeout(() => {
+                  if (standardsListRef.current) standardsListRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }, 100);
+          }
+      } catch (e) { warnLog("Unhandled error:", e); } finally { setIsSearching(false); }
+  };
+  const toggleStandard = (stdString) => {
+      setLocalData(prev => {
+          const current = prev.standards || [];
+          if (current.includes(stdString)) return { ...prev, standards: current.filter(s => s !== stdString) };
+          return { ...prev, standards: [...current, stdString] };
+      });
+  };
+  const grades = [
+      { label: t('grades_short.k'), value: 'Kindergarten' },
+      { label: t('grades_short.g1'), value: '1st Grade' },
+      { label: t('grades_short.g2'), value: '2nd Grade' },
+      { label: t('grades_short.g3'), value: '3rd Grade' },
+      { label: t('grades_short.g4'), value: '4th Grade' },
+      { label: t('grades_short.g5'), value: '5th Grade' },
+      { label: t('grades_short.g6'), value: '6th Grade' },
+      { label: t('grades_short.g7'), value: '7th Grade' },
+      { label: t('grades_short.g8'), value: '8th Grade' },
+      { label: t('grades_short.g9'), value: '9th Grade' },
+      { label: t('grades_short.g10'), value: '10th Grade' },
+      { label: t('grades_short.g11'), value: '11th Grade' },
+      { label: t('grades_short.g12'), value: '12th Grade' },
+      { label: t('grades_short.college'), value: 'College' },
+  ];
+  return (
+    <div
+        ref={wizardRef}
+        role="dialog"
+        aria-modal="true"
+        className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+    >
+      <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 border border-slate-200 max-h-[90vh]">
+          <div className="bg-slate-50 px-8 py-6 border-b border-slate-100 flex justify-between items-center shrink-0">
+              <div>
+                  <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
+                    <Sparkles className="text-yellow-500 fill-current" size={20} /> {t('wizard.title')}
+                  </h2>
+                  <div className="flex gap-1 mt-2">
+                      {[1, 2, 3, 4].map(s => (
+                          <div key={s} className={`h-1.5 w-5 rounded-full transition-colors ${step >= s ? 'bg-indigo-600' : 'bg-slate-200'}`}></div>
+                      ))}
+                  </div>
+              </div>
+              <div className="flex items-center gap-4">
+                  <button
+                      aria-label={t('common.skip')}
+                    data-help-ignore="true"
+                    onClick={handleSkip}
+                    className="text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors uppercase tracking-wider"
+                  >
+                    {t('common.skip')}
+                  </button>
+                  <button data-help-ignore="true" onClick={() => { setIsHelpMode(false); onClose(); }} className="p-2 rounded-full text-slate-500 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close_wizard')}><X size={24}/></button>
+              </div>
+          </div>
+          {isHelpMode && wizardStepHelp[step] && (
+            <div className="mx-8 mt-4 mb-0 p-4 bg-indigo-50 border border-indigo-200 rounded-xl animate-in slide-in-from-top-2 duration-200">
+              <div className="flex items-start gap-3">
+                <HelpCircle size={18} className="text-indigo-500 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-bold text-sm text-indigo-800">{wizardStepHelp[step].title}</p>
+                  <p className="text-xs text-indigo-700 mt-1 leading-relaxed">{wizardStepHelp[step].text}</p>
+                  <p className="text-xs text-indigo-500 mt-2 italic">💡 Click any element below for a detailed explanation</p>
+                </div>
+                <button onClick={() => setIsHelpMode(false)} className="text-indigo-400 hover:text-indigo-600 shrink-0 p-1"><X size={14}/></button>
+              </div>
+            </div>
+          )}
+          <div className="p-8 overflow-y-auto custom-scrollbar">
+              {step === 1 && (
+                  <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                      <div>
+                          <label className="block text-lg font-bold text-slate-700 mb-3">{t('wizard.global_context')}</label>
+                          <p className="text-slate-500 mb-4 text-sm">{t('wizard.grade_helper')}</p>
+                          <div className="grid grid-cols-4 gap-3">
+                              {grades.map((g) => (
+                                  <button
+                                    key={g.value}
+                                    data-help-key="wizard_grade_option"
+                                    onClick={() => setLocalData(prev => ({ ...prev, grade: g.value }))}
+                                    className={`py-3 px-2 rounded-xl border-2 font-bold transition-all text-sm ${localData.grade === g.value ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600 hover:border-indigo-500 hover:bg-indigo-50 hover:text-indigo-700'}`}
+                                  >
+                                    {g.label}
+                                  </button>
+                              ))}
+                          </div>
+                      </div>
+                      {!isParentMode && (
+                      <div className="border-t border-slate-100 pt-4">
+                          <label className="block text-lg font-bold text-slate-700 mb-2">
+                          {isIndependentMode ? t('wizard.learning_goals') : t('wizard.learning_goal_header')}
+                          </label>
+                          <p className="text-slate-500 mb-4 text-sm">{t('wizard.learning_goal_desc')}</p>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                              {!isIndependentMode && (
+                              <input aria-label={t('common.enter_region')}
+                                  type="text"
+                                  value={region}
+                                  onChange={(e) => setRegion(e.target.value)}
+                                  data-help-key="wizard_region_input"
+                                  placeholder={t('standards.region_placeholder')}
+                                  className="w-full sm:w-1/3 text-base p-3 border-2 border-indigo-100 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-all"
+                              />
+                              )}
+                              <div className="flex-grow flex gap-2">
+                                  <input aria-label={t('common.enter_learning_goal')}
+                                    type="text"
+                                    value={learningGoal}
+                                    onChange={(e) => setLearningGoal(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleGoalSearch()}
+                                    className="w-full text-base p-3 border-2 border-indigo-100 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-all"
+                                    data-help-key="wizard_growth_goal_input"
+                                    placeholder={isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.learning_goal_placeholder')}
+                                  />
+                                  <button aria-label={t('common.search_learning_standards')}
+                                    data-help-key="wizard_find_standard_btn"
+                                    onClick={handleGoalSearch}
+                                    disabled={isSearching || !learningGoal.trim()}
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 rounded-xl shadow-md transition-all flex items-center gap-2 disabled:opacity-50 shrink-0"
+                                  >
+                                    {isSearching ? <RefreshCw size={20} className="animate-spin"/> : <Search size={20}/>}
+                                    {t('wizard.find_button')}
+                                  </button>
+                              </div>
+                          </div>
+                      </div>
+                      )}
+                      {suggestedStandards.length > 0 && (
+                          <div ref={standardsListRef} className="space-y-2 animate-in slide-in-from-top-2">
+                              <label className="block text-sm font-bold text-slate-700">{t('wizard.standards_selection_label')}</label>
+                              <div className="max-h-[200px] overflow-y-auto custom-scrollbar p-1 border border-slate-100 rounded-xl bg-slate-50/50">
+                                  {suggestedStandards.map((std, i) => {
+                                      const val = `${std.code}: ${std.description}`;
+                                      const isSelected = localData.standards.includes(val);
+                                      return (
+                                          <div
+                                            key={i}
+                                            data-help-key="wizard_standard_select"
+                                            onClick={() => toggleStandard(val)}
+                                            className={`p-3 rounded-xl border-2 cursor-pointer transition-all mb-2 ${isSelected ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 bg-white hover:border-indigo-300'}`}
+                                          >
+                                              <div className="flex items-start gap-3">
+                                                  <div className={`w-5 h-5 rounded flex items-center justify-center border ${isSelected ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300 bg-white'}`}>
+                                                      {isSelected && <CheckCircle size={14}/>}
+                                                  </div>
+                                                  <div>
+                                                      {!isIndependentMode && (
+                                                          <div className="font-bold text-indigo-900 text-xs">{std.code}</div>
+                                                      )}
+                                                      <div className={`${isIndependentMode ? 'text-sm font-medium text-slate-800' : 'text-xs text-slate-600'} leading-snug`}>{std.description}</div>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                      );
+                                  })}
+                              </div>
+                              <p className="text-xs text-slate-500 text-right">{localData.standards.length} {t('wizard.selected_counter')}</p>
+                          </div>
+                      )}
+                  </div>
+              )}
+              {step === 2 && (
+                  <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                      <div>
+                          <label className="block text-lg font-bold text-slate-700 mb-2">{t('wizard.source_material')}</label>
+                          <p className="text-slate-500 mb-6 text-sm">{t('wizard.source_desc')}</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <button data-help-key="wizard_upload_source"
+                                  aria-label={t('common.upload')}
+                                onClick={() => {
+                                    setLocalData(prev => ({ ...prev, sourceMode: 'file' }));
+                                    setStep(3);
+                                }}
+                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all group bg-white active:scale-95 h-40"
+                              >
+                                <div className="bg-indigo-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white">
+                                    <Upload size={32} className="text-indigo-600"/>
+                                </div>
+                                <span className="font-bold text-slate-700 group-hover:text-indigo-700 text-lg">{t('wizard.upload_file')}</span>
+                                <span className="text-xs text-slate-500 mt-1">{t('wizard.upload_desc')}</span>
+                              </button>
+                              <button data-help-key="wizard_url_source"
+                                onClick={() => {
+                                    setLocalData(prev => ({ ...prev, sourceMode: 'url' }));
+                                    setStep(3);
+                                }}
+                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all group bg-white active:scale-95 h-40"
+                              >
+                                <div className="bg-blue-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white">
+                                    <Link size={32} className="text-blue-600"/>
+                                </div>
+                                <span className="font-bold text-slate-700 group-hover:text-blue-700 text-lg">{t('wizard.paste_url')}</span>
+                                <span className="text-xs text-slate-500 mt-1">{t('wizard.url_desc')}</span>
+                              </button>
+                              <button data-help-key="wizard_search_source"
+                                onClick={() => {
+                                    setLocalData(prev => ({ ...prev, sourceMode: 'search' }));
+                                    setStep(3);
+                                }}
+                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition-all group bg-white active:scale-95 h-40"
+                              >
+                                <div className="bg-teal-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white">
+                                    <Globe size={32} className="text-teal-600"/>
+                                </div>
+                                <span className="font-bold text-slate-700 group-hover:text-teal-700 text-lg">{t('wizard.ai_search')}</span>
+                                <span className="text-xs text-slate-500 mt-1">{t('wizard.search_desc')}</span>
+                              </button>
+                              <button data-help-key="wizard_generate_source"
+                                  aria-label={t('common.generate')}
+                                onClick={() => {
+                                    setLocalData(prev => ({ ...prev, sourceMode: 'generate' }));
+                                    setStep(3);
+                                }}
+                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-purple-500 hover:bg-purple-50 transition-all group bg-white active:scale-95 h-40"
+                              >
+                                <div className="bg-purple-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white">
+                                    <Sparkles size={32} className="text-purple-600 fill-current"/>
+                                </div>
+                                <span className="font-bold text-slate-700 group-hover:text-purple-700 text-lg">{t('wizard.generate_scratch')}</span>
+                                <span className="text-xs text-slate-500 mt-1">{t('wizard.generate_desc')}</span>
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+              )}
+              {step === 3 && (
+                  <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                      {localData.sourceMode === 'url' && (
+                          <div>
+                              <label className="block text-lg font-bold text-slate-700 mb-2">{t('wizard.import_web')}</label>
+                              <p className="text-slate-500 mb-4 text-sm">{t('wizard.url_helper')}</p>
+                              <div className="flex gap-2 mb-6">
+                                  <input aria-label={t('common.enter_url_input')}
+                                      type="url"
+                                      value={urlInput}
+                                      onChange={(e) => setUrlInput(e.target.value)}
+                                      data-help-key="wizard_url_input"
+                                      placeholder={t('wizard.url_placeholder')}
+                                      className="flex-grow p-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/30 outline-none transition-all"
+                                      onKeyDown={(e) => e.key === 'Enter' && handleWizardUrlFetch(urlInput)}
+                                      autoFocus
+                                  />
+                                  <button
+                                      aria-label={t('common.refresh')}
+                                      data-help-key="wizard_url_fetch_btn"
+                                      onClick={() => handleWizardUrlFetch(urlInput)}
+                                      disabled={isFetching || !urlInput}
+                                      className="bg-blue-600 text-white font-bold px-6 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2 shadow-md"
+                                  >
+                                      {isFetching ? <RefreshCw size={20} className="animate-spin"/> : <Download size={20}/>}
+                                      {t('wizard.fetch_action')}
+                                  </button>
+                              </div>
+                              {localData.fetchedContent && (
+                                  <div className="bg-green-50 border border-green-200 rounded-xl p-5 animate-in fade-in slide-in-from-top-2 shadow-sm">
+                                      <div className="flex items-center gap-2 text-green-800 font-bold mb-2">
+                                          <CheckCircle size={20} className="fill-green-100 text-green-600" /> {t('wizard.content_loaded')}
+                                      </div>
+                                      <p className="text-xs text-green-700 mb-4 line-clamp-3 opacity-80 bg-white/50 p-2 rounded border border-green-100">
+                                          {localData.fetchedContent.substring(0, 300)}...
+                                      </p>
+                                      <button
+                                          aria-label={t('common.continue')}
+                                          data-help-key="wizard_content_next_btn"
+                                          onClick={() => setStep(4)}
+                                          className="w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-md"
+                                      >
+                                          {t('common.next')} <ArrowRight size={18} />
+                                      </button>
+                                  </div>
+                              )}
+                          </div>
+                      )}
+                      {localData.sourceMode === 'search' && (
+                          <div>
+                              <label className="block text-lg font-bold text-slate-700 mb-2">{t('wizard.ai_search')}</label>
+                              <p className="text-slate-500 mb-4 text-sm">{t('wizard.search_helper')}</p>
+                              <div className="flex gap-2 mb-6">
+                                  <input aria-label={t('common.enter_local_data')}
+                                      type="text"
+                                      value={localData.searchQuery}
+                                      onChange={(e) => setLocalData(prev => ({ ...prev, searchQuery: e.target.value }))}
+                                      data-help-key="wizard_search_input"
+                                      placeholder={t('wizard.search_placeholder')}
+                                      className="flex-grow p-3 border-2 border-slate-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-500/30 outline-none transition-all"
+                                      onKeyDown={(e) => e.key === 'Enter' && handleWizardAiSearch()}
+                                      autoFocus
+                                  />
+                                  <button aria-label={t('common.search_with_ai')}
+                                      data-help-key="wizard_search_btn"
+                                      onClick={handleWizardAiSearch}
+                                      disabled={isFetching || !localData.searchQuery}
+                                      className="bg-teal-600 text-white font-bold px-6 rounded-xl hover:bg-teal-700 disabled:opacity-50 transition-colors flex items-center gap-2 shadow-md"
+                                  >
+                                      {isFetching ? <RefreshCw size={20} className="animate-spin"/> : <Search size={20}/>}
+                                      {isFetching ? t('wizard.finding_button') : t('wizard.find_button')}
+                                  </button>
+                              </div>
+                              {!localData.fetchedContent && localData.searchOptions && localData.searchOptions.length > 0 && (
+                                  <div className="space-y-3 mb-6 animate-in slide-in-from-bottom-4">
+                                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('wizard.select_resource')}</h4>
+                                      {localData.searchOptions.map((opt, idx) => (
+                                          <div key={idx} className="relative group">
+                                            <button
+                                                aria-label={t('common.refresh')}
+                                                data-help-key="wizard_search_result_select"
+                                                onClick={() => selectSearchOption(opt)}
+                                                className="w-full text-left p-4 pr-12 rounded-xl border-2 border-slate-100 hover:border-teal-500 hover:bg-teal-50 transition-all bg-white shadow-sm"
+                                            >
+                                                <div className="font-bold text-slate-700 group-hover:text-teal-800 mb-1 text-sm">{opt.title || t('wizard.untitled_resource')}</div>
+                                                <div className="text-xs text-slate-500 group-hover:text-teal-600 line-clamp-2">{opt.description || t('wizard.no_description')}</div>
+                                                <div className="text-[10px] text-slate-500 mt-2 truncate max-w-xs">{opt.url}</div>
+                                                {isFetching && (
+                                                    <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
+                                                        <RefreshCw size={20} className="animate-spin text-teal-600"/>
+                                                    </div>
+                                                )}
+                                            </button>
+                                            <a
+                                                href={opt.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setLocalData(prev => ({ ...prev, sourceMode: 'url' }));
+                                                    setUrlInput('');
+                                                    if (addToast) addToast(t('wizard.link_opened_toast'), "info");
+                                                }}
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-500 hover:text-teal-600 hover:bg-teal-100 rounded-full transition-colors z-20"
+                                                data-help-key="wizard_search_result_link"
+                                                title={t('wizard.open_link_title')}
+                                            >
+                                                <ExternalLink size={16} />
+                                            </a>
+                                          </div>
+                                      ))}
+                                  </div>
+                              )}
+                              {localData.fetchedContent && (
+                                  <div className="bg-green-50 border border-green-200 rounded-xl p-5 animate-in fade-in slide-in-from-top-2 shadow-sm">
+                                      <div className="flex items-center gap-2 text-green-800 font-bold mb-2">
+                                          <CheckCircle size={20} className="fill-green-100 text-green-600" /> {t('wizard.content_loaded')}
+                                      </div>
+                                      {localData.resourceMeta && (
+                                          <div className="mb-3 pb-3 border-b border-green-200/50">
+                                              <h4 className="font-bold text-green-900 text-sm">{localData.resourceMeta.title}</h4>
+                                              <p className="text-xs text-green-700 italic">{localData.resourceMeta.description}</p>
+                                          </div>
+                                      )}
+                                      <p className="text-xs text-green-700 mb-4 line-clamp-3 opacity-80 bg-white/50 p-2 rounded border border-green-100">
+                                          {localData.fetchedContent.substring(0, 300)}...
+                                      </p>
+                                      <div className="flex gap-2">
+                                          <button
+                                              aria-label={t('common.continue')}
+                                            data-help-key="wizard_back_results_btn"
+                                            onClick={() => setLocalData(prev => ({ ...prev, fetchedContent: '', resourceMeta: null }))}
+                                            className="px-4 py-3 text-xs font-bold text-slate-500 hover:text-slate-700 bg-white border border-slate-200 rounded-xl"
+                                          >
+                                              {t('wizard.back_to_results')}
+                                          </button>
+                                          <button
+                                              aria-label={t('common.continue')}
+                                              onClick={() => setStep(4)}
+                                              className="flex-grow bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-md"
+                                          >
+                                              {t('common.next')} <ArrowRight size={18} />
+                                          </button>
+                                      </div>
+                                  </div>
+                              )}
+                          </div>
+                      )}
+                      {localData.sourceMode === 'generate' && (
+                          <div>
+                              <label className="block text-lg font-bold text-slate-700 mb-2">{t('wizard.generate_scratch_title')}</label>
+                              <p className="text-slate-500 mb-6 text-sm">{t('wizard.generate_scratch_helper')}</p>
+                              <div className="space-y-4">
+                                  <div>
+                                      <label className="block text-xs font-bold text-slate-500 uppercase mb-1">{t('wizard.input_topic_label')}</label>
+                                      <div className="relative">
+                                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                              <Type size={14} className="text-slate-500" />
+                                          </div>
+                                          <input
+                                              type="text"
+                                              value={localData.topic}
+                                              onChange={(e) => setLocalData(prev => ({ ...prev, topic: e.target.value }))}
+                                              placeholder={t('wizard.topic_placeholder')}
+                                              className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-all"
+                                              autoFocus
+                                              data-help-key="wizard_topic_input"
+                                              aria-label={t('wizard.input_topic_label')}
+                                          />
+                                      </div>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                          <label className="block text-xs font-bold text-slate-500 uppercase mb-1">{t('wizard.input_tone_label')}</label>
+                                          <div className="relative">
+                                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                  <MessageSquare size={14} className="text-slate-500" />
+                                              </div>
+                                              <select
+                                                  value={localData.tone}
+                                                  onChange={(e) => setLocalData(prev => ({ ...prev, tone: e.target.value }))}
+                                                  className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-all bg-white"
+                                                  data-help-key="wizard_tone_select"
+                                                  aria-label={t('wizard.input_tone_label')}
+                                              >
+                                                  <option value="Informative">{t('wizard.tones.informative')}</option>
+                                                  <option value="Narrative">{t('wizard.tones.narrative')}</option>
+                                                  <option value="Persuasive">{t('wizard.tones.persuasive')}</option>
+                                                  <option value="Humorous">{t('wizard.tones.humorous')}</option>
+                                                  <option value="Step-by-Step">{t('wizard.tones.procedural')}</option>
+                                              </select>
+                                          </div>
+                                      </div>
+                                      <div>
+                                          <label className="block text-xs font-bold text-slate-500 uppercase mb-1">{t('wizard.input_length_label')}</label>
+                                          <div className="relative">
+                                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                  <AlignJustify size={14} className="text-slate-500" />
+                                              </div>
+                                              <select
+                                                  value={localData.length}
+                                                  onChange={(e) => setLocalData(prev => ({ ...prev, length: e.target.value }))}
+                                                  className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-all bg-white"
+                                                  data-help-key="wizard_length_select"
+                                                  aria-label={t('wizard.input_length_label')}
+                                              >
+                                                  <option value="200">{t('wizard.lengths.short')}</option>
+                                                  <option value="500">{t('wizard.lengths.medium')}</option>
+                                                  <option value="800">{t('wizard.lengths.long')}</option>
+                                                  <option value="1200">{t('wizard.lengths.extended')}</option>
+                                                  <option value="2000">{t('wizard.lengths.deep')}</option>
+                                              </select>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                          <label className="block text-xs font-bold text-slate-500 uppercase mb-1">{t('wizard.input_level_label')}</label>
+                                          <div className="relative">
+                                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                  <GraduationCap size={14} className="text-slate-500" />
+                                              </div>
+                                              <select
+                                                  value={localData.grade}
+                                                  onChange={(e) => setLocalData(prev => ({ ...prev, grade: e.target.value }))}
+                                                  className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-all bg-white"
+                                                  data-help-key="wizard_level_select"
+                                                  aria-label={t('common.target_level')}
+                                              >
+                                                  <option value="Kindergarten">{t('grades.k')}</option>
+                                                  <option value="1st Grade">{t('grades.g1')}</option>
+                                                  <option value="2nd Grade">{t('grades.g2')}</option>
+                                                  <option value="3rd Grade">{t('grades.g3')}</option>
+                                                  <option value="4th Grade">{t('grades.g4')}</option>
+                                                  <option value="5th Grade">{t('grades.g5')}</option>
+                                                  <option value="6th Grade">{t('grades.g6')}</option>
+                                                  <option value="7th Grade">{t('grades.g7')}</option>
+                                                  <option value="8th Grade">{t('grades.g8')}</option>
+                                                  <option value="9th Grade">{t('grades.g9')}</option>
+                                                  <option value="10th Grade">{t('grades.g10')}</option>
+                                                  <option value="11th Grade">{t('grades.g11')}</option>
+                                                  <option value="12th Grade">{t('grades.g12')}</option>
+                                                  <option value="College">{t('grades.college')}</option>
+                                                  <option value="Graduate Level">{t('grades.grad')}</option>
+                                              </select>
+                                          </div>
+                                      </div>
+                                      {!isParentMode && (
+                                      <div>
+                                          <label className="block text-xs font-bold text-slate-500 uppercase mb-1">{t('wizard.input_dok_label')}</label>
+                                          <div className="relative">
+                                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                  <Brain size={14} className="text-slate-500" />
+                                              </div>
+                                              <select
+                                                  value={localData.dokLevel}
+                                                  onChange={(e) => setLocalData(prev => ({ ...prev, dokLevel: e.target.value }))}
+                                                  className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-all bg-white"
+                                                  data-help-key="wizard_dok_select"
+                                                  aria-label={t('wizard.aria_dok_label')}
+                                              >
+                                                  <option value="">{t('wizard.dok_levels.none')}</option>
+                                                  <option value="Level 1: Recall & Reproduction">{t('wizard.dok_levels.l1')}</option>
+                                                  <option value="Level 2: Skill/Concept">{t('wizard.dok_levels.l2')}</option>
+                                                  <option value="Level 3: Strategic Thinking">{t('wizard.dok_levels.l3')}</option>
+                                                  <option value="Level 4: Extended Thinking">{t('wizard.dok_levels.l4')}</option>
+                                              </select>
+                                          </div>
+                                      </div>
+                                      )}
+                                  </div>
+                                  {!isParentMode && (
+                                    <div className="bg-slate-50 p-2 rounded-lg border border-slate-200">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="text-xs text-slate-600 font-bold flex items-center gap-1">
+                                                <CheckCircle size={12} className="text-green-600"/> {isIndependentMode ? t('wizard.learning_goals') : t('wizard.target_standard')}
+                                            </label>
+                                            {!isIndependentMode && (
+                                            <div className="flex bg-white rounded-md border border-slate-200 p-0.5 shadow-sm">
+                                                <button
+                                                    data-help-key="wizard_std_mode_ai"
+                                                    onClick={() => setStandardMode('ai')}
+                                                    className={`px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-500 hover:text-slate-600'}`}
+                                                >
+                                                    {t('standards.ai_match')}
+                                                </button>
+                                                <button
+                                                    data-help-key="wizard_std_mode_manual"
+                                                    onClick={() => setStandardMode('manual')}
+                                                    className={`px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${standardMode === 'manual' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-500 hover:text-slate-600'}`}
+                                                >
+                                                    {t('standards.manual')}
+                                                </button>
+                                            </div>
+                                            )}
+                                        </div>
+                                        {standardMode === 'ai' ? (
+                                            <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                <div className="flex gap-2">
+                                                    {!isIndependentMode && (
+                                                    <input aria-label={t('common.common_standards_region_placeholder')}
+                                                        type="text"
+                                                        value={aiStandardRegion}
+                                                        onChange={(e) => setAiStandardRegion(e.target.value)}
+                                                        placeholder={t('common.standards_region_placeholder')}
+                                                        className="w-1/3 text-xs border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
+                                                    />
+                                                    )}
+                                                    <input aria-label={t('common.enter_ai_standard_query')}
+                                                        type="text"
+                                                        value={aiStandardQuery}
+                                                        onChange={(e) => setAiStandardQuery(e.target.value)}
+                                                        onKeyDown={(e) => e.key === 'Enter' && handleFindStandards()}
+                                                        data-help-key="standards_query_input" placeholder={isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.skill_search_placeholder')}
+                                                        className="flex-grow text-xs border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
+                                                    />
+                                                    <button
+                                                        onClick={handleFindStandards} data-help-key="standards_search_btn"
+                                                        disabled={isFindingStandards || !aiStandardQuery.trim()}
+                                                        className="bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 transition-colors shadow-sm"
+                                                        title={t('standards.search_button_title')}
+                                                        aria-label={t('standards.search_button_title')}
+                                                    >
+                                                        {isFindingStandards ? <RefreshCw size={14} className="animate-spin"/> : <Search size={14}/>}
+                                                    </button>
+                                                </div>
+                                                {suggestedStandards.length > 0 && (
+                                                    <div ref={standardsListRef} className="max-h-32 overflow-y-auto custom-scrollbar border border-slate-200 rounded bg-white divide-y divide-slate-100 shadow-inner">
+                                                        {suggestedStandards.map((std, idx) => (
+                                                            <button
+                                                                key={idx}
+                                                                onClick={() => {
+                                                                    const val = `${std.code}: ${std.description}`;
+                                                                    if (localData.standards.length < 3 && !localData.standards.includes(val)) {
+                                                                        setLocalData(prev => ({ ...prev, standards: [...prev.standards, val] }));
+                                                                        if(addToast) addToast(`Added ${std.code}`, "success");
+                                                                    } else if (localData.standards.length >= 3) {
+                                                                        if(addToast) addToast(t('standards.toast_max_limit'), "error");
+                                                                    }
+                                                                }}
+                                                                className="w-full text-left p-2 hover:bg-indigo-50 transition-colors group flex flex-col gap-1"
+                                                            >
+                                                                <div className="flex justify-between items-start gap-1">
+                                                                    {!isIndependentMode && (
+                                                                        <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100">{std.code}</span>
+                                                                    )}
+                                                                    <span className="text-[9px] text-slate-500 uppercase ml-auto">{std.framework}</span>
+                                                                </div>
+                                                                <p className="text-[10px] text-slate-600 leading-snug line-clamp-2 group-hover:text-indigo-900">
+                                                                    {std.description}
+                                                                </p>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                {suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && (
+                                                    <div className="text-[10px] text-slate-500 italic text-center p-1">
+                                                        {t('standards.press_search_hint')}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="flex gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                <input aria-label={t('common.enter_standard_input_value')}
+                                                    type="text"
+                                                    value={standardInputValue}
+                                                    onChange={(e) => setStandardInputValue(e.target.value)}
+                                                    onKeyDown={(e) => e.key === 'Enter' && handleAddStandard()}
+                                                    data-help-key="wizard_std_manual_input"
+                                                    placeholder={t('standards.manual_placeholder')}
+                                                    className="flex-grow text-xs border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
+                                                />
+                                                <button
+                                                    aria-label={t('common.add')}
+                                                    onClick={handleAddStandard}
+                                                    disabled={!standardInputValue.trim() || localData.standards.length >= 3}
+                                                    className="bg-indigo-100 text-indigo-700 p-1.5 rounded hover:bg-indigo-200 transition-colors disabled:opacity-50"
+                                                    data-help-key="wizard_std_manual_add_btn"
+                                                    title={t('standards.add_standard')}
+                                                >
+                                                    <Plus size={16} />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                  )}
+                                  {localData.standards.length > 0 && (
+                                      <div className="flex flex-wrap gap-2 mt-2 mb-2">
+                                          {localData.standards.map((std, idx) => (
+                                              <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-green-100 text-green-700 border border-green-200 animate-in slide-in-from-left-1 max-w-full">
+                                                  <span className="truncate" title={std}>
+                                                      {std.split(':')[0]}
+                                                  </span>
+                                                  <button
+                                                      onClick={() => handleRemoveStandard(idx)}
+                                                      className="hover:text-green-900 ml-1 shrink-0"
+                                                      data-help-key="wizard_std_remove_btn"
+                                                      title={t('standards.remove_standard')}
+                                                      aria-label={t('standards.remove_standard')}
+                                                  >
+                                                      <X size={10} />
+                                                  </button>
+                                              </span>
+                                          ))}
+                                      </div>
+                                  )}
+                                  <div>
+                                    <label className="block text-xs font-medium text-indigo-900 mb-1">
+                                      {t('wizard.input_vocab_label')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
+                                    </label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <Languages size={14} className="text-slate-500" />
+                                        </div>
+                                        <input
+                                          type="text"
+                                          value={localData.vocabulary}
+                                          onChange={(e) => setLocalData(prev => ({ ...prev, vocabulary: e.target.value }))}
+                                          placeholder={t('wizard.vocab_placeholder')}
+                                          className="w-full ps-9 p-3 border-2 border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
+                                          data-help-key="wizard_vocab_input"
+                                          aria-label={t('input.vocab')}
+                                        />
+                                    </div>
+                                  </div>
+                                  <div>
+                                      <label className="block text-xs font-bold text-slate-500 uppercase mb-1">{t('wizard.input_instructions_label')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span></label>
+                                      <div className="relative">
+                                          <div className="absolute top-3 left-3 pointer-events-none">
+                                              <Wrench size={14} className="text-slate-500" />
+                                          </div>
+                                          <textarea
+                                              value={localData.sourceCustomInstructions}
+                                              onChange={(e) => setLocalData(prev => ({ ...prev, sourceCustomInstructions: e.target.value }))}
+                                              data-help-key="wizard_instructions_input"
+                                              placeholder={t('wizard.instructions_placeholder')}
+                                              className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-all h-20 resize-none"
+                                          />
+                                      </div>
+                                  </div>
+                                  <div className="flex items-center gap-2 bg-purple-50 p-3 rounded-xl border border-purple-100">
+                                      <input aria-label={t('common.toggle_verification')}
+                                          type="checkbox"
+                                          data-help-key="wizard_verify_checkbox" id="wiz-verify"
+                                          checked={localData.verification}
+                                          onChange={(e) => setLocalData(prev => ({ ...prev, verification: e.target.checked }))}
+                                          className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 border-gray-300 cursor-pointer"
+                                      />
+                                      <label htmlFor="wiz-verify" className="text-sm font-bold text-slate-700 cursor-pointer flex items-center gap-2">
+                                          <ShieldCheck size={16} className="text-purple-500"/> {t('wizard.verify_facts')}
+                                      </label>
+                                  </div>
+                                  <button
+                                      aria-label={t('common.continue')}
+                                      onClick={() => setStep(4)}
+                                      disabled={!localData.topic.trim()}
+                                      className="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700 disabled:opacity-50 transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-md mt-4"
+                                  >
+                                      {t('common.next')} <ArrowRight size={18} />
+                                  </button>
+                              </div>
+                          </div>
+                      )}
+                      {localData.sourceMode === 'file' && (
+                          <div className="text-center py-8">
+                              <div className="inline-block p-6 bg-indigo-50 rounded-full mb-4 border-2 border-indigo-100">
+                                  <Upload size={48} className="text-indigo-500"/>
+                              </div>
+                              <h3 className="text-xl font-bold text-slate-700 mb-2">{t('wizard.upload_title')}</h3>
+                              <p className="text-slate-500 mb-8 max-w-xs mx-auto text-sm">
+                                  {t('wizard.file_helper')}
+                              </p>
+                              <button
+                                  aria-label={t('common.upload')}
+                                  onClick={() => {
+                                      onUpload();
+                                      onClose();
+                                  }}
+                                  className="bg-indigo-600 text-white font-bold px-8 py-4 rounded-xl hover:bg-indigo-700 transition-transform hover:scale-105 active:scale-95 flex items-center gap-3 mx-auto shadow-xl"
+                              >
+                                  <Upload size={20}/> {t('wizard.select_file')}
+                              </button>
+                              <p className="text-xs text-slate-500 mt-4">{t('wizard.file_process_msg')}</p>
+                          </div>
+                      )}
+                  </div>
+              )}
+              {step === 4 && (
+                  <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                      <div>
+                          <label className="block text-lg font-bold text-slate-700 mb-2">{t('wizard.adaptation')}</label>
+                          <p className="text-slate-500 mb-6">{t('wizard.adaptation_desc')}</p>
+                          <div className="space-y-4">
+                              <div>
+                                  <label className="block text-sm font-bold text-slate-600 mb-2">{t('wizard.output_format')}</label>
+                                  <select aria-label={t('common.selection')}
+                                    value={localData.format}
+                                    data-help-key="wizard_format_select"
+                                    onChange={(e) => setLocalData({...localData, format: e.target.value})}
+                                    className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                                  >
+                                    <option value="Standard Text">{t('simplified.formats.standard')}</option>
+                                    <option value="Dialogue Script">{t('simplified.formats.dialogue')}</option>
+                                    <option value="Mock Advertisement">{t('simplified.formats.advertisement')}</option>
+                                    <option value="News Report">{t('simplified.formats.news')}</option>
+                                    <option value="Podcast Script">{t('simplified.formats.podcast')}</option>
+                                    <option value="Social Media Thread">{t('simplified.formats.social')}</option>
+                                    <option value="Poetry">{t('simplified.formats.poetry')}</option>
+                                    <option value="Narrative Story">{t('simplified.formats.narrative_story')}</option>
+                                  </select>
+                              </div>
+                              <div>
+                                  <label className="block text-sm font-bold text-slate-600 mb-1">{t('wizard.output_languages_label')}</label>
+                                  <div className="flex gap-2 mb-2">
+                                      <input aria-label={t('common.enter_wiz_lang_input')}
+                                        type="text"
+                                        value={wizLangInput}
+                                        onChange={(e) => setWizLangInput(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && addWizLanguage()}
+                                        data-help-key="wizard_lang_input"
+                                        placeholder={t('wizard.language_placeholder')}
+                                        className="flex-grow p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                                        disabled={localData.languages.length >= 4}
+                                      />
+                                      <button aria-label={t('common.add')}
+                                        data-help-key="wizard_lang_add_btn"
+                                        onClick={addWizLanguage}
+                                        disabled={!wizLangInput.trim() || localData.languages.length >= 4}
+                                        className="bg-indigo-100 text-indigo-700 p-3 rounded-xl hover:bg-indigo-200 disabled:opacity-50 transition-colors"
+                                      >
+                                        <Plus size={20} />
+                                      </button>
+                                  </div>
+                                  <select aria-label={t('common.selection')}
+                                      data-help-key="wizard_lang_common_select"
+                                      onChange={(e) => { addCommonLanguage(e.target.value); e.target.value = ""; }}
+                                      className="w-full text-xs border border-slate-200 rounded-lg p-2 bg-slate-50 text-slate-600 mb-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 cursor-pointer"
+                                      disabled={localData.languages.length >= 4}
+                                  >
+                                      <option data-help-key="wizard_lang_common_select" value="">{t('wizard.quick_add_language')}</option>
+                                      <option value="Spanish">{t('languages_list.Spanish')}</option>
+                                      <option value="French">{t('languages_list.French')}</option>
+                                      <option value="German">{t('languages_list.German')}</option>
+                                      <option value="Portuguese">{t('languages_list.Portuguese')}</option>
+                                      <option value="Mandarin">{t('languages_list.Mandarin')}</option>
+                                      <option value="Arabic">{t('languages_list.Arabic')}</option>
+                                      <option value="Vietnamese">{t('languages_list.Vietnamese')}</option>
+                                      <option value="Russian">{t('languages_list.Russian')}</option>
+                                      <option value="Japanese">{t('languages_list.Japanese')}</option>
+                                  </select>
+                                  <div className="flex flex-wrap gap-2 min-h-[40px] bg-slate-50 p-2 rounded-xl border border-slate-100">
+                                      {localData.languages.map(lang => (
+                                          <span key={lang} className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in zoom-in">
+                                              {lang}
+                                              <button
+                                                  aria-label={t('common.close')}
+                                                  data-help-key="wizard_lang_remove_btn"
+                                                  onClick={() => removeWizLanguage(lang)}
+                                                  className="hover:text-indigo-900 ml-1"
+                                              >
+                                                  <X size={12} />
+                                              </button>
+                                          </span>
+                                      ))}
+                                      {localData.languages.length === 0 && <span className="text-xs text-slate-500 italic self-center w-full text-center">{t('wizard.no_langs_selected')}</span>}
+                                  </div>
+                              </div>
+                              <div>
+                                  <label className="block text-sm font-bold text-slate-600 mb-1">{t('wizard.interests_label_optional').replace(' (Optional)', '')}<span className="text-slate-400 font-normal"> (Optional)</span></label>
+                                  <div className="flex gap-2 mb-2">
+                                      <input aria-label={t('common.enter_wiz_interest_input')}
+                                        type="text"
+                                        value={wizInterestInput}
+                                        onChange={(e) => setWizInterestInput(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && addWizInterest()}
+                                        data-help-key="wizard_interest_input"
+                                        placeholder={t('wizard.interest_placeholder')}
+                                        className="flex-grow p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        disabled={localData.interests.length >= 5}
+                                      />
+                                      <button aria-label={t('common.add')}
+                                        data-help-key="wizard_interest_add_btn"
+                                        onClick={addWizInterest}
+                                        disabled={!wizInterestInput.trim() || localData.interests.length >= 5}
+                                        className="bg-indigo-100 text-indigo-700 p-3 rounded-xl hover:bg-indigo-200 disabled:opacity-50 transition-colors"
+                                      >
+                                        <Plus size={20} />
+                                      </button>
+                                  </div>
+                                  <div className="flex flex-wrap gap-2 min-h-[40px] bg-slate-50 p-2 rounded-xl border border-slate-100">
+                                      {localData.interests.map(interest => (
+                                          <span key={interest} className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in zoom-in">
+                                              {interest}
+                                              <button
+                                                  aria-label={t('common.close')}
+                                                  data-help-key="wizard_interest_remove_btn"
+                                                  onClick={() => removeWizInterest(interest)}
+                                                  className="hover:text-pink-900 ml-1"
+                                              >
+                                                  <X size={12} />
+                                              </button>
+                                          </span>
+                                      ))}
+                                      {localData.interests.length === 0 && <span className="text-xs text-slate-500 italic self-center w-full text-center">{t('wizard.no_interests')}</span>}
+                                  </div>
+                                  <p className="text-xs text-slate-500 mt-1">{t('wizard.interests_helper')}</p>
+                              </div>
+                          </div>
+                          <div className="flex justify-between pt-4 mt-4 border-t border-slate-100">
+                              <button
+                                  aria-label={t('common.check')}
+                                data-help-key="wizard_prev_btn"
+                                onClick={() => setStep(s => s - 1)}
+                                className="text-slate-500 hover:text-slate-600 font-bold text-sm px-4 py-2 flex items-center gap-2"
+                              >
+                                <ArrowDown className="rotate-90" size={16}/> {t('common.back')}
+                              </button>
+                              <button
+                                  aria-label={t('common.check')}
+                                data-help-key="wizard_complete_btn"
+                                onClick={() => onComplete(localData)}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all active:scale-95 flex items-center gap-2"
+                              >
+                                {t('common.finish')} <CheckCircle2 size={18} />
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+              )}
+          </div>
+          {step < 4 && (
+              <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
+                  {step > 1 ? (
+                      <button
+                          aria-label={t('common.continue')}
+                        onClick={() => setStep(s => s - 1)}
+                        className="text-slate-500 hover:text-slate-600 font-bold text-sm px-4 py-2 flex items-center gap-2 transition-colors"
+                      >
+                        <ArrowDown className="rotate-90" size={16}/> {t('common.back')}
+                      </button>
+                  ) : (
+                      <div></div>
+                  )}
+                  {step === 1 && (
+                      <button aria-label={t('common.next')}
+                        data-help-key="wizard_next_grade_btn"
+                        onClick={handleNext}
+                        disabled={!localData.grade}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-indigo-500/30 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                      >
+                        {t('common.next')} <ArrowRight size={20} />
+                      </button>
+                  )}
+              </div>
+          )}
+      </div>
+    </div>
+  );
+});
 // @section IMMERSIVE_READER — Speed reader and immersive reading tools
 const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
   const { t } = useContext(LanguageContext);
@@ -11449,7 +18600,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // Load AI Backend module (Firebase shim + WebSearchProvider + AIProvider)
     // Custom load (not loadModule) so we get onload callback to upgrade shims
     (function() {
-      const url = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@be5169b/ai_backend_module.js';
+      const url = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/ai_backend_module.js';
       const s = document.createElement('script');
       s.src = url;
       s.crossOrigin = 'anonymous';
@@ -11463,22 +18614,22 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', './stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', './word_sounds_module.js');
-    loadModule('StudentAnalytics', './student_analytics_module.js');
-    loadModule('BehaviorLens', './behavior_lens_module.js');
-    loadModule('SymbolStudio', './symbol_studio_module.js');
-    loadModule('SelHub', './sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', './games_module.js');
-    loadModule('QuickStartWizard', './quickstart_module.js');
-    loadModule('AlloBot', './allobot_module.js');
-    loadModule('TeacherModule', './teacher_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/teacher_module.js');
     // ── Load registered STEM Lab tool modules (Plugin Architecture, Phase 2) ──
     // These files self-register via window.StemLab.registerTool()
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = './';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -11498,7 +18649,8 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_punnett.js', 'stem_lab/stem_tool_semiconductor.js',
         'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_emotions.js',
         'sel_hub/sel_tool_mindfulness.js', 'sel_hub/sel_tool_social.js',
-        'stem_lab/stem_tool_gamestudio.js'
+        'stem_lab/stem_tool_gamestudio.js',
+        'stem_lab/stem_tool_aquarium.js'
       ];
       toolModules.forEach(function(mod) {
         var s = document.createElement('script');
@@ -11523,8 +18675,8 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       });
       // Load scripts, then proactively init Kokoro to avoid first-speak latency
       (async () => {
-        await loadTTSScript('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@72e4dd2/kokoro_tts_loader.js');
-        loadTTSScript('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/piper_tts_loader.js');
+        await loadTTSScript('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/kokoro_tts_loader.js');
+        loadTTSScript('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/piper_tts_loader.js');
         if (window._kokoroTTS) {
           try {
             await window._kokoroTTS.init((progress) => {

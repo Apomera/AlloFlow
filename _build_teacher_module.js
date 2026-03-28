@@ -146,6 +146,7 @@ const iifeFooter = `
   // ═══════════════════════════════════════════════════════════════
   window.AlloModules = window.AlloModules || {};
 ${componentNames.map(n => `  window.AlloModules.${n} = ${n};`).join('\n')}
+  window.AlloModules.TeacherModule = true;
 
   console.log('[TeacherModule] ${componentNames.length} components registered:', ${JSON.stringify(componentNames)});
 })();
