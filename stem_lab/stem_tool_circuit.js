@@ -414,26 +414,23 @@ window.StemLab = window.StemLab || {
             checkBadges(getBadgeUpdates({ shortTriggered: true }));
           }
 
-          // Check series/parallel badges
-          React.useEffect(function() {
-            if (mode === 'series' && components.length >= 3) {
-              checkBadges(getBadgeUpdates({ seriesBuilt: true }));
-            }
-            if (mode === 'parallel' && components.length >= 3) {
-              checkBadges(getBadgeUpdates({ parallelBuilt: true }));
-            }
-          }, [mode, components.length]);
+          // Check series/parallel badges (inline, no useEffect)
+          if (mode === 'series' && components.length >= 3) {
+            checkBadges(getBadgeUpdates({ seriesBuilt: true }));
+          }
+          if (mode === 'parallel' && components.length >= 3) {
+            checkBadges(getBadgeUpdates({ parallelBuilt: true }));
+          }
 
-          // ── Electron animation ──
+          // ── Electron animation (managed without useEffect) ──
           var W = 440, H = 200;
 
-          React.useEffect(function() {
-            if (current < 0.001 || isShort) return;
-            var timer = setTimeout(function() {
+          if (current > 0.001 && !isShort) {
+            if (window._circuitAnimTimer) clearTimeout(window._circuitAnimTimer);
+            window._circuitAnimTimer = setTimeout(function() {
               upd('tick', (tick + 1) % 400);
             }, 60);
-            return function() { clearTimeout(timer); };
-          }, [tick, current, isShort]);
+          }
 
           var electronDots = [];
           if (current > 0.001 && !isShort) {

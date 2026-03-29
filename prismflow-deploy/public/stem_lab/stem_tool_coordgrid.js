@@ -357,23 +357,23 @@ window.StemLab = window.StemLab || {
         });
       };
 
-      // ═══ KEYBOARD SHORTCUTS ═══
-      React.useEffect(function() {
-        var handler = function(e) {
-          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-          if (e.key === 'c' || e.key === 'C') {
-            sfxClick();
-            if (connectMode) { setGridFeedback(null); } else { setGridFeedback({ connectMode: true, lines: gridLines, connectFirst: null }); }
-            setGridChallenge(null);
-          } else if (e.key === 'r' || e.key === 'R') {
-            setGridPoints([]); setGridChallenge(null); setGridFeedback(null);
-          } else if (e.key === '?' || e.key === '/') {
-            updCG({ showAITutor: !showAITutor });
-          }
-        };
-        window.addEventListener('keydown', handler);
-        return function() { window.removeEventListener('keydown', handler); };
-      }, [connectMode, showAITutor]);
+      // ═══ KEYBOARD SHORTCUTS (managed without useEffect) ═══
+      if (window._coordGridKeyHandler) {
+        window.removeEventListener('keydown', window._coordGridKeyHandler);
+      }
+      window._coordGridKeyHandler = function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'c' || e.key === 'C') {
+          sfxClick();
+          if (connectMode) { setGridFeedback(null); } else { setGridFeedback({ connectMode: true, lines: gridLines, connectFirst: null }); }
+          setGridChallenge(null);
+        } else if (e.key === 'r' || e.key === 'R') {
+          setGridPoints([]); setGridChallenge(null); setGridFeedback(null);
+        } else if (e.key === '?' || e.key === '/') {
+          updCG({ showAITutor: !showAITutor });
+        }
+      };
+      window.addEventListener('keydown', window._coordGridKeyHandler);
 
       // ════════════════════════════════
       // ═══ RENDER ═══
