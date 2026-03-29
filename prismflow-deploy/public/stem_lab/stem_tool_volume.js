@@ -636,7 +636,7 @@ window.StemLab = window.StemLab || {
           className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl border-2 border-emerald-300/30 flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing select-none',
           style: { minHeight: '350px', perspective: '900px' },
           onMouseDown: handleMouseDown,
-          onWheel: function(e) { e.preventDefault(); upd({ scale: Math.max(0.4, Math.min(2.5, scale + (e.deltaY > 0 ? -0.08 : 0.08))) }); }
+          onWheel: function(e) { upd({ scale: Math.max(0.4, Math.min(2.5, scale + (e.deltaY > 0 ? -0.08 : 0.08))) }); }
         }, h('div', {
           style: {
             transformStyle: 'preserve-3d',
