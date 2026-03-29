@@ -479,29 +479,29 @@ window.StemLab = window.StemLab || {
         });
       }
 
-      // ── Keyboard shortcuts ──
-      React.useEffect(function() {
-        function handleKey(e) {
-          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-          var key = e.key.toLowerCase();
-          if (key === 's' && !isSlider) { e.preventDefault(); upd({ mode: 'slider', builderChallenge: null, builderFeedback: null }); }
-          if (key === 'f' && isSlider) { e.preventDefault(); upd({ mode: 'freeform', challenge: null, feedback: null }); }
-          if (key === 'n') {
-            e.preventDefault();
-            if (isSlider) {
-              var rl = Math.floor(Math.random()*8)+1, rw = Math.floor(Math.random()*6)+1, rh = Math.floor(Math.random()*6)+1;
-              upd({ dims: {l:rl,w:rw,h:rh}, challenge: {l:rl,w:rw,h:rh,answer:rl*rw*rh}, answer: '', feedback: null, showLayers: null });
-            }
+      // ── Keyboard shortcuts (managed without useEffect) ──
+      if (window._volumeKeyHandler) {
+        window.removeEventListener('keydown', window._volumeKeyHandler);
+      }
+      window._volumeKeyHandler = function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        var key = e.key.toLowerCase();
+        if (key === 's' && !isSlider) { e.preventDefault(); upd({ mode: 'slider', builderChallenge: null, builderFeedback: null }); }
+        if (key === 'f' && isSlider) { e.preventDefault(); upd({ mode: 'freeform', challenge: null, feedback: null }); }
+        if (key === 'n') {
+          e.preventDefault();
+          if (isSlider) {
+            var rl = Math.floor(Math.random()*8)+1, rw = Math.floor(Math.random()*6)+1, rh = Math.floor(Math.random()*6)+1;
+            upd({ dims: {l:rl,w:rw,h:rh}, challenge: {l:rl,w:rw,h:rh,answer:rl*rw*rh}, answer: '', feedback: null, showLayers: null });
           }
-          if (key === 'p') { e.preventDefault(); upd({ paintSurfaceArea: !paintSurfaceArea }); if (!badges.surfaceExplorer) checkBadges({ surfaceExplorer: true }); }
-          if (key === 'b') { e.preventDefault(); upd({ showBadges: !showBadges }); }
-          if (key === '?' || (e.shiftKey && key === '/')) { e.preventDefault(); askAI(); }
-          if (key === '=' || key === '+') { e.preventDefault(); upd({ scale: Math.min(2.5, scale + 0.15) }); }
-          if (key === '-') { e.preventDefault(); upd({ scale: Math.max(0.4, scale - 0.15) }); }
         }
-        window.addEventListener('keydown', handleKey);
-        return function() { window.removeEventListener('keydown', handleKey); };
-      });
+        if (key === 'p') { e.preventDefault(); upd({ paintSurfaceArea: !paintSurfaceArea }); if (!badges.surfaceExplorer) checkBadges({ surfaceExplorer: true }); }
+        if (key === 'b') { e.preventDefault(); upd({ showBadges: !showBadges }); }
+        if (key === '?' || (e.shiftKey && key === '/')) { e.preventDefault(); askAI(); }
+        if (key === '=' || key === '+') { e.preventDefault(); upd({ scale: Math.min(2.5, scale + 0.15) }); }
+        if (key === '-') { e.preventDefault(); upd({ scale: Math.max(0.4, scale - 0.15) }); }
+      };
+      window.addEventListener('keydown', window._volumeKeyHandler);
 
       // ── Earned badges count ──
       var earnedBadges = BADGES.filter(function(b) { return badges[b.id]; });
