@@ -18672,7 +18672,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_economicslab.js',
         'stem_lab/stem_tool_companionplanting.js',
         'stem_lab/stem_tool_graphcalc.js',
-        'stem_lab/stem_tool_algebraCAS.js',
+        'stem_lab/stem_tool_algebracas.js',
         'stem_lab/stem_tool_circuit.js',
         'sel_hub/sel_tool_perspective.js',
         'sel_hub/sel_tool_decisions.js',
