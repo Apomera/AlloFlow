@@ -18457,6 +18457,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
   const [showEducatorHub, setShowEducatorHub] = useState(false);
   const [showReportWriter, setShowReportWriter] = useState(false);
   const [isSymbolStudioOpen, setIsSymbolStudioOpen] = useState(false);
+  const [showStoryForge, setShowStoryForge] = useState(false);
   const [autoAttachManipulatives, setAutoAttachManipulatives] = useState(true);
   const [autoSnapshotManipulatives, setAutoSnapshotManipulatives] = useState(true);
   const [labToolData, setLabToolData] = useState({
@@ -18547,14 +18548,15 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // Icon namespace for CDN-loaded modules
     window.AlloIcons = {
       Activity, AlertCircle, AlignJustify, ArrowDown, ArrowRight, ArrowUp, Award,
-      BarChart3, BookOpen, Brain, Calendar, CheckCircle, CheckCircle2, CheckSquare,
-      ChevronDown, ClipboardList, Clock, DoorOpen, Download, ExternalLink, Eye, EyeOff,
-      FileDown, Filter, Gamepad2, GitMerge, Globe, GraduationCap, GripVertical,
-      HelpCircle, History, ImageIcon, Languages, Layers, Layout, Lightbulb, Link,
-      ListOrdered, MapIcon, Maximize, MessageSquare, Mic, MicOff, Minimize, MonitorPlay,
-      Play, Plus, Printer, RefreshCw, Search, Settings, Share2, ShieldCheck, Sparkles,
-      Star, StopCircle, Target, Trash2, TrendingUp, Trophy, Type, Upload, Users,
-      Volume2, VolumeX, Wrench, X
+      Backpack, Ban, BarChart3, BookOpen, Brain, Calendar, Check, CheckCircle, CheckCircle2,
+      CheckSquare, ChevronDown, ChevronLeft, ClipboardList, Clock, DoorOpen, Download,
+      Edit2, ExternalLink, Eye, EyeOff, FileDown, Filter, Gamepad2, GitMerge, Globe,
+      GraduationCap, GripVertical, HelpCircle, History, ImageIcon, Key, Languages, Layers,
+      Layout, Lightbulb, Link, ListOrdered, Lock, Loader2, MapIcon, Maximize, Maximize2,
+      MessageSquare, Mic, MicOff, Minimize, MonitorPlay, Palette, Play, PlayCircle,
+      Plus, Printer, Quote, RefreshCw, Search, Send, Settings, Share2, ShieldCheck, ShoppingBag,
+      Sparkles, Star, StopCircle, Target, Trash2, TrendingUp, Trophy, Type, Upload, Users,
+      Volume2, VolumeX, Wrench, X, Zap
     };
   }, []);
   // Load external modules from GitHub CDN via script tags
@@ -18614,22 +18616,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a445d6/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a445d6/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a445d6/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a445d6/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a445d6/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a445d6/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a445d6/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a445d6/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a445d6/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a445d6/teacher_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@171f5f8/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@171f5f8/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@171f5f8/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@171f5f8/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@171f5f8/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@171f5f8/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@171f5f8/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@171f5f8/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@171f5f8/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@171f5f8/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@171f5f8/story_forge_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@171f5f8/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@171f5f8/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@171f5f8/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@171f5f8/student_interaction_module.js');
     // ── Load registered STEM Lab tool modules (Plugin Architecture, Phase 2) ──
     // These files self-register via window.StemLab.registerTool()
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0a445d6/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@171f5f8/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -18650,7 +18657,11 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_emotions.js',
         'sel_hub/sel_tool_mindfulness.js', 'sel_hub/sel_tool_social.js',
         'stem_lab/stem_tool_gamestudio.js',
-        'stem_lab/stem_tool_aquarium.js'
+        'stem_lab/stem_tool_aquarium.js',
+        'stem_lab/stem_tool_ecosystem.js',
+        'stem_lab/stem_tool_molecule.js',
+        'stem_lab/stem_tool_solarsystem.js',
+        'stem_lab/stem_tool_universe.js',
       ];
       toolModules.forEach(function(mod) {
         var s = document.createElement('script');
@@ -47598,6 +47609,13 @@ Return ONLY valid JSON:
                 >
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
                     <Quote size={16}/> {isIndependentMode ? t('scaffolds.title_independent') : t(isParentMode ? 'sidebar.tool_scaffolds_parent' : 'sidebar.tool_scaffolds')}
+                    {generatedContent && <span role="button" tabIndex={0}
+                      onClick={(e) => { e.stopPropagation(); setShowStoryForge(true); }}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); setShowStoryForge(true); }}}
+                      className="group flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-rose-600 bg-rose-50/80 hover:bg-rose-100 border border-rose-200/50 rounded-full transition-all hover:shadow-sm cursor-pointer"
+                      aria-label="Open StoryForge">
+                      📖 <span className="group-hover:tracking-wide transition-all">StoryForge</span>
+                    </span>}
                   </div>
                   {expandedTools.includes('sentence-frames') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="text-slate-500"/>}
                 </button>
@@ -62527,6 +62545,51 @@ Return only the corrected version of this exact text:`;
                     <p className="text-lg font-bold text-slate-700">Loading Symbol Studio...</p>
                     <p className="text-sm text-slate-400 mt-2">Module loading from CDN. If this persists, check your connection.</p>
                     <button onClick={() => setIsSymbolStudioOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
+                </div>
+            </div>
+            );
+        })()}
+        {showStoryForge && (() => {
+            const SF = window.AlloModules && window.AlloModules.StoryForge;
+            if (SF) {
+                return React.createElement(SF, {
+                    isOpen: true,
+                    onClose: () => setShowStoryForge(false),
+                    onCallImagen: callImagen,
+                    onCallGeminiImageEdit: callGeminiImageEdit,
+                    onCallGemini: callGemini,
+                    onCallTTS: callTTS,
+                    selectedVoice,
+                    gradeLevel,
+                    sourceTopic,
+                    glossaryTerms: (() => {
+                        const g = history.find(h => h.type === 'glossary');
+                        return g?.data?.terms || [];
+                    })(),
+                    addToast,
+                    t,
+                    isCanvasEnv: _isCanvasEnv,
+                    liveSession: (!_isCanvasEnv && isTeacherMode && activeSessionCode && db) ? {
+                        active: true,
+                        sessionCode: activeSessionCode,
+                        push: async (payload) => {
+                            const sRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+                            await updateDoc(sRef, { storyForgePayload: { ...payload, timestamp: Date.now(), pushedBy: user?.displayName || 'Teacher' } });
+                        },
+                        clear: async () => {
+                            const sRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+                            await updateDoc(sRef, { storyForgePayload: deleteField() });
+                        },
+                    } : null,
+                });
+            }
+            return (
+            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowStoryForge(false)}>
+                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                    <div className="text-4xl mb-3">📖</div>
+                    <p className="text-lg font-bold text-slate-700">Loading StoryForge...</p>
+                    <p className="text-sm text-slate-400 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <button onClick={() => setShowStoryForge(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
             );
