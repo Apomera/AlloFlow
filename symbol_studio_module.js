@@ -1550,8 +1550,12 @@
     }, []);
 
     var speakCell = useCallback(function (label) {
-      if (onCallTTS) onCallTTS(label, selectedVoice || 'Kore', 1);
-    }, [onCallTTS, selectedVoice]);
+      if (!onCallTTS) return;
+      var voice = selectedVoice || globalVoice || 'Kore';
+      onCallTTS(label, voice, 1).then(function (url) {
+        if (url) { var a = new Audio(url); a.play().catch(function () {}); }
+      }).catch(function () {});
+    }, [onCallTTS, selectedVoice, globalVoice]);
 
     // ── Schedule actions ──────────────────────────────────────────────────
     var generateSchedule = useCallback(async function () {
@@ -1760,7 +1764,16 @@
     var activeGoals = iepGoals.filter(function (g) { return g.profileId === (activeProfileId || 'default'); });
 
     var speakPage = useCallback(function (text) {
-      if (onCallTTS) { setStorySpeaking(true); onCallTTS(text, selectedVoice || globalVoice || 'Kore', 1); setTimeout(function () { setStorySpeaking(false); }, 3000); }
+      if (!onCallTTS) return;
+      setStorySpeaking(true);
+      var voice = selectedVoice || globalVoice || 'Kore';
+      onCallTTS(text, voice, 1).then(function (url) {
+        if (url) {
+          var a = new Audio(url);
+          a.onended = function () { setStorySpeaking(false); };
+          a.play().catch(function () { setStorySpeaking(false); });
+        } else { setStorySpeaking(false); }
+      }).catch(function () { setStorySpeaking(false); });
     }, [onCallTTS, selectedVoice, globalVoice]);
 
     var regenPageIllustration = useCallback(async function (pageId) {
@@ -1817,8 +1830,8 @@
     var selectChoice = useCallback(function (id) {
       setCbSelected(id);
       var item = cbItems.find(function (it) { return it.id === id; });
-      if (item && item.label && onCallTTS) onCallTTS(item.label, selectedVoice || 'Kore', 1);
-    }, [cbItems, onCallTTS, selectedVoice]);
+      if (item && item.label) speakCell(item.label);
+    }, [cbItems, speakCell]);
 
     var handleQbUpload = useCallback(function (ev) {
       var file = ev.target.files && ev.target.files[0];
@@ -2510,7 +2523,7 @@
               var isLoading = !!cmLoading[item.id];
               return e('div', {
                 key: item.id,
-                onClick: function () { if (onCallTTS) onCallTTS(item.label, selectedVoice || 'Kore', 1); },
+                onClick: function () { speakCell(item.label); },
                 style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '14px 10px 10px', border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', background: TEAL_LIGHT, cursor: 'pointer', transition: 'transform 0.1s, box-shadow 0.1s', position: 'relative' },
                 onMouseOver: function (ev) { ev.currentTarget.style.boxShadow = '0 4px 14px rgba(13,148,136,0.2)'; ev.currentTarget.style.transform = 'translateY(-2px)'; },
                 onMouseOut: function (ev) { ev.currentTarget.style.boxShadow = 'none'; ev.currentTarget.style.transform = 'none'; }
@@ -2560,7 +2573,7 @@
               var isLoading = !!snLoading[item.id];
               return e('div', {
                 key: item.id,
-                onClick: function () { if (onCallTTS) onCallTTS(item.label, selectedVoice || 'Kore', 1); },
+                onClick: function () { speakCell(item.label); },
                 style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '14px 10px 10px', border: '2px solid ' + AMBER_BORDER, borderRadius: '14px', background: AMBER_LIGHT, cursor: 'pointer', transition: 'transform 0.1s, box-shadow 0.1s', position: 'relative' },
                 onMouseOver: function (ev) { ev.currentTarget.style.boxShadow = '0 4px 14px rgba(217,119,6,0.2)'; ev.currentTarget.style.transform = 'translateY(-2px)'; },
                 onMouseOut: function (ev) { ev.currentTarget.style.boxShadow = 'none'; ev.currentTarget.style.transform = 'none'; }
@@ -2605,7 +2618,7 @@
               var isLoading = !!amLoading[item.id];
               return e('div', {
                 key: item.id,
-                onClick: function () { if (onCallTTS) onCallTTS(item.label, selectedVoice || 'Kore', 1); },
+                onClick: function () { speakCell(item.label); },
                 style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '14px 10px 10px', border: '2px solid ' + BLUE_BORDER, borderRadius: '14px', background: BLUE_LIGHT, cursor: 'pointer', transition: 'transform 0.1s, box-shadow 0.1s', position: 'relative' },
                 onMouseOver: function (ev) { ev.currentTarget.style.boxShadow = '0 4px 14px rgba(37,99,235,0.18)'; ev.currentTarget.style.transform = 'translateY(-2px)'; },
                 onMouseOut: function (ev) { ev.currentTarget.style.boxShadow = 'none'; ev.currentTarget.style.transform = 'none'; }
@@ -2646,7 +2659,7 @@
                   var isSelected = bcPainLevel === level;
                   return e('div', {
                     key: level,
-                    onClick: function () { setBcPainLevel(isSelected ? null : level); if (onCallTTS) onCallTTS(lbl.replace('\n', ', '), selectedVoice || 'Kore', 1); },
+                    onClick: function () { setBcPainLevel(isSelected ? null : level); speakCell(lbl.replace('\n', ', ')); },
                     style: { width: 52, padding: '8px 4px', borderRadius: '10px', background: PAIN_COLORS[i], border: isSelected ? '3px solid #1e293b' : '3px solid transparent', cursor: 'pointer', textAlign: 'center', boxShadow: isSelected ? '0 0 0 3px rgba(0,0,0,0.2)' : 'none', transition: 'transform 0.1s', transform: isSelected ? 'scale(1.12)' : 'scale(1)' }
                   },
                     e('div', { style: { fontWeight: 800, fontSize: '16px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.4)' } }, level),
@@ -2664,7 +2677,7 @@
                   var isLoading = !!bcLoading[item.id];
                   return e('div', {
                     key: item.id,
-                    onClick: function () { if (onCallTTS) onCallTTS(item.label, selectedVoice || 'Kore', 1); },
+                    onClick: function () { speakCell(item.label); },
                     style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 8px 8px', border: '2px solid ' + ROSE_BORDER, borderRadius: '12px', background: ROSE_LIGHT, cursor: 'pointer', transition: 'transform 0.1s' },
                     onMouseOver: function (ev) { ev.currentTarget.style.transform = 'translateY(-2px)'; },
                     onMouseOut: function (ev) { ev.currentTarget.style.transform = 'none'; }
@@ -2706,7 +2719,7 @@
               e('div', { style: { fontWeight: 800, fontSize: '20px', color: '#312e81', textAlign: 'center' } }, currentItem.label),
               e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '10px', marginTop: '4px' } },
                 e('button', { onClick: function () { setTwStep(function (s) { return Math.max(0, s - 1); }); }, disabled: twStep === 0, style: S.btn('#e0e7ff', INDIGO, twStep === 0) }, '\u2190 Prev'),
-                e('button', { onClick: function () { if (onCallTTS) onCallTTS(currentItem.label, selectedVoice || 'Kore', 1); }, style: S.btn(INDIGO, '#fff', false) }, '\uD83D\uDD0A Speak'),
+                e('button', { onClick: function () { speakCell(currentItem.label); }, style: S.btn(INDIGO, '#fff', false) }, '\uD83D\uDD0A Speak'),
                 e('button', { onClick: function () { setTwStep(function (s) { return Math.min(twItems.length - 1, s + 1); }); }, disabled: twStep === twItems.length - 1, style: S.btn('#e0e7ff', INDIGO, twStep === twItems.length - 1) }, 'Next \u2192')
               )
             ),
@@ -2717,7 +2730,7 @@
                 var isCurrent = idx === twStep;
                 return e('div', {
                   key: item.id,
-                  onClick: function () { setTwStep(idx); if (onCallTTS) onCallTTS(item.label, selectedVoice || 'Kore', 1); },
+                  onClick: function () { setTwStep(idx); speakCell(item.label); },
                   style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '10px 8px 8px', border: '2px solid ' + (isCurrent ? INDIGO : INDIGO_BORDER), borderRadius: '12px', background: isCurrent ? INDIGO_LIGHT : '#fff', cursor: 'pointer', outline: isCurrent ? '2px solid ' + INDIGO : 'none', transition: 'all 0.1s' }
                 },
                   e('div', { style: { fontSize: '9px', fontWeight: 700, color: isCurrent ? INDIGO : '#9ca3af', marginBottom: '2px' } }, 'STEP ' + (idx + 1)),
@@ -3991,8 +4004,12 @@
       var speakWordFn = function (label, audioData) {
         // Play custom recorded audio if available
         if (audioData) { var a = new Audio(audioData); a.play().catch(function () {}); return; }
-        if (onCallTTS && selectedVoice) {
-          onCallTTS(label, selectedVoice || globalVoice || 'Kore').catch(function () {
+        if (onCallTTS) {
+          var voice = selectedVoice || globalVoice || 'Kore';
+          onCallTTS(label, voice).then(function (url) {
+            if (url) { var a = new Audio(url); a.play().catch(function () {}); }
+            else if (window.speechSynthesis) { var u = new window.SpeechSynthesisUtterance(label); applyVoice(u); window.speechSynthesis.speak(u); }
+          }).catch(function () {
             if (window.speechSynthesis) { var u = new window.SpeechSynthesisUtterance(label); applyVoice(u); window.speechSynthesis.speak(u); }
           });
         } else if (window.speechSynthesis) {
@@ -4004,8 +4021,12 @@
         if (!phrase) return;
         setStripSpeaking(true);
         var done = function () { setStripSpeaking(false); };
-        if (onCallTTS && selectedVoice) {
-          onCallTTS(phrase, selectedVoice || globalVoice || 'Kore').then(done).catch(done);
+        if (onCallTTS) {
+          var voice = selectedVoice || globalVoice || 'Kore';
+          onCallTTS(phrase, voice).then(function (url) {
+            if (url) { var a = new Audio(url); a.onended = done; a.play().catch(done); }
+            else { done(); }
+          }).catch(done);
         } else if (window.speechSynthesis) {
           var utt = new window.SpeechSynthesisUtterance(phrase);
           applyVoice(utt);
@@ -4169,8 +4190,12 @@
       var activateCell = function () {
         var cell = scanCells[safeIdx];
         if (!cell) return;
-        if (onCallTTS && selectedVoice) {
-          onCallTTS(cell.label, selectedVoice || globalVoice || 'Kore').catch(function () {});
+        if (onCallTTS) {
+          var voice = selectedVoice || globalVoice || 'Kore';
+          onCallTTS(cell.label, voice).then(function (url) {
+            if (url) { var a = new Audio(url); a.play().catch(function () {}); }
+            else if (window.speechSynthesis) { var utt2 = new window.SpeechSynthesisUtterance(cell.label); applyVoice(utt2); window.speechSynthesis.speak(utt2); }
+          }).catch(function () {});
         } else if (window.speechSynthesis) {
           var utt = new window.SpeechSynthesisUtterance(cell.label);
           applyVoice(utt);
