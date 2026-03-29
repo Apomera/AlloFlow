@@ -18620,17 +18620,17 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f2bf87/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f2bf87/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f2bf87/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f2bf87/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f2bf87/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f2bf87/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f2bf87/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f2bf87/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f2bf87/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f2bf87/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f2bf87/story_forge_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('SymbolStudio', './symbol_studio_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    loadModule('StoryForge', './story_forge_module.js');
     loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4218503/visual_panel_module.js');
     loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4218503/word_sounds_setup_module.js');
     loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4218503/adventure_module.js');
@@ -18640,7 +18640,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f2bf87/';
+      var pluginCdnBase = './';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -18669,11 +18669,11 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_behaviorlab.js',
         'stem_lab/stem_tool_anatomy.js',
         'stem_lab/stem_tool_decomposer.js',
-        'stem_lab/stem_tool_economicslab.js',
-        'stem_lab/stem_tool_companionplanting.js',
-        'stem_lab/stem_tool_graphcalc.js',
-        'stem_lab/stem_tool_algebraCAS.js',
-        'stem_lab/stem_tool_circuit.js',
+      'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/stem_lab/stem_tool_economicslab.js',
+      'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/stem_lab/stem_tool_companionplanting.js',
+      'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/stem_lab/stem_tool_graphcalc.js',
+      'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/stem_lab/stem_tool_algebracas.js',
+      'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4f117ad/stem_lab/stem_tool_circuit.js',
         'sel_hub/sel_tool_perspective.js',
         'sel_hub/sel_tool_decisions.js',
         'sel_hub/sel_tool_conflict.js',
@@ -19000,6 +19000,7 @@ Return ONLY a valid JSON object:
   const [showVisualSupports, setShowVisualSupports] = useState(false);
   const [vsTab, setVsTab] = useState('boards');
   const [visualSupportsPayload, setVisualSupportsPayload] = useState(null);
+  const [storyForgeSubmissions, setStoryForgeSubmissions] = useState([]);
   const [activeView, setActiveView] = useState('input');
   const [showAIBackendModal, setShowAIBackendModal] = React.useState(false);
 
@@ -22897,6 +22898,15 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                     setVisualSupportsPayload(data.visualSupportsPayload);
                   } else {
                     setVisualSupportsPayload(null);
+                  }
+                  // ── StoryForge payload (student story submissions) ──
+                  if (data.storyForgePayload && data.storyForgePayload.timestamp) {
+                    setStoryForgeSubmissions(prev => {
+                      const existing = prev || [];
+                      const isDuplicate = existing.some(s => s.timestamp === data.storyForgePayload.timestamp);
+                      if (isDuplicate) return prev;
+                      return [...existing, data.storyForgePayload].slice(-50);
+                    });
                   }
                   if (data.mode === 'sync' && data.currentResourceId) {
                       let targetResourceId = data.currentResourceId;
@@ -61159,6 +61169,30 @@ Return only the corrected version of this exact text:`;
           </div>
         </div>
       )})()}
+      {/* ── StoryForge Gallery — Teacher sees student story submissions (FERPA: gated by !_isCanvasEnv) ── */}
+      {isTeacherMode && storyForgeSubmissions.length > 0 && !_isCanvasEnv && (
+        <div style={{position:'fixed',bottom:80,right:16,zIndex:9990,maxWidth:360}}>
+          <div style={{background:'white',borderRadius:16,boxShadow:'0 8px 30px rgba(0,0,0,0.15)',border:'2px solid #c4b5fd',overflow:'hidden'}}>
+            <div style={{background:'linear-gradient(135deg,#7c3aed,#a78bfa)',padding:'10px 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <span style={{color:'white',fontWeight:900,fontSize:13}}>📖 Story Gallery ({storyForgeSubmissions.length})</span>
+              <button onClick={() => setStoryForgeSubmissions([])} style={{color:'white',background:'rgba(255,255,255,0.2)',border:'none',borderRadius:8,padding:'2px 8px',fontSize:11,fontWeight:700,cursor:'pointer'}}>Clear</button>
+            </div>
+            <div style={{maxHeight:300,overflowY:'auto',padding:8}}>
+              {storyForgeSubmissions.map((sub, si) => (
+                <div key={si} style={{display:'flex',gap:8,padding:8,borderBottom:'1px solid #f1f5f9',alignItems:'flex-start'}}>
+                  {sub.coverArt && <img src={sub.coverArt} style={{width:48,height:48,borderRadius:8,objectFit:'cover',border:'2px solid #e2e8f0'}} alt="" />}
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontWeight:800,fontSize:12,color:'#1e293b',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{sub.title || 'Untitled'}</div>
+                    <div style={{fontSize:10,color:'#64748b'}}>By {sub.author || 'Student'} · {sub.wordCount || 0} words · {sub.vocabUsed || 0}/{sub.vocabTotal || 0} vocab</div>
+                    {sub.gradingScore && <div style={{fontSize:10,color:'#7c3aed',fontWeight:700}}>Score: {sub.gradingScore}</div>}
+                    {sub.preview && <div style={{fontSize:10,color:'#94a3b8',marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{sub.preview}</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       {visualSupportsPayload && !isTeacherMode && (() => {
         const _vsp = visualSupportsPayload;
         const _aacColors = { noun:'#fef9c3', verb:'#dcfce7', adjective:'#dbeafe', other:'#f3f4f6' };
