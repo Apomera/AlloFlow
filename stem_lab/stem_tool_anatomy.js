@@ -107,6 +107,28 @@ if (!window.StemLab.isRegistered('anatomy')) {
           playTone(350, 0.1, 'triangle', 0.06);
           setTimeout(function() { playTone(525, 0.1, 'triangle', 0.06); }, 80);
           break;
+        case 'spotterCorrect':
+          playTone(587, 0.06, 'sine', 0.10);
+          setTimeout(function() { playTone(784, 0.08, 'sine', 0.12); }, 50);
+          setTimeout(function() { playTone(1047, 0.12, 'sine', 0.14); }, 110);
+          break;
+        case 'spotterWrong':
+          playTone(294, 0.15, 'sawtooth', 0.07);
+          setTimeout(function() { playTone(220, 0.2, 'sawtooth', 0.06); }, 100);
+          break;
+        case 'pathwayStep':
+          playTone(494, 0.06, 'triangle', 0.06);
+          setTimeout(function() { playTone(587, 0.06, 'triangle', 0.06); }, 50);
+          break;
+        case 'compareView':
+          playTone(440, 0.06, 'sine', 0.06);
+          setTimeout(function() { playTone(554, 0.06, 'sine', 0.06); }, 40);
+          setTimeout(function() { playTone(440, 0.06, 'sine', 0.06); }, 80);
+          break;
+        case 'mnemonicReveal':
+          playTone(392, 0.08, 'triangle', 0.07);
+          setTimeout(function() { playTone(494, 0.1, 'triangle', 0.07); }, 60);
+          break;
       }
     } catch (e) { /* audio not available */ }
   }
@@ -127,7 +149,12 @@ if (!window.StemLab.isRegistered('anatomy')) {
     { id: 'tourComplete', name: 'Tour Guide', desc: 'Complete a guided tour', icon: '\uD83D\uDEB6', xp: 20 },
     { id: 'connectionExplorer', name: 'Systems Thinker', desc: 'Explore 5 system connections', icon: '\uD83D\uDD17', xp: 20 },
     { id: 'clinicalExpert', name: 'Clinical Expert', desc: 'Solve 3 clinical cases', icon: '\uD83E\uDE7A', xp: 25 },
-    { id: 'anatomyChampion', name: 'Anatomy Champion', desc: 'Earn 10 other badges', icon: '\uD83D\uDC51', xp: 50 }
+    { id: 'mnemonicLearner', name: 'Memory Master', desc: 'View 5 mnemonics', icon: '\uD83E\uDDE0', xp: 15 },
+    { id: 'pathwayTracer', name: 'Pathway Tracer', desc: 'Complete 2 pathways', icon: '\uD83D\uDEE4', xp: 20 },
+    { id: 'spotterPro', name: 'Spotter Pro', desc: 'Identify 5 in spotter test', icon: '\uD83C\uDFAF', xp: 25 },
+    { id: 'compareMaster', name: 'Comparator', desc: 'Compare 5 structure pairs', icon: '\u2696', xp: 15 },
+    { id: 'speedDemon', name: 'Speed Demon', desc: 'Identify a structure in under 3 seconds', icon: '\u26A1', xp: 20 },
+    { id: 'anatomyChampion', name: 'Anatomy Champion', desc: 'Earn 12 other badges', icon: '\uD83D\uDC51', xp: 50 }
   ];
 
   // ── TTS helper ──
@@ -579,6 +606,169 @@ if (!window.StemLab.isRegistered('anatomy')) {
         ];
 
         // ══════════════════════════════════════
+        // MNEMONICS — Memory aids for anatomy study
+        // ══════════════════════════════════════
+        var MNEMONICS = {
+          skeletal: [
+            { id: 'mn_carpals', title: 'Carpal Bones (Proximal to Distal)', phrase: 'Some Lovers Try Positions That They Can\'t Handle', meaning: 'Scaphoid, Lunate, Triquetrum, Pisiform, Trapezium, Trapezoid, Capitate, Hamate', structures: ['carpals'] },
+            { id: 'mn_cranial', title: 'Cranial Bones', phrase: 'Old People From Texas Eat Spiders', meaning: 'Occipital, Parietal, Frontal, Temporal, Ethmoid, Sphenoid', structures: ['skull'] },
+            { id: 'mn_vertebrae', title: 'Vertebral Count', phrase: 'Breakfast at 7, Lunch at 12, Dinner at 5', meaning: '7 cervical, 12 thoracic, 5 lumbar vertebrae', structures: ['vertebral'] }
+          ],
+          muscular: [
+            { id: 'mn_rotator', title: 'Rotator Cuff Muscles', phrase: 'SITS', meaning: 'Supraspinatus, Infraspinatus, Teres minor, Subscapularis', structures: ['rotator_cuff'] },
+            { id: 'mn_erector', title: 'Erector Spinae (Lateral to Medial)', phrase: 'I Love Standing', meaning: 'Iliocostalis, Longissimus, Spinalis', structures: ['trapezius'] },
+            { id: 'mn_quad', title: 'Quadriceps Muscles', phrase: 'Real Vast Legs, Very Important Muscles', meaning: 'Rectus femoris, Vastus lateralis, Vastus intermedius, Vastus medialis', structures: ['quads'] }
+          ],
+          circulatory: [
+            { id: 'mn_heartvalves', title: 'Heart Valve Order (Flow)', phrase: 'Try Pulling My Aorta', meaning: 'Tricuspid, Pulmonary, Mitral, Aortic (blood flow path)', structures: ['heart'] },
+            { id: 'mn_aorta', title: 'Aortic Arch Branches', phrase: 'BLC (Big Lefty Club)', meaning: 'Brachiocephalic, Left common carotid, Left subclavian', structures: ['aorta'] }
+          ],
+          nervous: [
+            { id: 'mn_cranialn', title: '12 Cranial Nerves', phrase: 'Oh Oh Oh To Touch And Feel Very Green Vegetables AH!', meaning: 'Olfactory, Optic, Oculomotor, Trochlear, Trigeminal, Abducens, Facial, Vestibulocochlear, Glossopharyngeal, Vagus, Accessory, Hypoglossal', structures: ['cranial_n', 'vagus'] },
+            { id: 'mn_brachial', title: 'Brachial Plexus', phrase: 'Real Texans Drink Cold Beer', meaning: 'Roots, Trunks, Divisions, Cords, Branches', structures: ['brachial_plexus'] }
+          ],
+          lymphatic: [
+            { id: 'mn_immune', title: 'Immune Cell Types', phrase: 'Never Let Monkeys Eat Bananas', meaning: 'Neutrophils, Lymphocytes, Monocytes, Eosinophils, Basophils (in order of abundance)', structures: ['bone_marrow'] }
+          ],
+          organs: [
+            { id: 'mn_liver', title: 'Liver Segments', phrase: 'The liver has 8 Couinaud segments supplied by portal triads', meaning: 'Each segment has its own portal pedicle (portal vein, hepatic artery, bile duct) enabling surgical resection', structures: ['liver'] },
+            { id: 'mn_intestine', title: 'Layers of GI Wall', phrase: 'Mary\'s Silly Monkey Made Smelly Sounds', meaning: 'Mucosa, Submucosa, Muscularis (circular + longitudinal), Serosa', structures: ['sm_intestine', 'stomach'] }
+          ],
+          integumentary: [
+            { id: 'mn_skin', title: 'Epidermis Layers (Deep to Superficial)', phrase: 'Come, Let\'s Get Sun Burned', meaning: 'Corneum (stratum), Lucidum, Granulosum, Spinosum, Basale', structures: ['epidermis'] }
+          ],
+          respiratory: [
+            { id: 'mn_resp', title: 'Structures Air Passes Through', phrase: 'Nice People Like Talking But All Are Late', meaning: 'Nose, Pharynx, Larynx, Trachea, Bronchi, Alveoli', structures: ['nasal_cavity', 'larynx', 'bronchi', 'alveoli'] }
+          ],
+          endocrine: [
+            { id: 'mn_pituitary', title: 'Anterior Pituitary Hormones', phrase: 'FLAT PeG', meaning: 'FSH, LH, ACTH, TSH, Prolactin, GH (Growth Hormone)', structures: ['pituitary'] }
+          ],
+          reproductive: [
+            { id: 'mn_repro', title: 'Stages of Meiosis I', phrase: 'PMAT with crossing over', meaning: 'Prophase I (crossing over), Metaphase I, Anaphase I, Telophase I', structures: ['testes_repro', 'ovaries_repro'] }
+          ]
+        };
+
+        // ══════════════════════════════════════
+        // PATHWAYS — Physiological process tracing
+        // ══════════════════════════════════════
+        var PATHWAYS = [
+          {
+            id: 'path_blood', title: 'Path of Blood', icon: '\u2764\uFE0F', color: '#ef4444',
+            desc: 'Follow a red blood cell through the entire circulatory system.',
+            steps: [
+              { label: 'Right Atrium', detail: 'Deoxygenated blood from the body enters the right atrium via the superior and inferior vena cava.', structure: 'sup_vena' },
+              { label: 'Right Ventricle', detail: 'Blood passes through the tricuspid valve into the right ventricle, which pumps it toward the lungs.', structure: 'heart' },
+              { label: 'Pulmonary Arteries', detail: 'The right ventricle ejects blood through the pulmonary valve into the pulmonary arteries toward both lungs.', structure: 'pulm_art' },
+              { label: 'Lung Capillaries', detail: 'In the alveolar capillaries, CO2 is released and O2 is picked up through the thin alveolar membrane.', structure: 'alveoli' },
+              { label: 'Pulmonary Veins', detail: 'Freshly oxygenated blood returns to the heart via four pulmonary veins, entering the left atrium.', structure: 'lungs' },
+              { label: 'Left Ventricle', detail: 'Blood passes through the mitral valve into the muscular left ventricle, the strongest heart chamber.', structure: 'heart' },
+              { label: 'Aorta', detail: 'The left ventricle powerfully ejects blood through the aortic valve into the aorta, the body\'s main highway.', structure: 'aorta' },
+              { label: 'Body Tissues', detail: 'Arteries branch into arterioles and capillaries where O2 and nutrients are delivered and CO2/waste collected.', structure: 'femoral_a' },
+              { label: 'Venous Return', detail: 'Deoxygenated blood returns through venules and veins, assisted by muscle pumps and valves, back to the right atrium.', structure: 'inf_vena' }
+            ]
+          },
+          {
+            id: 'path_air', title: 'Path of Air', icon: '\uD83D\uDCA8', color: '#3b82f6',
+            desc: 'Trace the journey of a breath of air from nose to alveoli and back.',
+            steps: [
+              { label: 'Nasal Cavity', detail: 'Air enters through the nostrils and is warmed, humidified, and filtered by mucous membranes and turbinates.', structure: 'nasal_cavity' },
+              { label: 'Pharynx', detail: 'Air passes through the nasopharynx and oropharynx, a shared passage with the digestive tract.', structure: 'pharynx' },
+              { label: 'Larynx', detail: 'Air crosses the vocal cords in the voice box. The epiglottis guards against food entering the airway.', structure: 'larynx' },
+              { label: 'Trachea', detail: 'The trachea (windpipe) is reinforced by C-shaped cartilage rings. Cilia move mucus upward to trap debris.', structure: 'trachea' },
+              { label: 'Bronchi', detail: 'The trachea splits into left and right main bronchi, each entering a lung. They branch into smaller bronchioles.', structure: 'bronchi' },
+              { label: 'Alveoli', detail: '300 million grape-like sacs where gas exchange occurs. O2 diffuses into blood; CO2 diffuses out. Surface area equals a tennis court.', structure: 'alveoli' },
+              { label: 'Exhalation', detail: 'The diaphragm relaxes and rises, reducing lung volume. CO2-rich air is pushed out through the same pathway in reverse.', structure: 'diaphragm_m' }
+            ]
+          },
+          {
+            id: 'path_food', title: 'Path of Food', icon: '\uD83C\uDF54', color: '#16a34a',
+            desc: 'Follow a meal from mouth through the entire digestive system.',
+            steps: [
+              { label: 'Mouth', detail: 'Teeth mechanically break food down. Salivary amylase begins starch digestion. The tongue shapes food into a bolus.', structure: 'mandible' },
+              { label: 'Pharynx & Esophagus', detail: 'Swallowing pushes the bolus past the epiglottis. Peristaltic waves move it down the 25cm esophagus in about 8 seconds.', structure: 'pharynx' },
+              { label: 'Stomach', detail: 'Gastric acid (pH 1.5-3.5) and pepsin break down proteins. Churning produces chyme over 2-4 hours.', structure: 'stomach' },
+              { label: 'Duodenum', detail: 'The first 25cm of the small intestine receives bile from the liver/gallbladder and enzymes from the pancreas.', structure: 'sm_intestine' },
+              { label: 'Jejunum & Ileum', detail: 'Most nutrient absorption occurs here via villi and microvilli, increasing surface area 600-fold. 6-7 meters long.', structure: 'sm_intestine' },
+              { label: 'Large Intestine', detail: 'Water and electrolytes are reabsorbed. Gut bacteria ferment remaining fiber, producing vitamins K and B12.', structure: 'lg_intestine' },
+              { label: 'Rectum & Excretion', detail: 'Waste is compacted and stored in the rectum until defecation. The entire journey takes 24-72 hours.', structure: 'bladder' }
+            ]
+          },
+          {
+            id: 'path_nerve', title: 'Path of a Nerve Signal', icon: '\u26A1', color: '#eab308',
+            desc: 'Trace a reflex arc from stimulus to response.',
+            steps: [
+              { label: 'Receptor', detail: 'A sensory receptor in the skin detects a painful stimulus (like touching a hot surface) and generates an electrical signal.', structure: 'epidermis' },
+              { label: 'Sensory Neuron', detail: 'The signal travels along a sensory (afferent) neuron toward the spinal cord at up to 120 m/s via saltatory conduction.', structure: 'sciatic' },
+              { label: 'Spinal Cord', detail: 'In the dorsal horn, the sensory neuron synapses with an interneuron. For reflexes, the signal does not need to reach the brain.', structure: 'spinal_cord' },
+              { label: 'Interneuron', detail: 'The interneuron in the spinal gray matter integrates the signal and relays it to a motor neuron.', structure: 'spinal_cord' },
+              { label: 'Motor Neuron', detail: 'The motor (efferent) neuron carries the command signal from the ventral horn down to the target muscle.', structure: 'femoral_n' },
+              { label: 'Effector (Muscle)', detail: 'Acetylcholine released at the neuromuscular junction causes muscle contraction. You pull your hand away before feeling pain.', structure: 'biceps' },
+              { label: 'Brain Awareness', detail: 'Meanwhile, a copy of the signal ascends to the somatosensory cortex. You consciously feel pain about 0.5 seconds after the reflex.', structure: 'brain' }
+            ]
+          }
+        ];
+
+        // ══════════════════════════════════════
+        // SIMPLE DESCRIPTIONS — Grade-band differentiated content
+        // ══════════════════════════════════════
+        var SIMPLE_DESC = {
+          skull: { k2: 'Your skull is like a helmet that protects your brain!', g35: 'The skull is made of 22 bones fused together. It protects the brain and gives your face its shape.' },
+          heart: { k2: 'Your heart is a pump that pushes blood all around your body!', g35: 'The heart has 4 rooms (chambers) and beats about 100,000 times every day to move blood through your body.' },
+          brain: { k2: 'Your brain is the boss of your whole body! It helps you think, feel, and move.', g35: 'The brain has billions of tiny cells called neurons that send messages to control everything you do.' },
+          lungs: { k2: 'Your lungs help you breathe! Air goes in and out like balloons.', g35: 'Your two lungs take oxygen from the air you breathe in and get rid of carbon dioxide when you breathe out.' },
+          femur: { k2: 'The femur is your thigh bone. It is the biggest bone in your body!', g35: 'The femur (thigh bone) is the longest and strongest bone. It helps you walk, run, and jump.' },
+          stomach: { k2: 'Your stomach is like a mixer that squishes food into mush!', g35: 'The stomach uses acid and muscles to break food into a paste. Food stays there for 2-4 hours.' },
+          ribs: { k2: 'Your ribs are like a cage that protects your heart and lungs!', g35: 'You have 12 pairs of ribs that form a protective cage around your chest organs. They move when you breathe.' },
+          biceps: { k2: 'Your biceps is the muscle that helps you bend your arm!', g35: 'The biceps brachii bends your elbow and turns your palm up. You use it every time you pick something up.' },
+          kidneys: { k2: 'Your kidneys are like filters that clean your blood!', g35: 'Your two kidneys filter waste from your blood and make urine. They process all your blood about 40 times a day.' },
+          liver: { k2: 'Your liver is a helper that cleans your blood and helps digest food!', g35: 'The liver does over 500 jobs including making bile, cleaning toxins from blood, and storing energy.' },
+          epidermis: { k2: 'Your skin keeps germs out and keeps water in. It is your biggest organ!', g35: 'The epidermis is the outer layer of skin. New skin cells grow at the bottom and push old ones to the surface.' },
+          spinal_cord: { k2: 'Your spinal cord is like a message highway inside your backbone!', g35: 'The spinal cord carries messages between your brain and body. It runs inside your vertebral column for protection.' },
+          diaphragm_m: { k2: 'Your diaphragm is the muscle that helps you breathe in and out!', g35: 'The diaphragm is a dome-shaped muscle below your lungs. When it tightens, your lungs expand and air rushes in.' },
+          aorta: { k2: 'The aorta is the biggest tube that carries blood from your heart!', g35: 'The aorta is your body\'s largest artery. It carries oxygen-rich blood from the heart to the rest of your body.' }
+        };
+
+        // ══════════════════════════════════════
+        // PRONUNCIATION GUIDE — Phonetic spelling for complex terms
+        // ══════════════════════════════════════
+        var PRONUNCIATION = {
+          skull: null, mandible: 'MAN-dih-bul', clavicle: 'KLAV-ih-kul', sternum: 'STUR-num',
+          scapula: 'SKAP-yoo-lah', humerus: 'HYOO-meh-rus', radius: 'RAY-dee-us', ulna: 'UL-nah',
+          carpals: 'KAR-pulz', vertebral: 'VER-teh-brul', pelvis: 'PEL-vis', femur: 'FEE-mur',
+          patella: 'pah-TEL-ah', tibia: 'TIB-ee-ah', fibula: 'FIB-yoo-lah', sacrum: 'SAY-krum',
+          tarsals: 'TAR-sulz', metacarpals: 'met-ah-KAR-pulz', metatarsals: 'met-ah-TAR-sulz',
+          scaphoid_bone: 'SKAF-oyd', pectoralis: 'pek-toh-RAL-is', deltoid: 'DEL-toyd',
+          biceps: 'BY-seps', triceps: 'TRY-seps', rectus_ab: 'REK-tus ab-DOM-ih-nis',
+          obliques: 'oh-BLEEKS', trapezius: 'trah-PEE-zee-us', lats: 'lah-TIS-ih-mus DOR-sy',
+          glutes: 'GLOO-tee-us MAX-ih-mus', quads: 'KWOD-rih-seps', hamstrings: 'HAM-strings',
+          gastrocnemius: 'gas-trok-NEE-mee-us', sartorius: 'sar-TOR-ee-us', soleus: 'SO-lee-us',
+          tibialis: 'tib-ee-AL-is', diaphragm_m: 'DY-ah-fram', iliopsoas: 'il-ee-oh-SO-as',
+          intercostals: 'in-ter-KOS-tulz', rotator_cuff: 'ROH-tay-ter kuf',
+          heart: null, aorta: 'ay-OR-tah', coronary: 'KOR-oh-nair-ee', carotid: 'kah-ROT-id',
+          jugular: 'JUG-yoo-lar', femoral_a: 'FEM-or-al', brachial: 'BRAY-kee-al',
+          saphenous: 'SAF-eh-nus', portal: 'POR-tal', pulm_art: 'PUL-moh-nair-ee',
+          brain: null, cerebral_cortex: 'seh-REE-bral KOR-teks', cerebellum: 'sair-eh-BEL-um',
+          brainstem: null, hippocampus: 'hip-oh-KAM-pus', amygdala: 'ah-MIG-dah-lah',
+          thalamus: 'THAL-ah-mus', hypothalamus: 'hy-poh-THAL-ah-mus',
+          corpus_callosum: 'KOR-pus kah-LO-sum', basal_ganglia: 'BAY-zal GANG-lee-ah',
+          vagus: 'VAY-gus', sciatic: 'sy-AT-ik', median: 'MEE-dee-an',
+          brachial_plexus: 'BRAY-kee-al PLEK-sus', cranial_n: 'KRAY-nee-al',
+          sympathetic: 'sim-pah-THET-ik', spinal_cord: null,
+          thymus: 'THY-mus', spleen: null, thoracic_duct: 'thoh-RAS-ik',
+          cervical_ln: 'SUR-vih-kal', axillary_ln: 'AK-sih-lair-ee', inguinal_ln: 'ING-gwih-nal',
+          epidermis: 'ep-ih-DUR-mis', dermis: 'DUR-mis', hypodermis: 'hy-poh-DUR-mis',
+          melanocytes: 'MEL-an-oh-syts', sebaceous: 'seh-BAY-shus',
+          larynx: 'LAIR-inks', pharynx: 'FAIR-inks', trachea: 'TRAY-kee-ah',
+          bronchi: 'BRONG-ky', alveoli: 'al-VEE-oh-ly', pleura: 'PLOOR-ah',
+          pituitary: 'pih-TOO-ih-tair-ee', thyroid: 'THY-royd', parathyroid: 'pair-ah-THY-royd',
+          adrenal_endo: 'ah-DREE-nal', islets: 'EYE-lets of LANG-er-hanz',
+          pineal: 'PIN-ee-al', hypothal_endo: 'hy-poh-THAL-ah-mus',
+          testes_repro: 'TES-teez', epididymis: 'ep-ih-DID-ih-mis', prostate: 'PROS-tayt',
+          uterus: 'YOO-teh-rus', ovaries_repro: 'OH-vah-reez', fallopian: 'fah-LO-pee-an',
+          placenta: 'plah-SEN-tah', mammary: 'MAM-ah-ree'
+        };
+
+        // ══════════════════════════════════════
         // DERIVED STATE
         // ══════════════════════════════════════
 
@@ -649,6 +839,44 @@ if (!window.StemLab.isRegistered('anatomy')) {
         var activeCaseIdx = d._activeCaseIdx || 0;
         var activeCaseFeedback = d._activeCaseFeedback || null;
 
+        // ── Spotter test state ──
+        var spotterActive = d._spotterActive || false;
+        var spotterScore = d._spotterScore || 0;
+        var spotterTotal = d._spotterTotal || 0;
+        var spotterTarget = d._spotterTarget || null;
+        var spotterFeedback = d._spotterFeedback || null;
+        var spotterStartTime = d._spotterStartTime || 0;
+        var spotterOptions = d._spotterOpts || [];
+        var spotterBestTime = d._spotterBestTime || 999;
+
+        // ── Compare mode state ──
+        var compareStructureId = d._compareStructure || null;
+        var compareSel = compareStructureId ? allStructures.find(function(s) { return s.id === compareStructureId; }) : null;
+        var comparisons = d._comparisons || 0;
+
+        // ── Pathway state ──
+        var activePathwayId = d._activePathway || null;
+        var pathwayStepIdx = d._pathwayStep || 0;
+        var pathwaysCompleted = d._pathwaysCompleted || {};
+
+        // ── Mnemonics viewed state ──
+        var mnemonicsViewed = d._mnemonicsViewed || {};
+
+        // ── X-ray mode ──
+        var xrayMode = d._xrayMode || false;
+
+        // ── Flashcard state ──
+        var flashcardIdx = d._flashcardIdx || 0;
+        var flashcardFlipped = d._flashcardFlipped || false;
+        var flashcardPool = allStructures.filter(function(s) { return s.fn && passesComplexity(s); });
+
+        // ── Confetti state ──
+        var confettiParticles = d._confettiParticles || [];
+
+        // ── Stats tracking ──
+        var totalTimeSpent = d._totalTimeSpent || 0;
+        var quizAttempts = d._quizAttempts || 0;
+
         // ── Enhanced Quiz logic ──
         var quizPool = allStructures.filter(function(s) { return s.fn && passesComplexity(s); });
         var quizTypeCount = 4;
@@ -690,6 +918,23 @@ if (!window.StemLab.isRegistered('anatomy')) {
         var searchFinds = d._searchFinds || 0;
         var aiQuestions = d._aiQuestions || 0;
 
+        function spawnConfetti() {
+          var particles = [];
+          for (var ci = 0; ci < 30; ci++) {
+            particles.push({
+              x: 0.3 + Math.random() * 0.4,
+              y: 0.1 + Math.random() * 0.2,
+              vx: (Math.random() - 0.5) * 2,
+              vy: -1 - Math.random() * 2,
+              rot: Math.random() * Math.PI * 2,
+              spin: (Math.random() - 0.5) * 6,
+              ci: ci,
+              born: Date.now()
+            });
+          }
+          upd('_confettiParticles', particles);
+        }
+
         function awardBadge(id) {
           if (badges[id]) return;
           var def = null;
@@ -701,15 +946,17 @@ if (!window.StemLab.isRegistered('anatomy')) {
           newBadges[id] = true;
           upd('_badges', newBadges);
           playSound('badge');
+          spawnConfetti();
           if (awardStemXP) awardStemXP(def.xp);
           if (stemCelebrate) stemCelebrate();
           if (addToast) addToast(def.icon + ' Badge: ' + def.name + ' (+' + def.xp + ' XP)');
           // Check anatomy champion
           var earnedCount = Object.keys(newBadges).length;
-          if (earnedCount >= 10 && !newBadges.anatomyChampion) {
+          if (earnedCount >= 12 && !newBadges.anatomyChampion) {
             var champBadges = Object.assign({}, newBadges);
             champBadges.anatomyChampion = true;
             upd('_badges', champBadges);
+            spawnConfetti();
             if (awardStemXP) awardStemXP(50);
             if (addToast) addToast('\uD83D\uDC51 Badge: Anatomy Champion (+50 XP)');
           }
@@ -730,6 +977,11 @@ if (!window.StemLab.isRegistered('anatomy')) {
           if (d._tourCompleted && !badges.tourComplete) awardBadge('tourComplete');
           if (Object.keys(connectionsViewed).length >= 5 && !badges.connectionExplorer) awardBadge('connectionExplorer');
           if (clinicalSolved >= 3 && !badges.clinicalExpert) awardBadge('clinicalExpert');
+          if (Object.keys(mnemonicsViewed).length >= 5 && !badges.mnemonicLearner) awardBadge('mnemonicLearner');
+          if (Object.keys(pathwaysCompleted).length >= 2 && !badges.pathwayTracer) awardBadge('pathwayTracer');
+          if (spotterScore >= 5 && !badges.spotterPro) awardBadge('spotterPro');
+          if (comparisons >= 5 && !badges.compareMaster) awardBadge('compareMaster');
+          if (spotterBestTime < 3 && !badges.speedDemon) awardBadge('speedDemon');
         }
 
         // Track system explored
@@ -770,18 +1022,42 @@ if (!window.StemLab.isRegistered('anatomy')) {
             anatTick++;
             cCtx.clearRect(0, 0, W, H);
 
+            // ── X-ray mode background ──
+            if (xrayMode) {
+              cCtx.fillStyle = '#0a0a12';
+              cCtx.fillRect(0, 0, W, H);
+              // Subtle vignette
+              var vigGrad = cCtx.createRadialGradient(W * 0.5, H * 0.45, H * 0.15, W * 0.5, H * 0.45, H * 0.65);
+              vigGrad.addColorStop(0, 'rgba(30,30,50,0)');
+              vigGrad.addColorStop(1, 'rgba(0,0,0,0.4)');
+              cCtx.fillStyle = vigGrad; cCtx.fillRect(0, 0, W, H);
+            } else {
+              // ── System-specific background gradient ──
+              var bgGrad = cCtx.createRadialGradient(W * 0.5, H * 0.4, H * 0.1, W * 0.5, H * 0.4, H * 0.6);
+              bgGrad.addColorStop(0, sys.accent + '06');
+              bgGrad.addColorStop(1, '#fafaf900');
+              cCtx.fillStyle = bgGrad;
+              cCtx.fillRect(0, 0, W, H);
+            }
+
             // ── Enhanced Anatomical Figure ──
             cCtx.save();
-            cCtx.globalAlpha = skinOpacity;
+            cCtx.globalAlpha = xrayMode ? 0.12 : skinOpacity;
             cCtx.lineJoin = 'round';
             cCtx.lineCap = 'round';
 
-            // Skin gradient
+            // Skin gradient (adapts to X-ray mode)
             var skinGrad = cCtx.createLinearGradient(W * 0.3, 0, W * 0.7, H);
-            skinGrad.addColorStop(0, '#f5e6d3');
-            skinGrad.addColorStop(0.3, '#f0ddd0');
-            skinGrad.addColorStop(0.6, '#ebd5c6');
-            skinGrad.addColorStop(1, '#e8cfc0');
+            if (xrayMode) {
+              skinGrad.addColorStop(0, '#2a2a3a');
+              skinGrad.addColorStop(0.5, '#222233');
+              skinGrad.addColorStop(1, '#1a1a2a');
+            } else {
+              skinGrad.addColorStop(0, '#f5e6d3');
+              skinGrad.addColorStop(0.3, '#f0ddd0');
+              skinGrad.addColorStop(0.6, '#ebd5c6');
+              skinGrad.addColorStop(1, '#e8cfc0');
+            }
 
             // Helper: draw body part
             function drawBodyPart(pathFn) {
@@ -805,6 +1081,54 @@ if (!window.StemLab.isRegistered('anatomy')) {
             cCtx.strokeStyle = '#d4b8a0'; cCtx.lineWidth = 0.6; cCtx.stroke();
             cCtx.beginPath(); cCtx.ellipse(W * 0.56, H * 0.06, W * 0.008, H * 0.018, 0, 0, Math.PI * 2);
             cCtx.strokeStyle = '#d4b8a0'; cCtx.lineWidth = 0.6; cCtx.stroke();
+
+            // ── Facial features (anterior view) ──
+            if (view === 'anterior') {
+              cCtx.save(); cCtx.globalAlpha = Math.min(skinOpacity, 0.85);
+              // Hairline arc
+              cCtx.beginPath(); cCtx.ellipse(W * 0.5, H * 0.025, W * 0.052, H * 0.028, 0, Math.PI * 0.85, Math.PI * 0.15, true);
+              cCtx.strokeStyle = '#a08060'; cCtx.lineWidth = 2.5; cCtx.stroke();
+              // Eyebrows
+              cCtx.beginPath(); cCtx.moveTo(W * 0.465, H * 0.046); cCtx.quadraticCurveTo(W * 0.475, H * 0.042, W * 0.49, H * 0.044);
+              cCtx.strokeStyle = '#a08060'; cCtx.lineWidth = 1.2; cCtx.stroke();
+              cCtx.beginPath(); cCtx.moveTo(W * 0.535, H * 0.046); cCtx.quadraticCurveTo(W * 0.525, H * 0.042, W * 0.51, H * 0.044); cCtx.stroke();
+              // Eyes
+              cCtx.beginPath(); cCtx.ellipse(W * 0.478, H * 0.053, W * 0.012, H * 0.005, 0, 0, Math.PI * 2);
+              cCtx.fillStyle = '#fff'; cCtx.fill(); cCtx.strokeStyle = '#8a7060'; cCtx.lineWidth = 0.7; cCtx.stroke();
+              cCtx.beginPath(); cCtx.arc(W * 0.478, H * 0.053, W * 0.005, 0, Math.PI * 2);
+              cCtx.fillStyle = '#5a4030'; cCtx.fill();
+              cCtx.beginPath(); cCtx.arc(W * 0.478, H * 0.052, W * 0.002, 0, Math.PI * 2);
+              cCtx.fillStyle = '#1a1a1a'; cCtx.fill();
+              cCtx.beginPath(); cCtx.ellipse(W * 0.522, H * 0.053, W * 0.012, H * 0.005, 0, 0, Math.PI * 2);
+              cCtx.fillStyle = '#fff'; cCtx.fill(); cCtx.strokeStyle = '#8a7060'; cCtx.lineWidth = 0.7; cCtx.stroke();
+              cCtx.beginPath(); cCtx.arc(W * 0.522, H * 0.053, W * 0.005, 0, Math.PI * 2);
+              cCtx.fillStyle = '#5a4030'; cCtx.fill();
+              cCtx.beginPath(); cCtx.arc(W * 0.522, H * 0.052, W * 0.002, 0, Math.PI * 2);
+              cCtx.fillStyle = '#1a1a1a'; cCtx.fill();
+              // Nose
+              cCtx.beginPath(); cCtx.moveTo(W * 0.50, H * 0.050); cCtx.lineTo(W * 0.497, H * 0.068);
+              cCtx.quadraticCurveTo(W * 0.49, H * 0.073, W * 0.493, H * 0.074);
+              cCtx.moveTo(W * 0.50, H * 0.050); cCtx.lineTo(W * 0.503, H * 0.068);
+              cCtx.quadraticCurveTo(W * 0.51, H * 0.073, W * 0.507, H * 0.074);
+              cCtx.strokeStyle = '#c4a08a'; cCtx.lineWidth = 0.6; cCtx.stroke();
+              // Nostrils
+              cCtx.beginPath(); cCtx.ellipse(W * 0.495, H * 0.074, W * 0.004, H * 0.002, 0.2, 0, Math.PI * 2);
+              cCtx.strokeStyle = '#b09080'; cCtx.lineWidth = 0.5; cCtx.stroke();
+              cCtx.beginPath(); cCtx.ellipse(W * 0.505, H * 0.074, W * 0.004, H * 0.002, -0.2, 0, Math.PI * 2); cCtx.stroke();
+              // Mouth
+              cCtx.beginPath(); cCtx.moveTo(W * 0.485, H * 0.083);
+              cCtx.quadraticCurveTo(W * 0.50, H * 0.086, W * 0.515, H * 0.083);
+              cCtx.strokeStyle = '#c09080'; cCtx.lineWidth = 0.8; cCtx.stroke();
+              // Upper lip (cupid's bow)
+              cCtx.beginPath(); cCtx.moveTo(W * 0.487, H * 0.082);
+              cCtx.quadraticCurveTo(W * 0.494, H * 0.080, W * 0.50, H * 0.081);
+              cCtx.quadraticCurveTo(W * 0.506, H * 0.080, W * 0.513, H * 0.082);
+              cCtx.strokeStyle = '#c09080'; cCtx.lineWidth = 0.5; cCtx.stroke();
+              // Chin dimple hint
+              cCtx.beginPath(); cCtx.arc(W * 0.50, H * 0.095, W * 0.003, 0.2, Math.PI - 0.2);
+              cCtx.strokeStyle = '#d4b8a0'; cCtx.lineWidth = 0.4; cCtx.stroke();
+              cCtx.restore();
+            }
 
             // Neck
             drawBodyPart(function(c) {
@@ -893,9 +1217,35 @@ if (!window.StemLab.isRegistered('anatomy')) {
             cCtx.strokeStyle = '#c4aa94'; cCtx.lineWidth = 0.5; cCtx.stroke();
             cCtx.globalAlpha = 1.0;
 
-            // Hands
+            // Hands (palm)
             drawBodyPart(function(c) { c.ellipse(W * 0.15, H * 0.468, W * 0.022, H * 0.014, -0.2, 0, Math.PI * 2); });
             drawBodyPart(function(c) { c.ellipse(W * 0.85, H * 0.468, W * 0.022, H * 0.014, 0.2, 0, Math.PI * 2); });
+            // Finger details — left hand
+            cCtx.save(); cCtx.globalAlpha = skinOpacity * 0.9;
+            var lFingerBase = [[0.135, 0.457], [0.14, 0.454], [0.148, 0.454], [0.155, 0.457]];
+            var lFingerTip =  [[0.125, 0.448], [0.133, 0.443], [0.144, 0.443], [0.154, 0.448]];
+            for (var fi = 0; fi < 4; fi++) {
+              cCtx.beginPath();
+              cCtx.moveTo(W * lFingerBase[fi][0], H * lFingerBase[fi][1]);
+              cCtx.lineTo(W * lFingerTip[fi][0], H * lFingerTip[fi][1]);
+              cCtx.strokeStyle = '#d4b8a0'; cCtx.lineWidth = 2.2; cCtx.lineCap = 'round'; cCtx.stroke();
+            }
+            // Thumb — left
+            cCtx.beginPath(); cCtx.moveTo(W * 0.130, H * 0.465); cCtx.quadraticCurveTo(W * 0.122, H * 0.462, W * 0.118, H * 0.458);
+            cCtx.strokeStyle = '#d4b8a0'; cCtx.lineWidth = 2.5; cCtx.stroke();
+            // Finger details — right hand
+            var rFingerBase = [[0.865, 0.457], [0.86, 0.454], [0.852, 0.454], [0.845, 0.457]];
+            var rFingerTip =  [[0.875, 0.448], [0.867, 0.443], [0.856, 0.443], [0.846, 0.448]];
+            for (var fi2 = 0; fi2 < 4; fi2++) {
+              cCtx.beginPath();
+              cCtx.moveTo(W * rFingerBase[fi2][0], H * rFingerBase[fi2][1]);
+              cCtx.lineTo(W * rFingerTip[fi2][0], H * rFingerTip[fi2][1]);
+              cCtx.strokeStyle = '#d4b8a0'; cCtx.lineWidth = 2.2; cCtx.lineCap = 'round'; cCtx.stroke();
+            }
+            // Thumb — right
+            cCtx.beginPath(); cCtx.moveTo(W * 0.870, H * 0.465); cCtx.quadraticCurveTo(W * 0.878, H * 0.462, W * 0.882, H * 0.458);
+            cCtx.strokeStyle = '#d4b8a0'; cCtx.lineWidth = 2.5; cCtx.stroke();
+            cCtx.restore();
 
             // Left leg
             drawBodyPart(function(c) {
@@ -948,6 +1298,55 @@ if (!window.StemLab.isRegistered('anatomy')) {
             drawBodyPart(function(c) {
               c.moveTo(W * 0.70, H * 0.935); c.lineTo(W * 0.72, H * 0.955); c.quadraticCurveTo(W * 0.70, H * 0.965, W * 0.62, H * 0.96); c.lineTo(W * 0.61, H * 0.935); c.closePath();
             });
+            // Toe hints — left foot
+            cCtx.save(); cCtx.globalAlpha = skinOpacity * 0.5;
+            for (var ti = 0; ti < 5; ti++) {
+              cCtx.beginPath();
+              cCtx.arc(W * (0.30 + ti * 0.018), H * 0.958, 1.5 - ti * 0.15, 0, Math.PI * 2);
+              cCtx.strokeStyle = '#c4aa94'; cCtx.lineWidth = 0.5; cCtx.stroke();
+            }
+            // Toe hints — right foot
+            for (var ti2 = 0; ti2 < 5; ti2++) {
+              cCtx.beginPath();
+              cCtx.arc(W * (0.70 - ti2 * 0.018), H * 0.958, 1.5 - ti2 * 0.15, 0, Math.PI * 2);
+              cCtx.strokeStyle = '#c4aa94'; cCtx.lineWidth = 0.5; cCtx.stroke();
+            }
+            // Ankle bone bumps (malleoli)
+            cCtx.beginPath(); cCtx.arc(W * 0.345, H * 0.925, 2.5, 0, Math.PI * 2);
+            cCtx.strokeStyle = '#c4aa94'; cCtx.lineWidth = 0.6; cCtx.stroke();
+            cCtx.beginPath(); cCtx.arc(W * 0.385, H * 0.925, 2.5, 0, Math.PI * 2); cCtx.stroke();
+            cCtx.beginPath(); cCtx.arc(W * 0.655, H * 0.925, 2.5, 0, Math.PI * 2); cCtx.stroke();
+            cCtx.beginPath(); cCtx.arc(W * 0.615, H * 0.925, 2.5, 0, Math.PI * 2); cCtx.stroke();
+            cCtx.restore();
+
+            // ── Navel ──
+            cCtx.save(); cCtx.globalAlpha = skinOpacity * 0.4;
+            cCtx.beginPath(); cCtx.arc(W * 0.50, H * 0.36, 2, 0, Math.PI * 2);
+            cCtx.fillStyle = '#c4aa94'; cCtx.fill();
+            cCtx.restore();
+
+            // ── Joint indicator circles ──
+            cCtx.save(); cCtx.globalAlpha = 0.15;
+            var joints = [
+              [0.30, 0.155, 5],    // left shoulder
+              [0.70, 0.155, 5],    // right shoulder
+              [0.22, 0.34, 4],     // left elbow
+              [0.78, 0.34, 4],     // right elbow
+              [0.17, 0.455, 3],    // left wrist
+              [0.83, 0.455, 3],    // right wrist
+              [0.44, 0.43, 5.5],   // left hip
+              [0.56, 0.43, 5.5],   // right hip
+              [0.395, 0.68, 4.5],  // left knee
+              [0.605, 0.68, 4.5],  // right knee
+              [0.365, 0.925, 3.5], // left ankle
+              [0.635, 0.925, 3.5]  // right ankle
+            ];
+            for (var ji = 0; ji < joints.length; ji++) {
+              cCtx.beginPath();
+              cCtx.arc(W * joints[ji][0], H * joints[ji][1], joints[ji][2], 0, Math.PI * 2);
+              cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 1.5; cCtx.stroke();
+            }
+            cCtx.restore();
 
             // ── Restore skin opacity ──
             cCtx.restore();
@@ -998,9 +1397,13 @@ if (!window.StemLab.isRegistered('anatomy')) {
               cCtx.restore();
             }
 
-            // ── SKELETAL LAYER ──
-            if (layerOn('skeletal')) {
-              cCtx.save(); cCtx.globalAlpha = 0.45;
+            // ── SKELETAL LAYER ── (X-ray: bright glow on dark background)
+            if (layerOn('skeletal') || xrayMode) {
+              cCtx.save();
+              cCtx.globalAlpha = xrayMode ? 0.85 : 0.45;
+              if (xrayMode) { cCtx.shadowColor = '#e0f0ff'; cCtx.shadowBlur = 8; }
+              var boneColor = xrayMode ? '#d0e8ff' : '#94a3b8';
+              var boneLW = xrayMode ? 1.3 : 1.0;
               cCtx.beginPath(); cCtx.moveTo(W * 0.50, H * 0.10);
               for (var si = 0; si < 18; si++) { var sy = H * (0.11 + si * 0.018); cCtx.lineTo(W * (0.50 + Math.sin(si * 0.3) * 0.003), sy); }
               cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 3.5; cCtx.stroke();
@@ -1139,6 +1542,34 @@ if (!window.StemLab.isRegistered('anatomy')) {
                 cCtx.beginPath(); cCtx.arc(bfX, bfY, 2.5, 0, Math.PI * 2);
                 cCtx.fillStyle = '#ef4444'; cCtx.globalAlpha = 0.7; cCtx.fill(); cCtx.globalAlpha = 0.45;
               }
+              // ── ECG waveform animation ──
+              cCtx.save(); cCtx.globalAlpha = 0.55;
+              var ecgX0 = W * 0.02, ecgY0 = H * 0.96, ecgW = W * 0.25, ecgH = H * 0.03;
+              cCtx.beginPath(); cCtx.roundRect(ecgX0 - 2, ecgY0 - ecgH - 4, ecgW + 6, ecgH * 2 + 8, 3);
+              cCtx.fillStyle = 'rgba(0,0,0,0.5)'; cCtx.fill();
+              cCtx.beginPath();
+              var ecgPhase = (anatTick * 2) % Math.floor(ecgW);
+              for (var ei = 0; ei < ecgW; ei++) {
+                var ePos = (ei + ecgPhase) % ecgW;
+                var eNorm = ePos / ecgW;
+                var eVal = 0;
+                if (eNorm > 0.10 && eNorm < 0.15) eVal = (eNorm - 0.10) * 6;
+                else if (eNorm >= 0.15 && eNorm < 0.20) eVal = (0.20 - eNorm) * 6;
+                else if (eNorm >= 0.30 && eNorm < 0.33) eVal = -(eNorm - 0.30) * 12;
+                else if (eNorm >= 0.33 && eNorm < 0.36) eVal = -0.36 + (eNorm - 0.33) * 40;
+                else if (eNorm >= 0.36 && eNorm < 0.40) eVal = 0.84 - (eNorm - 0.36) * 28;
+                else if (eNorm >= 0.40 && eNorm < 0.43) eVal = -(eNorm - 0.40) * 8;
+                else if (eNorm >= 0.43 && eNorm < 0.48) eVal = -0.24 + (eNorm - 0.43) * 4.8;
+                else if (eNorm >= 0.60 && eNorm < 0.70) eVal = Math.sin((eNorm - 0.60) * Math.PI / 0.10) * 0.3;
+                if (ei === 0) cCtx.moveTo(ecgX0 + ei, ecgY0 - eVal * ecgH);
+                else cCtx.lineTo(ecgX0 + ei, ecgY0 - eVal * ecgH);
+              }
+              cCtx.strokeStyle = '#22c55e'; cCtx.lineWidth = 1.5; cCtx.stroke();
+              cCtx.font = 'bold 7px monospace'; cCtx.fillStyle = '#22c55e'; cCtx.textAlign = 'left';
+              cCtx.fillText('ECG', ecgX0 + 2, ecgY0 - ecgH - 1);
+              var heartRateDisplay = 60 + Math.floor(Math.sin(anatTick * 0.01) * 12);
+              cCtx.fillText(heartRateDisplay + ' BPM', ecgX0 + ecgW - 30, ecgY0 - ecgH - 1);
+              cCtx.restore();
               cCtx.restore();
             }
 
@@ -1184,6 +1615,340 @@ if (!window.StemLab.isRegistered('anatomy')) {
               cCtx.beginPath(); cCtx.ellipse(W * 0.58, H * 0.32, W * 0.02, H * 0.018, 0, 0, Math.PI * 2); cCtx.fillStyle = '#86efac80'; cCtx.fill(); cCtx.strokeStyle = '#22c55e'; cCtx.lineWidth = 1; cCtx.stroke();
               cCtx.beginPath(); cCtx.ellipse(W * 0.50, H * 0.18, W * 0.015, H * 0.012, 0, 0, Math.PI * 2); cCtx.fillStyle = '#86efac80'; cCtx.fill(); cCtx.strokeStyle = '#22c55e'; cCtx.lineWidth = 1; cCtx.stroke();
               for (var li = 0; li < lnPts.length - 2; li++) { cCtx.beginPath(); cCtx.moveTo(W * lnPts[li][0], H * lnPts[li][1]); cCtx.lineTo(W * lnPts[li + 2][0], H * lnPts[li + 2][1]); cCtx.strokeStyle = '#22c55e50'; cCtx.lineWidth = 0.8; cCtx.setLineDash([2, 3]); cCtx.stroke(); cCtx.setLineDash([]); }
+              cCtx.restore();
+            }
+
+            // ── RESPIRATORY TREE (when respiratory system selected) ──
+            if (sysKey === 'respiratory') {
+              cCtx.save(); cCtx.globalAlpha = 0.40;
+              // Trachea
+              cCtx.beginPath(); cCtx.moveTo(W * 0.498, H * 0.115); cCtx.lineTo(W * 0.498, H * 0.19);
+              cCtx.moveTo(W * 0.502, H * 0.115); cCtx.lineTo(W * 0.502, H * 0.19);
+              cCtx.strokeStyle = '#60a5fa'; cCtx.lineWidth = 2.5; cCtx.stroke();
+              // Cartilage rings
+              for (var cr = 0; cr < 6; cr++) {
+                var crY = H * (0.125 + cr * 0.012);
+                cCtx.beginPath(); cCtx.moveTo(W * 0.49, crY); cCtx.lineTo(W * 0.51, crY);
+                cCtx.strokeStyle = '#93c5fd'; cCtx.lineWidth = 1.5; cCtx.stroke();
+              }
+              // Main bronchi
+              cCtx.beginPath(); cCtx.moveTo(W * 0.50, H * 0.19);
+              cCtx.quadraticCurveTo(W * 0.46, H * 0.20, W * 0.43, H * 0.22);
+              cCtx.strokeStyle = '#60a5fa'; cCtx.lineWidth = 2; cCtx.stroke();
+              cCtx.beginPath(); cCtx.moveTo(W * 0.50, H * 0.19);
+              cCtx.quadraticCurveTo(W * 0.54, H * 0.20, W * 0.57, H * 0.22);
+              cCtx.strokeStyle = '#60a5fa'; cCtx.lineWidth = 2; cCtx.stroke();
+              // Secondary bronchi (left)
+              cCtx.beginPath(); cCtx.moveTo(W * 0.43, H * 0.22); cCtx.quadraticCurveTo(W * 0.40, H * 0.23, W * 0.39, H * 0.25); cCtx.strokeStyle = '#93c5fd'; cCtx.lineWidth = 1.2; cCtx.stroke();
+              cCtx.beginPath(); cCtx.moveTo(W * 0.43, H * 0.22); cCtx.quadraticCurveTo(W * 0.42, H * 0.24, W * 0.44, H * 0.26); cCtx.stroke();
+              // Secondary bronchi (right)
+              cCtx.beginPath(); cCtx.moveTo(W * 0.57, H * 0.22); cCtx.quadraticCurveTo(W * 0.60, H * 0.23, W * 0.61, H * 0.25); cCtx.stroke();
+              cCtx.beginPath(); cCtx.moveTo(W * 0.57, H * 0.22); cCtx.quadraticCurveTo(W * 0.58, H * 0.24, W * 0.56, H * 0.26); cCtx.stroke();
+              // Tertiary bronchioles (tiny branches)
+              var bronchioles = [
+                [0.39, 0.25, 0.37, 0.27], [0.39, 0.25, 0.41, 0.27],
+                [0.44, 0.26, 0.42, 0.28], [0.44, 0.26, 0.46, 0.28],
+                [0.61, 0.25, 0.63, 0.27], [0.61, 0.25, 0.59, 0.27],
+                [0.56, 0.26, 0.58, 0.28], [0.56, 0.26, 0.54, 0.28]
+              ];
+              bronchioles.forEach(function(b) {
+                cCtx.beginPath(); cCtx.moveTo(W * b[0], H * b[1]); cCtx.lineTo(W * b[2], H * b[3]);
+                cCtx.strokeStyle = '#bfdbfe'; cCtx.lineWidth = 0.8; cCtx.stroke();
+              });
+              // Alveoli clusters
+              var alveoliPts = [[0.37, 0.275], [0.41, 0.275], [0.42, 0.285], [0.46, 0.285], [0.63, 0.275], [0.59, 0.275], [0.58, 0.285], [0.54, 0.285]];
+              alveoliPts.forEach(function(a) {
+                cCtx.beginPath(); cCtx.arc(W * a[0], H * a[1], 2, 0, Math.PI * 2);
+                cCtx.fillStyle = '#dbeafe'; cCtx.fill(); cCtx.strokeStyle = '#93c5fd'; cCtx.lineWidth = 0.5; cCtx.stroke();
+              });
+              cCtx.restore();
+            }
+
+            // ── DIGESTIVE TRACT PATH (when organs system selected) ──
+            if (sysKey === 'organs') {
+              cCtx.save(); cCtx.globalAlpha = 0.30;
+              // Esophagus
+              cCtx.beginPath(); cCtx.moveTo(W * 0.50, H * 0.115);
+              cCtx.quadraticCurveTo(W * 0.49, H * 0.18, W * 0.48, H * 0.28);
+              cCtx.strokeStyle = '#f97316'; cCtx.lineWidth = 2; cCtx.setLineDash([3, 2]); cCtx.stroke(); cCtx.setLineDash([]);
+              // Stomach outline
+              cCtx.beginPath();
+              cCtx.moveTo(W * 0.48, H * 0.28); cCtx.quadraticCurveTo(W * 0.44, H * 0.29, W * 0.43, H * 0.32);
+              cCtx.quadraticCurveTo(W * 0.44, H * 0.35, W * 0.48, H * 0.35);
+              cCtx.strokeStyle = '#f97316'; cCtx.lineWidth = 1.5; cCtx.stroke();
+              // Duodenum curve
+              cCtx.beginPath(); cCtx.moveTo(W * 0.48, H * 0.35);
+              cCtx.quadraticCurveTo(W * 0.52, H * 0.355, W * 0.52, H * 0.37);
+              cCtx.quadraticCurveTo(W * 0.52, H * 0.385, W * 0.48, H * 0.39);
+              cCtx.strokeStyle = '#fb923c'; cCtx.lineWidth = 1.2; cCtx.stroke();
+              // Small intestine coils
+              var siY = H * 0.39;
+              for (var sci = 0; sci < 5; sci++) {
+                cCtx.beginPath();
+                cCtx.moveTo(W * 0.44, siY + sci * H * 0.012);
+                cCtx.quadraticCurveTo(W * 0.50, siY + sci * H * 0.012 + H * 0.006, W * 0.56, siY + sci * H * 0.012);
+                cCtx.strokeStyle = '#fb923c'; cCtx.lineWidth = 0.8; cCtx.stroke();
+              }
+              // Large intestine frame
+              cCtx.beginPath();
+              cCtx.moveTo(W * 0.56, H * 0.39); cCtx.lineTo(W * 0.58, H * 0.35);
+              cCtx.lineTo(W * 0.58, H * 0.30); cCtx.quadraticCurveTo(W * 0.55, H * 0.295, W * 0.50, H * 0.30);
+              cCtx.quadraticCurveTo(W * 0.45, H * 0.295, W * 0.42, H * 0.30);
+              cCtx.lineTo(W * 0.42, H * 0.35); cCtx.lineTo(W * 0.44, H * 0.39);
+              cCtx.strokeStyle = '#92400e'; cCtx.lineWidth = 2; cCtx.stroke();
+              cCtx.restore();
+            }
+
+            // ── DIAPHRAGM DOME (always visible when organs or respiratory active) ──
+            if (sysKey === 'respiratory' || sysKey === 'organs' || layerOn('organs')) {
+              cCtx.save(); cCtx.globalAlpha = 0.30;
+              cCtx.beginPath();
+              cCtx.moveTo(W * 0.34, H * 0.29);
+              cCtx.quadraticCurveTo(W * 0.42, H * 0.275, W * 0.50, H * 0.28);
+              cCtx.quadraticCurveTo(W * 0.58, H * 0.275, W * 0.66, H * 0.29);
+              cCtx.strokeStyle = '#f472b6'; cCtx.lineWidth = 1.5; cCtx.setLineDash([4, 3]); cCtx.stroke(); cCtx.setLineDash([]);
+              cCtx.font = 'bold 7px Inter, system-ui, sans-serif';
+              cCtx.fillStyle = '#f472b6'; cCtx.textAlign = 'right';
+              cCtx.fillText('diaphragm', W * 0.34 - 4, H * 0.293);
+              cCtx.restore();
+            }
+
+            // ── ENDOCRINE GLAND SHAPES (when endocrine system selected) ──
+            if (sysKey === 'endocrine') {
+              cCtx.save(); cCtx.globalAlpha = 0.35;
+              // Pituitary
+              cCtx.beginPath(); cCtx.ellipse(W * 0.50, H * 0.075, W * 0.006, H * 0.004, 0, 0, Math.PI * 2);
+              cCtx.fillStyle = '#c084fc'; cCtx.fill(); cCtx.strokeStyle = '#9333ea'; cCtx.lineWidth = 0.8; cCtx.stroke();
+              // Thyroid butterfly
+              cCtx.beginPath(); cCtx.ellipse(W * 0.48, H * 0.12, W * 0.012, H * 0.008, 0.2, 0, Math.PI * 2);
+              cCtx.fillStyle = '#c084fc40'; cCtx.fill(); cCtx.strokeStyle = '#9333ea'; cCtx.lineWidth = 0.7; cCtx.stroke();
+              cCtx.beginPath(); cCtx.ellipse(W * 0.52, H * 0.12, W * 0.012, H * 0.008, -0.2, 0, Math.PI * 2);
+              cCtx.fillStyle = '#c084fc40'; cCtx.fill(); cCtx.strokeStyle = '#9333ea'; cCtx.lineWidth = 0.7; cCtx.stroke();
+              // Adrenals (on kidneys)
+              cCtx.beginPath(); cCtx.moveTo(W * 0.42, H * 0.33);
+              cCtx.quadraticCurveTo(W * 0.435, H * 0.325, W * 0.45, H * 0.33);
+              cCtx.fillStyle = '#c084fc60'; cCtx.fill(); cCtx.strokeStyle = '#9333ea'; cCtx.lineWidth = 0.7; cCtx.stroke();
+              cCtx.beginPath(); cCtx.moveTo(W * 0.55, H * 0.33);
+              cCtx.quadraticCurveTo(W * 0.565, H * 0.325, W * 0.58, H * 0.33);
+              cCtx.fillStyle = '#c084fc60'; cCtx.fill(); cCtx.stroke();
+              // Pancreas islets dots
+              cCtx.beginPath(); cCtx.ellipse(W * 0.50, H * 0.34, W * 0.03, H * 0.008, 0, 0, Math.PI * 2);
+              cCtx.strokeStyle = '#9333ea'; cCtx.lineWidth = 0.8; cCtx.setLineDash([2, 2]); cCtx.stroke(); cCtx.setLineDash([]);
+              for (var ei2 = 0; ei2 < 5; ei2++) {
+                cCtx.beginPath(); cCtx.arc(W * (0.475 + ei2 * 0.012), H * 0.34, 1.5, 0, Math.PI * 2);
+                cCtx.fillStyle = '#c084fc'; cCtx.fill();
+              }
+              // Pineal gland
+              cCtx.beginPath(); cCtx.arc(W * 0.50, H * 0.048, 2, 0, Math.PI * 2);
+              cCtx.fillStyle = '#c084fc'; cCtx.fill(); cCtx.strokeStyle = '#9333ea'; cCtx.lineWidth = 0.5; cCtx.stroke();
+              cCtx.restore();
+            }
+
+            // ── REPRODUCTIVE OUTLINES (when reproductive system selected) ──
+            if (sysKey === 'reproductive') {
+              cCtx.save(); cCtx.globalAlpha = 0.30;
+              // Uterus outline
+              cCtx.beginPath();
+              cCtx.moveTo(W * 0.47, H * 0.40); cCtx.quadraticCurveTo(W * 0.45, H * 0.41, W * 0.45, H * 0.43);
+              cCtx.quadraticCurveTo(W * 0.45, H * 0.45, W * 0.50, H * 0.46);
+              cCtx.quadraticCurveTo(W * 0.55, H * 0.45, W * 0.55, H * 0.43);
+              cCtx.quadraticCurveTo(W * 0.55, H * 0.41, W * 0.53, H * 0.40);
+              cCtx.strokeStyle = '#ec4899'; cCtx.lineWidth = 1.5; cCtx.stroke();
+              // Fallopian tubes
+              cCtx.beginPath(); cCtx.moveTo(W * 0.47, H * 0.40); cCtx.quadraticCurveTo(W * 0.43, H * 0.39, W * 0.40, H * 0.40);
+              cCtx.strokeStyle = '#ec4899'; cCtx.lineWidth = 1; cCtx.stroke();
+              cCtx.beginPath(); cCtx.moveTo(W * 0.53, H * 0.40); cCtx.quadraticCurveTo(W * 0.57, H * 0.39, W * 0.60, H * 0.40); cCtx.stroke();
+              // Ovaries
+              cCtx.beginPath(); cCtx.ellipse(W * 0.39, H * 0.405, W * 0.01, H * 0.007, 0, 0, Math.PI * 2);
+              cCtx.fillStyle = '#fce7f350'; cCtx.fill(); cCtx.strokeStyle = '#ec4899'; cCtx.lineWidth = 0.8; cCtx.stroke();
+              cCtx.beginPath(); cCtx.ellipse(W * 0.61, H * 0.405, W * 0.01, H * 0.007, 0, 0, Math.PI * 2);
+              cCtx.fillStyle = '#fce7f350'; cCtx.fill(); cCtx.stroke();
+              cCtx.restore();
+            }
+
+            // ── ANATOMICAL COMPASS ROSE ──
+            cCtx.save(); cCtx.globalAlpha = 0.35;
+            var compX = W - 28, compY = 20;
+            cCtx.beginPath(); cCtx.arc(compX, compY, 14, 0, Math.PI * 2);
+            cCtx.fillStyle = '#f8fafc'; cCtx.fill(); cCtx.strokeStyle = '#cbd5e1'; cCtx.lineWidth = 0.8; cCtx.stroke();
+            cCtx.beginPath(); cCtx.moveTo(compX, compY - 11); cCtx.lineTo(compX, compY + 11);
+            cCtx.moveTo(compX - 11, compY); cCtx.lineTo(compX + 11, compY);
+            cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 0.5; cCtx.stroke();
+            cCtx.font = 'bold 6px Inter, system-ui, sans-serif'; cCtx.fillStyle = '#64748b'; cCtx.textAlign = 'center';
+            cCtx.fillText('S', compX, compY - 7);  // Superior
+            cCtx.fillText('I', compX, compY + 10);  // Inferior
+            cCtx.fillText('L', compX - 8, compY + 2);  // Lateral
+            cCtx.fillText('M', compX + 8, compY + 2);  // Medial (for anterior view)
+            cCtx.restore();
+
+            // ── BODY REGION LABELS (subtle background labels) ──
+            if (d._showRegionLabels) {
+              cCtx.save(); cCtx.globalAlpha = 0.18;
+              cCtx.font = 'bold 7px Inter, system-ui, sans-serif'; cCtx.textAlign = 'left'; cCtx.fillStyle = '#64748b';
+              cCtx.fillText('HEAD', W * 0.03, H * 0.04);
+              cCtx.fillText('THORAX', W * 0.03, H * 0.19);
+              cCtx.fillText('ABDOMEN', W * 0.03, H * 0.33);
+              cCtx.fillText('PELVIS', W * 0.03, H * 0.43);
+              cCtx.fillText('UPPER', W * 0.03, H * 0.27);
+              cCtx.fillText('LIMB', W * 0.03, H * 0.29);
+              cCtx.fillText('LOWER', W * 0.03, H * 0.60);
+              cCtx.fillText('LIMB', W * 0.03, H * 0.62);
+              // Region dividing lines
+              cCtx.beginPath();
+              cCtx.moveTo(W * 0.30, H * 0.135); cCtx.lineTo(W * 0.70, H * 0.135);
+              cCtx.moveTo(W * 0.34, H * 0.29); cCtx.lineTo(W * 0.66, H * 0.29);
+              cCtx.moveTo(W * 0.38, H * 0.425); cCtx.lineTo(W * 0.62, H * 0.425);
+              cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 0.5; cCtx.setLineDash([2, 3]); cCtx.stroke(); cCtx.setLineDash([]);
+              cCtx.restore();
+            }
+
+            // ── BRAIN REGION MAPPING (when nervous system + brain selected) ──
+            if (sysKey === 'nervous' && view === 'anterior') {
+              cCtx.save(); cCtx.globalAlpha = 0.25;
+              var bx = W * 0.50, by = H * 0.055, br = W * 0.044;
+              // Frontal lobe
+              cCtx.beginPath(); cCtx.ellipse(bx, by - br * 0.15, br * 0.5, br * 0.6, 0, Math.PI * 1.1, Math.PI * 1.9);
+              cCtx.lineTo(bx, by); cCtx.closePath();
+              cCtx.fillStyle = '#fca5a540'; cCtx.fill(); cCtx.strokeStyle = '#ef4444'; cCtx.lineWidth = 0.5; cCtx.stroke();
+              // Parietal lobe
+              cCtx.beginPath(); cCtx.ellipse(bx, by - br * 0.3, br * 0.45, br * 0.35, 0, Math.PI * 1.2, Math.PI * 1.8);
+              cCtx.fillStyle = '#93c5fd40'; cCtx.fill(); cCtx.strokeStyle = '#3b82f6'; cCtx.lineWidth = 0.5; cCtx.stroke();
+              // Temporal lobes
+              cCtx.beginPath(); cCtx.ellipse(bx - br * 0.55, by + br * 0.1, br * 0.25, br * 0.3, 0.3, 0, Math.PI * 2);
+              cCtx.fillStyle = '#86efac40'; cCtx.fill(); cCtx.strokeStyle = '#22c55e'; cCtx.lineWidth = 0.5; cCtx.stroke();
+              cCtx.beginPath(); cCtx.ellipse(bx + br * 0.55, by + br * 0.1, br * 0.25, br * 0.3, -0.3, 0, Math.PI * 2);
+              cCtx.fillStyle = '#86efac40'; cCtx.fill(); cCtx.strokeStyle = '#22c55e'; cCtx.lineWidth = 0.5; cCtx.stroke();
+              // Labels
+              cCtx.font = 'bold 5px Inter, system-ui, sans-serif'; cCtx.textAlign = 'center';
+              cCtx.globalAlpha = 0.5;
+              cCtx.fillStyle = '#ef4444'; cCtx.fillText('F', bx, by - br * 0.05);
+              cCtx.fillStyle = '#3b82f6'; cCtx.fillText('P', bx, by - br * 0.45);
+              cCtx.fillStyle = '#22c55e'; cCtx.fillText('T', bx - br * 0.55, by + br * 0.15);
+              cCtx.fillText('T', bx + br * 0.55, by + br * 0.15);
+              cCtx.restore();
+            }
+
+            // ── INTEGUMENTARY CROSS-SECTION INSET ──
+            if (sysKey === 'integumentary') {
+              cCtx.save(); cCtx.globalAlpha = 0.80;
+              var csX = W * 0.68, csY = H * 0.02, csW2 = W * 0.30, csH2 = H * 0.18;
+              // Background
+              cCtx.beginPath(); cCtx.roundRect(csX, csY, csW2, csH2, 6);
+              cCtx.fillStyle = '#fff'; cCtx.fill();
+              cCtx.strokeStyle = '#e2e8f0'; cCtx.lineWidth = 1; cCtx.stroke();
+              cCtx.font = 'bold 7px Inter, system-ui, sans-serif'; cCtx.fillStyle = '#64748b'; cCtx.textAlign = 'left';
+              cCtx.fillText('SKIN CROSS-SECTION', csX + 4, csY + 10);
+              // Epidermis layer
+              cCtx.fillStyle = '#fef3c7'; cCtx.fillRect(csX + 4, csY + 15, csW2 - 8, csH2 * 0.15);
+              cCtx.font = '6px Inter, system-ui, sans-serif'; cCtx.fillStyle = '#92400e';
+              cCtx.fillText('Epidermis', csX + 6, csY + 22);
+              // Dermis layer
+              cCtx.fillStyle = '#fce7f3'; cCtx.fillRect(csX + 4, csY + 15 + csH2 * 0.15, csW2 - 8, csH2 * 0.40);
+              cCtx.fillStyle = '#9f1239';
+              cCtx.fillText('Dermis', csX + 6, csY + 15 + csH2 * 0.35);
+              // Hair follicle
+              var hfX = csX + csW2 * 0.3, hfY0 = csY + 14;
+              cCtx.beginPath(); cCtx.moveTo(hfX, hfY0); cCtx.lineTo(hfX - 1, hfY0 + csH2 * 0.45);
+              cCtx.strokeStyle = '#78350f'; cCtx.lineWidth = 1.2; cCtx.stroke();
+              cCtx.beginPath(); cCtx.arc(hfX - 1, hfY0 + csH2 * 0.45, 3, 0, Math.PI * 2);
+              cCtx.fillStyle = '#92400e40'; cCtx.fill(); cCtx.strokeStyle = '#78350f'; cCtx.lineWidth = 0.5; cCtx.stroke();
+              // Sweat gland
+              var sgX = csX + csW2 * 0.6, sgY = csY + 15 + csH2 * 0.35;
+              cCtx.beginPath();
+              cCtx.moveTo(sgX, csY + 14); cCtx.lineTo(sgX, sgY - 4);
+              cCtx.strokeStyle = '#3b82f6'; cCtx.lineWidth = 0.8; cCtx.stroke();
+              cCtx.beginPath();
+              for (var swi = 0; swi < 3; swi++) {
+                cCtx.arc(sgX + (swi % 2 === 0 ? 2 : -2), sgY + swi * 3, 2, 0, Math.PI * 2);
+              }
+              cCtx.strokeStyle = '#3b82f6'; cCtx.lineWidth = 0.5; cCtx.stroke();
+              // Hypodermis layer
+              cCtx.fillStyle = '#fef9c3'; cCtx.fillRect(csX + 4, csY + 15 + csH2 * 0.55, csW2 - 8, csH2 * 0.30);
+              cCtx.fillStyle = '#854d0e'; cCtx.fillText('Hypodermis', csX + 6, csY + 15 + csH2 * 0.72);
+              // Fat cells
+              for (var fci = 0; fci < 4; fci++) {
+                cCtx.beginPath(); cCtx.arc(csX + 30 + fci * 14, csY + 15 + csH2 * 0.62, 4, 0, Math.PI * 2);
+                cCtx.fillStyle = '#fef08a40'; cCtx.fill(); cCtx.strokeStyle = '#eab308'; cCtx.lineWidth = 0.4; cCtx.stroke();
+              }
+              // Blood vessel
+              cCtx.beginPath();
+              cCtx.moveTo(csX + csW2 * 0.75, csY + 15 + csH2 * 0.15);
+              cCtx.quadraticCurveTo(csX + csW2 * 0.80, csY + 15 + csH2 * 0.30, csX + csW2 * 0.72, csY + 15 + csH2 * 0.45);
+              cCtx.strokeStyle = '#ef4444'; cCtx.lineWidth = 1; cCtx.stroke();
+              // Nerve fiber
+              cCtx.beginPath();
+              cCtx.moveTo(csX + csW2 * 0.85, csY + 15 + csH2 * 0.20);
+              cCtx.lineTo(csX + csW2 * 0.85, csY + 15 + csH2 * 0.50);
+              cCtx.strokeStyle = '#eab308'; cCtx.lineWidth = 0.6; cCtx.setLineDash([1, 2]); cCtx.stroke(); cCtx.setLineDash([]);
+              cCtx.restore();
+            }
+
+            // ── SEARCH HIGHLIGHTING on canvas ──
+            if (searchTerm && searchTerm.length >= 2) {
+              filtered.forEach(function(st) {
+                if (st.name.toLowerCase().indexOf(searchTerm) >= 0) {
+                  var shx = st.x * W, shy = st.y * H;
+                  cCtx.save();
+                  var shPulse = 1.0 + Math.sin(anatTick * 0.08) * 0.3;
+                  cCtx.globalAlpha = 0.3;
+                  var shGlow = cCtx.createRadialGradient(shx, shy, 2, shx, shy, 14 + shPulse * 4);
+                  shGlow.addColorStop(0, '#fbbf24');
+                  shGlow.addColorStop(1, '#fbbf2400');
+                  cCtx.beginPath(); cCtx.arc(shx, shy, 14 + shPulse * 4, 0, Math.PI * 2);
+                  cCtx.fillStyle = shGlow; cCtx.fill();
+                  cCtx.restore();
+                }
+              });
+            }
+
+            // ── MUSCLE ORIGIN/INSERTION MARKERS ──
+            if (sel && sel.origin && sel.insertion) {
+              cCtx.save(); cCtx.globalAlpha = 0.6;
+              var oiX = sel.x * W, oiY = sel.y * H;
+              // Origin marker (red, above)
+              cCtx.beginPath(); cCtx.arc(oiX - 6, oiY - 10, 3.5, 0, Math.PI * 2);
+              cCtx.fillStyle = '#ef4444'; cCtx.fill(); cCtx.strokeStyle = '#fff'; cCtx.lineWidth = 1; cCtx.stroke();
+              cCtx.font = 'bold 5px Inter, system-ui, sans-serif'; cCtx.fillStyle = '#fff'; cCtx.textAlign = 'center';
+              cCtx.fillText('O', oiX - 6, oiY - 8.5);
+              // Insertion marker (blue, below)
+              cCtx.beginPath(); cCtx.arc(oiX + 6, oiY + 10, 3.5, 0, Math.PI * 2);
+              cCtx.fillStyle = '#3b82f6'; cCtx.fill(); cCtx.strokeStyle = '#fff'; cCtx.lineWidth = 1; cCtx.stroke();
+              cCtx.fillStyle = '#fff';
+              cCtx.fillText('I', oiX + 6, oiY + 11.5);
+              cCtx.restore();
+            }
+
+            // ── CONFETTI PARTICLES ──
+            if (confettiParticles.length > 0) {
+              cCtx.save();
+              var confettiColors = ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#ec4899', '#8b5cf6', '#f97316'];
+              confettiParticles.forEach(function(cp) {
+                var age = (Date.now() - cp.born) * 0.001;
+                if (age > 2) return;
+                var cpx2 = cp.x * W + cp.vx * age * W * 0.15;
+                var cpy2 = cp.y * H + cp.vy * age * H * 0.2 + age * age * H * 0.08;
+                cCtx.globalAlpha = Math.max(0, 1 - age * 0.5);
+                cCtx.save();
+                cCtx.translate(cpx2, cpy2);
+                cCtx.rotate(cp.rot + age * cp.spin);
+                cCtx.fillStyle = confettiColors[cp.ci % confettiColors.length];
+                cCtx.fillRect(-3, -1.5, 6, 3);
+                cCtx.restore();
+              });
+              cCtx.restore();
+            }
+
+            // ── X-ray film label ──
+            if (xrayMode) {
+              cCtx.save(); cCtx.globalAlpha = 0.4;
+              cCtx.font = 'bold 8px monospace'; cCtx.fillStyle = '#e0f0ff'; cCtx.textAlign = 'left';
+              cCtx.fillText('X-RAY', 8, 14);
+              cCtx.font = '6px monospace';
+              cCtx.fillText(view === 'anterior' ? 'AP VIEW' : 'PA VIEW', 8, 22);
+              cCtx.textAlign = 'right';
+              cCtx.fillText('R', 14, H * 0.5);
+              cCtx.textAlign = 'left';
+              cCtx.fillText('L', W - 14, H * 0.5);
               cCtx.restore();
             }
 
@@ -1258,6 +2023,47 @@ if (!window.StemLab.isRegistered('anatomy')) {
               }
             }
 
+            // ── Spotter test pin overlay ──
+            if (spotterActive && spotterTarget) {
+              var spSt = null;
+              for (var spi2 = 0; spi2 < filtered.length; spi2++) {
+                if (filtered[spi2].id === spotterTarget) { spSt = filtered[spi2]; break; }
+              }
+              if (spSt) {
+                var spx = spSt.x * W, spy2 = spSt.y * H;
+                var spPulse = 1.0 + Math.sin(anatTick * 0.1) * 0.4;
+                cCtx.save();
+                cCtx.globalAlpha = 0.2 + Math.sin(anatTick * 0.08) * 0.1;
+                cCtx.beginPath(); cCtx.arc(spx, spy2, 18 + spPulse * 6, 0, Math.PI * 2);
+                cCtx.strokeStyle = '#f59e0b'; cCtx.lineWidth = 3; cCtx.setLineDash([6, 4]); cCtx.stroke(); cCtx.setLineDash([]);
+                cCtx.beginPath(); cCtx.arc(spx, spy2, 10, 0, Math.PI * 2);
+                cCtx.fillStyle = '#f59e0b40'; cCtx.fill();
+                cCtx.globalAlpha = 0.7;
+                cCtx.beginPath(); cCtx.moveTo(spx - 12, spy2); cCtx.lineTo(spx + 12, spy2);
+                cCtx.moveTo(spx, spy2 - 12); cCtx.lineTo(spx, spy2 + 12);
+                cCtx.strokeStyle = '#f59e0b'; cCtx.lineWidth = 1.5; cCtx.stroke();
+                cCtx.restore();
+              }
+            }
+
+            // ── Compare highlight ──
+            if (compareSel && (!sel || compareSel.id !== sel.id)) {
+              var cpSt = null;
+              for (var cpi = 0; cpi < filtered.length; cpi++) {
+                if (filtered[cpi].id === compareSel.id) { cpSt = filtered[cpi]; break; }
+              }
+              if (cpSt) {
+                var cpx = cpSt.x * W, cpy = cpSt.y * H;
+                cCtx.save(); cCtx.globalAlpha = 0.5;
+                cCtx.beginPath(); cCtx.arc(cpx, cpy, 11, 0, Math.PI * 2);
+                cCtx.strokeStyle = '#8b5cf6'; cCtx.lineWidth = 2.5; cCtx.setLineDash([3, 3]); cCtx.stroke(); cCtx.setLineDash([]);
+                cCtx.font = 'bold 8px Inter, system-ui, sans-serif';
+                cCtx.fillStyle = '#8b5cf6'; cCtx.textAlign = 'center';
+                cCtx.fillText('B', cpx, cpy + 3);
+                cCtx.restore();
+              }
+            }
+
             // View label
             cCtx.save();
             var viewLbl = view === 'anterior' ? 'ANTERIOR VIEW' : 'POSTERIOR VIEW';
@@ -1265,9 +2071,9 @@ if (!window.StemLab.isRegistered('anatomy')) {
             var vW = cCtx.measureText(viewLbl).width + 16;
             cCtx.beginPath();
             cCtx.roundRect(W * 0.5 - vW / 2, H - 18, vW, 14, 4);
-            cCtx.fillStyle = '#f8fafc'; cCtx.fill();
-            cCtx.strokeStyle = '#e2e8f0'; cCtx.lineWidth = 0.5; cCtx.stroke();
-            cCtx.fillStyle = '#94a3b8'; cCtx.textAlign = 'center';
+            cCtx.fillStyle = xrayMode ? 'rgba(20,20,30,0.8)' : '#f8fafc'; cCtx.fill();
+            cCtx.strokeStyle = xrayMode ? '#4a5568' : '#e2e8f0'; cCtx.lineWidth = 0.5; cCtx.stroke();
+            cCtx.fillStyle = xrayMode ? '#a0c4ff' : '#94a3b8'; cCtx.textAlign = 'center';
             cCtx.fillText(viewLbl, W * 0.5, H - 8);
             cCtx.restore();
 
@@ -1367,11 +2173,38 @@ if (!window.StemLab.isRegistered('anatomy')) {
         filtered.forEach(function(st) { if (structuresViewed[st.id]) exploredInSystem++; });
         var progressPct = filtered.length > 0 ? Math.round((exploredInSystem / filtered.length) * 100) : 0;
 
+        // ── Keyboard navigation handler ──
+        function handleKeyNav(e) {
+          if (activeTab !== 'explore') return;
+          if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+          var navList = filtered;
+          if (navList.length === 0) return;
+          var curIdx = -1;
+          if (sel) {
+            for (var ki = 0; ki < navList.length; ki++) {
+              if (navList[ki].id === sel.id) { curIdx = ki; break; }
+            }
+          }
+          if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            var nextIdx = curIdx < navList.length - 1 ? curIdx + 1 : 0;
+            upd('selectedStructure', navList[nextIdx].id);
+            playSound('structureClick');
+          } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+            e.preventDefault();
+            var prevIdx = curIdx > 0 ? curIdx - 1 : navList.length - 1;
+            upd('selectedStructure', navList[prevIdx].id);
+            playSound('structureClick');
+          } else if (e.key === 'Escape') {
+            upd('selectedStructure', null);
+          }
+        }
+
         // ══════════════════════════════════════
         // UI RENDER
         // ══════════════════════════════════════
 
-        return h('div', { className: 'max-w-4xl mx-auto animate-in fade-in duration-200' },
+        return h('div', { className: 'max-w-4xl mx-auto animate-in fade-in duration-200', tabIndex: 0, onKeyDown: handleKeyNav, style: { outline: 'none' } },
 
           // Header
           h('div', { className: 'flex items-center gap-3 mb-3' },
@@ -1408,6 +2241,18 @@ if (!window.StemLab.isRegistered('anatomy')) {
               onClick: function() { upd('_activeTab', 'aiTutor'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'aiTutor' ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-200')
             }, '\uD83E\uDD16 AI Tutor'),
+            h('button', {
+              onClick: function() { upd('_activeTab', 'spotter'); },
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'spotter' ? 'bg-amber-600 text-white' : 'bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200')
+            }, '\uD83C\uDFAF Spotter'),
+            h('button', {
+              onClick: function() { upd('_activeTab', 'pathways'); },
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'pathways' ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200')
+            }, '\uD83D\uDEE4 Pathways'),
+            h('button', {
+              onClick: function() { upd('_activeTab', 'flashcards'); },
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'flashcards' ? 'bg-teal-600 text-white' : 'bg-teal-50 text-teal-600 hover:bg-teal-100 border border-teal-200')
+            }, '\uD83C\uDCCF Cards'),
             h('span', { className: 'ml-auto text-[10px] font-bold text-amber-600 self-center' }, '\uD83C\uDFC5 ' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ' badges')
           ),
 
@@ -1492,6 +2337,167 @@ if (!window.StemLab.isRegistered('anatomy')) {
             ) : h('p', { className: 'text-xs text-slate-400 italic' }, 'No tour available for this system.')
           ) : null,
 
+          // ── Spotter Test Tab ──
+          activeTab === 'spotter' ? h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4 space-y-3' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
+              h('h4', { className: 'font-bold text-amber-800 text-sm' }, '\uD83C\uDFAF Anatomy Spotter Test'),
+              h('div', { className: 'flex gap-2' },
+                h('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700' }, '\u2705 ' + spotterScore + '/' + spotterTotal),
+                spotterBestTime < 999 ? h('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700' }, '\u26A1 Best: ' + spotterBestTime.toFixed(1) + 's') : null
+              )
+            ),
+            h('p', { className: 'text-xs text-slate-500 mb-3' }, 'A pin is placed on the anatomical figure. Identify the structure as quickly as you can! Look for the pulsing crosshair on the canvas.'),
+            !spotterActive ? h('div', { className: 'text-center py-4' },
+              h('button', {
+                onClick: function() {
+                  var pool = filtered.filter(function(s) { return s.fn; });
+                  if (pool.length < 4) return;
+                  var target = pool[Math.floor(Math.random() * pool.length)];
+                  var wrong = pool.filter(function(s) { return s.id !== target.id; }).sort(function() { return Math.random() - 0.5; }).slice(0, 3);
+                  var opts = wrong.concat([target]).sort(function() { return Math.random() - 0.5; });
+                  updMulti({ _spotterActive: true, _spotterTarget: target.id, _spotterFeedback: null, _spotterOpts: opts, _spotterStartTime: Date.now() });
+                },
+                className: 'px-6 py-2.5 rounded-xl text-sm font-bold bg-amber-500 text-white hover:bg-amber-600 transition-all shadow-sm'
+              }, '\uD83C\uDFAF Start Spotter Test'),
+              spotterTotal > 0 ? h('p', { className: 'text-[10px] text-slate-400 mt-2' }, 'Score: ' + spotterScore + ' correct out of ' + spotterTotal + ' attempts') : null
+            ) : h('div', { className: 'space-y-3' },
+              h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200 text-center' },
+                h('p', { className: 'text-sm font-bold text-amber-900 mb-1' }, 'What structure is marked on the figure?'),
+                h('p', { className: 'text-[10px] text-amber-600' }, 'Look for the pulsing amber crosshair on the canvas')
+              ),
+              h('div', { className: 'grid grid-cols-2 gap-2' },
+                spotterOptions.map(function(opt) {
+                  var isCorrect = opt.id === spotterTarget;
+                  var showResult = spotterFeedback !== null;
+                  var wasChosen = showResult && spotterFeedback === opt.id;
+                  return h('button', {
+                    key: opt.id,
+                    disabled: showResult,
+                    onClick: function() {
+                      var elapsed = (Date.now() - spotterStartTime) / 1000;
+                      upd('_spotterFeedback', opt.id);
+                      upd('_spotterTotal', spotterTotal + 1);
+                      if (opt.id === spotterTarget) {
+                        upd('_spotterScore', spotterScore + 1);
+                        if (elapsed < spotterBestTime) upd('_spotterBestTime', elapsed);
+                        playSound('spotterCorrect');
+                      } else {
+                        playSound('spotterWrong');
+                      }
+                    },
+                    className: 'px-3 py-2.5 rounded-xl text-xs font-bold transition-all border-2 text-left ' +
+                      (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
+                        showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
+                          'border-slate-200 hover:border-amber-300 text-slate-700 hover:bg-amber-50')
+                  }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + opt.name);
+                })
+              ),
+              spotterFeedback ? h('div', { className: 'space-y-2' },
+                h('div', { className: 'rounded-lg p-3 text-xs leading-relaxed ' + (spotterFeedback === spotterTarget ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
+                  h('p', { className: 'font-bold ' + (spotterFeedback === spotterTarget ? 'text-green-800' : 'text-amber-800') },
+                    spotterFeedback === spotterTarget ? '\u2705 Correct! (' + ((Date.now() - spotterStartTime) / 1000).toFixed(1) + 's)' : '\u274C The answer was: ' + (function() { for (var si3 = 0; si3 < filtered.length; si3++) { if (filtered[si3].id === spotterTarget) return filtered[si3].name; } return ''; })()
+                  )
+                ),
+                h('button', {
+                  onClick: function() {
+                    var pool = filtered.filter(function(s) { return s.fn; });
+                    if (pool.length < 4) return;
+                    var target = pool[Math.floor(Math.random() * pool.length)];
+                    var wrong = pool.filter(function(s) { return s.id !== target.id; }).sort(function() { return Math.random() - 0.5; }).slice(0, 3);
+                    var opts = wrong.concat([target]).sort(function() { return Math.random() - 0.5; });
+                    updMulti({ _spotterTarget: target.id, _spotterFeedback: null, _spotterOpts: opts, _spotterStartTime: Date.now() });
+                  },
+                  className: 'w-full py-2 rounded-lg text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 transition-all'
+                }, 'Next Structure \u2192'),
+                h('button', {
+                  onClick: function() { updMulti({ _spotterActive: false, _spotterTarget: null, _spotterFeedback: null }); },
+                  className: 'w-full py-1.5 rounded-lg text-[10px] font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all'
+                }, 'End Test')
+              ) : null
+            )
+          ) : null,
+
+          // ── Pathways Tab ──
+          activeTab === 'pathways' ? h('div', { className: 'bg-white rounded-xl border-2 border-rose-200 p-4 space-y-3' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
+              h('h4', { className: 'font-bold text-rose-800 text-sm' }, '\uD83D\uDEE4 Physiological Pathways'),
+              h('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-600' }, Object.keys(pathwaysCompleted).length + '/' + PATHWAYS.length + ' completed')
+            ),
+            h('p', { className: 'text-xs text-slate-500 mb-3' }, 'Trace step-by-step how blood flows, air moves, food digests, or nerve signals travel through the body.'),
+            !activePathwayId ? h('div', { className: 'grid grid-cols-2 gap-2' },
+              PATHWAYS.map(function(pw) {
+                var isDone = pathwaysCompleted[pw.id];
+                return h('button', {
+                  key: pw.id,
+                  onClick: function() { updMulti({ _activePathway: pw.id, _pathwayStep: 0 }); upd('selectedStructure', pw.steps[0].structure); playSound('pathwayStep'); },
+                  className: 'text-left rounded-xl p-3 border-2 transition-all ' + (isDone ? 'border-rose-300 bg-rose-50' : 'border-slate-200 hover:border-rose-200 hover:bg-rose-50/50')
+                },
+                  h('div', { className: 'flex items-center gap-2 mb-1' },
+                    h('span', { className: 'text-lg' }, pw.icon),
+                    h('span', { className: 'text-xs font-black', style: { color: pw.color } }, pw.title),
+                    isDone ? h('span', { className: 'ml-auto text-[10px] text-emerald-500 font-bold' }, '\u2713') : null
+                  ),
+                  h('p', { className: 'text-[10px] text-slate-500 leading-relaxed' }, pw.desc)
+                );
+              })
+            ) : (function() {
+              var pw = null;
+              for (var pwi = 0; pwi < PATHWAYS.length; pwi++) { if (PATHWAYS[pwi].id === activePathwayId) { pw = PATHWAYS[pwi]; break; } }
+              if (!pw) return null;
+              var step = pw.steps[pathwayStepIdx];
+              return h('div', { className: 'space-y-3' },
+                h('div', { className: 'flex items-center gap-2 mb-2' },
+                  h('span', { className: 'text-lg' }, pw.icon),
+                  h('span', { className: 'text-sm font-black', style: { color: pw.color } }, pw.title),
+                  h('button', {
+                    onClick: function() { updMulti({ _activePathway: null, _pathwayStep: 0 }); },
+                    className: 'ml-auto text-[10px] font-bold text-slate-400 hover:text-slate-600 px-2 py-1 rounded hover:bg-slate-100'
+                  }, '\u2190 Back')
+                ),
+                h('div', { className: 'flex items-center justify-between mb-2' },
+                  h('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full', style: { background: pw.color + '18', color: pw.color } }, 'Step ' + (pathwayStepIdx + 1) + ' of ' + pw.steps.length),
+                  h('div', { className: 'flex-1 mx-3 h-1.5 rounded-full bg-slate-100 overflow-hidden' },
+                    h('div', { className: 'h-full rounded-full transition-all', style: { width: (((pathwayStepIdx + 1) / pw.steps.length) * 100) + '%', background: pw.color } })
+                  )
+                ),
+                step ? h('div', { className: 'rounded-xl p-4 border-2', style: { borderColor: pw.color + '40', background: pw.color + '08' } },
+                  h('h5', { className: 'font-bold text-sm mb-2', style: { color: pw.color } }, (pathwayStepIdx + 1) + '. ' + step.label),
+                  h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, step.detail),
+                  ttsBtn(step.detail)
+                ) : null,
+                h('div', { className: 'flex gap-2 justify-between' },
+                  h('button', {
+                    onClick: function() {
+                      if (pathwayStepIdx > 0) {
+                        var prev = pathwayStepIdx - 1;
+                        upd('_pathwayStep', prev); upd('selectedStructure', pw.steps[prev].structure); playSound('pathwayStep');
+                      }
+                    },
+                    disabled: pathwayStepIdx === 0,
+                    className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (pathwayStepIdx === 0 ? 'bg-slate-100 text-slate-400' : 'bg-rose-100 text-rose-700 hover:bg-rose-200')
+                  }, '\u2190 Previous'),
+                  pathwayStepIdx < pw.steps.length - 1 ? h('button', {
+                    onClick: function() {
+                      var next = pathwayStepIdx + 1;
+                      upd('_pathwayStep', next); upd('selectedStructure', pw.steps[next].structure); playSound('pathwayStep');
+                    },
+                    className: 'px-4 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-90 transition-all',
+                    style: { background: pw.color }
+                  }, 'Next \u2192') : h('button', {
+                    onClick: function() {
+                      var newPC = Object.assign({}, pathwaysCompleted);
+                      newPC[pw.id] = true;
+                      updMulti({ _pathwaysCompleted: newPC, _activePathway: null, _pathwayStep: 0 });
+                      playSound('badge');
+                      if (addToast) addToast('\uD83D\uDEE4 Pathway complete: ' + pw.title + '!');
+                    },
+                    className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-white hover:bg-emerald-600 transition-all'
+                  }, '\uD83C\uDFC6 Complete Pathway!')
+                )
+              );
+            })()
+          ) : null,
+
           // ── Connections Tab ──
           activeTab === 'connections' ? h('div', { className: 'bg-white rounded-xl border-2 border-sky-200 p-4 space-y-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
@@ -1531,6 +2537,56 @@ if (!window.StemLab.isRegistered('anatomy')) {
             )
           ) : null,
 
+          // ── Flashcard Tab ──
+          activeTab === 'flashcards' ? h('div', { className: 'bg-white rounded-xl border-2 border-teal-200 p-4 space-y-3' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
+              h('h4', { className: 'font-bold text-teal-800 text-sm' }, '\uD83C\uDCCF Anatomy Flashcards'),
+              h('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-700' }, (flashcardIdx + 1) + '/' + flashcardPool.length)
+            ),
+            h('p', { className: 'text-xs text-slate-500 mb-2' }, 'Click the card to flip. Study ' + sys.name + ' structures.'),
+            flashcardPool.length > 0 ? h('div', { className: 'space-y-3' },
+              // Flashcard
+              h('button', {
+                onClick: function() { upd('_flashcardFlipped', !flashcardFlipped); },
+                className: 'w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left cursor-pointer hover:shadow-md ' +
+                  (flashcardFlipped ? 'border-teal-400 bg-teal-50' : 'border-slate-300 bg-gradient-to-br from-white to-slate-50')
+              },
+                !flashcardFlipped ? h('div', null,
+                  h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase mb-3' }, 'STRUCTURE NAME'),
+                  h('h3', { className: 'text-xl font-black text-slate-800 mb-2' }, flashcardPool[flashcardIdx % flashcardPool.length].name),
+                  PRONUNCIATION[flashcardPool[flashcardIdx % flashcardPool.length].id] ? h('p', { className: 'text-xs text-indigo-500 italic' }, '\uD83D\uDD0A ' + PRONUNCIATION[flashcardPool[flashcardIdx % flashcardPool.length].id]) : null,
+                  h('p', { className: 'text-[10px] text-slate-400 mt-4' }, 'Tap to reveal function \u2192')
+                ) : h('div', null,
+                  h('p', { className: 'text-[10px] font-bold text-teal-600 uppercase mb-2' }, 'FUNCTION'),
+                  h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, flashcardPool[flashcardIdx % flashcardPool.length].fn),
+                  flashcardPool[flashcardIdx % flashcardPool.length].clinical ? h('div', { className: 'mt-2 pt-2 border-t border-teal-200' },
+                    h('p', { className: 'text-[10px] font-bold text-rose-500 uppercase mb-0.5' }, '\u26A0 Clinical'),
+                    h('p', { className: 'text-[10px] text-slate-600 leading-relaxed' }, flashcardPool[flashcardIdx % flashcardPool.length].clinical.substring(0, 200))
+                  ) : null,
+                  ttsBtn(flashcardPool[flashcardIdx % flashcardPool.length].fn)
+                )
+              ),
+              // Navigation
+              h('div', { className: 'flex gap-2 justify-between' },
+                h('button', {
+                  onClick: function() { upd('_flashcardIdx', flashcardIdx > 0 ? flashcardIdx - 1 : flashcardPool.length - 1); upd('_flashcardFlipped', false); },
+                  className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-100 text-teal-700 hover:bg-teal-200 transition-all'
+                }, '\u2190 Previous'),
+                h('button', {
+                  onClick: function() {
+                    var randIdx = Math.floor(Math.random() * flashcardPool.length);
+                    upd('_flashcardIdx', randIdx); upd('_flashcardFlipped', false);
+                  },
+                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all'
+                }, '\uD83C\uDFB2 Random'),
+                h('button', {
+                  onClick: function() { upd('_flashcardIdx', (flashcardIdx + 1) % flashcardPool.length); upd('_flashcardFlipped', false); },
+                  className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-600 text-white hover:bg-teal-700 transition-all'
+                }, 'Next \u2192')
+              )
+            ) : h('p', { className: 'text-xs text-slate-400 italic' }, 'No flashcards available for this complexity level.')
+          ) : null,
+
           // ── Explore Tab ──
           activeTab === 'explore' ? h('div', null,
             // System tabs
@@ -1560,6 +2616,41 @@ if (!window.StemLab.isRegistered('anatomy')) {
                 onClick: function() { upd('_factIdx', (factIdx + 1) % sysFacts.length); playSound('funFact'); },
                 className: 'px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-all flex-shrink-0'
               }, 'Next \u2192')
+            ) : null,
+
+            // Mnemonics section
+            MNEMONICS[sysKey] && MNEMONICS[sysKey].length > 0 ? h('div', { className: 'mb-3' },
+              h('button', {
+                onClick: function() { upd('_showMnemonics', !d._showMnemonics); },
+                className: 'w-full flex items-center justify-between px-3 py-2 rounded-lg bg-purple-50 border border-purple-200 hover:bg-purple-100 transition-all'
+              },
+                h('span', { className: 'text-[10px] font-bold text-purple-700 uppercase flex items-center gap-1' }, '\uD83E\uDDE0 Mnemonics (' + MNEMONICS[sysKey].length + ')'),
+                h('span', { className: 'text-[10px] text-purple-500' }, d._showMnemonics ? '\u25B2' : '\u25BC')
+              ),
+              d._showMnemonics ? h('div', { className: 'mt-1 space-y-1.5' },
+                MNEMONICS[sysKey].map(function(mn) {
+                  var isRevealed = mnemonicsViewed[mn.id];
+                  return h('div', {
+                    key: mn.id,
+                    className: 'rounded-lg p-2.5 border transition-all ' + (isRevealed ? 'border-purple-300 bg-purple-50' : 'border-slate-200 bg-white')
+                  },
+                    h('p', { className: 'text-[10px] font-bold text-purple-800 mb-0.5' }, mn.title),
+                    h('p', { className: 'text-xs font-black text-purple-600 mb-1 italic' }, '"' + mn.phrase + '"'),
+                    isRevealed ? h('div', null,
+                      h('p', { className: 'text-[10px] text-slate-600 leading-relaxed' }, mn.meaning),
+                      ttsBtn(mn.phrase + '. ' + mn.meaning)
+                    ) : h('button', {
+                      onClick: function() {
+                        var newMV = Object.assign({}, mnemonicsViewed);
+                        newMV[mn.id] = true;
+                        upd('_mnemonicsViewed', newMV);
+                        playSound('mnemonicReveal');
+                      },
+                      className: 'text-[10px] font-bold text-purple-600 hover:text-purple-800 transition-all'
+                    }, 'Reveal meaning \u2192')
+                  );
+                })
+              ) : null
             ) : null,
 
             // Progress tracker
@@ -1630,7 +2721,17 @@ if (!window.StemLab.isRegistered('anatomy')) {
                   }, lv.label);
                 })
               ),
-              h('span', { className: 'text-[10px] text-slate-500 font-bold' }, filtered.length + ' structures')
+              h('span', { className: 'text-[10px] text-slate-500 font-bold' }, filtered.length + ' structures'),
+              h('button', {
+                onClick: function() { upd('_showRegionLabels', !d._showRegionLabels); },
+                title: 'Toggle body region labels',
+                className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ' + (d._showRegionLabels ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-400 border-slate-200 hover:bg-slate-50')
+              }, '\uD83C\uDFF7 Regions'),
+              h('button', {
+                onClick: function() { upd('_xrayMode', !xrayMode); },
+                title: 'Toggle X-ray radiograph mode',
+                className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ' + (xrayMode ? 'bg-cyan-800 text-cyan-200 border-cyan-600' : 'bg-white text-slate-400 border-slate-200 hover:bg-slate-50')
+              }, '\u2622 X-ray')
             ),
 
             // Main content: canvas + detail panel
@@ -1719,8 +2820,22 @@ if (!window.StemLab.isRegistered('anatomy')) {
                     // Detail panel
                     h('div', { className: 'bg-white rounded-xl border-2 p-4 space-y-3', style: { borderColor: sys.accent + '40' } },
                       h('div', { className: 'flex items-start justify-between' },
-                        h('h4', { className: 'text-base font-black', style: { color: sys.accent } }, sel.name),
-                        h('button', { onClick: function() { upd('selectedStructure', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-400' }))
+                        h('div', { className: 'flex-1' },
+                          h('h4', { className: 'text-base font-black', style: { color: sys.accent } }, sel.name),
+                          PRONUNCIATION[sel.id] ? h('p', { className: 'text-[10px] text-indigo-500 italic mt-0.5' }, '\uD83D\uDD0A ' + PRONUNCIATION[sel.id]) : null,
+                          (gradeBand === 'k2' || gradeBand === 'g35') && SIMPLE_DESC[sel.id] && SIMPLE_DESC[sel.id][gradeBand] ? h('p', { className: 'text-xs text-sky-700 bg-sky-50 rounded-lg px-2 py-1.5 mt-1 border border-sky-200 leading-relaxed' }, SIMPLE_DESC[sel.id][gradeBand]) : null
+                        ),
+                        h('div', { className: 'flex gap-1' },
+                          h('button', {
+                            onClick: function() {
+                              if (compareStructureId === sel.id) { upd('_compareStructure', null); }
+                              else { upd('_compareStructure', sel.id); upd('_comparisons', comparisons + 1); playSound('compareView'); }
+                            },
+                            title: compareStructureId === sel.id ? 'Remove from compare' : 'Set as compare target (B)',
+                            className: 'p-1 rounded text-[10px] font-bold transition-all ' + (compareStructureId === sel.id ? 'bg-violet-100 text-violet-700' : 'hover:bg-violet-50 text-violet-400')
+                          }, '\u2696'),
+                          h('button', { onClick: function() { upd('selectedStructure', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-400' }))
+                        )
                       ),
                       h('div', { className: 'space-y-2.5' },
                         h('div', null,
@@ -1784,7 +2899,53 @@ if (!window.StemLab.isRegistered('anatomy')) {
                             })
                           )
                         )
-                      )
+                      ),
+                      // ── Compare Panel ──
+                      compareSel && compareSel.id !== sel.id ? h('div', { className: 'mt-3 pt-3 border-t-2 border-violet-200' },
+                        h('div', { className: 'flex items-center justify-between mb-2' },
+                          h('p', { className: 'text-[10px] font-bold text-violet-600 uppercase' }, '\u2696 Comparing with:'),
+                          h('button', {
+                            onClick: function() { upd('_compareStructure', null); },
+                            className: 'text-[10px] font-bold text-slate-400 hover:text-slate-600 px-1 py-0.5 rounded hover:bg-slate-100'
+                          }, '\u2715 Clear')
+                        ),
+                        h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-200' },
+                          h('h5', { className: 'text-sm font-black text-violet-800 mb-1' }, compareSel.name),
+                          h('p', { className: 'text-[10px] text-slate-600 leading-relaxed mb-1' }, compareSel.fn.substring(0, 200) + (compareSel.fn.length > 200 ? '...' : '')),
+                          compareSel.clinical ? h('p', { className: 'text-[10px] text-rose-600 italic leading-relaxed' }, '\u26A0 ' + compareSel.clinical.substring(0, 150) + (compareSel.clinical.length > 150 ? '...' : '')) : null
+                        ),
+                        h('table', { className: 'w-full mt-2 text-[10px]' },
+                          h('thead', null,
+                            h('tr', { className: 'border-b border-violet-200' },
+                              h('th', { className: 'text-left py-1 text-violet-600 font-bold' }, ''),
+                              h('th', { className: 'text-left py-1 font-bold', style: { color: sys.accent } }, sel.name),
+                              h('th', { className: 'text-left py-1 text-violet-700 font-bold' }, compareSel.name)
+                            )
+                          ),
+                          h('tbody', null,
+                            h('tr', { className: 'border-b border-slate-100' },
+                              h('td', { className: 'py-1 font-bold text-slate-400' }, 'System'),
+                              h('td', { className: 'py-1 text-slate-600' }, sys.name),
+                              h('td', { className: 'py-1 text-slate-600' }, sys.name)
+                            ),
+                            h('tr', { className: 'border-b border-slate-100' },
+                              h('td', { className: 'py-1 font-bold text-slate-400' }, 'View'),
+                              h('td', { className: 'py-1 text-slate-600' }, sel.v === 'b' ? 'Both' : sel.v === 'a' ? 'Anterior' : 'Posterior'),
+                              h('td', { className: 'py-1 text-slate-600' }, compareSel.v === 'b' ? 'Both' : compareSel.v === 'a' ? 'Anterior' : 'Posterior')
+                            ),
+                            sel.origin && compareSel.origin ? h('tr', { className: 'border-b border-slate-100' },
+                              h('td', { className: 'py-1 font-bold text-slate-400' }, 'Origin'),
+                              h('td', { className: 'py-1 text-slate-600' }, sel.origin),
+                              h('td', { className: 'py-1 text-slate-600' }, compareSel.origin)
+                            ) : null,
+                            sel.insertion && compareSel.insertion ? h('tr', null,
+                              h('td', { className: 'py-1 font-bold text-slate-400' }, 'Insertion'),
+                              h('td', { className: 'py-1 text-slate-600' }, sel.insertion),
+                              h('td', { className: 'py-1 text-slate-600' }, compareSel.insertion)
+                            ) : null
+                          )
+                        )
+                      ) : null
                     )
                   ) : (
                     // Structure list
@@ -1863,6 +3024,83 @@ if (!window.StemLab.isRegistered('anatomy')) {
                       (earned ? 'bg-amber-50 border-amber-300 text-amber-800' : 'bg-slate-100 border-slate-200 text-slate-400')
                   }, bd.icon + ' ' + bd.name);
                 })
+              )
+            ),
+
+            // ── Stats Dashboard ──
+            h('div', { className: 'mt-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-3' },
+              h('p', { className: 'text-[10px] font-bold text-indigo-400 uppercase tracking-wider mb-2' }, '\uD83D\uDCCA Exploration Stats'),
+              h('div', { className: 'grid grid-cols-3 gap-2' },
+                // Structures Viewed
+                h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
+                  h('p', { className: 'text-lg font-black text-indigo-700' }, String(Object.keys(structuresViewed).length)),
+                  h('p', { className: 'text-[9px] text-slate-500 font-semibold' }, 'Structures')
+                ),
+                // Systems Explored
+                h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
+                  h('p', { className: 'text-lg font-black text-emerald-600' }, String(Object.keys(systemsExplored).length) + '/10'),
+                  h('p', { className: 'text-[9px] text-slate-500 font-semibold' }, 'Systems')
+                ),
+                // Quiz Score
+                h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
+                  h('p', { className: 'text-lg font-black text-amber-600' }, String(totalCorrect)),
+                  h('p', { className: 'text-[9px] text-slate-500 font-semibold' }, 'Quiz Correct')
+                ),
+                // Spotter Score
+                h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
+                  h('p', { className: 'text-lg font-black text-rose-600' }, String(spotterScore)),
+                  h('p', { className: 'text-[9px] text-slate-500 font-semibold' }, 'Spotter IDs')
+                ),
+                // Pathways Completed
+                h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
+                  h('p', { className: 'text-lg font-black text-teal-600' }, String(Object.keys(pathwaysCompleted).length)),
+                  h('p', { className: 'text-[9px] text-slate-500 font-semibold' }, 'Pathways')
+                ),
+                // Comparisons
+                h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
+                  h('p', { className: 'text-lg font-black text-purple-600' }, String(comparisons)),
+                  h('p', { className: 'text-[9px] text-slate-500 font-semibold' }, 'Comparisons')
+                )
+              ),
+              // Secondary stats row
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('span', { className: 'text-[9px] px-2 py-0.5 rounded-full bg-white border border-indigo-100 text-slate-600 font-semibold' },
+                  '\uD83D\uDD25 Streak: ' + streak
+                ),
+                h('span', { className: 'text-[9px] px-2 py-0.5 rounded-full bg-white border border-indigo-100 text-slate-600 font-semibold' },
+                  '\uD83E\uDD16 AI Questions: ' + aiQuestions
+                ),
+                h('span', { className: 'text-[9px] px-2 py-0.5 rounded-full bg-white border border-indigo-100 text-slate-600 font-semibold' },
+                  '\uD83E\uDDE0 Mnemonics: ' + Object.keys(mnemonicsViewed).length
+                ),
+                h('span', { className: 'text-[9px] px-2 py-0.5 rounded-full bg-white border border-indigo-100 text-slate-600 font-semibold' },
+                  '\uD83D\uDD0D Searches: ' + searchFinds
+                ),
+                h('span', { className: 'text-[9px] px-2 py-0.5 rounded-full bg-white border border-indigo-100 text-slate-600 font-semibold' },
+                  '\uD83E\uDE7A Clinical Cases: ' + clinicalSolved
+                ),
+                spotterBestTime < 999 ? h('span', { className: 'text-[9px] px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 font-bold' },
+                  '\u26A1 Best Spotter: ' + spotterBestTime.toFixed(1) + 's'
+                ) : null
+              ),
+              // XP total
+              getStemXP ? h('div', { className: 'mt-2 text-center' },
+                h('span', { className: 'text-xs font-black px-3 py-1 rounded-full bg-gradient-to-r from-amber-100 to-yellow-100 border border-amber-300 text-amber-800' },
+                  '\u2B50 Total XP: ' + (getStemXP() || 0)
+                )
+              ) : null,
+              // Progress bar
+              h('div', { className: 'mt-2' },
+                h('div', { className: 'flex justify-between mb-1' },
+                  h('span', { className: 'text-[9px] text-slate-500 font-semibold' }, 'System Progress'),
+                  h('span', { className: 'text-[9px] font-bold text-indigo-600' }, progressPct + '%')
+                ),
+                h('div', { className: 'w-full bg-slate-200 rounded-full h-1.5' },
+                  h('div', {
+                    className: 'h-1.5 rounded-full transition-all duration-500',
+                    style: { width: progressPct + '%', background: 'linear-gradient(90deg, ' + sys.accent + ', #6366f1)' }
+                  })
+                )
               )
             )
           ) : null
