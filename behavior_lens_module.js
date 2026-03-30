@@ -23335,7 +23335,7 @@ IMPORTANT rules for expert keys:
         const _cloudDocPath = useCallback((studentName) => {
             if (!_cloudUserId || !studentName) return null;
             const safeName = studentName.replace(/[\/\.#$\[\]]/g, '_');
-            return `behaviorLens/users/${_cloudUserId}/workspaces/${safeName}`;
+            return `behaviorLens_users/${_cloudUserId}/workspaces/${safeName}`;
         }, [_cloudUserId]);
 
         const _saveToCloud = useCallback(async (studentName, data) => {

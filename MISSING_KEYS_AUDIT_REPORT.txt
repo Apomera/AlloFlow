@@ -1,0 +1,122 @@
+========================================================================================================================
+COMPREHENSIVE MISSING TRANSLATION KEYS AUDIT - AlloFlow Codebase
+========================================================================================================================
+
+EXECUTIVE SUMMARY
+------------------------------------------------------------------------------------------------------------------------
+Report Generated: Audit of AlloFlowANTI.txt (62,808 lines)
+Total keys in ui_strings.js: 7,365
+Total fallback instances found: 408
+Unique translation keys with fallbacks: 331
+Missing keys (not defined in ui_strings.js): 12
+Sections requiring attention: 6
+
+Coverage Rate: 97.3% of keys with fallbacks are defined in ui_strings.js
+Translation Debt: 12 undefined keys
+
+
+========================================================================================================================
+DETAILED MISSING KEYS BY SECTION
+========================================================================================================================
+
+
+[[DATA-HELP-IGNORE]]
+------------------------------------------------------------------------------------------------------------------------
+Missing: 1 unique key(s) across 1 instance(s)
+
+  KEY: [data-help-ignore]
+  Line(s): 20541
+  Fallback value: ''
+
+
+[ADVENTURE]
+------------------------------------------------------------------------------------------------------------------------
+Missing: 1 unique key(s) across 2 instance(s)
+
+  KEY: adventure.upload_portrait
+  Line(s): 16586, 16620
+  Fallback value: 'Upload your own portrait image'
+  Instances: 2
+
+
+[ADVENTURE_TITLE]
+------------------------------------------------------------------------------------------------------------------------
+Missing: 1 unique key(s) across 1 instance(s)
+
+  KEY: adventure_title
+  Line(s): 49866
+  Fallback value: 'Adventure'
+
+
+[BEHAVIOR_LENS]
+------------------------------------------------------------------------------------------------------------------------
+Missing: 4 unique key(s) across 6 instance(s)
+
+  KEY: behavior_lens.hub.open_btn
+  Line(s): 15122
+  Fallback value: 'Open BehaviorLens'
+
+  KEY: behavior_lens.hub.subtitle
+  Line(s): 15117
+  Fallback value: 'Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools.'
+
+  KEY: behavior_lens.hub.title
+  Line(s): 14529, 15116, 62730
+  Fallback value: 'Behavior'
+  Instances: 3
+
+  KEY: behavior_lens.loading_hint
+  Line(s): 62731
+  Fallback value: 'Module loading from CDN. If this persists, check your connection.'
+
+
+[STATUS]
+------------------------------------------------------------------------------------------------------------------------
+Missing: 1 unique key(s) across 1 instance(s)
+
+  KEY: status.text_condensing
+  Line(s): 39337
+  Fallback value: 'Condensing text...'
+
+
+[STATUS_STEPS]
+------------------------------------------------------------------------------------------------------------------------
+Missing: 1 unique key(s) across 1 instance(s)
+
+  KEY: status_steps.retrying_citations
+  Line(s): 28576
+  Fallback value: 'Retrying for better citations...'
+
+
+========================================================================================================================
+ACTION ITEMS
+========================================================================================================================
+
+1. Add missing keys to ui_strings.js in their respective sections:
+
+   [[DATA-HELP-IGNORE]]
+   - [data-help-ignore]: ''
+
+   [ADVENTURE]
+   - adventure.upload_portrait: 'Upload your own portrait image'
+
+   [ADVENTURE_TITLE]
+   - adventure_title: 'Adventure'
+
+   [BEHAVIOR_LENS]
+   - behavior_lens.hub.open_btn: 'Open BehaviorLens'
+   - behavior_lens.hub.subtitle: 'Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools.'
+   - behavior_lens.hub.title: 'Behavior'
+   - behavior_lens.loading_hint: 'Module loading from CDN. If this persists, check your connection.'
+
+   [STATUS]
+   - status.text_condensing: 'Condensing text...'
+
+   [STATUS_STEPS]
+   - status_steps.retrying_citations: 'Retrying for better citations...'
+
+
+2. Consider these approaches:
+   - Translate all 12 missing keys to support full internationalization
+   - Move BehaviorLens strings to a separate module if it's optional/lazy-loaded
+   - Review [data-help-ignore] - appears to be a selector, not a translation key

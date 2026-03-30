@@ -182,7 +182,137 @@ window.SelHub = window.SelHub || {
     ]
   };
 
-  // ── Badges ──
+  // ═══════════════════════════════════════════════════════════════
+  // ── Scenario Data (Grade-Adaptive Branching) ──
+  // ═══════════════════════════════════════════════════════════════
+  var SCENARIOS = {
+    elementary: [
+      { id: 'sc1', title: 'The Hard Test', setup: 'You have a big spelling test tomorrow and you don\'t feel ready. What do you do?',
+        choices: [
+          { text: 'Practice your words again and again until you feel better.', strength: 'persevere', feedback: 'That\'s perseverance! You didn\'t give up even when it felt hard.', rating: 3 },
+          { text: 'Ask a family member to quiz you on the words.', strength: 'brave', feedback: 'That takes bravery \u2014 asking for help shows you\'re smart, not weak!', rating: 3 },
+          { text: 'Just hope for the best and play instead.', strength: null, feedback: 'It\'s okay to take breaks, but a little practice goes a long way. Which strength could help you?', rating: 1 }
+        ] },
+      { id: 'sc2', title: 'The New Kid', setup: 'A new student joins your class and doesn\'t know anyone. They look nervous. What do you do?',
+        choices: [
+          { text: 'Go say hi and ask if they want to sit with you at lunch.', strength: 'kind', feedback: 'That\'s kindness in action! You made someone feel welcome.', rating: 3 },
+          { text: 'Smile at them from your seat but don\'t go over.', strength: null, feedback: 'A smile is nice! But going over would use your bravery strength too.', rating: 2 },
+          { text: 'Tell the teacher someone should help the new kid.', strength: 'fair', feedback: 'Good thinking! You used fairness to make sure they got help.', rating: 2 }
+        ] },
+      { id: 'sc3', title: 'The Broken Project', setup: 'You spent a whole week building an amazing art project, and it falls off the table and breaks. What do you do?',
+        choices: [
+          { text: 'Take a deep breath and start fixing what you can.', strength: 'persevere', feedback: 'Amazing perseverance! You didn\'t let a setback stop you.', rating: 3 },
+          { text: 'Ask your teacher if you can have extra time to redo parts.', strength: 'brave', feedback: 'Speaking up for yourself takes courage! That\'s a real strength.', rating: 3 },
+          { text: 'Get really upset and say you don\'t want to do art anymore.', strength: null, feedback: 'It\'s okay to feel upset! But which strength could help you bounce back?', rating: 1 }
+        ] },
+      { id: 'sc4', title: 'The Disagreement', setup: 'You and your best friend both want to be the team leader for a group project. What do you do?',
+        choices: [
+          { text: 'Suggest you take turns \u2014 one leads the first half, the other leads the second.', strength: 'fair', feedback: 'Brilliant! Fairness means finding solutions that work for everyone.', rating: 3 },
+          { text: 'Let your friend be leader because you don\'t want to fight.', strength: 'kind', feedback: 'That\'s kind, but remember \u2014 your ideas matter too!', rating: 2 },
+          { text: 'Tell your friend you should be leader because it was your idea.', strength: null, feedback: 'Having confidence is good, but fairness means listening to others too.', rating: 1 }
+        ] },
+      { id: 'sc5', title: 'The Mistake', setup: 'You accidentally knock over someone\'s water bottle in the hallway and it spills everywhere. What do you do?',
+        choices: [
+          { text: 'Say sorry right away and help clean it up.', strength: 'honest', feedback: 'That\'s honesty and responsibility! Owning your mistakes is a superpower.', rating: 3 },
+          { text: 'Pretend you didn\'t see it and keep walking.', strength: null, feedback: 'It\'s natural to feel embarrassed, but being honest builds trust.', rating: 1 },
+          { text: 'Go get paper towels and help clean up without saying anything.', strength: 'kind', feedback: 'Taking action shows kindness! Adding a sorry would use honesty too.', rating: 2 }
+        ] }
+    ],
+    middle: [
+      { id: 'sc1', title: 'The Group Freeloader', setup: 'Your group project partner isn\'t doing their share of the work. The deadline is tomorrow. What do you do?',
+        choices: [
+          { text: 'Talk to them privately and ask what\'s going on \u2014 maybe they\'re struggling.', strength: 'empathy', feedback: 'Empathy first! Understanding the situation before judging shows real maturity.', rating: 3 },
+          { text: 'Do their part yourself to make sure the grade is good.', strength: 'persevere', feedback: 'Perseverance gets the job done, but advocating for yourself matters too.', rating: 2 },
+          { text: 'Tell the teacher they\'re not helping.', strength: 'advocacy', feedback: 'Self-advocacy is important! Though talking to them first builds better relationships.', rating: 2 }
+        ] },
+      { id: 'sc2', title: 'The Viral Post', setup: 'Someone posts an embarrassing photo of a classmate in a group chat. Everyone is laughing. What do you do?',
+        choices: [
+          { text: 'Message the person who posted it and say it\'s not cool.', strength: 'brave', feedback: 'Standing up when everyone is going along takes real moral courage.', rating: 3 },
+          { text: 'Don\'t laugh or share it, but don\'t say anything either.', strength: null, feedback: 'Not participating is better than joining in, but speaking up uses your bravery strength.', rating: 2 },
+          { text: 'Check on the classmate privately to see if they\'re okay.', strength: 'kind', feedback: 'Compassion in action! You prioritized someone\'s feelings over social pressure.', rating: 3 }
+        ] },
+      { id: 'sc3', title: 'The Failed Tryout', setup: 'You didn\'t make the basketball team after practicing all summer. What do you do?',
+        choices: [
+          { text: 'Ask the coach what you can improve and make a plan for next year.', strength: 'resilience', feedback: 'Resilience! Turning rejection into a growth plan is incredibly mature.', rating: 3 },
+          { text: 'Try out for a different sport or activity instead.', strength: 'flexibility', feedback: 'Flexibility! Redirecting your energy shows adaptability and self-awareness.', rating: 3 },
+          { text: 'Decide sports aren\'t for you and quit trying.', strength: null, feedback: 'Disappointment is valid, but one setback doesn\'t define your abilities.', rating: 1 }
+        ] },
+      { id: 'sc4', title: 'The Ethical Dilemma', setup: 'You find a completed homework assignment on the floor. It belongs to someone in another class. Your homework is due today and you haven\'t finished it.',
+        choices: [
+          { text: 'Return the homework to the office and finish your own as best you can.', strength: 'honest', feedback: 'Integrity! Doing the right thing when no one is watching is the truest strength.', rating: 3 },
+          { text: 'Copy some answers but do some of your own work too.', strength: null, feedback: 'Tempting, but integrity means your work reflects YOUR learning.', rating: 1 },
+          { text: 'Ask your teacher for extra time and explain you\'re struggling.', strength: 'advocacy', feedback: 'Self-advocacy! Asking for help is always stronger than cutting corners.', rating: 3 }
+        ] },
+      { id: 'sc5', title: 'The Cultural Clash', setup: 'A friend makes a joke about a tradition your family celebrates. They don\'t realize it\'s hurtful.',
+        choices: [
+          { text: 'Explain calmly why it matters to you and your family.', strength: 'brave', feedback: 'Bravery! Educating others with patience is a powerful strength.', rating: 3 },
+          { text: 'Laugh along even though it hurts inside.', strength: null, feedback: 'Your identity matters. Which strength could help you stand up for it?', rating: 1 },
+          { text: 'Share something interesting about the tradition instead of confronting.', strength: 'creative', feedback: 'Creative approach! Turning a negative into a learning moment shows wisdom.', rating: 3 }
+        ] }
+    ],
+    high: [
+      { id: 'sc1', title: 'The Ethical Leader', setup: 'You\'re student council president and discover that a popular fundraiser idea involves a company with questionable labor practices. The council loves the idea.',
+        choices: [
+          { text: 'Research the issue and present the facts to the council, proposing alternatives.', strength: 'honest', feedback: 'Integrity-driven leadership. You balanced truth with practical solutions.', rating: 3 },
+          { text: 'Go along with it since the fundraiser benefits students.', strength: null, feedback: 'Pragmatism has its place, but your values are your compass. What strength could guide you?', rating: 1 },
+          { text: 'Privately suggest alternatives to the advisor without calling out the issue publicly.', strength: 'perspective', feedback: 'Strategic perspective! Sometimes the wisest path isn\'t the loudest one.', rating: 2 }
+        ] },
+      { id: 'sc2', title: 'The Identity Crossroads', setup: 'You\'re passionate about art, but your family expects you to pursue a "practical" career like engineering. College applications are due soon.',
+        choices: [
+          { text: 'Have an honest conversation about your passion and propose a path that honors both.', strength: 'brave', feedback: 'Moral courage! Advocating for your authentic self while respecting your family.', rating: 3 },
+          { text: 'Apply for engineering but take art classes as electives.', strength: 'adaptability', feedback: 'Adaptability! Finding creative compromises is itself a strength.', rating: 2 },
+          { text: 'Apply for art school and tell your family after.', strength: null, feedback: 'Authenticity matters, but relationships do too. What strength helps navigate both?', rating: 1 }
+        ] },
+      { id: 'sc3', title: 'The Systemic Injustice', setup: 'You notice that students from lower-income neighborhoods consistently get fewer resources and opportunities at your school. What do you do?',
+        choices: [
+          { text: 'Research the disparity, gather data, and present a proposal to the school board.', strength: 'fair', feedback: 'Justice in action! Using evidence to advocate for systemic change is the highest form of fairness.', rating: 3 },
+          { text: 'Start a peer tutoring program to help bridge the gap yourself.', strength: 'leader', feedback: 'Initiative-driven leadership! You didn\'t wait for permission to make a difference.', rating: 3 },
+          { text: 'Post about it on social media to raise awareness.', strength: null, feedback: 'Awareness is a start, but action creates change. Which strength could move you beyond posts?', rating: 2 }
+        ] },
+      { id: 'sc4', title: 'The Burnout', setup: 'You\'ve been overcommitting \u2014 AP classes, clubs, volunteer work, part-time job. You\'re exhausted and your grades are slipping.',
+        choices: [
+          { text: 'Evaluate priorities and let go of one commitment to protect your well-being.', strength: 'metacognition', feedback: 'Metacognition! Recognizing your own limits and acting on it is profound self-awareness.', rating: 3 },
+          { text: 'Push through until the semester ends, then rest.', strength: 'persevere', feedback: 'Grit is admirable, but wisdom knows when perseverance becomes self-harm.', rating: 1 },
+          { text: 'Talk to a counselor or trusted adult about feeling overwhelmed.', strength: 'vulnerability', feedback: 'Vulnerability! Asking for help when you\'re struggling is one of the bravest things you can do.', rating: 3 }
+        ] }
+    ]
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // ── Strength Match Quiz Data ──
+  // ═══════════════════════════════════════════════════════════════
+  var MATCH_QUIZ = {
+    elementary: [
+      { situation: 'You see a younger kid drop their books. You stop to help pick them up.', answer: 'kind', options: ['kind', 'brave', 'curious'] },
+      { situation: 'You keep trying to ride your bike even after falling down three times.', answer: 'persevere', options: ['funny', 'persevere', 'fair'] },
+      { situation: 'You tell the truth about breaking the vase even though you might get in trouble.', answer: 'honest', options: ['honest', 'grateful', 'curious'] },
+      { situation: 'You want to know how caterpillars turn into butterflies, so you look it up.', answer: 'curious', options: ['brave', 'kind', 'curious'] },
+      { situation: 'You make sure everyone gets a turn on the swing at recess.', answer: 'fair', options: ['fair', 'funny', 'honest'] },
+      { situation: 'You stand up for a kid who is being teased, even though you\'re nervous.', answer: 'brave', options: ['grateful', 'brave', 'persevere'] },
+      { situation: 'You write a thank-you card for your teacher at the end of the year.', answer: 'grateful', options: ['kind', 'honest', 'grateful'] },
+      { situation: 'You make funny faces to cheer up your friend who is sad.', answer: 'funny', options: ['funny', 'fair', 'brave'] }
+    ],
+    middle: [
+      { situation: 'You notice a classmate eating alone every day, so you invite them to your table.', answer: 'kind', options: ['kind', 'leader', 'creative'] },
+      { situation: 'You rewrite your essay three times to get it right before the deadline.', answer: 'persevere', options: ['humble', 'persevere', 'fair'] },
+      { situation: 'You admit to your coach that you missed practice because you overslept, not because you were sick.', answer: 'honest', options: ['honest', 'brave', 'leader'] },
+      { situation: 'You volunteer to lead the group project and organize tasks for everyone.', answer: 'leader', options: ['leader', 'creative', 'persevere'] },
+      { situation: 'You research multiple sides of a debate before forming your opinion.', answer: 'curious', options: ['humble', 'curious', 'fair'] },
+      { situation: 'You create an original design for the school mural instead of copying someone else\'s idea.', answer: 'creative', options: ['creative', 'brave', 'kind'] },
+      { situation: 'You accept criticism of your science project without getting defensive.', answer: 'humble', options: ['persevere', 'humble', 'honest'] },
+      { situation: 'You advocate for a classmate with a disability to be included in the field trip activities.', answer: 'fair', options: ['kind', 'brave', 'fair'] }
+    ],
+    high: [
+      { situation: 'You challenge a popular opinion in class discussion with a well-researched alternative viewpoint.', answer: 'brave', options: ['brave', 'honest', 'creative'] },
+      { situation: 'You mentor a younger student struggling with the same challenges you overcame.', answer: 'kind', options: ['kind', 'leader', 'perspective'] },
+      { situation: 'You organize a community service project that addresses a local need you identified.', answer: 'leader', options: ['fair', 'leader', 'persevere'] },
+      { situation: 'After failing to get into your first-choice college, you reframe it as an opportunity.', answer: 'resilience', options: ['resilience', 'adaptability', 'vulnerability'] },
+      { situation: 'You recognize that your perfectionism is actually holding you back, and you choose to submit "good enough" work.', answer: 'metacognition', options: ['vulnerability', 'metacognition', 'adaptability'] },
+      { situation: 'You tell your friend group you need to skip the party to take care of your mental health.', answer: 'vulnerability', options: ['brave', 'vulnerability', 'advocacy'] }
+    ]
+  };
+
+  // ── Badges (expanded) ──
   var BADGES = {
     firstCard: { icon: '\u2B50', name: 'First Discovery', desc: 'Select your first strength' },
     fiveCards: { icon: '\uD83C\uDF1F', name: 'Self-Aware', desc: 'Identify 5 strengths' },
@@ -192,16 +322,26 @@ window.SelHub = window.SelHub || {
     threeReflections: { icon: '\uD83D\uDCD6', name: 'Deep Thinker', desc: 'Complete 3 reflections' },
     growthMindset: { icon: '\uD83C\uDF31', name: 'Growth Mindset', desc: 'Identify a growth area' },
     aiCoach: { icon: '\uD83E\uDD16', name: 'Coaching Session', desc: 'Ask the AI strengths coach' },
-    sharedStrengths: { icon: '\uD83D\uDCE4', name: 'Strength Sharer', desc: 'Export your strengths profile' }
+    sharedStrengths: { icon: '\uD83D\uDCE4', name: 'Strength Sharer', desc: 'Export your strengths profile' },
+    firstScenario: { icon: '\uD83C\uDFAD', name: 'Strength Applier', desc: 'Complete a scenario' },
+    threeScenarios: { icon: '\uD83C\uDFC6', name: 'Scenario Pro', desc: 'Complete 3 scenarios with top rating' },
+    allScenarios: { icon: '\uD83D\uDC51', name: 'Master Strategist', desc: 'Complete all scenarios' },
+    firstQuiz: { icon: '\uD83E\uDDE9', name: 'Strength Detective', desc: 'Score 3+ on the match quiz' },
+    perfectQuiz: { icon: '\uD83C\uDFAF', name: 'Perfect Match', desc: 'Get a perfect quiz score' },
+    fiveReflections: { icon: '\uD83D\uDCDA', name: 'Philosopher', desc: 'Complete 5 reflections' },
+    explorer: { icon: '\uD83D\uDE80', name: 'Full Explorer', desc: 'Visit all tabs' }
   };
 
   function checkBadges(d, awardXP, addToast) {
     var earned = d.badges || {};
     var selected = d.selectedStrengths || [];
     var reflections = d.reflections || [];
+    var scenariosDone = d.scenariosDone || [];
+    var topScenarios = d.topScenarios || 0;
+    var quizBest = d.quizBest || 0;
     var changed = false;
     function award(id) {
-      if (earned[id]) return;
+      if (!BADGES[id] || earned[id]) return;
       earned[id] = true; changed = true;
       sfxBadge();
       if (awardXP) awardXP(10);
@@ -212,14 +352,20 @@ window.SelHub = window.SelHub || {
     if (selected.length >= 10) award('tenCards');
     if (reflections.length >= 1) award('firstReflection');
     if (reflections.length >= 3) award('threeReflections');
-    // Check all categories
+    if (reflections.length >= 5) award('fiveReflections');
     var cats = {};
     selected.forEach(function(s) { if (s.category) cats[s.category] = true; });
     if (Object.keys(cats).length >= 3) award('allCategories');
-    // Growth area
     if (selected.some(function(s) { return s.category === 'growth'; })) award('growthMindset');
     if (d.aiAsked) award('aiCoach');
     if (d.exported) award('sharedStrengths');
+    if (scenariosDone.length >= 1) award('firstScenario');
+    if (topScenarios >= 3) award('threeScenarios');
+    if (scenariosDone.length >= 5) award('allScenarios');
+    if (quizBest >= 3) award('firstQuiz');
+    var quizLen = (MATCH_QUIZ.elementary || []).length;
+    if (quizBest >= quizLen && quizLen > 0) award('perfectQuiz');
+    if (d.tabsVisited && d.tabsVisited.length >= 6) award('explorer');
     return changed ? earned : null;
   }
 
@@ -273,12 +419,26 @@ window.SelHub = window.SelHub || {
         var showBadges = d.showBadges || false;
         var badges = d.badges || {};
         var badgeCount = Object.keys(badges).length;
+        // Scenario state
+        var scenariosDone = d.scenariosDone || [];
+        var topScenarios = d.topScenarios || 0;
+        var scenarioIdx = d.scenarioIdx || 0;
+        var scenarioChoice = d.scenarioChoice || null;
+        // Quiz state
+        var quizActive = d.quizActive || false;
+        var quizIdx = d.quizIdx || 0;
+        var quizScore = d.quizScore || 0;
+        var quizBest = d.quizBest || 0;
+        var quizFeedback = d.quizFeedback || null;
+        var quizDone = d.quizDone || false;
+        // Tab tracking for explorer badge
+        var tabsVisited = d.tabsVisited || [];
 
         // ── Badge check on state change ──
         React.useEffect(function() {
           var newBadges = checkBadges(d, awardXP, addToast);
           if (newBadges) upd({ badges: newBadges });
-        }, [selectedStrengths.length, reflections.length, d.aiAsked, d.exported]);
+        }, [selectedStrengths.length, reflections.length, d.aiAsked, d.exported, scenariosDone.length, topScenarios, quizBest, tabsVisited.length]);
 
         // ── Toggle strength selection ──
         var toggleStrength = function(strength, categoryId) {
@@ -399,9 +559,9 @@ window.SelHub = window.SelHub || {
 
           // Tabs
           h('div', { style: { display: 'flex', borderBottom: '1px solid rgba(245,158,11,0.15)', background: 'rgba(15,23,42,0.8)' } },
-            [{ id: 'discover', label: '\u2B50 Discover' }, { id: 'reflect', label: '\uD83D\uDCDD Reflect' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'profile', label: '\uD83D\uDCCA Profile' }].map(function(t) {
+            [{ id: 'discover', label: '\u2B50 Discover' }, { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' }, { id: 'quiz', label: '\uD83E\uDDE9 Quiz' }, { id: 'reflect', label: '\uD83D\uDCDD Reflect' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'profile', label: '\uD83D\uDCCA Profile' }].map(function(t) {
               var active = tab === t.id;
-              return h('button', { key: t.id, onClick: function() { sfxSelect(); upd({ tab: t.id }); }, style: { flex: 1, padding: '10px 4px', fontSize: 11, fontWeight: 'bold', color: active ? '#fbbf24' : '#64748b', background: active ? 'rgba(245,158,11,0.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #f59e0b' : '2px solid transparent', cursor: 'pointer' } }, t.label);
+              return h('button', { key: t.id, onClick: function() { sfxSelect(); var tv = tabsVisited.indexOf(t.id) < 0 ? tabsVisited.concat([t.id]) : tabsVisited; upd({ tab: t.id, tabsVisited: tv }); }, style: { flex: 1, padding: '10px 4px', fontSize: 10, fontWeight: 'bold', color: active ? '#fbbf24' : '#64748b', background: active ? 'rgba(245,158,11,0.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #f59e0b' : '2px solid transparent', cursor: 'pointer' } }, t.label);
             })
           ),
 

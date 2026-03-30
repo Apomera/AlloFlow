@@ -1,7 +1,8 @@
 // ═══════════════════════════════════════════════════════
-// stem_tool_epidemic.js — Epidemic Modeling Lab  v3.0
-// Enhanced STEM Lab tool — 8 sub-tools
-// SIR · SEIR · R₀ Explorer · Vaccination · Outbreak Map
+// stem_tool_epidemic.js — Epidemic Modeling Lab  v4.0
+// Enhanced STEM Lab tool — 12 sub-tools
+// SIR · SEIR · R₀ Explorer · Vaccination · Interventions
+// Outbreak Map · Contact Trace · History · Scenarios
 // Challenge · Battle · Learn
 // ═══════════════════════════════════════════════════════
 
@@ -41,7 +42,11 @@ window.StemLab = window.StemLab || {
     { id: 'seir',        icon: '\uD83E\uDDA0', label: 'SEIR' },
     { id: 'r0explorer',  icon: '\uD83C\uDF21\uFE0F', label: 'R\u2080 Explorer' },
     { id: 'vaccination', icon: '\uD83D\uDC89', label: 'Vaccination' },
+    { id: 'interventions', icon: '\uD83D\uDE37', label: 'Interventions' },
     { id: 'outbreakmap', icon: '\uD83D\uDDFA\uFE0F', label: 'Outbreak Map' },
+    { id: 'contacttrace', icon: '\uD83D\uDD17', label: 'Contact Trace' },
+    { id: 'history',     icon: '\uD83D\uDCDC', label: 'History' },
+    { id: 'scenarios',   icon: '\uD83C\uDFAD', label: 'Scenarios' },
     { id: 'challenge',   icon: '\uD83C\uDFAF', label: 'Challenge' },
     { id: 'battle',      icon: '\u2694\uFE0F', label: 'Battle' },
     { id: 'learn',       icon: '\uD83D\uDCDA', label: 'Learn' }
@@ -72,7 +77,13 @@ window.StemLab = window.StemLab || {
     { id: 'quizStreak5',   icon: '\uD83D\uDD25', name: 'Streak x5', desc: 'Get 5 correct answers in a row' },
     { id: 'battleWin',     icon: '\u2694\uFE0F', name: 'Outbreak Defender', desc: 'Win an Outbreak Defense battle' },
     { id: 'aiBattle',      icon: '\uD83E\uDDE0', name: 'AI Combatant', desc: 'Win an AI-powered battle' },
-    { id: 'scholar',       icon: '\uD83C\uDF93', name: 'Epidemiology Scholar', desc: 'Read all 4 Learn topics' }
+    { id: 'scholar',       icon: '\uD83C\uDF93', name: 'Epidemiology Scholar', desc: 'Read all 4 Learn topics' },
+    { id: 'npiMaster',     icon: '\uD83D\uDE37', name: 'NPI Strategist', desc: 'Flatten the curve using interventions' },
+    { id: 'contactTracer', icon: '\uD83D\uDD17', name: 'Contact Tracer', desc: 'Successfully trace an infection chain' },
+    { id: 'historian',     icon: '\uD83D\uDCDC', name: 'Plague Historian', desc: 'Explore all historical pandemics' },
+    { id: 'scenarioSolver',icon: '\uD83C\uDFAD', name: 'Scenario Solver', desc: 'Complete an AI-generated outbreak scenario' },
+    { id: 'quarantine',    icon: '\uD83D\uDEA7', name: 'Quarantine Chief', desc: 'Use quarantine zones on outbreak map' },
+    { id: 'hospitalMgr',   icon: '\uD83C\uDFE5', name: 'Hospital Manager', desc: 'Keep hospital capacity below 100%' }
   ];
 
   // ── Challenge Questions (3 tiers × 8 = 24) ──
@@ -176,6 +187,142 @@ window.StemLab = window.StemLab || {
     { name: 'Rural Area', gridSize: 20, density: 0.35, initialInfected: 1, desc: 'Sparse population with natural social distancing.' },
     { name: 'School', gridSize: 15, density: 0.95, initialInfected: 2, desc: 'High density, high contact rate environment.' },
     { name: 'Island Chain', gridSize: 18, density: 0.50, initialInfected: 1, desc: 'Clustered population with limited inter-cluster contact.' }
+  ];
+
+  // ── Historical Pandemics ──
+  var HISTORICAL_PANDEMICS = [
+    {
+      name: 'Black Death',
+      year: '1347\u20131353',
+      pathogen: 'Yersinia pestis (bacterium)',
+      deaths: '75\u2013200 million',
+      worldPop: '~475 million',
+      pctDeath: '~30\u201360%',
+      r0Est: '~2\u20133',
+      transmission: 'Flea bites (rats), respiratory droplets (pneumonic)',
+      icon: '\u2620\uFE0F',
+      color: '#1e293b',
+      keyFacts: [
+        'Killed 30\u201360% of Europe\'s population in just 6 years',
+        'Spread along Silk Road trade routes from Central Asia',
+        'Led to major social upheaval and the end of feudalism in parts of Europe',
+        'Quarantine (40 days isolation) was invented in response \u2014 "quarantina"'
+      ],
+      gradeSummary: {
+        'K-2': 'A long time ago, a very bad sickness called the plague spread across many countries. People didn\'t know about germs yet, so they couldn\'t stop it from spreading.',
+        '3-5': 'The Black Death was a devastating plague that swept across Europe in the 1340s. It was caused by bacteria carried by fleas on rats. It killed millions of people because they had no medicine or understanding of how diseases spread.',
+        '6-8': 'The Black Death (Yersinia pestis) killed 30\u201360% of Europe\'s population between 1347\u20131353. Spread via the Silk Road, it transmitted through infected flea bites and respiratory droplets. The concept of quarantine originated from this pandemic.',
+        '9-12': 'Yersinia pestis caused three clinical forms: bubonic (flea vector, CFR ~60%), septicemic, and pneumonic (airborne, CFR ~95%). The pandemic triggered demographic, economic, and social transformations including labor shortages that accelerated the decline of feudalism. R\u2080 estimates vary by transmission route (2\u20133 for bubonic, higher for pneumonic).'
+      }
+    },
+    {
+      name: '1918 Influenza',
+      year: '1918\u20131920',
+      pathogen: 'H1N1 Influenza A virus',
+      deaths: '50\u2013100 million',
+      worldPop: '~1.8 billion',
+      pctDeath: '~3\u20135%',
+      r0Est: '~2\u20133',
+      transmission: 'Respiratory droplets, aerosols',
+      icon: '\uD83E\uDD27',
+      color: '#b45309',
+      keyFacts: [
+        'Infected ~500 million people (~1/3 of world population)',
+        'Unusual W-shaped mortality curve \u2014 killed healthy young adults ages 20\u201340',
+        'Came in 3 waves; the second wave (fall 1918) was deadliest',
+        'Cities that imposed early social distancing had lower mortality (Philadelphia vs St. Louis)'
+      ],
+      gradeSummary: {
+        'K-2': 'About 100 years ago, a very bad flu made people sick all around the world. Doctors learned that keeping people apart helped slow the spread.',
+        '3-5': 'The 1918 flu pandemic infected about 1 in 3 people on Earth. It came in three waves, with the second being the worst. Cities that closed schools and banned gatherings early had fewer deaths.',
+        '6-8': 'The 1918 H1N1 pandemic infected ~500 million globally with R\u2080\u22482\u20133. It exhibited a unique W-shaped mortality curve, disproportionately killing healthy 20\u201340 year olds through cytokine storms. Early adoption of NPIs (Philadelphia vs. St. Louis) demonstrated the effectiveness of social distancing.',
+        '9-12': 'H1N1 1918 caused an estimated 50\u2013100M deaths (CFR 2\u20133%). The unusual age-mortality profile (W-curve) is attributed to antigenic original sin and cytokine storm in immunologically primed young adults. The pandemic demonstrated that staggered NPI implementation critically affected mortality \u2014 a natural experiment analyzed by Hatchett et al. (2007).'
+      }
+    },
+    {
+      name: 'SARS 2003',
+      year: '2002\u20132004',
+      pathogen: 'SARS-CoV (coronavirus)',
+      deaths: '774',
+      worldPop: '~6.3 billion',
+      pctDeath: '<0.001%',
+      r0Est: '~2\u20134',
+      transmission: 'Respiratory droplets, close contact',
+      icon: '\uD83E\uDDA0',
+      color: '#7c3aed',
+      keyFacts: [
+        'First known SARS coronavirus epidemic \u2014 originated from bat-to-civet-to-human spillover',
+        'Contained through aggressive contact tracing and quarantine',
+        'Only ~8,098 cases worldwide \u2014 a successful containment story',
+        'Demonstrated that coronaviruses could cause severe pandemics'
+      ],
+      gradeSummary: {
+        'K-2': 'SARS was a new type of germ that made some people very sick. Disease detectives tracked down everyone who was near a sick person and asked them to stay home. This stopped it from spreading!',
+        '3-5': 'SARS was a new coronavirus that appeared in 2003. Scientists traced it back to bats. Health workers used contact tracing \u2014 finding everyone an infected person was near \u2014 to stop it from spreading to only about 8,000 people total.',
+        '6-8': 'SARS-CoV (R\u2080\u22482\u20134) was contained through aggressive contact tracing, quarantine, and hospital infection control after ~8,098 cases and 774 deaths. The outbreak demonstrated both the pandemic potential of coronaviruses and the power of traditional public health measures.',
+        '9-12': 'SARS-CoV had an R\u2080 of 2\u20134 with significant overdispersion (many cases from superspreading events, k<1). Containment succeeded because viral shedding peaked after symptom onset, enabling effective symptom-based surveillance. The 9.6% overall CFR and healthcare worker vulnerability foreshadowed challenges of SARS-CoV-2.'
+      }
+    },
+    {
+      name: 'COVID-19',
+      year: '2019\u2013present',
+      pathogen: 'SARS-CoV-2 (coronavirus)',
+      deaths: '7+ million (confirmed)',
+      worldPop: '~7.8 billion',
+      pctDeath: '~0.09%',
+      r0Est: '~2.5\u20133 (original), ~10\u201318 (Omicron)',
+      transmission: 'Airborne, respiratory droplets, aerosols',
+      icon: '\uD83E\uDDA0',
+      color: '#ef4444',
+      keyFacts: [
+        'First coronavirus pandemic \u2014 caused unprecedented global lockdowns',
+        'mRNA vaccines developed in record time (~11 months from sequence to authorization)',
+        'Demonstrated both success and failure of different public health strategies',
+        'Variants (Alpha, Delta, Omicron) showed how viruses evolve under immune pressure'
+      ],
+      gradeSummary: {
+        'K-2': 'COVID-19 is a sickness that spread all around the world. Scientists made vaccines really fast to help protect people. Washing hands and wearing masks helped slow it down.',
+        '3-5': 'COVID-19 was caused by a new coronavirus that spread across every country on Earth. Scientists created vaccines in record time using new mRNA technology. The pandemic showed how important it is to be prepared for new diseases.',
+        '6-8': 'SARS-CoV-2 (R\u2080\u22482.5\u20133) caused the COVID-19 pandemic. Key features: pre-symptomatic transmission made containment difficult, mRNA vaccines were developed in ~11 months, and variants (Delta R\u2080\u22485\u20138, Omicron R\u2080\u224810\u201318) demonstrated ongoing viral evolution under immune pressure.',
+        '9-12': 'SARS-CoV-2 demonstrated critical epidemiological concepts: the challenge of controlling a pathogen with significant pre-symptomatic transmission (serial interval < incubation period), the importance of overdispersion (k\u22480.1\u20130.5) in superspreading dynamics, the race between vaccination and variant emergence, and the real-world complexity of NPI implementation across diverse populations.'
+      }
+    },
+    {
+      name: 'HIV/AIDS',
+      year: '1981\u2013present',
+      pathogen: 'Human Immunodeficiency Virus',
+      deaths: '40+ million',
+      worldPop: '~4.5\u20138 billion',
+      pctDeath: '~0.5%',
+      r0Est: '~2\u20135',
+      transmission: 'Bodily fluids (blood, sexual contact)',
+      icon: '\uD83C\uDF97\uFE0F',
+      color: '#dc2626',
+      keyFacts: [
+        'Long incubation period (years) made early detection extremely difficult',
+        'Initially nearly 100% fatal; antiretroviral therapy (ART) transformed it into a manageable condition',
+        'Sub-Saharan Africa disproportionately affected (>25 million living with HIV)',
+        'Demonstrates how social factors (stigma, access to care) shape epidemic trajectories'
+      ],
+      gradeSummary: {
+        'K-2': 'HIV is a germ that weakens the body\'s ability to fight other germs. Scientists created medicines that help people with HIV live long, healthy lives.',
+        '3-5': 'HIV is a virus that attacks the immune system. When it was first discovered, there was no treatment. Now, special medicines called antiretrovirals let people with HIV live normal lives. It taught us how important it is to develop medicines for new diseases.',
+        '6-8': 'HIV (R\u2080\u22482\u20135 depending on population) has killed 40+ million people since 1981. Its long asymptomatic incubation period (years) enabled widespread transmission before detection. Antiretroviral therapy (ART) transformed HIV from a death sentence to a chronic condition, demonstrating the power of sustained medical research.',
+        '9-12': 'HIV demonstrates unique epidemiological features: extremely long infectious period, R\u2080 highly dependent on behavioral and structural factors, phylodynamic analysis reveals transmission networks, and the epidemic illustrates how social determinants (stigma, healthcare access, poverty) profoundly shape disease burden. UNAIDS 90-90-90 targets showcase the intersection of epidemiology and public health policy.'
+      }
+    }
+  ];
+
+  // ── NPI Intervention Types ──
+  var NPI_INTERVENTIONS = [
+    { id: 'masks', label: 'Mask Mandate', icon: '\uD83D\uDE37', betaReduction: 0.40, desc: 'Reduces transmission rate by ~40% through filtering respiratory droplets.', cost: 'Low', compliance: 'Moderate' },
+    { id: 'distancing', label: 'Social Distancing', icon: '\uD83D\uDEB6', betaReduction: 0.30, desc: 'Reduces close contacts by ~30%. Effective in reducing transmission chains.', cost: 'Medium', compliance: 'Low' },
+    { id: 'quarantine', label: 'Quarantine', icon: '\uD83C\uDFE0', betaReduction: 0.50, desc: 'Isolating exposed/infected individuals reduces spread by ~50%.', cost: 'High', compliance: 'Moderate' },
+    { id: 'schoolclose', label: 'School Closures', icon: '\uD83C\uDFEB', betaReduction: 0.20, desc: 'Reduces child-to-adult transmission chains by ~20%.', cost: 'High', compliance: 'High' },
+    { id: 'travban', label: 'Travel Restrictions', icon: '\u2708\uFE0F', betaReduction: 0.15, desc: 'Delays geographic spread by ~15% but doesn\'t prevent it long-term.', cost: 'Very High', compliance: 'High' },
+    { id: 'handwash', label: 'Hand Hygiene', icon: '\uD83E\uDDF4', betaReduction: 0.20, desc: 'Reduces fomite transmission by ~20%. Low cost, easy to implement.', cost: 'Very Low', compliance: 'High' },
+    { id: 'ventilation', label: 'Ventilation', icon: '\uD83D\uDCA8', betaReduction: 0.25, desc: 'Improved airflow reduces aerosol concentration by ~25%.', cost: 'Medium', compliance: 'High' },
+    { id: 'testing', label: 'Mass Testing', icon: '\uD83E\uDDEA', betaReduction: 0.35, desc: 'Identifies and isolates cases early, reducing onward transmission by ~35%.', cost: 'High', compliance: 'Moderate' }
   ];
 
   // ═══════════════════════════════════════════════════════
@@ -299,7 +446,7 @@ window.StemLab = window.StemLab || {
     return grid;
   }
 
-  function stepGrid(grid, r0) {
+  function stepGrid(grid, r0, quarantineZones) {
     var size = grid.length;
     var pInfect = Math.min(0.95, r0 * 0.08);
     var pRecover = 0.15;
@@ -307,20 +454,120 @@ window.StemLab = window.StemLab || {
     for (var r = 0; r < size; r++) {
       for (var c = 0; c < size; c++) {
         if (grid[r][c] === 'I') {
+          // check if in quarantine zone — reduced spread
+          var inQZ = false;
+          if (quarantineZones) {
+            for (var qz = 0; qz < quarantineZones.length; qz++) {
+              var z = quarantineZones[qz];
+              if (r >= z.r && r < z.r + z.size && c >= z.c && c < z.c + z.size) { inQZ = true; break; }
+            }
+          }
+          var effectiveP = inQZ ? pInfect * 0.2 : pInfect;
           // try to infect neighbors
           var neighbors = [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]];
           for (var n = 0; n < neighbors.length; n++) {
             var nr = r + neighbors[n][0], nc = c + neighbors[n][1];
             if (nr >= 0 && nr < size && nc >= 0 && nc < size && grid[nr][nc] === 'S') {
-              if (Math.random() < pInfect) next[nr][nc] = 'I';
+              if (Math.random() < effectiveP) next[nr][nc] = 'I';
             }
           }
-          // recover
-          if (Math.random() < pRecover) next[r][c] = 'R';
+          // recover (faster in quarantine due to focused care)
+          if (Math.random() < (inQZ ? pRecover * 1.5 : pRecover)) next[r][c] = 'R';
         }
       }
     }
     return next;
+  }
+
+  // ── SIR solver with NPI interventions ──
+  function solveSIR_NPI(params, activeNPIs) {
+    var r0 = params.r0, vaccRate = params.vaccRate || 0, infectPeriod = params.infectPeriod, popSize = params.popSize;
+    var gamma = 1 / infectPeriod;
+    var beta = r0 * gamma;
+    // apply NPI reductions (multiplicative)
+    var totalReduction = 0;
+    if (activeNPIs) {
+      for (var n = 0; n < activeNPIs.length; n++) {
+        var npi = NPI_INTERVENTIONS.find(function(x) { return x.id === activeNPIs[n]; });
+        if (npi) totalReduction = 1 - (1 - totalReduction) * (1 - npi.betaReduction);
+      }
+    }
+    var betaEff = beta * (1 - Math.min(0.95, totalReduction));
+    var dt = 0.5, simDays = 300;
+    var initR = vaccRate / 100;
+    var S = 1 - initR - 0.001;
+    var I = 0.001;
+    var R = initR;
+    var hospitalCapacity = 0.05; // 5% of pop can be hospitalized
+    var data = [{ day: 0, S: S * 100, I: I * 100, R: R * 100, hospitalPct: (I / hospitalCapacity) * 100 }];
+    for (var t = dt; t <= simDays; t += dt) {
+      var dS = -betaEff * S * I * dt;
+      var dI = (betaEff * S * I - gamma * I) * dt;
+      var dR = gamma * I * dt;
+      S = Math.max(0, Math.min(1, S + dS));
+      I = Math.max(0, Math.min(1, I + dI));
+      R = Math.max(0, Math.min(1, R + dR));
+      if (Math.round(t * 2) % 2 === 0) {
+        data.push({ day: Math.round(t), S: S * 100, I: I * 100, R: R * 100, hospitalPct: Math.min(500, (I / hospitalCapacity) * 100) });
+      }
+    }
+    return { data: data, betaEff: betaEff, effR0: betaEff / gamma, totalReduction: totalReduction };
+  }
+
+  // ── Contact tracing network generator ──
+  function generateContactNetwork(numNodes) {
+    var nodes = [];
+    var edges = [];
+    var cx = 350, cy = 200;
+    for (var i = 0; i < numNodes; i++) {
+      var angle = (i / numNodes) * Math.PI * 2;
+      var radius = 120 + Math.random() * 60;
+      nodes.push({
+        id: i,
+        x: cx + Math.cos(angle) * radius + (Math.random() - 0.5) * 40,
+        y: cy + Math.sin(angle) * radius + (Math.random() - 0.5) * 40,
+        state: 'unknown', // unknown, traced, infected, clear
+        name: 'Person ' + String.fromCharCode(65 + i)
+      });
+    }
+    // create contact edges (each person contacts 2-4 others)
+    for (var j = 0; j < numNodes; j++) {
+      var numContacts = 2 + Math.floor(Math.random() * 3);
+      for (var k = 0; k < numContacts; k++) {
+        var target = (j + 1 + Math.floor(Math.random() * (numNodes - 2))) % numNodes;
+        var exists = edges.some(function(e) { return (e.from === j && e.to === target) || (e.from === target && e.to === j); });
+        if (!exists && target !== j) edges.push({ from: j, to: target });
+      }
+    }
+    // pick patient zero and infection chain
+    var p0 = Math.floor(Math.random() * numNodes);
+    nodes[p0].state = 'infected';
+    nodes[p0].isPatientZero = true;
+    // spread infection along 3-5 edges
+    var infected = [p0];
+    var infectionChain = [];
+    var maxSpread = 3 + Math.floor(Math.random() * 3);
+    for (var s = 0; s < maxSpread && infected.length > 0; s++) {
+      var spreader = infected[Math.floor(Math.random() * infected.length)];
+      var possibleTargets = edges.filter(function(e) {
+        var target = e.from === spreader ? e.to : (e.to === spreader ? e.from : -1);
+        return target >= 0 && nodes[target].state !== 'infected';
+      });
+      if (possibleTargets.length > 0) {
+        var edge = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
+        var newInfected = edge.from === spreader ? edge.to : edge.from;
+        nodes[newInfected].state = 'infected';
+        nodes[newInfected].infectedBy = spreader;
+        infected.push(newInfected);
+        infectionChain.push({ from: spreader, to: newInfected });
+      }
+    }
+    // hide infection state (player must discover)
+    var solution = infected.slice();
+    for (var h = 0; h < numNodes; h++) {
+      if (!nodes[h].isPatientZero) nodes[h].state = 'unknown';
+    }
+    return { nodes: nodes, edges: edges, solution: solution, chain: infectionChain, patientZero: p0 };
   }
 
   function countGrid(grid) {
@@ -772,15 +1019,18 @@ window.StemLab = window.StemLab || {
       // Map stepping via timer in render body
       if (mapRunning && mapGrid) {
         setTimeout(function() {
-          var newGrid = stepGrid(mapGrid, r0);
+          var newGrid = stepGrid(mapGrid, r0, mapQuarantineZones);
           var counts = countGrid(newGrid);
           var hist = (mapHistory || []).concat([counts]);
           var stillInfected = counts.I > 0;
+          // hospital capacity check
+          var hospPct = counts.total > 0 ? (counts.I / (counts.total * hospitalBeds / 100)) * 100 : 0;
           updMulti({
             mapGrid: newGrid,
             mapStep: mapStep + 1,
             mapHistory: hist,
-            mapRunning: stillInfected && mapStep < 200
+            mapRunning: stillInfected && mapStep < 200,
+            mapHospPct: hospPct
           });
         }, 150);
       }
@@ -828,6 +1078,113 @@ window.StemLab = window.StemLab || {
         lr[title] = true;
         upd('learnRead', lr);
         if (Object.keys(lr).length >= LEARN_TOPICS.length) checkBadge('scholar');
+      }
+
+      // ── Intervention state ──
+      var activeNPIs = d.activeNPIs || [];
+      var npiResult = (tab === 'interventions') ? solveSIR_NPI({ r0: r0, vaccRate: vaccRate, infectPeriod: infectPeriod, popSize: popSize }, activeNPIs) : null;
+      var npiBaseline = (tab === 'interventions') ? solveSIR_NPI({ r0: r0, vaccRate: vaccRate, infectPeriod: infectPeriod, popSize: popSize }, []) : null;
+
+      function toggleNPI(id) {
+        var list = activeNPIs.slice();
+        var idx = list.indexOf(id);
+        if (idx >= 0) list.splice(idx, 1);
+        else list.push(id);
+        upd('activeNPIs', list);
+      }
+
+      function runNPISim() {
+        var res = solveSIR_NPI({ r0: r0, vaccRate: vaccRate, infectPeriod: infectPeriod, popSize: popSize }, activeNPIs);
+        var npiPeak = 0;
+        for (var j = 0; j < res.data.length; j++) { if (res.data[j].I > npiPeak) npiPeak = res.data[j].I; }
+        if (npiPeak < 20 && npiPeak > 0 && activeNPIs.length > 0) checkBadge('npiMaster');
+        // check hospital capacity badge
+        var overCapacity = false;
+        for (var k = 0; k < res.data.length; k++) { if (res.data[k].hospitalPct > 100) overCapacity = true; }
+        if (!overCapacity && activeNPIs.length > 0) checkBadge('hospitalMgr');
+        awardXP(10, 'NPI simulation');
+        announceToSR('NPI Simulation: R_eff = ' + res.effR0.toFixed(2) + ', reduction = ' + (res.totalReduction * 100).toFixed(0) + '%');
+      }
+
+      // ── Contact tracing state ──
+      var ctNetwork = d.ctNetwork || null;
+      var ctRevealed = d.ctRevealed || [];
+      var ctGuesses = d.ctGuesses || 0;
+      var ctScore = d.ctScore || 0;
+      var ctComplete = d.ctComplete || false;
+
+      function startContactTrace() {
+        var net = generateContactNetwork(12);
+        updMulti({ ctNetwork: net, ctRevealed: [net.patientZero], ctGuesses: 0, ctScore: 0, ctComplete: false, ctFeedback: null });
+      }
+
+      function traceNode(nodeId) {
+        if (!ctNetwork || ctComplete) return;
+        var revealed = ctRevealed.slice();
+        if (revealed.indexOf(nodeId) >= 0) return;
+        revealed.push(nodeId);
+        var isInfected = ctNetwork.solution.indexOf(nodeId) >= 0;
+        var newGuesses = ctGuesses + 1;
+        var newScore = ctScore + (isInfected ? 20 : -5);
+        // check if all infected found
+        var allFound = ctNetwork.solution.every(function(id) { return revealed.indexOf(id) >= 0; });
+        updMulti({
+          ctRevealed: revealed,
+          ctGuesses: newGuesses,
+          ctScore: Math.max(0, newScore),
+          ctComplete: allFound,
+          ctFeedback: isInfected ? '\u2705 Infected! Contact traced.' : '\u274C Clear \u2014 not in chain.'
+        });
+        stemBeep(isInfected);
+        if (allFound) {
+          checkBadge('contactTracer');
+          awardXP(25, 'Contact trace complete');
+        }
+      }
+
+      // ── History state ──
+      var historyViewed = d.historyViewed || {};
+      function viewPandemic(name) {
+        var hv = Object.assign({}, historyViewed);
+        hv[name] = true;
+        upd('historyViewed', hv);
+        if (Object.keys(hv).length >= HISTORICAL_PANDEMICS.length) checkBadge('historian');
+      }
+
+      // ── Quarantine zones for outbreak map ──
+      var mapQuarantineZones = d.mapQuarantineZones || [];
+      function addQuarantineZone(row, col) {
+        var zones = mapQuarantineZones.slice();
+        zones.push({ r: Math.max(0, row - 2), c: Math.max(0, col - 2), size: 5 });
+        upd('mapQuarantineZones', zones);
+        checkBadge('quarantine');
+      }
+
+      // ── Hospital capacity for outbreak map ──
+      var hospitalBeds = d.hospitalBeds != null ? d.hospitalBeds : 5; // % of pop
+
+      // ── AI Scenarios state ──
+      var scenarioData = d.scenarioData || null;
+      var scenarioChoice = d.scenarioChoice || null;
+      var scenarioResult = d.scenarioResult || null;
+
+      function generateScenario() {
+        if (!callGemini) return;
+        upd('scenarioLoading', true);
+        callGemini('Create a realistic fictional epidemic scenario for a ' + gradeBand + ' student. Include: disease name, origin, R0 (1-8), symptoms, transmission mode. Then present 3 response options (A, B, C) with different intervention strategies. For each option, describe the likely outcome. Return JSON: {"name":"disease name","origin":"where","r0":number,"symptoms":"brief","transmission":"how","description":"1-2 sentence scenario setup","options":[{"label":"A","strategy":"description","outcome":"what happens","score":number(0-100)}]}').then(function(res) {
+          try {
+            var parsed = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
+            updMulti({ scenarioData: parsed, scenarioLoading: false, scenarioChoice: null, scenarioResult: null });
+          } catch(e) { upd('scenarioLoading', false); }
+        }).catch(function() { upd('scenarioLoading', false); });
+      }
+
+      function chooseScenario(idx) {
+        if (!scenarioData) return;
+        var opt = scenarioData.options[idx];
+        updMulti({ scenarioChoice: idx, scenarioResult: opt });
+        checkBadge('scenarioSolver');
+        awardXP(20, 'Scenario completed');
       }
 
       // ═══════════════════════════════════════════════════════
@@ -880,7 +1237,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Disease presets (shared across SIR/SEIR/R0/Vaccination) ──
-        (tab === 'sir' || tab === 'seir' || tab === 'r0explorer' || tab === 'vaccination') &&
+        (tab === 'sir' || tab === 'seir' || tab === 'r0explorer' || tab === 'vaccination' || tab === 'interventions') &&
         h('div', { className: glassCard },
           h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-2' }, 'Disease Presets'),
           h('div', { className: 'flex flex-wrap gap-1.5' },
@@ -1135,6 +1492,105 @@ window.StemLab = window.StemLab || {
         ),
 
         // ═══════════════════════════════════════════
+        // INTERVENTIONS TAB (NEW)
+        // ═══════════════════════════════════════════
+        tab === 'interventions' && h('div', { className: 'space-y-4' },
+          h('div', { className: glassCard },
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDE37 Non-Pharmaceutical Interventions'),
+            h('p', { className: 'text-xs text-slate-500' }, gradeText(gradeBand,
+              'Pick ways to slow down germs! Masks, handwashing, and staying apart all help!',
+              'Choose different interventions to see how they flatten the epidemic curve.',
+              'Toggle NPIs to modify the effective transmission rate \u03B2. Observe combined effects on R_eff and peak infection.',
+              'Explore multiplicative NPI effects on \u03B2_eff. Each intervention reduces the remaining transmission probability independently: \u03B2_eff = \u03B2 \u00D7 \u220F(1 - r_i).'))
+          ),
+          // NPI toggles
+          h('div', { className: glassCard + ' space-y-2' },
+            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-2' }, 'Select Interventions'),
+            h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
+              NPI_INTERVENTIONS.map(function(npi) {
+                var active = activeNPIs.indexOf(npi.id) >= 0;
+                return h('button', {
+                  key: npi.id,
+                  onClick: function() { toggleNPI(npi.id); },
+                  className: 'p-2 rounded-xl text-left transition-all border ' + (active ? 'bg-teal-50 border-teal-400 ring-2 ring-teal-200' : 'bg-white border-slate-200 hover:border-teal-300')
+                },
+                  h('div', { className: 'flex items-center gap-1.5' },
+                    h('span', { className: 'text-lg' }, npi.icon),
+                    h('span', { className: 'text-[10px] font-bold ' + (active ? 'text-teal-700' : 'text-slate-600') }, npi.label)
+                  ),
+                  h('p', { className: 'text-[8px] text-slate-500 mt-0.5' }, '-' + (npi.betaReduction * 100) + '% transmission'),
+                  h('p', { className: 'text-[8px] text-slate-400' }, 'Cost: ' + npi.cost)
+                );
+              })
+            )
+          ),
+          // Parameter sliders
+          h('div', { className: glassCard + ' space-y-3' },
+            slider('R\u2080', r0, 0.5, 12, 0.1, 'r0', function(v) { return v.toFixed(1); }),
+            slider('Vaccination (%)', vaccRate, 0, 95, 1, 'vaccRate', function(v) { return v + '%'; }),
+            slider('Infectious Period', infectPeriod, 2, 30, 1, 'infectPeriod'),
+            h('button', { onClick: runNPISim, className: 'w-full py-2 text-sm font-bold bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all shadow-md' }, '\uD83D\uDE37 Simulate with NPIs')
+          ),
+          // Reduction summary
+          npiResult && h('div', { className: glassCard },
+            h('div', { className: 'grid grid-cols-3 gap-3 text-center' },
+              h('div', null,
+                h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, '\u03B2 Reduction'),
+                h('p', { className: 'text-lg font-bold text-teal-600' }, (npiResult.totalReduction * 100).toFixed(0) + '%')
+              ),
+              h('div', null,
+                h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'R_effective'),
+                h('p', { className: 'text-lg font-bold', style: { color: r0Color(npiResult.effR0) } }, npiResult.effR0.toFixed(2))
+              ),
+              h('div', null,
+                h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Status'),
+                h('p', { className: 'text-lg font-bold ' + (npiResult.effR0 < 1 ? 'text-emerald-600' : 'text-red-600') }, npiResult.effR0 < 1 ? 'Contained!' : 'Spreading')
+              )
+            )
+          ),
+          // Side-by-side curves
+          npiResult && npiBaseline && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+            h('div', { className: glassCard },
+              h('p', { className: 'text-[10px] font-bold text-red-500 uppercase mb-1' }, 'Without Interventions'),
+              renderSVGChart(npiBaseline.data, ['S', 'I', 'R'], 350, 200)
+            ),
+            h('div', { className: glassCard },
+              h('p', { className: 'text-[10px] font-bold text-teal-500 uppercase mb-1' }, 'With ' + activeNPIs.length + ' NPIs Active'),
+              renderSVGChart(npiResult.data, ['S', 'I', 'R'], 350, 200)
+            )
+          ),
+          // Hospital capacity overlay
+          npiResult && h('div', { className: glassCard },
+            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-2' }, '\uD83C\uDFE5 Hospital Capacity'),
+            h('div', { className: 'space-y-2' },
+              (function() {
+                var maxHosp = 0;
+                for (var hh = 0; hh < npiResult.data.length; hh++) {
+                  if (npiResult.data[hh].hospitalPct > maxHosp) maxHosp = npiResult.data[hh].hospitalPct;
+                }
+                var exceeded = maxHosp > 100;
+                return h('div', null,
+                  h('div', { className: 'relative h-6 bg-slate-200 rounded-full overflow-hidden' },
+                    h('div', { className: 'absolute inset-y-0 left-0 rounded-full transition-all', style: { width: Math.min(100, maxHosp) + '%', background: exceeded ? '#ef4444' : '#22c55e' } }),
+                    h('div', { className: 'absolute top-0 bottom-0 w-0.5 bg-red-800', style: { left: '100%' } })
+                  ),
+                  h('p', { className: 'text-[10px] font-bold mt-1 ' + (exceeded ? 'text-red-600' : 'text-emerald-600') },
+                    exceeded ? '\u26A0\uFE0F Peak hospital use: ' + maxHosp.toFixed(0) + '% of capacity \u2014 OVERWHELMED' : '\u2705 Peak hospital use: ' + maxHosp.toFixed(0) + '% of capacity')
+                );
+              })()
+            )
+          ),
+          // NPI explanation
+          h('div', { className: glassCard },
+            h('p', { className: 'text-[10px] font-bold text-indigo-600' }, '\uD83D\uDCA1 ' + gradeText(gradeBand,
+              'Each way to stay safe makes germs spread slower. Using more than one is even better!',
+              'Each intervention reduces how fast the disease spreads. Using multiple interventions together gives better protection than any single one!',
+              'NPIs reduce the effective \u03B2 multiplicatively. With masks (-40%) and distancing (-30%), \u03B2_eff = \u03B2 \u00D7 0.60 \u00D7 0.70 = \u03B2 \u00D7 0.42 (58% reduction). This is why layered strategies work.',
+              'The multiplicative NPI model: \u03B2_eff = \u03B2 \u220F_i(1-r_i) where r_i is each intervention\'s reduction. This assumes independence of mechanisms (respiratory vs. fomite vs. contact). In practice, diminishing returns occur when interventions target the same transmission route.'))
+          )
+        ),
+
+        // ═══════════════════════════════════════════
         // OUTBREAK MAP TAB
         // ═══════════════════════════════════════════
         tab === 'outbreakmap' && h('div', { className: 'space-y-4' },
@@ -1161,6 +1617,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-[10px] text-slate-500 italic' }, MAP_SCENARIOS[mapScenario].desc),
             slider('R\u2080', r0, 0.5, 8, 0.1, 'r0', function(v) { return v.toFixed(1); }),
             slider('Pre-vaccinated (%)', mapVacc, 0, 90, 5, 'mapVacc', function(v) { return v + '%'; }),
+            slider('Hospital Beds (% of pop)', hospitalBeds, 1, 15, 1, 'hospitalBeds', function(v) { return v + '%'; }),
             h('div', { className: 'flex gap-2' },
               h('button', { onClick: initMap, className: 'flex-1 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, '\uD83D\uDDFA\uFE0F Generate Map'),
               mapGrid && h('button', {
@@ -1190,6 +1647,42 @@ window.StemLab = window.StemLab || {
                 });
                 return cells;
               }, [])
+            )
+          ),
+          // Quarantine zones + hospital capacity
+          mapGrid && h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-center justify-between' },
+              h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, '\uD83D\uDEA7 Quarantine Zones (' + mapQuarantineZones.length + ')'),
+              h('div', { className: 'flex gap-2' },
+                h('button', {
+                  onClick: function() {
+                    var sc = MAP_SCENARIOS[mapScenario];
+                    addQuarantineZone(Math.floor(Math.random() * sc.gridSize), Math.floor(Math.random() * sc.gridSize));
+                  },
+                  className: 'px-2 py-1 text-[10px] font-bold bg-amber-100 text-amber-700 rounded-lg'
+                }, '+ Add Zone'),
+                mapQuarantineZones.length > 0 && h('button', {
+                  onClick: function() { upd('mapQuarantineZones', []); },
+                  className: 'px-2 py-1 text-[10px] font-bold bg-slate-100 text-slate-500 rounded-lg'
+                }, 'Clear')
+              )
+            ),
+            mapQuarantineZones.length > 0 && h('p', { className: 'text-[8px] text-amber-600 italic' }, 'Quarantine zones reduce transmission by 80% and speed recovery by 50% within the zone.'),
+            // Hospital capacity bar
+            h('div', null,
+              h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-1' }, '\uD83C\uDFE5 Hospital Capacity'),
+              (function() {
+                var hospPct = d.mapHospPct || 0;
+                var exceeded = hospPct > 100;
+                return h('div', null,
+                  h('div', { className: 'relative h-5 bg-slate-200 rounded-full overflow-hidden' },
+                    h('div', { className: 'absolute inset-y-0 left-0 rounded-full transition-all', style: { width: Math.min(100, hospPct) + '%', background: exceeded ? '#ef4444' : hospPct > 70 ? '#f59e0b' : '#22c55e' } }),
+                    h('div', { className: 'absolute inset-0 flex items-center justify-center text-[8px] font-bold ' + (hospPct > 50 ? 'text-white' : 'text-slate-600') },
+                      hospPct.toFixed(0) + '% used (' + hospitalBeds + '% beds)')
+                  ),
+                  exceeded && h('p', { className: 'text-[9px] font-bold text-red-600 mt-0.5' }, '\u26A0\uFE0F HOSPITALS OVERWHELMED \u2014 mortality increases!')
+                );
+              })()
             )
           ),
           // Map history mini chart
@@ -1231,6 +1724,290 @@ window.StemLab = window.StemLab || {
               disabled: d.mapAnalysisLoading,
               className: 'w-full py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all disabled:opacity-50'
             }, d.mapAnalysisLoading ? '\uD83E\uDDE0 Analyzing...' : '\uD83E\uDDE0 AI Analysis')
+          )
+        ),
+
+        // ═══════════════════════════════════════════
+        // CONTACT TRACING TAB (NEW)
+        // ═══════════════════════════════════════════
+        tab === 'contacttrace' && h('div', { className: 'space-y-4' },
+          h('div', { className: glassCard },
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDD17 Contact Tracing'),
+            h('p', { className: 'text-xs text-slate-500' }, gradeText(gradeBand,
+              'Be a disease detective! Find all the sick people by following who they talked to!',
+              'Trace the chain of infection by clicking on people connected to known cases.',
+              'Identify all infected individuals in a contact network. Start from Patient Zero and trace the infection chain.',
+              'Perform contact tracing on a stochastic network graph. The infection chain follows edges with probability proportional to contact intensity. Minimize false traces to maximize your score.'))
+          ),
+          !ctNetwork ? h('div', { className: glassCard + ' text-center space-y-3' },
+            h('div', { className: 'text-5xl mb-2' }, '\uD83D\uDD0D'),
+            h('p', { className: 'text-sm font-bold text-slate-700' }, 'Trace the infection chain!'),
+            h('p', { className: 'text-xs text-slate-500' }, 'Click on people connected to known cases to test if they\'re infected.'),
+            h('button', { onClick: startContactTrace, className: 'px-6 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, '\uD83D\uDD17 Start Tracing')
+          ) : h('div', { className: 'space-y-3' },
+            // Score/status bar
+            h('div', { className: glassCard + ' flex items-center justify-between' },
+              h('div', { className: 'flex gap-3 text-xs' },
+                h('span', { className: 'font-bold text-indigo-600' }, '\uD83C\uDFAF Score: ' + ctScore),
+                h('span', { className: 'font-bold text-slate-500' }, 'Traces: ' + ctGuesses),
+                h('span', { className: 'font-bold text-red-600' }, 'Infected: ' + ctNetwork.solution.length)
+              ),
+              ctComplete ? h('span', { className: 'text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg' }, '\u2705 All Found!') :
+              h('span', { className: 'text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg' },
+                ctRevealed.filter(function(id) { return ctNetwork.solution.indexOf(id) >= 0; }).length + '/' + ctNetwork.solution.length + ' found')
+            ),
+            // Network graph (SVG)
+            h('div', { className: glassCard },
+              h('svg', { viewBox: '0 0 700 400', className: 'w-full', style: { maxHeight: '400px' } },
+                // edges
+                ctNetwork.edges.map(function(e, idx) {
+                  var n1 = ctNetwork.nodes[e.from], n2 = ctNetwork.nodes[e.to];
+                  var bothRevealed = ctRevealed.indexOf(e.from) >= 0 && ctRevealed.indexOf(e.to) >= 0;
+                  var isChainEdge = ctComplete && ctNetwork.chain.some(function(ce) {
+                    return (ce.from === e.from && ce.to === e.to) || (ce.from === e.to && ce.to === e.from);
+                  });
+                  return h('line', {
+                    key: 'e' + idx,
+                    x1: n1.x, y1: n1.y, x2: n2.x, y2: n2.y,
+                    stroke: isChainEdge ? '#ef4444' : bothRevealed ? '#94a3b8' : '#e2e8f0',
+                    strokeWidth: isChainEdge ? 3 : 1.5,
+                    strokeDasharray: bothRevealed ? 'none' : '4,3'
+                  });
+                }),
+                // nodes
+                ctNetwork.nodes.map(function(node) {
+                  var revealed = ctRevealed.indexOf(node.id) >= 0;
+                  var isInfected = revealed && ctNetwork.solution.indexOf(node.id) >= 0;
+                  var isClear = revealed && ctNetwork.solution.indexOf(node.id) < 0;
+                  var fill = node.isPatientZero ? '#dc2626' : isInfected ? '#ef4444' : isClear ? '#22c55e' : '#e2e8f0';
+                  var canClick = !revealed && !ctComplete;
+                  // only allow clicking nodes connected to revealed infected
+                  var isConnected = !revealed && ctNetwork.edges.some(function(e) {
+                    var other = e.from === node.id ? e.to : (e.to === node.id ? e.from : -1);
+                    return other >= 0 && ctRevealed.indexOf(other) >= 0 && ctNetwork.solution.indexOf(other) >= 0;
+                  });
+                  return h('g', { key: 'n' + node.id, onClick: canClick && isConnected ? function() { traceNode(node.id); } : undefined, style: { cursor: canClick && isConnected ? 'pointer' : 'default' } },
+                    h('circle', {
+                      cx: node.x, cy: node.y, r: node.isPatientZero ? 18 : 14,
+                      fill: fill, stroke: isConnected && !revealed ? '#6366f1' : '#94a3b8',
+                      strokeWidth: isConnected && !revealed ? 3 : 1.5,
+                      opacity: canClick && isConnected ? 1 : (revealed ? 1 : 0.5)
+                    }),
+                    h('text', { x: node.x, y: node.y + 4, textAnchor: 'middle', fill: revealed ? 'white' : '#64748b', fontSize: 10, fontWeight: 'bold' },
+                      node.isPatientZero ? 'P0' : String.fromCharCode(65 + node.id))
+                  );
+                })
+              )
+            ),
+            // Feedback
+            d.ctFeedback && h('div', { className: glassCard },
+              h('p', { className: 'text-sm font-bold ' + (d.ctFeedback[0] === '\u2705' ? 'text-emerald-600' : 'text-red-600') }, d.ctFeedback)
+            ),
+            // Controls
+            h('div', { className: 'flex gap-2' },
+              h('button', { onClick: startContactTrace, className: 'px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, '\u21BA New Network'),
+              ctComplete && callGemini && h('button', {
+                onClick: function() {
+                  upd('ctAnalysisLoading', true);
+                  callGemini('A ' + gradeBand + ' student completed a contact tracing exercise. Network had ' + ctNetwork.nodes.length + ' people, ' + ctNetwork.solution.length + ' were infected. Student used ' + ctGuesses + ' traces and scored ' + ctScore + '. Give 2 sentences of encouraging feedback and one real-world contact tracing fact.').then(function(res) {
+                    updMulti({ ctAnalysis: res, ctAnalysisLoading: false });
+                  }).catch(function() { upd('ctAnalysisLoading', false); });
+                },
+                disabled: d.ctAnalysisLoading,
+                className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all disabled:opacity-50'
+              }, d.ctAnalysisLoading ? '\uD83E\uDDE0 Analyzing...' : '\uD83E\uDDE0 AI Feedback')
+            ),
+            d.ctAnalysis && h('div', { className: glassCard },
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-line' }, d.ctAnalysis)
+            ),
+            // Legend
+            h('div', { className: 'flex gap-4 text-[10px] text-slate-500 px-2' },
+              h('span', null, '\uD83D\uDD34 Patient Zero'),
+              h('span', null, '\uD83D\uDD35 Unknown (clickable if connected)'),
+              h('span', null, '\uD83D\uDFE2 Tested Clear'),
+              h('span', null, '\uD83D\uDD34 Confirmed Infected')
+            )
+          )
+        ),
+
+        // ═══════════════════════════════════════════
+        // HISTORY TAB (NEW)
+        // ═══════════════════════════════════════════
+        tab === 'history' && h('div', { className: 'space-y-4' },
+          h('div', { className: glassCard },
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDCDC Historical Pandemics'),
+            h('p', { className: 'text-xs text-slate-500' }, gradeText(gradeBand,
+              'Learn about big sicknesses from long ago and what people did to stop them!',
+              'Explore the major pandemics in human history and what we learned from each one.',
+              'Study how historical pandemics shaped public health, society, and our understanding of disease transmission.',
+              'Analyze the epidemiological parameters, intervention strategies, and societal impacts of history\'s most significant pandemics. Compare R\u2080 values, CFRs, and containment outcomes.'))
+          ),
+          // Timeline
+          h('div', { className: glassCard },
+            h('div', { className: 'relative' },
+              // Timeline line
+              h('div', { className: 'absolute left-4 top-0 bottom-0 w-0.5 bg-slate-300' }),
+              h('div', { className: 'space-y-4 pl-10' },
+                HISTORICAL_PANDEMICS.map(function(p) {
+                  var expanded = d.historyExpanded === p.name;
+                  var viewed = historyViewed[p.name];
+                  return h('div', { key: p.name, className: 'relative' },
+                    // Timeline dot
+                    h('div', { className: 'absolute -left-[26px] top-2 w-4 h-4 rounded-full border-2 border-white shadow-sm', style: { backgroundColor: p.color } }),
+                    h('button', {
+                      onClick: function() {
+                        viewPandemic(p.name);
+                        upd('historyExpanded', expanded ? null : p.name);
+                      },
+                      className: 'w-full text-left p-3 rounded-xl transition-all ' + (expanded ? 'bg-slate-50 ring-2 ring-indigo-200' : 'hover:bg-slate-50')
+                    },
+                      h('div', { className: 'flex items-center gap-2' },
+                        h('span', { className: 'text-lg' }, p.icon),
+                        h('div', { className: 'flex-1' },
+                          h('p', { className: 'text-sm font-bold text-slate-700' }, p.name + ' (' + p.year + ')'),
+                          h('p', { className: 'text-[10px] text-slate-500' }, p.pathogen)
+                        ),
+                        h('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full', style: { backgroundColor: p.color + '20', color: p.color } }, p.deaths + ' deaths'),
+                        viewed && h('span', { className: 'text-[10px]' }, '\u2705')
+                      )
+                    ),
+                    // Expanded details
+                    expanded && h('div', { className: 'mt-2 p-4 bg-white rounded-xl border border-slate-200 space-y-3' },
+                      // Grade-appropriate summary
+                      h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, p.gradeSummary[gradeBand] || p.gradeSummary['3-5']),
+                      // Stats grid
+                      h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
+                        [
+                          { label: 'Deaths', value: p.deaths, color: '#ef4444' },
+                          { label: '% World Pop', value: p.pctDeath, color: '#f59e0b' },
+                          { label: 'R\u2080 Estimate', value: p.r0Est, color: r0Color(parseFloat(p.r0Est) || 3) },
+                          { label: 'Transmission', value: p.transmission, color: '#6366f1' }
+                        ].map(function(s) {
+                          return h('div', { key: s.label, className: 'bg-slate-50 rounded-lg p-2 text-center' },
+                            h('p', { className: 'text-[8px] font-bold text-slate-500 uppercase' }, s.label),
+                            h('p', { className: 'text-[10px] font-bold', style: { color: s.color } }, s.value)
+                          );
+                        })
+                      ),
+                      // Key facts
+                      h('div', null,
+                        h('p', { className: 'text-[10px] font-bold text-slate-600 mb-1' }, 'Key Facts:'),
+                        h('ul', { className: 'space-y-1' },
+                          p.keyFacts.map(function(fact, fi) {
+                            return h('li', { key: fi, className: 'text-[10px] text-slate-600 flex gap-1' },
+                              h('span', null, '\u2022'),
+                              h('span', null, fact)
+                            );
+                          })
+                        )
+                      ),
+                      // Actions
+                      h('div', { className: 'flex gap-2 pt-2 border-t border-slate-100' },
+                        callTTS && h('button', { onClick: function() { callTTS(p.gradeSummary[gradeBand] || p.gradeSummary['3-5']); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-blue-50 text-blue-600 rounded-lg' }, '\uD83D\uDD0A Read Aloud'),
+                        h('button', { onClick: function() { applyPreset(PRESETS.findIndex(function(pr) { return pr.name === 'COVID-19'; }) || 0); updMulti({ tab: 'sir' }); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-violet-50 text-violet-600 rounded-lg' }, '\uD83D\uDD2C Simulate')
+                      )
+                    )
+                  );
+                })
+              )
+            )
+          ),
+          // Progress
+          h('div', { className: glassCard + ' text-center' },
+            h('p', { className: 'text-[10px] font-bold text-slate-500' },
+              'Explored: ' + Object.keys(historyViewed).length + '/' + HISTORICAL_PANDEMICS.length +
+              (Object.keys(historyViewed).length >= HISTORICAL_PANDEMICS.length ? ' \uD83C\uDFC6 Historian Badge!' : ''))
+          )
+        ),
+
+        // ═══════════════════════════════════════════
+        // AI SCENARIOS TAB (NEW)
+        // ═══════════════════════════════════════════
+        tab === 'scenarios' && h('div', { className: 'space-y-4' },
+          h('div', { className: glassCard },
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83C\uDFAD Outbreak Scenarios'),
+            h('p', { className: 'text-xs text-slate-500' }, gradeText(gradeBand,
+              'A pretend sickness is spreading! Pick the best way to stop it!',
+              'AI creates a fictional disease outbreak. Choose the best response strategy!',
+              'AI generates a novel outbreak scenario. Analyze the parameters and choose the optimal public health response.',
+              'Evaluate AI-generated scenarios requiring you to consider R\u2080, transmission mode, available resources, and intervention trade-offs. Optimal response depends on epidemiological parameters and social constraints.'))
+          ),
+          !scenarioData && !d.scenarioLoading ? h('div', { className: glassCard + ' text-center space-y-3' },
+            h('div', { className: 'text-5xl mb-2' }, '\uD83C\uDFAD'),
+            h('p', { className: 'text-sm font-bold text-slate-700' }, 'AI Outbreak Scenario Generator'),
+            h('p', { className: 'text-xs text-slate-500' }, 'Gemini will create a unique fictional outbreak for you to respond to.'),
+            callGemini ? h('button', { onClick: generateScenario, className: 'px-6 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all' }, '\uD83E\uDDE0 Generate Scenario') :
+            h('p', { className: 'text-xs text-slate-400 italic' }, 'AI not available \u2014 requires Gemini integration.')
+          ) : d.scenarioLoading ? h('div', { className: glassCard + ' text-center py-6' },
+            h('div', { className: 'text-3xl animate-pulse mb-2' }, '\uD83E\uDDE0'),
+            h('p', { className: 'text-sm font-bold text-purple-600' }, 'Generating outbreak scenario...')
+          ) : scenarioData && h('div', { className: 'space-y-3' },
+            // Scenario briefing
+            h('div', { className: glassCard + ' border-l-4 border-red-500' },
+              h('div', { className: 'flex items-center gap-2 mb-2' },
+                h('span', { className: 'text-xl' }, '\uD83D\uDEA8'),
+                h('h5', { className: 'text-sm font-bold text-red-700' }, 'OUTBREAK ALERT: ' + (scenarioData.name || 'Unknown Pathogen'))
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, scenarioData.description),
+              h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3' },
+                [
+                  { label: 'Origin', value: scenarioData.origin || 'Unknown', color: '#6366f1' },
+                  { label: 'R\u2080', value: (scenarioData.r0 || '?').toString(), color: r0Color(scenarioData.r0 || 3) },
+                  { label: 'Transmission', value: scenarioData.transmission || 'Unknown', color: '#f59e0b' },
+                  { label: 'Symptoms', value: scenarioData.symptoms || 'Varies', color: '#ef4444' }
+                ].map(function(s) {
+                  return h('div', { key: s.label, className: 'bg-slate-50 rounded-lg p-2 text-center' },
+                    h('p', { className: 'text-[8px] font-bold text-slate-500 uppercase' }, s.label),
+                    h('p', { className: 'text-[10px] font-bold', style: { color: s.color } }, s.value)
+                  );
+                })
+              )
+            ),
+            // Response options
+            !scenarioChoice && scenarioData.options && h('div', { className: glassCard },
+              h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-3' }, 'Choose Your Response Strategy'),
+              h('div', { className: 'space-y-2' },
+                scenarioData.options.map(function(opt, idx) {
+                  var letters = ['A', 'B', 'C'];
+                  var colors = ['#3b82f6', '#f59e0b', '#22c55e'];
+                  return h('button', {
+                    key: idx,
+                    onClick: function() { chooseScenario(idx); },
+                    className: 'w-full p-3 text-left rounded-xl border-2 transition-all hover:shadow-md',
+                    style: { borderColor: colors[idx] + '40' }
+                  },
+                    h('div', { className: 'flex items-start gap-2' },
+                      h('span', { className: 'text-sm font-bold px-2 py-0.5 rounded-full text-white', style: { backgroundColor: colors[idx] } }, letters[idx]),
+                      h('div', null,
+                        h('p', { className: 'text-xs font-bold text-slate-700' }, opt.label || opt.strategy),
+                        h('p', { className: 'text-[10px] text-slate-500 mt-0.5' }, opt.strategy)
+                      )
+                    )
+                  );
+                })
+              )
+            ),
+            // Result
+            scenarioResult && h('div', { className: glassCard + ' border-l-4 ' + (scenarioResult.score >= 70 ? 'border-emerald-500' : scenarioResult.score >= 40 ? 'border-amber-500' : 'border-red-500') },
+              h('div', { className: 'flex items-center gap-2 mb-2' },
+                h('span', { className: 'text-xl' }, scenarioResult.score >= 70 ? '\uD83C\uDFC6' : scenarioResult.score >= 40 ? '\uD83D\uDCA1' : '\u26A0\uFE0F'),
+                h('h5', { className: 'text-sm font-bold ' + (scenarioResult.score >= 70 ? 'text-emerald-700' : scenarioResult.score >= 40 ? 'text-amber-700' : 'text-red-700') },
+                  scenarioResult.score >= 70 ? 'Excellent Response!' : scenarioResult.score >= 40 ? 'Adequate Response' : 'Suboptimal Response')
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, scenarioResult.outcome),
+              h('div', { className: 'mt-2 flex items-center gap-2' },
+                h('span', { className: 'text-[10px] font-bold text-slate-500' }, 'Effectiveness:'),
+                h('div', { className: 'flex-1 h-3 bg-slate-200 rounded-full overflow-hidden' },
+                  h('div', { className: 'h-full rounded-full transition-all', style: { width: scenarioResult.score + '%', background: scenarioResult.score >= 70 ? '#22c55e' : scenarioResult.score >= 40 ? '#f59e0b' : '#ef4444' } })
+                ),
+                h('span', { className: 'text-xs font-bold font-mono' }, scenarioResult.score + '/100')
+              )
+            ),
+            // Play again
+            h('div', { className: 'flex gap-2' },
+              h('button', { onClick: function() { updMulti({ scenarioData: null, scenarioChoice: null, scenarioResult: null }); generateScenario(); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all' }, '\uD83E\uDDE0 New Scenario'),
+              scenarioData.r0 && h('button', { onClick: function() { updMulti({ tab: 'sir', r0: scenarioData.r0 }); }, className: 'px-4 py-2 text-sm font-bold bg-indigo-100 text-indigo-600 rounded-xl' }, '\uD83D\uDD2C Simulate R\u2080=' + scenarioData.r0)
+            )
           )
         ),
 
@@ -1404,5 +2181,5 @@ window.StemLab = window.StemLab || {
     }
   });
 
-  console.log('[StemLab] stem_tool_epidemic.js v3.0 loaded');
+  console.log('[StemLab] stem_tool_epidemic.js v4.0 loaded');
 })();

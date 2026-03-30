@@ -1439,6 +1439,11 @@
           value: "Biology",
           className: "text-slate-800"
         }, "Biology")), /*#__PURE__*/React.createElement("button", {
+          onClick: () => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); },
+          className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
+          "aria-label": "Toggle theme",
+          title: isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode'
+        }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', /*#__PURE__*/React.createElement("span", { className: "text-[10px] font-bold" }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')), /*#__PURE__*/React.createElement("button", {
           onClick: () => setShowStemLab(false),
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors",
           "aria-label": "Close STEM Lab"

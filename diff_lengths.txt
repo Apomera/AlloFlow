@@ -1,4 +1,0 @@
-circuitTool: src=862186 stem_lab=792034
-musicSynth: src=2125201 stem_lab=2090958
-cyberDefenseLab: src=69597 stem_lab=68032
-pluginFallback: src=3538 stem_lab=3937

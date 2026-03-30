@@ -88,9 +88,9 @@ window.StemLab = window.StemLab || {
 
       // ── Tool body (probability) ──
       return (function() {
-const d = labToolData.probability;
+var d = (labToolData.probability) || {};
 
-          const upd = (key, val) => setLabToolData(prev => ({ ...prev, probability: { ...prev.probability, [key]: val } }));
+          var upd = function(key, val) { setLabToolData(function(prev) { return Object.assign({}, prev, { probability: Object.assign({}, prev.probability, (function() { var o = {}; o[key] = val; return o; })()) }); }); };
 
 
 
@@ -146,7 +146,7 @@ const d = labToolData.probability;
 
           // â”€â”€ Run trials â”€â”€
 
-          const runTrial = (n) => {
+          var runTrial = function(n) {
 
             const results = [...d.results];
 
@@ -350,7 +350,7 @@ const d = labToolData.probability;
 
           // ── Functional trial runner for Auto-Run ──
           // Uses setLabToolData(prev=>) to always read fresh state (no stale closure)
-          const runTrialAuto = () => {
+          var runTrialAuto = function() {
 
             setLabToolData(function(prev) {
 

@@ -86,18 +86,43 @@
   // ═══════════════════════════════════════════════════════════════
 
 const useReducedMotion = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+let _speakAudio = null;
 const speakText = (text) => {
   if (!text) return;
+  const str = String(text);
   try {
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(String(text));
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      window.speechSynthesis.speak(utterance);
+    if (_speakAudio) {
+      try {
+        _speakAudio.pause();
+        _speakAudio = null;
+      } catch (e) {
+      }
     }
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    if (window._kokoroTTS && typeof window._kokoroTTS.speak === "function") {
+      window._kokoroTTS.speak(str, "af_heart", 1).then((url) => {
+        if (url) {
+          _speakAudio = new Audio(url);
+          _speakAudio.playbackRate = 0.95;
+          _speakAudio.play().catch(() => {
+          });
+        } else {
+          _browserTTSFallback(str);
+        }
+      }).catch(() => _browserTTSFallback(str));
+      return;
+    }
+    _browserTTSFallback(str);
   } catch (e) {
     console.warn("TTS failed", e);
+  }
+};
+const _browserTTSFallback = (text) => {
+  if (window.speechSynthesis) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
   }
 };
 const SpeakButton = ({ text, size = 13, className = "" }) => /* @__PURE__ */ React.createElement(
@@ -1886,15 +1911,12 @@ var CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGam
       setIsWon(true);
       currentScore += 100;
       if (playSound) playSound("correct");
-      var hintMultiplier = Math.max(0.25, 1 - (hintsUsed * 0.1));
-      var adjustedScore = Math.round(currentScore * hintMultiplier);
-      if (onScoreUpdate) onScoreUpdate(adjustedScore, "Crossword Challenge Complete");
+      if (onScoreUpdate) onScoreUpdate(currentScore, "Crossword Challenge Complete");
       if (onGameComplete) {
         onGameComplete("crossword", {
-          score: adjustedScore,
+          score: currentScore,
           wordsSolved: clues.across.length + clues.down.length,
-          totalWords: data?.length || 0,
-          hintsUsed: hintsUsed
+          totalWords: data?.length || 0
         });
       }
     } else {
@@ -2810,7 +2832,6 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
   const [score, setScore] = useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
   const [hintLevel, setHintLevel] = useState(0);
-  const [totalHintsUsed, setTotalHintsUsed] = useState(0);
   const [results, setResults] = useState([]);
   useEffect(() => {
     if (!data) return;
@@ -2840,9 +2861,7 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
       setHintLevel(0);
     } else {
       setIsGameOver(true);
-      var hintMult = Math.max(0.25, 1 - (totalHintsUsed * 0.15));
-      var adjustedScore = Math.round(currentScore * hintMult);
-      if (onScoreUpdate) onScoreUpdate(adjustedScore, "Word Scramble Complete");
+      if (onScoreUpdate) onScoreUpdate(currentScore, "Word Scramble Complete");
       if (playSound) playSound("correct");
     }
   };
@@ -2877,7 +2896,6 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
     const maxHints = Math.max(1, currentItem.term.length - 1);
     if (hintLevel >= maxHints) return;
     setHintLevel((h) => h + 1);
-    setTotalHintsUsed((h) => h + 1);
     setScore((s) => Math.max(0, s - 3));
     if (playSound) playSound("click");
   };
@@ -2965,7 +2983,7 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
   window.AlloModules.BingoGame = BingoGame;
   window.AlloModules.StudentBingoGame = StudentBingoGame;
   window.AlloModules.WordScrambleGame = WordScrambleGame;
-
   window.AlloModules.GamesBundle = true;
+
   console.log('[GamesBundle] 10 games registered:', ["MemoryGame","MatchingGame","TimelineGame","ConceptSortGame","VennGame","CrosswordGame","SyntaxScramble","BingoGame","StudentBingoGame","WordScrambleGame"]);
 })();

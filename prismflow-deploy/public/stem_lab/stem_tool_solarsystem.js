@@ -191,13 +191,15 @@ const d = labToolData.solarSystem;
             });
           }
 
-          // --- TTS ---
+          // --- TTS (Kokoro-first, browser fallback) ---
           function speakText(text) {
             if (!text) return;
-            window.speechSynthesis.cancel();
-            var u = new SpeechSynthesisUtterance(text);
-            u.rate = 0.9;
-            window.speechSynthesis.speak(u);
+            if (callTTS) { try { callTTS(text); return; } catch(e) {} }
+            if (window._kokoroTTS && window._kokoroTTS.speak) {
+              window._kokoroTTS.speak(String(text),'af_heart',1).then(function(url){if(url){var a=new Audio(url);a.playbackRate=0.95;a.play();}}).catch(function(){});
+              return;
+            }
+            if (window.speechSynthesis) { window.speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(text); u.rate=0.9; window.speechSynthesis.speak(u); }
           }
 
           // --- Gravity calculator data ---
@@ -515,7 +517,7 @@ const d = labToolData.solarSystem;
           // Dark mode
           var isDark = d.isDark || false;
 
-          const PLANETS = [
+          var PLANETS = [
 
             { name: t('stem.periodic.mercury'), emoji: '\u2638', color: '#94a3b8', rgb: [0.58, 0.64, 0.72], size: 0.2, dist: 8, speed: 4.15, tilt: 0.03, moons: 0, diameter: '4,879 km', dayLen: '59 Earth days', yearLen: '88 days', temp: '\u2212180 to 430\u00B0C', fact: 'Smallest planet; no atmosphere to retain heat.', gravity: '0.38g', atmosphere: 'Virtually none \u2014 exosphere of O\u2082, Na, H\u2082, He', surface: 'Cratered surface similar to the Moon', notableFeatures: ['Caloris Basin (1,550 km impact crater)', 'Water ice in permanently shadowed polar craters', 'Most cratered planet in the solar system'], skyColor: '#000000', terrainColor: '#8a8278', terrainType: 'cratered', surfaceDesc: 'Dark airless surface pocked with ancient craters beneath a pitch-black sky. The Sun blazes 3\u00D7 larger than on Earth.' },
 
@@ -537,7 +539,7 @@ const d = labToolData.solarSystem;
 
           ];
 
-          const sel = d.selectedPlanet ? PLANETS.find(p => p.name === d.selectedPlanet) : null;
+          var sel = d.selectedPlanet ? PLANETS.find(p => p.name === d.selectedPlanet) : null;
 
           // Track planet visits (moved here from above to avoid temporal dead zone)
           if (sel && planetsVisited.indexOf(sel.name) === -1) {

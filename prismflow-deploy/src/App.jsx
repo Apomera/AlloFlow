@@ -645,6 +645,11 @@ const getSpeechLangCode = (friendlyName) => {
     };
     return map[input] || 'en-US';
 };
+// Convert friendly language name → 2-letter ISO 639-1 code for TTS routing
+const languageToTTSCode = (friendlyName) => {
+    const bcp47 = getSpeechLangCode(friendlyName); // e.g. 'es-ES'
+    return bcp47.split('-')[0].toLowerCase();        // e.g. 'es'
+};
 const isRtlLang = (languageName) => {
     if (!languageName) return false;
     const rtlLanguages = [
@@ -4908,6 +4913,8 @@ const getAssetManifest = (historyItems) => {
             case 'timeline': usage = "(Sequence Activity / Guided Practice)"; break;
             case 'concept-sort': usage = "(Categorization Activity / Guided Practice)"; break;
             case 'sentence-frames': usage = "(Writing Support / Independent Practice)"; break;
+            case 'storyforge-config': usage = "(Creative Writing Assignment)"; break;
+            case 'storyforge-submission': usage = "(Student Story Submission)"; break;
             case 'quiz': usage = "(Assessment / Closure)"; break;
             case 'math': usage = "(STEM Problem Solving)"; break;
             case 'persona': usage = "(Historical Interview Activity)"; break;
@@ -6020,6 +6027,8 @@ const getIconForType = (type) => {
         case 'lesson-plan': return <ClipboardList size={16} />;
         case 'gemini-bridge': return <Terminal size={16} />;
         case 'persona': return <History size={16} />;
+        case 'storyforge-config': return <BookOpen size={16} />;
+        case 'storyforge-submission': return <Star size={16} />;
         default: return <FileText size={16} />;
     }
 };
@@ -6377,6 +6386,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           case 'simplified': return 'book';
           case 'concept-sort': return 'pointer';
           case 'behavior-lens': return 'clipboard';
+          case 'storyforge-config': return 'book';
+          case 'storyforge-submission': return 'book';
           default: return null;
       }
   };
@@ -8216,35 +8227,36 @@ const GEMINI_VOICES = [
 ];
 // ─── Kokoro TTS Voices (Canvas mode — WASM, Apache 2.0) ────────────
 const KOKORO_VOICES = [
-  // ── American English ──
+  // ── American English — Female ──
   { id: 'af_heart',     label: '❤️ Heart — Warm female (English US)' },
   { id: 'af_nova',      label: '⭐ Nova — Clear female (English US)' },
   { id: 'af_sky',       label: '🌤️ Sky — Bright female (English US)' },
   { id: 'af_bella',     label: '🔔 Bella — Elegant female (English US)' },
   { id: 'af_sarah',     label: '🌸 Sarah — Gentle female (English US)' },
   { id: 'af_nicole',    label: '🎵 Nicole — Musical female (English US)' },
+  { id: 'af_alloy',     label: '🔩 Alloy — Versatile female (English US)' },
+  { id: 'af_aoede',     label: '🎶 Aoede — Melodic female (English US)' },
+  { id: 'af_jessica',   label: '💐 Jessica — Friendly female (English US)' },
+  { id: 'af_kore',      label: '🌿 Kore — Calm female (English US)' },
+  { id: 'af_river',     label: '🌊 River — Smooth female (English US)' },
+  // ── American English — Male ──
   { id: 'am_adam',      label: '🧑 Adam — Natural male (English US)' },
   { id: 'am_michael',   label: '🎙️ Michael — Deep male (English US)' },
+  { id: 'am_echo',      label: '📡 Echo — Resonant male (English US)' },
+  { id: 'am_eric',      label: '🎤 Eric — Confident male (English US)' },
+  { id: 'am_fenrir',    label: '🐺 Fenrir — Bold male (English US)' },
+  { id: 'am_liam',      label: '📘 Liam — Steady male (English US)' },
+  { id: 'am_onyx',      label: '🖤 Onyx — Rich male (English US)' },
+  { id: 'am_puck',      label: '🃏 Puck — Playful male (English US)' },
   // ── British English ──
   { id: 'bf_emma',      label: '🇬🇧 Emma — British female' },
   { id: 'bf_isabella',  label: '🇬🇧 Isabella — British female' },
+  { id: 'bf_alice',     label: '🇬🇧 Alice — British female' },
+  { id: 'bf_lily',      label: '🇬🇧 Lily — British female' },
   { id: 'bm_george',    label: '🇬🇧 George — British male' },
   { id: 'bm_lewis',     label: '🇬🇧 Lewis — British male' },
-  // ── Other Languages ──
-  { id: 'ff_siwis',     label: '🇫🇷 Siwis — French female' },
-  { id: 'hf_alpha',     label: '🇮🇳 Alpha — Hindi female' },
-  { id: 'hm_omega',     label: '🇮🇳 Omega — Hindi male' },
-  { id: 'jf_alpha',     label: '🇯🇵 Alpha — Japanese female' },
-  { id: 'jf_gongitsune',label: '🇯🇵 Gongitsune — Japanese female' },
-  { id: 'zf_xiaobei',   label: '🇨🇳 Xiaobei — Chinese female' },
-  { id: 'zf_xiaoni',    label: '🇨🇳 Xiaoni — Chinese female' },
-  { id: 'zm_yunjian',   label: '🇨🇳 Yunjian — Chinese male' },
-  { id: 'ef_dora',      label: '🇪🇸 Dora — Spanish female' },
-  { id: 'em_alex',      label: '🇪🇸 Alex — Spanish male' },
-  { id: 'if_sara',      label: '🇮🇹 Sara — Italian female' },
-  { id: 'im_nicola',    label: '🇮🇹 Nicola — Italian male' },
-  { id: 'pf_dora',      label: '🇧🇷 Dora — Portuguese female' },
-  { id: 'pm_alex',      label: '🇧🇷 Alex — Portuguese male' },
+  { id: 'bm_daniel',    label: '🇬🇧 Daniel — British male' },
+  { id: 'bm_fable',     label: '🇬🇧 Fable — British male' },
 ];
 const EDGE_TTS_VOICES = [
   { id: "alloy",   label: "🇺🇸 Ava (English, US)" },
@@ -17942,7 +17954,6 @@ const AlloFlowContent = () => {
     return toolId === currentStep.id;
   };
   const handleGuidedSkip = () => { if (guidedStep < GUIDED_STEPS.length - 1) setGuidedStep(s => s + 1); };
-  const handleGuidedBack = () => { if (guidedStep > 0) setGuidedStep(s => s - 1); };
   const handleExitGuidedMode = () => { setGuidedMode(false); };
   const [showGuidedTip, setShowGuidedTip] = useState(false);
   useEffect(() => { setShowGuidedTip(false); }, [guidedStep]);
@@ -18624,17 +18635,17 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/story_forge_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a556c02/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a556c02/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a556c02/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a556c02/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a556c02/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a556c02/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a556c02/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a556c02/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a556c02/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a556c02/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a556c02/story_forge_module.js');
     loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4218503/visual_panel_module.js');
     loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4218503/word_sounds_setup_module.js');
     loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4218503/adventure_module.js');
@@ -18653,7 +18664,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a556c02/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -18690,6 +18701,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'sel_hub/sel_tool_perspective.js',
         'sel_hub/sel_tool_decisions.js',
         'sel_hub/sel_tool_conflict.js',
+        'sel_hub/sel_tool_strengths.js',
       ];
       toolModules.forEach(function(mod) {
         var s = document.createElement('script');
@@ -18733,6 +18745,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       console.log('[Canvas TTS] 📦 Loading Kokoro + Piper TTS engines...');
     }
   }, []);
+  // NOTE: Piper preload effect moved after leveledTextLanguage declaration (line ~23416)
   const [kokoroLoadState, setKokoroLoadState] = useState(
     _isCanvasEnv ? { loading: true, stage: 'Preparing voice engine...', pct: 0 } : null
   );
@@ -23392,6 +23405,17 @@ Return only the corrected version of this exact text:`;
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [glossarySearchTerm, setGlossarySearchTerm] = useState('');
   const [leveledTextLanguage, setLeveledTextLanguage] = useState('English');
+  // ─── Proactive Piper preload when content language changes ─────
+  useEffect(() => {
+    if (!_isCanvasEnv) return;
+    const ttsLang = languageToTTSCode(leveledTextLanguage || 'English');
+    if (ttsLang === 'en') return; // Kokoro handles English
+    if (window._piperTTS && window._piperTTS.supportsLanguage(ttsLang)) {
+      window._piperTTS.preloadLanguage(ttsLang).catch(e => {
+        console.warn('[Canvas TTS] Piper preload failed for', ttsLang, ':', e?.message);
+      });
+    }
+  }, [leveledTextLanguage]);
   const [showSourceGen, setShowSourceGen] = useState(false);
   const [sourceTopic, setSourceTopic] = useState('');
   const [sourceTone, setSourceTone] = useState('Informative');
@@ -23985,7 +24009,9 @@ Return only the corrected version of this exact text:`;
                   engagedMinutes: focusData.engagedMinutes || 0,
                   idleMinutes: focusData.idleMinutes || 0,
                   focusStreak: focusData.longestStreak || 0,
-                  pasteEventCount: pasteEvents.length
+                  pasteEventCount: pasteEvents.length,
+                  storyForgeSubmissions: history.filter(h => h.type === 'storyforge-submission').length,
+                  storyForgeLatest: (() => { const sf = history.filter(h => h.type === 'storyforge-submission').pop(); return sf ? { title: sf.data?.storyTitle, words: sf.data?.analytics?.totalWords, vocab: sf.data?.analytics?.vocabUsedCount, grade: sf.data?.analytics?.readingLevel?.grade, drafts: sf.data?.analytics?.draftCount } : null; })()
               },
               focusData: {
                   engagedMinutes: focusData.engagedMinutes || 0,
@@ -25232,7 +25258,8 @@ Return only the corrected version of this exact text:`;
     const processedText = normalizeResourceLinks(text);
     const isSingleParagraph = !processedText.includes('\n\n') && processedText.length < 500 && !processedText.includes('|');
     let normalizedText = processedText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-    normalizedText = normalizedText.replace(/([^\n])\s*(#{2,6}\s)/g, '$1\n\n$2');
+    normalizedText = normalizedText.replace(/([^\n])[^\S\n]*(#{2,6}\s)/g, '$1\n\n$2');
+    normalizedText = normalizedText.replace(/\n(#{2,6}\s)/g, '\n\n$1');
     normalizedText = normalizedText.replace(/([^\n])\s+(#\s+[A-Z])/g, '$1\n\n$2');
     normalizedText = normalizedText.replace(/^(#{1,6}\s[^\n]+)\n(?!\n|#{1,6}\s|$)/gm, '$1\n\n');
     normalizedText = normalizedText.replace(/\n{3,}/g, '\n\n');
@@ -26795,20 +26822,32 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       if (isGlobalMuted()) {
           return null;
       }
-      // Canvas: Gemini TTS model unavailable — use Kokoro → Piper → null cascade
+      // Canvas: Gemini TTS unavailable — language-aware Kokoro / Piper cascade
       if (_isCanvasEnv) {
-          try {
-              if (window._kokoroTTS) {
-                  const url = await window._kokoroTTS.speakStreaming(text, voiceName, speed);
-                  if (url) return url;
-              }
-          } catch (e) { console.warn('[Canvas TTS] Kokoro failed:', e?.message); }
-          try {
-              if (window._piperTTS) {
-                  const url = await window._piperTTS.speak(text, 'en', speed);
-                  if (url) return url;
-              }
-          } catch (e) { console.warn('[Canvas TTS] Piper failed:', e?.message); }
+          const ttsLang = languageToTTSCode(leveledTextLanguage || currentUiLanguage || 'English');
+          if (ttsLang === 'en') {
+              // English: Kokoro (high quality, user's voice) → Piper English fallback
+              try {
+                  if (window._kokoroTTS) {
+                      const url = await window._kokoroTTS.speakStreaming(text, voiceName, speed);
+                      if (url) return url;
+                  }
+              } catch (e) { console.warn('[Canvas TTS] Kokoro failed:', e?.message); }
+              try {
+                  if (window._piperTTS) {
+                      const url = await window._piperTTS.speak(text, 'en', speed);
+                      if (url) return url;
+                  }
+              } catch (e) { console.warn('[Canvas TTS] Piper en fallback failed:', e?.message); }
+          } else {
+              // Non-English: Piper with correct language (auto-downloads voice model)
+              try {
+                  if (window._piperTTS && window._piperTTS.supportsLanguage(ttsLang)) {
+                      const url = await window._piperTTS.speak(text, ttsLang, speed);
+                      if (url) return url;
+                  }
+              } catch (e) { console.warn('[Canvas TTS] Piper', ttsLang, 'failed:', e?.message); }
+          }
           return null; // Caller handles browser speechSynthesis fallback
       }
       // ─── AIProvider TTS routing ───────────────────────────────────
@@ -26865,26 +26904,38 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       }
       warnLog("[TTS] All retries exhausted for:", text?.substring(0, 30), lastError?.message);
       throw lastError;
-  }, [fetchTTSBytes]);
+  }, [fetchTTSBytes, leveledTextLanguage, currentUiLanguage]);
   const callTTSDirect = useCallback(async (text, voiceName = "Puck", speed = 1, maxRetries = 2) => {
       if (isGlobalMuted()) return null;
-      // ─── Always try Kokoro first when available (any environment) ─────
-      // Kokoro is the preferred TTS engine — try it before any API calls.
-      if (window._kokoroTTS) {
+      // ─── Language-aware Kokoro / Piper cascade ─────
+      const ttsLang = _isCanvasEnv ? languageToTTSCode(leveledTextLanguage || currentUiLanguage || 'English') : 'en';
+      // Try Kokoro first for English (any environment)
+      if (window._kokoroTTS && ttsLang === 'en') {
           try {
               const url = await window._kokoroTTS.speakStreaming(text, voiceName, speed);
               if (url) return url;
-              console.warn('[callTTSDirect] Kokoro returned null, falling through to other providers');
+              console.warn('[callTTSDirect] Kokoro returned null, falling through');
           } catch (e) { console.warn('[callTTSDirect] Kokoro failed:', e?.message); }
       }
-      // Canvas: if Kokoro didn't work, try Piper → null (no Gemini TTS on Canvas)
+      // Canvas: language-aware Piper fallback → null (no Gemini TTS on Canvas)
       if (_isCanvasEnv) {
-          try {
-              if (window._piperTTS) {
-                  const url = await window._piperTTS.speak(text, 'en', speed);
-                  if (url) return url;
-              }
-          } catch (e) { console.warn('[Canvas TTS] Piper failed:', e?.message); }
+          if (ttsLang !== 'en') {
+              // Non-English: Piper with correct language
+              try {
+                  if (window._piperTTS && window._piperTTS.supportsLanguage(ttsLang)) {
+                      const url = await window._piperTTS.speak(text, ttsLang, speed);
+                      if (url) return url;
+                  }
+              } catch (e) { console.warn('[Canvas TTS] Piper', ttsLang, 'failed:', e?.message); }
+          } else {
+              // English: Piper fallback (Kokoro already failed above)
+              try {
+                  if (window._piperTTS) {
+                      const url = await window._piperTTS.speak(text, 'en', speed);
+                      if (url) return url;
+                  }
+              } catch (e) { console.warn('[Canvas TTS] Piper en fallback failed:', e?.message); }
+          }
           return null;
       }
       // ─── AIProvider TTS routing (same as callTTS) ─────────────────
@@ -27004,7 +27055,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       }
       console.error("[TTS-Bot] ❌ All retries exhausted after backoff:", lastError?.message || lastError);
       throw lastError;
-  }, [apiKey]);
+  }, [apiKey, leveledTextLanguage, currentUiLanguage]);
   const imagenQueueRef = React.useRef(Promise.resolve());
   const imagenRateLimitedRef = React.useRef(false);
   const callImagen = async (prompt, width = 300, qual = 0.7) => {
@@ -32270,6 +32321,10 @@ ${t('export.readme_json_desc')}`;
           }));
           addToast(t('adventure.toasts.state_restored'), "info");
       }
+      if (item.type === 'storyforge-config' || item.type === 'storyforge-submission') {
+          // Open StoryForge with the config/submission pre-loaded
+          setShowStoryForge(true);
+      }
       if (isTeacherMode && activeSessionCode) {
           if (!TEACHER_ONLY_TYPES.includes(item.type)) {
               const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
@@ -32368,6 +32423,8 @@ ${t('export.readme_json_desc')}`;
           case 'gemini-bridge': return t('sidebar.tool_bridge');
           case 'persona': return t('persona.title');
           case 'word-sounds': return t('output.word_sounds_studio') || 'Word Sounds Studio';
+          case 'storyforge-config': return '📖 StoryForge Assignment';
+          case 'storyforge-submission': return '📖 Story Submission';
           default: return t('common.resource') || 'Resource';
       }
   };
@@ -38810,6 +38867,13 @@ Return ONLY valid JSON:
                     if (!isLast) await new Promise(r => setTimeout(r, 800));
                 }
                 addToast(`Generated ${gradesToGen.length} differentiated versions!`, "success");
+                if (guidedMode) {
+                  const currentIdx = GUIDED_STEPS.findIndex(s => s.id === 'simplified');
+                  if (currentIdx >= 0 && currentIdx === guidedStep && guidedStep < GUIDED_STEPS.length - 1) {
+                    setTimeout(() => setGuidedStep(prev => prev + 1), 1200);
+                    setTimeout(() => addToast(t('guided.history_hint'), 'info'), 2000);
+                  }
+                }
             } catch (e) {
                 warnLog("Unhandled error:", e);
                 addToast(t('toasts.batch_diff_failed'), "error");
@@ -38856,6 +38920,17 @@ Return ONLY valid JSON:
             if (type === 'glossary') flyToElement('ui-tool-glossary');
             if (type === 'outline') flyToElement('tour-tool-outline');
             if (type === 'image') flyToElement('tour-tool-visual');
+            if (guidedMode) {
+              const typeToGuidedId = { 'analysis': 'analysis', 'glossary': 'glossary', 'simplified': 'simplified', 'outline': 'outline', 'image': 'image', 'faq': 'faq', 'sentence-frames': 'sentence-frames', 'brainstorm': 'brainstorm', 'persona': 'persona', 'timeline': 'timeline', 'concept-sort': 'concept-sort', 'quiz': 'quiz', 'lesson-plan': 'lesson-plan', 'alignment-report': '_final' };
+              const matchedId = typeToGuidedId[type];
+              if (matchedId) {
+                const currentIdx = GUIDED_STEPS.findIndex(s => s.id === matchedId);
+                if (currentIdx >= 0 && currentIdx === guidedStep && guidedStep < GUIDED_STEPS.length - 1) {
+                  setTimeout(() => setGuidedStep(prev => prev + 1), 1200);
+                  setTimeout(() => addToast(t('guided.history_hint'), 'info'), 2000);
+                }
+              }
+            }
         } catch (err) {
             warnLog("Unhandled error:", err);
             setError(t('errors.batch_generation_failed'));
@@ -39309,6 +39384,13 @@ Return ONLY valid JSON:
             }
             addToast(`${getDefaultTitle(type)} generated!`, "success");
             if (switchView) flyToElement('ui-tool-simplified');
+            if (guidedMode) {
+              const currentIdx = GUIDED_STEPS.findIndex(s => s.id === 'simplified');
+              if (currentIdx >= 0 && currentIdx === guidedStep && guidedStep < GUIDED_STEPS.length - 1) {
+                setTimeout(() => setGuidedStep(prev => prev + 1), 1200);
+                setTimeout(() => addToast(t('guided.history_hint'), 'info'), 2000);
+              }
+            }
             return;
         } else {
             setGenerationStep(t('status_steps.adapting_text'));
@@ -40675,7 +40757,7 @@ Return ONLY valid JSON:
       const toastTitle = type === 'simplified' ? "Adapted Text" : getDefaultTitle(type);
       addToast(`${toastTitle} generated!`, "success");
       if (guidedMode) {
-        const typeToGuidedId = { 'analysis': 'analysis', 'glossary': 'glossary', 'simplified': 'simplified', 'outline': 'outline', 'image': 'image', 'faq': 'faq', 'sentence-frames': 'sentence-frames', 'brainstorm': 'brainstorm', 'timeline': 'timeline', 'concept-sort': 'concept-sort', 'quiz': 'quiz', 'alignment-report': '_final' };
+        const typeToGuidedId = { 'analysis': 'analysis', 'glossary': 'glossary', 'simplified': 'simplified', 'outline': 'outline', 'image': 'image', 'faq': 'faq', 'sentence-frames': 'sentence-frames', 'brainstorm': 'brainstorm', 'persona': 'persona', 'timeline': 'timeline', 'concept-sort': 'concept-sort', 'quiz': 'quiz', 'lesson-plan': 'lesson-plan', 'alignment-report': '_final' };
         const matchedId = typeToGuidedId[type];
         if (matchedId) {
           const currentIdx = GUIDED_STEPS.findIndex(s => s.id === matchedId);
@@ -43273,6 +43355,7 @@ Return ONLY valid JSON:
         return 'light';
     });
   };
+  window.AlloToggleTheme = toggleTheme;
   const resetFontSize = () => {
       setBaseFontSize(16);
       setSliderFontSize(16);
@@ -43966,9 +44049,14 @@ Return ONLY valid JSON:
         .theme-dark .text-orange-700, .theme-dark .text-orange-800 { color: #fdba74 !important; } /* Orange-300 */
         .theme-dark .text-cyan-700, .theme-dark .text-cyan-800 { color: #67e8f9 !important; } /* Cyan-300 */
         .theme-dark .text-rose-700, .theme-dark .text-rose-800 { color: #fda4af !important; } /* Rose-300 */
+        .theme-dark { color-scheme: dark; }
         .theme-dark input, .theme-dark textarea, .theme-dark select {
             background-color: #0f172a !important;
             border-color: #475569 !important;
+            color: #f8fafc !important;
+        }
+        .theme-dark select option {
+            background-color: #1e293b !important;
             color: #f8fafc !important;
         }
         .theme-dark input::placeholder, .theme-dark textarea::placeholder { color: #64748b !important; }
@@ -43993,9 +44081,14 @@ Return ONLY valid JSON:
         .theme-contrast .bg-indigo-700, .theme-contrast .bg-indigo-900 { background-color: #000000 !important; border-bottom: 4px solid #ffff00 !important; }
         .theme-contrast button { background-color: #000000 !important; border: 2px solid #00ff00 !important; color: #00ff00 !important; font-weight: bold !important; }
         .theme-contrast button:hover { background-color: #00ff00 !important; color: #000000 !important; }
+        .theme-contrast { color-scheme: dark; }
         .theme-contrast input, .theme-contrast textarea, .theme-contrast select {
             background-color: #000000 !important;
             border: 2px solid #ffff00 !important;
+            color: #ffff00 !important;
+        }
+        .theme-contrast select option {
+            background-color: #000000 !important;
             color: #ffff00 !important;
         }
         .theme-contrast [class*="bg-"] { background-color: #000000 !important; }
@@ -44355,6 +44448,18 @@ Return ONLY valid JSON:
                                                             </button>
                                                         </div>
                                                         <p className="text-[8px] text-slate-400 mt-1">Fast uses a smaller model for quicker response. High Quality is richer but slower.</p>
+                                                    </div>
+                                                )}
+                                                {/* ── Non-English Language TTS Indicator ── */}
+                                                {_isCanvasEnv && leveledTextLanguage && leveledTextLanguage !== 'English' && (
+                                                    <div className="mt-2 p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700">
+                                                        <div className="text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400">Active TTS: {leveledTextLanguage}</div>
+                                                        <div className="text-[10px] text-blue-800 dark:text-blue-200 mt-0.5">
+                                                            {window._piperTTS?.supportsLanguage(languageToTTSCode(leveledTextLanguage))
+                                                                ? 'Piper Neural Voice \u2014 auto-selected'
+                                                                : 'Browser fallback \u2014 language not yet supported'}
+                                                        </div>
+                                                        <div className="text-[9px] text-blue-500/70 dark:text-blue-400/70 mt-0.5">Kokoro voice applies to English content</div>
                                                     </div>
                                                 )}
                                                 <div className="flex gap-2 mt-3">
@@ -46377,7 +46482,6 @@ Return ONLY valid JSON:
                 <div style={{ height: '100%', borderRadius: '2px', background: 'linear-gradient(90deg, #818cf8, #6366f1)', transition: 'width 0.4s ease-out', width: ((guidedStep / GUIDED_STEPS.length) * 100) + '%' }} />
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
-                {guidedStep > 0 && guidedStep < GUIDED_STEPS.length && <button onClick={handleGuidedBack} style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'rgba(165,180,252,0.9)', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.back')}</button>}
                 {guidedStep < GUIDED_STEPS.length - 1 && guidedStep > 0 && <button onClick={handleGuidedSkip} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'rgba(165,180,252,0.9)', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.skip')}</button>}
                 {guidedStep === 0 && <span style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'rgba(165,180,252,0.4)', textAlign: 'center' }}>{t('guided.source_prompt')}</span>}
                 {guidedStep >= GUIDED_STEPS.length - 1 && <button onClick={() => { setGuidedStep(0); handleExitGuidedMode(); }} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'white', background: 'linear-gradient(135deg, #818cf8, #6366f1)', border: 'none', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.all_done')}</button>}
@@ -62681,6 +62785,18 @@ Return only the corrected version of this exact text:`;
                             await updateDoc(sRef, { storyForgePayload: deleteField() });
                         },
                     } : null,
+                    // ── Resource integration ──
+                    initialConfig: generatedContent?.type === 'storyforge-config' ? generatedContent.data : null,
+                    onSaveConfig: isTeacherMode ? (config) => {
+                        const item = { id: Date.now().toString() + Math.random().toString(36).substr(2, 9), type: 'storyforge-config', title: '📖 ' + (config.storyTitle || 'StoryForge Assignment'), data: config, timestamp: new Date(), meta: `${config.vocabTerms?.length || 0} vocab · ${config.genre || 'free'}` };
+                        setHistory(prev => [...prev, item]);
+                    } : null,
+                    onSaveSubmission: (submission) => {
+                        const item = { id: Date.now().toString() + Math.random().toString(36).substr(2, 9), type: 'storyforge-submission', title: '📖 ' + (submission.storyTitle || 'My Story'), data: submission, timestamp: new Date(), meta: `${submission.analytics?.totalWords || 0} words · ${submission.analytics?.vocabUsedCount || 0}/${submission.analytics?.vocabTotal || 0} vocab` };
+                        setHistory(prev => [...prev, item]);
+                    },
+                    lessonResources: history.filter(h => ['glossary', 'simplified', 'sentence-frames', 'lesson-plan', 'timeline'].includes(h.type)),
+                    codename: studentNickname || 'Creative Writer',
                 });
             }
             return (

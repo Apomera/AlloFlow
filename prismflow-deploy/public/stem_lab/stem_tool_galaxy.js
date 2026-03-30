@@ -1569,19 +1569,21 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("button", {
 
-                    onClick: function () {
+                    onMouseDown: function (e) {
+
+                      e.preventDefault(); e.stopPropagation();
 
                       if (window._galaxyTimeLapse) { clearInterval(window._galaxyTimeLapse); window._galaxyTimeLapse = null; upd("isPlaying", false); return; }
 
                       upd("isPlaying", true);
 
-                      var age = cosmicAge;
+                      var age = d.cosmicAge !== undefined ? d.cosmicAge : cosmicAge;
 
                       window._galaxyTimeLapse = setInterval(function () {
 
                         age += 0.1;
 
-                        if (age > 14) { age = 0.1; }
+                        if (age > 14) { clearInterval(window._galaxyTimeLapse); window._galaxyTimeLapse = null; upd("isPlaying", false); return; }
 
                         upd("cosmicAge", parseFloat(age.toFixed(1)));
 
@@ -1595,9 +1597,9 @@ if (!window._galaxyHasLoadedOnce) {
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.isPlaying ? "bg-red-500 text-white" : "bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold select-none " + (window._galaxyTimeLapse ? "bg-red-500 text-white" : "bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
 
-                  }, d.isPlaying ? "\u23F9 Stop" : "\u25B6 Play Time-Lapse"),
+                  }, window._galaxyTimeLapse ? "\u23F9 Stop" : "\u25B6 Play Time-Lapse"),
 
                   React.createElement("button", {
 

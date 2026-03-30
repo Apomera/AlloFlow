@@ -1,17 +1,58 @@
 const useReducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
 
 // ── TTS utility for read-aloud accessibility ──
+// Prefers Kokoro WASM TTS (high quality, offline) → browser TTS fallback
+let _speakAudio = null;
 const speakText = (text) => {
   if (!text) return;
+  const str = String(text);
   try {
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(String(text));
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      window.speechSynthesis.speak(utterance);
+    // Stop any current playback
+    if (_speakAudio) { try { _speakAudio.pause(); _speakAudio = null; } catch(e) {} }
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+
+    // ── Try Kokoro first ──
+    if (window._kokoroTTS && typeof window._kokoroTTS.speak === 'function') {
+      window._kokoroTTS.speak(str, 'af_heart', 1).then((url) => {
+        if (url) {
+          _speakAudio = new Audio(url);
+          _speakAudio.playbackRate = 0.95;
+          _speakAudio.play().catch(() => {});
+        } else {
+          _browserTTSFallback(str);
+        }
+      }).catch(() => _browserTTSFallback(str));
+      return;
     }
+    // ── Browser TTS fallback ──
+    _browserTTSFallback(str);
   } catch (e) { console.warn('TTS failed', e); }
+};
+const _browserTTSFallback = (text) => {
+  if (window.speechSynthesis) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
+  }
+};
+
+// ── Theme toggle for game headers ──
+const GameThemeToggle = () => {
+  let isDark = false, isContrast = false;
+  try { isDark = !!document.querySelector('.theme-dark'); isContrast = !!document.querySelector('.theme-contrast'); } catch(e) {}
+  return (
+    <button
+      onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }}
+      className="p-2 hover:bg-white/20 rounded-full transition-colors flex items-center gap-1 text-white"
+      aria-label="Toggle theme (light / dark / high contrast)"
+      title={isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode'}
+      type="button"
+    >
+      <span>{isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F'}</span>
+      <span className="text-[10px] font-bold">{isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light'}</span>
+    </button>
+  );
 };
 
 const SpeakButton = ({ text, size = 13, className = "" }) => (
@@ -988,6 +1029,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                    <Trophy size={14} className="text-yellow-400"/>
                    <span className="font-bold text-sm">{score} pts</span>
                </div>
+               <GameThemeToggle />
                <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors" aria-label={t('timeline.game.close_aria')}><X size={24}/></button>
            </div>
        </div>
@@ -1370,6 +1412,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                 <Trophy size={14} className="text-yellow-400"/>
                 <span className="font-bold text-sm">{score} pts</span>
             </div>
+            <GameThemeToggle />
             <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white" aria-label={t('concept_sort.close_aria')}><X size={24}/></button>
         </div>
       </div>
@@ -1668,6 +1711,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                   <div className="bg-indigo-800 px-4 py-1 rounded-full font-bold text-yellow-400 border border-indigo-500">
                       {t('common.score')}: {score}
                   </div>
+                  <GameThemeToggle />
                   <button
                       aria-label={t('common.close')}
                       onClick={onClose}
@@ -2171,6 +2215,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                     ))}
                 </select>
              )}
+             <GameThemeToggle />
              <button data-help-key="crossword_close_btn" onClick={onClose} className="hover:bg-indigo-500 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('games.crossword.close_puzzle_aria')}><X size={24}/></button>
          </div>
       </div>
@@ -2383,6 +2428,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
            <h3 className="font-bold text-xl flex items-center gap-2"><Layout size={24}/> {t('games.syntax.title')}</h3>
            <div className="flex items-center gap-4">
                <div className="bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold text-yellow-400 border border-indigo-500">{t('memory.score')}: {score}</div>
+               <GameThemeToggle />
                <button data-help-key="syntax_close" onClick={onClose} className="hover:bg-indigo-500 p-1 rounded-full" aria-label={t('common.close')}><X size={24}/></button>
            </div>
         </div>
@@ -3173,6 +3219,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
                          <p className="text-indigo-200 text-xs font-bold">{t('bingo.click_hint')}</p>
                      </div>
                  </div>
+                 <GameThemeToggle />
                  <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-label={t('bingo.close_game_aria')}>
                      <X size={24} />
                  </button>

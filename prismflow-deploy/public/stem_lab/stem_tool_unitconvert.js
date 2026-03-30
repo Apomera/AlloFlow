@@ -285,27 +285,23 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           });
         }
 
-        // ── Keyboard shortcuts ──
-        React.useEffect(function() {
-          function handleKey(e) {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-            var key = e.key;
-            if (key === '1') { e.preventDefault(); upd('tab', 'convert'); }
-            if (key === '2') { e.preventDefault(); upd('tab', 'table'); }
-            if (key === '3') { e.preventDefault(); upd('tab', 'quiz'); }
-            if (key === '4') { e.preventDefault(); upd('tab', 'wordproblem'); }
-            if (key.toLowerCase() === 'n' && tab === 'quiz') {
-              e.preventDefault();
-              var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
-              upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
-              stemBeep && stemBeep('click');
-            }
-            if (key === '?' || (e.shiftKey && key === '/')) { e.preventDefault(); askTutor(); }
-            if (key.toLowerCase() === 'b') { e.preventDefault(); upd('showBadges', !showBadges); }
+        // ── Keyboard shortcuts (no hooks — plain render function) ──
+        function handleKey(e) {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+          var key = e.key;
+          if (key === '1') { e.preventDefault(); upd('tab', 'convert'); }
+          if (key === '2') { e.preventDefault(); upd('tab', 'table'); }
+          if (key === '3') { e.preventDefault(); upd('tab', 'quiz'); }
+          if (key === '4') { e.preventDefault(); upd('tab', 'wordproblem'); }
+          if (key.toLowerCase() === 'n' && tab === 'quiz') {
+            e.preventDefault();
+            var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
+            upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
+            stemBeep && stemBeep('click');
           }
-          window.addEventListener('keydown', handleKey);
-          return function() { window.removeEventListener('keydown', handleKey); };
-        });
+          if (key === '?' || (e.shiftKey && key === '/')) { e.preventDefault(); askTutor(); }
+          if (key.toLowerCase() === 'b') { e.preventDefault(); upd('showBadges', !showBadges); }
+        }
 
         // ── Earned badges count ──
         var earnedBadges = BADGES.filter(function(b) { return badges[b.id]; });
@@ -319,7 +315,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           '@keyframes spin{to{transform:rotate(360deg)}}';
 
         // ── RENDER ──
-        return h('div', { className: 'max-w-2xl mx-auto animate-in fade-in duration-200' },
+        return h('div', { className: 'max-w-2xl mx-auto animate-in fade-in duration-200', onKeyDown: handleKey, tabIndex: -1, style: { outline: 'none' } },
 
           h('style', null, css),
 

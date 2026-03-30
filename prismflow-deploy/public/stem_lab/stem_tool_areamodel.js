@@ -258,9 +258,13 @@ window.StemLab = window.StemLab || {
         });
       };
 
-      // ═══ KEYBOARD SHORTCUTS ═══
-      React.useEffect(function() {
-        var handler = function(e) {
+      // ═══ KEYBOARD SHORTCUTS (non-hook: setTimeout to avoid conditional hook) ═══
+      if (!window._areaModelKbHandler) window._areaModelKbHandler = null;
+      setTimeout(function() {
+        if (window._areaModelKbHandler) {
+          window.removeEventListener('keydown', window._areaModelKbHandler);
+        }
+        window._areaModelKbHandler = function(e) {
           if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
           if (e.key === 'b' || e.key === 'B') { sfxClick(); upd({ viewMode: 'basic' }); }
           else if (e.key === 'd' || e.key === 'D') { sfxClick(); upd({ viewMode: 'distributive' }); }
@@ -273,9 +277,8 @@ window.StemLab = window.StemLab || {
           }
           else if (e.key === '?' || e.key === '/') { upd({ showAITutor: !showAITutor }); }
         };
-        window.addEventListener('keydown', handler);
-        return function() { window.removeEventListener('keydown', handler); };
-      }, [viewMode, swapped, showAITutor]);
+        window.addEventListener('keydown', window._areaModelKbHandler);
+      }, 0);
 
       // ═══ VIEW: BASIC ═══
       var renderBasicGrid = function() {

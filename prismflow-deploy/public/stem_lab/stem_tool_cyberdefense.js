@@ -742,7 +742,8 @@
                       style: { marginTop: 14, padding: '10px 24px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 } },
                       '\uD83D\uDD75\uFE0F Next Case \u2192')
                   )
-                ),
+                )
+              ),
 
               // ======= PASSWORD FORGE =======
               cyberTab === 'password' && el('div', { style: { maxWidth: 640, margin: '0 auto' } },
@@ -953,7 +954,6 @@
                     style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '2px solid ' + (challengeSolved ? '#22c55e' : 'rgba(255,255,255,0.1)'), background: challengeSolved ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.06)', color: challengeSolved ? '#4ade80' : '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, outline: 'none', boxSizing: 'border-box' } }),
                   challengeSolved && el('div', { style: { marginTop: 8, color: '#4ade80', fontSize: 13, fontWeight: 800, textAlign: 'center' } }, '\u2705 Decoded! The message is: "' + activeChallengeData.answer + '"')
                 )
-              )
               ),
 
               // ======= NETWORK TRAFFIC ANALYZER =======

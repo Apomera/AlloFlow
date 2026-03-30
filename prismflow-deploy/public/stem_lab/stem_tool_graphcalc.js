@@ -139,15 +139,12 @@
      ═══════════════════════════════════════════════════════════ */
   function speakText(text, callTTS) {
     SOUNDS.tts();
-    if (callTTS) {
-      try { callTTS(text); return; } catch (e) { /* fallback */ }
+    if (callTTS) { try { callTTS(text); return; } catch (e) {} }
+    if (window._kokoroTTS && window._kokoroTTS.speak) {
+      window._kokoroTTS.speak(String(text),'af_heart',1).then(function(url){if(url){var a=new Audio(url);a.playbackRate=0.95;a.play();}}).catch(function(){});
+      return;
     }
-    if (window.speechSynthesis) {
-      var utter = new SpeechSynthesisUtterance(text);
-      utter.rate = 0.9;
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utter);
-    }
+    if (window.speechSynthesis) { var utter=new SpeechSynthesisUtterance(text); utter.rate=0.9; window.speechSynthesis.cancel(); window.speechSynthesis.speak(utter); }
   }
 
   /* ═══════════════════════════════════════════════════════════

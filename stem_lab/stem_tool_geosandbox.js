@@ -629,28 +629,25 @@ window.StemLab = window.StemLab || {
         });
       };
 
-      // ── Keyboard shortcuts ──
-      React.useEffect(function() {
-        var handler = function(e) {
-          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-          var key = e.key;
-          // 1-7: select shape
-          if (key >= '1' && key <= '7') {
-            var idx = parseInt(key) - 1;
-            if (shapes[idx]) selectShape(shapes[idx].id);
-            return;
-          }
-          switch (key.toLowerCase()) {
-            case 'c': generateChallenge(); break;
-            case 'w': toggleWireframe(); break;
-            case 'e': doExportSTL(); break;
-            case 'b': updExt({ showBadges: !showBadges }); break;
-            case '/': e.preventDefault(); askAI(); break;
-          }
-        };
-        window.addEventListener('keydown', handler);
-        return function() { window.removeEventListener('keydown', handler); };
-      });
+      // ── Keyboard shortcuts (managed without useEffect) ──
+      if (window._geoSandboxKbHandler) window.removeEventListener('keydown', window._geoSandboxKbHandler);
+      window._geoSandboxKbHandler = function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+        var key = e.key;
+        if (key >= '1' && key <= '7') {
+          var idx = parseInt(key) - 1;
+          if (shapes[idx]) selectShape(shapes[idx].id);
+          return;
+        }
+        switch (key.toLowerCase()) {
+          case 'c': generateChallenge(); break;
+          case 'w': toggleWireframe(); break;
+          case 'e': doExportSTL(); break;
+          case 'b': updExt({ showBadges: !showBadges }); break;
+          case '/': e.preventDefault(); askAI(); break;
+        }
+      };
+      window.addEventListener('keydown', window._geoSandboxKbHandler);
 
       // ── Three.js scene update effect ──
       React.useEffect(function() {

@@ -483,28 +483,26 @@ window.StemLab = window.StemLab || {
       });
     };
 
-    // ═══ KEYBOARD SHORTCUTS ═══
-    React.useEffect(function() {
-      var handler = function(e) {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-        var key = e.key;
-        if (key === '1') { upd({ tab: 'practice' }); trackTab('practice'); }
-        else if (key === '2') { upd({ tab: 'compare' }); trackTab('compare'); }
-        else if (key === '3') { upd({ tab: 'operations' }); trackTab('operations'); }
-        else if (key === '4') { upd({ tab: 'equivalents' }); trackTab('equivalents'); }
-        else if (key === '5') { upd({ tab: 'converter' }); trackTab('converter'); }
-        else if (key === '6') { upd({ tab: 'wall' }); trackTab('wall'); }
-        else if (key === 'n' || key === 'N') { if (tab === 'practice') generateChallenge(); }
-        else if (key === 'b' || key === 'B') { upd({ showBenchmarks: !showBenchmarks }); }
-        else if (key === 'p' || key === 'P') { upd({ mode: mode === 'pie' ? 'bar' : 'pie' }); }
-        else if (key === '?' || key === '/') { upd({ showAITutor: !showAITutor }); }
-      };
-      window.addEventListener('keydown', handler);
-      return function() { window.removeEventListener('keydown', handler); };
-    }, [tab, mode, showBenchmarks, showAITutor]);
+    // ═══ KEYBOARD SHORTCUTS (managed without useEffect) ═══
+    if (window._fracKbHandler) window.removeEventListener('keydown', window._fracKbHandler);
+    window._fracKbHandler = function(e) {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      var key = e.key;
+      if (key === '1') { upd({ tab: 'practice' }); trackTab('practice'); }
+      else if (key === '2') { upd({ tab: 'compare' }); trackTab('compare'); }
+      else if (key === '3') { upd({ tab: 'operations' }); trackTab('operations'); }
+      else if (key === '4') { upd({ tab: 'equivalents' }); trackTab('equivalents'); }
+      else if (key === '5') { upd({ tab: 'converter' }); trackTab('converter'); }
+      else if (key === '6') { upd({ tab: 'wall' }); trackTab('wall'); }
+      else if (key === 'n' || key === 'N') { if (tab === 'practice') generateChallenge(); }
+      else if (key === 'b' || key === 'B') { upd({ showBenchmarks: !showBenchmarks }); }
+      else if (key === 'p' || key === 'P') { upd({ mode: mode === 'pie' ? 'bar' : 'pie' }); }
+      else if (key === '?' || key === '/') { upd({ showAITutor: !showAITutor }); }
+    };
+    window.addEventListener('keydown', window._fracKbHandler);
 
     // Track initial tab visit
-    React.useEffect(function() { trackTab(tab); }, [tab]);
+    if (!window.__fracTabTracked) { window.__fracTabTracked = true; setTimeout(function() { trackTab(tab); }, 0); }
 
     // ═══ TAB: PRACTICE ═══
     var renderPractice = function() {

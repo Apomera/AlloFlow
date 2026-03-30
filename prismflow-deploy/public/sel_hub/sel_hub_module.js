@@ -155,6 +155,27 @@
       var _reduceMotion = false;
       try { _reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e) {}
 
+      // ── Theme detection (reads parent app's CSS class) ──
+      var isDark = false, isContrast = false;
+      try {
+        isDark = !!document.querySelector('.theme-dark');
+        isContrast = !!document.querySelector('.theme-contrast');
+      } catch(e) {}
+      var _t = {
+        bg:       isContrast ? '#000000' : isDark ? '#0f172a' : '#f8fafc',
+        bgCard:   isContrast ? '#000000' : isDark ? '#1e293b' : '#ffffff',
+        bgInput:  isContrast ? '#000000' : isDark ? '#1e293b' : '#ffffff',
+        border:   isContrast ? '#ffff00' : isDark ? '#334155' : '#e2e8f0',
+        text:     isContrast ? '#ffff00' : isDark ? '#f1f5f9' : '#0f172a',
+        textMuted:isContrast ? '#ffff00' : isDark ? '#94a3b8' : '#64748b',
+        headerBg: isContrast ? '#000000' : isDark ? 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' : 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+        headerText: isContrast ? '#ffff00' : '#f1f5f9',
+        btnBg:    isContrast ? '#000000' : isDark ? '#334155' : '#e2e8f0',
+        btnText:  isContrast ? '#00ff00' : isDark ? '#f1f5f9' : '#334155',
+        btnBorder:isContrast ? '2px solid #00ff00' : isDark ? 'none' : 'none',
+        accent:   '#7c3aed'
+      };
+
       // ══════════════════════════════════════════════════════════════
       // ── Tool Catalog ──
       // All SEL tools are defined here for the grid display.
@@ -208,31 +229,38 @@
 
       // ── Header bar ──
       var header = h('div', {
-        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #334155', background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }
+        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid ' + _t.border, background: _t.headerBg }
       },
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
           selHubTool && h('button', {
             onClick: function() { setSelHubTool(null); announceToSR('Returned to tool grid'); },
             'aria-label': 'Back to tools',
-            style: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }
+            style: { background: 'none', border: 'none', color: _t.headerText, cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }
           }, ArrowLeft ? h(ArrowLeft, { size: 20 }) : '\u2190'),
-          h('h2', { style: { margin: 0, fontSize: 20, fontWeight: 800, color: '#f1f5f9' } },
+          h('h2', { style: { margin: 0, fontSize: 20, fontWeight: 800, color: _t.headerText } },
             '\u2764\uFE0F\u200D\uD83E\uDE79 SEL Hub'
           ),
           h('span', {
-            style: { fontSize: 11, color: '#64748b', marginLeft: 8 }
+            style: { fontSize: 11, color: 'rgba(255,255,255,0.6)', marginLeft: 8 }
           }, gradeBand(gradeLevel) === 'elementary' ? 'Elementary' : gradeBand(gradeLevel) === 'middle' ? 'Middle School' : 'High School')
         ),
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+          // Theme toggle button
+          h('button', {
+            onClick: function() { if (typeof window.AlloToggleTheme === 'function') { window.AlloToggleTheme(); setTimeout(function() { setSelToolData(function(p) { return Object.assign({}, p); }); }, 50); } },
+            'aria-label': 'Toggle theme (light / dark / high contrast)',
+            title: isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode',
+            style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: '4px 10px', borderRadius: 8, fontSize: 14, display: 'flex', alignItems: 'center', gap: 4 }
+          }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', h('span', { style: { fontSize: 10, fontWeight: 700 } }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
           // XP badge
           h('div', {
-            style: { background: '#7c3aed', color: '#fff', borderRadius: 20, padding: '4px 14px', fontSize: 12, fontWeight: 700 }
+            style: { background: _t.accent, color: '#fff', borderRadius: 20, padding: '4px 14px', fontSize: 12, fontWeight: 700 }
           }, '\u2728 ' + selXp + ' XP'),
           // Close button
           h('button', {
             onClick: function() { setShowSelHub(false); },
             'aria-label': 'Close SEL Hub',
-            style: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }
+            style: { background: 'none', border: 'none', color: _t.headerText, cursor: 'pointer', padding: 4 }
           }, X ? h(X, { size: 20 }) : '\u2715')
         )
       );
@@ -280,7 +308,7 @@
               value: selToolSearch,
               onChange: function(e) { setSelToolSearch(e.target.value); },
               'aria-label': 'Search SEL tools',
-              style: { width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 14, outline: 'none', boxSizing: 'border-box' }
+              style: { width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' }
             })
           ),
           // Grid
@@ -292,7 +320,7 @@
                   key: tool.id,
                   style: { gridColumn: '1 / -1', marginTop: 12, marginBottom: 4 }
                 },
-                  h('h3', { style: { margin: 0, fontSize: 13, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 6 } },
+                  h('h3', { style: { margin: 0, fontSize: 13, fontWeight: 700, color: _t.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 6 } },
                     h('span', null, tool.icon), ' ', tool.label
                   )
                 );
@@ -321,8 +349,8 @@
                 'aria-label': tool.label + (tool.recommendedRange ? ' (Grades ' + tool.recommendedRange + ')' : ''),
                 style: {
                   display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
-                  padding: 16, borderRadius: 14, border: '1px solid #334155',
-                  background: isRegistered ? '#1e293b' : '#1a202c',
+                  padding: 16, borderRadius: 14, border: '1px solid ' + _t.border,
+                  background: _t.bgCard,
                   cursor: isRegistered ? 'pointer' : 'default',
                   opacity: isRegistered ? 1 : 0.5,
                   textAlign: 'left', transition: 'transform 0.15s, box-shadow 0.15s',
@@ -333,9 +361,9 @@
               },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%' } },
                   h('span', { style: { fontSize: 24 } }, tool.icon),
-                  h('span', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9' } }, tool.label)
+                  h('span', { style: { fontSize: 14, fontWeight: 700, color: _t.text } }, tool.label)
                 ),
-                h('p', { style: { margin: 0, fontSize: 11, color: '#94a3b8', lineHeight: 1.4 } }, tool.desc),
+                h('p', { style: { margin: 0, fontSize: 11, color: _t.textMuted, lineHeight: 1.4 } }, tool.desc),
                 tool.recommendedRange && h('span', {
                   style: { fontSize: 10, color: cardColor, fontWeight: 600, marginTop: 4 }
                 }, 'Grades ' + tool.recommendedRange),
@@ -345,9 +373,9 @@
             })
           ),
           // No results
-          _searchLower && _filteredTools.length === 0 && h('div', { style: { textAlign: 'center', padding: '48px 0', color: '#94a3b8' } },
+          _searchLower && _filteredTools.length === 0 && h('div', { style: { textAlign: 'center', padding: '48px 0', color: _t.textMuted } },
             h('div', { style: { fontSize: 32, marginBottom: 8 } }, '\uD83D\uDD0D'),
-            h('p', { style: { fontSize: 14, fontWeight: 700 } }, 'No tools match "' + selToolSearch + '"'),
+            h('p', { style: { fontSize: 14, fontWeight: 700, color: _t.text } }, 'No tools match "' + selToolSearch + '"'),
             h('p', { style: { fontSize: 12 } }, 'Try a different search term')
           )
         );
@@ -436,22 +464,34 @@
             };
           },
 
+          // ── Theme ──
+          isDark: isDark,
+          isContrast: isContrast,
+          theme: _t,
+
           // ── Full props passthrough ──
           props: props || {}
         };
 
         console.log('[SelHub] Rendering plugin: ' + selHubTool);
         try {
-          toolContent = window.SelHub.renderTool(selHubTool, _ctx);
+          // Wrap plugin render in a stable React component per tool so hooks are isolated.
+          if (!window.__selPluginComponents) window.__selPluginComponents = {};
+          if (!window.__selPluginComponents[selHubTool]) {
+            window.__selPluginComponents[selHubTool] = function SelPluginBridge(props) {
+              return window.SelHub.renderTool(props._toolId, props._ctx);
+            };
+          }
+          toolContent = React.createElement(window.__selPluginComponents[selHubTool], { key: 'sel-plugin-' + selHubTool, _toolId: selHubTool, _ctx: _ctx });
         } catch(e) {
           console.error('[SelHub] Plugin render error for ' + selHubTool, e);
           toolContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#ef4444' } },
             h('p', { style: { fontSize: 32, marginBottom: 12 } }, '\u26A0\uFE0F'),
             h('p', { style: { fontWeight: 700, marginBottom: 8 } }, 'Error loading ' + selHubTool),
-            h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 16 } }, e.message || 'Unknown error'),
+            h('p', { style: { fontSize: 12, color: _t.textMuted, marginBottom: 16 } }, e.message || 'Unknown error'),
             h('button', {
               onClick: function() { setSelHubTool(null); },
-              style: { padding: '8px 20px', borderRadius: 8, background: '#7c3aed', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
+              style: { padding: '8px 20px', borderRadius: 8, background: _t.accent, color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
             }, '\u2190 Back to Tools')
           );
         }
@@ -459,18 +499,18 @@
 
       // ── Loading state (tool selected but plugin not yet loaded) ──
       if (selHubTool && !toolContent) {
-        toolContent = h('div', { style: { padding: 60, textAlign: 'center', color: '#94a3b8' } },
+        toolContent = h('div', { style: { padding: 60, textAlign: 'center', color: _t.textMuted } },
           h('div', {
             style: {
               fontSize: 40, marginBottom: 16,
               animation: _reduceMotion ? 'none' : 'pulse 2s ease-in-out infinite'
             }
           }, '\u2764\uFE0F\u200D\uD83E\uDE79'),
-          h('p', { style: { fontWeight: 700, fontSize: 16, marginBottom: 4 } }, 'Loading tool...'),
+          h('p', { style: { fontWeight: 700, fontSize: 16, marginBottom: 4, color: _t.text } }, 'Loading tool...'),
           h('p', { style: { fontSize: 12 } }, 'The plugin file is still being fetched.'),
           h('button', {
             onClick: function() { setSelHubTool(null); },
-            style: { marginTop: 16, padding: '8px 20px', borderRadius: 8, background: '#334155', color: '#f1f5f9', fontWeight: 600, border: 'none', cursor: 'pointer' }
+            style: { marginTop: 16, padding: '8px 20px', borderRadius: 8, background: _t.btnBg, color: _t.btnText, fontWeight: 600, border: _t.btnBorder, cursor: 'pointer' }
           }, '\u2190 Back to Tools')
         );
       }
@@ -482,7 +522,7 @@
         'aria-label': 'SEL Hub',
         style: {
           position: 'fixed', inset: 0, zIndex: 9999,
-          background: '#0f172a', color: '#f1f5f9',
+          background: _t.bg, color: _t.text,
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden'
         }

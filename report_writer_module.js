@@ -88,7 +88,7 @@
             if (score >= 60) return { label: 'High Average', color: 'amber' };
             if (score >= 40) return { label: 'Average', color: 'sky' };
             if (score >= 35) return { label: 'Low', color: 'amber' };
-            return { label: 'Very Low', color: 'emerald' };
+            return { label: 'Very Low', color: 'red' };
         }
         return SCORE_CLASSIFICATIONS.find(c => score >= c.min && score <= c.max) || { label: 'Unknown', color: 'slate' };
     };
@@ -453,6 +453,7 @@
         const [genProgress, setGenProgress] = useState('');
         // Step 5: Accuracy
         const [accuracyResults, setAccuracyResults] = useState([]);
+        const [clinicianAttested, setClinicianAttested] = useState(false);
         const [checking, setChecking] = useState(false);
         // Step 6: Export
         const [importText, setImportText] = useState('');
@@ -1273,15 +1274,21 @@ Return ONLY valid JSON:
             } catch { if (addToast) addToast('Invalid JSON', 'error'); }
         };
         const copyFullReport = () => {
+            const draftNotice = `${'═'.repeat(50)}\nCONFIDENTIAL DRAFT — AI-ASSISTED DOCUMENT\nThis report requires review and approval by the\nlicensed school psychologist before use in\neducational decision-making.\n${'═'.repeat(50)}\n\n`;
             const header = `${reportTitle}\nStudent: ${studentName || '[Student]'}\nAge: ${studentAge || 'N/A'} | Grade: ${studentGrade || 'N/A'}\nDate: ${new Date().toLocaleDateString()}\n${'─'.repeat(50)}\n\n`;
             const body = Object.entries(reportSections).map(([k, v]) => `${k.toUpperCase()}\n\n${v.replace(/\[Student\]/g, studentName || '[Student]')}`).join('\n\n' + '─'.repeat(50) + '\n\n');
-            navigator.clipboard.writeText(header + body).then(() => { if (addToast) addToast('Report copied to clipboard ✅', 'success'); });
+            const footer = `\n\n${'─'.repeat(50)}\nClinician Signature: _______________ Date: ________\nGenerated with AlloFlow Report Writer (AI-Assisted Draft)\n`;
+            navigator.clipboard.writeText(draftNotice + header + body + footer).then(() => { if (addToast) addToast('Report copied to clipboard ✅', 'success'); });
         };
         const printReport = () => {
             const w = window.open('', '_blank');
+            const draftBanner = `<div style="background:#fef2f2;border:2px solid #dc2626;border-radius:8px;padding:12px 16px;margin-bottom:20px;text-align:center"><p style="color:#dc2626;font-weight:900;font-size:13px;margin:0 0 4px 0;text-transform:uppercase;letter-spacing:1px">CONFIDENTIAL DRAFT — AI-ASSISTED DOCUMENT</p><p style="color:#991b1b;font-size:10px;margin:0;line-height:1.4">This report was generated with AI assistance and requires review and approval by the licensed school psychologist before use in educational decision-making. All interpretations must be validated against the clinician&rsquo;s independent professional judgment. This document is not a finalized evaluation report until signed by the responsible clinician.</p></div>`;
             const header = `<h1 style="text-align:center;margin-bottom:4px">${reportTitle}</h1><p style="text-align:center;color:#666">Student: ${studentName || '[Student]'} | Age: ${studentAge || 'N/A'} | Grade: ${studentGrade || 'N/A'} | Date: ${new Date().toLocaleDateString()}</p><hr>`;
             const body = Object.entries(reportSections).map(([k, v]) => `<h2>${k}</h2><p>${v.replace(/\[Student\]/g, studentName || '[Student]').replace(/\n/g, '</p><p>')}</p>`).join('');
-            w.document.write(`<html><head><title>${reportTitle}</title><style>body{font-family:Georgia,serif;max-width:800px;margin:40px auto;padding:20px;line-height:1.6;color:#333}h1{font-size:18px}h2{font-size:14px;color:#1e40af;border-bottom:1px solid #ddd;padding-bottom:4px;margin-top:24px}p{font-size:12px;text-align:justify}</style></head><body>${header}${body}</body></html>`);
+            const signatureLine = `<div style="margin-top:40px;border-top:2px solid #333;padding-top:12px"><p style="font-size:11px;color:#666;margin-bottom:24px"><strong>Clinician Signature:</strong> _____________________________ &nbsp;&nbsp;&nbsp; <strong>Date:</strong> ______________ &nbsp;&nbsp;&nbsp; <strong>License #:</strong> ______________</p><p style="font-size:9px;color:#999;text-align:center;margin-top:8px">Generated with AlloFlow Report Writer (AI-Assisted Draft) — Requires clinician review, approval, and signature before distribution.</p></div>`;
+            const isDemo = reportTitle?.toLowerCase().includes('demo') || studentName?.toLowerCase().includes('demo') || studentName?.toLowerCase().includes('fictional');
+            const demoWatermark = isDemo ? `<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-45deg);font-size:120px;color:rgba(220,38,38,0.08);font-weight:900;pointer-events:none;z-index:9999">DEMO</div>` : '';
+            w.document.write(`<html><head><title>${reportTitle}</title><style>body{font-family:Georgia,serif;max-width:800px;margin:40px auto;padding:20px;line-height:1.6;color:#333}h1{font-size:18px}h2{font-size:14px;color:#1e40af;border-bottom:1px solid #ddd;padding-bottom:4px;margin-top:24px}p{font-size:12px;text-align:justify}@media print{body{margin:20px}}</style></head><body>${demoWatermark}${draftBanner}${header}${body}${signatureLine}</body></html>`);
             w.document.close();
             w.print();
         };
@@ -2005,17 +2012,27 @@ Return ONLY valid JSON:
                             : `✅ ${accuracyResults.filter(r => r.status === 'verified').length}/${accuracyResults.length} claims verified — ready to export`
                     )
                 ),
+                // Clinician attestation
+                Object.keys(reportSections).length > 0 && h('div', { className: `rounded-lg p-3 border ${clinicianAttested ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}` },
+                    h('label', { className: 'flex items-start gap-2 cursor-pointer' },
+                        h('input', { type: 'checkbox', checked: clinicianAttested, onChange: (e) => setClinicianAttested(e.target.checked), className: 'mt-0.5 rounded border-slate-300 text-green-600 focus:ring-green-400' }),
+                        h('span', { className: 'text-[10px] text-slate-700 leading-relaxed' },
+                            h('strong', null, 'Clinician Attestation: '),
+                            'I have independently reviewed the assessment data, verified all score entries match protocols, reviewed AI-generated interpretations for clinical accuracy, and I am the licensed professional responsible for this evaluation.'
+                        )
+                    )
+                ),
                 // Export buttons
                 h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
                     h('button', { className: 'flex flex-col items-center gap-1 px-3 py-3 bg-violet-50 border border-violet-200 rounded-lg hover:bg-violet-100 transition-colors', onClick: exportJSON },
                         h('span', { className: 'text-lg' }, '💾'),
                         h('span', { className: 'text-[10px] font-medium text-violet-700' }, 'Save JSON')
                     ),
-                    h('button', { className: 'flex flex-col items-center gap-1 px-3 py-3 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors', onClick: copyFullReport, disabled: Object.keys(reportSections).length === 0 },
+                    h('button', { className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border border-red-200 opacity-50 cursor-not-allowed' : 'bg-indigo-50 border border-indigo-200 hover:bg-indigo-100'}`, onClick: () => { if (accuracyResults.filter(r => r.status === 'contradicts').length > 0) { addToast('Resolve contradictions before copying — run accuracy audit and fix flagged claims', 'error'); return; } copyFullReport(); }, disabled: Object.keys(reportSections).length === 0 },
                         h('span', { className: 'text-lg' }, '📋'),
                         h('span', { className: 'text-[10px] font-medium text-indigo-700' }, 'Copy Report')
                     ),
-                    h('button', { className: 'flex flex-col items-center gap-1 px-3 py-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors', onClick: printReport, disabled: Object.keys(reportSections).length === 0 },
+                    h('button', { className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border border-red-200 opacity-50 cursor-not-allowed' : 'bg-blue-50 border border-blue-200 hover:bg-blue-100'}`, onClick: () => { if (accuracyResults.filter(r => r.status === 'contradicts').length > 0) { addToast('Resolve contradictions before printing — run accuracy audit and fix flagged claims', 'error'); return; } printReport(); }, disabled: Object.keys(reportSections).length === 0 },
                         h('span', { className: 'text-lg' }, '🖨️'),
                         h('span', { className: 'text-[10px] font-medium text-blue-700' }, 'Print / PDF')
                     ),

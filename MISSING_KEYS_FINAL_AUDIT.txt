@@ -1,0 +1,92 @@
+====================================================================================================
+COMPREHENSIVE MISSING TRANSLATION KEYS AUDIT - AlloFlow Codebase
+====================================================================================================
+
+AUDIT SUMMARY
+----------------------------------------------------------------------------------------------------
+File Scanned: AlloFlowANTI.txt (62,808 lines)
+Translation File: ui_strings.js (7,365 total keys)
+Fallback Instances Found: 12
+Unique Missing Keys: 9
+Sections Affected: 6
+Health Score: 97.3% (322 out of 331 keys with fallbacks are defined)
+
+
+MISSING KEYS BY SECTION
+----------------------------------------------------------------------------------------------------
+
+[[data-help-ignore]] - 1 unique key(s), 1 instance(s)
+----------------------------------------------------------------------------------------------------
+  Key: [data-help-ignore]
+  Lines: 20541
+  Fallback: ''
+
+[adventure] - 1 unique key(s), 2 instance(s)
+----------------------------------------------------------------------------------------------------
+  Key: adventure.upload_portrait
+  Lines: 16586, 16620
+  Fallback: 'Upload your own portrait image'
+
+[adventure_title] - 1 unique key(s), 1 instance(s)
+----------------------------------------------------------------------------------------------------
+  Key: adventure_title
+  Lines: 49866
+  Fallback: 'Adventure'
+
+[behavior_lens] - 4 unique key(s), 6 instance(s)
+----------------------------------------------------------------------------------------------------
+  Key: behavior_lens.hub.open_btn
+  Lines: 15122
+  Fallback: 'Open BehaviorLens'
+
+  Key: behavior_lens.hub.subtitle
+  Lines: 15117
+  Fallback: 'Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools.'
+
+  Key: behavior_lens.hub.title
+  Lines: 14529, 15116, 62730
+  Fallback: 'Behavior'
+
+  Key: behavior_lens.loading_hint
+  Lines: 62731
+  Fallback: 'Module loading from CDN. If this persists, check your connection.'
+
+[status] - 1 unique key(s), 1 instance(s)
+----------------------------------------------------------------------------------------------------
+  Key: status.text_condensing
+  Lines: 39337
+  Fallback: 'Condensing text...'
+
+[status_steps] - 1 unique key(s), 1 instance(s)
+----------------------------------------------------------------------------------------------------
+  Key: status_steps.retrying_citations
+  Lines: 28576
+  Fallback: 'Retrying for better citations...'
+
+
+====================================================================================================
+ACTION ITEMS
+====================================================================================================
+
+Add these keys to ui_strings.js in their respective sections:
+
+[data-help-ignore]:
+  - [data-help-ignore]: ''
+
+adventure:
+  - adventure.upload_portrait: 'Upload your own portrait image'
+
+adventure_title:
+  - adventure_title: 'Adventure'
+
+behavior_lens:
+  - behavior_lens.hub.open_btn: 'Open BehaviorLens'
+  - behavior_lens.hub.subtitle: 'Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools.'
+  - behavior_lens.hub.title: 'Behavior'
+  - behavior_lens.loading_hint: 'Module loading from CDN. If this persists, check your connection.'
+
+status:
+  - status.text_condensing: 'Condensing text...'
+
+status_steps:
+  - status_steps.retrying_citations: 'Retrying for better citations...'

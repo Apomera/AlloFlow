@@ -139,7 +139,7 @@ const iifeHeader = `/**
   var useContext = React.useContext;
 
   // ── App dependencies from window ──
-  var LanguageContext = window.AlloLanguageContext;
+  var LanguageContext = window.AlloLanguageContext || React.createContext({ t: function(k) { return k; } });
   var fisherYatesShuffle = window.fisherYatesShuffle;
   var getGlobalAudioContext = window.getGlobalAudioContext || function() { return null; };
   var warnLog = (typeof window.__alloWarnLog === 'function') ? window.__alloWarnLog : function() { console.warn.apply(console, arguments); };

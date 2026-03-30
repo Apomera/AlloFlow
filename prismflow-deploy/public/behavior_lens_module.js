@@ -2783,7 +2783,242 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                     },
                     disabled: filteredAbc.length === 0 && filteredObs.length === 0,
                     className: 'w-full py-3 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
-                }, '📄 Print Portfolio PDF')
+                }, '📄 Print Portfolio PDF'),
+                // ── IEP-Ready FBA Report ──────────────────────────────────────────
+                h('button', {
+                    onClick: () => {
+                        const student = studentName || 'Student';
+                        const now = new Date().toLocaleString();
+                        const abc = filteredAbc;
+                        if (!abc.length) return;
+
+                        // ── Compute frequency analysis ──────────────────────────
+                        const aCount = {}, cCount = {}, sCount = {}, fCount = {}, iDist = {1:0,2:0,3:0,4:0,5:0};
+                        let phaseData = {};
+                        abc.forEach(e => {
+                            if (e.antecedent) aCount[e.antecedent] = (aCount[e.antecedent]||0)+1;
+                            if (e.consequence) cCount[e.consequence] = (cCount[e.consequence]||0)+1;
+                            if (e.setting) sCount[e.setting] = (sCount[e.setting]||0)+1;
+                            if (e.functionTag) fCount[e.functionTag] = (fCount[e.functionTag]||0)+1;
+                            if (e.intensity) iDist[e.intensity] = (iDist[e.intensity]||0)+1;
+                            if (e.phase) { if (!phaseData[e.phase]) phaseData[e.phase]={count:0,totalInt:0}; phaseData[e.phase].count++; phaseData[e.phase].totalInt+=(e.intensity||0); }
+                        });
+                        const topA = Object.entries(aCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
+                        const topC = Object.entries(cCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
+                        const topS = Object.entries(sCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
+                        const topF = Object.entries(fCount).sort((a,b)=>b[1]-a[1]);
+                        const total = abc.length;
+                        const avgInt = (abc.reduce((s,e)=>s+(e.intensity||0),0)/total).toFixed(1);
+
+                        // ── Temporal pattern (Mon–Fri × Morning/Mid/Afternoon) ──
+                        const timeSlots = {'Morning (7–10)': [7,8,9], 'Midday (10–13)': [10,11,12], 'Afternoon (13–16)': [13,14,15], 'Late (16–18)': [16,17,18]};
+                        const days = ['Mon','Tue','Wed','Thu','Fri'];
+                        const temporal = {};
+                        abc.forEach(e => {
+                            const d = new Date(e.timestamp||e.date);
+                            const dayIdx = d.getDay()-1;
+                            if (dayIdx<0||dayIdx>4) return;
+                            const h_ = d.getHours();
+                            Object.entries(timeSlots).forEach(([slot, hrs]) => {
+                                if (hrs.includes(h_)) { const k=dayIdx+'_'+slot; temporal[k]=(temporal[k]||0)+1; }
+                            });
+                        });
+                        const maxTemporal = Math.max(1,...Object.values(temporal));
+
+                        // ── Date range ──────────────────────────────────────────
+                        const timestamps = abc.map(e=>new Date(e.timestamp||e.date)).filter(d=>!isNaN(d)).sort((a,b)=>a-b);
+                        const firstDate = timestamps.length ? timestamps[0].toLocaleDateString() : '—';
+                        const lastDate = timestamps.length ? timestamps[timestamps.length-1].toLocaleDateString() : '—';
+                        const spanDays = timestamps.length > 1 ? Math.round((timestamps[timestamps.length-1]-timestamps[0])/(86400000)) : 0;
+                        const topSetting = topS.length ? topS[0][0] : '—';
+
+                        // ── Helper: horizontal bar row ──────────────────────────
+                        const bar = (label, count, max, color) => {
+                            const pct = Math.round((count/max)*100);
+                            const entPct = Math.round((count/total)*100);
+                            return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                                <div style="width:180px;font-size:9pt;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0;" title="${label}">${label}</div>
+                                <div style="flex:1;height:20px;background:#f1f5f9;border-radius:3px;overflow:hidden;">
+                                    <div style="width:${pct}%;height:100%;background:${color};border-radius:3px;display:flex;align-items:center;padding-left:6px;">
+                                        ${pct>15?`<span style="font-size:8pt;font-weight:700;color:white;">${entPct}%</span>`:''}
+                                    </div>
+                                </div>
+                                <div style="width:42px;text-align:right;font-size:9pt;font-weight:700;color:#374151;">${count}</div>
+                            </div>`;
+                        };
+
+                        // ── Helper: intensity bar ───────────────────────────────
+                        const intColors = {1:'#22c55e',2:'#86efac',3:'#facc15',4:'#f97316',5:'#dc2626'};
+                        const intLabels = {1:'1 — Mild',2:'2 — Low',3:'3 — Moderate',4:'4 — High',5:'5 — Severe'};
+                        const maxI = Math.max(1,...Object.values(iDist));
+                        const intensityBars = Object.entries(iDist).map(([lvl,cnt]) =>
+                            bar(intLabels[lvl], cnt, maxI, intColors[lvl])
+                        ).join('');
+
+                        // ── Phase colors ────────────────────────────────────────
+                        const phaseColors = {baseline:'#64748b',intervention:'#059669',maintenance:'#3b82f6','return to baseline':'#f97316'};
+                        const phaseRows = Object.entries(phaseData).map(([ph,d]) =>
+                            `<tr><td><span style="display:inline-block;padding:2px 8px;border-radius:4px;background:${phaseColors[ph]||'#e2e8f0'};color:white;font-weight:700;font-size:8.5pt;">${ph}</span></td><td>${d.count}</td><td>${Math.round(d.count/total*100)}%</td><td>${d.count>0?(d.totalInt/d.count).toFixed(1):'—'}</td></tr>`
+                        ).join('');
+
+                        // ── Temporal grid ───────────────────────────────────────
+                        const cellColor = (v,max) => v===0?'#f8fafc':v/max>0.6?'#dc2626':v/max>0.3?'#f97316':'#fef9c3';
+                        const tempGridRows = Object.keys(timeSlots).map(slot => {
+                            const cells = days.map((day,di) => {
+                                const v = temporal[di+'_'+slot]||0;
+                                return `<td style="text-align:center;background:${cellColor(v,maxTemporal)};padding:6px 10px;border:1px solid #e2e8f0;font-size:8.5pt;font-weight:${v>0?700:400};color:${v>0?'#1e293b':'#94a3b8'};">${v||'—'}</td>`;
+                            }).join('');
+                            return `<tr><td style="padding:6px 10px;font-size:8.5pt;font-weight:600;color:#374151;border:1px solid #e2e8f0;white-space:nowrap;">${slot}</td>${cells}</tr>`;
+                        }).join('');
+
+                        // ── Build HTML ──────────────────────────────────────────
+                        const css = `
+                            body{font-family:'Segoe UI',Tahoma,sans-serif;max-width:860px;margin:0 auto;padding:28px;color:#1e293b;font-size:10.5pt;line-height:1.5}
+                            h1{font-size:20pt;margin:0 0 4px}
+                            h2{font-size:12.5pt;border-bottom:2px solid #334155;padding-bottom:5px;margin:28px 0 14px;color:#0f172a}
+                            h3{font-size:10.5pt;color:#475569;margin:0 0 8px}
+                            .cover{border-bottom:3px solid #1e293b;margin-bottom:28px;padding-bottom:20px}
+                            .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+                            .meta-item{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:7px 12px;flex:1;min-width:150px}
+                            .meta-label{font-size:8pt;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+                            .stat-row{display:flex;gap:10px;margin-bottom:16px}
+                            .stat-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;flex:1;text-align:center}
+                            .stat-val{font-size:22pt;font-weight:900}
+                            .stat-lbl{font-size:7.5pt;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em}
+                            table{width:100%;border-collapse:collapse;margin:6px 0 14px;font-size:9pt}
+                            th{background:#1e293b;color:#fff;padding:7px 9px;text-align:left;font-size:8.5pt}
+                            td{border:1px solid #e2e8f0;padding:6px 8px;vertical-align:top}
+                            tr:nth-child(even) td{background:#f8fafc}
+                            .hyp-box{background:#f5f3ff;border:2px solid #7c3aed;border-radius:10px;padding:16px;margin-bottom:16px}
+                            .hyp-badge{display:inline-block;background:#7c3aed;color:#fff;padding:4px 14px;border-radius:20px;font-weight:800;font-size:11pt;margin-bottom:10px}
+                            .rec-list{margin:8px 0 0;padding-left:18px}
+                            .rec-list li{margin-bottom:5px}
+                            .footer{margin-top:32px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:8pt;color:#94a3b8;text-align:center}
+                            .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:8.5pt;margin-bottom:10px}
+                            .legend-item{display:flex;align-items:center;gap:4px}
+                            .legend-swatch{width:14px;height:14px;border-radius:2px;flex-shrink:0}
+                            section{page-break-inside:avoid}
+                            .page-break{page-break-before:always}
+                            @media print{body{padding:0}@page{margin:.75in;size:letter}section{page-break-inside:avoid}}
+                        `;
+
+                        let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>FBA Report — ${student}</title><style>${css}</style></head><body>`;
+
+                        // Cover
+                        html += `<div class="cover">
+                            <h1>📊 Functional Behavior Assessment</h1>
+                            <div style="font-size:11pt;color:#64748b">Data Summary Report — Prepared by BehaviorLens</div>
+                            <div class="meta">
+                                <div class="meta-item"><div class="meta-label">Student</div><strong>${student}</strong></div>
+                                <div class="meta-item"><div class="meta-label">Report Generated</div>${now}</div>
+                                <div class="meta-item"><div class="meta-label">Assessment Period</div>${firstDate} – ${lastDate} (${spanDays} days)</div>
+                                <div class="meta-item"><div class="meta-label">Total Incidents</div>${total} ABC entries</div>
+                            </div>
+                        </div>`;
+
+                        // Section 1: Data Overview
+                        html += `<section><h2>1. Data Overview</h2>
+                            <div class="stat-row">
+                                <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-lbl">ABC Entries</div></div>
+                                <div class="stat-card"><div class="stat-val">${filteredObs.length}</div><div class="stat-lbl">Observation Sessions</div></div>
+                                <div class="stat-card"><div class="stat-val">${avgInt}</div><div class="stat-lbl">Avg Intensity (1–5)</div></div>
+                                <div class="stat-card"><div class="stat-val">${spanDays}</div><div class="stat-lbl">Days of Data</div></div>
+                            </div>
+                            ${topS.length?`<p style="font-size:9.5pt;color:#475569;margin:0"><strong>Most common setting:</strong> ${topSetting} (${topS[0][1]} incidents, ${Math.round(topS[0][1]/total*100)}% of entries)</p>`:''}
+                        </section>`;
+
+                        // Section 2: Behavioral Function Hypothesis
+                        if (aiAnalysis || topF.length) {
+                            html += `<section class="page-break"><h2>2. Behavioral Function Analysis</h2>`;
+                            if (aiAnalysis && aiAnalysis.hypothesizedFunction) {
+                                html += `<div class="hyp-box">
+                                    <div class="hyp-badge">${aiAnalysis.hypothesizedFunction}</div>
+                                    <div style="font-size:9.5pt;color:#374151"><strong>Confidence:</strong> ${aiAnalysis.confidence||'?'}%</div>
+                                    ${aiAnalysis.summary?`<p style="margin:10px 0 0;font-size:10pt;">${aiAnalysis.summary}</p>`:''}
+                                </div>`;
+                            }
+                            if (topF.length) {
+                                const maxF = topF[0][1];
+                                const fColors = {Attention:'#3b82f6',Escape:'#f97316',Tangible:'#8b5cf6',Sensory:'#22c55e',Access:'#8b5cf6',Automatic:'#10b981'};
+                                html += `<h3>Function Tag Distribution</h3>${topF.map(([f,c])=>bar(f,c,maxF,fColors[f]||'#6b7280')).join('')}`;
+                            }
+                            html += `</section>`;
+                        }
+
+                        // Section 3: Antecedent Analysis
+                        if (topA.length) {
+                            const maxA = topA[0][1];
+                            html += `<section><h2>3. Antecedent Analysis</h2>
+                                <p style="font-size:9.5pt;color:#475569;margin:0 0 10px">Events or conditions that occurred immediately before the behavior. Top ${topA.length} of ${Object.keys(aCount).length} unique antecedents.</p>
+                                ${topA.map(([a,c])=>bar(a,c,maxA,'#3b82f6')).join('')}
+                            </section>`;
+                        }
+
+                        // Section 4: Consequence Analysis
+                        if (topC.length) {
+                            const maxC = topC[0][1];
+                            html += `<section><h2>4. Consequence Analysis</h2>
+                                <p style="font-size:9.5pt;color:#475569;margin:0 0 10px">What typically followed the behavior. Top ${topC.length} of ${Object.keys(cCount).length} unique consequences.</p>
+                                ${topC.map(([c,cnt])=>bar(c,cnt,maxC,'#f97316')).join('')}
+                            </section>`;
+                        }
+
+                        // Section 5: Intensity Distribution
+                        html += `<section><h2>5. Intensity Distribution</h2>
+                            <p style="font-size:9.5pt;color:#475569;margin:0 0 10px">Severity rating at time of each recorded incident (1 = Mild, 5 = Severe).</p>
+                            <div class="legend">
+                                ${Object.entries(intColors).map(([l,c])=>`<div class="legend-item"><div class="legend-swatch" style="background:${c}"></div>${intLabels[l]}</div>`).join('')}
+                            </div>
+                            ${intensityBars}
+                        </section>`;
+
+                        // Section 6: Temporal Patterns
+                        if (Object.keys(temporal).length) {
+                            html += `<section><h2>6. Temporal Patterns</h2>
+                                <p style="font-size:9.5pt;color:#475569;margin:0 0 10px">Incident counts by day of week and time of day. <span style="background:#dc2626;color:white;padding:1px 6px;border-radius:3px;font-size:8pt">High</span> <span style="background:#f97316;color:white;padding:1px 6px;border-radius:3px;font-size:8pt">Medium</span> <span style="background:#fef9c3;color:#374151;padding:1px 6px;border-radius:3px;font-size:8pt;border:1px solid #d1d5db">Low</span></p>
+                                <table><tr><th>Time Slot</th>${days.map(d=>`<th style="text-align:center">${d}</th>`).join('')}</tr>${tempGridRows}</table>
+                            </section>`;
+                        }
+
+                        // Section 7: Phase Comparison
+                        if (phaseRows) {
+                            html += `<section><h2>7. Phase Comparison</h2>
+                                <p style="font-size:9.5pt;color:#475569;margin:0 0 10px">Breakdown of incidents across experimental phases (A/B/A' design).</p>
+                                <table><tr><th>Phase</th><th>Incidents</th><th>% of Total</th><th>Avg Intensity</th></tr>${phaseRows}</table>
+                            </section>`;
+                        }
+
+                        // Section 8: Complete ABC Log
+                        html += `<section class="page-break"><h2>8. Complete ABC Data Log</h2>
+                            <table><tr><th>#</th><th>Date</th><th>Time</th><th>Antecedent</th><th>Behavior</th><th>Consequence</th><th>Setting</th><th>Int.</th></tr>`;
+                        abc.forEach((e,i) => {
+                            const d = new Date(e.timestamp||e.date);
+                            const dateStr = isNaN(d)?'—':d.toLocaleDateString();
+                            const timeStr = isNaN(d)?'—':d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+                            html += `<tr><td>${i+1}</td><td style="white-space:nowrap">${dateStr}</td><td style="white-space:nowrap">${timeStr}</td><td>${e.antecedent||'—'}</td><td>${e.behavior||'—'}</td><td>${e.consequence||'—'}</td><td>${e.setting||'—'}</td><td style="text-align:center">${e.intensity||'—'}</td></tr>`;
+                        });
+                        html += `</table></section>`;
+
+                        // Section 9: Recommendations
+                        if (aiAnalysis && (aiAnalysis.recommendations||aiAnalysis.summary)) {
+                            html += `<section><h2>9. AI Analysis &amp; Recommendations</h2>`;
+                            if (aiAnalysis.summary) html += `<p>${aiAnalysis.summary}</p>`;
+                            if (aiAnalysis.recommendations&&Array.isArray(aiAnalysis.recommendations)&&aiAnalysis.recommendations.length) {
+                                html += `<h3>Recommended Interventions</h3><ul class="rec-list">`;
+                                aiAnalysis.recommendations.forEach(r => { html += `<li>${r}</li>`; });
+                                html += `</ul>`;
+                            }
+                            html += `</section>`;
+                        }
+
+                        html += `<div class="footer">Generated by BehaviorLens — AlloFlow UDL Platform &bull; ${now} &bull; CONFIDENTIAL: For educational use only</div></body></html>`;
+
+                        const w = window.open('', '_blank');
+                        if (w) { w.document.write(html); w.document.close(); setTimeout(function(){ w.print(); }, 400); }
+                    },
+                    disabled: filteredAbc.length === 0,
+                    className: 'w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
+                }, '📋 IEP-Ready FBA Report')
             )
         );
     };
@@ -23100,7 +23335,7 @@ IMPORTANT rules for expert keys:
         const _cloudDocPath = useCallback((studentName) => {
             if (!_cloudUserId || !studentName) return null;
             const safeName = studentName.replace(/[\/\.#$\[\]]/g, '_');
-            return `behaviorLens/users/${_cloudUserId}/workspaces/${safeName}`;
+            return `behaviorLens_users/${_cloudUserId}/workspaces/${safeName}`;
         }, [_cloudUserId]);
 
         const _saveToCloud = useCallback(async (studentName, data) => {

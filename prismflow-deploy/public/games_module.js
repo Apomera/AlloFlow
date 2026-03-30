@@ -27,7 +27,7 @@
   var useContext = React.useContext;
 
   // ── App dependencies from window ──
-  var LanguageContext = window.AlloLanguageContext;
+  var LanguageContext = window.AlloLanguageContext || React.createContext({ t: function(k) { return k; } });
   var fisherYatesShuffle = window.fisherYatesShuffle;
   var getGlobalAudioContext = window.getGlobalAudioContext || function() { return null; };
   var warnLog = (typeof window.__alloWarnLog === 'function') ? window.__alloWarnLog : function() { console.warn.apply(console, arguments); };
@@ -86,18 +86,43 @@
   // ═══════════════════════════════════════════════════════════════
 
 const useReducedMotion = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+let _speakAudio = null;
 const speakText = (text) => {
   if (!text) return;
+  const str = String(text);
   try {
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(String(text));
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      window.speechSynthesis.speak(utterance);
+    if (_speakAudio) {
+      try {
+        _speakAudio.pause();
+        _speakAudio = null;
+      } catch (e) {
+      }
     }
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    if (window._kokoroTTS && typeof window._kokoroTTS.speak === "function") {
+      window._kokoroTTS.speak(str, "af_heart", 1).then((url) => {
+        if (url) {
+          _speakAudio = new Audio(url);
+          _speakAudio.playbackRate = 0.95;
+          _speakAudio.play().catch(() => {
+          });
+        } else {
+          _browserTTSFallback(str);
+        }
+      }).catch(() => _browserTTSFallback(str));
+      return;
+    }
+    _browserTTSFallback(str);
   } catch (e) {
     console.warn("TTS failed", e);
+  }
+};
+const _browserTTSFallback = (text) => {
+  if (window.speechSynthesis) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
   }
 };
 const SpeakButton = ({ text, size = 13, className = "" }) => /* @__PURE__ */ React.createElement(
@@ -2958,7 +2983,7 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
   window.AlloModules.BingoGame = BingoGame;
   window.AlloModules.StudentBingoGame = StudentBingoGame;
   window.AlloModules.WordScrambleGame = WordScrambleGame;
-
   window.AlloModules.GamesBundle = true;
+
   console.log('[GamesBundle] 10 games registered:', ["MemoryGame","MatchingGame","TimelineGame","ConceptSortGame","VennGame","CrosswordGame","SyntaxScramble","BingoGame","StudentBingoGame","WordScrambleGame"]);
 })();

@@ -1473,56 +1473,90 @@
 
             // Scene selection (when no scene active)
             !activeScene ? h('div', null,
-              h('div', { className: 'text-center mb-4' },
-                h('h4', { className: 'text-lg font-bold text-slate-800' }, '\uD83E\uDDEA Chemistry Hunt'),
-                h('p', { className: 'text-xs text-slate-500 mt-1 leading-relaxed' }, 'Explore real-world scenes. Can you find the object that contains each chemical compound?'),
-                huntScore > 0 ? h('div', { className: 'flex items-center justify-center gap-3 mt-2' },
-                  h('span', { className: 'text-xs font-bold text-emerald-600' }, '\u2B50 Score: ' + huntScore),
-                  huntStreak >= 2 ? h('span', { className: 'text-xs font-bold text-amber-600' }, '\uD83D\uDD25 Streak: ' + huntStreak) : null
-                ) : null
+              // Scene selection hero banner
+              h('div', { className: 'relative rounded-2xl overflow-hidden mb-5', style: { background: 'linear-gradient(135deg, #312e81 0%, #1e1b4b 50%, #0f172a 100%)', padding: '24px 20px' } },
+                // Decorative floating molecule icons
+                h('div', { className: 'absolute inset-0 overflow-hidden pointer-events-none', style: { opacity: 0.08 } },
+                  h('span', { style: { position: 'absolute', fontSize: 40, top: '10%', left: '5%' } }, '\u269B\uFE0F'),
+                  h('span', { style: { position: 'absolute', fontSize: 28, top: '60%', right: '8%' } }, '\uD83E\uDDEA'),
+                  h('span', { style: { position: 'absolute', fontSize: 22, bottom: '15%', left: '35%' } }, '\u2697\uFE0F'),
+                  h('span', { style: { position: 'absolute', fontSize: 34, top: '5%', right: '25%' } }, '\uD83D\uDD2C')
+                ),
+                h('div', { className: 'relative text-center' },
+                  h('h4', { className: 'text-xl font-black text-white mb-1 flex items-center justify-center gap-2' }, '\uD83E\uDDEA Chemistry Hunt'),
+                  h('p', { className: 'text-xs text-indigo-300 leading-relaxed max-w-sm mx-auto' }, 'Explore real-world scenes. Can you find the object that contains each chemical compound?'),
+                  huntScore > 0 ? h('div', { className: 'flex items-center justify-center gap-3 mt-3' },
+                    h('span', { className: 'px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30' }, '\u2B50 Score: ' + huntScore),
+                    huntStreak >= 2 ? h('span', { className: 'px-3 py-1 rounded-full text-xs font-bold bg-orange-500/20 text-orange-300 border border-orange-500/30' }, '\uD83D\uDD25 Streak: ' + huntStreak) : null
+                  ) : null
+                )
               ),
+              // Scene cards
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
                 SCENES.map(function(scene) {
                   var sceneFound = 0;
                   scene.objects.forEach(function(obj) { if (foundObjects[obj.id]) sceneFound++; });
                   var complete = sceneFound === scene.objects.length;
+                  var pct = Math.round(sceneFound / scene.objects.length * 100);
                   return h('button', {
                     key: scene.id,
                     onClick: function() {
                       SOUNDS.sceneSwitch();
                       var visited = Object.assign({}, scenesVisited);
                       visited[scene.id] = true;
-                      // Pick a random un-found object as the first hunt target
                       var unfound = scene.objects.filter(function(o) { return !foundObjects[o.id]; });
                       var target = unfound.length > 0 ? unfound[Math.floor(Math.random() * unfound.length)] : null;
                       updMulti({ activeScene: scene.id, scenesVisited: visited, selectedSceneObj: null, huntTarget: target ? target.id : null, huntWrongGuess: null });
                     },
-                    className: 'relative rounded-xl p-4 text-left border-2 transition-all hover:shadow-md ' +
-                      (complete ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 bg-white hover:border-amber-300'),
-                    style: { borderLeftWidth: '6px', borderLeftColor: scene.accent }
+                    className: 'group relative rounded-2xl p-4 text-left border-2 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 ' +
+                      (complete ? 'border-emerald-400 bg-gradient-to-br from-emerald-50 to-teal-50' : 'border-slate-200 bg-white hover:border-indigo-300'),
+                    style: { borderLeftWidth: '6px', borderLeftColor: scene.accent, overflow: 'hidden' }
                   },
-                    h('div', { className: 'flex items-center gap-3' },
-                      h('span', { className: 'text-3xl' }, scene.icon),
-                      h('div', { className: 'flex-1' },
-                        h('div', { className: 'font-bold text-slate-800 text-sm' }, scene.name),
-                        h('p', { className: 'text-[10px] text-slate-500 mt-0.5' }, scene.desc),
-                        h('div', { className: 'flex items-center gap-2 mt-1.5' },
-                          h('div', { className: 'flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden' },
-                            h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: Math.round(sceneFound / scene.objects.length * 100) + '%', background: scene.accent } })
+                    // Background scene tint
+                    h('div', { className: 'absolute inset-0 opacity-[0.04] pointer-events-none', style: { background: scene.accent } }),
+                    h('div', { className: 'relative flex items-center gap-3' },
+                      h('div', {
+                        className: 'flex items-center justify-center shrink-0 rounded-xl transition-transform duration-200 group-hover:scale-110',
+                        style: { width: 48, height: 48, background: scene.bgColor, border: '2px solid ' + scene.accent + '40' }
+                      }, h('span', { className: 'text-2xl' }, scene.icon)),
+                      h('div', { className: 'flex-1 min-w-0' },
+                        h('div', { className: 'font-bold text-slate-800 text-sm flex items-center gap-1.5' },
+                          scene.name,
+                          complete ? h('span', { className: 'text-emerald-500 text-xs' }, '\u2705') : null
+                        ),
+                        h('p', { className: 'text-[10px] text-slate-500 mt-0.5 line-clamp-1' }, scene.desc),
+                        h('div', { className: 'flex items-center gap-2 mt-2' },
+                          h('div', { className: 'flex-1 h-2 rounded-full overflow-hidden', style: { background: complete ? '#d1fae5' : '#f1f5f9' } },
+                            h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: pct + '%', background: complete ? '#10b981' : scene.accent } })
                           ),
-                          h('span', { className: 'text-[9px] font-bold ' + (complete ? 'text-emerald-600' : 'text-slate-400') }, sceneFound + '/' + scene.objects.length)
+                          h('span', { className: 'text-[9px] font-bold min-w-[28px] text-right ' + (complete ? 'text-emerald-600' : 'text-slate-400') }, pct + '%')
                         )
-                      ),
-                      complete ? h('span', { className: 'text-xl' }, '\u2705') : null
+                      )
                     )
                   );
                 })
               ),
-              h('div', { className: 'mt-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3 text-center' },
-                h('span', { className: 'text-xs font-bold text-amber-700' },
-                  '\uD83D\uDD0E Total: ' + Object.keys(foundObjects).length + '/' + SCENES.reduce(function(s, sc) { return s + sc.objects.length; }, 0) + ' compounds identified'
-                )
-              )
+              // Global progress footer
+              (function() {
+                var totalFound = Object.keys(foundObjects).length;
+                var totalObjects = SCENES.reduce(function(s, sc) { return s + sc.objects.length; }, 0);
+                var globalPct = Math.round(totalFound / totalObjects * 100);
+                return h('div', { className: 'mt-5 rounded-2xl overflow-hidden border', style: { borderColor: globalPct === 100 ? '#10b981' : '#e2e8f0' } },
+                  h('div', { className: 'px-4 py-3 flex items-center justify-between', style: { background: globalPct === 100 ? 'linear-gradient(135deg, #ecfdf5, #d1fae5)' : 'linear-gradient(135deg, #fffbeb, #fef3c7)' } },
+                    h('div', { className: 'flex items-center gap-2' },
+                      h('span', { className: 'text-lg' }, globalPct === 100 ? '\uD83C\uDFC6' : '\uD83D\uDD0E'),
+                      h('div', null,
+                        h('span', { className: 'text-xs font-bold', style: { color: globalPct === 100 ? '#065f46' : '#92400e' } }, globalPct === 100 ? 'All Compounds Discovered!' : 'Total Progress'),
+                        h('p', { className: 'text-[10px]', style: { color: globalPct === 100 ? '#047857' : '#b45309' } }, totalFound + ' of ' + totalObjects + ' compounds identified')
+                      )
+                    ),
+                    h('span', { className: 'text-sm font-black', style: { color: globalPct === 100 ? '#059669' : '#d97706' } }, globalPct + '%')
+                  ),
+                  h('div', { className: 'h-1.5', style: { background: '#f1f5f9' } },
+                    h('div', { className: 'h-full transition-all duration-700', style: { width: globalPct + '%', background: globalPct === 100 ? '#10b981' : 'linear-gradient(90deg, #f59e0b, #d97706)' } })
+                  )
+                );
+              })()
             ) : null,
 
             // Active scene view
@@ -1564,46 +1598,82 @@
 
               return h('div', null,
                 // Scene header
-                h('div', { className: 'flex items-center gap-3 mb-3' },
-                  h('button', { onClick: function() { updMulti({ activeScene: null, selectedSceneObj: null, huntTarget: null, huntWrongGuess: null }); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg' }, h(ArrowLeft, { size: 16, className: 'text-slate-500' })),
-                  h('span', { className: 'text-2xl' }, scene.icon),
+                h('div', { className: 'flex items-center gap-3 mb-4 rounded-2xl p-3', style: { background: 'linear-gradient(135deg, ' + scene.bgColor + ', ' + scene.accent + '15)' } },
+                  h('button', { onClick: function() { updMulti({ activeScene: null, selectedSceneObj: null, huntTarget: null, huntWrongGuess: null }); }, className: 'p-2 hover:bg-white/60 rounded-xl transition-colors' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
+                  h('div', {
+                    className: 'flex items-center justify-center shrink-0 rounded-xl',
+                    style: { width: 44, height: 44, background: 'white', border: '2px solid ' + scene.accent + '40', boxShadow: '0 2px 8px ' + scene.accent + '20' }
+                  }, h('span', { className: 'text-2xl' }, scene.icon)),
                   h('div', { className: 'flex-1' },
-                    h('h4', { className: 'font-bold text-slate-800' }, scene.name),
-                    h('p', { className: 'text-[10px] text-slate-500' }, sceneFoundCount + '/' + scene.objects.length + ' identified')
+                    h('h4', { className: 'font-bold text-slate-800 text-base' }, scene.name),
+                    h('div', { className: 'flex items-center gap-1.5 mt-0.5' },
+                      h('div', { className: 'w-16 h-1.5 rounded-full overflow-hidden', style: { background: scene.accent + '20' } },
+                        h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: Math.round(sceneFoundCount / scene.objects.length * 100) + '%', background: scene.accent } })
+                      ),
+                      h('span', { className: 'text-[10px] font-bold', style: { color: scene.accent } }, sceneFoundCount + '/' + scene.objects.length)
+                    )
                   ),
-                  huntScore > 0 ? h('span', { className: 'px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full' }, '\u2B50 ' + huntScore) : null,
-                  allFoundInScene ? h('span', { className: 'px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full' }, '\u2705 Complete!') : null
+                  h('div', { className: 'flex items-center gap-2' },
+                    huntScore > 0 ? h('span', { className: 'px-2 py-1 rounded-full text-[10px] font-bold', style: { background: '#fef3c7', color: '#92400e' } }, '\u2B50 ' + huntScore) : null,
+                    huntStreak >= 2 ? h('span', { className: 'px-2 py-1 rounded-full text-[10px] font-bold', style: { background: '#ffedd5', color: '#c2410c' } }, '\uD83D\uDD25 ' + huntStreak) : null,
+                    allFoundInScene ? h('span', { className: 'px-2 py-1 rounded-full text-[10px] font-bold', style: { background: '#d1fae5', color: '#065f46' } }, '\u2705 Complete!') : null
+                  )
                 ),
 
                 // Challenge prompt — "Find the compound!"
-                targetObj && targetMat && !allFoundInScene ? h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-3 mb-3 text-center' },
-                  h('p', { className: 'text-[10px] font-bold text-indigo-400 uppercase tracking-wider mb-1' }, '\uD83D\uDD0E Find the compound!'),
-                  h('div', { className: 'flex items-center justify-center gap-3' },
-                    h('span', { className: 'text-2xl font-mono font-black text-indigo-800' }, targetMat.formula),
-                    h('span', { className: 'text-sm text-indigo-600' }, '\u2014'),
+                targetObj && targetMat && !allFoundInScene ? h('div', {
+                  className: 'relative rounded-2xl border-2 p-4 mb-4 text-center overflow-hidden',
+                  style: { borderColor: '#818cf8', background: 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #ede9fe 100%)' }
+                },
+                  // Decorative corner atoms
+                  h('div', { className: 'absolute top-1 right-2 text-lg opacity-10 pointer-events-none' }, '\u269B\uFE0F'),
+                  h('div', { className: 'absolute bottom-1 left-2 text-sm opacity-10 pointer-events-none' }, '\uD83E\uDDEA'),
+                  h('p', { className: 'text-[10px] font-bold text-indigo-400 uppercase tracking-[0.15em] mb-2' }, '\uD83D\uDD0E Chemistry Challenge'),
+                  h('div', { className: 'inline-flex items-center gap-3 px-5 py-2 rounded-xl', style: { background: 'white', boxShadow: '0 2px 12px rgba(99,102,241,0.15)' } },
+                    h('span', { className: 'text-2xl font-mono font-black', style: { color: '#312e81' } }, targetMat.formula),
+                    h('div', { className: 'w-px h-6', style: { background: '#c7d2fe' } }),
                     h('span', { className: 'text-sm font-bold text-indigo-700' }, targetMat.name)
                   ),
-                  h('p', { className: 'text-[10px] text-indigo-500 mt-1' }, 'Tap the object in the scene that contains this compound!')
+                  h('p', { className: 'text-[10px] text-indigo-500 mt-2.5 font-medium' }, 'Tap the object in the scene that contains this compound!'),
+                  huntStreak >= 2 ? h('p', { className: 'text-[10px] font-bold text-amber-600 mt-1' }, '\uD83D\uDD25 ' + huntStreak + ' in a row!') : null
                 ) : null,
 
                 // Scene complete message
-                allFoundInScene ? h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-300 p-4 mb-3 text-center' },
-                  h('p', { className: 'text-lg font-bold text-emerald-800' }, '\uD83C\uDF89 Scene Complete!'),
-                  h('p', { className: 'text-xs text-emerald-600 mt-1' }, 'You identified every compound in the ' + scene.name + '.')
+                allFoundInScene ? h('div', {
+                  className: 'relative rounded-2xl border-2 p-5 mb-4 text-center overflow-hidden',
+                  style: { borderColor: '#34d399', background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 50%, #ccfbf1 100%)' }
+                },
+                  h('div', { className: 'absolute inset-0 pointer-events-none overflow-hidden' },
+                    h('span', { style: { position: 'absolute', fontSize: 32, top: '5%', left: '8%', opacity: 0.08 } }, '\uD83C\uDF89'),
+                    h('span', { style: { position: 'absolute', fontSize: 24, bottom: '10%', right: '10%', opacity: 0.08 } }, '\u2728'),
+                    h('span', { style: { position: 'absolute', fontSize: 28, top: '10%', right: '20%', opacity: 0.06 } }, '\uD83C\uDF1F')
+                  ),
+                  h('p', { className: 'text-2xl mb-1' }, '\uD83C\uDF89'),
+                  h('p', { className: 'text-lg font-black text-emerald-800' }, 'Scene Complete!'),
+                  h('p', { className: 'text-xs text-emerald-600 mt-1' }, 'You identified every compound in the ' + scene.name + '.'),
+                  h('div', { className: 'flex items-center justify-center gap-2 mt-3' },
+                    scene.objects.map(function(o) { return h('span', { key: o.id, className: 'text-lg', title: o.name }, o.emoji); })
+                  )
                 ) : null,
 
                 // Wrong guess feedback
-                wrongObj && wrongMat && !foundObjects[huntWrongGuess] ? h('div', { className: 'bg-red-50 rounded-xl border border-red-200 p-3 mb-3' },
-                  h('div', { className: 'flex items-center gap-2 mb-1' },
-                    h('span', { className: 'text-lg' }, wrongObj.emoji),
-                    h('span', { className: 'text-xs font-bold text-red-700' }, 'Not quite! ' + wrongObj.name + ' contains ' + wrongMat.formula + ' (' + wrongMat.name + ')'),
-                    h('button', { onClick: function() { upd('huntWrongGuess', null); }, className: 'ml-auto text-red-400 hover:text-red-600 text-xs font-bold' }, '\u2715')
+                wrongObj && wrongMat && !foundObjects[huntWrongGuess] ? h('div', { className: 'rounded-2xl border-2 border-red-200 p-3 mb-4 overflow-hidden', style: { background: 'linear-gradient(135deg, #fef2f2, #fee2e2)' } },
+                  h('div', { className: 'flex items-center gap-3' },
+                    h('div', {
+                      className: 'flex items-center justify-center shrink-0 rounded-xl',
+                      style: { width: 40, height: 40, background: 'white', border: '2px solid #fca5a5' }
+                    }, h('span', { className: 'text-xl' }, wrongObj.emoji)),
+                    h('div', { className: 'flex-1' },
+                      h('p', { className: 'text-xs font-bold text-red-700' }, 'Not quite! ' + wrongObj.name + ' contains:'),
+                      h('p', { className: 'text-sm font-mono font-bold text-red-800 mt-0.5' }, wrongMat.formula + ' \u2014 ' + wrongMat.name)
+                    ),
+                    h('button', { onClick: function() { upd('huntWrongGuess', null); }, className: 'p-1.5 hover:bg-red-100 rounded-lg transition-colors' }, h(X, { size: 14, className: 'text-red-400' }))
                   ),
-                  h('p', { className: 'text-[10px] text-red-600' }, 'Keep looking for ' + targetMat.formula + '!')
+                  targetMat ? h('p', { className: 'text-[10px] text-red-500 mt-2 font-medium pl-[52px]' }, '\uD83D\uDCA1 Keep looking for ' + targetMat.formula + ' (' + targetMat.name + ')') : null
                 ) : null,
 
                 // Scene visual — all objects always visible
-                h('div', { className: 'relative rounded-xl border-2 overflow-hidden mb-3', style: { borderColor: scene.accent, background: scene.bgColor, minHeight: '260px' } },
+                h('div', { className: 'relative rounded-2xl border-2 overflow-hidden mb-4', style: { borderColor: scene.accent, background: scene.bgColor, minHeight: '320px', boxShadow: '0 4px 20px ' + scene.accent + '15' } },
                   // Canvas background
                   h('canvas', {
                     ref: function(canvas) {
@@ -1613,59 +1683,234 @@
                       var c = canvas.getContext('2d');
                       var dpr = window.devicePixelRatio || 1;
                       var cw = canvas.offsetWidth || 500;
-                      var ch = 260;
+                      var ch = 320;
                       canvas.width = cw * dpr; canvas.height = ch * dpr; canvas.style.height = ch + 'px'; c.scale(dpr, dpr);
                       var bgGrad = c.createLinearGradient(0, 0, 0, ch);
                       bgGrad.addColorStop(0, scene.bgColor); bgGrad.addColorStop(1, scene.accent + '18');
                       c.fillStyle = bgGrad; c.fillRect(0, 0, cw, ch);
                       if (scene.id === 'kitchen') {
-                        c.fillStyle = '#d4a574'; c.fillRect(0, ch * 0.5, cw, ch * 0.04);
-                        c.fillStyle = '#8b6f47'; c.fillRect(0, ch * 0.54, cw, ch * 0.46);
-                        c.fillStyle = '#c8a882'; c.fillRect(cw * 0.05, ch * 0.08, cw * 0.25, ch * 0.38);
-                        c.strokeStyle = '#a0845c'; c.lineWidth = 2; c.strokeRect(cw * 0.05, ch * 0.08, cw * 0.25, ch * 0.38);
-                        c.fillRect(cw * 0.65, ch * 0.08, cw * 0.30, ch * 0.38); c.strokeRect(cw * 0.65, ch * 0.08, cw * 0.30, ch * 0.38);
-                        c.fillStyle = '#87ceeb'; c.fillRect(cw * 0.38, ch * 0.05, cw * 0.24, ch * 0.28);
-                        c.strokeStyle = '#fff'; c.lineWidth = 3; c.strokeRect(cw * 0.38, ch * 0.05, cw * 0.24, ch * 0.28);
-                        c.beginPath(); c.moveTo(cw * 0.50, ch * 0.05); c.lineTo(cw * 0.50, ch * 0.33); c.stroke();
+                        // Wall
+                        var wallGrad = c.createLinearGradient(0, 0, 0, ch * 0.5);
+                        wallGrad.addColorStop(0, '#fef9ef'); wallGrad.addColorStop(1, '#fef3c7');
+                        c.fillStyle = wallGrad; c.fillRect(0, 0, cw, ch * 0.5);
+                        // Backsplash tiles
+                        c.strokeStyle = '#fde68a'; c.lineWidth = 0.4;
+                        for (var bx = 0; bx < cw; bx += 22) { for (var by = ch * 0.28; by < ch * 0.5; by += 16) { c.strokeRect(bx, by, 22, 16); } }
+                        // Countertop
+                        var ctrGrad = c.createLinearGradient(0, ch * 0.48, 0, ch * 0.54);
+                        ctrGrad.addColorStop(0, '#e8d5b7'); ctrGrad.addColorStop(0.5, '#d4a574'); ctrGrad.addColorStop(1, '#c49a6c');
+                        c.fillStyle = ctrGrad; c.fillRect(0, ch * 0.48, cw, ch * 0.06);
+                        c.strokeStyle = '#a0845c'; c.lineWidth = 1; c.beginPath(); c.moveTo(0, ch * 0.48); c.lineTo(cw, ch * 0.48); c.stroke();
+                        // Lower cabinets
+                        c.fillStyle = '#c8a882'; c.fillRect(0, ch * 0.54, cw, ch * 0.46);
+                        c.strokeStyle = '#a0845c'; c.lineWidth = 1;
+                        var cabW = cw / 5;
+                        for (var ci = 0; ci < 5; ci++) {
+                          c.strokeRect(ci * cabW + 4, ch * 0.57, cabW - 8, ch * 0.38);
+                          c.fillStyle = '#b8956e'; c.beginPath(); c.arc(ci * cabW + cabW / 2, ch * 0.76, 3, 0, Math.PI * 2); c.fill();
+                          c.fillStyle = '#c8a882';
+                        }
+                        // Upper cabinets
+                        c.fillStyle = '#c8a882';
+                        c.fillRect(cw * 0.02, ch * 0.04, cw * 0.25, ch * 0.22); c.strokeRect(cw * 0.02, ch * 0.04, cw * 0.25, ch * 0.22);
+                        c.fillRect(cw * 0.73, ch * 0.04, cw * 0.25, ch * 0.22); c.strokeRect(cw * 0.73, ch * 0.04, cw * 0.25, ch * 0.22);
+                        c.fillStyle = '#b8956e';
+                        c.beginPath(); c.arc(cw * 0.145, ch * 0.15, 3, 0, Math.PI * 2); c.fill();
+                        c.beginPath(); c.arc(cw * 0.855, ch * 0.15, 3, 0, Math.PI * 2); c.fill();
+                        // Window
+                        c.fillStyle = '#bfdbfe'; c.fillRect(cw * 0.36, ch * 0.03, cw * 0.28, ch * 0.24);
+                        c.strokeStyle = '#f8fafc'; c.lineWidth = 4; c.strokeRect(cw * 0.36, ch * 0.03, cw * 0.28, ch * 0.24);
+                        c.lineWidth = 2; c.beginPath(); c.moveTo(cw * 0.50, ch * 0.03); c.lineTo(cw * 0.50, ch * 0.27); c.stroke();
+                        c.beginPath(); c.moveTo(cw * 0.36, ch * 0.15); c.lineTo(cw * 0.64, ch * 0.15); c.stroke();
+                        // Sunlight glow through window
+                        c.fillStyle = 'rgba(253,224,71,0.15)'; c.fillRect(cw * 0.38, ch * 0.28, cw * 0.24, ch * 0.20);
+                        // Stove burner outlines
+                        c.strokeStyle = '#78716c'; c.lineWidth = 1.5;
+                        c.beginPath(); c.arc(cw * 0.40, ch * 0.50, 8, 0, Math.PI * 2); c.stroke();
+                        c.beginPath(); c.arc(cw * 0.52, ch * 0.50, 8, 0, Math.PI * 2); c.stroke();
                       } else if (scene.id === 'bathroom') {
+                        // Tile wall
                         c.fillStyle = '#e0f2fe'; c.fillRect(0, 0, cw, ch * 0.65);
                         c.strokeStyle = '#bae6fd'; c.lineWidth = 0.5;
-                        for (var tx = 0; tx < cw; tx += 30) { c.beginPath(); c.moveTo(tx, 0); c.lineTo(tx, ch * 0.65); c.stroke(); }
-                        for (var ty = 0; ty < ch * 0.65; ty += 30) { c.beginPath(); c.moveTo(0, ty); c.lineTo(cw, ty); c.stroke(); }
-                        c.fillStyle = '#cbd5e1'; c.fillRect(0, ch * 0.65, cw, ch * 0.35);
-                        c.fillStyle = '#c7d2fe'; c.beginPath(); c.ellipse(cw * 0.55, ch * 0.18, cw * 0.12, ch * 0.14, 0, 0, Math.PI * 2); c.fill();
-                        c.strokeStyle = '#a5b4fc'; c.lineWidth = 3; c.stroke();
-                        c.fillStyle = '#f8fafc'; c.fillRect(cw * 0.12, ch * 0.40, cw * 0.30, ch * 0.14);
-                        c.strokeStyle = '#94a3b8'; c.lineWidth = 2; c.strokeRect(cw * 0.12, ch * 0.40, cw * 0.30, ch * 0.14);
+                        for (var tx = 0; tx < cw; tx += 28) { c.beginPath(); c.moveTo(tx, 0); c.lineTo(tx, ch * 0.65); c.stroke(); }
+                        for (var ty = 0; ty < ch * 0.65; ty += 28) { c.beginPath(); c.moveTo(0, ty); c.lineTo(cw, ty); c.stroke(); }
+                        // Accent tile row
+                        c.fillStyle = '#93c5fd';
+                        for (var atx = 0; atx < cw; atx += 28) { c.fillRect(atx + 1, ch * 0.28, 26, 26); }
+                        // Floor
+                        var floorGrad = c.createLinearGradient(0, ch * 0.65, 0, ch);
+                        floorGrad.addColorStop(0, '#e2e8f0'); floorGrad.addColorStop(1, '#cbd5e1');
+                        c.fillStyle = floorGrad; c.fillRect(0, ch * 0.65, cw, ch * 0.35);
+                        // Floor tile pattern
+                        c.strokeStyle = '#94a3b8'; c.lineWidth = 0.3;
+                        for (var ftx = 0; ftx < cw; ftx += 40) { c.strokeRect(ftx, ch * 0.65, 40, 40); }
+                        // Mirror (oval with shine)
+                        c.fillStyle = '#c7d2fe'; c.beginPath(); c.ellipse(cw * 0.55, ch * 0.18, cw * 0.11, ch * 0.13, 0, 0, Math.PI * 2); c.fill();
+                        c.strokeStyle = '#818cf8'; c.lineWidth = 4; c.stroke();
+                        c.fillStyle = 'rgba(255,255,255,0.3)'; c.beginPath(); c.ellipse(cw * 0.52, ch * 0.14, cw * 0.04, ch * 0.06, -0.3, 0, Math.PI * 2); c.fill();
+                        // Sink vanity
+                        c.fillStyle = '#f1f5f9'; c.fillRect(cw * 0.10, ch * 0.38, cw * 0.34, ch * 0.18);
+                        c.strokeStyle = '#94a3b8'; c.lineWidth = 2; c.strokeRect(cw * 0.10, ch * 0.38, cw * 0.34, ch * 0.18);
+                        // Sink bowl
+                        c.fillStyle = '#e0f2fe'; c.beginPath(); c.ellipse(cw * 0.27, ch * 0.45, cw * 0.08, ch * 0.04, 0, 0, Math.PI * 2); c.fill();
+                        c.strokeStyle = '#94a3b8'; c.lineWidth = 1; c.stroke();
+                        // Bathtub
+                        c.fillStyle = '#f8fafc';
+                        c.beginPath();
+                        c.moveTo(cw * 0.62, ch * 0.60); c.quadraticCurveTo(cw * 0.60, ch * 0.80, cw * 0.65, ch * 0.82);
+                        c.lineTo(cw * 0.92, ch * 0.82); c.quadraticCurveTo(cw * 0.97, ch * 0.80, cw * 0.95, ch * 0.60);
+                        c.closePath(); c.fill();
+                        c.strokeStyle = '#94a3b8'; c.lineWidth = 2; c.stroke();
+                        // Shower head
+                        c.strokeStyle = '#94a3b8'; c.lineWidth = 2;
+                        c.beginPath(); c.moveTo(cw * 0.92, ch * 0.10); c.lineTo(cw * 0.92, ch * 0.35); c.lineTo(cw * 0.85, ch * 0.35); c.stroke();
+                        c.fillStyle = '#94a3b8'; c.beginPath(); c.arc(cw * 0.85, ch * 0.35, 6, 0, Math.PI * 2); c.fill();
+                        // Water droplets
+                        c.fillStyle = 'rgba(96,165,250,0.3)';
+                        c.beginPath(); c.arc(cw * 0.83, ch * 0.42, 2, 0, Math.PI * 2); c.fill();
+                        c.beginPath(); c.arc(cw * 0.87, ch * 0.44, 2, 0, Math.PI * 2); c.fill();
+                        c.beginPath(); c.arc(cw * 0.85, ch * 0.47, 2, 0, Math.PI * 2); c.fill();
                       } else if (scene.id === 'garage') {
-                        c.fillStyle = '#9ca3af'; c.fillRect(0, ch * 0.6, cw, ch * 0.4);
+                        // Back wall
                         c.fillStyle = '#d1d5db'; c.fillRect(0, 0, cw, ch * 0.6);
-                        c.fillStyle = '#78716c'; c.fillRect(cw * 0.6, ch * 0.15, cw * 0.35, ch * 0.04);
-                        c.fillRect(cw * 0.6, ch * 0.35, cw * 0.35, ch * 0.04);
-                        c.strokeStyle = '#6b7280'; c.lineWidth = 3; c.strokeRect(cw * 0.05, ch * 0.05, cw * 0.45, ch * 0.52);
+                        // Brick texture on wall
+                        c.strokeStyle = '#b0b8c4'; c.lineWidth = 0.3;
+                        for (var bry = 4; bry < ch * 0.6; bry += 12) {
+                          var bOff = (Math.floor(bry / 12) % 2) * 16;
+                          for (var brx = bOff; brx < cw; brx += 32) { c.strokeRect(brx, bry, 30, 10); }
+                        }
+                        // Concrete floor
+                        var flGrad = c.createLinearGradient(0, ch * 0.6, 0, ch);
+                        flGrad.addColorStop(0, '#9ca3af'); flGrad.addColorStop(1, '#6b7280');
+                        c.fillStyle = flGrad; c.fillRect(0, ch * 0.6, cw, ch * 0.4);
+                        // Oil stain
+                        c.fillStyle = 'rgba(55,48,42,0.15)'; c.beginPath(); c.ellipse(cw * 0.35, ch * 0.78, 30, 12, 0, 0, Math.PI * 2); c.fill();
+                        // Pegboard with pegs
+                        c.fillStyle = '#c8b89a'; c.fillRect(cw * 0.58, ch * 0.08, cw * 0.38, ch * 0.45);
+                        c.strokeStyle = '#a0845c'; c.lineWidth = 2; c.strokeRect(cw * 0.58, ch * 0.08, cw * 0.38, ch * 0.45);
+                        c.fillStyle = '#b8a888';
+                        for (var px = cw * 0.62; px < cw * 0.94; px += 18) {
+                          for (var py = ch * 0.14; py < ch * 0.48; py += 18) {
+                            c.beginPath(); c.arc(px, py, 2, 0, Math.PI * 2); c.fill();
+                          }
+                        }
+                        // Shelves on pegboard
+                        c.fillStyle = '#78716c';
+                        c.fillRect(cw * 0.60, ch * 0.18, cw * 0.35, ch * 0.03);
+                        c.fillRect(cw * 0.60, ch * 0.36, cw * 0.35, ch * 0.03);
+                        // Garage door outline
+                        c.strokeStyle = '#6b7280'; c.lineWidth = 3; c.strokeRect(cw * 0.03, ch * 0.03, cw * 0.50, ch * 0.54);
+                        // Garage door panels
+                        c.strokeStyle = '#9ca3af'; c.lineWidth = 1;
+                        c.beginPath(); c.moveTo(cw * 0.03, ch * 0.20); c.lineTo(cw * 0.53, ch * 0.20); c.stroke();
+                        c.beginPath(); c.moveTo(cw * 0.03, ch * 0.38); c.lineTo(cw * 0.53, ch * 0.38); c.stroke();
+                        // Light bulb
+                        c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(cw * 0.28, ch * 0.03, 6, 0, Math.PI); c.fill();
+                        c.fillStyle = 'rgba(251,191,36,0.1)'; c.beginPath(); c.arc(cw * 0.28, ch * 0.05, 30, 0, Math.PI * 2); c.fill();
+                        // Workbench
+                        c.fillStyle = '#a0845c'; c.fillRect(cw * 0.04, ch * 0.58, cw * 0.48, ch * 0.04);
+                        c.fillStyle = '#78716c'; c.fillRect(cw * 0.08, ch * 0.62, cw * 0.03, ch * 0.18);
+                        c.fillRect(cw * 0.45, ch * 0.62, cw * 0.03, ch * 0.18);
                       } else if (scene.id === 'classroom') {
-                        c.fillStyle = '#166534'; c.fillRect(cw * 0.1, ch * 0.05, cw * 0.8, ch * 0.30);
-                        c.strokeStyle = '#a16207'; c.lineWidth = 4; c.strokeRect(cw * 0.1, ch * 0.05, cw * 0.8, ch * 0.30);
-                        c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '12px serif'; c.textAlign = 'center';
-                        c.fillText('H\u2082O    NaCl    CO\u2082    CaCO\u2083', cw * 0.5, ch * 0.22);
-                        c.fillStyle = '#c8a882'; c.fillRect(cw * 0.05, ch * 0.42, cw * 0.9, ch * 0.06);
+                        // Wall
+                        c.fillStyle = '#fdf4ff'; c.fillRect(0, 0, cw, ch);
+                        // Chalkboard
+                        var boardGrad = c.createLinearGradient(cw * 0.08, ch * 0.04, cw * 0.08, ch * 0.36);
+                        boardGrad.addColorStop(0, '#14532d'); boardGrad.addColorStop(1, '#166534');
+                        c.fillStyle = boardGrad; c.fillRect(cw * 0.08, ch * 0.04, cw * 0.84, ch * 0.32);
+                        // Chalk tray
+                        c.fillStyle = '#a16207'; c.fillRect(cw * 0.08, ch * 0.36, cw * 0.84, ch * 0.03);
+                        // Board frame
+                        c.strokeStyle = '#92400e'; c.lineWidth = 5; c.strokeRect(cw * 0.08, ch * 0.04, cw * 0.84, ch * 0.35);
+                        // Chalk text
+                        c.fillStyle = 'rgba(255,255,255,0.7)'; c.font = 'bold 14px serif'; c.textAlign = 'center';
+                        c.fillText('H\u2082O    NaCl    CO\u2082    CaCO\u2083', cw * 0.5, ch * 0.18);
+                        c.font = '11px serif'; c.fillStyle = 'rgba(255,255,255,0.4)';
+                        c.fillText('Chemistry is everywhere!', cw * 0.5, ch * 0.30);
+                        // Chalk dust marks
+                        c.fillStyle = 'rgba(255,255,255,0.12)';
+                        for (var di = 0; di < 8; di++) { c.beginPath(); c.arc(cw * (0.15 + Math.random() * 0.7), ch * (0.08 + Math.random() * 0.24), 3 + Math.random() * 5, 0, Math.PI * 2); c.fill(); }
+                        // Lab table
+                        c.fillStyle = '#1c1917'; c.fillRect(cw * 0.05, ch * 0.44, cw * 0.9, ch * 0.05);
+                        c.fillStyle = '#78716c';
+                        c.fillRect(cw * 0.10, ch * 0.49, cw * 0.03, ch * 0.20);
+                        c.fillRect(cw * 0.87, ch * 0.49, cw * 0.03, ch * 0.20);
+                        // Floor
+                        c.fillStyle = '#f5f0e8'; c.fillRect(0, ch * 0.70, cw, ch * 0.30);
+                        c.strokeStyle = '#e7e0d5'; c.lineWidth = 0.4;
+                        for (var fy = ch * 0.70; fy < ch; fy += 20) { for (var fx = 0; fx < cw; fx += 30) { c.strokeRect(fx, fy, 30, 20); } }
+                        // Periodic table poster on side wall
+                        c.fillStyle = '#dbeafe'; c.fillRect(cw * 0.02, ch * 0.06, cw * 0.05, ch * 0.12);
+                        c.strokeStyle = '#93c5fd'; c.lineWidth = 1; c.strokeRect(cw * 0.02, ch * 0.06, cw * 0.05, ch * 0.12);
+                        c.fillStyle = '#60a5fa'; c.font = '5px sans-serif'; c.textAlign = 'center'; c.fillText('PT', cw * 0.045, ch * 0.13);
+                        // Stool
+                        c.fillStyle = '#78716c';
+                        c.beginPath(); c.arc(cw * 0.25, ch * 0.66, 10, 0, Math.PI * 2); c.fill();
+                        c.fillRect(cw * 0.247, ch * 0.67, 3, ch * 0.10);
                       } else if (scene.id === 'outdoors') {
+                        // Sky gradient
                         var skyGrad = c.createLinearGradient(0, 0, 0, ch * 0.55);
-                        skyGrad.addColorStop(0, '#7dd3fc'); skyGrad.addColorStop(1, '#bae6fd');
+                        skyGrad.addColorStop(0, '#38bdf8'); skyGrad.addColorStop(0.5, '#7dd3fc'); skyGrad.addColorStop(1, '#bae6fd');
                         c.fillStyle = skyGrad; c.fillRect(0, 0, cw, ch * 0.55);
-                        c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(cw * 0.85, ch * 0.12, 20, 0, Math.PI * 2); c.fill();
-                        c.fillStyle = 'rgba(255,255,255,0.8)';
-                        c.beginPath(); c.arc(cw * 0.55, ch * 0.10, 16, 0, Math.PI * 2); c.fill();
-                        c.beginPath(); c.arc(cw * 0.60, ch * 0.08, 20, 0, Math.PI * 2); c.fill();
-                        c.fillStyle = '#22c55e'; c.fillRect(0, ch * 0.55, cw, ch * 0.45);
-                        c.fillStyle = '#78350f'; c.fillRect(cw * 0.25, ch * 0.22, cw * 0.04, ch * 0.34);
-                        c.fillStyle = '#16a34a'; c.beginPath(); c.arc(cw * 0.27, ch * 0.20, 30, 0, Math.PI * 2); c.fill();
+                        // Sun with rays
+                        c.fillStyle = 'rgba(251,191,36,0.15)'; c.beginPath(); c.arc(cw * 0.85, ch * 0.12, 35, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(cw * 0.85, ch * 0.12, 18, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = '#fde68a'; c.beginPath(); c.arc(cw * 0.85, ch * 0.12, 12, 0, Math.PI * 2); c.fill();
+                        // Clouds (fluffy)
+                        c.fillStyle = 'rgba(255,255,255,0.85)';
+                        c.beginPath(); c.arc(cw * 0.20, ch * 0.10, 14, 0, Math.PI * 2); c.fill();
+                        c.beginPath(); c.arc(cw * 0.25, ch * 0.08, 18, 0, Math.PI * 2); c.fill();
+                        c.beginPath(); c.arc(cw * 0.30, ch * 0.11, 14, 0, Math.PI * 2); c.fill();
+                        c.beginPath(); c.arc(cw * 0.55, ch * 0.14, 12, 0, Math.PI * 2); c.fill();
+                        c.beginPath(); c.arc(cw * 0.59, ch * 0.12, 16, 0, Math.PI * 2); c.fill();
+                        c.beginPath(); c.arc(cw * 0.63, ch * 0.14, 12, 0, Math.PI * 2); c.fill();
+                        // Hills behind grass
+                        c.fillStyle = '#4ade80';
+                        c.beginPath(); c.moveTo(0, ch * 0.55); c.quadraticCurveTo(cw * 0.25, ch * 0.42, cw * 0.5, ch * 0.52); c.quadraticCurveTo(cw * 0.75, ch * 0.44, cw, ch * 0.55); c.lineTo(cw, ch * 0.55); c.closePath(); c.fill();
+                        // Grass
+                        var grassGrad = c.createLinearGradient(0, ch * 0.55, 0, ch);
+                        grassGrad.addColorStop(0, '#22c55e'); grassGrad.addColorStop(0.5, '#16a34a'); grassGrad.addColorStop(1, '#15803d');
+                        c.fillStyle = grassGrad; c.fillRect(0, ch * 0.55, cw, ch * 0.45);
+                        // Grass blades
+                        c.strokeStyle = '#15803d'; c.lineWidth = 1;
+                        for (var gi = 0; gi < 30; gi++) {
+                          var gx = Math.random() * cw; var gy = ch * 0.56 + Math.random() * ch * 0.38;
+                          c.beginPath(); c.moveTo(gx, gy); c.lineTo(gx - 2, gy - 6 - Math.random() * 5); c.stroke();
+                          c.beginPath(); c.moveTo(gx, gy); c.lineTo(gx + 3, gy - 5 - Math.random() * 5); c.stroke();
+                        }
+                        // Tree trunk (textured)
+                        c.fillStyle = '#78350f'; c.fillRect(cw * 0.24, ch * 0.22, cw * 0.05, ch * 0.34);
+                        c.strokeStyle = '#451a03'; c.lineWidth = 0.5;
+                        for (var tri = 0; tri < 6; tri++) { c.beginPath(); c.moveTo(cw * 0.24, ch * (0.25 + tri * 0.05)); c.lineTo(cw * 0.29, ch * (0.26 + tri * 0.05)); c.stroke(); }
+                        // Tree foliage (layered)
+                        c.fillStyle = '#16a34a'; c.beginPath(); c.arc(cw * 0.265, ch * 0.20, 32, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = '#22c55e'; c.beginPath(); c.arc(cw * 0.24, ch * 0.16, 22, 0, Math.PI * 2); c.fill();
+                        c.beginPath(); c.arc(cw * 0.30, ch * 0.18, 20, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = '#4ade80'; c.beginPath(); c.arc(cw * 0.265, ch * 0.13, 16, 0, Math.PI * 2); c.fill();
+                        // Path / stone walkway
+                        c.fillStyle = '#d6d3d1'; c.lineWidth = 1;
+                        var pathPts = [[0.45, 0.60], [0.47, 0.68], [0.50, 0.76], [0.52, 0.84], [0.54, 0.92]];
+                        pathPts.forEach(function(p) { c.beginPath(); c.ellipse(cw * p[0], ch * p[1], 12, 6, 0.2, 0, Math.PI * 2); c.fill(); c.strokeStyle = '#a8a29e'; c.stroke(); });
+                        // Fence in background
+                        c.strokeStyle = '#a0845c'; c.lineWidth = 2;
+                        c.beginPath(); c.moveTo(0, ch * 0.50); c.lineTo(cw * 0.18, ch * 0.50); c.stroke();
+                        for (var fi = 0; fi < 4; fi++) { c.fillStyle = '#c8a882'; c.fillRect(cw * (0.02 + fi * 0.05), ch * 0.42, 4, ch * 0.12); }
+                        // Flowers
+                        c.fillStyle = '#f472b6';
+                        c.beginPath(); c.arc(cw * 0.75, ch * 0.62, 4, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = '#fb923c';
+                        c.beginPath(); c.arc(cw * 0.78, ch * 0.64, 4, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = '#a78bfa';
+                        c.beginPath(); c.arc(cw * 0.73, ch * 0.65, 3, 0, Math.PI * 2); c.fill();
+                        c.strokeStyle = '#15803d'; c.lineWidth = 1;
+                        c.beginPath(); c.moveTo(cw * 0.75, ch * 0.63); c.lineTo(cw * 0.75, ch * 0.70); c.stroke();
+                        c.beginPath(); c.moveTo(cw * 0.78, ch * 0.65); c.lineTo(cw * 0.78, ch * 0.72); c.stroke();
                       }
                       c.fillStyle = scene.accent; c.globalAlpha = 0.25;
                       c.font = 'bold 10px system-ui, sans-serif'; c.textAlign = 'left';
                       c.fillText(scene.name.toUpperCase(), 8, 16); c.globalAlpha = 1;
                     },
-                    className: 'w-full block', style: { height: '260px' }
+                    className: 'w-full block', style: { height: '320px' }
                   }),
 
                   // All objects ALWAYS visible as labeled emoji buttons
@@ -1678,21 +1923,17 @@
                       key: obj.id,
                       onClick: function() {
                         if (isFound) {
-                          // Already found — show details
                           SOUNDS.elementClick();
                           upd('selectedSceneObj', isSelected ? null : obj.id);
                           return;
                         }
-                        // Hunt mode: check if this is the target
                         if (huntTarget && obj.id === huntTarget) {
-                          // CORRECT!
                           SOUNDS.objectFind();
                           var newFound = Object.assign({}, foundObjects);
                           newFound[obj.id] = true;
                           var newScore = huntScore + 1;
                           var newStreak = huntStreak + 1;
                           var updates = { foundObjects: newFound, selectedSceneObj: obj.id, huntScore: newScore, huntStreak: newStreak, huntWrongGuess: null };
-                          // Check scene complete
                           var sceneComplete = true;
                           scene.objects.forEach(function(o) { if (o.id !== obj.id && !foundObjects[o.id]) sceneComplete = false; });
                           if (scene.id === 'kitchen' && sceneComplete) updates._kitchenComplete = true;
@@ -1704,7 +1945,6 @@
                             });
                           }
                           if (globalComplete) { updates._allScenesComplete = true; setTimeout(function() { SOUNDS.allFound(); }, 300); }
-                          // Pick next target
                           if (!sceneComplete) {
                             var unfound = scene.objects.filter(function(o) { return !foundObjects[o.id] && o.id !== obj.id; });
                             updates.huntTarget = unfound.length > 0 ? unfound[Math.floor(Math.random() * unfound.length)].id : null;
@@ -1715,45 +1955,66 @@
                           if (addToast) addToast('\u2705 Correct! ' + obj.name + ' = ' + MATERIALS.find(function(m) { return m.name === obj.material; }).formula, 'success');
                           if (awardStemXP) awardStemXP(5);
                         } else {
-                          // WRONG — teach them what this object contains
                           SOUNDS.quizWrong();
                           updMulti({ huntWrongGuess: obj.id, huntStreak: 0 });
                         }
                       },
-                      className: 'absolute flex flex-col items-center transition-all duration-200',
+                      className: 'absolute flex flex-col items-center transition-all duration-300',
                       style: {
                         left: (obj.x * 100) + '%', top: (obj.y * 100) + '%',
-                        transform: 'translate(-50%, -50%)' + (isSelected ? ' scale(1.15)' : ''),
-                        cursor: 'pointer', zIndex: isSelected ? 10 : 2,
-                        filter: isWrong ? 'saturate(0.3)' : 'none'
+                        transform: 'translate(-50%, -50%)' + (isSelected ? ' scale(1.2)' : (isTarget && !isFound ? ' scale(1.05)' : '')),
+                        cursor: 'pointer', zIndex: isSelected ? 10 : (isTarget ? 5 : 2),
+                        filter: isWrong ? 'saturate(0.3) brightness(0.9)' : 'none'
                       },
                       'aria-label': isFound ? obj.name + ' - identified' : obj.label
                     },
+                      // Pulsing ring for current target
+                      isTarget && !isFound ? h('div', {
+                        className: 'absolute inset-0 rounded-2xl',
+                        style: { width: 52, height: 52, left: -4, top: -4, border: '2px solid ' + scene.accent, borderRadius: 16, opacity: 0.4, animation: 'pulse 2s ease-in-out infinite' }
+                      }) : null,
                       h('div', {
-                        className: 'flex items-center justify-center transition-all duration-200',
+                        className: 'flex items-center justify-center transition-all duration-300',
                         style: {
-                          width: '44px', height: '44px', borderRadius: '12px',
-                          background: isFound ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.8)',
-                          border: isFound ? '2px solid #22c55e' : (isTarget && !isFound ? '2px solid ' + scene.accent : '2px solid rgba(0,0,0,0.1)'),
-                          boxShadow: isFound ? '0 0 8px rgba(34,197,94,0.3)' : '0 2px 8px rgba(0,0,0,0.12)'
+                          width: '48px', height: '48px', borderRadius: '14px',
+                          background: isFound ? 'rgba(255,255,255,0.97)' : (isTarget && !isFound ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.82)'),
+                          border: isFound ? '2.5px solid #22c55e' : (isTarget && !isFound ? '2.5px solid ' + scene.accent : '2px solid rgba(255,255,255,0.6)'),
+                          boxShadow: isFound ? '0 0 12px rgba(34,197,94,0.35), 0 2px 6px rgba(0,0,0,0.08)' : (isTarget && !isFound ? '0 0 16px ' + scene.accent + '40, 0 3px 10px rgba(0,0,0,0.12)' : '0 2px 10px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.08)'),
+                          backdropFilter: 'blur(4px)'
                         }
-                      }, h('span', { style: { fontSize: '22px' } }, obj.emoji)),
+                      }, h('span', { style: { fontSize: '24px' } }, obj.emoji)),
                       h('span', {
-                        className: 'text-[8px] font-bold mt-0.5 px-1 py-0.5 rounded',
-                        style: { background: isFound ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.85)', color: isFound ? '#15803d' : '#475569', maxWidth: '70px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+                        className: 'text-[8px] font-bold mt-1 px-1.5 py-0.5 rounded-md',
+                        style: {
+                          background: isFound ? 'rgba(34,197,94,0.18)' : (isTarget && !isFound ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.85)'),
+                          color: isFound ? '#15803d' : '#475569',
+                          maxWidth: '76px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                          border: isFound ? '1px solid rgba(34,197,94,0.2)' : '1px solid rgba(0,0,0,0.06)'
+                        }
                       }, isFound ? '\u2705 ' + (obj.label || obj.name) : (obj.label || obj.name))
                     );
                   })
                 ),
 
                 // Progress bar
-                h('div', { className: 'mb-3' },
-                  h('div', { className: 'flex justify-between mb-1' },
-                    h('span', { className: 'text-[10px] font-bold text-slate-500' }, 'Compounds Identified'),
-                    h('span', { className: 'text-[10px] font-bold', style: { color: scene.accent } }, sceneFoundCount + '/' + scene.objects.length)
+                h('div', { className: 'mb-4 rounded-xl p-3', style: { background: scene.accent + '08', border: '1px solid ' + scene.accent + '20' } },
+                  h('div', { className: 'flex justify-between items-center mb-1.5' },
+                    h('span', { className: 'text-[10px] font-bold text-slate-600 flex items-center gap-1' }, '\uD83E\uDDEA Compounds Identified'),
+                    h('span', { className: 'text-xs font-black', style: { color: scene.accent } }, sceneFoundCount + ' / ' + scene.objects.length)
                   ),
-                  h('div', { className: 'w-full h-2 bg-slate-200 rounded-full overflow-hidden' },
-                    h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: Math.round(sceneFoundCount / scene.objects.length * 100) + '%', background: scene.accent } })
+                  h('div', { className: 'w-full h-2.5 rounded-full overflow-hidden', style: { background: scene.accent + '15' } },
+                    h('div', { className: 'h-full rounded-full transition-all duration-700', style: { width: Math.round(sceneFoundCount / scene.objects.length * 100) + '%', background: allFoundInScene ? '#10b981' : 'linear-gradient(90deg, ' + scene.accent + ', ' + scene.accent + 'cc)' } })
+                  ),
+                  // Mini object emoji row
+                  h('div', { className: 'flex items-center gap-1 mt-2' },
+                    scene.objects.map(function(o) {
+                      var f = !!foundObjects[o.id];
+                      return h('span', {
+                        key: o.id, title: o.name,
+                        style: { fontSize: '14px', opacity: f ? 1 : 0.3, filter: f ? 'none' : 'grayscale(1)', transition: 'all 0.3s' }
+                      }, o.emoji);
+                    })
                   )
                 ),
 
