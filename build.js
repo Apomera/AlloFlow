@@ -156,7 +156,8 @@ const PLUGIN_FILES = [
     'sel_hub/sel_tool_decisions.js',
     'sel_hub/sel_tool_conflict.js',
     'sel_hub/sel_tool_advocacy.js',
-    'sel_hub/sel_tool_strengths.js'
+    'sel_hub/sel_tool_strengths.js',
+    'sel_hub/sel_tool_goals.js'
 ];
 
 // ── Read source ─────────────────────────────────────────────────
