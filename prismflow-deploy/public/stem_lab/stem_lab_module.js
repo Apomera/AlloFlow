@@ -2121,6 +2121,11 @@
                 color: 'emerald', ready: true
               },
               {
+                id: 'climateExplorer', icon: '\uD83C\uDF0D', label: 'Climate Explorer',
+                desc: 'Carbon calculator, renewables impact simulator, climate justice map, and solutions spotlight. Understand your footprint, design clean energy futures, and discover real-world innovations.',
+                color: 'emerald', ready: true
+              },
+              {
                 id: 'fireEcology', icon: '\uD83D\uDD25', label: 'Fire Ecology & Indigenous Stewardship',
                 desc: 'Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, prescribed burn planning, and forest management science. Centers Aboriginal Australian, Karuk, Martu, Plains Nations, and more.',
                 color: 'orange', ready: true
@@ -11239,7 +11244,7 @@
             calculus: true, cell: true, chemBalance: true, punnett: true,
             circuit: true, molecule: true, decomposer: true, solarSystem: true,
             universe: true, ecosystem: true, unitConvert: true,
-            anatomy: true, companionPlanting: true, fireEcology: true, graphCalc: true,
+            anatomy: true, companionPlanting: true, fireEcology: true, climateExplorer: true, graphCalc: true,
             algebraCAS: true, aquarium: true, economicsLab: true, behaviorLab: true,
             probability: true, logicLab: true, dnaLab: true, dataPlot: true,
             numberline: true, volume: true, areamodel: true, fractionViz: true, fractions: true,

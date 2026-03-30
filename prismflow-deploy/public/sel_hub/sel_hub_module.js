@@ -185,7 +185,7 @@
       var _allSelTools = [
         // ── Self-Awareness ──
         { id: '_cat_SelfAwareness', icon: '\uD83E\uDDE0', label: 'Self-Awareness', desc: '', color: 'slate', category: true },
-        { id: 'zones',       icon: '\uD83D\uDEA6', label: 'Zones of Regulation', desc: 'Identify your zone (blue, green, yellow, red) and explore strategies to self-regulate.', color: 'emerald', recommendedRange: 'K-12' },
+        { id: 'zones',       icon: '\uD83D\uDEA6', label: 'Emotion Zones', desc: 'Identify your zone (blue, green, yellow, red) and explore strategies to self-regulate.', color: 'emerald', recommendedRange: 'K-12' },
         { id: 'emotions',    icon: '\uD83D\uDE0A', label: 'Emotion Explorer',    desc: 'Build emotional vocabulary — identify, name, and rate the intensity of feelings.', color: 'blue', recommendedRange: 'K-8' },
         { id: 'strengths',   icon: '\u2B50',       label: 'Strengths Finder',    desc: 'Discover and reflect on personal strengths, talents, and growth areas.', color: 'amber', recommendedRange: 'K-12' },
 
@@ -210,7 +210,11 @@
         { id: '_cat_DecisionMaking', icon: '\u2696\uFE0F', label: 'Responsible Decision-Making', desc: '', color: 'slate', category: true },
         { id: 'decisions',   icon: '\uD83E\uDD14', label: 'Decision Lab',        desc: 'Work through real-life scenarios using stop-think-act frameworks.', color: 'violet', recommendedRange: '3-12' },
         { id: 'journal',     icon: '\uD83D\uDCD3', label: 'Feelings Journal',    desc: 'Daily check-in journal — log moods, triggers, and reflections over time.', color: 'pink', recommendedRange: 'K-12' },
-        { id: 'safety',      icon: '\uD83D\uDEE1\uFE0F', label: 'Safety & Boundaries', desc: 'Learn about personal boundaries, trusted adults, and safe vs. unsafe situations.', color: 'red', recommendedRange: 'K-8' }
+        { id: 'safety',      icon: '\uD83D\uDEE1\uFE0F', label: 'Safety & Boundaries', desc: 'Learn about personal boundaries, trusted adults, and safe vs. unsafe situations.', color: 'red', recommendedRange: 'K-8' },
+        { id: 'restorativeCircle', icon: '\uD83E\uDEB6', label: 'Restorative Circle', desc: 'Facilitate restorative and community-building circles. Explore talking pieces and Indigenous roots.', color: 'amber', recommendedRange: '3-12', category: 'relationship-skills' },
+        { id: 'civicAction', icon: '\u270A', label: 'Civic Action & Hope', desc: 'Process hard feelings about injustice, build civic agency, and cultivate hope through action.', color: 'teal', recommendedRange: '3-12', category: 'responsible-decision-making' },
+        { id: 'ethicalReasoning', icon: '\u2696\uFE0F', label: 'Ethical Reasoning Lab', desc: 'Explore contemporary ethical dilemmas through multiple frameworks, stakeholder mapping, and AI Socratic dialogue.', color: 'slate', recommendedRange: '5-12', category: 'responsible-decision-making' },
+        { id: 'cultureExplorer', icon: '\uD83C\uDF0D', label: 'Culture Explorer', desc: 'Take AI-powered deep dives into world cultures with illustrations, audio, and respectful engagement.', color: 'cyan', recommendedRange: 'K-12', category: 'social-awareness' }
       ];
 
       // ══════════════════════════════════════════════════════════════

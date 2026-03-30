@@ -149,6 +149,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_graphcalc.js',
     'stem_lab/stem_tool_algebraCAS.js',
     'stem_lab/stem_tool_circuit.js',
+    'stem_lab/stem_tool_climateExplorer.js',
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
     'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_mindfulness.js',
     'sel_hub/sel_tool_social.js',
@@ -161,7 +162,11 @@ const PLUGIN_FILES = [
     'sel_hub/sel_tool_community.js',
     'sel_hub/sel_tool_teamwork.js',
     'sel_hub/sel_tool_journal.js',
-    'sel_hub/sel_tool_safety.js'
+    'sel_hub/sel_tool_safety.js',
+    'sel_hub/sel_tool_restorativecircle.js',
+    'sel_hub/sel_tool_civicaction.js',
+    'sel_hub/sel_tool_ethicalreasoning.js',
+    'sel_hub/sel_tool_cultureexplorer.js'
 ];
 
 // ── Read source ─────────────────────────────────────────────────
