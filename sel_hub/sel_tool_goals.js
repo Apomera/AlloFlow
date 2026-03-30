@@ -1,9 +1,11 @@
 // ═══════════════════════════════════════════════════════════════
-// sel_tool_goals.js — Goal Setter Plugin (v2.0)
+// sel_tool_goals.js — Goal Setter Plugin (v3.0)
 // SMART goals builder, progress tracker, milestone celebrations,
 // habit streak counter, AI goal coach, vision board,
 // goal reflection journal, habit tracker, goal buddy system,
-// motivational boosts, and achievement badges.
+// motivational boosts, achievement badges, weekly check-ins,
+// category dashboard, goal milestones, daily nudges,
+// and accountability partner enhancements.
 // Registered tool ID: "goals"
 // Category: self-management
 // Grade-adaptive: elementary/middle/high
@@ -135,7 +137,12 @@ window.SelHub = window.SelHub || {
     visionCreator: { icon: '\uD83C\uDF1F', name: 'Vision Creator', desc: 'Create a vision board entry' },
     reflectiveAchiever: { icon: '\uD83E\uDE9E', name: 'Reflective Achiever', desc: 'Write a reflection on a completed goal' },
     accountabilityPartner: { icon: '\uD83E\uDD1D', name: 'Accountability Partner', desc: 'Share a goal with a buddy' },
-    habitMaster: { icon: '\uD83C\uDFC5', name: 'Habit Master', desc: 'Complete all habits for a full week' }
+    habitMaster: { icon: '\uD83C\uDFC5', name: 'Habit Master', desc: 'Complete all habits for a full week' },
+    weeklyReviewer: { icon: '\uD83D\uDCDD', name: 'Weekly Reviewer', desc: 'Complete 3 weekly check-ins' },
+    milestoneMaker: { icon: '\uD83D\uDDFC', name: 'Milestone Maker', desc: 'Reach a 50% milestone on any goal' },
+    categoryExplorer: { icon: '\uD83E\uDDED', name: 'Category Explorer', desc: 'Set goals in 4+ categories' },
+    habitHero: { icon: '\uD83E\uDDB8', name: 'Habit Hero', desc: '14-day accountability streak' },
+    visionAchiever: { icon: '\uD83C\uDF20', name: 'Vision Achiever', desc: 'Fill all vision board sections' }
   };
 
   // ── Motivational Quotes (grade-adaptive) ──
@@ -197,6 +204,57 @@ window.SelHub = window.SelHub || {
     ]
   };
 
+  // ── Category AI Tips (per category, grade-adaptive) ──
+  var CATEGORY_TIPS = {
+    academic: {
+      elementary: 'Break big homework into tiny bites \u2014 you\u2019ll be done before you know it!',
+      middle: 'Use spaced repetition: review notes 1 day, 3 days, and 7 days after learning.',
+      high: 'Build a study system (Cornell notes, Anki, etc.) \u2014 systems beat willpower.'
+    },
+    social: {
+      elementary: 'Smile and say hi \u2014 that\u2019s how friendships start!',
+      middle: 'Quality over quantity: focus on deepening a few friendships.',
+      high: 'Practice active listening \u2014 put away your phone and be fully present.'
+    },
+    personal: {
+      elementary: 'Try something new every week \u2014 your brain loves learning!',
+      middle: 'Journal for 5 minutes daily \u2014 writing clarifies your thoughts.',
+      high: 'Identify one limiting belief and challenge it with evidence this week.'
+    },
+    health: {
+      elementary: 'Drink a glass of water every time you take a break!',
+      middle: 'Sleep 8+ hours \u2014 your brain processes everything you learned while you sleep.',
+      high: 'Exercise is the most underused antidepressant \u2014 move for 30 min daily.'
+    },
+    creative: {
+      elementary: 'Draw, sing, or dance for 10 minutes \u2014 it makes your brain happy!',
+      middle: 'Start before you feel ready \u2014 creativity comes from doing, not waiting.',
+      high: 'Ship imperfect work. Perfectionism is the enemy of creativity.'
+    },
+    community: {
+      elementary: 'Do one nice thing for someone without being asked today!',
+      middle: 'Organize something small: a study group, a cleanup, or a fundraiser.',
+      high: 'Mentoring a younger student is the highest form of understanding a subject.'
+    }
+  };
+
+  // ── Daily Nudge Messages ──
+  var DAILY_NUDGE_MESSAGES = [
+    'Hey! You haven\u2019t completed any steps today. Even one small step counts! \uD83D\uDC63',
+    'Just 5 minutes on your goal can build unstoppable momentum. Start now! \uD83D\uDE80',
+    'Your future self is cheering you on. Take one step today! \uD83C\uDF1F',
+    'Progress isn\u2019t always big leaps \u2014 tiny steps add up. What can you do right now? \uD83C\uDFAF',
+    'You\u2019ve got goals waiting for you! Pick one step and crush it! \uD83D\uDCAA',
+    'Consistency beats intensity. Even 2 minutes on your goal matters today! \u23F0',
+    'Remember why you started. One step closer is still closer! \u2764\uFE0F',
+    'The hardest part is starting. Once you begin, momentum takes over! \uD83C\uDFC3',
+    'You\u2019re building something amazing, one step at a time. Don\u2019t stop now! \uD83C\uDFD7\uFE0F',
+    'A goal without daily action is just a wish. Make it real today! \u2728'
+  ];
+
+  // ── Milestone thresholds ──
+  var MILESTONE_THRESHOLDS = [25, 50, 75, 100];
+
   function checkBadges(d, awardXP, addToast) {
     var earned = d.badges || {};
     var goals = d.goals || [];
@@ -232,6 +290,15 @@ window.SelHub = window.SelHub || {
     if (d.hasGoalReflection) award('reflectiveAchiever');
     if (d.hasSharedGoal) award('accountabilityPartner');
     if (d.habitWeekComplete) award('habitMaster');
+    // New v3 badges
+    if ((d.weeklyCheckins || []).length >= 3) award('weeklyReviewer');
+    if (d.hasMilestone50) award('milestoneMaker');
+    var catCount = {};
+    goals.forEach(function(g) { if (g.category) catCount[g.category] = true; });
+    if (Object.keys(catCount).length >= 4) award('categoryExplorer');
+    if ((d.accountabilityStreak || 0) >= 14) award('habitHero');
+    var vb = d.visionBoard || {};
+    if (vb.thisYear && vb.thisYear.trim() && vb.thisMonth && vb.thisMonth.trim() && vb.thisWeek && vb.thisWeek.trim()) award('visionAchiever');
     return changed ? earned : null;
   }
 
@@ -301,11 +368,18 @@ window.SelHub = window.SelHub || {
         var accountabilityLog = d.accountabilityLog || {};
         var accountabilityStreak = d.accountabilityStreak || 0;
 
+        // ── Weekly Check-in state ──
+        var weeklyCheckins = d.weeklyCheckins || [];
+        var weeklyDraft = d.weeklyDraft || { obstacles: '', focus: '', rating: 0 };
+
+        // ── Milestone tracking state ──
+        var milestonesShown = d.milestonesShown || {};
+
         // ── Badge check ──
         React.useEffect(function() {
           var newBadges = checkBadges(d, awardXP, addToast);
           if (newBadges) upd({ badges: newBadges });
-        }, [goals.length, streak, d.aiAsked, d.hasReflection, d.habitStreak7, d.hasVision, d.hasGoalReflection, d.hasSharedGoal, d.habitWeekComplete]);
+        }, [goals.length, streak, d.aiAsked, d.hasReflection, d.habitStreak7, d.hasVision, d.hasGoalReflection, d.hasSharedGoal, d.habitWeekComplete, weeklyCheckins.length, d.hasMilestone50, accountabilityStreak]);
 
         // ── Streak check on mount ──
         React.useEffect(function() {
@@ -355,20 +429,42 @@ window.SelHub = window.SelHub || {
 
         var toggleStep = function(goalId, stepIdx) {
           sfxStep();
+          var milestoneUpdates = {};
           var next = goals.map(function(g) {
             if (g.id !== goalId) return g;
             var steps = g.steps.map(function(s, i) { return i === stepIdx ? Object.assign({}, s, { done: !s.done }) : s; });
             var doneCount = steps.filter(function(s) { return s.done; }).length;
             var progress = steps.length > 0 ? Math.round((doneCount / steps.length) * 100) : 0;
+            var oldProgress = g.progress || 0;
             var completed = progress === 100 && steps.length > 0;
             if (completed && !g.completed) {
               sfxComplete();
               if (awardXP) awardXP(20);
               if (addToast) addToast('\uD83C\uDF89 Goal completed: ' + g.text + '! +20 XP', 'success');
             }
+            // Milestone checks for goals with 5+ steps
+            if (steps.length >= 5 && progress > oldProgress) {
+              MILESTONE_THRESHOLDS.forEach(function(threshold) {
+                var msKey = g.id + '-' + threshold;
+                if (progress >= threshold && oldProgress < threshold && !milestonesShown[msKey]) {
+                  milestoneUpdates[msKey] = true;
+                  sfxBadge();
+                  if (awardXP) awardXP(5);
+                  if (addToast) addToast('\uD83C\uDFC6 Milestone! ' + g.text + ' reached ' + threshold + '%! +5 XP', 'success');
+                  if (threshold === 50) milestoneUpdates._hasMilestone50 = true;
+                }
+              });
+            }
             return Object.assign({}, g, { steps: steps, progress: progress, completed: completed });
           });
-          upd({ goals: next });
+          var updObj = { goals: next };
+          if (Object.keys(milestoneUpdates).length > 0) {
+            var newShown = Object.assign({}, milestonesShown);
+            Object.keys(milestoneUpdates).forEach(function(k) { if (k !== '_hasMilestone50') newShown[k] = true; });
+            updObj.milestonesShown = newShown;
+            if (milestoneUpdates._hasMilestone50) updObj.hasMilestone50 = true;
+          }
+          upd(updObj);
         };
 
         var addStep = function(goalId, text) {
@@ -534,12 +630,112 @@ window.SelHub = window.SelHub || {
           return boosts[Math.floor(Math.random() * boosts.length)];
         };
 
+        // ── Weekly Check-in helpers ──
+        var getWeekProgressSummary = function() {
+          var oneWeekAgo = Date.now() - 7 * 86400000;
+          var progressGoals = [];
+          goals.forEach(function(g) {
+            var recentSteps = (g.steps || []).filter(function(s) { return s.done; });
+            if (recentSteps.length > 0) {
+              progressGoals.push({ text: g.text, progress: g.progress, stepsComplete: recentSteps.length, totalSteps: (g.steps || []).length });
+            }
+          });
+          return progressGoals;
+        };
+
+        var saveWeeklyCheckin = function() {
+          var summary = getWeekProgressSummary();
+          var checkin = {
+            id: 'wci-' + Date.now(),
+            date: Date.now(),
+            weekOf: new Date().toISOString().slice(0, 10),
+            progressSummary: summary,
+            obstacles: weeklyDraft.obstacles || '',
+            focus: weeklyDraft.focus || '',
+            rating: weeklyDraft.rating || 0
+          };
+          var newCheckins = weeklyCheckins.concat([checkin]);
+          sfxComplete();
+          if (awardXP) awardXP(10);
+          if (addToast) addToast('\uD83D\uDCDD Weekly check-in saved! +10 XP', 'success');
+          upd({ weeklyCheckins: newCheckins, weeklyDraft: { obstacles: '', focus: '', rating: 0 } });
+        };
+
+        var updateWeeklyDraft = function(field, value) {
+          var newDraft = Object.assign({}, weeklyDraft);
+          newDraft[field] = value;
+          upd({ weeklyDraft: newDraft });
+        };
+
+        // ── Daily Nudge helper ──
+        var getDailyNudge = function() {
+          if (goals.length === 0) return null;
+          var today = new Date().toISOString().slice(0, 10);
+          // Check if any steps were completed today (use accountability log as proxy)
+          if (accountabilityLog[today] === true) return null;
+          var dayIndex = Math.floor(Date.now() / 86400000) % DAILY_NUDGE_MESSAGES.length;
+          return DAILY_NUDGE_MESSAGES[dayIndex];
+        };
+
+        // ── Goal of the Week helper ──
+        var getGoalOfTheWeek = function() {
+          if (activeGoals.length === 0) return null;
+          // Pick the goal with the most progress that isn't complete, to encourage finishing it
+          var sorted = activeGoals.slice().sort(function(a, b) { return (b.progress || 0) - (a.progress || 0); });
+          // Prefer one with some progress but not done
+          var candidate = sorted.find(function(g) { return g.progress > 0 && g.progress < 100; });
+          return candidate || sorted[0];
+        };
+
+        // ── Category Dashboard helper ──
+        var getCategoryStats = function() {
+          return GOAL_CATEGORIES.map(function(cat) {
+            var catGoals = goals.filter(function(g) { return g.category === cat.id; });
+            var catCompleted = catGoals.filter(function(g) { return g.completed; });
+            var completionRate = catGoals.length > 0 ? Math.round((catCompleted.length / catGoals.length) * 100) : 0;
+            var avgStepCompletion = 0;
+            if (catGoals.length > 0) {
+              var totalPct = 0;
+              catGoals.forEach(function(g) { totalPct += (g.progress || 0); });
+              avgStepCompletion = Math.round(totalPct / catGoals.length);
+            }
+            var tip = CATEGORY_TIPS[cat.id] ? (CATEGORY_TIPS[cat.id][band] || CATEGORY_TIPS[cat.id].elementary) : '';
+            return {
+              id: cat.id,
+              label: cat.label,
+              emoji: cat.emoji,
+              color: cat.color,
+              count: catGoals.length,
+              completedCount: catCompleted.length,
+              completionRate: completionRate,
+              avgStepCompletion: avgStepCompletion,
+              tip: tip
+            };
+          });
+        };
+
+        // ── Milestone markers helper ──
+        var getGoalMilestones = function(goal) {
+          if (!goal.steps || goal.steps.length < 5) return [];
+          return MILESTONE_THRESHOLDS.map(function(threshold) {
+            var msKey = goal.id + '-' + threshold;
+            return {
+              threshold: threshold,
+              reached: !!(milestonesShown[msKey]),
+              isCurrent: (goal.progress || 0) >= threshold
+            };
+          });
+        };
+
         var templates = GOAL_TEMPLATES[band] || GOAL_TEMPLATES.elementary;
         var activeGoals = goals.filter(function(g) { return !g.completed; });
         var completedGoals = goals.filter(function(g) { return g.completed; });
         var editGoal = editingGoal ? goals.find(function(g) { return g.id === editingGoal; }) : null;
         var accentColor = '#6366f1';
         var motivationalBoost = getMotivationalBoost();
+        var dailyNudge = getDailyNudge();
+        var goalOfTheWeek = getGoalOfTheWeek();
+        var categoryStats = getCategoryStats();
 
         // ═══════════════════════════════════════════════════════════
         // ── UI ──
@@ -561,7 +757,7 @@ window.SelHub = window.SelHub || {
 
           // Tabs
           h('div', { style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.8)', overflowX: 'auto' } },
-            [{ id: 'goals', label: '\uD83C\uDFAF Goals' }, { id: 'habits', label: '\uD83D\uDD01 Habits' }, { id: 'vision', label: '\uD83C\uDF1F Vision' }, { id: 'smart', label: '\uD83E\uDDE0 SMART' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'progress', label: '\uD83D\uDCCA Progress' }].map(function(tb) {
+            [{ id: 'goals', label: '\uD83C\uDFAF Goals' }, { id: 'habits', label: '\uD83D\uDD01 Habits' }, { id: 'vision', label: '\uD83C\uDF1F Vision' }, { id: 'smart', label: '\uD83E\uDDE0 SMART' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'checkin', label: '\uD83D\uDCDD Check-In' }, { id: 'progress', label: '\uD83D\uDCCA Progress' }].map(function(tb) {
               var active = tab === tb.id;
               return h('button', { key: tb.id, onClick: function() { sfxClick(); upd({ tab: tb.id }); }, style: { flex: 1, padding: '10px 4px', fontSize: 10, fontWeight: 'bold', color: active ? '#a5b4fc' : '#64748b', background: active ? 'rgba(99,102,241,0.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #6366f1' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap', minWidth: 0 } }, tb.label);
             })
@@ -589,6 +785,25 @@ window.SelHub = window.SelHub || {
               motivationalBoost ? h('div', { style: { padding: '10px 14px', marginBottom: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(234,179,8,0.08))', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', gap: 8 } },
                 h('span', { style: { fontSize: 18 } }, '\uD83D\uDCAB'),
                 h('span', { style: { fontSize: 12, color: '#fbbf24', lineHeight: 1.5, fontStyle: 'italic' } }, motivationalBoost)
+              ) : null,
+              // Daily Nudge — shows if no steps completed today
+              dailyNudge ? h('div', { style: { padding: '10px 14px', marginBottom: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(99,102,241,0.10), rgba(168,85,247,0.06))', border: '1px solid rgba(99,102,241,0.20)', display: 'flex', alignItems: 'center', gap: 8 } },
+                h('span', { style: { fontSize: 18 } }, '\uD83D\uDC4B'),
+                h('span', { style: { fontSize: 12, color: '#c7d2fe', lineHeight: 1.5 } }, dailyNudge)
+              ) : null,
+              // Goal of the Week spotlight
+              goalOfTheWeek ? h('div', { style: { padding: '10px 14px', marginBottom: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(52,211,153,0.06))', border: '1px solid rgba(34,197,94,0.20)', display: 'flex', alignItems: 'center', gap: 10 } },
+                h('div', { style: { display: 'flex', flexDirection: 'column', flex: 1 } },
+                  h('div', { style: { fontSize: 9, fontWeight: 'bold', color: '#34d399', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\u2B50 Goal of the Week'),
+                  h('div', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 'bold' } }, goalOfTheWeek.text || '(unnamed)'),
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 } },
+                    h('div', { style: { flex: 1, height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', maxWidth: 120 } },
+                      h('div', { style: { width: (goalOfTheWeek.progress || 0) + '%', height: '100%', background: '#22c55e', borderRadius: 3 } })
+                    ),
+                    h('span', { style: { fontSize: 10, color: '#34d399', fontWeight: 'bold' } }, (goalOfTheWeek.progress || 0) + '%')
+                  )
+                ),
+                h('button', { onClick: function() { upd({ editingGoal: goalOfTheWeek.id, tab: 'goals' }); }, style: { padding: '6px 12px', borderRadius: 8, background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', color: '#34d399', fontSize: 10, fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' } }, '\uD83C\uDFAF Focus')
               ) : null,
               // Accountability check
               (function() {
@@ -642,13 +857,27 @@ window.SelHub = window.SelHub || {
                     h('button', { onClick: function() { shareGoalToClipboard(goal); }, title: 'Share goal with buddy', style: { background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer', fontSize: 12, padding: 4 } }, '\uD83D\uDCE4'),
                     h('button', { onClick: function() { deleteGoal(goal.id); }, style: { background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 12, padding: 4 } }, '\u2715')
                   ),
-                  // Progress bar
-                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
-                    h('div', { style: { flex: 1, height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
-                      h('div', { style: { width: goal.progress + '%', height: '100%', background: 'linear-gradient(90deg, ' + cat.color + ', ' + cat.color + 'cc)', borderRadius: 4, transition: 'width 0.3s' } })
-                    ),
-                    h('span', { style: { fontSize: 11, fontWeight: 'bold', color: cat.color, minWidth: 32, textAlign: 'right' } }, goal.progress + '%')
-                  ),
+                  // Progress bar with milestone markers
+                  (function() {
+                    var milestones = getGoalMilestones(goal);
+                    var hasMilestones = milestones.length > 0;
+                    return h('div', { style: { marginBottom: 8 } },
+                      h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                        h('div', { style: { flex: 1, height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden', position: 'relative' } },
+                          h('div', { style: { width: goal.progress + '%', height: '100%', background: 'linear-gradient(90deg, ' + cat.color + ', ' + cat.color + 'cc)', borderRadius: 4, transition: 'width 0.3s' } })
+                        ),
+                        h('span', { style: { fontSize: 11, fontWeight: 'bold', color: cat.color, minWidth: 32, textAlign: 'right' } }, goal.progress + '%')
+                      ),
+                      hasMilestones ? h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 3, paddingRight: 40 } },
+                        milestones.map(function(ms) {
+                          return h('div', { key: ms.threshold, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', width: 24 } },
+                            h('div', { style: { width: 14, height: 14, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: ms.isCurrent ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.04)', border: ms.isCurrent ? '2px solid #34d399' : '1px solid rgba(99,102,241,0.2)', fontSize: 7, color: ms.isCurrent ? '#34d399' : '#475569' } }, ms.isCurrent ? '\u2713' : ms.threshold === 100 ? '\u2605' : '\u25CB'),
+                            h('span', { style: { fontSize: 7, color: ms.isCurrent ? '#34d399' : '#475569', marginTop: 1 } }, ms.threshold + '%')
+                          );
+                        })
+                      ) : null
+                    );
+                  })(),
                   // Steps
                   (goal.steps || []).map(function(step, si) {
                     return h('div', { key: si, onClick: function() { toggleStep(goal.id, si); }, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', marginBottom: 4, borderRadius: 6, background: step.done ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.02)', cursor: 'pointer', transition: 'all 0.15s' } },
@@ -936,6 +1165,123 @@ window.SelHub = window.SelHub || {
               )
             ) : null,
 
+            // ── WEEKLY CHECK-IN TAB ──
+            tab === 'checkin' ? h('div', null,
+              h('div', { style: { fontSize: 14, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 4 } }, '\uD83D\uDCDD Weekly Check-In'),
+              h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 14, lineHeight: 1.5 } },
+                band === 'elementary' ? 'Look back at your week! What did you work on? What will you do next?' :
+                band === 'middle' ? 'Take a few minutes to reflect on your week. Honest reflection builds self-awareness.' :
+                'Structured weekly review: assess progress, acknowledge obstacles, and set intentions for next week.'
+              ),
+
+              // Section 1: Auto-populated progress summary
+              h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 12, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' } },
+                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#34d399', marginBottom: 8 } }, '\u2705 Goals I Made Progress On This Week'),
+                (function() {
+                  var summary = getWeekProgressSummary();
+                  if (summary.length === 0) {
+                    return h('p', { style: { fontSize: 11, color: '#64748b', fontStyle: 'italic' } }, 'No goal progress recorded this week yet. Keep going!');
+                  }
+                  return h('div', null,
+                    summary.map(function(g, gi) {
+                      return h('div', { key: gi, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', marginBottom: 4, borderRadius: 6, background: 'rgba(52,211,153,0.06)' } },
+                        h('span', { style: { fontSize: 12 } }, '\uD83C\uDFAF'),
+                        h('span', { style: { flex: 1, fontSize: 11, color: '#e2e8f0' } }, g.text),
+                        h('span', { style: { fontSize: 10, color: '#34d399', fontWeight: 'bold' } }, g.stepsComplete + '/' + g.totalSteps + ' steps'),
+                        h('span', { style: { fontSize: 10, color: '#94a3b8' } }, g.progress + '%')
+                      );
+                    })
+                  );
+                })()
+              ),
+
+              // Section 2: Obstacles text input
+              h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 12, background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.12)' } },
+                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#f87171', marginBottom: 8 } }, '\uD83E\uDEA8 What Obstacles Did I Face?'),
+                h('textarea', { value: weeklyDraft.obstacles || '', onChange: function(e) { updateWeeklyDraft('obstacles', e.target.value); }, placeholder: band === 'elementary' ? 'What was hard this week? What got in the way?' : 'Describe any challenges, distractions, or setbacks you faced this week...', style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid rgba(239,68,68,0.15)', background: 'rgba(15,23,42,0.4)', color: '#e2e8f0', fontSize: 12, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box', lineHeight: 1.6 } })
+              ),
+
+              // Section 3: Next week focus
+              h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.12)' } },
+                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#818cf8', marginBottom: 8 } }, '\uD83C\uDFAF What Will I Focus On Next Week?'),
+                h('textarea', { value: weeklyDraft.focus || '', onChange: function(e) { updateWeeklyDraft('focus', e.target.value); }, placeholder: band === 'elementary' ? 'What do you want to work on next week?' : 'Set your intention: what specific goal or step will you prioritize?', style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: '#e2e8f0', fontSize: 12, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box', lineHeight: 1.6 } })
+              ),
+
+              // Section 4: Star rating
+              h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 12, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.12)', textAlign: 'center' } },
+                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#fbbf24', marginBottom: 10 } }, '\u2B50 Rate Your Week'),
+                h('div', { style: { display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 6 } },
+                  [1, 2, 3, 4, 5].map(function(star) {
+                    var filled = (weeklyDraft.rating || 0) >= star;
+                    return h('button', { key: star, onClick: function() { updateWeeklyDraft('rating', star); sfxClick(); }, style: { background: 'none', border: 'none', fontSize: 28, cursor: 'pointer', color: filled ? '#fbbf24' : '#334155', transition: 'transform 0.15s', padding: 2 } }, filled ? '\u2B50' : '\u2606');
+                  })
+                ),
+                h('div', { style: { fontSize: 10, color: '#94a3b8' } },
+                  (weeklyDraft.rating || 0) === 0 ? 'Tap a star to rate' :
+                  (weeklyDraft.rating || 0) <= 2 ? 'Tough week \u2014 that\u2019s okay! Next week is a fresh start.' :
+                  (weeklyDraft.rating || 0) <= 3 ? 'Solid week! Room to grow.' :
+                  (weeklyDraft.rating || 0) <= 4 ? 'Great week! You\u2019re building momentum!' :
+                  'Amazing week! You\u2019re unstoppable!'
+                )
+              ),
+
+              // Weekly check-in streak / count
+              weeklyCheckins.length > 0 ? h('div', { style: { padding: '10px 14px', marginBottom: 14, borderRadius: 10, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.15)', display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' } },
+                h('span', { style: { fontSize: 14 } }, '\uD83D\uDCCA'),
+                h('span', { style: { fontSize: 11, color: '#c4b5fd' } }, 'You\u2019ve completed ' + weeklyCheckins.length + ' weekly check-in' + (weeklyCheckins.length !== 1 ? 's' : '') + '!'),
+                weeklyCheckins.length >= 4 ? h('span', { style: { fontSize: 10, color: '#a855f7', fontWeight: 'bold', marginLeft: 4 } }, '\uD83C\uDFC6 Consistent Reviewer!') : null
+              ) : null,
+
+              // Average weekly rating
+              weeklyCheckins.length >= 2 ? (function() {
+                var totalRating = 0;
+                weeklyCheckins.forEach(function(ci) { totalRating += (ci.rating || 0); });
+                var avgRating = (totalRating / weeklyCheckins.length).toFixed(1);
+                return h('div', { style: { padding: '8px 14px', marginBottom: 14, borderRadius: 8, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.12)', textAlign: 'center' } },
+                  h('span', { style: { fontSize: 10, color: '#fbbf24' } }, '\u2B50 Average weekly rating: ' + avgRating + '/5 across ' + weeklyCheckins.length + ' weeks')
+                );
+              })() : null,
+
+              // Save button
+              h('button', { onClick: function() {
+                if (!weeklyDraft.rating) {
+                  if (addToast) addToast('Please rate your week before saving.', 'warning');
+                  return;
+                }
+                saveWeeklyCheckin();
+              }, style: { width: '100%', padding: '12px 20px', borderRadius: 10, background: '#6366f1', color: '#fff', border: 'none', fontSize: 13, fontWeight: 'bold', cursor: 'pointer', marginBottom: 20 } }, '\u2705 Save Weekly Check-In'),
+
+              // Past check-ins
+              weeklyCheckins.length > 0 ? h('div', { style: { marginTop: 8 } },
+                h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', marginBottom: 10 } }, '\uD83D\uDCC5 Past Weekly Check-Ins (' + weeklyCheckins.length + ')'),
+                weeklyCheckins.slice().reverse().map(function(ci, idx) {
+                  var dateStr = new Date(ci.date).toLocaleDateString();
+                  var stars = '';
+                  for (var si = 0; si < 5; si++) { stars += si < (ci.rating || 0) ? '\u2B50' : '\u2606'; }
+                  return h('div', { key: ci.id || idx, style: { padding: 12, marginBottom: 8, borderRadius: 10, background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.10)' } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 } },
+                      h('span', { style: { fontSize: 11, fontWeight: 'bold', color: '#a5b4fc' } }, 'Week of ' + (ci.weekOf || dateStr)),
+                      h('span', { style: { fontSize: 12 } }, stars)
+                    ),
+                    ci.progressSummary && ci.progressSummary.length > 0 ? h('div', { style: { marginBottom: 6 } },
+                      h('div', { style: { fontSize: 10, fontWeight: 'bold', color: '#34d399', marginBottom: 3 } }, 'Progress:'),
+                      ci.progressSummary.map(function(ps, psi) {
+                        return h('div', { key: psi, style: { fontSize: 10, color: '#94a3b8', paddingLeft: 8 } }, '\u2022 ' + ps.text + ' (' + ps.progress + '%)');
+                      })
+                    ) : null,
+                    ci.obstacles ? h('div', { style: { marginBottom: 4 } },
+                      h('span', { style: { fontSize: 10, fontWeight: 'bold', color: '#f87171' } }, 'Obstacles: '),
+                      h('span', { style: { fontSize: 10, color: '#94a3b8' } }, ci.obstacles)
+                    ) : null,
+                    ci.focus ? h('div', null,
+                      h('span', { style: { fontSize: 10, fontWeight: 'bold', color: '#818cf8' } }, 'Next focus: '),
+                      h('span', { style: { fontSize: 10, color: '#94a3b8' } }, ci.focus)
+                    ) : null
+                  );
+                })
+              ) : null
+            ) : null,
+
             // ── PROGRESS TAB ──
             tab === 'progress' ? h('div', null,
               h('div', { style: { fontSize: 14, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 12 } }, '\uD83D\uDCCA Your Progress'),
@@ -954,8 +1300,49 @@ window.SelHub = window.SelHub || {
                   );
                 })
               ),
-              // Category distribution
-              h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', marginBottom: 8 } }, 'Goals by Category'),
+              // ── Category Visual Dashboard ──
+              h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#c4b5fd', marginBottom: 10 } }, '\uD83C\uDFC6 Category Dashboard'),
+              categoryStats.map(function(cs) {
+                if (cs.count === 0) return null;
+                return h('div', { key: cs.id, style: { padding: 12, marginBottom: 10, borderRadius: 12, background: cs.color + '08', border: '1px solid ' + cs.color + '22' } },
+                  // Category header row
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+                    h('span', { style: { fontSize: 18 } }, cs.emoji),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontSize: 13, fontWeight: 'bold', color: cs.color } }, cs.label),
+                      h('div', { style: { fontSize: 10, color: '#94a3b8' } }, cs.count + ' goal' + (cs.count !== 1 ? 's' : '') + ' \u2022 ' + cs.completedCount + ' completed')
+                    )
+                  ),
+                  // Completion rate bar
+                  h('div', { style: { marginBottom: 6 } },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 3 } },
+                      h('span', { style: { fontSize: 10, color: '#94a3b8' } }, 'Completion Rate'),
+                      h('span', { style: { fontSize: 10, fontWeight: 'bold', color: cs.completionRate >= 75 ? '#34d399' : cs.completionRate >= 40 ? '#fbbf24' : cs.color } }, cs.completionRate + '%')
+                    ),
+                    h('div', { style: { height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
+                      h('div', { style: { width: cs.completionRate + '%', height: '100%', background: cs.completionRate >= 75 ? '#22c55e' : cs.completionRate >= 40 ? '#f59e0b' : cs.color, borderRadius: 4, transition: 'width 0.3s' } })
+                    )
+                  ),
+                  // Avg step completion bar
+                  h('div', { style: { marginBottom: 8 } },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 3 } },
+                      h('span', { style: { fontSize: 10, color: '#94a3b8' } }, 'Avg Step Progress'),
+                      h('span', { style: { fontSize: 10, fontWeight: 'bold', color: cs.avgStepCompletion >= 75 ? '#34d399' : cs.avgStepCompletion >= 40 ? '#fbbf24' : '#64748b' } }, cs.avgStepCompletion + '%')
+                    ),
+                    h('div', { style: { height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
+                      h('div', { style: { width: cs.avgStepCompletion + '%', height: '100%', background: cs.avgStepCompletion >= 75 ? '#34d399' : cs.avgStepCompletion >= 40 ? '#fbbf24' : cs.color + '88', borderRadius: 3, transition: 'width 0.3s' } })
+                    )
+                  ),
+                  // AI motivational tip
+                  cs.tip ? h('div', { style: { padding: '8px 10px', borderRadius: 8, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.10)', display: 'flex', alignItems: 'flex-start', gap: 6 } },
+                    h('span', { style: { fontSize: 12 } }, '\uD83E\uDD16'),
+                    h('span', { style: { fontSize: 10, color: '#a5b4fc', lineHeight: 1.5, fontStyle: 'italic' } }, cs.tip)
+                  ) : null
+                );
+              }),
+
+              // Category distribution (simple bar view)
+              h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', marginBottom: 8, marginTop: 16 } }, 'Goals by Category'),
               GOAL_CATEGORIES.map(function(cat) {
                 var count = goals.filter(function(g) { return g.category === cat.id; }).length;
                 if (count === 0) return null;
@@ -968,18 +1355,53 @@ window.SelHub = window.SelHub || {
                   h('span', { style: { fontSize: 11, fontWeight: 'bold', color: cat.color, width: 20, textAlign: 'right' } }, String(count))
                 );
               }),
+              // Milestone summary
+              (function() {
+                var msCount = Object.keys(milestonesShown).length;
+                if (msCount === 0) return null;
+                return h('div', { style: { marginTop: 16, padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.15)', display: 'flex', alignItems: 'center', gap: 10 } },
+                  h('span', { style: { fontSize: 22 } }, '\uD83D\uDDFC'),
+                  h('div', null,
+                    h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#c4b5fd' } }, 'Milestones Reached: ' + msCount),
+                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'You earned ' + (msCount * 5) + ' bonus XP from milestones!')
+                  )
+                );
+              })(),
+
+              // Weekly check-in summary in progress
+              weeklyCheckins.length > 0 ? h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.12)', display: 'flex', alignItems: 'center', gap: 10 } },
+                h('span', { style: { fontSize: 18 } }, '\uD83D\uDCDD'),
+                h('div', null,
+                  h('div', { style: { fontSize: 11, fontWeight: 'bold', color: '#a5b4fc' } }, weeklyCheckins.length + ' Weekly Check-In' + (weeklyCheckins.length !== 1 ? 's' : '') + ' Completed'),
+                  (function() {
+                    var totalR = 0;
+                    weeklyCheckins.forEach(function(c) { totalR += (c.rating || 0); });
+                    var avgR = weeklyCheckins.length > 0 ? (totalR / weeklyCheckins.length).toFixed(1) : '0';
+                    return h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Average rating: ' + avgR + '/5 \u2B50');
+                  })()
+                )
+              ) : null,
+
               // Goal progress list
               goals.length > 0 ? h('div', { style: { marginTop: 16 } },
                 h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', marginBottom: 8 } }, 'Individual Goal Progress'),
                 goals.map(function(goal) {
                   var cat = GOAL_CATEGORIES.find(function(c) { return c.id === goal.category; }) || GOAL_CATEGORIES[2];
-                  return h('div', { key: goal.id, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.02)' } },
-                    h('span', null, cat.emoji),
-                    h('span', { style: { flex: 1, fontSize: 11, color: goal.completed ? '#6ee7b7' : '#cbd5e1', textDecoration: goal.completed ? 'line-through' : 'none' } }, goal.text || '(unnamed)'),
-                    h('div', { style: { width: 60, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)' } },
-                      h('div', { style: { width: goal.progress + '%', height: '100%', background: goal.completed ? '#22c55e' : cat.color, borderRadius: 3 } })
+                  var milestones = getGoalMilestones(goal);
+                  return h('div', { key: goal.id, style: { padding: '8px 10px', marginBottom: 8, borderRadius: 8, background: 'rgba(255,255,255,0.02)' } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: milestones.length > 0 ? 4 : 0 } },
+                      h('span', null, cat.emoji),
+                      h('span', { style: { flex: 1, fontSize: 11, color: goal.completed ? '#6ee7b7' : '#cbd5e1', textDecoration: goal.completed ? 'line-through' : 'none' } }, goal.text || '(unnamed)'),
+                      h('div', { style: { width: 60, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)' } },
+                        h('div', { style: { width: goal.progress + '%', height: '100%', background: goal.completed ? '#22c55e' : cat.color, borderRadius: 3 } })
+                      ),
+                      h('span', { style: { fontSize: 10, fontWeight: 'bold', color: goal.completed ? '#22c55e' : cat.color, width: 28, textAlign: 'right' } }, goal.progress + '%')
                     ),
-                    h('span', { style: { fontSize: 10, fontWeight: 'bold', color: goal.completed ? '#22c55e' : cat.color, width: 28, textAlign: 'right' } }, goal.progress + '%')
+                    milestones.length > 0 ? h('div', { style: { display: 'flex', gap: 4, paddingLeft: 28, marginTop: 2 } },
+                      milestones.map(function(ms) {
+                        return h('span', { key: ms.threshold, style: { fontSize: 8, padding: '1px 5px', borderRadius: 4, background: ms.isCurrent ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (ms.isCurrent ? 'rgba(52,211,153,0.3)' : 'rgba(99,102,241,0.08)'), color: ms.isCurrent ? '#34d399' : '#475569' } }, ms.threshold + '%' + (ms.isCurrent ? ' \u2713' : ''));
+                      })
+                    ) : null
                   );
                 })
               ) : null

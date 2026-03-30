@@ -24,6 +24,10 @@ window.SelHub = window.SelHub || {
     { id: 'explore', label: '\ud83c\udf0d Explore Issues', desc: 'Learn about civic issues' },
     { id: 'act', label: '\u270a Act', desc: 'Turn feelings into action' },
     { id: 'planner', label: '\ud83d\udcdd Plan', desc: 'Build a civic action plan' },
+    { id: 'simulation', label: '\ud83c\udfdb\ufe0f Simulate', desc: 'Civic decision-making simulation' },
+    { id: 'survey', label: '\ud83d\udcca Survey', desc: 'Build a community survey' },
+    { id: 'rights', label: '\ud83d\udcdc Rights', desc: 'Explore rights and responsibilities' },
+    { id: 'service', label: '\ud83e\udd1d Service', desc: 'Plan a service learning project' },
     { id: 'quiz', label: '\ud83c\udfc6 Quiz', desc: 'Test your civic knowledge' },
     { id: 'scenarios', label: '\ud83c\udfad Scenarios', desc: 'Community change scenarios' },
     { id: 'hope', label: '\ud83c\udf05 Hope', desc: 'Cultivate hope and vision' },
@@ -321,7 +325,218 @@ window.SelHub = window.SelHub || {
     ]
   };
 
-  // ── NEW: Badges ──
+  // ── NEW: Civic Simulation Game Data ──
+
+  var CIVIC_SIMULATIONS = {
+    elementary: {
+      title: 'School Council Meeting',
+      intro: 'You have been elected to the School Council! Today you will vote on 3 proposals. Each choice affects your school differently. Think carefully about what is best for everyone.',
+      proposals: [
+        {
+          id: 'recess', title: 'Longer Recess', desc: 'Should recess be extended by 15 minutes each day?',
+          options: [
+            { text: 'Yes, extend recess by 15 minutes', outcome: 'Students are happier and more energetic, but teachers report less time for reading lessons. Some students fall behind in reading scores.', impact: { happiness: 3, learning: -1, health: 2 } },
+            { text: 'Extend recess by 10 minutes as a compromise', outcome: 'Students get a bit more play time and teachers can still cover reading. The school community feels heard on both sides.', impact: { happiness: 2, learning: 0, health: 1 } },
+            { text: 'No, keep recess the same length', outcome: 'Teachers are relieved, but many students feel their voices were not heard. Some students have trouble focusing in the afternoon.', impact: { happiness: -1, learning: 1, health: -1 } }
+          ]
+        },
+        {
+          id: 'garden', title: 'School Garden Project', desc: 'Should the school spend $500 from the activities fund on a school garden?',
+          options: [
+            { text: 'Yes, build the garden with the full budget', outcome: 'The garden is beautiful and students learn about plants and food. However, the science fair has less funding this year.', impact: { happiness: 2, learning: 2, health: 2 } },
+            { text: 'Use half the budget and ask families to donate supplies', outcome: 'The garden is smaller but the whole community pitches in. Families feel connected to the school. The science fair still happens.', impact: { happiness: 3, learning: 2, health: 1 } },
+            { text: 'No, save the money for the science fair', outcome: 'The science fair is great, but students miss out on learning where food comes from. Some students are disappointed.', impact: { happiness: 0, learning: 1, health: 0 } }
+          ]
+        },
+        {
+          id: 'buddy', title: 'Buddy Bench Program', desc: 'Should the school install a "buddy bench" where students who need a friend can sit?',
+          options: [
+            { text: 'Yes, and train student volunteers to be buddy helpers', outcome: 'Lonely students find friends faster. Buddy helpers learn empathy and leadership. The whole school feels kinder.', impact: { happiness: 3, learning: 1, health: 2 } },
+            { text: 'Yes, install the bench but without formal volunteers', outcome: 'The bench helps some students, but others are embarrassed to sit there. It works sometimes but not always.', impact: { happiness: 1, learning: 0, health: 1 } },
+            { text: 'No, students should find friends on their own', outcome: 'Some students continue to feel lonely at recess. Teachers notice more conflicts and fewer friendships forming.', impact: { happiness: -2, learning: 0, health: -1 } }
+          ]
+        }
+      ]
+    },
+    middle: {
+      title: 'City Budget Challenge',
+      intro: 'You are on the Youth Advisory Board for your city. The city has $1,000,000 to allocate across 6 categories. Drag the sliders to decide how much each area gets. Every dollar you add to one area is a dollar you cannot spend on another. Watch how the community reacts!',
+      categories: [
+        { id: 'parks', label: '\ud83c\udf33 Parks & Recreation', desc: 'Playgrounds, sports fields, trails, community centers', base: 166666 },
+        { id: 'schools', label: '\ud83c\udfe5 Schools & Education', desc: 'Teachers, supplies, after-school programs, tutoring', base: 166666 },
+        { id: 'safety', label: '\ud83d\udee1\ufe0f Public Safety', desc: 'Fire department, emergency services, crossing guards', base: 166666 },
+        { id: 'roads', label: '\ud83d\udea7 Roads & Transit', desc: 'Road repairs, bus routes, bike lanes, sidewalks', base: 166666 },
+        { id: 'health', label: '\ud83c\udfe5 Health Services', desc: 'Clinics, mental health programs, food assistance', base: 166668 },
+        { id: 'arts', label: '\ud83c\udfa8 Arts & Culture', desc: 'Libraries, museums, public art, music programs', base: 166668 }
+      ],
+      reactions: {
+        parks: { low: 'Families complain that playgrounds are falling apart. Kids have nowhere safe to play after school.', high: 'Beautiful new parks bring the community together. Youth sports leagues grow. Everyone has a place to relax.' },
+        schools: { low: 'Class sizes increase. Teachers leave for better-funded districts. Test scores drop.', high: 'New after-school programs thrive. Teachers get better supplies. More students graduate on time.' },
+        safety: { low: 'Response times increase. Some residents feel less safe walking at night.', high: 'Emergency response times improve. The community feels protected. New programs build trust.' },
+        roads: { low: 'Potholes multiply. Bus routes are cut. Students have trouble getting to school.', high: 'New bike lanes and bus routes make it easier for everyone to get around. Fewer car accidents.' },
+        health: { low: 'The free clinic reduces hours. Families without insurance struggle to see a doctor.', high: 'A new mental health program helps students and families. The free clinic expands hours.' },
+        arts: { low: 'The library cuts hours. Music programs are eliminated. The community loses a sense of identity.', high: 'A vibrant arts scene attracts visitors and pride. The library becomes a community hub.' }
+      }
+    },
+    high: {
+      title: 'Legislative Simulation',
+      intro: 'You are a newly elected state representative. You want to pass a bill that matters to you. Navigate the legislative process: draft the bill, build a coalition, survive committee, and win the floor vote.',
+      steps: [
+        {
+          id: 'draft', title: 'Step 1: Draft Your Bill',
+          desc: 'Choose an issue for your bill. The more specific and well-defined your bill, the better chance it has.',
+          bills: [
+            { id: 'climate', title: 'Clean Energy Schools Act', desc: 'Require all public schools to use 50% renewable energy within 5 years', support_base: 55, opposition: 'Energy companies and fiscal conservatives worry about costs' },
+            { id: 'mental_health', title: 'Student Mental Health Act', desc: 'Mandate a 1:250 school counselor to student ratio', support_base: 65, opposition: 'Budget hawks say the state cannot afford it' },
+            { id: 'voting', title: 'Youth Civic Engagement Act', desc: 'Allow 16-year-olds to pre-register and vote in local school board elections', support_base: 45, opposition: 'Some argue 16-year-olds lack maturity for voting' }
+          ]
+        },
+        {
+          id: 'coalition', title: 'Step 2: Build Your Coalition',
+          desc: 'You need allies. Each group you convince adds support but may require compromises.',
+          allies: [
+            { id: 'teachers', label: 'Teachers\' Union', bonus: 10, ask: 'They want a clause protecting teacher pay. Add it?' },
+            { id: 'parents', label: 'Parent Association', bonus: 8, ask: 'They want quarterly progress reports made public. Agree?' },
+            { id: 'students', label: 'Student Council Federation', bonus: 5, ask: 'They want student representatives on the oversight board. Include it?' },
+            { id: 'business', label: 'Local Business Alliance', bonus: 7, ask: 'They want tax incentives included. Add a business tax credit?' },
+            { id: 'media', label: 'Local News Partnership', bonus: 6, ask: 'They want exclusive access to report on progress. Grant press access?' }
+          ]
+        },
+        {
+          id: 'committee', title: 'Step 3: Committee Hearing',
+          desc: 'Your bill goes to committee. You must respond to tough questions from skeptical members.',
+          questions: [
+            { q: 'How will we pay for this?', good: 'Present a detailed funding plan with specific revenue sources', bad: 'Say the details can be worked out later', goodBonus: 5, badPenalty: -8 },
+            { q: 'What evidence shows this will work?', good: 'Cite research from states that have implemented similar policies', bad: 'Appeal to emotion without data', goodBonus: 5, badPenalty: -5 },
+            { q: 'Why should this be a priority over other bills?', good: 'Show how it addresses an urgent need with data on who is affected', bad: 'Argue that your bill is simply more important', goodBonus: 5, badPenalty: -5 }
+          ]
+        },
+        {
+          id: 'vote', title: 'Step 4: Floor Vote',
+          desc: 'Your bill goes to the full legislature. You need 51% to pass.'
+        }
+      ]
+    }
+  };
+
+  // ── NEW: Community Survey Builder Data ──
+
+  var SURVEY_TEMPLATES = {
+    elementary: [
+      { q: 'What is your favorite thing about our school?', type: 'open' },
+      { q: 'Do you feel safe at school?', type: 'choice', options: ['Always', 'Usually', 'Sometimes', 'Rarely'] },
+      { q: 'What would make our school better?', type: 'open' },
+      { q: 'Do you feel like adults at school listen to you?', type: 'choice', options: ['Yes, always', 'Most of the time', 'Sometimes', 'Not really'] },
+      { q: 'If you could add one thing to our school, what would it be?', type: 'open' }
+    ],
+    middle: [
+      { q: 'How would you rate the mental health support at your school?', type: 'choice', options: ['Excellent', 'Good', 'Fair', 'Poor', 'I don\'t know what\'s available'] },
+      { q: 'What community issue concerns you most?', type: 'open' },
+      { q: 'How often do you feel your voice matters in school decisions?', type: 'choice', options: ['Always', 'Often', 'Sometimes', 'Rarely', 'Never'] },
+      { q: 'What resources do students in our community need most?', type: 'open' },
+      { q: 'Do you feel represented in your school\'s curriculum?', type: 'choice', options: ['Strongly yes', 'Somewhat', 'Not really', 'Not at all'] }
+    ],
+    high: [
+      { q: 'What is the biggest challenge facing young people in your community?', type: 'open' },
+      { q: 'How prepared do you feel to participate in civic life after graduation?', type: 'choice', options: ['Very prepared', 'Somewhat prepared', 'Not very prepared', 'Not at all prepared'] },
+      { q: 'Have you ever contacted an elected official about an issue?', type: 'choice', options: ['Yes, multiple times', 'Yes, once', 'No, but I would like to', 'No, and I don\'t plan to'] },
+      { q: 'What policy change would most improve your community?', type: 'open' },
+      { q: 'How would you rate access to healthcare in your community?', type: 'choice', options: ['Excellent', 'Good', 'Fair', 'Poor', 'I\'m not sure'] }
+    ]
+  };
+
+  // ── NEW: Rights & Responsibilities Explorer Data ──
+
+  var RIGHTS_DATA = {
+    elementary: {
+      title: 'Your Rights at School',
+      intro: 'Every student has rights \u2014 things you are always allowed to have and do. You also have responsibilities \u2014 things you should do to help everyone.',
+      rights: [
+        { right: 'The right to learn', icon: '\ud83d\udcda', explain: 'Every student deserves a good education. Teachers and schools must help you learn in a way that works for you.', responsibility: 'Pay attention, try your best, and ask for help when you need it.', scenario: 'A student in your class has trouble reading. The teacher spends extra time helping them. Another student says "That\'s not fair, the teacher should spend equal time with everyone." What do you think?' },
+        { right: 'The right to be safe', icon: '\ud83d\udee1\ufe0f', explain: 'Nobody should hurt you or make you feel scared at school. Adults at school must keep you safe.', responsibility: 'Follow safety rules, tell an adult if someone is being hurt, and be kind to others.', scenario: 'You see an older student pushing a younger kid on the playground. The younger kid looks scared. What would you do?' },
+        { right: 'The right to be heard', icon: '\ud83d\udce2', explain: 'Your ideas and feelings matter. Adults should listen to you and take what you say seriously.', responsibility: 'Speak up respectfully, listen when others talk, and take turns sharing.', scenario: 'Your class is voting on a field trip destination. Your choice does not win. Does that mean your right to be heard was violated? Why or why not?' },
+        { right: 'The right to be treated fairly', icon: '\u2696\ufe0f', explain: 'No one should be treated differently because of how they look, where they come from, or what they believe.', responsibility: 'Treat everyone with respect, stand up against bullying, and include others.', scenario: 'A new student who speaks a different language joins your class. Some kids laugh at their accent. What is the right thing to do?' },
+        { right: 'The right to be yourself', icon: '\ud83c\udf08', explain: 'You can be who you are. You do not have to pretend to be someone else to fit in.', responsibility: 'Respect other people for who they are, even if they are different from you.', scenario: 'A classmate likes things that other kids say are "weird." They want to share their hobby at show-and-tell but are nervous. How could you help?' }
+      ]
+    },
+    middle: {
+      title: 'Constitutional Rights',
+      intro: 'The U.S. Constitution, especially the Bill of Rights, protects fundamental freedoms. Understanding these rights helps you know what you are entitled to and how to stand up for yourself and others.',
+      rights: [
+        { right: 'Freedom of Speech (1st Amendment)', icon: '\ud83d\udce3', explain: 'You can express your opinions, including at school, as long as you are not causing a substantial disruption. The landmark case Tinker v. Des Moines (1969) confirmed that students do not "shed their constitutional rights at the schoolhouse gate."', responsibility: 'Use your speech to inform and uplift. Consider the impact of your words on others.', scenario: 'A student wears a T-shirt with a political message to school. The principal says they must change. The student says it is protected speech. Who is right, and where is the line?' },
+        { right: 'Freedom of Religion (1st Amendment)', icon: '\ud83d\udd4c', explain: 'You can practice any religion or no religion. The government (including public schools) cannot force you to pray or follow religious practices.', responsibility: 'Respect others\' beliefs even when they differ from yours. Learn about different traditions.', scenario: 'A student asks to be excused from a class activity that conflicts with their religious beliefs. Some classmates say they are just trying to get out of work. How should the school handle this?' },
+        { right: 'Due Process (5th & 14th Amendments)', icon: '\u2696\ufe0f', explain: 'The government must follow fair procedures before taking away your rights. At school, this means you have the right to hear the charges against you and tell your side before being suspended or expelled.', responsibility: 'Follow school rules. If you disagree with a punishment, use proper channels to appeal.', scenario: 'A student is accused of cheating on a test. The teacher wants to give them a zero immediately without hearing their side. What rights does the student have?' },
+        { right: 'Equal Protection (14th Amendment)', icon: '\ud83e\udd1d', explain: 'The law must treat all people equally. Schools cannot discriminate based on race, gender, religion, disability, or national origin.', responsibility: 'Speak up when you see unequal treatment. Be an ally to those who face discrimination.', scenario: 'You notice that students of one racial group receive harsher punishments than others for the same behavior. What could you do about this?' },
+        { right: 'Protection from Unreasonable Searches (4th Amendment)', icon: '\ud83d\udd12', explain: 'The government needs a good reason to search your belongings. At school, officials need "reasonable suspicion" (not just a hunch) to search your locker or bag.', responsibility: 'Know your rights if asked to submit to a search. Stay calm and ask questions respectfully.', scenario: 'A school administrator wants to search every student\'s backpack after an anonymous tip. Is this a reasonable search? What would you do?' }
+      ]
+    },
+    high: {
+      title: 'International Human Rights',
+      intro: 'The Universal Declaration of Human Rights (UDHR), adopted in 1948, outlines fundamental rights for all people everywhere. Understanding the difference between civil liberties and civil rights is essential for informed citizenship.',
+      rights: [
+        { right: 'Right to Life, Liberty, and Security (UDHR Article 3)', icon: '\ud83c\udf0d', explain: 'Every human being has the right to live, to be free, and to feel safe. This is the foundation of all other rights. Civil liberties protect you FROM government overreach; civil rights protect your EQUAL treatment by government.', responsibility: 'Advocate for the safety and freedom of all people, especially those whose rights are threatened.', scenario: 'A government argues that restricting certain freedoms is necessary for national security. Where should the line be drawn between safety and liberty? Use a real-world example to support your argument.' },
+        { right: 'Freedom from Discrimination (UDHR Article 2)', icon: '\u2696\ufe0f', explain: 'Everyone is entitled to all rights regardless of race, color, sex, language, religion, political opinion, national origin, property, birth, or other status. This right has been central to every civil rights movement in history.', responsibility: 'Examine your own biases. Actively work against systems that produce unequal outcomes.', scenario: 'A company uses an AI hiring tool that unintentionally screens out candidates from certain racial backgrounds. The company did not intend to discriminate. Is this still a rights violation? Why?' },
+        { right: 'Right to Education (UDHR Article 26)', icon: '\ud83c\udf93', explain: 'Everyone has the right to education. Elementary education shall be free and compulsory. Higher education shall be equally accessible based on merit. Around the world, 244 million children are still out of school.', responsibility: 'Value your education. Advocate for educational equity in your community and globally.', scenario: 'Two schools in the same city receive vastly different funding because of property tax differences. One has new technology; the other has outdated textbooks. Is this a human rights issue? What solutions exist?' },
+        { right: 'Freedom of Thought and Expression (UDHR Articles 18-19)', icon: '\ud83d\udce3', explain: 'Everyone has the right to freedom of thought, conscience, and religion, and the right to seek, receive, and share information. In the digital age, this right intersects with issues of censorship, misinformation, and platform regulation.', responsibility: 'Use your expression to contribute to truth and understanding. Seek multiple sources. Think critically.', scenario: 'A social media platform removes posts that contain certain political viewpoints, saying they violate community standards. Users say this is censorship. The platform says it is a private company, not the government. Analyze both sides.' },
+        { right: 'Right to Participate in Government (UDHR Article 21)', icon: '\ud83d\uddf3\ufe0f', explain: 'Everyone has the right to take part in their government, directly or through representatives. The will of the people shall be the basis of government authority, expressed through genuine periodic elections.', responsibility: 'Register to vote. Stay informed. Engage in civic life beyond just voting \u2014 attend meetings, contact officials, run for office.', scenario: 'In your state, formerly incarcerated people cannot vote even after serving their sentence. Some say this is fair punishment; others say it undermines democracy. Research both positions and form your own argument.' }
+      ]
+    }
+  };
+
+  // ── NEW: Service Learning Project Planner Data ──
+
+  var SERVICE_TEMPLATES = [
+    {
+      id: 'food_drive', title: '\ud83c\udf5e Food Drive', desc: 'Collect and distribute food to those in need',
+      steps: [
+        { phase: 'Need', task: 'Research local food insecurity: How many families in your area face food insecurity? Contact a local food bank to learn about their needs.' },
+        { phase: 'Research', task: 'Find out what foods are most needed (non-perishable, protein, canned vegetables). Learn about food safety and donation guidelines.' },
+        { phase: 'Plan', task: 'Set a goal (e.g., 200 items). Create collection boxes, flyers, and a timeline. Assign roles to team members. Get permission from your school.' },
+        { phase: 'Action', task: 'Run the drive for 2-3 weeks. Track donations daily. Send reminders and updates. Organize a sorting and delivery day.' },
+        { phase: 'Reflect', task: 'How many items were collected? How many families were served? What did you learn? What would you do differently next time?' }
+      ]
+    },
+    {
+      id: 'park_cleanup', title: '\ud83c\udf33 Park Cleanup', desc: 'Organize a community park or beach cleanup',
+      steps: [
+        { phase: 'Need', task: 'Visit local parks and document litter, damage, or neglect. Take photos. Talk to park visitors about what they notice.' },
+        { phase: 'Research', task: 'Learn about local environmental impacts of litter. Contact your parks department about volunteer guidelines and supplies.' },
+        { phase: 'Plan', task: 'Choose a date, location, and time. Get supplies (bags, gloves, grabbers). Create sign-up sheets. Plan for water and snacks. Arrange adult supervision.' },
+        { phase: 'Action', task: 'Lead the cleanup. Separate recyclables. Document before-and-after with photos. Track bags of trash collected.' },
+        { phase: 'Reflect', task: 'How much trash was collected? What types of litter were most common? How can the community prevent this? Write about the experience.' }
+      ]
+    },
+    {
+      id: 'tutoring', title: '\ud83d\udcda Tutoring Program', desc: 'Help younger students with reading or math',
+      steps: [
+        { phase: 'Need', task: 'Talk to teachers at a local elementary school about which students need extra help. Identify subjects where tutoring would make the biggest difference.' },
+        { phase: 'Research', task: 'Learn effective tutoring strategies. Practice explaining concepts in simple terms. Gather materials and practice activities.' },
+        { phase: 'Plan', task: 'Set a schedule (e.g., twice a week for 6 weeks). Match tutors with students. Create lesson plans. Get background checks and permissions as needed.' },
+        { phase: 'Action', task: 'Tutor consistently. Track each student\'s progress. Adjust your approach based on what works. Communicate with teachers and parents.' },
+        { phase: 'Reflect', task: 'How did your students improve? What tutoring methods worked best? How did this experience change your own understanding of the subject?' }
+      ]
+    },
+    {
+      id: 'supply_drive', title: '\ud83c\udf92 School Supply Drive', desc: 'Collect supplies for students who cannot afford them',
+      steps: [
+        { phase: 'Need', task: 'Research how many students at local schools qualify for free lunch (an indicator of need). Ask counselors what supplies are most needed.' },
+        { phase: 'Research', task: 'Create a list of most-needed supplies with price ranges. Research wholesale options. Identify potential donors (businesses, community groups).' },
+        { phase: 'Plan', task: 'Set goals for number of supply kits. Design collection points and donation boxes. Create a budget. Plan an assembly or distribution event.' },
+        { phase: 'Action', task: 'Run the drive. Send donation letters to local businesses. Organize supplies into kits. Distribute them discreetly to respect student privacy.' },
+        { phase: 'Reflect', task: 'How many kits were distributed? What was the community response? How can this become an annual project? What systemic issues did you notice?' }
+      ]
+    }
+  ];
+
+  var SERVICE_PHASES = [
+    { id: 'need', label: '\ud83d\udd0d Need', desc: 'Identify the community need' },
+    { id: 'research', label: '\ud83d\udcda Research', desc: 'Learn about the issue' },
+    { id: 'plan', label: '\ud83d\udcdd Plan', desc: 'Create your action plan' },
+    { id: 'action', label: '\u26a1 Action', desc: 'Carry out your project' },
+    { id: 'reflect', label: '\ud83d\udcad Reflect', desc: 'Evaluate your impact' }
+  ];
+
+  // ── NEW: Badges (expanded) ──
 
   var BADGES = [
     { id: 'first_issue', icon: '\ud83c\udf0d', label: 'First Issue', desc: 'Explored your first civic issue' },
@@ -332,6 +547,11 @@ window.SelHub = window.SelHub || {
     { id: 'hope_keeper', icon: '\ud83c\udf05', label: 'Hope Keeper', desc: 'Wrote your vision for the future' },
     { id: 'empathy_leader', icon: '\u2764\ufe0f', label: 'Empathy Leader', desc: 'Explored 5 or more civic issues' },
     { id: 'scenario_master', icon: '\ud83c\udfad', label: 'Scenario Master', desc: 'Completed all scenarios for your grade band' },
+    { id: 'civic_simulator', icon: '\ud83c\udfdb\ufe0f', label: 'Civic Simulator', desc: 'Completed a civic simulation' },
+    { id: 'survey_creator', icon: '\ud83d\udcca', label: 'Survey Creator', desc: 'Built and exported a community survey' },
+    { id: 'rights_scholar', icon: '\ud83d\udcdc', label: 'Rights Scholar', desc: 'Explored all rights in your grade band' },
+    { id: 'service_leader', icon: '\ud83e\udd1d', label: 'Service Leader', desc: 'Completed a service learning project plan' },
+    { id: 'democracy_champion', icon: '\ud83c\uddfa\ud83c\uddf8', label: 'Democracy Champion', desc: 'Engaged with all civic tools' },
   ];
 
   // ── NEW: Template Letters ──
@@ -390,11 +610,39 @@ window.SelHub = window.SelHub || {
       var selectedTemplate = d.selectedTemplate || null;
       var earnedBadges = d.earnedBadges || [];
 
+      // New feature state vars
+      var simStep = d.simStep || 0;
+      var simChoices = d.simChoices || {};
+      var simDone = d.simDone || false;
+      var budgetAlloc = d.budgetAlloc || null;
+      var legBill = d.legBill || null;
+      var legAllies = d.legAllies || [];
+      var legAnswers = d.legAnswers || {};
+      var legStep = d.legStep || 0;
+      var legSupport = d.legSupport || 0;
+      var surveyQuestions = d.surveyQuestions || [];
+      var surveyCustomQ = d.surveyCustomQ || '';
+      var surveyCustomType = d.surveyCustomType || 'open';
+      var surveyCustomOpts = d.surveyCustomOpts || '';
+      var surveyTitle = d.surveyTitle || '';
+      var surveyExported = d.surveyExported || false;
+      var rightsIdx = d.rightsIdx || 0;
+      var rightsExplored = d.rightsExplored || [];
+      var rightsScenarioAnswer = d.rightsScenarioAnswer || '';
+      var serviceTemplate = d.serviceTemplate || null;
+      var servicePhase = d.servicePhase || 0;
+      var serviceNotes = d.serviceNotes || {};
+      var serviceHours = d.serviceHours || 0;
+      var serviceDone = d.serviceDone || false;
+
       var actions = CIVIC_ACTIONS[gradeBand] || CIVIC_ACTIONS.elementary;
       var issues = CIVIC_ISSUES[gradeBand] || CIVIC_ISSUES.elementary;
       var quizQuestions = CIVIC_QUIZ[gradeBand] || CIVIC_QUIZ.elementary;
       var scenarios = CHANGE_SCENARIOS[gradeBand] || CHANGE_SCENARIOS.elementary;
       var changemakers = CHANGEMAKERS[gradeBand] || CHANGEMAKERS.elementary;
+      var simData = CIVIC_SIMULATIONS[gradeBand] || CIVIC_SIMULATIONS.elementary;
+      var surveyTemplates = SURVEY_TEMPLATES[gradeBand] || SURVEY_TEMPLATES.elementary;
+      var rightsInfo = RIGHTS_DATA[gradeBand] || RIGHTS_DATA.elementary;
 
       // ── Badge helper ──
       var awardBadge = function(badgeId) {
@@ -882,6 +1130,797 @@ window.SelHub = window.SelHub || {
               className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700'
             }, '\ud83d\udcbe Save Petition Draft')
           )
+        ),
+
+        // ═══ CIVIC SIMULATION GAME (NEW) ═══
+        tab === 'simulation' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83c\udfdb\ufe0f ' + simData.title),
+            h('p', { className: 'text-sm text-slate-500' }, simData.intro)
+          ),
+
+          // ── Elementary: School Council Meeting ──
+          gradeBand === 'elementary' && !simDone && (function() {
+            var proposals = simData.proposals;
+            var currentProposal = proposals[simStep];
+            if (!currentProposal) return null;
+            return h('div', { className: 'space-y-4' },
+              h('div', { className: 'flex justify-between items-center' },
+                h('span', { className: 'text-xs font-bold text-slate-500' }, 'Proposal ' + (simStep + 1) + ' of ' + proposals.length),
+                h('span', { className: 'text-xs font-bold text-teal-600' }, 'Decisions made: ' + Object.keys(simChoices).length)
+              ),
+              h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
+                h('div', { className: 'bg-teal-500 h-full rounded-full transition-all', style: { width: ((simStep + 1) / proposals.length * 100) + '%' } })
+              ),
+              h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-4' },
+                h('h4', { className: 'text-sm font-bold text-teal-700' }, '\ud83d\udcdd ' + currentProposal.title),
+                h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, currentProposal.desc),
+                h('div', { className: 'space-y-2 mt-3' },
+                  currentProposal.options.map(function(opt, oi) {
+                    var chosen = simChoices[currentProposal.id];
+                    var isChosen = chosen === oi;
+                    var showResult = chosen !== undefined;
+                    var btnClass = 'w-full p-3 rounded-xl border-2 text-left text-sm transition-all ';
+                    if (showResult && isChosen) btnClass += 'border-teal-400 bg-teal-50 font-bold';
+                    else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-teal-300 hover:bg-teal-50';
+                    else btnClass += 'border-slate-200 bg-slate-50 text-slate-400';
+                    return h('div', { key: oi },
+                      h('button', {
+                        disabled: showResult,
+                        onClick: function() {
+                          var newChoices = {};
+                          for (var k in simChoices) { if (simChoices.hasOwnProperty(k)) newChoices[k] = simChoices[k]; }
+                          newChoices[currentProposal.id] = oi;
+                          upd('simChoices', newChoices);
+                          ctx.awardXP(5);
+                        },
+                        className: btnClass
+                      }, opt.text),
+                      showResult && isChosen && h('div', { className: 'mt-2 ml-2 bg-blue-50 border border-blue-200 rounded-xl p-3' },
+                        h('p', { className: 'text-xs font-bold text-blue-700 mb-1' }, '\ud83d\udcca Outcome:'),
+                        h('p', { className: 'text-xs text-blue-800 leading-relaxed' }, opt.outcome),
+                        h('div', { className: 'flex gap-3 mt-2' },
+                          h('span', { className: 'text-[10px] font-bold ' + (opt.impact.happiness > 0 ? 'text-emerald-600' : opt.impact.happiness < 0 ? 'text-red-500' : 'text-slate-400') }, '\ud83d\ude0a Happiness: ' + (opt.impact.happiness > 0 ? '+' : '') + opt.impact.happiness),
+                          h('span', { className: 'text-[10px] font-bold ' + (opt.impact.learning > 0 ? 'text-emerald-600' : opt.impact.learning < 0 ? 'text-red-500' : 'text-slate-400') }, '\ud83d\udcda Learning: ' + (opt.impact.learning > 0 ? '+' : '') + opt.impact.learning),
+                          h('span', { className: 'text-[10px] font-bold ' + (opt.impact.health > 0 ? 'text-emerald-600' : opt.impact.health < 0 ? 'text-red-500' : 'text-slate-400') }, '\ud83d\udc9a Health: ' + (opt.impact.health > 0 ? '+' : '') + opt.impact.health)
+                        )
+                      )
+                    );
+                  })
+                ),
+                simChoices[currentProposal.id] !== undefined && h('button', {
+                  onClick: function() {
+                    if (simStep < proposals.length - 1) {
+                      upd('simStep', simStep + 1);
+                    } else {
+                      upd('simDone', true);
+                      awardBadge('civic_simulator');
+                      ctx.awardXP(15);
+                      ctx.celebrate();
+                    }
+                  },
+                  className: 'w-full px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 mt-2'
+                }, simStep < proposals.length - 1 ? 'Next Proposal \u2192' : '\u2728 See Overall Results')
+              )
+            );
+          })(),
+
+          // ── Middle: City Budget Challenge ──
+          gradeBand === 'middle' && !simDone && (function() {
+            var cats = simData.categories;
+            var alloc = budgetAlloc || {};
+            // Initialize budget if not set
+            if (Object.keys(alloc).length === 0) {
+              cats.forEach(function(c) { alloc[c.id] = c.base; });
+            }
+            var total = 0;
+            cats.forEach(function(c) { total += (alloc[c.id] || 0); });
+            var remaining = 1000000 - total;
+            return h('div', { className: 'space-y-4' },
+              h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-4' },
+                h('div', { className: 'flex justify-between items-center' },
+                  h('span', { className: 'text-xs font-bold text-slate-600' }, 'Total Budget: $1,000,000'),
+                  h('span', { className: 'text-xs font-bold ' + (Math.abs(remaining) < 100 ? 'text-emerald-600' : 'text-amber-600') }, 'Remaining: $' + remaining.toLocaleString())
+                ),
+                cats.map(function(cat) {
+                  var val = alloc[cat.id] || 0;
+                  var pct = Math.round(val / 1000000 * 100);
+                  return h('div', { key: cat.id, className: 'space-y-1' },
+                    h('div', { className: 'flex justify-between items-center' },
+                      h('span', { className: 'text-xs font-bold text-slate-700' }, cat.label),
+                      h('span', { className: 'text-xs font-bold text-teal-600' }, '$' + val.toLocaleString() + ' (' + pct + '%)')
+                    ),
+                    h('p', { className: 'text-[10px] text-slate-400' }, cat.desc),
+                    h('input', {
+                      type: 'range',
+                      min: 0,
+                      max: 500000,
+                      step: 10000,
+                      value: val,
+                      onChange: function(e) {
+                        var newAlloc = {};
+                        for (var k in alloc) { if (alloc.hasOwnProperty(k)) newAlloc[k] = alloc[k]; }
+                        newAlloc[cat.id] = parseInt(e.target.value, 10);
+                        upd('budgetAlloc', newAlloc);
+                      },
+                      className: 'w-full accent-teal-600',
+                      'aria-label': cat.label + ' budget'
+                    })
+                  );
+                }),
+                h('button', {
+                  onClick: function() {
+                    upd('simDone', true);
+                    awardBadge('civic_simulator');
+                    ctx.awardXP(15);
+                    ctx.celebrate();
+                  },
+                  className: 'w-full px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 mt-2'
+                }, '\ud83d\udcca Submit Budget & See Reactions')
+              )
+            );
+          })(),
+
+          // ── High: Legislative Simulation ──
+          gradeBand === 'high' && !simDone && (function() {
+            var steps = simData.steps;
+            var currentStep = steps[legStep];
+            if (!currentStep) return null;
+
+            // Step 1: Draft
+            if (currentStep.id === 'draft') {
+              return h('div', { className: 'space-y-4' },
+                h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
+                  h('div', { className: 'bg-indigo-500 h-full rounded-full transition-all', style: { width: ((legStep + 1) / steps.length * 100) + '%' } })
+                ),
+                h('div', { className: 'text-xs font-bold text-slate-500 text-center' }, currentStep.title),
+                h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-3' },
+                  h('p', { className: 'text-sm text-slate-600' }, currentStep.desc),
+                  currentStep.bills.map(function(bill) {
+                    var isSelected = legBill === bill.id;
+                    return h('button', {
+                      key: bill.id,
+                      onClick: function() {
+                        updMulti({ legBill: bill.id, legSupport: bill.support_base });
+                        ctx.awardXP(5);
+                      },
+                      className: 'w-full p-4 rounded-xl border-2 text-left transition-all ' + (isSelected ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-white hover:border-indigo-300')
+                    },
+                      h('div', { className: 'font-bold text-sm text-slate-800' }, bill.title),
+                      h('p', { className: 'text-xs text-slate-500 mt-1' }, bill.desc),
+                      h('p', { className: 'text-[10px] text-amber-600 mt-1' }, '\u26a0\ufe0f Opposition: ' + bill.opposition),
+                      h('p', { className: 'text-[10px] text-teal-600 font-bold mt-1' }, 'Base support: ' + bill.support_base + '%')
+                    );
+                  }),
+                  legBill && h('button', {
+                    onClick: function() { upd('legStep', 1); },
+                    className: 'w-full px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 mt-2'
+                  }, 'Next: Build Coalition \u2192')
+                )
+              );
+            }
+
+            // Step 2: Coalition
+            if (currentStep.id === 'coalition') {
+              return h('div', { className: 'space-y-4' },
+                h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
+                  h('div', { className: 'bg-indigo-500 h-full rounded-full transition-all', style: { width: ((legStep + 1) / steps.length * 100) + '%' } })
+                ),
+                h('div', { className: 'flex justify-between text-xs font-bold' },
+                  h('span', { className: 'text-slate-500' }, currentStep.title),
+                  h('span', { className: 'text-indigo-600' }, 'Current Support: ' + legSupport + '%')
+                ),
+                h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-3' },
+                  h('p', { className: 'text-sm text-slate-600' }, currentStep.desc),
+                  currentStep.allies.map(function(ally) {
+                    var isRecruited = legAllies.indexOf(ally.id) !== -1;
+                    return h('div', { key: ally.id, className: 'p-3 rounded-xl border-2 ' + (isRecruited ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white') },
+                      h('div', { className: 'flex justify-between items-center' },
+                        h('span', { className: 'font-bold text-sm text-slate-800' }, ally.label),
+                        h('span', { className: 'text-[10px] font-bold text-emerald-600' }, '+' + ally.bonus + '% support')
+                      ),
+                      h('p', { className: 'text-xs text-slate-500 mt-1' }, ally.ask),
+                      !isRecruited && h('div', { className: 'flex gap-2 mt-2' },
+                        h('button', {
+                          onClick: function() {
+                            var newAllies = legAllies.concat([ally.id]);
+                            updMulti({ legAllies: newAllies, legSupport: legSupport + ally.bonus });
+                            ctx.awardXP(3);
+                          },
+                          className: 'px-3 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700'
+                        }, '\u2705 Accept & Recruit'),
+                        h('button', {
+                          onClick: function() {
+                            addToast(ally.label + ' declined to support your bill.', 'info');
+                          },
+                          className: 'px-3 py-1 bg-slate-200 text-slate-600 rounded-lg text-[10px] font-bold hover:bg-slate-300'
+                        }, '\u274c Decline')
+                      ),
+                      isRecruited && h('span', { className: 'text-[10px] text-emerald-600 font-bold mt-1 block' }, '\u2705 Recruited')
+                    );
+                  }),
+                  h('button', {
+                    onClick: function() { upd('legStep', 2); },
+                    className: 'w-full px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 mt-2'
+                  }, 'Next: Committee Hearing \u2192')
+                )
+              );
+            }
+
+            // Step 3: Committee
+            if (currentStep.id === 'committee') {
+              return h('div', { className: 'space-y-4' },
+                h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
+                  h('div', { className: 'bg-indigo-500 h-full rounded-full transition-all', style: { width: ((legStep + 1) / steps.length * 100) + '%' } })
+                ),
+                h('div', { className: 'flex justify-between text-xs font-bold' },
+                  h('span', { className: 'text-slate-500' }, currentStep.title),
+                  h('span', { className: 'text-indigo-600' }, 'Current Support: ' + legSupport + '%')
+                ),
+                h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-4' },
+                  h('p', { className: 'text-sm text-slate-600' }, currentStep.desc),
+                  currentStep.questions.map(function(cq, qi) {
+                    var answered = legAnswers[qi] !== undefined;
+                    return h('div', { key: qi, className: 'p-3 rounded-xl border-2 ' + (answered ? 'border-slate-200 bg-slate-50' : 'border-amber-300 bg-amber-50') },
+                      h('p', { className: 'font-bold text-sm text-slate-800' }, '\ud83d\udde3\ufe0f "' + cq.q + '"'),
+                      !answered && h('div', { className: 'flex gap-2 mt-2' },
+                        h('button', {
+                          onClick: function() {
+                            var newAnswers = {};
+                            for (var k in legAnswers) { if (legAnswers.hasOwnProperty(k)) newAnswers[k] = legAnswers[k]; }
+                            newAnswers[qi] = 'good';
+                            updMulti({ legAnswers: newAnswers, legSupport: legSupport + cq.goodBonus });
+                            ctx.awardXP(5);
+                            addToast('Strong answer! Support increased.', 'success');
+                          },
+                          className: 'flex-1 px-3 py-2 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700'
+                        }, '\u2705 ' + cq.good),
+                        h('button', {
+                          onClick: function() {
+                            var newAnswers = {};
+                            for (var k in legAnswers) { if (legAnswers.hasOwnProperty(k)) newAnswers[k] = legAnswers[k]; }
+                            newAnswers[qi] = 'bad';
+                            updMulti({ legAnswers: newAnswers, legSupport: Math.max(0, legSupport + cq.badPenalty) });
+                            addToast('Weak answer. Support decreased.', 'warning');
+                          },
+                          className: 'flex-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg text-[10px] font-bold hover:bg-red-200'
+                        }, '\u274c ' + cq.bad)
+                      ),
+                      answered && h('p', { className: 'text-[10px] mt-1 font-bold ' + (legAnswers[qi] === 'good' ? 'text-emerald-600' : 'text-red-500') }, legAnswers[qi] === 'good' ? '\u2705 Strong response \u2014 committee impressed' : '\u274c Weak response \u2014 committee skeptical')
+                    );
+                  }),
+                  Object.keys(legAnswers).length >= currentStep.questions.length && h('button', {
+                    onClick: function() { upd('legStep', 3); },
+                    className: 'w-full px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 mt-2'
+                  }, 'Next: Floor Vote \u2192')
+                )
+              );
+            }
+
+            // Step 4: Floor Vote
+            if (currentStep.id === 'vote') {
+              var passed = legSupport >= 51;
+              return h('div', { className: 'space-y-4' },
+                h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
+                  h('div', { className: 'bg-indigo-500 h-full rounded-full', style: { width: '100%' } })
+                ),
+                h('div', { className: 'text-xs font-bold text-slate-500 text-center' }, currentStep.title),
+                h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-4 text-center' },
+                  h('p', { className: 'text-sm text-slate-600' }, currentStep.desc),
+                  h('div', { className: 'bg-slate-100 rounded-full h-6 overflow-hidden relative mt-4' },
+                    h('div', { className: 'h-full rounded-full transition-all ' + (passed ? 'bg-emerald-500' : 'bg-red-400'), style: { width: Math.min(legSupport, 100) + '%' } }),
+                    h('div', { className: 'absolute inset-0 flex items-center justify-center text-xs font-bold text-white', style: { textShadow: '0 1px 2px rgba(0,0,0,0.3)' } }, legSupport + '% Support')
+                  ),
+                  h('div', { className: 'absolute left-1/2 top-0 bottom-0 border-l-2 border-dashed border-slate-400', style: { left: '50%' } }),
+                  h('p', { className: 'text-xs text-slate-400 mt-1' }, 'Need 51% to pass'),
+                  h('div', { className: 'text-4xl mt-4' }, passed ? '\ud83c\udf89' : '\ud83d\udcaa'),
+                  h('h4', { className: 'text-lg font-black ' + (passed ? 'text-emerald-700' : 'text-amber-700') }, passed ? 'Your Bill Passed!' : 'Your Bill Did Not Pass'),
+                  h('p', { className: 'text-sm text-slate-600' }, passed ? 'Congratulations! Your coalition-building and strong committee answers made the difference. This is how democracy works.' : 'Your bill fell short of 51%. Consider building a broader coalition and preparing stronger evidence next time. Many great bills take multiple attempts to pass.'),
+                  h('button', {
+                    onClick: function() {
+                      upd('simDone', true);
+                      awardBadge('civic_simulator');
+                      ctx.awardXP(20);
+                      if (passed) ctx.celebrate();
+                    },
+                    className: 'px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 mt-2'
+                  }, '\u2728 Complete Simulation')
+                )
+              );
+            }
+
+            return null;
+          })(),
+
+          // ── Simulation Complete (all bands) ──
+          simDone && (function() {
+            // Elementary results
+            if (gradeBand === 'elementary') {
+              var proposals = simData.proposals;
+              var totalH = 0, totalL = 0, totalHe = 0;
+              proposals.forEach(function(p) {
+                var ci = simChoices[p.id];
+                if (ci !== undefined && p.options[ci]) {
+                  totalH += p.options[ci].impact.happiness;
+                  totalL += p.options[ci].impact.learning;
+                  totalHe += p.options[ci].impact.health;
+                }
+              });
+              return h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-6 text-center space-y-4' },
+                h('div', { className: 'text-4xl' }, '\ud83c\udfdb\ufe0f'),
+                h('h4', { className: 'text-lg font-black text-slate-800' }, 'School Council Results!'),
+                h('div', { className: 'flex justify-center gap-6' },
+                  h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\ude0a'), h('div', { className: 'text-sm font-bold ' + (totalH >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalH >= 0 ? '+' : '') + totalH), h('div', { className: 'text-[10px] text-slate-400' }, 'Happiness')),
+                  h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\udcda'), h('div', { className: 'text-sm font-bold ' + (totalL >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalL >= 0 ? '+' : '') + totalL), h('div', { className: 'text-[10px] text-slate-400' }, 'Learning')),
+                  h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\udc9a'), h('div', { className: 'text-sm font-bold ' + (totalHe >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalHe >= 0 ? '+' : '') + totalHe), h('div', { className: 'text-[10px] text-slate-400' }, 'Health'))
+                ),
+                h('p', { className: 'text-sm text-slate-600' }, 'Every decision has trade-offs. Great civic leaders think about how their choices affect everyone, not just themselves.'),
+                h('button', {
+                  onClick: function() { updMulti({ simStep: 0, simChoices: {}, simDone: false }); },
+                  className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
+                }, '\ud83d\udd04 Try Again')
+              );
+            }
+
+            // Middle results
+            if (gradeBand === 'middle') {
+              var cats = simData.categories;
+              var alloc = budgetAlloc || {};
+              var reactions = simData.reactions;
+              return h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-6 space-y-4' },
+                h('div', { className: 'text-center' },
+                  h('div', { className: 'text-4xl' }, '\ud83d\udcb0'),
+                  h('h4', { className: 'text-lg font-black text-slate-800' }, 'Budget Results: Community Reactions')
+                ),
+                cats.map(function(cat) {
+                  var val = alloc[cat.id] || 0;
+                  var isLow = val < 100000;
+                  var isHigh = val > 250000;
+                  var reaction = isHigh ? reactions[cat.id].high : (isLow ? reactions[cat.id].low : 'Adequate funding maintains current service levels. The community accepts this allocation.');
+                  return h('div', { key: cat.id, className: 'bg-white rounded-xl border p-3 ' + (isHigh ? 'border-emerald-300' : isLow ? 'border-red-300' : 'border-slate-200') },
+                    h('div', { className: 'flex justify-between' },
+                      h('span', { className: 'text-xs font-bold text-slate-700' }, cat.label),
+                      h('span', { className: 'text-xs font-bold text-teal-600' }, '$' + val.toLocaleString())
+                    ),
+                    h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, reaction)
+                  );
+                }),
+                h('p', { className: 'text-sm text-slate-600 text-center mt-2' }, 'Budgeting is about balancing competing needs. There is no perfect answer \u2014 only thoughtful trade-offs.'),
+                h('button', {
+                  onClick: function() { updMulti({ budgetAlloc: null, simDone: false }); },
+                  className: 'w-full px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
+                }, '\ud83d\udd04 Try Again')
+              );
+            }
+
+            // High results (handled in floor vote step above)
+            if (gradeBand === 'high') {
+              return h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200 p-6 text-center space-y-4' },
+                h('div', { className: 'text-4xl' }, '\ud83c\udfdb\ufe0f'),
+                h('h4', { className: 'text-lg font-black text-slate-800' }, 'Legislative Simulation Complete!'),
+                h('p', { className: 'text-sm text-slate-600' }, 'You experienced the full legislative process: drafting, coalition-building, committee testimony, and the floor vote. Real democracy requires patience, persuasion, and persistence.'),
+                h('button', {
+                  onClick: function() { updMulti({ legStep: 0, legBill: null, legAllies: [], legAnswers: {}, legSupport: 0, simDone: false }); },
+                  className: 'px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700'
+                }, '\ud83d\udd04 Try Again')
+              );
+            }
+
+            return null;
+          })()
+        ),
+
+        // ═══ COMMUNITY SURVEY BUILDER (NEW) ═══
+        tab === 'survey' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83d\udcca Community Survey Builder'),
+            h('p', { className: 'text-sm text-slate-500' }, 'Create a survey to learn about community needs. Add template questions or write your own.')
+          ),
+
+          // Survey title
+          h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
+            h('label', { className: 'text-xs font-bold text-slate-600 block' }, 'Survey Title'),
+            h('input', {
+              type: 'text',
+              value: surveyTitle,
+              onChange: function(e) { upd('surveyTitle', e.target.value); },
+              placeholder: 'e.g., "Our Community Needs Assessment"',
+              className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-300',
+              'aria-label': 'Survey title'
+            })
+          ),
+
+          // Template questions
+          h('div', { className: 'bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-3' },
+            h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest' }, '\ud83d\udccb Template Questions (' + gradeBand + ')'),
+            h('p', { className: 'text-[10px] text-slate-400' }, 'Click to add a template question to your survey.'),
+            h('div', { className: 'space-y-2' },
+              surveyTemplates.map(function(tmpl, ti) {
+                var alreadyAdded = surveyQuestions.some(function(sq) { return sq.q === tmpl.q; });
+                return h('button', {
+                  key: ti,
+                  disabled: alreadyAdded,
+                  onClick: function() {
+                    var newQs = surveyQuestions.concat([{ q: tmpl.q, type: tmpl.type, options: tmpl.options || [] }]);
+                    upd('surveyQuestions', newQs);
+                    ctx.awardXP(2);
+                  },
+                  className: 'w-full p-3 rounded-xl border text-left text-xs transition-all ' + (alreadyAdded ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white hover:border-teal-300 text-slate-700')
+                },
+                  h('div', { className: 'flex justify-between items-center' },
+                    h('span', null, tmpl.q),
+                    alreadyAdded ? h('span', { className: 'text-[10px] font-bold text-emerald-600' }, '\u2705 Added') : h('span', { className: 'text-[10px] font-bold text-teal-500' }, '+ Add')
+                  ),
+                  h('span', { className: 'text-[10px] text-slate-400 block mt-0.5' }, tmpl.type === 'choice' ? 'Multiple choice' : 'Open-ended')
+                );
+              })
+            )
+          ),
+
+          // Custom question builder
+          h('div', { className: 'bg-white rounded-2xl border-2 border-amber-200 p-5 space-y-3' },
+            h('h4', { className: 'text-xs font-bold text-amber-700 uppercase tracking-widest' }, '\u270d\ufe0f Write Your Own Question'),
+            h('input', {
+              type: 'text',
+              value: surveyCustomQ,
+              onChange: function(e) { upd('surveyCustomQ', e.target.value); },
+              placeholder: 'Type your question here...',
+              className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
+              'aria-label': 'Custom survey question'
+            }),
+            h('div', { className: 'flex gap-2' },
+              h('button', {
+                onClick: function() { upd('surveyCustomType', 'open'); },
+                className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold border ' + (surveyCustomType === 'open' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white text-slate-600 border-slate-300')
+              }, 'Open-ended'),
+              h('button', {
+                onClick: function() { upd('surveyCustomType', 'choice'); },
+                className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold border ' + (surveyCustomType === 'choice' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white text-slate-600 border-slate-300')
+              }, 'Multiple Choice')
+            ),
+            surveyCustomType === 'choice' && h('div', null,
+              h('label', { className: 'text-[10px] text-slate-500 block mb-1' }, 'Answer options (comma-separated)'),
+              h('input', {
+                type: 'text',
+                value: surveyCustomOpts,
+                onChange: function(e) { upd('surveyCustomOpts', e.target.value); },
+                placeholder: 'e.g., Strongly Agree, Agree, Neutral, Disagree, Strongly Disagree',
+                className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
+                'aria-label': 'Answer options'
+              })
+            ),
+            surveyCustomQ.length > 5 && h('button', {
+              onClick: function() {
+                var opts = surveyCustomType === 'choice' ? surveyCustomOpts.split(',').map(function(o) { return o.trim(); }).filter(Boolean) : [];
+                var newQs = surveyQuestions.concat([{ q: surveyCustomQ, type: surveyCustomType, options: opts, custom: true }]);
+                updMulti({ surveyQuestions: newQs, surveyCustomQ: '', surveyCustomOpts: '' });
+                ctx.awardXP(3);
+              },
+              className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700'
+            }, '+ Add Question to Survey')
+          ),
+
+          // Current survey preview
+          surveyQuestions.length > 0 && h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
+            h('h4', { className: 'text-xs font-bold text-teal-700 uppercase tracking-widest' }, '\ud83d\udcdd Your Survey (' + surveyQuestions.length + ' questions)'),
+            surveyQuestions.map(function(sq, si) {
+              return h('div', { key: si, className: 'bg-white rounded-xl border border-teal-200 p-3 flex justify-between items-start' },
+                h('div', { className: 'flex-1' },
+                  h('p', { className: 'text-xs font-bold text-slate-800' }, (si + 1) + '. ' + sq.q),
+                  h('span', { className: 'text-[10px] text-slate-400' }, sq.type === 'choice' ? 'Choices: ' + (sq.options || []).join(', ') : 'Open-ended response'),
+                  sq.custom && h('span', { className: 'text-[10px] text-amber-500 ml-2 font-bold' }, '(custom)')
+                ),
+                h('button', {
+                  onClick: function() {
+                    var newQs = surveyQuestions.filter(function(_, i) { return i !== si; });
+                    upd('surveyQuestions', newQs);
+                  },
+                  className: 'text-red-400 hover:text-red-600 text-xs font-bold ml-2 shrink-0',
+                  'aria-label': 'Remove question ' + (si + 1)
+                }, '\u2716')
+              );
+            }),
+
+            // Export survey
+            h('div', { className: 'flex gap-2 mt-2' },
+              h('button', {
+                onClick: function() {
+                  var text = '=== ' + (surveyTitle || 'Community Survey') + ' ===\n\n';
+                  surveyQuestions.forEach(function(sq, si) {
+                    text += (si + 1) + '. ' + sq.q + '\n';
+                    if (sq.type === 'choice' && sq.options) {
+                      sq.options.forEach(function(opt, oi) {
+                        text += '   [ ] ' + opt + '\n';
+                      });
+                    } else {
+                      text += '   Answer: ___________________________________\n';
+                    }
+                    text += '\n';
+                  });
+                  text += '\nThank you for completing this survey!\n';
+                  if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text);
+                    addToast('Survey copied to clipboard! Share it with your community.', 'success');
+                  } else {
+                    addToast('Survey generated with ' + surveyQuestions.length + ' questions.', 'success');
+                  }
+                  awardBadge('survey_creator');
+                  upd('surveyExported', true);
+                  ctx.awardXP(15);
+                },
+                className: 'flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
+              }, '\ud83d\udccb Export Survey as Text'),
+              surveyExported && h('span', { className: 'self-center text-[10px] font-bold text-emerald-600' }, '\u2705 Exported!')
+            )
+          ),
+
+          // Analyze results hint
+          surveyExported && h('div', { className: 'bg-purple-50 border border-purple-200 rounded-xl p-4' },
+            h('h4', { className: 'text-xs font-bold text-purple-700 mb-1' }, '\ud83d\udcc8 After Collecting Responses'),
+            h('div', { className: 'text-xs text-slate-600 space-y-1' },
+              h('p', null, '\u2022 Tally multiple-choice answers and calculate percentages'),
+              h('p', null, '\u2022 Group open-ended responses by common themes'),
+              h('p', null, '\u2022 Look for patterns: What do most people agree on?'),
+              h('p', null, '\u2022 Identify surprises: What did you not expect?'),
+              h('p', null, '\u2022 Create a summary with charts or graphs to share your findings'),
+              h('p', null, '\u2022 Present your results to decision-makers who can act on them')
+            )
+          )
+        ),
+
+        // ═══ RIGHTS & RESPONSIBILITIES EXPLORER (NEW) ═══
+        tab === 'rights' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83d\udcdc ' + rightsInfo.title),
+            h('p', { className: 'text-sm text-slate-500' }, rightsInfo.intro)
+          ),
+
+          // Rights navigation
+          h('div', { className: 'flex gap-1 bg-slate-50 rounded-xl p-1 border border-slate-200 overflow-x-auto' },
+            rightsInfo.rights.map(function(r, ri) {
+              var isExplored = rightsExplored.indexOf(ri) !== -1;
+              return h('button', {
+                key: ri,
+                onClick: function() {
+                  upd('rightsIdx', ri);
+                  if (rightsExplored.indexOf(ri) === -1) {
+                    var newExplored = rightsExplored.concat([ri]);
+                    upd('rightsExplored', newExplored);
+                    ctx.awardXP(5);
+                    if (newExplored.length >= rightsInfo.rights.length) {
+                      awardBadge('rights_scholar');
+                    }
+                  }
+                },
+                className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all whitespace-nowrap ' +
+                  (rightsIdx === ri ? 'bg-white text-indigo-700 shadow-sm' : isExplored ? 'text-emerald-600/70' : 'text-slate-500/60 hover:text-slate-700')
+              }, r.icon + ' ' + (ri + 1));
+            })
+          ),
+
+          // Current right detail
+          (function() {
+            var right = rightsInfo.rights[rightsIdx];
+            if (!right) return null;
+            return h('div', { className: 'space-y-4' },
+              // Right card
+              h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-4' },
+                h('div', { className: 'flex items-center gap-3' },
+                  h('span', { className: 'text-3xl' }, right.icon),
+                  h('h4', { className: 'text-sm font-bold text-indigo-700' }, right.right)
+                ),
+                h('div', { className: 'bg-indigo-50 rounded-xl p-4 border border-indigo-200' },
+                  h('h5', { className: 'text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-1' }, 'What This Means'),
+                  h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, right.explain)
+                ),
+                h('div', { className: 'bg-emerald-50 rounded-xl p-4 border border-emerald-200' },
+                  h('h5', { className: 'text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1' }, 'Your Responsibility'),
+                  h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, right.responsibility)
+                ),
+                callTTS && h('button', {
+                  onClick: function() { callTTS(right.right + '. ' + right.explain + '. Your responsibility: ' + right.responsibility); },
+                  className: 'text-[10px] text-indigo-500 hover:text-indigo-700 font-bold'
+                }, '\ud83d\udd0a Hear this read aloud')
+              ),
+
+              // Scenario
+              h('div', { className: 'bg-amber-50 rounded-2xl border-2 border-amber-200 p-5 space-y-3' },
+                h('h5', { className: 'text-xs font-bold text-amber-700' }, '\ud83e\udd14 What Would You Do?'),
+                h('p', { className: 'text-sm text-slate-700 leading-relaxed italic' }, right.scenario),
+                h('textarea', {
+                  value: rightsScenarioAnswer,
+                  onChange: function(e) { upd('rightsScenarioAnswer', e.target.value); },
+                  placeholder: 'Write your response here. Think about rights and responsibilities...',
+                  className: 'w-full text-sm p-3 border border-amber-200 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
+                  'aria-label': 'Your response to the scenario'
+                }),
+                rightsScenarioAnswer && rightsScenarioAnswer.length > 15 && callGemini && h('button', {
+                  onClick: function() {
+                    upd('aiLoading', true);
+                    var prompt = 'You are a civic education teacher for ' + (gradeLevel || '5th grade') + ' students. A student was asked this scenario about rights: "' + right.scenario + '" They responded: "' + rightsScenarioAnswer + '". Give brief, encouraging feedback (2-3 sentences). Highlight their good reasoning and gently suggest any perspectives they might have missed. Be warm and supportive.';
+                    callGemini(prompt).then(function(resp) {
+                      updMulti({ aiResponse: resp, aiLoading: false });
+                      ctx.awardXP(5);
+                    }).catch(function() { upd('aiLoading', false); });
+                  },
+                  disabled: aiLoading,
+                  className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 disabled:opacity-40 flex items-center gap-2'
+                }, h(Sparkles, { size: 14 }), aiLoading ? 'Thinking...' : '\ud83d\udcac Get Feedback on Your Response')
+              ),
+
+              // Navigation between rights
+              h('div', { className: 'flex justify-between' },
+                rightsIdx > 0 ? h('button', {
+                  onClick: function() { updMulti({ rightsIdx: rightsIdx - 1, rightsScenarioAnswer: '' }); },
+                  className: 'px-4 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
+                }, '\u2190 Previous Right') : h('div'),
+                rightsIdx < rightsInfo.rights.length - 1 ? h('button', {
+                  onClick: function() { updMulti({ rightsIdx: rightsIdx + 1, rightsScenarioAnswer: '' }); },
+                  className: 'px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700'
+                }, 'Next Right \u2192') : h('button', {
+                  onClick: function() {
+                    awardBadge('rights_scholar');
+                    ctx.awardXP(15);
+                    addToast('You have explored all rights for your grade level!', 'success');
+                    ctx.celebrate();
+                  },
+                  className: 'px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700'
+                }, '\u2728 Complete Rights Explorer')
+              )
+            );
+          })()
+        ),
+
+        // ═══ SERVICE LEARNING PROJECT PLANNER (NEW) ═══
+        tab === 'service' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83e\udd1d Service Learning Project Planner'),
+            h('p', { className: 'text-sm text-slate-500' }, 'Plan a community service project from start to finish. Choose a template or design your own.')
+          ),
+
+          // Template selection
+          !serviceTemplate && h('div', { className: 'space-y-3' },
+            h('h4', { className: 'text-xs font-bold text-teal-600 uppercase tracking-widest' }, 'Choose a Project Template'),
+            h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+              SERVICE_TEMPLATES.map(function(tmpl) {
+                return h('button', {
+                  key: tmpl.id,
+                  onClick: function() {
+                    upd('serviceTemplate', tmpl.id);
+                    ctx.awardXP(5);
+                  },
+                  className: 'p-4 rounded-2xl border-2 border-slate-200 bg-white text-left transition-all hover:border-teal-300 hover:shadow-md hover:scale-[1.01]'
+                },
+                  h('div', { className: 'text-2xl mb-2' }, tmpl.title.split(' ')[0]),
+                  h('div', { className: 'font-bold text-sm text-slate-800' }, tmpl.title),
+                  h('p', { className: 'text-xs text-slate-500 mt-1' }, tmpl.desc)
+                );
+              })
+            )
+          ),
+
+          // Active project plan
+          serviceTemplate && !serviceDone && (function() {
+            var tmpl = SERVICE_TEMPLATES.find(function(t) { return t.id === serviceTemplate; });
+            if (!tmpl) return null;
+            var currentPhase = SERVICE_PHASES[servicePhase];
+            var currentStep = tmpl.steps[servicePhase];
+            return h('div', { className: 'space-y-4' },
+              h('button', {
+                onClick: function() { updMulti({ serviceTemplate: null, servicePhase: 0, serviceNotes: {}, serviceHours: 0 }); },
+                className: 'text-xs text-teal-600 font-bold hover:text-teal-800 flex items-center gap-1'
+              }, h(ArrowLeft, { size: 14 }), 'Back to templates'),
+
+              h('div', { className: 'bg-teal-50 rounded-xl border border-teal-200 p-3 text-center' },
+                h('span', { className: 'text-sm font-bold text-teal-700' }, tmpl.title)
+              ),
+
+              // Phase progress
+              h('div', { className: 'flex gap-1' },
+                SERVICE_PHASES.map(function(phase, pi) {
+                  var isActive = pi === servicePhase;
+                  var isDone = pi < servicePhase;
+                  return h('div', {
+                    key: pi,
+                    className: 'flex-1 text-center py-2 rounded-lg text-[10px] font-bold ' +
+                      (isActive ? 'bg-teal-600 text-white' : isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400')
+                  }, phase.label);
+                })
+              ),
+
+              // Current phase
+              h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
+                h('h4', { className: 'text-sm font-bold text-teal-700' }, currentPhase.label + ': ' + currentPhase.desc),
+                h('div', { className: 'bg-teal-50 rounded-xl p-3 border border-teal-200' },
+                  h('p', { className: 'text-xs text-teal-800 leading-relaxed' }, '\ud83d\udccb Task: ' + currentStep.task)
+                ),
+                h('textarea', {
+                  value: serviceNotes[currentPhase.id] || '',
+                  onChange: function(e) {
+                    var newNotes = {};
+                    for (var k in serviceNotes) { if (serviceNotes.hasOwnProperty(k)) newNotes[k] = serviceNotes[k]; }
+                    newNotes[currentPhase.id] = e.target.value;
+                    upd('serviceNotes', newNotes);
+                  },
+                  placeholder: 'Write your notes, plans, and progress here...',
+                  className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-teal-300',
+                  'aria-label': currentPhase.label + ' notes'
+                }),
+
+                // Hour tracker
+                h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
+                  h('div', { className: 'flex items-center justify-between' },
+                    h('span', { className: 'text-xs font-bold text-amber-700' }, '\u23f0 Service Hours Logged'),
+                    h('div', { className: 'flex items-center gap-2' },
+                      h('button', {
+                        onClick: function() { if (serviceHours > 0) upd('serviceHours', serviceHours - 0.5); },
+                        className: 'w-6 h-6 rounded-full bg-amber-200 text-amber-700 text-xs font-bold hover:bg-amber-300'
+                      }, '-'),
+                      h('span', { className: 'text-sm font-bold text-amber-800 w-10 text-center' }, serviceHours.toFixed(1)),
+                      h('button', {
+                        onClick: function() { upd('serviceHours', serviceHours + 0.5); },
+                        className: 'w-6 h-6 rounded-full bg-amber-200 text-amber-700 text-xs font-bold hover:bg-amber-300'
+                      }, '+')
+                    )
+                  ),
+                  h('p', { className: 'text-[10px] text-amber-500 mt-1' }, 'Track the hours you spend on each phase of your project.')
+                ),
+
+                // Navigation
+                h('div', { className: 'flex justify-between mt-2' },
+                  servicePhase > 0 ? h('button', {
+                    onClick: function() { upd('servicePhase', servicePhase - 1); },
+                    className: 'px-4 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
+                  }, '\u2190 Previous Phase') : h('div'),
+                  servicePhase < SERVICE_PHASES.length - 1 ? h('button', {
+                    onClick: function() { upd('servicePhase', servicePhase + 1); ctx.awardXP(5); },
+                    className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
+                  }, 'Next Phase \u2192') : h('button', {
+                    onClick: function() {
+                      upd('serviceDone', true);
+                      awardBadge('service_leader');
+                      ctx.awardXP(25);
+                      addToast('Service project plan complete! You logged ' + serviceHours.toFixed(1) + ' hours. Amazing work!', 'success');
+                      ctx.celebrate();
+                    },
+                    className: 'px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700'
+                  }, '\u2728 Complete Project Plan')
+                )
+              )
+            );
+          })(),
+
+          // Project complete
+          serviceDone && (function() {
+            var tmpl = SERVICE_TEMPLATES.find(function(t) { return t.id === serviceTemplate; });
+            return h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-6 text-center space-y-4' },
+              h('div', { className: 'text-4xl' }, '\ud83c\udfc5'),
+              h('h4', { className: 'text-lg font-black text-slate-800' }, 'Service Project Complete!'),
+              tmpl && h('p', { className: 'text-sm font-bold text-teal-700' }, tmpl.title),
+              h('div', { className: 'flex justify-center gap-6' },
+                h('div', null,
+                  h('div', { className: 'text-2xl font-bold text-teal-700' }, serviceHours.toFixed(1)),
+                  h('div', { className: 'text-[10px] text-slate-400' }, 'Hours Logged')
+                ),
+                h('div', null,
+                  h('div', { className: 'text-2xl font-bold text-teal-700' }, Object.keys(serviceNotes).length),
+                  h('div', { className: 'text-[10px] text-slate-400' }, 'Phases Documented')
+                )
+              ),
+              h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200 text-left' },
+                h('h5', { className: 'text-xs font-bold text-slate-700 mb-2' }, 'Impact Measurement'),
+                h('p', { className: 'text-xs text-slate-600' }, '\u2022 People served or impacted: ________'),
+                h('p', { className: 'text-xs text-slate-600' }, '\u2022 Items collected/donated: ________'),
+                h('p', { className: 'text-xs text-slate-600' }, '\u2022 What I learned: ' + (serviceNotes.reflect || '(complete the Reflect phase above)')),
+                h('p', { className: 'text-xs text-slate-600' }, '\u2022 What I would do differently: ________')
+              ),
+              h('p', { className: 'text-sm text-slate-600' }, 'Service is not just about helping others \u2014 it transforms you too. The skills you built here will serve you for a lifetime.'),
+              h('button', {
+                onClick: function() { updMulti({ serviceTemplate: null, servicePhase: 0, serviceNotes: {}, serviceHours: 0, serviceDone: false }); },
+                className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
+              }, '\ud83d\udd04 Plan Another Project')
+            );
+          })()
         ),
 
         // ═══ CIVIC SKILLS QUIZ (NEW) ═══

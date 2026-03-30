@@ -2,6 +2,35 @@
 // stem_tool_climateExplorer.js — Climate Explorer
 // Carbon calculator, renewables simulator, climate justice, solutions spotlight
 // ═══════════════════════════════════════════
+  // ── Sound Effects ──
+  var _audioCtx = null;
+  function getAudioCtx() { if (!_audioCtx) try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} return _audioCtx; }
+  function playTone(freq, dur, type, vol) {
+    var ac = getAudioCtx(); if (!ac) return;
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.type = type || 'sine'; o.frequency.value = freq;
+    g.gain.value = vol || 0.06;
+    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+    o.connect(g); g.connect(ac.destination);
+    o.start(ac.currentTime); o.stop(ac.currentTime + dur);
+  }
+  function playSound(type) {
+    try {
+      switch (type) {
+        case 'tab':       playTone(660, 0.05, 'sine', 0.04); break;
+        case 'calculate': playTone(440, 0.08, 'sine', 0.05); setTimeout(function(){playTone(554, 0.08, 'sine', 0.05);}, 60); break;
+        case 'slider':    playTone(800, 0.03, 'sine', 0.03); break;
+        case 'scenario':  playTone(330, 0.08, 'triangle', 0.04); setTimeout(function(){playTone(440, 0.08, 'triangle', 0.04);}, 70); setTimeout(function(){playTone(554, 0.08, 'triangle', 0.04);}, 140); break;
+        case 'correct':   playTone(523, 0.1, 'sine', 0.06); setTimeout(function(){playTone(659, 0.1, 'sine', 0.06);}, 80); setTimeout(function(){playTone(784, 0.15, 'sine', 0.06);}, 160); break;
+        case 'wrong':     playTone(220, 0.25, 'sawtooth', 0.04); break;
+        case 'badge':     playTone(523, 0.1, 'sine', 0.06); setTimeout(function(){playTone(659, 0.1, 'sine', 0.06);}, 80); setTimeout(function(){playTone(784, 0.1, 'sine', 0.06);}, 160); setTimeout(function(){playTone(1047, 0.2, 'sine', 0.06);}, 240); break;
+        case 'region':    playTone(380, 0.12, 'triangle', 0.04); break;
+        case 'hope':      playTone(330, 0.1, 'triangle', 0.03); setTimeout(function(){playTone(440, 0.1, 'triangle', 0.03);}, 100); setTimeout(function(){playTone(554, 0.1, 'triangle', 0.03);}, 200); setTimeout(function(){playTone(659, 0.15, 'triangle', 0.03);}, 300); break;
+        case 'action':    playTone(880, 0.04, 'sine', 0.05); break;
+      }
+    } catch(e) {}
+  }
+
 (function() {
   'use strict';
   if (!window.StemLab || !window.StemLab.registerTool) return;
@@ -80,6 +109,47 @@
       }
       var gradeBand = getGradeBand();
 
+      // Badges
+      var badgesOpen = d.badgesOpen || false;
+      // Hope Meter
+      var hopeMilestones = d.hopeMilestones || {};
+      // Solutions viewed
+      var solutionsViewed = d.solutionsViewed || {};
+      var scenariosTried = d.scenariosTried || {};
+      var scalesViewed = d.scalesViewed || {};
+
+      // ── Badge definitions ──
+      var BADGES = [
+        { id: 'firstCalc', icon: '\uD83E\uDDEE', label: 'First Calculation', desc: 'Calculate your carbon footprint' },
+        { id: 'lowFootprint', icon: '\uD83C\uDF33', label: 'Low Footprint', desc: 'Get below 2,000 kg CO\u2082/year' },
+        { id: 'dataDiver', icon: '\uD83D\uDCCA', label: 'Data Diver', desc: 'Try all 3 scale views' },
+        { id: 'netZero', icon: '\u2600\uFE0F', label: 'Net Zero Designer', desc: 'Design <5% fossil energy mix' },
+        { id: 'scenarioTester', icon: '\u26A1', label: 'Scenario Tester', desc: 'Try all 4 energy scenarios' },
+        { id: 'justiceExplorer', icon: '\u2696\uFE0F', label: 'Justice Explorer', desc: 'Explore 5+ vulnerable regions' },
+        { id: 'solutionScholar', icon: '\uD83D\uDCA1', label: 'Solution Scholar', desc: 'Read all 8 solution cards' },
+        { id: 'actionPlanner', icon: '\u270A', label: 'Action Planner', desc: 'Open the action plan' },
+        { id: 'quizChampion', icon: '\uD83E\uDDE0', label: 'Quiz Champion', desc: 'Answer 8+ questions correctly' },
+        { id: 'aiConsultant', icon: '\uD83E\uDD16', label: 'AI Consultant', desc: 'Get AI analysis of your mix' },
+        { id: 'allTabs', icon: '\uD83C\uDF0D', label: 'Full Explorer', desc: 'Visit all four tabs' },
+        { id: 'climateChampion', icon: '\uD83C\uDFC6', label: 'Climate Champion', desc: 'Earn 10+ badges' }
+      ];
+
+      // ── Hope Meter milestones ──
+      var HOPE_MILESTONES = [
+        { id: 'started', label: 'Started Exploring', check: function() { return Object.keys(tabsVisited).length > 0; } },
+        { id: 'calculated', label: 'Calculated Footprint', check: function() { return !!badges.firstCalc; } },
+        { id: 'lowCarbon', label: 'Low-Carbon Lifestyle', check: function() { return ct.total < 2000; } },
+        { id: 'designedMix', label: 'Designed Energy Mix', check: function() { return rsSolar + rsWind + rsHydro + rsNuclear > 60; } },
+        { id: 'netZero', label: 'Near Net-Zero Mix', check: function() { return !!badges.netZero; } },
+        { id: 'justiceAware', label: 'Explored Justice', check: function() { return Object.keys(d.regionsViewed || {}).length >= 3; } },
+        { id: 'solutions', label: 'Learned Solutions', check: function() { return Object.keys(solutionsViewed).length >= 4; } },
+        { id: 'action', label: 'Took Action', check: function() { return !!badges.actionPlanner; } },
+        { id: 'quizAce', label: 'Aced the Quiz', check: function() { return quizCorrect >= 5; } },
+        { id: 'allTabs', label: 'Explored Everything', check: function() { return !!badges.allTabs; } }
+      ];
+      var hopePts = HOPE_MILESTONES.filter(function(m) { return m.check(); }).length;
+      var hopePct = Math.round(hopePts / HOPE_MILESTONES.length * 100);
+
       // ── Badge helper ──
       function earnBadge(id) {
         if (badges[id]) return;
@@ -87,12 +157,16 @@
         nb[id] = Date.now();
         upd('badges', nb);
         awardXP(15);
-        if (addToast) addToast('\uD83C\uDFC5 Badge earned: ' + id + '!', 'success');
+        playSound('badge');
+        var b = BADGES.find(function(x) { return x.id === id; });
+        if (addToast) addToast(b ? b.icon + ' ' + b.label + '!' : '\uD83C\uDFC5 Badge earned!', 'success');
+        if (Object.keys(nb).length >= 10) { if (!nb.climateChampion) { nb.climateChampion = Date.now(); upd('badges', nb); } }
       }
 
       // ── Track tab visits ──
       function visitTab(tid) {
         upd('tab', tid);
+        playSound('tab');
         if (!tabsVisited[tid]) {
           var nv = Object.assign({}, tabsVisited);
           nv[tid] = true;
@@ -262,6 +336,102 @@
         { q: 'What is the Great Green Wall?', opts: ['A border wall', 'A reforestation project across Africa', 'A type of solar panel'], a: 1 }
       ];
 
+      // ═══ CANVAS: Donut Chart ═══
+      function drawDonut(canvas, ct) {
+        if (!canvas) return;
+        var key = ct.transport + '|' + ct.food + '|' + ct.energy + '|' + ct.waste;
+        if (canvas._donutKey === key) return;
+        canvas._donutKey = key;
+        var dpr = window.devicePixelRatio || 1;
+        var w = canvas.offsetWidth || 300, h = 180;
+        canvas.width = w * dpr; canvas.height = h * dpr;
+        canvas.style.height = h + 'px';
+        var c = canvas.getContext('2d');
+        c.scale(dpr, dpr);
+        var cx = w / 2, cy = h / 2, r = 65, inner = 40;
+        var segs = [
+          { val: ct.transport, color: '#3b82f6', label: 'Transport' },
+          { val: ct.food, color: '#f59e0b', label: 'Food' },
+          { val: ct.energy, color: '#ef4444', label: 'Energy' },
+          { val: ct.waste, color: '#22c55e', label: 'Waste' }
+        ];
+        var total = ct.total || 1;
+        var angle = -Math.PI / 2;
+        segs.forEach(function(s) {
+          var sweep = (s.val / total) * Math.PI * 2;
+          c.beginPath(); c.arc(cx, cy, r, angle, angle + sweep); c.arc(cx, cy, inner, angle + sweep, angle, true); c.closePath();
+          c.fillStyle = s.color; c.fill();
+          // Label
+          var mid = angle + sweep / 2;
+          var lx = cx + Math.cos(mid) * (r + 16), ly = cy + Math.sin(mid) * (r + 16);
+          c.fillStyle = s.color; c.font = 'bold 9px system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle';
+          if (s.val > 0) c.fillText(s.label, lx, ly);
+          angle += sweep;
+        });
+        // Center text
+        c.fillStyle = ct.total < 2000 ? '#4ade80' : ct.total < 5000 ? '#fbbf24' : '#f87171';
+        c.font = 'bold 22px system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText(ct.total.toLocaleString(), cx, cy - 6);
+        c.fillStyle = '#94a3b8'; c.font = '600 9px system-ui';
+        c.fillText('kg CO\u2082/yr', cx, cy + 12);
+      }
+
+      // ═══ CANVAS: Emissions Timeline ═══
+      function drawTimeline(canvas, tl, baseline) {
+        if (!canvas || !tl.length) return;
+        var key = tl.map(function(p) { return p.gt.toFixed(1); }).join(',');
+        if (canvas._tlKey === key) return;
+        canvas._tlKey = key;
+        var dpr = window.devicePixelRatio || 1;
+        var w = canvas.offsetWidth || 600, h = 160;
+        canvas.width = w * dpr; canvas.height = h * dpr;
+        canvas.style.height = h + 'px';
+        var c = canvas.getContext('2d');
+        c.scale(dpr, dpr);
+        var pad = { l: 40, r: 16, t: 16, b: 24 };
+        var gw = w - pad.l - pad.r, gh = h - pad.t - pad.b;
+        var maxGt = Math.max(baseline * 1.05, 40);
+        function x(i) { return pad.l + (i / (tl.length - 1)) * gw; }
+        function y(gt) { return pad.t + (1 - gt / maxGt) * gh; }
+        // Grid
+        c.strokeStyle = 'rgba(148,163,184,0.1)'; c.lineWidth = 1;
+        for (var g = 0; g <= maxGt; g += 10) { c.beginPath(); c.moveTo(pad.l, y(g)); c.lineTo(w - pad.r, y(g)); c.stroke(); }
+        // Baseline
+        c.strokeStyle = 'rgba(239,68,68,0.3)'; c.setLineDash([4, 4]);
+        c.beginPath(); c.moveTo(pad.l, y(baseline)); c.lineTo(w - pad.r, y(baseline)); c.stroke();
+        c.setLineDash([]);
+        // 1.5C target (~20 Gt)
+        c.strokeStyle = 'rgba(34,197,94,0.4)'; c.setLineDash([4, 4]);
+        c.beginPath(); c.moveTo(pad.l, y(20)); c.lineTo(w - pad.r, y(20)); c.stroke();
+        c.setLineDash([]);
+        c.fillStyle = 'rgba(34,197,94,0.6)'; c.font = '600 8px system-ui'; c.textAlign = 'left';
+        c.fillText('1.5\u00B0C target', pad.l + 4, y(20) - 4);
+        // Filled area
+        var grad = c.createLinearGradient(0, y(baseline), 0, y(0));
+        grad.addColorStop(0, 'rgba(239,68,68,0.3)'); grad.addColorStop(0.5, 'rgba(245,158,11,0.2)'); grad.addColorStop(1, 'rgba(34,197,94,0.15)');
+        c.beginPath(); c.moveTo(x(0), y(tl[0].gt));
+        for (var i = 1; i < tl.length; i++) c.lineTo(x(i), y(tl[i].gt));
+        c.lineTo(x(tl.length - 1), y(0)); c.lineTo(x(0), y(0)); c.closePath();
+        c.fillStyle = grad; c.fill();
+        // Line
+        c.beginPath(); c.moveTo(x(0), y(tl[0].gt));
+        for (var j = 1; j < tl.length; j++) c.lineTo(x(j), y(tl[j].gt));
+        var endGt = tl[tl.length - 1].gt;
+        c.strokeStyle = endGt > baseline * 0.7 ? '#ef4444' : endGt > baseline * 0.4 ? '#f59e0b' : '#22c55e';
+        c.lineWidth = 2.5; c.stroke();
+        // Endpoint dot
+        c.beginPath(); c.arc(x(tl.length - 1), y(endGt), 4, 0, Math.PI * 2);
+        c.fillStyle = c.strokeStyle; c.fill();
+        // Y-axis labels
+        c.fillStyle = '#64748b'; c.font = '600 8px system-ui'; c.textAlign = 'right';
+        for (var yl = 0; yl <= maxGt; yl += 10) c.fillText(yl + ' Gt', pad.l - 4, y(yl) + 3);
+        // X-axis labels
+        c.textAlign = 'center';
+        var step = Math.max(1, Math.floor(tl.length / 5));
+        for (var xi = 0; xi < tl.length; xi += step) c.fillText(tl[xi].year, x(xi), h - 4);
+        if (tl.length - 1 > 0) c.fillText(tl[tl.length - 1].year, x(tl.length - 1), h - 4);
+      }
+
       // ═══ HELPER: section card ═══
       function card(props, children) {
         return el('div', { style: Object.assign({ padding: 16, borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', marginBottom: 12 }, props.style || {}) }, children);
@@ -313,7 +483,35 @@
           el('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' } },
             el('button', { onClick: function() { upd('quizOpen', !quizOpen); }, style: { padding: '4px 10px', borderRadius: 8, border: '1px solid rgba(168,85,247,0.3)', background: quizOpen ? 'rgba(168,85,247,0.2)' : 'rgba(168,85,247,0.08)', color: '#c084fc', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\uD83E\uDDE0 Quiz'),
             el('div', { style: { padding: '4px 12px', borderRadius: 20, background: 'linear-gradient(135deg, #22c55e, #16a34a)', fontSize: 11, fontWeight: 900, color: '#fff' } }, '\u2B50 ' + (getStemXP ? getStemXP('climateExplorer') : 0) + ' XP'),
-            el('div', { style: { padding: '4px 10px', borderRadius: 20, background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11, fontWeight: 700, color: '#fbbf24' } }, '\uD83C\uDFC5 ' + Object.keys(badges).length)
+            el('button', { onClick: function() { upd('badgesOpen', !badgesOpen); }, style: { padding: '4px 10px', borderRadius: 20, background: badgesOpen ? 'rgba(245,158,11,0.25)' : 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11, fontWeight: 700, color: '#fbbf24', cursor: 'pointer' } }, '\uD83C\uDFC5 ' + Object.keys(badges).length + '/' + BADGES.length)
+          )
+        ),
+
+        // ── Hope Meter ──
+        el('div', { style: { padding: '0 24px 0', margin: '8px 0 0' } },
+          el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
+            el('span', { style: { fontSize: hopePct >= 80 ? 16 : 13, filter: hopePct >= 80 ? 'drop-shadow(0 0 4px #fbbf24)' : 'none', transition: 'all 0.3s' } }, hopePct >= 100 ? '\uD83C\uDF1F' : hopePct >= 60 ? '\u2600\uFE0F' : '\uD83C\uDF31'),
+            el('span', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700 } }, 'Hope Meter'),
+            el('span', { style: { color: '#64748b', fontSize: 9, marginLeft: 'auto' } }, hopePts + '/' + HOPE_MILESTONES.length)
+          ),
+          el('div', { style: { width: '100%', height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
+            el('div', { style: { width: hopePct + '%', height: '100%', borderRadius: 2, background: 'linear-gradient(90deg, #22c55e, #3b82f6, #a855f7)', transition: 'width 0.8s ease-out', boxShadow: hopePct >= 50 ? '0 0 8px rgba(34,197,94,0.4)' : 'none' } })
+          )
+        ),
+
+        // ── Badge Panel (collapsible) ──
+        badgesOpen && el('div', { style: { padding: '12px 24px', borderBottom: '1px solid rgba(245,158,11,0.1)' } },
+          el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 } },
+            BADGES.map(function(b) {
+              var earned = !!badges[b.id];
+              return el('div', { key: b.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, background: earned ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.02)', border: '1px solid ' + (earned ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.05)'), opacity: earned ? 1 : 0.5 } },
+                el('span', { style: { fontSize: 18, filter: earned ? 'none' : 'grayscale(1)' } }, b.icon),
+                el('div', null,
+                  el('div', { style: { fontSize: 10, fontWeight: 800, color: earned ? '#fbbf24' : '#475569' } }, b.label),
+                  el('div', { style: { fontSize: 9, color: '#64748b' } }, b.desc)
+                )
+              );
+            })
           )
         ),
 
@@ -353,6 +551,7 @@
                     onClick: function() {
                       upd('quizAnswer', oi);
                       upd('quizTotal', quizTotal + 1);
+                      playSound(oi === q.a ? 'correct' : 'wrong');
                       if (oi === q.a) { upd('quizCorrect', quizCorrect + 1); awardXP(10); }
                       if (quizCorrect + (oi === q.a ? 1 : 0) >= 8) earnBadge('quizChampion');
                     },
@@ -388,7 +587,11 @@
                   cat.opts.map(function(opt, oi) {
                     return optBtn(val === oi, function() {
                       upd(stateKey, oi);
+                      playSound('calculate');
                       if (!badges.firstCalc) { earnBadge('firstCalc'); }
+                      // Check low footprint after update
+                      var newTotal = carbonTotal().total; // recompute
+                      if (newTotal < 2000 && !badges.lowFootprint) earnBadge('lowFootprint');
                     }, opt.emoji, opt.label, opt.kg + ' kg/yr');
                   })
                 ),
@@ -399,26 +602,23 @@
 
             // Results
             el('div', { style: { padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(59,130,246,0.08))', border: '1px solid rgba(34,197,94,0.2)', marginTop: 8 } },
-              el('div', { style: { textAlign: 'center', marginBottom: 12 } },
-                el('div', { style: { color: ct.total < 2000 ? '#4ade80' : ct.total < 5000 ? '#fbbf24' : '#f87171', fontSize: 36, fontWeight: 900 } }, ct.total.toLocaleString()),
-                el('div', { style: { color: '#94a3b8', fontSize: 12, fontWeight: 700 } }, 'kg CO\u2082 per year')
+              // Canvas donut chart
+              el('canvas', { ref: function(c) { if (c) setTimeout(function() { drawDonut(c, ct); }, 0); },
+                style: { width: '100%', height: 180, display: 'block', marginBottom: 8 } }),
+              // Legend
+              el('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 8 } },
+                [
+                  { label: 'Transport', kg: ct.transport, color: '#3b82f6' },
+                  { label: 'Food', kg: ct.food, color: '#f59e0b' },
+                  { label: 'Energy', kg: ct.energy, color: '#ef4444' },
+                  { label: 'Waste', kg: ct.waste, color: '#22c55e' }
+                ].map(function(b) {
+                  return el('div', { key: b.label, style: { display: 'flex', alignItems: 'center', gap: 4 } },
+                    el('div', { style: { width: 10, height: 10, borderRadius: 3, background: b.color } }),
+                    el('span', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8' } }, b.label + ': ' + b.kg.toLocaleString() + ' kg')
+                  );
+                })
               ),
-              // Breakdown bars
-              [
-                { label: 'Transport', kg: ct.transport, color: '#3b82f6' },
-                { label: 'Food', kg: ct.food, color: '#f59e0b' },
-                { label: 'Energy', kg: ct.energy, color: '#ef4444' },
-                { label: 'Waste', kg: ct.waste, color: '#22c55e' }
-              ].map(function(b) {
-                var pct = ct.total > 0 ? Math.round(b.kg / ct.total * 100) : 0;
-                return el('div', { key: b.label, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
-                  el('span', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', width: 60 } }, b.label),
-                  el('div', { style: { flex: 1, height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
-                    el('div', { style: { width: pct + '%', height: '100%', borderRadius: 4, background: b.color, transition: 'width 0.5s' } })
-                  ),
-                  el('span', { style: { fontSize: 10, fontWeight: 700, color: b.color, width: 55, textAlign: 'right' } }, b.kg.toLocaleString() + ' kg')
-                );
-              }),
 
               // Tree comparison
               el('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.15)', textAlign: 'center' } },
@@ -434,7 +634,7 @@
               el('div', { style: { display: 'flex', gap: 6, marginBottom: 12 } },
                 ['school', 'city', 'country'].map(function(s) {
                   var labels = { school: '\uD83C\uDFEB School', city: '\uD83C\uDFD9\uFE0F City', country: '\uD83C\uDDFA\uD83C\uDDF8 Country' };
-                  return el('button', { key: s, onClick: function() { upd('ccScale', s); awardXP(5); },
+                  return el('button', { key: s, onClick: function() { upd('ccScale', s); awardXP(5); playSound('calculate'); var nsc = Object.assign({}, scalesViewed); nsc[s] = true; upd('scalesViewed', nsc); if (Object.keys(nsc).length >= 3 && !badges.dataDiver) earnBadge('dataDiver'); },
                     style: { flex: 1, padding: '8px', borderRadius: 8, border: ccScale === s ? '2px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: ccScale === s ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.03)', color: ccScale === s ? '#a5b4fc' : '#64748b', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                     labels[s]);
                 })
@@ -457,7 +657,7 @@
             // Scenario presets
             el('div', { style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
               SCENARIOS.map(function(sc, si) {
-                return el('button', { key: si, onClick: function() { upd({ rsSolar: sc.mix[0], rsWind: sc.mix[1], rsHydro: sc.mix[2], rsNuclear: sc.mix[3] }); },
+                return el('button', { key: si, onClick: function() { upd({ rsSolar: sc.mix[0], rsWind: sc.mix[1], rsHydro: sc.mix[2], rsNuclear: sc.mix[3] }); playSound('scenario'); var ns = Object.assign({}, scenariosTried); ns[si] = true; upd('scenariosTried', ns); if (Object.keys(ns).length >= 4 && !badges.scenarioTester) earnBadge('scenarioTester'); },
                   style: { padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.08)', color: '#fbbf24', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
                   sc.label);
               })
@@ -466,10 +666,10 @@
             // Energy mix sliders
             el('div', { style: { padding: 16, borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', marginBottom: 16 } },
               el('div', { style: { color: '#94a3b8', fontSize: 11, fontWeight: 800, marginBottom: 10, textTransform: 'uppercase' } }, 'Design Your Energy Mix'),
-              slider('Solar', '\u2600\uFE0F', rsSolar, '#f59e0b', function(e) { upd('rsSolar', parseInt(e.target.value)); }),
-              slider('Wind', '\uD83C\uDF2C\uFE0F', rsWind, '#60a5fa', function(e) { upd('rsWind', parseInt(e.target.value)); }),
-              slider('Hydro', '\uD83D\uDCA7', rsHydro, '#22d3ee', function(e) { upd('rsHydro', parseInt(e.target.value)); }),
-              slider('Nuclear', '\u2622\uFE0F', rsNuclear, '#a78bfa', function(e) { upd('rsNuclear', parseInt(e.target.value)); }),
+              slider('Solar', '\u2600\uFE0F', rsSolar, '#f59e0b', function(e) { upd('rsSolar', parseInt(e.target.value)); playSound('slider'); }),
+              slider('Wind', '\uD83C\uDF2C\uFE0F', rsWind, '#60a5fa', function(e) { upd('rsWind', parseInt(e.target.value)); playSound('slider'); }),
+              slider('Hydro', '\uD83D\uDCA7', rsHydro, '#22d3ee', function(e) { upd('rsHydro', parseInt(e.target.value)); playSound('slider'); }),
+              slider('Nuclear', '\u2622\uFE0F', rsNuclear, '#a78bfa', function(e) { upd('rsNuclear', parseInt(e.target.value)); playSound('slider'); }),
               el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, padding: '8px 12px', borderRadius: 8, background: rsFossil > 50 ? 'rgba(239,68,68,0.1)' : rsFossil > 20 ? 'rgba(245,158,11,0.1)' : 'rgba(34,197,94,0.1)' } },
                 el('span', { style: { fontSize: 16 } }, '\uD83C\uDFED'),
                 el('span', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', width: 60 } }, 'Fossil'),
@@ -506,24 +706,9 @@
                   el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 600 } }, 'Gt/yr by ' + (2025 + rsTimespan))
                 )
               ),
-              // Simple emissions timeline (text-based)
-              el('div', { style: { marginBottom: 12 } },
-                el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Emissions Timeline'),
-                el('div', { style: { display: 'flex', alignItems: 'flex-end', gap: 2, height: 80 } },
-                  timeline.filter(function(_, i) { return i % Math.max(1, Math.floor(timeline.length / 20)) === 0 || i === timeline.length - 1; }).map(function(pt, i) {
-                    var pct = Math.min(100, pt.gt / BASELINE_GT * 100);
-                    var clr = pct > 70 ? '#ef4444' : pct > 40 ? '#f59e0b' : '#22c55e';
-                    return el('div', { key: i, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 } },
-                      el('div', { style: { width: '100%', maxWidth: 24, height: Math.max(4, pct * 0.7) + 'px', borderRadius: 3, background: clr, transition: 'height 0.5s' } }),
-                      i % 4 === 0 && el('span', { style: { fontSize: 8, color: '#475569' } }, pt.year)
-                    );
-                  })
-                ),
-                el('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 4 } },
-                  el('span', { style: { fontSize: 9, color: '#64748b' } }, 'Today: ' + BASELINE_GT + ' Gt/yr'),
-                  el('span', { style: { fontSize: 9, color: rsReductionPct > 50 ? '#4ade80' : '#fbbf24' } }, (2025 + rsTimespan) + ': ' + timeline[timeline.length - 1].gt.toFixed(1) + ' Gt/yr')
-                )
-              ),
+              // Canvas emissions timeline
+              el('canvas', { ref: function(c) { if (c) setTimeout(function() { drawTimeline(c, timeline, BASELINE_GT); }, 0); },
+                style: { width: '100%', height: 160, display: 'block', borderRadius: 8, marginBottom: 12, background: 'rgba(0,0,0,0.15)' } }),
 
               // Hopeful message
               el('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.15)', textAlign: 'center' } },
@@ -544,7 +729,7 @@
                   if (aiLoading) return;
                   upd('aiLoading', true);
                   var prompt = 'You are a hopeful climate science educator for a ' + gradeBand + ' student. They designed an energy mix: ' + rsSolar + '% solar, ' + rsWind + '% wind, ' + rsHydro + '% hydro, ' + rsNuclear + '% nuclear, ' + rsFossil + '% fossil. Give a 2-3 sentence encouraging analysis of their mix. Mention one real-world country or city doing something similar. End with an inspiring fact. Keep it under 80 words. Do NOT use markdown.';
-                  callGemini(prompt, true, false, 0.8).then(function(r) { upd({ aiResponse: r, aiLoading: false }); }).catch(function() { upd('aiLoading', false); });
+                  callGemini(prompt, true, false, 0.8).then(function(r) { upd({ aiResponse: r, aiLoading: false }); playSound('scenario'); if (!badges.aiConsultant) earnBadge('aiConsultant'); }).catch(function() { upd('aiLoading', false); });
                 }, disabled: aiLoading,
                 style: { padding: '8px 20px', borderRadius: 10, border: '1px solid rgba(34,197,94,0.3)', background: aiLoading ? 'rgba(34,197,94,0.2)' : 'rgba(34,197,94,0.08)', color: '#4ade80', fontSize: 12, fontWeight: 700, cursor: aiLoading ? 'wait' : 'pointer' } },
                 aiLoading ? '\u23F3 Analyzing...' : '\uD83E\uDD16 AI Analysis of Your Mix'),
@@ -582,6 +767,7 @@
                 var regionsViewed = d.regionsViewed || {};
                 return el('div', { key: r.id, onClick: function() {
                     upd('cjRegion', isOpen ? null : r.id);
+                    playSound('region');
                     if (!regionsViewed[r.id]) {
                       var nv = Object.assign({}, regionsViewed); nv[r.id] = true;
                       upd('regionsViewed', nv);
@@ -657,7 +843,7 @@
             el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
               SOLUTIONS.filter(function(s) { return ssCategory === 'all' || s.cat === ssCategory || s.cat === 'all'; }).map(function(s) {
                 var isExp = ssExpanded === s.id;
-                return el('div', { key: s.id, onClick: function() { upd('ssExpanded', isExp ? null : s.id); awardXP(5); },
+                return el('div', { key: s.id, onClick: function() { upd('ssExpanded', isExp ? null : s.id); awardXP(5); playSound('action'); var nsv = Object.assign({}, solutionsViewed); nsv[s.id] = true; upd('solutionsViewed', nsv); if (Object.keys(nsv).length >= 8 && !badges.solutionScholar) earnBadge('solutionScholar'); },
                   style: { padding: 16, borderRadius: 12, background: s.highlight ? 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(245,158,11,0.08))' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (s.highlight ? 'rgba(34,197,94,0.25)' : isExp ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.08)'), cursor: 'pointer', transition: 'all 0.2s' } },
                   el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: isExp ? 10 : 0 } },
                     el('span', { style: { fontSize: 28 } }, s.emoji),
@@ -686,7 +872,7 @@
 
             // What Can I Do section
             el('div', { style: { marginTop: 20 } },
-              el('button', { onClick: function() { upd('ssShowActions', !ssShowActions); if (!ssShowActions) earnBadge('actionPlanner'); },
+              el('button', { onClick: function() { upd('ssShowActions', !ssShowActions); playSound('action'); if (!ssShowActions) earnBadge('actionPlanner'); },
                 style: { width: '100%', padding: '14px 20px', borderRadius: 12, border: '2px solid rgba(34,197,94,0.3)', background: ssShowActions ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.04)', color: '#4ade80', fontSize: 14, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s' } },
                 (ssShowActions ? '\u25BC' : '\u25B6') + ' What Can I Do?'),
 

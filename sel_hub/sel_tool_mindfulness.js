@@ -1,8 +1,10 @@
 // ═══════════════════════════════════════════════════════════════
-// sel_tool_mindfulness.js — Mindfulness Corner Plugin (v1.0)
+// sel_tool_mindfulness.js — Mindfulness Corner Plugin (v2.0)
 // Guided breathing with animated visuals, body scan walkthrough,
 // 5-4-3-2-1 grounding exercise, gratitude journal with AI coach,
-// mindful moments activity library, and practice log/stats.
+// mindful moments activity library, practice log/stats,
+// guided meditation scripts, mindful movement exercises,
+// expanded grounding techniques, streak/log tracking.
 // Registered tool ID: "mindfulness"
 // Category: self-management
 // Grade-adaptive: uses ctx.gradeBand for vocabulary & depth
@@ -187,6 +189,244 @@ window.SelHub = window.SelHub || {
   ];
 
   // ══════════════════════════════════════════════════════════════
+  // ── Guided Meditation Scripts ──
+  // ══════════════════════════════════════════════════════════════
+  var MEDITATION_SCRIPTS = {
+    elementary: [
+      {
+        id: 'cloud_watching', name: 'Cloud Watching', emoji: '\u2601\uFE0F', duration: '4 min', difficulty: 1,
+        desc: 'Imagine floating on a soft, fluffy cloud high in the sky.',
+        script: 'Close your eyes and take a big, deep breath. Imagine you are lying on the softest, fluffiest cloud you have ever seen. It is warm and cozy, like a giant pillow. Feel the cloud gently holding you up as you float across a bright blue sky. The sun is warm on your face, but not too hot \u2014 just right. You can hear birds singing far below. Look around \u2014 there are other clouds nearby, shaped like animals and fun things. Can you see one shaped like a bunny? How about one shaped like a star? Your cloud drifts slowly, gently rocking you like a hammock. With every breath in, your cloud floats a little higher. With every breath out, you feel more relaxed. Your arms are heavy and relaxed. Your legs are heavy and relaxed. Your whole body is calm and peaceful. Keep floating on your cloud for a little while longer. When you are ready, imagine your cloud slowly, gently floating back down to the ground. Wiggle your fingers and toes. Open your eyes. You feel calm and happy.'
+      },
+      {
+        id: 'magic_garden', name: 'Magic Garden', emoji: '\uD83C\uDF3A', duration: '4 min', difficulty: 1,
+        desc: 'Plant seeds of kindness and watch them grow in your imagination.',
+        script: 'Take a deep breath and close your eyes. Imagine you have found a magical garden. The gate is sparkling with tiny lights. You push it open and step inside. The ground is soft under your feet. In your hand, you have a bag of special seeds \u2014 these are kindness seeds. You dig a small hole in the warm dirt and drop in a seed. Think of something kind you did today. As you think about it, a tiny sprout pops out of the ground! It grows into a beautiful flower, glowing with a warm light. Plant another seed. Think of someone you love. Another flower grows, even more beautiful than the first! Keep planting seeds \u2014 one for a friend, one for your family, one for yourself. Soon your garden is full of glowing, colorful flowers. Each one represents something good in your life. Take a deep breath and smell the flowers. They smell wonderful. This garden is always here for you, whenever you need it. Take one more deep breath. Wiggle your fingers. Open your eyes. You are a garden of kindness.'
+      },
+      {
+        id: 'ocean_waves_elem', name: 'Ocean Waves', emoji: '\uD83C\uDF0A', duration: '3 min', difficulty: 1,
+        desc: 'Breathe in and out with the gentle ocean waves.',
+        script: 'Close your eyes and take a slow, deep breath. Imagine you are sitting on a warm, sandy beach. The sand is soft and warm between your toes. In front of you is a beautiful blue ocean. Watch the waves come in slowly toward you. As a wave comes in, breathe in slowly through your nose. As the wave goes back out, breathe out slowly through your mouth. In comes the wave, in comes your breath. Out goes the wave, out goes your breath. Feel the warm sun on your skin. Hear the seagulls calling. The waves keep coming and going, and your breathing keeps going with them. You are calm. You are peaceful. You are as steady as the ocean. Take three more breaths with the waves. One. Two. Three. Now imagine the ocean giving you a big, warm wave of happiness. It washes over you and makes you smile. Wiggle your toes in the sand. Open your eyes. You are calm and ready.'
+      },
+      {
+        id: 'star_light', name: 'Star Light', emoji: '\u2B50', duration: '4 min', difficulty: 1,
+        desc: 'A nighttime relaxation with twinkling stars.',
+        script: 'Take a big breath and close your eyes. Imagine it is a beautiful, clear night. You are lying on a soft blanket in your backyard, looking up at the sky. The sky is dark and full of twinkling stars. Each star is a tiny light, blinking just for you. Pick one star and look at it. That star is sending you calm, peaceful feelings. Feel the calm travel from the star, down through the sky, and into the top of your head. It feels warm and tingly. Now the calm feeling moves down to your forehead, relaxing it. Down to your eyes, making them heavy and peaceful. Down to your cheeks and your jaw \u2014 let them go soft. The warm, starry feeling moves down your neck and into your shoulders. They drop down, relaxed. It flows down your arms to your fingertips. Down through your tummy, making it feel warm. Down through your legs, all the way to your toes. Your whole body is filled with starlight. You are glowing with calm. Rest here for a moment. When you are ready, take a deep breath. Wiggle your fingers and toes. Open your eyes. The stars are always there for you.'
+      },
+      {
+        id: 'animal_friend', name: 'Animal Friend', emoji: '\uD83D\uDC3E', duration: '4 min', difficulty: 1,
+        desc: 'Meet a gentle animal friend in your imagination.',
+        script: 'Close your eyes and take three slow breaths. Imagine you are walking in a peaceful forest. The trees are tall and green. Sunlight is peeking through the leaves. The path is soft under your feet. As you walk, you hear a gentle rustling in the bushes. A friendly animal steps out! It can be any animal you like \u2014 a bunny, a deer, a puppy, a kitten, or even a baby bear. This animal is your special friend. It comes up to you and nuzzles your hand. You can feel its soft fur. It is so happy to see you. Sit down on the forest floor and let your animal friend curl up next to you. Feel its warmth against your side. Listen to it breathing slowly. Can you breathe with it? Breathe in together. Breathe out together. Your animal friend feels safe with you, and you feel safe with it. Pet your animal gently. Tell it something that is on your mind. It listens and understands. Spend a quiet moment together. When you are ready, give your animal friend a gentle hug. It will always be here in this forest, waiting for you. Take a deep breath. Wiggle your fingers. Open your eyes.'
+      }
+    ],
+    middle: [
+      {
+        id: 'mountain_meditation', name: 'Mountain Meditation', emoji: '\uD83C\uDFD4\uFE0F', duration: '5 min', difficulty: 2,
+        desc: 'Find your inner stability and strength like a mountain.',
+        script: 'Sit comfortably and close your eyes. Take three slow, even breaths to settle in. Now picture the most magnificent mountain you can imagine. It could be snow-capped, covered in green forests, or rising red and rocky from a desert. See its wide base, firmly rooted in the earth. See its peak reaching high into the sky. This mountain has been here for millions of years. It is solid, strong, and unshakeable. Now imagine that you are this mountain. Your legs and hips are the base, rooted firmly to the ground. Your body is the solid core, strong and steady. Your head is the peak, reaching upward. Throughout the day, the weather changes around the mountain. The sun shines, clouds roll in, rain falls, wind blows, snow covers the peak, then melts away. But the mountain remains still through all of it. Like the mountain, emotions and events pass around you and through you \u2014 stress, excitement, worry, joy \u2014 but your core stays steady. You can feel the weather without becoming the weather. Take a moment to sit with this feeling of being unmovable, grounded, and strong. Three more breaths as the mountain. When you are ready, gently return your awareness to the room. Open your eyes. You carry the mountain\'s strength with you.'
+      },
+      {
+        id: 'body_scan_express', name: 'Body Scan Express', emoji: '\uD83E\uDEC0', duration: '3 min', difficulty: 2,
+        desc: 'A quick 3-minute body scan for when you need to reset fast.',
+        script: 'Close your eyes. This is a quick scan, so we will move at a steady pace. Take one deep breath to start. Bring your attention to the top of your head. Notice any tension. Let it soften. Move to your forehead and eyes. Release any tightness. Soften your jaw. Let your tongue drop from the roof of your mouth. Notice your neck and shoulders. On your next exhale, let your shoulders drop an inch. Feel your arms. Let them get heavy. Let your hands relax completely \u2014 uncurl your fingers. Move to your chest. Notice your heartbeat. Take a slow breath here. Feel your stomach rise and fall. Let it be soft, not held in. Notice your lower back. If there is tension, breathe into it. Feel your hips, your thighs. Let them sink into whatever is supporting you. Move to your knees, your calves, your ankles. Finally, notice your feet. Feel the ground beneath them. Take one complete breath and scan your whole body at once from head to toes. Where is the most relaxed spot? Where is there still tension? Send one more breath to that tense spot. Open your eyes. That took about three minutes, and you have just reset your entire nervous system.'
+      },
+      {
+        id: 'gratitude_glow', name: 'Gratitude Glow', emoji: '\u2728', duration: '4 min', difficulty: 2,
+        desc: 'Focus on appreciation and feel the warmth of gratitude.',
+        script: 'Close your eyes and take two settling breaths. Bring to mind one thing you are grateful for today. It can be big or small \u2014 a person, a moment, a meal, a feeling. Hold it in your mind and really see it. Notice how your body feels when you think about this thing. Is there warmth in your chest? A lightness? A smile starting to form? That is the gratitude glow. Now think of a second thing. Something about your day that went better than expected, even just slightly. Add that to the glow. Feel it getting brighter. Now think of someone who has helped you recently. Picture their face. Silently say thank you to them. Feel the glow expand. Think of one thing about yourself that you are grateful for \u2014 a quality, a talent, something you did that you are proud of. Add it to the glow. Imagine the glow filling your entire body now, from the top of your head to the tips of your toes. You are lit up with gratitude. Sit with this feeling for a few breaths. Gratitude does not ignore problems. It reminds you that good things exist alongside the hard things. Take one more deep breath. Open your eyes. Carry the glow with you.'
+      },
+      {
+        id: 'stress_eraser', name: 'Stress Eraser', emoji: '\uD83E\uDEE7', duration: '5 min', difficulty: 2,
+        desc: 'Progressive relaxation to erase tension from your body.',
+        script: 'Sit or lie comfortably. Close your eyes. We are going to erase stress from your body one section at a time. Start with your hands. Make two tight fists. Squeeze them hard for five seconds. One, two, three, four, five. Now release. Feel the difference between tension and relaxation. That release is what we want. Now scrunch up your face \u2014 squeeze your eyes, scrunch your nose, clench your jaw. Hold for five seconds. One, two, three, four, five. Release. Feel everything soften. Raise your shoulders up toward your ears. Hold them tight. One, two, three, four, five. Drop them. Notice the relief. Tighten your stomach muscles like someone might poke your belly. Hold. One, two, three, four, five. Release. Let your belly be soft. Tighten both legs \u2014 flex your feet, squeeze your thighs. Hold. One, two, three, four, five. Let go completely. Now curl your toes tightly. Hold. One, two, three, four, five. Release. Your whole body has been tensed and released. Scan from head to toe \u2014 every area should feel looser, warmer, heavier. Imagine any remaining stress as a color. Watch it drain out through your feet and disappear. Take three peaceful breaths. Open your eyes. The stress has been erased.'
+      },
+      {
+        id: 'future_self', name: 'Future Self', emoji: '\uD83D\uDD2E', duration: '5 min', difficulty: 2,
+        desc: 'Visualize a positive future version of yourself.',
+        script: 'Close your eyes and breathe deeply. Imagine a doorway in front of you. It is glowing with a warm, golden light. When you step through this doorway, you will meet your future self \u2014 the person you are becoming. Step through the doorway. On the other side, you see yourself one year from now. This future version of you looks confident and at peace. Notice how they stand, how they carry themselves. What are they wearing? Where are they? What does their life look like? Walk up to your future self. They smile at you \u2014 they have been expecting you. They want to tell you something important. Listen. What do they say about the challenges you are facing right now? Your future self knows you made it through. They are proof that you can handle what is happening. They might tell you to be patient, to keep going, to trust yourself, or to ask for help. Listen with your whole heart. Now ask your future self one question. Anything you want to know. Wait for the answer. It might come as words, a feeling, or an image. Thank your future self. They give you a small gift \u2014 something to remind you that this bright future is real. Hold it close. Step back through the doorway. Take a deep breath. Open your eyes. The future is something you are building every day.'
+      }
+    ],
+    high: [
+      {
+        id: 'loving_kindness_hs', name: 'Loving-Kindness', emoji: '\uD83D\uDC9C', duration: '6 min', difficulty: 3,
+        desc: 'Metta meditation \u2014 systematically cultivate unconditional goodwill.',
+        script: 'Settle into a comfortable position. Close your eyes. Take several slow breaths, allowing each exhale to be slightly longer than the inhale. We will practice metta \u2014 loving-kindness \u2014 by directing benevolent intention in expanding circles. Begin with yourself. Place your hand on your chest if that helps you connect. Silently repeat: May I be safe. May I be healthy. May I be happy. May I live with ease. Stay with these phrases for several breaths. Notice any resistance \u2014 self-directed compassion is often the hardest. That is okay. Keep offering the words anyway. Now bring to mind someone you care about \u2014 a friend, family member, mentor. See their face clearly. Direct the phrases toward them: May you be safe. May you be healthy. May you be happy. May you live with ease. Feel the warmth of genuine care. Next, think of a neutral person \u2014 someone you neither like nor dislike. A cashier, a classmate you do not know well. Offer them the same phrases. Notice how it feels to wish well for someone you have no relationship with. This is the expansion of empathy beyond personal attachment. Now, if you are willing, bring to mind someone with whom you have difficulty. Start small \u2014 a minor irritation, not your greatest adversary. Offer the phrases. This is not about condoning behavior. It is about freeing yourself from the weight of ill will. Finally, radiate metta outward without limit \u2014 to all beings in your school, your city, your country, the entire world. May all beings everywhere be safe, healthy, happy, and live with ease. Rest in this open-hearted awareness. Notice how your body feels. Open your eyes when ready.'
+      },
+      {
+        id: 'acceptance', name: 'Acceptance', emoji: '\uD83C\uDF3F', duration: '5 min', difficulty: 3,
+        desc: 'Non-judgment practice \u2014 release the need to control experience.',
+        script: 'Close your eyes. Settle your posture. Take three grounding breaths. In this meditation, we practice radical acceptance \u2014 the willingness to experience reality as it is, without trying to change it. Begin by noticing your body. Whatever sensations are present \u2014 comfort, discomfort, tension, ease \u2014 simply notice them. Do not try to fix or adjust anything. Just observe with curiosity. Say inwardly: This is what is here right now. Now notice your emotional state. Are you calm? Anxious? Bored? Frustrated? Peaceful? Whatever you find, do not judge it. There is no wrong way to feel right now. Say inwardly: This feeling is present. I do not need to push it away or hold onto it. Now notice your thoughts. They might be busy or quiet. Judgmental or neutral. Planning or remembering. Simply observe the pattern without engaging. Thoughts are mental events, not commands. Say inwardly: These are thoughts. They are not facts, and they are not me. Now expand your acceptance outward. Accept the sounds around you, the temperature, the light. Accept this moment exactly as it is, with all its imperfections. Acceptance does not mean approval. It means you stop fighting reality long enough to respond wisely instead of reactively. This is the foundation of emotional regulation. Sit with full acceptance for one more minute. When you are ready, take a deep breath and open your eyes. You have practiced one of the most powerful psychological skills there is.'
+      },
+      {
+        id: 'observer_mind', name: 'Observer Mind', emoji: '\uD83D\uDC41\uFE0F', duration: '5 min', difficulty: 3,
+        desc: 'Detach from thoughts by stepping into the role of the observer.',
+        script: 'Close your eyes. Breathe normally. In this meditation, you will practice stepping back from your thoughts and becoming the observer. Imagine your mind is a movie theater. Usually, you are so absorbed in the movie that you forget you are watching one. Today, you are going to find your seat in the audience. Notice a thought arise. It might be a worry, a plan, a memory, a judgment. Instead of following it, simply label it: thinking. Do not engage. Do not analyze. Just note: thinking. And return to watching. Another thought comes. Maybe it is about this exercise. Label it: thinking. Return to watching. Now notice an emotion, if one is present. Label it without story: sadness, boredom, restlessness, contentment. You are not the emotion. You are the awareness that notices the emotion. This is what psychologists call decentering or defusion. You are creating space between stimulus and response. That space is where freedom lives. Try this: notice the thinker. Who is observing the thoughts? That awareness \u2014 steady, unchanged, always present \u2014 is what some traditions call your true self. It does not come and go like thoughts and feelings do. Rest in that awareness for a minute. You are the sky, not the weather. The screen, not the movie. The ocean, not the waves. When you are ready, take a deep breath. Open your eyes. You can access the observer at any time, in any situation. It is always available.'
+      },
+      {
+        id: 'interconnection', name: 'Interconnection', emoji: '\uD83C\uDF10', duration: '6 min', difficulty: 3,
+        desc: 'Cultivate compassion through awareness of our shared humanity.',
+        script: 'Close your eyes. Settle in with three breaths. This meditation is about the web of connection that ties all living beings together. Start by noticing your own breath. This air has been breathed by countless beings before you and will be breathed by countless beings after. You are already interconnected through the most basic act of being alive. Think about the people in your immediate life \u2014 family, friends, teachers. Each of them is carrying their own hopes, fears, and struggles right now. Just like you. Silently acknowledge: just like me, they want to be happy. Just like me, they want to avoid suffering. Expand your awareness to people you do not know personally \u2014 people in your city, your country, across the world. Someone right now is laughing. Someone is crying. Someone is being born. Someone is taking their last breath. This is the full spectrum of the human experience, happening simultaneously, everywhere. You are part of this vast web. Now extend your awareness to all living things \u2014 animals, plants, ecosystems. Everything is interdependent. The food you ate today involved sunlight, soil, water, farmers, drivers, and store workers. Nothing exists in isolation. From this awareness, let compassion naturally arise. Not forced, not performative, but genuine. The recognition that we are all in this together. Say inwardly: May all beings know peace. May all beings be free from suffering. May we recognize our interconnection and act from that awareness. Sit with this expanded sense of belonging for a moment. Open your eyes when ready. You are never alone in this.'
+      },
+      {
+        id: 'mindful_decision', name: 'Mindful Decision', emoji: '\uD83E\uDDE0', duration: '5 min', difficulty: 3,
+        desc: 'Clarity meditation \u2014 approach a decision with calm awareness.',
+        script: 'Close your eyes. Take five slow, deep breaths to create a foundation of calm. Think of a decision you are currently facing. It can be large or small. Hold it loosely in your mind \u2014 do not try to solve it yet. First, notice how your body responds when you think about this decision. Is there tension? Tightness? Openness? Your body often knows things before your conscious mind does. Now notice the emotions connected to this decision. Fear? Excitement? Obligation? Confusion? Name each one without judgment. They are data, not directives. Now examine the thoughts. What stories is your mind telling about each option? Are those stories based on evidence, or on assumptions and fears? Can you distinguish between what you know and what you are guessing? Imagine choosing option A. Sit with that choice for thirty seconds. How does it feel in your body? What emotion arises? Now imagine choosing option B. Sit with that choice for thirty seconds. Same questions. Which option aligns more closely with your values \u2014 not what is easiest, but what is most authentic to who you want to be? You do not need to decide right now. The goal of this meditation is not to reach an answer, but to approach the decision from a place of clarity rather than reactivity. The wisest decisions come from a calm mind, not an anxious one. Take three more breaths. Trust that clarity will come when you stop forcing it. Open your eyes.'
+      }
+    ]
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Mindful Movement Exercises ──
+  // ══════════════════════════════════════════════════════════════
+  var MINDFUL_MOVEMENTS = [
+    {
+      id: 'mindful_walking', name: 'Mindful Walking', emoji: '\uD83D\uDEB6', duration: '3 min', color: '#3b82f6',
+      desc: { elementary: 'Walk super slowly and count your steps while you breathe!', middle: 'Combine slow, intentional steps with rhythmic breathing.', high: 'Walking meditation \u2014 kinesthetic mindfulness through deliberate locomotion.' },
+      steps: [
+        { instruction: 'Stand up and find a space to take about 10 steps in a line.', breath: 'Take 3 deep breaths before starting.' },
+        { instruction: 'Begin walking very slowly. Lift one foot, move it forward, place it down.', breath: 'Breathe in as you lift your foot.' },
+        { instruction: 'Notice the feeling of your foot leaving the ground, moving through the air, and touching down.', breath: 'Breathe out as you place your foot down.' },
+        { instruction: 'Continue walking, one slow step at a time. Count each step up to 10.', breath: 'Match one full breath to each step.' },
+        { instruction: 'When you reach 10 steps, pause. Turn around slowly. Walk back the same way.', breath: 'Take a centering breath at the turn.' },
+        { instruction: 'Do 2-3 full laps. Notice how your body feels more grounded and present.', breath: 'Let your breathing be natural and steady.' }
+      ]
+    },
+    {
+      id: 'standing_mountain', name: 'Standing Mountain', emoji: '\uD83C\uDFD4\uFE0F', duration: '2 min', color: '#8b5cf6',
+      desc: { elementary: 'Stand tall like a mountain and feel strong and steady!', middle: 'A balance and breathing exercise rooted in mountain pose.', high: 'Tadasana-inspired postural awareness combined with diaphragmatic breathing.' },
+      steps: [
+        { instruction: 'Stand with your feet hip-width apart, arms at your sides.', breath: 'Breathe normally to start.' },
+        { instruction: 'Press your feet firmly into the ground. Spread your toes wide.', breath: 'Inhale deeply as you root down.' },
+        { instruction: 'Straighten your spine. Imagine a string pulling the top of your head toward the sky.', breath: 'Exhale and feel your shoulders drop.' },
+        { instruction: 'Roll your shoulders back and down. Let your arms hang heavy.', breath: 'Inhale for 4 counts.' },
+        { instruction: 'Close your eyes. Feel yourself standing solid like a mountain. Wind and rain cannot move you.', breath: 'Exhale for 6 counts.' },
+        { instruction: 'Hold this pose for 30 seconds. Feel grounded, stable, and strong.', breath: 'Continue slow, steady breathing.' }
+      ]
+    },
+    {
+      id: 'gentle_stretching', name: 'Gentle Stretching', emoji: '\uD83E\uDDD8', duration: '4 min', color: '#22c55e',
+      desc: { elementary: 'Stretch your body gently and breathe along with each stretch!', middle: 'A simple stretching sequence that pairs each stretch with a breath.', high: 'Somatic stretching sequence \u2014 mindful elongation of major muscle groups.' },
+      steps: [
+        { instruction: 'Stand or sit comfortably. Reach both arms overhead and stretch up tall.', breath: 'Inhale as you reach up.' },
+        { instruction: 'Slowly lean to the right, stretching your left side. Hold for 3 breaths.', breath: 'Breathe into the stretch.' },
+        { instruction: 'Return to center and lean to the left. Hold for 3 breaths.', breath: 'Breathe into the stretch.' },
+        { instruction: 'Drop your chin to your chest. Slowly roll your head to the right, then left.', breath: 'Exhale as your chin drops, inhale as you roll.' },
+        { instruction: 'Interlace your fingers behind your back. Gently lift your arms and open your chest.', breath: 'Inhale as you open your chest wide.' },
+        { instruction: 'Release your arms. Roll your shoulders forward 5 times, then backward 5 times.', breath: 'Breathe smoothly throughout.' },
+        { instruction: 'Shake out your hands, arms, and legs. Take a final deep breath.', breath: 'One big inhale, one long exhale.' }
+      ]
+    },
+    {
+      id: 'sun_salutation', name: 'Sun Salutation Basics', emoji: '\u2600\uFE0F', duration: '5 min', color: '#f59e0b',
+      desc: { elementary: 'Say good morning to the sun with these fun moves!', middle: 'A simplified sun salutation flow linking breath to movement.', high: 'Adapted Surya Namaskar \u2014 a foundational vinyasa linking respiratory and motor rhythms.' },
+      steps: [
+        { instruction: 'Stand tall with palms together at your heart (Mountain Pose).', breath: 'Inhale deeply.' },
+        { instruction: 'Reach your arms overhead, stretching up and slightly back (Upward Salute).', breath: 'Inhale as you reach up.' },
+        { instruction: 'Fold forward at the hips, reaching toward the ground (Forward Fold).', breath: 'Exhale as you fold down.' },
+        { instruction: 'Place your hands on your shins and lift halfway, flattening your back (Half Lift).', breath: 'Inhale as you lift.' },
+        { instruction: 'Fold back down. Step or hop your feet back to a plank position. Hold for 3 breaths.', breath: 'Breathe steadily in plank.' },
+        { instruction: 'Lower to the floor. Press up gently, opening your chest (Cobra or Low Cobra).', breath: 'Inhale as you lift your chest.' },
+        { instruction: 'Press back to an inverted V shape (Downward Dog). Hold for 3 breaths.', breath: 'Breathe deeply.' },
+        { instruction: 'Step your feet forward to your hands. Rise up to standing with arms overhead.', breath: 'Inhale as you rise.' },
+        { instruction: 'Bring palms back to heart center. You completed one round!', breath: 'Exhale and feel centered.' }
+      ]
+    },
+    {
+      id: 'chair_stretches', name: 'Chair Stretches', emoji: '\uD83E\uDE91', duration: '3 min', color: '#ec4899',
+      desc: { elementary: 'You can do these stretches right in your chair!', middle: 'Desk-friendly stretches to release tension without standing up.', high: 'Seated ergonomic stretches targeting common postural tension patterns.' },
+      steps: [
+        { instruction: 'Sit up tall. Place both feet flat on the floor. Roll your shoulders back.', breath: 'Take 3 settling breaths.' },
+        { instruction: 'Interlace your fingers and stretch your arms straight in front of you, palms facing out.', breath: 'Inhale as you push forward, rounding your back.' },
+        { instruction: 'Now reach your interlaced hands overhead. Stretch tall toward the ceiling.', breath: 'Inhale as you reach up, exhale and hold.' },
+        { instruction: 'Place your right hand on your left knee. Gently twist to the left. Hold for 3 breaths.', breath: 'Exhale into the twist.' },
+        { instruction: 'Repeat the twist on the other side. Left hand on right knee, twist right.', breath: 'Exhale into the twist.' },
+        { instruction: 'Drop your right ear toward your right shoulder. Hold 3 breaths. Switch sides.', breath: 'Breathe into the stretch in your neck.' },
+        { instruction: 'Place both hands on your knees. Round your back like a cat, then arch it. Repeat 3 times.', breath: 'Exhale to round, inhale to arch.' }
+      ]
+    },
+    {
+      id: 'pmr_exercise', name: 'Progressive Muscle Relaxation', emoji: '\uD83D\uDCAA', duration: '5 min', color: '#06b6d4',
+      desc: { elementary: 'Squeeze your muscles tight, then let them go all floppy!', middle: 'Tense and release each muscle group to melt away stress.', high: 'Jacobson-style PMR \u2014 systematic isometric contraction and release for somatic stress reduction.' },
+      steps: [
+        { instruction: 'Sit or lie down comfortably. Close your eyes.', breath: 'Take 3 deep, slow breaths to prepare.' },
+        { instruction: 'Make tight fists with both hands. Squeeze as hard as you can for 5 seconds. Then release.', breath: 'Inhale while squeezing, exhale as you release.' },
+        { instruction: 'Bend your arms and flex your biceps. Hold tight for 5 seconds. Release.', breath: 'Inhale while flexing, exhale as you let go.' },
+        { instruction: 'Raise your shoulders to your ears. Hold for 5 seconds. Drop them.', breath: 'Inhale as you raise, exhale as you drop.' },
+        { instruction: 'Scrunch your face tightly \u2014 eyes, nose, mouth. Hold 5 seconds. Release into a blank expression.', breath: 'Inhale to scrunch, exhale to soften.' },
+        { instruction: 'Tighten your stomach muscles. Hold 5 seconds. Let your belly go soft.', breath: 'Inhale to tighten, exhale to release.' },
+        { instruction: 'Squeeze your legs together and flex your feet toward you. Hold 5 seconds. Release everything.', breath: 'Inhale to squeeze, exhale to let go completely.' },
+        { instruction: 'Scan your whole body. Notice the difference between before and now. You are deeply relaxed.', breath: 'Take 3 final slow breaths.' }
+      ]
+    }
+  ];
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Grounding Techniques Library ──
+  // ══════════════════════════════════════════════════════════════
+  var GROUNDING_TECHNIQUES = [
+    {
+      id: 'box_breathing', name: 'Box Breathing', emoji: '\u2B1C', color: '#3b82f6',
+      desc: { elementary: 'Breathe in a square pattern \u2014 in, hold, out, hold!', middle: 'A four-phase breathing technique used by first responders to stay calm.', high: 'Rhythmic equalizing of inhale, hold, exhale, and post-exhale pause phases.' },
+      phases: [
+        { label: 'Inhale', seconds: 4, icon: '\u2B06\uFE0F' },
+        { label: 'Hold', seconds: 4, icon: '\u23F8\uFE0F' },
+        { label: 'Exhale', seconds: 4, icon: '\u2B07\uFE0F' },
+        { label: 'Hold', seconds: 4, icon: '\u23F8\uFE0F' }
+      ],
+      rounds: 4
+    },
+    {
+      id: 'rain_technique', name: 'RAIN Technique', emoji: '\uD83C\uDF27\uFE0F', color: '#8b5cf6',
+      desc: { elementary: 'Four steps to handle big feelings: Recognize, Allow, Investigate, Non-identify!', middle: 'A four-step process for working with difficult emotions mindfully.', high: 'RAIN \u2014 a structured mindfulness protocol for emotional processing (Brach, 2013).' },
+      steps: [
+        {
+          letter: 'R', title: 'Recognize',
+          prompt: { elementary: 'What feeling is here right now? Can you name it?', middle: 'What emotion or experience is calling for attention right now?', high: 'What is the dominant experience in this moment? Name it precisely.' },
+          guidance: { elementary: 'Just notice the feeling. You might feel mad, sad, worried, or something else. Any feeling is okay!', middle: 'Pause and identify what is present. Naming an emotion reduces its intensity \u2014 this is called affect labeling.', high: 'Affect labeling activates prefrontal regulation of the amygdala. Simply naming the experience begins to shift your relationship with it.' }
+        },
+        {
+          letter: 'A', title: 'Allow',
+          prompt: { elementary: 'Can you let the feeling just be there, without pushing it away?', middle: 'Can you give this feeling permission to be here, just as it is?', high: 'Can you create space for this experience without resistance or avoidance?' },
+          guidance: { elementary: 'You do not have to like the feeling. Just let it sit with you, like a cloud in the sky. It will pass.', middle: 'Allowing does not mean you approve of the feeling. It means you stop fighting it. Resistance amplifies distress.', high: 'Experiential avoidance paradoxically intensifies suffering. Willingness to contact the experience as it is reduces its hold.' }
+        },
+        {
+          letter: 'I', title: 'Investigate',
+          prompt: { elementary: 'Where do you feel it in your body? Is it big or small?', middle: 'What sensations accompany this emotion? What belief or story is behind it?', high: 'What are the somatic correlates? What core belief or schema does this emotion activate?' },
+          guidance: { elementary: 'Put your hand where you feel it. Is it in your tummy? Your chest? Is it hot or cold? Tight or fluttery?', middle: 'Get curious. What triggered this? What is the worst-case story your mind is telling? Is that story actually true?', high: 'Investigate with non-judgmental curiosity. Trace the somatic signature. Identify the underlying cognitive schema without fusing with it.' }
+        },
+        {
+          letter: 'N', title: 'Non-Identify',
+          prompt: { elementary: 'Remember: you are not the feeling! You are YOU, and feelings come and go.', middle: 'This feeling is something you are experiencing. It is not who you are.', high: 'Dis-identification: you are the awareness in which this experience is arising, not the experience itself.' },
+          guidance: { elementary: 'Feelings are like weather \u2014 they change! You might feel sad now, but you are not sadness. You are still you!', middle: 'Step back and see the feeling as temporary. You have felt differently before and will again. You are bigger than any single emotion.', high: 'This is cognitive defusion. The experience is real, but it does not define you. You are the context, not the content. Rest in the observing self.' }
+        }
+      ]
+    },
+    {
+      id: 'butterfly_hug', name: 'Butterfly Hug', emoji: '\uD83E\uDD8B', color: '#ec4899',
+      desc: { elementary: 'Cross your arms and tap your shoulders like butterfly wings!', middle: 'A bilateral stimulation technique that calms your nervous system.', high: 'Self-administered bilateral stimulation (BLS) \u2014 adapted from EMDR protocols for self-regulation.' },
+      instructions: [
+        { step: 1, text: 'Cross your arms over your chest so each hand rests on the opposite shoulder.', detail: 'Your arms should form an X across your chest, like you are giving yourself a hug.' },
+        { step: 2, text: 'Close your eyes or look downward.', detail: 'Reducing visual input helps you focus on the bilateral rhythm.' },
+        { step: 3, text: 'Gently tap your left shoulder with your right hand. Then your right shoulder with your left hand.', detail: 'Alternate sides slowly and rhythmically, like butterfly wings gently flapping.' },
+        { step: 4, text: 'Continue tapping, alternating sides. Keep a slow, steady rhythm.', detail: 'Tap at a pace that feels comfortable \u2014 roughly one tap per second on each side.' },
+        { step: 5, text: 'While tapping, think of a safe, calm place or simply focus on your breathing.', detail: 'The bilateral stimulation helps both hemispheres of your brain process and integrate.' },
+        { step: 6, text: 'Continue for 1-2 minutes. When you feel calmer, slow the tapping and gently stop.', detail: 'Take a few deep breaths. Notice how you feel compared to when you started.' }
+      ]
+    },
+    {
+      id: 'five_senses_interactive', name: '5-4-3-2-1 Senses (Interactive)', emoji: '\uD83C\uDF0D', color: '#22c55e',
+      desc: { elementary: 'Write down what you see, hear, touch, smell, and taste!', middle: 'An interactive version of the classic sensory grounding exercise.', high: 'Structured exteroceptive anchoring with written processing for enhanced engagement.' },
+      senses: [
+        { sense: 'See', count: 5, emoji: '\uD83D\uDC41\uFE0F', color: '#3b82f6' },
+        { sense: 'Touch', count: 4, emoji: '\u270B', color: '#22c55e' },
+        { sense: 'Hear', count: 3, emoji: '\uD83D\uDC42', color: '#f59e0b' },
+        { sense: 'Smell', count: 2, emoji: '\uD83D\uDC43', color: '#ec4899' },
+        { sense: 'Taste', count: 1, emoji: '\uD83D\uDC45', color: '#8b5cf6' }
+      ]
+    }
+  ];
+
+  // ══════════════════════════════════════════════════════════════
   // ── Gratitude Prompts ──
   // ══════════════════════════════════════════════════════════════
   var GRATITUDE_PROMPTS = {
@@ -247,7 +487,14 @@ window.SelHub = window.SelHub || {
     { id: 'streak_3',         icon: '\uD83D\uDD25',       name: 'Streak Starter',       desc: 'Practice 3 days in a row' },
     { id: 'streak_7',         icon: '\u2B50',             name: 'Mindful Week',         desc: 'Practice 7 days in a row' },
     { id: 'total_10',         icon: '\uD83E\uDDE0',       name: 'Dedicated Practitioner', desc: 'Complete 10 total mindfulness practices' },
-    { id: 'ai_coach',         icon: '\u2728',             name: 'Inner Guide',          desc: 'Get a reflection from the AI mindfulness coach' }
+    { id: 'ai_coach',         icon: '\u2728',             name: 'Inner Guide',          desc: 'Get a reflection from the AI mindfulness coach' },
+    { id: 'meditation_5',     icon: '\uD83E\uDDD8\u200D\u2640\uFE0F', name: 'Meditation Master', desc: 'Complete 5 guided meditation scripts' },
+    { id: 'mindful_mover',    icon: '\uD83D\uDEB6',       name: 'Mindful Mover',        desc: 'Complete 3 mindful movement exercises' },
+    { id: 'streak_7_new',     icon: '\uD83D\uDD25',       name: '7-Day Streak',         desc: 'Practice mindfulness 7 days in a row' },
+    { id: 'grounding_expert', icon: '\u2693',             name: 'Grounding Expert',     desc: 'Try all 4 grounding techniques' },
+    { id: 'zen_master',       icon: '\uD83C\uDFAF',       name: 'Zen Master',           desc: 'Complete activities in every category' },
+    { id: 'movement_all',     icon: '\uD83C\uDFC5',       name: 'Flex Champion',        desc: 'Complete all 6 movement exercises' },
+    { id: 'meditation_10',    icon: '\uD83D\uDC8E',       name: 'Deep Practitioner',    desc: 'Complete 10 guided meditation scripts' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -324,6 +571,33 @@ window.SelHub = window.SelHub || {
       // Practice log
       var practiceLog      = d.practiceLog || []; // { type, id, timestamp }
 
+      // Meditation state
+      var meditationIdx      = d.meditationIdx != null ? d.meditationIdx : -1;
+      var meditationsDone    = d.meditationsDone || 0;
+      var meditationFavs     = d.meditationFavs || {};
+      var meditationPlaying  = d.meditationPlaying || false;
+
+      // Movement state
+      var movementActiveId   = d.movementActiveId || null;
+      var movementStep       = d.movementStep || 0;
+      var movementsDone      = d.movementsDone || {};
+
+      // Grounding Techniques state
+      var techActiveId       = d.techActiveId || null;
+      var techStep           = d.techStep || 0;
+      var techBoxPhase       = d.techBoxPhase || 0;
+      var techBoxRound       = d.techBoxRound || 0;
+      var techBoxTimer       = d.techBoxTimer || 0;
+      var techBoxActive      = d.techBoxActive || false;
+      var techRainStep       = d.techRainStep || 0;
+      var techRainInputs     = d.techRainInputs || ['','','',''];
+      var techButterflyDone  = d.techButterflyDone || false;
+      var techsDone          = d.techsDone || {};
+
+      // Streak & Log enhanced state
+      var weeklyGoal         = d.weeklyGoal || 3;
+      var totalMinutes       = d.totalMinutes || 0;
+
       // Badge state
       var earnedBadges     = d.earnedBadges || {};
       var showBadgePopup   = d.showBadgePopup || null;
@@ -371,12 +645,15 @@ window.SelHub = window.SelHub || {
       // ── Tab Bar ──
       // ══════════════════════════════════════════════════════════
       var tabs = [
-        { id: 'breathe',   label: '\uD83C\uDF2C\uFE0F Breathe' },
-        { id: 'scan',      label: '\uD83E\uDEC0 Body Scan' },
-        { id: 'ground',    label: '\uD83C\uDF0D Grounding' },
-        { id: 'gratitude', label: '\uD83D\uDE4F Gratitude' },
-        { id: 'moments',   label: '\uD83C\uDF3F Moments' },
-        { id: 'log',       label: '\uD83D\uDCCA Practice Log' }
+        { id: 'breathe',    label: '\uD83C\uDF2C\uFE0F Breathe' },
+        { id: 'meditate',   label: '\uD83E\uDDD8 Meditate' },
+        { id: 'scan',       label: '\uD83E\uDEC0 Body Scan' },
+        { id: 'ground',     label: '\uD83C\uDF0D Grounding' },
+        { id: 'techniques', label: '\u2693 Techniques' },
+        { id: 'movement',   label: '\uD83D\uDEB6 Movement' },
+        { id: 'gratitude',  label: '\uD83D\uDE4F Gratitude' },
+        { id: 'moments',    label: '\uD83C\uDF3F Moments' },
+        { id: 'log',        label: '\uD83D\uDCCA Log' }
       ];
 
       var tabBar = h('div', {
@@ -1079,8 +1356,8 @@ window.SelHub = window.SelHub || {
       if (activeTab === 'log') {
         var totalPractices = practiceLog.length;
 
-        // Count by type
-        var typeCounts = { breathe: 0, scan: 0, grounding: 0, gratitude: 0, activity: 0 };
+        // Count by type (expanded)
+        var typeCounts = { breathe: 0, scan: 0, grounding: 0, gratitude: 0, activity: 0, meditation: 0, movement: 0, technique: 0 };
         practiceLog.forEach(function(e) { if (typeCounts[e.type] !== undefined) typeCounts[e.type]++; });
 
         // Compute streak
@@ -1094,14 +1371,26 @@ window.SelHub = window.SelHub || {
           if (daySet[chk.toISOString().slice(0,10)]) { streak++; } else if (si > 0) { break; }
         }
 
-        // Calendar (last 21 days)
+        // Weekly practice count (current week)
+        var weekStart = new Date(today);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+        weekStart.setHours(0, 0, 0, 0);
+        var weekPractices = 0;
+        practiceLog.forEach(function(e) { if (e.timestamp >= weekStart.getTime()) weekPractices++; });
+        var weekDaysActive = {};
+        practiceLog.forEach(function(e) { if (e.timestamp >= weekStart.getTime()) weekDaysActive[new Date(e.timestamp).toISOString().slice(0,10)] = true; });
+        var weekDays = Object.keys(weekDaysActive).length;
+
+        // Calendar (last 28 days for 4 full weeks)
         var calDays = [];
-        for (var ci = 20; ci >= 0; ci--) {
+        for (var ci = 27; ci >= 0; ci--) {
           var cd = new Date(today);
           cd.setDate(cd.getDate() - ci);
           var cds = cd.toISOString().slice(0,10);
           calDays.push({ date: cds, dayNum: cd.getDate(), practiced: !!daySet[cds], isToday: ci === 0 });
         }
+        // Day labels
+        var dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
         logContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCCA Mindfulness Practice Log'),
@@ -1113,31 +1402,74 @@ window.SelHub = window.SelHub || {
                 h('p', { style: { fontSize: 12 } }, 'Try a breathing exercise, body scan, or grounding activity to get started!')
               )
             : h('div', null,
-                // Stats row
-                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 } },
-                  h('div', { style: { textAlign: 'center', padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-                    h('div', { style: { fontSize: 24, fontWeight: 800, color: '#8b5cf6' } }, streak),
+                // Stats row (4 columns now)
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 20 } },
+                  h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
+                    h('div', { style: { fontSize: 22, fontWeight: 800, color: '#8b5cf6' } }, streak),
                     h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Day Streak')
                   ),
-                  h('div', { style: { textAlign: 'center', padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-                    h('div', { style: { fontSize: 24, fontWeight: 800, color: '#22c55e' } }, totalPractices),
+                  h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
+                    h('div', { style: { fontSize: 22, fontWeight: 800, color: '#22c55e' } }, totalPractices),
                     h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Total Practices')
                   ),
-                  h('div', { style: { textAlign: 'center', padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-                    h('div', { style: { fontSize: 24, fontWeight: 800, color: '#f59e0b' } }, Object.keys(daySet).length),
+                  h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
+                    h('div', { style: { fontSize: 22, fontWeight: 800, color: '#f59e0b' } }, totalMinutes),
+                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Est. Minutes')
+                  ),
+                  h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
+                    h('div', { style: { fontSize: 22, fontWeight: 800, color: '#ec4899' } }, Object.keys(daySet).length),
                     h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Days Active')
                   )
                 ),
 
-                // Practice calendar
+                // Weekly Goal Tracker
                 h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 10 } }, '\uD83D\uDCC5 Last 21 Days'),
-                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
+                    h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', margin: 0 } }, '\uD83C\uDFAF Weekly Goal'),
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                      h('span', { style: { fontSize: 11, color: '#64748b' } }, 'Goal:'),
+                      h('select', {
+                        value: weeklyGoal,
+                        onChange: function(e) { upd('weeklyGoal', parseInt(e.target.value) || 3); },
+                        style: { padding: '2px 6px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 11 }
+                      },
+                        [1,2,3,4,5,6,7].map(function(n) {
+                          return h('option', { key: n, value: n }, n + ' day' + (n > 1 ? 's' : ''));
+                        })
+                      )
+                    )
+                  ),
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+                    h('div', { style: { flex: 1, height: 16, borderRadius: 8, background: '#0f172a', overflow: 'hidden' } },
+                      h('div', { style: {
+                        height: '100%', width: Math.min(100, (weekDays / weeklyGoal * 100)) + '%',
+                        background: weekDays >= weeklyGoal ? '#22c55e' : '#8b5cf6',
+                        borderRadius: 8, transition: 'width 0.3s'
+                      } })
+                    ),
+                    h('span', { style: { fontSize: 12, fontWeight: 700, color: weekDays >= weeklyGoal ? '#22c55e' : '#94a3b8', flexShrink: 0 } },
+                      weekDays + '/' + weeklyGoal
+                    )
+                  ),
+                  weekDays >= weeklyGoal && h('p', { style: { fontSize: 11, color: '#22c55e', marginTop: 6, textAlign: 'center', fontWeight: 600 } },
+                    '\u2705 Weekly goal reached! Great job staying consistent.'
+                  )
+                ),
+
+                // Practice calendar (28 days with day labels)
+                h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
+                  h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 10 } }, '\uD83D\uDCC5 Last 28 Days'),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3, marginBottom: 4 } },
+                    dayLabels.map(function(lbl, i) {
+                      return h('div', { key: 'lbl' + i, style: { textAlign: 'center', fontSize: 9, color: '#475569', fontWeight: 700, padding: '2px 0' } }, lbl);
+                    })
+                  ),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 } },
                     calDays.map(function(day) {
                       return h('div', {
                         key: day.date, title: day.date,
                         style: {
-                          textAlign: 'center', padding: '6px 0', borderRadius: 6,
+                          textAlign: 'center', padding: '5px 0', borderRadius: 6,
                           background: day.practiced ? '#8b5cf633' : '#0f172a',
                           border: day.isToday ? '2px solid #8b5cf6' : '1px solid ' + (day.practiced ? '#8b5cf644' : '#1e293b'),
                           fontSize: 10, color: day.practiced ? '#e2e8f0' : '#475569', fontWeight: day.isToday ? 800 : 500
@@ -1147,25 +1479,28 @@ window.SelHub = window.SelHub || {
                   )
                 ),
 
-                // Type breakdown
+                // Type breakdown (expanded)
                 h('div', { style: { marginBottom: 20, padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
                   h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 10 } }, 'Practice Types'),
                   [
                     { key: 'breathe', label: 'Breathing', emoji: '\uD83C\uDF2C\uFE0F', color: '#3b82f6' },
+                    { key: 'meditation', label: 'Meditation', emoji: '\uD83E\uDDD8', color: '#a78bfa' },
                     { key: 'scan', label: 'Body Scan', emoji: '\uD83E\uDEC0', color: '#8b5cf6' },
                     { key: 'grounding', label: 'Grounding', emoji: '\uD83C\uDF0D', color: '#22c55e' },
+                    { key: 'technique', label: 'Techniques', emoji: '\u2693', color: '#06b6d4' },
+                    { key: 'movement', label: 'Movement', emoji: '\uD83D\uDEB6', color: '#f97316' },
                     { key: 'gratitude', label: 'Gratitude', emoji: '\uD83D\uDE4F', color: '#f59e0b' },
                     { key: 'activity', label: 'Activities', emoji: '\uD83C\uDF3F', color: '#ec4899' }
                   ].map(function(typ) {
                     var count = typeCounts[typ.key] || 0;
                     var pct = totalPractices > 0 ? (count / totalPractices * 100) : 0;
-                    return h('div', { key: typ.key, style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                      h('span', { style: { fontSize: 16, width: 24, textAlign: 'center', flexShrink: 0 } }, typ.emoji),
-                      h('span', { style: { fontSize: 11, color: '#94a3b8', width: 70, flexShrink: 0 } }, typ.label),
-                      h('div', { style: { flex: 1, height: 12, borderRadius: 6, background: '#0f172a', overflow: 'hidden' } },
-                        h('div', { style: { height: '100%', width: pct + '%', background: typ.color, borderRadius: 6, transition: 'width 0.3s', minWidth: count > 0 ? 4 : 0 } })
+                    return h('div', { key: typ.key, style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                      h('span', { style: { fontSize: 14, width: 22, textAlign: 'center', flexShrink: 0 } }, typ.emoji),
+                      h('span', { style: { fontSize: 10, color: '#94a3b8', width: 68, flexShrink: 0 } }, typ.label),
+                      h('div', { style: { flex: 1, height: 10, borderRadius: 5, background: '#0f172a', overflow: 'hidden' } },
+                        h('div', { style: { height: '100%', width: pct + '%', background: typ.color, borderRadius: 5, transition: 'width 0.3s', minWidth: count > 0 ? 4 : 0 } })
                       ),
-                      h('span', { style: { fontSize: 11, color: '#64748b', width: 24, textAlign: 'right', flexShrink: 0 } }, count)
+                      h('span', { style: { fontSize: 10, color: '#64748b', width: 20, textAlign: 'right', flexShrink: 0 } }, count)
                     );
                   })
                 ),
@@ -1173,8 +1508,8 @@ window.SelHub = window.SelHub || {
                 // Recent practices
                 h('div', null,
                   h('p', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 8 } }, 'Recent Practices'),
-                  practiceLog.slice().reverse().slice(0, 8).map(function(entry, i) {
-                    var typeLabels = { breathe: '\uD83C\uDF2C\uFE0F Breathing', scan: '\uD83E\uDEC0 Body Scan', grounding: '\uD83C\uDF0D Grounding', gratitude: '\uD83D\uDE4F Gratitude', activity: '\uD83C\uDF3F Activity' };
+                  practiceLog.slice().reverse().slice(0, 10).map(function(entry, i) {
+                    var typeLabels = { breathe: '\uD83C\uDF2C\uFE0F Breathing', scan: '\uD83E\uDEC0 Body Scan', grounding: '\uD83C\uDF0D Grounding', gratitude: '\uD83D\uDE4F Gratitude', activity: '\uD83C\uDF3F Activity', meditation: '\uD83E\uDDD8 Meditation', movement: '\uD83D\uDEB6 Movement', technique: '\u2693 Technique' };
                     var time = new Date(entry.timestamp);
                     return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: '#0f172a', marginBottom: 4 } },
                       h('span', { style: { flex: 1, fontSize: 12, color: '#e2e8f0', fontWeight: 600 } }, typeLabels[entry.type] || entry.type),
@@ -1188,14 +1523,697 @@ window.SelHub = window.SelHub || {
       }
 
       // ══════════════════════════════════════════════════════════
+      // ── TAB: Guided Meditation Scripts ──
+      // ══════════════════════════════════════════════════════════
+      var meditateContent = null;
+      if (activeTab === 'meditate') {
+        var scripts = MEDITATION_SCRIPTS[band] || MEDITATION_SCRIPTS.elementary;
+
+        meditateContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+            band === 'elementary' ? '\uD83E\uDDD8 Guided Meditations' : '\uD83E\uDDD8 Meditation Scripts'
+          ),
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+            band === 'elementary' ? 'Choose a meditation and listen to the story. Close your eyes and relax!' :
+            band === 'middle' ? 'Select a guided meditation. Follow along with the text or use the read-aloud button.' :
+            'Evidence-based guided meditation scripts. Use TTS read-aloud or follow the text at your own pace.'
+          ),
+
+          // Script list view
+          meditationIdx === -1 && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+            scripts.map(function(script, i) {
+              var isFav = !!meditationFavs[script.id];
+              return h('div', {
+                key: script.id,
+                style: { display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', cursor: 'pointer' },
+                onClick: function() { upd('meditationIdx', i); if (soundEnabled) sfxClick(); }
+              },
+                h('div', { style: { fontSize: 32, flexShrink: 0 } }, script.emoji),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 } }, script.name),
+                  h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4 } }, script.desc),
+                  h('div', { style: { display: 'flex', gap: 8, marginTop: 6 } },
+                    h('span', { style: { fontSize: 10, color: '#64748b', padding: '2px 6px', borderRadius: 4, background: '#0f172a' } }, '\u23F1 ' + script.duration),
+                    h('span', { style: { fontSize: 10, color: '#64748b', padding: '2px 6px', borderRadius: 4, background: '#0f172a' } },
+                      'Difficulty: ' + Array.from({ length: script.difficulty }, function() { return '\u2B50'; }).join('')
+                    )
+                  )
+                ),
+                h('button', {
+                  onClick: function(e) {
+                    e.stopPropagation();
+                    var newFavs = Object.assign({}, meditationFavs);
+                    if (newFavs[script.id]) { delete newFavs[script.id]; } else { newFavs[script.id] = true; }
+                    upd('meditationFavs', newFavs);
+                    if (soundEnabled) sfxClick();
+                  },
+                  title: isFav ? 'Remove from favorites' : 'Add to favorites',
+                  style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, flexShrink: 0, padding: 4 }
+                }, isFav ? '\u2764\uFE0F' : '\uD83E\uDD0D')
+              );
+            }),
+
+            // Show favorites section
+            Object.keys(meditationFavs).length > 0 && h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, background: '#8b5cf612', border: '1px solid #8b5cf633' } },
+              h('p', { style: { fontSize: 11, fontWeight: 700, color: '#a78bfa', marginBottom: 6 } }, '\u2764\uFE0F Favorites'),
+              h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                scripts.filter(function(s) { return meditationFavs[s.id]; }).map(function(s) {
+                  return h('span', { key: s.id, style: { fontSize: 11, padding: '4px 10px', borderRadius: 6, background: '#8b5cf622', color: '#e2e8f0', border: '1px solid #8b5cf644' } }, s.emoji + ' ' + s.name);
+                })
+              )
+            ),
+
+            // Stats
+            meditationsDone > 0 && h('p', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginTop: 12 } },
+              '\uD83E\uDDD8 ' + meditationsDone + ' meditation' + (meditationsDone !== 1 ? 's' : '') + ' completed'
+            )
+          ),
+
+          // Script detail / reading view
+          meditationIdx >= 0 && meditationIdx < scripts.length && (function() {
+            var sc = scripts[meditationIdx];
+            return h('div', null,
+              h('button', {
+                onClick: function() { upd({ meditationIdx: -1, meditationPlaying: false }); if (soundEnabled) sfxClick(); },
+                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
+              }, '\u2190 All Scripts'),
+
+              h('div', { style: { textAlign: 'center', marginBottom: 16 } },
+                h('div', { style: { fontSize: 48 } }, sc.emoji),
+                h('h4', { style: { margin: '8px 0 4px', color: '#f1f5f9', fontSize: 20 } }, sc.name),
+                h('div', { style: { display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 8 } },
+                  h('span', { style: { fontSize: 10, color: '#64748b', padding: '2px 8px', borderRadius: 4, background: '#0f172a' } }, '\u23F1 ' + sc.duration),
+                  h('span', { style: { fontSize: 10, color: '#64748b', padding: '2px 8px', borderRadius: 4, background: '#0f172a' } },
+                    'Difficulty: ' + Array.from({ length: sc.difficulty }, function() { return '\u2B50'; }).join('')
+                  )
+                )
+              ),
+
+              // Script text
+              h('div', { style: { padding: 20, borderRadius: 16, background: '#0f172a', border: '1px solid #334155', marginBottom: 16, lineHeight: 1.8 } },
+                h('p', { style: { fontSize: 14, color: '#e2e8f0', margin: 0, whiteSpace: 'pre-wrap' } }, sc.script)
+              ),
+
+              // Action buttons
+              h('div', { style: { display: 'flex', gap: 8 } },
+                callTTS && h('button', {
+                  onClick: function() {
+                    upd('meditationPlaying', true);
+                    callTTS(sc.script);
+                    setTimeout(function() { upd('meditationPlaying', false); }, 5000);
+                  },
+                  style: { flex: 1, padding: '12px 0', borderRadius: 10, border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }
+                }, meditationPlaying ? '\uD83D\uDD0A Reading...' : '\uD83D\uDD0A Read Aloud'),
+
+                h('button', {
+                  onClick: function() {
+                    var newDone = meditationsDone + 1;
+                    upd('meditationsDone', newDone);
+                    // Estimate minutes from duration string
+                    var mins = parseInt(sc.duration) || 4;
+                    upd('totalMinutes', totalMinutes + mins);
+                    if (soundEnabled) sfxComplete();
+                    celebrate();
+                    addToast(sc.emoji + ' Meditation complete: ' + sc.name + '!', 'success');
+                    awardXP(20);
+                    if (newDone >= 5) tryAwardBadge('meditation_5');
+                    if (newDone >= 10) tryAwardBadge('meditation_10');
+                    logPractice('meditation', sc.id);
+                    // Check zen master
+                    var st2 = (ctx.toolData && ctx.toolData.mindfulness) || {};
+                    if ((st2.breathSessions || 0) > 0 && (st2.scanSessions || 0) > 0 && (st2.groundCompleted || 0) > 0 && newDone > 0 && Object.keys(st2.movementsDone || {}).length > 0 && Object.keys(st2.techsDone || {}).length > 0) {
+                      tryAwardBadge('zen_master');
+                    }
+                  },
+                  style: { flex: 1, padding: '12px 0', borderRadius: 10, border: 'none', background: '#22c55e', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                }, '\u2705 Mark Complete')
+              ),
+
+              // Favorite toggle
+              h('div', { style: { textAlign: 'center', marginTop: 12 } },
+                h('button', {
+                  onClick: function() {
+                    var newFavs = Object.assign({}, meditationFavs);
+                    if (newFavs[sc.id]) { delete newFavs[sc.id]; } else { newFavs[sc.id] = true; }
+                    upd('meditationFavs', newFavs);
+                    if (soundEnabled) sfxClick();
+                  },
+                  style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: meditationFavs[sc.id] ? '#ef4444' : '#94a3b8', cursor: 'pointer', fontSize: 13 }
+                }, meditationFavs[sc.id] ? '\u2764\uFE0F Favorited' : '\uD83E\uDD0D Add to Favorites')
+              )
+            );
+          })()
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Mindful Movement ──
+      // ══════════════════════════════════════════════════════════
+      var movementContent = null;
+      if (activeTab === 'movement') {
+        movementContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+            band === 'elementary' ? '\uD83D\uDEB6 Move Your Body Mindfully!' : '\uD83D\uDEB6 Mindful Movement'
+          ),
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+            band === 'elementary' ? 'Gentle exercises that combine moving with breathing. Fun and calming!' :
+            band === 'middle' ? 'Simple exercises that combine physical movement with mindful breathing.' :
+            'Somatic mindfulness \u2014 integrating kinesthetic awareness with respiratory entrainment.'
+          ),
+
+          // Exercise detail view
+          movementActiveId && (function() {
+            var ex = MINDFUL_MOVEMENTS.find(function(m) { return m.id === movementActiveId; });
+            if (!ex) return null;
+            var steps = ex.steps;
+            var isDone = !!movementsDone[ex.id];
+
+            return h('div', null,
+              h('button', {
+                onClick: function() { upd({ movementActiveId: null, movementStep: 0 }); if (soundEnabled) sfxClick(); },
+                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
+              }, '\u2190 All Exercises'),
+
+              h('div', { style: { textAlign: 'center', marginBottom: 16 } },
+                h('div', { style: { fontSize: 48 } }, ex.emoji),
+                h('h4', { style: { margin: '8px 0 4px', color: ex.color, fontSize: 20 } }, ex.name),
+                h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 4 } }, ex.desc[band]),
+                h('span', { style: { fontSize: 10, color: '#64748b' } }, '\u23F1 ' + ex.duration)
+              ),
+
+              // Steps with breathing cues
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                steps.map(function(step, i) {
+                  var isStepDone = i < movementStep;
+                  var isCurrent = i === movementStep;
+                  return h('div', {
+                    key: i,
+                    onClick: function() {
+                      if (i === movementStep) {
+                        var nextStep = movementStep + 1;
+                        upd('movementStep', nextStep);
+                        if (soundEnabled) sfxClick();
+                        awardXP(3);
+                        if (nextStep >= steps.length) {
+                          var newDone = Object.assign({}, movementsDone);
+                          newDone[ex.id] = true;
+                          upd('movementsDone', newDone);
+                          var mins = parseInt(ex.duration) || 3;
+                          upd('totalMinutes', totalMinutes + mins);
+                          if (soundEnabled) sfxComplete();
+                          celebrate();
+                          addToast(ex.emoji + ' ' + ex.name + ' complete!', 'success');
+                          awardXP(15);
+                          var doneCount = Object.keys(newDone).length;
+                          if (doneCount >= 3) tryAwardBadge('mindful_mover');
+                          if (doneCount >= MINDFUL_MOVEMENTS.length) tryAwardBadge('movement_all');
+                          logPractice('movement', ex.id);
+                        }
+                      }
+                    },
+                    style: {
+                      padding: 14, borderRadius: 12,
+                      background: isCurrent ? ex.color + '12' : isStepDone ? '#22c55e08' : '#1e293b',
+                      border: '1px solid ' + (isCurrent ? ex.color + '44' : isStepDone ? '#22c55e33' : '#334155'),
+                      cursor: isCurrent ? 'pointer' : 'default', opacity: !isStepDone && !isCurrent ? 0.5 : 1
+                    }
+                  },
+                    h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
+                      h('div', {
+                        style: {
+                          width: 26, height: 26, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: isStepDone ? '#22c55e' : isCurrent ? ex.color : '#334155',
+                          color: '#fff', fontSize: 11, fontWeight: 700
+                        }
+                      }, isStepDone ? '\u2713' : (i + 1)),
+                      h('div', { style: { flex: 1 } },
+                        h('p', { style: { fontSize: 13, color: isStepDone ? '#94a3b8' : '#e2e8f0', margin: '0 0 4px', lineHeight: 1.5 } }, step.instruction),
+                        h('p', { style: { fontSize: 11, color: ex.color, margin: 0, fontStyle: 'italic' } }, '\uD83C\uDF2C\uFE0F ' + step.breath)
+                      )
+                    )
+                  );
+                })
+              ),
+
+              movementStep < steps.length && h('p', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginTop: 12 } },
+                'Tap the current step when you have completed it.'
+              )
+            );
+          })(),
+
+          // Exercise grid
+          !movementActiveId && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 } },
+            MINDFUL_MOVEMENTS.map(function(ex) {
+              var done = movementsDone[ex.id];
+              return h('button', {
+                key: ex.id,
+                onClick: function() { upd({ movementActiveId: ex.id, movementStep: 0 }); if (soundEnabled) sfxClick(); },
+                style: {
+                  padding: 16, borderRadius: 14, border: '1px solid ' + (done ? '#22c55e44' : '#334155'),
+                  background: done ? '#22c55e08' : '#1e293b', cursor: 'pointer', textAlign: 'left'
+                }
+              },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 } },
+                  h('span', { style: { fontSize: 28 } }, ex.emoji),
+                  done && h('span', { style: { fontSize: 10, color: '#22c55e', fontWeight: 700 } }, '\u2713 Done')
+                ),
+                h('div', { style: { fontSize: 13, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 } }, ex.name),
+                h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.3, marginBottom: 4 } },
+                  ex.desc[band].length > 55 ? ex.desc[band].substring(0, 55) + '...' : ex.desc[band]
+                ),
+                h('span', { style: { fontSize: 10, color: '#64748b', padding: '2px 6px', borderRadius: 4, background: '#0f172a' } }, '\u23F1 ' + ex.duration)
+              );
+            })
+          ),
+
+          !movementActiveId && h('p', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginTop: 16 } },
+            Object.keys(movementsDone).length + '/' + MINDFUL_MOVEMENTS.length + ' exercises completed'
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Grounding Techniques Library ──
+      // ══════════════════════════════════════════════════════════
+      var techniquesContent = null;
+      if (activeTab === 'techniques') {
+        techniquesContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+            band === 'elementary' ? '\u2693 Grounding Toolkit' : '\u2693 Grounding Techniques'
+          ),
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+            band === 'elementary' ? 'Extra tools to help you feel calm and safe when big feelings come!' :
+            band === 'middle' ? 'Advanced grounding techniques for managing stress and anxiety.' :
+            'Empirically-supported grounding interventions for acute stress and emotional dysregulation.'
+          ),
+
+          // Technique detail view
+          techActiveId && (function() {
+            var tech = GROUNDING_TECHNIQUES.find(function(t) { return t.id === techActiveId; });
+            if (!tech) return null;
+
+            var backBtn = h('button', {
+              onClick: function() { upd({ techActiveId: null, techStep: 0, techBoxActive: false, techBoxPhase: 0, techBoxRound: 0, techRainStep: 0, techRainInputs: ['','','',''], techButterflyDone: false }); if (soundEnabled) sfxClick(); },
+              style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 12, marginBottom: 16 }
+            }, '\u2190 All Techniques');
+
+            // ── Box Breathing Technique ──
+            if (tech.id === 'box_breathing') {
+              var phases = tech.phases;
+              var currentPhase = phases[techBoxPhase % phases.length];
+              var phaseLabels = ['\u2B06\uFE0F Inhale', '\u23F8\uFE0F Hold', '\u2B07\uFE0F Exhale', '\u23F8\uFE0F Hold'];
+              // Box visual corners
+              var boxSide = techBoxPhase % 4;
+
+              return h('div', null,
+                backBtn,
+                h('div', { style: { textAlign: 'center', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 48 } }, tech.emoji),
+                  h('h4', { style: { margin: '8px 0 4px', color: tech.color, fontSize: 20 } }, tech.name),
+                  h('p', { style: { fontSize: 12, color: '#94a3b8' } }, tech.desc[band])
+                ),
+
+                // Box visual
+                !techBoxActive && h('div', { style: { textAlign: 'center', marginBottom: 16 } },
+                  h('div', { style: { display: 'inline-block', width: 160, height: 160, border: '3px solid #3b82f6', borderRadius: 8, position: 'relative', background: '#0f172a' } },
+                    h('div', { style: { position: 'absolute', top: 8, left: 12, fontSize: 10, color: '#3b82f6', fontWeight: 700 } }, '\u2B06\uFE0F Inhale 4s'),
+                    h('div', { style: { position: 'absolute', top: 8, right: 12, fontSize: 10, color: '#8b5cf6', fontWeight: 700 } }, '\u23F8\uFE0F Hold 4s'),
+                    h('div', { style: { position: 'absolute', bottom: 8, right: 12, fontSize: 10, color: '#22c55e', fontWeight: 700 } }, '\u2B07\uFE0F Exhale 4s'),
+                    h('div', { style: { position: 'absolute', bottom: 8, left: 12, fontSize: 10, color: '#f59e0b', fontWeight: 700 } }, '\u23F8\uFE0F Hold 4s'),
+                    h('div', { style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+                      h('span', { style: { fontSize: 28 } }, '\u2B1C')
+                    )
+                  ),
+                  h('p', { style: { fontSize: 11, color: '#64748b', marginTop: 8 } }, tech.rounds + ' rounds \u2022 4 seconds each phase')
+                ),
+
+                // Active animation
+                techBoxActive && h('div', { style: { textAlign: 'center', marginBottom: 16 } },
+                  h('div', {
+                    style: {
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                      width: boxSide === 0 || boxSide === 2 ? 120 : 160,
+                      height: boxSide === 0 || boxSide === 2 ? 160 : 120,
+                      border: '3px solid ' + tech.color, borderRadius: 12, background: tech.color + '11',
+                      transition: 'all 1s ease-in-out', flexDirection: 'column'
+                    }
+                  },
+                    h('div', { style: { fontSize: 28, fontWeight: 800, color: tech.color } }, techBoxTimer),
+                    h('div', { style: { fontSize: 14, fontWeight: 700, color: '#e2e8f0', marginTop: 4 } }, phaseLabels[boxSide])
+                  ),
+                  h('p', { style: { fontSize: 11, color: '#64748b', marginTop: 8 } },
+                    'Round ' + (techBoxRound + 1) + ' of ' + tech.rounds
+                  )
+                ),
+
+                // Start / Stop button
+                h('div', { style: { textAlign: 'center' } },
+                  !techBoxActive && h('button', {
+                    onClick: function() {
+                      upd({ techBoxActive: true, techBoxPhase: 0, techBoxRound: 0, techBoxTimer: 4 });
+                      if (soundEnabled) sfxBowl();
+                      var boxIntv = setInterval(function() {
+                        var st = (ctx.toolData && ctx.toolData.mindfulness) || {};
+                        var timer = (st.techBoxTimer || 1) - 1;
+                        if (timer <= 0) {
+                          var nextPhase = (st.techBoxPhase || 0) + 1;
+                          var nextRound = st.techBoxRound || 0;
+                          if (nextPhase >= 4) {
+                            nextPhase = 0;
+                            nextRound = nextRound + 1;
+                          }
+                          if (nextRound >= tech.rounds) {
+                            clearInterval(boxIntv);
+                            var newTechs = Object.assign({}, st.techsDone || {});
+                            newTechs['box_breathing'] = true;
+                            upd({ techBoxActive: false, techBoxPhase: 0, techBoxRound: 0, techBoxTimer: 0, techsDone: newTechs });
+                            var mins = Math.round((tech.rounds * 16) / 60) || 1;
+                            upd('totalMinutes', (st.totalMinutes || 0) + mins);
+                            if (soundEnabled) sfxComplete();
+                            celebrate();
+                            addToast('\u2B1C Box breathing complete!', 'success');
+                            awardXP(15);
+                            logPractice('technique', 'box_breathing');
+                            if (Object.keys(newTechs).length >= GROUNDING_TECHNIQUES.length) tryAwardBadge('grounding_expert');
+                          } else {
+                            upd({ techBoxPhase: nextPhase, techBoxRound: nextRound, techBoxTimer: 4 });
+                            if (soundEnabled) sfxChime();
+                          }
+                        } else {
+                          upd('techBoxTimer', timer);
+                        }
+                      }, 1000);
+                    },
+                    style: { padding: '14px 32px', borderRadius: 10, border: 'none', background: tech.color, color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }
+                  }, '\u25B6 Start Box Breathing'),
+                  techBoxActive && h('button', {
+                    onClick: function() { upd({ techBoxActive: false }); },
+                    style: { padding: '10px 24px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                  }, '\u25A0 Stop')
+                )
+              );
+            }
+
+            // ── RAIN Technique ──
+            if (tech.id === 'rain_technique') {
+              var rainSteps = tech.steps;
+              var currentRainStep = rainSteps[techRainStep];
+
+              return h('div', null,
+                backBtn,
+                h('div', { style: { textAlign: 'center', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 48 } }, tech.emoji),
+                  h('h4', { style: { margin: '8px 0 4px', color: tech.color, fontSize: 20 } }, tech.name),
+                  h('p', { style: { fontSize: 12, color: '#94a3b8' } }, tech.desc[band])
+                ),
+
+                // RAIN letter progress
+                h('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 20 } },
+                  rainSteps.map(function(rs, i) {
+                    var isDone = i < techRainStep;
+                    var isCurrent = i === techRainStep;
+                    return h('div', {
+                      key: i,
+                      style: {
+                        width: 48, height: 48, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: isDone ? tech.color + '33' : isCurrent ? tech.color + '22' : '#1e293b',
+                        border: '2px solid ' + (isDone ? tech.color : isCurrent ? tech.color : '#334155'),
+                        color: isDone || isCurrent ? '#e2e8f0' : '#64748b', fontSize: 20, fontWeight: 800
+                      }
+                    }, isDone ? '\u2713' : rs.letter);
+                  })
+                ),
+
+                // Current step
+                techRainStep < 4 && h('div', { style: { padding: 20, borderRadius: 16, background: tech.color + '10', border: '1px solid ' + tech.color + '33', marginBottom: 16 } },
+                  h('h4', { style: { margin: '0 0 4px', color: tech.color, fontSize: 18 } }, currentRainStep.letter + ' \u2014 ' + currentRainStep.title),
+                  h('p', { style: { fontSize: 14, color: '#e2e8f0', marginBottom: 12 } }, currentRainStep.prompt[band]),
+                  h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.6, marginBottom: 12, fontStyle: 'italic' } }, currentRainStep.guidance[band]),
+                  h('textarea', {
+                    value: techRainInputs[techRainStep] || '',
+                    onChange: function(e) {
+                      var newInputs = techRainInputs.slice();
+                      newInputs[techRainStep] = e.target.value;
+                      upd('techRainInputs', newInputs);
+                    },
+                    placeholder: band === 'elementary' ? 'Write your thoughts here...' : 'Reflect and respond...',
+                    rows: 3,
+                    style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 12 }
+                  }),
+                  h('button', {
+                    onClick: function() {
+                      var next = techRainStep + 1;
+                      upd('techRainStep', next);
+                      if (soundEnabled) sfxChime();
+                      awardXP(5);
+                      if (next >= 4) {
+                        var newTechs = Object.assign({}, techsDone);
+                        newTechs['rain_technique'] = true;
+                        upd('techsDone', newTechs);
+                        upd('totalMinutes', totalMinutes + 5);
+                        celebrate();
+                        addToast('\uD83C\uDF27\uFE0F RAIN technique complete!', 'success');
+                        awardXP(15);
+                        logPractice('technique', 'rain_technique');
+                        if (Object.keys(newTechs).length >= GROUNDING_TECHNIQUES.length) tryAwardBadge('grounding_expert');
+                      }
+                    },
+                    style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: tech.color, color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                  }, techRainStep < 3 ? 'Next: ' + rainSteps[techRainStep + 1].letter + ' \u2014 ' + rainSteps[techRainStep + 1].title + ' \u2192' : '\u2705 Complete RAIN')
+                ),
+
+                // Completion
+                techRainStep >= 4 && h('div', { style: { textAlign: 'center', padding: 24 } },
+                  h('div', { style: { fontSize: 56, marginBottom: 8 } }, '\uD83C\uDF27\uFE0F'),
+                  h('h4', { style: { color: '#22c55e', fontSize: 18, marginBottom: 8 } }, 'RAIN Complete'),
+                  h('p', { style: { color: '#94a3b8', fontSize: 13, lineHeight: 1.6, marginBottom: 16 } },
+                    band === 'elementary' ? 'Great job! You used all four steps to work through a big feeling.' :
+                    'You have processed an emotional experience using the RAIN framework. This skill strengthens with practice.'
+                  ),
+                  h('button', {
+                    onClick: function() { upd({ techRainStep: 0, techRainInputs: ['','','',''], techActiveId: null }); },
+                    style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, cursor: 'pointer' }
+                  }, '\u2190 Back to Techniques')
+                )
+              );
+            }
+
+            // ── Butterfly Hug ──
+            if (tech.id === 'butterfly_hug') {
+              var bfSteps = tech.instructions;
+              return h('div', null,
+                backBtn,
+                h('div', { style: { textAlign: 'center', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 48 } }, tech.emoji),
+                  h('h4', { style: { margin: '8px 0 4px', color: tech.color, fontSize: 20 } }, tech.name),
+                  h('p', { style: { fontSize: 12, color: '#94a3b8' } }, tech.desc[band])
+                ),
+
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                  bfSteps.map(function(step, i) {
+                    var isStepDone = i < techStep;
+                    var isCurrent = i === techStep;
+                    return h('div', {
+                      key: i,
+                      onClick: function() {
+                        if (i === techStep) {
+                          var next = techStep + 1;
+                          upd('techStep', next);
+                          if (soundEnabled) sfxClick();
+                          awardXP(3);
+                          if (next >= bfSteps.length) {
+                            var newTechs = Object.assign({}, techsDone);
+                            newTechs['butterfly_hug'] = true;
+                            upd({ techsDone: newTechs, techButterflyDone: true });
+                            upd('totalMinutes', totalMinutes + 2);
+                            if (soundEnabled) sfxComplete();
+                            celebrate();
+                            addToast('\uD83E\uDD8B Butterfly Hug complete!', 'success');
+                            awardXP(15);
+                            logPractice('technique', 'butterfly_hug');
+                            if (Object.keys(newTechs).length >= GROUNDING_TECHNIQUES.length) tryAwardBadge('grounding_expert');
+                          }
+                        }
+                      },
+                      style: {
+                        padding: 14, borderRadius: 12,
+                        background: isCurrent ? tech.color + '12' : isStepDone ? '#22c55e08' : '#1e293b',
+                        border: '1px solid ' + (isCurrent ? tech.color + '44' : isStepDone ? '#22c55e33' : '#334155'),
+                        cursor: isCurrent ? 'pointer' : 'default', opacity: !isStepDone && !isCurrent ? 0.5 : 1
+                      }
+                    },
+                      h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
+                        h('div', {
+                          style: {
+                            width: 26, height: 26, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            background: isStepDone ? '#22c55e' : isCurrent ? tech.color : '#334155',
+                            color: '#fff', fontSize: 11, fontWeight: 700
+                          }
+                        }, isStepDone ? '\u2713' : step.step),
+                        h('div', { style: { flex: 1 } },
+                          h('p', { style: { fontSize: 13, color: isStepDone ? '#94a3b8' : '#e2e8f0', margin: '0 0 4px', lineHeight: 1.5 } }, step.text),
+                          h('p', { style: { fontSize: 11, color: '#64748b', margin: 0, fontStyle: 'italic' } }, step.detail)
+                        )
+                      )
+                    );
+                  })
+                ),
+
+                techStep < bfSteps.length && h('p', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginTop: 12 } },
+                  'Tap each step as you complete it.'
+                )
+              );
+            }
+
+            // ── 5-4-3-2-1 Interactive Senses ──
+            if (tech.id === 'five_senses_interactive') {
+              var senses = tech.senses;
+              return h('div', null,
+                backBtn,
+                h('div', { style: { textAlign: 'center', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 48 } }, tech.emoji),
+                  h('h4', { style: { margin: '8px 0 4px', color: tech.color, fontSize: 20 } }, tech.name),
+                  h('p', { style: { fontSize: 12, color: '#94a3b8' } }, tech.desc[band])
+                ),
+
+                techStep < 5 && (function() {
+                  var sense = senses[techStep];
+                  return h('div', null,
+                    // Progress dots
+                    h('div', { style: { display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 20 } },
+                      senses.map(function(s, i) {
+                        var isDone = i < techStep;
+                        var isCurrent = i === techStep;
+                        return h('div', {
+                          key: i,
+                          style: {
+                            width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            background: isDone ? s.color + '33' : isCurrent ? s.color + '22' : '#1e293b',
+                            border: '2px solid ' + (isDone ? s.color : isCurrent ? s.color : '#334155'),
+                            fontSize: 16
+                          }
+                        }, isDone ? '\u2713' : s.emoji);
+                      })
+                    ),
+
+                    h('div', { style: { padding: 20, borderRadius: 16, background: sense.color + '10', border: '1px solid ' + sense.color + '33', marginBottom: 16, textAlign: 'center' } },
+                      h('div', { style: { fontSize: 48, marginBottom: 8 } }, sense.emoji),
+                      h('h4', { style: { margin: '0 0 12px', color: sense.color, fontSize: 20 } },
+                        'Name ' + sense.count + ' thing' + (sense.count > 1 ? 's' : '') + ' you can ' + sense.sense
+                      )
+                    ),
+
+                    h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 } },
+                      Array.from({ length: sense.count }, function(_, i) {
+                        return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                          h('span', { style: { fontSize: 14, color: sense.color, fontWeight: 700, width: 20, textAlign: 'center', flexShrink: 0 } }, i + 1),
+                          h('input', {
+                            type: 'text',
+                            placeholder: sense.sense.toLowerCase() + ' #' + (i + 1) + '...',
+                            value: (techRainInputs[techStep] && typeof techRainInputs[techStep] === 'object' ? techRainInputs[techStep][i] : '') || '',
+                            onChange: function(e) {
+                              var newInputs = techRainInputs.slice();
+                              if (!newInputs[techStep] || typeof newInputs[techStep] !== 'object') {
+                                newInputs[techStep] = {};
+                              }
+                              var stepInputs = Object.assign({}, newInputs[techStep]);
+                              stepInputs[i] = e.target.value;
+                              newInputs[techStep] = stepInputs;
+                              upd('techRainInputs', newInputs);
+                            },
+                            style: { flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, fontFamily: 'inherit' }
+                          })
+                        );
+                      })
+                    ),
+
+                    h('button', {
+                      onClick: function() {
+                        var next = techStep + 1;
+                        upd('techStep', next);
+                        if (soundEnabled) sfxChime();
+                        awardXP(5);
+                        if (next >= 5) {
+                          var newTechs = Object.assign({}, techsDone);
+                          newTechs['five_senses_interactive'] = true;
+                          upd('techsDone', newTechs);
+                          upd('totalMinutes', totalMinutes + 3);
+                          celebrate();
+                          addToast('\uD83C\uDF0D 5-4-3-2-1 senses exercise complete!', 'success');
+                          awardXP(15);
+                          logPractice('technique', 'five_senses_interactive');
+                          if (Object.keys(newTechs).length >= GROUNDING_TECHNIQUES.length) tryAwardBadge('grounding_expert');
+                        }
+                      },
+                      style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: sense.color, color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }
+                    }, techStep < 4 ? 'Next Sense \u2192' : '\u2705 Complete!')
+                  );
+                })(),
+
+                techStep >= 5 && h('div', { style: { textAlign: 'center', padding: 24 } },
+                  h('div', { style: { fontSize: 56, marginBottom: 8 } }, '\uD83C\uDF0D'),
+                  h('h4', { style: { color: '#22c55e', fontSize: 18, marginBottom: 8 } }, 'Senses Grounding Complete!'),
+                  h('p', { style: { color: '#94a3b8', fontSize: 13, lineHeight: 1.6 } },
+                    'You brought yourself back to the present moment using all five senses.'
+                  ),
+                  h('button', {
+                    onClick: function() { upd({ techStep: 0, techRainInputs: ['','','',''], techActiveId: null }); },
+                    style: { marginTop: 12, padding: '10px 24px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, cursor: 'pointer' }
+                  }, '\u2190 Back to Techniques')
+                )
+              );
+            }
+
+            return null;
+          })(),
+
+          // Technique grid (list view)
+          !techActiveId && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+            GROUNDING_TECHNIQUES.map(function(tech) {
+              var done = techsDone[tech.id];
+              return h('button', {
+                key: tech.id,
+                onClick: function() {
+                  upd({ techActiveId: tech.id, techStep: 0, techBoxActive: false, techBoxPhase: 0, techBoxRound: 0, techRainStep: 0, techRainInputs: ['','','',''], techButterflyDone: false });
+                  if (soundEnabled) sfxClick();
+                },
+                style: {
+                  display: 'flex', alignItems: 'center', gap: 14, padding: 16, borderRadius: 14,
+                  border: '1px solid ' + (done ? '#22c55e44' : '#334155'),
+                  background: done ? '#22c55e08' : '#1e293b', cursor: 'pointer', textAlign: 'left'
+                }
+              },
+                h('div', { style: { fontSize: 32, flexShrink: 0 } }, tech.emoji),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                    h('span', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9' } }, tech.name),
+                    done && h('span', { style: { fontSize: 10, color: '#22c55e', fontWeight: 700 } }, '\u2713 Done')
+                  ),
+                  h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4, marginTop: 2 } }, tech.desc[band])
+                ),
+                h('span', { style: { fontSize: 16, color: '#64748b', flexShrink: 0 } }, '\u2192')
+              );
+            })
+          ),
+
+          !techActiveId && h('p', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginTop: 16 } },
+            Object.keys(techsDone).length + '/' + GROUNDING_TECHNIQUES.length + ' techniques completed'
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
       return h('div', { style: { minHeight: '100%' } },
         tabBar,
         badgePopup,
         breatheContent,
+        meditateContent,
         scanContent,
         groundContent,
+        techniquesContent,
+        movementContent,
         gratitudeContent,
         momentsContent,
         logContent

@@ -192,7 +192,275 @@ window.SelHub = window.SelHub || {
     { id: 'journal_writer', label: 'Journal Writer', emoji: '\uD83D\uDCD3', desc: 'Complete 3 journal reflections', check: function(d) { return (d.journalCount || 0) >= 3; } },
     { id: 'deep_diver', label: 'Deep Diver', emoji: '\uD83E\uDD3F', desc: 'Ask 10+ follow-up questions about cultures', check: function(d) { return (d.questionsAsked || 0) >= 10; } },
     { id: 'polyglot_starter', label: 'Polyglot Starter', emoji: '\uD83C\uDDFA\uD83C\uDDF3', desc: 'Win the language matching game', check: function(d) { return d.langMatchWon; } },
-    { id: 'appreciation_pro', label: 'Appreciation Pro', emoji: '\uD83C\uDF1F', desc: 'Complete all 6 journal prompts', check: function(d) { return (d.journalPromptsCompleted || []).length >= 6; } }
+    { id: 'appreciation_pro', label: 'Appreciation Pro', emoji: '\uD83C\uDF1F', desc: 'Complete all 6 journal prompts', check: function(d) { return (d.journalPromptsCompleted || []).length >= 6; } },
+    { id: 'foodie_explorer', label: 'Foodie Explorer', emoji: '\uD83C\uDF7D\uFE0F', desc: 'Mark 4+ recipes as "want to try"', check: function(d) { return (d.recipesWantToTry || []).length >= 4; } },
+    { id: 'music_lover', label: 'Music Lover', emoji: '\uD83C\uDFB5', desc: 'Explore 5+ music/dance traditions', check: function(d) { return (d.musicExplored || []).length >= 5; } },
+    { id: 'story_listener', label: 'Story Listener', emoji: '\uD83D\uDCDA', desc: 'Read 4+ cultural stories', check: function(d) { return (d.storiesRead || []).length >= 4; } },
+    { id: 'calendar_scholar', label: 'Calendar Scholar', emoji: '\uD83D\uDCC5', desc: 'Explore 6+ months on the cultural calendar', check: function(d) { return (d.calendarMonthsViewed || []).length >= 6; } },
+    { id: 'cultural_ambassador', label: 'Cultural Ambassador', emoji: '\uD83C\uDF0E', desc: 'Earn 10 total badges', check: function(d) { return (d.badgesEarned || []).length >= 10; } },
+    { id: 'rhythm_explorer', label: 'Rhythm Explorer', emoji: '\uD83E\uDD41', desc: 'Try 3+ beat patterns in the Rhythm Explorer', check: function(d) { return (d.rhythmsTried || []).length >= 3; } }
+  ];
+
+  // ── Cultural Recipes Data ──
+  var CULTURAL_RECIPES = [
+    {
+      id: 'onigiri', name: 'Onigiri (Rice Balls)', origin: 'Japan', emoji: '\uD83C\uDF59',
+      description: 'Onigiri are triangular or round rice balls, often wrapped in nori (seaweed) and filled with pickled plum, salmon, or tuna. They are the quintessential portable Japanese meal.',
+      significance: 'Onigiri represent community and sharing in Japanese culture. Mothers lovingly shape them for their children\'s bento boxes. During festivals and disasters alike, people come together to make onigiri for others.',
+      funFact: 'Onigiri are over 2,000 years old! The earliest mention dates back to the 11th century in the diary of Lady Murasaki, but archaeological evidence suggests rice balls were eaten as early as the Yayoi period.',
+      difficulty: 'Easy'
+    },
+    {
+      id: 'tamales', name: 'Tamales', origin: 'Mexico', emoji: '\uD83E\uDED4',
+      description: 'Tamales are made from masa (corn dough) filled with meats, cheeses, or chilies, wrapped in corn husks or banana leaves, and steamed to perfection.',
+      significance: 'Making tamales is a family tradition, especially around holidays like Christmas and D\u00eda de los Muertos. The whole family gathers for "tamaladas" \u2014 tamale-making parties where recipes are passed down through generations.',
+      funFact: 'Tamales date back to 8000 BCE among the Aztec, Maya, and Olmec civilizations. They were portable food for hunters, travelers, and warriors.',
+      difficulty: 'Intermediate'
+    },
+    {
+      id: 'chai', name: 'Masala Chai', origin: 'India', emoji: '\u2615',
+      description: 'Masala chai is a spiced tea made by simmering black tea with milk and a blend of aromatic spices like cardamom, cinnamon, ginger, cloves, and black pepper.',
+      significance: 'Offering chai to guests is one of the most fundamental acts of hospitality in Indian culture. The "chaiwala" (tea vendor) is a beloved community figure. Chai brings people together across all social boundaries.',
+      funFact: 'Every region and family in India has their own secret chai recipe. There is no single "correct" way to make it \u2014 the variety reflects India\'s incredible cultural diversity.',
+      difficulty: 'Easy'
+    },
+    {
+      id: 'injera', name: 'Injera', origin: 'Ethiopia', emoji: '\uD83E\uDD5E',
+      description: 'Injera is a large, spongy, sourdough flatbread made from teff flour. It serves as both plate and utensil \u2014 stews and dishes are placed on top, and pieces are torn off to scoop up food.',
+      significance: 'Eating from a shared plate of injera represents communal bonds. The act of "gursha" \u2014 hand-feeding someone else a morsel \u2014 is a gesture of deep respect and affection.',
+      funFact: 'Teff, the grain used to make injera, is one of the world\'s smallest grains. It takes 150 teff grains to equal the weight of one grain of wheat, yet it is a nutritional powerhouse.',
+      difficulty: 'Advanced'
+    },
+    {
+      id: 'pasta', name: 'Pasta', origin: 'Italy', emoji: '\uD83C\uDF5D',
+      description: 'Italian pasta comes in hundreds of shapes, each designed for specific sauces. From spaghetti to orecchiette, every region has signature pasta dishes passed down for centuries.',
+      significance: 'Pasta represents regional identity and the warmth of "nonna\'s kitchen." Italian families gather around Sunday pasta dinners, and recipes are guarded traditions that connect generations.',
+      funFact: 'Italy has over 350 different pasta shapes, and many have poetic names \u2014 "orecchiette" means "little ears," "farfalle" means "butterflies," and "linguine" means "little tongues."',
+      difficulty: 'Easy'
+    },
+    {
+      id: 'hummus', name: 'Hummus', origin: 'Middle East', emoji: '\uD83E\uDED8',
+      description: 'Hummus is a creamy dip made from mashed chickpeas blended with tahini (sesame paste), lemon juice, garlic, and olive oil. It is served with warm pita bread.',
+      significance: 'Hummus is an ancient tradition shared across multiple Middle Eastern and Mediterranean cultures. It represents the common culinary heritage that unites peoples across national borders.',
+      funFact: 'Hummus is so old that its exact origin is debated among Lebanese, Israeli, Palestinian, Egyptian, and other cultures \u2014 each claiming it as their own. The earliest known recipe dates back to 13th-century Egypt.',
+      difficulty: 'Easy'
+    },
+    {
+      id: 'kimchi', name: 'Kimchi', origin: 'South Korea', emoji: '\uD83E\uDD66',
+      description: 'Kimchi is fermented vegetables (usually napa cabbage and radish) seasoned with chili pepper flakes, garlic, ginger, and salted seafood. It accompanies virtually every Korean meal.',
+      significance: 'Kimchi-making ("kimjang") is a communal activity where families and neighbors gather each autumn. UNESCO recognized kimjang as an Intangible Cultural Heritage for its role in Korean identity and community.',
+      funFact: 'There are over 200 varieties of kimchi in Korea! Some are mild, some fiery. Koreans even sent kimchi to space with their first astronaut in 2008.',
+      difficulty: 'Intermediate'
+    },
+    {
+      id: 'jerk_chicken', name: 'Jerk Chicken', origin: 'Caribbean (Jamaica)', emoji: '\uD83C\uDF57',
+      description: 'Jerk chicken is marinated in a fiery blend of Scotch bonnet peppers, allspice (pimento), thyme, garlic, and ginger, then slow-cooked over pimento wood.',
+      significance: 'Jerk seasoning represents the fusion of African, Indigenous Ta\u00edno, and European influences that define Caribbean culture. It originated with the Maroons \u2014 escaped enslaved people who developed the technique in Jamaica\'s Blue Mountains.',
+      funFact: 'The word "jerk" likely comes from the Quechua word "charqui" (dried meat), showing how Indigenous American food knowledge traveled across cultures. The same root gave us the English word "jerky."',
+      difficulty: 'Intermediate'
+    }
+  ];
+
+  // ── Cultural Music & Dance Data ──
+  var MUSIC_DANCE_DATA = [
+    {
+      id: 'taiko', name: 'Taiko Drumming', origin: 'Japan', emoji: '\uD83E\uDD41',
+      description: 'Taiko are large drums played with wooden sticks (bachi). Ensemble taiko (kumi-daiko) combines powerful drumming with choreographed movement and shouts (kakegoe).',
+      originStory: 'Taiko drums have been used in Japan for over 2,000 years, originally in religious ceremonies, battlefield communication, and rice planting festivals. Modern ensemble taiko was revitalized in the 1950s by Daihachi Oguchi, a jazz drummer.',
+      significance: 'Taiko embodies community spirit \u2014 the word "wa" (harmony) is central. Players must synchronize perfectly, subordinating individual expression to group unity. The physical intensity represents discipline and perseverance.',
+      instruments: 'Nagado-daiko (long-bodied drum), Shime-daiko (rope-tuned drum), Odaiko (great drum), Bachi (wooden sticks)',
+      funFact: 'The largest taiko drum ever made weighs over 3 tons and is 2.4 meters wide. Taiko can be heard from miles away.',
+      beatPattern: [1,0,1,0,1,1,0,1,0,1,1,0,1,0,0,1]
+    },
+    {
+      id: 'salsa', name: 'Salsa', origin: 'Latin America (Cuba/Puerto Rico/NYC)', emoji: '\uD83D\uDC83',
+      description: 'Salsa is a vibrant partner dance set to infectious rhythms blending Cuban son, Puerto Rican bomba, jazz, and rock. It is danced in clubs, streets, and living rooms worldwide.',
+      originStory: 'Salsa crystallized in 1960s-70s New York City, where Cuban, Puerto Rican, and other Latin American immigrants fused their musical traditions. The Fania All-Stars popularized it globally.',
+      significance: 'Salsa represents cultural resilience and joy. Born from immigrant communities facing hardship, it transformed struggle into celebration. The dance requires trust between partners and embodies Latin American warmth.',
+      instruments: 'Clave (rhythm sticks), Congas, Bongos, Timbales, Trumpet, Piano, G\u00fciro (scraper)',
+      funFact: 'The word "salsa" means "sauce" in Spanish. Like a good sauce, it is a blend of many ingredients \u2014 no single culture can claim it as theirs alone.',
+      beatPattern: [1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,0]
+    },
+    {
+      id: 'djembe', name: 'Djembe Drumming', origin: 'West Africa (Mali/Guinea)', emoji: '\uD83E\uDD41',
+      description: 'The djembe is a goblet-shaped hand drum carved from a single piece of wood and topped with goatskin. It produces an incredible range of tones from deep bass to sharp slaps.',
+      originStory: 'The djembe originated with the Mand\u00e9 people of West Africa around the 13th century, during the Mali Empire. Traditionally carved by the Numu (blacksmith) caste, each drum carries spiritual significance.',
+      significance: 'In Mand\u00e9 culture, the djembe is called "Anke dj\u00e9," meaning "everyone gather together." It brings communities together for ceremonies, celebrations, and storytelling. The djembefola (master drummer) holds an honored role.',
+      instruments: 'Djembe (hand drum), Dunun (bass drums: dununba, sangban, kenkeni), Balafon (wooden xylophone), Shekere (beaded gourd)',
+      funFact: 'A skilled djembe player can produce over 25 different sounds from a single drum. The saying goes: "The djembe can make you cry, make you laugh, make you dance."',
+      beatPattern: [1,0,1,1,0,1,0,0,1,0,1,1,0,1,0,0]
+    },
+    {
+      id: 'bollywood', name: 'Bollywood Dance', origin: 'India', emoji: '\uD83D\uDC83',
+      description: 'Bollywood dance is the energetic, colorful dance style from Indian cinema, blending classical Indian forms (Bharatanatyam, Kathak) with folk, jazz, hip-hop, and contemporary styles.',
+      originStory: 'Indian cinema has featured elaborate dance sequences since the 1930s. The term "Bollywood" emerged in the 1970s for Mumbai\'s Hindi film industry. The dance style evolved alongside Indian pop culture.',
+      significance: 'Bollywood dance is a joyful expression of emotion \u2014 love, celebration, devotion, and drama. It has become a global fitness and cultural phenomenon, introducing millions to Indian arts and aesthetics.',
+      instruments: 'Tabla (paired drums), Sitar, Dholak (two-headed drum), Harmonium, Synthesizers, Vocals',
+      funFact: 'India produces over 1,500 films per year, more than any other country. Many feature 5-6 elaborate dance numbers, each with hundreds of backup dancers and costume changes.',
+      beatPattern: [1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1]
+    },
+    {
+      id: 'flamenco', name: 'Flamenco', origin: 'Spain (Andalusia)', emoji: '\uD83D\uDC60',
+      description: 'Flamenco is a passionate art form combining cante (song), toque (guitar), baile (dance), jaleo (vocalizations), and palmas (handclaps). Dancers use zapateado (footwork) to create complex rhythms.',
+      originStory: 'Flamenco developed among the Romani (Gitano) communities of Andalusia, southern Spain, blending Romani, Moorish, Jewish, and Spanish musical traditions over centuries of cultural exchange.',
+      significance: 'Flamenco expresses "duende" \u2014 a deep, almost supernatural emotional intensity. It emerged from marginalized communities and transforms pain, joy, and longing into powerful art. UNESCO declared it Intangible Cultural Heritage in 2010.',
+      instruments: 'Spanish guitar, Palmas (handclaps), Caj\u00f3n (box drum), Castanets, Zapateado (foot percussion), Voice',
+      funFact: 'Professional flamenco dancers\' shoes have nails in the heels and toes to amplify the sound. A single foot can strike the floor up to 12 times per second!',
+      beatPattern: [1,0,0,1,0,0,1,0,1,0,1,0,1,0,0,1]
+    },
+    {
+      id: 'hiphop', name: 'Hip-Hop', origin: 'African American (Bronx, NYC)', emoji: '\uD83C\uDFA4',
+      description: 'Hip-hop culture encompasses four elements: MCing (rapping), DJing, breakdancing (b-boying/b-girling), and graffiti art. It is one of the most influential cultural movements in modern history.',
+      originStory: 'Hip-hop was born on August 11, 1973, at a back-to-school party in the Bronx, where DJ Kool Herc isolated and extended the "break" in funk records. The movement grew from Black and Latino communities facing poverty and systemic neglect.',
+      significance: 'Hip-hop is a voice for the voiceless. It transformed marginalization into creative power, allowing young people to tell their stories, build community, and challenge injustice through art.',
+      instruments: 'Turntables, Drum machines, Samplers, Microphone, Beatbox (human voice), MPCs',
+      funFact: 'Hip-hop has become the most-streamed music genre in the world. It has influenced fashion, language, visual art, film, and social movements across every continent.',
+      beatPattern: [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0]
+    },
+    {
+      id: 'hula', name: 'Hula', origin: 'Hawai\u02BBi', emoji: '\uD83C\uDF3A',
+      description: 'Hula is a Polynesian dance accompanied by chant (oli) or song (mele). Hand and body movements tell stories of nature, history, gods, and love. Ancient hula (kahiko) and modern hula (\u02BBauana) are distinct forms.',
+      originStory: 'Hula is one of the oldest dance forms in the world, created by Native Hawaiians as a sacred practice to honor the gods and preserve oral history. It was nearly destroyed when missionaries banned it in the 1800s, but Hawaiian people kept it alive in secret.',
+      significance: 'Hula is the heartbeat of Hawaiian culture. Every gesture has specific meaning \u2014 ocean waves, swaying palms, rainfall. It is a living encyclopedia of Hawaiian knowledge, language, and spirituality.',
+      instruments: 'Ipu (gourd drum), P\u016bniu (coconut knee drum), Ul\u012B ul\u012B (feathered gourd rattles), Kala\u02BBau (rhythm sticks), Ukulele, Slack-key guitar',
+      funFact: 'Hula dancers train for years. In the annual Merrie Monarch Festival (the "Olympics of Hula"), dancers spend months preparing a single performance that lasts just minutes.',
+      beatPattern: [1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0]
+    },
+    {
+      id: 'kpop', name: 'K-pop', origin: 'South Korea', emoji: '\uD83C\uDFB6',
+      description: 'K-pop (Korean pop music) features highly choreographed groups performing catchy songs that blend pop, hip-hop, R&B, and electronic music with stunning visuals and synchronized dance.',
+      originStory: 'Modern K-pop began in 1992 when Seo Taiji and Boys debuted on Korean television, fusing American hip-hop with Korean pop. The "Hallyu" (Korean Wave) has since made K-pop a global phenomenon.',
+      significance: 'K-pop represents South Korea\'s cultural soft power and creativity. The intense training (trainees practice 12+ hours daily for years) reflects Korean values of perseverance and dedication. Fan communities foster global connections.',
+      instruments: 'Synthesizers, Electronic production, Vocals, Visual performance, Choreography, Digital media',
+      funFact: 'BTS became the first K-pop group to top the Billboard Hot 100, and their fans (ARMY) have raised millions for charitable causes worldwide, showing how music creates positive change.',
+      beatPattern: [1,0,1,0,0,1,0,1,1,0,1,0,0,1,0,1]
+    }
+  ];
+
+  // ── Cultural Stories Data ──
+  var CULTURAL_STORIES = {
+    elementary: [
+      {
+        id: 'anansi', name: 'Anansi the Spider', origin: 'West Africa (Akan/Ashanti)', emoji: '\uD83D\uDD77\uFE0F',
+        summary: 'Anansi is a clever spider who uses his wits to outsmart much larger and stronger animals. In one famous tale, Anansi tricks the Sky God into giving him all the world\'s stories by capturing a python, a leopard, and a swarm of hornets.',
+        moral: 'Intelligence and cleverness can overcome brute strength. Stories belong to everyone who shares them.',
+        context: 'Anansi stories traveled from Ghana across the Atlantic with enslaved Africans, becoming "Aunt Nancy" tales in the American South and "Anancy" in the Caribbean. They are a symbol of resistance and survival through wit.',
+        questions: ['Why do you think Anansi uses tricks instead of strength?', 'How did these stories help people who were far from home?', 'Can you think of a time you solved a problem by being clever?']
+      },
+      {
+        id: 'rainbow_serpent', name: 'The Rainbow Serpent', origin: 'Aboriginal Australian', emoji: '\uD83C\uDF08',
+        summary: 'In the Dreamtime, the Rainbow Serpent slithered across the flat, empty land, and wherever she traveled, rivers, mountains, and valleys formed in her wake. She created the water holes and filled them with rain, giving life to all creatures.',
+        moral: 'The natural world is sacred and alive. Water is the source of all life and must be respected and protected.',
+        context: 'This is one of the oldest stories on Earth, part of Aboriginal Australian Dreamtime beliefs that stretch back over 65,000 years. Different Aboriginal nations have their own versions, showing how diverse Indigenous Australian cultures are.',
+        questions: ['Why is water so important in this story?', 'What does this story teach us about caring for nature?', 'What places in nature feel special or magical to you?']
+      },
+      {
+        id: 'stone_soup', name: 'Stone Soup', origin: 'European (many versions)', emoji: '\uD83C\uDF72',
+        summary: 'A hungry traveler arrives in a village where nobody will share food. He announces he will make "stone soup" using just a stone and water. Curious villagers gather, and each adds "just one small ingredient" until a delicious soup feeds everyone.',
+        moral: 'When everyone contributes a little, the whole community benefits. Generosity and cooperation create abundance from scarcity.',
+        context: 'Versions of "Stone Soup" exist across Europe \u2014 in France, Portugal, Russia, Sweden, and beyond. The story reflects a universal truth about the power of community that crosses all cultural boundaries.',
+        questions: ['Why were the villagers not willing to share at first?', 'What changed their minds?', 'How does your community come together to share?']
+      }
+    ],
+    middle: [
+      {
+        id: 'momotaro', name: 'Momotaro (Peach Boy)', origin: 'Japan', emoji: '\uD83C\uDF51',
+        summary: 'An elderly couple finds a giant peach floating down a river. Inside is a boy they name Momotaro. He grows strong and brave, then sets off to defeat the oni (demons) terrorizing the land. Along the way, he befriends a dog, monkey, and pheasant by sharing his kibidango (millet dumplings).',
+        moral: 'True strength comes from courage, kindness, and building alliances. Generosity earns loyalty, and diverse friends with different skills make a stronger team.',
+        context: 'Momotaro is one of Japan\'s most beloved folk tales, dating back to the Muromachi period (1336-1573). The story reflects Japanese values of filial piety, courage, and the importance of cooperation across differences.',
+        questions: ['Why does Momotaro share his food with the animals?', 'How do the different strengths of each animal contribute to the mission?', 'What does this story suggest about leadership?']
+      },
+      {
+        id: 'coyote', name: 'Coyote the Trickster', origin: 'Indigenous American (many nations)', emoji: '\uD83E\uDD8A',
+        summary: 'Coyote is a trickster figure who appears in stories across many Indigenous nations. In one Navajo tale, Coyote scatters the stars across the sky out of impatience, creating the Milky Way. His impulsive nature often creates both problems and beauty.',
+        moral: 'Mistakes and chaos can lead to unexpected beauty. Patience is a virtue, but imperfection is part of creation.',
+        context: 'Coyote stories are sacred oral traditions shared by many distinct Indigenous nations including Navajo, Crow, Nez Perce, and many others. Each nation\'s Coyote is unique. These stories teach lessons through humor and are still told today.',
+        questions: ['Why do many cultures use animal characters to teach lessons?', 'What does it mean that Coyote creates something beautiful by accident?', 'How are mistakes sometimes important in your own life?']
+      },
+      {
+        id: 'scheherazade', name: 'Scheherazade (1001 Nights)', origin: 'Middle East / Persia', emoji: '\uD83C\uDF19',
+        summary: 'The king, betrayed and angry, marries a new wife each day and executes her the next morning. Scheherazade volunteers to marry him, and each night she begins a captivating story but stops at a cliffhanger. The king spares her to hear the ending, and after 1,001 nights, he has been transformed by the power of her stories.',
+        moral: 'Stories have the power to transform even the hardest hearts. Courage, intellect, and patience can overcome tyranny without violence.',
+        context: 'The Arabian Nights (Alf Layla wa-Layla) is a collection of tales from across the Islamic world \u2014 Persian, Arabic, Indian, and Turkish stories woven together over centuries. It gave us Aladdin, Ali Baba, and Sinbad.',
+        questions: ['How does Scheherazade use storytelling as a form of power?', 'Why might stories change someone more than force?', 'What story has changed the way you think about something?']
+      }
+    ]
+  };
+
+  // ── Cultural Calendar Data ──
+  var CULTURAL_CALENDAR = [
+    { month: 'January', celebrations: [
+      { name: 'New Year\'s Day', origin: 'Global', desc: 'Celebrated worldwide with fireworks, resolutions, and fresh starts. Different cultures mark the date differently.' },
+      { name: 'Makar Sankranti / Pongal', origin: 'India', desc: 'Hindu harvest festival celebrating the sun\'s journey northward. Families fly kites and cook sweet rice dishes.' },
+      { name: 'Lunar New Year Prep', origin: 'East Asia', desc: 'Cleaning homes to sweep away bad luck, buying red decorations, and preparing special foods for the coming new year.' },
+      { name: 'Martin Luther King Jr. Day', origin: 'United States', desc: 'Honors Dr. King\'s legacy of nonviolent activism for civil rights and racial justice.' }
+    ]},
+    { month: 'February', celebrations: [
+      { name: 'Lunar New Year / Spring Festival', origin: 'China, Korea, Vietnam', desc: 'The most important holiday in East Asia. Families reunite, exchange red envelopes, and watch dragon dances.' },
+      { name: 'Carnival / Mardi Gras', origin: 'Brazil, Caribbean, New Orleans', desc: 'Spectacular parades, costumes, and music before Lent. Rio\'s Carnival is the world\'s largest festival.' },
+      { name: 'Black History Month', origin: 'USA / Canada', desc: 'A month dedicated to celebrating the achievements and history of African Americans and the African diaspora.' },
+      { name: 'Setsubun', origin: 'Japan', desc: 'People throw roasted soybeans to drive away evil spirits and welcome spring, shouting "Oni wa soto! Fuku wa uchi!" (Demons out! Fortune in!).' }
+    ]},
+    { month: 'March', celebrations: [
+      { name: 'Holi', origin: 'India', desc: 'The Festival of Colors where people throw colored powder and water at each other, celebrating the triumph of good over evil and the arrival of spring.' },
+      { name: 'Nowruz', origin: 'Iran / Central Asia', desc: 'Persian New Year at the spring equinox. Families set a "Haft-sin" table with seven symbolic items.' },
+      { name: 'St. Patrick\'s Day', origin: 'Ireland / global', desc: 'Celebrates Irish culture and heritage. While often associated with green and parades, it honors Ireland\'s patron saint.' },
+      { name: 'World Water Day', origin: 'United Nations', desc: 'Raises awareness about the importance of fresh water and advocates for sustainable water resource management.' }
+    ]},
+    { month: 'April', celebrations: [
+      { name: 'Ramadan begins (varies)', origin: 'Islamic world', desc: 'The holy month of fasting from dawn to sunset. Muslims focus on prayer, charity, community, and spiritual reflection.' },
+      { name: 'Songkran', origin: 'Thailand', desc: 'Thai New Year celebrated with massive water fights in the streets. Water symbolizes cleansing and renewal.' },
+      { name: 'Passover / Pesach', origin: 'Jewish', desc: 'Commemorates the Exodus from Egypt. Families gather for a Seder meal with symbolic foods and storytelling.' },
+      { name: 'Easter', origin: 'Christian (global)', desc: 'Celebrates the resurrection of Jesus Christ. Traditions vary widely, from egg hunts to solemn processions.' }
+    ]},
+    { month: 'May', celebrations: [
+      { name: 'Eid al-Fitr (varies)', origin: 'Islamic world', desc: 'Celebrates the end of Ramadan with prayers, feasting, gifts, and charity. Families wear new clothes and visit loved ones.' },
+      { name: 'Children\'s Day (Kodomo no Hi)', origin: 'Japan', desc: 'Families fly colorful carp-shaped koinobori streamers to celebrate children\'s health and happiness.' },
+      { name: 'Vesak / Buddha Day', origin: 'Buddhist (Asia)', desc: 'Celebrates the birth, enlightenment, and death of the Buddha. Temples are decorated and lanterns are lit.' },
+      { name: 'Cinco de Mayo', origin: 'Mexico', desc: 'Commemorates the Mexican victory at the Battle of Puebla in 1862. Celebrated with parades, music, and traditional food.' }
+    ]},
+    { month: 'June', celebrations: [
+      { name: 'Juneteenth', origin: 'African American', desc: 'Celebrates June 19, 1865, when enslaved people in Texas finally learned of their freedom. A day of joy, reflection, and community.' },
+      { name: 'Dragon Boat Festival', origin: 'China', desc: 'Teams race long, dragon-decorated boats while eating zongzi (sticky rice dumplings). Honors the poet Qu Yuan.' },
+      { name: 'Inti Raymi', origin: 'Quechua / Peru', desc: 'The Festival of the Sun, an ancient Incan celebration of the winter solstice (in the Southern Hemisphere) honoring the sun god.' },
+      { name: 'Midsummer (Midsommar)', origin: 'Scandinavia', desc: 'Celebrating the summer solstice with maypole dancing, flower wreaths, and feasting outdoors under the midnight sun.' }
+    ]},
+    { month: 'July', celebrations: [
+      { name: 'Tanabata (Star Festival)', origin: 'Japan', desc: 'Based on the legend of two star-crossed lovers (Orihime and Hikoboshi) who meet once a year across the Milky Way. People write wishes on paper and hang them on bamboo.' },
+      { name: 'Hajj (varies)', origin: 'Islamic world', desc: 'The annual pilgrimage to Mecca that all able Muslims aim to make once in their lifetime. Millions gather in unity.' },
+      { name: 'NAIDOC Week', origin: 'Aboriginal Australian', desc: 'Celebrates the history, culture, and achievements of Aboriginal and Torres Strait Islander peoples.' },
+      { name: 'Hemis Festival', origin: 'Ladakh, India', desc: 'A vibrant Buddhist festival with masked dances, music, and celebrations at the Hemis Monastery in the Himalayas.' }
+    ]},
+    { month: 'August', celebrations: [
+      { name: 'Obon', origin: 'Japan', desc: 'A Buddhist tradition honoring the spirits of ancestors. Families clean graves, light lanterns, and perform the Bon Odori dance.' },
+      { name: 'Raksha Bandhan', origin: 'India', desc: 'Sisters tie a bracelet (rakhi) on their brothers\' wrists, symbolizing love and protection between siblings.' },
+      { name: 'La Tomatina', origin: 'Spain', desc: 'The world\'s largest tomato fight! Thousands gather in Bu\u00f1ol to throw tomatoes at each other in joyful chaos.' },
+      { name: 'World Indigenous Peoples Day', origin: 'United Nations', desc: 'August 9th recognizes the rights and cultures of the world\'s 476 million Indigenous peoples.' }
+    ]},
+    { month: 'September', celebrations: [
+      { name: 'Rosh Hashanah', origin: 'Jewish', desc: 'The Jewish New Year. Families eat apples dipped in honey for a sweet new year and hear the shofar (ram\'s horn) blown.' },
+      { name: 'Mid-Autumn Festival', origin: 'China / East Asia', desc: 'Families gather under the full moon, eat mooncakes, and celebrate the harvest. Children carry colorful lanterns.' },
+      { name: 'Chuseok', origin: 'South Korea', desc: 'Korean harvest festival where families visit ancestral hometowns, perform rituals, and share songpyeon (rice cakes).' },
+      { name: 'Mexican Independence Day', origin: 'Mexico', desc: 'September 16th celebrates Mexico\'s independence from Spain. The "Grito de Dolores" (cry of independence) rings out at midnight on the 15th.' }
+    ]},
+    { month: 'October', celebrations: [
+      { name: 'D\u00eda de los Muertos', origin: 'Mexico', desc: 'Nov 1-2 (preparations in October). Families build altars (ofrendas) with photos, marigolds, and favorite foods to honor and remember loved ones who have passed.' },
+      { name: 'Diwali (varies Oct/Nov)', origin: 'Hindu / Sikh / Jain', desc: 'The Festival of Lights! Families light clay lamps (diyas), share sweets, set off fireworks, and celebrate the victory of light over darkness.' },
+      { name: 'Oktoberfest', origin: 'Germany', desc: 'The world\'s largest folk festival in Munich. Traditional music, dance, food, and Bavarian culture for 16-18 days.' },
+      { name: 'Sukkot', origin: 'Jewish', desc: 'The Feast of Tabernacles. Families build temporary shelters (sukkah) and eat meals inside, remembering the Israelites\' journey in the wilderness.' }
+    ]},
+    { month: 'November', celebrations: [
+      { name: 'D\u00eda de los Muertos', origin: 'Mexico', desc: 'November 1-2. The culmination of celebrations honoring the dead with beautiful altars, sugar skulls, and gravesite vigils.' },
+      { name: 'Thanksgiving (US)', origin: 'United States', desc: 'Families gather to share a meal and express gratitude. Indigenous perspectives on this holiday provide important context.' },
+      { name: 'Loy Krathong', origin: 'Thailand', desc: 'People release decorated floating baskets (krathong) onto rivers under the full moon, symbolizing letting go of negativity.' },
+      { name: 'Native American Heritage Month', origin: 'United States', desc: 'Honors the rich cultures, histories, and contributions of Native American and Alaska Native peoples.' }
+    ]},
+    { month: 'December', celebrations: [
+      { name: 'Hanukkah (varies)', origin: 'Jewish', desc: 'The Festival of Lights lasting eight nights. Families light the menorah, play dreidel, eat latkes, and exchange gifts.' },
+      { name: 'Christmas', origin: 'Christian (global)', desc: 'Celebrates the birth of Jesus Christ. Traditions include gift-giving, feasting, carols, and decorating trees.' },
+      { name: 'Kwanzaa', origin: 'African American', desc: 'Dec 26-Jan 1. Celebrates African heritage with seven principles: unity, self-determination, collective work, cooperative economics, purpose, creativity, and faith.' },
+      { name: 'Yule / Winter Solstice', origin: 'Norse / Pagan / global', desc: 'The shortest day of the year, celebrated since ancient times. Many modern Christmas traditions (yule log, evergreen trees) come from solstice celebrations.' }
+    ]}
   ];
 
   // ── Helper: shuffle array (Fisher-Yates) ──
@@ -273,6 +541,26 @@ window.SelHub = window.SelHub || {
       var quizAnswer = d.quizAnswer;
       var quizDone = d.quizDone || false;
       var quizBestScore = d.quizBestScore || 0;
+
+      // Recipes state
+      var recipesWantToTry = d.recipesWantToTry || [];
+      var recipeExpanded = d.recipeExpanded || null;
+
+      // Music & Dance state
+      var musicExplored = d.musicExplored || [];
+      var musicExpanded = d.musicExpanded || null;
+      var rhythmsTried = d.rhythmsTried || [];
+      var rhythmPlaying = d.rhythmPlaying || false;
+      var rhythmId = d.rhythmId || null;
+
+      // Stories state
+      var storiesRead = d.storiesRead || [];
+      var storyExpanded = d.storyExpanded || null;
+
+      // Calendar state
+      var calendarMonthsViewed = d.calendarMonthsViewed || [];
+      var calendarMonth = d.calendarMonth || null;
+      var calendarEventExpanded = d.calendarEventExpanded || null;
 
       // ── Badge checker ──
       var checkBadges = function(newData) {
@@ -487,6 +775,90 @@ window.SelHub = window.SelHub || {
         }
       };
 
+      // ── Toggle recipe "want to try" ──
+      var toggleRecipeTry = function(recipeId) {
+        var list = recipesWantToTry.slice();
+        var idx = list.indexOf(recipeId);
+        if (idx >= 0) {
+          list.splice(idx, 1);
+        } else {
+          list.push(recipeId);
+          ctx.awardXP(3);
+          addToast('Added to your food bucket list!', 'success');
+        }
+        upd('recipesWantToTry', list);
+        checkBadges({ recipesWantToTry: list });
+      };
+
+      // ── Mark a music tradition explored ──
+      var markMusicExplored = function(musicId) {
+        if (musicExplored.indexOf(musicId) < 0) {
+          var newList = musicExplored.concat([musicId]);
+          upd('musicExplored', newList);
+          ctx.awardXP(5);
+          checkBadges({ musicExplored: newList });
+        }
+      };
+
+      // ── Mark story read ──
+      var markStoryRead = function(storyId) {
+        if (storiesRead.indexOf(storyId) < 0) {
+          var newList = storiesRead.concat([storyId]);
+          upd('storiesRead', newList);
+          ctx.awardXP(5);
+          addToast('Story completed! Great reading!', 'success');
+          checkBadges({ storiesRead: newList });
+        }
+      };
+
+      // ── Mark calendar month viewed ──
+      var markCalendarMonth = function(monthIdx) {
+        var monthName = CULTURAL_CALENDAR[monthIdx].month;
+        if (calendarMonthsViewed.indexOf(monthName) < 0) {
+          var newList = calendarMonthsViewed.concat([monthName]);
+          upd('calendarMonthsViewed', newList);
+          ctx.awardXP(2);
+          checkBadges({ calendarMonthsViewed: newList });
+        }
+      };
+
+      // ── Rhythm Explorer: play a simple beat pattern via Web Audio ──
+      var playRhythm = function(pattern, tradId) {
+        if (rhythmPlaying) return;
+        upd('rhythmPlaying', true);
+        upd('rhythmId', tradId);
+        // Mark tried
+        if (rhythmsTried.indexOf(tradId) < 0) {
+          var newTried = rhythmsTried.concat([tradId]);
+          upd('rhythmsTried', newTried);
+          ctx.awardXP(3);
+          checkBadges({ rhythmsTried: newTried });
+        }
+        try {
+          var AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) { upd('rhythmPlaying', false); return; }
+          var actx = new AudioCtx();
+          var tempo = 0.18;
+          pattern.forEach(function(hit, i) {
+            if (hit) {
+              var osc = actx.createOscillator();
+              var gain = actx.createGain();
+              osc.connect(gain);
+              gain.connect(actx.destination);
+              osc.frequency.value = (i % 4 === 0) ? 120 : 200;
+              osc.type = 'triangle';
+              gain.gain.setValueAtTime(0.4, actx.currentTime + i * tempo);
+              gain.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + i * tempo + 0.12);
+              osc.start(actx.currentTime + i * tempo);
+              osc.stop(actx.currentTime + i * tempo + 0.12);
+            }
+          });
+          setTimeout(function() { upd('rhythmPlaying', false); actx.close(); }, pattern.length * tempo * 1000 + 200);
+        } catch(e) {
+          upd('rhythmPlaying', false);
+        }
+      };
+
       // ═══ RENDER ═══
       var badgesEarned = d.badgesEarned || [];
 
@@ -507,6 +879,10 @@ window.SelHub = window.SelHub || {
           [
             { id: 'choose', label: '\uD83D\uDDFA\uFE0F Cultures' },
             { id: 'worldmap', label: '\uD83C\uDF0E World Map' },
+            { id: 'recipes', label: '\uD83C\uDF72 Recipes' },
+            { id: 'music', label: '\uD83C\uDFB5 Music' },
+            { id: 'stories', label: '\uD83D\uDCDA Stories' },
+            { id: 'calendar', label: '\uD83D\uDCC5 Calendar' },
             { id: 'language', label: '\uD83D\uDDE3\uFE0F Languages' },
             { id: 'compare', label: '\uD83D\uDD0D Compare' },
             { id: 'explore', label: '\uD83D\uDD2C Explore' },
@@ -655,6 +1031,314 @@ window.SelHub = window.SelHub || {
                     },
                     className: 'w-full mt-1 px-3 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors'
                   }, '\uD83D\uDD2C AI Deep Dive into ' + hl.name)
+                )
+              );
+            })
+          )
+        ),
+
+        // ═══ CULTURAL RECIPES EXPLORER ═══
+        tab === 'recipes' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDF72 Cultural Recipes Explorer'),
+            h('p', { className: 'text-sm text-slate-500' }, 'Food is a universal cultural connector. Discover dishes from around the world!')
+          ),
+
+          // Want-to-try tracker
+          recipesWantToTry.length > 0 && h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3 text-center' },
+            h('span', { className: 'text-xs font-bold text-amber-700' }, '\uD83C\uDF1F Your food bucket list: ' + recipesWantToTry.length + ' / ' + CULTURAL_RECIPES.length + ' dishes')
+          ),
+
+          // Recipe cards
+          CULTURAL_RECIPES.map(function(recipe) {
+            var isExpanded = recipeExpanded === recipe.id;
+            var wantToTry = recipesWantToTry.indexOf(recipe.id) >= 0;
+            return h('div', { key: recipe.id, className: 'bg-white rounded-2xl border-2 overflow-hidden transition-all ' + (wantToTry ? 'border-amber-300' : 'border-slate-200') },
+              // Header
+              h('button', { onClick: function() { upd('recipeExpanded', isExpanded ? null : recipe.id); },
+                className: 'w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-slate-50 transition-colors'
+              },
+                h('span', { className: 'text-2xl' }, recipe.emoji),
+                h('div', { className: 'flex-1' },
+                  h('div', { className: 'text-sm font-bold text-slate-800' }, recipe.name),
+                  h('div', { className: 'text-[10px] text-slate-500' }, recipe.origin + ' \u2022 ' + recipe.difficulty)
+                ),
+                wantToTry && h('span', { className: 'text-amber-500 text-sm' }, '\u2764\uFE0F'),
+                h('span', { className: 'text-slate-400 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
+              ),
+
+              // Expanded content
+              isExpanded && h('div', { className: 'px-4 pb-4 space-y-3 border-t border-slate-100 pt-3' },
+                h('div', null,
+                  h('p', { className: 'text-xs font-bold text-slate-500 uppercase mb-1' }, 'About This Dish'),
+                  h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, recipe.description)
+                ),
+                h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-lg p-3' },
+                  h('p', { className: 'text-xs font-bold text-cyan-600 uppercase mb-1' }, '\uD83C\uDF0D Cultural Significance'),
+                  h('p', { className: 'text-sm text-cyan-800 leading-relaxed' }, recipe.significance)
+                ),
+                h('div', { className: 'bg-amber-50 border border-amber-200 rounded-lg p-3' },
+                  h('p', { className: 'text-xs font-bold text-amber-600 uppercase mb-1' }, '\u2728 Fun Fact'),
+                  h('p', { className: 'text-sm text-amber-800 leading-relaxed' }, recipe.funFact)
+                ),
+                h('button', { onClick: function() { toggleRecipeTry(recipe.id); },
+                  className: 'w-full px-4 py-2.5 rounded-lg text-sm font-bold transition-all ' +
+                    (wantToTry ? 'bg-amber-100 border-2 border-amber-300 text-amber-700 hover:bg-amber-200' : 'bg-amber-500 text-white hover:bg-amber-600')
+                }, wantToTry ? '\u2764\uFE0F On My List!' : '\uD83D\uDE0B I Want to Try This!')
+              )
+            );
+          }),
+
+          // Cultural context note
+          h('div', { className: 'bg-teal-50 border border-teal-200 rounded-xl p-4 text-center' },
+            h('p', { className: 'text-xs text-teal-700 leading-relaxed' },
+              '\uD83C\uDF31 Food connects us across cultures. Every dish tells a story of place, people, and tradition. ',
+              'Trying foods from other cultures is one of the simplest ways to show curiosity and respect.'
+            )
+          )
+        ),
+
+        // ═══ CULTURAL MUSIC & DANCE ═══
+        tab === 'music' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDFB5 Music & Dance Traditions'),
+            h('p', { className: 'text-sm text-slate-500' }, 'Every culture has rhythm. Explore artistic traditions from around the world.')
+          ),
+
+          // Progress
+          musicExplored.length > 0 && h('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-center' },
+            h('span', { className: 'text-xs font-bold text-indigo-700' }, '\uD83C\uDFB6 ' + musicExplored.length + ' / ' + MUSIC_DANCE_DATA.length + ' traditions explored')
+          ),
+
+          // Music cards
+          MUSIC_DANCE_DATA.map(function(trad) {
+            var isExpanded = musicExpanded === trad.id;
+            var explored = musicExplored.indexOf(trad.id) >= 0;
+            return h('div', { key: trad.id, className: 'bg-white rounded-2xl border-2 overflow-hidden transition-all ' + (explored ? 'border-indigo-300' : 'border-slate-200') },
+              // Header
+              h('button', { onClick: function() {
+                  upd('musicExpanded', isExpanded ? null : trad.id);
+                  if (!isExpanded) markMusicExplored(trad.id);
+                },
+                className: 'w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-slate-50 transition-colors'
+              },
+                h('span', { className: 'text-2xl' }, trad.emoji),
+                h('div', { className: 'flex-1' },
+                  h('div', { className: 'text-sm font-bold text-slate-800' }, trad.name),
+                  h('div', { className: 'text-[10px] text-slate-500' }, trad.origin)
+                ),
+                explored && h('span', { className: 'text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713'),
+                h('span', { className: 'text-slate-400 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
+              ),
+
+              // Expanded content
+              isExpanded && h('div', { className: 'px-4 pb-4 space-y-3 border-t border-slate-100 pt-3' },
+                h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, trad.description),
+
+                h('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-lg p-3' },
+                  h('p', { className: 'text-xs font-bold text-indigo-600 uppercase mb-1' }, '\uD83D\uDCDC Origin Story'),
+                  h('p', { className: 'text-sm text-indigo-800 leading-relaxed' }, trad.originStory)
+                ),
+
+                h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-lg p-3' },
+                  h('p', { className: 'text-xs font-bold text-cyan-600 uppercase mb-1' }, '\uD83C\uDF0D Cultural Significance'),
+                  h('p', { className: 'text-sm text-cyan-800 leading-relaxed' }, trad.significance)
+                ),
+
+                h('div', { className: 'bg-slate-50 border border-slate-200 rounded-lg p-3' },
+                  h('p', { className: 'text-xs font-bold text-slate-500 uppercase mb-1' }, '\uD83C\uDFB8 Instruments / Elements'),
+                  h('p', { className: 'text-sm text-slate-700' }, trad.instruments)
+                ),
+
+                h('div', { className: 'bg-amber-50 border border-amber-200 rounded-lg p-3' },
+                  h('p', { className: 'text-xs font-bold text-amber-600 uppercase mb-1' }, '\u2728 Fun Fact'),
+                  h('p', { className: 'text-sm text-amber-800 leading-relaxed' }, trad.funFact)
+                ),
+
+                // Rhythm Explorer
+                trad.beatPattern && h('div', { className: 'bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-3' },
+                  h('p', { className: 'text-xs font-bold text-purple-600 uppercase mb-2' }, '\uD83E\uDD41 Rhythm Explorer'),
+                  h('div', { className: 'flex gap-1 mb-2 justify-center flex-wrap' },
+                    trad.beatPattern.map(function(hit, i) {
+                      return h('div', { key: i, className: 'w-5 h-5 rounded ' + (hit ? 'bg-purple-500' : 'bg-purple-200'), title: hit ? 'Hit' : 'Rest' });
+                    })
+                  ),
+                  h('button', { onClick: function() { playRhythm(trad.beatPattern, trad.id); },
+                    disabled: rhythmPlaying,
+                    className: 'w-full px-4 py-2 rounded-lg text-sm font-bold transition-all ' +
+                      (rhythmPlaying && rhythmId === trad.id ? 'bg-purple-300 text-purple-700' : 'bg-purple-600 text-white hover:bg-purple-700') +
+                      (rhythmPlaying ? ' opacity-70' : '')
+                  }, rhythmPlaying && rhythmId === trad.id ? '\uD83C\uDFB5 Playing...' : '\u25B6 Play This Beat'),
+                  rhythmsTried.indexOf(trad.id) >= 0 && h('div', { className: 'text-[10px] text-purple-600 font-bold text-center mt-1' }, '\u2713 Beat explored!')
+                ),
+
+                // TTS button
+                callTTS && h('button', { onClick: function() { callTTS(trad.name + '. ' + trad.description); },
+                  className: 'w-full px-3 py-2 bg-indigo-50 border border-indigo-200 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors'
+                }, '\uD83D\uDD0A Listen to Description')
+              )
+            );
+          })
+        ),
+
+        // ═══ CULTURAL STORYTELLING ═══
+        tab === 'stories' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCDA Cultural Storytelling'),
+            h('p', { className: 'text-sm text-slate-500' }, 'Traditional stories carry the wisdom of cultures across generations')
+          ),
+
+          // Progress
+          storiesRead.length > 0 && h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center' },
+            h('span', { className: 'text-xs font-bold text-emerald-700' }, '\uD83D\uDCDA ' + storiesRead.length + ' stories read')
+          ),
+
+          // Grade band selector info
+          h('div', { className: 'bg-slate-50 border border-slate-200 rounded-xl p-3 text-center' },
+            h('p', { className: 'text-xs text-slate-600' }, 'Showing stories for: ',
+              h('strong', null, gradeBand === 'middle' || gradeBand === 'high' ? 'Middle School' : 'Elementary'),
+              ' level')
+          ),
+
+          // Stories based on grade band
+          (function() {
+            var storyList = (gradeBand === 'middle' || gradeBand === 'high') ? CULTURAL_STORIES.middle : CULTURAL_STORIES.elementary;
+            return storyList.map(function(story) {
+              var isExpanded = storyExpanded === story.id;
+              var isRead = storiesRead.indexOf(story.id) >= 0;
+              return h('div', { key: story.id, className: 'bg-white rounded-2xl border-2 overflow-hidden transition-all ' + (isRead ? 'border-emerald-300' : 'border-slate-200') },
+                // Header
+                h('button', { onClick: function() { upd('storyExpanded', isExpanded ? null : story.id); },
+                  className: 'w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-slate-50 transition-colors'
+                },
+                  h('span', { className: 'text-2xl' }, story.emoji),
+                  h('div', { className: 'flex-1' },
+                    h('div', { className: 'text-sm font-bold text-slate-800' }, story.name),
+                    h('div', { className: 'text-[10px] text-slate-500' }, story.origin)
+                  ),
+                  isRead && h('span', { className: 'text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713 Read'),
+                  h('span', { className: 'text-slate-400 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
+                ),
+
+                // Expanded content
+                isExpanded && h('div', { className: 'px-4 pb-4 space-y-3 border-t border-slate-100 pt-3' },
+                  // The story
+                  h('div', { className: 'bg-amber-50 border border-amber-200 rounded-lg p-4' },
+                    h('p', { className: 'text-xs font-bold text-amber-600 uppercase mb-2' }, '\uD83D\uDCDC The Story'),
+                    h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, story.summary),
+                    // TTS narration
+                    callTTS && h('button', { onClick: function() { callTTS(story.summary); },
+                      className: 'mt-2 px-3 py-1.5 bg-amber-100 border border-amber-300 rounded-lg text-[10px] font-bold text-amber-700 hover:bg-amber-200 transition-colors'
+                    }, '\uD83D\uDD0A Listen to This Story')
+                  ),
+
+                  // Moral / lesson
+                  h('div', { className: 'bg-teal-50 border border-teal-200 rounded-lg p-3' },
+                    h('p', { className: 'text-xs font-bold text-teal-600 uppercase mb-1' }, '\uD83D\uDCA1 Moral / Lesson'),
+                    h('p', { className: 'text-sm text-teal-800 leading-relaxed' }, story.moral)
+                  ),
+
+                  // Cultural context
+                  h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-lg p-3' },
+                    h('p', { className: 'text-xs font-bold text-cyan-600 uppercase mb-1' }, '\uD83C\uDF0D Cultural Context'),
+                    h('p', { className: 'text-sm text-cyan-800 leading-relaxed' }, story.context)
+                  ),
+
+                  // Discussion questions
+                  h('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-lg p-3' },
+                    h('p', { className: 'text-xs font-bold text-indigo-600 uppercase mb-2' }, '\u2753 Discussion Questions'),
+                    h('div', { className: 'space-y-1.5' },
+                      story.questions.map(function(q, qi) {
+                        return h('p', { key: qi, className: 'text-sm text-indigo-800 flex items-start gap-2' },
+                          h('span', { className: 'text-indigo-400 font-bold shrink-0' }, (qi + 1) + '.'),
+                          h('span', null, q)
+                        );
+                      })
+                    )
+                  ),
+
+                  // Mark as read
+                  !isRead && h('button', { onClick: function() { markStoryRead(story.id); },
+                    className: 'w-full px-4 py-2.5 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-colors'
+                  }, '\u2713 Mark as Read'),
+
+                  isRead && h('div', { className: 'text-center text-xs text-emerald-600 font-bold' }, '\u2713 You\'ve read this story!')
+                )
+              );
+            });
+          })(),
+
+          // Closing thought
+          h('div', { className: 'bg-slate-50 border border-slate-200 rounded-xl p-4 text-center' },
+            h('p', { className: 'text-xs text-slate-600 italic leading-relaxed' },
+              '"Stories are the creative conversion of life itself into a more powerful, clearer, more meaningful experience." \u2014 Robert McKee'
+            )
+          )
+        ),
+
+        // ═══ CULTURAL CALENDAR ═══
+        tab === 'calendar' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCC5 Cultural Calendar'),
+            h('p', { className: 'text-sm text-slate-500' }, 'Major celebrations from around the world, month by month')
+          ),
+
+          // Progress
+          calendarMonthsViewed.length > 0 && h('div', { className: 'bg-rose-50 border border-rose-200 rounded-xl p-3 text-center' },
+            h('span', { className: 'text-xs font-bold text-rose-700' }, '\uD83D\uDCC5 ' + calendarMonthsViewed.length + ' / 12 months explored')
+          ),
+
+          // Month grid
+          !calendarMonth && calendarMonth !== 0 && h('div', { className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
+            CULTURAL_CALENDAR.map(function(m, idx) {
+              var currentMonth = new Date().getMonth();
+              var isCurrent = idx === currentMonth;
+              var isViewed = calendarMonthsViewed.indexOf(m.month) >= 0;
+              return h('button', { key: idx, onClick: function() {
+                  upd('calendarMonth', idx);
+                  upd('calendarEventExpanded', null);
+                  markCalendarMonth(idx);
+                },
+                className: 'p-3 rounded-xl border-2 text-center transition-all hover:scale-105 ' +
+                  (isCurrent ? 'border-rose-400 bg-rose-50 ring-2 ring-rose-300' :
+                   isViewed ? 'border-cyan-300 bg-cyan-50' : 'border-slate-200 bg-white')
+              },
+                h('div', { className: 'text-sm font-bold ' + (isCurrent ? 'text-rose-700' : 'text-slate-800') }, m.month.substring(0, 3)),
+                h('div', { className: 'text-[9px] text-slate-500 mt-0.5' }, m.celebrations.length + ' events'),
+                isCurrent && h('div', { className: 'text-[8px] text-rose-500 font-bold mt-0.5' }, 'This Month'),
+                isViewed && !isCurrent && h('div', { className: 'text-[8px] text-cyan-500 font-bold mt-0.5' }, '\u2713')
+              );
+            })
+          ),
+
+          // Month detail view
+          (calendarMonth !== null && calendarMonth !== undefined && CULTURAL_CALENDAR[calendarMonth]) && h('div', { className: 'space-y-3' },
+            h('button', { onClick: function() { upd('calendarMonth', null); upd('calendarEventExpanded', null); },
+              className: 'text-xs text-cyan-500 hover:text-cyan-700 font-bold' }, '\u2190 All Months'),
+
+            h('div', { className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl border border-rose-200 p-4 text-center' },
+              h('h4', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCC5 ' + CULTURAL_CALENDAR[calendarMonth].month),
+              h('p', { className: 'text-xs text-slate-500' }, CULTURAL_CALENDAR[calendarMonth].celebrations.length + ' celebrations from around the world')
+            ),
+
+            CULTURAL_CALENDAR[calendarMonth].celebrations.map(function(event, ei) {
+              var isEventExpanded = calendarEventExpanded === ei;
+              return h('div', { key: ei, className: 'bg-white rounded-xl border border-slate-200 overflow-hidden' },
+                h('button', { onClick: function() { upd('calendarEventExpanded', isEventExpanded ? null : ei); },
+                  className: 'w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-slate-50 transition-colors'
+                },
+                  h('div', { className: 'w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-sm font-bold text-rose-600 shrink-0' }, String(ei + 1)),
+                  h('div', { className: 'flex-1' },
+                    h('div', { className: 'text-sm font-bold text-slate-800' }, event.name),
+                    h('div', { className: 'text-[10px] text-slate-500' }, event.origin)
+                  ),
+                  h('span', { className: 'text-slate-400 text-xs' }, isEventExpanded ? '\u25B2' : '\u25BC')
+                ),
+                isEventExpanded && h('div', { className: 'px-4 pb-4 border-t border-slate-100 pt-3' },
+                  h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, event.desc),
+                  callTTS && h('button', { onClick: function() { callTTS(event.name + '. ' + event.desc); },
+                    className: 'mt-2 px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-lg text-[10px] font-bold text-rose-700 hover:bg-rose-100 transition-colors'
+                  }, '\uD83D\uDD0A Hear about this celebration')
                 )
               );
             })

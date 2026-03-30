@@ -845,8 +845,100 @@ if (!window.StemLab.isRegistered('fireEcology')) {
     { q: 'What is \u201Cepicormic sprouting\u201D?', choices: ['Seeds germinating after fire', 'Dormant buds beneath bark that sprout new growth after fire kills the canopy', 'A type of fire spread', 'Mushrooms growing after rain'], answer: 1 },
     { q: 'Cultural burning protects watersheds by:', choices: ['Building dams', 'Keeping trees alive so roots stabilize soil and prevent debris flows', 'Adding chemicals to streams', 'Increasing snowpack'], answer: 1 },
     { q: 'In the 2018 Camp Fire, the town of Paradise was destroyed in:', choices: ['3 days', 'Less than 4 hours', '2 weeks', '1 month'], answer: 1 },
-    { q: 'What is the \u201Cfuel debt\u201D?', choices: ['Money owed for firefighting', 'The accumulated fuel load from decades of fire suppression that makes catastrophic wildfire inevitable', 'The cost of prescribed burns', 'A tax on logging'], answer: 1 }
+    { q: 'What is the \u201Cfuel debt\u201D?', choices: ['Money owed for firefighting', 'The accumulated fuel load from decades of fire suppression that makes catastrophic wildfire inevitable', 'The cost of prescribed burns', 'A tax on logging'], answer: 1 },
+    { q: 'How do beaver dams help during wildfire?', choices: ['Beavers fight fires', 'Beaver ponds create fireproof wetland refugia where vegetation stays green', 'Beavers warn other animals', 'They don\u2019t help at all'], answer: 1 },
+    { q: 'Emily Fairfax\u2019s satellite research showed that during wildfire, beaver-dammed areas:', choices: ['Burned faster than surrounding land', 'Stayed green and acted as fire refugia for wildlife', 'Dried up completely', 'Were abandoned by all animals'], answer: 1 },
+    { q: 'The fur trade\u2019s near-elimination of beavers across North America:', choices: ['Had no ecological effect', 'Drained millions of acres of wetlands, increasing wildfire vulnerability', 'Made forests healthier', 'Increased beaver populations'], answer: 1 },
+    { q: 'What is a Beaver Dam Analog (BDA)?', choices: ['A computer model of beaver behavior', 'A human-built structure that mimics a beaver dam to restore wetlands in fire-prone areas', 'A type of fire extinguisher', 'A beaver-shaped robot'], answer: 1 }
   );
+
+  // ═══════════════════════════════════════════
+  // BEAVER & FIRE RESILIENCE
+  // ═══════════════════════════════════════════
+
+  var BEAVER_FIRE = {
+    title: 'Nature\u2019s Firefighters: How Beavers Protect Landscapes from Wildfire',
+    intro: 'The North American beaver (Castor canadensis) is increasingly recognized as one of the most important allies in wildfire resilience. Beaver dams create wetlands that act as fireproof refugia, store water that sustains landscapes through drought, and slow post-fire debris flows. Indigenous peoples across North America managed beaver populations as part of their holistic land stewardship \u2014 and the fur trade\u2019s near-elimination of beavers is directly linked to increased wildfire vulnerability.',
+    science: [
+      {
+        name: 'Beaver Ponds as Fire Refugia',
+        icon: '\uD83D\uDCA7',
+        desc: 'In 2020, fire ecologist Emily Fairfax (California State University Channel Islands) published groundbreaking satellite research showing that during wildfires, beaver-dammed river corridors stayed green and lush while everything around them burned. Beaver ponds raise the water table, saturating surrounding soil and vegetation. This creates a \u201Cfireproof\u201D ribbon of green along waterways that wildlife can shelter in during fire.',
+        stat: 'Beaver-dammed areas had 3x more green vegetation during wildfire than similar undammed streams.',
+        color: '#0ea5e9'
+      },
+      {
+        name: 'Water Storage & Drought Resilience',
+        icon: '\uD83D\uDEB0',
+        desc: 'A single beaver dam stores 3,000-10,000+ gallons of water. A colony with multiple dams can store millions of gallons. This water slowly recharges the water table, keeping soils moist and vegetation hydrated through dry seasons. In fire-prone landscapes, this moisture buffer is the difference between vegetation that can burn and vegetation that can\u2019t.',
+        stat: 'Beaver complexes raise water tables by 1-3 feet across adjacent floodplains.',
+        color: '#22c55e'
+      },
+      {
+        name: 'Post-Fire Debris Flow Prevention',
+        icon: '\uD83C\uDF0A',
+        desc: 'After wildfire burns a watershed, the next rainstorm can trigger lethal debris flows (see: Montecito 2018). Beaver dams act as natural check dams, slowing water velocity, trapping sediment, and preventing the catastrophic runoff that causes debris flows. A series of beaver dams along a stream can reduce peak flows by 30-50%.',
+        stat: 'Beaver dams reduce downstream sediment transport by 50-90% after fire.',
+        color: '#f59e0b'
+      },
+      {
+        name: 'Wildlife Refugia During Fire',
+        icon: '\uD83E\uDD86',
+        desc: 'Beaver ponds serve as emergency refuge for wildlife during wildfire. Fish, amphibians, waterfowl, deer, elk, and even bears seek out beaver ponds as safe zones. The moist, green vegetation surrounding beaver ponds provides cover and food when surrounding landscapes are scorched. Post-fire, beaver ponds accelerate ecosystem recovery by maintaining seed banks, soil moisture, and aquatic food webs.',
+        stat: 'Beaver ponds support 5-10x more species per acre than adjacent unbuffered streams.',
+        color: '#a855f7'
+      },
+      {
+        name: 'The Fur Trade & Ecological Collapse',
+        icon: '\u26A0\uFE0F',
+        desc: 'Before European colonization, an estimated 100-400 million beavers lived in North America. By 1900, the fur trade had reduced the population to approximately 100,000 \u2014 a 99.9% decline. This eliminated millions of beaver dams, draining an estimated 40-80 million acres of wetlands. The loss of these wetlands dried out landscapes, lowered water tables, and removed the natural fire resilience that beaver-maintained waterways provided.',
+        stat: 'The fur trade destroyed an estimated 25 million beaver dams, draining an area the size of California.',
+        color: '#ef4444'
+      },
+      {
+        name: 'Indigenous Beaver-Fire Connection',
+        icon: '\uD83C\uDF0D',
+        desc: 'Many Indigenous nations understood the connection between beavers, water, and fire resilience. The Blackfeet, Shoshone, and many other nations did not trap beavers to local extinction the way the fur trade did \u2014 they managed beaver populations sustainably as part of the same holistic land stewardship that included cultural burning. Beavers and fire were managed together because Indigenous peoples understood they were parts of the same system: beavers protect water, fire manages fuel, and together they create resilient landscapes.',
+        stat: 'Indigenous-managed landscapes had both intact beaver populations AND regular cultural burning \u2014 a dual resilience system.',
+        color: '#7c3aed'
+      },
+      {
+        name: 'Beaver Dam Analogs (BDAs)',
+        icon: '\uD83D\uDEE0\uFE0F',
+        desc: 'Land managers are now building Beaver Dam Analogs (BDAs) \u2014 simple structures of wooden posts and woven branches that mimic the function of beaver dams \u2014 in fire-prone watersheds. BDAs slow stream flow, raise water tables, re-wet floodplains, and create conditions that encourage real beavers to recolonize. Several post-fire restoration projects now install BDAs as a first step in watershed recovery.',
+        stat: 'BDAs cost $200-500 each to install and can raise water tables by 1+ feet within a single season.',
+        color: '#16a34a'
+      }
+    ]
+  };
+
+  // ═══════════════════════════════════════════
+  // FIREKEEPER CHALLENGE GAME
+  // ═══════════════════════════════════════════
+
+  var GAME_EVENTS = [
+    { id: 'drought', name: 'Severe Drought', icon: '\u2600\uFE0F', desc: 'A multi-year drought has dried fuels to critical levels.', effects: { fuelLoad: 8, soilHealth: -5, waterYield: -12, biodiversity: -3 }, urgent: true },
+    { id: 'lightning', name: 'Lightning Storm', icon: '\u26A1', desc: 'Dry lightning strikes ignite several small fires in the forest.', effects: { fuelLoad: -5 }, wildfire_chance: 0.3, urgent: true },
+    { id: 'wetSpring', name: 'Wet Spring', icon: '\uD83C\uDF27\uFE0F', desc: 'Heavy spring rains soak the forest floor and recharge streams.', effects: { soilHealth: 8, waterYield: 10, fuelLoad: 3 }, urgent: false },
+    { id: 'barkBeetle', name: 'Bark Beetle Outbreak', icon: '\uD83D\uDC1E', desc: 'Mountain pine beetles have killed 30% of mature conifers, creating standing dead fuel.', effects: { fuelLoad: 15, canopyCover: -15, biodiversity: -5 }, urgent: true },
+    { id: 'windstorm', name: 'Windstorm', icon: '\uD83C\uDF2C\uFE0F', desc: 'A powerful windstorm topples trees, creating heavy fuel on the forest floor.', effects: { fuelLoad: 12, canopyCover: -8 }, urgent: false },
+    { id: 'elderVisit', name: 'Elder Fire Keeper Visit', icon: '\uD83C\uDF0D', desc: 'An Indigenous fire keeper shares traditional burning knowledge with your team. Your cultural burn effectiveness increases.', effects: { biodiversity: 5, soilHealth: 3 }, bonus: 'culturalBurnBoost', urgent: false },
+    { id: 'beaverReturn', name: 'Beaver Colony Establishes!', icon: '\uD83E\uDDAB', desc: 'Beavers have built dams in the main creek, raising the water table and creating wetland fire breaks.', effects: { waterYield: 15, biodiversity: 8, fuelLoad: -3 }, urgent: false },
+    { id: 'development', name: 'Housing Development Proposed', icon: '\uD83C\uDFE0', desc: 'A developer wants to build homes at the forest edge. Community pressure to suppress all fire increases.', effects: { biodiversity: -2 }, pressure: 'suppress', urgent: false },
+    { id: 'heatwave', name: 'Record Heat Wave', icon: '\uD83C\uDF21\uFE0F', desc: 'Record-breaking temperatures persist for weeks. Fuel moisture drops to critical levels across the region.', effects: { fuelLoad: 5, waterYield: -8, soilHealth: -3 }, urgent: true },
+    { id: 'fungalBloom', name: 'Post-Burn Morel Bloom', icon: '\uD83C\uDF44', desc: 'Morel mushrooms fruit prolifically in areas you recently burned. Mycorrhizal networks are expanding.', effects: { soilHealth: 10, biodiversity: 5 }, condition: 'recentBurn', urgent: false },
+    { id: 'cedarInvasion', name: 'Cedar Encroachment', icon: '\uD83C\uDF32', desc: 'Eastern red cedar is spreading rapidly into prairie openings.', effects: { biodiversity: -8, understoryDensity: 15, waterYield: -5 }, urgent: true },
+    { id: 'eagleNest', name: 'Bald Eagle Nesting', icon: '\uD83E\uDD85', desc: 'A pair of bald eagles has nested in a fire-scarred old-growth tree \u2014 a sign of healthy ecosystem structure.', effects: { biodiversity: 6 }, condition: 'highBio', urgent: false },
+    { id: 'budgetCut', name: 'Fire Management Budget Cut', icon: '\uD83D\uDCB8', desc: 'Budget cuts reduce your ability to conduct burns this decade. You can still burn but with less area.', effects: { fuelLoad: 5 }, urgent: false },
+    { id: 'communityBurn', name: 'Community Burn Day', icon: '\uD83E\uDD1D', desc: 'Community members join your cultural burn day! Fuel reduction is extra effective and public support grows.', effects: { fuelLoad: -6, biodiversity: 3 }, urgent: false },
+    { id: 'invasiveGrass', name: 'Cheatgrass Invasion', icon: '\uD83C\uDF3E', desc: 'Invasive cheatgrass has established in disturbed areas, creating continuous fine fuel that burns easily.', effects: { fuelLoad: 10, biodiversity: -6 }, urgent: true }
+  ];
+
+  var GAME_DIFFICULTIES = {
+    easy: { label: 'Apprentice Fire Keeper', eventChance: 0.4, wildfireThreshold: 65, targetYears: 100, description: 'Fewer random events. Wildfires only at extreme fuel levels.' },
+    medium: { label: 'Journeyman Fire Keeper', eventChance: 0.6, wildfireThreshold: 55, targetYears: 100, description: 'Regular events. Standard wildfire risk.' },
+    hard: { label: 'Master Fire Keeper', eventChance: 0.8, wildfireThreshold: 45, targetYears: 150, description: 'Frequent events. Climate change increases fire risk. Must survive 150 years.' }
+  };
 
   // ═══════════════════════════════════════════
   // MAIN TOOL REGISTRATION
@@ -962,6 +1054,16 @@ if (!window.StemLab.isRegistered('fireEcology')) {
         var comparisonMode = d.comparisonMode || false;
         var simB = d.simB || Object.assign({}, SIM_DEFAULTS);
 
+        // Game state
+        var gameActive = d.gameActive || false;
+        var gameDifficulty = d.gameDifficulty || 'medium';
+        var gameState = d.gameState || null;
+        var gameEvent = d.gameEvent || null;
+        var gameScore = d.gameScore || 0;
+        var gameBestScore = d.gameBestScore || 0;
+        var gameOver = d.gameOver || false;
+        var gameHistory = d.gameHistory || [];
+
         var band = getGradeBand(ctx);
 
         // ── Badge checker ──
@@ -1006,6 +1108,8 @@ if (!window.StemLab.isRegistered('fireEcology')) {
           { id: 'watershed', icon: '\uD83D\uDCA7', label: 'Watersheds' },
           { id: 'caseStudies', icon: '\uD83D\uDCF0', label: 'Case Studies' },
           { id: 'carbon', icon: '\u2601\uFE0F', label: 'Carbon Calculator' },
+          { id: 'beavers', icon: '\uD83E\uDDAB', label: 'Beavers & Fire' },
+          { id: 'game', icon: '\uD83C\uDFAE', label: 'Firekeeper Challenge' },
           { id: 'quiz', icon: '\uD83C\uDFC6', label: 'Quiz' }
         ];
 
@@ -2344,6 +2448,435 @@ if (!window.StemLab.isRegistered('fireEcology')) {
         }
 
         // ══════════════════════════════════════
+        // TAB: BEAVERS & FIRE
+        // ══════════════════════════════════════
+
+        function renderBeaverTab() {
+          return h('div', null,
+            h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #0ea5e9' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
+                h('span', { style: { fontSize: 36 } }, '\uD83E\uDDAB'),
+                h('h3', { style: { margin: 0, color: '#0ea5e9', fontSize: 18 } }, BEAVER_FIRE.title)
+              ),
+              h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 14, lineHeight: 1.7 } }, BEAVER_FIRE.intro)
+            ),
+
+            // Interactive beaver-dam diagram
+            h('div', { style: { background: '#0c1929', borderRadius: 12, padding: 16, marginBottom: 16, textAlign: 'center', border: '1px solid #1e3a5f' } },
+              h('div', { style: { fontWeight: 700, color: '#38bdf8', marginBottom: 12, fontSize: 15 } }, '\uD83C\uDF0A How Beaver Dams Create Fire Refugia'),
+              h('div', { style: { display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 12 } },
+                // Visual cross-section
+                [
+                  { emoji: '\uD83D\uDD25', label: 'Burned\nForest', bg: '#7f1d1d', w: 60 },
+                  { emoji: '\uD83C\uDF32', label: 'Fire\nEdge', bg: '#854d0e', w: 40 },
+                  { emoji: '\uD83C\uDF3F', label: 'Green\nBuffer', bg: '#14532d', w: 50 },
+                  { emoji: '\uD83E\uDDAB', label: 'Beaver\nPond', bg: '#0c4a6e', w: 70 },
+                  { emoji: '\uD83D\uDCA7', label: 'Saturated\nSoil', bg: '#164e63', w: 50 },
+                  { emoji: '\uD83C\uDF3F', label: 'Green\nBuffer', bg: '#14532d', w: 50 },
+                  { emoji: '\uD83C\uDF32', label: 'Fire\nEdge', bg: '#854d0e', w: 40 },
+                  { emoji: '\uD83D\uDD25', label: 'Burned\nForest', bg: '#7f1d1d', w: 60 }
+                ].map(function(zone, zi) {
+                  return h('div', { key: zi, style: { width: zone.w, padding: '8px 2px', background: zone.bg, borderRadius: zi === 0 ? '8px 0 0 8px' : zi === 7 ? '0 8px 8px 0' : 0, textAlign: 'center' } },
+                    h('div', { style: { fontSize: 18, marginBottom: 2 } }, zone.emoji),
+                    h('div', { style: { fontSize: 9, color: '#cbd5e1', whiteSpace: 'pre-line', lineHeight: 1.2 } }, zone.label)
+                  );
+                })
+              ),
+              h('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic' } }, 'Cross-section: Beaver pond creates a green, fire-resistant corridor even when surrounding forest burns')
+            ),
+
+            // Science cards
+            BEAVER_FIRE.science.map(function(item, idx) {
+              return h('div', { key: idx, style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 12, borderLeft: '3px solid ' + item.color } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                  h('span', { style: { fontSize: 22 } }, item.icon),
+                  h('span', { style: { fontWeight: 700, color: item.color, fontSize: 15 } }, item.name)
+                ),
+                h('p', { style: { margin: '0 0 8px 0', color: '#cbd5e1', fontSize: 14, lineHeight: 1.6 } }, item.desc),
+                h('div', { style: { background: item.color + '15', borderRadius: 6, padding: '8px 12px', fontSize: 13, color: item.color, fontWeight: 600 } },
+                  '\uD83D\uDCCA ' + item.stat
+                )
+              );
+            }),
+
+            // Key takeaway
+            h('div', { style: { background: '#052e16', borderRadius: 12, padding: 16, border: '1px solid #16a34a44' } },
+              h('div', { style: { fontWeight: 700, color: '#4ade80', marginBottom: 8, fontSize: 15 } }, '\u2B50 The Integrated Vision: Fire + Beavers + Indigenous Knowledge'),
+              h('p', { style: { margin: 0, color: '#bbf7d0', fontSize: 14, lineHeight: 1.7 } },
+                'The most fire-resilient landscapes on Earth share three features: ',
+                h('strong', null, 'regular low-intensity fire'),
+                ' managed by knowledgeable practitioners, ',
+                h('strong', null, 'intact beaver populations'),
+                ' maintaining wetland corridors, and ',
+                h('strong', null, 'Indigenous stewardship'),
+                ' that understands fire, water, and wildlife as interconnected systems. Restoring all three together \u2014 not just one in isolation \u2014 is the most effective strategy for building landscape resilience in an era of increasing wildfire risk.'
+              )
+            )
+          );
+        }
+
+        // ══════════════════════════════════════
+        // TAB: FIREKEEPER CHALLENGE GAME
+        // ══════════════════════════════════════
+
+        function renderGameTab() {
+          var diff = GAME_DIFFICULTIES[gameDifficulty];
+
+          function startGame() {
+            var initial = {
+              year: 0,
+              fuelLoad: 20,
+              canopyCover: 65,
+              understoryDensity: 25,
+              soilHealth: 75,
+              biodiversity: 80,
+              carbonStored: 50,
+              waterYield: 75,
+              yearsSinceLastBurn: 5,
+              totalBurns: 0,
+              wildfires: 0,
+              villageHealth: 100,
+              eventLog: [],
+              decade: []
+            };
+            updMulti({
+              gameActive: true,
+              gameState: initial,
+              gameEvent: null,
+              gameScore: 0,
+              gameOver: false,
+              gameHistory: []
+            });
+            playSound('ignite');
+            if (addToast) addToast('\uD83D\uDD25 Firekeeper Challenge begins! Manage the forest wisely.', 'success');
+          }
+
+          function getRandomEvent() {
+            if (Math.random() > diff.eventChance) return null;
+            var pool = GAME_EVENTS.slice();
+            // Filter conditional events
+            if (gameState) {
+              pool = pool.filter(function(ev) {
+                if (ev.condition === 'recentBurn' && gameState.yearsSinceLastBurn > 10) return false;
+                if (ev.condition === 'highBio' && gameState.biodiversity < 70) return false;
+                return true;
+              });
+            }
+            return pool[Math.floor(Math.random() * pool.length)];
+          }
+
+          function gameAdvance(action) {
+            if (!gameState || gameOver) return;
+            var gs = Object.assign({}, gameState);
+            var points = 0;
+            var log = '';
+
+            // Apply player action
+            if (action === 'culturalBurn') {
+              gs.fuelLoad = clamp(gs.fuelLoad - 10, 3, 100);
+              gs.understoryDensity = clamp(gs.understoryDensity - 15, 5, 100);
+              gs.biodiversity = clamp(gs.biodiversity + 8, 0, 100);
+              gs.soilHealth = clamp(gs.soilHealth + 5, 0, 100);
+              gs.waterYield = clamp(gs.waterYield + 4, 0, 100);
+              gs.yearsSinceLastBurn = 0;
+              gs.totalBurns++;
+              points += 15;
+              log = '\uD83D\uDD25 Cultural burn performed successfully.';
+              playSound('ignite');
+            } else if (action === 'prescribe') {
+              gs.fuelLoad = clamp(gs.fuelLoad - 6, 3, 100);
+              gs.understoryDensity = clamp(gs.understoryDensity - 10, 5, 100);
+              gs.biodiversity = clamp(gs.biodiversity + 4, 0, 100);
+              gs.soilHealth = clamp(gs.soilHealth + 2, 0, 100);
+              gs.yearsSinceLastBurn = 0;
+              gs.totalBurns++;
+              points += 8;
+              log = '\uD83D\uDCCB Prescribed burn completed.';
+              playSound('ignite');
+            } else if (action === 'thin') {
+              gs.fuelLoad = clamp(gs.fuelLoad - 4, 3, 100);
+              gs.understoryDensity = clamp(gs.understoryDensity - 8, 5, 100);
+              gs.canopyCover = clamp(gs.canopyCover - 5, 10, 95);
+              points += 5;
+              log = '\uD83E\uDE93 Mechanical thinning reduced some fuel, but missed fine fuels fire would have consumed.';
+            } else if (action === 'nothing') {
+              gs.fuelLoad = clamp(gs.fuelLoad + 8, 0, 100);
+              gs.understoryDensity = clamp(gs.understoryDensity + 12, 0, 100);
+              gs.biodiversity = clamp(gs.biodiversity - 4, 0, 100);
+              points -= 2;
+              log = '\u23F8\uFE0F No action taken. Fuel continues to accumulate.';
+            } else if (action === 'beavers') {
+              gs.waterYield = clamp(gs.waterYield + 10, 0, 100);
+              gs.biodiversity = clamp(gs.biodiversity + 5, 0, 100);
+              gs.fuelLoad = clamp(gs.fuelLoad - 2, 3, 100);
+              points += 10;
+              log = '\uD83E\uDDAB Installed Beaver Dam Analogs! Water table rising, wetland corridors expanding.';
+              playSound('rain');
+            }
+
+            gs.year += 10;
+            gs.yearsSinceLastBurn += (action === 'culturalBurn' || action === 'prescribe') ? 0 : 10;
+
+            // Natural canopy recovery
+            gs.canopyCover = clamp(gs.canopyCover + (gs.canopyCover < 40 ? 6 : 2), 0, 95);
+
+            // Random event
+            var event = getRandomEvent();
+            if (event) {
+              Object.keys(event.effects).forEach(function(k) {
+                if (typeof gs[k] === 'number') {
+                  gs[k] = clamp(gs[k] + event.effects[k], 0, 100);
+                }
+              });
+              log += ' ' + event.icon + ' EVENT: ' + event.name + ' \u2014 ' + event.desc;
+
+              // Lightning wildfire check
+              if (event.wildfire_chance && gs.fuelLoad > 30) {
+                if (Math.random() < event.wildfire_chance * (gs.fuelLoad / 60)) {
+                  var sev = gs.fuelLoad / 100;
+                  gs.canopyCover = clamp(gs.canopyCover - Math.round(sev * 50), 5, 100);
+                  gs.biodiversity = clamp(gs.biodiversity - 20, 0, 100);
+                  gs.soilHealth = clamp(gs.soilHealth - 15, 0, 100);
+                  gs.waterYield = clamp(gs.waterYield - 12, 0, 100);
+                  gs.carbonStored = clamp(gs.carbonStored - 25, 0, 200);
+                  gs.fuelLoad = clamp(gs.fuelLoad - 25, 0, 100);
+                  gs.wildfires++;
+                  gs.villageHealth = clamp((gs.villageHealth || 100) - 30, 0, 100);
+                  points -= 20;
+                  log += ' \uD83D\uDCA5 WILDFIRE ERUPTED! Catastrophic damage!';
+                  playSound('wildfire');
+                }
+              }
+
+              upd('gameEvent', event);
+            } else {
+              upd('gameEvent', null);
+            }
+
+            // Wildfire check from fuel accumulation
+            if (!event || !event.wildfire_chance) {
+              if (gs.fuelLoad > diff.wildfireThreshold && Math.random() < (gs.fuelLoad - diff.wildfireThreshold + 10) / 100) {
+                var sev2 = gs.fuelLoad / 100;
+                gs.canopyCover = clamp(gs.canopyCover - Math.round(sev2 * 55), 5, 100);
+                gs.biodiversity = clamp(gs.biodiversity - 22, 0, 100);
+                gs.soilHealth = clamp(gs.soilHealth - 18, 0, 100);
+                gs.waterYield = clamp(gs.waterYield - 14, 0, 100);
+                gs.fuelLoad = clamp(gs.fuelLoad - 28, 0, 100);
+                gs.wildfires++;
+                gs.villageHealth = clamp((gs.villageHealth || 100) - 35, 0, 100);
+                points -= 25;
+                log += ' \uD83D\uDCA5 WILDFIRE from fuel accumulation!';
+                playSound('wildfire');
+              }
+            }
+
+            // Score bonuses for good health
+            if (gs.biodiversity > 70) points += 5;
+            if (gs.soilHealth > 70) points += 3;
+            if (gs.waterYield > 70) points += 3;
+            if (gs.fuelLoad < 25) points += 5;
+
+            var newScore = gameScore + points;
+
+            // Snapshot
+            gs.decade = (gameState.decade || []).concat([{
+              year: gs.year, fuel: gs.fuelLoad, biodiversity: gs.biodiversity, canopy: gs.canopyCover, water: gs.waterYield
+            }]);
+            gs.eventLog = (gameState.eventLog || []).concat([{ year: gs.year, event: log }]);
+
+            // Check game over
+            var isOver = false;
+            var endMsg = '';
+            if (gs.year >= diff.targetYears) {
+              isOver = true;
+              endMsg = '\uD83C\uDFC6 You survived ' + diff.targetYears + ' years! Final score: ' + newScore;
+              playSound('badge');
+            }
+            if ((gs.villageHealth || 100) <= 0) {
+              isOver = true;
+              endMsg = '\uD83D\uDCA5 The village was devastated by repeated wildfires. Game over. Score: ' + newScore;
+              playSound('quizWrong');
+            }
+            if (gs.biodiversity <= 5) {
+              isOver = true;
+              endMsg = '\uD83D\uDC80 The ecosystem collapsed from catastrophic biodiversity loss. Game over. Score: ' + newScore;
+              playSound('quizWrong');
+            }
+
+            var newBest = Math.max(gameBestScore, newScore);
+
+            updMulti({
+              gameState: gs,
+              gameScore: newScore,
+              gameBestScore: newBest,
+              gameOver: isOver,
+              gameHistory: (gameHistory || []).concat([{ action: action, year: gs.year, score: points }])
+            });
+
+            if (isOver && addToast) addToast(endMsg, gs.year >= diff.targetYears ? 'success' : 'error');
+            if (gs.year >= diff.targetYears && gs.wildfires === 0) {
+              checkBadge('firekeeper');
+              checkBadge('knowledgeKeeper');
+            }
+
+            awardStemXP('fire_game_' + gs.year, Math.max(5, points), 'Firekeeper turn');
+          }
+
+          // Not started yet
+          if (!gameActive || !gameState) {
+            return h('div', null,
+              h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 20, marginBottom: 16, textAlign: 'center' } },
+                h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDD25'),
+                h('h3', { style: { margin: '0 0 10px 0', color: '#f97316', fontSize: 22 } }, 'The Firekeeper Challenge'),
+                h('p', { style: { margin: '0 0 20px 0', color: '#cbd5e1', fontSize: 14, lineHeight: 1.6, maxWidth: 500, marginLeft: 'auto', marginRight: 'auto' } },
+                  'You are a fire keeper tasked with managing a forest for ' + diff.targetYears + ' years. Every decade, choose an action: cultural burn, prescribed burn, mechanical thinning, install beaver dams, or do nothing. Random events will challenge you \u2014 drought, beetle outbreaks, windstorms, and more. Keep the forest healthy, prevent catastrophic wildfire, and protect the nearby village.'
+                ),
+                h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 10 } }, 'Select Difficulty:'),
+                h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 20, flexWrap: 'wrap' } },
+                  Object.keys(GAME_DIFFICULTIES).map(function(key) {
+                    var gd = GAME_DIFFICULTIES[key];
+                    var active = gameDifficulty === key;
+                    return h('button', {
+                      key: key,
+                      onClick: function() { upd('gameDifficulty', key); },
+                      style: {
+                        padding: '10px 16px', borderRadius: 8, border: '2px solid ' + (active ? '#f97316' : '#334155'),
+                        background: active ? '#431407' : '#0f172a', color: active ? '#fb923c' : '#94a3b8',
+                        cursor: 'pointer', fontSize: 13, fontWeight: active ? 700 : 500
+                      }
+                    },
+                      h('div', { style: { fontWeight: 700 } }, gd.label),
+                      h('div', { style: { fontSize: 11, marginTop: 2 } }, gd.description)
+                    );
+                  })
+                ),
+                h('button', {
+                  onClick: startGame,
+                  style: { padding: '14px 40px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#ea580c', color: '#fff', fontWeight: 700, fontSize: 18 }
+                }, '\uD83D\uDD25 Begin the Challenge')
+              )
+            );
+          }
+
+          // Game in progress
+          var gs = gameState;
+          var dangerLevel = gs.fuelLoad < 25 ? { label: 'Low', color: '#22c55e' } :
+                            gs.fuelLoad < 40 ? { label: 'Moderate', color: '#f59e0b' } :
+                            gs.fuelLoad < 60 ? { label: 'High', color: '#f97316' } :
+                            { label: 'EXTREME', color: '#ef4444' };
+
+          return h('div', null,
+            // Game header
+            h('div', { style: { display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' } },
+              h('div', { style: { background: '#0f172a', borderRadius: 8, padding: '8px 14px', flex: 1, minWidth: 80 } },
+                h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Year'),
+                h('div', { style: { fontSize: 20, fontWeight: 700, color: '#fff' } }, gs.year + '/' + diff.targetYears)
+              ),
+              h('div', { style: { background: '#0f172a', borderRadius: 8, padding: '8px 14px', flex: 1, minWidth: 80 } },
+                h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Score'),
+                h('div', { style: { fontSize: 20, fontWeight: 700, color: '#f97316' } }, gameScore)
+              ),
+              h('div', { style: { background: '#0f172a', borderRadius: 8, padding: '8px 14px', flex: 1, minWidth: 80 } },
+                h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Fire Risk'),
+                h('div', { style: { fontSize: 18, fontWeight: 700, color: dangerLevel.color } }, dangerLevel.label)
+              ),
+              h('div', { style: { background: '#0f172a', borderRadius: 8, padding: '8px 14px', flex: 1, minWidth: 80 } },
+                h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Wildfires'),
+                h('div', { style: { fontSize: 20, fontWeight: 700, color: gs.wildfires > 0 ? '#ef4444' : '#22c55e' } }, gs.wildfires)
+              ),
+              h('div', { style: { background: '#0f172a', borderRadius: 8, padding: '8px 14px', flex: 1, minWidth: 80 } },
+                h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Village'),
+                h('div', { style: { fontSize: 18, fontWeight: 700, color: (gs.villageHealth || 100) > 50 ? '#22c55e' : '#ef4444' } }, (gs.villageHealth || 100) + '%')
+              )
+            ),
+
+            // Current event
+            gameEvent ? h('div', { style: { background: gameEvent.urgent ? '#451a03' : '#0f172a', borderRadius: 10, padding: 14, marginBottom: 12, border: '1px solid ' + (gameEvent.urgent ? '#f97316' : '#334155') } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                h('span', { style: { fontSize: 22 } }, gameEvent.icon),
+                h('div', null,
+                  h('div', { style: { fontWeight: 700, color: gameEvent.urgent ? '#fb923c' : '#e2e8f0', fontSize: 14 } }, gameEvent.name),
+                  h('div', { style: { fontSize: 13, color: '#94a3b8' } }, gameEvent.desc)
+                )
+              )
+            ) : null,
+
+            // Gauges
+            h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 14, marginBottom: 12 } },
+              gauge('Fuel Load', Math.round(gs.fuelLoad), 100, gs.fuelLoad > 50 ? '#ef4444' : gs.fuelLoad > 30 ? '#f59e0b' : '#22c55e', ' t/acre'),
+              gauge('Canopy Cover', Math.round(gs.canopyCover), 100, '#16a34a', '%'),
+              gauge('Understory Density', Math.round(gs.understoryDensity), 100, gs.understoryDensity > 60 ? '#ef4444' : '#f59e0b', '%'),
+              gauge('Biodiversity', Math.round(gs.biodiversity), 100, '#3b82f6', '/100'),
+              gauge('Soil Health', Math.round(gs.soilHealth), 100, '#854d0e', '/100'),
+              gauge('Water Yield', Math.round(gs.waterYield), 100, '#0ea5e9', '%')
+            ),
+
+            // Action buttons
+            gameOver ? h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 20, textAlign: 'center', marginBottom: 16 } },
+              h('div', { style: { fontSize: 36, marginBottom: 10 } }, gs.year >= diff.targetYears ? '\uD83C\uDFC6' : '\uD83D\uDCA5'),
+              h('h3', { style: { margin: '0 0 8px 0', color: gs.year >= diff.targetYears ? '#22c55e' : '#ef4444', fontSize: 20 } },
+                gs.year >= diff.targetYears ? 'Challenge Complete!' : 'Game Over'
+              ),
+              h('div', { style: { fontSize: 28, fontWeight: 700, color: '#f97316', marginBottom: 8 } }, 'Score: ' + gameScore),
+              h('div', { style: { fontSize: 14, color: '#94a3b8', marginBottom: 16 } }, 'Best: ' + gameBestScore + ' | Wildfires: ' + gs.wildfires + ' | Burns: ' + gs.totalBurns),
+              h('button', {
+                onClick: function() { updMulti({ gameActive: false, gameState: null, gameEvent: null, gameScore: 0, gameOver: false, gameHistory: [] }); },
+                style: { padding: '12px 30px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#ea580c', color: '#fff', fontWeight: 700, fontSize: 16 }
+              }, '\uD83D\uDD04 Play Again')
+            ) :
+            h('div', null,
+              h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 8, fontSize: 14 } }, '\uD83C\uDFAE Choose Your Action for the Next Decade:'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8, marginBottom: 16 } },
+                [
+                  { action: 'culturalBurn', label: '\uD83D\uDD25 Cultural Burn', desc: 'Best fuel reduction + biodiversity', color: '#16a34a' },
+                  { action: 'prescribe', label: '\uD83D\uDCCB Prescribed Burn', desc: 'Good fuel reduction', color: '#f59e0b' },
+                  { action: 'thin', label: '\uD83E\uDE93 Mechanical Thin', desc: 'Remove some fuel, no fire', color: '#64748b' },
+                  { action: 'beavers', label: '\uD83E\uDDAB Install BDAs', desc: 'Boost water + fire breaks', color: '#0ea5e9' },
+                  { action: 'nothing', label: '\u23F8\uFE0F Do Nothing', desc: 'Fuel accumulates...', color: '#ef4444' }
+                ].map(function(opt) {
+                  return h('button', {
+                    key: opt.action,
+                    onClick: function() { gameAdvance(opt.action); },
+                    style: {
+                      background: '#0f172a', border: '2px solid ' + opt.color + '44', borderRadius: 10,
+                      padding: 12, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s'
+                    }
+                  },
+                    h('div', { style: { fontWeight: 700, color: opt.color, fontSize: 14, marginBottom: 4 } }, opt.label),
+                    h('div', { style: { fontSize: 11, color: '#94a3b8' } }, opt.desc)
+                  );
+                })
+              )
+            ),
+
+            // History graph
+            gs.decade && gs.decade.length > 0 ? h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 14, marginBottom: 12 } },
+              h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 8, fontSize: 13 } }, '\uD83D\uDCCA Forest Health Timeline'),
+              h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: 3, height: 80 } },
+                gs.decade.map(function(snap, si) {
+                  return h('div', { key: si, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 } },
+                    h('div', { title: 'Bio: ' + snap.biodiversity, style: { width: '100%', height: Math.max(2, snap.biodiversity * 0.7), background: '#3b82f6', borderRadius: '2px 2px 0 0' } }),
+                    h('div', { title: 'Fuel: ' + snap.fuel, style: { width: '100%', height: Math.max(2, snap.fuel * 0.7), background: snap.fuel > 50 ? '#ef4444' : '#f59e0b', borderRadius: '0 0 2px 2px' } }),
+                    h('div', { style: { fontSize: 8, color: '#475569', marginTop: 1 } }, snap.year)
+                  );
+                })
+              )
+            ) : null,
+
+            // Event log
+            gs.eventLog && gs.eventLog.length > 0 ? h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 14 } },
+              h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 8, fontSize: 13 } }, '\uD83D\uDCDC Event Log'),
+              gs.eventLog.slice(-6).reverse().map(function(ev, ei) {
+                return h('div', { key: ei, style: { padding: '4px 0', borderBottom: '1px solid #1e293b', fontSize: 12, color: '#94a3b8' } },
+                  h('span', { style: { color: '#f97316', fontWeight: 600 } }, 'Y' + ev.year + ': '),
+                  ev.event
+                );
+              })
+            ) : null
+          );
+        }
+
+        // ══════════════════════════════════════
         // FIRE FACT BANNER
         // ══════════════════════════════════════
 
@@ -2441,6 +2974,8 @@ if (!window.StemLab.isRegistered('fireEcology')) {
           tab === 'watershed' ? renderWatershedTab() :
           tab === 'caseStudies' ? renderCaseStudiesTab() :
           tab === 'carbon' ? renderCarbonTab() :
+          tab === 'beavers' ? renderBeaverTab() :
+          tab === 'game' ? renderGameTab() :
           tab === 'quiz' ? renderQuizTab() : null,
 
           // Fire Fact banner
