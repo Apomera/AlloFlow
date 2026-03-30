@@ -491,7 +491,6 @@
         /* ═══════════════════════════════════════════════════
            Track material exploration  (for badges)
            ═══════════════════════════════════════════════════ */
-        // Track material exploration inline (no useEffect)
         var explored = d.materialsExplored || [];
         if (explored.indexOf(sel.name) < 0) {
           var next = explored.concat([sel.name]);
