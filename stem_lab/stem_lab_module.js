@@ -308,6 +308,21 @@
       var [stemAILoading, setStemAILoading] = React.useState(false);
       var [_stemToolSearch, _setStemToolSearch] = React.useState('');
 
+      // ── Station Builder State ──
+      var [_showStationBuilder, _setShowStationBuilder] = React.useState(false);
+      var [_stationName, _setStationName] = React.useState('');
+      var [_stationGrade, _setStationGrade] = React.useState('');
+      var [_stationNote, _setStationNote] = React.useState('');
+      var [_stationTools, _setStationTools] = React.useState({});
+      var [_stationTimeEst, _setStationTimeEst] = React.useState('20');
+      var [_savedStations, _setSavedStations] = React.useState(function() {
+        try { return JSON.parse(localStorage.getItem('alloflow_stem_stations') || '[]'); } catch(e) { return []; }
+      });
+      var [_activeStationId, _setActiveStationId] = React.useState(null);
+
+      // Active station helper
+      var _activeStation = _activeStationId ? _savedStations.find(function(s) { return s.id === _activeStationId; }) : null;
+
       // ── Color Map (explicit classes for Tailwind JIT compatibility) ──
       var _toolColorMap = {
         emerald: { bg: 'bg-emerald-50', border: 'border-emerald-200', hoverBorder: 'hover:border-emerald-400', title: 'text-emerald-800', desc: 'text-emerald-600/70' },
@@ -2106,6 +2121,11 @@
                 color: 'emerald', ready: true
               },
               {
+                id: 'fireEcology', icon: '\uD83D\uDD25', label: 'Fire Ecology & Indigenous Stewardship',
+                desc: 'Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, prescribed burn planning, and forest management science. Centers Aboriginal Australian, Karuk, Martu, Plains Nations, and more.',
+                color: 'orange', ready: true
+              },
+              {
                 id: 'aquarium', icon: '🐠', label: 'Aquaculture & Ocean Lab',
                 desc: 'Manage aquarium tanks, simulate sustainable fishing, and explore marine ecosystems. Water chemistry, population dynamics and species studies.',
                 color: 'cyan', ready: true
@@ -2273,6 +2293,24 @@
                 return false;
               });
             }
+            // Station filter — only show tools in active station
+            if (_activeStation && _activeStation.tools && _activeStation.tools.length > 0) {
+              var _stationToolSet = {};
+              _activeStation.tools.forEach(function(tid) { _stationToolSet[tid] = true; });
+              _filteredTools = _allStemTools.filter(function(tool) {
+                if (tool.category) return true;
+                return !!_stationToolSet[tool.id];
+              });
+              // Remove orphan categories
+              _filteredTools = _filteredTools.filter(function(tool, i, arr) {
+                if (!tool.category) return true;
+                for (var j = i + 1; j < arr.length; j++) {
+                  if (arr[j].category) return false;
+                  return true;
+                }
+                return false;
+              });
+            }
             var _cardIndex = 0;
             return /*#__PURE__*/React.createElement("div", {
               className: "max-w-3xl mx-auto animate-in fade-in duration-200"
@@ -2294,6 +2332,210 @@
                 'aria-label': 'Clear search'
               }, "\u2715")
             ),
+
+          // ── Station Controls ──
+          React.createElement("div", { className: "flex items-center gap-2 mb-4" },
+            // Create Station button
+            React.createElement("button", {
+              onClick: function() { _setShowStationBuilder(!_showStationBuilder); },
+              className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
+                (_showStationBuilder ? "bg-indigo-600 text-white" : "bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100")
+            }, "\uD83D\uDCCC", _showStationBuilder ? "Close Builder" : "Create Station"),
+            // Active station indicator
+            _activeStation ? React.createElement("div", { className: "flex items-center gap-2 flex-1 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200" },
+              React.createElement("span", { className: "text-xs font-bold text-emerald-700" }, "\uD83C\uDFAF Station: " + _activeStation.name),
+              _activeStation.grade ? React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-600 font-bold" }, "Grade " + _activeStation.grade) : null,
+              React.createElement("button", {
+                onClick: function() { _setActiveStationId(null); },
+                className: "ml-auto text-[10px] text-emerald-500 hover:text-emerald-700 font-bold"
+              }, "\u2715 Exit Station")
+            ) : null,
+            // Saved stations dropdown
+            _savedStations.length > 0 && !_activeStation ? React.createElement("select", {
+              value: _activeStationId || '',
+              onChange: function(e) {
+                var sid = e.target.value;
+                _setActiveStationId(sid || null);
+                if (sid) {
+                  var st = _savedStations.find(function(s) { return s.id === sid; });
+                  if (st && st.grade && typeof props.setGradeLevel === 'function') {
+                    props.setGradeLevel(st.grade);
+                  }
+                  if (addToast) addToast('\uD83C\uDFAF Station loaded: ' + (st ? st.name : ''), 'success');
+                }
+              },
+              className: "px-2 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 font-bold"
+            },
+              React.createElement("option", { value: "" }, "\uD83D\uDCCB Load Station..."),
+              _savedStations.map(function(st) {
+                return React.createElement("option", { key: st.id, value: st.id }, st.name + (st.grade ? ' (Gr ' + st.grade + ')' : ''));
+              })
+            ) : null
+          ),
+
+          // ── Station Builder Panel ──
+          _showStationBuilder ? React.createElement("div", { className: "mb-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-4" },
+            React.createElement("h3", { className: "text-sm font-black text-indigo-800 mb-3 flex items-center gap-2" }, "\uD83D\uDCCC Station Builder"),
+
+            // Station name
+            React.createElement("div", { className: "mb-3" },
+              React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, "Station Name"),
+              React.createElement("input", {
+                type: "text", value: _stationName, placeholder: "e.g. Water Cycle Exploration",
+                onChange: function(e) { _setStationName(e.target.value); },
+                className: "w-full px-3 py-2 text-sm border border-indigo-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 outline-none"
+              })
+            ),
+
+            // Grade + Time row
+            React.createElement("div", { className: "grid grid-cols-2 gap-3 mb-3" },
+              React.createElement("div", null,
+                React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, "Grade Level"),
+                React.createElement("select", {
+                  value: _stationGrade,
+                  onChange: function(e) { _setStationGrade(e.target.value); },
+                  className: "w-full px-3 py-2 text-sm border border-indigo-200 rounded-lg bg-white"
+                },
+                  React.createElement("option", { value: "" }, "Auto-detect"),
+                  ["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"].map(function(g) {
+                    return React.createElement("option", { key: g, value: g }, "Grade " + g);
+                  })
+                )
+              ),
+              React.createElement("div", null,
+                React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, "Time Estimate"),
+                React.createElement("select", {
+                  value: _stationTimeEst,
+                  onChange: function(e) { _setStationTimeEst(e.target.value); },
+                  className: "w-full px-3 py-2 text-sm border border-indigo-200 rounded-lg bg-white"
+                },
+                  ["10", "15", "20", "30", "45", "60"].map(function(m) {
+                    return React.createElement("option", { key: m, value: m }, m + " minutes");
+                  })
+                )
+              )
+            ),
+
+            // Teacher note
+            React.createElement("div", { className: "mb-3" },
+              React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, "Teacher Instructions (optional)"),
+              React.createElement("textarea", {
+                value: _stationNote, placeholder: "e.g. Start with the Water Cycle tool, then complete the Quiz.",
+                onChange: function(e) { _setStationNote(e.target.value); },
+                rows: 2, className: "w-full px-3 py-2 text-sm border border-indigo-200 rounded-lg bg-white resize-none focus:ring-2 focus:ring-indigo-400 outline-none"
+              })
+            ),
+
+            // Tool selector grid
+            React.createElement("div", { className: "mb-3" },
+              React.createElement("label", { className: "text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-1" },
+                "Select Tools (" + Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; }).length + " selected)"
+              ),
+              React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-[200px] overflow-y-auto p-1" },
+                _allStemTools.filter(function(t) { return !t.category && t.ready !== false; }).map(function(tool) {
+                  var isSelected = !!_stationTools[tool.id];
+                  return React.createElement("button", {
+                    key: tool.id,
+                    onClick: function() {
+                      var next = Object.assign({}, _stationTools);
+                      if (next[tool.id]) { delete next[tool.id]; } else { next[tool.id] = true; }
+                      _setStationTools(next);
+                    },
+                    className: "p-2 rounded-lg text-left text-[10px] font-bold transition-all border " +
+                      (isSelected ? "bg-indigo-100 border-indigo-400 text-indigo-800" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300")
+                  },
+                    React.createElement("span", { className: "text-lg block" }, tool.icon),
+                    React.createElement("span", { className: "block truncate" }, tool.label)
+                  );
+                })
+              )
+            ),
+
+            // Save + Cancel buttons
+            React.createElement("div", { className: "flex gap-2" },
+              React.createElement("button", {
+                onClick: function() {
+                  var selectedIds = Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; });
+                  if (selectedIds.length === 0) { if (addToast) addToast('Select at least one tool', 'error'); return; }
+                  var station = {
+                    id: 'station_' + Date.now(),
+                    name: _stationName.trim() || 'STEM Station',
+                    tools: selectedIds,
+                    grade: _stationGrade || null,
+                    timeEstimate: _stationTimeEst + ' min',
+                    teacherNote: _stationNote.trim(),
+                    createdAt: new Date().toISOString()
+                  };
+                  var updated = _savedStations.concat([station]);
+                  _setSavedStations(updated);
+                  localStorage.setItem('alloflow_stem_stations', JSON.stringify(updated));
+                  _setShowStationBuilder(false);
+                  _setStationName(''); _setStationGrade(''); _setStationNote(''); _setStationTools({}); _setStationTimeEst('20');
+                  _setActiveStationId(station.id);
+                  if (station.grade && typeof props.setGradeLevel === 'function') props.setGradeLevel(station.grade);
+                  if (addToast) addToast('\u2705 Station "' + station.name + '" created with ' + selectedIds.length + ' tools!', 'success');
+                },
+                disabled: Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; }).length === 0,
+                className: "flex-1 py-2 rounded-lg text-sm font-bold transition-all " +
+                  (Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; }).length > 0
+                    ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                    : "bg-slate-200 text-slate-400 cursor-not-allowed")
+              }, "\uD83D\uDCCC Save Station"),
+              React.createElement("button", {
+                onClick: function() { _setShowStationBuilder(false); },
+                className: "px-4 py-2 rounded-lg text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50"
+              }, "Cancel")
+            ),
+
+            // Manage saved stations
+            _savedStations.length > 0 ? React.createElement("div", { className: "mt-3 pt-3 border-t border-indigo-200" },
+              React.createElement("p", { className: "text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-2" },
+                "\uD83D\uDCCB Saved Stations (" + _savedStations.length + ")"
+              ),
+              React.createElement("div", { className: "space-y-1.5" },
+                _savedStations.map(function(st) {
+                  return React.createElement("div", {
+                    key: st.id, className: "flex items-center gap-2 px-2 py-1.5 rounded-lg bg-white border border-indigo-100 text-xs"
+                  },
+                    React.createElement("span", { className: "font-bold text-indigo-800 flex-1" }, st.name),
+                    st.grade ? React.createElement("span", { className: "text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-600 font-bold" }, "Gr " + st.grade) : null,
+                    React.createElement("span", { className: "text-[9px] text-slate-400" }, st.tools.length + " tools"),
+                    st.timeEstimate ? React.createElement("span", { className: "text-[9px] text-slate-400" }, st.timeEstimate) : null,
+                    React.createElement("button", {
+                      onClick: function() {
+                        _setActiveStationId(st.id);
+                        _setShowStationBuilder(false);
+                        if (st.grade && typeof props.setGradeLevel === 'function') props.setGradeLevel(st.grade);
+                        if (addToast) addToast('\uD83C\uDFAF Station loaded!', 'success');
+                      },
+                      className: "text-[10px] font-bold text-indigo-600 hover:text-indigo-800"
+                    }, "Load"),
+                    React.createElement("button", {
+                      onClick: function() {
+                        var filtered = _savedStations.filter(function(s) { return s.id !== st.id; });
+                        _setSavedStations(filtered);
+                        localStorage.setItem('alloflow_stem_stations', JSON.stringify(filtered));
+                        if (_activeStationId === st.id) _setActiveStationId(null);
+                      },
+                      className: "text-[10px] font-bold text-red-400 hover:text-red-600"
+                    }, "\u2715")
+                  );
+                })
+              )
+            ) : null
+          ) : null,
+
+          // ── Active Station Info Bar ──
+          _activeStation ? React.createElement("div", { className: "mb-4 bg-emerald-50 rounded-xl border border-emerald-200 p-3" },
+            React.createElement("div", { className: "flex items-center gap-2 mb-1" },
+              React.createElement("span", { className: "text-sm font-bold text-emerald-800" }, "\uD83C\uDFAF " + _activeStation.name),
+              _activeStation.grade ? React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-200 text-emerald-700 font-bold" }, "Grade " + _activeStation.grade) : null,
+              _activeStation.timeEstimate ? React.createElement("span", { className: "text-[10px] text-emerald-600" }, "\u23F1 " + _activeStation.timeEstimate) : null,
+              React.createElement("span", { className: "text-[10px] text-emerald-600" }, _activeStation.tools.length + " tools")
+            ),
+            _activeStation.teacherNote ? React.createElement("p", { className: "text-xs text-emerald-700 italic mt-1" }, "\uD83D\uDCDD " + _activeStation.teacherNote) : null
+          ) : null,
+
           // Tool grid
           /*#__PURE__*/React.createElement("div", {
               className: "grid grid-cols-2 gap-4"
@@ -10997,7 +11239,7 @@
             calculus: true, cell: true, chemBalance: true, punnett: true,
             circuit: true, molecule: true, decomposer: true, solarSystem: true,
             universe: true, ecosystem: true, unitConvert: true,
-            anatomy: true, companionPlanting: true, graphCalc: true,
+            anatomy: true, companionPlanting: true, fireEcology: true, graphCalc: true,
             algebraCAS: true, aquarium: true, economicsLab: true, behaviorLab: true,
             probability: true, logicLab: true, dnaLab: true, dataPlot: true,
             numberline: true, volume: true, areamodel: true, fractionViz: true, fractions: true,
