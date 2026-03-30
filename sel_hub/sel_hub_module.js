@@ -442,7 +442,14 @@
 
         console.log('[SelHub] Rendering plugin: ' + selHubTool);
         try {
-          toolContent = window.SelHub.renderTool(selHubTool, _ctx);
+          // Wrap plugin render in a stable React component per tool so hooks are isolated.
+          if (!window.__selPluginComponents) window.__selPluginComponents = {};
+          if (!window.__selPluginComponents[selHubTool]) {
+            window.__selPluginComponents[selHubTool] = function SelPluginBridge(props) {
+              return window.SelHub.renderTool(props._toolId, props._ctx);
+            };
+          }
+          toolContent = React.createElement(window.__selPluginComponents[selHubTool], { key: 'sel-plugin-' + selHubTool, _toolId: selHubTool, _ctx: _ctx });
         } catch(e) {
           console.error('[SelHub] Plugin render error for ' + selHubTool, e);
           toolContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#ef4444' } },
