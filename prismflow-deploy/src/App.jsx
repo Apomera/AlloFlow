@@ -17487,7 +17487,8 @@ const AlloFlowContent = () => {
                     "https://unpkg.com/idb-keyval@6.2.0/dist/iife/index.js",
                     "https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/iife/index.js",
                     "https://cdnjs.cloudflare.com/ajax/libs/idb-keyval/6.2.1/umd.js"
-                ], "idbKeyval")
+                ], "idbKeyval"),
+                Promise.resolve()
             ]);
             setLzLoaded(true);
             setIsStorageDisabled(false);
@@ -17941,6 +17942,7 @@ const AlloFlowContent = () => {
     return toolId === currentStep.id;
   };
   const handleGuidedSkip = () => { if (guidedStep < GUIDED_STEPS.length - 1) setGuidedStep(s => s + 1); };
+  const handleGuidedBack = () => { if (guidedStep > 0) setGuidedStep(s => s - 1); };
   const handleExitGuidedMode = () => { setGuidedMode(false); };
   const [showGuidedTip, setShowGuidedTip] = useState(false);
   useEffect(() => { setShowGuidedTip(false); }, [guidedStep]);
@@ -18488,7 +18490,9 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     musicSynth: { waveType: 'sine', octave: 4, volume: 0.5, attack: 0.02, decay: 0.1, sustain: 0.7, release: 0.3, bpm: 120, sequence: [0,0,0,0,0,0,0,0], activeKeys: [], quiz: null, lastNote: null, lastFreq: null, seqPlaying: false, seqStep: -1 },
     anatomy: { system: 'skeletal', selectedStructure: null, detailLevel: 'standard', quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null },
     brainAtlas: { view: 'lateral', selectedRegion: null, detailLevel: 'standard', quizMode: false, quizIdx: 0, quizScore: 0, quizFeedback: null },
-    artStudio: { tab: 'color', hue: 0, sat: 100, lit: 50, harmony: 'complementary', color2: { h: 180, s: 100, l: 50 }, mixRatio: 50, mixMode: 'subtractive', pixelGrid: Array(256).fill(''), pixelColor: '#e74c3c', pixelSize: 16, symFolds: 6, symLines: [], fgHex: '#1a1a2e', bgHex: '#e8e8e8', quiz: null }
+    artStudio: { tab: 'color', hue: 0, sat: 100, lit: 50, harmony: 'complementary', color2: { h: 180, s: 100, l: 50 }, mixRatio: 50, mixMode: 'subtractive', pixelGrid: Array(256).fill(''), pixelColor: '#e74c3c', pixelSize: 16, symFolds: 6, symLines: [], fgHex: '#1a1a2e', bgHex: '#e8e8e8', quiz: null },
+    graphCalc: { tier: 'explorer', funcs: [{ expr: '', color: '#38bdf8' }, { expr: '', color: '#f472b6' }, { expr: '', color: '#34d399' }, { expr: '', color: '#fbbf24' }, { expr: '', color: '#a78bfa' }, { expr: '', color: '#fb923c' }], window: { xmin: -10, xmax: 10, ymin: -10, ymax: 10 }, showTable: false, showWindow: false, showChallenge: false, showMathPad: false, showArith: false, arithExpr: '', arithResult: '', showSliders: false, focusedInput: 0, tableX: -5, tableStep: 1, badges: [], aiMessages: [], aiInput: '', aiLoading: false },
+    algebraCAS: { mode: 'solve', expr: '', result: null, history: [], badges: [] }
   });
   const [cubeBuilderMode, setCubeBuilderMode] = useState('slider');
   const [cubePositions, setCubePositions] = useState(new Set());
@@ -18620,27 +18624,36 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', './stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', './word_sounds_module.js');
-    loadModule('StudentAnalytics', './student_analytics_module.js');
-    loadModule('BehaviorLens', './behavior_lens_module.js');
-    loadModule('SymbolStudio', './symbol_studio_module.js');
-    loadModule('SelHub', './sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', './games_module.js');
-    loadModule('QuickStartWizard', './quickstart_module.js');
-    loadModule('AlloBot', './allobot_module.js');
-    loadModule('TeacherModule', './teacher_module.js');
-    loadModule('StoryForge', './story_forge_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/story_forge_module.js');
     loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4218503/visual_panel_module.js');
     loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4218503/word_sounds_setup_module.js');
     loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4218503/adventure_module.js');
     loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4218503/student_interaction_module.js');
+    // ── Load math.js for graphCalc (lazy, non-blocking) ──
+    (function() {
+      var s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
+      s.async = true;
+      s.onload = function() { console.log('[MathJS] Loaded — graphCalc analysis available'); };
+      s.onerror = function() { console.warn('[MathJS] Failed to load — graphCalc analysis unavailable'); };
+      document.head.appendChild(s);
+    })();
     // ── Load registered STEM Lab tool modules (Plugin Architecture, Phase 2) ──
     // These files self-register via window.StemLab.registerTool()
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = './';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@91e7588/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js', 'stem_lab/stem_tool_math.js', 'stem_lab/stem_tool_science.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -18672,7 +18685,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_economicslab.js',
         'stem_lab/stem_tool_companionplanting.js',
         'stem_lab/stem_tool_graphcalc.js',
-        'stem_lab/stem_tool_algebracas.js',
+        'stem_lab/stem_tool_algebraCAS.js',
         'stem_lab/stem_tool_circuit.js',
         'sel_hub/sel_tool_perspective.js',
         'sel_hub/sel_tool_decisions.js',
@@ -46364,6 +46377,7 @@ Return ONLY valid JSON:
                 <div style={{ height: '100%', borderRadius: '2px', background: 'linear-gradient(90deg, #818cf8, #6366f1)', transition: 'width 0.4s ease-out', width: ((guidedStep / GUIDED_STEPS.length) * 100) + '%' }} />
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
+                {guidedStep > 0 && guidedStep < GUIDED_STEPS.length && <button onClick={handleGuidedBack} style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'rgba(165,180,252,0.9)', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.back')}</button>}
                 {guidedStep < GUIDED_STEPS.length - 1 && guidedStep > 0 && <button onClick={handleGuidedSkip} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'rgba(165,180,252,0.9)', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.skip')}</button>}
                 {guidedStep === 0 && <span style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'rgba(165,180,252,0.4)', textAlign: 'center' }}>{t('guided.source_prompt')}</span>}
                 {guidedStep >= GUIDED_STEPS.length - 1 && <button onClick={() => { setGuidedStep(0); handleExitGuidedMode(); }} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'white', background: 'linear-gradient(135deg, #818cf8, #6366f1)', border: 'none', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.all_done')}</button>}

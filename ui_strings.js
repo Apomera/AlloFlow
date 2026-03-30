@@ -66,6 +66,7 @@
   "guided": {
     "indicator_title": "Guided Mode",
       "step_of": "Step {current} of {total}",
+        "back": "\u2190 Back",
         "skip": "Skip this step \u2192",
           "all_done": "\ud83c\udf89 All Done! View All Tools",
             "about": "About",
@@ -76,6 +77,7 @@
   "guided": {
     "indicator_title": "Guided Mode",
       "step_of": "Step {current} of {total}",
+        "back": "\u2190 Back",
         "skip": "Skip this step \u2192",
           "all_done": "\ud83c\udf89 All Done! View All Tools",
             "about": "About",

@@ -66,6 +66,7 @@
   "guided": {
     "indicator_title": "Guided Mode",
       "step_of": "Step {current} of {total}",
+        "back": "\u2190 Back",
         "skip": "Skip this step \u2192",
           "all_done": "\ud83c\udf89 All Done! View All Tools",
             "about": "About",
@@ -76,6 +77,7 @@
   "guided": {
     "indicator_title": "Guided Mode",
       "step_of": "Step {current} of {total}",
+        "back": "\u2190 Back",
         "skip": "Skip this step \u2192",
           "all_done": "\ud83c\udf89 All Done! View All Tools",
             "about": "About",
@@ -822,7 +824,8 @@
                                                 "text_expanding": "Text too short. Expanding...",
                                                   "adjusting": "Adjusting",
                                                     "fetching_url": "Fetching content from URL...",
-                                                      "generating": "Generating"
+                                                      "generating": "Generating",
+                                                        "text_condensing": "Condensing text..."
   },
   "toasts": {
     "copied": "Text copied to clipboard!",
@@ -4614,7 +4617,8 @@
                                                                                       "remove_character": "Remove Character",
                                                                                         "role_placeholder": "e.g., protagonist, antagonist, mentor...",
                                                                                           "story_unfolds": "The story unfolds...",
-                                                                                            "your_choice": "Your Choice"
+                                                                                            "your_choice": "Your Choice",
+                                                                                              "upload_portrait": "Upload your own portrait image"
   },
   "grades": {
     "k": "Kindergarten",
@@ -5210,7 +5214,8 @@
                                                     "extracting_text": "Extracting text from source...",
                                                       "searching_resources": "Searching for resources...",
                                                         "analyzing_topology": "Acting as Curriculum Designer: Analyzing content topology...",
-                                                          "brainstorming": "Brainstorming ideas..."
+                                                          "brainstorming": "Brainstorming ideas...",
+                                                            "retrying_citations": "Retrying for better citations..."
   },
   "process": {
     "source_missing": "Please provide source text first.",
@@ -6504,6 +6509,7 @@
     "title": "BehaviorLens",
       "subtitle": "Behavioral Observation & Support",
         "hub_title": "Behavior Dashboard",
+          "loading_hint": "Module loading from CDN. If this persists, check your connection.",
           "tab_abc": "ABC Data",
             "tab_obs": "Live Observation",
               "tab_overview": "Overview",
@@ -6550,7 +6556,10 @@
                                                                                                 "setting_special": "Specials",
                                                                                                   "setting_other": "Other",
                                                                                                     "hub": {
-      "select_student": "Select Student",
+      "title": "BehaviorLens",
+        "subtitle": "Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools.",
+          "open_btn": "Open BehaviorLens",
+            "select_student": "Select Student",
         "choose_student": "— Choose a student —",
           "enter_codename": "Enter student codename...",
             "pick_adjective": "— Adjective —",
@@ -7927,7 +7936,23 @@
                     "badge_recommended": "Recommended",
                       "badge_educator": "🔒 Educator",
                         "badge_educator_open": "🛠️ Educator",
-                          "switch_hint": "You can switch modes anytime from the menu"
+                          "switch_hint": "You can switch modes anytime from the menu",
+                            "learning_tools_title": "Learning Tools",
+                              "learning_tools_desc": "STEM Lab, StoryForge & SEL Hub \u2014 explore, create, and grow"
   },
-  "_version": "2026-03-09T1773292800"
+  "learning_hub": {
+    "title": "Learning Tools",
+      "subtitle": "Choose a tool to explore",
+        "stem_title": "STEM Lab",
+          "stem_desc": "40+ interactive math & science explorations",
+            "storyforge_title": "StoryForge",
+              "storyforge_desc": "Create illustrated stories with AI writing tools",
+                "sel_title": "SEL Hub",
+                  "sel_desc": "Social-emotional learning for self-awareness & growth"
+  },
+  "sel_hub": {
+    "loading": "Loading SEL Hub...",
+      "loading_hint": "Module loading from CDN. If this persists, check your connection."
+  },
+  "_version": "2026-03-29T1774812000"
 }
