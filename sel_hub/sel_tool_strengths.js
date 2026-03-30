@@ -1,9 +1,10 @@
 // ═══════════════════════════════════════════════════════════════
-// sel_tool_strengths.js — Strengths Finder Plugin (v2.0)
+// sel_tool_strengths.js — Strengths Finder Plugin (v2.5)
 // Discover personal strengths through guided reflection, sorting
 // activities, strengths cards, growth mindset exercises, AI coach,
 // strengths interview, action planner, peer strengths, affirmation
-// cards, and achievement badges.
+// cards, story builder, role comparison, daily challenges,
+// strengths gratitude, and achievement badges.
 // Registered tool ID: "strengths"
 // Category: self-awareness
 // Grade-adaptive: uses gradeBand for vocabulary & depth
@@ -493,6 +494,224 @@ window.SelHub = window.SelHub || {
   };
 
   // ═══════════════════════════════════════════════════════════════
+  // ── Story Builder Prompts (Grade-Adaptive) ──
+  // ═══════════════════════════════════════════════════════════════
+  var STORY_PROMPTS = {
+    elementary: [
+      { id: 'when', label: 'When did this happen?', hint: 'Was it at school, home, or somewhere else? What time of year?' },
+      { id: 'challenge', label: 'What was the challenge?', hint: 'What was hard or tricky about the situation?' },
+      { id: 'used', label: 'How did you use your [STRENGTH]?', hint: 'What did you do? What did you say?' },
+      { id: 'result', label: 'What happened next?', hint: 'Did things get better? What changed?' },
+      { id: 'feel', label: 'How did it make you feel?', hint: 'Happy? Proud? Brave? Describe your feelings.' }
+    ],
+    middle: [
+      { id: 'when', label: 'Set the scene \u2014 when and where did this happen?', hint: 'Give us the context. What was going on in your life at that time?' },
+      { id: 'challenge', label: 'What was the challenge you faced?', hint: 'What made this situation difficult or important?' },
+      { id: 'used', label: 'How did you use your [STRENGTH] to respond?', hint: 'Describe the specific actions you took and why.' },
+      { id: 'result', label: 'What was the outcome?', hint: 'How did things turn out? What changed because of your actions?' },
+      { id: 'feel', label: 'How did this experience shape you?', hint: 'What did you learn about yourself? How did it make you feel?' }
+    ],
+    high: [
+      { id: 'when', label: 'Set the scene \u2014 context, time, and circumstances.', hint: 'Help us understand the full situation and what was at stake.' },
+      { id: 'challenge', label: 'What was the core challenge or tension?', hint: 'What made this moment significant? What values or needs were in conflict?' },
+      { id: 'used', label: 'How did your [STRENGTH] manifest in your response?', hint: 'Describe your thought process and actions. How was this strength essential?' },
+      { id: 'result', label: 'What were the consequences \u2014 intended and unintended?', hint: 'What ripple effects did your actions have? What surprised you?' },
+      { id: 'feel', label: 'How did this experience deepen your self-understanding?', hint: 'What did you learn about this strength and yourself? How have you grown?' }
+    ]
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // ── Role Profiles for Strengths Comparison ──
+  // ═══════════════════════════════════════════════════════════════
+  var ROLE_PROFILES = {
+    studentLeader: {
+      label: 'Student Leader',
+      emoji: '\uD83D\uDC51',
+      color: '#818cf8',
+      desc: 'Someone who inspires, organizes, and guides others toward shared goals.',
+      strengths: ['leader', 'brave', 'fair', 'honest', 'persevere', 'advocacy']
+    },
+    creativeArtist: {
+      label: 'Creative Artist',
+      emoji: '\uD83C\uDFA8',
+      color: '#f472b6',
+      desc: 'A person who expresses ideas through art, music, writing, or design.',
+      strengths: ['creative', 'art', 'music', 'curious', 'creative_arts', 'writing']
+    },
+    stemThinker: {
+      label: 'STEM Thinker',
+      emoji: '\uD83D\uDD2C',
+      color: '#34d399',
+      desc: 'An analytical mind who loves solving problems with science, math, and technology.',
+      strengths: ['curious', 'analytical', 'math', 'stem', 'tech', 'persevere']
+    },
+    socialConnector: {
+      label: 'Social Connector',
+      emoji: '\uD83E\uDD1D',
+      color: '#fbbf24',
+      desc: 'Someone who brings people together, builds friendships, and reads social situations.',
+      strengths: ['kind', 'empathy', 'social', 'interpersonal', 'funny', 'helping']
+    },
+    communityHelper: {
+      label: 'Community Helper',
+      emoji: '\uD83C\uDF0D',
+      color: '#22c55e',
+      desc: 'A person who works to make their community better and advocates for others.',
+      strengths: ['fair', 'civic', 'helping', 'kind', 'advocacy', 'leader']
+    },
+    athlete: {
+      label: 'Athlete',
+      emoji: '\u26BD',
+      color: '#f97316',
+      desc: 'Someone who excels through physical skill, discipline, and teamwork.',
+      strengths: ['sports', 'physical', 'persevere', 'resilience', 'selfControl', 'brave']
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // ── Daily Strength Challenges ──
+  // ═══════════════════════════════════════════════════════════════
+  var DAILY_CHALLENGES = {
+    kind: [
+      'Write an anonymous kind note and leave it for someone to find.',
+      'Compliment someone you wouldn\u0027t normally talk to.',
+      'Help someone with a task before they ask you.'
+    ],
+    brave: [
+      'Raise your hand first in class today, even if you\u0027re unsure.',
+      'Start a conversation with someone new.',
+      'Share an unpopular opinion respectfully in a group discussion.'
+    ],
+    honest: [
+      'Admit one mistake you made today and take responsibility.',
+      'Give someone genuine, kind feedback on their work.',
+      'Write in a journal about something you\u0027ve been avoiding.'
+    ],
+    curious: [
+      'Ask three \u0022why?\u0022 questions about something you see today.',
+      'Research a topic you know nothing about for 10 minutes.',
+      'Try a food, game, or activity you\u0027ve never tried before.'
+    ],
+    fair: [
+      'Make sure everyone in a group gets a chance to speak.',
+      'Notice if anyone is left out today and include them.',
+      'Think of a rule you disagree with and consider the other side.'
+    ],
+    grateful: [
+      'Tell three people specifically what you appreciate about them.',
+      'Write down five things you\u0027re grateful for right now.',
+      'Send a thank-you message to someone who helped you recently.'
+    ],
+    funny: [
+      'Make someone laugh who looks like they need it.',
+      'Write a silly poem, joke, or comic strip.',
+      'Find the humor in a frustrating situation today.'
+    ],
+    persevere: [
+      'Work on your hardest task first thing today.',
+      'When you want to quit something, push through for 5 more minutes.',
+      'Revisit something you gave up on and try again.'
+    ],
+    creative: [
+      'Doodle or sketch something during your free time today.',
+      'Come up with three unusual solutions to an everyday problem.',
+      'Express your mood through a short poem or drawing.'
+    ],
+    leader: [
+      'Volunteer to organize or lead a group activity today.',
+      'Help someone who\u0027s struggling without being asked.',
+      'Set a positive example by being the first to try something.'
+    ],
+    humble: [
+      'Ask someone for honest feedback on something you did.',
+      'Celebrate someone else\u0027s achievement out loud today.',
+      'Learn something new from someone younger than you.'
+    ],
+    empathy: [
+      'Ask someone \u0022How are you really doing?\u0022 and truly listen.',
+      'Try to see a disagreement completely from the other person\u0027s side.',
+      'Notice someone\u0027s body language today and check in on them.'
+    ],
+    resilience: [
+      'When something goes wrong today, find one silver lining.',
+      'Write about a past failure and what it taught you.',
+      'Encourage someone else who is going through a hard time.'
+    ],
+    sports: [
+      'Do a 10-minute physical challenge \u2014 push-ups, stretches, or a jog.',
+      'Teach someone a sports skill or movement technique.',
+      'Try a brand-new physical activity you\u0027ve never done.'
+    ],
+    reading: [
+      'Read for 15 minutes purely for enjoyment.',
+      'Recommend a book or article to a friend today.',
+      'Read something outside your usual genre.'
+    ],
+    math: [
+      'Solve a math puzzle or brain teaser just for fun.',
+      'Find math in the real world \u2014 estimate, measure, or calculate something.',
+      'Help someone with a math concept they\u0027re stuck on.'
+    ],
+    art: [
+      'Create something visual today, even a quick 5-minute sketch.',
+      'Find three beautiful things around you and really notice them.',
+      'Try a new art technique or medium you haven\u0027t used.'
+    ],
+    music: [
+      'Listen deeply to a song and notice instruments, rhythm, and emotion.',
+      'Hum or sing something that matches your mood.',
+      'Share a favorite song with someone and tell them why you love it.'
+    ],
+    helping: [
+      'Offer to help with a task without being asked.',
+      'Check in with a friend you haven\u0027t talked to recently.',
+      'Volunteer 15 minutes of your time to help someone today.'
+    ],
+    flexibility: [
+      'When plans change today, adapt without complaining.',
+      'Try doing a routine task in a completely new way.',
+      'Say yes to something unexpected that comes up.'
+    ],
+    selfControl: [
+      'Pause for 10 seconds before reacting to frustration today.',
+      'Set a timer and focus on one task without checking your phone.',
+      'Choose the harder-but-better option when tempted by the easy one.'
+    ],
+    advocacy: [
+      'Speak up about something you need in a clear, respectful way.',
+      'Help someone else find words to express what they need.',
+      'Practice one \u0022I feel... because...\u0022 statement in a real conversation.'
+    ]
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // ── Gratitude Prompts (Grade-Adaptive) ──
+  // ═══════════════════════════════════════════════════════════════
+  var GRATITUDE_PROMPTS = {
+    elementary: [
+      'I\u0027m grateful that [person] is so [strength] because...',
+      'Someone showed me [strength] when they...',
+      'I feel lucky to know someone who is really good at [strength] because...',
+      'Thank you to the person who used [strength] to help me when...'
+    ],
+    middle: [
+      'I appreciate [person]\u0027s [strength] because it showed me...',
+      'Someone\u0027s [strength] made a real difference in my life when...',
+      'I\u0027m grateful for the way [person] uses their [strength] to...',
+      'I noticed someone\u0027s [strength] today and it mattered because...',
+      'The world is better because [person] has the strength of [strength]. Here\u0027s why...'
+    ],
+    high: [
+      'I\u0027m grateful for [person]\u0027s [strength] because it taught me something about...',
+      'Someone\u0027s [strength] changed my perspective on...',
+      'I want to express gratitude for how [person] uses [strength] to impact others by...',
+      'The strength of [strength] in [person] reminds me that...',
+      'Reflecting on [person]\u0027s [strength] makes me realize...',
+      'I\u0027m deeply grateful for the way [person]\u0027s [strength] creates ripple effects in...'
+    ]
+  };
+
+  // ═══════════════════════════════════════════════════════════════
   // ── Peer Strengths Prompts ──
   // ═══════════════════════════════════════════════════════════════
   var PEER_PROMPTS = {
@@ -581,7 +800,11 @@ window.SelHub = window.SelHub || {
     actionPlanner: { icon: '\uD83D\uDCCB', name: 'Action Planner', desc: 'Complete 3 action items' },
     peerObserver: { icon: '\uD83D\uDC41\uFE0F', name: 'Peer Observer', desc: 'Record strengths you see in others' },
     affirmationPractice: { icon: '\uD83D\uDCAC', name: 'Affirmation Practice', desc: 'Read 5 affirmation cards' },
-    deepThinkerPlus: { icon: '\uD83E\uDDE0', name: 'Insight Seeker', desc: 'Answer 3 deep reflection prompts' }
+    deepThinkerPlus: { icon: '\uD83E\uDDE0', name: 'Insight Seeker', desc: 'Answer 3 deep reflection prompts' },
+    storyWriter: { icon: '\uD83D\uDCDD', name: 'Story Writer', desc: 'Write your first strengths story' },
+    roleExplorer: { icon: '\uD83D\uDD0D', name: 'Role Explorer', desc: 'Compare strengths to 3 different roles' },
+    dailyChallenger: { icon: '\u26A1', name: 'Daily Challenger', desc: 'Complete 3 daily strength challenges' },
+    gratitudeGiver: { icon: '\uD83D\uDE4F', name: 'Gratitude Giver', desc: 'Write 3 gratitude entries for others\u0027 strengths' }
   };
 
   function checkBadges(d, awardXP, addToast) {
@@ -627,6 +850,14 @@ window.SelHub = window.SelHub || {
     if (affirmationsRead >= 5) award('affirmationPractice');
     var deepReflections = d.deepReflections || [];
     if (deepReflections.length >= 3) award('deepThinkerPlus');
+    var stories = d.stories || [];
+    if (stories.length >= 1) award('storyWriter');
+    var rolesExplored = d.rolesExplored || [];
+    if (rolesExplored.length >= 3) award('roleExplorer');
+    var challengesDone = d.challengesDone || 0;
+    if (challengesDone >= 3) award('dailyChallenger');
+    var gratitudeEntries = d.gratitudeEntries || [];
+    if (gratitudeEntries.length >= 3) award('gratitudeGiver');
     return changed ? earned : null;
   }
 
@@ -647,6 +878,8 @@ window.SelHub = window.SelHub || {
       var setToolData = ctx.setToolData;
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
@@ -699,7 +932,7 @@ window.SelHub = window.SelHub || {
         React.useEffect(function() {
           var newBadges = checkBadges(d, awardXP, addToast);
           if (newBadges) upd({ badges: newBadges });
-        }, [selectedStrengths.length, reflections.length, d.aiAsked, d.exported, scenariosDone.length, topScenarios, quizBest, tabsVisited.length, d.interviewComplete, d.actionsCompleted, (d.peerNotes || []).length, d.affirmationsRead, (d.deepReflections || []).length]);
+        }, [selectedStrengths.length, reflections.length, d.aiAsked, d.exported, scenariosDone.length, topScenarios, quizBest, tabsVisited.length, d.interviewComplete, d.actionsCompleted, (d.peerNotes || []).length, d.affirmationsRead, (d.deepReflections || []).length, (d.stories || []).length, (d.rolesExplored || []).length, d.challengesDone, (d.gratitudeEntries || []).length]);
 
         // ── Toggle strength selection ──
         var toggleStrength = function(strength, categoryId) {
@@ -819,10 +1052,10 @@ window.SelHub = window.SelHub || {
           ),
 
           // Tabs (scrollable row)
-          h('div', { style: { display: 'flex', overflowX: 'auto', borderBottom: '1px solid rgba(245,158,11,0.15)', background: 'rgba(15,23,42,0.8)', scrollbarWidth: 'none' } },
-            [{ id: 'discover', label: '\u2B50 Discover' }, { id: 'interview', label: '\uD83C\uDF99\uFE0F Interview' }, { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' }, { id: 'quiz', label: '\uD83E\uDDE9 Quiz' }, { id: 'reflect', label: '\uD83D\uDCDD Reflect' }, { id: 'planner', label: '\uD83D\uDCCB Planner' }, { id: 'peers', label: '\uD83D\uDC65 Peers' }, { id: 'affirm', label: '\uD83D\uDCAC Affirm' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'profile', label: '\uD83D\uDCCA Profile' }].map(function(t) {
+          h('div', { role: 'tablist', 'aria-label': 'Strengths Finder tabs', style: { display: 'flex', overflowX: 'auto', borderBottom: '1px solid rgba(245,158,11,0.15)', background: 'rgba(15,23,42,0.8)', scrollbarWidth: 'none' } },
+            [{ id: 'discover', label: '\u2B50 Discover' }, { id: 'interview', label: '\uD83C\uDF99\uFE0F Interview' }, { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' }, { id: 'quiz', label: '\uD83E\uDDE9 Quiz' }, { id: 'reflect', label: '\uD83D\uDCDD Reflect' }, { id: 'stories', label: '\uD83D\uDCD6 Stories' }, { id: 'compare', label: '\uD83D\uDD0D Compare' }, { id: 'challenge', label: '\u26A1 Challenge' }, { id: 'gratitude', label: '\uD83D\uDE4F Gratitude' }, { id: 'planner', label: '\uD83D\uDCCB Planner' }, { id: 'peers', label: '\uD83D\uDC65 Peers' }, { id: 'affirm', label: '\uD83D\uDCAC Affirm' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'profile', label: '\uD83D\uDCCA Profile' }].map(function(t) {
               var active = tab === t.id;
-              return h('button', { key: t.id, onClick: function() { sfxSelect(); var tv = tabsVisited.indexOf(t.id) < 0 ? tabsVisited.concat([t.id]) : tabsVisited; upd({ tab: t.id, tabsVisited: tv }); }, style: { flex: '0 0 auto', padding: '10px 10px', fontSize: 10, fontWeight: 'bold', color: active ? '#fbbf24' : '#64748b', background: active ? 'rgba(245,158,11,0.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #f59e0b' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap' } }, t.label);
+              return h('button', { key: t.id, role: 'tab', 'aria-selected': active, onClick: function() { sfxSelect(); var tv = tabsVisited.indexOf(t.id) < 0 ? tabsVisited.concat([t.id]) : tabsVisited; upd({ tab: t.id, tabsVisited: tv }); }, style: { flex: '0 0 auto', padding: '10px 10px', fontSize: 10, fontWeight: 'bold', color: active ? '#fbbf24' : '#64748b', background: active ? 'rgba(245,158,11,0.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #f59e0b' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap' } }, t.label);
             })
           ),
 
@@ -959,11 +1192,11 @@ window.SelHub = window.SelHub || {
                   h('p', { style: { fontSize: 15, fontWeight: 'bold', color: '#fde68a', lineHeight: 1.6, marginBottom: 8 } }, q.question),
                   h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 12 } }, '\uD83D\uDCA1 ' + q.hint),
                   callTTS ? h('button', { onClick: function() { speak(q.question + '. ' + q.hint); }, style: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 6, padding: '3px 8px', color: '#fbbf24', fontSize: 10, cursor: 'pointer', marginBottom: 8 } }, '\uD83D\uDD0A Read aloud') : null,
-                  h('textarea', { value: interviewAnswers[q.id] || '', onChange: function(e) {
+                  h('textarea', { value: interviewAnswers[q.id] || '', 'aria-label': 'Interview answer', onChange: function(e) {
                     var newAnswers = Object.assign({}, interviewAnswers);
                     newAnswers[q.id] = e.target.value;
                     upd({ interviewAnswers: newAnswers });
-                  }, placeholder: band === 'elementary' ? 'Type your answer here...' : 'Take your time. Thoughtful answers lead to better insights...', style: { width: '100%', minHeight: 80, padding: 10, borderRadius: 8, border: '1px solid rgba(245,158,11,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' } })
+                  }, placeholder: band === 'elementary' ? 'Type your answer here...' : 'Take your time. Thoughtful answers lead to better insights...', style: { width: '100%', minHeight: 80, padding: 10, borderRadius: 8, border: '1px solid rgba(245,158,11,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } })
                 ),
                 // Navigation
                 h('div', { style: { display: 'flex', gap: 8, justifyContent: 'space-between' } },
@@ -1110,7 +1343,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 11, color: '#fbbf24', fontWeight: 'bold', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 } }, '\uD83D\uDCDD Reflection Prompt'),
                 h('p', { style: { fontSize: 14, color: '#fde68a', lineHeight: 1.6, fontWeight: 600, marginBottom: 12 } }, currentPrompt),
                 callTTS ? h('button', { onClick: function() { speak(currentPrompt); }, style: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 6, padding: '4px 10px', color: '#fbbf24', fontSize: 10, cursor: 'pointer', marginBottom: 8 } }, '\uD83D\uDD0A Read aloud') : null,
-                h('textarea', { value: reflectionInput, onChange: function(e) { upd({ reflectionInput: e.target.value }); }, placeholder: band === 'elementary' ? 'Write your answer here...' : 'Take your time. There\'s no right or wrong answer...', style: { width: '100%', minHeight: 100, padding: 10, borderRadius: 8, border: '1px solid rgba(245,158,11,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' } }),
+                h('textarea', { value: reflectionInput, 'aria-label': 'Reflection response', onChange: function(e) { upd({ reflectionInput: e.target.value }); }, placeholder: band === 'elementary' ? 'Write your answer here...' : 'Take your time. There\'s no right or wrong answer...', style: { width: '100%', minHeight: 100, padding: 10, borderRadius: 8, border: '1px solid rgba(245,158,11,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } }),
                 h('div', { style: { display: 'flex', gap: 8, marginTop: 8 } },
                   h('button', { onClick: saveReflection, disabled: !reflectionInput.trim(), style: { padding: '8px 20px', borderRadius: 8, background: reflectionInput.trim() ? '#f59e0b' : '#334155', color: reflectionInput.trim() ? '#0f172a' : '#64748b', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: reflectionInput.trim() ? 'pointer' : 'default' } }, '\u2705 Save Reflection'),
                   h('button', { onClick: function() { upd({ currentPromptIdx: (currentPromptIdx + 1) % prompts.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u27A1 Next Prompt')
@@ -1145,7 +1378,7 @@ window.SelHub = window.SelHub || {
                   h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8 } }, 'These prompts go deeper \u2014 explore how strengths really work in your life.'),
                   h('p', { style: { fontSize: 14, color: '#e0d4ff', lineHeight: 1.6, fontWeight: 600, marginBottom: 12 } }, currentDeep),
                   callTTS ? h('button', { onClick: function() { speak(currentDeep); }, style: { background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 6, padding: '4px 10px', color: '#c4b5fd', fontSize: 10, cursor: 'pointer', marginBottom: 8 } }, '\uD83D\uDD0A Read aloud') : null,
-                  h('textarea', { value: deepInput, onChange: function(e) { upd({ deepInput: e.target.value }); }, placeholder: 'Go deeper... really think about this one.', style: { width: '100%', minHeight: 80, padding: 10, borderRadius: 8, border: '1px solid rgba(167,139,250,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' } }),
+                  h('textarea', { value: deepInput, 'aria-label': 'Deep reflection response', onChange: function(e) { upd({ deepInput: e.target.value }); }, placeholder: 'Go deeper... really think about this one.', style: { width: '100%', minHeight: 80, padding: 10, borderRadius: 8, border: '1px solid rgba(167,139,250,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } }),
                   h('div', { style: { display: 'flex', gap: 8, marginTop: 8 } },
                     h('button', { onClick: saveDeepReflection, disabled: !deepInput.trim(), style: { padding: '8px 20px', borderRadius: 8, background: deepInput.trim() ? '#8b5cf6' : '#334155', color: deepInput.trim() ? '#fff' : '#64748b', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: deepInput.trim() ? 'pointer' : 'default' } }, '\u2705 Save Deep Reflection'),
                     h('button', { onClick: function() { upd({ deepPromptIdx: (deepPromptIdx + 1) % deepPrompts.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u27A1 Next Deep Prompt')
@@ -1175,6 +1408,546 @@ window.SelHub = window.SelHub || {
                 })
               ) : h('p', { style: { textAlign: 'center', color: '#64748b', fontSize: 12, padding: 20 } }, 'No reflections yet. Answer the prompt above to get started!')
             ) : null,
+
+            // ── STORIES TAB (Strengths Story Builder) ──
+            tab === 'stories' ? (function() {
+              var stories = d.stories || [];
+              var storyStrength = d.storyStrength || null;
+              var storyDraft = d.storyDraft || {};
+              var storyStep = d.storyStep || 0;
+              var storyAiResponse = d.storyAiResponse || '';
+              var storyAiLoading = d.storyAiLoading || false;
+              var storyViewMode = d.storyViewMode || 'write'; // 'write' | 'past'
+              var storyPrompts = STORY_PROMPTS[band] || STORY_PROMPTS.elementary;
+
+              if (selectedStrengths.length === 0) {
+                return h('div', { style: { textAlign: 'center', padding: 40 } },
+                  h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDCD6'),
+                  h('p', { style: { fontSize: 14, color: '#94a3b8' } }, 'Select some strengths first!'),
+                  h('p', { style: { fontSize: 12, color: '#64748b', marginTop: 4 } }, 'Go to the Discover tab to identify your strengths, then come back to write stories about using them.'),
+                  h('button', { onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
+                );
+              }
+
+              // Toggle between write and past stories
+              var modeToggle = h('div', { style: { display: 'flex', gap: 6, marginBottom: 16 } },
+                h('button', { onClick: function() { upd({ storyViewMode: 'write' }); }, style: { padding: '6px 14px', borderRadius: 20, background: storyViewMode === 'write' ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.04)', border: storyViewMode === 'write' ? '2px solid #f59e0b' : '1px solid rgba(99,102,241,0.15)', color: storyViewMode === 'write' ? '#fbbf24' : '#64748b', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '\u270D\uFE0F Write Story'),
+                h('button', { onClick: function() { upd({ storyViewMode: 'past' }); }, style: { padding: '6px 14px', borderRadius: 20, background: storyViewMode === 'past' ? 'rgba(167,139,250,0.2)' : 'rgba(255,255,255,0.04)', border: storyViewMode === 'past' ? '2px solid #a78bfa' : '1px solid rgba(99,102,241,0.15)', color: storyViewMode === 'past' ? '#c4b5fd' : '#64748b', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCDA Past Stories (' + stories.length + ')')
+              );
+
+              if (storyViewMode === 'past') {
+                return h('div', null,
+                  h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 12, lineHeight: 1.6 } }, 'Your collection of strengths stories \u2014 moments when you put your strengths into action.'),
+                  modeToggle,
+                  stories.length === 0 ?
+                    h('div', { style: { textAlign: 'center', padding: 30, color: '#64748b' } },
+                      h('p', { style: { fontSize: 13 } }, 'No stories yet. Write your first one!'),
+                      h('button', { onClick: function() { upd({ storyViewMode: 'write' }); }, style: { marginTop: 10, padding: '8px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u270D\uFE0F Write a Story')
+                    ) :
+                    stories.slice().reverse().map(function(story, si) {
+                      return h('div', { key: 'story' + si, style: { padding: 14, marginBottom: 12, borderRadius: 12, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' } },
+                        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 } },
+                          h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                            h('span', { style: { fontSize: 14 } }, story.strengthEmoji || '\u2B50'),
+                            h('span', { style: { fontSize: 13, fontWeight: 'bold', color: '#fbbf24' } }, 'My ' + story.strengthLabel + ' Story')
+                          ),
+                          h('span', { style: { fontSize: 10, color: '#64748b' } }, new Date(story.timestamp).toLocaleDateString())
+                        ),
+                        Object.keys(story.answers || {}).map(function(key) {
+                          var promptData = storyPrompts.find(function(p) { return p.id === key; });
+                          return h('div', { key: key, style: { marginBottom: 6 } },
+                            h('div', { style: { fontSize: 10, color: '#f59e0b', fontWeight: 'bold', marginBottom: 2 } }, promptData ? promptData.label.replace('[STRENGTH]', story.strengthLabel) : key),
+                            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } }, story.answers[key])
+                          );
+                        }),
+                        story.aiFeedback ? h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)' } },
+                          h('div', { style: { fontSize: 10, color: '#a5b4fc', fontWeight: 'bold', marginBottom: 4 } }, '\uD83E\uDD16 Coach Feedback'),
+                          h('div', { style: { fontSize: 12, color: '#c4b5fd', lineHeight: 1.5 } }, story.aiFeedback)
+                        ) : null
+                      );
+                    })
+                );
+              }
+
+              // Write mode
+              // Step 0: Choose a strength
+              if (!storyStrength) {
+                return h('div', null,
+                  h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 4, lineHeight: 1.6 } },
+                    band === 'elementary' ? 'Write a story about a time you used one of YOUR strengths! First, pick the strength:' :
+                    'Tell the story of a moment when one of your strengths came to life. Select the strength to write about:'
+                  ),
+                  modeToggle,
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                    selectedStrengths.map(function(s) {
+                      var catData = STRENGTH_CATEGORIES.find(function(c) { return c.id === s.category; });
+                      var catColor = catData ? catData.color : '#f59e0b';
+                      return h('button', { key: s.id + '_' + s.category, onClick: function() {
+                        sfxSelect();
+                        upd({ storyStrength: s, storyDraft: {}, storyStep: 0, storyAiResponse: '' });
+                      }, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', borderRadius: 12, background: catColor + '15', border: '2px solid ' + catColor + '44', color: catColor, fontWeight: 'bold', fontSize: 12, cursor: 'pointer', transition: 'all 0.15s' } },
+                        h('span', { style: { fontSize: 18 } }, s.emoji),
+                        h('span', null, s.label)
+                      );
+                    })
+                  )
+                );
+              }
+
+              // Story writing wizard
+              var currentStoryPrompt = storyPrompts[storyStep];
+              var promptLabel = currentStoryPrompt.label.replace('[STRENGTH]', storyStrength.label);
+              var allFilled = storyPrompts.every(function(p) { return storyDraft[p.id] && storyDraft[p.id].trim(); });
+
+              var saveStory = function() {
+                if (!allFilled) return;
+                sfxComplete();
+                var newStory = {
+                  strengthId: storyStrength.id,
+                  strengthLabel: storyStrength.label,
+                  strengthEmoji: storyStrength.emoji,
+                  strengthCategory: storyStrength.category,
+                  answers: Object.assign({}, storyDraft),
+                  timestamp: Date.now(),
+                  aiFeedback: storyAiResponse || null
+                };
+                var newStories = stories.concat([newStory]);
+                upd({ stories: newStories, storyStrength: null, storyDraft: {}, storyStep: 0, storyAiResponse: '', storyViewMode: 'past' });
+                if (addToast) addToast('\uD83D\uDCD6 Strengths story saved!', 'success');
+                if (awardXP) awardXP(15);
+              };
+
+              var getAiFeedback = function() {
+                if (!callGemini || storyAiLoading || !allFilled) return;
+                sfxReflect();
+                var storyText = storyPrompts.map(function(p) {
+                  return p.label.replace('[STRENGTH]', storyStrength.label) + '\n' + (storyDraft[p.id] || '');
+                }).join('\n\n');
+                var prompt = 'You are a warm, encouraging strengths-based coach for a ' + band + ' school student (grade ' + gradeLevel + '). ' +
+                  'They wrote a story about using their strength of "' + storyStrength.label + '". Here is their story:\n\n' +
+                  storyText + '\n\n' +
+                  'Give brief feedback (2-3 sentences) on how this story demonstrates the strength of ' + storyStrength.label + '. ' +
+                  'Be specific \u2014 reference details from their story. Be encouraging and affirming. ' +
+                  (band === 'elementary' ? 'Use simple, warm language.' : band === 'middle' ? 'Be relatable and affirming.' : 'Be thoughtful and nuanced.');
+                upd({ storyAiLoading: true });
+                callGemini(prompt, false, false, 0.8).then(function(resp) {
+                  upd({ storyAiResponse: resp || 'Great story! You clearly used your strength well.', storyAiLoading: false });
+                }).catch(function() {
+                  upd({ storyAiResponse: 'Your story shows real self-awareness! Keep writing about your strengths.', storyAiLoading: false });
+                });
+              };
+
+              return h('div', null,
+                modeToggle,
+                // Strength badge
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 } },
+                  h('span', { style: { fontSize: 20 } }, storyStrength.emoji),
+                  h('span', { style: { fontSize: 14, fontWeight: 'bold', color: '#fbbf24' } }, 'Writing about: ' + storyStrength.label),
+                  h('button', { onClick: function() { upd({ storyStrength: null, storyDraft: {}, storyStep: 0, storyAiResponse: '' }); }, style: { marginLeft: 'auto', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 6, padding: '3px 8px', color: '#94a3b8', fontSize: 10, cursor: 'pointer' } }, '\u2715 Change')
+                ),
+                // Progress
+                h('div', { style: { display: 'flex', gap: 4, marginBottom: 12 } },
+                  storyPrompts.map(function(p, pi) {
+                    var filled = storyDraft[p.id] && storyDraft[p.id].trim();
+                    var active = pi === storyStep;
+                    return h('div', { key: pi, style: { flex: 1, height: 4, borderRadius: 2, background: filled ? '#f59e0b' : active ? 'rgba(245,158,11,0.4)' : 'rgba(255,255,255,0.06)', transition: 'all 0.3s' } });
+                  })
+                ),
+                h('div', { style: { fontSize: 10, color: '#64748b', marginBottom: 8 } }, 'Step ' + (storyStep + 1) + ' of ' + storyPrompts.length),
+                // Prompt card
+                h('div', { style: { padding: 16, borderRadius: 14, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.05))', border: '1px solid rgba(245,158,11,0.25)', marginBottom: 12 } },
+                  h('p', { style: { fontSize: 14, fontWeight: 'bold', color: '#fde68a', lineHeight: 1.6, marginBottom: 6 } }, promptLabel),
+                  h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 10 } }, '\uD83D\uDCA1 ' + currentStoryPrompt.hint),
+                  callTTS ? h('button', { onClick: function() { speak(promptLabel + '. ' + currentStoryPrompt.hint); }, style: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 6, padding: '3px 8px', color: '#fbbf24', fontSize: 10, cursor: 'pointer', marginBottom: 8 } }, '\uD83D\uDD0A Read aloud') : null,
+                  h('textarea', { value: storyDraft[currentStoryPrompt.id] || '', 'aria-label': 'Strength story response', onChange: function(e) {
+                    var newDraft = Object.assign({}, storyDraft);
+                    newDraft[currentStoryPrompt.id] = e.target.value;
+                    upd({ storyDraft: newDraft });
+                  }, placeholder: band === 'elementary' ? 'Tell your story...' : 'Write your response...', style: { width: '100%', minHeight: 80, padding: 10, borderRadius: 8, border: '1px solid rgba(245,158,11,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } })
+                ),
+                // Navigation
+                h('div', { style: { display: 'flex', gap: 8, justifyContent: 'space-between' } },
+                  h('button', { onClick: function() { if (storyStep > 0) upd({ storyStep: storyStep - 1 }); }, disabled: storyStep === 0, style: { padding: '8px 16px', borderRadius: 8, background: storyStep > 0 ? 'rgba(255,255,255,0.05)' : 'transparent', color: storyStep > 0 ? '#94a3b8' : '#334155', border: '1px solid ' + (storyStep > 0 ? 'rgba(99,102,241,0.15)' : 'transparent'), fontSize: 12, cursor: storyStep > 0 ? 'pointer' : 'default' } }, '\u2190 Previous'),
+                  h('div', { style: { display: 'flex', gap: 8 } },
+                    storyStep < storyPrompts.length - 1 ?
+                      h('button', { onClick: function() { upd({ storyStep: storyStep + 1 }); }, style: { padding: '8px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, 'Next \u2192') :
+                      h('div', { style: { display: 'flex', gap: 6 } },
+                        callGemini ? h('button', { onClick: getAiFeedback, disabled: !allFilled || storyAiLoading, style: { padding: '8px 14px', borderRadius: 8, background: allFilled ? 'rgba(99,102,241,0.15)' : '#334155', color: allFilled ? '#a5b4fc' : '#64748b', border: '1px solid ' + (allFilled ? 'rgba(99,102,241,0.3)' : 'transparent'), fontSize: 12, cursor: allFilled ? 'pointer' : 'default' } }, storyAiLoading ? '\u23F3 Getting feedback...' : '\uD83E\uDD16 Get AI Feedback') : null,
+                        h('button', { onClick: saveStory, disabled: !allFilled, style: { padding: '8px 20px', borderRadius: 8, background: allFilled ? '#22c55e' : '#334155', color: allFilled ? '#0f172a' : '#64748b', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: allFilled ? 'pointer' : 'default' } }, '\uD83D\uDCBE Save Story')
+                      )
+                  )
+                ),
+                // AI feedback preview
+                storyAiResponse ? h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)' } },
+                  h('div', { style: { fontSize: 10, color: '#a5b4fc', fontWeight: 'bold', marginBottom: 4 } }, '\uD83E\uDD16 Coach Feedback'),
+                  h('div', { style: { fontSize: 12, color: '#c4b5fd', lineHeight: 1.5 } }, storyAiResponse),
+                  callTTS ? h('button', { onClick: function() { speak(storyAiResponse); }, style: { marginTop: 6, background: 'none', border: 'none', color: '#a5b4fc', fontSize: 10, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null
+                ) : null,
+                // Step dots
+                h('div', { style: { display: 'flex', justifyContent: 'center', gap: 6, marginTop: 14 } },
+                  storyPrompts.map(function(p, pi) {
+                    var filled = !!(storyDraft[p.id] && storyDraft[p.id].trim());
+                    var isCurrent = pi === storyStep;
+                    return h('button', { key: pi, onClick: function() { upd({ storyStep: pi }); }, style: { width: 10, height: 10, borderRadius: '50%', border: isCurrent ? '2px solid #fbbf24' : '1px solid rgba(99,102,241,0.2)', background: filled ? '#f59e0b' : 'rgba(255,255,255,0.05)', cursor: 'pointer', padding: 0 } });
+                  })
+                )
+              );
+            })() : null,
+
+            // ── COMPARE TAB (Strengths Comparison) ──
+            tab === 'compare' ? (function() {
+              var compareRole = d.compareRole || null;
+              var rolesExplored = d.rolesExplored || [];
+
+              if (selectedStrengths.length === 0) {
+                return h('div', { style: { textAlign: 'center', padding: 40 } },
+                  h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDD0D'),
+                  h('p', { style: { fontSize: 14, color: '#94a3b8' } }, 'Select some strengths first!'),
+                  h('p', { style: { fontSize: 12, color: '#64748b', marginTop: 4 } }, 'Go to the Discover tab to identify your strengths, then compare them to different roles.'),
+                  h('button', { onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
+                );
+              }
+
+              if (!compareRole) {
+                return h('div', null,
+                  h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 16, lineHeight: 1.6 } },
+                    band === 'elementary' ? 'See how your strengths match up with different roles! Pick one to compare:' :
+                    'Compare your strength profile to different roles. See what you share, what\u0027s unique to you, and what you might develop.'
+                  ),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 } },
+                    Object.keys(ROLE_PROFILES).map(function(roleKey) {
+                      var role = ROLE_PROFILES[roleKey];
+                      var explored = rolesExplored.indexOf(roleKey) >= 0;
+                      return h('button', { key: roleKey, onClick: function() {
+                        sfxSelect();
+                        var newExplored = rolesExplored.indexOf(roleKey) < 0 ? rolesExplored.concat([roleKey]) : rolesExplored;
+                        upd({ compareRole: roleKey, rolesExplored: newExplored });
+                      }, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '16px 10px', borderRadius: 14, background: role.color + '10', border: '2px solid ' + role.color + '33', cursor: 'pointer', transition: 'all 0.15s', position: 'relative' } },
+                        explored ? h('span', { style: { position: 'absolute', top: 4, right: 6, fontSize: 10, color: '#22c55e' } }, '\u2713') : null,
+                        h('span', { style: { fontSize: 28 } }, role.emoji),
+                        h('span', { style: { fontSize: 12, fontWeight: 'bold', color: role.color } }, role.label),
+                        h('span', { style: { fontSize: 10, color: '#94a3b8', textAlign: 'center', lineHeight: 1.3 } }, role.desc)
+                      );
+                    })
+                  ),
+                  rolesExplored.length > 0 ? h('div', { style: { marginTop: 12, fontSize: 11, color: '#64748b', textAlign: 'center' } }, '\uD83D\uDD0D Roles explored: ' + rolesExplored.length + '/6') : null
+                );
+              }
+
+              // Comparison view
+              var role = ROLE_PROFILES[compareRole];
+              var myStrengthIds = selectedStrengths.map(function(s) { return s.id; });
+              var roleStrengthIds = role.strengths;
+
+              // Calculate shared, unique-to-me, unique-to-role
+              var shared = [];
+              var uniqueToMe = [];
+              var uniqueToRole = [];
+
+              roleStrengthIds.forEach(function(rid) {
+                if (myStrengthIds.indexOf(rid) >= 0) {
+                  shared.push(rid);
+                } else {
+                  uniqueToRole.push(rid);
+                }
+              });
+              myStrengthIds.forEach(function(mid) {
+                if (roleStrengthIds.indexOf(mid) < 0) {
+                  uniqueToMe.push(mid);
+                }
+              });
+
+              // Lookup label for a strength id
+              var getStrengthLabel = function(sid) {
+                var found = null;
+                selectedStrengths.forEach(function(s) { if (s.id === sid) found = s; });
+                if (found) return found.emoji + ' ' + found.label;
+                // Search all categories
+                STRENGTH_CATEGORIES.forEach(function(cat) {
+                  var list = cat.strengths[band] || cat.strengths.elementary;
+                  list.forEach(function(s) { if (s.id === sid && !found) found = s; });
+                  // Also check other bands
+                  if (!found) { (cat.strengths.middle || []).forEach(function(s) { if (s.id === sid && !found) found = s; }); }
+                  if (!found) { (cat.strengths.high || []).forEach(function(s) { if (s.id === sid && !found) found = s; }); }
+                  if (!found) { (cat.strengths.elementary || []).forEach(function(s) { if (s.id === sid && !found) found = s; }); }
+                });
+                if (found) return found.emoji + ' ' + found.label;
+                return '\uD83D\uDCA0 ' + sid;
+              };
+
+              var matchPercent = roleStrengthIds.length > 0 ? Math.round((shared.length / roleStrengthIds.length) * 100) : 0;
+
+              return h('div', null,
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 } },
+                  h('button', { onClick: function() { upd({ compareRole: null }); }, style: { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 8, padding: '4px 10px', color: '#94a3b8', fontSize: 11, cursor: 'pointer' } }, '\u2190 Back'),
+                  h('span', { style: { fontSize: 20 } }, role.emoji),
+                  h('span', { style: { fontSize: 14, fontWeight: 'bold', color: role.color } }, 'My Strengths vs ' + role.label)
+                ),
+
+                // Match meter
+                h('div', { style: { textAlign: 'center', marginBottom: 16, padding: 14, borderRadius: 12, background: role.color + '10', border: '1px solid ' + role.color + '33' } },
+                  h('div', { style: { fontSize: 28, fontWeight: 'bold', color: role.color } }, matchPercent + '%'),
+                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8 } }, 'Strength Match'),
+                  h('div', { style: { width: '100%', height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
+                    h('div', { style: { width: matchPercent + '%', height: '100%', background: role.color, borderRadius: 4, transition: 'width 0.5s' } })
+                  )
+                ),
+
+                // Venn-style comparison
+                h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 16 } },
+                  // Unique to me
+                  h('div', { style: { padding: 12, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' } },
+                    h('div', { style: { fontSize: 10, fontWeight: 'bold', color: '#fbbf24', marginBottom: 8, textAlign: 'center', textTransform: 'uppercase', letterSpacing: 1 } }, '\u2B50 Only Me'),
+                    uniqueToMe.length > 0 ? uniqueToMe.slice(0, 6).map(function(sid) {
+                      return h('div', { key: 'um_' + sid, style: { fontSize: 11, color: '#fde68a', marginBottom: 4, padding: '3px 0' } }, getStrengthLabel(sid));
+                    }) : h('div', { style: { fontSize: 11, color: '#64748b', fontStyle: 'italic' } }, 'None')
+                  ),
+                  // Shared
+                  h('div', { style: { padding: 12, borderRadius: 12, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)' } },
+                    h('div', { style: { fontSize: 10, fontWeight: 'bold', color: '#34d399', marginBottom: 8, textAlign: 'center', textTransform: 'uppercase', letterSpacing: 1 } }, '\u2728 Shared'),
+                    shared.length > 0 ? shared.map(function(sid) {
+                      return h('div', { key: 'sh_' + sid, style: { fontSize: 11, color: '#6ee7b7', marginBottom: 4, padding: '3px 0', fontWeight: 'bold' } }, getStrengthLabel(sid));
+                    }) : h('div', { style: { fontSize: 11, color: '#64748b', fontStyle: 'italic' } }, 'None yet')
+                  ),
+                  // Unique to role
+                  h('div', { style: { padding: 12, borderRadius: 12, background: role.color + '0a', border: '1px solid ' + role.color + '22' } },
+                    h('div', { style: { fontSize: 10, fontWeight: 'bold', color: role.color, marginBottom: 8, textAlign: 'center', textTransform: 'uppercase', letterSpacing: 1 } }, role.emoji + ' ' + role.label.split(' ')[0]),
+                    uniqueToRole.length > 0 ? uniqueToRole.map(function(sid) {
+                      return h('div', { key: 'ur_' + sid, style: { fontSize: 11, color: role.color, marginBottom: 4, padding: '3px 0' } }, getStrengthLabel(sid));
+                    }) : h('div', { style: { fontSize: 11, color: '#64748b', fontStyle: 'italic' } }, 'None')
+                  )
+                ),
+
+                // Suggestions
+                uniqueToRole.length > 0 ? h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)' } },
+                  h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 8 } }, '\uD83C\uDF31 Strengths you could develop for this role:'),
+                  uniqueToRole.map(function(sid) {
+                    var label = getStrengthLabel(sid);
+                    var actions = ACTION_SUGGESTIONS[sid];
+                    return h('div', { key: 'sug_' + sid, style: { marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid rgba(99,102,241,0.08)' } },
+                      h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#c4b5fd', marginBottom: 2 } }, label),
+                      actions ? h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4 } }, 'Try: ' + actions[0]) : null
+                    );
+                  })
+                ) : h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', textAlign: 'center' } },
+                  h('div', { style: { fontSize: 16, marginBottom: 4 } }, '\uD83C\uDF1F'),
+                  h('div', { style: { fontSize: 13, fontWeight: 'bold', color: '#34d399' } }, 'Perfect match! You have all the strengths for this role!')
+                ),
+
+                h('button', { onClick: function() { upd({ compareRole: null }); }, style: { marginTop: 14, width: '100%', padding: '10px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD0D Compare Another Role')
+              );
+            })() : null,
+
+            // ── CHALLENGE TAB (Daily Strength Challenge) ──
+            tab === 'challenge' ? (function() {
+              var challengesDone = d.challengesDone || 0;
+              var challengeLog = d.challengeLog || {};
+              // Compute today's date key
+              var now = new Date();
+              var todayKey = now.getFullYear() + '-' + String(now.getMonth() + 1) + '-' + String(now.getDate());
+              var todayDone = !!challengeLog[todayKey];
+
+              if (selectedStrengths.length === 0) {
+                return h('div', { style: { textAlign: 'center', padding: 40 } },
+                  h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\u26A1'),
+                  h('p', { style: { fontSize: 14, color: '#94a3b8' } }, 'Select some strengths first!'),
+                  h('p', { style: { fontSize: 12, color: '#64748b', marginTop: 4 } }, 'Go to the Discover tab so we can give you daily challenges based on YOUR strengths.'),
+                  h('button', { onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
+                );
+              }
+
+              // Pick today's strength based on date
+              var dayNum = Math.floor(now.getTime() / 86400000);
+              var todayStrength = selectedStrengths[dayNum % selectedStrengths.length];
+              var challenges = DAILY_CHALLENGES[todayStrength.id] || ACTION_SUGGESTIONS[todayStrength.id] || ['Use your ' + todayStrength.label + ' strength in a meaningful way today.', 'Look for an opportunity to demonstrate ' + todayStrength.label + '.', 'Reflect on a time you used ' + todayStrength.label + ' recently.'];
+              // Pick today's specific challenge
+              var todayChallenge = challenges[dayNum % challenges.length];
+
+              var completeChallenge = function() {
+                if (todayDone) return;
+                sfxBadge();
+                var newLog = Object.assign({}, challengeLog);
+                newLog[todayKey] = { strength: todayStrength.label, challenge: todayChallenge, emoji: todayStrength.emoji };
+                var newCount = challengesDone + 1;
+                upd({ challengeLog: newLog, challengesDone: newCount });
+                if (awardXP) awardXP(10);
+                if (addToast) addToast('\u26A1 Daily challenge complete! +10 XP', 'success');
+              };
+
+              // Count streak
+              var streak = 0;
+              var checkDate = new Date(now);
+              for (var si = 0; si < 365; si++) {
+                var ck = checkDate.getFullYear() + '-' + String(checkDate.getMonth() + 1) + '-' + String(checkDate.getDate());
+                if (challengeLog[ck]) {
+                  streak++;
+                  checkDate.setDate(checkDate.getDate() - 1);
+                } else {
+                  break;
+                }
+              }
+
+              return h('div', null,
+                h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 16, lineHeight: 1.6 } },
+                  band === 'elementary' ? 'Every day you get a fun challenge based on one of your strengths! Can you do it?' :
+                  'A new challenge every day, matched to one of your strengths. Small actions build big habits.'
+                ),
+
+                // Today's challenge card
+                h('div', { style: { textAlign: 'center', padding: 24, borderRadius: 16, background: todayDone ? 'rgba(52,211,153,0.1)' : 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(234,179,8,0.08))', border: todayDone ? '2px solid rgba(52,211,153,0.3)' : '2px solid rgba(245,158,11,0.3)', marginBottom: 20 } },
+                  h('div', { style: { fontSize: 10, textTransform: 'uppercase', letterSpacing: 1, color: todayDone ? '#34d399' : '#f59e0b', marginBottom: 8, fontWeight: 'bold' } }, todayDone ? '\u2705 Challenge Complete!' : '\u26A1 Today\u0027s Challenge'),
+                  h('div', { style: { fontSize: 36, marginBottom: 10 } }, todayStrength.emoji),
+                  h('div', { style: { fontSize: 12, color: todayDone ? '#34d399' : '#fbbf24', fontWeight: 'bold', marginBottom: 10 } }, 'Use your ' + todayStrength.label + ' strength:'),
+                  h('p', { style: { fontSize: 15, fontWeight: 'bold', color: todayDone ? '#6ee7b7' : '#fde68a', lineHeight: 1.6, maxWidth: 400, margin: '0 auto 16px' } }, todayChallenge),
+                  callTTS ? h('button', { onClick: function() { speak('Today\u0027s challenge: Use your ' + todayStrength.label + ' strength. ' + todayChallenge); }, style: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, padding: '6px 14px', color: '#fbbf24', fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '\uD83D\uDD0A Read Aloud') : null,
+                  todayDone ?
+                    h('div', { style: { fontSize: 13, color: '#34d399', fontWeight: 'bold' } }, '\uD83C\uDF1F Great job! Come back tomorrow for a new challenge.') :
+                    h('button', { onClick: completeChallenge, style: { padding: '12px 30px', borderRadius: 10, background: '#22c55e', color: '#0f172a', border: 'none', fontSize: 14, fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 I Did It! (+10 XP)')
+                ),
+
+                // Stats
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 16 } },
+                  h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' } },
+                    h('div', { style: { fontSize: 22, fontWeight: 'bold', color: '#fbbf24' } }, String(challengesDone)),
+                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Completed')
+                  ),
+                  h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 10, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.15)' } },
+                    h('div', { style: { fontSize: 22, fontWeight: 'bold', color: '#34d399' } }, String(streak)),
+                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Day Streak')
+                  ),
+                  h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.15)' } },
+                    h('div', { style: { fontSize: 22, fontWeight: 'bold', color: '#c4b5fd' } }, String(challengesDone * 10)),
+                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'XP Earned')
+                  )
+                ),
+
+                // Other challenges for today's strength
+                h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 8 } }, '\uD83D\uDCA1 More ' + todayStrength.label + ' ideas:'),
+                  challenges.map(function(ch, ci) {
+                    var isCurrent = ch === todayChallenge;
+                    return h('div', { key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 0', borderBottom: ci < challenges.length - 1 ? '1px solid rgba(99,102,241,0.06)' : 'none' } },
+                      h('span', { style: { fontSize: 11, color: isCurrent ? '#fbbf24' : '#94a3b8', fontWeight: isCurrent ? 'bold' : 'normal' } }, (isCurrent ? '\u27A4 ' : '\u25CB ') + ch)
+                    );
+                  })
+                ),
+
+                // Recent history
+                (function() {
+                  var logKeys = Object.keys(challengeLog).sort().reverse().slice(0, 7);
+                  if (logKeys.length === 0) return null;
+                  return h('div', null,
+                    h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', marginBottom: 8 } }, '\uD83D\uDCC5 Recent Challenges'),
+                    logKeys.map(function(key) {
+                      var entry = challengeLog[key];
+                      return h('div', { key: key, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' } },
+                        h('span', { style: { fontSize: 14 } }, entry.emoji || '\u2B50'),
+                        h('div', { style: { flex: 1 } },
+                          h('div', { style: { fontSize: 11, fontWeight: 'bold', color: '#fbbf24' } }, entry.strength),
+                          h('div', { style: { fontSize: 10, color: '#94a3b8' } }, entry.challenge)
+                        ),
+                        h('span', { style: { fontSize: 10, color: '#64748b' } }, key),
+                        h('span', { style: { color: '#22c55e', fontSize: 12 } }, '\u2713')
+                      );
+                    })
+                  );
+                })()
+              );
+            })() : null,
+
+            // ── GRATITUDE TAB (Strengths Gratitude) ──
+            tab === 'gratitude' ? (function() {
+              var gratitudeEntries = d.gratitudeEntries || [];
+              var gratInput = d.gratInput || '';
+              var gratPerson = d.gratPerson || '';
+              var gratStrength = d.gratStrength || '';
+              var gratPromptIdx = d.gratPromptIdx || 0;
+              var gratPrompts = GRATITUDE_PROMPTS[band] || GRATITUDE_PROMPTS.elementary;
+              var currentGratPrompt = gratPrompts[gratPromptIdx % gratPrompts.length];
+
+              var saveGratitude = function() {
+                if (!gratInput.trim()) return;
+                sfxComplete();
+                var newEntry = {
+                  person: gratPerson.trim() || 'Someone special',
+                  strength: gratStrength.trim() || 'their strength',
+                  message: gratInput.trim(),
+                  prompt: currentGratPrompt,
+                  timestamp: Date.now()
+                };
+                var newEntries = gratitudeEntries.concat([newEntry]);
+                upd({ gratitudeEntries: newEntries, gratInput: '', gratPerson: '', gratStrength: '', gratPromptIdx: (gratPromptIdx + 1) % gratPrompts.length });
+                if (addToast) addToast('\uD83D\uDE4F Gratitude entry saved!', 'success');
+                if (awardXP) awardXP(5);
+              };
+
+              // Strength options for the dropdown
+              var allStrengthLabels = [];
+              STRENGTH_CATEGORIES.forEach(function(cat) {
+                var list = cat.strengths[band] || cat.strengths.elementary;
+                list.forEach(function(s) {
+                  if (allStrengthLabels.indexOf(s.label) < 0) allStrengthLabels.push(s.label);
+                });
+              });
+
+              return h('div', null,
+                h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 16, lineHeight: 1.6 } },
+                  band === 'elementary' ? 'Say thank you for the strengths you see in the people around you! It feels good to notice the good in others.' :
+                  band === 'middle' ? 'Express gratitude for the strengths you see in others. Noticing strengths in people around you builds empathy and deepens relationships.' :
+                  'Gratitude for others\u0027 strengths builds empathy, strengthens relationships, and develops your own capacity for perspective-taking.'
+                ),
+
+                // Prompt
+                h('div', { style: { textAlign: 'center', padding: 16, borderRadius: 14, background: 'linear-gradient(135deg, rgba(167,139,250,0.12), rgba(139,92,246,0.06))', border: '1px solid rgba(167,139,250,0.25)', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 10, textTransform: 'uppercase', letterSpacing: 1, color: '#a78bfa', marginBottom: 6, fontWeight: 'bold' } }, '\uD83D\uDE4F Gratitude Prompt'),
+                  h('p', { style: { fontSize: 14, fontWeight: 'bold', color: '#e0d4ff', lineHeight: 1.6, fontStyle: 'italic' } }, currentGratPrompt),
+                  callTTS ? h('button', { onClick: function() { speak(currentGratPrompt); }, style: { marginTop: 8, background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 6, padding: '4px 10px', color: '#c4b5fd', fontSize: 10, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null
+                ),
+
+                // Input form
+                h('div', { style: { padding: 16, borderRadius: 14, background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.15)', marginBottom: 16 } },
+                  h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+                    h('div', { style: { flex: 1 } },
+                      h('label', { style: { fontSize: 10, color: '#a78bfa', fontWeight: 'bold', marginBottom: 4, display: 'block' } }, 'Person (first name or description)'),
+                      h('input', { type: 'text', value: gratPerson, 'aria-label': 'Gratitude person', onChange: function(e) { upd({ gratPerson: e.target.value }); }, placeholder: band === 'elementary' ? 'My friend, my teacher, my mom...' : 'A friend, teacher, family member...', style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(167,139,250,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 12, boxSizing: 'border-box' } })
+                    ),
+                    h('div', { style: { flex: 1 } },
+                      h('label', { style: { fontSize: 10, color: '#a78bfa', fontWeight: 'bold', marginBottom: 4, display: 'block' } }, 'Their strength'),
+                      h('select', { value: gratStrength, 'aria-label': 'Their strength', onChange: function(e) { upd({ gratStrength: e.target.value }); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(167,139,250,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 12, boxSizing: 'border-box' } },
+                        h('option', { value: '' }, 'Choose a strength...'),
+                        allStrengthLabels.map(function(lbl) {
+                          return h('option', { key: lbl, value: lbl }, lbl);
+                        })
+                      )
+                    )
+                  ),
+                  h('label', { style: { fontSize: 10, color: '#a78bfa', fontWeight: 'bold', marginBottom: 4, display: 'block' } }, 'Why are you grateful? What did they do?'),
+                  h('textarea', { value: gratInput, 'aria-label': 'Gratitude message', onChange: function(e) { upd({ gratInput: e.target.value }); }, placeholder: band === 'elementary' ? 'I\u0027m grateful because...' : 'Express your gratitude...', style: { width: '100%', minHeight: 80, padding: 10, borderRadius: 8, border: '1px solid rgba(167,139,250,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } }),
+                  h('div', { style: { display: 'flex', gap: 8, marginTop: 8 } },
+                    h('button', { onClick: saveGratitude, disabled: !gratInput.trim(), style: { padding: '8px 20px', borderRadius: 8, background: gratInput.trim() ? '#8b5cf6' : '#334155', color: gratInput.trim() ? '#fff' : '#64748b', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: gratInput.trim() ? 'pointer' : 'default' } }, '\uD83D\uDE4F Save Gratitude'),
+                    h('button', { onClick: function() { upd({ gratPromptIdx: (gratPromptIdx + 1) % gratPrompts.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u27A1 Next Prompt')
+                  )
+                ),
+
+                // Gratitude wall
+                gratitudeEntries.length > 0 ? h('div', null,
+                  h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#c4b5fd', marginBottom: 10 } }, '\uD83D\uDE4F Gratitude Wall (' + gratitudeEntries.length + ')'),
+                  gratitudeEntries.slice().reverse().map(function(entry, ei) {
+                    return h('div', { key: 'grat' + ei, style: { padding: 12, marginBottom: 8, borderRadius: 12, background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.12)' } },
+                      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 } },
+                        h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                          h('span', { style: { fontSize: 14 } }, '\uD83D\uDE4F'),
+                          h('span', { style: { fontSize: 12, fontWeight: 'bold', color: '#c4b5fd' } }, entry.person),
+                          h('span', { style: { fontSize: 10, padding: '2px 8px', borderRadius: 10, background: 'rgba(167,139,250,0.15)', color: '#a78bfa' } }, entry.strength)
+                        ),
+                        h('span', { style: { fontSize: 10, color: '#64748b' } }, new Date(entry.timestamp).toLocaleDateString())
+                      ),
+                      h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5 } }, entry.message)
+                    );
+                  })
+                ) : h('div', { style: { textAlign: 'center', padding: 20, color: '#64748b', fontSize: 12 } }, 'Your gratitude wall is empty. Start expressing gratitude for others\u0027 strengths!')
+              );
+            })() : null,
 
             // ── PLANNER TAB (Strengths in Action) ──
             tab === 'planner' ? (function() {
@@ -1257,7 +2030,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 8 } }, '\uD83D\uDC41\uFE0F Strengths I See in Others'),
                   h('p', { style: { fontSize: 12, color: '#a5b4fc', fontWeight: 600, marginBottom: 8, lineHeight: 1.5 } }, currentPeerPrompt),
                   callTTS ? h('button', { onClick: function() { speak(currentPeerPrompt); }, style: { background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 6, padding: '3px 8px', color: '#a5b4fc', fontSize: 10, cursor: 'pointer', marginBottom: 8 } }, '\uD83D\uDD0A Read aloud') : null,
-                  h('textarea', { value: peerInput, onChange: function(e) { upd({ peerInput: e.target.value }); }, placeholder: 'Describe the strength you noticed (no names needed)...', style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' } }),
+                  h('textarea', { value: peerInput, 'aria-label': 'Peer strength observation', onChange: function(e) { upd({ peerInput: e.target.value }); }, placeholder: 'Describe the strength you noticed (no names needed)...', style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } }),
                   h('div', { style: { display: 'flex', gap: 8, marginTop: 8 } },
                     h('button', { onClick: savePeerNote, disabled: !peerInput.trim(), style: { padding: '8px 16px', borderRadius: 8, background: peerInput.trim() ? '#6366f1' : '#334155', color: peerInput.trim() ? '#fff' : '#64748b', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: peerInput.trim() ? 'pointer' : 'default' } }, '\u2705 Save Observation'),
                     h('button', { onClick: function() { upd({ peerPromptIdx: (peerPromptIdx + 1) % peerPrompts.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u27A1 Next Prompt')
@@ -1377,7 +2150,7 @@ window.SelHub = window.SelHub || {
                 callTTS ? h('button', { onClick: function() { speak(aiResponse); }, style: { marginTop: 6, background: 'none', border: 'none', color: '#f59e0b', fontSize: 10, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null
               ) : null,
               h('div', { style: { display: 'flex', gap: 6 } },
-                h('input', { type: 'text', value: aiInput, onChange: function(e) { upd({ aiInput: e.target.value }); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) askAI(); }, placeholder: band === 'elementary' ? 'Ask me about your strengths...' : 'Ask about your strengths, growth areas, or how to apply them...', style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(245,158,11,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 12, outline: 'none' } }),
+                h('input', { type: 'text', value: aiInput, onChange: function(e) { upd({ aiInput: e.target.value }); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) askAI(); }, placeholder: band === 'elementary' ? 'Ask me about your strengths...' : 'Ask about your strengths, growth areas, or how to apply them...', style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(245,158,11,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 12 } }),
                 h('button', { onClick: askAI, disabled: aiLoading, style: { padding: '10px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3' : '\u2191')
               ),
               // Quick questions
@@ -1483,6 +2256,9 @@ window.SelHub = window.SelHub || {
                         { val: scenariosDone.length, label: 'Scenarios', color: '#f97316' },
                         { val: quizBest, label: 'Quiz Best', color: '#34d399' },
                         { val: d.actionsCompleted || 0, label: 'Actions', color: '#22c55e' },
+                        { val: (d.stories || []).length, label: 'Stories', color: '#f59e0b' },
+                        { val: d.challengesDone || 0, label: 'Challenges', color: '#f97316' },
+                        { val: (d.gratitudeEntries || []).length, label: 'Gratitude', color: '#a78bfa' },
                         { val: (d.peerNotes || []).length, label: 'Peer Notes', color: '#6366f1' },
                         { val: d.affirmationsRead || 0, label: 'Affirmations', color: '#f472b6' },
                         { val: badgeCount, label: 'Badges', color: '#818cf8' }
@@ -1502,5 +2278,5 @@ window.SelHub = window.SelHub || {
     }
   });
 
-  console.log('[SelHub] sel_tool_strengths.js v2.0 loaded \u2014 Strengths Finder (Interview, Planner, Peers, Affirmations)');
+  console.log('[SelHub] sel_tool_strengths.js v2.5 loaded \u2014 Strengths Finder (Stories, Compare, Challenge, Gratitude, Interview, Planner, Peers, Affirmations)');
 })();

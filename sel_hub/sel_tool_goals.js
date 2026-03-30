@@ -1,11 +1,15 @@
 // ═══════════════════════════════════════════════════════════════
-// sel_tool_goals.js — Goal Setter Plugin (v3.0)
+// sel_tool_goals.js — Goal Setter Plugin (v4.0)
 // SMART goals builder, progress tracker, milestone celebrations,
 // habit streak counter, AI goal coach, vision board,
 // goal reflection journal, habit tracker, goal buddy system,
 // motivational boosts, achievement badges, weekly check-ins,
 // category dashboard, goal milestones, daily nudges,
-// and accountability partner enhancements.
+// accountability partner enhancements, goal journaling with
+// celebration screens, SMART examples library, goal difficulty
+// rating, progress celebration milestones, habit categories
+// with weekly chart, habit of the week spotlight, and expanded
+// badge system.
 // Registered tool ID: "goals"
 // Category: self-management
 // Grade-adaptive: elementary/middle/high
@@ -142,7 +146,16 @@ window.SelHub = window.SelHub || {
     milestoneMaker: { icon: '\uD83D\uDDFC', name: 'Milestone Maker', desc: 'Reach a 50% milestone on any goal' },
     categoryExplorer: { icon: '\uD83E\uDDED', name: 'Category Explorer', desc: 'Set goals in 4+ categories' },
     habitHero: { icon: '\uD83E\uDDB8', name: 'Habit Hero', desc: '14-day accountability streak' },
-    visionAchiever: { icon: '\uD83C\uDF20', name: 'Vision Achiever', desc: 'Fill all vision board sections' }
+    visionAchiever: { icon: '\uD83C\uDF20', name: 'Vision Achiever', desc: 'Fill all vision board sections' },
+    // v4.0 badges
+    habitChampion: { icon: '\uD83E\uDD47', name: 'Habit Champion', desc: 'Complete all habits 3 days in a row' },
+    difficultySeeker: { icon: '\uD83D\uDD25', name: 'Difficulty Seeker', desc: 'Complete a hard goal (difficulty 4+)' },
+    smartExampleUser: { icon: '\uD83D\uDCD6', name: 'SMART Learner', desc: 'Use a SMART example as template' },
+    journey25: { icon: '\uD83D\uDEA9', name: 'Journey 25%', desc: 'Complete 25% of all goals' },
+    journey50: { icon: '\uD83C\uDFD4\uFE0F', name: 'Halfway There', desc: 'Complete 50% of all goals' },
+    journey75: { icon: '\uD83C\uDF05', name: 'Almost There', desc: 'Complete 75% of all goals' },
+    journey100: { icon: '\uD83C\uDF1F', name: 'Journey Complete', desc: 'Complete 100% of all goals' },
+    habitCategorist: { icon: '\uD83D\uDDC2\uFE0F', name: 'Habit Organizer', desc: 'Add habits in 3+ categories' }
   };
 
   // ── Motivational Quotes (grade-adaptive) ──
@@ -252,6 +265,227 @@ window.SelHub = window.SelHub || {
     'A goal without daily action is just a wish. Make it real today! \u2728'
   ];
 
+  // ── SMART Goal Examples Library (3 per category, grade-adaptive) ──
+  var SMART_EXAMPLES = {
+    academic: [
+      {
+        title: 'Reading Challenge',
+        smart: {
+          S: { elementary: 'I will read 2 chapter books this month.', middle: 'I will read 3 books from my teacher\'s recommended list this month.', high: 'I will read 4 non-fiction books related to my AP course topics this semester.' },
+          M: { elementary: 'I will finish 2 books and tell my teacher about each one.', middle: 'I\'ll track each book in my reading log and write a 1-paragraph summary.', high: 'I\'ll annotate key passages and maintain a reading journal with 5+ entries per book.' },
+          A: { elementary: 'I can read for 15 minutes every day after school.', middle: 'I have 30 minutes of free reading time daily and access to the library.', high: 'I have consistent evening study time and a curated reading list already prepared.' },
+          R: { elementary: 'Reading helps me learn new words and cool stories!', middle: 'Reading builds vocabulary and critical thinking that helps across all subjects.', high: 'Extensive reading strengthens analytical skills essential for college-level coursework.' },
+          T: { elementary: 'I will finish both books by the last day of this month.', middle: 'I will complete all 3 books by the 28th of this month.', high: 'I will finish all 4 books by the end of this semester with journal entries submitted weekly.' }
+        }
+      },
+      {
+        title: 'Grade Improvement',
+        smart: {
+          S: { elementary: 'I will practice math for 10 minutes every day.', middle: 'I will raise my science grade from a C to a B this quarter.', high: 'I will raise my GPA from 3.2 to 3.5 by focusing on my two weakest subjects.' },
+          M: { elementary: 'I will do 10 practice problems every day and check my answers.', middle: 'I\'ll track my test scores and homework grades weekly in a spreadsheet.', high: 'I\'ll track grades bi-weekly and meet with each teacher once a month for feedback.' },
+          A: { elementary: 'I can ask my mom or dad to help me if I get stuck.', middle: 'I can attend tutoring on Tuesdays and Thursdays after school.', high: 'I have access to office hours, study groups, and online resources like Khan Academy.' },
+          R: { elementary: 'Getting better at math makes me feel proud!', middle: 'Better grades open doors for the programs I want to join.', high: 'A higher GPA strengthens my college applications and scholarship opportunities.' },
+          T: { elementary: 'I will do this every day for the next 4 weeks.', middle: 'I will reach a B by the end of this grading quarter (10 weeks).', high: 'I will achieve the 3.5 GPA by the end of this academic semester.' }
+        }
+      },
+      {
+        title: 'Study Habits',
+        smart: {
+          S: { elementary: 'I will organize my backpack every night before bed.', middle: 'I will use a planner to write down all assignments and due dates daily.', high: 'I will implement the Pomodoro technique for all study sessions this month.' },
+          M: { elementary: 'I will check that I have all my books and folders every night.', middle: 'I\'ll check off each assignment in my planner and review weekly.', high: 'I\'ll log study sessions, breaks, and productivity ratings in a tracker app.' },
+          A: { elementary: 'I can do this right after dinner each night.', middle: 'I already have a planner from school and 5 minutes at the end of each class.', high: 'I have a timer app and a dedicated study space with minimal distractions.' },
+          R: { elementary: 'Being organized means I won\'t forget my homework!', middle: 'Staying organized reduces stress and helps me manage my time.', high: 'Effective study systems are proven to improve retention and reduce burnout.' },
+          T: { elementary: 'I will do this every school night for 3 weeks.', middle: 'I will use my planner consistently for the full month of April.', high: 'I will follow this system for 30 consecutive days starting Monday.' }
+        }
+      }
+    ],
+    social: [
+      {
+        title: 'Making Friends',
+        smart: {
+          S: { elementary: 'I will say hi to one new person at recess every day this week.', middle: 'I will start a conversation with someone outside my friend group twice this week.', high: 'I will initiate one meaningful conversation per week with someone I don\'t know well.' },
+          M: { elementary: 'I will tell my teacher the name of each new person I talk to.', middle: 'I\'ll journal about each conversation: who, what we talked about, how it felt.', high: 'I\'ll reflect weekly on the quality and depth of new connections made.' },
+          A: { elementary: 'Recess is the perfect time because everyone is playing!', middle: 'I see new people in the cafeteria and before classes start each day.', high: 'I have opportunities in classes, clubs, and community activities to meet people.' },
+          R: { elementary: 'Having more friends makes school more fun!', middle: 'Expanding my social circle builds empathy and communication skills.', high: 'Networking and relationship-building are critical life and career skills.' },
+          T: { elementary: 'I will do this every day for 5 school days.', middle: 'I will do this twice per week for the next 3 weeks.', high: 'I will sustain this practice weekly for the remainder of the semester.' }
+        }
+      },
+      {
+        title: 'Kindness Practice',
+        smart: {
+          S: { elementary: 'I will give one compliment to a classmate every single day.', middle: 'I will perform one deliberate act of kindness each day this week.', high: 'I will practice active listening in every conversation for 2 weeks.' },
+          M: { elementary: 'I will draw a star on my chart for each compliment I give.', middle: 'I\'ll keep a kindness log noting what I did and how the person reacted.', high: 'I\'ll self-assess my listening quality on a 1-5 scale after each key conversation.' },
+          A: { elementary: 'I see my classmates every day so I can always find someone to compliment!', middle: 'There are small opportunities every day: holding doors, sharing supplies, helping.', high: 'I interact with peers, teachers, and family daily \u2014 plenty of practice opportunities.' },
+          R: { elementary: 'Being kind makes everyone feel good, including me!', middle: 'Kindness strengthens relationships and makes me someone others trust.', high: 'Empathy and active listening are foundational to emotional intelligence and leadership.' },
+          T: { elementary: 'I will do this every school day for 2 weeks.', middle: 'I will complete 7 acts of kindness in the next 7 days.', high: 'I will practice for 14 consecutive days and review my journal at the end.' }
+        }
+      },
+      {
+        title: 'Conflict Resolution',
+        smart: {
+          S: { elementary: 'I will use "I feel" words when I\'m upset instead of yelling.', middle: 'I will resolve one disagreement this week using I-statements and calm voice.', high: 'I will practice assertive communication techniques in 3 difficult conversations this month.' },
+          M: { elementary: 'I will count how many times I used my calm words on my feelings chart.', middle: 'I\'ll write down what happened, what I said, and the outcome each time.', high: 'I\'ll document each interaction: trigger, my response, the result, and what I\'d improve.' },
+          A: { elementary: 'My teacher taught me "I feel ___ when ___" and I can use it!', middle: 'I\'ve learned conflict resolution strategies in advisory and can apply them.', high: 'I have knowledge of NVC (nonviolent communication) and can practice deliberately.' },
+          R: { elementary: 'Using calm words helps me keep my friends and feel better.', middle: 'Handling conflict well earns respect and strengthens friendships.', high: 'Conflict resolution is essential for healthy relationships and professional success.' },
+          T: { elementary: 'I will practice this every day for 1 week.', middle: 'I will resolve at least 1 conflict this way within the next 7 days.', high: 'I will complete all 3 conversations within the next 30 days.' }
+        }
+      }
+    ],
+    personal: [
+      {
+        title: 'Journaling Habit',
+        smart: {
+          S: { elementary: 'I will draw or write about my day for 5 minutes before bed.', middle: 'I will journal for 10 minutes each evening about my thoughts and feelings.', high: 'I will maintain a structured daily journal with gratitude, reflection, and intention-setting.' },
+          M: { elementary: 'I will fill one page in my journal every night.', middle: 'I\'ll write at least half a page each night and track my streak.', high: 'I\'ll complete 3 sections (gratitude, reflection, tomorrow\'s intention) each evening.' },
+          A: { elementary: 'I have a journal and crayons on my nightstand!', middle: 'I have a dedicated journal and 10 minutes of quiet time each evening.', high: 'I have a structured template and a consistent pre-sleep routine already established.' },
+          R: { elementary: 'Writing helps me understand my feelings better!', middle: 'Journaling reduces stress and helps me process my day.', high: 'Daily reflection builds self-awareness \u2014 the foundation of emotional intelligence.' },
+          T: { elementary: 'I will journal every night for 7 days.', middle: 'I will journal for 21 consecutive days to build the habit.', high: 'I will maintain this practice for 30 days, then assess and refine my template.' }
+        }
+      },
+      {
+        title: 'Mindfulness Practice',
+        smart: {
+          S: { elementary: 'I will take 5 deep belly breaths every morning when I wake up.', middle: 'I will practice 5 minutes of guided mindfulness each morning.', high: 'I will meditate for 10 minutes daily using a mindfulness app.' },
+          M: { elementary: 'I will color a box on my chart each day I do my breaths.', middle: 'I\'ll track each session in my habit tracker and note how I feel after.', high: 'I\'ll log session length, technique used, and subjective stress level pre/post.' },
+          A: { elementary: 'I can do it right when my alarm goes off!', middle: 'I have 5 minutes before breakfast and a quiet spot in my room.', high: 'I have a meditation app (Headspace/Calm) and a consistent morning routine.' },
+          R: { elementary: 'Deep breathing helps me start my day feeling calm and ready!', middle: 'Mindfulness helps me focus better in class and manage stress.', high: 'Meditation has evidence-based benefits for focus, stress reduction, and emotional regulation.' },
+          T: { elementary: 'I will do this every morning for 5 days.', middle: 'I will practice for 14 consecutive mornings.', high: 'I will meditate daily for 30 days, then evaluate the impact on my wellbeing.' }
+        }
+      },
+      {
+        title: 'Growth Mindset',
+        smart: {
+          S: { elementary: 'I will say "I can\'t do it YET" instead of "I can\'t do it."', middle: 'I will reframe 1 negative thought per day into a growth mindset statement.', high: 'I will identify and challenge one limiting belief each week through journaling.' },
+          M: { elementary: 'I will put a sticker on my chart each time I use the word "yet."', middle: 'I\'ll write each reframe in my journal: original thought \u2192 growth version.', high: 'I\'ll document the belief, evidence for/against, and the reframed version weekly.' },
+          A: { elementary: 'I just need to remember the magic word "yet"!', middle: 'I notice negative thoughts throughout the day and have my journal nearby.', high: 'I have a CBT-informed framework and dedicated weekly reflection time.' },
+          R: { elementary: 'The word "yet" reminds me that I\'m still learning and growing!', middle: 'A growth mindset helps me see challenges as opportunities, not threats.', high: 'Cognitive reframing is a proven technique for resilience and peak performance.' },
+          T: { elementary: 'I will practice this every day for 2 weeks.', middle: 'I will reframe one thought daily for 21 days.', high: 'I will complete 8 weekly belief-challenge entries over the next 2 months.' }
+        }
+      }
+    ],
+    health: [
+      {
+        title: 'Water Intake',
+        smart: {
+          S: { elementary: 'I will drink 4 glasses of water every day.', middle: 'I will drink 6 glasses (48 oz) of water daily.', high: 'I will consume at least 64 oz of water daily, spread across the day.' },
+          M: { elementary: 'I will mark each glass on my water tracker chart.', middle: 'I\'ll use a marked water bottle and log intake in my tracker.', high: 'I\'ll track daily intake in my health app and review weekly averages.' },
+          A: { elementary: 'I have a water bottle and my teacher lets us drink water in class!', middle: 'I have a reusable water bottle and access to water fountains all day.', high: 'I own a 32 oz bottle with time markers and can refill it twice daily.' },
+          R: { elementary: 'Water helps my brain work better for learning!', middle: 'Hydration improves focus, energy, and skin health.', high: 'Proper hydration is linked to improved cognitive function and physical performance.' },
+          T: { elementary: 'I will drink 4 glasses every day for 1 week.', middle: 'I will hit 48 oz daily for 14 days straight.', high: 'I will maintain 64 oz daily for 30 days and track the impact on my energy.' }
+        }
+      },
+      {
+        title: 'Exercise Routine',
+        smart: {
+          S: { elementary: 'I will play outside for 30 minutes every day after school.', middle: 'I will exercise for 20 minutes 4 times a week (running, biking, or sports).', high: 'I will follow a structured workout plan 4x/week alternating cardio and strength.' },
+          M: { elementary: 'I will set a timer for 30 minutes and play until it goes off.', middle: 'I\'ll log each session: type, duration, and how I felt afterward.', high: 'I\'ll track sets, reps, duration, and progressive overload in a fitness journal.' },
+          A: { elementary: 'I have a yard and a bike and my neighborhood is safe to play in!', middle: 'I have PE class, after-school sports, and home workout videos available.', high: 'I have gym access, a workout plan from a reliable source, and a consistent schedule.' },
+          R: { elementary: 'Playing outside makes me feel happy and strong!', middle: 'Exercise improves my mood, sleep, and energy for school.', high: 'Regular exercise is the most effective natural intervention for mental and physical health.' },
+          T: { elementary: 'I will play outside every day for 2 weeks.', middle: 'I will complete 4 sessions per week for the next 4 weeks.', high: 'I will follow this plan for 8 weeks, then reassess and adjust.' }
+        }
+      },
+      {
+        title: 'Sleep Hygiene',
+        smart: {
+          S: { elementary: 'I will be in bed with lights off by 8:30 PM on school nights.', middle: 'I will get 8+ hours of sleep on school nights by setting a 9:30 PM bedtime.', high: 'I will establish a consistent sleep schedule (10:30 PM - 6:30 AM) with a 30-min wind-down routine.' },
+          M: { elementary: 'My parent will check that I\'m in bed by 8:30 and put a star on my chart.', middle: 'I\'ll track bedtime, wake time, and sleep quality (1-5) daily.', high: 'I\'ll use a sleep tracking app to monitor sleep duration, quality, and consistency.' },
+          A: { elementary: 'I can start getting ready for bed at 8:00 PM.', middle: 'I can set a phone alarm at 9:00 PM to start my bedtime routine.', high: 'I can remove screens from my bedroom and use blue-light blockers after 9 PM.' },
+          R: { elementary: 'Good sleep helps me pay attention and be happy at school!', middle: 'Sleep is when my brain consolidates everything I learned that day.', high: 'Sleep is the single most impactful health behavior for cognitive performance and wellbeing.' },
+          T: { elementary: 'I will be in bed on time every school night for 2 weeks.', middle: 'I will follow this sleep schedule for 21 consecutive school nights.', high: 'I will maintain this schedule for 30 days and review my sleep data weekly.' }
+        }
+      }
+    ],
+    creative: [
+      {
+        title: 'Daily Art',
+        smart: {
+          S: { elementary: 'I will draw one picture every day for 2 weeks.', middle: 'I will create one piece of art (drawing, painting, digital) every day for a month.', high: 'I will complete a 30-day creative challenge in my chosen medium.' },
+          M: { elementary: 'I will put each drawing in my art folder and count them.', middle: 'I\'ll photograph each piece and post it in my digital portfolio.', high: 'I\'ll document each piece with date, medium, time spent, and a brief artist\'s statement.' },
+          A: { elementary: 'I have crayons, paper, and markers at home!', middle: 'I have art supplies and 20 minutes of free time each evening.', high: 'I have materials, a workspace, and daily prompts from an art challenge list.' },
+          R: { elementary: 'Drawing makes me happy and helps me show my feelings!', middle: 'Consistent practice is how skills grow \u2014 I want to get better at art.', high: 'Building a creative practice develops discipline, self-expression, and original thinking.' },
+          T: { elementary: 'I will draw every day for 14 days straight.', middle: 'I will create one piece daily for 30 consecutive days.', high: 'I will complete all 30 days of the challenge and curate a final portfolio.' }
+        }
+      },
+      {
+        title: 'Learn an Instrument',
+        smart: {
+          S: { elementary: 'I will practice my instrument for 10 minutes every day.', middle: 'I will learn 2 new songs on my instrument this month.', high: 'I will master 3 pieces of increasing difficulty and perform one publicly.' },
+          M: { elementary: 'I will set a timer and practice until it beeps!', middle: 'I\'ll track practice time daily and record myself playing each song when finished.', high: 'I\'ll log daily practice (scales, technique, repertoire) and record progress weekly.' },
+          A: { elementary: 'I have my instrument at home and I know how to hold it!', middle: 'I have lessons, an instrument, and tutorial videos to help me learn.', high: 'I have an instrument, a teacher/online course, and a structured practice routine.' },
+          R: { elementary: 'Music makes me feel awesome and I want to play songs!', middle: 'Learning music improves focus, math skills, and self-discipline.', high: 'Musical mastery develops grit, performance skills, and creative expression.' },
+          T: { elementary: 'I will practice every day for 3 weeks.', middle: 'I will learn both songs within 4 weeks.', high: 'I will complete all 3 pieces in 8 weeks, with the performance in week 9.' }
+        }
+      },
+      {
+        title: 'Writing Project',
+        smart: {
+          S: { elementary: 'I will write a short story with a beginning, middle, and end.', middle: 'I will write a 5-page short story and share it with my class.', high: 'I will draft, revise, and submit a 10-page creative piece to a literary magazine.' },
+          M: { elementary: 'My story will be at least 1 page long with pictures.', middle: 'I\'ll write 1 page per day and track my word count.', high: 'I\'ll hit 500 words/day minimum and track progress through outline, draft, and revision stages.' },
+          A: { elementary: 'I know how to write sentences and my teacher helps me with spelling.', middle: 'I have a quiet writing space and story ideas in my brainstorm list.', high: 'I have writing experience, peer reviewers available, and submission guidelines researched.' },
+          R: { elementary: 'I love making up stories and I want to make a real book!', middle: 'Creative writing builds communication skills and lets me express my ideas.', high: 'Publishing builds my portfolio and develops professional communication skills.' },
+          T: { elementary: 'I will finish my story in 2 weeks.', middle: 'I will complete the 5-page story in 3 weeks: outline (week 1), draft (week 2), revision (week 3).', high: 'I will complete the draft in 4 weeks, revise in week 5-6, and submit by the end of month 2.' }
+        }
+      }
+    ],
+    community: [
+      {
+        title: 'Volunteer Service',
+        smart: {
+          S: { elementary: 'I will help clean up my classroom every day this week.', middle: 'I will volunteer 2 hours this month at a local food bank or shelter.', high: 'I will complete 10 hours of community service this quarter in an area aligned with my values.' },
+          M: { elementary: 'My teacher will give me a helper sticker each day I help.', middle: 'I\'ll log each volunteer session with date, hours, and what I did.', high: 'I\'ll maintain a service log with hours, skills used, and impact reflections.' },
+          A: { elementary: 'I can pick up supplies, wipe tables, and organize books!', middle: 'I have a parent who can drive me and I\'ve found nearby volunteer opportunities.', high: 'I\'ve researched organizations, have transportation, and have cleared my schedule.' },
+          R: { elementary: 'Helping my classroom makes it a nicer place for everyone!', middle: 'Volunteering builds empathy and helps me understand my community better.', high: 'Service deepens my understanding of social issues and strengthens my college applications.' },
+          T: { elementary: 'I will help every day for 5 school days.', middle: 'I will complete both volunteer sessions within this calendar month.', high: 'I will complete 10 hours by the end of this quarter, logging weekly.' }
+        }
+      },
+      {
+        title: 'Mentoring',
+        smart: {
+          S: { elementary: 'I will help a younger student with reading once a week.', middle: 'I will tutor a younger student in math for 30 minutes once a week.', high: 'I will mentor an underclassman weekly, covering academics and college prep.' },
+          M: { elementary: 'I will read with my buddy and we will count the books we finish.', middle: 'I\'ll track each session: topic covered, problems solved, and progress made.', high: 'I\'ll document session plans, outcomes, and mentee feedback monthly.' },
+          A: { elementary: 'My teacher set up a reading buddy program and I signed up!', middle: 'My school has a peer tutoring program I can join.', high: 'I have subject expertise, a regular meeting time, and mentoring resources.' },
+          R: { elementary: 'Helping little kids feel smart makes me feel smart too!', middle: 'Teaching someone else is the best way to deepen my own understanding.', high: 'Mentoring develops leadership, communication, and reinforces my own knowledge.' },
+          T: { elementary: 'I will meet my reading buddy once a week for 4 weeks.', middle: 'I will tutor every week for the next 6 weeks.', high: 'I will mentor weekly for the full semester with a mid-semester check-in.' }
+        }
+      },
+      {
+        title: 'Environmental Action',
+        smart: {
+          S: { elementary: 'I will pick up 5 pieces of trash every day at recess.', middle: 'I will organize a school recycling awareness campaign this month.', high: 'I will lead a campus sustainability initiative reducing single-use plastic.' },
+          M: { elementary: 'I will count the trash I pick up and write the number on my chart.', middle: 'I\'ll track: posters made, announcements given, and recycling bin usage before/after.', high: 'I\'ll measure plastic waste reduction %, student participation, and media coverage.' },
+          A: { elementary: 'I can bring gloves and a bag to recess every day!', middle: 'I have permission from my teacher and materials from the office to make posters.', high: 'I have admin approval, a team of 4 students, and a budget from student council.' },
+          R: { elementary: 'Picking up trash keeps animals and nature safe!', middle: 'Taking care of our planet is everyone\'s responsibility and I want to lead.', high: 'Environmental advocacy develops leadership, project management, and civic engagement.' },
+          T: { elementary: 'I will pick up trash every recess for 2 weeks.', middle: 'I will launch the campaign within 2 weeks and run it for the full month.', high: 'I will implement the initiative over 6 weeks with measurable results by week 8.' }
+        }
+      }
+    ]
+  };
+
+  // ── Habit Categories ──
+  var HABIT_CATEGORIES = [
+    { id: 'health', label: 'Health', emoji: '\uD83D\uDCAA', color: '#ef4444' },
+    { id: 'academic', label: 'Academic', emoji: '\uD83D\uDCDA', color: '#6366f1' },
+    { id: 'social', label: 'Social', emoji: '\uD83E\uDD1D', color: '#f59e0b' },
+    { id: 'creative', label: 'Creative', emoji: '\uD83C\uDFA8', color: '#a855f7' }
+  ];
+
+  // ── Difficulty labels & XP multipliers ──
+  var DIFFICULTY_LABELS = [
+    { level: 1, label: 'Easy', flames: 1, xpMult: 1 },
+    { level: 2, label: 'Moderate', flames: 2, xpMult: 1.25 },
+    { level: 3, label: 'Challenging', flames: 3, xpMult: 1.5 },
+    { level: 4, label: 'Hard', flames: 4, xpMult: 1.75 },
+    { level: 5, label: 'Extreme', flames: 5, xpMult: 2 }
+  ];
+
+  // ── Journey milestone messages ──
+  var JOURNEY_MESSAGES = {
+    25: { emoji: '\uD83D\uDEA9', msg: 'You\'ve completed 25% of your goals! Great start!' },
+    50: { emoji: '\uD83C\uDFD4\uFE0F', msg: 'Halfway through your goals! You\'re building serious momentum!' },
+    75: { emoji: '\uD83C\uDF05', msg: '75% of goals complete! The finish line is in sight!' },
+    100: { emoji: '\uD83C\uDF1F', msg: 'ALL goals complete! You are an absolute legend!' }
+  };
+
   // ── Milestone thresholds ──
   var MILESTONE_THRESHOLDS = [25, 50, 75, 100];
 
@@ -299,6 +533,25 @@ window.SelHub = window.SelHub || {
     if ((d.accountabilityStreak || 0) >= 14) award('habitHero');
     var vb = d.visionBoard || {};
     if (vb.thisYear && vb.thisYear.trim() && vb.thisMonth && vb.thisMonth.trim() && vb.thisWeek && vb.thisWeek.trim()) award('visionAchiever');
+    // v4.0 badges
+    if (d.habitChampion3Day) award('habitChampion');
+    if (d.completedHardGoal) award('difficultySeeker');
+    if (d.usedSmartExample) award('smartExampleUser');
+    // Journey milestones (percentage of ALL goals completed)
+    if (goals.length >= 3) {
+      var journeyPct = Math.round((completedGoals.length / goals.length) * 100);
+      if (journeyPct >= 25) award('journey25');
+      if (journeyPct >= 50) award('journey50');
+      if (journeyPct >= 75) award('journey75');
+      if (journeyPct >= 100) award('journey100');
+    }
+    // Habit categorist: habits in 3+ categories
+    var habitCats = {};
+    var habs = d.habits || [];
+    habs.forEach(function(hab) {
+      if (hab && typeof hab === 'object' && hab.category) habitCats[hab.category] = true;
+    });
+    if (Object.keys(habitCats).length >= 3) award('habitCategorist');
     return changed ? earned : null;
   }
 
@@ -319,6 +572,8 @@ window.SelHub = window.SelHub || {
       var setToolData = ctx.setToolData;
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
@@ -375,11 +630,18 @@ window.SelHub = window.SelHub || {
         // ── Milestone tracking state ──
         var milestonesShown = d.milestonesShown || {};
 
+        // ── v4.0 Celebration & SMART Examples state ──
+        var celebratingGoalId = d.celebratingGoalId || null;
+        var showSmartExamples = d.showSmartExamples || false;
+        var smartExampleCat = d.smartExampleCat || 'academic';
+        var habitCategoryFilter = d.habitCategoryFilter || 'all';
+        var journeyMilestonesShown = d.journeyMilestonesShown || {};
+
         // ── Badge check ──
         React.useEffect(function() {
           var newBadges = checkBadges(d, awardXP, addToast);
           if (newBadges) upd({ badges: newBadges });
-        }, [goals.length, streak, d.aiAsked, d.hasReflection, d.habitStreak7, d.hasVision, d.hasGoalReflection, d.hasSharedGoal, d.habitWeekComplete, weeklyCheckins.length, d.hasMilestone50, accountabilityStreak]);
+        }, [goals.length, streak, d.aiAsked, d.hasReflection, d.habitStreak7, d.hasVision, d.hasGoalReflection, d.hasSharedGoal, d.habitWeekComplete, weeklyCheckins.length, d.hasMilestone50, accountabilityStreak, d.habitChampion3Day, d.completedHardGoal, d.usedSmartExample]);
 
         // ── Streak check on mount ──
         React.useEffect(function() {
@@ -411,18 +673,21 @@ window.SelHub = window.SelHub || {
           upd({ goals: goals.filter(function(g) { return g.id !== goalId; }) });
         };
 
-        var addGoal = function(text, category) {
+        var addGoal = function(text, category, difficulty, smartData) {
           sfxAdd();
           var newGoal = {
             id: 'goal-' + Date.now(),
             text: text || '',
             category: category || 'personal',
-            smart: { S: '', M: '', A: '', R: '', T: '' },
+            smart: smartData || { S: '', M: '', A: '', R: '', T: '' },
             steps: [],
             progress: 0,
             completed: false,
             createdAt: Date.now(),
-            reflections: []
+            completedAt: null,
+            difficulty: difficulty || 1,
+            reflections: [],
+            completionJournal: null
           };
           upd({ goals: goals.concat([newGoal]), editingGoal: newGoal.id });
         };
@@ -430,6 +695,8 @@ window.SelHub = window.SelHub || {
         var toggleStep = function(goalId, stepIdx) {
           sfxStep();
           var milestoneUpdates = {};
+          var completedHardGoalFlag = false;
+          var showCelebrationGoalId = null;
           var next = goals.map(function(g) {
             if (g.id !== goalId) return g;
             var steps = g.steps.map(function(s, i) { return i === stepIdx ? Object.assign({}, s, { done: !s.done }) : s; });
@@ -437,10 +704,16 @@ window.SelHub = window.SelHub || {
             var progress = steps.length > 0 ? Math.round((doneCount / steps.length) * 100) : 0;
             var oldProgress = g.progress || 0;
             var completed = progress === 100 && steps.length > 0;
+            var goalDiff = g.difficulty || 1;
             if (completed && !g.completed) {
               sfxComplete();
-              if (awardXP) awardXP(20);
-              if (addToast) addToast('\uD83C\uDF89 Goal completed: ' + g.text + '! +20 XP', 'success');
+              var baseXP = 20;
+              var diffInfo = DIFFICULTY_LABELS[goalDiff - 1] || DIFFICULTY_LABELS[0];
+              var earnedXP = Math.round(baseXP * diffInfo.xpMult);
+              if (awardXP) awardXP(earnedXP);
+              if (addToast) addToast('\uD83C\uDF89 Goal completed: ' + g.text + '! +' + earnedXP + ' XP' + (goalDiff >= 4 ? ' (Hard bonus!)' : ''), 'success');
+              if (goalDiff >= 4) completedHardGoalFlag = true;
+              showCelebrationGoalId = g.id;
             }
             // Milestone checks for goals with 5+ steps
             if (steps.length >= 5 && progress > oldProgress) {
@@ -455,7 +728,7 @@ window.SelHub = window.SelHub || {
                 }
               });
             }
-            return Object.assign({}, g, { steps: steps, progress: progress, completed: completed });
+            return Object.assign({}, g, { steps: steps, progress: progress, completed: completed, completedAt: completed && !g.completed ? Date.now() : (g.completedAt || null) });
           });
           var updObj = { goals: next };
           if (Object.keys(milestoneUpdates).length > 0) {
@@ -463,6 +736,28 @@ window.SelHub = window.SelHub || {
             Object.keys(milestoneUpdates).forEach(function(k) { if (k !== '_hasMilestone50') newShown[k] = true; });
             updObj.milestonesShown = newShown;
             if (milestoneUpdates._hasMilestone50) updObj.hasMilestone50 = true;
+          }
+          if (completedHardGoalFlag) updObj.completedHardGoal = true;
+          if (showCelebrationGoalId) updObj.celebratingGoalId = showCelebrationGoalId;
+          // Check journey milestones (percentage of ALL goals completed)
+          var allCompleted = next.filter(function(g) { return g.completed; }).length;
+          var totalGoals = next.length;
+          if (totalGoals >= 3) {
+            var journeyPct = Math.round((allCompleted / totalGoals) * 100);
+            var journeyMilestonesShown = d.journeyMilestonesShown || {};
+            [25, 50, 75, 100].forEach(function(jp) {
+              if (journeyPct >= jp && !journeyMilestonesShown[jp]) {
+                var jm = JOURNEY_MESSAGES[jp];
+                if (jm) {
+                  sfxBadge();
+                  if (awardXP) awardXP(15);
+                  if (addToast) addToast(jm.emoji + ' Journey Milestone: ' + jm.msg + ' +15 XP', 'success');
+                  journeyMilestonesShown = Object.assign({}, journeyMilestonesShown);
+                  journeyMilestonesShown[jp] = true;
+                }
+              }
+            });
+            updObj.journeyMilestonesShown = journeyMilestonesShown;
           }
           upd(updObj);
         };
@@ -526,16 +821,41 @@ window.SelHub = window.SelHub || {
             if (consecutive >= 7) hasStreak7 = true;
             if (!allWeek) allHabitsComplete = false;
           });
+          // Check for 3-day all-habits-complete champion badge
+          var champion3Day = false;
+          if (habits.length > 0) {
+            var last3 = weekDates.slice(-3);
+            var all3Done = true;
+            last3.forEach(function(wd) {
+              habits.forEach(function(hab, hi) {
+                if (!newLog[hi + '-' + wd]) all3Done = false;
+              });
+            });
+            if (all3Done) champion3Day = true;
+          }
           var updates = { habitLog: newLog };
           if (hasStreak7) updates.habitStreak7 = true;
           if (allHabitsComplete && habits.length > 0) updates.habitWeekComplete = true;
+          if (champion3Day) updates.habitChampion3Day = true;
           upd(updates);
         };
 
-        var addHabit = function(name) {
-          if (!name || !name.trim() || habits.length >= 5) return;
+        var addHabit = function(name, category) {
+          if (!name || !name.trim() || habits.length >= 7) return;
           sfxAdd();
-          upd({ habits: habits.concat([name.trim()]) });
+          var habitObj = { name: name.trim(), category: category || 'health' };
+          upd({ habits: habits.concat([habitObj]) });
+        };
+
+        // Helper to get habit display name (supports old string format and new object format)
+        var getHabitName = function(hab) {
+          if (typeof hab === 'string') return hab;
+          return (hab && hab.name) || '';
+        };
+
+        var getHabitCategory = function(hab) {
+          if (typeof hab === 'string') return 'health';
+          return (hab && hab.category) || 'health';
         };
 
         var removeHabit = function(idx) {
@@ -727,6 +1047,101 @@ window.SelHub = window.SelHub || {
           });
         };
 
+        // ── Completion Celebration helpers ──
+        var getTimeToDays = function(startMs, endMs) {
+          if (!startMs || !endMs) return 0;
+          return Math.max(1, Math.round((endMs - startMs) / 86400000));
+        };
+
+        var getCompletedStepCount = function(goal) {
+          return (goal.steps || []).filter(function(s) { return s.done; }).length;
+        };
+
+        var dismissCelebration = function() {
+          upd({ celebratingGoalId: null });
+        };
+
+        var saveCompletionJournal = function(goalId, learnedText) {
+          var next = goals.map(function(g) {
+            if (g.id !== goalId) return g;
+            return Object.assign({}, g, { completionJournal: { whatLearned: learnedText, savedAt: Date.now() } });
+          });
+          sfxComplete();
+          if (awardXP) awardXP(10);
+          if (addToast) addToast('\uD83D\uDCDD Completion journal saved! +10 XP', 'success');
+          upd({ goals: next, celebratingGoalId: null, hasGoalReflection: true });
+        };
+
+        var shareAchievement = function(goal) {
+          var days = getTimeToDays(goal.createdAt, goal.completedAt || Date.now());
+          var steps = getCompletedStepCount(goal);
+          var diffLabel = DIFFICULTY_LABELS[(goal.difficulty || 1) - 1] || DIFFICULTY_LABELS[0];
+          var text = '\uD83C\uDF89 Achievement Unlocked!\n\n';
+          text += '\uD83C\uDFAF Goal: ' + (goal.text || 'My Goal') + '\n';
+          text += '\u23F1\uFE0F Time to Complete: ' + days + ' day' + (days !== 1 ? 's' : '') + '\n';
+          text += '\uD83D\uDC63 Steps Completed: ' + steps + '\n';
+          text += '\uD83D\uDD25 Difficulty: ' + diffLabel.label + '\n';
+          if (goal.completionJournal && goal.completionJournal.whatLearned) {
+            text += '\uD83D\uDCA1 What I Learned: ' + goal.completionJournal.whatLearned + '\n';
+          }
+          text += '\n\u2014 Set with Goal Setter by AlloFlow';
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(function() {
+              if (addToast) addToast('\uD83D\uDCCB Achievement copied to clipboard!', 'success');
+            }).catch(function() {
+              if (addToast) addToast('Could not copy \u2014 try selecting the text manually.', 'warning');
+            });
+          }
+        };
+
+        // ── SMART Example helper ──
+        var loadSmartExample = function(catId, exampleIdx) {
+          var examples = SMART_EXAMPLES[catId];
+          if (!examples || !examples[exampleIdx]) return;
+          var ex = examples[exampleIdx];
+          var smartData = {};
+          ['S', 'M', 'A', 'R', 'T'].forEach(function(key) {
+            smartData[key] = ex.smart[key][band] || ex.smart[key].elementary || '';
+          });
+          sfxAdd();
+          addGoal(ex.title, catId, 1, smartData);
+          upd({ usedSmartExample: true, showSmartExamples: false, tab: 'smart' });
+          if (addToast) addToast('\uD83D\uDCD6 SMART template loaded! Customize it to fit you.', 'info');
+        };
+
+        // ── Difficulty helper ──
+        var getDifficultyFlames = function(level) {
+          var flames = '';
+          for (var i = 0; i < (level || 1); i++) flames += '\uD83D\uDD25';
+          return flames;
+        };
+
+        // ── Weekly Habit Completion Chart data ──
+        var getWeeklyHabitChartData = function() {
+          if (habits.length === 0) return [];
+          return weekDates.map(function(wd) {
+            var completed = 0;
+            habits.forEach(function(hab, hi) {
+              if (habitLog[hi + '-' + wd]) completed++;
+            });
+            var pct = Math.round((completed / habits.length) * 100);
+            return { date: wd, pct: pct, completed: completed, total: habits.length };
+          });
+        };
+
+        // ── Habit of the Week helper ──
+        var getHabitOfTheWeek = function() {
+          if (habits.length === 0) return null;
+          var bestIdx = 0;
+          var bestPct = 0;
+          habits.forEach(function(hab, hi) {
+            var pct = getHabitCompletion(hi);
+            if (pct > bestPct) { bestPct = pct; bestIdx = hi; }
+          });
+          if (bestPct === 0) return null;
+          return { name: getHabitName(habits[bestIdx]), category: getHabitCategory(habits[bestIdx]), pct: bestPct, idx: bestIdx };
+        };
+
         var templates = GOAL_TEMPLATES[band] || GOAL_TEMPLATES.elementary;
         var activeGoals = goals.filter(function(g) { return !g.completed; });
         var completedGoals = goals.filter(function(g) { return g.completed; });
@@ -756,10 +1171,10 @@ window.SelHub = window.SelHub || {
           ),
 
           // Tabs
-          h('div', { style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.8)', overflowX: 'auto' } },
+          h('div', { role: 'tablist', 'aria-label': 'Goal Setting tabs', style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.8)', overflowX: 'auto' } },
             [{ id: 'goals', label: '\uD83C\uDFAF Goals' }, { id: 'habits', label: '\uD83D\uDD01 Habits' }, { id: 'vision', label: '\uD83C\uDF1F Vision' }, { id: 'smart', label: '\uD83E\uDDE0 SMART' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'checkin', label: '\uD83D\uDCDD Check-In' }, { id: 'progress', label: '\uD83D\uDCCA Progress' }].map(function(tb) {
               var active = tab === tb.id;
-              return h('button', { key: tb.id, onClick: function() { sfxClick(); upd({ tab: tb.id }); }, style: { flex: 1, padding: '10px 4px', fontSize: 10, fontWeight: 'bold', color: active ? '#a5b4fc' : '#64748b', background: active ? 'rgba(99,102,241,0.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #6366f1' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap', minWidth: 0 } }, tb.label);
+              return h('button', { key: tb.id, role: 'tab', 'aria-selected': active, onClick: function() { sfxClick(); upd({ tab: tb.id }); }, style: { flex: 1, padding: '10px 4px', fontSize: 10, fontWeight: 'bold', color: active ? '#a5b4fc' : '#64748b', background: active ? 'rgba(99,102,241,0.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #6366f1' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap', minWidth: 0 } }, tb.label);
             })
           ),
 
@@ -844,19 +1259,31 @@ window.SelHub = window.SelHub || {
               activeGoals.map(function(goal) {
                 var cat = GOAL_CATEGORIES.find(function(c) { return c.id === goal.category; }) || GOAL_CATEGORIES[2];
                 var isEditing = editingGoal === goal.id;
+                var goalDiff = goal.difficulty || 1;
                 return h('div', { key: goal.id, style: { padding: 14, marginBottom: 10, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid ' + cat.color + '33', transition: 'all 0.15s' } },
                   // Goal header
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                     h('span', { style: { fontSize: 18 } }, cat.emoji),
                     isEditing ?
-                      h('input', { type: 'text', value: goal.text, onChange: function(e) { updateGoal(goal.id, { text: e.target.value }); }, autoFocus: true, style: { flex: 1, padding: '6px 8px', borderRadius: 6, border: '1px solid ' + cat.color + '44', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, outline: 'none' } }) :
+                      h('input', { type: 'text', value: goal.text, onChange: function(e) { updateGoal(goal.id, { text: e.target.value }); }, autoFocus: true, style: { flex: 1, padding: '6px 8px', borderRadius: 6, border: '1px solid ' + cat.color + '44', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13 } }) :
                       h('span', { style: { flex: 1, fontSize: 13, fontWeight: 'bold', color: '#e2e8f0', cursor: 'pointer' }, onClick: function() { upd({ editingGoal: goal.id }); } }, goal.text || 'Tap to name your goal...'),
+                    // Difficulty indicator (flames)
+                    h('span', { title: 'Difficulty: ' + (DIFFICULTY_LABELS[goalDiff - 1] || DIFFICULTY_LABELS[0]).label, style: { fontSize: 10, letterSpacing: -2, cursor: 'default' } }, getDifficultyFlames(goalDiff)),
                     h('select', { value: goal.category, onChange: function(e) { updateGoal(goal.id, { category: e.target.value }); }, style: { padding: '3px 6px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#94a3b8', fontSize: 10, cursor: 'pointer' } },
                       GOAL_CATEGORIES.map(function(c) { return h('option', { key: c.id, value: c.id }, c.emoji + ' ' + c.label); })
                     ),
                     h('button', { onClick: function() { shareGoalToClipboard(goal); }, title: 'Share goal with buddy', style: { background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer', fontSize: 12, padding: 4 } }, '\uD83D\uDCE4'),
                     h('button', { onClick: function() { deleteGoal(goal.id); }, style: { background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 12, padding: 4 } }, '\u2715')
                   ),
+                  // Difficulty selector (shown when editing)
+                  isEditing ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, paddingLeft: 26 } },
+                    h('span', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 'bold' } }, 'Difficulty:'),
+                    [1, 2, 3, 4, 5].map(function(lvl) {
+                      var info = DIFFICULTY_LABELS[lvl - 1];
+                      var active = goalDiff === lvl;
+                      return h('button', { key: lvl, onClick: function() { updateGoal(goal.id, { difficulty: lvl }); sfxClick(); }, title: info.label + ' (' + info.xpMult + 'x XP)', style: { padding: '2px 8px', borderRadius: 12, background: active ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.03)', border: active ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(99,102,241,0.1)', color: active ? '#fbbf24' : '#64748b', fontSize: 9, fontWeight: 'bold', cursor: 'pointer' } }, getDifficultyFlames(lvl) + ' ' + info.label);
+                    })
+                  ) : null,
                   // Progress bar with milestone markers
                   (function() {
                     var milestones = getGoalMilestones(goal);
@@ -887,11 +1314,57 @@ window.SelHub = window.SelHub || {
                   }),
                   // Add step input
                   h('div', { style: { display: 'flex', gap: 6, marginTop: 6 } },
-                    h('input', { type: 'text', placeholder: band === 'elementary' ? 'Add a step...' : 'Add a step toward this goal...', onKeyDown: function(e) { if (e.key === 'Enter' && e.target.value.trim()) { addStep(goal.id, e.target.value); e.target.value = ''; } }, style: { flex: 1, padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: '#e2e8f0', fontSize: 11, outline: 'none' } }),
+                    h('input', { type: 'text', placeholder: band === 'elementary' ? 'Add a step...' : 'Add a step toward this goal...', onKeyDown: function(e) { if (e.key === 'Enter' && e.target.value.trim()) { addStep(goal.id, e.target.value); e.target.value = ''; } }, style: { flex: 1, padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: '#e2e8f0', fontSize: 11 } }),
                     h('button', { onClick: function() { var inp = document.querySelector('[placeholder*="step"]'); if (inp && inp.value.trim()) { addStep(goal.id, inp.value); inp.value = ''; } }, style: { padding: '6px 10px', borderRadius: 6, background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', border: 'none', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '+')
                   )
                 );
               }),
+              // ── Celebration Screen (shown when a goal is just completed) ──
+              celebratingGoalId ? (function() {
+                var celebGoal = goals.find(function(g) { return g.id === celebratingGoalId; });
+                if (!celebGoal) return null;
+                var celebCat = GOAL_CATEGORIES.find(function(c) { return c.id === celebGoal.category; }) || GOAL_CATEGORIES[2];
+                var daysTaken = getTimeToDays(celebGoal.createdAt, celebGoal.completedAt || Date.now());
+                var stepsCount = getCompletedStepCount(celebGoal);
+                var diffInfo = DIFFICULTY_LABELS[(celebGoal.difficulty || 1) - 1] || DIFFICULTY_LABELS[0];
+                return h('div', { style: { padding: 20, marginBottom: 16, borderRadius: 16, background: 'linear-gradient(135deg, rgba(52,211,153,0.15), rgba(34,197,94,0.08))', border: '2px solid rgba(52,211,153,0.4)', textAlign: 'center', position: 'relative' } },
+                  // Confetti burst at top
+                  h('div', { style: { fontSize: 28, marginBottom: 8, letterSpacing: 4 } }, '\uD83C\uDF89\uD83C\uDF8A\u2728\uD83C\uDF86\uD83C\uDF89\uD83C\uDF8A\u2728\uD83C\uDF86'),
+                  h('div', { style: { fontSize: 18, fontWeight: 'bold', color: '#34d399', marginBottom: 4 } }, '\uD83C\uDFC6 Goal Completed!'),
+                  h('div', { style: { fontSize: 14, color: '#e2e8f0', fontWeight: 'bold', marginBottom: 12 } }, celebCat.emoji + ' ' + (celebGoal.text || 'Your Goal')),
+                  // Stats row
+                  h('div', { style: { display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 14 } },
+                    h('div', { style: { textAlign: 'center' } },
+                      h('div', { style: { fontSize: 20, fontWeight: 'bold', color: '#6366f1' } }, String(daysTaken)),
+                      h('div', { style: { fontSize: 9, color: '#94a3b8' } }, 'Day' + (daysTaken !== 1 ? 's' : ''))
+                    ),
+                    h('div', { style: { textAlign: 'center' } },
+                      h('div', { style: { fontSize: 20, fontWeight: 'bold', color: '#a855f7' } }, String(stepsCount)),
+                      h('div', { style: { fontSize: 9, color: '#94a3b8' } }, 'Steps Done')
+                    ),
+                    h('div', { style: { textAlign: 'center' } },
+                      h('div', { style: { fontSize: 14, fontWeight: 'bold', color: '#fbbf24' } }, getDifficultyFlames(celebGoal.difficulty || 1)),
+                      h('div', { style: { fontSize: 9, color: '#94a3b8' } }, diffInfo.label)
+                    )
+                  ),
+                  // "What I Learned" textarea
+                  h('div', { style: { textAlign: 'left', marginBottom: 12 } },
+                    h('label', { style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 4 } }, '\uD83D\uDCA1 What I Learned'),
+                    h('textarea', { id: 'celebration-journal', placeholder: band === 'elementary' ? 'What did you learn from reaching this goal?' : 'Reflect on what you learned during this journey...', style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.5)', color: '#e2e8f0', fontSize: 12, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 } })
+                  ),
+                  // Action buttons
+                  h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
+                    h('button', { onClick: function() {
+                      var ta = document.getElementById('celebration-journal');
+                      var text = ta ? ta.value : '';
+                      saveCompletionJournal(celebGoal.id, text);
+                    }, style: { padding: '8px 16px', borderRadius: 8, background: '#22c55e', color: '#fff', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 Save Journal'),
+                    h('button', { onClick: function() { shareAchievement(celebGoal); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', color: '#a5b4fc', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCE4 Share Achievement'),
+                    h('button', { onClick: function() { dismissCelebration(); addGoal('', 'personal'); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.3)', color: '#c4b5fd', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFAF Set Next Goal'),
+                    h('button', { onClick: function() { dismissCelebration(); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(99,102,241,0.1)', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, 'Dismiss')
+                  )
+                );
+              })() : null,
               // Completed goals with reflection journal
               completedGoals.length > 0 ? h('div', { style: { marginTop: 20 } },
                 h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#34d399', marginBottom: 8 } }, '\u2705 Completed (' + completedGoals.length + ')'),
@@ -899,14 +1372,29 @@ window.SelHub = window.SelHub || {
                   var cat = GOAL_CATEGORIES.find(function(c) { return c.id === goal.category; }) || GOAL_CATEGORIES[2];
                   var isReflecting = reflectingGoalId === goal.id;
                   var hasReflections = goal.reflections && goal.reflections.length > 0;
+                  var goalDiffLvl = goal.difficulty || 1;
                   return h('div', { key: goal.id, style: { padding: 10, marginBottom: 8, borderRadius: 10, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.15)' } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                       h('span', null, cat.emoji),
                       h('span', { style: { flex: 1, fontSize: 12, color: '#6ee7b7', textDecoration: 'line-through' } }, goal.text),
+                      h('span', { style: { fontSize: 10, letterSpacing: -2 } }, getDifficultyFlames(goalDiffLvl)),
                       h('span', { style: { fontSize: 10, color: '#34d399' } }, '\uD83C\uDF89 Done!'),
+                      // Show celebration button if no journal yet
+                      !goal.completionJournal ? h('button', { onClick: function() { upd({ celebratingGoalId: goal.id }); }, style: { background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 6, padding: '3px 8px', color: '#34d399', fontSize: 9, fontWeight: 'bold', cursor: 'pointer', marginLeft: 2 } }, '\uD83C\uDF89 Celebrate') : null,
                       !hasReflections ? h('button', { onClick: function() { upd({ reflectingGoalId: isReflecting ? null : goal.id }); }, style: { background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 6, padding: '3px 8px', color: '#c4b5fd', fontSize: 9, fontWeight: 'bold', cursor: 'pointer', marginLeft: 4 } }, '\uD83D\uDCDD Reflect') : null,
                       h('button', { onClick: function() { shareGoalToClipboard(goal); }, style: { background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer', fontSize: 11, padding: 2 } }, '\uD83D\uDCE4')
                     ),
+                    // Completion stats line
+                    (goal.completedAt || goal.completionJournal) ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginTop: 4, paddingLeft: 22, fontSize: 10, color: '#94a3b8' } },
+                      goal.completedAt ? h('span', null, '\u23F1\uFE0F ' + getTimeToDays(goal.createdAt, goal.completedAt) + ' days') : null,
+                      h('span', null, '\uD83D\uDC63 ' + getCompletedStepCount(goal) + ' steps'),
+                      goal.completionJournal ? h('span', { style: { color: '#a5b4fc' } }, '\uD83D\uDCA1 Journal saved') : null
+                    ) : null,
+                    // Show completion journal if saved
+                    goal.completionJournal && goal.completionJournal.whatLearned ? h('div', { style: { marginTop: 6, padding: 8, borderRadius: 6, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.1)' } },
+                      h('div', { style: { fontSize: 10, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 3 } }, '\uD83D\uDCA1 What I Learned'),
+                      h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } }, goal.completionJournal.whatLearned)
+                    ) : null,
                     // Reflection form
                     isReflecting ? h('div', { style: { marginTop: 10, padding: 12, borderRadius: 8, background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.15)' } },
                       h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#c4b5fd', marginBottom: 8 } }, '\uD83D\uDCDD Goal Reflection Journal'),
@@ -914,7 +1402,7 @@ window.SelHub = window.SelHub || {
                       ['What worked well?', 'What was the hardest part?', 'What would I do differently?', 'What\'s my next goal?'].map(function(prompt, pi) {
                         return h('div', { key: pi, style: { marginBottom: 8 } },
                           h('label', { style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 3 } }, prompt),
-                          h('textarea', { id: 'reflect-' + pi, placeholder: band === 'elementary' ? 'Write your thoughts...' : 'Share your reflection...', style: { width: '100%', minHeight: 40, padding: 6, borderRadius: 6, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: '#e2e8f0', fontSize: 11, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' } })
+                          h('textarea', { id: 'reflect-' + pi, placeholder: band === 'elementary' ? 'Write your thoughts...' : 'Share your reflection...', style: { width: '100%', minHeight: 40, padding: 6, borderRadius: 6, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: '#e2e8f0', fontSize: 11, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } })
                         );
                       }),
                       h('button', { onClick: function() {
@@ -952,25 +1440,64 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: 14, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 4 } }, '\uD83D\uDD01 Daily Habit Tracker'),
               h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 14, lineHeight: 1.5 } },
                 band === 'elementary' ? 'Track your daily habits! Check off each one you do every day.' :
-                band === 'middle' ? 'Build consistency by tracking up to 5 daily habits over the week.' :
-                'Atomic habits: track small daily actions that compound over time. Up to 5 habits.'
+                band === 'middle' ? 'Build consistency by tracking up to 7 daily habits over the week.' :
+                'Atomic habits: track small daily actions that compound over time. Up to 7 habits.'
               ),
-              // Add habit input
-              habits.length < 5 ? h('div', { style: { display: 'flex', gap: 8, marginBottom: 14 } },
-                h('input', { type: 'text', id: 'habit-input', placeholder: band === 'elementary' ? 'Add a habit (e.g., Drink water)...' : 'Add a daily habit (e.g., Read 15 min, Exercise, Journal)...', onKeyDown: function(e) { if (e.key === 'Enter' && e.target.value.trim()) { addHabit(e.target.value); e.target.value = ''; } }, style: { flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 12, outline: 'none' } }),
-                h('button', { onClick: function() { var inp = document.getElementById('habit-input'); if (inp && inp.value.trim()) { addHabit(inp.value); inp.value = ''; } }, style: { padding: '8px 14px', borderRadius: 8, background: '#6366f1', color: '#fff', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '+ Add')
-              ) : h('p', { style: { fontSize: 10, color: '#64748b', marginBottom: 10 } }, 'Maximum 5 habits reached. Remove one to add a new one.'),
-              // Habit suggestion chips
+              // Habit of the Week spotlight
+              (function() {
+                var hotw = getHabitOfTheWeek();
+                if (!hotw) return null;
+                var hCat = HABIT_CATEGORIES.find(function(c) { return c.id === hotw.category; }) || HABIT_CATEGORIES[0];
+                return h('div', { style: { padding: '10px 14px', marginBottom: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.10), rgba(234,179,8,0.06))', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', gap: 10 } },
+                  h('span', { style: { fontSize: 18 } }, '\u2B50'),
+                  h('div', { style: { flex: 1 } },
+                    h('div', { style: { fontSize: 9, fontWeight: 'bold', color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, 'Habit of the Week'),
+                    h('div', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 'bold' } }, hotw.name),
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 } },
+                      h('span', { style: { fontSize: 10 } }, hCat.emoji),
+                      h('span', { style: { fontSize: 10, color: '#94a3b8' } }, hCat.label),
+                      h('span', { style: { fontSize: 10, fontWeight: 'bold', color: hotw.pct >= 80 ? '#34d399' : '#fbbf24' } }, hotw.pct + '% this week')
+                    )
+                  )
+                );
+              })(),
+              // Add habit input with category selector
+              habits.length < 7 ? h('div', { style: { display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' } },
+                h('input', { type: 'text', id: 'habit-input', placeholder: band === 'elementary' ? 'Add a habit (e.g., Drink water)...' : 'Add a daily habit...', onKeyDown: function(e) {
+                  if (e.key === 'Enter' && e.target.value.trim()) {
+                    var catSel = document.getElementById('habit-cat-select');
+                    var cat = catSel ? catSel.value : 'health';
+                    addHabit(e.target.value, cat); e.target.value = '';
+                  }
+                }, style: { flex: 1, minWidth: 120, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 12 } }),
+                h('select', { id: 'habit-cat-select', style: { padding: '8px 6px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#94a3b8', fontSize: 11, cursor: 'pointer' } },
+                  HABIT_CATEGORIES.map(function(hc) { return h('option', { key: hc.id, value: hc.id }, hc.emoji + ' ' + hc.label); })
+                ),
+                h('button', { onClick: function() {
+                  var inp = document.getElementById('habit-input');
+                  var catSel = document.getElementById('habit-cat-select');
+                  if (inp && inp.value.trim()) { addHabit(inp.value, catSel ? catSel.value : 'health'); inp.value = ''; }
+                }, style: { padding: '8px 14px', borderRadius: 8, background: '#6366f1', color: '#fff', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '+ Add')
+              ) : h('p', { style: { fontSize: 10, color: '#64748b', marginBottom: 10 } }, 'Maximum 7 habits reached. Remove one to add a new one.'),
+              // Habit category filter
+              habits.length > 0 ? h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
+                h('button', { onClick: function() { upd({ habitCategoryFilter: 'all' }); }, style: { padding: '3px 10px', borderRadius: 12, background: habitCategoryFilter === 'all' ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (habitCategoryFilter === 'all' ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.08)'), color: habitCategoryFilter === 'all' ? '#a5b4fc' : '#64748b', fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, 'All'),
+                HABIT_CATEGORIES.map(function(hc) {
+                  var isActive = habitCategoryFilter === hc.id;
+                  return h('button', { key: hc.id, onClick: function() { upd({ habitCategoryFilter: hc.id }); }, style: { padding: '3px 10px', borderRadius: 12, background: isActive ? hc.color + '22' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (isActive ? hc.color + '44' : 'rgba(99,102,241,0.08)'), color: isActive ? hc.color : '#64748b', fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, hc.emoji + ' ' + hc.label);
+                })
+              ) : null,
+              // Habit suggestion chips (with categories)
               habits.length === 0 ? h('div', { style: { marginBottom: 14 } },
                 h('div', { style: { fontSize: 10, color: '#64748b', marginBottom: 6 } }, 'Suggested habits \u2014 tap to add:'),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                   (band === 'elementary' ?
-                    ['Drink water \uD83D\uDCA7', 'Read 15 min \uD83D\uDCDA', 'Exercise \uD83C\uDFC3', 'Be kind \uD83D\uDC9B', 'Clean up \uD83E\uDDF9'] :
+                    [{ n: 'Drink water \uD83D\uDCA7', c: 'health' }, { n: 'Read 15 min \uD83D\uDCDA', c: 'academic' }, { n: 'Exercise \uD83C\uDFC3', c: 'health' }, { n: 'Be kind \uD83D\uDC9B', c: 'social' }, { n: 'Draw or color \uD83C\uDFA8', c: 'creative' }] :
                     band === 'middle' ?
-                    ['Read 15 min \uD83D\uDCDA', 'Exercise 20 min \uD83C\uDFC3', 'Journal \uD83D\uDCDD', 'No phone at dinner \uD83D\uDCF1', 'Practice instrument \uD83C\uDFB5'] :
-                    ['Read 30 min \uD83D\uDCDA', 'Exercise \uD83D\uDCAA', 'Meditate \uD83E\uDDD8', 'Journal \uD83D\uDCDD', 'Study review \uD83D\uDCDA']
+                    [{ n: 'Read 15 min \uD83D\uDCDA', c: 'academic' }, { n: 'Exercise 20 min \uD83C\uDFC3', c: 'health' }, { n: 'Journal \uD83D\uDCDD', c: 'creative' }, { n: 'No phone at dinner \uD83D\uDCF1', c: 'social' }, { n: 'Practice instrument \uD83C\uDFB5', c: 'creative' }] :
+                    [{ n: 'Read 30 min \uD83D\uDCDA', c: 'academic' }, { n: 'Exercise \uD83D\uDCAA', c: 'health' }, { n: 'Meditate \uD83E\uDDD8', c: 'health' }, { n: 'Journal \uD83D\uDCDD', c: 'creative' }, { n: 'Connect with a friend \uD83E\uDD1D', c: 'social' }]
                   ).map(function(sug) {
-                    return h('button', { key: sug, onClick: function() { addHabit(sug); }, style: { padding: '4px 10px', borderRadius: 16, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 10, cursor: 'pointer' } }, sug);
+                    return h('button', { key: sug.n, onClick: function() { addHabit(sug.n, sug.c); }, style: { padding: '4px 10px', borderRadius: 16, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 10, cursor: 'pointer' } }, sug.n);
                   })
                 )
               ) : null,
@@ -994,11 +1521,16 @@ window.SelHub = window.SelHub || {
                   ),
                   h('tbody', null,
                     habits.map(function(hab, hi) {
+                      var habCat = getHabitCategory(hab);
+                      // Filter by category
+                      if (habitCategoryFilter !== 'all' && habCat !== habitCategoryFilter) return null;
                       var pct = getHabitCompletion(hi);
+                      var habCatObj = HABIT_CATEGORIES.find(function(c) { return c.id === habCat; }) || HABIT_CATEGORIES[0];
                       return h('tr', { key: hi },
-                        h('td', { style: { padding: '8px', color: '#e2e8f0', fontSize: 11, borderBottom: '1px solid rgba(99,102,241,0.05)', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
+                        h('td', { style: { padding: '8px', color: '#e2e8f0', fontSize: 11, borderBottom: '1px solid rgba(99,102,241,0.05)', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
                           h('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
-                            h('span', null, hab),
+                            h('span', { title: habCatObj.label, style: { fontSize: 10 } }, habCatObj.emoji),
+                            h('span', null, getHabitName(hab)),
                             habitEditMode ? h('button', { onClick: function() { removeHabit(hi); }, style: { background: 'none', border: 'none', color: '#ef4444', fontSize: 10, cursor: 'pointer', padding: 0, marginLeft: 4 } }, '\u2715') : null
                           )
                         ),
@@ -1032,6 +1564,39 @@ window.SelHub = window.SelHub || {
                   return bestStreak > 0 ? h('div', { style: { textAlign: 'center', marginTop: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.15)' } },
                     h('span', { style: { fontSize: 11, color: '#fbbf24' } }, '\uD83D\uDD25 Best current habit streak: ' + bestStreak + ' day' + (bestStreak !== 1 ? 's' : ''))
                   ) : null;
+                })(),
+                // ── Weekly Habit Completion Chart (7 bars) ──
+                (function() {
+                  var chartData = getWeeklyHabitChartData();
+                  if (chartData.length === 0) return null;
+                  var maxBarH = 80;
+                  return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.12)' } },
+                    h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 10, textAlign: 'center' } }, '\uD83D\uDCCA Weekly Habit Completion'),
+                    h('div', { style: { display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 6, height: maxBarH + 30 } },
+                      chartData.map(function(cd, ci) {
+                        var dt = new Date(cd.date + 'T12:00:00');
+                        var dayName = dayLabels[dt.getDay()];
+                        var isToday = cd.date === new Date().toISOString().slice(0, 10);
+                        var barH = Math.max(4, Math.round((cd.pct / 100) * maxBarH));
+                        var barColor = cd.pct >= 80 ? '#22c55e' : cd.pct >= 50 ? '#f59e0b' : cd.pct > 0 ? '#6366f1' : 'rgba(255,255,255,0.06)';
+                        return h('div', { key: ci, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 } },
+                          h('span', { style: { fontSize: 9, fontWeight: 'bold', color: cd.pct >= 80 ? '#34d399' : '#94a3b8' } }, cd.pct + '%'),
+                          h('div', { style: { width: '100%', maxWidth: 28, height: barH, borderRadius: 4, background: barColor, transition: 'height 0.3s', border: isToday ? '2px solid #a5b4fc' : 'none' } }),
+                          h('span', { style: { fontSize: 8, color: isToday ? '#a5b4fc' : '#64748b', fontWeight: isToday ? 'bold' : 'normal' } }, dayName)
+                        );
+                      })
+                    ),
+                    // Weekly average
+                    (function() {
+                      var totalPct = 0;
+                      chartData.forEach(function(cd) { totalPct += cd.pct; });
+                      var avgPct = Math.round(totalPct / chartData.length);
+                      return h('div', { style: { textAlign: 'center', marginTop: 8, fontSize: 10, color: '#94a3b8' } },
+                        'Weekly average: ',
+                        h('span', { style: { fontWeight: 'bold', color: avgPct >= 80 ? '#34d399' : avgPct >= 50 ? '#fbbf24' : '#a5b4fc' } }, avgPct + '%')
+                      );
+                    })()
+                  );
                 })()
               ) : h('div', { style: { textAlign: 'center', padding: 30 } },
                 h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDD01'),
@@ -1065,7 +1630,7 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 16 } }, section.emoji),
                     h('span', { style: { fontSize: 13, fontWeight: 'bold', color: section.color } }, section.label)
                   ),
-                  h('textarea', { value: visionBoard[section.key] || '', onChange: function(e) { updateVision(section.key, e.target.value); }, placeholder: section.hint, style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid ' + section.color + '22', background: 'rgba(15,23,42,0.4)', color: '#e2e8f0', fontSize: 12, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box', lineHeight: 1.6 } })
+                  h('textarea', { value: visionBoard[section.key] || '', onChange: function(e) { updateVision(section.key, e.target.value); }, placeholder: section.hint, style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid ' + section.color + '22', background: 'rgba(15,23,42,0.4)', color: '#e2e8f0', fontSize: 12, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 } })
                 );
               }),
               // Vision board preview
@@ -1092,7 +1657,48 @@ window.SelHub = window.SelHub || {
                 band === 'elementary' ? 'SMART goals help you think clearly about what you want to do. Fill in each section!' :
                 'SMART goals are Specific, Measurable, Achievable, Relevant, and Time-bound. Select a goal and build it out.'
               ),
-              goals.length === 0 ?
+              // ── SMART Examples Library ──
+              h('div', { style: { marginBottom: 16 } },
+                h('button', { onClick: function() { upd({ showSmartExamples: !showSmartExamples }); sfxClick(); }, style: { width: '100%', padding: '10px 16px', borderRadius: 10, background: showSmartExamples ? 'rgba(168,85,247,0.15)' : 'rgba(99,102,241,0.08)', border: '1px solid ' + (showSmartExamples ? 'rgba(168,85,247,0.3)' : 'rgba(99,102,241,0.15)'), color: showSmartExamples ? '#c4b5fd' : '#a5b4fc', fontSize: 12, fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8 } },
+                  h('span', null, '\uD83D\uDCD6'),
+                  h('span', { style: { flex: 1 } }, 'SMART Goal Examples Library'),
+                  h('span', { style: { fontSize: 10, opacity: 0.7 } }, showSmartExamples ? '\u25B2' : '\u25BC')
+                ),
+                showSmartExamples ? h('div', { style: { marginTop: 10, padding: 14, borderRadius: 12, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.12)' } },
+                  h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, lineHeight: 1.5 } },
+                    band === 'elementary' ? 'Pick an example to start with! You can change the words later.' :
+                    'Browse fully-filled SMART examples by category. Tap "Use as Template" to pre-fill and customize.'
+                  ),
+                  // Category selector
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                    GOAL_CATEGORIES.map(function(cat) {
+                      var isActive = smartExampleCat === cat.id;
+                      var hasExamples = !!SMART_EXAMPLES[cat.id];
+                      if (!hasExamples) return null;
+                      return h('button', { key: cat.id, onClick: function() { upd({ smartExampleCat: cat.id }); sfxClick(); }, style: { padding: '5px 12px', borderRadius: 16, background: isActive ? cat.color + '22' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (isActive ? cat.color + '44' : 'rgba(99,102,241,0.1)'), color: isActive ? cat.color : '#64748b', fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, cat.emoji + ' ' + cat.label);
+                    })
+                  ),
+                  // Examples for selected category
+                  (SMART_EXAMPLES[smartExampleCat] || []).map(function(ex, ei) {
+                    return h('div', { key: ei, style: { padding: 12, marginBottom: 10, borderRadius: 10, background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.10)' } },
+                      h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+                        h('span', { style: { fontSize: 14, fontWeight: 'bold', color: '#a5b4fc' } }, ex.title),
+                        h('button', { onClick: function() { loadSmartExample(smartExampleCat, ei); }, style: { marginLeft: 'auto', padding: '4px 12px', borderRadius: 6, background: '#6366f1', color: '#fff', border: 'none', fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '\u2192 Use as Template')
+                      ),
+                      // Preview SMART fields
+                      ['S', 'M', 'A', 'R', 'T'].map(function(key) {
+                        var info = SMART_LABELS[key];
+                        var val = ex.smart[key][band] || ex.smart[key].elementary;
+                        return h('div', { key: key, style: { display: 'flex', gap: 6, marginBottom: 3, fontSize: 10, lineHeight: 1.5 } },
+                          h('span', { style: { fontWeight: 'bold', color: '#818cf8', minWidth: 14 } }, key + ':'),
+                          h('span', { style: { color: '#94a3b8' } }, val)
+                        );
+                      })
+                    );
+                  })
+                ) : null
+              ),
+              goals.length === 0 && !showSmartExamples ?
                 h('div', { style: { textAlign: 'center', padding: 30 } },
                   h('p', { style: { color: '#64748b' } }, 'Create a goal first, then come here to make it SMART!'),
                   h('button', { onClick: function() { upd({ tab: 'goals' }); addGoal('', 'personal'); }, style: { marginTop: 8, padding: '8px 20px', borderRadius: 8, background: '#6366f1', color: '#fff', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '+ Create Goal')
@@ -1119,7 +1725,7 @@ window.SelHub = window.SelHub || {
                           var newSmart = Object.assign({}, editGoal.smart || {});
                           newSmart[key] = e.target.value;
                           updateGoal(editGoal.id, { smart: newSmart });
-                        }, placeholder: info.placeholder[band] || info.placeholder.elementary, style: { width: '100%', minHeight: 50, padding: 8, borderRadius: 6, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: '#e2e8f0', fontSize: 12, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' } })
+                        }, placeholder: info.placeholder[band] || info.placeholder.elementary, style: { width: '100%', minHeight: 50, padding: 8, borderRadius: 6, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: '#e2e8f0', fontSize: 12, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } })
                       );
                     }),
                     // SMART completeness indicator
@@ -1154,7 +1760,7 @@ window.SelHub = window.SelHub || {
                 callTTS ? h('button', { onClick: function() { speak(aiResponse); }, style: { marginTop: 6, background: 'none', border: 'none', color: '#818cf8', fontSize: 10, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null
               ) : null,
               h('div', { style: { display: 'flex', gap: 6 } },
-                h('input', { type: 'text', value: aiInput, onChange: function(e) { upd({ aiInput: e.target.value }); }, onKeyDown: function(e) { if (e.key === 'Enter') askAI(); }, placeholder: 'Ask about your goals...', style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 12, outline: 'none' } }),
+                h('input', { type: 'text', value: aiInput, onChange: function(e) { upd({ aiInput: e.target.value }); }, onKeyDown: function(e) { if (e.key === 'Enter') askAI(); }, placeholder: 'Ask about your goals...', style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 12 } }),
                 h('button', { onClick: askAI, disabled: aiLoading, style: { padding: '10px 16px', borderRadius: 8, background: '#6366f1', color: '#fff', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3' : '\u2191')
               ),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 } },
@@ -1198,13 +1804,13 @@ window.SelHub = window.SelHub || {
               // Section 2: Obstacles text input
               h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 12, background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.12)' } },
                 h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#f87171', marginBottom: 8 } }, '\uD83E\uDEA8 What Obstacles Did I Face?'),
-                h('textarea', { value: weeklyDraft.obstacles || '', onChange: function(e) { updateWeeklyDraft('obstacles', e.target.value); }, placeholder: band === 'elementary' ? 'What was hard this week? What got in the way?' : 'Describe any challenges, distractions, or setbacks you faced this week...', style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid rgba(239,68,68,0.15)', background: 'rgba(15,23,42,0.4)', color: '#e2e8f0', fontSize: 12, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box', lineHeight: 1.6 } })
+                h('textarea', { value: weeklyDraft.obstacles || '', onChange: function(e) { updateWeeklyDraft('obstacles', e.target.value); }, placeholder: band === 'elementary' ? 'What was hard this week? What got in the way?' : 'Describe any challenges, distractions, or setbacks you faced this week...', style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid rgba(239,68,68,0.15)', background: 'rgba(15,23,42,0.4)', color: '#e2e8f0', fontSize: 12, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 } })
               ),
 
               // Section 3: Next week focus
               h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.12)' } },
                 h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#818cf8', marginBottom: 8 } }, '\uD83C\uDFAF What Will I Focus On Next Week?'),
-                h('textarea', { value: weeklyDraft.focus || '', onChange: function(e) { updateWeeklyDraft('focus', e.target.value); }, placeholder: band === 'elementary' ? 'What do you want to work on next week?' : 'Set your intention: what specific goal or step will you prioritize?', style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: '#e2e8f0', fontSize: 12, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box', lineHeight: 1.6 } })
+                h('textarea', { value: weeklyDraft.focus || '', onChange: function(e) { updateWeeklyDraft('focus', e.target.value); }, placeholder: band === 'elementary' ? 'What do you want to work on next week?' : 'Set your intention: what specific goal or step will you prioritize?', style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: '#e2e8f0', fontSize: 12, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 } })
               ),
 
               // Section 4: Star rating

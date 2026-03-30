@@ -1,9 +1,10 @@
 // ═══════════════════════════════════════════════════════════════
-// sel_tool_safety.js — Safety & Boundaries Plugin (v2.0)
+// sel_tool_safety.js — Safety & Boundaries Plugin (v3.0)
 // Body safety, trusted adults, consent, boundaries, crisis
 // resources, grade-adaptive scenarios, safety quiz, boundary
 // types lesson, safety plan builder, red/green flag activity,
-// and safety badges.
+// digital safety deep dive, assertiveness training, emergency
+// preparedness, and safety badges.
 // Registered tool ID: "safety"
 // Category: responsible-decision-making
 // Grade-adaptive: K-8 (elementary / middle)
@@ -143,6 +144,27 @@ window.SelHub = window.SelHub || {
           { label: 'Go with them \u2014 they seem nice and you like candy.', rating: 1, feedback: 'No matter how nice someone seems, a safe adult would NEVER ask a child they do not know to come to their car. This is a trick. Your safety is more important than anything someone might offer you.' },
           { label: 'Say "No!" loudly and run back to your family right away. Tell them what happened.', rating: 3, feedback: 'That is exactly the right move! Saying NO loudly, getting to safety, and telling your family is perfect. You do not have to be polite to someone who makes you feel unsafe. Your safety comes FIRST.' },
           { label: 'Say "No thank you" and walk away quietly.', rating: 2, feedback: 'Saying no is great! But it is very important to also tell your family right away so they can alert store security. This kind of thing should always be reported to a trusted adult.' }
+        ] },
+      { id: 'es9', title: 'The Game Chat Stranger',
+        setup: 'You are playing an online game and someone in the chat starts asking you personal questions like what school you go to, where you live, and if your parents are home. They say they just want to be friends.',
+        choices: [
+          { label: 'Answer their questions \u2014 they seem like a nice player.', rating: 1, feedback: 'People online are NOT always who they say they are. Someone who asks where you live and if your parents are home is collecting information that could put you in danger. Never share personal details online.' },
+          { label: 'Do not answer, leave the chat, and tell a parent or trusted adult what happened.', rating: 3, feedback: 'Exactly right! You protected your personal information and told an adult. A safe person would never ask a kid these kinds of questions. Your instincts are strong.' },
+          { label: 'Give them fake answers to trick them.', rating: 2, feedback: 'It is smart that you did not share real information. But continuing to talk to someone who asks unsafe questions keeps the conversation going. The safest choice is to leave and tell a trusted adult.' }
+        ] },
+      { id: 'es10', title: 'The Unwanted Photo',
+        setup: 'At recess, an older student takes a photo of you without asking. When you tell them to delete it, they laugh and say, "It is just a picture. Relax."',
+        choices: [
+          { label: 'Let it go \u2014 it is just a photo and you do not want to cause drama.', rating: 1, feedback: 'You have the right to decide who takes your photo. Someone taking your picture without permission and refusing to delete it is NOT okay. You deserve to have your boundaries respected.' },
+          { label: 'Tell them firmly, "I did not say you could take my photo. Please delete it." Then tell a teacher or trusted adult.', rating: 3, feedback: 'You spoke up clearly AND got help from an adult. You have every right to control who takes your picture. Standing up for yourself like this is brave and important.' },
+          { label: 'Try to grab their phone and delete it yourself.', rating: 2, feedback: 'It is understandable to want the photo gone immediately. But grabbing someone\u2019s phone could lead to a bigger conflict. Telling a trusted adult is the safest way to handle this \u2014 they can make sure the photo is deleted.' }
+        ] },
+      { id: 'es11', title: 'The Uncomfortable Babysitter',
+        setup: 'Your babysitter starts doing things that make you feel uncomfortable. They tell you not to tell your parents because "they would not believe you anyway" and "you will get in trouble."',
+        choices: [
+          { label: 'Stay quiet because you are scared of getting in trouble.', rating: 1, feedback: 'You will NOT get in trouble for telling the truth. When someone says you will get in trouble for telling, that is a trick to keep you silent. What they are doing is wrong \u2014 not anything you did.' },
+          { label: 'Tell your parent or another trusted adult as soon as possible, even if you feel scared.', rating: 3, feedback: 'You are so brave. Telling a trusted adult is always the right thing to do. Your parents WILL believe you, and you will NOT get in trouble. The babysitter is the one who did something wrong \u2014 not you.' },
+          { label: 'Wait and hope it does not happen again.', rating: 2, feedback: 'It is natural to hope things will get better on their own. But telling a trusted adult is the best way to make sure you are protected. You deserve to feel safe, and adults in your life want to help you.' }
         ] }
     ],
     middle: [
@@ -201,6 +223,27 @@ window.SelHub = window.SelHub || {
           { label: 'Walk past \u2014 you do not want them to target you next.', rating: 1, feedback: 'Feeling scared for your own safety is completely understandable. But bystanders have more power than they think. Even if you do not confront the group directly, there are safe ways to help.' },
           { label: 'Get a teacher or staff member immediately. Later, check in on the targeted student privately.', rating: 3, feedback: 'Outstanding bystander action. Getting an adult is the safest and most effective response. Checking in on the targeted student shows compassion and lets them know they are not alone. You are making a real difference.' },
           { label: 'Record the incident on your phone.', rating: 2, feedback: 'Evidence can be important, but the priority should be getting immediate help. Find a trusted adult right away. Recording without also reporting can put the targeted student at further risk and may not stop the immediate harm.' }
+        ] },
+      { id: 'ms9', title: 'The Sextortion Attempt',
+        setup: 'Someone you have been chatting with online says they have a private photo of you (or claims to). They threaten to share it with your entire school unless you send them money or more photos. You feel terrified.',
+        choices: [
+          { label: 'Send them what they want so they will leave you alone.', rating: 1, feedback: 'Giving in to threats NEVER makes them stop. People who do this almost always come back and demand more. This is a crime called sextortion, and it is NEVER your fault. You need and deserve adult help right now.' },
+          { label: 'Do NOT respond to the threat. Screenshot everything as evidence. Tell a parent or trusted adult immediately. They can help you report this to the police or the CyberTipline (1-800-843-5678).', rating: 3, feedback: 'This is exactly right. Sextortion is a serious crime and trained professionals can help. You did nothing wrong, and you will NOT get in trouble for reporting. Many young people go through this \u2014 you are not alone, and there is help.' },
+          { label: 'Block the person and try to forget about it.', rating: 2, feedback: 'Blocking is a good first step, but they may try to reach you through other accounts. Telling a trusted adult is critical because this is a crime. Law enforcement and organizations like the National Center for Missing & Exploited Children can help. You are NOT in trouble.' }
+        ] },
+      { id: 'ms10', title: 'The Risky Social Media Post',
+        setup: 'A close friend posts their exact location, school name, and a photo in their school uniform on social media with the caption "Home alone all weekend!" You know this could be dangerous.',
+        choices: [
+          { label: 'Like the post and move on \u2014 it is their account.', rating: 1, feedback: 'While it is their account, a good friend looks out for each other. Sharing your location, school, and the fact that you are home alone puts a person at real risk. Friends help each other stay safe.' },
+          { label: 'Send your friend a private message explaining why the post is risky, and suggest they take it down. If they do not, tell a trusted adult.', rating: 3, feedback: 'This is outstanding friendship. You approached it privately and respectfully, and you have a plan to involve an adult if needed. You are protecting your friend without embarrassing them.' },
+          { label: 'Comment on the post telling them to take it down.', rating: 2, feedback: 'Your instinct to speak up is right. But commenting publicly could embarrass your friend and also draw more attention to the risky information. A private message is more effective and respectful.' }
+        ] },
+      { id: 'ms11', title: 'The Dating App Deception',
+        setup: 'A friend shows you that they are using a dating app and have set their age to 18 even though they are only 14. They are talking to someone who thinks they are an adult. Your friend says it is just for fun.',
+        choices: [
+          { label: 'Think it is harmless \u2014 lots of people lie about their age online.', rating: 1, feedback: 'This is extremely dangerous. Adults on dating apps expect to interact with other adults. Your friend could attract attention from people with harmful intentions. Lying about age removes the protections that exist to keep young people safe.' },
+          { label: 'Talk to your friend seriously about the dangers, and if they will not stop, tell a trusted adult. Your friend\u2019s safety is more important than them being upset with you.', rating: 3, feedback: 'This is exactly right. Real friendship means protecting someone even when it is hard. Adults on dating apps are strangers, and a 14-year-old pretending to be 18 is in real danger. A trusted adult can help handle this safely.' },
+          { label: 'Tell your friend to be careful but do not push it.', rating: 2, feedback: 'It is good that you said something. But "be careful" is not enough when a young person is in active danger. If your friend continues, telling a trusted adult could prevent a very serious situation.' }
         ] }
     ]
   };
@@ -217,13 +260,17 @@ window.SelHub = window.SelHub || {
     { id: 'help_seeker',      icon: '\uD83D\uDCDE', name: 'Help Seeker',        desc: 'View the crisis resources' },
     { id: 'brave_voice',      icon: '\uD83E\uDDB8', name: 'Brave Voice',        desc: 'Complete 3 scenarios with the top rating' },
     { id: 'ally',             icon: '\uD83E\uDD1D', name: 'Ally',               desc: 'Complete bystander or advocacy scenarios' },
-    { id: 'quick_thinker',    icon: '\u26A1',        name: 'Quick Thinker',      desc: 'Complete all 5 scenarios in your grade band' },
+    { id: 'quick_thinker',    icon: '\u26A1',        name: 'Quick Thinker',      desc: 'Complete all scenarios in your grade band' },
     { id: 'safety_champion',  icon: '\uD83C\uDFC6', name: 'Safety Champion',    desc: 'Earn 7 or more badges' },
     { id: 'quiz_master',      icon: '\uD83E\uDDE0', name: 'Quiz Master',        desc: 'Score 8 or higher on the Safety Quiz' },
     { id: 'boundary_expert',  icon: '\uD83D\uDEE1\uFE0F', name: 'Boundary Expert',   desc: 'Read all boundary types in the lesson' },
     { id: 'safety_planner',   icon: '\uD83D\uDCCB', name: 'Safety Planner',     desc: 'Complete your personal Safety Plan' },
     { id: 'topics_explorer',  icon: '\uD83D\uDDFA\uFE0F', name: 'All Topics Explored', desc: 'Read every topic in Learn plus Boundary Types' },
-    { id: 'flag_sorter',      icon: '\uD83D\uDEA9', name: 'Flag Sorter',        desc: 'Complete the Red Flag / Green Flag activity' }
+    { id: 'flag_sorter',      icon: '\uD83D\uDEA9', name: 'Flag Sorter',        desc: 'Complete the Red Flag / Green Flag activity' },
+    { id: 'digital_safety_pro', icon: '\uD83D\uDD10', name: 'Digital Safety Pro', desc: 'Read all 8 digital safety cards' },
+    { id: 'assertiveness_master', icon: '\uD83D\uDCAA', name: 'Assertiveness Master', desc: 'Complete 6 assertiveness scenarios with the assertive response' },
+    { id: 'emergency_ready',   icon: '\uD83D\uDE92', name: 'Emergency Ready',   desc: 'Complete all emergency preparedness topics' },
+    { id: 'safety_educator',   icon: '\uD83C\uDF93', name: 'Safety Educator',   desc: 'Explore every tab in the Safety tool' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -314,6 +361,204 @@ window.SelHub = window.SelHub || {
   };
 
   // ══════════════════════════════════════════════════════════════
+  // ── Digital Safety Deep Dive Cards ──
+  // ══════════════════════════════════════════════════════════════
+  var DIGITAL_SAFETY_CARDS = [
+    { id: 'ds_passwords', icon: '\uD83D\uDD11', title: 'Password Safety',
+      elementary: 'A strong password is like a really good lock on your diary. Use a mix of letters, numbers, and symbols. NEVER share your password with friends \u2014 only a parent or guardian.',
+      middle: 'Strong passwords use 12+ characters with uppercase, lowercase, numbers, and symbols. Never reuse passwords across sites. Consider a passphrase like "PurpleTiger$Runs42Fast!" Common mistakes: using your birthday, pet\u2019s name, or "123456."',
+      tip_elementary: 'Bad passwords: your name, 1234, "password." Good passwords: a silly sentence only YOU know!',
+      tip_middle: 'Use a password manager. Enable two-factor authentication everywhere. Never share login credentials \u2014 not even with a partner.' },
+    { id: 'ds_socialmedia', icon: '\uD83D\uDCF1', title: 'Social Media Safety',
+      elementary: 'If you use social media or apps, make sure your account is set to private. Only add people you know in REAL life. Never post your school name, address, or phone number.',
+      middle: 'Review your privacy settings on every platform. Set accounts to private. Disable location sharing on posts. Think before accepting follow requests from strangers. Your social media creates a permanent record.',
+      tip_elementary: 'Ask a grown-up to help you check your privacy settings. If someone you do not know tries to follow you, do not accept!',
+      tip_middle: 'Privacy settings checklist: profile set to private, location OFF on posts, limited personal info in bio, friend list hidden from public.' },
+    { id: 'ds_thinkpost', icon: '\uD83E\uDD14', title: 'Think Before You Post',
+      elementary: 'Before you post ANYTHING online, ask yourself: Would I be okay if my teacher, my parents, and my grandma all saw this? If the answer is no, do not post it!',
+      middle: 'The THINK test: Is it True? Is it Helpful? Is it Inspiring? Is it Necessary? Is it Kind? If it does not pass, do not post. Screenshots live forever. College admissions officers and future employers search social media.',
+      tip_elementary: 'Once something is posted, you cannot take it back \u2014 even if you delete it! Someone could have already saved it.',
+      tip_middle: 'Before posting, imagine it on a billboard outside your school. Still okay? Post. Cringing? Do not post. Your digital reputation starts NOW.' },
+    { id: 'ds_cyberbullying', icon: '\uD83D\uDEAB', title: 'Cyberbullying',
+      elementary: 'Cyberbullying is when someone uses technology to be mean to you on purpose. It could be mean texts, embarrassing photos, or leaving you out online. It is NEVER your fault, and you should always tell a trusted adult.',
+      middle: 'Cyberbullying includes harassing messages, sharing private information (doxxing), creating fake profiles, spreading rumors online, and deliberate exclusion. If you experience it: do NOT respond, screenshot everything, block the person, and report to a trusted adult.',
+      tip_elementary: 'If someone is mean to you online: 1) Do not reply. 2) Tell a grown-up. 3) Save what they sent (take a screenshot). You are NOT in trouble!',
+      tip_middle: 'How to report: most platforms have a report button. Talk to a school counselor. In serious cases (threats of violence), tell a parent and contact local authorities. You can also report at StopBullying.gov.' },
+    { id: 'ds_predators', icon: '\u26A0\uFE0F', title: 'Online Predator Awareness',
+      elementary: 'Some people online pretend to be kids but are actually adults with bad intentions. Warning signs: they ask lots of personal questions, want to be your "special" friend, ask you to keep your friendship secret, or want to meet you in person.',
+      middle: 'Grooming tactics online include: building trust over time, giving excessive compliments, asking personal questions, gradually introducing inappropriate topics, requesting private chats or moving to different platforms, asking for photos, and creating secrecy. Anyone can be targeted \u2014 it is never the victim\u2019s fault.',
+      tip_elementary: 'Remember: A real kid friend would NOT ask you to keep your friendship a secret from your parents. Tell a trusted adult if this happens!',
+      tip_middle: 'Red flags: someone much older wanting to be your "best friend," asking you to move conversations to private apps, requesting photos, wanting to meet secretly, saying "you are mature for your age." Report to CyberTipline: 1-800-843-5678.' },
+    { id: 'ds_footprint', icon: '\uD83D\uDC63', title: 'Your Digital Footprint',
+      elementary: 'Everything you do online leaves a trail, like footprints in the sand \u2014 except these footprints NEVER go away. Every post, photo, search, and message becomes part of your digital footprint.',
+      middle: 'Your digital footprint includes every post, comment, like, photo, search, purchase, and account you have ever created. Even "deleted" content may exist on servers or in screenshots. Future schools, employers, and scholarship committees may review your digital history.',
+      tip_elementary: 'Before doing ANYTHING online, think: "Would I want this following me around forever?" Because it will!',
+      tip_middle: 'Real examples: students have lost college admissions and scholarships over old social media posts. Job offers have been rescinded. What you post at 13 can affect you at 23. Build a digital footprint you are proud of.' },
+    { id: 'ds_phishing', icon: '\uD83C\uDFA3', title: 'Scams and Phishing',
+      elementary: 'Some emails and messages are tricks! They might say "You won a prize!" or "Click here right now!" Do NOT click on links from people you do not know. Ask a grown-up before clicking anything that seems too good to be true.',
+      middle: 'Phishing attacks use fake emails, texts, or websites that look real to steal your personal information. Warning signs: urgency ("Act NOW!"), spelling errors, suspicious links, requests for passwords. Never click links in unexpected messages. Verify by going directly to the official website.',
+      tip_elementary: 'If a message says you won something you did not enter, or asks you to click a link RIGHT NOW \u2014 it is a trick! Tell a grown-up.',
+      tip_middle: 'Check the sender\u2019s actual email address (hover over it). Look for "https" and a lock icon on websites. When in doubt, do not click \u2014 go directly to the website by typing the address yourself.' },
+    { id: 'ds_screentime', icon: '\u23F0', title: 'Healthy Screen Habits',
+      elementary: 'Screens are fun, but your brain and body also need time to play outside, read books, and talk to people face-to-face! It is healthy to take breaks. If screens are making you feel sad, anxious, or tired, that is your body telling you to take a break.',
+      middle: 'Research shows excessive screen time impacts sleep, mental health, and relationships. Set boundaries: no screens before bed (blue light disrupts sleep), take breaks every 30 minutes, be mindful of how social media makes you feel. Doomscrolling and constant comparison can increase anxiety and depression.',
+      tip_elementary: 'Try the 20-20-20 rule: Every 20 minutes, look at something 20 feet away for 20 seconds. Your eyes will thank you!',
+      tip_middle: 'Track your screen time for a week. Notice how you feel after different types of screen use. Social media that makes you feel bad is not worth your time. Curate your feed to include positive, inspiring content.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Assertiveness Training Scenarios ──
+  // ══════════════════════════════════════════════════════════════
+  var ASSERTIVENESS_SCENARIOS = {
+    elementary: [
+      { id: 'ae1', title: 'The Candy Theft',
+        setup: 'A friend at school says, "Go take some candy from the teacher\u2019s desk when she is not looking. I dare you!" They start calling you a scaredy-cat.',
+        responses: [
+          { label: 'Okay, fine... I will do it.', style: 'passive', stars: 1, feedback: 'Giving in to pressure means someone else is making your decisions. You have the right to say no, even when it is hard. You are not a scaredy-cat \u2014 you are smart.' },
+          { label: 'No, that is stealing. I am not doing that. If you want candy, ask the teacher.', style: 'assertive', stars: 3, feedback: 'That is assertive! You said no clearly, named why it was wrong, and even offered a better option. You stood your ground without being mean. That takes real courage.' },
+          { label: 'You are so stupid for even asking me that! Get away from me!', style: 'aggressive', stars: 1, feedback: 'It is good that you said no, but calling someone stupid is aggressive. You can be firm without being mean. Try: "No, I am not doing that. That is stealing."' }
+        ] },
+      { id: 'ae2', title: 'The Mean Command',
+        setup: 'An older kid at recess tells you, "Go push that first grader off the swing, or I will not let you play with us anymore."',
+        responses: [
+          { label: '(Push the smaller kid because you are scared of the older kid.)', style: 'passive', stars: 1, feedback: 'Being scared of an older kid is understandable. But hurting someone else because of pressure is not okay. A trusted adult can help you handle this safely.' },
+          { label: 'No. Pushing someone is wrong, and I do not want to play if that is the rule. I will find other friends to play with.', style: 'assertive', stars: 3, feedback: 'Incredible! You said no, explained why, and made a plan. Walking away from people who pressure you to hurt others is one of the bravest things you can do.' },
+          { label: 'Why do you not push them yourself, you big bully!', style: 'aggressive', stars: 1, feedback: 'Standing up to bullies is good, but challenging them aggressively can escalate the situation and put you in danger. Saying no and walking away \u2014 then telling an adult \u2014 is the safest choice.' }
+        ] },
+      { id: 'ae3', title: 'The Private Parts Question',
+        setup: 'An older person asks you to show them your private parts. They say it is a "game" and that "everyone does it."',
+        responses: [
+          { label: '(Do it because they said everyone does it, even though it feels wrong.)', style: 'passive', stars: 1, feedback: 'When something feels wrong, that feeling is telling you something important. NO ONE has the right to see or touch your private parts. This is NEVER okay, and it is NEVER your fault.' },
+          { label: 'NO! My body is MY body. I am going to tell my parent/trusted adult RIGHT NOW.', style: 'assertive', stars: 3, feedback: 'You are SO brave. Saying NO loudly and clearly, and immediately telling a trusted adult, is exactly the right thing to do. Remember: this is NOT a game, NOT normal, and NOT your fault. You will NOT get in trouble for telling.' },
+          { label: '(Run away but do not tell anyone because you feel ashamed.)', style: 'passive', stars: 1, feedback: 'Running away is a good instinct \u2014 getting away is important. But please tell a trusted adult. You have NOTHING to be ashamed of. The person who asked you to do this is the one who did something wrong, not you.' }
+        ] },
+      { id: 'ae4', title: 'The Sharing Pressure',
+        setup: 'A kid at school keeps asking to use your tablet and gets mad when you say no. They say, "You are so selfish! Real friends share everything!"',
+        responses: [
+          { label: '(Give them the tablet even though you do not want to.)', style: 'passive', stars: 1, feedback: 'Your things belong to you. Giving in because someone calls you selfish lets them control you with guilt. You are not selfish for having boundaries about your belongings.' },
+          { label: 'My tablet is mine, and I get to decide who uses it. Saying no does not make me selfish \u2014 it means I am taking care of my stuff.', style: 'assertive', stars: 3, feedback: 'Perfect! You named your boundary, stood firm, and corrected the guilt trip. Real friends respect when you say no. Your things are yours to protect.' },
+          { label: 'Fine! Take it! I do not even care anymore!', style: 'aggressive', stars: 1, feedback: 'Giving in angrily is still giving in. You end up losing your boundary AND feeling upset. A calm, clear "no" is more powerful than giving in with frustration.' }
+        ] },
+      { id: 'ae5', title: 'The Unwanted Hug',
+        setup: 'A family friend visits and says, "Come give me a big hug!" but you do not feel like hugging them. Your parent looks at you expectantly.',
+        responses: [
+          { label: '(Hug them even though you do not want to, because you do not want to be rude.)', style: 'passive', stars: 1, feedback: 'It is nice to be polite, but your body belongs to you. You never have to give physical affection when you do not want to \u2014 even to family or family friends.' },
+          { label: 'I do not feel like a hug right now, but I would love to give you a high-five or a wave!', style: 'assertive', stars: 3, feedback: 'Wonderful! You respected your own boundary while still being kind and offering an alternative. This is a great example of being assertive without being rude.' },
+          { label: 'Ew! No way! Do not touch me!', style: 'aggressive', stars: 1, feedback: 'It is okay to not want a hug, but you can say no without being hurtful. Try offering a high-five or wave instead. You can protect your boundaries AND be respectful.' }
+        ] },
+      { id: 'ae6', title: 'The Scary Video',
+        setup: 'Your friends want to watch a scary video at a sleepover. You know it will give you nightmares, but they are all excited about it.',
+        responses: [
+          { label: '(Watch it even though you know you will be scared, because you do not want to be left out.)', style: 'passive', stars: 1, feedback: 'Watching something that upsets you just to fit in is not worth the nightmares and anxiety. Good friends will find something everyone can enjoy.' },
+          { label: 'Scary movies are not really my thing. Can we pick something we all enjoy? Or I can do something else while you watch.', style: 'assertive', stars: 3, feedback: 'Great job! You were honest about your feelings and offered alternatives. There is nothing wrong with not liking scary content. Standing up for your comfort is always okay.' },
+          { label: 'That movie is so dumb! Only babies watch that!', style: 'aggressive', stars: 1, feedback: 'Putting down what others enjoy is not the same as standing up for yourself. It is better to simply say what you prefer without insulting their choice.' }
+        ] },
+      { id: 'ae7', title: 'The Homework Cheating',
+        setup: 'A classmate says, "Just let me copy your homework. It will only take a second. No one will know!" They seem desperate.',
+        responses: [
+          { label: '(Let them copy because you feel bad for them.)', style: 'passive', stars: 1, feedback: 'It is kind to want to help, but letting someone copy your work is not really helping them learn. It also puts you at risk of getting in trouble for cheating.' },
+          { label: 'I worked hard on this and I cannot let you copy it. But I can help you understand it so you can do it yourself!', style: 'assertive', stars: 3, feedback: 'This is such a mature response. You protected your work, set a clear boundary, and offered genuine help. That is being a real friend.' },
+          { label: 'No way! Do your own work, you lazy cheater!', style: 'aggressive', stars: 1, feedback: 'Saying no to cheating is right, but calling someone lazy or a cheater is hurtful. A firm but kind refusal is more effective and keeps the friendship intact.' }
+        ] },
+      { id: 'ae8', title: 'The Peer Exclusion',
+        setup: 'A group of friends says, "You cannot sit with us unless you stop being friends with [another kid\u2019s name]. You have to choose."',
+        responses: [
+          { label: '(Drop the other friend to keep this group happy.)', style: 'passive', stars: 1, feedback: 'Friends who make you drop other friends are being controlling. Real friendship does not come with conditions like this. You deserve friends who accept all of you.' },
+          { label: 'I get to choose my own friends, and I am not going to stop being friends with someone just because you say so. That is not how friendship works.', style: 'assertive', stars: 3, feedback: 'That is incredibly brave! You stood up for yourself and your other friend. People who give ultimatums about friendships are showing you a red flag about how they treat people.' },
+          { label: 'Fine! You are all terrible anyway! I do not need any of you!', style: 'aggressive', stars: 1, feedback: 'It makes sense to be hurt and angry. But lashing out burns bridges. A calm, firm statement about your right to choose your friends is more powerful than angry words.' }
+        ] }
+    ],
+    middle: [
+      { id: 'am1', title: 'The Photo Pressure',
+        setup: 'A friend pressures you to send a private photo of yourself. They say, "Come on, everyone does it. Do not you trust me? I would never share it."',
+        responses: [
+          { label: '(Send the photo because you do not want them to think you do not trust them.)', style: 'passive', stars: 1, feedback: 'Trust is shown through respect, not through pressuring someone to do something uncomfortable. Once a photo is sent, you lose ALL control over it. This is a red flag, not a trust test.' },
+          { label: 'I do trust you, but I am not comfortable sending photos like that. If you respect me, you will understand my decision. This is a boundary I will not change.', style: 'assertive', stars: 3, feedback: 'That is a powerful, assertive response. You acknowledged the relationship while making your boundary crystal clear. Someone who truly respects you will accept your no without guilt-tripping.' },
+          { label: 'You are disgusting for even asking! I am telling everyone what kind of person you are!', style: 'aggressive', stars: 1, feedback: 'Your anger is valid \u2014 being pressured like this is wrong. But threatening to publicly expose them could escalate the situation. A clear no and talking to a trusted adult is the safest approach.' }
+        ] },
+      { id: 'am2', title: 'The Substance Offer',
+        setup: 'At a party, someone offers you a vape or a drink. They say, "Just try it once. It is not a big deal. Everyone here is doing it."',
+        responses: [
+          { label: '(Take it because you do not want to be the only one not doing it.)', style: 'passive', stars: 1, feedback: 'Doing something risky just because "everyone is doing it" puts your health and safety in someone else\u2019s hands. You always have the right to make your own choices about your body.' },
+          { label: 'No thanks, I am good. I do not need to try it to have a good time. (Change the subject or find something else to do.)', style: 'assertive', stars: 3, feedback: 'Confident and clear! You said no without being preachy, and you moved on. Most people will respect a casual, firm refusal more than you think. You do not owe anyone an explanation.' },
+          { label: 'That stuff is so stupid! Anyone who does that is an idiot!', style: 'aggressive', stars: 1, feedback: 'While choosing not to use substances is smart, insulting people who do will not help the situation and may cause conflict. A simple, confident "no thanks" is all you need.' }
+        ] },
+      { id: 'am3', title: 'The Boundary Pusher',
+        setup: 'Someone you are dating keeps pushing past your physical boundaries. When you say you are not comfortable, they say, "If you really cared about me, you would want to do this."',
+        responses: [
+          { label: '(Go along with it because you do not want to lose the relationship.)', style: 'passive', stars: 1, feedback: 'A relationship where you have to ignore your own comfort to keep someone happy is NOT healthy. Love never requires you to cross your own boundaries. This is manipulation.' },
+          { label: 'I DO care about you, but caring about someone does not mean ignoring my own boundaries. If you care about ME, you will respect my no. This is not negotiable.', style: 'assertive', stars: 3, feedback: 'That is a strong, clear boundary. You called out the manipulation while standing firm. Remember: someone who respects you will NEVER pressure you past your limits. If they keep pushing, that is a sign to reconsider the relationship.' },
+          { label: 'You are so selfish! All you care about is yourself! We are done!', style: 'aggressive', stars: 1, feedback: 'Your frustration is completely valid. But ending a relationship in anger can be complicated. A calm, firm boundary \u2014 and talking to a trusted adult if the pressure continues \u2014 is the healthiest path.' }
+        ] },
+      { id: 'am4', title: 'The Group Chat Pressure',
+        setup: 'A group chat you are in starts sharing mean rumors about a classmate. People are tagging you and saying, "Add something! It is just jokes." You know it is hurtful.',
+        responses: [
+          { label: '(Stay silent and hope no one notices you did not participate.)', style: 'passive', stars: 1, feedback: 'Silence in the face of bullying can feel like agreement to the person being targeted. While it is better than participating, speaking up or leaving the chat sends a stronger message.' },
+          { label: 'I am not participating in this. Making fun of someone behind their back is not funny \u2014 it is bullying. I am leaving this chat. (Screenshot evidence and report to a trusted adult.)', style: 'assertive', stars: 3, feedback: 'Outstanding! You named the behavior, refused to participate, documented evidence, and reported it. That is assertive bystander action. Your courage could change the group\u2019s behavior and protect the person being targeted.' },
+          { label: 'You are all horrible people! I am screenshotting this and sending it to everyone!', style: 'aggressive', stars: 1, feedback: 'Your instinct to stand up for the targeted person is admirable. But threatening to spread the screenshots could make things worse. Report to a trusted adult who can handle it properly.' }
+        ] },
+      { id: 'am5', title: 'The Ride Home',
+        setup: 'You are at a friend\u2019s house and realize the person who is supposed to drive you home has been drinking. They insist they are "totally fine to drive."',
+        responses: [
+          { label: '(Get in the car because you do not want to make a scene or bother your parents.)', style: 'passive', stars: 1, feedback: 'Getting into a car with an impaired driver puts your life at serious risk. No amount of awkwardness is worth your safety. There is ALWAYS another option.' },
+          { label: 'I am not comfortable riding with someone who has been drinking. I am going to call my parent/trusted adult for a ride. (Use your code word if needed.)', style: 'assertive', stars: 3, feedback: 'This could literally save your life. Calling for a ride is always the right choice. Many families have a "no questions asked" policy for situations like this. Your safety ALWAYS comes first.' },
+          { label: 'You are drunk! I am calling the police on you right now!', style: 'aggressive', stars: 1, feedback: 'Your concern is right, and impaired driving is dangerous and illegal. But the priority is getting yourself to safety first. Call your parent or trusted adult for a ride, and let the adults handle the impaired driver.' }
+        ] },
+      { id: 'am6', title: 'The Identity Disclosure',
+        setup: 'A classmate finds out something personal about you (your religion, sexuality, family situation, etc.) and threatens to "out" you to the whole school unless you do what they say.',
+        responses: [
+          { label: '(Do what they say to keep your secret safe.)', style: 'passive', stars: 1, feedback: 'Giving in to blackmail never makes it stop \u2014 the demands will only grow. Your personal information is yours to share when and how YOU choose. What this person is doing is wrong.' },
+          { label: 'What you are doing is blackmail, and it is wrong. I am going to talk to a school counselor about this. My personal life is mine to share on my own terms.', style: 'assertive', stars: 3, feedback: 'Naming the behavior and involving a trusted adult is exactly right. No one has the right to weaponize your personal information. A school counselor can help protect you and address the blackmail.' },
+          { label: 'If you tell anyone, I will make your life miserable! You will regret this!', style: 'aggressive', stars: 1, feedback: 'Counter-threats can escalate the situation and put you at more risk. The strongest move is to take away their power by involving a trusted adult who can help protect you.' }
+        ] },
+      { id: 'am7', title: 'The Social Media Dare',
+        setup: 'A social media challenge is going around that involves doing something physically dangerous. Your friends are all posting videos and pressuring you to join. "You will be the only one who did not do it!"',
+        responses: [
+          { label: '(Do the challenge because the fear of being left out is worse than the risk.)', style: 'passive', stars: 1, feedback: 'Social media challenges have caused serious injuries and even deaths. The temporary feeling of fitting in is NEVER worth risking your safety or your life.' },
+          { label: 'I do not need to do something dangerous to prove I am cool. I am sitting this one out. My safety matters more than views or likes.', style: 'assertive', stars: 3, feedback: 'That is real confidence. Knowing that your worth is not measured in likes or viral videos is incredibly mature. Real friends will respect your decision.' },
+          { label: 'That challenge is so dumb! Anyone who does it deserves to get hurt!', style: 'aggressive', stars: 1, feedback: 'No one deserves to get hurt, even if they make risky choices. A better approach is to calmly explain your decision and maybe even share information about why the challenge is dangerous.' }
+        ] },
+      { id: 'am8', title: 'The Unwanted Advance',
+        setup: 'At a school event, someone keeps touching your arm, standing too close, and making flirty comments even though you have shown you are not interested. They say, "I am just being friendly!"',
+        responses: [
+          { label: '(Put up with it because you do not want to cause a scene at the event.)', style: 'passive', stars: 1, feedback: 'Your comfort matters more than avoiding awkwardness. Unwanted physical contact does not become okay just because someone calls it "friendly." You have the right to set boundaries anywhere.' },
+          { label: 'I have noticed you touching me and standing really close. I am not comfortable with that. Please stop. (Move away, and if it continues, tell an adult or event supervisor.)', style: 'assertive', stars: 3, feedback: 'You named the specific behavior, stated your boundary clearly, and had a plan for escalation. That is textbook assertiveness. You do not have to accept unwanted contact from anyone, ever.' },
+          { label: 'Get your hands OFF me! What is WRONG with you?!', style: 'aggressive', stars: 1, feedback: 'Your anger is justified \u2014 unwanted touching is not okay. But shouting can escalate the situation. A firm, direct statement followed by creating distance and telling an adult is safer and more effective.' }
+        ] }
+    ]
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Emergency Preparedness Topics ──
+  // ══════════════════════════════════════════════════════════════
+  var EMERGENCY_TOPICS = [
+    { id: 'em_address', icon: '\uD83C\uDFE0', title: 'Know Your Information',
+      elementary: 'It is really important to know your home address and phone number by heart! Practice saying them out loud until you can remember them without help. This way, if you ever need help, you can tell a grown-up where you live.',
+      middle: 'Memorize your full home address, parent/guardian phone numbers, and at least one other emergency contact. In a crisis, your phone might be dead or unavailable. Having this information memorized could be critical.',
+      practice: 'Practice right now: Can you say your address and a parent\u2019s phone number without looking? If not, practice until you can!' },
+    { id: 'em_911', icon: '\uD83D\uDCDE', title: 'How to Call 911',
+      elementary: 'When to call 911: When someone is badly hurt, when there is a fire, when someone is in danger, or when you see a crime happening. When you call: stay calm, tell them your name, say what is happening, and tell them your address. Stay on the line \u2014 do NOT hang up!',
+      middle: 'Call 911 for life-threatening emergencies: medical emergencies, fires, crimes in progress, someone in immediate danger. What to say: your location (address or landmarks), what happened, how many people are involved, if anyone is injured. Stay on the line. Follow the dispatcher\u2019s instructions. You will NOT get in trouble for calling in a real emergency.',
+      practice: 'Practice what you would say: "My name is ___. I am at ___. Someone needs help because ___. Please send help."' },
+    { id: 'em_fire', icon: '\uD83D\uDD25', title: 'Fire Safety',
+      elementary: 'If your clothes catch fire: STOP, DROP, and ROLL! If there is a fire in your building: GET LOW (crawl under smoke), GET OUT (use your escape route), STAY OUT (never go back inside). Feel doors before opening them \u2014 if a door is hot, do NOT open it!',
+      middle: 'Have a fire escape plan with TWO ways out of every room. Practice it with your family. If you smell smoke or hear a fire alarm: do not stop to grab anything. Crawl low under smoke. Feel doors with the back of your hand before opening. Meet at your designated meeting spot outside. Call 911 from outside.',
+      practice: 'Do you know two ways out of your bedroom? Do you have a family meeting spot outside your home? If not, make a plan today!' },
+    { id: 'em_lockdown', icon: '\uD83D\uDD12', title: 'Lockdown Safety',
+      elementary: 'If your school goes into lockdown, listen carefully to your teacher. Move quickly and quietly to the safe area your teacher shows you. Stay silent, stay hidden, and stay calm. Your teacher is trained to keep you safe.',
+      middle: 'In a lockdown: follow your school\u2019s protocol. Typically: move away from doors and windows, silence your phone, stay quiet, do not open the door for anyone (authorities will identify themselves and have keys). If you are in a hallway, go to the nearest room. Know your school\u2019s emergency procedures. In an active threat situation, remember: Run (if safe), Hide (if you cannot run), as a last resort, act to protect yourself.',
+      practice: 'Do you know your school\u2019s lockdown procedure? Where is the safe spot in your classroom? Knowing this ahead of time helps you act quickly.' },
+    { id: 'em_weather', icon: '\u26C8\uFE0F', title: 'Severe Weather Safety',
+      elementary: 'Tornado: Go to the lowest level of your building, away from windows. Get under something sturdy and cover your head. Earthquake: DROP to the ground, take COVER under a desk or table, and HOLD ON until the shaking stops.',
+      middle: 'Tornado: go to an interior room on the lowest floor, away from windows. Protect your head. Earthquake: Drop, Cover, Hold On. Do NOT run outside during shaking. After shaking stops, check for injuries and damage. Hurricane: follow evacuation orders. Flood: NEVER walk or drive through flood water. Know your area\u2019s most common severe weather threats.',
+      practice: 'What type of severe weather is most common where you live? Do you know where to go in your home during that kind of emergency?' },
+    { id: 'em_firstaid', icon: '\u2764\uFE0F\u200D\uD83E\uDE79', title: 'Basic First Aid',
+      elementary: 'If someone is hurt: 1) Stay calm. 2) Get a grown-up right away. 3) If there is bleeding, press a clean cloth on the wound firmly. 4) Stay with the person until help comes. You do not need to fix everything \u2014 getting help IS helping.',
+      middle: 'Basic first aid everyone should know: For bleeding, apply direct pressure with a clean cloth. For burns, run cool (not cold) water over the area. For choking, learn the Heimlich maneuver. For someone who is unconscious, check for breathing and call 911 immediately. Consider taking a first aid or CPR course through the Red Cross.',
+      practice: 'Do you know where the first aid kit is at home? At school? Knowing where supplies are BEFORE an emergency saves critical time.' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════
   // ── Register Tool ──
   // ══════════════════════════════════════════════════════════════
   window.SelHub.registerTool('safety', {
@@ -329,6 +574,8 @@ window.SelHub = window.SelHub || {
         var Sparkles = ctx.icons && ctx.icons.Sparkles;
         var addToast = ctx.addToast;
         var awardXP = ctx.awardXP;
+        var announceToSR = ctx.announceToSR;
+        var a11yClick = ctx.a11yClick;
         var celebrate = ctx.celebrate;
         var callGemini = ctx.callGemini;
         var callTTS = ctx.callTTS;
@@ -398,6 +645,26 @@ window.SelHub = window.SelHub || {
         var flagCorrect      = d.flagCorrect || 0;
         var flagDone         = d.flagDone || false;
 
+        // Digital safety deep dive state
+        var dsViewed         = d.dsViewed || {};
+        var dsExpanded       = d.dsExpanded || null;
+        var dsKnewCount      = d.dsKnewCount || 0;
+        var dsLearnedCount   = d.dsLearnedCount || 0;
+        var dsTracked        = d.dsTracked || {};
+
+        // Assertiveness training state
+        var assertIdx        = d.assertIdx != null ? d.assertIdx : 0;
+        var assertChoice     = d.assertChoice != null ? d.assertChoice : null;
+        var assertCompleted  = d.assertCompleted || {};
+        var assertTopCount   = d.assertTopCount || 0;
+
+        // Emergency preparedness state
+        var emViewed         = d.emViewed || {};
+        var emExpanded       = d.emExpanded || null;
+
+        // Tab visits tracking for Safety Educator badge
+        var tabsVisited      = d.tabsVisited || {};
+
         // ── Helpers ──
         var ACCENT = '#ef4444';
         var ACCENT_DIM = '#ef444422';
@@ -438,22 +705,37 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         var tabs = [
           { id: 'learn',     label: '\uD83D\uDCDA Learn' },
+          { id: 'digital',   label: '\uD83D\uDD10 Digital' },
           { id: 'circle',    label: '\uD83D\uDC9A My Circle' },
           { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' },
+          { id: 'assertive', label: '\uD83D\uDCAA Assertive' },
           { id: 'quiz',      label: '\uD83E\uDDE0 Quiz' },
           { id: 'flags',     label: '\uD83D\uDEA9 Flags' },
+          { id: 'emergency', label: '\uD83D\uDE92 Emergency' },
           { id: 'plan',      label: '\uD83D\uDCCB Plan' },
           { id: 'badges',    label: '\uD83C\uDFC5 Badges' }
         ];
 
         var tabBar = h('div', {
+          role: 'tablist', 'aria-label': 'Safety & Wellbeing tabs',
           style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
         },
           tabs.map(function(t) {
             var isActive = activeTab === t.id;
             return h('button', {
               key: t.id,
-              onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
+              onClick: function() {
+                upd('activeTab', t.id);
+                if (soundEnabled) sfxClick();
+                // Track tab visits for Safety Educator badge
+                if (!tabsVisited[t.id]) {
+                  var newVisited = Object.assign({}, tabsVisited);
+                  newVisited[t.id] = true;
+                  upd('tabsVisited', newVisited);
+                  // All 10 tabs visited?
+                  if (Object.keys(newVisited).length >= 10) tryAwardBadge('safety_educator');
+                }
+              },
               'aria-selected': isActive,
               role: 'tab',
               style: {
@@ -632,6 +914,133 @@ window.SelHub = window.SelHub || {
         }
 
         // ══════════════════════════════════════════════════════════
+        // ── TAB: Digital Safety Deep Dive ──
+        // ══════════════════════════════════════════════════════════
+        var digitalContent = null;
+        if (activeTab === 'digital') {
+          var dsCards = DIGITAL_SAFETY_CARDS;
+          var dsViewedCount = Object.keys(dsViewed).length;
+
+          var dsBanner = h('div', {
+            style: { margin: '0 16px 12px', padding: '12px 14px', borderRadius: 10, background: '#1e3a5f', border: '1px solid #3b82f6' }
+          },
+            h('div', { style: { fontWeight: 700, color: '#93c5fd', fontSize: 13, marginBottom: 4 } },
+              band === 'elementary'
+                ? '\uD83D\uDD10 The internet can be fun AND safe \u2014 when you know the rules!'
+                : '\uD83D\uDD10 Your digital life is real life. What you do online matters.'
+            ),
+            h('div', { style: { fontSize: 11, color: '#93c5fd88' } },
+              'Read all 8 cards and track what you already knew vs. what is new. ' + dsViewedCount + '/8 explored.')
+          );
+
+          var dsProgress = h('div', {
+            style: { margin: '0 16px 12px' }
+          },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 4 } },
+              h('span', null, '\uD83E\uDDE0 Already knew: ' + dsKnewCount),
+              h('span', null, '\uD83D\uDCA1 Learned something new: ' + dsLearnedCount)
+            ),
+            h('div', { style: { height: 6, borderRadius: 3, background: '#1e293b' } },
+              h('div', { style: { height: '100%', borderRadius: 3, background: '#3b82f6', width: Math.round((dsViewedCount / 8) * 100) + '%', transition: 'width 0.3s' } })
+            )
+          );
+
+          var dsCardList = dsCards.map(function(card) {
+            var isExpanded = dsExpanded === card.id;
+            var isViewed = !!dsViewed[card.id];
+            var isTracked = !!dsTracked[card.id];
+            return h('div', {
+              key: card.id,
+              onClick: function() {
+                upd('dsExpanded', isExpanded ? null : card.id);
+                if (!isViewed) {
+                  var newViewed = Object.assign({}, dsViewed);
+                  newViewed[card.id] = true;
+                  upd('dsViewed', newViewed);
+                  if (soundEnabled) sfxReveal();
+                  // Check badge: all 8 cards read
+                  if (Object.keys(newViewed).length >= 8) tryAwardBadge('digital_safety_pro');
+                }
+              },
+              style: {
+                margin: '0 16px 10px', padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
+                background: isExpanded ? '#1e293b' : '#0f172a', border: '1px solid ' + (isExpanded ? '#3b82f655' : '#1e293b'),
+                transition: 'all 0.2s'
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+                h('span', { style: { fontSize: 24 } }, card.icon),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontWeight: 600, color: '#f1f5f9', fontSize: 14 } }, card.title),
+                  !isExpanded && h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, isViewed ? '\u2705 Read' : 'Tap to learn')
+                )
+              ),
+              isExpanded && h('div', { style: { marginTop: 12 } },
+                h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: '1.6', margin: '0 0 10px' } },
+                  band === 'elementary' ? card.elementary : card.middle
+                ),
+                h('div', { style: { padding: '10px 12px', borderRadius: 8, background: '#3b82f615', border: '1px solid #3b82f633', marginBottom: 10 } },
+                  h('div', { style: { fontSize: 12, fontWeight: 600, color: '#60a5fa', marginBottom: 4 } }, '\uD83D\uDCA1 ' + (band === 'elementary' ? card.tip_elementary : card.tip_middle))
+                ),
+                // "I knew this" / "I learned something new" tracking
+                !isTracked && h('div', { style: { display: 'flex', gap: 8, marginTop: 8 } },
+                  h('button', {
+                    onClick: function(e) {
+                      e.stopPropagation();
+                      var newTracked = Object.assign({}, dsTracked);
+                      newTracked[card.id] = 'knew';
+                      upd({ dsTracked: newTracked, dsKnewCount: dsKnewCount + 1 });
+                      if (soundEnabled) sfxClick();
+                    },
+                    style: { flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
+                  }, '\uD83E\uDDE0 I already knew this'),
+                  h('button', {
+                    onClick: function(e) {
+                      e.stopPropagation();
+                      var newTracked = Object.assign({}, dsTracked);
+                      newTracked[card.id] = 'learned';
+                      upd({ dsTracked: newTracked, dsLearnedCount: dsLearnedCount + 1 });
+                      if (soundEnabled) sfxCorrect();
+                      awardXP(5);
+                    },
+                    style: { flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid #3b82f644', background: '#3b82f615', color: '#60a5fa', fontSize: 12, cursor: 'pointer' }
+                  }, '\uD83D\uDCA1 I learned something new')
+                ),
+                isTracked && h('div', { style: { marginTop: 8, fontSize: 11, color: '#4ade80' } },
+                  dsTracked[card.id] === 'knew' ? '\u2705 You already knew this \u2014 great awareness!' : '\u2705 New learning unlocked!'
+                ),
+                callTTS && h('button', {
+                  onClick: function(e) { e.stopPropagation(); speak(card.title + '. ' + (band === 'elementary' ? card.elementary : card.middle) + '. ' + (band === 'elementary' ? card.tip_elementary : card.tip_middle)); },
+                  style: { marginTop: 8, background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer' }
+                }, '\uD83D\uDD0A Read aloud')
+              )
+            );
+          });
+
+          var dsCrisis = h('div', {
+            style: { margin: '12px 16px 16px', padding: '10px 14px', borderRadius: 8, background: '#7f1d1d', fontSize: 11, color: '#fca5a5' }
+          },
+            '\uD83D\uDCDE Need help? 988 (call/text) \u2022 Text HOME to 741741 \u2022 CyberTipline: 1-800-843-5678'
+          );
+
+          var dsAffirm = h('div', {
+            style: { margin: '12px 16px', padding: '12px 14px', borderRadius: 10, background: '#3b82f615', textAlign: 'center', fontSize: 12, color: '#60a5fa', fontWeight: 500, lineHeight: '1.5' }
+          },
+            band === 'elementary'
+              ? 'You are learning how to be safe online. That is really smart! Share what you learn with a friend or family member.'
+              : 'Digital literacy is a superpower. The more you know about online safety, the better you can protect yourself and your community.'
+          );
+
+          digitalContent = h('div', { style: { padding: '8px 0 16px' } },
+            dsBanner,
+            dsProgress,
+            dsCardList,
+            dsAffirm,
+            dsCrisis
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
         // ── TAB: My Circle ──
         // ══════════════════════════════════════════════════════════
         var circleContent = null;
@@ -670,13 +1079,15 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 } },
               h('input', {
                 type: 'text', placeholder: 'Name', value: newAdultName,
+                'aria-label': 'Trusted adult name',
                 onChange: function(e) { upd('newAdultName', e.target.value); },
-                style: { flex: 1, minWidth: 120, padding: '8px 10px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, outline: 'none' }
+                style: { flex: 1, minWidth: 120, padding: '8px 10px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13 }
               }),
               h('input', {
                 type: 'text', placeholder: 'Role (teacher, aunt, etc.)', value: newAdultRole,
+                'aria-label': 'Trusted adult role',
                 onChange: function(e) { upd('newAdultRole', e.target.value); },
-                style: { flex: 1, minWidth: 120, padding: '8px 10px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, outline: 'none' }
+                style: { flex: 1, minWidth: 120, padding: '8px 10px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13 }
               })
             ),
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
@@ -752,11 +1163,12 @@ window.SelHub = window.SelHub || {
             ),
             h('textarea', {
               value: circleReflect,
+              'aria-label': 'Circle of trust reflection',
               onChange: function(e) { upd('circleReflect', e.target.value); },
               placeholder: band === 'elementary'
                 ? 'Write the name of someone you trust and why you trust them...'
                 : 'Reflect on who you would turn to in different situations and what makes them trustworthy...',
-              style: { width: '100%', minHeight: 80, padding: '10px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, resize: 'vertical', outline: 'none', boxSizing: 'border-box' }
+              style: { width: '100%', minHeight: 80, padding: '10px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box' }
             }),
             !circleSaved && circleReflect.trim().length > 10 && h('button', {
               onClick: function() {
@@ -908,6 +1320,162 @@ window.SelHub = window.SelHub || {
             scenCard,
             scenFooter,
             scenCrisis
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // ── TAB: Assertiveness Training ──
+        // ══════════════════════════════════════════════════════════
+        var assertiveContent = null;
+        if (activeTab === 'assertive') {
+          var assertScenarios = ASSERTIVENESS_SCENARIOS[band] || ASSERTIVENESS_SCENARIOS.elementary;
+          var assertScen = assertScenarios[assertIdx];
+          var assertCompletedCount = Object.keys(assertCompleted).length;
+
+          // Passive / Assertive / Aggressive lesson header
+          var assertLesson = h('div', {
+            style: { margin: '0 16px 14px', padding: '14px 16px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155' }
+          },
+            h('div', { style: { fontWeight: 700, color: '#f1f5f9', fontSize: 14, marginBottom: 8 } },
+              band === 'elementary'
+                ? '\uD83D\uDCAA Three Ways to Respond'
+                : '\uD83D\uDCAA Passive vs. Assertive vs. Aggressive'
+            ),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              h('div', { style: { flex: 1, minWidth: 100, padding: '10px', borderRadius: 8, background: '#ef444415', border: '1px solid #ef444433' } },
+                h('div', { style: { fontSize: 12, fontWeight: 600, color: '#f87171', marginBottom: 4 } }, '\u2B50 Passive (1 star)'),
+                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: '1.4' } },
+                  band === 'elementary'
+                    ? 'Going along with it even though it feels wrong. Letting others make choices for you.'
+                    : 'Giving in to avoid conflict. Not expressing your true feelings or needs. Others\u2019 wants override your boundaries.'
+                )
+              ),
+              h('div', { style: { flex: 1, minWidth: 100, padding: '10px', borderRadius: 8, background: '#22c55e15', border: '1px solid #22c55e33' } },
+                h('div', { style: { fontSize: 12, fontWeight: 600, color: '#4ade80', marginBottom: 4 } }, '\u2B50\u2B50\u2B50 Assertive (3 stars)'),
+                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: '1.4' } },
+                  band === 'elementary'
+                    ? 'Saying how you feel clearly and calmly. Standing up for yourself without being mean.'
+                    : 'Expressing your needs clearly and respectfully. Setting firm boundaries while acknowledging others\u2019 feelings. The healthiest response.'
+                )
+              ),
+              h('div', { style: { flex: 1, minWidth: 100, padding: '10px', borderRadius: 8, background: '#f59e0b15', border: '1px solid #f59e0b33' } },
+                h('div', { style: { fontSize: 12, fontWeight: 600, color: '#fbbf24', marginBottom: 4 } }, '\u2B50 Aggressive (1 star)'),
+                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: '1.4' } },
+                  band === 'elementary'
+                    ? 'Yelling, name-calling, or being mean back. Fighting back in a way that could make things worse.'
+                    : 'Expressing anger through insults, threats, or hostility. May escalate the situation and damage relationships.'
+                )
+              )
+            )
+          );
+
+          var assertNav = h('div', {
+            style: { display: 'flex', alignItems: 'center', gap: 8, padding: '0 16px 10px' }
+          },
+            h('button', {
+              onClick: function() { upd({ assertIdx: Math.max(0, assertIdx - 1), assertChoice: null }); if (soundEnabled) sfxClick(); },
+              disabled: assertIdx === 0,
+              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: assertIdx === 0 ? '#334155' : '#94a3b8', cursor: assertIdx === 0 ? 'default' : 'pointer', fontSize: 12 }
+            }, '\u25C0 Prev'),
+            h('span', { style: { fontSize: 12, color: '#94a3b8' } }, (assertIdx + 1) + ' / ' + assertScenarios.length),
+            h('button', {
+              onClick: function() { upd({ assertIdx: Math.min(assertScenarios.length - 1, assertIdx + 1), assertChoice: null }); if (soundEnabled) sfxClick(); },
+              disabled: assertIdx === assertScenarios.length - 1,
+              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: assertIdx === assertScenarios.length - 1 ? '#334155' : '#94a3b8', cursor: assertIdx === assertScenarios.length - 1 ? 'default' : 'pointer', fontSize: 12 }
+            }, 'Next \u25B6'),
+            h('span', { style: { marginLeft: 'auto', fontSize: 11, color: '#64748b' } }, '\u2705 ' + assertCompletedCount + '/' + assertScenarios.length + ' completed')
+          );
+
+          var assertCard = h('div', {
+            style: { margin: '0 16px', padding: '16px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155' }
+          },
+            h('div', { style: { fontWeight: 700, color: '#f1f5f9', fontSize: 16, marginBottom: 4 } }, assertScen.title),
+            h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: '1.6', margin: '8px 0 14px' } }, assertScen.setup),
+            callTTS && h('button', {
+              onClick: function() { speak(assertScen.title + '. ' + assertScen.setup); },
+              style: { marginBottom: 12, background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer' }
+            }, '\uD83D\uDD0A Read aloud'),
+            h('div', { style: { fontWeight: 600, color: '#94a3b8', fontSize: 12, marginBottom: 8 } }, 'How would you respond?'),
+            assertScen.responses.map(function(resp, i) {
+              var isSelected = assertChoice === i;
+              var isCompleted = assertCompleted[assertScen.id] != null;
+              var styleColors = { passive: '#ef4444', assertive: '#22c55e', aggressive: '#f59e0b' };
+              var rColor = styleColors[resp.style] || '#64748b';
+              var starStr = '';
+              for (var si = 0; si < resp.stars; si++) starStr += '\u2B50';
+              return h('div', { key: i },
+                h('button', {
+                  onClick: function() {
+                    if (isCompleted) return;
+                    upd('assertChoice', i);
+                    if (soundEnabled) { resp.stars === 3 ? sfxCorrect() : sfxReveal(); }
+                    var newCompleted = Object.assign({}, assertCompleted);
+                    newCompleted[assertScen.id] = { choice: i, stars: resp.stars, style: resp.style };
+                    upd('assertCompleted', newCompleted);
+                    awardXP(resp.stars === 3 ? 20 : 10);
+                    // Track assertive top choices
+                    var topCount = 0;
+                    Object.keys(newCompleted).forEach(function(k) { if (newCompleted[k].stars === 3) topCount++; });
+                    upd('assertTopCount', topCount);
+                    // Assertiveness Master badge: 6 assertive responses
+                    if (topCount >= 6) tryAwardBadge('assertiveness_master');
+                  },
+                  style: {
+                    width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 6, borderRadius: 8, cursor: isCompleted ? 'default' : 'pointer',
+                    border: '1px solid ' + (isSelected ? rColor + '66' : '#334155'),
+                    background: isSelected ? rColor + '15' : '#0f172a',
+                    color: '#e2e8f0', fontSize: 13, lineHeight: '1.4',
+                    transition: 'all 0.2s'
+                  }
+                },
+                  h('span', { style: { fontSize: 10, color: rColor, marginRight: 6 } },
+                    resp.style.charAt(0).toUpperCase() + resp.style.slice(1)
+                  ),
+                  resp.label
+                ),
+                isSelected && h('div', {
+                  style: { padding: '10px 14px', marginBottom: 8, borderRadius: 8, background: rColor + '15', border: '1px solid ' + rColor + '44' }
+                },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
+                    h('span', { style: { fontSize: 11, fontWeight: 700, color: rColor } },
+                      starStr + ' ' + (resp.stars === 3 ? 'Assertive \u2014 Great choice!' : resp.style === 'passive' ? 'Passive \u2014 Let\u2019s think about this...' : 'Aggressive \u2014 There is a better way...')
+                    )
+                  ),
+                  h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: '1.5', margin: 0 } }, resp.feedback),
+                  callTTS && h('button', {
+                    onClick: function() { speak(resp.feedback); },
+                    style: { marginTop: 6, background: 'none', border: 'none', color: '#94a3b8', fontSize: 10, cursor: 'pointer' }
+                  }, '\uD83D\uDD0A Read feedback aloud')
+                )
+              );
+            })
+          );
+
+          var assertFooter = h('div', {
+            style: { margin: '14px 16px', padding: '12px 14px', borderRadius: 10, background: '#22c55e15', textAlign: 'center', fontSize: 12, color: '#4ade80', fontWeight: 500, lineHeight: '1.5' }
+          },
+            band === 'elementary'
+              ? 'Being assertive means standing up for yourself in a kind, strong way. It gets easier with practice! You are doing great.'
+              : 'Assertiveness is a skill that takes practice. The more you use it, the more natural it becomes. You have the right to stand up for yourself \u2014 always.'
+          );
+
+          var assertCrisis = h('div', {
+            style: { margin: '0 16px 16px', padding: '10px 14px', borderRadius: 8, background: '#7f1d1d', fontSize: 11, color: '#fca5a5' }
+          },
+            '\uD83D\uDCDE Need help? 988 (call/text) \u2022 Text HOME to 741741 \u2022 1-800-422-4453'
+          );
+
+          assertiveContent = h('div', { style: { padding: '12px 0 16px' } },
+            h('div', { style: { padding: '0 16px 10px', fontSize: 13, color: '#94a3b8' } },
+              band === 'elementary'
+                ? 'Practice saying "no" firmly and respectfully. Read each situation and choose the best way to respond.'
+                : 'Practice assertive communication. Learn the difference between passive, assertive, and aggressive responses.'
+            ),
+            assertLesson,
+            assertNav,
+            assertCard,
+            assertFooter,
+            assertCrisis
           );
         }
 
@@ -1216,12 +1784,110 @@ window.SelHub = window.SelHub || {
         }
 
         // ══════════════════════════════════════════════════════════
+        // ── TAB: Emergency Preparedness ──
+        // ══════════════════════════════════════════════════════════
+        var emergencyContent = null;
+        if (activeTab === 'emergency') {
+          var emTopics = EMERGENCY_TOPICS;
+          var emViewedCount = Object.keys(emViewed).length;
+
+          var emHeader = h('div', {
+            style: { margin: '0 16px 12px', padding: '14px 16px', borderRadius: 12, background: '#7f1d1d22', border: '1px solid #dc262644' }
+          },
+            h('div', { style: { fontWeight: 700, color: '#fca5a5', fontSize: 14, marginBottom: 6 } },
+              '\uD83D\uDE92 ' + (band === 'elementary'
+                ? 'Being prepared means knowing what to do BEFORE an emergency happens!'
+                : 'Emergency preparedness is not about fear \u2014 it is about confidence. When you know what to do, you can act quickly and calmly.'
+              )
+            ),
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 } },
+              h('div', { style: { flex: 1, height: 6, borderRadius: 3, background: '#1e293b' } },
+                h('div', { style: { height: '100%', borderRadius: 3, background: '#dc2626', width: Math.round((emViewedCount / emTopics.length) * 100) + '%', transition: 'width 0.3s' } })
+              ),
+              h('span', { style: { fontSize: 11, color: '#fca5a5' } }, emViewedCount + '/' + emTopics.length + ' topics')
+            )
+          );
+
+          var emCardList = emTopics.map(function(topic) {
+            var isExpanded = emExpanded === topic.id;
+            var isViewed = !!emViewed[topic.id];
+            return h('div', {
+              key: topic.id,
+              onClick: function() {
+                upd('emExpanded', isExpanded ? null : topic.id);
+                if (!isViewed) {
+                  var newViewed = Object.assign({}, emViewed);
+                  newViewed[topic.id] = true;
+                  upd('emViewed', newViewed);
+                  if (soundEnabled) sfxReveal();
+                  awardXP(10);
+                  // Emergency Ready badge: all topics viewed
+                  if (Object.keys(newViewed).length >= emTopics.length) tryAwardBadge('emergency_ready');
+                }
+              },
+              style: {
+                margin: '0 16px 10px', padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
+                background: isExpanded ? '#1e293b' : '#0f172a', border: '1px solid ' + (isExpanded ? '#dc262644' : '#1e293b'),
+                transition: 'all 0.2s'
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+                h('span', { style: { fontSize: 24 } }, topic.icon),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontWeight: 600, color: '#f1f5f9', fontSize: 14 } }, topic.title),
+                  !isExpanded && h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, isViewed ? '\u2705 Read' : 'Tap to learn')
+                )
+              ),
+              isExpanded && h('div', { style: { marginTop: 12 } },
+                h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: '1.6', margin: '0 0 10px' } },
+                  band === 'elementary' ? topic.elementary : topic.middle
+                ),
+                h('div', { style: { padding: '10px 12px', borderRadius: 8, background: '#22c55e15', border: '1px solid #22c55e33' } },
+                  h('div', { style: { fontSize: 12, fontWeight: 600, color: '#4ade80', marginBottom: 4 } }, '\u270D\uFE0F Practice:'),
+                  h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: '1.5' } }, topic.practice)
+                ),
+                callTTS && h('button', {
+                  onClick: function(e) { e.stopPropagation(); speak(topic.title + '. ' + (band === 'elementary' ? topic.elementary : topic.middle) + '. ' + topic.practice); },
+                  style: { marginTop: 8, background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer' }
+                }, '\uD83D\uDD0A Read aloud')
+              )
+            );
+          });
+
+          var emAffirm = h('div', {
+            style: { margin: '12px 16px', padding: '12px 14px', borderRadius: 10, background: '#dc262615', textAlign: 'center', fontSize: 12, color: '#fca5a5', fontWeight: 500, lineHeight: '1.5' }
+          },
+            band === 'elementary'
+              ? 'You are learning how to be ready for emergencies. That makes you a real-life hero! Talk to your family about making a plan together.'
+              : 'Being prepared is not about worrying. It is about having a plan so you can stay calm and help yourself and others when it matters most.'
+          );
+
+          var emCrisis = h('div', {
+            style: { margin: '0 16px 16px', padding: '10px 14px', borderRadius: 8, background: '#7f1d1d', fontSize: 11, color: '#fca5a5' }
+          },
+            '\uD83D\uDCDE Emergency: 911 \u2022 Crisis Line: 988 \u2022 Text HOME to 741741'
+          );
+
+          emergencyContent = h('div', { style: { padding: '8px 0 16px' } },
+            h('div', { style: { padding: '0 16px 10px', fontSize: 13, color: '#94a3b8' } },
+              band === 'elementary'
+                ? 'Learn what to do in an emergency. Knowing this stuff can keep you and your family safe!'
+                : 'Emergency preparedness is a life skill everyone needs. Explore each topic to build your readiness.'
+            ),
+            emHeader,
+            emCardList,
+            emAffirm,
+            emCrisis
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
         // ── TAB: Safety Plan Builder ──
         // ══════════════════════════════════════════════════════════
         var planContent = null;
         if (activeTab === 'plan') {
           var planLabelStyle = { fontWeight: 600, color: '#f1f5f9', fontSize: 13, marginBottom: 6 };
-          var planInputStyle = { width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, outline: 'none', boxSizing: 'border-box' };
+          var planInputStyle = { width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, boxSizing: 'border-box' };
 
           var planForm = h('div', {
             style: { margin: '0 16px', padding: '16px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155' }
@@ -1241,6 +1907,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: planLabelStyle }, '\u0031\uFE0F\u20E3 If I feel unsafe, the first thing I will do is:'),
               h('input', {
                 type: 'text', value: safetyPlanStep1,
+                'aria-label': 'Safety plan step 1',
                 onChange: function(e) { upd('safetyPlanStep1', e.target.value); },
                 placeholder: band === 'elementary' ? 'Example: Run to a safe grown-up' : 'Example: Remove myself from the situation',
                 style: planInputStyle
@@ -1252,6 +1919,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: planLabelStyle }, '\u0032\uFE0F\u20E3 Then I will:'),
               h('input', {
                 type: 'text', value: safetyPlanStep2,
+                'aria-label': 'Safety plan step 2',
                 onChange: function(e) { upd('safetyPlanStep2', e.target.value); },
                 placeholder: band === 'elementary' ? 'Example: Tell them what happened' : 'Example: Contact my trusted adult',
                 style: planInputStyle
@@ -1263,6 +1931,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: planLabelStyle }, '\u0033\uFE0F\u20E3 If that does not work, I will:'),
               h('input', {
                 type: 'text', value: safetyPlanStep3,
+                'aria-label': 'Safety plan step 3',
                 onChange: function(e) { upd('safetyPlanStep3', e.target.value); },
                 placeholder: band === 'elementary' ? 'Example: Call 911 or another trusted adult' : 'Example: Call 988 or go to a safe location',
                 style: planInputStyle
@@ -1274,6 +1943,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: planLabelStyle }, '\uD83C\uDFE0 My safe place is:'),
               h('input', {
                 type: 'text', value: safetyPlanPlace,
+                'aria-label': 'Safe place',
                 onChange: function(e) { upd('safetyPlanPlace', e.target.value); },
                 placeholder: band === 'elementary' ? 'Example: My house, the school office, the library' : 'Example: Home, school counselor office, friend\'s house',
                 style: planInputStyle
@@ -1290,6 +1960,7 @@ window.SelHub = window.SelHub || {
               ),
               h('input', {
                 type: 'text', value: safetyPlanCode,
+                'aria-label': 'Code word',
                 onChange: function(e) { upd('safetyPlanCode', e.target.value); },
                 placeholder: 'Example: Pineapple, Red balloon, etc.',
                 style: planInputStyle
@@ -1301,6 +1972,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: planLabelStyle }, '\uD83D\uDCDE Emergency numbers I know by heart:'),
               h('textarea', {
                 value: safetyPlanNums,
+                'aria-label': 'Emergency phone numbers',
                 onChange: function(e) { upd('safetyPlanNums', e.target.value); },
                 placeholder: 'Example:\n911\nMom: 555-0123\nDad: 555-0456\n988 (crisis line)',
                 style: Object.assign({}, planInputStyle, { minHeight: 70, resize: 'vertical' })
@@ -1437,7 +2109,7 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         // ── Final Render ──
         // ══════════════════════════════════════════════════════════
-        var content = learnContent || circleContent || scenariosContent || quizContent || flagsContent || planContent || badgesContent;
+        var content = learnContent || digitalContent || circleContent || scenariosContent || assertiveContent || quizContent || flagsContent || emergencyContent || planContent || badgesContent;
 
         return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
           tabBar,

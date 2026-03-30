@@ -506,6 +506,317 @@ window.SelHub = window.SelHub || {
   };
 
   // ══════════════════════════════════════════════════════════════
+  // ── Empathy Stories Data ──
+  // Short narrative vignettes told from different perspectives
+  // ══════════════════════════════════════════════════════════════
+  var EMPATHY_STORIES = {
+    elementary: [
+      { id: 'es1', title: 'The New Student',
+        intro: 'It is the first day of school after winter break. A new student named Amara walks into Room 12 carrying a brand-new backpack and a nervous stomach.',
+        perspectives: [
+          { name: 'Amara (the new student)', emoji: '\uD83D\uDE1F',
+            text: 'Everyone already has friends. They all know the rules, the jokes, where things go. I don\u2019t even know where the bathroom is. When the teacher told me to sit next to a girl named Harper, Harper just looked at me and then went back to talking to her friend. I smiled but my voice wouldn\u2019t come out. I ate lunch at the end of a table and pretended I was reading so nobody would notice I was alone.' },
+          { name: 'Harper (the classmate)', emoji: '\uD83D\uDE10',
+            text: 'A new girl sat next to me today. She seemed really quiet and I didn\u2019t know what to say. My friend Jada was telling me something funny so I turned back to her. At lunch I saw the new girl sitting by herself. I thought about going over but I didn\u2019t want to leave Jada. I figured someone else would talk to her. Now I feel a little bad because nobody did.' }
+        ],
+        reflection: 'Harper wasn\u2019t being mean \u2014 she was just comfortable. Amara wasn\u2019t unfriendly \u2014 she was terrified. Which perspective hadn\u2019t you thought about before?' },
+      { id: 'es2', title: 'The Substitute Teacher',
+        intro: 'Mrs. Reyes is out sick today. A substitute teacher, Mr. Brooks, is filling in. He doesn\u2019t know the class routines.',
+        perspectives: [
+          { name: 'Caleb (student)', emoji: '\uD83D\uDE24',
+            text: 'This sub doesn\u2019t know anything. He gave us the wrong worksheet, he called me \u201CColin,\u201D and he won\u2019t let us have free reading time even though Mrs. Reyes always does. Why should I listen to someone who doesn\u2019t even know our names? I wasn\u2019t being bad, I just told my friend this was dumb.' },
+          { name: 'Mr. Brooks (substitute)', emoji: '\uD83D\uDE30',
+            text: 'This is my second day of substitute teaching ever. The lesson plan Mrs. Reyes left was confusing and I couldn\u2019t find the worksheets she mentioned. I\u2019m trying my best but the kids can tell I\u2019m nervous. When that boy said this was dumb, it really stung. I almost became a teacher because I love kids. Right now I\u2019m wondering if I made a mistake.' }
+        ],
+        reflection: 'Caleb saw an incompetent stranger. Mr. Brooks saw a room full of kids he wanted to help. Neither could see the other\u2019s full picture.' },
+      { id: 'es3', title: 'The Playground Argument',
+        intro: 'At recess, two kids argue about the rules of a game.',
+        perspectives: [
+          { name: 'Deshawn', emoji: '\uD83D\uDE20',
+            text: 'We always play tag the same way and Lily just changed the rules because she was about to be out. That\u2019s not fair! If you\u2019re losing you can\u2019t just make up new rules. I got mad because I\u2019ve been waiting all morning to play and now she ruined it.' },
+          { name: 'Lily', emoji: '\uD83D\uDE22',
+            text: 'I wasn\u2019t trying to cheat. I really thought we played that way before. At my old school, you got a free pass if you touched the fence. When Deshawn yelled at me in front of everyone, I felt so embarrassed. I just wanted to play and now everyone thinks I\u2019m a cheater.' }
+        ],
+        reflection: 'Deshawn saw someone breaking the rules on purpose. Lily was following rules from a different place. The same moment felt like unfairness to one and humiliation to the other.' },
+      { id: 'es4', title: 'Moving Day',
+        intro: 'Jayden\u2019s family is moving to a different city. His best friend Marco finds out today.',
+        perspectives: [
+          { name: 'Jayden (the one leaving)', emoji: '\uD83D\uDE14',
+            text: 'I didn\u2019t want to tell Marco because I knew he\u2019d be upset. I\u2019ve been sad about it for two weeks but my parents told me not to tell anyone until it was official. Now Marco is mad that I kept a secret. I\u2019m the one who has to start over somewhere with no friends, and he\u2019s making it about himself.' },
+          { name: 'Marco (the one staying)', emoji: '\uD83D\uDE22',
+            text: 'Jayden is my best friend and he\u2019s been keeping this secret for TWO WEEKS. I had to hear about it from his mom. I feel like our friendship wasn\u2019t real if he couldn\u2019t tell me something this big. Now I\u2019m mad AND sad at the same time. And who am I going to sit with at lunch?' }
+        ],
+        reflection: 'Jayden was protecting himself from a goodbye he wasn\u2019t ready for. Marco was hurt by the secrecy because it felt like not being trusted. Both were grieving the same loss differently.' },
+      { id: 'es5', title: 'The Lost Pet',
+        intro: 'A small dog without a collar wanders into a neighborhood. Two families notice it.',
+        perspectives: [
+          { name: 'Sofia (the pet\u2019s owner)', emoji: '\uD83D\uDE2D',
+            text: 'Biscuit got out when my little brother left the gate open. I\u2019ve been looking for three hours. I made posters, I walked every street. Biscuit is old and needs medicine every day. Every minute she\u2019s gone I feel sicker. I can\u2019t eat, I can\u2019t sleep, I just want my dog back.' },
+          { name: 'The Chen family (finders)', emoji: '\uD83D\uDE0A',
+            text: 'We found this sweet little dog in our yard with no collar. The kids are so excited \u2014 we\u2019ve always wanted a pet. We gave her water and food and made a little bed. My daughter named her Daisy already. We\u2019ll put up \u201Cfound dog\u201D signs tomorrow, but part of me hopes nobody claims her.' }
+        ],
+        reflection: 'One family\u2019s joy is another family\u2019s agony. The Chens aren\u2019t being selfish \u2014 they just don\u2019t know Sofia exists yet. Once they do, empathy changes everything.' }
+    ],
+    middle: [
+      { id: 'es6', title: 'The Group Project',
+        intro: 'Four students are assigned a history presentation due Friday. It\u2019s now Wednesday night.',
+        perspectives: [
+          { name: 'Keiko (the overachiever)', emoji: '\uD83D\uDE24',
+            text: 'I\u2019ve done 80% of this project and I\u2019m exhausted. I texted the group Sunday and only one person replied. Darius still hasn\u2019t sent his section. I don\u2019t want to be the \u201Cbossy\u201D one but if I don\u2019t do everything, we\u2019ll fail. Why do I always end up carrying the group? My grade shouldn\u2019t depend on someone else\u2019s effort.' },
+          { name: 'Darius (struggling student)', emoji: '\uD83D\uDE14',
+            text: 'I want to do my part but I don\u2019t even understand the topic. When I asked the group for help, Keiko sent me a list of links and said \u201Cjust read these.\u201D I tried but it\u2019s all above my reading level. I haven\u2019t told anyone I\u2019m in reading support. The longer I wait, the worse it gets, and now they probably think I\u2019m lazy.' },
+          { name: 'Ms. Rivera (teacher)', emoji: '\uD83E\uDD14',
+            text: 'I assigned groups strategically \u2014 mixing strengths. I expect them to learn collaboration, not just content. I know some students will do more, but that\u2019s part of learning to work with different people. What I might not see is when \u201Ccollaboration\u201D becomes \u201Cone person doing everything.\u201D' }
+        ],
+        reflection: 'Keiko sees laziness. Darius carries invisible struggle. The teacher sees a learning opportunity. All three perspectives reveal a system failure, not a character flaw.' },
+      { id: 'es7', title: 'The Social Media Post',
+        intro: 'Brianna takes a funny photo of her friend Mia making a weird face at lunch and posts it on social media with a laughing emoji.',
+        perspectives: [
+          { name: 'Brianna (the poster)', emoji: '\uD83D\uDE02',
+            text: 'It was just a silly photo! Mia makes funny faces all the time. I thought she\u2019d laugh. I got like 50 likes in an hour. When she texted me \u201Ctake it down,\u201D I was confused. I didn\u2019t mean any harm. It\u2019s not like I posted something mean. Why is she being so sensitive?' },
+          { name: 'Mia (the subject)', emoji: '\uD83D\uDE23',
+            text: 'I didn\u2019t even know she took that photo. When I saw it, my stomach dropped. 50 people liked it and some of the comments were not kind. A boy in eighth grade commented \u201CLOL what is that face\u201D and now I\u2019m mortified. Brianna thinks it\u2019s funny but she\u2019s not the one whose face is the joke. She didn\u2019t even ask me.' }
+        ],
+        reflection: 'Brianna measured impact by her intent (\u201CI was joking\u201D). Mia measured it by her experience (\u201CI\u2019m the punchline\u201D). The gap between how something is meant and how it\u2019s felt is where most social media harm lives.' },
+      { id: 'es8', title: 'The School Dance',
+        intro: 'The fall formal is Friday. Everyone in the friend group has dates or plans \u2014 except Raul.',
+        perspectives: [
+          { name: 'Tiana (the popular kid)', emoji: '\uD83D\uDE0A',
+            text: 'I\u2019m so excited for the dance! My whole group is going and we\u2019re matching outfits. I asked Raul if he was coming and he said \u201Cprobably not.\u201D I told him it would be fun but he just shrugged. I\u2019m not going to beg someone to come. I\u2019ve got my own night to plan.' },
+          { name: 'Raul (the excluded kid)', emoji: '\uD83D\uDE14',
+            text: 'Every conversation is about the dance. What they\u2019re wearing, who\u2019s going with who. Nobody asked me to go with them. Tiana asked if I was coming but she didn\u2019t offer to include me \u2014 she asked the way you ask about the weather. I said \u201Cprobably not\u201D because saying \u201CI have nobody to go with\u201D is worse. I\u2019ll stay home and tell everyone Monday that I was \u201Cbusy.\u201D' }
+        ],
+        reflection: 'Tiana sees someone choosing not to come. Raul sees a world that didn\u2019t choose him. The same shrug can mean independence or isolation \u2014 and most people never ask which one it is.' },
+      { id: 'es9', title: 'The Cafeteria Table',
+        intro: 'A group of friends have sat at the same lunch table all year. Today, a new student tries to sit with them.',
+        perspectives: [
+          { name: 'Zara (insider)', emoji: '\uD83D\uDE10',
+            text: 'We\u2019ve been this friend group since sixth grade. We have inside jokes, we know each other\u2019s problems, it\u2019s our safe space. When this new kid sat down, nobody was mean \u2014 but nobody really talked to him either. It\u2019s not personal. We\u2019re just comfortable and adding someone changes the dynamic.' },
+          { name: 'Isaiah (outsider)', emoji: '\uD83D\uDE1F',
+            text: 'I sat at their table because there was an empty seat and they seemed nice. They said hi but then kept talking about stuff I didn\u2019t understand. Nobody explained the jokes or asked me questions. I sat there for twenty minutes feeling invisible. Tomorrow I\u2019ll find a different table and pretend I didn\u2019t care.' }
+        ],
+        reflection: 'The group didn\u2019t exclude Isaiah on purpose. But comfort for insiders can feel like a wall to outsiders. Inclusion isn\u2019t just the absence of cruelty \u2014 it\u2019s active welcome.' },
+      { id: 'es10', title: 'The Coach\u2019s Decision',
+        intro: 'Coach Williams has to cut the soccer roster from 18 to 14 players for the tournament team.',
+        perspectives: [
+          { name: 'Andre (starter)', emoji: '\uD83D\uDE04',
+            text: 'I made the tournament team! I worked all summer, went to camps, stayed after every practice. I earned this. When Coach posted the list, I felt relieved and proud. I saw Marcus looking at the list and walking away. I wanted to say something but I didn\u2019t know what.' },
+          { name: 'Marcus (cut)', emoji: '\uD83D\uDE22',
+            text: 'I didn\u2019t make it. I\u2019ve been on this team for two years. My dad took off work to drive me to every practice. When I saw the list, my vision blurred. Andre made it \u2014 of course he did, his family can afford summer camps. I practice in my driveway with a flat ball. They\u2019ll tell me it\u2019s about \u201Cskill\u201D but it\u2019s also about opportunity.' },
+          { name: 'Coach Williams', emoji: '\uD83D\uDE13',
+            text: 'Cutting four kids is the worst part of my job. Marcus has heart, and I see how hard he tries. But the tournament is competitive and I have to take the most ready players. I don\u2019t know about his home situation. I wish I could keep everyone. I\u2019ll lose sleep over this list.' }
+        ],
+        reflection: 'Andre sees merit. Marcus sees unequal access. Coach sees impossible choices. The same list means celebration, devastation, and guilt \u2014 all at once.' }
+    ],
+    high: [
+      { id: 'es11', title: 'The Job Interview',
+        intro: 'Two candidates arrive for the same position at a small business.',
+        perspectives: [
+          { name: 'Eva (the candidate)', emoji: '\uD83D\uDE13',
+            text: 'I prepared for days. I researched the company, rehearsed answers, picked my best outfit. I\u2019m the first in my family to finish college. When the interviewer asked where I went to school and I said the community college, I saw something shift in his expression. He spent the rest of the interview looking at his notes instead of at me. I know I\u2019m qualified. I just don\u2019t look like what they expected.' },
+          { name: 'Mr. Tanaka (hiring manager)', emoji: '\uD83E\uDD14',
+            text: 'I interviewed six people today. Eva was articulate and clearly prepared. But the role requires networking with clients who went to prestigious schools, and I worry she wouldn\u2019t fit the culture. Is that a legitimate concern or a bias? I hired someone from my alma mater last year and they quit in three months. I need to think about what \u201Cfit\u201D really means.' }
+        ],
+        reflection: 'Eva sees a door closing based on pedigree, not ability. Mr. Tanaka sees a practical concern that might actually be a dressed-up bias. \u201CCulture fit\u201D is sometimes code for \u201Csameness.\u201D' },
+      { id: 'es12', title: 'The Protest',
+        intro: 'Students organize a protest march that goes through the downtown business district on a Saturday afternoon.',
+        perspectives: [
+          { name: 'Camila (protester)', emoji: '\uD83D\uDE24',
+            text: 'We are marching because the school district cut funding for ESL programs and my mother\u2019s English class was cancelled. This affects hundreds of families. If we don\u2019t make noise, nobody listens. Yes, it\u2019s loud. Yes, it blocks traffic. That\u2019s the point. Comfortable people don\u2019t change unjust systems.' },
+          { name: 'David (business owner)', emoji: '\uD83D\uDE23',
+            text: 'I support their cause \u2014 honestly, I do. But they blocked my storefront for three hours on my busiest day. I\u2019m a small business owner, not the school board. I barely made rent last month. My employees lost a day\u2019s tips. Why target the people in your own neighborhood instead of the people who made the decision?' },
+          { name: 'Officer Reyes (police)', emoji: '\uD83D\uDE10',
+            text: 'I\u2019m here to keep everyone safe. I agree the funding cuts were wrong \u2014 my kids go to those schools. But I\u2019m in uniform and that makes me a symbol of the system they\u2019re protesting against. A kid yelled \u201Cpig\u201D at me. I held my composure but it stung. I\u2019m a person too.' }
+        ],
+        reflection: 'Camila sees disruption as necessary justice. David sees collateral damage on the wrong target. Officer Reyes carries the weight of a symbol. Protest is messy because it affects people beyond its intended audience.' },
+      { id: 'es13', title: 'The College Decision',
+        intro: 'A high school senior must decide between their dream school far away and the local university near their family.',
+        perspectives: [
+          { name: 'Priya (the student)', emoji: '\uD83D\uDE1F',
+            text: 'I got into Stanford. This is everything I\u2019ve worked for since ninth grade. But my mom cried when I told her. Not from joy \u2014 from fear. My dad is sick and she needs help at home. My little brother looks up to me and he\u2019s already struggling in school. Going to Stanford means choosing my future over my family\u2019s present. Staying means choosing their needs over my dreams. Both choices cost me something I can\u2019t get back.' },
+          { name: 'Priya\u2019s mother', emoji: '\uD83D\uDE22',
+            text: 'I want Priya to go. I do. I came to this country so my children could have chances I never had. But I am scared. Who will translate at the doctor\u2019s office? Who will help her brother with homework? I cannot tell her to stay because that would be selfish. I cannot tell her to go because I am not brave enough to be alone. So I cry, and she thinks I am trying to stop her, but I am trying to let her go.' }
+        ],
+        reflection: 'Priya sees an impossible choice between two loves. Her mother sees the same impossible choice from the other side. Love doesn\u2019t simplify decisions \u2014 it complicates them.' },
+      { id: 'es14', title: 'The Viral Video',
+        intro: 'A video of a confrontation at a store goes viral online. It shows the last 30 seconds of a five-minute interaction.',
+        perspectives: [
+          { name: 'The person filmed', emoji: '\uD83D\uDE28',
+            text: 'In that video I look terrible. I\u2019m yelling at a cashier. What nobody filmed was the twenty minutes before: I was told my insurance card was fake, I was followed around the store by security, and when I asked to speak to a manager, the cashier said \u201Cpeople like you always want a manager.\u201D By the time someone started filming, I was already at my worst. Now two million people know my face and think they know my character.' },
+          { name: 'A viewer', emoji: '\uD83D\uDCF1',
+            text: 'I saw the video and immediately judged that person. They were screaming at a minimum-wage worker and it looked awful. I shared it with the caption \u201Cpeople are terrible.\u201D I felt righteous. Then someone posted the full context and I realized I had participated in destroying someone\u2019s reputation based on 30 seconds of the worst moment of their life. I deleted my post but the damage was done.' }
+        ],
+        reflection: 'Thirty seconds of footage created a permanent reputation. The person filmed lost control after provocation. The viewer became a judge, jury, and amplifier without evidence. Viral content rewards speed over context.' },
+      { id: 'es15', title: 'The Refugee',
+        intro: 'A refugee family from Syria is resettled in a small American town. They move into an apartment on Oak Street.',
+        perspectives: [
+          { name: 'Yasmin (the refugee)', emoji: '\uD83D\uDE14',
+            text: 'People say we should be grateful. I am grateful \u2014 my children are safe. But grateful and grieving can exist in the same body. I was an engineer in Damascus. Here, I clean offices. My daughter is learning English so fast it scares me \u2014 she\u2019s becoming someone I might not be able to talk to in five years. The neighbors brought cookies when we arrived. One of them also signed a petition to block more refugees from coming. Kindness and exclusion from the same hand.' },
+          { name: 'Jim (local resident)', emoji: '\uD83D\uDE10',
+            text: 'I\u2019m not against refugees. I brought them cookies. But this town has been struggling for years \u2014 factory closed, schools underfunded, opioid crisis nobody talks about. Now the government finds resources for new families but not for mine. I don\u2019t blame Yasmin. I blame a system that makes us compete for scraps. But when I say that out loud, people call me a bigot, so I stopped talking about it.' },
+          { name: 'Amira (Yasmin\u2019s daughter)', emoji: '\uD83D\uDE42',
+            text: 'I like my new school but I pretend I\u2019m not from Syria because a boy in my class said Syria is where terrorists come from. My teacher was kind about it but she also asked me to \u201Cshare about my culture\u201D in front of everyone, like I\u2019m a museum exhibit. I just want to be normal. I want to be boring. I want nobody to look at me when the news is on.' }
+        ],
+        reflection: 'Yasmin holds gratitude and grief. Jim holds compassion and resentment. Amira holds two identities she cannot reconcile. None of them are the villain the simple narrative demands.' }
+    ]
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Perspective-Taking Exercises Data ──
+  // Interactive activities: Walk in Their Shoes, Same Event
+  // Different Eyes, Before You Judge
+  // ══════════════════════════════════════════════════════════════
+  var PERSPECTIVE_EXERCISES = {
+    walkInShoes: {
+      elementary: [
+        { id: 'ws1', person: 'A grandparent who lives alone', emoji: '\uD83D\uDC75', prompt: 'Imagine you are a grandparent whose family lives far away. Describe your typical Saturday.' },
+        { id: 'ws2', person: 'A child who uses a wheelchair', emoji: '\u267F', prompt: 'Imagine you use a wheelchair. Describe getting to school, going to class, and playing at recess. What is easy? What is hard?' },
+        { id: 'ws3', person: 'A kid whose family speaks a different language at home', emoji: '\uD83C\uDF0D', prompt: 'Imagine you speak one language at home and a different one at school. What is your morning like? What confuses you? What are you good at that others don\u2019t see?' }
+      ],
+      middle: [
+        { id: 'ws4', person: 'A single parent working two jobs', emoji: '\uD83D\uDCBC', prompt: 'Imagine you are a single parent. You wake up at 5 AM, work until 3 PM, pick up your kids, start your second job at 5 PM. Describe your evening. What do you miss? What keeps you going?' },
+        { id: 'ws5', person: 'A teenager in a developing country', emoji: '\uD83C\uDF0D', prompt: 'Imagine you are 14 but you walk 3 miles to school, carry water for your family, and share one textbook with five classmates. Describe your relationship with education.' },
+        { id: 'ws6', person: 'A student who is hard of hearing', emoji: '\uD83E\uDDBB', prompt: 'Imagine you are partially deaf. You wear hearing aids. Describe a typical school day \u2014 classroom discussions, hallway noise, lunch conversations, group work.' }
+      ],
+      high: [
+        { id: 'ws7', person: 'An undocumented immigrant', emoji: '\uD83D\uDCDD', prompt: 'Imagine you came to this country as a child. You\u2019ve lived here 12 years, graduated high school with honors, but have no legal status. Describe your day \u2014 what fears follow you? What doors are closed?' },
+        { id: 'ws8', person: 'A homeless veteran', emoji: '\uD83C\uDFD6\uFE0F', prompt: 'Imagine you served your country for 8 years. You came home with PTSD that nobody can see. You lost your apartment, then your family. Describe how people look at you now versus how they looked at you in uniform.' },
+        { id: 'ws9', person: 'A first-generation college student from a rural town', emoji: '\uD83C\uDF93', prompt: 'Imagine you\u2019re the first person in your family and your town to attend a university 500 miles away. Everyone back home is proud but doesn\u2019t understand your world anymore. Describe the distance that isn\u2019t about miles.' }
+      ]
+    },
+    sameEvent: [
+      { id: 'se1', title: 'The Fire Alarm',
+        event: 'The fire alarm goes off during third period. Everyone evacuates to the field.',
+        characters: ['A student with anxiety', 'The teacher trying to count heads', 'A student who pulled the alarm as a prank'],
+        gradeHint: { elementary: 'Write 2-3 sentences for each person.', middle: 'Write a paragraph for each, focusing on their inner experience.', high: 'Write from each perspective, exploring the emotional and ethical dimensions.' } },
+      { id: 'se2', title: 'The Power Outage',
+        event: 'The electricity goes out in the whole neighborhood for six hours on a hot summer day.',
+        characters: ['An elderly person who lives alone', 'A family with a newborn baby', 'A teenager who was in the middle of an online game'],
+        gradeHint: { elementary: 'What would each person be most worried about?', middle: 'Describe each person\u2019s experience and what they need most.', high: 'Explore how the same inconvenience can be a crisis, a hardship, or an annoyance depending on your circumstances.' } },
+      { id: 'se3', title: 'The Snow Day',
+        event: 'School is cancelled due to heavy snow.',
+        characters: ['A student', 'A working parent with no childcare', 'A teacher who was planning to give a test'],
+        gradeHint: { elementary: 'How does each person feel when they hear the news?', middle: 'Describe the chain of effects on each person\u2019s day.', high: 'Explore how the same event can be a gift, a crisis, or a relief depending on your role and resources.' } }
+    ],
+    beforeYouJudge: {
+      elementary: [
+        { id: 'byj1', surface: 'A student never brings lunch to school and always eats the free lunch.',
+          reveal: 'His family can\u2019t afford to buy groceries every week. His parents skip meals so the kids can eat. The free lunch is sometimes his biggest meal of the day.',
+          lesson: 'What looks like \u201Cnot caring\u201D can actually be \u201Cnot having.\u201D Never assume you know someone\u2019s situation from what you see on the surface.' },
+        { id: 'byj2', surface: 'A girl falls asleep in class almost every day. The teacher keeps waking her up.',
+          reveal: 'She shares a one-bedroom apartment with five family members. Her baby brother cries all night and she can\u2019t sleep. She does her homework under a streetlight because there\u2019s not enough space inside.',
+          lesson: 'Falling asleep in class isn\u2019t laziness when your home doesn\u2019t allow rest. Behavior is often a symptom, not a choice.' }
+      ],
+      middle: [
+        { id: 'byj3', surface: 'A student is always on his phone in class, even after being told to put it away multiple times.',
+          reveal: 'His mother is in the hospital and he is the emergency contact because his father is deployed overseas. Every buzz could be the call that changes his life.',
+          lesson: 'The device that looks like a distraction may actually be a lifeline. We judge visible behavior without seeing invisible context.' },
+        { id: 'byj4', surface: 'A student never participates in class discussions and has been labeled \u201Cunmotivated\u201D by three teachers.',
+          reveal: 'She has selective mutism, an anxiety disorder that makes it physically impossible to speak in certain settings. She writes beautiful essays. She has thoughts she can\u2019t voice. The label \u201Cunmotivated\u201D is the opposite of her truth.',
+          lesson: 'Silence is not emptiness. The quietest person in the room might have the most to say and the least ability to say it.' }
+      ],
+      high: [
+        { id: 'byj5', surface: 'A student dropped out of all extracurriculars, stopped hanging out with friends, and barely maintains passing grades.',
+          reveal: 'She is the primary caretaker for her father, who has early-onset Alzheimer\u2019s. She bathes him, feeds him, manages his medications, and watches him forget her name a little more each week. She is seventeen.',
+          lesson: 'When someone\u2019s life shrinks, the reason might be that their responsibilities have expanded beyond what any teenager should carry. Withdrawal is sometimes the sound of someone holding too much.' },
+        { id: 'byj6', surface: 'A student is \u201Calways angry\u201D \u2014 snapping at teachers, getting into arguments, sitting alone at lunch by choice.',
+          reveal: 'He was placed in foster care six months ago after his parents\u2019 rights were terminated. He\u2019s been in three homes in six months. Every adult who promised to care for him has either hurt him or left. Anger is the only emotion that feels safe because sadness requires trust.',
+          lesson: 'Anger is grief\u2019s bodyguard. The student who pushes everyone away may be the one most terrified of being left.' }
+      ]
+    }
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Cognitive Bias Explorer Data ──
+  // Learn about common thinking errors
+  // ══════════════════════════════════════════════════════════════
+  var COGNITIVE_BIASES = {
+    elementary: [
+      { id: 'cb1', name: 'Jumping to Conclusions',
+        emoji: '\uD83D\uDCA8',
+        definition: 'Deciding you know what happened or why someone did something without having all the facts.',
+        example: 'You see two friends whispering and think they\u2019re talking about you. Actually, they were planning a surprise for another friend.',
+        catchYourself: 'Ask yourself: \u201CDo I actually KNOW this, or am I guessing?\u201D If you\u2019re guessing, check before you react.' },
+      { id: 'cb2', name: 'Only Seeing Your Side',
+        emoji: '\uD83D\uDE48',
+        definition: 'Thinking your way of seeing something is the only way to see it.',
+        example: 'You think recess should always be outside. But a kid with bad allergies thinks indoor recess is way better. Neither is wrong \u2014 you just have different experiences.',
+        catchYourself: 'When you think \u201Ceveryone knows that\u201D or \u201Cthat\u2019s just obvious,\u201D stop and ask: \u201CWho might see this differently, and why?\u201D' },
+      { id: 'cb3', name: 'Thinking Everyone Thinks Like You',
+        emoji: '\uD83E\uDDE0',
+        definition: 'Assuming other people feel the same way you do about things.',
+        example: 'You love surprise parties, so you plan one for your friend. But your friend actually hates being the center of attention and feels ambushed, not celebrated.',
+        catchYourself: 'Before you assume someone will like what you like, ask them. \u201CWould YOU want this?\u201D is a powerful question.' }
+    ],
+    middle: [
+      { id: 'cb4', name: 'Confirmation Bias',
+        emoji: '\uD83D\uDD0D',
+        definition: 'Only noticing information that supports what you already believe and ignoring information that contradicts it.',
+        example: 'You think a classmate is mean. So you remember every rude thing they did but forget the time they lent you a pencil or said something nice.',
+        catchYourself: 'When you\u2019re sure about someone, actively look for evidence that contradicts your view. If you can\u2019t find any, you might not be looking hard enough.' },
+      { id: 'cb5', name: 'Fundamental Attribution Error',
+        emoji: '\u26A0\uFE0F',
+        definition: 'When someone else does something bad, you blame their character. When YOU do something bad, you blame the situation.',
+        example: 'If a classmate is late, you think \u201Cthey\u2019re irresponsible.\u201D If YOU are late, you think \u201Ctraffic was bad.\u201D Same behavior, different explanations.',
+        catchYourself: 'When someone does something you don\u2019t like, give them the same generous interpretation you\u2019d give yourself.' },
+      { id: 'cb6', name: 'In-Group / Out-Group Bias',
+        emoji: '\uD83D\uDC65',
+        definition: 'Seeing people in your group as individuals with complex reasons, but seeing people outside your group as all the same.',
+        example: 'You know everyone in your friend group is different. But when you think about the \u201Cpopular kids\u201D or the \u201Cnerds,\u201D you imagine them as one thing.',
+        catchYourself: 'Whenever you think \u201CTHOSE people always...\u201D replace it with \u201CSome people in that group might...\u201D and see how it changes your thinking.' },
+      { id: 'cb7', name: 'Anchoring',
+        emoji: '\u2693',
+        definition: 'Relying too heavily on the first piece of information you hear about something or someone.',
+        example: 'Someone tells you a new student got suspended at their last school. Now every time that student does anything, you see it through that first impression \u2014 even if they\u2019ve changed completely.',
+        catchYourself: 'Ask yourself: \u201CIs my opinion based on current evidence, or on the first thing I heard?\u201D First impressions are sticky but not always accurate.' }
+    ],
+    high: [
+      { id: 'cb8', name: 'Dunning-Kruger Effect',
+        emoji: '\uD83D\uDCC8',
+        definition: 'People who know very little about a topic tend to overestimate their knowledge. People who know a lot tend to underestimate it.',
+        example: 'After watching one documentary about climate science, someone feels qualified to debate a climate scientist. Meanwhile, the scientist constantly qualifies their statements because they understand how much they don\u2019t know.',
+        catchYourself: 'If you feel absolutely certain about a complex topic, consider that certainty itself might be a sign you don\u2019t know enough. Expertise sounds like \u201Cit depends,\u201D not \u201Cit\u2019s obvious.\u201D' },
+      { id: 'cb9', name: 'Availability Heuristic',
+        emoji: '\uD83D\uDCF0',
+        definition: 'Judging how common something is based on how easily you can remember examples of it, usually because of dramatic or recent events.',
+        example: 'After seeing news about a plane crash, you feel flying is dangerous \u2014 even though statistically, you\u2019re far more likely to be hurt in a car on the way to the airport.',
+        catchYourself: 'When something feels common or dangerous, ask: \u201CAm I basing this on data or on a vivid memory?\u201D Our brains prioritize drama over statistics.' },
+      { id: 'cb10', name: 'Sunk Cost Fallacy',
+        emoji: '\uD83D\uDCB8',
+        definition: 'Continuing something because you\u2019ve already invested time, money, or effort in it \u2014 even when quitting would be the better choice.',
+        example: 'You\u2019ve been in a friendship that makes you miserable for two years. Instead of ending it, you think \u201CBut we\u2019ve been friends so long, I can\u2019t just throw that away.\u201D The time already spent can\u2019t be recovered either way.',
+        catchYourself: 'Ask: \u201CIf I were starting fresh today, would I make this same choice?\u201D If the answer is no, the past investment shouldn\u2019t be the reason you continue.' },
+      { id: 'cb11', name: 'Spotlight Effect',
+        emoji: '\uD83D\uDD26',
+        definition: 'Believing that other people notice and care about your appearance, behavior, and mistakes far more than they actually do.',
+        example: 'You trip in the hallway and feel like the entire school saw it and will remember it forever. In reality, most people were looking at their phones and forgot about it in ten seconds.',
+        catchYourself: 'Remember: you are the main character of YOUR life, but a background character in everyone else\u2019s. People are too busy worrying about themselves to catalog your embarrassments.' }
+    ]
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Perspective Journal Prompts (extended) ──
+  // Guided reflection with specific themes
+  // ══════════════════════════════════════════════════════════════
+  var GUIDED_JOURNAL_PROMPTS = [
+    { id: 'gj1', title: 'A time I changed my mind about someone',
+      prompt: 'Think about a person you once judged or misunderstood. What was your first impression? What happened to change it? What did you learn about making assumptions?',
+      followUp: 'What would you say to your past self about this person?' },
+    { id: 'gj2', title: 'A time someone surprised me',
+      prompt: 'Describe a moment when someone did something you never expected. What surprised you? What assumption did it challenge? How did it change how you think about that person?',
+      followUp: 'What assumptions might people make about YOU that are wrong?' },
+    { id: 'gj3', title: 'A perspective I struggle to understand',
+      prompt: 'Honestly describe a viewpoint, belief, or way of living that you find hard to understand. Why is it difficult for you? What might someone with that perspective say if they could explain it to you?',
+      followUp: 'Is there a difference between understanding a perspective and agreeing with it?' },
+    { id: 'gj4', title: 'The invisible weight someone carries',
+      prompt: 'Think about someone in your life who might be carrying a burden others don\u2019t see. What might their daily life be like? What do they never talk about? What would change if people knew?',
+      followUp: 'Who in your life might not know about something YOU carry silently?' },
+    { id: 'gj5', title: 'When I was the outsider',
+      prompt: 'Describe a time you were the new person, the different one, or the one who didn\u2019t belong. What did it feel like in your body? What did you wish someone would do? What did you learn?',
+      followUp: 'How has that experience changed how you treat outsiders now?' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════
   // ── Badges ──
   // ══════════════════════════════════════════════════════════════
   var BADGES = [
@@ -525,7 +836,13 @@ window.SelHub = window.SelHub || {
     { id: 'journal_3',        icon: '\u270D\uFE0F',  name: 'Deep Thinker',            desc: 'Complete 3 journal reflections' },
     { id: 'respond_1',        icon: '\u2705',        name: 'Action Taker',            desc: 'Complete your first "What Would You Do?"' },
     { id: 'respond_5',        icon: '\uD83E\uDDD7', name: 'Moral Compass',           desc: 'Complete 5 "What Would You Do?" responses' },
-    { id: 'respond_empathy',  icon: '\uD83D\uDC9C', name: 'Empathy in Action',       desc: 'Score high empathy on a response' }
+    { id: 'respond_empathy',  icon: '\uD83D\uDC9C', name: 'Empathy in Action',       desc: 'Score high empathy on a response' },
+    { id: 'story_explorer',   icon: '\uD83D\uDCD6', name: 'Story Explorer',          desc: 'Read 3 empathy stories from multiple perspectives' },
+    { id: 'empathy_builder',  icon: '\uD83E\uDDF1', name: 'Empathy Builder',         desc: 'Complete 3 perspective-taking exercises' },
+    { id: 'bias_spotter',     icon: '\uD83D\uDCA1', name: 'Bias Spotter',            desc: 'Explore 5 cognitive biases' },
+    { id: 'perspective_shift', icon: '\uD83D\uDD00', name: 'Perspective Shifter',    desc: 'Write from 3 different perspectives in Same Event' },
+    { id: 'open_mind',        icon: '\uD83C\uDF1F', name: 'Open Mind',               desc: 'Complete a guided journal reflection on a difficult perspective' },
+    { id: 'bias_master',      icon: '\uD83E\uDDD0', name: 'Bias Master',             desc: 'Explore all biases in your grade band' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -543,6 +860,8 @@ window.SelHub = window.SelHub || {
       var Sparkles = ctx.icons.Sparkles;
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
+      var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var band = ctx.gradeBand || 'elementary';
@@ -607,6 +926,37 @@ window.SelHub = window.SelHub || {
       var respondAiLoad  = d.respondAiLoad || false;
       var respondDone    = d.respondDone || 0;
 
+      // Empathy Stories state
+      var storyIdx       = d.storyIdx || 0;
+      var storyPerspIdx  = d.storyPerspIdx || 0;
+      var storyReflected = d.storyReflected || false;
+      var storyDone      = d.storyDone || 0;
+
+      // Perspective Exercises state
+      var exerciseMode   = d.exerciseMode || 'walkInShoes';
+      var walkIdx        = d.walkIdx || 0;
+      var walkText       = d.walkText || '';
+      var walkSaved      = d.walkSaved || false;
+      var sameEventIdx   = d.sameEventIdx || 0;
+      var sameEventTexts = d.sameEventTexts || {};
+      var sameEventDone  = d.sameEventDone || 0;
+      var byjIdx         = d.byjIdx || 0;
+      var byjRevealed    = d.byjRevealed || false;
+      var exerciseDone   = d.exerciseDone || 0;
+
+      // Cognitive Bias state
+      var biasIdx        = d.biasIdx || 0;
+      var biasExplored   = d.biasExplored || {};
+      var biasDone       = d.biasDone || 0;
+
+      // Guided Journal state
+      var guidedJIdx     = d.guidedJIdx || 0;
+      var guidedJText    = d.guidedJText || '';
+      var guidedJSaved   = d.guidedJSaved || false;
+      var guidedJShowFU  = d.guidedJShowFU || false;
+      var guidedJEntries = d.guidedJEntries || [];
+      var guidedJDone    = d.guidedJDone || 0;
+
       // Practice log & badges
       var practiceLog    = d.practiceLog || [];
       var earnedBadges   = d.earnedBadges || {};
@@ -633,7 +983,7 @@ window.SelHub = window.SelHub || {
         var entry = { type: type, id: id, timestamp: Date.now() };
         var newLog = practiceLog.concat([entry]);
         upd('practiceLog', newLog);
-        var totalActivities = scenCompleted + swapCompleted + emCompleted + hfTotal + journalDone + respondDone;
+        var totalActivities = scenCompleted + swapCompleted + emCompleted + hfTotal + journalDone + respondDone + storyDone + exerciseDone + biasDone + guidedJDone;
         if (totalActivities + 1 >= 10) tryAwardBadge('total_10');
         var daySet = {};
         newLog.forEach(function(e) { daySet[new Date(e.timestamp).toISOString().slice(0,10)] = true; });
@@ -657,21 +1007,27 @@ window.SelHub = window.SelHub || {
       var tabs = [
         { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' },
         { id: 'swap',      label: '\uD83D\uDD04 Viewpoint Swap' },
+        { id: 'stories',   label: '\uD83D\uDCD6 Empathy Stories' },
+        { id: 'exercises', label: '\uD83D\uDC5F Exercises' },
+        { id: 'biases',    label: '\uD83E\uDDD0 Bias Explorer' },
         { id: 'empathy',   label: '\uD83D\uDDFA\uFE0F Empathy Map' },
         { id: 'hidden',    label: '\uD83D\uDD0D Hidden Feelings' },
         { id: 'journal',   label: '\uD83D\uDCD4 Journal' },
+        { id: 'guidedJ',   label: '\uD83D\uDCDD Perspective Journal' },
         { id: 'respond',   label: '\u270D\uFE0F What Would You Do?' },
         { id: 'coach',     label: '\u2728 AI Coach' },
         { id: 'progress',  label: '\uD83D\uDCCA Progress' }
       ];
 
       var tabBar = h('div', {
+        role: 'tablist', 'aria-label': 'Perspective Taking tabs',
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
         tabs.map(function(tab) {
           var isActive = activeTab === tab.id;
           return h('button', {
             key: tab.id,
+            role: 'tab', 'aria-selected': isActive,
             onClick: function() { upd('activeTab', tab.id); if (soundEnabled) sfxClick(); },
             style: {
               padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
@@ -956,6 +1312,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: field.color, marginBottom: 6 } }, field.label),
                 h('textarea', {
                   value: field.val,
+                  'aria-label': field.label + ' empathy map field',
                   onChange: function(e) { upd(field.key, e.target.value); if (emSaved) upd('emSaved', false); },
                   placeholder: field.placeholder,
                   rows: 3,
@@ -1105,6 +1462,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('textarea', {
               value: aiPrompt,
+              'aria-label': 'Ask the perspective AI coach',
               onChange: function(e) { upd('aiPrompt', e.target.value); },
               placeholder: band === 'elementary'
                 ? 'Tell me about a time when someone didn\'t understand how you felt, or you didn\'t understand how they felt...'
@@ -1189,6 +1547,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { marginBottom: 16 } },
             h('textarea', {
               value: journalText,
+              'aria-label': 'Perspective journal entry',
               onChange: function(e) { upd('journalText', e.target.value); upd('journalSaved', false); },
               placeholder: band === 'elementary'
                 ? 'Write your thoughts here... Try to use feeling words and tell why you think that way.'
@@ -1318,6 +1677,7 @@ window.SelHub = window.SelHub || {
             ),
             h('textarea', {
               value: respondText,
+              'aria-label': 'Your response to the scenario',
               onChange: function(e) { upd('respondText', e.target.value); },
               placeholder: band === 'elementary'
                 ? 'I would... because...'
@@ -1395,17 +1755,523 @@ window.SelHub = window.SelHub || {
       }
 
       // ══════════════════════════════════════════════════════════
+      // ── TAB: Empathy Stories ──
+      // ══════════════════════════════════════════════════════════
+      var storiesContent = null;
+      if (activeTab === 'stories') {
+        var storyList = EMPATHY_STORIES[band] || EMPATHY_STORIES.elementary;
+        var curStory = storyList[storyIdx % storyList.length];
+
+        storiesContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+            '\uD83D\uDCD6 Empathy Stories'
+          ),
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+            band === 'elementary' ? 'Read a story, then see it through different eyes.' :
+            band === 'middle' ? 'Every story has more than one side. Explore them all.' :
+            'Narrative vignettes told from multiple perspectives. Notice whose story you default to.'
+          ),
+          h('p', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 16 } },
+            'Story ' + ((storyIdx % storyList.length) + 1) + ' of ' + storyList.length +
+            (storyDone > 0 ? ' \u00B7 ' + storyDone + ' explored' : '')
+          ),
+          // Story intro
+          h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+            h('p', { style: { fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, textAlign: 'center' } },
+              curStory.title
+            ),
+            h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7 } }, curStory.intro)
+          ),
+          // Perspective tabs
+          h('div', { style: { display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 16, flexWrap: 'wrap' } },
+            curStory.perspectives.map(function(p, pi) {
+              var isActive = storyPerspIdx === pi;
+              return h('button', {
+                key: pi,
+                onClick: function() { upd('storyPerspIdx', pi); if (soundEnabled) sfxSwap(); },
+                style: {
+                  padding: '8px 16px', borderRadius: 10, border: '2px solid ' + (isActive ? ACCENT : '#334155'),
+                  background: isActive ? ACCENT_DIM : '#1e293b', color: isActive ? '#c4b5fd' : '#94a3b8',
+                  fontWeight: 700, fontSize: 12, cursor: 'pointer', transition: 'all 0.2s'
+                }
+              }, p.emoji + ' ' + p.name);
+            })
+          ),
+          // Current perspective text
+          h('div', { style: { padding: 20, borderRadius: 12, background: '#1e293b', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
+              h('span', { style: { fontSize: 28 } }, curStory.perspectives[storyPerspIdx % curStory.perspectives.length].emoji),
+              h('div', { style: { fontWeight: 700, color: '#f1f5f9', fontSize: 14 } }, curStory.perspectives[storyPerspIdx % curStory.perspectives.length].name)
+            ),
+            h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, fontStyle: 'italic' } },
+              '\u201C' + curStory.perspectives[storyPerspIdx % curStory.perspectives.length].text + '\u201D'
+            )
+          ),
+          // Reflection reveal
+          !storyReflected ?
+            h('div', { style: { textAlign: 'center' } },
+              h('button', {
+                onClick: function() {
+                  upd('storyReflected', true);
+                  if (soundEnabled) sfxReveal();
+                  awardXP(10);
+                },
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              }, '\uD83D\uDCA1 Reveal Reflection')
+            )
+          :
+            h('div', null,
+              h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #22c55e44', marginBottom: 16 } },
+                h('p', { style: { fontSize: 10, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, 'Reflection'),
+                h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, curStory.reflection)
+              ),
+              h('div', { style: { textAlign: 'center' } },
+                h('button', {
+                  onClick: function() {
+                    var newDone = storyDone + 1;
+                    upd({
+                      storyIdx: storyIdx + 1,
+                      storyPerspIdx: 0,
+                      storyReflected: false,
+                      storyDone: newDone
+                    });
+                    logPractice('story', curStory.id);
+                    if (newDone >= 3) tryAwardBadge('story_explorer');
+                    if (soundEnabled) sfxClick();
+                    if (celebrate) celebrate();
+                    ctx.announceToSR && ctx.announceToSR('Next empathy story loaded');
+                  },
+                  style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                }, 'Next Story \u2192')
+              )
+            )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Perspective-Taking Exercises ──
+      // ══════════════════════════════════════════════════════════
+      var exercisesContent = null;
+      if (activeTab === 'exercises') {
+        var exModes = [
+          { id: 'walkInShoes', label: '\uD83D\uDC5F Walk in Their Shoes' },
+          { id: 'sameEvent',   label: '\uD83D\uDC41\uFE0F Same Event, Different Eyes' },
+          { id: 'beforeJudge', label: '\u2696\uFE0F Before You Judge' }
+        ];
+
+        var exModeBar = h('div', { style: { display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 16, flexWrap: 'wrap' } },
+          exModes.map(function(m) {
+            var isActive = exerciseMode === m.id;
+            return h('button', {
+              key: m.id,
+              onClick: function() { upd('exerciseMode', m.id); if (soundEnabled) sfxClick(); },
+              style: {
+                padding: '7px 14px', borderRadius: 8, border: '2px solid ' + (isActive ? '#22c55e' : '#334155'),
+                background: isActive ? '#22c55e22' : '#1e293b', color: isActive ? '#22c55e' : '#94a3b8',
+                fontWeight: 600, fontSize: 11, cursor: 'pointer'
+              }
+            }, m.label);
+          })
+        );
+
+        var exerciseBody = null;
+
+        // Walk in Their Shoes
+        if (exerciseMode === 'walkInShoes') {
+          var walkList = PERSPECTIVE_EXERCISES.walkInShoes[band] || PERSPECTIVE_EXERCISES.walkInShoes.elementary;
+          var curWalk = walkList[walkIdx % walkList.length];
+
+          exerciseBody = h('div', null,
+            h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #22c55e44', marginBottom: 16, textAlign: 'center' } },
+              h('span', { style: { fontSize: 36 } }, curWalk.emoji),
+              h('h4', { style: { margin: '8px 0 4px 0', color: '#f1f5f9', fontSize: 15 } }, curWalk.person),
+              h('p', { style: { fontSize: 13, color: '#94a3b8', lineHeight: 1.6 } }, curWalk.prompt)
+            ),
+            h('textarea', {
+              value: walkText,
+              'aria-label': 'Perspective walk reflection',
+              onChange: function(e) { upd('walkText', e.target.value); upd('walkSaved', false); },
+              placeholder: 'Write from this person\u2019s perspective. Describe their day, their feelings, their challenges...',
+              rows: 6,
+              style: { width: '100%', padding: 14, borderRadius: 12, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: 1.6, marginBottom: 8 }
+            }),
+            h('div', { style: { textAlign: 'right', color: '#64748b', fontSize: 11, marginBottom: 12 } },
+              (walkText.trim() ? walkText.trim().split(/\s+/).length : 0) + ' words'
+            ),
+            h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
+              h('button', {
+                onClick: function() {
+                  if (walkText.trim().split(/\s+/).length < 10) { addToast('Write a bit more \u2014 at least a few sentences!', 'info'); return; }
+                  upd('walkSaved', true);
+                  var newExDone = exerciseDone + 1;
+                  upd('exerciseDone', newExDone);
+                  logPractice('exercise', curWalk.id);
+                  if (newExDone >= 3) tryAwardBadge('empathy_builder');
+                  if (soundEnabled) sfxCorrect();
+                  awardXP(15);
+                  addToast('Perspective saved!', 'success');
+                },
+                disabled: walkSaved,
+                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: walkSaved ? '#22c55e' : ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: walkSaved ? 'default' : 'pointer' }
+              }, walkSaved ? '\u2705 Saved!' : '\uD83D\uDCBE Save'),
+              h('button', {
+                onClick: function() {
+                  upd({ walkIdx: walkIdx + 1, walkText: '', walkSaved: false });
+                  if (soundEnabled) sfxClick();
+                },
+                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              }, 'Next Person \u2192')
+            )
+          );
+        }
+
+        // Same Event, Different Eyes
+        if (exerciseMode === 'sameEvent') {
+          var seList = PERSPECTIVE_EXERCISES.sameEvent;
+          var curSE = seList[sameEventIdx % seList.length];
+          var gradeHint = curSE.gradeHint[band] || curSE.gradeHint.elementary;
+
+          exerciseBody = h('div', null,
+            h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #3b82f644', marginBottom: 16 } },
+              h('h4', { style: { color: '#3b82f6', fontSize: 15, marginBottom: 8, textAlign: 'center' } }, curSE.title),
+              h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10, textAlign: 'center' } }, curSE.event),
+              h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', textAlign: 'center' } }, gradeHint)
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 } },
+              curSE.characters.map(function(charName, ci) {
+                var textKey = curSE.id + '_' + ci;
+                var charText = (sameEventTexts[textKey]) || '';
+                return h('div', {
+                  key: ci,
+                  style: { padding: 12, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' }
+                },
+                  h('div', { style: { fontSize: 12, fontWeight: 700, color: '#3b82f6', marginBottom: 6 } }, '\uD83D\uDC64 ' + charName),
+                  h('textarea', {
+                    value: charText,
+                    'aria-label': 'Character perspective response',
+                    onChange: function(e) {
+                      var newTexts = Object.assign({}, sameEventTexts);
+                      newTexts[textKey] = e.target.value;
+                      upd('sameEventTexts', newTexts);
+                    },
+                    placeholder: 'Write from ' + charName + '\u2019s perspective...',
+                    rows: 3,
+                    style: { width: '100%', padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
+                  })
+                );
+              })
+            ),
+            h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
+              h('button', {
+                onClick: function() {
+                  var filled = curSE.characters.filter(function(c, ci) {
+                    var k = curSE.id + '_' + ci;
+                    return sameEventTexts[k] && sameEventTexts[k].trim().length > 10;
+                  }).length;
+                  if (filled < 2) { addToast('Write from at least 2 perspectives first!', 'info'); return; }
+                  var newSEDone = sameEventDone + 1;
+                  var newExDone = exerciseDone + 1;
+                  upd('sameEventDone', newSEDone);
+                  upd('exerciseDone', newExDone);
+                  logPractice('exercise', curSE.id);
+                  if (newExDone >= 3) tryAwardBadge('empathy_builder');
+                  if (filled >= 3) tryAwardBadge('perspective_shift');
+                  if (soundEnabled) sfxCorrect();
+                  awardXP(20);
+                  addToast('Multi-perspective writing saved!', 'success');
+                  if (celebrate) celebrate();
+                },
+                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              }, '\uD83D\uDCBE Save All Perspectives'),
+              h('button', {
+                onClick: function() {
+                  upd({ sameEventIdx: sameEventIdx + 1, sameEventTexts: {} });
+                  if (soundEnabled) sfxClick();
+                },
+                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              }, 'Next Event \u2192')
+            )
+          );
+        }
+
+        // Before You Judge
+        if (exerciseMode === 'beforeJudge') {
+          var byjList = PERSPECTIVE_EXERCISES.beforeYouJudge[band] || PERSPECTIVE_EXERCISES.beforeYouJudge.elementary;
+          var curBYJ = byjList[byjIdx % byjList.length];
+
+          exerciseBody = h('div', null,
+            h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #f59e0b44', marginBottom: 16 } },
+              h('p', { style: { fontSize: 10, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, textAlign: 'center' } }, 'What You See'),
+              h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7 } }, curBYJ.surface)
+            ),
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12, fontStyle: 'italic' } },
+              'What is your first assumption about this person?'
+            ),
+            !byjRevealed ?
+              h('div', { style: { textAlign: 'center', marginBottom: 16 } },
+                h('button', {
+                  onClick: function() {
+                    upd('byjRevealed', true);
+                    if (soundEnabled) sfxReveal();
+                    awardXP(10);
+                    var newExDone = exerciseDone + 1;
+                    upd('exerciseDone', newExDone);
+                    logPractice('exercise', curBYJ.id);
+                    if (newExDone >= 3) tryAwardBadge('empathy_builder');
+                  },
+                  style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#f59e0b', color: '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                }, '\uD83D\uDD13 Reveal the Full Story')
+              )
+            :
+              h('div', null,
+                h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #22c55e44', marginBottom: 12 } },
+                  h('p', { style: { fontSize: 10, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, textAlign: 'center' } }, 'The Full Story'),
+                  h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7 } }, curBYJ.reveal)
+                ),
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+                  h('p', { style: { fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, 'The Lesson'),
+                  h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, curBYJ.lesson)
+                ),
+                h('div', { style: { textAlign: 'center' } },
+                  h('button', {
+                    onClick: function() {
+                      upd({ byjIdx: byjIdx + 1, byjRevealed: false });
+                      if (soundEnabled) sfxClick();
+                    },
+                    style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                  }, 'Next Scenario \u2192')
+                )
+              )
+          );
+        }
+
+        exercisesContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+            '\uD83D\uDC5F Perspective-Taking Exercises'
+          ),
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+            'Practice seeing the world through someone else\u2019s eyes.'
+          ),
+          exModeBar,
+          exerciseBody
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Cognitive Bias Explorer ──
+      // ══════════════════════════════════════════════════════════
+      var biasContent = null;
+      if (activeTab === 'biases') {
+        var biasList = COGNITIVE_BIASES[band] || COGNITIVE_BIASES.elementary;
+        var curBias = biasList[biasIdx % biasList.length];
+        var biasExKey = curBias.id;
+        var isBiasExplored = !!biasExplored[biasExKey];
+
+        biasContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+            '\uD83E\uDDD0 Cognitive Bias Explorer'
+          ),
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+            band === 'elementary' ? 'Our brains play tricks on us sometimes! Learn to catch common thinking mistakes.' :
+            band === 'middle' ? 'Cognitive biases are shortcuts your brain takes that can lead you astray. Learn to spot them.' :
+            'Explore the cognitive biases that shape perception, judgment, and decision-making \u2014 often without awareness.'
+          ),
+          h('p', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 16 } },
+            'Bias ' + ((biasIdx % biasList.length) + 1) + ' of ' + biasList.length +
+            ' \u00B7 ' + Object.keys(biasExplored).length + ' explored'
+          ),
+          // Bias navigation dots
+          h('div', { style: { display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 16, flexWrap: 'wrap' } },
+            biasList.map(function(b, bi) {
+              var explored = !!biasExplored[b.id];
+              var isCur = (biasIdx % biasList.length) === bi;
+              return h('button', {
+                key: bi,
+                onClick: function() { upd('biasIdx', bi); if (soundEnabled) sfxClick(); },
+                title: b.name,
+                style: {
+                  width: 28, height: 28, borderRadius: '50%', border: '2px solid ' + (isCur ? ACCENT : explored ? '#22c55e44' : '#334155'),
+                  background: explored ? '#22c55e22' : '#1e293b', color: isCur ? '#fff' : '#94a3b8',
+                  fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0
+                }
+              }, explored ? '\u2713' : String(bi + 1));
+            })
+          ),
+          // Bias card
+          h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+            h('div', { style: { textAlign: 'center', marginBottom: 12 } },
+              h('span', { style: { fontSize: 40 } }, curBias.emoji),
+              h('h4', { style: { margin: '8px 0 4px 0', color: '#f1f5f9', fontSize: 17 } }, curBias.name)
+            ),
+            // Definition
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', marginBottom: 12 } },
+              h('p', { style: { fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'What Is It?'),
+              h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, curBias.definition)
+            ),
+            // Example
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #3b82f644', marginBottom: 12 } },
+              h('p', { style: { fontSize: 10, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'Everyday Example'),
+              h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, curBias.example)
+            ),
+            // How to catch yourself
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #22c55e44' } },
+              h('p', { style: { fontSize: 10, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'How to Catch Yourself'),
+              h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, curBias.catchYourself)
+            )
+          ),
+          // Mark explored & navigate
+          h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
+            !isBiasExplored ?
+              h('button', {
+                onClick: function() {
+                  var newExplored = Object.assign({}, biasExplored);
+                  newExplored[biasExKey] = true;
+                  var newCount = Object.keys(newExplored).length;
+                  upd('biasExplored', newExplored);
+                  upd('biasDone', newCount);
+                  logPractice('bias', curBias.id);
+                  if (soundEnabled) sfxCorrect();
+                  awardXP(10);
+                  if (newCount >= 5) tryAwardBadge('bias_spotter');
+                  if (newCount >= biasList.length) tryAwardBadge('bias_master');
+                  addToast('Bias explored! ' + newCount + '/' + biasList.length, 'success');
+                },
+                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              }, '\u2705 Mark as Explored')
+            :
+              h('span', { style: { padding: '10px 20px', borderRadius: 10, background: '#22c55e22', color: '#22c55e', fontWeight: 600, fontSize: 13, border: '1px solid #22c55e44' } }, '\u2713 Explored'),
+            h('button', {
+              onClick: function() {
+                upd('biasIdx', biasIdx + 1);
+                if (soundEnabled) sfxClick();
+              },
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+            }, 'Next Bias \u2192')
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Guided Perspective Journal ──
+      // ══════════════════════════════════════════════════════════
+      var guidedJContent = null;
+      if (activeTab === 'guidedJ') {
+        var gjPrompts = GUIDED_JOURNAL_PROMPTS;
+        var curGJ = gjPrompts[guidedJIdx % gjPrompts.length];
+
+        guidedJContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+            '\uD83D\uDCDD Perspective Journal'
+          ),
+          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+            'Guided reflections on perspective-taking, assumptions, and empathy. Your entries are saved with timestamps.'
+          ),
+          h('p', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 16 } },
+            'Prompt ' + ((guidedJIdx % gjPrompts.length) + 1) + ' of ' + gjPrompts.length +
+            (guidedJDone > 0 ? ' \u00B7 ' + guidedJDone + ' entries saved' : '')
+          ),
+          // Prompt card
+          h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid #6366f144', marginBottom: 16 } },
+            h('h4', { style: { color: '#818cf8', fontSize: 14, marginBottom: 8, fontWeight: 700 } }, curGJ.title),
+            h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7, fontStyle: 'italic' } }, '\u201C' + curGJ.prompt + '\u201D')
+          ),
+          // Writing area
+          h('textarea', {
+            value: guidedJText,
+            'aria-label': 'Guided journal reflection',
+            onChange: function(e) { upd('guidedJText', e.target.value); upd('guidedJSaved', false); },
+            placeholder: 'Write your reflection here. Be honest \u2014 this is for you...',
+            rows: 7,
+            style: { width: '100%', padding: 14, borderRadius: 12, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: 1.6, marginBottom: 4 }
+          }),
+          h('div', { style: { textAlign: 'right', color: '#64748b', fontSize: 11, marginBottom: 12 } },
+            (guidedJText.trim() ? guidedJText.trim().split(/\s+/).length : 0) + ' words'
+          ),
+          // Buttons
+          h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 16, flexWrap: 'wrap' } },
+            h('button', {
+              onClick: function() {
+                if (guidedJText.trim().split(/\s+/).length < 10) { addToast('Write at least a few sentences first!', 'info'); return; }
+                var timestamp = new Date().toISOString();
+                var entry = { prompt: curGJ.title, text: guidedJText.trim(), time: timestamp };
+                var newEntries = guidedJEntries.concat([entry]);
+                var newDone = guidedJDone + 1;
+                upd({
+                  guidedJSaved: true,
+                  guidedJEntries: newEntries,
+                  guidedJDone: newDone
+                });
+                logPractice('guidedJ', curGJ.id);
+                if (soundEnabled) sfxCorrect();
+                awardXP(15);
+                tryAwardBadge('open_mind');
+                addToast('Journal entry saved with timestamp!', 'success');
+                ctx.announceToSR && ctx.announceToSR('Guided journal entry saved');
+              },
+              disabled: guidedJSaved,
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: guidedJSaved ? '#22c55e' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 13, cursor: guidedJSaved ? 'default' : 'pointer' }
+            }, guidedJSaved ? '\u2705 Saved!' : '\uD83D\uDCBE Save Entry'),
+            !guidedJShowFU && guidedJSaved ?
+              h('button', {
+                onClick: function() { upd('guidedJShowFU', true); if (soundEnabled) sfxReveal(); },
+                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              }, '\uD83D\uDCA1 Show Follow-Up Question')
+            : null
+          ),
+          // Follow-up question
+          guidedJShowFU && h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+            h('p', { style: { fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, 'Follow-Up Question'),
+            h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, fontStyle: 'italic' } }, curGJ.followUp)
+          ),
+          // Next prompt
+          guidedJSaved && h('div', { style: { textAlign: 'center', marginBottom: 16 } },
+            h('button', {
+              onClick: function() {
+                upd({ guidedJIdx: guidedJIdx + 1, guidedJText: '', guidedJSaved: false, guidedJShowFU: false });
+                if (soundEnabled) sfxClick();
+              },
+              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+            }, 'Next Prompt \u2192')
+          ),
+          // Saved entries list
+          guidedJEntries.length > 0 && h('div', { style: { marginTop: 8 } },
+            h('h4', { style: { fontSize: 14, color: '#f1f5f9', marginBottom: 8 } }, '\uD83D\uDCDA Saved Entries (' + guidedJEntries.length + ')'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              guidedJEntries.slice().reverse().slice(0, 5).map(function(entry, i) {
+                var dateStr = new Date(entry.time).toLocaleString();
+                return h('div', {
+                  key: i,
+                  style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' }
+                },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+                    h('span', { style: { fontSize: 12, fontWeight: 700, color: '#818cf8' } }, entry.prompt),
+                    h('span', { style: { fontSize: 10, color: '#64748b' } }, dateStr)
+                  ),
+                  h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.5, margin: 0 } },
+                    entry.text.length > 120 ? entry.text.slice(0, 120) + '...' : entry.text
+                  )
+                );
+              })
+            )
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
       // ── TAB: Progress ──
       // ══════════════════════════════════════════════════════════
       var progressContent = null;
       if (activeTab === 'progress') {
-        var totalActs = scenCompleted + swapCompleted + emCompleted + hfTotal + journalDone + respondDone;
+        var totalActs = scenCompleted + swapCompleted + emCompleted + hfTotal + journalDone + respondDone + storyDone + exerciseDone + biasDone + guidedJDone;
         var stats = [
           { label: 'Scenarios Explored', value: scenCompleted, icon: '\uD83C\uDFAD', color: '#8b5cf6' },
           { label: 'Viewpoints Swapped', value: swapCompleted, icon: '\uD83D\uDD04', color: '#3b82f6' },
+          { label: 'Empathy Stories', value: storyDone, icon: '\uD83D\uDCD6', color: '#e879f9' },
+          { label: 'Exercises Done', value: exerciseDone, icon: '\uD83D\uDC5F', color: '#22d3ee' },
+          { label: 'Biases Explored', value: biasDone, icon: '\uD83E\uDDD0', color: '#fb923c' },
           { label: 'Empathy Maps Created', value: emCompleted, icon: '\uD83D\uDDFA\uFE0F', color: '#22c55e' },
           { label: 'Hidden Feelings Found', value: hfCorrect + '/' + hfTotal, icon: '\uD83D\uDD0D', color: '#f59e0b' },
-          { label: 'Journal Entries', value: journalDone, icon: '\uD83D\uDCD4', color: '#6366f1' },
+          { label: 'Journal Entries', value: journalDone + guidedJDone, icon: '\uD83D\uDCD4', color: '#6366f1' },
           { label: 'Responses Submitted', value: respondDone, icon: '\u270D\uFE0F', color: '#f59e0b' }
         ];
 
@@ -1444,8 +2310,8 @@ window.SelHub = window.SelHub || {
             h('h4', { style: { fontSize: 14, color: '#f1f5f9', marginBottom: 8 } }, 'Recent Practice'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
               practiceLog.slice(-8).reverse().map(function(entry, i) {
-                var icons = { scenario: '\uD83C\uDFAD', swap: '\uD83D\uDD04', empathy: '\uD83D\uDDFA\uFE0F', hidden: '\uD83D\uDD0D', coach: '\u2728', journal: '\uD83D\uDCD4', respond: '\u270D\uFE0F' };
-                var labels = { scenario: 'Scenario', swap: 'Viewpoint Swap', empathy: 'Empathy Map', hidden: 'Hidden Feeling', coach: 'AI Coach', journal: 'Journal Entry', respond: 'What Would You Do?' };
+                var icons = { scenario: '\uD83C\uDFAD', swap: '\uD83D\uDD04', empathy: '\uD83D\uDDFA\uFE0F', hidden: '\uD83D\uDD0D', coach: '\u2728', journal: '\uD83D\uDCD4', respond: '\u270D\uFE0F', story: '\uD83D\uDCD6', exercise: '\uD83D\uDC5F', bias: '\uD83E\uDDD0', guidedJ: '\uD83D\uDCDD' };
+                var labels = { scenario: 'Scenario', swap: 'Viewpoint Swap', empathy: 'Empathy Map', hidden: 'Hidden Feeling', coach: 'AI Coach', journal: 'Journal Entry', respond: 'What Would You Do?', story: 'Empathy Story', exercise: 'Exercise', bias: 'Bias Explorer', guidedJ: 'Perspective Journal' };
                 return h('div', {
                   key: i,
                   style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }
@@ -1463,7 +2329,7 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
-      var content = scenContent || swapContent || emContent || hfContent || journalContent || respondContent || coachContent || progressContent;
+      var content = scenContent || swapContent || storiesContent || exercisesContent || biasContent || emContent || hfContent || journalContent || guidedJContent || respondContent || coachContent || progressContent;
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         tabBar,
