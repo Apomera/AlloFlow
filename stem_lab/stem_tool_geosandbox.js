@@ -453,6 +453,8 @@ window.StemLab = window.StemLab || {
       var awardXP = ctx.awardXP;
       var t = ctx.t;
 
+      return (function() {
+
       // ── State ──
       var gd = (labToolData && labToolData.geoSandbox) || {};
       var upd = function(key, val) { setLabToolData(function(prev) { return Object.assign({}, prev, { geoSandbox: Object.assign({}, prev.geoSandbox || {}, (function() { var o = {}; o[key] = val; return o; })()) }); }); };
@@ -1010,6 +1012,7 @@ window.StemLab = window.StemLab || {
           '\uD83D\uDCA1 STL files are unit-less. Most 3D printer slicers (Cura, PrusaSlicer) default to millimeters. A shape with width=5 will print as 5mm wide.'
         )
       );
+      })();
     }
   });
 })();
