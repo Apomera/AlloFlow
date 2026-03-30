@@ -233,6 +233,111 @@
 
 
   /* ═══════════════════════════════════════════════════════════
+     REACTIONS — What happens when two materials interact?
+     ═══════════════════════════════════════════════════════════ */
+  var REACTIONS = [
+    { a: 'Baking Soda', b: 'Acetic Acid', name: 'Volcano Reaction', emoji: '\uD83C\uDF0B',
+      equation: 'NaHCO\u2083 + CH\u2083COOH \u2192 CO\u2082 + H\u2082O + NaCH\u2083COO',
+      desc: 'Baking soda reacts with vinegar to produce carbon dioxide gas, water, and sodium acetate. This is the classic science fair volcano!',
+      type: 'Acid-Base Neutralization', observable: 'Fizzing, bubbling, gas release' },
+    { a: 'Water', b: 'Table Salt', name: 'Dissolving Salt', emoji: '\uD83C\uDF0A',
+      equation: 'NaCl + H\u2082O \u2192 Na\u207A(aq) + Cl\u207B(aq)',
+      desc: 'Salt dissolves in water as the polar water molecules pull apart the Na\u207A and Cl\u207B ions. The salt seems to disappear but is still there!',
+      type: 'Dissolution', observable: 'Salt disappears, water tastes salty' },
+    { a: 'Water', b: 'Sugar (Sucrose)', name: 'Dissolving Sugar', emoji: '\uD83C\uDF6C',
+      equation: 'C\u2081\u2082H\u2082\u2082O\u2081\u2081 + H\u2082O \u2192 C\u2081\u2082H\u2082\u2082O\u2081\u2081(aq)',
+      desc: 'Sugar dissolves in water but does NOT break into new substances. This is a physical change \u2014 you can get the sugar back by evaporating the water.',
+      type: 'Physical Change (Dissolving)', observable: 'Sugar disappears, water tastes sweet' },
+    { a: 'Rust', b: 'Water', name: 'Iron Corrosion', emoji: '\uD83D\uDFE4',
+      equation: '4Fe + 3O\u2082 + 6H\u2082O \u2192 4Fe(OH)\u2083',
+      desc: 'Iron reacts with oxygen and water over time to form iron hydroxide, which becomes rust (Fe\u2082O\u2083). This is why leaving iron in rain causes it to corrode.',
+      type: 'Oxidation (Corrosion)', observable: 'Orange-brown flaky coating forms slowly' },
+    { a: 'Hydrogen Peroxide', b: 'Water', name: 'Peroxide Decomposition', emoji: '\uD83D\uDCA5',
+      equation: '2H\u2082O\u2082 \u2192 2H\u2082O + O\u2082',
+      desc: 'Hydrogen peroxide naturally decomposes into water and oxygen gas. A catalyst (like yeast or MnO\u2082) speeds this up dramatically \u2014 that\u2019s the "elephant toothpaste" experiment!',
+      type: 'Decomposition', observable: 'Bubbling, foam if catalyzed' },
+    { a: 'Baking Soda', b: 'Water', name: 'Baking Soda Solution', emoji: '\uD83E\uDDEA',
+      equation: 'NaHCO\u2083 + H\u2082O \u2192 Na\u207A(aq) + OH\u207B(aq) + CO\u2082',
+      desc: 'Baking soda dissolves in water creating a mildly basic (alkaline) solution. This is why it works as an antacid \u2014 it neutralizes stomach acid.',
+      type: 'Dissolution (Basic)', observable: 'Slight fizzing, slippery feel' },
+    { a: 'Methane', b: 'Ozone', name: 'Combustion', emoji: '\uD83D\uDD25',
+      equation: 'CH\u2084 + 2O\u2082 \u2192 CO\u2082 + 2H\u2082O + energy',
+      desc: 'When methane burns in oxygen, it releases energy as heat and light. This is how natural gas stoves and heaters work.',
+      type: 'Combustion', observable: 'Blue flame, heat, water vapor' },
+    { a: 'Calcium Carbonate', b: 'Acetic Acid', name: 'Dissolving Shells', emoji: '\uD83D\uDC1A',
+      equation: 'CaCO\u2083 + 2CH\u2083COOH \u2192 Ca(CH\u2083COO)\u2082 + H\u2082O + CO\u2082',
+      desc: 'Vinegar dissolves seashells and chalk! The acid reacts with calcium carbonate to produce gas bubbles. This is similar to how acid rain damages limestone buildings.',
+      type: 'Acid-Base', observable: 'Fizzing, shell slowly dissolves' }
+  ];
+
+  /* ═══════════════════════════════════════════════════════════
+     SAFETY + FUN FACTS per material
+     ═══════════════════════════════════════════════════════════ */
+  var MATERIAL_EXTRAS = {
+    'Water': {
+      safety: 'Safe! But never mix water with hot oil \u2014 it causes dangerous splattering.',
+      facts: ['A water molecule bends at 104.5\u00B0 \u2014 that angle gives water its special properties.', 'Hot water can freeze faster than cold water (Mpemba effect).', 'Water is the only substance that naturally exists in all three states on Earth.']
+    },
+    'Table Salt': {
+      safety: 'Safe to eat in small amounts. Too much raises blood pressure.',
+      facts: ['Roman soldiers were sometimes paid in salt \u2014 that\u2019s where "salary" comes from.', 'Only 6% of all salt produced is used for food. Most goes to de-icing roads and industry.', 'A single grain of table salt contains about 1.2 \u00D7 10\u00B9\u2078 atoms.']
+    },
+    'Sugar (Sucrose)': {
+      safety: 'Safe to eat. Excessive sugar consumption causes tooth decay and health issues.',
+      facts: ['If you heat sugar to 186\u00B0C it caramelizes \u2014 that\u2019s a chemical change, not just melting.', 'Sugar cane was once so valuable it was called "white gold."', 'Your brain uses about 120g of glucose daily \u2014 20% of your body\u2019s energy.']
+    },
+    'Baking Soda': {
+      safety: 'Safe for cooking and cleaning. Do not ingest large amounts.',
+      facts: ['Baking soda can extinguish small grease fires by releasing CO\u2082.', 'It\u2019s used in toothpaste as a mild abrasive.', 'Mixed with vinegar, it produces enough CO\u2082 to inflate a balloon.']
+    },
+    'Rust': {
+      safety: 'Rust itself is not toxic, but rusty metal can harbor tetanus bacteria.',
+      facts: ['Mars is red because its surface is covered in iron oxide \u2014 literally a rusty planet.', 'Rusting costs the US economy about $7 billion per year.', 'Stainless steel resists rust because it contains chromium, which forms a protective oxide layer.']
+    },
+    'Carbon Dioxide': {
+      safety: 'Non-toxic in small amounts. High concentrations displace oxygen and cause suffocation.',
+      facts: ['You exhale about 200 mL of CO\u2082 with every breath.', 'Dry ice is solid CO\u2082 at -78.5\u00B0C \u2014 it sublimes directly to gas.', 'Plants absorb 120 billion tons of CO\u2082 from the atmosphere each year.']
+    },
+    'Ammonia': {
+      safety: '\u26A0\uFE0F Irritating to eyes and lungs. NEVER mix with bleach \u2014 creates toxic chloramine gas.',
+      facts: ['The Haber process makes 150 million tons of ammonia yearly for fertilizer.', 'Jupiter\u2019s atmosphere contains ammonia clouds.', 'Many household cleaners contain dilute ammonia (about 5-10%).']
+    },
+    'Glucose': {
+      safety: 'Safe \u2014 it\u2019s your body\u2019s primary energy source.',
+      facts: ['Your blood contains about 5 grams of glucose at all times.', 'Photosynthesis converts CO\u2082 + H\u2082O into glucose using sunlight.', 'Glucose was first isolated from raisins in 1747 by Andreas Marggraf.']
+    },
+    'Calcium Carbonate': {
+      safety: 'Safe \u2014 used in antacids (Tums) and toothpaste.',
+      facts: ['The White Cliffs of Dover are made of calcium carbonate from ancient sea creatures.', 'Coral reefs are built from CaCO\u2083 secreted by coral polyps.', 'Eggshells are 95% calcium carbonate.']
+    },
+    'Methane': {
+      safety: '\u26A0\uFE0F Extremely flammable. Odorless \u2014 gas companies add mercaptan for the rotten-egg smell.',
+      facts: ['Cows produce about 100 liters of methane per day through burping.', 'Methane is 80\u00D7 more potent than CO\u2082 as a greenhouse gas (over 20 years).', 'Titan (Saturn\u2019s moon) has lakes of liquid methane.']
+    },
+    'Ethanol': {
+      safety: '\u26A0\uFE0F Flammable. Toxic if consumed in large quantities.',
+      facts: ['Hand sanitizer is typically 60-70% ethanol.', 'Ethanol has been produced by fermentation for over 9,000 years.', 'Brazil uses sugarcane ethanol to fuel about 30% of its cars.']
+    },
+    'Acetic Acid': {
+      safety: 'Household vinegar (5%) is safe. Concentrated acetic acid is corrosive.',
+      facts: ['Vinegar has been used for over 10,000 years \u2014 it\u2019s one of the oldest chemicals known.', 'The word "vinegar" comes from French "vin aigre" meaning "sour wine."', 'Acetic acid bacteria convert ethanol to vinegar naturally.']
+    },
+    'Hydrogen Peroxide': {
+      safety: '\u26A0\uFE0F 3% solutions are safe for first aid. Higher concentrations burn skin.',
+      facts: ['Bombardier beetles spray boiling hydrogen peroxide at predators!', 'Your white blood cells produce H\u2082O\u2082 to kill bacteria.', 'It\u2019s used as rocket propellant at 90% concentration.']
+    },
+    'Sulfuric Acid': {
+      safety: '\u2620\uFE0F EXTREMELY corrosive. Never handle without proper equipment.',
+      facts: ['More sulfuric acid is produced than any other chemical \u2014 over 200 million tons/year.', 'Car batteries contain about 35% sulfuric acid.', 'Venus has clouds of sulfuric acid in its atmosphere.']
+    },
+    'Ozone': {
+      safety: '\u26A0\uFE0F Toxic to breathe. Ground-level ozone is a pollutant, but stratospheric ozone protects us from UV.',
+      facts: ['The ozone layer is only about 3mm thick if compressed to sea-level pressure.', 'Lightning creates ozone \u2014 that\u2019s the fresh smell after a thunderstorm.', 'The ozone hole over Antarctica was discovered in 1985.']
+    }
+  };
+
+
+  /* ═══════════════════════════════════════════════════════════
      Register Tool
      ═══════════════════════════════════════════════════════════ */
   window.StemLab.registerTool('decomposer', {
@@ -490,6 +595,15 @@
         var huntWrongGuess = d.huntWrongGuess || null;
         var huntScore = d.huntScore || 0;
         var huntStreak = d.huntStreak || 0;
+
+        // Reaction Lab state
+        var reactantA = d.reactantA || null;
+        var reactantB = d.reactantB || null;
+        var activeReaction = d.activeReaction || null;
+        var reactionsDiscovered = d.reactionsDiscovered || {};
+
+        // Fun fact state
+        var factIdx = d._factIdx || 0;
 
 
         /* ═══════════════════════════════════════════════════
@@ -890,7 +1004,8 @@
            ═══════════════════════════════════════════════════ */
         var TABS = [
           { id: 'explore', label: '\u2697\uFE0F Explore', color: 'amber' },
-          { id: 'scenes', label: '\uD83C\uDFE0 Scenes', color: 'rose' },
+          { id: 'scenes', label: '\uD83C\uDFE0 Hunt', color: 'rose' },
+          { id: 'reactions', label: '\uD83C\uDF0B Mix', color: 'red' },
           { id: 'visualize', label: '\uD83C\uDFA8 Visualize', color: 'indigo' },
           { id: 'quiz', label: '\uD83E\uDDE0 Quiz', color: 'emerald' },
           { id: 'tutor', label: '\uD83E\uDD16 AI Tutor', color: 'purple' }
@@ -1171,6 +1286,60 @@
               ),
               h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, sel.realUse)
             ),
+
+            /* Safety info */
+            MATERIAL_EXTRAS[sel.name] ? h('div', { className: 'rounded-xl border p-3 mb-3 ' + (MATERIAL_EXTRAS[sel.name].safety.indexOf('\u26A0') >= 0 || MATERIAL_EXTRAS[sel.name].safety.indexOf('\u2620') >= 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200') },
+              h('div', { className: 'flex items-center gap-2' },
+                h('span', { className: 'text-[10px] font-bold uppercase tracking-wider ' + (MATERIAL_EXTRAS[sel.name].safety.indexOf('\u26A0') >= 0 || MATERIAL_EXTRAS[sel.name].safety.indexOf('\u2620') >= 0 ? 'text-red-600' : 'text-green-600') }, '\uD83D\uDEE1\uFE0F Safety'),
+                h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, MATERIAL_EXTRAS[sel.name].safety)
+              )
+            ) : null,
+
+            /* Did You Know? facts */
+            MATERIAL_EXTRAS[sel.name] ? (function() {
+              var extras = MATERIAL_EXTRAS[sel.name];
+              var facts = extras.facts || [];
+              var fi = factIdx % facts.length;
+              return facts.length > 0 ? h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-3 mb-3' },
+                h('div', { className: 'flex items-center justify-between mb-1' },
+                  h('span', { className: 'text-[10px] font-bold text-violet-600 uppercase tracking-wider' }, '\uD83D\uDCA1 Did You Know?'),
+                  h('button', {
+                    onClick: function() { upd('_factIdx', factIdx + 1); },
+                    className: 'text-[10px] text-violet-500 hover:text-violet-700 font-bold'
+                  }, 'Next \u2192')
+                ),
+                h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, facts[fi]),
+                h('div', { className: 'flex gap-1 mt-2' },
+                  facts.map(function(f, i) {
+                    return h('div', { key: i, style: { width: '6px', height: '6px', borderRadius: '50%', background: i === fi ? '#7c3aed' : '#e2e8f0' } });
+                  })
+                )
+              ) : null;
+            })() : null,
+
+            /* Element mini-cards with periodic table info */
+            decomposed ? h('div', { className: 'bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-200 p-3 mb-3' },
+              h('p', { className: 'text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-2' }, '\u269B\uFE0F Element Details'),
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
+                sel.elements.map(function(el) {
+                  return h('div', { key: el.sym, className: 'bg-white rounded-lg border border-indigo-100 p-2 flex items-center gap-3' },
+                    h('div', {
+                      className: 'w-12 h-14 rounded-lg flex flex-col items-center justify-center text-white shadow-sm',
+                      style: { background: el.color }
+                    },
+                      h('span', { className: 'text-[8px] opacity-70' }, el.num),
+                      h('span', { className: 'text-lg font-black leading-none' }, el.sym),
+                      h('span', { className: 'text-[7px] opacity-80' }, el.mass + ' u')
+                    ),
+                    h('div', { className: 'flex-1' },
+                      h('div', { className: 'font-bold text-sm text-slate-800' }, el.name),
+                      h('div', { className: 'text-[10px] text-slate-500' }, el.group),
+                      h('div', { className: 'text-[10px] font-bold text-amber-600 mt-0.5' }, '\u00D7' + el.count + ' in ' + sel.formula)
+                    )
+                  );
+                })
+              )
+            ) : null,
 
             /* Molar mass calculator */
             h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-3 mb-3' },
@@ -1550,6 +1719,138 @@
                 ) : null
               );
             })() : null
+          ),
+
+
+          /* ═══════════════════════════════════════════════════
+             REACTION LAB TAB — Mix two materials
+             ═══════════════════════════════════════════════════ */
+          tab === 'reactions' && h('div', null,
+            h('div', { className: 'text-center mb-4' },
+              h('h4', { className: 'text-lg font-bold text-slate-800' }, '\uD83C\uDF0B Reaction Lab'),
+              h('p', { className: 'text-xs text-slate-500 mt-1' }, 'Pick two materials and see what happens when they react!')
+            ),
+
+            // Material picker — two slots
+            h('div', { className: 'grid grid-cols-2 gap-4 mb-4' },
+              // Slot A
+              h('div', { className: 'bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-indigo-200 p-3' },
+                h('p', { className: 'text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-2' }, 'Material A'),
+                reactantA ? h('div', { className: 'text-center' },
+                  h('span', { className: 'text-3xl' }, (MATERIALS.find(function(m) { return m.name === reactantA; }) || {}).emoji || '?'),
+                  h('p', { className: 'text-xs font-bold text-slate-800 mt-1' }, reactantA),
+                  h('button', { onClick: function() { updMulti({ reactantA: null, activeReaction: null }); }, className: 'text-[10px] text-red-500 font-bold mt-1' }, '\u2715 Remove')
+                ) : h('p', { className: 'text-xs text-indigo-400 text-center py-4' }, 'Select below \u2193')
+              ),
+              // Slot B
+              h('div', { className: 'bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl border-2 border-rose-200 p-3' },
+                h('p', { className: 'text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-2' }, 'Material B'),
+                reactantB ? h('div', { className: 'text-center' },
+                  h('span', { className: 'text-3xl' }, (MATERIALS.find(function(m) { return m.name === reactantB; }) || {}).emoji || '?'),
+                  h('p', { className: 'text-xs font-bold text-slate-800 mt-1' }, reactantB),
+                  h('button', { onClick: function() { updMulti({ reactantB: null, activeReaction: null }); }, className: 'text-[10px] text-red-500 font-bold mt-1' }, '\u2715 Remove')
+                ) : h('p', { className: 'text-xs text-rose-400 text-center py-4' }, 'Select below \u2193')
+              )
+            ),
+
+            // Material palette
+            h('div', { className: 'flex flex-wrap gap-1.5 mb-4' },
+              MATERIALS.map(function(m) {
+                var isA = reactantA === m.name;
+                var isB = reactantB === m.name;
+                return h('button', {
+                  key: m.name,
+                  onClick: function() {
+                    SOUNDS.selectMaterial();
+                    if (!reactantA) { updMulti({ reactantA: m.name, activeReaction: null }); }
+                    else if (!reactantB && m.name !== reactantA) { upd('reactantB', m.name); }
+                    else if (!isA && !isB) { updMulti({ reactantA: m.name, reactantB: null, activeReaction: null }); }
+                  },
+                  className: 'px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all ' +
+                    (isA ? 'bg-indigo-500 text-white' : isB ? 'bg-rose-500 text-white' : 'bg-slate-50 text-slate-600 border border-slate-200 hover:border-amber-300')
+                }, m.emoji + ' ' + m.name);
+              })
+            ),
+
+            // React button + result
+            reactantA && reactantB ? (function() {
+              // Find matching reaction
+              var reaction = null;
+              for (var ri = 0; ri < REACTIONS.length; ri++) {
+                var r = REACTIONS[ri];
+                if ((r.a === reactantA && r.b === reactantB) || (r.a === reactantB && r.b === reactantA)) {
+                  reaction = r; break;
+                }
+              }
+
+              return h('div', null,
+                // Mix button
+                !activeReaction ? h('button', {
+                  onClick: function() {
+                    SOUNDS.decompose();
+                    if (reaction) {
+                      var disc = Object.assign({}, reactionsDiscovered);
+                      disc[reaction.name] = true;
+                      updMulti({ activeReaction: reaction, reactionsDiscovered: disc });
+                      if (addToast) addToast(reaction.emoji + ' ' + reaction.name + '!', 'success');
+                      if (awardStemXP) awardStemXP(10);
+                    } else {
+                      upd('activeReaction', { name: 'No Known Reaction', emoji: '\uD83E\uDD37', desc: 'These two materials don\u2019t have a notable reaction in our database. Try a different combination!', equation: reactantA + ' + ' + reactantB + ' \u2192 ?', type: 'Unknown', observable: 'No visible change' });
+                    }
+                  },
+                  className: 'w-full py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 shadow-md transition-all mb-3'
+                }, '\uD83E\uDDEA Mix ' + reactantA + ' + ' + reactantB + '!') : null,
+
+                // Reaction result card
+                activeReaction ? h('div', { className: 'bg-gradient-to-br from-amber-50 to-red-50 rounded-xl border-2 border-amber-300 p-4 mb-3' },
+                  h('div', { className: 'flex items-center gap-3 mb-3' },
+                    h('span', { className: 'text-3xl' }, activeReaction.emoji),
+                    h('div', null,
+                      h('h4', { className: 'font-bold text-slate-800 text-lg' }, activeReaction.name),
+                      h('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700' }, activeReaction.type)
+                    )
+                  ),
+                  // Equation
+                  h('div', { className: 'bg-white rounded-lg p-3 mb-3 text-center border border-amber-200' },
+                    h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1' }, 'Chemical Equation'),
+                    h('p', { className: 'text-sm font-mono font-bold text-slate-800' }, activeReaction.equation)
+                  ),
+                  // Description
+                  h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-3' }, activeReaction.desc),
+                  // Observable
+                  activeReaction.observable ? h('div', { className: 'flex items-center gap-2 bg-sky-50 rounded-lg p-2 border border-sky-200 mb-3' },
+                    h('span', { className: 'text-[10px] font-bold text-sky-600' }, '\uD83D\uDC41\uFE0F What you\u2019d see:'),
+                    h('span', { className: 'text-xs text-slate-700' }, activeReaction.observable)
+                  ) : null,
+                  // TTS + try another
+                  h('div', { className: 'flex gap-2' },
+                    h('button', {
+                      onClick: function() { speakText(activeReaction.name + '. ' + activeReaction.desc); },
+                      className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200'
+                    }, '\uD83D\uDD0A Listen'),
+                    h('button', {
+                      onClick: function() { updMulti({ reactantA: null, reactantB: null, activeReaction: null }); },
+                      className: 'flex-1 py-2 bg-amber-500 text-white font-bold text-xs rounded-lg hover:bg-amber-600'
+                    }, '\uD83D\uDD04 Try Another Combo')
+                  )
+                ) : null
+              );
+            })() : null,
+
+            // Discovered reactions log
+            Object.keys(reactionsDiscovered).length > 0 ? h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
+              h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2' }, '\uD83E\uDDEA Discovered Reactions (' + Object.keys(reactionsDiscovered).length + '/' + REACTIONS.length + ')'),
+              h('div', { className: 'flex flex-wrap gap-1.5' },
+                REACTIONS.map(function(r) {
+                  var disc = !!reactionsDiscovered[r.name];
+                  return h('span', {
+                    key: r.name,
+                    className: 'px-2 py-1 rounded-lg text-[10px] font-bold ' +
+                      (disc ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-400 border border-slate-200')
+                  }, disc ? r.emoji + ' ' + r.name : '\uD83D\uDD12 ???');
+                })
+              )
+            ) : null
           ),
 
 
