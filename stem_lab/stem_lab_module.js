@@ -10984,7 +10984,12 @@
             circuit: true, molecule: true, decomposer: true, solarSystem: true,
             universe: true, ecosystem: true, unitConvert: true,
             anatomy: true, companionPlanting: true, graphCalc: true,
-            algebraCAS: true, aquarium: true, economicsLab: true, behaviorLab: true
+            algebraCAS: true, aquarium: true, economicsLab: true, behaviorLab: true,
+            probability: true, logicLab: true, dnaLab: true, dataPlot: true,
+            numberline: true, volume: true, areamodel: true, fractionViz: true, fractions: true,
+            codingPlayground: true, wave: true, semiconductor: true, titrationLab: true,
+            plateTectonics: true, gameStudio: true, geoQuiz: true, geometryProver: true,
+            epidemicSim: true, lifeSkills: true, graphCalc: true
           };
           console.log('[StemLab Fallback] Attempting to render plugin: ' + stemLabTool + ' (registered: ' + window.StemLab.isRegistered(stemLabTool) + ')');
           if (!_pluginOnlyTools[stemLabTool]) return null;
