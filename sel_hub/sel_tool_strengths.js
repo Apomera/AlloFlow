@@ -1,8 +1,9 @@
 // ═══════════════════════════════════════════════════════════════
-// sel_tool_strengths.js — Strengths Finder Plugin (v1.0)
+// sel_tool_strengths.js — Strengths Finder Plugin (v2.0)
 // Discover personal strengths through guided reflection, sorting
 // activities, strengths cards, growth mindset exercises, AI coach,
-// and achievement badges.
+// strengths interview, action planner, peer strengths, affirmation
+// cards, and achievement badges.
 // Registered tool ID: "strengths"
 // Category: self-awareness
 // Grade-adaptive: uses gradeBand for vocabulary & depth
@@ -312,6 +313,252 @@ window.SelHub = window.SelHub || {
     ]
   };
 
+  // ═══════════════════════════════════════════════════════════════
+  // ── Strengths Interview Questions (Grade-Adaptive) ──
+  // ═══════════════════════════════════════════════════════════════
+  var INTERVIEW_QUESTIONS = {
+    elementary: [
+      { id: 'iq1', question: 'When do you lose track of time because you\'re having so much fun?', hint: 'Think about activities at school, home, or with friends.' },
+      { id: 'iq2', question: 'What do your friends ask you for help with?', hint: 'Maybe it\'s homework, playing games, or fixing things.' },
+      { id: 'iq3', question: 'What comes easily to you that seems hard for others?', hint: 'Something you don\'t have to try very hard at.' },
+      { id: 'iq4', question: 'What do you love to teach other people?', hint: 'Something you enjoy sharing or showing others.' },
+      { id: 'iq5', question: 'What makes you feel proud when you finish it?', hint: 'Think about something that gives you a good feeling inside.' },
+      { id: 'iq6', question: 'If you could help the world with one thing, what would it be?', hint: 'Anything at all \u2014 big or small!' },
+      { id: 'iq7', question: 'What do adults in your life say you\'re really good at?', hint: 'Think about compliments from parents, teachers, or coaches.' },
+      { id: 'iq8', question: 'What kind of stories or games do you like the most?', hint: 'Adventure, mystery, helping people, building things?' }
+    ],
+    middle: [
+      { id: 'iq1', question: 'When do you lose track of time because you\'re so absorbed in what you\'re doing?', hint: 'This is called "flow" \u2014 it\'s a clue to your strengths.' },
+      { id: 'iq2', question: 'What do friends or family come to you for help with?', hint: 'The things people ask for reveal what they see in you.' },
+      { id: 'iq3', question: 'What comes easily to you that seems hard for others?', hint: 'Natural abilities you might take for granted.' },
+      { id: 'iq4', question: 'What would you do every day if you had no limits?', hint: 'Dream big \u2014 money, time, and skills are no barrier.' },
+      { id: 'iq5', question: 'What kind of problems do you enjoy solving?', hint: 'Technical, social, creative, physical?' },
+      { id: 'iq6', question: 'When have you felt most like your true self?', hint: 'A moment where you thought "this is really me."' },
+      { id: 'iq7', question: 'What compliments have surprised you the most?', hint: 'Sometimes others see strengths we miss in ourselves.' },
+      { id: 'iq8', question: 'What topics could you talk about for hours?', hint: 'Passion is often a sign of underlying strengths.' }
+    ],
+    high: [
+      { id: 'iq1', question: 'When do you experience "flow" \u2014 total absorption where time disappears?', hint: 'Csikszentmihalyi identified flow as the peak of engagement.' },
+      { id: 'iq2', question: 'What do others consistently seek your advice or help with?', hint: 'Patterns in how others see you reveal your signature strengths.' },
+      { id: 'iq3', question: 'What comes naturally to you that requires significant effort from peers?', hint: 'These effortless abilities are your most authentic strengths.' },
+      { id: 'iq4', question: 'If you could solve one problem in the world, what would it be and how would you approach it?', hint: 'Your approach reveals your strength orientation.' },
+      { id: 'iq5', question: 'What activities energize you rather than drain you, even when they\'re challenging?', hint: 'Strengths are not just abilities \u2014 they\'re energizers.' },
+      { id: 'iq6', question: 'Describe a time you handled a difficult situation well. What qualities did you draw on?', hint: 'Crisis moments often reveal our deepest strengths.' },
+      { id: 'iq7', question: 'How would your closest friend describe your greatest strengths differently than you would?', hint: 'The gap between self-perception and others\' view is revealing.' },
+      { id: 'iq8', question: 'What legacy do you want to leave? What strengths would that require?', hint: 'Long-term vision connects strengths to purpose.' }
+    ]
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // ── Strengths Action Planner Data ──
+  // ═══════════════════════════════════════════════════════════════
+  var ACTION_SUGGESTIONS = {
+    // Character strengths
+    kind: [
+      'Write a kind note to someone who might be having a tough day.',
+      'Do a secret act of kindness without telling anyone.',
+      'Compliment three people you interact with today.'
+    ],
+    brave: [
+      'Raise your hand to answer a question you\'re not 100% sure about.',
+      'Start a conversation with someone you don\'t usually talk to.',
+      'Try something you\'ve been putting off because it feels scary.'
+    ],
+    honest: [
+      'When someone asks your opinion, share your real thoughts with kindness.',
+      'Admit a small mistake openly and fix it.',
+      'Write in a journal about something you\'ve been avoiding being honest about.'
+    ],
+    curious: [
+      'Look up something you\'ve always wondered about and learn 3 new facts.',
+      'Ask a thoughtful question in class or at home today.',
+      'Try a new hobby or activity you\'ve never done before.'
+    ],
+    fair: [
+      'Make sure everyone gets a turn or a voice in a group activity.',
+      'Stand up for someone who is being treated unfairly.',
+      'Think about a rule or situation that seems unfair and brainstorm a better way.'
+    ],
+    grateful: [
+      'Write down 3 things you\'re thankful for before bed tonight.',
+      'Thank someone who helped you this week and be specific about what they did.',
+      'Notice something beautiful or good that you usually take for granted.'
+    ],
+    funny: [
+      'Make someone laugh who seems like they need it.',
+      'Write a funny story, joke, or comic strip.',
+      'Use humor to lighten a stressful moment (without making fun of anyone).'
+    ],
+    persevere: [
+      'Work on something difficult for 15 minutes without giving up.',
+      'Finish a task you started but didn\'t complete.',
+      'When you feel like quitting, try one more time before you stop.'
+    ],
+    creative: [
+      'Doodle, draw, or paint for at least 10 minutes.',
+      'Solve a problem in an unusual or unexpected way.',
+      'Teach someone a concept through a story, picture, or metaphor.'
+    ],
+    leader: [
+      'Organize a group activity or help plan an event.',
+      'Help someone who is struggling by breaking down the task for them.',
+      'Set a positive example by going first when others are hesitant.'
+    ],
+    humble: [
+      'Ask for feedback on something you made and listen without defending.',
+      'Celebrate someone else\'s achievement genuinely.',
+      'Admit you don\'t know something and ask for help.'
+    ],
+    perspective: [
+      'Before reacting to a situation, consider it from two other viewpoints.',
+      'Ask someone from a different background about their experience.',
+      'Read or watch something that challenges your usual way of thinking.'
+    ],
+    transcend: [
+      'Spend 10 minutes in quiet reflection or meditation.',
+      'Do something meaningful for someone without any expectation of recognition.',
+      'Write about what gives your life meaning or purpose.'
+    ],
+    // Talent strengths
+    reading: ['Read for 15 minutes just for fun today.', 'Share a book recommendation with a friend.', 'Try reading something in a genre you don\'t usually choose.'],
+    math: ['Solve a math puzzle or brain teaser for fun.', 'Help someone with a math problem they\'re stuck on.', 'Find math in real life \u2014 estimate distances, costs, or patterns around you.'],
+    art: ['Create something visual today, even a quick sketch.', 'Try a new art medium or technique you haven\'t used before.', 'Look at the world around you and find three things that are beautiful.'],
+    music: ['Listen mindfully to a song and notice the layers of sound.', 'Hum, sing, or play something that matches your mood.', 'Share a song with someone and explain why you love it.'],
+    sports: ['Do a 10-minute physical challenge \u2014 push-ups, running, stretching.', 'Teach someone a sports technique or skill.', 'Try a new physical activity or movement you haven\'t done before.'],
+    helping: ['Ask someone "How are you really doing?" and listen carefully.', 'Volunteer your time to help with a task someone else is doing.', 'Notice when someone needs help and offer before they ask.'],
+    building: ['Build or construct something with whatever materials you have.', 'Fix or improve something that\'s broken or not working well.', 'Design a solution to a problem you see in your daily life.'],
+    animals: ['Spend time outside observing nature for at least 10 minutes.', 'Learn about an animal or plant species you know nothing about.', 'Take care of a living thing \u2014 water a plant, feed a pet, tend a garden.'],
+    writing: ['Write for 10 minutes about anything that comes to mind.', 'Craft a short story, poem, or letter to someone.', 'Express an opinion in writing with clear reasoning.'],
+    stem: ['Explore a science question and form a hypothesis.', 'Build or code something small but functional.', 'Explain a science concept to someone in simple terms.'],
+    social: ['Pay attention to body language in your next conversation.', 'Help resolve a small conflict between friends.', 'Make someone feel included who might be on the outside.'],
+    tech: ['Code or build something digital for 20 minutes.', 'Teach someone a tech skill they don\'t have.', 'Learn about a new technology or tool you haven\'t used before.'],
+    nature: ['Go outside and identify three plants, birds, or insects.', 'Research an environmental issue and share what you learn.', 'Reduce, reuse, or recycle something today with intention.'],
+    language: ['Learn 5 new words in a language you\'re studying.', 'Practice speaking with someone in a different language.', 'Translate a favorite song or poem into another language.'],
+    organize: ['Make a plan or to-do list for the rest of the week.', 'Help organize a shared space (classroom, home area).', 'Create a system or schedule to improve how something works.'],
+    analytical: ['Break a complex problem into smaller parts and solve each one.', 'Analyze data or information to find a pattern or insight.', 'Evaluate two sides of a debate and form a reasoned position.'],
+    creative_arts: ['Create a piece of art that expresses how you feel today.', 'Collaborate with someone on a creative project.', 'Attend or explore a form of art you haven\'t experienced before.'],
+    physical: ['Set a personal fitness goal and take the first step today.', 'Teach a physical skill to someone else.', 'Try a new sport or movement practice you\'ve never done.'],
+    interpersonal: ['Have a meaningful conversation where you mostly listen.', 'Mediate a disagreement with empathy for all sides.', 'Check in with someone you haven\'t connected with recently.'],
+    entrepreneurial: ['Identify a problem and brainstorm 3 possible solutions.', 'Create a small project or initiative from scratch.', 'Interview someone about how they started something from nothing.'],
+    civic: ['Learn about a community issue and one thing you can do about it.', 'Volunteer or participate in a community event.', 'Write a letter or email to a decision-maker about something that matters to you.'],
+    // Growth strengths
+    tryNew: ['Try one new food, activity, or experience today.', 'Say "yes" to something you\'d normally say "no" to.', 'Take a different route or do a routine thing in a new way.'],
+    patience: ['Practice waiting calmly for something without checking the time.', 'Take 3 deep breaths before responding when you feel frustrated.', 'Work on a puzzle, craft, or task that requires slow, careful effort.'],
+    listening: ['In your next conversation, focus only on listening \u2014 don\'t plan what to say.', 'Ask a follow-up question after someone finishes talking.', 'Listen to a podcast or audiobook about a topic someone else loves.'],
+    sharing: ['Share something you value with someone today.', 'Give someone the first turn or the better option.', 'Offer your time, attention, or help to someone who needs it.'],
+    resilience: ['Reflect on a past failure and write down what you learned from it.', 'When something goes wrong today, name one positive thing about the situation.', 'Create a "resilience toolkit" \u2014 3 things you do when life gets hard.'],
+    selfControl: ['Pause for 10 seconds before reacting to something frustrating.', 'Choose a healthy option when tempted by an easy but less good one.', 'Set a timer and focus on one task without distractions.'],
+    empathy: ['Imagine a day in the life of someone very different from you.', 'Ask someone about their feelings and really listen to the answer.', 'Notice when someone around you seems upset and offer support.'],
+    advocacy: ['Speak up about something you need in a respectful, clear way.', 'Practice saying "I need..." or "I feel..." in a real conversation.', 'Help someone else find the words to express their needs.'],
+    flexibility: ['When plans change unexpectedly, notice your reaction and adapt.', 'Try solving a problem in a completely different way than usual.', 'Embrace an imperfect outcome and find something good in it.'],
+    metacognition: ['Spend 5 minutes writing about how you think and learn best.', 'After a conversation, reflect on what you were thinking and why.', 'Notice a thinking pattern (positive or negative) and name it.'],
+    vulnerability: ['Share something you\'re struggling with with a trusted person.', 'Admit you don\'t have all the answers about something important.', 'Write about a fear and what it would mean to face it.'],
+    adaptability: ['Change your approach to a task mid-way and see what happens.', 'Seek out a situation that\'s outside your comfort zone.', 'When faced with ambiguity, make a decision and adjust as you go.']
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // ── Strengths Affirmation Cards ──
+  // ═══════════════════════════════════════════════════════════════
+  var AFFIRMATION_CARDS = {
+    character: [
+      'I am brave enough to do what\'s right, even when it\'s hard.',
+      'My kindness makes the world a better place.',
+      'I am honest with myself and others, and that is powerful.',
+      'My curiosity leads me to discover amazing things.',
+      'I treat people fairly because everyone deserves respect.',
+      'I choose gratitude, and it fills me with strength.',
+      'My sense of humor brings light into dark moments.',
+      'I don\'t give up. Every step forward counts.'
+    ],
+    talent: [
+      'My skills grow every time I practice.',
+      'I have unique talents that only I can offer the world.',
+      'I am creative in ways that surprise even me.',
+      'My abilities are real, and I deserve to be proud of them.',
+      'Learning comes naturally to me when I follow my passion.',
+      'I can do hard things because I have practiced hard things.',
+      'My talents are seeds \u2014 with effort, they become forests.',
+      'I bring something special to every group I\'m part of.'
+    ],
+    growth: [
+      'Every challenge makes me stronger than I was before.',
+      'I am learning, growing, and becoming who I\'m meant to be.',
+      'Mistakes are my teachers, not my enemies.',
+      'I am patient with myself as I grow.',
+      'Asking for help is one of the bravest things I can do.',
+      'I can adapt to anything life throws my way.',
+      'My struggles today are building my strength for tomorrow.',
+      'I am not perfect, and that is perfectly okay.'
+    ]
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // ── Peer Strengths Prompts ──
+  // ═══════════════════════════════════════════════════════════════
+  var PEER_PROMPTS = {
+    elementary: [
+      'Someone in my class is really good at helping others. They always...',
+      'I noticed someone being brave today when they...',
+      'Someone I know is great at making people laugh because...',
+      'A person I admire never gives up, even when...'
+    ],
+    middle: [
+      'I see leadership in someone who...',
+      'Someone in my life shows real empathy when they...',
+      'I admire someone\'s creativity because they...',
+      'Someone I know demonstrates integrity by...',
+      'A person in my community shows resilience when...'
+    ],
+    high: [
+      'I observe moral courage in someone who...',
+      'Someone in my life models vulnerability by...',
+      'A person I respect demonstrates perspective-taking when they...',
+      'I see authentic leadership in someone who...',
+      'Someone shows adaptability in the way they...'
+    ]
+  };
+
+  var ASK_FRIEND_TEMPLATES = [
+    'If you had to describe my biggest strength in one word, what would it be?',
+    'What\'s something I do well that I might not realize?',
+    'When have you seen me at my best? What was I doing?',
+    'What do you think I\'m naturally good at?',
+    'If you needed help with something, what would you come to me for?'
+  ];
+
+  // ═══════════════════════════════════════════════════════════════
+  // ── Deep Reflection Prompts (Grade-Adaptive, 5+ per band) ──
+  // ═══════════════════════════════════════════════════════════════
+  var DEEP_REFLECTION_PROMPTS = {
+    elementary: [
+      'When has being really good at something made things harder for you?',
+      'What strength do you see in someone who looks or acts differently from you?',
+      'How would your best friend describe what you\'re good at?',
+      'If you could give one of your strengths to a friend, which would you pick and why?',
+      'What is something you used to be bad at that you\'re getting better at?',
+      'Think of someone you admire. What strength do they have that you want to grow?'
+    ],
+    middle: [
+      'When has a strength become a weakness for you? (Example: being too kind and not setting boundaries.)',
+      'What strength do you admire in someone from a different background than yours?',
+      'How would your best friend describe your strengths vs. how you\'d describe them?',
+      'What strength do you hide because you\'re afraid of what people will think?',
+      'How does your mood affect which strengths you can access?',
+      'If you couldn\'t use your top strength for a week, how would your life change?',
+      'What strength do you wish your school valued more?'
+    ],
+    high: [
+      'When has a strength become a weakness for you, and how did you recalibrate?',
+      'What strength do you admire in someone from a vastly different background or worldview?',
+      'How would your best friend describe your strengths vs. how you\'d describe them? What accounts for the difference?',
+      'What strength do you suppress in certain contexts, and why?',
+      'How have your strengths evolved over the past few years? What drove those changes?',
+      'What is the relationship between your identity and your strengths?',
+      'How do power dynamics affect which strengths get recognized in your community?',
+      'If your strengths were a team, which one would be the captain and which would be the underdog?'
+    ]
+  };
+
   // ── Badges (expanded) ──
   var BADGES = {
     firstCard: { icon: '\u2B50', name: 'First Discovery', desc: 'Select your first strength' },
@@ -329,7 +576,12 @@ window.SelHub = window.SelHub || {
     firstQuiz: { icon: '\uD83E\uDDE9', name: 'Strength Detective', desc: 'Score 3+ on the match quiz' },
     perfectQuiz: { icon: '\uD83C\uDFAF', name: 'Perfect Match', desc: 'Get a perfect quiz score' },
     fiveReflections: { icon: '\uD83D\uDCDA', name: 'Philosopher', desc: 'Complete 5 reflections' },
-    explorer: { icon: '\uD83D\uDE80', name: 'Full Explorer', desc: 'Visit all tabs' }
+    explorer: { icon: '\uD83D\uDE80', name: 'Full Explorer', desc: 'Visit all tabs' },
+    interviewComplete: { icon: '\uD83C\uDF99\uFE0F', name: 'Interview Complete', desc: 'Finish the Strengths Interview' },
+    actionPlanner: { icon: '\uD83D\uDCCB', name: 'Action Planner', desc: 'Complete 3 action items' },
+    peerObserver: { icon: '\uD83D\uDC41\uFE0F', name: 'Peer Observer', desc: 'Record strengths you see in others' },
+    affirmationPractice: { icon: '\uD83D\uDCAC', name: 'Affirmation Practice', desc: 'Read 5 affirmation cards' },
+    deepThinkerPlus: { icon: '\uD83E\uDDE0', name: 'Insight Seeker', desc: 'Answer 3 deep reflection prompts' }
   };
 
   function checkBadges(d, awardXP, addToast) {
@@ -365,7 +617,16 @@ window.SelHub = window.SelHub || {
     if (quizBest >= 3) award('firstQuiz');
     var quizLen = (MATCH_QUIZ.elementary || []).length;
     if (quizBest >= quizLen && quizLen > 0) award('perfectQuiz');
-    if (d.tabsVisited && d.tabsVisited.length >= 6) award('explorer');
+    if (d.tabsVisited && d.tabsVisited.length >= 10) award('explorer');
+    if (d.interviewComplete) award('interviewComplete');
+    var actionsCompleted = d.actionsCompleted || 0;
+    if (actionsCompleted >= 3) award('actionPlanner');
+    var peerNotes = d.peerNotes || [];
+    if (peerNotes.length >= 1) award('peerObserver');
+    var affirmationsRead = d.affirmationsRead || 0;
+    if (affirmationsRead >= 5) award('affirmationPractice');
+    var deepReflections = d.deepReflections || [];
+    if (deepReflections.length >= 3) award('deepThinkerPlus');
     return changed ? earned : null;
   }
 
@@ -438,7 +699,7 @@ window.SelHub = window.SelHub || {
         React.useEffect(function() {
           var newBadges = checkBadges(d, awardXP, addToast);
           if (newBadges) upd({ badges: newBadges });
-        }, [selectedStrengths.length, reflections.length, d.aiAsked, d.exported, scenariosDone.length, topScenarios, quizBest, tabsVisited.length]);
+        }, [selectedStrengths.length, reflections.length, d.aiAsked, d.exported, scenariosDone.length, topScenarios, quizBest, tabsVisited.length, d.interviewComplete, d.actionsCompleted, (d.peerNotes || []).length, d.affirmationsRead, (d.deepReflections || []).length]);
 
         // ── Toggle strength selection ──
         var toggleStrength = function(strength, categoryId) {
@@ -557,11 +818,11 @@ window.SelHub = window.SelHub || {
             )
           ),
 
-          // Tabs
-          h('div', { style: { display: 'flex', borderBottom: '1px solid rgba(245,158,11,0.15)', background: 'rgba(15,23,42,0.8)' } },
-            [{ id: 'discover', label: '\u2B50 Discover' }, { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' }, { id: 'quiz', label: '\uD83E\uDDE9 Quiz' }, { id: 'reflect', label: '\uD83D\uDCDD Reflect' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'profile', label: '\uD83D\uDCCA Profile' }].map(function(t) {
+          // Tabs (scrollable row)
+          h('div', { style: { display: 'flex', overflowX: 'auto', borderBottom: '1px solid rgba(245,158,11,0.15)', background: 'rgba(15,23,42,0.8)', scrollbarWidth: 'none' } },
+            [{ id: 'discover', label: '\u2B50 Discover' }, { id: 'interview', label: '\uD83C\uDF99\uFE0F Interview' }, { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' }, { id: 'quiz', label: '\uD83E\uDDE9 Quiz' }, { id: 'reflect', label: '\uD83D\uDCDD Reflect' }, { id: 'planner', label: '\uD83D\uDCCB Planner' }, { id: 'peers', label: '\uD83D\uDC65 Peers' }, { id: 'affirm', label: '\uD83D\uDCAC Affirm' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'profile', label: '\uD83D\uDCCA Profile' }].map(function(t) {
               var active = tab === t.id;
-              return h('button', { key: t.id, onClick: function() { sfxSelect(); var tv = tabsVisited.indexOf(t.id) < 0 ? tabsVisited.concat([t.id]) : tabsVisited; upd({ tab: t.id, tabsVisited: tv }); }, style: { flex: 1, padding: '10px 4px', fontSize: 10, fontWeight: 'bold', color: active ? '#fbbf24' : '#64748b', background: active ? 'rgba(245,158,11,0.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #f59e0b' : '2px solid transparent', cursor: 'pointer' } }, t.label);
+              return h('button', { key: t.id, onClick: function() { sfxSelect(); var tv = tabsVisited.indexOf(t.id) < 0 ? tabsVisited.concat([t.id]) : tabsVisited; upd({ tab: t.id, tabsVisited: tv }); }, style: { flex: '0 0 auto', padding: '10px 10px', fontSize: 10, fontWeight: 'bold', color: active ? '#fbbf24' : '#64748b', background: active ? 'rgba(245,158,11,0.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #f59e0b' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap' } }, t.label);
             })
           ),
 
@@ -629,6 +890,100 @@ window.SelHub = window.SelHub || {
                 );
               })
             ) : null,
+
+            // ── INTERVIEW TAB ──
+            tab === 'interview' ? (function() {
+              var questions = INTERVIEW_QUESTIONS[band] || INTERVIEW_QUESTIONS.elementary;
+              var interviewAnswers = d.interviewAnswers || {};
+              var interviewStep = d.interviewStep || 0;
+              var interviewResult = d.interviewResult || null;
+              var interviewAnalyzing = d.interviewAnalyzing || false;
+              var answeredCount = Object.keys(interviewAnswers).length;
+              var allAnswered = answeredCount >= questions.length;
+
+              // Analyze with AI
+              var analyzeInterview = function() {
+                if (!callGemini || interviewAnalyzing) return;
+                sfxReflect();
+                var answerText = questions.map(function(q, i) {
+                  return 'Q' + (i + 1) + ': ' + q.question + '\nA: ' + (interviewAnswers[q.id] || '(skipped)');
+                }).join('\n\n');
+                var prompt = 'You are a strengths-based coach analyzing a ' + band + ' school student\'s (grade ' + gradeLevel + ') self-discovery interview.\n\n' +
+                  'Their answers:\n' + answerText + '\n\n' +
+                  'Based on these answers, identify 3-5 strengths this student likely has. For each strength, explain briefly WHY their answers suggest it.\n' +
+                  'Format: Start with "These answers suggest you have:" then list each strength as:\n' +
+                  '- **[Strength Name]**: [1-sentence explanation connecting to their answers]\n\n' +
+                  (band === 'elementary' ? 'Use simple, encouraging language. Keep explanations to 1 short sentence each.' :
+                   band === 'middle' ? 'Be specific and affirming. Reference their actual answers.' :
+                   'Be insightful and nuanced. Draw meaningful connections between their answers and recognized character/talent strengths.');
+                upd({ interviewAnalyzing: true });
+                callGemini(prompt, false, false, 0.8).then(function(resp) {
+                  upd({ interviewResult: resp || 'Your answers show real self-awareness! Keep exploring your strengths.', interviewAnalyzing: false, interviewComplete: true });
+                }).catch(function() {
+                  upd({ interviewResult: 'AI analysis is unavailable right now. Review your answers above \u2014 each one holds clues to your strengths!', interviewAnalyzing: false, interviewComplete: true });
+                });
+              };
+
+              if (interviewResult) {
+                return h('div', null,
+                  h('div', { style: { textAlign: 'center', marginBottom: 16 } },
+                    h('div', { style: { fontSize: 40, marginBottom: 8 } }, '\uD83C\uDF1F'),
+                    h('p', { style: { fontSize: 16, fontWeight: 'bold', color: '#fbbf24' } }, 'Your Strengths Analysis')
+                  ),
+                  h('div', { style: { padding: 16, borderRadius: 14, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', marginBottom: 16, fontSize: 13, lineHeight: 1.8, color: '#fde68a', whiteSpace: 'pre-wrap' } },
+                    interviewResult
+                  ),
+                  callTTS ? h('button', { onClick: function() { speak(interviewResult); }, style: { marginBottom: 12, background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, padding: '6px 14px', color: '#fbbf24', fontSize: 11, cursor: 'pointer' } }, '\uD83D\uDD0A Read Analysis Aloud') : null,
+                  h('div', { style: { display: 'flex', gap: 8 } },
+                    h('button', { onClick: function() { upd({ interviewResult: null, interviewAnswers: {}, interviewStep: 0, interviewComplete: false }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD04 Start Over'),
+                    h('button', { onClick: function() { upd({ tab: 'discover' }); }, style: { padding: '8px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\u2B50 Go Select Strengths')
+                  )
+                );
+              }
+
+              var q = questions[interviewStep];
+              return h('div', null,
+                h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 12, lineHeight: 1.6 } },
+                  band === 'elementary' ? 'Answer these questions to discover strengths you might not know you have!' :
+                  'This guided interview helps uncover strengths through self-reflection. Answer honestly \u2014 there are no wrong answers.'
+                ),
+                h('div', { style: { fontSize: 10, color: '#64748b', marginBottom: 12 } },
+                  'Question ' + (interviewStep + 1) + ' of ' + questions.length + ' \u2022 ' + answeredCount + ' answered'
+                ),
+                // Progress bar
+                h('div', { style: { width: '100%', height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', marginBottom: 16, overflow: 'hidden' } },
+                  h('div', { style: { width: Math.round((interviewStep / questions.length) * 100) + '%', height: '100%', background: '#f59e0b', borderRadius: 3, transition: 'width 0.3s' } })
+                ),
+                // Question card
+                h('div', { style: { padding: 16, borderRadius: 14, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.05))', border: '1px solid rgba(245,158,11,0.25)', marginBottom: 16 } },
+                  h('p', { style: { fontSize: 15, fontWeight: 'bold', color: '#fde68a', lineHeight: 1.6, marginBottom: 8 } }, q.question),
+                  h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 12 } }, '\uD83D\uDCA1 ' + q.hint),
+                  callTTS ? h('button', { onClick: function() { speak(q.question + '. ' + q.hint); }, style: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 6, padding: '3px 8px', color: '#fbbf24', fontSize: 10, cursor: 'pointer', marginBottom: 8 } }, '\uD83D\uDD0A Read aloud') : null,
+                  h('textarea', { value: interviewAnswers[q.id] || '', onChange: function(e) {
+                    var newAnswers = Object.assign({}, interviewAnswers);
+                    newAnswers[q.id] = e.target.value;
+                    upd({ interviewAnswers: newAnswers });
+                  }, placeholder: band === 'elementary' ? 'Type your answer here...' : 'Take your time. Thoughtful answers lead to better insights...', style: { width: '100%', minHeight: 80, padding: 10, borderRadius: 8, border: '1px solid rgba(245,158,11,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' } })
+                ),
+                // Navigation
+                h('div', { style: { display: 'flex', gap: 8, justifyContent: 'space-between' } },
+                  h('button', { onClick: function() { if (interviewStep > 0) upd({ interviewStep: interviewStep - 1 }); }, disabled: interviewStep === 0, style: { padding: '8px 16px', borderRadius: 8, background: interviewStep > 0 ? 'rgba(255,255,255,0.05)' : 'transparent', color: interviewStep > 0 ? '#94a3b8' : '#334155', border: '1px solid ' + (interviewStep > 0 ? 'rgba(99,102,241,0.15)' : 'transparent'), fontSize: 12, cursor: interviewStep > 0 ? 'pointer' : 'default' } }, '\u2190 Previous'),
+                  h('div', { style: { display: 'flex', gap: 8 } },
+                    interviewStep < questions.length - 1 ?
+                      h('button', { onClick: function() { upd({ interviewStep: interviewStep + 1 }); }, style: { padding: '8px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, 'Next \u2192') :
+                      h('button', { onClick: analyzeInterview, disabled: answeredCount < 3 || interviewAnalyzing, style: { padding: '8px 20px', borderRadius: 8, background: answeredCount >= 3 ? '#22c55e' : '#334155', color: answeredCount >= 3 ? '#0f172a' : '#64748b', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: answeredCount >= 3 ? 'pointer' : 'default' } }, interviewAnalyzing ? '\u23F3 Analyzing...' : '\uD83C\uDF1F Discover My Strengths')
+                  )
+                ),
+                // Quick answer dots
+                h('div', { style: { display: 'flex', justifyContent: 'center', gap: 6, marginTop: 16 } },
+                  questions.map(function(qq, qi) {
+                    var hasAnswer = !!(interviewAnswers[qq.id] && interviewAnswers[qq.id].trim());
+                    var isCurrent = qi === interviewStep;
+                    return h('button', { key: qi, onClick: function() { upd({ interviewStep: qi }); }, style: { width: 10, height: 10, borderRadius: '50%', border: isCurrent ? '2px solid #fbbf24' : '1px solid rgba(99,102,241,0.2)', background: hasAnswer ? '#f59e0b' : 'rgba(255,255,255,0.05)', cursor: 'pointer', padding: 0 } });
+                  })
+                )
+              );
+            })() : null,
 
             // ── SCENARIOS TAB ──
             tab === 'scenarios' ? (function() {
@@ -761,6 +1116,53 @@ window.SelHub = window.SelHub || {
                   h('button', { onClick: function() { upd({ currentPromptIdx: (currentPromptIdx + 1) % prompts.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u27A1 Next Prompt')
                 )
               ),
+              // ── Deep Reflection Prompts ──
+              (function() {
+                var deepPrompts = DEEP_REFLECTION_PROMPTS[band] || DEEP_REFLECTION_PROMPTS.elementary;
+                var deepReflections = d.deepReflections || [];
+                var deepPromptIdx = d.deepPromptIdx || 0;
+                var deepInput = d.deepInput || '';
+                var currentDeep = deepPrompts[deepPromptIdx % deepPrompts.length];
+
+                var saveDeepReflection = function() {
+                  if (!deepInput.trim()) return;
+                  sfxComplete();
+                  var newDeep = deepReflections.concat([{
+                    prompt: currentDeep,
+                    response: deepInput.trim(),
+                    timestamp: Date.now()
+                  }]);
+                  upd({
+                    deepReflections: newDeep,
+                    deepInput: '',
+                    deepPromptIdx: (deepPromptIdx + 1) % deepPrompts.length
+                  });
+                  if (addToast) addToast('\uD83E\uDDE0 Deep reflection saved!', 'success');
+                };
+
+                return h('div', { style: { background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 12, padding: 16, marginBottom: 16 } },
+                  h('div', { style: { fontSize: 11, color: '#c4b5fd', fontWeight: 'bold', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 } }, '\uD83E\uDDE0 Deep Reflection'),
+                  h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8 } }, 'These prompts go deeper \u2014 explore how strengths really work in your life.'),
+                  h('p', { style: { fontSize: 14, color: '#e0d4ff', lineHeight: 1.6, fontWeight: 600, marginBottom: 12 } }, currentDeep),
+                  callTTS ? h('button', { onClick: function() { speak(currentDeep); }, style: { background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 6, padding: '4px 10px', color: '#c4b5fd', fontSize: 10, cursor: 'pointer', marginBottom: 8 } }, '\uD83D\uDD0A Read aloud') : null,
+                  h('textarea', { value: deepInput, onChange: function(e) { upd({ deepInput: e.target.value }); }, placeholder: 'Go deeper... really think about this one.', style: { width: '100%', minHeight: 80, padding: 10, borderRadius: 8, border: '1px solid rgba(167,139,250,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' } }),
+                  h('div', { style: { display: 'flex', gap: 8, marginTop: 8 } },
+                    h('button', { onClick: saveDeepReflection, disabled: !deepInput.trim(), style: { padding: '8px 20px', borderRadius: 8, background: deepInput.trim() ? '#8b5cf6' : '#334155', color: deepInput.trim() ? '#fff' : '#64748b', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: deepInput.trim() ? 'pointer' : 'default' } }, '\u2705 Save Deep Reflection'),
+                    h('button', { onClick: function() { upd({ deepPromptIdx: (deepPromptIdx + 1) % deepPrompts.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u27A1 Next Deep Prompt')
+                  ),
+                  deepReflections.length > 0 ? h('div', { style: { marginTop: 12 } },
+                    h('div', { style: { fontSize: 11, fontWeight: 'bold', color: '#94a3b8', marginBottom: 6 } }, '\uD83E\uDDE0 Deep Reflections (' + deepReflections.length + ')'),
+                    deepReflections.slice().reverse().slice(0, 3).map(function(r, i) {
+                      return h('div', { key: 'deep' + i, style: { padding: 10, marginBottom: 6, borderRadius: 8, background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.1)' } },
+                        h('div', { style: { fontSize: 10, color: '#64748b', marginBottom: 2 } }, new Date(r.timestamp).toLocaleDateString()),
+                        h('div', { style: { fontSize: 11, color: '#c4b5fd', fontWeight: 600, marginBottom: 2 } }, r.prompt),
+                        h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.4 } }, r.response)
+                      );
+                    })
+                  ) : null
+                );
+              })(),
+
               // Past reflections
               reflections.length > 0 ? h('div', null,
                 h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', marginBottom: 8 } }, '\uD83D\uDCD6 Past Reflections (' + reflections.length + ')'),
@@ -773,6 +1175,192 @@ window.SelHub = window.SelHub || {
                 })
               ) : h('p', { style: { textAlign: 'center', color: '#64748b', fontSize: 12, padding: 20 } }, 'No reflections yet. Answer the prompt above to get started!')
             ) : null,
+
+            // ── PLANNER TAB (Strengths in Action) ──
+            tab === 'planner' ? (function() {
+              var actionChecked = d.actionChecked || {};
+              var actionsCompleted = d.actionsCompleted || 0;
+              if (selectedStrengths.length === 0) {
+                return h('div', { style: { textAlign: 'center', padding: 40 } },
+                  h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDCCB'),
+                  h('p', { style: { fontSize: 14, color: '#94a3b8' } }, 'Select some strengths first!'),
+                  h('p', { style: { fontSize: 12, color: '#64748b', marginTop: 4 } }, 'Go to the Discover tab to identify your strengths, then come back to plan how to use them.'),
+                  h('button', { onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
+                );
+              }
+              return h('div', null,
+                h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 4, lineHeight: 1.6 } },
+                  band === 'elementary' ? 'Here are fun things you can do this week using YOUR strengths!' :
+                  'Connect your strengths to real-life action. Check off activities as you complete them.'
+                ),
+                h('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 16 } }, '\u2705 ' + actionsCompleted + ' actions completed'),
+                selectedStrengths.map(function(s) {
+                  var actions = ACTION_SUGGESTIONS[s.id];
+                  if (!actions) return null;
+                  var catData = STRENGTH_CATEGORIES.find(function(c) { return c.id === s.category; });
+                  var catColor = catData ? catData.color : '#f59e0b';
+                  return h('div', { key: s.id + '_' + s.category, style: { marginBottom: 16, padding: 14, borderRadius: 12, background: catColor + '0a', border: '1px solid ' + catColor + '22' } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 } },
+                      h('span', { style: { fontSize: 16 } }, s.emoji),
+                      h('span', { style: { fontSize: 13, fontWeight: 'bold', color: catColor } }, 'Your strength: ' + s.label)
+                    ),
+                    h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, fontStyle: 'italic' } }, 'This week, try:'),
+                    actions.map(function(action, ai) {
+                      var actionKey = s.id + '_' + s.category + '_' + ai;
+                      var checked = !!actionChecked[actionKey];
+                      return h('div', { key: ai, style: { display: 'flex', alignItems: 'flex-start', gap: 8, padding: '6px 0', borderBottom: ai < actions.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' } },
+                        h('button', { onClick: function() {
+                          sfxSelect();
+                          var newChecked = Object.assign({}, actionChecked);
+                          newChecked[actionKey] = !checked;
+                          var newCount = Object.keys(newChecked).filter(function(k) { return newChecked[k]; }).length;
+                          upd({ actionChecked: newChecked, actionsCompleted: newCount });
+                          if (!checked && addToast) addToast('\u2705 Action completed! Way to use your strengths!', 'success');
+                        }, style: { flex: '0 0 auto', width: 22, height: 22, borderRadius: 6, border: checked ? '2px solid #22c55e' : '2px solid rgba(99,102,241,0.2)', background: checked ? 'rgba(34,197,94,0.2)' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#22c55e', padding: 0 } }, checked ? '\u2713' : ''),
+                        h('span', { style: { fontSize: 12, color: checked ? '#64748b' : '#cbd5e1', lineHeight: 1.5, textDecoration: checked ? 'line-through' : 'none' } }, (ai + 1) + ') ' + action)
+                      );
+                    })
+                  );
+                })
+              );
+            })() : null,
+
+            // ── PEERS TAB ──
+            tab === 'peers' ? (function() {
+              var peerNotes = d.peerNotes || [];
+              var peerInput = d.peerInput || '';
+              var peerPromptIdx = d.peerPromptIdx || 0;
+              var askFriendIdx = d.askFriendIdx || 0;
+              var peerPrompts = PEER_PROMPTS[band] || PEER_PROMPTS.elementary;
+              var currentPeerPrompt = peerPrompts[peerPromptIdx % peerPrompts.length];
+
+              var savePeerNote = function() {
+                if (!peerInput.trim()) return;
+                sfxComplete();
+                var newNotes = peerNotes.concat([{
+                  prompt: currentPeerPrompt,
+                  note: peerInput.trim(),
+                  timestamp: Date.now()
+                }]);
+                upd({ peerNotes: newNotes, peerInput: '', peerPromptIdx: (peerPromptIdx + 1) % peerPrompts.length });
+                if (addToast) addToast('\uD83D\uDC41\uFE0F Peer strength noted!', 'success');
+              };
+
+              return h('div', null,
+                h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 16, lineHeight: 1.6 } },
+                  band === 'elementary' ? 'Notice the strengths in people around you! You don\'t have to name anyone \u2014 just describe what you see.' :
+                  'Observing strengths in others sharpens your ability to see strengths in yourself. All entries are anonymous \u2014 describe what you see, not who.'
+                ),
+
+                // Strengths I See section
+                h('div', { style: { background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 12, padding: 16, marginBottom: 20 } },
+                  h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#a5b4fc', marginBottom: 8 } }, '\uD83D\uDC41\uFE0F Strengths I See in Others'),
+                  h('p', { style: { fontSize: 12, color: '#a5b4fc', fontWeight: 600, marginBottom: 8, lineHeight: 1.5 } }, currentPeerPrompt),
+                  callTTS ? h('button', { onClick: function() { speak(currentPeerPrompt); }, style: { background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 6, padding: '3px 8px', color: '#a5b4fc', fontSize: 10, cursor: 'pointer', marginBottom: 8 } }, '\uD83D\uDD0A Read aloud') : null,
+                  h('textarea', { value: peerInput, onChange: function(e) { upd({ peerInput: e.target.value }); }, placeholder: 'Describe the strength you noticed (no names needed)...', style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' } }),
+                  h('div', { style: { display: 'flex', gap: 8, marginTop: 8 } },
+                    h('button', { onClick: savePeerNote, disabled: !peerInput.trim(), style: { padding: '8px 16px', borderRadius: 8, background: peerInput.trim() ? '#6366f1' : '#334155', color: peerInput.trim() ? '#fff' : '#64748b', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: peerInput.trim() ? 'pointer' : 'default' } }, '\u2705 Save Observation'),
+                    h('button', { onClick: function() { upd({ peerPromptIdx: (peerPromptIdx + 1) % peerPrompts.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u27A1 Next Prompt')
+                  )
+                ),
+
+                // Ask a Friend section
+                h('div', { style: { background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 12, padding: 16, marginBottom: 20 } },
+                  h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#fbbf24', marginBottom: 8 } }, '\uD83D\uDCE8 Ask a Friend'),
+                  h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, lineHeight: 1.5 } },
+                    'Want to know what others see in you? Share one of these questions with a friend, family member, or teacher.'
+                  ),
+                  h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)', marginBottom: 10 } },
+                    h('p', { style: { fontSize: 14, color: '#fde68a', fontWeight: 600, lineHeight: 1.6, fontStyle: 'italic' } }, '\u201C' + ASK_FRIEND_TEMPLATES[askFriendIdx % ASK_FRIEND_TEMPLATES.length] + '\u201D')
+                  ),
+                  h('div', { style: { display: 'flex', gap: 8 } },
+                    h('button', { onClick: function() {
+                      var text = ASK_FRIEND_TEMPLATES[askFriendIdx % ASK_FRIEND_TEMPLATES.length];
+                      navigator.clipboard.writeText(text).then(function() {
+                        if (addToast) addToast('\uD83D\uDCCB Question copied! Share it with someone you trust.', 'success');
+                      }).catch(function() {});
+                    }, style: { padding: '6px 14px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCCB Copy Question'),
+                    h('button', { onClick: function() { upd({ askFriendIdx: (askFriendIdx + 1) % ASK_FRIEND_TEMPLATES.length }); }, style: { padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 11, cursor: 'pointer' } }, '\u27A1 Different Question')
+                  )
+                ),
+
+                // Past peer notes
+                peerNotes.length > 0 ? h('div', null,
+                  h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', marginBottom: 8 } }, '\uD83D\uDCD6 My Observations (' + peerNotes.length + ')'),
+                  peerNotes.slice().reverse().map(function(n, i) {
+                    return h('div', { key: i, style: { padding: 10, marginBottom: 6, borderRadius: 8, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.1)' } },
+                      h('div', { style: { fontSize: 10, color: '#64748b', marginBottom: 2 } }, new Date(n.timestamp).toLocaleDateString()),
+                      h('div', { style: { fontSize: 11, color: '#a5b4fc', fontWeight: 600, marginBottom: 2 } }, n.prompt),
+                      h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.4 } }, n.note)
+                    );
+                  })
+                ) : null
+              );
+            })() : null,
+
+            // ── AFFIRMATION TAB ──
+            tab === 'affirm' ? (function() {
+              var affirmCat = d.affirmCat || 'character';
+              var affirmIdx = d.affirmIdx || 0;
+              var affirmationsRead = d.affirmationsRead || 0;
+              var cards = AFFIRMATION_CARDS[affirmCat] || AFFIRMATION_CARDS.character;
+              var currentAffirmation = cards[affirmIdx % cards.length];
+              var catData = STRENGTH_CATEGORIES.find(function(c) { return c.id === affirmCat; });
+              var catColor = catData ? catData.color : '#f59e0b';
+              var catEmoji = catData ? catData.emoji : '\u2B50';
+
+              // Daily rotation: use day of year to pick a "daily" affirmation
+              var dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+              var allAffirmations = AFFIRMATION_CARDS.character.concat(AFFIRMATION_CARDS.talent, AFFIRMATION_CARDS.growth);
+              var dailyAffirmation = allAffirmations[dayOfYear % allAffirmations.length];
+
+              return h('div', null,
+                // Daily affirmation
+                h('div', { style: { textAlign: 'center', padding: 20, marginBottom: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(234,179,8,0.08))', border: '1px solid rgba(245,158,11,0.3)' } },
+                  h('div', { style: { fontSize: 10, textTransform: 'uppercase', letterSpacing: 1, color: '#f59e0b', marginBottom: 8, fontWeight: 'bold' } }, '\u2728 Today\'s Affirmation'),
+                  h('p', { style: { fontSize: 16, fontWeight: 'bold', color: '#fde68a', lineHeight: 1.6, fontStyle: 'italic', maxWidth: 400, margin: '0 auto 12px' } }, '\u201C' + dailyAffirmation + '\u201D'),
+                  callTTS ? h('button', { onClick: function() { speak(dailyAffirmation); }, style: { background: 'rgba(245,158,11,0.2)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, padding: '6px 14px', color: '#fbbf24', fontSize: 11, cursor: 'pointer' } }, '\uD83D\uDD0A Hear It') : null
+                ),
+
+                // Category selector
+                h('div', { style: { display: 'flex', gap: 6, marginBottom: 16, justifyContent: 'center' } },
+                  STRENGTH_CATEGORIES.map(function(cat) {
+                    var active = affirmCat === cat.id;
+                    return h('button', { key: cat.id, onClick: function() { upd({ affirmCat: cat.id, affirmIdx: 0 }); }, style: { padding: '6px 14px', borderRadius: 20, background: active ? cat.color + '22' : 'rgba(255,255,255,0.04)', border: active ? '2px solid ' + cat.color : '1px solid rgba(99,102,241,0.15)', color: active ? cat.color : '#64748b', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, cat.emoji + ' ' + cat.label.split(' ')[0]);
+                  })
+                ),
+
+                // Card display
+                h('div', { style: { textAlign: 'center', padding: 30, marginBottom: 16, borderRadius: 14, background: catColor + '0a', border: '2px solid ' + catColor + '33', minHeight: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                  h('div', { style: { fontSize: 32, marginBottom: 12 } }, catEmoji),
+                  h('p', { style: { fontSize: 18, fontWeight: 'bold', color: catColor, lineHeight: 1.6, maxWidth: 400 } }, currentAffirmation),
+                  h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 10 } }, (affirmIdx % cards.length + 1) + ' / ' + cards.length)
+                ),
+
+                // Controls
+                h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 16 } },
+                  h('button', { onClick: function() {
+                    var prev = affirmIdx > 0 ? affirmIdx - 1 : cards.length - 1;
+                    upd({ affirmIdx: prev });
+                  }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u2190 Previous'),
+                  callTTS ? h('button', { onClick: function() {
+                    speak(currentAffirmation);
+                    var newCount = affirmationsRead + 1;
+                    upd({ affirmationsRead: newCount });
+                  }, style: { padding: '8px 20px', borderRadius: 8, background: catColor, color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDD0A Read Aloud') : null,
+                  h('button', { onClick: function() {
+                    var next = (affirmIdx + 1) % cards.length;
+                    var newCount = affirmationsRead + 1;
+                    upd({ affirmIdx: next, affirmationsRead: newCount });
+                  }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, 'Next \u2192')
+                ),
+
+                // Affirmation stats
+                h('div', { style: { textAlign: 'center', fontSize: 11, color: '#64748b', padding: 8 } },
+                  '\uD83D\uDCAC Affirmations practiced: ' + affirmationsRead
+                )
+              );
+            })() : null,
 
             // ── COACH TAB ──
             tab === 'coach' ? h('div', null,
@@ -888,13 +1476,16 @@ window.SelHub = window.SelHub || {
                   // Stats grid
                   h('div', { style: { marginTop: 20, padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.1)' } },
                     h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', marginBottom: 8 } }, '\uD83D\uDCCA Summary'),
-                    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, textAlign: 'center' } },
+                    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, textAlign: 'center' } },
                       [
                         { val: selectedStrengths.length, label: 'Strengths', color: '#fbbf24' },
-                        { val: reflections.length, label: 'Reflections', color: '#a78bfa' },
+                        { val: reflections.length + (d.deepReflections || []).length, label: 'Reflections', color: '#a78bfa' },
                         { val: scenariosDone.length, label: 'Scenarios', color: '#f97316' },
                         { val: quizBest, label: 'Quiz Best', color: '#34d399' },
-                        { val: badgeCount, label: 'Badges', color: '#6366f1' }
+                        { val: d.actionsCompleted || 0, label: 'Actions', color: '#22c55e' },
+                        { val: (d.peerNotes || []).length, label: 'Peer Notes', color: '#6366f1' },
+                        { val: d.affirmationsRead || 0, label: 'Affirmations', color: '#f472b6' },
+                        { val: badgeCount, label: 'Badges', color: '#818cf8' }
                       ].map(function(s, si) {
                         return h('div', { key: si },
                           h('div', { style: { fontSize: 20, fontWeight: 'bold', color: s.color } }, String(s.val)),
@@ -911,5 +1502,5 @@ window.SelHub = window.SelHub || {
     }
   });
 
-  console.log('[SelHub] sel_tool_strengths.js loaded \u2014 Strengths Finder');
+  console.log('[SelHub] sel_tool_strengths.js v2.0 loaded \u2014 Strengths Finder (Interview, Planner, Peers, Affirmations)');
 })();
