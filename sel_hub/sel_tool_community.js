@@ -61,7 +61,14 @@ window.SelHub = window.SelHub || {
       { id: 'ce7', emoji: '\uD83C\uDF5C', name: 'Foods That Tell Stories', desc: 'Tamales, jollof rice, pierogi, pho, injera \u2014 every culture has dishes passed down through generations. Food carries memories and love.' },
       { id: 'ce8', emoji: '\uD83D\uDDE3\uFE0F', name: 'Languages of the World', desc: 'There are over 7,000 languages spoken on Earth! Some people speak two or three languages at home. Being multilingual is a superpower.' },
       { id: 'ce9', emoji: '\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67\u200D\uD83D\uDC66', name: 'Family Traditions', desc: 'Some families have game nights, others cook together on Sundays, some tell stories before bed. Every family has its own special ways of showing love.' },
-      { id: 'ce10', emoji: '\uD83C\uDF0D', name: 'Kwanzaa', desc: 'A week-long celebration of African heritage and community. Each of the seven days honors a different principle like unity, creativity, and faith.' }
+      { id: 'ce10', emoji: '\uD83C\uDF0D', name: 'Kwanzaa', desc: 'A week-long celebration of African heritage and community. Each of the seven days honors a different principle like unity, creativity, and faith.' },
+      { id: 'ce11', emoji: '\uD83C\uDF84', name: 'Holi \u2014 Festival of Colors', desc: 'A joyful Hindu spring festival where people throw bright colored powders and water at each other. It celebrates the triumph of good over evil and the arrival of spring.' },
+      { id: 'ce12', emoji: '\uD83D\uDEA3', name: 'Dragon Boat Festival', desc: 'A Chinese festival where teams paddle long, decorated boats to the beat of drums. People also eat sticky rice dumplings called zongzi and remember the poet Qu Yuan.' },
+      { id: 'ce13', emoji: '\uD83C\uDF8A', name: 'Carnival & Mardi Gras', desc: 'Colorful parades with music, dancing, and costumes celebrated in many countries around the world. From Brazil to New Orleans, people come together for this joyful festival.' },
+      { id: 'ce14', emoji: '\uD83E\uDD85', name: 'Pow Wow', desc: 'A gathering of Native American communities with traditional drumming, dancing, singing, and storytelling. Pow Wows are a way to honor traditions and build community.' },
+      { id: 'ce15', emoji: '\uD83C\uDFAD', name: 'Storytelling Traditions', desc: 'From African griots to Native American oral histories to Indian folktales, cultures around the world pass down wisdom through stories told generation after generation.' },
+      { id: 'ce16', emoji: '\uD83D\uDC98', name: 'Coming-of-Age Celebrations', desc: 'Many cultures mark the transition to adulthood: Quincea\u00F1eras in Latin American cultures, Bar and Bat Mitzvahs in Judaism, and Seijin-no-Hi in Japan.' },
+      { id: 'ce17', emoji: '\uD83C\uDFA8', name: 'Art From Every Culture', desc: 'From Aboriginal dot paintings to Japanese origami to Mexican papel picado to African kente cloth, art is a way people express their culture and tell their stories.' }
     ],
     middle: [
       { id: 'cm1', emoji: '\uD83E\uDDE9', name: 'Cultural Identity', desc: 'Your cultural identity is made up of many pieces: where your family is from, the languages you speak, your traditions, values, and beliefs. No two people have the exact same cultural identity.' },
@@ -71,7 +78,14 @@ window.SelHub = window.SelHub || {
       { id: 'cm5', emoji: '\uD83C\uDF0E', name: 'Cultural Appreciation vs. Appropriation', desc: 'Appreciation means learning about a culture with respect and permission. Appropriation means taking elements of a culture without understanding or honoring their meaning.' },
       { id: 'cm6', emoji: '\uD83D\uDCAC', name: 'Code-Switching', desc: 'Many people change how they talk, dress, or act depending on the environment. Code-switching can be a survival skill, but it shouldn\'t mean hiding who you are.' },
       { id: 'cm7', emoji: '\uD83D\uDCDA', name: 'Hidden Histories', desc: 'Many cultures and communities have histories that aren\'t taught in mainstream education. Seeking out diverse perspectives helps us understand the full picture.' },
-      { id: 'cm8', emoji: '\u2764\uFE0F', name: 'Microaggressions', desc: 'Small comments or actions that communicate negative messages about someone\'s identity. They may seem minor individually, but they add up and cause real harm.' }
+      { id: 'cm8', emoji: '\u2764\uFE0F', name: 'Microaggressions', desc: 'Small comments or actions that communicate negative messages about someone\'s identity. They may seem minor individually, but they add up and cause real harm.' },
+      { id: 'cm9', emoji: '\uD83C\uDFAD', name: 'Code-Switching in Depth', desc: 'Code-switching goes beyond language. Many students of color, LGBTQ+ youth, and immigrants shift their behavior, speech, and appearance to fit into dominant culture spaces. It takes energy and can feel exhausting.' },
+      { id: 'cm10', emoji: '\u26A0\uFE0F', name: 'Model Minority Myth', desc: 'The idea that certain racial groups are universally successful is a harmful myth. It erases individual struggles, pits communities against each other, and ignores systemic barriers many still face.' },
+      { id: 'cm11', emoji: '\uD83E\uDDE0', name: 'Implicit Bias Basics', desc: 'Implicit biases are attitudes or stereotypes that affect our understanding and actions without us even knowing. Everyone has them, but we can learn to recognize and challenge them.' },
+      { id: 'cm12', emoji: '\uD83C\uDFAD', name: 'Appropriation vs. Appreciation', desc: 'Wearing a sacred headdress as a costume is appropriation. Learning a traditional dance with guidance from that culture is appreciation. The difference lies in permission, context, and respect.' },
+      { id: 'cm13', emoji: '\uD83D\uDCF1', name: 'Digital Culture & Identity', desc: 'Social media shapes how we see culture. Algorithms can create echo chambers, viral trends can spread stereotypes, and online spaces can both connect and divide cultural communities.' },
+      { id: 'cm14', emoji: '\uD83C\uDFE0', name: 'Multicultural Families', desc: 'Many families blend multiple cultural backgrounds. Navigating different traditions, languages, and expectations within one family can be complex, beautiful, and sometimes challenging.' },
+      { id: 'cm15', emoji: '\uD83D\uDCDA', name: 'Representation Matters', desc: 'Seeing people who look like you in books, movies, and leadership positions matters. Representation shapes self-image and tells young people that all identities belong and are valued.' }
     ],
     high: [
       { id: 'ch1', emoji: '\uD83D\uDD17', name: 'Intersectionality', desc: 'A person\'s identity includes race, gender, class, ability, sexuality, religion, and more. These identities intersect and create unique experiences of both privilege and oppression that can\'t be understood in isolation.' },
@@ -81,7 +95,14 @@ window.SelHub = window.SelHub || {
       { id: 'ch5', emoji: '\uD83E\uDDE0', name: 'Implicit Bias', desc: 'Everyone has unconscious biases shaped by media, upbringing, and society. Recognizing them doesn\'t make you bad \u2014 refusing to examine them does.' },
       { id: 'ch6', emoji: '\uD83C\uDFD7\uFE0F', name: 'Structural Inequality', desc: 'Disparities in wealth, education, healthcare, and justice aren\'t accidents. They\'re the result of historical and ongoing policies. Understanding this is the first step to dismantling it.' },
       { id: 'ch7', emoji: '\uD83D\uDD04', name: 'Decolonizing Knowledge', desc: 'Much of what we\'re taught centers Western perspectives. Decolonizing means seeking out and valuing knowledge systems from Indigenous, African, Asian, and other non-Western traditions.' },
-      { id: 'ch8', emoji: '\uD83D\uDC65', name: 'Coalition Building', desc: 'Real change happens when diverse communities work together across differences. Coalition building requires trust, shared goals, and willingness to center the most affected voices.' }
+      { id: 'ch8', emoji: '\uD83D\uDC65', name: 'Coalition Building', desc: 'Real change happens when diverse communities work together across differences. Coalition building requires trust, shared goals, and willingness to center the most affected voices.' },
+      { id: 'ch9', emoji: '\uD83C\uDF0D', name: 'Decolonization', desc: 'Decolonization is the process of dismantling colonial structures, ideologies, and power dynamics. It means returning land, language, and agency to Indigenous peoples and rethinking systems built on colonial foundations.' },
+      { id: 'ch10', emoji: '\u2708\uFE0F', name: 'Diaspora Communities', desc: 'Diaspora refers to communities of people who have been dispersed from their homeland. Whether through forced migration or choice, diaspora communities navigate dual identities while preserving cultural heritage across borders.' },
+      { id: 'ch11', emoji: '\uD83D\uDD04', name: 'Restorative Justice', desc: 'Restorative justice focuses on repairing harm through dialogue rather than punishment. Rooted in Indigenous traditions, it centers the needs of those harmed and holds accountable parties responsible for making things right.' },
+      { id: 'ch12', emoji: '\uD83C\uDF3F', name: 'Indigenous Sovereignty', desc: 'Indigenous sovereignty affirms the right of Indigenous peoples to self-governance, cultural preservation, and land stewardship. It challenges colonial narratives and recognizes nations that existed long before settler states.' },
+      { id: 'ch13', emoji: '\uD83D\uDCCA', name: 'Data & Racial Justice', desc: 'Data can expose inequity or reinforce it. Algorithms trained on biased data perpetuate discrimination in hiring, policing, and lending. Critical data literacy is essential for racial justice in the digital age.' },
+      { id: 'ch14', emoji: '\uD83C\uDFD7\uFE0F', name: 'Environmental Racism', desc: 'Marginalized communities disproportionately bear the burden of pollution, toxic waste, and climate change. Environmental justice recognizes that ecological issues are inseparable from racial and economic justice.' },
+      { id: 'ch15', emoji: '\uD83D\uDCDC', name: 'Reparative Justice', desc: 'Reparative justice goes beyond equality to address historical harms. It asks what is owed to communities whose wealth, labor, and culture were stolen, and explores concrete steps toward repair.' }
     ]
   };
 
@@ -133,6 +154,24 @@ window.SelHub = window.SelHub || {
           { label: 'Just pick from the list. It doesn\'t matter.', rating: 1, feedback: 'It does matter. Everyone deserves to see themselves reflected in what they learn. Your history is important too.' },
           { label: 'Feel frustrated but don\'t say anything.', rating: 2, feedback: 'Your frustration is valid. But if you don\'t speak up, the teacher may not realize the list was incomplete.' },
           { label: 'Ask the teacher: "Can I research someone from my own background? I\'d love to share their story with the class."', rating: 3, feedback: 'You advocated for representation AND offered to educate your classmates. Your culture\'s heroes deserve to be known.' }
+        ] },
+      { id: 'sc6', title: 'The New Kid\'s Language', setup: 'A new student just moved from another country and is still learning English. During group work, other kids skip over them and say "They can\'t even talk right."',
+        branches: [
+          { label: 'Agree. Working with someone who doesn\'t speak English well would slow the group down.', rating: 1, feedback: 'Speaking a new language is incredibly brave. Excluding someone for learning a language tells them they don\'t belong.' },
+          { label: 'Feel bad for the student but don\'t do anything.', rating: 2, feedback: 'Empathy is a start, but action is what makes someone feel included. The new student needs an ally right now.' },
+          { label: 'Invite the student into your group and say: "We\'d love to work with you! We can figure it out together."', rating: 3, feedback: 'You showed the new student they belong. Learning a new language is hard enough without being excluded. Your kindness made school feel safer.' }
+        ] },
+      { id: 'sc7', title: 'The Religious Holiday', setup: 'Your friend can\'t come to your birthday party because it falls on a religious holiday their family observes. Other kids say "That\'s so weird. Just skip it."',
+        branches: [
+          { label: 'Be upset at your friend for not coming. Your party is more important.', rating: 1, feedback: 'Everyone\'s beliefs deserve respect. Expecting your friend to skip something sacred shows you don\'t value what matters to them.' },
+          { label: 'Say "That\'s okay" but feel annoyed inside.', rating: 2, feedback: 'Saying okay is polite, but try to genuinely understand why this matters to them. Religious practices are a deep part of identity.' },
+          { label: 'Say: "I understand! Let\'s celebrate together another day. Can you tell me about your holiday? It sounds important."', rating: 3, feedback: 'You showed real respect by honoring their observance AND staying connected. Asking about their holiday shows genuine curiosity and care.' }
+        ] },
+      { id: 'sc8', title: 'The Hair Comment', setup: 'A classmate reaches out to touch another student\'s hair without asking and says "Your hair is so cool and different! Can I feel it?"',
+        branches: [
+          { label: 'Don\'t see a problem. It was a compliment.', rating: 1, feedback: 'Touching someone\'s hair without consent, especially hair tied to cultural identity, is invasive. Bodies are not exhibits to be touched.' },
+          { label: 'Think it was a little weird but say nothing.', rating: 2, feedback: 'Noticing discomfort is good. Speaking up could help both students understand why consent and respect for bodies matter.' },
+          { label: 'Gently say: "We should always ask before touching someone. Everyone\'s hair is their own." Then check in with the student.', rating: 3, feedback: 'You set a boundary kindly and helped everyone learn about consent and respect. Many people with textured or natural hair face unwanted touching regularly.' }
         ] }
     ],
     middle: [
@@ -165,6 +204,24 @@ window.SelHub = window.SelHub || {
           { label: 'Don\'t get involved. It\'s between them.', rating: 1, feedback: 'Using a person as proof you\'re not biased reduces them to a token. Your friend deserves to be a person, not an argument.' },
           { label: 'Talk to your friend later and ask how they feel about it.', rating: 2, feedback: 'Checking on your friend shows care. They may already know this happens and appreciate someone noticing.' },
           { label: 'Address it: "Having a friend from a group doesn\'t mean you can\'t have blind spots. We all do. What matters is being willing to learn."', rating: 3, feedback: 'You challenged the logic without attacking the person. Bias exists in everyone \u2014 acknowledging that is the first step.' }
+        ] },
+      { id: 'sm6', title: 'The "Where Are You Really From?" Question', setup: 'A classmate keeps asking your friend "But where are you REALLY from?" after they already said they\'re from this city. Your friend looks uncomfortable.',
+        branches: [
+          { label: 'It\'s just curiosity. No big deal.', rating: 1, feedback: 'This question implies someone doesn\'t truly belong here based on their appearance. It\'s a common microaggression that makes people feel like perpetual outsiders.' },
+          { label: 'Notice it\'s awkward but stay quiet.', rating: 2, feedback: 'You sensed something was off. Next time, trust that instinct and step in. Your friend could use support in the moment.' },
+          { label: 'Jump in: "They told you \u2014 they\'re from here. If you want to know about their family heritage, maybe ask a different way, like \'What\'s your family\'s background?\'"', rating: 3, feedback: 'You redirected the question to be respectful while still allowing genuine cultural curiosity. Framing matters enormously.' }
+        ] },
+      { id: 'sm7', title: 'The Segregated Cafeteria', setup: 'You notice that in the cafeteria, students mostly sit with people of the same race or background. A friend says "People just prefer their own kind."',
+        branches: [
+          { label: 'Agree. It\'s natural for people to group with similar people.', rating: 1, feedback: 'While comfort with the familiar is natural, accepting full segregation as "just how it is" ignores the forces that create division and the value of cross-cultural connection.' },
+          { label: 'Feel conflicted but don\'t respond.', rating: 2, feedback: 'Sitting at the same table doesn\'t fix systemic issues, but small acts of reaching across differences build understanding over time.' },
+          { label: 'Say: "Maybe, but I think we\'re also missing out on getting to know people different from us. Want to sit somewhere new today?"', rating: 3, feedback: 'You challenged the assumption gently and invited action. Breaking informal segregation starts with individual choices to bridge divides.' }
+        ] },
+      { id: 'sm8', title: 'The Sports Team Joke', setup: 'A team with a mascot that\'s a racial caricature is playing on TV. Someone on your team says "It\'s just tradition, people need to relax."',
+        branches: [
+          { label: 'Agree. Sports mascots are just for fun.', rating: 1, feedback: 'Racial caricatures as mascots reduce entire peoples to stereotypes. Many Indigenous communities have spoken out about how harmful and dehumanizing this is.' },
+          { label: 'Feel uncomfortable but change the subject.', rating: 2, feedback: 'Discomfort is a signal worth exploring. Changing the subject avoids conflict but also avoids growth.' },
+          { label: 'Say: "Some traditions hurt people. A lot of Native communities have asked teams to change these. I think we should listen to them."', rating: 3, feedback: 'You centered the voices of the affected community. Real respect means listening to people who say they\'re being harmed, even when it challenges what feels familiar.' }
         ] }
     ],
     high: [
@@ -197,7 +254,124 @@ window.SelHub = window.SelHub || {
           { label: 'Decline. They\'re just using you for optics.', rating: 1, feedback: 'Your skepticism is valid, but declining without dialogue means the panel happens without diverse voices at all.' },
           { label: 'Accept and say what they want to hear.', rating: 2, feedback: 'Being a comfortable token helps the organizers but not the community. Your voice matters when it\'s authentic.' },
           { label: 'Accept conditionally: "I\'ll join if you also invite [specific people], if I can help shape the questions, and if this leads to concrete action \u2014 not just a photo op."', rating: 3, feedback: 'You used the invitation as leverage for real inclusion. Setting conditions ensures your participation creates change rather than decoration.' }
+        ] },
+      { id: 'sh6', title: 'The "Colorblind" Teacher', setup: 'A teacher says "I don\'t see color. I treat all my students the same." A student of color in your class visibly deflates.',
+        branches: [
+          { label: 'Agree. Treating everyone the same is fair.', rating: 1, feedback: 'Colorblindness sounds equal but actually erases the real experiences of people of color. Equity means seeing and responding to differences, not ignoring them.' },
+          { label: 'Notice your classmate\'s reaction but stay silent.', rating: 2, feedback: 'You observed the impact, which matters. But your classmate is alone in feeling unseen. Your voice could validate their experience.' },
+          { label: 'Say respectfully: "I think seeing our differences is actually important. Treating everyone the same isn\'t the same as treating everyone fairly."', rating: 3, feedback: 'You challenged a well-intentioned but harmful ideology. Acknowledging race and difference is essential to creating genuine equity and belonging.' }
+        ] },
+      { id: 'sh7', title: 'The Gentrification Debate', setup: 'Your neighborhood is rapidly changing. New expensive shops are replacing family-owned businesses. In class, someone says gentrification is "just progress."',
+        branches: [
+          { label: 'Agree. New businesses mean the area is improving.', rating: 1, feedback: '"Improvement" for some means displacement for others. When longtime residents can no longer afford their neighborhood, communities and cultural fabric are destroyed.' },
+          { label: 'Feel conflicted because you see both sides.', rating: 2, feedback: 'Nuance is important, but centering the voices of those being displaced is essential. Development without community input is colonization, not progress.' },
+          { label: 'Share: "Progress should include the people already here. When development happens without community voice, it erases the culture that made this neighborhood what it is."', rating: 3, feedback: 'You centered the affected community and challenged the narrative that displacement equals progress. Real development uplifts everyone, not just newcomers.' }
+        ] },
+      { id: 'sh8', title: 'The Activist Burnout', setup: 'A friend who has been actively organizing for social justice is exhausted, cynical, and says "Nothing ever changes. I\'m done fighting."',
+        branches: [
+          { label: 'Agree with them. The system can\'t be changed.', rating: 1, feedback: 'Burnout is real, but nihilism is not the answer. History shows that persistent collective action does create change, even when it\'s slow.' },
+          { label: 'Tell them to take a break and not think about it.', rating: 2, feedback: 'Rest is important, but dismissing their exhaustion or the cause itself isn\'t supportive. Acknowledge both the toll and the importance.' },
+          { label: 'Say: "Your exhaustion is valid and your work matters. Rest is part of resistance. Let me carry some of the weight while you recharge."', rating: 3, feedback: 'You validated their feelings, affirmed their impact, and offered tangible support. Sustainable activism requires community care and shared burden.' }
         ] }
+    ]
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Culture Quiz Data (grade-adaptive matching game) ──
+  // ══════════════════════════════════════════════════════════════
+  var CULTURE_QUIZ = {
+    elementary: [
+      { q: 'Diwali is celebrated in which tradition?', a: 'Hindu / Indian', options: ['Hindu / Indian', 'Chinese', 'Native American', 'Greek'] },
+      { q: 'Day of the Dead (D\u00EDa de los Muertos) honors...', a: 'Deceased loved ones', options: ['Deceased loved ones', 'Military heroes', 'Ancient kings', 'Harvest season'] },
+      { q: 'Kwanzaa celebrates which heritage?', a: 'African heritage', options: ['European heritage', 'African heritage', 'Asian heritage', 'Australian heritage'] },
+      { q: 'During Hanukkah, families light candles on a...', a: 'Menorah', options: ['Cake', 'Menorah', 'Campfire', 'Lantern'] },
+      { q: 'Lunar New Year is celebrated in many...', a: 'Asian cultures', options: ['South American cultures', 'European cultures', 'Asian cultures', 'African cultures'] },
+      { q: 'During Ramadan, many Muslims...', a: 'Fast from sunrise to sunset', options: ['Fast from sunrise to sunset', 'Stay awake all night', 'Exchange gifts daily', 'Play games all month'] },
+      { q: 'Holi is known as the festival of...', a: 'Colors', options: ['Colors', 'Fire', 'Water', 'Stars'] },
+      { q: 'A Pow Wow is a gathering of...', a: 'Native American communities', options: ['European royalty', 'Native American communities', 'African musicians', 'Japanese artists'] },
+      { q: 'Dragon Boat Festival is celebrated in...', a: 'China', options: ['India', 'Brazil', 'China', 'Egypt'] },
+      { q: 'Carnival features colorful parades in countries like...', a: 'Brazil and Trinidad', options: ['Japan and Korea', 'Brazil and Trinidad', 'Norway and Finland', 'Australia and New Zealand'] }
+    ],
+    middle: [
+      { q: 'Code-switching means...', a: 'Changing behavior to fit different environments', options: ['Changing behavior to fit different environments', 'Switching between phone apps', 'Learning to code computers', 'Copying someone else\'s homework'] },
+      { q: 'Cultural appropriation is different from appreciation because it...', a: 'Takes without understanding or permission', options: ['Takes without understanding or permission', 'Always involves clothing', 'Only applies to food', 'Is the same thing'] },
+      { q: 'The "model minority" myth is harmful because it...', a: 'Erases individual struggles and pits groups against each other', options: ['Celebrates all minorities equally', 'Erases individual struggles and pits groups against each other', 'Only affects one racial group', 'Is actually true for most people'] },
+      { q: 'Implicit bias refers to...', a: 'Unconscious attitudes that affect our actions', options: ['Lies people tell on purpose', 'Unconscious attitudes that affect our actions', 'Laws that discriminate openly', 'Opinions shared on social media'] },
+      { q: 'A microaggression is best described as...', a: 'Small comments that communicate negative messages about identity', options: ['A very tiny act of violence', 'A small compliment', 'Small comments that communicate negative messages about identity', 'Quietly disagreeing with someone'] },
+      { q: 'An ally is someone who...', a: 'Uses their voice to support people facing discrimination', options: ['Only helps people who look like them', 'Uses their voice to support people facing discrimination', 'Avoids all conflict', 'Agrees with everyone always'] },
+      { q: 'Representation in media matters because...', a: 'It shapes self-image and tells people they belong', options: ['It makes TV shows longer', 'It shapes self-image and tells people they belong', 'It only matters to adults', 'It has no real effect'] },
+      { q: 'Stereotypes are harmful even when "positive" because they...', a: 'Ignore individual differences', options: ['Ignore individual differences', 'Are always accurate', 'Only affect celebrities', 'Help people fit in'] },
+      { q: 'Multicultural families often navigate...', a: 'Multiple traditions, languages, and expectations', options: ['Only one culture', 'Multiple traditions, languages, and expectations', 'No traditions at all', 'Only food differences'] },
+      { q: 'Digital culture can reinforce stereotypes through...', a: 'Biased algorithms and viral trends', options: ['Better WiFi signals', 'Biased algorithms and viral trends', 'Longer battery life', 'Fewer ads'] }
+    ],
+    high: [
+      { q: 'Intersectionality, coined by Kimberl\u00E9 Crenshaw, describes how...', a: 'Multiple identities create unique experiences of privilege and oppression', options: ['People should only identify one way', 'Multiple identities create unique experiences of privilege and oppression', 'Race is the only identity that matters', 'Everyone has the same experience'] },
+      { q: 'Systemic bias differs from personal prejudice because it is...', a: 'Built into institutions, laws, and systems', options: ['Only in people\'s heads', 'Built into institutions, laws, and systems', 'Easy to fix with one conversation', 'Not real'] },
+      { q: 'Cultural humility differs from cultural competence in that it...', a: 'Is an ongoing process, not a destination', options: ['Can be achieved with a single course', 'Is an ongoing process, not a destination', 'Only applies to doctors', 'Means knowing everything about a culture'] },
+      { q: 'Decolonization primarily involves...', a: 'Dismantling colonial structures and centering Indigenous knowledge', options: ['Building more colonies', 'Dismantling colonial structures and centering Indigenous knowledge', 'Ignoring history completely', 'Only changing textbooks'] },
+      { q: 'Diaspora communities are formed when people...', a: 'Are dispersed from their homeland', options: ['Move to the suburbs', 'Are dispersed from their homeland', 'Choose to live alone', 'Join a sports team'] },
+      { q: 'Restorative justice focuses on...', a: 'Repairing harm through dialogue', options: ['Harsher punishments', 'Repairing harm through dialogue', 'Ignoring wrongdoing', 'Only forgiving'] },
+      { q: 'Indigenous sovereignty affirms the right to...', a: 'Self-governance and cultural preservation', options: ['Colonial rule', 'Self-governance and cultural preservation', 'Isolation from society', 'Military power'] },
+      { q: 'Environmental racism means that...', a: 'Marginalized communities bear disproportionate environmental burdens', options: ['Nature is inherently racist', 'Marginalized communities bear disproportionate environmental burdens', 'Only certain countries pollute', 'All communities are affected equally'] },
+      { q: 'Performative allyship is problematic because it...', a: 'Prioritizes appearance over genuine action', options: ['Raises too much money for causes', 'Prioritizes appearance over genuine action', 'Always leads to real change', 'Is a new type of activism'] },
+      { q: 'Coalition building requires...', a: 'Trust, shared goals, and centering the most affected voices', options: ['Everyone agreeing on everything', 'Trust, shared goals, and centering the most affected voices', 'Only one strong leader', 'Avoiding difficult conversations'] }
+    ]
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Allyship Action Cards (grade-adaptive) ──
+  // ══════════════════════════════════════════════════════════════
+  var ALLYSHIP_ACTIONS = {
+    elementary: [
+      { id: 'aa_e1', icon: '\uD83D\uDDE3\uFE0F', action: 'Learn to say someone\'s name correctly', detail: 'Ask a classmate how to pronounce their name. Practice it until you get it right. Their name is important!' },
+      { id: 'aa_e2', icon: '\uD83C\uDF5C', action: 'Try food from a different culture', detail: 'Ask your family to try a restaurant or recipe from a culture different from yours. Talk about what you liked!' },
+      { id: 'aa_e3', icon: '\uD83D\uDCDA', action: 'Read a book by an author who looks different from you', detail: 'Visit the library and find a book by an author from a different background. What did you learn from their story?' },
+      { id: 'aa_e4', icon: '\uD83D\uDC4B', action: 'Learn to say "hello" in 3 new languages', detail: 'Ask classmates or look up how to greet someone in languages spoken in your community. Surprise someone by greeting them in their language!' },
+      { id: 'aa_e5', icon: '\uD83C\uDFA8', action: 'Make art inspired by a culture you want to learn about', detail: 'Research an art form from another culture (origami, rangoli, papel picado) and try making your own version while learning about its meaning.' },
+      { id: 'aa_e6', icon: '\uD83E\uDD1D', action: 'Sit with someone new at lunch', detail: 'Choose a day to sit with someone you don\'t usually eat with. Ask about their favorite things and find something you have in common.' }
+    ],
+    middle: [
+      { id: 'aa_m1', icon: '\uD83D\uDCAC', action: 'Speak up when you hear a stereotype', detail: 'Next time someone uses a stereotype, try saying: "That\'s actually a stereotype. People in that group are all different, just like us."' },
+      { id: 'aa_m2', icon: '\u2753', action: 'Ask genuine questions about someone\'s culture', detail: 'Instead of assuming, ask respectful questions like: "I\'d love to learn about your traditions. Would you be willing to share?"' },
+      { id: 'aa_m3', icon: '\uD83D\uDD0A', action: 'Amplify marginalized voices', detail: 'When someone from a marginalized group shares an idea that gets ignored, say: "I think [name] made a great point. Can we go back to what they said?"' },
+      { id: 'aa_m4', icon: '\uD83D\uDCF1', action: 'Follow diverse creators on social media', detail: 'Diversify your feed by following creators, writers, and thinkers from backgrounds different from your own. Notice how it changes your perspective.' },
+      { id: 'aa_m5', icon: '\uD83D\uDCDD', action: 'Write a letter supporting inclusive school policies', detail: 'Think about a policy at school that could be more inclusive. Write a respectful letter to an administrator explaining why it matters.' },
+      { id: 'aa_m6', icon: '\uD83C\uDF0E', action: 'Attend a cultural event outside your own background', detail: 'Visit a cultural festival, museum exhibit, or community event from a culture different from yours. Go to learn, not to judge.' }
+    ],
+    high: [
+      { id: 'aa_h1', icon: '\uD83E\uDDE0', action: 'Examine your own biases through the IAT', detail: 'Take the Implicit Association Test (IAT) at implicit.harvard.edu. Reflect honestly on the results. Awareness is the first step toward change.' },
+      { id: 'aa_h2', icon: '\uD83C\uDFDB\uFE0F', action: 'Support student-led cultural organizations', detail: 'Show up to events hosted by cultural clubs, even (especially) ones outside your own identity. Your presence shows solidarity.' },
+      { id: 'aa_h3', icon: '\uD83D\uDCDA', action: 'Advocate for inclusive curriculum', detail: 'Research authors, historical figures, and perspectives missing from your courses. Present a proposal to a teacher or department with specific recommendations.' },
+      { id: 'aa_h4', icon: '\uD83D\uDCE2', action: 'Organize a community dialogue on race and identity', detail: 'Partner with a teacher or counselor to create a safe space for honest conversations about race, identity, and belonging at your school.' },
+      { id: 'aa_h5', icon: '\uD83D\uDCB0', action: 'Support minority-owned businesses in your community', detail: 'Research and patronize businesses owned by people from marginalized communities. Economic support is a concrete form of allyship.' },
+      { id: 'aa_h6', icon: '\u270D\uFE0F', action: 'Write about your own positionality', detail: 'Reflect in writing on how your race, class, gender, and other identities shape your worldview. Positionality work is ongoing and humbling.' }
+    ]
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Battle Questions (quick true/false & multiple choice) ──
+  // ══════════════════════════════════════════════════════════════
+  var BATTLE_QUESTIONS = {
+    elementary: [
+      { q: 'True or False: There are over 7,000 languages spoken in the world.', a: 'True', options: ['True', 'False'] },
+      { q: 'True or False: Everyone in the same country celebrates the same holidays.', a: 'False', options: ['True', 'False'] },
+      { q: 'What does the word "culture" include?', a: 'All of the above', options: ['Food and music', 'Language and traditions', 'Beliefs and values', 'All of the above'] },
+      { q: 'True or False: Being multilingual (speaking many languages) is a strength.', a: 'True', options: ['True', 'False'] },
+      { q: 'What is the best way to learn about another culture?', a: 'Ask respectful questions and listen', options: ['Watch one movie about it', 'Ask respectful questions and listen', 'Assume you already know', 'Avoid the topic'] }
+    ],
+    middle: [
+      { q: 'True or False: A microaggression is always intentional.', a: 'False', options: ['True', 'False'] },
+      { q: 'What is code-switching?', a: 'Changing behavior to fit different social contexts', options: ['Switching computer programming languages', 'Changing behavior to fit different social contexts', 'A type of secret code', 'Switching schools'] },
+      { q: 'True or False: "Positive" stereotypes (like "all Asians are good at math") are still harmful.', a: 'True', options: ['True', 'False'] },
+      { q: 'Cultural appropriation is taking elements of a culture without...', a: 'Understanding or respect', options: ['Paying money', 'Understanding or respect', 'A permission slip', 'Telling anyone'] },
+      { q: 'True or False: Implicit biases can be changed with awareness and effort.', a: 'True', options: ['True', 'False'] }
+    ],
+    high: [
+      { q: 'Who coined the term "intersectionality"?', a: 'Kimberl\u00E9 Crenshaw', options: ['Kimberl\u00E9 Crenshaw', 'Martin Luther King Jr.', 'bell hooks', 'Angela Davis'] },
+      { q: 'True or False: Systemic bias can exist even without individual racist intent.', a: 'True', options: ['True', 'False'] },
+      { q: 'Restorative justice has its roots in which traditions?', a: 'Indigenous practices', options: ['Roman law', 'British common law', 'Indigenous practices', 'Social media movements'] },
+      { q: 'True or False: "Colorblindness" (claiming not to see race) promotes equity.', a: 'False', options: ['True', 'False'] },
+      { q: 'Environmental racism describes how pollution disproportionately affects...', a: 'Marginalized communities', options: ['Rural areas only', 'Wealthy neighborhoods', 'Marginalized communities', 'All areas equally'] }
     ]
   };
 
@@ -216,9 +390,15 @@ window.SelHub = window.SelHub || {
     { id: 'all_tabs',          icon: '\uD83D\uDCCB', name: 'All Tabs Visited',     desc: 'Visit every tab at least once' },
     { id: 'culture_champion',  icon: '\uD83C\uDFC6', name: 'Culture Champion',     desc: 'Earn 7 other badges' },
     { id: 'identity_complete', icon: '\uD83C\uDF1F', name: 'Identity Complete',    desc: 'Fill in all 8 identity areas' },
-    { id: 'scenario_master',   icon: '\uD83C\uDFAD', name: 'Scenario Master',      desc: 'Complete all 5 scenarios in your grade band' },
+    { id: 'scenario_master',   icon: '\uD83C\uDFAD', name: 'Scenario Master',      desc: 'Complete all 8 scenarios in your grade band' },
     { id: 'streak_3',          icon: '\uD83D\uDD25', name: 'Practice Streak',      desc: 'Practice 3 days in a row' },
-    { id: 'total_10',          icon: '\uD83D\uDC8E', name: 'Dedicated Learner',    desc: 'Complete 10 activities across all tabs' }
+    { id: 'total_10',          icon: '\uD83D\uDC8E', name: 'Dedicated Learner',    desc: 'Complete 10 activities across all tabs' },
+    { id: 'quiz_champion',     icon: '\uD83C\uDFC6', name: 'Quiz Champion',        desc: 'Score 8 or more on the Culture Quiz' },
+    { id: 'ally_action',       icon: '\uD83E\uDD1D', name: 'Ally Action',          desc: 'Complete 3 allyship action cards' },
+    { id: 'culture_explorer_pro', icon: '\uD83C\uDF1F', name: 'Culture Explorer Pro', desc: 'Explore 12 or more cultural topics' },
+    { id: 'deep_diver',        icon: '\uD83E\uDD3F', name: 'Deep Diver',           desc: 'Read every culture item in your grade band' },
+    { id: 'action_taker',      icon: '\u26A1',        name: 'Action Taker',         desc: 'Complete 5 allyship actions and a scenario with top rating' },
+    { id: 'battle_victor',     icon: '\u2694\uFE0F',  name: 'Battle Victor',        desc: 'Get 4 or more correct in Battle Questions' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -286,6 +466,23 @@ window.SelHub = window.SelHub || {
         var aiResponse     = d.aiResponse || null;
         var aiLoading      = d.aiLoading || false;
 
+        // Culture Quiz state
+        var quizIdx        = d.quizIdx || 0;
+        var quizScore      = d.quizScore || 0;
+        var quizBest       = d.quizBest || 0;
+        var quizAnswered   = d.quizAnswered || {};
+        var quizFinished   = d.quizFinished || false;
+
+        // Allyship Actions state
+        var allyActions    = d.allyActions || {};
+
+        // Battle Questions state
+        var battleIdx      = d.battleIdx || 0;
+        var battleScore    = d.battleScore || 0;
+        var battleBest     = d.battleBest || 0;
+        var battleAnswered = d.battleAnswered || {};
+        var battleFinished = d.battleFinished || false;
+
         // Badges & log
         var practiceLog    = d.practiceLog || [];
         var earnedBadges   = d.earnedBadges || {};
@@ -326,10 +523,24 @@ window.SelHub = window.SelHub || {
           if (superpower && superpower.trim().length > 0 && superpowerSaved) tryAwardBadge('reflective');
           if (scTopRatings >= 1) tryAwardBadge('ally_training');
           if (scCompleted >= 3) tryAwardBadge('deep_listener');
-          if (scCompleted >= 5) tryAwardBadge('scenario_master');
+          if (scCompleted >= 8) tryAwardBadge('scenario_master');
 
           var tabsVisited = visitedTabs;
-          if (tabsVisited.explore && tabsVisited.identity && tabsVisited.scenarios && tabsVisited.badges) tryAwardBadge('all_tabs');
+          if (tabsVisited.explore && tabsVisited.identity && tabsVisited.scenarios && tabsVisited.badges && tabsVisited.quiz && tabsVisited.battle) tryAwardBadge('all_tabs');
+
+          if (explored >= 12) tryAwardBadge('culture_explorer_pro');
+
+          var bandItems = CULTURE_ITEMS[band] || CULTURE_ITEMS.elementary;
+          var allBandExplored = true;
+          bandItems.forEach(function(item) { if (!exploredItems[item.id]) allBandExplored = false; });
+          if (allBandExplored && bandItems.length > 0) tryAwardBadge('deep_diver');
+
+          var allyDone = Object.keys(allyActions).length;
+          if (allyDone >= 3) tryAwardBadge('ally_action');
+          if (allyDone >= 5 && scTopRatings >= 1) tryAwardBadge('action_taker');
+
+          if (quizBest >= 8 || quizScore >= 8) tryAwardBadge('quiz_champion');
+          if (battleBest >= 4 || battleScore >= 4) tryAwardBadge('battle_victor');
 
           var badgeCount = Object.keys(earnedBadges).length;
           if (badgeCount >= 7) tryAwardBadge('culture_champion');
@@ -371,6 +582,8 @@ window.SelHub = window.SelHub || {
           { id: 'explore',   label: '\uD83C\uDF0D Explore' },
           { id: 'identity',  label: '\uD83E\uDDE9 Identity' },
           { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' },
+          { id: 'quiz',      label: '\uD83C\uDFC6 Quiz' },
+          { id: 'battle',    label: '\u2694\uFE0F Battle' },
           { id: 'badges',    label: '\uD83C\uDFC5 Badges' }
         ];
 
@@ -593,6 +806,49 @@ window.SelHub = window.SelHub || {
                 disabled: superpowerSaved,
                 style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: superpowerSaved ? '#334155' : ACCENT, color: superpowerSaved ? '#64748b' : '#fff', fontSize: 12, fontWeight: 600, cursor: superpowerSaved ? 'default' : 'pointer' }
               }, superpowerSaved ? '\u2713 Saved' : 'Save My Superpower')
+            ),
+            // ── Allyship Action Cards ──
+            h('div', { style: { marginTop: 24 } },
+              h('h4', { style: { fontSize: 14, color: ACCENT, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 } },
+                h('span', null, '\uD83E\uDD1D'),
+                'Allyship Action Cards'
+              ),
+              h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 14, lineHeight: 1.5 } },
+                band === 'elementary' ? 'Try these real actions to be a great friend to everyone! Check them off as you complete them.' :
+                band === 'middle' ? 'Move from awareness to action. Complete these allyship challenges and reflect on what you learn.' :
+                'Practice tangible allyship. Each action pushes you beyond comfort into genuine solidarity.'
+              ),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                (ALLYSHIP_ACTIONS[band] || ALLYSHIP_ACTIONS.elementary).map(function(card) {
+                  var isDone = !!allyActions[card.id];
+                  return h('div', { key: card.id, style: { padding: 14, borderRadius: 12, background: isDone ? '#1e293b' : '#0f172a', border: '1px solid ' + (isDone ? '#22c55e44' : '#334155'), transition: 'all 0.2s' } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                      h('span', { style: { fontSize: 22 } }, card.icon),
+                      h('div', { style: { flex: 1 } },
+                        h('div', { style: { fontSize: 13, fontWeight: 600, color: isDone ? '#22c55e' : '#f1f5f9' } }, card.action),
+                        h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, card.detail)
+                      ),
+                      isDone && h('span', { style: { fontSize: 16, color: '#22c55e' } }, '\u2713')
+                    ),
+                    !isDone && h('button', {
+                      onClick: function() {
+                        var newAlly = Object.assign({}, allyActions);
+                        newAlly[card.id] = Date.now();
+                        upd({ allyActions: newAlly });
+                        if (soundEnabled) sfxCorrect();
+                        addToast('\uD83E\uDD1D Allyship action completed!', 'success');
+                        awardXP(10);
+                        logPractice('ally_action', card.id);
+                        checkBadges();
+                      },
+                      style: { marginTop: 8, padding: '6px 14px', borderRadius: 8, border: '1px solid ' + ACCENT_MED, background: ACCENT_DIM, color: ACCENT, fontSize: 11, cursor: 'pointer', fontWeight: 600 }
+                    }, '\u2713 I did this!')
+                  );
+                })
+              ),
+              h('div', { style: { textAlign: 'center', marginTop: 12, fontSize: 12, color: '#64748b' } },
+                Object.keys(allyActions).length + ' of ' + (ALLYSHIP_ACTIONS[band] || ALLYSHIP_ACTIONS.elementary).length + ' actions completed'
+              )
             )
           );
         }
@@ -679,6 +935,195 @@ window.SelHub = window.SelHub || {
         }
 
         // ══════════════════════════════════════════════════════════
+        // ── TAB: Culture Quiz ──
+        // Grade-adaptive matching quiz for cultural knowledge
+        // ══════════════════════════════════════════════════════════
+        var quizContent = null;
+        if (activeTab === 'quiz') {
+          var quizItems = CULTURE_QUIZ[band] || CULTURE_QUIZ.elementary;
+          var currentQ = quizItems[quizIdx % quizItems.length];
+          var qKey = band + '_' + (quizIdx % quizItems.length);
+          var isQAnswered = !!quizAnswered[qKey];
+
+          quizContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 6, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFC6 Culture Quiz'),
+            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#94a3b8', marginBottom: 6 } },
+              band === 'elementary' ? 'Match cultural practices to their origins! How much do you know?' :
+              band === 'middle' ? 'Test your cultural literacy. Can you get them all right?' :
+              'Challenge your understanding of culture, power, and identity.'
+            ),
+            h('div', { style: { display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 16, fontSize: 12 } },
+              h('span', { style: { color: ACCENT, fontWeight: 600 } }, 'Score: ' + quizScore + '/' + quizItems.length),
+              h('span', { style: { color: '#f59e0b', fontWeight: 600 } }, '\u2B50 Best: ' + quizBest + '/' + quizItems.length)
+            ),
+            !quizFinished ? h('div', null,
+              h('div', { style: { padding: 20, borderRadius: 16, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
+                h('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, 'Question ' + ((quizIdx % quizItems.length) + 1) + ' of ' + quizItems.length),
+                h('p', { style: { fontSize: 14, color: '#f1f5f9', fontWeight: 600, lineHeight: 1.5, marginBottom: 16 } }, currentQ.q),
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                  currentQ.options.map(function(opt) {
+                    var isCorrect = opt === currentQ.a;
+                    var wasChosen = quizAnswered[qKey] === opt;
+                    var showResult = isQAnswered;
+                    return h('button', {
+                      key: opt,
+                      onClick: function() {
+                        if (isQAnswered) return;
+                        var newAnswered = Object.assign({}, quizAnswered);
+                        newAnswered[qKey] = opt;
+                        var newScore = quizScore + (isCorrect ? 1 : 0);
+                        upd({ quizAnswered: newAnswered, quizScore: newScore });
+                        if (soundEnabled) { if (isCorrect) sfxCorrect(); else sfxWrong(); }
+                        if (isCorrect) awardXP(5);
+                        logPractice('quiz', qKey);
+                        // Check if quiz is complete
+                        var answeredCount = Object.keys(newAnswered).length;
+                        if (answeredCount >= quizItems.length) {
+                          var best = newScore > quizBest ? newScore : quizBest;
+                          upd({ quizFinished: true, quizBest: best });
+                          if (newScore >= 8) {
+                            addToast('\uD83C\uDFC6 Amazing! Quiz Champion with ' + newScore + '/' + quizItems.length + '!', 'success');
+                            if (soundEnabled) sfxBadge();
+                          } else {
+                            addToast('Quiz complete! Score: ' + newScore + '/' + quizItems.length, 'info');
+                          }
+                        }
+                        checkBadges();
+                      },
+                      style: {
+                        width: '100%', padding: '12px 14px', borderRadius: 10, textAlign: 'left', fontSize: 13, cursor: isQAnswered ? 'default' : 'pointer',
+                        border: '1px solid ' + (showResult && isCorrect ? '#22c55e' : showResult && wasChosen && !isCorrect ? '#ef4444' : '#334155'),
+                        background: showResult && isCorrect ? '#22c55e11' : showResult && wasChosen && !isCorrect ? '#ef444411' : '#0f172a',
+                        color: showResult && isCorrect ? '#22c55e' : showResult && wasChosen && !isCorrect ? '#ef4444' : '#e2e8f0',
+                        fontWeight: showResult && (isCorrect || wasChosen) ? 600 : 400,
+                        opacity: showResult && !isCorrect && !wasChosen ? 0.5 : 1,
+                        transition: 'all 0.2s'
+                      }
+                    }, opt + (showResult && isCorrect ? ' \u2713' : '') + (showResult && wasChosen && !isCorrect ? ' \u2717' : ''));
+                  })
+                )
+              ),
+              isQAnswered && h('div', { style: { display: 'flex', justifyContent: 'center' } },
+                h('button', {
+                  onClick: function() {
+                    var nextIdx = quizIdx + 1;
+                    upd({ quizIdx: nextIdx });
+                    if (soundEnabled) sfxClick();
+                  },
+                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: ACCENT, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+                }, (quizIdx % quizItems.length) + 1 >= quizItems.length ? 'See Results' : 'Next Question \u2192')
+              )
+            ) : h('div', { style: { textAlign: 'center', padding: 30, borderRadius: 16, background: '#1e293b', border: '1px solid ' + ACCENT_MED } },
+              h('div', { style: { fontSize: 48, marginBottom: 12 } }, quizScore >= 8 ? '\uD83C\uDFC6' : quizScore >= 5 ? '\uD83C\uDF1F' : '\uD83D\uDCA1'),
+              h('div', { style: { fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 } }, 'Quiz Complete!'),
+              h('div', { style: { fontSize: 16, color: ACCENT, fontWeight: 600, marginBottom: 4 } }, 'Score: ' + quizScore + ' / ' + quizItems.length),
+              h('div', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 16 } }, quizScore >= 8 ? 'Outstanding cultural knowledge!' : quizScore >= 5 ? 'Great job! Keep exploring to learn more.' : 'Keep learning! Every question you missed is a chance to grow.'),
+              h('div', { style: { fontSize: 12, color: '#f59e0b', marginBottom: 16 } }, '\u2B50 Personal Best: ' + quizBest + '/' + quizItems.length),
+              h('button', {
+                onClick: function() {
+                  upd({ quizIdx: 0, quizScore: 0, quizAnswered: {}, quizFinished: false });
+                  if (soundEnabled) sfxClick();
+                },
+                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: ACCENT, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+              }, '\uD83D\uDD04 Try Again')
+            )
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // ── TAB: Battle Questions ──
+        // Quick true/false & multiple choice for rapid XP
+        // ══════════════════════════════════════════════════════════
+        var battleContent = null;
+        if (activeTab === 'battle') {
+          var battleItems = BATTLE_QUESTIONS[band] || BATTLE_QUESTIONS.elementary;
+          var currentB = battleItems[battleIdx % battleItems.length];
+          var bKey = band + '_b_' + (battleIdx % battleItems.length);
+          var isBAnswered = !!battleAnswered[bKey];
+
+          battleContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 6, color: '#f1f5f9', fontSize: 18 } }, '\u2694\uFE0F Battle Questions'),
+            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#94a3b8', marginBottom: 6 } },
+              'Quick-fire questions! Answer fast and earn XP.'
+            ),
+            h('div', { style: { display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 16, fontSize: 12 } },
+              h('span', { style: { color: '#ec4899', fontWeight: 600 } }, '\u2694\uFE0F Score: ' + battleScore + '/' + battleItems.length),
+              h('span', { style: { color: '#f59e0b', fontWeight: 600 } }, '\u2B50 Best: ' + battleBest + '/' + battleItems.length)
+            ),
+            !battleFinished ? h('div', null,
+              h('div', { style: { padding: 20, borderRadius: 16, background: '#1e293b', border: '1px solid #ec489944', marginBottom: 16 } },
+                h('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, 'Question ' + ((battleIdx % battleItems.length) + 1) + ' of ' + battleItems.length),
+                h('p', { style: { fontSize: 14, color: '#f1f5f9', fontWeight: 600, lineHeight: 1.5, marginBottom: 16 } }, currentB.q),
+                h('div', { style: { display: 'flex', flexDirection: currentB.options.length <= 2 ? 'row' : 'column', gap: 8 } },
+                  currentB.options.map(function(opt) {
+                    var isCorrect = opt === currentB.a;
+                    var wasChosen = battleAnswered[bKey] === opt;
+                    var showResult = isBAnswered;
+                    return h('button', {
+                      key: opt,
+                      onClick: function() {
+                        if (isBAnswered) return;
+                        var newBAnswered = Object.assign({}, battleAnswered);
+                        newBAnswered[bKey] = opt;
+                        var newBScore = battleScore + (isCorrect ? 1 : 0);
+                        upd({ battleAnswered: newBAnswered, battleScore: newBScore });
+                        if (soundEnabled) { if (isCorrect) sfxCorrect(); else sfxWrong(); }
+                        if (isCorrect) awardXP(8);
+                        logPractice('battle', bKey);
+                        var bAnsweredCount = Object.keys(newBAnswered).length;
+                        if (bAnsweredCount >= battleItems.length) {
+                          var bBest = newBScore > battleBest ? newBScore : battleBest;
+                          upd({ battleFinished: true, battleBest: bBest });
+                          if (newBScore >= 4) {
+                            addToast('\u2694\uFE0F Battle Victor! ' + newBScore + '/' + battleItems.length + ' correct!', 'success');
+                            if (soundEnabled) sfxBadge();
+                          } else {
+                            addToast('Battle complete! ' + newBScore + '/' + battleItems.length, 'info');
+                          }
+                        }
+                        checkBadges();
+                      },
+                      style: {
+                        flex: currentB.options.length <= 2 ? 1 : 'none', padding: '12px 14px', borderRadius: 10, textAlign: 'center', fontSize: 13, cursor: isBAnswered ? 'default' : 'pointer',
+                        border: '1px solid ' + (showResult && isCorrect ? '#22c55e' : showResult && wasChosen && !isCorrect ? '#ef4444' : '#ec489944'),
+                        background: showResult && isCorrect ? '#22c55e11' : showResult && wasChosen && !isCorrect ? '#ef444411' : '#0f172a',
+                        color: showResult && isCorrect ? '#22c55e' : showResult && wasChosen && !isCorrect ? '#ef4444' : '#e2e8f0',
+                        fontWeight: showResult && (isCorrect || wasChosen) ? 600 : 400,
+                        opacity: showResult && !isCorrect && !wasChosen ? 0.5 : 1,
+                        transition: 'all 0.2s'
+                      }
+                    }, opt + (showResult && isCorrect ? ' \u2713' : '') + (showResult && wasChosen && !isCorrect ? ' \u2717' : ''));
+                  })
+                )
+              ),
+              isBAnswered && h('div', { style: { display: 'flex', justifyContent: 'center' } },
+                h('button', {
+                  onClick: function() {
+                    var nextBIdx = battleIdx + 1;
+                    upd({ battleIdx: nextBIdx });
+                    if (soundEnabled) sfxClick();
+                  },
+                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: '#ec4899', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+                }, (battleIdx % battleItems.length) + 1 >= battleItems.length ? 'See Results' : 'Next \u2192')
+              )
+            ) : h('div', { style: { textAlign: 'center', padding: 30, borderRadius: 16, background: '#1e293b', border: '1px solid #ec489944' } },
+              h('div', { style: { fontSize: 48, marginBottom: 12 } }, battleScore >= 4 ? '\u2694\uFE0F' : '\uD83D\uDCA1'),
+              h('div', { style: { fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 } }, 'Battle Complete!'),
+              h('div', { style: { fontSize: 16, color: '#ec4899', fontWeight: 600, marginBottom: 4 } }, 'Score: ' + battleScore + ' / ' + battleItems.length),
+              h('div', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 16 } }, battleScore >= 4 ? 'Battle Victor! Impressive quick thinking!' : 'Keep training! Try again to improve your score.'),
+              h('div', { style: { fontSize: 12, color: '#f59e0b', marginBottom: 16 } }, '\u2B50 Personal Best: ' + battleBest + '/' + battleItems.length),
+              h('button', {
+                onClick: function() {
+                  upd({ battleIdx: 0, battleScore: 0, battleAnswered: {}, battleFinished: false });
+                  if (soundEnabled) sfxClick();
+                },
+                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: '#ec4899', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+              }, '\uD83D\uDD04 Battle Again')
+            )
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
         // ── TAB: Badges / Profile ──
         // Progress stats, AI coach, and badge display
         // ══════════════════════════════════════════════════════════
@@ -687,14 +1132,17 @@ window.SelHub = window.SelHub || {
           var exploredCount = Object.keys(exploredItems).length;
           var idFilled = 0;
           IDENTITY_CATEGORIES.forEach(function(cat) { if (identityMap[cat.id] && identityMap[cat.id].trim().length > 0) idFilled++; });
-          var totalActs = exploredCount + scCompleted + idFilled + learnCount;
+          var totalActs = exploredCount + scCompleted + idFilled + learnCount + quizBest + battleBest + Object.keys(allyActions).length;
 
           var stats = [
             { label: 'Topics Explored', value: exploredCount, icon: '\uD83C\uDF0D', color: '#06b6d4' },
             { label: 'Scenarios Done', value: scCompleted, icon: '\uD83C\uDFAD', color: '#8b5cf6' },
             { label: 'Identity Areas', value: idFilled + '/8', icon: '\uD83E\uDDE9', color: '#f59e0b' },
             { label: 'New Things Learned', value: learnCount, icon: '\uD83D\uDCA1', color: '#22c55e' },
-            { label: 'Top Ratings', value: scTopRatings, icon: '\u2B50', color: '#ec4899' }
+            { label: 'Top Ratings', value: scTopRatings, icon: '\u2B50', color: '#ec4899' },
+            { label: 'Quiz Best', value: quizBest + '/' + (CULTURE_QUIZ[band] || CULTURE_QUIZ.elementary).length, icon: '\uD83C\uDFC6', color: '#a855f7' },
+            { label: 'Battle Best', value: battleBest + '/' + (BATTLE_QUESTIONS[band] || BATTLE_QUESTIONS.elementary).length, icon: '\u2694\uFE0F', color: '#f43f5e' },
+            { label: 'Ally Actions', value: Object.keys(allyActions).length, icon: '\uD83E\uDD1D', color: '#14b8a6' }
           ];
 
           badgesContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
@@ -806,8 +1254,8 @@ window.SelHub = window.SelHub || {
               h('h4', { style: { fontSize: 14, color: '#f1f5f9', marginBottom: 8 } }, 'Recent Activity'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 practiceLog.slice(-8).reverse().map(function(entry, i) {
-                  var icons = { explore: '\uD83C\uDF0D', learn: '\uD83D\uDCA1', identity: '\uD83E\uDDE9', scenario: '\uD83C\uDFAD', superpower: '\u26A1', ai_coach: '\u2728' };
-                  var labels = { explore: 'Explored Topic', learn: 'Learned Something New', identity: 'Identity Reflection', scenario: 'Cultural Scenario', superpower: 'Superpower Reflection', ai_coach: 'AI Coach' };
+                  var icons = { explore: '\uD83C\uDF0D', learn: '\uD83D\uDCA1', identity: '\uD83E\uDDE9', scenario: '\uD83C\uDFAD', superpower: '\u26A1', ai_coach: '\u2728', quiz: '\uD83C\uDFC6', battle: '\u2694\uFE0F', ally_action: '\uD83E\uDD1D' };
+                  var labels = { explore: 'Explored Topic', learn: 'Learned Something New', identity: 'Identity Reflection', scenario: 'Cultural Scenario', superpower: 'Superpower Reflection', ai_coach: 'AI Coach', quiz: 'Culture Quiz', battle: 'Battle Question', ally_action: 'Allyship Action' };
                   return h('div', { key: i, style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 } },
                     h('span', null, icons[entry.type] || '\uD83D\uDCDD'),
                     h('span', { style: { color: '#e2e8f0', fontWeight: 500 } }, labels[entry.type] || entry.type),
@@ -822,7 +1270,7 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         // ── Final Render ──
         // ══════════════════════════════════════════════════════════
-        var content = exploreContent || identityContent || scenariosContent || badgesContent;
+        var content = exploreContent || identityContent || scenariosContent || quizContent || battleContent || badgesContent;
 
         return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
           tabBar,

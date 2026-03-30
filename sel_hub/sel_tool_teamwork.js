@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
-// sel_tool_teamwork.js — Teamwork Builder Plugin (v1.0)
+// sel_tool_teamwork.js — Teamwork Builder Plugin (v1.1)
 // Team role discovery, collaborative challenges, teamwork
-// conflict scenarios, and AI team coach.
+// conflict scenarios, skills quiz, team contracts, and AI coach.
 // Registered tool ID: "teamwork"
 // Category: relationship-skills
 // Grade-adaptive: uses ctx.gradeBand for vocabulary & depth
@@ -91,7 +91,16 @@ window.SelHub = window.SelHub || {
         skills: ['prioritizing', 'compromise', 'listening'] },
       { id: 'ch3', title: 'Design a Playground', icon: '\uD83C\uDFB2', desc: 'Your school is building a new playground. Design one that is fun for ALL students, including those with disabilities.',
         prompts: ['How did you make sure everyone\'s ideas were included?', 'What did you include for students who use wheelchairs?', 'How did you compromise when people wanted different things?'],
-        skills: ['inclusion', 'compromise', 'creativity'] }
+        skills: ['inclusion', 'compromise', 'creativity'] },
+      { id: 'ch_e4', title: 'Design a Class Pet Habitat', icon: '\uD83D\uDC22', desc: 'Your class voted to get a pet turtle! But you only have one small table and $30 for supplies. Work together to design a habitat that keeps the turtle happy and healthy. Everyone must agree on the plan.',
+        prompts: ['What does the turtle need to be healthy?', 'How did your team compromise when you disagreed about the design?', 'Did everyone get to share their ideas before the group decided?'],
+        skills: ['compromise', 'research', 'planning'] },
+      { id: 'ch_e5', title: 'Plan a Class Party with $50', icon: '\uD83C\uDF89', desc: 'Your class has exactly $50 to plan a party. You need snacks, decorations, and one activity. But there are students with food allergies and different interests. Plan a party that works for EVERYONE.',
+        prompts: ['How did you make sure the snacks are safe for everyone?', 'What happened when someone wanted to spend all the money on one thing?', 'How did you make the final budget decisions together?'],
+        skills: ['budgeting', 'inclusion', 'communication'] },
+      { id: 'ch_e6', title: 'Create a Class Song', icon: '\uD83C\uDFB5', desc: 'Write a short class song (4-8 lines) that represents your class. Everyone must contribute at least one word or idea. It has to be something the whole class would want to sing!',
+        prompts: ['How did you include shy classmates in the songwriting?', 'What did you do when two people had very different ideas for the song?', 'How does your song represent EVERYONE in the class?'],
+        skills: ['creative-collaboration', 'inclusion', 'encouragement'] }
     ],
     middle: [
       { id: 'ch4', title: 'Stranded on an Island', icon: '\uD83C\uDFDD\uFE0F', desc: 'Your group is stranded with limited resources: 3 tarps, rope, 2 water bottles, a knife, and matches. Plan your first 48 hours. Assign roles and justify every decision.',
@@ -102,7 +111,16 @@ window.SelHub = window.SelHub || {
         skills: ['budgeting', 'delegation', 'negotiation'] },
       { id: 'ch6', title: 'Debate Prep', icon: '\uD83D\uDDE3\uFE0F', desc: 'Prepare for a debate where HALF your team argues FOR and half argues AGAINST the same topic: "Social media does more harm than good." You must collaborate even while disagreeing.',
         prompts: ['How did you research the opposing view respectfully?', 'What did you learn from the side you didn\'t agree with?', 'How is debating different from arguing?'],
-        skills: ['perspective-taking', 'research', 'respectful-disagreement'] }
+        skills: ['perspective-taking', 'research', 'respectful-disagreement'] },
+      { id: 'ch_m4', title: 'Mock Trial', icon: '\u2696\uFE0F', desc: 'A student is accused of copying homework. Your group must put on a mock trial. Assign roles: judge, defense attorney, prosecutor, witnesses, and jury. Everyone must stay in character and present evidence fairly.',
+        prompts: ['How did you decide who plays each role?', 'Was it hard to argue for a side you disagreed with?', 'What did this teach you about seeing both sides of a conflict?'],
+        skills: ['role-assignment', 'perspective-taking', 'fairness'] },
+      { id: 'ch_m5', title: 'Design a School Improvement', icon: '\uD83C\uDFEB', desc: 'Your principal wants ONE improvement to the school. Your team must research a real problem (cafeteria lines, bathroom access, hallway crowding), propose a solution with a budget, and present it. Think like systems designers.',
+        prompts: ['How did you gather information about the real problem?', 'What trade-offs did you discuss when designing the solution?', 'How did you handle it when someone\'s idea was rejected by the group?'],
+        skills: ['systems-thinking', 'research', 'presentation'] },
+      { id: 'ch_m6', title: 'Escape Room Planning', icon: '\uD83D\uDD10', desc: 'Design an escape room for another group of students. You need 3 puzzles, a storyline, clues, and a time limit. Each team member must design at least one element. The final product must fit together seamlessly.',
+        prompts: ['How did you make sure each person\'s puzzle connected to the story?', 'What creative disagreements came up and how did you resolve them?', 'How did you test whether your escape room was too easy or too hard?'],
+        skills: ['creative-problem-solving', 'coordination', 'quality-checking'] }
     ],
     high: [
       { id: 'ch7', title: 'Startup Pitch', icon: '\uD83D\uDCBC', desc: 'Your team has 30 minutes to develop a startup concept that solves a real community problem. You need a name, mission statement, target audience, revenue model, and a 2-minute pitch. Every team member must present part of the pitch.',
@@ -110,7 +128,16 @@ window.SelHub = window.SelHub || {
         skills: ['innovation', 'time-management', 'presentation'] },
       { id: 'ch8', title: 'Crisis Management', icon: '\u26A0\uFE0F', desc: 'Your team runs a fictional company. Breaking news: a product defect has been discovered. You have 20 minutes to draft a public response, assign media roles, plan a recall, and prepare for customer backlash. Decisions must be unanimous.',
         prompts: ['How did you make decisions under pressure?', 'What happened when someone disagreed with the group?', 'How did requiring unanimous decisions change the process?'],
-        skills: ['pressure-management', 'consensus-building', 'accountability'] }
+        skills: ['pressure-management', 'consensus-building', 'accountability'] },
+      { id: 'ch_h3', title: 'Model UN Scenario', icon: '\uD83C\uDF0D', desc: 'Each team member represents a different country in a negotiation about climate change policy. You must draft a resolution that ALL countries sign. Each "country" has different economic interests, resources, and priorities. Find common ground.',
+        prompts: ['How did you balance your country\'s interests with the global good?', 'What negotiation strategies were most effective?', 'When did you have to sacrifice something your country wanted for the team agreement?'],
+        skills: ['negotiation', 'diplomacy', 'perspective-taking'] },
+      { id: 'ch_h4', title: 'Social Enterprise Pitch', icon: '\uD83D\uDCA1', desc: 'Create a social enterprise that addresses a real problem in your community (food waste, loneliness, literacy, etc.). Develop a business model, impact metrics, a 3-minute pitch, and a 1-page plan. Every team member owns a functional area.',
+        prompts: ['How did you divide ownership of different functional areas?', 'What happened when the business model conflicted with the social mission?', 'How did you give and receive feedback on each other\'s sections?'],
+        skills: ['real-world-collaboration', 'strategic-thinking', 'feedback'] },
+      { id: 'ch_h5', title: 'Community Needs Assessment', icon: '\uD83D\uDCCB', desc: 'Conduct a mini needs assessment for your school or neighborhood. Design a 5-question survey, identify 3 stakeholder groups, collect data (real or simulated), analyze findings, and present actionable recommendations. Every step requires team coordination.',
+        prompts: ['How did you ensure your survey questions were unbiased?', 'What did you learn about the difference between what people say they need and what data shows?', 'How did you resolve disagreements about the final recommendations?'],
+        skills: ['research', 'data-analysis', 'action-planning'] }
     ]
   };
 
@@ -152,6 +179,41 @@ window.SelHub = window.SelHub || {
         { label: 'Do their section for them so the grade doesn\'t suffer.', rating: 2, feedback: 'You saved the grade but enabled the behavior. They learn that someone will always bail them out.' },
         { label: 'Refuse to help and let the project be incomplete.', rating: 1, feedback: 'Principled but costly. Everyone\'s grade suffers for one person\'s mistake. Sometimes the team needs to absorb and address it later.' },
         { label: 'Help them finish it tonight, but then have an honest conversation: "We all need to be accountable. Next time, let\'s set check-in dates."', rating: 3, feedback: 'You protected the team\'s work AND addressed the root cause. Proposing check-ins creates structure that prevents repeat problems.' }
+      ] },
+    { id: 'sc6', title: 'Remote Communication Breakdown', icon: '\uD83D\uDCBB',
+      setup: 'Your team is working on a project over a shared document and group chat. One member misunderstands the instructions and does the wrong section. Another member gets angry and sends a harsh message. Now two people aren\'t responding to the chat at all.',
+      choices: [
+        { label: 'Send a message blaming the person who messed up: "You should have read the instructions."', rating: 1, feedback: 'Blame increases defensiveness and shuts down communication. The real problem is the system, not one person. Written messages also feel harsher than spoken words.' },
+        { label: 'Wait for everyone to cool down and hope it resolves itself.', rating: 2, feedback: 'Giving space can help, but silence in virtual teams often escalates misunderstanding. Without a clear next step, people disengage further.' },
+        { label: 'Send a calm group message: "It seems like there was a miscommunication. Let\'s hop on a quick video call to clarify roles and get back on track. No blame \u2014 these things happen with remote work."', rating: 3, feedback: 'Switching from text to a richer communication channel (video/voice) reduces misunderstanding. Naming the problem without blame invites everyone back to the table.' }
+      ] },
+    { id: 'sc7', title: 'Cultural Misunderstanding', icon: '\uD83C\uDF0D',
+      setup: 'During a group project, one team member from a different cultural background stays quiet during brainstorming and only shares ideas when directly asked. Another team member says, "You need to speak up more \u2014 you\'re not pulling your weight." The quiet member looks uncomfortable.',
+      choices: [
+        { label: 'Agree with the outspoken member \u2014 everyone should participate equally.', rating: 1, feedback: 'Participation looks different across cultures. In some cultures, speaking without being invited is considered rude. Assuming one style is "right" excludes people rather than including them.' },
+        { label: 'Tell the outspoken member to stop being rude.', rating: 2, feedback: 'Defending the quiet member is important, but calling someone rude can escalate the conflict. The outspoken member may not realize their bias.' },
+        { label: 'Say: "People have different communication styles. Let\'s try a round-robin where everyone gets a turn, and also use a shared doc for ideas so people can contribute in writing too."', rating: 3, feedback: 'You created multiple pathways for participation without singling anyone out. Great teams design systems that work for different communication styles, not just the loudest voice.' }
+      ] },
+    { id: 'sc8', title: 'When the Leader Isn\'t Leading', icon: '\uD83D\uDC51',
+      setup: 'Your group chose a team leader, but they\'re not doing their job. They don\'t set deadlines, they cancel meetings, and when you ask what to do next, they say "I don\'t know, figure it out." The project is falling apart and everyone is frustrated.',
+      choices: [
+        { label: 'Go to the teacher and ask for a new leader.', rating: 2, feedback: 'The teacher may help, but jumping to authority before talking to the leader misses a chance to practice direct communication. It can also feel like going behind someone\'s back.' },
+        { label: 'Just do the leader\'s job yourself without saying anything.', rating: 1, feedback: 'Silently taking over avoids conflict but creates resentment. The "leader" never learns, and you burn out doing two jobs. It also confuses the rest of the team.' },
+        { label: 'Talk to the leader privately: "Hey, I noticed we\'re behind. I think the team needs more structure. Can we set up a plan together, or would you prefer to split the leadership tasks?"', rating: 3, feedback: 'Private, respectful, and solution-focused. You gave them a chance to step up or share the responsibility. Offering to help rather than criticize makes it easier for them to accept.' }
+      ] },
+    { id: 'sc9', title: 'The Perfectionist Bottleneck', icon: '\u270D\uFE0F',
+      setup: 'One team member insists on redoing everyone else\'s work because it isn\'t "good enough." They rewrite paragraphs, redesign slides, and redo calculations. The rest of the team feels like their contributions don\'t matter.',
+      choices: [
+        { label: 'Let them do everything since their work is better anyway.', rating: 1, feedback: 'Quality matters, but a team where one person does everything isn\'t a team. Others stop trying, the perfectionist burns out, and no one learns.' },
+        { label: 'Tell them angrily: "Stop changing our work! It\'s a group project, not YOUR project."', rating: 2, feedback: 'The frustration is valid, but anger makes people defensive. The perfectionist likely thinks they\'re helping, not hurting.' },
+        { label: 'Say: "I appreciate that you want our work to be great. But when changes happen without discussion, it feels like our input doesn\'t count. Can we agree on quality standards together and review as a team?"', rating: 3, feedback: 'You validated their motivation while naming the impact. Proposing shared standards gives the whole team ownership of quality, not just one person.' }
+      ] },
+    { id: 'sc10', title: 'Unequal Workload', icon: '\u2696\uFE0F',
+      setup: 'Your group of four divided the project into "equal" parts, but one section turned out to be way harder and longer than the others. The person with that section is overwhelmed and the deadline is in three days. The other three members say "that\'s your part."',
+      choices: [
+        { label: 'Tell the overwhelmed person to just do their best \u2014 fair is fair.', rating: 1, feedback: 'The division seemed fair but wasn\'t. Sticking rigidly to an unfair plan in the name of "fairness" sacrifices both the project quality and a teammate\'s wellbeing.' },
+        { label: 'Complain to the teacher that the project wasn\'t designed well.', rating: 2, feedback: 'The project design may have been uneven, but real teams encounter unexpected workload imbalances all the time. Learning to adjust is the skill.' },
+        { label: 'Say: "It looks like the sections weren\'t as equal as we thought. Let\'s redistribute some of the work so we all finish together. We\'re a team."', rating: 3, feedback: 'You recognized the systemic problem instead of blaming anyone. Redistributing shows that the team succeeds or fails together. This is exactly how high-functioning teams work.' }
       ] }
   ];
 
@@ -170,7 +232,40 @@ window.SelHub = window.SelHub || {
     { id: 'full_explorer',     icon: '\uD83D\uDE80', name: 'Full Explorer',        desc: 'Visit all 4 tabs' },
     { id: 'teamwork_champion', icon: '\uD83C\uDFC6', name: 'Teamwork Champion',    desc: 'Earn 7 or more badges' },
     { id: 'perfect_scenarios', icon: '\u2B50',        name: 'Perfect Insight',      desc: 'Get 3 stars on all scenarios' },
-    { id: 'streak_3',          icon: '\uD83D\uDD25', name: 'Teamwork Streak',      desc: 'Practice 3 days in a row' }
+    { id: 'streak_3',          icon: '\uD83D\uDD25', name: 'Teamwork Streak',      desc: 'Practice 3 days in a row' },
+    { id: 'skills_assessor',   icon: '\uD83D\uDCCA', name: 'Skills Assessor',      desc: 'Complete the Team Skills Quiz' },
+    { id: 'contract_creator',  icon: '\uD83D\uDCDC', name: 'Contract Creator',     desc: 'Build a team contract' },
+    { id: 'challenge_champ',   icon: '\uD83E\uDD47', name: 'Challenge Champion',   desc: 'Complete 5 collaborative challenges' },
+    { id: 'all_challenges',    icon: '\uD83C\uDF1F', name: 'All Challenges Done',  desc: 'Complete every challenge in your grade band' },
+    { id: 'teamwork_guru',     icon: '\uD83E\uDDD8', name: 'Teamwork Guru',        desc: 'Earn 12 or more badges' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Team Skills Quiz Data ──
+  // ══════════════════════════════════════════════════════════════
+  var QUIZ_SKILLS = [
+    { id: 'communication', name: 'Communication', icon: '\uD83D\uDCAC', desc: 'Sharing ideas clearly and listening to understand others.' },
+    { id: 'listening', name: 'Active Listening', icon: '\uD83D\uDC42', desc: 'Paying full attention when others speak, without interrupting.' },
+    { id: 'flexibility', name: 'Flexibility', icon: '\uD83E\uDD38', desc: 'Being willing to change plans or try new approaches.' },
+    { id: 'reliability', name: 'Reliability', icon: '\u2705', desc: 'Following through on commitments and doing your part on time.' },
+    { id: 'problemSolving', name: 'Problem-Solving', icon: '\uD83E\uDDE9', desc: 'Finding creative solutions when the team faces obstacles.' },
+    { id: 'encouragement', name: 'Encouragement', icon: '\uD83C\uDF1F', desc: 'Supporting teammates, celebrating wins, and lifting spirits.' },
+    { id: 'organization', name: 'Organization', icon: '\uD83D\uDCCB', desc: 'Keeping track of tasks, deadlines, and materials.' },
+    { id: 'conflictRes', name: 'Conflict Resolution', icon: '\uD83D\uDD4A\uFE0F', desc: 'Handling disagreements calmly and finding fair solutions.' }
+  ];
+
+  var IDEAL_PROFILE = {
+    communication: 5, listening: 5, flexibility: 4, reliability: 5,
+    problemSolving: 4, encouragement: 4, organization: 4, conflictRes: 4
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Reflection Prompts (post-activity quick reflections) ──
+  // ══════════════════════════════════════════════════════════════
+  var REFLECTION_SKILLS_DROPDOWN = [
+    'Communication', 'Active Listening', 'Flexibility', 'Reliability',
+    'Problem-Solving', 'Encouragement', 'Organization', 'Conflict Resolution',
+    'Perspective-Taking', 'Delegation', 'Negotiation'
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -225,6 +320,22 @@ window.SelHub = window.SelHub || {
         var coachResponse = d.coachResponse || null;
         var coachLoading  = d.coachLoading || false;
 
+        // Skills Quiz state
+        var quizRatings    = d.quizRatings || {};
+        var quizSubmitted  = d.quizSubmitted || false;
+
+        // Team Contract state
+        var contractAgreements = d.contractAgreements || ['', '', '', '', ''];
+        var contractRoles     = d.contractRoles || ['', '', '', ''];
+        var contractComms     = d.contractComms || '';
+        var contractConsequence = d.contractConsequence || '';
+        var contractSaved    = d.contractSaved || false;
+
+        // Quick Reflection state (post-activity)
+        var reflectionSkill   = d.reflectionSkill || '';
+        var reflectionNote    = d.reflectionNote || '';
+        var reflectionLog     = d.reflectionLog || [];
+
         // Practice log & badges
         var practiceLog    = d.practiceLog || [];
         var earnedBadges   = d.earnedBadges || {};
@@ -255,6 +366,9 @@ window.SelHub = window.SelHub || {
           if (totalBadges >= 7 && !newBadges.teamwork_champion) {
             setTimeout(function() { tryAwardBadge('teamwork_champion'); }, 3200);
           }
+          if (totalBadges >= 12 && !newBadges.teamwork_guru) {
+            setTimeout(function() { tryAwardBadge('teamwork_guru'); }, 3500);
+          }
         }
 
         function logPractice(type, id) {
@@ -277,7 +391,7 @@ window.SelHub = window.SelHub || {
           var newVisited = Object.assign({}, visitedTabs);
           newVisited[tabId] = true;
           upd('visitedTabs', newVisited);
-          if (newVisited.roles && newVisited.challenges && newVisited.scenarios && newVisited.progress) {
+          if (newVisited.roles && newVisited.challenges && newVisited.scenarios && newVisited.progress && newVisited.quiz && newVisited.contract) {
             tryAwardBadge('full_explorer');
           }
         }
@@ -290,6 +404,44 @@ window.SelHub = window.SelHub || {
           return h('span', null, stars);
         }
 
+        // ── Quick Reflection Prompt (reusable) ──
+        function renderQuickReflection(activityType) {
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { style: { fontSize: 12, fontWeight: 600, color: ACCENT, marginBottom: 8 } }, '\uD83D\uDCDD Quick Reflection'),
+            h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8 } }, 'What teamwork skill did you practice?'),
+            h('select', {
+              value: reflectionSkill,
+              onChange: function(e) { upd('reflectionSkill', e.target.value); },
+              style: { width: '100%', padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 12, marginBottom: 8, outline: 'none' }
+            },
+              h('option', { value: '' }, '-- Select a skill --'),
+              REFLECTION_SKILLS_DROPDOWN.map(function(sk) {
+                return h('option', { key: sk, value: sk }, sk);
+              })
+            ),
+            h('textarea', {
+              value: reflectionNote,
+              onChange: function(e) { upd('reflectionNote', e.target.value); },
+              placeholder: 'Briefly describe how you used this skill...',
+              rows: 2,
+              style: { width: '100%', padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 12, resize: 'vertical', outline: 'none', boxSizing: 'border-box', marginBottom: 8 }
+            }),
+            h('button', {
+              onClick: function() {
+                if (!reflectionSkill) { addToast('Select a skill first!', 'info'); return; }
+                var entry = { skill: reflectionSkill, note: reflectionNote, activity: activityType, timestamp: Date.now() };
+                var newLog = reflectionLog.concat([entry]);
+                upd({ reflectionLog: newLog, reflectionSkill: '', reflectionNote: '' });
+                logPractice('quick_reflection', activityType);
+                awardXP(5);
+                if (soundEnabled) sfxCorrect();
+                addToast('Reflection saved! +5 XP', 'success');
+              },
+              style: { padding: '6px 14px', borderRadius: 8, border: 'none', background: ACCENT, color: '#0f172a', fontWeight: 600, fontSize: 11, cursor: 'pointer' }
+            }, 'Save Reflection')
+          );
+        }
+
         // ══════════════════════════════════════════════════════════
         // ── Tab Bar ──
         // ══════════════════════════════════════════════════════════
@@ -297,7 +449,9 @@ window.SelHub = window.SelHub || {
           { id: 'roles',      label: '\uD83D\uDC51 Roles' },
           { id: 'challenges', label: '\uD83C\uDFD7\uFE0F Challenges' },
           { id: 'scenarios',  label: '\uD83C\uDFAD Scenarios' },
-          { id: 'progress',   label: '\uD83D\uDCCA Progress' }
+          { id: 'quiz',       label: '\uD83D\uDCCA Quiz' },
+          { id: 'contract',   label: '\uD83D\uDCDC Contract' },
+          { id: 'progress',   label: '\uD83D\uDCC8 Progress' }
         ];
 
         var tabBar = h('div', {
@@ -516,7 +670,10 @@ window.SelHub = window.SelHub || {
                 h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Team Coach'),
                 h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, coachResponse)
               )
-            )
+            ),
+
+            // Quick reflection for roles
+            selectedRoles.length > 0 && renderQuickReflection('roles')
           );
         }
 
@@ -608,6 +765,8 @@ window.SelHub = window.SelHub || {
                     awardXP(20);
                     tryAwardBadge('challenge_accepted');
                     if (newCompleted >= 3) tryAwardBadge('collab_expert');
+                    if (newCompleted >= 5) tryAwardBadge('challenge_champ');
+                    if (newCompleted >= chList.length) tryAwardBadge('all_challenges');
                     if (soundEnabled) sfxCorrect();
                     addToast('Challenge completed! +20 XP', 'success');
                     upd({ challengeIdx: challengeIdx + 1, challengeDiscussion: '' });
@@ -615,7 +774,10 @@ window.SelHub = window.SelHub || {
                   },
                   style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: ACCENT, color: '#0f172a', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                 }, 'Complete & Next \u2192')
-              )
+              ),
+
+              // Quick reflection after challenge
+              renderQuickReflection('challenge')
             )
           );
         }
@@ -767,6 +929,306 @@ window.SelHub = window.SelHub || {
                 h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Coach Says'),
                 h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, coachResponse)
               )
+            ),
+
+            // Quick reflection after scenario
+            renderQuickReflection('scenario')
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // ── TAB: Skills Quiz ──
+        // ══════════════════════════════════════════════════════════
+        var quizContent = null;
+        if (activeTab === 'quiz') {
+          var quizDone = Object.keys(quizRatings).length === QUIZ_SKILLS.length;
+
+          quizContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCCA Team Skills Self-Assessment'),
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+              band === 'elementary' ? 'Rate yourself on each skill from 1 (I\'m still learning) to 5 (I\'m really good at this!).' :
+              band === 'middle' ? 'Honestly rate your ability in each teamwork skill. 1 = needs work, 5 = strong.' :
+              'Assess your competency across 8 core teamwork dimensions. Be candid \u2014 self-awareness drives growth.'
+            ),
+
+            // Skill rating cards
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 } },
+              QUIZ_SKILLS.map(function(skill) {
+                var rating = quizRatings[skill.id] || 0;
+                return h('div', {
+                  key: skill.id,
+                  style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid ' + (rating > 0 ? ACCENT + '44' : '#334155') }
+                },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                    h('span', { style: { fontSize: 20 } }, skill.icon),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9' } }, skill.name),
+                      h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, skill.desc)
+                    )
+                  ),
+                  h('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
+                    h('span', { style: { fontSize: 10, color: '#64748b', marginRight: 4 } }, 'Low'),
+                    [1, 2, 3, 4, 5].map(function(val) {
+                      var isSelected = rating === val;
+                      return h('button', {
+                        key: val,
+                        onClick: function() {
+                          if (quizSubmitted) return;
+                          var newRatings = Object.assign({}, quizRatings);
+                          newRatings[skill.id] = val;
+                          upd('quizRatings', newRatings);
+                          if (soundEnabled) sfxClick();
+                        },
+                        style: {
+                          width: 32, height: 32, borderRadius: '50%', border: '2px solid ' + (isSelected ? ACCENT : '#334155'),
+                          background: isSelected ? ACCENT_DIM : '#0f172a', color: isSelected ? ACCENT : '#94a3b8',
+                          fontWeight: 700, fontSize: 13, cursor: quizSubmitted ? 'default' : 'pointer', transition: 'all 0.15s'
+                        }
+                      }, String(val));
+                    }),
+                    h('span', { style: { fontSize: 10, color: '#64748b', marginLeft: 4 } }, 'High')
+                  )
+                );
+              })
+            ),
+
+            // Submit quiz
+            !quizSubmitted && h('button', {
+              onClick: function() {
+                if (!quizDone) { addToast('Rate all 8 skills first!', 'info'); return; }
+                upd('quizSubmitted', true);
+                logPractice('quiz', 'skills_quiz');
+                tryAwardBadge('skills_assessor');
+                awardXP(20);
+                if (soundEnabled) sfxCorrect();
+                addToast('Skills assessment complete! +20 XP', 'success');
+                celebrate && celebrate();
+              },
+              style: { display: 'block', width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: quizDone ? ACCENT : '#334155', color: quizDone ? '#0f172a' : '#64748b', fontWeight: 700, fontSize: 14, cursor: quizDone ? 'pointer' : 'default', marginBottom: 20 }
+            }, quizDone ? '\u2705 Submit My Assessment' : 'Rate all 8 skills to continue'),
+
+            // Results visualization (bar chart)
+            quizSubmitted && h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 12, textAlign: 'center' } }, '\uD83D\uDCCA Your Skills Profile'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                QUIZ_SKILLS.map(function(skill) {
+                  var myRating = quizRatings[skill.id] || 0;
+                  var idealRating = IDEAL_PROFILE[skill.id] || 4;
+                  var barWidthMy = (myRating / 5) * 100;
+                  var barWidthIdeal = (idealRating / 5) * 100;
+                  return h('div', { key: skill.id },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 } },
+                      h('span', { style: { fontSize: 14 } }, skill.icon),
+                      h('span', { style: { fontSize: 11, color: '#cbd5e1', flex: 1, minWidth: 100 } }, skill.name),
+                      h('span', { style: { fontSize: 11, color: ACCENT, fontWeight: 600, width: 24, textAlign: 'right' } }, String(myRating))
+                    ),
+                    // My rating bar
+                    h('div', { style: { position: 'relative', height: 10, borderRadius: 5, background: '#0f172a', overflow: 'hidden', marginBottom: 2 } },
+                      h('div', { style: { position: 'absolute', top: 0, left: 0, height: '100%', width: barWidthMy + '%', background: ACCENT, borderRadius: 5, transition: 'width 0.5s' } })
+                    ),
+                    // Ideal bar (subtle reference line)
+                    h('div', { style: { position: 'relative', height: 4, borderRadius: 2, background: '#0f172a', overflow: 'hidden' } },
+                      h('div', { style: { position: 'absolute', top: 0, left: 0, height: '100%', width: barWidthIdeal + '%', background: '#6366f144', borderRadius: 2 } })
+                    )
+                  );
+                })
+              ),
+              h('div', { style: { display: 'flex', gap: 16, justifyContent: 'center', marginTop: 12, fontSize: 10, color: '#64748b' } },
+                h('span', null, h('span', { style: { display: 'inline-block', width: 10, height: 10, borderRadius: 2, background: ACCENT, marginRight: 4, verticalAlign: 'middle' } }), 'Your Rating'),
+                h('span', null, h('span', { style: { display: 'inline-block', width: 10, height: 4, borderRadius: 2, background: '#6366f144', marginRight: 4, verticalAlign: 'middle' } }), 'Ideal Team Player')
+              ),
+
+              // Summary
+              (function() {
+                var total = 0; var count = 0; var strongest = ''; var sMax = 0; var weakest = ''; var wMin = 6;
+                QUIZ_SKILLS.forEach(function(skill) {
+                  var v = quizRatings[skill.id] || 0;
+                  total += v; count++;
+                  if (v > sMax) { sMax = v; strongest = skill.name; }
+                  if (v < wMin) { wMin = v; weakest = skill.name; }
+                });
+                var avg = count > 0 ? (total / count).toFixed(1) : '0';
+                return h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: 12, fontWeight: 600, color: '#f1f5f9', marginBottom: 6 } }, '\uD83D\uDCCB Summary'),
+                  h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.8 } },
+                    '\u2022 Average score: ' + avg + '/5',
+                    h('br'),
+                    '\u2022 Strongest skill: ' + strongest + ' (' + sMax + '/5)',
+                    h('br'),
+                    '\u2022 Growth area: ' + weakest + ' (' + wMin + '/5)',
+                    h('br'),
+                    '\u2022 ' + (parseFloat(avg) >= 4 ? 'You\'re a strong team player! Focus on mentoring others.' : parseFloat(avg) >= 3 ? 'Solid foundation! Target your growth areas for the next level.' : 'Great self-awareness! Pick one skill to practice this week.')
+                  )
+                );
+              })(),
+
+              // Reset quiz
+              h('button', {
+                onClick: function() { upd({ quizRatings: {}, quizSubmitted: false }); if (soundEnabled) sfxClick(); },
+                style: { display: 'block', margin: '12px auto 0', padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#64748b', fontSize: 11, cursor: 'pointer' }
+              }, 'Retake Quiz')
+            ),
+
+            // Quick reflection
+            quizSubmitted && renderQuickReflection('quiz')
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // ── TAB: Team Contract Builder ──
+        // ══════════════════════════════════════════════════════════
+        var contractContent = null;
+        if (activeTab === 'contract') {
+          contractContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCDC Team Contract Builder'),
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+              band === 'elementary' ? 'Make promises with your team about how you\'ll work together!' :
+              band === 'middle' ? 'Create a team agreement that sets expectations for how you\'ll collaborate.' :
+              'Draft a formal team operating agreement that establishes norms, roles, and accountability structures.'
+            ),
+
+            // ── Section 1: Team Agreements ──
+            h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 12 } },
+                '\uD83E\uDD1D ' + (band === 'elementary' ? 'We Promise To...' : 'We Agree To...')
+              ),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                contractAgreements.map(function(agreement, idx) {
+                  return h('div', { key: idx, style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                    h('span', { style: { fontSize: 12, color: ACCENT, fontWeight: 700, minWidth: 20 } }, String(idx + 1) + '.'),
+                    h('input', {
+                      type: 'text',
+                      value: agreement,
+                      onChange: function(e) {
+                        var newAgreements = contractAgreements.slice();
+                        newAgreements[idx] = e.target.value;
+                        upd('contractAgreements', newAgreements);
+                        upd('contractSaved', false);
+                      },
+                      placeholder: idx === 0 ? (band === 'elementary' ? 'Listen when someone is talking' : 'Respect all ideas during brainstorming') :
+                                   idx === 1 ? (band === 'elementary' ? 'Take turns sharing ideas' : 'Meet all deadlines or communicate early') :
+                                   idx === 2 ? (band === 'elementary' ? 'Help when someone is stuck' : 'Give constructive feedback, not criticism') :
+                                   idx === 3 ? (band === 'elementary' ? 'Say kind things about each other\'s work' : 'Share workload equitably') :
+                                   (band === 'elementary' ? 'Try our best even when it\'s hard' : 'Address conflicts directly and respectfully'),
+                      style: { flex: 1, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 12, outline: 'none' }
+                    })
+                  );
+                })
+              )
+            ),
+
+            // ── Section 2: Role Assignments ──
+            h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 12 } }, '\uD83D\uDC65 Role Assignments'),
+              h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10 } }, 'Assign team members to roles (e.g., "Alex \u2014 Note-Taker", "Sam \u2014 Facilitator"):'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                contractRoles.map(function(role, idx) {
+                  return h('input', {
+                    key: idx,
+                    type: 'text',
+                    value: role,
+                    onChange: function(e) {
+                      var newRoles = contractRoles.slice();
+                      newRoles[idx] = e.target.value;
+                      upd('contractRoles', newRoles);
+                      upd('contractSaved', false);
+                    },
+                    placeholder: 'Team member ' + (idx + 1) + ' \u2014 Role',
+                    style: { padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 12, outline: 'none' }
+                  });
+                })
+              )
+            ),
+
+            // ── Section 3: Communication Expectations ──
+            h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 8 } }, '\uD83D\uDCAC Communication Plan'),
+              h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10 } },
+                band === 'elementary' ? 'How will your team talk to each other during the project?' :
+                'How and when will the team communicate? (e.g., daily check-ins, group chat norms, response time expectations)'
+              ),
+              h('textarea', {
+                value: contractComms,
+                onChange: function(e) { upd('contractComms', e.target.value); upd('contractSaved', false); },
+                placeholder: band === 'elementary' ? 'We will raise our hands, take turns, and ask before changing someone\'s work.' :
+                  band === 'middle' ? 'We\'ll use a group chat for updates. We\'ll respond within 24 hours. We\'ll meet twice a week in person.' :
+                  'Communication channels, response-time expectations, meeting cadence, status update format...',
+                rows: 3,
+                style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 12, resize: 'vertical', outline: 'none', boxSizing: 'border-box' }
+              })
+            ),
+
+            // ── Section 4: Consequences ──
+            h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 8 } },
+                '\u26A0\uFE0F ' + (band === 'elementary' ? 'What Happens If We Forget?' : 'Accountability Plan')
+              ),
+              h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10 } },
+                band === 'elementary' ? 'What will your team do if someone doesn\'t follow the promises?' :
+                'What are the agreed-upon consequences if a team member doesn\'t meet expectations?'
+              ),
+              h('textarea', {
+                value: contractConsequence,
+                onChange: function(e) { upd('contractConsequence', e.target.value); upd('contractSaved', false); },
+                placeholder: band === 'elementary' ? 'We\'ll have a kind talk. If it keeps happening, we\'ll ask the teacher for help.' :
+                  band === 'middle' ? 'First: private conversation. Second: group discussion. Third: involve the teacher.' :
+                  'Progressive accountability: private check-in, team meeting, escalation path, grade impact discussion.',
+                rows: 2,
+                style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 12, resize: 'vertical', outline: 'none', boxSizing: 'border-box' }
+              })
+            ),
+
+            // Save / Preview
+            h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 16 } },
+              h('button', {
+                onClick: function() {
+                  var filledAgreements = contractAgreements.filter(function(a) { return a.trim(); });
+                  if (filledAgreements.length < 2) { addToast('Fill in at least 2 agreements!', 'info'); return; }
+                  upd('contractSaved', true);
+                  logPractice('contract', 'team_contract');
+                  tryAwardBadge('contract_creator');
+                  awardXP(20);
+                  if (soundEnabled) sfxCorrect();
+                  addToast('Team contract saved! +20 XP', 'success');
+                  celebrate && celebrate();
+                },
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: contractSaved ? '#334155' : ACCENT, color: contractSaved ? '#94a3b8' : '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+              }, contractSaved ? '\u2713 Contract Saved' : '\uD83D\uDCBE Save Contract'),
+              contractSaved && h('button', {
+                onClick: function() { upd({ contractAgreements: ['', '', '', '', ''], contractRoles: ['', '', '', ''], contractComms: '', contractConsequence: '', contractSaved: false }); if (soundEnabled) sfxClick(); },
+                style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#64748b', fontSize: 12, cursor: 'pointer' }
+              }, 'Start New Contract')
+            ),
+
+            // Contract Preview
+            contractSaved && h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '2px solid ' + ACCENT + '44', marginBottom: 16 } },
+              h('div', { style: { textAlign: 'center', marginBottom: 14 } },
+                h('div', { style: { fontSize: 20, fontWeight: 700, color: '#f1f5f9' } }, '\uD83D\uDCDC Team Contract'),
+                h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 4 } }, 'Created ' + new Date().toLocaleDateString())
+              ),
+              h('div', { style: { marginBottom: 14 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: ACCENT, marginBottom: 6 } }, 'AGREEMENTS:'),
+                contractAgreements.filter(function(a) { return a.trim(); }).map(function(a, i) {
+                  return h('div', { key: i, style: { fontSize: 12, color: '#cbd5e1', padding: '4px 0', paddingLeft: 12, borderLeft: '2px solid ' + ACCENT + '44' } }, (i + 1) + '. ' + a);
+                })
+              ),
+              contractRoles.filter(function(r) { return r.trim(); }).length > 0 && h('div', { style: { marginBottom: 14 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#8b5cf6', marginBottom: 6 } }, 'ROLES:'),
+                contractRoles.filter(function(r) { return r.trim(); }).map(function(r, i) {
+                  return h('div', { key: i, style: { fontSize: 12, color: '#cbd5e1', padding: '4px 0', paddingLeft: 12, borderLeft: '2px solid #8b5cf644' } }, r);
+                })
+              ),
+              contractComms.trim() && h('div', { style: { marginBottom: 14 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#f59e0b', marginBottom: 6 } }, 'COMMUNICATION:'),
+                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, paddingLeft: 12, borderLeft: '2px solid #f59e0b44' } }, contractComms)
+              ),
+              contractConsequence.trim() && h('div', null,
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#ef4444', marginBottom: 6 } }, 'ACCOUNTABILITY:'),
+                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, paddingLeft: 12, borderLeft: '2px solid #ef444444' } }, contractConsequence)
+              ),
+              h('div', { style: { marginTop: 16, paddingTop: 12, borderTop: '1px dashed #334155', textAlign: 'center' } },
+                h('div', { style: { fontSize: 11, color: '#64748b', fontStyle: 'italic' } }, 'Signatures: _______________  _______________  _______________  _______________')
+              )
             )
           );
         }
@@ -795,7 +1257,10 @@ window.SelHub = window.SelHub || {
             { icon: '\uD83C\uDFD7\uFE0F', label: 'Challenges Done', value: String(challengesCompleted), color: '#f59e0b' },
             { icon: '\uD83C\uDFAD', label: 'Scenarios Answered', value: answeredScenarios + '/' + SCENARIOS.length, color: '#8b5cf6' },
             { icon: '\u2B50', label: 'Stars Earned', value: totalStars + '/' + (SCENARIOS.length * 3), color: '#facc15' },
+            { icon: '\uD83D\uDCCA', label: 'Quiz', value: quizSubmitted ? 'Done' : 'Not yet', color: '#06b6d4' },
+            { icon: '\uD83D\uDCDC', label: 'Contract', value: contractSaved ? 'Saved' : 'Not yet', color: '#a78bfa' },
             { icon: '\uD83C\uDFC5', label: 'Badges', value: Object.keys(earnedBadges).length + '/' + BADGES.length, color: '#ec4899' },
+            { icon: '\uD83D\uDCDD', label: 'Reflections', value: String(reflectionLog.length), color: '#22d3ee' },
             { icon: '\uD83D\uDD25', label: 'Activities', value: String(practiceLog.length), color: '#ef4444' }
           ];
 
@@ -803,15 +1268,15 @@ window.SelHub = window.SelHub || {
             h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCCA Your Teamwork Progress'),
 
             // Stats grid
-            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 20 } },
               stats.map(function(s) {
                 return h('div', {
                   key: s.label,
-                  style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid ' + s.color + '44', textAlign: 'center' }
+                  style: { padding: 12, borderRadius: 12, background: '#1e293b', border: '1px solid ' + s.color + '44', textAlign: 'center' }
                 },
-                  h('div', { style: { fontSize: 24 } }, s.icon),
-                  h('div', { style: { fontSize: 22, fontWeight: 700, color: s.color, margin: '4px 0' } }, s.value),
-                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, s.label)
+                  h('div', { style: { fontSize: 20 } }, s.icon),
+                  h('div', { style: { fontSize: 18, fontWeight: 700, color: s.color, margin: '4px 0' } }, s.value),
+                  h('div', { style: { fontSize: 10, color: '#94a3b8' } }, s.label)
                 );
               })
             ),
@@ -847,13 +1312,32 @@ window.SelHub = window.SelHub || {
               )
             ),
 
+            // Quick Reflections log
+            reflectionLog.length > 0 && h('div', { style: { marginBottom: 16 } },
+              h('h4', { style: { fontSize: 14, color: '#f1f5f9', marginBottom: 8 } }, '\uD83D\uDCDD Quick Reflections'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+                reflectionLog.slice(-6).reverse().map(function(entry, i) {
+                  return h('div', {
+                    key: i,
+                    style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', fontSize: 12, border: '1px solid #334155' }
+                  },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+                      h('span', { style: { padding: '2px 8px', borderRadius: 12, background: ACCENT_DIM, color: ACCENT, fontSize: 10, fontWeight: 600 } }, entry.skill),
+                      h('span', { style: { fontSize: 10, color: '#64748b', marginLeft: 'auto' } }, entry.activity + ' \u00B7 ' + new Date(entry.timestamp).toLocaleDateString())
+                    ),
+                    entry.note && h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, '"' + entry.note + '"')
+                  );
+                })
+              )
+            ),
+
             // Recent practice log
             practiceLog.length > 0 && h('div', null,
               h('h4', { style: { fontSize: 14, color: '#f1f5f9', marginBottom: 8 } }, 'Recent Practice'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 practiceLog.slice(-8).reverse().map(function(entry, i) {
-                  var icons = { role_explore: '\uD83D\uDC51', reflection: '\uD83D\uDCDD', challenge: '\uD83C\uDFD7\uFE0F', scenario: '\uD83C\uDFAD', ai_coach: '\u2728' };
-                  var labels = { role_explore: 'Role Explored', reflection: 'Reflection', challenge: 'Challenge', scenario: 'Scenario', ai_coach: 'AI Coach' };
+                  var icons = { role_explore: '\uD83D\uDC51', reflection: '\uD83D\uDCDD', challenge: '\uD83C\uDFD7\uFE0F', scenario: '\uD83C\uDFAD', ai_coach: '\u2728', quiz: '\uD83D\uDCCA', contract: '\uD83D\uDCDC', quick_reflection: '\uD83D\uDCDD' };
+                  var labels = { role_explore: 'Role Explored', reflection: 'Reflection', challenge: 'Challenge', scenario: 'Scenario', ai_coach: 'AI Coach', quiz: 'Skills Quiz', contract: 'Team Contract', quick_reflection: 'Quick Reflection' };
                   return h('div', {
                     key: i,
                     style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }
@@ -871,7 +1355,7 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         // ── Final Render ──
         // ══════════════════════════════════════════════════════════
-        var content = rolesContent || challengesContent || scenariosContent || progressContent;
+        var content = rolesContent || challengesContent || scenariosContent || quizContent || contractContent || progressContent;
 
         return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
           tabBar,

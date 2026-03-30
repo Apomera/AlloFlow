@@ -1,7 +1,9 @@
 // ═══════════════════════════════════════════════════════════════
-// sel_tool_safety.js — Safety & Boundaries Plugin (v1.0)
+// sel_tool_safety.js — Safety & Boundaries Plugin (v2.0)
 // Body safety, trusted adults, consent, boundaries, crisis
-// resources, grade-adaptive scenarios, and safety badges.
+// resources, grade-adaptive scenarios, safety quiz, boundary
+// types lesson, safety plan builder, red/green flag activity,
+// and safety badges.
 // Registered tool ID: "safety"
 // Category: responsible-decision-making
 // Grade-adaptive: K-8 (elementary / middle)
@@ -120,6 +122,27 @@ window.SelHub = window.SelHub || {
           { label: 'Send a photo \u2014 they seem really nice.', rating: 1, feedback: 'People online are not always who they say they are. A photo of you can be shared, saved, or used in ways you cannot control. Never send photos to people you only know online.' },
           { label: 'Say "I do not share photos online" and tell a parent or trusted adult.', rating: 3, feedback: 'Perfect response! You set a clear boundary AND told a trusted adult. It does not matter how nice someone seems online \u2014 protecting your privacy is always the smart choice.' },
           { label: 'Block them without telling anyone.', rating: 2, feedback: 'Blocking is a good instinct! But telling a trusted adult is also important because they can help make sure this person does not try to contact you another way.' }
+        ] },
+      { id: 'es6', title: 'The Tablet Trouble',
+        setup: 'A friend shows you something on their tablet that looks really inappropriate. They say, "Check this out! It is so funny!" It makes you feel uncomfortable inside.',
+        choices: [
+          { label: 'Look at it because your friend thinks it is funny.', rating: 1, feedback: 'If something makes you feel uncomfortable, that feeling is telling you something important. Just because a friend thinks something is funny does not make it okay. Trust your gut.' },
+          { label: 'Say "That does not look right" and tell a trusted adult what you saw.', rating: 3, feedback: 'Excellent! You named the problem, set a boundary, and involved a safe adult. You will NOT get in trouble for reporting something inappropriate \u2014 you did the right thing.' },
+          { label: 'Look away and walk to a different area.', rating: 2, feedback: 'Walking away shows you trust your feelings. But telling a trusted adult is also important because they can help make sure your friend gets guidance and that it does not happen again.' }
+        ] },
+      { id: 'es7', title: 'The Online Meeting',
+        setup: 'Someone you chat with in an online game says they live nearby and want to meet you at the park after school. They say, "It will be so fun! Do not tell your parents, it is a surprise."',
+        choices: [
+          { label: 'Go to the park \u2014 they seem like a real friend.', rating: 1, feedback: 'People online are NOT always who they say they are. Meeting someone from the internet alone, especially without telling a parent, is extremely dangerous. This request to keep it secret is a major red flag.' },
+          { label: 'Say no and immediately tell your parent or a trusted adult about the request.', rating: 3, feedback: 'You are absolutely right! Anyone who asks you to meet in secret is NOT safe. Telling an adult right away is the bravest and smartest thing to do. You could be preventing a very dangerous situation.' },
+          { label: 'Do not go, but keep talking to them online.', rating: 2, feedback: 'It is good that you would not go. But someone who asks a kid to meet secretly is showing warning signs. Telling a trusted adult is important so they can help keep you safe online too.' }
+        ] },
+      { id: 'es8', title: 'The Store Stranger',
+        setup: 'You are at a store with your family. An adult you do not know comes up and says, "Hey kid, I have some candy in my car. Want to come pick some out?" They seem friendly and smile a lot.',
+        choices: [
+          { label: 'Go with them \u2014 they seem nice and you like candy.', rating: 1, feedback: 'No matter how nice someone seems, a safe adult would NEVER ask a child they do not know to come to their car. This is a trick. Your safety is more important than anything someone might offer you.' },
+          { label: 'Say "No!" loudly and run back to your family right away. Tell them what happened.', rating: 3, feedback: 'That is exactly the right move! Saying NO loudly, getting to safety, and telling your family is perfect. You do not have to be polite to someone who makes you feel unsafe. Your safety comes FIRST.' },
+          { label: 'Say "No thank you" and walk away quietly.', rating: 2, feedback: 'Saying no is great! But it is very important to also tell your family right away so they can alert store security. This kind of thing should always be reported to a trusted adult.' }
         ] }
     ],
     middle: [
@@ -157,6 +180,27 @@ window.SelHub = window.SelHub || {
           { label: 'Assume they are just going through a phase and it will pass.', rating: 1, feedback: 'These warning signs should always be taken seriously. It is better to overreact and be wrong than to underreact and miss a chance to help. Your concern shows you care deeply.' },
           { label: 'Talk to your friend directly AND tell a trusted adult right away.', rating: 3, feedback: 'This is exactly right. Let your friend know you care, and immediately involve a trusted adult who can provide professional support. You may be saving a life. That is not an exaggeration.' },
           { label: 'Ask your friend if they are okay.', rating: 2, feedback: 'Checking in is important and kind. But when warning signs are this serious, telling a trusted adult is essential \u2014 even if your friend asks you not to. Their safety matters more than keeping a secret.' }
+        ] },
+      { id: 'ms6', title: 'The Photo Threat',
+        setup: 'Someone you used to be close with is threatening to share private photos of you unless you do what they say. You feel scared and trapped.',
+        choices: [
+          { label: 'Do what they ask so they do not share the photos.', rating: 1, feedback: 'Giving in to threats does NOT make them stop \u2014 it usually makes the person ask for more. This is NOT your fault. What this person is doing is wrong, and in many cases, it is a crime. You deserve help.' },
+          { label: 'Tell a trusted adult immediately. Do not respond to the threat. Save any evidence (screenshots).', rating: 3, feedback: 'This is exactly right. Telling a trusted adult, saving evidence, and not engaging with the threat are the safest steps. What this person is doing is wrong and possibly illegal. You are NOT in trouble \u2014 they are.' },
+          { label: 'Block the person and hope they go away.', rating: 2, feedback: 'Blocking can help, but this situation needs adult support. The person may try to reach you other ways or follow through on their threat. A trusted adult can involve authorities if needed. This is NOT your fault.' }
+        ] },
+      { id: 'ms7', title: 'The Dangerous Home',
+        setup: 'A close friend confides in you that they do not feel safe at home. They describe situations that sound really concerning. They beg you not to tell anyone.',
+        choices: [
+          { label: 'Keep their secret because they asked you to.', rating: 1, feedback: 'It is natural to want to honor your friend\u2019s wishes. But when someone is in danger, their safety matters more than keeping a secret. Getting help is NOT betraying them \u2014 it is protecting them.' },
+          { label: 'Tell a trusted adult like a school counselor, even though your friend asked you not to.', rating: 3, feedback: 'You are being an incredible friend. When someone is in danger, the bravest thing you can do is get them help \u2014 even if they are not ready to ask for it themselves. A school counselor knows how to handle this safely and confidentially.' },
+          { label: 'Tell your friend they should call a hotline and leave it up to them.', rating: 2, feedback: 'Sharing resources is kind. But your friend is scared and may not be able to take that step alone. Telling a trusted adult means a professional can step in to help. You do not need to carry this alone, and neither does your friend.' }
+        ] },
+      { id: 'ms8', title: 'The Hallway Harassment',
+        setup: 'You witness a group of students surrounding a younger student in the hallway. They are making fun of them, blocking their way, and saying threatening things. The younger student looks terrified.',
+        choices: [
+          { label: 'Walk past \u2014 you do not want them to target you next.', rating: 1, feedback: 'Feeling scared for your own safety is completely understandable. But bystanders have more power than they think. Even if you do not confront the group directly, there are safe ways to help.' },
+          { label: 'Get a teacher or staff member immediately. Later, check in on the targeted student privately.', rating: 3, feedback: 'Outstanding bystander action. Getting an adult is the safest and most effective response. Checking in on the targeted student shows compassion and lets them know they are not alone. You are making a real difference.' },
+          { label: 'Record the incident on your phone.', rating: 2, feedback: 'Evidence can be important, but the priority should be getting immediate help. Find a trusted adult right away. Recording without also reporting can put the targeted student at further risk and may not stop the immediate harm.' }
         ] }
     ]
   };
@@ -174,8 +218,100 @@ window.SelHub = window.SelHub || {
     { id: 'brave_voice',      icon: '\uD83E\uDDB8', name: 'Brave Voice',        desc: 'Complete 3 scenarios with the top rating' },
     { id: 'ally',             icon: '\uD83E\uDD1D', name: 'Ally',               desc: 'Complete bystander or advocacy scenarios' },
     { id: 'quick_thinker',    icon: '\u26A1',        name: 'Quick Thinker',      desc: 'Complete all 5 scenarios in your grade band' },
-    { id: 'safety_champion',  icon: '\uD83C\uDFC6', name: 'Safety Champion',    desc: 'Earn 7 or more badges' }
+    { id: 'safety_champion',  icon: '\uD83C\uDFC6', name: 'Safety Champion',    desc: 'Earn 7 or more badges' },
+    { id: 'quiz_master',      icon: '\uD83E\uDDE0', name: 'Quiz Master',        desc: 'Score 8 or higher on the Safety Quiz' },
+    { id: 'boundary_expert',  icon: '\uD83D\uDEE1\uFE0F', name: 'Boundary Expert',   desc: 'Read all boundary types in the lesson' },
+    { id: 'safety_planner',   icon: '\uD83D\uDCCB', name: 'Safety Planner',     desc: 'Complete your personal Safety Plan' },
+    { id: 'topics_explorer',  icon: '\uD83D\uDDFA\uFE0F', name: 'All Topics Explored', desc: 'Read every topic in Learn plus Boundary Types' },
+    { id: 'flag_sorter',      icon: '\uD83D\uDEA9', name: 'Flag Sorter',        desc: 'Complete the Red Flag / Green Flag activity' }
   ];
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Safety Quiz Questions (grade-adaptive) ──
+  // ══════════════════════════════════════════════════════════════
+  var QUIZ_QUESTIONS = {
+    elementary: [
+      { q: 'Is it okay to say NO to an adult who makes you uncomfortable?', type: 'tf', answer: true, explain: 'You ALWAYS have the right to say NO to anyone \u2014 even adults \u2014 if something feels wrong. A safe adult will respect your no.' },
+      { q: 'Should you keep a secret if it makes you feel scared?', type: 'tf', answer: false, explain: 'If a secret makes you feel scared, worried, or icky inside, it is an UNSAFE secret. You should always tell a trusted adult about unsafe secrets.' },
+      { q: 'If something bad happens to you, is it your fault?', type: 'mc', choices: ['Yes', 'Sometimes', 'NEVER'], answer: 2, explain: 'It is NEVER your fault. No matter what happened, no matter what anyone says \u2014 you did not cause it. You deserve help and support.' },
+      { q: 'Your body belongs to YOU and only you.', type: 'tf', answer: true, explain: 'That is right! You are the boss of your body. No one has the right to touch you in a way that makes you uncomfortable.' },
+      { q: 'A trusted adult is someone who keeps you safe and believes you.', type: 'tf', answer: true, explain: 'Trusted adults listen to you, believe you, and work to keep you safe. Try to think of at least 3 trusted adults in your life!' },
+      { q: 'If a friend tells you a secret that is dangerous, should you keep it?', type: 'tf', answer: false, explain: 'When someone is in danger, telling a trusted adult is NOT tattling \u2014 it is protecting them. Safety secrets should always be shared with a safe grown-up.' },
+      { q: 'What is a "safe touch"?', type: 'mc', choices: ['Any touch from someone you know', 'A touch that feels caring and you said okay to', 'A touch from an adult'], answer: 1, explain: 'Safe touches feel caring and kind, and you have said it is okay. You always get to decide what touches are okay for YOUR body.' },
+      { q: 'It is okay to share your address and phone number with people online.', type: 'tf', answer: false, explain: 'NEVER share personal information online. Not everyone online is who they say they are. Keep your address, phone number, school, and photos private.' },
+      { q: 'If you tell a trusted adult about something bad, will you get in trouble?', type: 'mc', choices: ['Yes', 'Maybe', 'NO \u2014 you will NOT get in trouble'], answer: 2, explain: 'You will NOT get in trouble for telling the truth to a trusted adult. They are there to help and protect you.' },
+      { q: 'Your feelings can be an alarm system that tells you something is not safe.', type: 'tf', answer: true, explain: 'When something feels icky, scary, or confusing, your brain is sending you an important signal. Always listen to those feelings and tell someone you trust.' }
+    ],
+    middle: [
+      { q: 'Can consent be withdrawn at any time?', type: 'tf', answer: true, explain: 'Consent can ALWAYS be taken back. It does not matter if you said yes before \u2014 you can change your mind at any time, and that must be respected.' },
+      { q: 'Is it okay for an adult to ask you to keep your relationship a secret?', type: 'mc', choices: ['Yes, if they are nice', 'It depends', 'No \u2014 that is a red flag'], answer: 2, explain: 'An adult asking you to keep a relationship secret is a major RED FLAG. Safe adults do not ask young people to hide their interactions from other adults.' },
+      { q: 'What should you do if you see cyberbullying?', type: 'mc', choices: ['Ignore it \u2014 not your problem', 'Join in to fit in', 'Screenshot evidence and tell a trusted adult'], answer: 2, explain: 'Documenting evidence and telling a trusted adult is the most effective bystander action. You can also send a private supportive message to the person being targeted.' },
+      { q: 'Setting boundaries with people you care about is rude.', type: 'tf', answer: false, explain: 'Setting boundaries is HEALTHY, not rude. People who truly care about you will respect your boundaries. It is one of the most important life skills you can develop.' },
+      { q: 'Grooming always looks scary and obvious.', type: 'tf', answer: false, explain: 'Grooming often looks like special attention, gifts, and trust-building. That is what makes it dangerous \u2014 it is designed to feel good at first. Learning the warning signs helps you stay safe.' },
+      { q: 'If someone pressures you by saying "If you loved me, you would..." what is that?', type: 'mc', choices: ['A sign of real love', 'Manipulation and a red flag', 'Just a disagreement'], answer: 1, explain: 'Using guilt or emotional pressure to cross your boundaries is manipulation. Real love means respecting someone\u2019s no without making them feel bad about it.' },
+      { q: 'Everything you share online can be screenshotted and shared without your permission.', type: 'tf', answer: true, explain: 'Once something is sent digitally, you lose control of it. Screenshots are forever. If you would not want it on a billboard, do not send it.' },
+      { q: 'Speaking up about something wrong is tattling.', type: 'tf', answer: false, explain: 'Speaking up about safety concerns is BRAVE, not tattling. Tattling is trying to get someone in trouble. Reporting is trying to keep someone safe. There is a big difference.' },
+      { q: 'Silence counts as consent.', type: 'tf', answer: false, explain: 'Silence is NOT consent. Consent must be freely given, enthusiastic, informed, and clear. If someone does not say yes, or is unable to say yes, there is no consent.' },
+      { q: 'If you are being harassed or threatened, who should you tell?', type: 'mc', choices: ['No one \u2014 handle it yourself', 'Only your best friend', 'A trusted adult who can help protect you'], answer: 2, explain: 'A trusted adult has the power and resources to help protect you. You do NOT need to handle threatening situations alone. Asking for help is the strongest thing you can do.' }
+    ]
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Boundary Types Lesson Data ──
+  // ══════════════════════════════════════════════════════════════
+  var BOUNDARY_TYPES = [
+    { id: 'physical', icon: '\uD83E\uDDD1', title: 'Physical Boundaries',
+      desc: 'Your body and personal space belong to you. You decide who can touch you, hug you, or stand close to you.',
+      elementary_example: 'You do not have to hug or kiss anyone \u2014 even relatives \u2014 if you do not want to. A wave or high-five is always okay instead.',
+      middle_example: 'You have the right to say "Please do not touch me" or "I need more personal space" \u2014 even with close friends or people you are dating.',
+      practice: 'Practice saying: "I do not want a hug right now, but I would love a high-five!"' },
+    { id: 'emotional', icon: '\u2764\uFE0F', title: 'Emotional Boundaries',
+      desc: 'Your feelings are valid and important. You get to decide how much you share and with whom.',
+      elementary_example: 'If someone says "You should not feel that way," remember: ALL your feelings are real and okay. No one gets to tell you how to feel.',
+      middle_example: 'You do not owe anyone your emotional energy. It is okay to say "I am not ready to talk about that" or "I need some space right now."',
+      practice: 'Practice saying: "I hear you, but I am not comfortable sharing that right now."' },
+    { id: 'digital', icon: '\uD83D\uDCF1', title: 'Digital Boundaries',
+      desc: 'Your online presence, passwords, and digital devices are yours. You control what you share and who can access your accounts.',
+      elementary_example: 'Never share your passwords with friends. If someone asks for your login, say "That is private" \u2014 and tell a grown-up.',
+      middle_example: 'You do not have to share your phone with anyone, give out your passwords, or accept follow requests. Your digital space is yours to protect.',
+      practice: 'Practice saying: "My password is private. I do not share it with anyone except my parents."' },
+    { id: 'time', icon: '\u23F0', title: 'Time Boundaries',
+      desc: 'Your time and energy matter. It is okay to say "not right now" or to take breaks when you need them.',
+      elementary_example: 'If a friend wants to play but you are tired, it is okay to say "Not right now. Can we play tomorrow?" True friends will understand.',
+      middle_example: 'You do not have to respond to every text immediately or be available for everyone all the time. Taking time for yourself is not selfish \u2014 it is self-care.',
+      practice: 'Practice saying: "I need some time to myself right now. I will talk to you later."' },
+    { id: 'material', icon: '\uD83C\uDF92', title: 'Material Boundaries',
+      desc: 'Your belongings are yours. You decide who can borrow, use, or touch your things.',
+      elementary_example: 'If someone takes your toys or school supplies without asking, it is okay to say "Please ask me first." Your things are YOUR things.',
+      middle_example: 'You are not obligated to lend money, share your belongings, or let someone use your phone. Saying no does not make you a bad friend.',
+      practice: 'Practice saying: "I would rather not lend that out, but thank you for asking."' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Red Flag / Green Flag Activity Data ──
+  // ══════════════════════════════════════════════════════════════
+  var FLAG_ITEMS = {
+    elementary: [
+      { text: 'An adult asks you to sit on their lap when you do not want to.', flag: 'red', explain: 'You get to decide who touches you. If you do not want to sit on someone\u2019s lap, that is your choice. A safe adult will never pressure you.' },
+      { text: 'Your teacher gives you a high-five for doing a great job.', flag: 'green', explain: 'A high-five is a safe, positive touch \u2014 especially when it is in a public place and you are comfortable with it.' },
+      { text: 'Someone wants to take photos of you without your clothes.', flag: 'red', explain: 'NO ONE should ever take photos of you without clothes. This is NEVER okay. Tell a trusted adult immediately. This is NOT your fault.' },
+      { text: 'Your friend shares their snack with you at lunch.', flag: 'green', explain: 'Sharing food with a friend is a kind and safe behavior. It shows they care about you!' },
+      { text: 'A grown-up says "This is our little secret \u2014 do not tell your parents."', flag: 'red', explain: 'Safe adults do NOT ask kids to keep secrets from their parents. Unsafe secrets feel heavy and scary. Always tell a trusted adult.' },
+      { text: 'Your school counselor talks to you in their office with the door open.', flag: 'green', explain: 'A counselor who keeps the door open and talks to you in a professional way is showing safe, appropriate behavior.' },
+      { text: 'A neighbor offers you a ride home without your parents knowing.', flag: 'red', explain: 'You should never go anywhere with anyone unless your parent or guardian has told you it is okay. Always check with your trusted adult first.' },
+      { text: 'Your friend invites you over and their parent calls your parent to arrange it.', flag: 'green', explain: 'When adults communicate with each other to plan things, that is a safe, healthy pattern. Everyone knows where you are.' }
+    ],
+    middle: [
+      { text: 'A coach texts you late at night about things unrelated to the sport.', flag: 'red', explain: 'A coach contacting you privately at night about non-sport topics is a warning sign. Safe coaches communicate during appropriate hours and often include parents in messages.' },
+      { text: 'A teacher keeps you after class with the door open to discuss your grade.', flag: 'green', explain: 'Keeping the door open and discussing school-related topics is appropriate, professional behavior from a teacher.' },
+      { text: 'Someone says "This is our special secret \u2014 no one else would understand."', flag: 'red', explain: 'Creating secrecy and making you feel like no one else would understand is a classic grooming tactic. Safe relationships do NOT require secrecy.' },
+      { text: 'A mentor meets with you in a public place and your parents know about it.', flag: 'green', explain: 'Meeting in public with parental knowledge shows transparency and respect for boundaries. This is healthy mentoring.' },
+      { text: 'Someone your age pressures you to share private photos.', flag: 'red', explain: 'Pressuring someone to share private images is NEVER okay, regardless of age. This is a serious boundary violation. You have the right to say no.' },
+      { text: 'A friend checks in on you when you seem upset and respects when you say "I am not ready to talk."', flag: 'green', explain: 'Checking in AND respecting your boundaries is a sign of a healthy, safe friendship. They care about you without pressuring you.' },
+      { text: 'An adult gives you expensive gifts and asks you not to tell anyone.', flag: 'red', explain: 'Gift-giving combined with secrecy is a known grooming pattern. Safe adults do not create secret, exclusive relationships with young people.' },
+      { text: 'Your school holds an assembly about digital safety with resources for everyone.', flag: 'green', explain: 'Schools providing safety education openly and for everyone is a positive, protective practice.' }
+    ]
+  };
 
   // ══════════════════════════════════════════════════════════════
   // ── Register Tool ──
@@ -234,6 +370,34 @@ window.SelHub = window.SelHub || {
         var showBadgePopup  = d.showBadgePopup || null;
         var showBadgesPanel = d.showBadgesPanel || false;
 
+        // Quiz tab state
+        var quizIdx         = d.quizIdx != null ? d.quizIdx : 0;
+        var quizAnswer      = d.quizAnswer != null ? d.quizAnswer : null;
+        var quizAnswered    = d.quizAnswered || {};
+        var quizScore       = d.quizScore || 0;
+        var quizBest        = d.quizBest || 0;
+        var quizDone        = d.quizDone || false;
+
+        // Boundary types state
+        var viewedBoundaryTypes = d.viewedBoundaryTypes || {};
+        var expandedBoundary    = d.expandedBoundary || null;
+
+        // Safety plan state
+        var safetyPlanStep1  = d.safetyPlanStep1 || '';
+        var safetyPlanStep2  = d.safetyPlanStep2 || '';
+        var safetyPlanStep3  = d.safetyPlanStep3 || '';
+        var safetyPlanPlace  = d.safetyPlanPlace || '';
+        var safetyPlanCode   = d.safetyPlanCode || '';
+        var safetyPlanNums   = d.safetyPlanNums || '';
+        var safetyPlanSaved  = d.safetyPlanSaved || false;
+
+        // Red/Green flag state
+        var flagIdx          = d.flagIdx != null ? d.flagIdx : 0;
+        var flagChoice       = d.flagChoice || null;
+        var flagAnswered     = d.flagAnswered || {};
+        var flagCorrect      = d.flagCorrect || 0;
+        var flagDone         = d.flagDone || false;
+
         // ── Helpers ──
         var ACCENT = '#ef4444';
         var ACCENT_DIM = '#ef444422';
@@ -276,6 +440,9 @@ window.SelHub = window.SelHub || {
           { id: 'learn',     label: '\uD83D\uDCDA Learn' },
           { id: 'circle',    label: '\uD83D\uDC9A My Circle' },
           { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' },
+          { id: 'quiz',      label: '\uD83E\uDDE0 Quiz' },
+          { id: 'flags',     label: '\uD83D\uDEA9 Flags' },
+          { id: 'plan',      label: '\uD83D\uDCCB Plan' },
           { id: 'badges',    label: '\uD83C\uDFC5 Badges' }
         ];
 
@@ -390,6 +557,68 @@ window.SelHub = window.SelHub || {
             );
           });
 
+          // ── Boundary Types Lesson Section ──
+          var boundarySection = h('div', { style: { margin: '16px 0 0' } },
+            h('div', { style: { padding: '0 16px 10px' } },
+              h('div', { style: { fontWeight: 700, color: '#f1f5f9', fontSize: 15, marginBottom: 4 } }, '\uD83D\uDEE1\uFE0F Types of Boundaries'),
+              h('div', { style: { fontSize: 12, color: '#94a3b8' } },
+                band === 'elementary'
+                  ? 'Boundaries are like invisible fences that help keep you safe and comfortable. There are different kinds!'
+                  : 'Understanding different types of boundaries helps you protect yourself in all areas of your life.'
+              )
+            ),
+            BOUNDARY_TYPES.map(function(bt) {
+              var isExpanded = expandedBoundary === bt.id;
+              var isViewed = !!viewedBoundaryTypes[bt.id];
+              return h('div', {
+                key: bt.id,
+                onClick: function() {
+                  upd('expandedBoundary', isExpanded ? null : bt.id);
+                  if (!isViewed) {
+                    var newViewed = Object.assign({}, viewedBoundaryTypes);
+                    newViewed[bt.id] = true;
+                    upd('viewedBoundaryTypes', newViewed);
+                    if (soundEnabled) sfxReveal();
+                    // Check boundary expert badge
+                    if (Object.keys(newViewed).length >= BOUNDARY_TYPES.length) {
+                      tryAwardBadge('boundary_expert');
+                      // Check topics explorer: all learn topics + all boundary types
+                      var allLearnViewed = Object.keys(viewedTopics).length >= topics.length;
+                      if (allLearnViewed) tryAwardBadge('topics_explorer');
+                    }
+                  }
+                },
+                style: {
+                  margin: '0 16px 10px', padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
+                  background: isExpanded ? '#1e293b' : '#0f172a', border: '1px solid ' + (isExpanded ? '#6366f155' : '#1e293b'),
+                  transition: 'all 0.2s'
+                }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+                  h('span', { style: { fontSize: 24 } }, bt.icon),
+                  h('div', { style: { flex: 1 } },
+                    h('div', { style: { fontWeight: 600, color: '#f1f5f9', fontSize: 14 } }, bt.title),
+                    !isExpanded && h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, isViewed ? '\u2705 Read' : 'Tap to learn')
+                  )
+                ),
+                isExpanded && h('div', { style: { marginTop: 12 } },
+                  h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: '1.6', margin: '0 0 10px' } }, bt.desc),
+                  h('div', { style: { padding: '10px 12px', borderRadius: 8, background: '#6366f115', border: '1px solid #6366f133', marginBottom: 8 } },
+                    h('div', { style: { fontSize: 11, fontWeight: 600, color: '#818cf8', marginBottom: 4 } }, '\uD83D\uDCA1 Example:'),
+                    h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: '1.5' } }, band === 'elementary' ? bt.elementary_example : bt.middle_example)
+                  ),
+                  h('div', { style: { padding: '10px 12px', borderRadius: 8, background: '#22c55e15', border: '1px solid #22c55e33' } },
+                    h('div', { style: { fontSize: 11, fontWeight: 600, color: '#4ade80', marginBottom: 4 } }, '\uD83D\uDDE3\uFE0F ' + bt.practice)
+                  ),
+                  callTTS && h('button', {
+                    onClick: function(e) { e.stopPropagation(); speak(bt.title + '. ' + bt.desc + '. ' + (band === 'elementary' ? bt.elementary_example : bt.middle_example) + '. ' + bt.practice); },
+                    style: { marginTop: 8, background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer' }
+                  }, '\uD83D\uDD0A Read aloud')
+                )
+              );
+            })
+          );
+
           learnContent = h('div', { style: { padding: '8px 0 16px' } },
             h('div', { style: { padding: '0 16px 8px', fontSize: 13, color: '#94a3b8' } },
               band === 'elementary'
@@ -397,7 +626,8 @@ window.SelHub = window.SelHub || {
                 : 'Explore these key safety and boundary concepts. Tap each card for details.'
             ),
             crisisBanner,
-            topicCards
+            topicCards,
+            boundarySection
           );
         }
 
@@ -622,7 +852,7 @@ window.SelHub = window.SelHub || {
                     // Badge: brave voice (3 top ratings)
                     if (topCount >= 3) tryAwardBadge('brave_voice');
                     // Badge: ally (bystander/advocacy scenarios)
-                    var allyIds = ['ms3', 'es2', 'ms5'];
+                    var allyIds = ['ms3', 'es2', 'ms5', 'ms7', 'ms8'];
                     var hasAlly = allyIds.some(function(aid) { return newCompleted[aid] && newCompleted[aid].rating >= 2; });
                     if (hasAlly) tryAwardBadge('ally');
                   },
@@ -682,6 +912,486 @@ window.SelHub = window.SelHub || {
         }
 
         // ══════════════════════════════════════════════════════════
+        // ── TAB: Safety Quiz ──
+        // ══════════════════════════════════════════════════════════
+        var quizContent = null;
+        if (activeTab === 'quiz') {
+          var questions = QUIZ_QUESTIONS[band] || QUIZ_QUESTIONS.elementary;
+          var currentQ = questions[quizIdx];
+          var totalQ = questions.length;
+          var isAnsweredQ = quizAnswered[quizIdx] != null;
+
+          // Quiz header with score tracking
+          var quizHeader = h('div', {
+            style: { padding: '0 16px 12px' }
+          },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 } },
+              h('div', { style: { fontSize: 13, color: '#94a3b8' } },
+                band === 'elementary'
+                  ? 'Test what you know about staying safe! Answer each question.'
+                  : 'Challenge your safety knowledge. Choose the best answer for each question.'
+              ),
+              h('div', { style: { fontSize: 11, color: '#64748b' } },
+                quizBest > 0 ? '\uD83C\uDFC6 Best: ' + quizBest + '/' + totalQ : ''
+              )
+            ),
+            !quizDone && h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+              h('div', { style: { flex: 1, height: 6, borderRadius: 3, background: '#1e293b' } },
+                h('div', { style: { height: '100%', borderRadius: 3, background: ACCENT, width: Math.round((Object.keys(quizAnswered).length / totalQ) * 100) + '%', transition: 'width 0.3s' } })
+              ),
+              h('span', { style: { fontSize: 11, color: '#94a3b8' } }, Object.keys(quizAnswered).length + '/' + totalQ)
+            )
+          );
+
+          // Quiz card (question)
+          var quizCard = null;
+          if (!quizDone) {
+            var choiceButtons = [];
+            if (currentQ.type === 'tf') {
+              choiceButtons = [true, false].map(function(val, i) {
+                var isSelected = quizAnswered[quizIdx] != null && quizAnswered[quizIdx].picked === val;
+                var isCorrectAnswer = val === currentQ.answer;
+                var showResult = isAnsweredQ;
+                var btnColor = showResult ? (isCorrectAnswer ? '#22c55e' : (isSelected && !isCorrectAnswer ? '#ef4444' : '#334155')) : '#334155';
+                return h('button', {
+                  key: i,
+                  onClick: function() {
+                    if (isAnsweredQ) return;
+                    var correct = val === currentQ.answer;
+                    var newAnswered = Object.assign({}, quizAnswered);
+                    newAnswered[quizIdx] = { picked: val, correct: correct };
+                    var newScore = quizScore + (correct ? 1 : 0);
+                    upd({ quizAnswered: newAnswered, quizAnswer: val, quizScore: newScore });
+                    if (soundEnabled) { correct ? sfxCorrect() : sfxReveal(); }
+                    awardXP(correct ? 10 : 3);
+                    // Check if all questions answered
+                    if (Object.keys(newAnswered).length >= totalQ) {
+                      upd('quizDone', true);
+                      var newBest = Math.max(quizBest, newScore);
+                      upd('quizBest', newBest);
+                      if (newScore >= 8) tryAwardBadge('quiz_master');
+                    }
+                  },
+                  style: {
+                    flex: 1, padding: '12px 16px', borderRadius: 10, cursor: isAnsweredQ ? 'default' : 'pointer',
+                    border: '2px solid ' + btnColor,
+                    background: isSelected ? btnColor + '22' : '#0f172a',
+                    color: showResult && isCorrectAnswer ? '#22c55e' : (showResult && isSelected && !isCorrectAnswer ? '#ef4444' : '#e2e8f0'),
+                    fontSize: 14, fontWeight: 600, transition: 'all 0.2s'
+                  }
+                }, val ? '\u2705 TRUE' : '\u274C FALSE');
+              });
+            } else {
+              // Multiple choice
+              choiceButtons = currentQ.choices.map(function(ch, i) {
+                var isSelected = quizAnswered[quizIdx] != null && quizAnswered[quizIdx].picked === i;
+                var isCorrectAnswer = i === currentQ.answer;
+                var showResult = isAnsweredQ;
+                var btnColor = showResult ? (isCorrectAnswer ? '#22c55e' : (isSelected && !isCorrectAnswer ? '#ef4444' : '#334155')) : '#334155';
+                return h('button', {
+                  key: i,
+                  onClick: function() {
+                    if (isAnsweredQ) return;
+                    var correct = i === currentQ.answer;
+                    var newAnswered = Object.assign({}, quizAnswered);
+                    newAnswered[quizIdx] = { picked: i, correct: correct };
+                    var newScore = quizScore + (correct ? 1 : 0);
+                    upd({ quizAnswered: newAnswered, quizAnswer: i, quizScore: newScore });
+                    if (soundEnabled) { correct ? sfxCorrect() : sfxReveal(); }
+                    awardXP(correct ? 10 : 3);
+                    if (Object.keys(newAnswered).length >= totalQ) {
+                      upd('quizDone', true);
+                      var newBest = Math.max(quizBest, newScore);
+                      upd('quizBest', newBest);
+                      if (newScore >= 8) tryAwardBadge('quiz_master');
+                    }
+                  },
+                  style: {
+                    width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 6, borderRadius: 8, cursor: isAnsweredQ ? 'default' : 'pointer',
+                    border: '1px solid ' + btnColor,
+                    background: isSelected ? btnColor + '22' : '#0f172a',
+                    color: showResult && isCorrectAnswer ? '#22c55e' : (showResult && isSelected && !isCorrectAnswer ? '#ef4444' : '#e2e8f0'),
+                    fontSize: 13, fontWeight: isSelected ? 600 : 400, transition: 'all 0.2s'
+                  }
+                }, ch);
+              });
+            }
+
+            quizCard = h('div', {
+              style: { margin: '0 16px', padding: '16px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155' }
+            },
+              h('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 4 } }, 'Question ' + (quizIdx + 1) + ' of ' + totalQ),
+              h('div', { style: { fontWeight: 600, color: '#f1f5f9', fontSize: 15, marginBottom: 14, lineHeight: '1.5' } }, currentQ.q),
+              callTTS && h('button', {
+                onClick: function() { speak(currentQ.q); },
+                style: { marginBottom: 10, background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer' }
+              }, '\uD83D\uDD0A Read aloud'),
+              currentQ.type === 'tf'
+                ? h('div', { style: { display: 'flex', gap: 10 } }, choiceButtons)
+                : h('div', null, choiceButtons),
+              // Explanation after answering
+              isAnsweredQ && h('div', {
+                style: { marginTop: 12, padding: '12px 14px', borderRadius: 8, background: quizAnswered[quizIdx].correct ? '#22c55e15' : '#ef444415', border: '1px solid ' + (quizAnswered[quizIdx].correct ? '#22c55e44' : '#ef444444') }
+              },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: quizAnswered[quizIdx].correct ? '#4ade80' : '#f87171', marginBottom: 4 } },
+                  quizAnswered[quizIdx].correct ? '\u2B50 Correct!' : '\uD83D\uDCA1 Not quite \u2014 here is why:'
+                ),
+                h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: '1.5', margin: 0 } }, currentQ.explain)
+              ),
+              // Navigation
+              isAnsweredQ && h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: 12 } },
+                quizIdx < totalQ - 1 && h('button', {
+                  onClick: function() { upd({ quizIdx: quizIdx + 1, quizAnswer: null }); if (soundEnabled) sfxClick(); },
+                  style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: ACCENT, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+                }, 'Next Question \u25B6')
+              )
+            );
+          }
+
+          // Quiz results screen
+          var quizResults = null;
+          if (quizDone) {
+            var pct = Math.round((quizScore / totalQ) * 100);
+            var msg = pct >= 80 ? 'Outstanding! You really know your stuff!' : pct >= 60 ? 'Great job! You are learning important safety skills.' : 'Every question is a chance to learn. You are getting stronger!';
+            quizResults = h('div', {
+              style: { margin: '0 16px', padding: '20px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155', textAlign: 'center' }
+            },
+              h('div', { style: { fontSize: 48, marginBottom: 8 } }, pct >= 80 ? '\uD83C\uDFC6' : pct >= 60 ? '\u2B50' : '\uD83D\uDCAA'),
+              h('div', { style: { fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 } }, 'Score: ' + quizScore + ' / ' + totalQ),
+              h('div', { style: { fontSize: 14, color: '#94a3b8', marginBottom: 4 } }, pct + '% correct'),
+              quizBest > 0 && h('div', { style: { fontSize: 12, color: '#64748b', marginBottom: 10 } }, '\uD83C\uDFC6 Personal best: ' + quizBest + '/' + totalQ),
+              h('div', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 16, lineHeight: '1.5' } }, msg),
+              h('button', {
+                onClick: function() { upd({ quizIdx: 0, quizAnswer: null, quizAnswered: {}, quizScore: 0, quizDone: false }); if (soundEnabled) sfxClick(); },
+                style: { padding: '10px 22px', borderRadius: 10, border: 'none', background: ACCENT, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }
+              }, '\uD83D\uDD04 Try Again'),
+              h('div', {
+                style: { marginTop: 14, padding: '10px 12px', borderRadius: 8, background: ACCENT_DIM, fontSize: 12, color: ACCENT, fontWeight: 500, lineHeight: '1.4' }
+              }, 'Remember: Getting questions wrong is part of learning. What matters is that you now know the right answers \u2014 and you can use that knowledge to stay safe.')
+            );
+          }
+
+          // Crisis mini-banner
+          var quizCrisis = h('div', {
+            style: { margin: '14px 16px 16px', padding: '10px 14px', borderRadius: 8, background: '#7f1d1d', fontSize: 11, color: '#fca5a5' }
+          },
+            '\uD83D\uDCDE Need help? 988 (call/text) \u2022 Text HOME to 741741 \u2022 1-800-422-4453'
+          );
+
+          quizContent = h('div', { style: { padding: '12px 0 16px' } },
+            quizHeader,
+            quizDone ? quizResults : quizCard,
+            quizCrisis
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // ── TAB: Red Flag / Green Flag ──
+        // ══════════════════════════════════════════════════════════
+        var flagsContent = null;
+        if (activeTab === 'flags') {
+          var flagItems = FLAG_ITEMS[band] || FLAG_ITEMS.elementary;
+          var totalFlags = flagItems.length;
+          var currentFlag = flagItems[flagIdx];
+          var isFlagAnswered = !!flagAnswered[flagIdx];
+
+          var flagHeader = h('div', {
+            style: { padding: '0 16px 12px' }
+          },
+            h('div', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 8 } },
+              band === 'elementary'
+                ? 'Is this behavior a safe (green flag) or an unsafe (red flag) thing? Sort each card!'
+                : 'Identify whether each behavior is a safe (green flag) or an unsafe (red flag). Trust your instincts.'
+            ),
+            !flagDone && h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+              h('div', { style: { flex: 1, height: 6, borderRadius: 3, background: '#1e293b' } },
+                h('div', { style: { height: '100%', borderRadius: 3, background: ACCENT, width: Math.round((Object.keys(flagAnswered).length / totalFlags) * 100) + '%', transition: 'width 0.3s' } })
+              ),
+              h('span', { style: { fontSize: 11, color: '#94a3b8' } }, Object.keys(flagAnswered).length + '/' + totalFlags)
+            )
+          );
+
+          var flagCard = null;
+          if (!flagDone) {
+            flagCard = h('div', {
+              style: { margin: '0 16px', padding: '16px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155' }
+            },
+              h('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 4 } }, 'Card ' + (flagIdx + 1) + ' of ' + totalFlags),
+              h('div', { style: { fontWeight: 600, color: '#f1f5f9', fontSize: 14, marginBottom: 14, lineHeight: '1.5', padding: '8px 0' } }, currentFlag.text),
+              callTTS && h('button', {
+                onClick: function() { speak(currentFlag.text); },
+                style: { marginBottom: 10, background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer' }
+              }, '\uD83D\uDD0A Read aloud'),
+              h('div', { style: { display: 'flex', gap: 10 } },
+                ['green', 'red'].map(function(flag) {
+                  var isSelected = isFlagAnswered && flagAnswered[flagIdx].picked === flag;
+                  var isCorrectAnswer = flag === currentFlag.flag;
+                  var showResult = isFlagAnswered;
+                  var bgColor = flag === 'green' ? '#22c55e' : '#ef4444';
+                  var borderColor = showResult ? (isCorrectAnswer ? bgColor : (isSelected && !isCorrectAnswer ? '#f59e0b' : '#334155')) : '#334155';
+                  return h('button', {
+                    key: flag,
+                    onClick: function() {
+                      if (isFlagAnswered) return;
+                      var correct = flag === currentFlag.flag;
+                      var newAnswered = Object.assign({}, flagAnswered);
+                      newAnswered[flagIdx] = { picked: flag, correct: correct };
+                      var newCorrect = flagCorrect + (correct ? 1 : 0);
+                      upd({ flagAnswered: newAnswered, flagChoice: flag, flagCorrect: newCorrect });
+                      if (soundEnabled) { correct ? sfxCorrect() : sfxReveal(); }
+                      awardXP(correct ? 10 : 3);
+                      if (Object.keys(newAnswered).length >= totalFlags) {
+                        upd('flagDone', true);
+                        tryAwardBadge('flag_sorter');
+                      }
+                    },
+                    style: {
+                      flex: 1, padding: '14px 16px', borderRadius: 10, cursor: isFlagAnswered ? 'default' : 'pointer',
+                      border: '2px solid ' + borderColor,
+                      background: isSelected ? bgColor + '22' : '#0f172a',
+                      color: showResult && isCorrectAnswer ? bgColor : '#e2e8f0',
+                      fontSize: 14, fontWeight: 600, transition: 'all 0.2s'
+                    }
+                  }, flag === 'green' ? '\uD83D\uDFE2 Safe' : '\uD83D\uDD34 Unsafe');
+                })
+              ),
+              // Explanation
+              isFlagAnswered && h('div', {
+                style: {
+                  marginTop: 12, padding: '12px 14px', borderRadius: 8,
+                  background: flagAnswered[flagIdx].correct ? '#22c55e15' : '#f59e0b15',
+                  border: '1px solid ' + (flagAnswered[flagIdx].correct ? '#22c55e44' : '#f59e0b44')
+                }
+              },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: flagAnswered[flagIdx].correct ? '#4ade80' : '#fbbf24', marginBottom: 4 } },
+                  flagAnswered[flagIdx].correct ? '\u2705 You got it!' : '\uD83D\uDCA1 Actually, this is a ' + (currentFlag.flag === 'red' ? 'RED flag (unsafe)' : 'GREEN flag (safe)') + ':'
+                ),
+                h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: '1.5', margin: 0 } }, currentFlag.explain)
+              ),
+              // Next button
+              isFlagAnswered && flagIdx < totalFlags - 1 && h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: 12 } },
+                h('button', {
+                  onClick: function() { upd({ flagIdx: flagIdx + 1, flagChoice: null }); if (soundEnabled) sfxClick(); },
+                  style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: ACCENT, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+                }, 'Next Card \u25B6')
+              )
+            );
+          }
+
+          // Flag results
+          var flagResults = null;
+          if (flagDone) {
+            var flagPct = Math.round((flagCorrect / totalFlags) * 100);
+            flagResults = h('div', {
+              style: { margin: '0 16px', padding: '20px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155', textAlign: 'center' }
+            },
+              h('div', { style: { fontSize: 48, marginBottom: 8 } }, flagPct >= 80 ? '\uD83C\uDFC6' : '\uD83D\uDCAA'),
+              h('div', { style: { fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 } }, flagCorrect + ' / ' + totalFlags + ' correct'),
+              h('div', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 16, lineHeight: '1.5' } },
+                flagPct >= 80
+                  ? 'Excellent instincts! You can spot safe and unsafe behaviors clearly.'
+                  : 'You are building important skills. Keep practicing \u2014 your instincts are getting sharper!'
+              ),
+              h('button', {
+                onClick: function() { upd({ flagIdx: 0, flagChoice: null, flagAnswered: {}, flagCorrect: 0, flagDone: false }); if (soundEnabled) sfxClick(); },
+                style: { padding: '10px 22px', borderRadius: 10, border: 'none', background: ACCENT, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }
+              }, '\uD83D\uDD04 Play Again'),
+              h('div', {
+                style: { marginTop: 14, padding: '10px 12px', borderRadius: 8, background: ACCENT_DIM, fontSize: 12, color: ACCENT, fontWeight: 500, lineHeight: '1.4' }
+              }, 'Trust your gut feelings. When something feels wrong, it probably is. You always have the right to speak up.')
+            );
+          }
+
+          var flagCrisis = h('div', {
+            style: { margin: '14px 16px 16px', padding: '10px 14px', borderRadius: 8, background: '#7f1d1d', fontSize: 11, color: '#fca5a5' }
+          },
+            '\uD83D\uDCDE Need help? 988 (call/text) \u2022 Text HOME to 741741 \u2022 1-800-422-4453'
+          );
+
+          flagsContent = h('div', { style: { padding: '12px 0 16px' } },
+            flagHeader,
+            flagDone ? flagResults : flagCard,
+            flagCrisis
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // ── TAB: Safety Plan Builder ──
+        // ══════════════════════════════════════════════════════════
+        var planContent = null;
+        if (activeTab === 'plan') {
+          var planLabelStyle = { fontWeight: 600, color: '#f1f5f9', fontSize: 13, marginBottom: 6 };
+          var planInputStyle = { width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, outline: 'none', boxSizing: 'border-box' };
+
+          var planForm = h('div', {
+            style: { margin: '0 16px', padding: '16px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155' }
+          },
+            h('div', { style: { textAlign: 'center', marginBottom: 14 } },
+              h('div', { style: { fontSize: 32, marginBottom: 4 } }, '\uD83D\uDCCB'),
+              h('div', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9' } }, 'My Personal Safety Plan'),
+              h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4 } },
+                band === 'elementary'
+                  ? 'Fill in your plan so you know what to do if you ever feel unsafe.'
+                  : 'Having a plan means you do not have to think under pressure. Fill this out when you are calm and ready.'
+              )
+            ),
+
+            // Step 1
+            h('div', { style: { marginBottom: 14 } },
+              h('div', { style: planLabelStyle }, '\u0031\uFE0F\u20E3 If I feel unsafe, the first thing I will do is:'),
+              h('input', {
+                type: 'text', value: safetyPlanStep1,
+                onChange: function(e) { upd('safetyPlanStep1', e.target.value); },
+                placeholder: band === 'elementary' ? 'Example: Run to a safe grown-up' : 'Example: Remove myself from the situation',
+                style: planInputStyle
+              })
+            ),
+
+            // Step 2
+            h('div', { style: { marginBottom: 14 } },
+              h('div', { style: planLabelStyle }, '\u0032\uFE0F\u20E3 Then I will:'),
+              h('input', {
+                type: 'text', value: safetyPlanStep2,
+                onChange: function(e) { upd('safetyPlanStep2', e.target.value); },
+                placeholder: band === 'elementary' ? 'Example: Tell them what happened' : 'Example: Contact my trusted adult',
+                style: planInputStyle
+              })
+            ),
+
+            // Step 3
+            h('div', { style: { marginBottom: 14 } },
+              h('div', { style: planLabelStyle }, '\u0033\uFE0F\u20E3 If that does not work, I will:'),
+              h('input', {
+                type: 'text', value: safetyPlanStep3,
+                onChange: function(e) { upd('safetyPlanStep3', e.target.value); },
+                placeholder: band === 'elementary' ? 'Example: Call 911 or another trusted adult' : 'Example: Call 988 or go to a safe location',
+                style: planInputStyle
+              })
+            ),
+
+            // Safe place
+            h('div', { style: { marginBottom: 14 } },
+              h('div', { style: planLabelStyle }, '\uD83C\uDFE0 My safe place is:'),
+              h('input', {
+                type: 'text', value: safetyPlanPlace,
+                onChange: function(e) { upd('safetyPlanPlace', e.target.value); },
+                placeholder: band === 'elementary' ? 'Example: My house, the school office, the library' : 'Example: Home, school counselor office, friend\'s house',
+                style: planInputStyle
+              })
+            ),
+
+            // Code word
+            h('div', { style: { marginBottom: 14 } },
+              h('div', { style: planLabelStyle }, '\uD83D\uDD10 My code word with my trusted adult is:'),
+              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic' } },
+                band === 'elementary'
+                  ? 'A code word is a special secret word you and your trusted adult agree on. If you use it, they know you need help right away!'
+                  : 'A code word is a discreet way to signal that you need help without others knowing. Agree on one with a parent or trusted adult.'
+              ),
+              h('input', {
+                type: 'text', value: safetyPlanCode,
+                onChange: function(e) { upd('safetyPlanCode', e.target.value); },
+                placeholder: 'Example: Pineapple, Red balloon, etc.',
+                style: planInputStyle
+              })
+            ),
+
+            // Emergency numbers
+            h('div', { style: { marginBottom: 14 } },
+              h('div', { style: planLabelStyle }, '\uD83D\uDCDE Emergency numbers I know by heart:'),
+              h('textarea', {
+                value: safetyPlanNums,
+                onChange: function(e) { upd('safetyPlanNums', e.target.value); },
+                placeholder: 'Example:\n911\nMom: 555-0123\nDad: 555-0456\n988 (crisis line)',
+                style: Object.assign({}, planInputStyle, { minHeight: 70, resize: 'vertical' })
+              })
+            ),
+
+            // Save and export
+            h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
+              !safetyPlanSaved && safetyPlanStep1.trim() && h('button', {
+                onClick: function() {
+                  upd('safetyPlanSaved', true);
+                  if (soundEnabled) sfxResolve();
+                  addToast('\uD83D\uDCCB Safety Plan saved! You are prepared.', 'success');
+                  awardXP(25);
+                  tryAwardBadge('safety_planner');
+                },
+                style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: ACCENT, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+              }, '\uD83D\uDCBE Save My Plan'),
+              safetyPlanSaved && h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                h('span', { style: { fontSize: 12, color: '#4ade80' } }, '\u2705 Plan saved!'),
+                h('button', {
+                  onClick: function() { upd('safetyPlanSaved', false); },
+                  style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }
+                }, 'Edit')
+              ),
+              (safetyPlanStep1.trim() || safetyPlanPlace.trim()) && h('button', {
+                onClick: function() {
+                  var planText = 'MY SAFETY PLAN\n' +
+                    '==============\n\n' +
+                    '1. If I feel unsafe, I will: ' + (safetyPlanStep1 || '(not filled in)') + '\n' +
+                    '2. Then I will: ' + (safetyPlanStep2 || '(not filled in)') + '\n' +
+                    '3. If that does not work: ' + (safetyPlanStep3 || '(not filled in)') + '\n\n' +
+                    'My safe place: ' + (safetyPlanPlace || '(not filled in)') + '\n' +
+                    'My code word: ' + (safetyPlanCode || '(not filled in)') + '\n\n' +
+                    'Emergency numbers:\n' + (safetyPlanNums || '(not filled in)') + '\n\n' +
+                    '---\n' +
+                    'CRISIS RESOURCES (available 24/7):\n' +
+                    '988 Suicide & Crisis Lifeline: Call or text 988\n' +
+                    'Crisis Text Line: Text HOME to 741741\n' +
+                    'Childhelp Hotline: 1-800-422-4453\n\n' +
+                    'Remember: You are NEVER alone. It is NEVER your fault.\n';
+                  try {
+                    var blob = new Blob([planText], { type: 'text/plain' });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url; a.download = 'My_Safety_Plan.txt';
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    addToast('\uD83D\uDCBE Safety Plan downloaded!', 'success');
+                  } catch(e) {
+                    // Fallback: copy to clipboard
+                    try {
+                      navigator.clipboard.writeText(planText);
+                      addToast('\uD83D\uDCCB Safety Plan copied to clipboard!', 'success');
+                    } catch(e2) {
+                      addToast('Could not export. Try copying your plan manually.', 'error');
+                    }
+                  }
+                },
+                style: { padding: '10px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontSize: 13, fontWeight: 500, cursor: 'pointer' }
+              }, '\uD83D\uDDA8\uFE0F Export / Print')
+            )
+          );
+
+          var planAffirm = h('div', {
+            style: { margin: '14px 16px', padding: '12px 14px', borderRadius: 10, background: ACCENT_DIM, textAlign: 'center', fontSize: 12, color: ACCENT, fontWeight: 500, lineHeight: '1.5' }
+          },
+            band === 'elementary'
+              ? 'Having a safety plan means you are ready \u2014 even if you never need to use it. That is really smart and brave!'
+              : 'A safety plan is not about expecting the worst \u2014 it is about being prepared so you can act confidently if you ever need to.'
+          );
+
+          var planCrisis = h('div', {
+            style: { margin: '0 16px 16px', padding: '10px 14px', borderRadius: 8, background: '#7f1d1d', fontSize: 11, color: '#fca5a5' }
+          },
+            '\uD83D\uDCDE Need help? 988 (call/text) \u2022 Text HOME to 741741 \u2022 1-800-422-4453'
+          );
+
+          planContent = h('div', { style: { padding: '12px 0 16px' } },
+            h('div', { style: { padding: '0 16px 10px', fontSize: 13, color: '#94a3b8' } },
+              band === 'elementary'
+                ? 'Create your very own safety plan. Fill in each section so you always know what to do.'
+                : 'Build your personal safety plan. When you are prepared, you do not have to figure things out under stress.'
+            ),
+            planForm,
+            planAffirm,
+            planCrisis
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
         // ── TAB: Badges ──
         // ══════════════════════════════════════════════════════════
         var badgesContent = null;
@@ -727,7 +1437,7 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         // ── Final Render ──
         // ══════════════════════════════════════════════════════════
-        var content = learnContent || circleContent || scenariosContent || badgesContent;
+        var content = learnContent || circleContent || scenariosContent || quizContent || flagsContent || planContent || badgesContent;
 
         return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
           tabBar,

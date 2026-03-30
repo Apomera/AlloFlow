@@ -1,7 +1,8 @@
 // ═══════════════════════════════════════════════════════════════
-// sel_tool_journal.js — Feelings Journal Plugin (v1.0)
+// sel_tool_journal.js — Feelings Journal Plugin (v2.0)
 // Daily mood check-ins, free-write journaling, mood analytics,
-// AI-powered insight generation, and achievement badges.
+// AI-powered insight generation, coping strategies, mood calendar,
+// weekly summaries, sub-emotions, and achievement badges.
 // Registered tool ID: "journal"
 // Category: responsible-decision-making
 // Grade-adaptive: uses ctx.gradeBand for vocabulary & depth
@@ -59,6 +60,73 @@ window.SelHub = window.SelHub || {
   var TRIGGER_TAGS = ['School', 'Friends', 'Family', 'Health', 'Future', 'Other'];
 
   // ══════════════════════════════════════════════════════════════
+  // ── Sub-Emotions (tap mood → see specific feelings) ──
+  // ══════════════════════════════════════════════════════════════
+  var SUB_EMOTIONS = {
+    5: [
+      { emoji: '\uD83E\uDD29', label: 'Excited' },
+      { emoji: '\uD83E\uDD70', label: 'Loved' },
+      { emoji: '\uD83D\uDE0E', label: 'Confident' },
+      { emoji: '\uD83E\uDD73', label: 'Celebratory' }
+    ],
+    4: [
+      { emoji: '\uD83D\uDE0C', label: 'Peaceful' },
+      { emoji: '\uD83D\uDE0A', label: 'Content' },
+      { emoji: '\uD83D\uDE07', label: 'Hopeful' },
+      { emoji: '\uD83E\uDD17', label: 'Grateful' }
+    ],
+    3: [
+      { emoji: '\uD83E\uDD14', label: 'Unsure' },
+      { emoji: '\uD83D\uDE36', label: 'Numb' },
+      { emoji: '\uD83D\uDE11', label: 'Bored' },
+      { emoji: '\uD83D\uDE14', label: 'Distracted' }
+    ],
+    2: [
+      { emoji: '\uD83D\uDE1F', label: 'Worried' },
+      { emoji: '\uD83D\uDE24', label: 'Frustrated' },
+      { emoji: '\uD83D\uDE1E', label: 'Disappointed' },
+      { emoji: '\uD83D\uDE29', label: 'Overwhelmed' }
+    ],
+    1: [
+      { emoji: '\uD83D\uDE30', label: 'Anxious' },
+      { emoji: '\uD83D\uDE2D', label: 'Heartbroken' },
+      { emoji: '\uD83D\uDE28', label: 'Scared' },
+      { emoji: '\uD83D\uDE16', label: 'Hopeless' }
+    ]
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Coping Strategies (mood-based) ──
+  // ══════════════════════════════════════════════════════════════
+  var COPING_STRATEGIES = {
+    5: [
+      { icon: '\uD83D\uDE4F', title: 'Gratitude List', desc: 'Write 3 things you\u2019re grateful for to remember this feeling.' },
+      { icon: '\uD83E\uDD1D', title: 'Share Your Joy', desc: 'Tell a friend or family member what made your day great.' },
+      { icon: '\uD83C\uDFAF', title: 'Set a New Goal', desc: 'Ride this positive energy \u2014 pick something to work toward!' }
+    ],
+    4: [
+      { icon: '\u2600\uFE0F', title: 'Savor the Moment', desc: 'Pause and appreciate what\u2019s going well right now.' },
+      { icon: '\uD83D\uDCDD', title: 'Capture It', desc: 'Write about what\u2019s contributing to this good feeling.' },
+      { icon: '\uD83C\uDF31', title: 'Pay It Forward', desc: 'Do something kind for someone \u2014 it multiplies good vibes.' }
+    ],
+    3: [
+      { icon: '\uD83D\uDEB6', title: 'Take a Short Walk', desc: 'Moving your body can help shift your mood and clear your mind.' },
+      { icon: '\uD83C\uDFB5', title: 'Listen to Music', desc: 'Put on a song you love \u2014 music can be a powerful mood booster.' },
+      { icon: '\uD83D\uDCAC', title: 'Talk to a Friend', desc: 'Sometimes just chatting with someone helps you feel more connected.' }
+    ],
+    2: [
+      { icon: '\uD83C\uDF2C\uFE0F', title: 'Deep Breathing (4-7-8)', desc: 'Breathe in 4 sec, hold 7 sec, breathe out 8 sec. Repeat 3x.' },
+      { icon: '\uD83D\uDCD3', title: 'Journal About It', desc: 'Writing about what happened can help you process and release it.' },
+      { icon: '\uD83E\uDDE1', title: 'Talk to a Trusted Adult', desc: 'Reach out to someone you trust \u2014 you don\u2019t have to carry this alone.' }
+    ],
+    1: [
+      { icon: '\uD83D\uDCDE', title: 'Talk to a Trusted Adult', desc: 'Please reach out to someone you trust. You matter.' },
+      { icon: '\u2764\uFE0F', title: 'Call 988 Lifeline', desc: 'Free, confidential support 24/7. Call or text 988.' },
+      { icon: '\uD83D\uDCF1', title: 'Text HOME to 741741', desc: 'Crisis Text Line \u2014 free 24/7 support via text. You are not alone.' }
+    ]
+  };
+
+  // ══════════════════════════════════════════════════════════════
   // ── Writing Prompts (grade-adaptive) ──
   // ══════════════════════════════════════════════════════════════
   var PROMPTS = {
@@ -74,7 +142,17 @@ window.SelHub = window.SelHub || {
       'A friend who makes me feel happy is...',
       'If I could go anywhere in the world, I would go to...',
       'Something I\u2019m proud of is...',
-      'My favorite thing about myself is...'
+      'My favorite thing about myself is...',
+      'Draw or describe your happy place \u2014 what does it look like?',
+      'What animal are you feeling like today and why?',
+      'Write a letter to your future self \u2014 what would you say?',
+      'What would you tell a friend who feels the way you do right now?',
+      'If my feelings were colors today, what colors would they be?',
+      'Something that makes me feel safe and cozy is...',
+      'A time someone made me feel really special was...',
+      'If I could invent a new holiday, it would celebrate...',
+      'What is the nicest thing someone has ever said to me?',
+      'If I could teach the whole world one thing, it would be...'
     ],
     middle: [
       'Something that challenged me today and how I handled it...',
@@ -88,7 +166,17 @@ window.SelHub = window.SelHub || {
       'Something I\u2019m looking forward to and why...',
       'A boundary I set recently and how it felt...',
       'What does being a good friend mean to me?',
-      'How do I feel when I compare myself to others on social media?'
+      'How do I feel when I compare myself to others on social media?',
+      'What song matches your mood today and why?',
+      'Describe a time you surprised yourself with what you could do.',
+      'What boundary do you need to set right now?',
+      'If your emotions were weather, what\u2019s today\u2019s forecast?',
+      'A moment this week when I felt truly seen or heard...',
+      'What does courage look like in my everyday life?',
+      'How do I recharge when I\u2019m emotionally drained?',
+      'Something I\u2019m learning about myself this year is...',
+      'If I could have an honest conversation with anyone, who and why?',
+      'What\u2019s one thing I do well that I don\u2019t give myself credit for?'
     ],
     high: [
       'What pattern do I notice in my moods this week?',
@@ -102,7 +190,17 @@ window.SelHub = window.SelHub || {
       'Something I need to forgive myself for...',
       'How do I want to be remembered by the people in my life?',
       'What role does vulnerability play in my relationships?',
-      'How do I balance taking care of others and taking care of myself?'
+      'How do I balance taking care of others and taking care of myself?',
+      'How does your environment affect your emotional state?',
+      'What societal pressure weighs on you most right now?',
+      'Write about a belief you\u2019ve changed \u2014 what shifted your perspective?',
+      'What does emotional intelligence mean to you?',
+      'How do I differentiate between what I want and what I need?',
+      'What would radical self-acceptance look like in my life?',
+      'How do my relationships reflect my relationship with myself?',
+      'What unspoken expectations am I carrying from others?',
+      'When did I last feel truly at peace, and what made it possible?',
+      'How do I want to grow as a person in the next year?'
     ]
   };
 
@@ -121,7 +219,12 @@ window.SelHub = window.SelHub || {
     { id: 'pattern_spotter',  icon: '\uD83D\uDD0D', name: 'Pattern Spotter',    desc: 'View your mood insights' },
     { id: 'ai_reflector',     icon: '\uD83E\uDD16', name: 'AI Reflector',       desc: 'Get an AI-powered insight about your patterns' },
     { id: 'mood_mapper',      icon: '\uD83C\uDF08', name: 'Mood Mapper',        desc: 'Use all 5 mood levels at least once' },
-    { id: 'consistent_10',    icon: '\uD83D\uDCAA', name: 'Consistent',         desc: 'Complete 10 total check-ins' }
+    { id: 'consistent_10',    icon: '\uD83D\uDCAA', name: 'Consistent',         desc: 'Complete 10 total check-ins' },
+    { id: 'calendar_viewer',  icon: '\uD83D\uDCC5', name: 'Calendar Viewer',    desc: 'View your mood calendar for the first time' },
+    { id: 'coping_practitioner', icon: '\uD83E\uDDD8', name: 'Coping Practitioner', desc: 'Tap 3 different coping strategy cards' },
+    { id: 'weekly_reviewer',  icon: '\uD83D\uDCCB', name: 'Weekly Reviewer',    desc: 'View your first weekly mood summary' },
+    { id: 'streak_30',        icon: '\uD83D\uDC8E', name: '30-Day Streak',      desc: 'Check in 30 days in a row \u2014 incredible!' },
+    { id: 'prompt_master',    icon: '\uD83C\uDFA8', name: 'Prompt Master',      desc: 'Use 10 or more different writing prompts' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -171,6 +274,87 @@ window.SelHub = window.SelHub || {
       if (ci.gratitude && ci.gratitude.trim()) count++;
     });
     return count;
+  }
+
+  function uniquePromptsUsed(journalEntries) {
+    var seen = {};
+    (journalEntries || []).forEach(function(je) {
+      if (je.prompt) seen[je.prompt] = true;
+    });
+    return Object.keys(seen).length;
+  }
+
+  function getWeekBounds(dateObj) {
+    var d = new Date(dateObj);
+    var day = d.getDay();
+    var start = new Date(d);
+    start.setDate(d.getDate() - day);
+    start.setHours(0, 0, 0, 0);
+    var end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    end.setHours(23, 59, 59, 999);
+    return { start: start.getTime(), end: end.getTime() };
+  }
+
+  function getWeeklySummary(checkIns) {
+    var week = getWeekBounds(new Date());
+    var weekEntries = (checkIns || []).filter(function(ci) {
+      return ci.timestamp >= week.start && ci.timestamp <= week.end;
+    });
+    if (weekEntries.length < 3) return null;
+
+    var totalMood = 0;
+    var totalEnergy = 0;
+    var trigCount = {};
+    weekEntries.forEach(function(ci) {
+      totalMood += ci.mood;
+      totalEnergy += (ci.energy || 3);
+      (ci.triggers || []).forEach(function(t) { trigCount[t] = (trigCount[t] || 0) + 1; });
+    });
+    var avgMood = Math.round(totalMood / weekEntries.length * 10) / 10;
+    var avgEnergy = Math.round(totalEnergy / weekEntries.length * 10) / 10;
+
+    var sortedTrigs = Object.keys(trigCount).sort(function(a, b) { return trigCount[b] - trigCount[a]; });
+    var topTriggers = sortedTrigs.slice(0, 3);
+
+    // Trajectory: compare first-half avg to second-half avg
+    var mid = Math.floor(weekEntries.length / 2);
+    var firstHalf = weekEntries.slice(0, mid || 1);
+    var secondHalf = weekEntries.slice(mid);
+    var firstAvg = 0;
+    var secondAvg = 0;
+    firstHalf.forEach(function(ci) { firstAvg += ci.mood; });
+    firstAvg = firstAvg / firstHalf.length;
+    secondHalf.forEach(function(ci) { secondAvg += ci.mood; });
+    secondAvg = secondAvg / secondHalf.length;
+    var diff = secondAvg - firstAvg;
+    var trajectory = 'stable';
+    if (diff > 0.5) trajectory = 'improving';
+    else if (diff < -0.5) trajectory = 'declining';
+
+    var encouragement = '';
+    if (trajectory === 'improving') encouragement = 'Your mood is trending upward \u2014 keep it up!';
+    else if (trajectory === 'declining') encouragement = 'It\u2019s okay to have tough stretches. Remember to use your coping strategies.';
+    else if (avgMood >= 4) encouragement = 'You\u2019re doing great this week! Keep nurturing what\u2019s working.';
+    else if (avgMood >= 3) encouragement = 'A steady week. Small positive choices add up over time.';
+    else encouragement = 'Tough week \u2014 but you\u2019re showing up. That takes real courage.';
+
+    return {
+      count: weekEntries.length,
+      avgMood: avgMood,
+      avgEnergy: avgEnergy,
+      topTriggers: topTriggers,
+      trajectory: trajectory,
+      encouragement: encouragement
+    };
+  }
+
+  function getMonthDays(year, month) {
+    return new Date(year, month + 1, 0).getDate();
+  }
+
+  function getFirstDayOfWeek(year, month) {
+    return new Date(year, month, 1).getDay();
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -226,6 +410,20 @@ window.SelHub = window.SelHub || {
         var showBadgePopup = d.showBadgePopup || null;
         var showBadgesPanel = d.showBadgesPanel || false;
 
+        // Sub-emotion state
+        var ciSubEmotion   = d.ciSubEmotion || null;
+
+        // Coping state
+        var showCoping     = d.showCoping || false;
+        var copingTapped   = d.copingTapped || {};
+
+        // Calendar state
+        var calYear        = d.calYear != null ? d.calYear : new Date().getFullYear();
+        var calMonth       = d.calMonth != null ? d.calMonth : new Date().getMonth();
+
+        // Weekly summary state
+        var showWeekly     = d.showWeekly || false;
+
         var ACCENT = '#ec4899';
         var ACCENT_DIM = '#ec489922';
         var ACCENT_MED = '#ec489944';
@@ -260,6 +458,7 @@ window.SelHub = window.SelHub || {
         var TABS = [
           { id: 'checkin',  icon: '\uD83D\uDE42', label: 'Check-In' },
           { id: 'journal',  icon: '\u270D\uFE0F', label: 'Journal' },
+          { id: 'calendar', icon: '\uD83D\uDCC5', label: 'Calendar' },
           { id: 'insights', icon: '\uD83D\uDCCA', label: 'Insights' },
           { id: 'badges',   icon: '\uD83C\uDFC5', label: 'Badges' }
         ];
@@ -329,7 +528,10 @@ window.SelHub = window.SelHub || {
                   var isSelected = ciMood === m.id;
                   return h('button', {
                     key: m.id,
-                    onClick: function() { upd('ciMood', m.id); if (soundEnabled) sfxClick(); },
+                    onClick: function() {
+                      upd({ ciMood: m.id, ciSubEmotion: null });
+                      if (soundEnabled) sfxClick();
+                    },
                     style: {
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '10px 12px',
                       borderRadius: 12, border: isSelected ? '2px solid ' + m.color : '2px solid #334155',
@@ -341,6 +543,37 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 10, color: isSelected ? m.color : '#64748b', fontWeight: 600 } }, m.label)
                   );
                 })
+              ),
+
+              // Sub-emotion picker (appears when a mood is selected)
+              ciMood != null && SUB_EMOTIONS[ciMood] && h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, background: '#0f172a', border: '1px solid #334155' } },
+                h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textAlign: 'center', fontWeight: 500 } },
+                  band === 'elementary' ? 'Can you pick a more specific feeling? (optional)' : 'More specifically, you feel... (optional)'
+                ),
+                h('div', { style: { display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' } },
+                  SUB_EMOTIONS[ciMood].map(function(sub) {
+                    var isSel = ciSubEmotion === sub.label;
+                    var moodColor = MOODS.find(function(m) { return m.id === ciMood; });
+                    var col = moodColor ? moodColor.color : ACCENT;
+                    return h('button', {
+                      key: sub.label,
+                      onClick: function() {
+                        upd('ciSubEmotion', isSel ? null : sub.label);
+                        if (soundEnabled) sfxClick();
+                      },
+                      style: {
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                        padding: '8px 14px', borderRadius: 10,
+                        border: isSel ? '2px solid ' + col : '1px solid #334155',
+                        background: isSel ? col + '22' : '#1e293b',
+                        cursor: 'pointer', transition: 'all 0.15s'
+                      }
+                    },
+                      h('span', { style: { fontSize: 20 } }, sub.emoji),
+                      h('span', { style: { fontSize: 10, color: isSel ? col : '#94a3b8', fontWeight: 600 } }, sub.label)
+                    );
+                  })
+                )
               )
             ),
 
@@ -423,12 +656,14 @@ window.SelHub = window.SelHub || {
                   energy: ciEnergy,
                   thoughts: ciThoughts,
                   triggers: ciTriggers.slice(),
-                  gratitude: ciGratitude
+                  gratitude: ciGratitude,
+                  subEmotion: ciSubEmotion || null
                 };
                 var newCheckIns = checkIns.concat([entry]);
                 upd({
                   checkIns: newCheckIns,
-                  ciMood: null, ciEnergy: 3, ciThoughts: '', ciTriggers: [], ciGratitude: ''
+                  ciMood: null, ciEnergy: 3, ciThoughts: '', ciTriggers: [], ciGratitude: '',
+                  ciSubEmotion: null, showCoping: ciMood
                 });
                 if (soundEnabled) sfxSave();
                 awardXP(10);
@@ -444,6 +679,7 @@ window.SelHub = window.SelHub || {
                 if (newStreak >= 3) tryAwardBadge('streak_3');
                 if (newStreak >= 7) tryAwardBadge('streak_7');
                 if (newStreak >= 14) tryAwardBadge('streak_14');
+                if (newStreak >= 30) tryAwardBadge('streak_30');
               },
               disabled: ciMood == null,
               style: {
@@ -451,7 +687,52 @@ window.SelHub = window.SelHub || {
                 background: ciMood != null ? ACCENT : '#334155', color: '#fff', fontWeight: 700,
                 fontSize: 14, cursor: ciMood != null ? 'pointer' : 'not-allowed', transition: 'all 0.15s'
               }
-            }, '\uD83D\uDCBE Save Check-In')
+            }, '\uD83D\uDCBE Save Check-In'),
+
+            // ── Coping Strategy Cards (shown after save) ──
+            showCoping && COPING_STRATEGIES[showCoping] && h('div', { style: { marginTop: 20 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 } },
+                h('div', { style: { fontSize: 13, fontWeight: 700, color: '#f1f5f9' } },
+                  showCoping <= 1 ? '\uD83D\uDC9C Please Reach Out' :
+                  showCoping <= 2 ? '\uD83E\uDDE1 Suggested Coping Strategies' :
+                  '\u2728 Keep the Momentum Going'
+                ),
+                h('button', {
+                  onClick: function() { upd('showCoping', false); },
+                  style: { background: 'none', border: 'none', color: '#64748b', fontSize: 14, cursor: 'pointer' }
+                }, '\u2715')
+              ),
+              showCoping <= 1 && h('div', { style: { fontSize: 12, color: '#ef4444', marginBottom: 10, fontWeight: 600 } },
+                'You are not alone. These resources are here for you.'
+              ),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                COPING_STRATEGIES[showCoping].map(function(strat, idx) {
+                  return h('button', {
+                    key: idx,
+                    onClick: function() {
+                      var newTapped = Object.assign({}, copingTapped);
+                      newTapped[strat.title] = true;
+                      upd('copingTapped', newTapped);
+                      if (soundEnabled) sfxClick();
+                      addToast(strat.title + ' \u2014 ' + strat.desc, 'info');
+                      // Badge: coping_practitioner after tapping 3 different strategies
+                      if (Object.keys(newTapped).length >= 3) tryAwardBadge('coping_practitioner');
+                    },
+                    style: {
+                      display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
+                      borderRadius: 12, border: '1px solid ' + ACCENT_MED, background: '#0f172a',
+                      cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s'
+                    }
+                  },
+                    h('span', { style: { fontSize: 24, flexShrink: 0 } }, strat.icon),
+                    h('div', null,
+                      h('div', { style: { fontSize: 13, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 } }, strat.title),
+                      h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4 } }, strat.desc)
+                    )
+                  );
+                })
+              )
+            )
           );
         }
 
@@ -510,6 +791,7 @@ window.SelHub = window.SelHub || {
                     addToast('Journal entry saved!', 'success');
                     tryAwardBadge('first_journal');
                     if (newEntries.length >= 3) tryAwardBadge('deep_writer');
+                    if (uniquePromptsUsed(newEntries) >= 10) tryAwardBadge('prompt_master');
                   },
                   disabled: !jText.trim(),
                   style: {
@@ -544,6 +826,201 @@ window.SelHub = window.SelHub || {
                   h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, entry.text)
                 );
               })
+            )
+          );
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── TAB: Calendar ──
+        // ══════════════════════════════════════════════════════
+        var calendarContent = null;
+        if (activeTab === 'calendar') {
+          // Badge: calendar_viewer on first visit
+          if (!earnedBadges['calendar_viewer']) {
+            tryAwardBadge('calendar_viewer');
+          }
+
+          var MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+          var DAY_HEADERS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+          var daysInMonth = getMonthDays(calYear, calMonth);
+          var firstDay = getFirstDayOfWeek(calYear, calMonth);
+
+          // Build mood map for month: dayNum -> avgMood
+          var monthMoodMap = {};
+          checkIns.forEach(function(ci) {
+            var ciDate = new Date(ci.timestamp);
+            if (ciDate.getFullYear() === calYear && ciDate.getMonth() === calMonth) {
+              var dayNum = ciDate.getDate();
+              if (!monthMoodMap[dayNum]) monthMoodMap[dayNum] = [];
+              monthMoodMap[dayNum].push(ci.mood);
+            }
+          });
+
+          // Build calendar grid cells
+          var calCells = [];
+          // Empty cells before first day
+          for (var ei = 0; ei < firstDay; ei++) {
+            calCells.push(h('div', { key: 'empty-' + ei, style: { width: 36, height: 36 } }));
+          }
+          // Day cells
+          var todayDate = new Date();
+          for (var dayNum = 1; dayNum <= daysInMonth; dayNum++) {
+            (function(dn) {
+              var moods = monthMoodMap[dn] || [];
+              var avgMood = 0;
+              if (moods.length > 0) {
+                var s = 0;
+                moods.forEach(function(m) { s += m; });
+                avgMood = Math.round(s / moods.length);
+              }
+              var moodObj = avgMood > 0 ? MOODS.find(function(m) { return m.id === avgMood; }) : null;
+              var isToday = calYear === todayDate.getFullYear() && calMonth === todayDate.getMonth() && dn === todayDate.getDate();
+
+              calCells.push(h('div', {
+                key: 'day-' + dn,
+                style: {
+                  width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  borderRadius: '50%', fontSize: 11, fontWeight: isToday ? 700 : 400, position: 'relative',
+                  background: moodObj ? moodObj.color + '33' : 'transparent',
+                  border: isToday ? '2px solid ' + ACCENT : '1px solid transparent',
+                  color: moodObj ? moodObj.color : '#64748b'
+                },
+                title: moodObj ? moodObj.label + ' (' + moods.length + ' check-in' + (moods.length > 1 ? 's' : '') + ')' : 'No check-in'
+              },
+                moodObj ? h('span', { style: { fontSize: 18 } }, moodObj.emoji) : String(dn)
+              ));
+            })(dayNum);
+          }
+
+          // Weekly Summary
+          var weeklySummary = getWeeklySummary(checkIns);
+
+          calendarContent = h('div', { style: { padding: 20, maxWidth: 520, margin: '0 auto' } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCC5 Mood Calendar'),
+
+            // Month navigation
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 } },
+              h('button', {
+                onClick: function() {
+                  var nm = calMonth - 1;
+                  var ny = calYear;
+                  if (nm < 0) { nm = 11; ny--; }
+                  upd({ calMonth: nm, calYear: ny });
+                  if (soundEnabled) sfxClick();
+                },
+                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontSize: 14, cursor: 'pointer' }
+              }, '\u2190'),
+              h('div', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9' } }, MONTH_NAMES[calMonth] + ' ' + calYear),
+              h('button', {
+                onClick: function() {
+                  var nm = calMonth + 1;
+                  var ny = calYear;
+                  if (nm > 11) { nm = 0; ny++; }
+                  upd({ calMonth: nm, calYear: ny });
+                  if (soundEnabled) sfxClick();
+                },
+                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontSize: 14, cursor: 'pointer' }
+              }, '\u2192')
+            ),
+
+            // Legend
+            h('div', { style: { display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+              MOODS.map(function(m) {
+                return h('div', { key: m.id, style: { display: 'flex', alignItems: 'center', gap: 4 } },
+                  h('div', { style: { width: 10, height: 10, borderRadius: '50%', background: m.color } }),
+                  h('span', { style: { fontSize: 10, color: '#94a3b8' } }, m.label)
+                );
+              })
+            ),
+
+            // Calendar grid
+            h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
+              // Day headers
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginBottom: 8 } },
+                DAY_HEADERS.map(function(dh) {
+                  return h('div', { key: dh, style: { textAlign: 'center', fontSize: 10, color: '#64748b', fontWeight: 600, padding: 4 } }, dh);
+                })
+              ),
+              // Day cells
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, justifyItems: 'center' } },
+                calCells
+              )
+            ),
+
+            // Monthly Stats
+            h('div', { style: { padding: 14, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
+              h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 600, marginBottom: 8 } }, 'Monthly Stats'),
+              h('div', { style: { display: 'flex', justifyContent: 'space-around' } },
+                h('div', { style: { textAlign: 'center' } },
+                  h('div', { style: { fontSize: 20, fontWeight: 700, color: '#f1f5f9' } }, Object.keys(monthMoodMap).length),
+                  h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Days Tracked')
+                ),
+                h('div', { style: { textAlign: 'center' } },
+                  (function() {
+                    var totalM = 0; var countM = 0;
+                    Object.keys(monthMoodMap).forEach(function(k) {
+                      monthMoodMap[k].forEach(function(m) { totalM += m; countM++; });
+                    });
+                    var avgM = countM > 0 ? Math.round(totalM / countM * 10) / 10 : 0;
+                    var avgObj = avgM > 0 ? MOODS.find(function(m) { return m.id === Math.round(avgM); }) : null;
+                    return [
+                      h('div', { key: 'avg', style: { fontSize: 20, fontWeight: 700, color: avgObj ? avgObj.color : '#64748b' } }, avgM > 0 ? avgM.toFixed(1) : '\u2014'),
+                      h('div', { key: 'lbl', style: { fontSize: 10, color: '#94a3b8' } }, 'Avg Mood')
+                    ];
+                  })()
+                ),
+                h('div', { style: { textAlign: 'center' } },
+                  h('div', { style: { fontSize: 20, fontWeight: 700, color: '#f1f5f9' } },
+                    (function() {
+                      var c = 0;
+                      Object.keys(monthMoodMap).forEach(function(k) { c += monthMoodMap[k].length; });
+                      return c;
+                    })()
+                  ),
+                  h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Check-Ins')
+                )
+              )
+            ),
+
+            // Weekly Summary
+            h('div', { style: { padding: 14, borderRadius: 14, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+              h('div', { style: { fontSize: 12, color: ACCENT, fontWeight: 700, marginBottom: 8 } }, '\uD83D\uDCCB Weekly Summary'),
+              weeklySummary ? h('div', null,
+                (function() {
+                  if (!earnedBadges['weekly_reviewer']) tryAwardBadge('weekly_reviewer');
+                  return null;
+                })(),
+                h('div', { style: { display: 'flex', justifyContent: 'space-around', marginBottom: 12 } },
+                  h('div', { style: { textAlign: 'center' } },
+                    h('div', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9' } }, weeklySummary.avgMood.toFixed(1)),
+                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Avg Mood')
+                  ),
+                  h('div', { style: { textAlign: 'center' } },
+                    h('div', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9' } }, weeklySummary.avgEnergy.toFixed(1)),
+                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Avg Energy')
+                  ),
+                  h('div', { style: { textAlign: 'center' } },
+                    h('div', { style: { fontSize: 16, fontWeight: 700, color: weeklySummary.trajectory === 'improving' ? '#22c55e' : weeklySummary.trajectory === 'declining' ? '#f97316' : '#eab308' } },
+                      weeklySummary.trajectory === 'improving' ? '\u2197\uFE0F' : weeklySummary.trajectory === 'declining' ? '\u2198\uFE0F' : '\u2192\uFE0F'
+                    ),
+                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, weeklySummary.trajectory.charAt(0).toUpperCase() + weeklySummary.trajectory.slice(1))
+                  )
+                ),
+                weeklySummary.topTriggers.length > 0 && h('div', { style: { marginBottom: 8 } },
+                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, 'Top triggers:'),
+                  h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                    weeklySummary.topTriggers.map(function(t) {
+                      return h('span', { key: t, style: { padding: '3px 10px', borderRadius: 12, background: '#1e293b', color: ACCENT, fontSize: 11, fontWeight: 500 } }, t);
+                    })
+                  )
+                ),
+                h('div', { style: { padding: 10, borderRadius: 10, background: '#0f172a', marginTop: 8 } },
+                  h('p', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5, margin: 0, fontStyle: 'italic' } }, weeklySummary.encouragement)
+                )
+              ) :
+              h('div', { style: { fontSize: 12, color: '#94a3b8', textAlign: 'center', padding: 12 } },
+                'Check in at least 3 times this week to see your summary!'
+              )
             )
           );
         }
@@ -735,7 +1212,7 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════
         // ── Final Render ──
         // ══════════════════════════════════════════════════════
-        var content = checkinContent || journalContent || insightsContent || badgesContent;
+        var content = checkinContent || journalContent || calendarContent || insightsContent || badgesContent;
 
         return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
           tabBar,
