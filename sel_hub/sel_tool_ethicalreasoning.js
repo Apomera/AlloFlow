@@ -347,6 +347,258 @@ window.SelHub = window.SelHub || {
     ]
   };
 
+  // ── Ethical Case Studies (grade-banded) ──
+  var CASE_STUDIES = {
+    elementary: [
+      {
+        id: 'cs-e-last-cookie', title: 'The Last Cookie', emoji: '\uD83C\uDF6A',
+        background: 'It\u2019s snack time at school. There is one cookie left on the plate. You\u2019re hungry, but so is your friend who forgot their snack today. Your friend looks at the cookie hopefully.',
+        stakeholders: ['You (hungry, it\u2019s technically your turn)', 'Your friend (forgot their snack, also hungry)', 'The teacher (wants fairness in the classroom)', 'Other classmates (watching what happens)'],
+        competingValues: ['Sharing vs. keeping what\u2019s yours', 'Kindness vs. self-care', 'Fairness vs. generosity'],
+        questions: ['Is it selfish to keep the cookie? Or is it okay to take care of yourself?', 'What if you split it? Is half a cookie fair enough?', 'What would you want your friend to do if YOU forgot your snack?', 'Does it matter who is hungrier?'],
+        socraticSeed: 'If keeping the cookie makes you happy but your friend sad, and sharing makes your friend happy but you a little hungry, which choice creates more total happiness?'
+      },
+      {
+        id: 'cs-e-telling-friend', title: 'Telling on a Friend', emoji: '\uD83E\uDD2B',
+        background: 'Your best friend showed you a bruise on their arm and said someone at home did it. They begged you not to tell anyone because they\u2019re afraid of what might happen. You promised not to tell, but you\u2019re worried about your friend.',
+        stakeholders: ['Your friend (scared, asked you to keep a secret)', 'You (worried, promised to keep the secret)', 'A trusted adult (could help but doesn\u2019t know yet)', 'Your friend\u2019s family (the situation at home is complicated)'],
+        competingValues: ['Loyalty vs. safety', 'Keeping a promise vs. doing the right thing', 'Trust vs. protection'],
+        questions: ['Is there a time when breaking a promise is the RIGHT thing to do?', 'What\u2019s the difference between tattling and telling to keep someone safe?', 'If you don\u2019t tell and something worse happens, how would you feel?', 'Can you find a way to help without breaking trust completely?'],
+        socraticSeed: 'If your friend made you promise to keep a secret that could hurt them, was that a fair promise to ask for?'
+      },
+      {
+        id: 'cs-e-found-phone', title: 'Found a Phone', emoji: '\uD83D\uDCF1',
+        background: 'You find a shiny new phone on a bench at the park. Nobody is around. The phone has no lock screen and you can see it has cool games on it. You\u2019ve always wanted a phone but your family can\u2019t afford one right now.',
+        stakeholders: ['You (want a phone, found it fair and square)', 'The phone\u2019s owner (probably worried, might be a kid like you)', 'Your parents (would want you to do the right thing)', 'A park worker (could help find the owner)'],
+        competingValues: ['Honesty vs. temptation', 'Wanting something vs. doing what\u2019s right', 'Finders keepers vs. the Golden Rule'],
+        questions: ['How would you feel if YOU lost your phone and someone kept it?', 'Does "finders keepers" apply to expensive things?', 'Would you feel truly happy using a phone you know belongs to someone else?', 'What\u2019s the difference between finding something and stealing it?'],
+        socraticSeed: 'If keeping the phone would make you happy for a while but guilty forever, and returning it would be hard but make you proud, which feeling lasts longer?'
+      },
+      {
+        id: 'cs-e-unfair-rule', title: 'The Unfair Rule', emoji: '\uD83D\uDCCB',
+        background: 'Your school made a new rule: no recess if ANY student in the class doesn\u2019t finish their homework. You always do your homework, but a few students in your class often don\u2019t. Now you\u2019re losing recess because of them.',
+        stakeholders: ['You and other students who do their homework (losing recess unfairly)', 'Students who struggle with homework (may have tough home situations)', 'The teacher (trying to motivate everyone)', 'Parents (concerned about fairness)'],
+        competingValues: ['Obedience vs. justice', 'Following rules vs. speaking up', 'Group responsibility vs. individual fairness'],
+        questions: ['Is it fair to punish everyone for what a few people do?', 'Should you follow a rule you think is unfair, or speak up?', 'What if the students who don\u2019t do homework have a reason you don\u2019t know about?', 'How could the rule be changed to be more fair?'],
+        socraticSeed: 'If a rule is meant to help but ends up hurting people who did nothing wrong, is it still a good rule?'
+      },
+      {
+        id: 'cs-e-helping-cheating', title: 'Helping vs. Cheating', emoji: '\u270D\uFE0F',
+        background: 'During a test, your friend whispers "What\u2019s the answer to number 5?" They look really stressed and you know they studied hard but are blanking out. The teacher isn\u2019t looking.',
+        stakeholders: ['You (want to help your friend but don\u2019t want to cheat)', 'Your friend (stressed, struggling, asking for help)', 'The teacher (trusts students to be honest)', 'Other students (taking the test fairly on their own)'],
+        competingValues: ['Helping a friend vs. following the rules', 'Kindness vs. honesty', 'Short-term help vs. long-term learning'],
+        questions: ['Is whispering an answer "helping" or "cheating"?', 'If the teacher can\u2019t see, does that make it okay?', 'Would your friend actually learn anything if you gave them the answer?', 'What could you do AFTER the test to actually help your friend?'],
+        socraticSeed: 'If helping someone cheat means they never learn how to do it themselves, is that really helping them?'
+      }
+    ],
+    middle: [
+      {
+        id: 'cs-m-ai-homework', title: 'AI-Generated Homework', emoji: '\uD83E\uDD16',
+        background: 'A new AI tool can write essays and solve math problems that are nearly impossible for teachers to detect. About half your class is using it to complete assignments. Your grades are dropping because you\u2019re doing your own work while others get perfect scores from AI. A friend says "You\u2019re putting yourself at a disadvantage for no reason."',
+        stakeholders: ['Students using AI (getting higher grades, less stress)', 'Students doing their own work (lower grades, more effort)', 'Teachers (can\u2019t detect it, trust is eroding)', 'Future employers/colleges (expecting real skills)', 'AI companies (profiting from the tools)'],
+        competingValues: ['Integrity vs. competitive advantage', 'Individual ethics vs. systemic pressure', 'Short-term grades vs. long-term learning'],
+        questions: ['If everyone is doing it, does that make it okay?', 'Is using AI for homework different from using a calculator for math?', 'Where is the line between "tool" and "doing the work for you"?', 'What happens when these students face a test or job that requires real skills?'],
+        socraticSeed: 'If the purpose of homework is to learn, and AI does the learning for you, have you completed the assignment or just produced a document?'
+      },
+      {
+        id: 'cs-m-cancel-culture', title: 'Cancel Culture Debate', emoji: '\uD83D\uDCF2',
+        background: 'A popular student at your school posted something offensive on social media two years ago, when they were in 6th grade. Someone found the old post and shared it. Now many students are calling for this person to be removed from student council, kicked off sports teams, and socially excluded. The student has apologized and says they\u2019ve changed.',
+        stakeholders: ['The student who posted (apologized, says they\u2019ve grown)', 'Students who were hurt by the post (still feel the impact)', 'Student body (debating accountability vs. forgiveness)', 'School administration (deciding consequences)', 'Social media (amplifies everything)'],
+        competingValues: ['Accountability vs. forgiveness', 'Justice vs. mercy', 'Growth vs. consequences', 'Public shaming vs. private resolution'],
+        questions: ['Can people truly change? How do we know?', 'Should a 12-year-old be held accountable for something they said at 10?', 'Is there a difference between consequences and punishment?', 'Does public shaming help anyone grow, or does it just feel satisfying?'],
+        socraticSeed: 'If we judge people only by their worst moment and never allow for growth, what incentive does anyone have to become a better person?'
+      },
+      {
+        id: 'cs-m-fast-fashion', title: 'Fast Fashion', emoji: '\uD83D\uDC55',
+        background: 'Your favorite clothing brand sells trendy clothes for very cheap prices. An investigative report reveals that the clothes are made by workers in another country who earn $2 a day, work 14-hour shifts, and face unsafe conditions. The brand says they follow local labor laws. Your friends all wear this brand.',
+        stakeholders: ['Garment workers (low wages, poor conditions)', 'Consumers/you (want affordable trendy clothes)', 'The clothing company (following local laws, maximizing profit)', 'Local economies (jobs depend on these factories)', 'The environment (fast fashion creates massive waste)'],
+        competingValues: ['Convenience vs. exploitation', 'Affordable clothing vs. fair wages', 'Individual choices vs. systemic problems', 'Following the law vs. doing what\u2019s right'],
+        questions: ['If the workers agreed to the job, is it still exploitation?', 'Are consumers responsible for how products are made?', 'Is it fair for wealthy countries to impose their labor standards on poorer countries?', 'Can you be ethical and still buy affordable clothes?'],
+        socraticSeed: 'If something is legal but causes suffering, does legality make it ethical?'
+      },
+      {
+        id: 'cs-m-social-media-privacy', title: 'Social Media Privacy', emoji: '\uD83D\uDD12',
+        background: 'Your friend group went to a party and someone took photos. One friend posted a group photo on social media without asking. In the photo, another friend is doing something embarrassing. The embarrassing friend asks for it to be taken down, but the poster says "It\u2019s my photo, I can post what I want."',
+        stakeholders: ['The person who posted (took the photo, feels ownership)', 'The embarrassed friend (didn\u2019t consent, reputation at risk)', 'Other people in the photo (didn\u2019t consent either)', 'Social media audience (sharing and commenting)', 'School community (may see the photo)'],
+        competingValues: ['Freedom of expression vs. consent', 'Ownership vs. privacy', 'Sharing memories vs. respecting boundaries'],
+        questions: ['Does taking a photo give you the right to share it with anyone?', 'Should you always ask before posting photos of others?', 'Is "it\u2019s my photo" a valid argument when other people are in it?', 'How would YOU feel if someone posted an embarrassing photo of you?'],
+        socraticSeed: 'If you have the legal right to post a photo but it hurts someone, does having the right make it the right thing to do?'
+      },
+      {
+        id: 'cs-m-grade-inflation', title: 'Grade Inflation', emoji: '\uD83D\uDCCA',
+        background: 'Your teacher is known for being tough but fair \u2014 students earn their grades honestly. Another teacher gives almost everyone A\u2019s regardless of work quality. Students in that class have higher GPAs and get into better programs. Parents are complaining that your teacher is "too hard" and hurting students\u2019 futures.',
+        stakeholders: ['Students in the tough class (learning more but lower GPAs)', 'Students in the easy class (higher GPAs, less learning)', 'The tough teacher (committed to real standards)', 'The easy teacher (wants students to feel successful)', 'Colleges and future programs (relying on grades to be meaningful)'],
+        competingValues: ['Fairness vs. compassion', 'Honest assessment vs. student self-esteem', 'Real learning vs. grade competition', 'Individual teachers vs. system-wide standards'],
+        questions: ['Is a grade meaningful if everyone gets an A?', 'Should teachers make students feel good or prepare them for reality?', 'Is it fair that two students doing the same work get different grades?', 'Whose job is it to fix this \u2014 teachers, schools, or the system?'],
+        socraticSeed: 'If an A means "excellent" but everyone gets one, does the word "excellent" lose its meaning?'
+      }
+    ],
+    high: [
+      {
+        id: 'cs-h-self-driving', title: 'Self-Driving Car Dilemma', emoji: '\uD83D\uDE97',
+        background: 'A self-driving car\u2019s brakes fail on a busy street. The AI must choose: swerve left and hit an elderly pedestrian, swerve right and hit a young parent with a child, or continue straight into a concrete barrier (killing the passenger). The car must decide in 0.3 seconds. The company needs to program this decision BEFORE the situation occurs.',
+        stakeholders: ['The passenger (purchased the car expecting safety)', 'The elderly pedestrian (has a right to walk safely)', 'The parent and child (vulnerable, crossing legally)', 'The car manufacturer (liable for the programming decision)', 'Society (needs to trust autonomous vehicles)', 'Insurance companies (who pays for what outcome?)'],
+        competingValues: ['Utilitarian calculation (save the most lives) vs. dignity (no life is worth less)', 'Consumer safety vs. public safety', 'Algorithm-driven decisions vs. human moral judgment', 'Progress vs. precaution'],
+        questions: ['Can morality be programmed into an algorithm?', 'Should a car value its passenger over pedestrians, or vice versa?', 'Who is responsible when an algorithm kills someone \u2014 the programmer, the company, or the buyer?', 'Would you buy a car that might sacrifice you to save others?'],
+        socraticSeed: 'If we program a car to calculate who "deserves" to live based on age, health, or number, have we reduced human beings to data points?'
+      },
+      {
+        id: 'cs-h-genetic-engineering', title: 'Genetic Engineering', emoji: '\uD83E\uDDEC',
+        background: 'CRISPR gene editing can now eliminate genetic diseases like sickle cell anemia and cystic fibrosis from embryos before birth. The same technology could enhance intelligence, athleticism, and appearance. A wealthy family wants to use it to ensure their child is "optimized." A family with a genetic disease wants to use it to prevent their child\u2019s suffering. The technology costs $100,000 \u2014 insurance doesn\u2019t cover it.',
+        stakeholders: ['Families with genetic diseases (desperately want to prevent suffering)', 'Wealthy families (can afford enhancement)', 'Children who will be born (can\u2019t consent to genetic changes)', 'Disability rights advocates (argue genetic conditions are part of human diversity)', 'Scientists (pushing boundaries of what\u2019s possible)', 'Insurance/healthcare systems (who pays, who benefits?)'],
+        competingValues: ['Curing disease vs. "playing God"', 'Parental choice vs. child\u2019s future autonomy', 'Medical necessity vs. enhancement', 'Equality vs. genetic privilege'],
+        questions: ['Where is the line between curing a disease and "improving" a human?', 'If only the rich can afford genetic enhancement, does that create a new form of inequality?', 'Do parents have the right to make permanent genetic decisions for unborn children?', 'Is eliminating a genetic condition the same as saying people with that condition shouldn\u2019t exist?'],
+        socraticSeed: 'If we define some genetic traits as "defects" to be eliminated, who gets to decide what counts as normal?'
+      },
+      {
+        id: 'cs-h-surveillance-safety', title: 'Surveillance for Safety', emoji: '\uD83D\uDCF7',
+        background: 'After a series of crimes, a city proposes installing facial recognition cameras on every street corner. Police say it will reduce crime by 40%. Civil liberties groups note that the technology misidentifies people of color at 10x the rate of white people. A recent study shows that cities with surveillance see a 15% decrease in public protests and political speech.',
+        stakeholders: ['Crime victims (want safety and prevention)', 'Police (want effective tools)', 'People of color (disproportionately misidentified)', 'Political activists (chilled speech and protest)', 'Technology companies (selling the systems)', 'General public (trading privacy for safety)'],
+        competingValues: ['Privacy vs. security', 'Safety vs. civil liberties', 'Efficiency vs. accuracy', 'Majority safety vs. minority rights'],
+        questions: ['Is a 40% crime reduction worth universal surveillance?', 'If the technology is biased, is using it a form of discrimination?', 'Does constant surveillance change how people behave, even if they\u2019re innocent?', 'Who controls the data, and what else could it be used for?'],
+        socraticSeed: 'If you have nothing to hide, you have nothing to fear \u2014 but who decides what counts as "something to hide," and can that definition change?'
+      },
+      {
+        id: 'cs-h-wealth-inequality', title: 'Wealth Inequality', emoji: '\uD83D\uDCB0',
+        background: 'The world\u2019s 8 richest people own as much wealth as the poorest 3.6 billion combined. A billionaire argues they created thousands of jobs, pay taxes, and donate to charity. Critics argue that no one "earns" a billion dollars \u2014 it requires systemic advantages, others\u2019 labor, and often regulatory capture. Meanwhile, 10% of the world lives on less than $2.15 per day.',
+        stakeholders: ['Billionaires (argue wealth was earned through innovation)', 'Workers (created the actual value through labor)', 'People in extreme poverty (lack basic necessities)', 'Governments (set tax policies and regulations)', 'Consumers (benefit from products, fund wealth accumulation)', 'Future generations (inherit or don\u2019t inherit wealth)'],
+        competingValues: ['Merit vs. luck/privilege', 'Property rights vs. human rights', 'Innovation incentives vs. redistribution', 'Individual freedom vs. collective welfare'],
+        questions: ['Is extreme wealth a personal achievement or a systemic outcome?', 'Does voluntary charity address inequality, or just make the wealthy feel better?', 'If you were behind Rawls\u2019 veil of ignorance (not knowing your position), what economic system would you choose?', 'Is it possible to have billionaires and no poverty at the same time?'],
+        socraticSeed: 'If one person\u2019s wealth depends on a system that keeps others in poverty, can we separate the wealth from the poverty?'
+      },
+      {
+        id: 'cs-h-climate-development', title: 'Climate vs. Development', emoji: '\uD83C\uDF0D',
+        background: 'A developing nation with widespread poverty discovers massive oil reserves that could lift millions out of poverty. Wealthy nations \u2014 which industrialized using fossil fuels for 200 years \u2014 demand the developing nation leave the oil in the ground to meet global climate targets. The developing nation\u2019s leader says: "You got rich burning oil. Now you want us to stay poor to fix YOUR problem?"',
+        stakeholders: ['Citizens of the developing nation (desperate to escape poverty)', 'Future generations everywhere (will bear climate consequences)', 'Wealthy nations (historically responsible for most emissions)', 'Indigenous communities (land and water threatened by extraction)', 'The global ecosystem (approaching tipping points)', 'International climate negotiators (trying to find consensus)'],
+        competingValues: ['Present survival vs. future sustainability', 'Historical responsibility vs. current action', 'National sovereignty vs. global commons', 'Economic justice vs. environmental justice'],
+        questions: ['Is it fair to ask poor countries to sacrifice development for a problem rich countries created?', 'Who owes the "climate debt" \u2014 and how should it be paid?', 'Can economic development and climate action coexist?', 'If wealthy nations won\u2019t pay for the transition, do they have the right to demand it?'],
+        socraticSeed: 'If the wealthiest nations became wealthy by doing exactly what they now forbid others from doing, is their demand for climate action justice or hypocrisy?'
+      }
+    ]
+  };
+
+  // ── Values Clarification Exercise Data ──
+  var VALUES_LIST = [
+    { id: 'honesty', name: 'Honesty', emoji: '\uD83D\uDCA1', desc: 'Being truthful and transparent, even when it\u2019s hard.' },
+    { id: 'kindness', name: 'Kindness', emoji: '\uD83D\uDC9B', desc: 'Being caring, generous, and considerate toward others.' },
+    { id: 'fairness', name: 'Fairness', emoji: '\u2696\uFE0F', desc: 'Treating everyone equally and standing up for what\u2019s right.' },
+    { id: 'loyalty', name: 'Loyalty', emoji: '\uD83E\uDD1D', desc: 'Being faithful and dependable to the people and causes you care about.' },
+    { id: 'freedom', name: 'Freedom', emoji: '\uD83D\uDD4A\uFE0F', desc: 'Having the ability to make your own choices and live your own way.' },
+    { id: 'responsibility', name: 'Responsibility', emoji: '\uD83D\uDCCB', desc: 'Taking ownership of your actions and doing what you\u2019re supposed to do.' },
+    { id: 'courage', name: 'Courage', emoji: '\uD83E\uDD81', desc: 'Being brave enough to do the right thing, even when it\u2019s scary.' },
+    { id: 'respect', name: 'Respect', emoji: '\uD83C\uDF1F', desc: 'Treating others with dignity, even when you disagree with them.' },
+    { id: 'creativity', name: 'Creativity', emoji: '\uD83C\uDFA8', desc: 'Using imagination and original thinking to express yourself and solve problems.' },
+    { id: 'family', name: 'Family', emoji: '\uD83C\uDFE0', desc: 'Caring for and being close to the people you call family.' },
+    { id: 'achievement', name: 'Achievement', emoji: '\uD83C\uDFC6', desc: 'Working hard to reach your goals and do your best.' },
+    { id: 'community', name: 'Community', emoji: '\uD83C\uDF0D', desc: 'Being part of something bigger and helping your neighborhood, school, or world.' }
+  ];
+
+  // ── Philosophy Corner Data (grade-banded) ──
+  var PHILOSOPHERS = {
+    elementary: [
+      {
+        id: 'aesop', name: 'Aesop', emoji: '\uD83E\uDD8A', years: 'c. 620\u2013564 BCE',
+        tagline: 'Fables teach morals',
+        bio: 'Aesop was a storyteller from ancient Greece who used short stories about animals to teach important life lessons. His fables \u2014 like "The Tortoise and the Hare" and "The Boy Who Cried Wolf" \u2014 have been told for over 2,500 years because the lessons still apply today!',
+        keyIdea: 'We can learn about right and wrong through stories. Animals in fables represent different human choices.',
+        famousQuote: 'No act of kindness, no matter how small, is ever wasted.',
+        tryIt: 'Think of a time when you learned an important lesson. Can you turn it into a short animal fable?'
+      },
+      {
+        id: 'confucius', name: 'Confucius', emoji: '\uD83C\uDFAF', years: '551\u2013479 BCE',
+        tagline: 'Respect your elders and be kind',
+        bio: 'Confucius was a teacher from ancient China who believed that being a good person starts with respecting your family, your teachers, and your community. He thought that if everyone practiced kindness and respect at home, the whole world would be a better place.',
+        keyIdea: 'Respect for elders, teachers, and family creates a chain of kindness that makes communities strong.',
+        famousQuote: 'What you do not wish for yourself, do not do to others.',
+        tryIt: 'Confucius said to treat others how you want to be treated. Sound familiar? Try being extra respectful to someone older than you today.'
+      },
+      {
+        id: 'mrogers', name: 'Fred Rogers', emoji: '\uD83D\uDC4B', years: '1928\u20132003',
+        tagline: 'Kindness is the most important thing',
+        bio: 'Mister Rogers hosted a TV show for children for over 30 years. He believed that every single person is special and worthy of love. He taught kids that feelings are natural, kindness matters more than being cool, and that being yourself is the best thing you can be.',
+        keyIdea: 'Everyone deserves to be treated with kindness. Your feelings are valid. You are special just by being you.',
+        famousQuote: 'You\u2019ve made this day a special day, by just your being you.',
+        tryIt: 'Think of someone who might need a kind word today. What could you say to make them feel special?'
+      }
+    ],
+    middle: [
+      {
+        id: 'socrates', name: 'Socrates', emoji: '\u2753', years: '470\u2013399 BCE',
+        tagline: 'Question everything',
+        bio: 'Socrates was an ancient Greek philosopher who believed the best way to find truth was to ask questions, not give answers. He would walk around Athens asking people "Why do you believe that?" until they realized they didn\u2019t fully understand their own ideas. He never wrote anything down \u2014 we know about him from his student Plato.',
+        keyIdea: 'The "Socratic method" means learning through questions. True wisdom begins with admitting what you don\u2019t know.',
+        famousQuote: 'The unexamined life is not worth living.',
+        tryIt: 'Pick something you believe strongly. Now ask yourself: WHY do I believe this? What evidence do I have? Could I be wrong?'
+      },
+      {
+        id: 'aristotle', name: 'Aristotle', emoji: '\u2696\uFE0F', years: '384\u2013322 BCE',
+        tagline: 'The golden mean \u2014 balance in all things',
+        bio: 'Aristotle was Plato\u2019s student and one of the most influential thinkers in history. He believed that being a good person means finding the "golden mean" \u2014 the balance between two extremes. For example, courage is the balance between cowardice (too little) and recklessness (too much).',
+        keyIdea: 'Virtue is about balance. Every good quality exists between two extremes. Becoming good takes practice, like learning an instrument.',
+        famousQuote: 'We are what we repeatedly do. Excellence, then, is not an act, but a habit.',
+        tryIt: 'Pick a virtue (like courage, generosity, or honesty). What does "too little" look like? What does "too much" look like? Where\u2019s the healthy middle?'
+      },
+      {
+        id: 'mlk', name: 'Martin Luther King Jr.', emoji: '\u270A', years: '1929\u20131968',
+        tagline: 'Just vs. unjust laws',
+        bio: 'Dr. King was a civil rights leader who argued that people have a moral DUTY to disobey unjust laws. He distinguished between just laws (which apply equally to everyone) and unjust laws (which oppress a group). He believed in nonviolent resistance \u2014 breaking unfair laws peacefully and accepting the consequences to awaken the conscience of the community.',
+        keyIdea: 'An unjust law is no law at all. We have a moral responsibility to disobey laws that violate human dignity, but we must do so nonviolently and accept the consequences.',
+        famousQuote: 'Injustice anywhere is a threat to justice everywhere.',
+        tryIt: 'Think of a rule at school or in your community that feels unfair. Is it truly unjust, or just inconvenient? How would Dr. King approach it?'
+      }
+    ],
+    high: [
+      {
+        id: 'kant', name: 'Immanuel Kant', emoji: '\uD83D\uDCDC', years: '1724\u20131804',
+        tagline: 'The categorical imperative',
+        bio: 'Kant argued that moral rules must be universal \u2014 if an action is right, it must be right for EVERYONE, always. His "categorical imperative" says: act only according to rules you could will to be universal laws. He also insisted we must treat people as ends in themselves, never merely as means to our own goals.',
+        keyIdea: 'Morality is about duty, not consequences. Ask: "What if everyone did this?" If the answer is chaos, it\u2019s wrong. Always respect human dignity.',
+        famousQuote: 'Act only according to that maxim whereby you can, at the same time, will that it should become a universal law.',
+        tryIt: 'Apply the universalizability test to a common action (lying, littering, cheating). What happens if EVERYONE does it?'
+      },
+      {
+        id: 'mill', name: 'John Stuart Mill', emoji: '\uD83D\uDCCA', years: '1806\u20131873',
+        tagline: 'Utilitarianism \u2014 the greatest good',
+        bio: 'Mill developed utilitarianism, the idea that the right action is whatever produces the most happiness (or least suffering) for the most people. But he distinguished between "higher" and "lower" pleasures \u2014 intellectual and moral pleasures matter more than physical ones. He was also a strong advocate for women\u2019s rights and free speech.',
+        keyIdea: 'Calculate the consequences: which action creates the most total well-being? But remember that not all pleasures are equal \u2014 quality matters as much as quantity.',
+        famousQuote: 'It is better to be Socrates dissatisfied than a fool satisfied.',
+        tryIt: 'Think of a policy decision. Can you calculate the total happiness and suffering it would cause? What are the limits of this approach?'
+      },
+      {
+        id: 'rawls', name: 'John Rawls', emoji: '\uD83C\uDFAD', years: '1921\u20132002',
+        tagline: 'Justice as fairness',
+        bio: 'Rawls proposed a thought experiment: imagine you\u2019re designing society from scratch, but you don\u2019t know what position you\u2019ll hold \u2014 rich or poor, healthy or sick, majority or minority. Behind this "veil of ignorance," what rules would you choose? Rawls argued you\u2019d choose to protect the most vulnerable, because you might BE the most vulnerable.',
+        keyIdea: 'The veil of ignorance: design society as if you don\u2019t know who you\u2019ll be. Fair rules are the ones you\u2019d choose without knowing your position.',
+        famousQuote: 'Justice is the first virtue of social institutions, as truth is of systems of thought.',
+        tryIt: 'Redesign your school\u2019s rules from behind the veil of ignorance. How would things change if you didn\u2019t know your grades, popularity, or family income?'
+      },
+      {
+        id: 'de-beauvoir', name: 'Simone de Beauvoir', emoji: '\uD83D\uDD25', years: '1908\u20131986',
+        tagline: 'The ethics of ambiguity',
+        bio: 'De Beauvoir argued that human freedom is the foundation of ethics, but freedom comes with radical responsibility. We cannot escape choosing \u2014 even refusing to choose is a choice. She challenged people to accept the ambiguity of moral life rather than hiding behind rules or excuses, and showed how systems of oppression deny freedom to entire groups.',
+        keyIdea: 'Ethics requires embracing ambiguity. There are no guaranteed right answers \u2014 but that doesn\u2019t free us from the responsibility of choosing. Oppression denies others the freedom that makes ethics possible.',
+        famousQuote: 'One is not born, but rather becomes, a woman.',
+        tryIt: 'Think of a moral decision where there\u2019s no clear "right" answer. Can you sit with the ambiguity instead of forcing certainty?'
+      },
+      {
+        id: 'hooks', name: 'bell hooks', emoji: '\u2764\uFE0F', years: '1952\u20132021',
+        tagline: 'Love as a practice of freedom',
+        bio: 'bell hooks (she wrote her name in lowercase intentionally) argued that love isn\u2019t just a feeling \u2014 it\u2019s a practice, a verb, an action. She defined love as "the will to nurture our own and another\u2019s spiritual growth." She connected love to justice, arguing that you cannot truly love someone while participating in systems that oppress them.',
+        keyIdea: 'Love is action, not just feeling. True love requires justice. You cannot love people and support systems that harm them. Ethics starts with how we love.',
+        famousQuote: 'The moment we choose to love we begin to move against domination, against oppression.',
+        tryIt: 'Think about someone you love. Are there ways the systems around you make their life harder? What would it mean to love them not just personally, but politically?'
+      },
+      {
+        id: 'singer', name: 'Peter Singer', emoji: '\uD83D\uDC3E', years: 'b. 1946',
+        tagline: 'Animal rights and effective altruism',
+        bio: 'Singer argues that the capacity to suffer \u2014 not species, intelligence, or language \u2014 is what matters morally. If an animal can suffer, its suffering counts. He also developed "effective altruism," the idea that we have a moral obligation to help others as effectively as possible, and that failing to donate to life-saving causes is morally equivalent to letting someone drown.',
+        keyIdea: 'Suffering is suffering, regardless of species. We have a moral obligation to reduce suffering wherever we can, as effectively as we can.',
+        famousQuote: 'If it is in our power to prevent something bad from happening, without thereby sacrificing anything of comparable moral importance, we ought, morally, to do it.',
+        tryIt: 'Singer asks: if you walked past a drowning child, would you save them even if it ruined your expensive shoes? If yes, why don\u2019t you donate that shoe money to save children in poverty?'
+      }
+    ]
+  };
+
   // ── Badges ──
   var BADGES = [
     { id: 'ethics-scholar', name: 'Ethics Scholar', emoji: '\uD83C\uDF93', desc: 'Studied 3+ ethical frameworks', check: function(d) { return (d.frameworksStudied || []).length >= 3; } },
@@ -357,6 +609,17 @@ window.SelHub = window.SelHub || {
     { id: 'socratic-thinker', name: 'Socratic Thinker', emoji: '\uD83C\uDFDB\uFE0F', desc: 'Engaged in 5+ rounds of Socratic dialogue', check: function(d) { return (d.dialogue || []).length >= 10; } },
     { id: 'perspective-master', name: 'Perspective Master', emoji: '\uD83D\uDC41\uFE0F', desc: 'Explored all stakeholder perspectives in a dilemma', check: function(d) { return d.allStakeholdersViewed === true; } },
     { id: 'deep-diver', name: 'Deep Diver', emoji: '\uD83C\uDF0A', desc: 'Explored 3+ deep contemporary dilemmas', check: function(d) { return (d.deepDilemmasExplored || []).length >= 3; } },
+    { id: 'case-study-scholar', name: 'Case Study Scholar', emoji: '\uD83D\uDCD6', desc: 'Completed 3+ ethical case studies', check: function(d) { return (d.caseStudiesCompleted || []).length >= 3; } },
+    { id: 'values-explorer', name: 'Values Explorer', emoji: '\uD83D\uDC8E', desc: 'Completed the values clarification exercise', check: function(d) { return d.valuesComplete === true; } },
+    { id: 'decision-tree-builder', name: 'Decision Tree Builder', emoji: '\uD83C\uDF32', desc: 'Built an ethical decision tree', check: function(d) { return d.decisionTreeComplete === true; } },
+    { id: 'philosophy-fan', name: 'Philosophy Fan', emoji: '\uD83E\uDDD0', desc: 'Explored 4+ philosophers', check: function(d) { return (d.philosophersExplored || []).length >= 4; } },
+    { id: 'ethical-leader', name: 'Ethical Leader', emoji: '\uD83C\uDF1F', desc: 'Earned 8+ other badges', check: function(d) {
+      var count = 0;
+      for (var i = 0; i < BADGES.length; i++) {
+        if (BADGES[i].id !== 'ethical-leader' && BADGES[i].check(d)) count++;
+      }
+      return count >= 8;
+    } },
   ];
 
   // ── Helper: count earned badges ──
@@ -553,9 +816,13 @@ window.SelHub = window.SelHub || {
           [
             { id: 'dilemmas', label: '\uD83D\uDD25 Dilemmas' },
             { id: 'branching', label: '\uD83C\uDF33 Scenarios' },
+            { id: 'casestudies', label: '\uD83D\uDCD6 Cases' },
             { id: 'frameworks', label: '\uD83C\uDFDB\uFE0F Frameworks' },
             { id: 'explore', label: '\uD83D\uDD0D Explore' },
             { id: 'dialogue', label: '\uD83D\uDCAC Socratic' },
+            { id: 'values', label: '\uD83D\uDC8E Values' },
+            { id: 'decisiontree', label: '\uD83C\uDF32 Tree' },
+            { id: 'philosophy', label: '\uD83E\uDDD0 Thinkers' },
             { id: 'kohlberg', label: '\uD83E\uDDE0 Reasoning' },
             { id: 'debate', label: '\uD83C\uDFA4 Debate' },
             { id: 'badges', label: '\uD83C\uDFC5 Badges' },
@@ -1219,6 +1486,568 @@ window.SelHub = window.SelHub || {
           )
         ),
 
+        // ═══ CASE STUDIES TAB ═══
+        tab === 'casestudies' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCD6 Ethical Case Studies'),
+            h('p', { className: 'text-sm text-slate-500' }, 'Real-world ethical situations for deeper analysis and Socratic dialogue.')
+          ),
+
+          // Case study list (when none selected)
+          !d.caseStudyId && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+            (CASE_STUDIES[gradeBand] || CASE_STUDIES.elementary).map(function(cs) {
+              var completed = (d.caseStudiesCompleted || []).indexOf(cs.id) !== -1;
+              return h('button', { key: cs.id, onClick: function() {
+                updMulti({ caseStudyId: cs.id, caseStudyReflection: '', caseStudyAIResp: null, caseStudySocratic: [] });
+              },
+                className: 'p-4 rounded-2xl border-2 bg-white text-left hover:border-teal-300 hover:shadow-md transition-all ' + (completed ? 'border-teal-300 bg-teal-50' : 'border-slate-200')
+              },
+                h('div', { className: 'flex items-center gap-2 mb-1' },
+                  h('span', { className: 'text-xl' }, cs.emoji),
+                  h('span', { className: 'font-bold text-sm text-slate-800' }, cs.title),
+                  completed && h('span', { className: 'ml-auto text-teal-500 text-xs font-bold' }, '\u2713 Done')
+                ),
+                h('p', { className: 'text-xs text-slate-500 leading-relaxed' }, cs.background.substring(0, 100) + '...')
+              );
+            })
+          ),
+
+          // Active case study
+          d.caseStudyId && (function() {
+            var studies = CASE_STUDIES[gradeBand] || CASE_STUDIES.elementary;
+            var cs = studies.find(function(s) { return s.id === d.caseStudyId; });
+            if (!cs) return null;
+            var csSocratic = d.caseStudySocratic || [];
+
+            return h('div', { className: 'space-y-4' },
+              h('button', { onClick: function() { updMulti({ caseStudyId: null, caseStudyReflection: '', caseStudyAIResp: null, caseStudySocratic: [] }); },
+                className: 'text-xs text-slate-400 hover:text-slate-600 font-bold'
+              }, '\u2190 All Case Studies'),
+
+              // Background
+              h('div', { className: 'bg-gradient-to-r from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 p-5' },
+                h('div', { className: 'flex items-center gap-2 mb-3' },
+                  h('span', { className: 'text-3xl' }, cs.emoji),
+                  h('h3', { className: 'text-lg font-black text-slate-800' }, cs.title)
+                ),
+                h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, cs.background),
+                callTTS && h('button', { onClick: function() { callTTS(cs.background); }, className: 'mt-2 text-[10px] text-teal-600 hover:text-teal-800 font-bold' }, '\uD83D\uDD0A Read Aloud')
+              ),
+
+              // Stakeholders
+              h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
+                h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDC65 Stakeholders'),
+                h('div', { className: 'space-y-1.5' },
+                  cs.stakeholders.map(function(s, i) {
+                    return h('div', { key: i, className: 'flex items-start gap-2 text-xs text-slate-600 bg-slate-50 rounded-lg p-2 border border-slate-100' },
+                      h('span', { className: 'text-teal-500 mt-0.5 shrink-0 font-bold' }, (i + 1) + '.'),
+                      h('span', null, s)
+                    );
+                  })
+                )
+              ),
+
+              // Competing values
+              h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-4' },
+                h('h4', { className: 'text-sm font-bold text-amber-700 mb-2' }, '\u26A1 Competing Values'),
+                h('div', { className: 'space-y-1.5' },
+                  cs.competingValues.map(function(v, i) {
+                    return h('div', { key: i, className: 'flex items-start gap-2 text-xs text-amber-800' },
+                      h('span', { className: 'text-amber-500 mt-0.5 shrink-0' }, '\u27F7'),
+                      h('span', null, v)
+                    );
+                  })
+                )
+              ),
+
+              // Discussion questions
+              h('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-4' },
+                h('h4', { className: 'text-sm font-bold text-indigo-700 mb-2' }, '\u2753 Discussion Questions'),
+                h('div', { className: 'space-y-2' },
+                  cs.questions.map(function(q, i) {
+                    return h('p', { key: i, className: 'text-xs text-indigo-800' }, (i + 1) + '. ' + q);
+                  })
+                )
+              ),
+
+              // Student reflection
+              h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
+                h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\u270D\uFE0F Your Analysis: What do you think is the right thing to do here, and why?'),
+                h('textarea', { value: d.caseStudyReflection || '', onChange: function(e) { upd('caseStudyReflection', e.target.value); },
+                  placeholder: 'I think the ethical choice is... because...',
+                  className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-teal-300',
+                  'aria-label': 'Case study reflection'
+                })
+              ),
+
+              // Socratic dialogue for case study
+              h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 space-y-3' },
+                h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDCAC Socratic Dialogue'),
+
+                csSocratic.length > 0 && h('div', { className: 'space-y-2 max-h-[300px] overflow-y-auto' },
+                  csSocratic.map(function(msg, i) {
+                    return h('div', { key: i, className: 'flex ' + (msg.role === 'student' ? 'justify-end' : 'justify-start') },
+                      h('div', { className: 'max-w-[80%] rounded-2xl px-4 py-3 ' + (msg.role === 'student' ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-800 border border-slate-200') },
+                        h('div', { className: 'text-[10px] font-bold mb-1 ' + (msg.role === 'student' ? 'text-teal-200' : 'text-slate-400') }, msg.role === 'student' ? 'You' : '\uD83C\uDFDB\uFE0F Socrates'),
+                        h('p', { className: 'text-sm leading-relaxed' }, msg.text)
+                      )
+                    );
+                  })
+                ),
+
+                csSocratic.length === 0 && h('p', { className: 'text-xs text-slate-400 italic text-center' }, 'Share your thinking to begin a Socratic dialogue about this case.'),
+
+                // Socratic input
+                h('div', { className: 'flex gap-2' },
+                  h('input', { type: 'text', value: d.caseStudySocraticInput || '', onChange: function(e) { upd('caseStudySocraticInput', e.target.value); },
+                    onKeyDown: function(e) {
+                      if (e.key === 'Enter' && d.caseStudySocraticInput && d.caseStudySocraticInput.trim() && callGemini) {
+                        var userInput = d.caseStudySocraticInput;
+                        upd('aiLoading', true);
+                        var histCtx = csSocratic.length > 0 ? 'Previous dialogue:\n' + csSocratic.slice(-6).map(function(m) { return m.role + ': ' + m.text; }).join('\n') : '';
+                        var prompt = 'You are a Socratic philosophy teacher helping a ' + (gradeLevel || '5th grade') + ' student analyze an ethical case study.\n' +
+                          'Case: "' + cs.title + '": ' + cs.background + '\n' +
+                          'Socratic seed question for this case: ' + cs.socraticSeed + '\n' +
+                          histCtx + '\nStudent says: "' + userInput + '"\n\n' +
+                          'Respond with ONE thought-provoking follow-up question. Do NOT give answers. Be warm, challenging, 2-3 sentences max.';
+                        callGemini(prompt).then(function(resp) {
+                          var newHist = csSocratic.concat([{ role: 'student', text: userInput }, { role: 'socrates', text: resp }]);
+                          updMulti({ caseStudySocratic: newHist, aiLoading: false, caseStudySocraticInput: '' });
+                          ctx.awardXP(5);
+                        }).catch(function() { upd('aiLoading', false); });
+                      }
+                    },
+                    placeholder: 'Share your reasoning...', disabled: aiLoading,
+                    className: 'flex-1 text-sm p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-300 disabled:opacity-40',
+                    'aria-label': 'Socratic dialogue input for case study'
+                  }),
+                  h('button', { onClick: function() {
+                    if (d.caseStudySocraticInput && d.caseStudySocraticInput.trim() && callGemini) {
+                      var userInput = d.caseStudySocraticInput;
+                      upd('aiLoading', true);
+                      var histCtx = csSocratic.length > 0 ? 'Previous dialogue:\n' + csSocratic.slice(-6).map(function(m) { return m.role + ': ' + m.text; }).join('\n') : '';
+                      var prompt = 'You are a Socratic philosophy teacher helping a ' + (gradeLevel || '5th grade') + ' student analyze an ethical case study.\n' +
+                        'Case: "' + cs.title + '": ' + cs.background + '\n' +
+                        'Socratic seed question for this case: ' + cs.socraticSeed + '\n' +
+                        histCtx + '\nStudent says: "' + userInput + '"\n\n' +
+                        'Respond with ONE thought-provoking follow-up question. Do NOT give answers. Be warm, challenging, 2-3 sentences max.';
+                      callGemini(prompt).then(function(resp) {
+                        var newHist = csSocratic.concat([{ role: 'student', text: userInput }, { role: 'socrates', text: resp }]);
+                        updMulti({ caseStudySocratic: newHist, aiLoading: false, caseStudySocraticInput: '' });
+                        ctx.awardXP(5);
+                      }).catch(function() { upd('aiLoading', false); });
+                    }
+                  }, disabled: aiLoading || !(d.caseStudySocraticInput && d.caseStudySocraticInput.trim()),
+                    className: 'px-4 py-3 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors disabled:opacity-40'
+                  }, aiLoading ? '...' : '\u2192')
+                )
+              ),
+
+              // Mark complete & get AI insight
+              callGemini && d.caseStudyReflection && d.caseStudyReflection.length > 20 && !d.caseStudyAIResp && h('button', { onClick: function() {
+                upd('aiLoading', true);
+                var prompt = 'A ' + (gradeLevel || '5th grade') + ' student just analyzed an ethical case study.\n' +
+                  'Case: "' + cs.title + '": ' + cs.background + '\n' +
+                  'Competing values: ' + cs.competingValues.join('; ') + '\n' +
+                  'Student\u2019s analysis: "' + d.caseStudyReflection + '"\n\n' +
+                  'Provide a brief (3-4 sentence), warm, insightful response that:\n' +
+                  '1. Validates their reasoning\n2. Identifies which ethical framework(s) their thinking aligns with\n' +
+                  '3. Offers one perspective they might not have considered\n4. Ends with an encouraging thought about their ethical growth.\nBe age-appropriate and non-judgmental.';
+                callGemini(prompt).then(function(resp) {
+                  var completed = (d.caseStudiesCompleted || []).slice();
+                  if (completed.indexOf(cs.id) === -1) completed.push(cs.id);
+                  updMulti({ caseStudyAIResp: resp, aiLoading: false, caseStudiesCompleted: completed });
+                  ctx.awardXP(10);
+                  if (completed.length >= 3) { addToast('\uD83D\uDCD6 Case Study Scholar badge earned!'); }
+                }).catch(function() { upd('aiLoading', false); });
+              }, disabled: aiLoading,
+                className: 'w-full px-4 py-3 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2'
+              }, h(Sparkles, { size: 14 }), aiLoading ? 'Analyzing...' : '\uD83D\uDCD6 Get AI Insight on My Analysis'),
+
+              // AI insight response
+              d.caseStudyAIResp && h('div', { className: 'bg-teal-50 border border-teal-200 rounded-2xl p-5' },
+                h('div', { className: 'flex items-center gap-2 mb-2' },
+                  h(Sparkles, { size: 14, className: 'text-teal-500' }),
+                  h('h4', { className: 'text-sm font-bold text-teal-700' }, 'AI Ethical Insight')
+                ),
+                h('p', { className: 'text-sm text-slate-700 leading-relaxed whitespace-pre-line' }, d.caseStudyAIResp)
+              ),
+
+              // Try another
+              h('button', { onClick: function() { updMulti({ caseStudyId: null, caseStudyReflection: '', caseStudyAIResp: null, caseStudySocratic: [], caseStudySocraticInput: '' }); },
+                className: 'w-full px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors'
+              }, '\u2190 Try Another Case Study')
+            );
+          })()
+        ),
+
+        // ═══ VALUES CLARIFICATION TAB ═══
+        tab === 'values' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDC8E Values Clarification'),
+            h('p', { className: 'text-sm text-slate-500' }, 'What matters most to you? Rank your top values and reflect on why.')
+          ),
+
+          // Intro or active exercise
+          !d.valuesStarted && h('div', { className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl border-2 border-rose-200 p-5 text-center' },
+            h('span', { className: 'text-4xl block mb-3' }, '\uD83D\uDC8E'),
+            h('h4', { className: 'text-base font-bold text-rose-800 mb-2' }, 'What Do You Value Most?'),
+            h('p', { className: 'text-sm text-slate-600 leading-relaxed mb-3' }, 'There are no wrong answers here. Your values are yours \u2014 they shape how you see the world and make decisions. Tap or click on values to select your top 5, then rank them from most to least important to you.'),
+            h('button', { onClick: function() { updMulti({ valuesStarted: true, valuesSelected: [], valuesRanked: [], valuesReflection: '', valuesComplete: false, valuesAIResp: null }); },
+              className: 'px-6 py-3 bg-rose-600 text-white rounded-xl text-sm font-bold hover:bg-rose-700 transition-colors'
+            }, 'Start Values Exercise')
+          ),
+
+          // Step 1: Select top 5
+          d.valuesStarted && !d.valuesComplete && !(d.valuesRanked && d.valuesRanked.length === 5) && (function() {
+            var selected = d.valuesSelected || [];
+            return h('div', { className: 'space-y-4' },
+              h('div', { className: 'bg-rose-50 border border-rose-200 rounded-xl p-3 text-center' },
+                h('p', { className: 'text-sm font-bold text-rose-700' }, 'Step 1: Select Your Top 5 Values (' + selected.length + '/5)')
+              ),
+              h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-3' },
+                VALUES_LIST.map(function(v) {
+                  var isSelected = selected.indexOf(v.id) !== -1;
+                  var canSelect = selected.length < 5 || isSelected;
+                  return h('button', { key: v.id, onClick: function() {
+                    var newSelected = selected.slice();
+                    if (isSelected) {
+                      newSelected = newSelected.filter(function(s) { return s !== v.id; });
+                    } else if (canSelect) {
+                      newSelected.push(v.id);
+                    }
+                    upd('valuesSelected', newSelected);
+                  },
+                    className: 'p-3 rounded-xl border-2 text-left transition-all ' +
+                      (isSelected ? 'border-rose-400 bg-rose-50 shadow-md' : canSelect ? 'border-slate-200 bg-white hover:border-rose-300' : 'border-slate-100 bg-slate-50 opacity-40 cursor-not-allowed')
+                  },
+                    h('div', { className: 'flex items-center gap-2' },
+                      h('span', { className: 'text-lg' }, v.emoji),
+                      h('div', null,
+                        h('div', { className: 'font-bold text-xs ' + (isSelected ? 'text-rose-800' : 'text-slate-700') }, v.name),
+                        h('div', { className: 'text-[10px] text-slate-400 leading-tight' }, v.desc.substring(0, 50) + '...')
+                      )
+                    ),
+                    isSelected && h('div', { className: 'mt-1 text-[9px] text-rose-500 font-bold' }, '\u2713 Selected')
+                  );
+                })
+              ),
+              selected.length === 5 && h('button', { onClick: function() {
+                upd('valuesRanked', selected.slice());
+              },
+                className: 'w-full px-4 py-3 bg-rose-600 text-white rounded-xl text-sm font-bold hover:bg-rose-700 transition-colors'
+              }, 'Now Rank Them \u2192')
+            );
+          })(),
+
+          // Step 2: Rank top 5 (simple tap-to-reorder)
+          d.valuesStarted && !d.valuesComplete && d.valuesRanked && d.valuesRanked.length === 5 && (function() {
+            var ranked = d.valuesRanked;
+            return h('div', { className: 'space-y-4' },
+              h('div', { className: 'bg-rose-50 border border-rose-200 rounded-xl p-3 text-center' },
+                h('p', { className: 'text-sm font-bold text-rose-700' }, 'Step 2: Rank Your Top 5 (tap arrows to reorder)')
+              ),
+              h('div', { className: 'space-y-2' },
+                ranked.map(function(vid, idx) {
+                  var v = VALUES_LIST.find(function(val) { return val.id === vid; });
+                  if (!v) return null;
+                  return h('div', { key: vid, className: 'flex items-center gap-3 p-3 rounded-xl border-2 border-rose-200 bg-white' },
+                    h('span', { className: 'text-lg font-black text-rose-600 w-6 text-center shrink-0' }, '#' + (idx + 1)),
+                    h('span', { className: 'text-xl' }, v.emoji),
+                    h('div', { className: 'flex-1' },
+                      h('div', { className: 'font-bold text-sm text-slate-800' }, v.name),
+                      h('div', { className: 'text-[10px] text-slate-400' }, v.desc)
+                    ),
+                    h('div', { className: 'flex flex-col gap-1 shrink-0' },
+                      idx > 0 && h('button', { onClick: function() {
+                        var newRanked = ranked.slice();
+                        var tmp = newRanked[idx - 1];
+                        newRanked[idx - 1] = newRanked[idx];
+                        newRanked[idx] = tmp;
+                        upd('valuesRanked', newRanked);
+                      }, className: 'text-xs text-slate-400 hover:text-rose-600 font-bold px-2 py-0.5 rounded hover:bg-rose-50', 'aria-label': 'Move up' }, '\u25B2'),
+                      idx < ranked.length - 1 && h('button', { onClick: function() {
+                        var newRanked = ranked.slice();
+                        var tmp = newRanked[idx + 1];
+                        newRanked[idx + 1] = newRanked[idx];
+                        newRanked[idx] = tmp;
+                        upd('valuesRanked', newRanked);
+                      }, className: 'text-xs text-slate-400 hover:text-rose-600 font-bold px-2 py-0.5 rounded hover:bg-rose-50', 'aria-label': 'Move down' }, '\u25BC')
+                    )
+                  );
+                })
+              ),
+
+              // Reflection
+              h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
+                h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\u270D\uFE0F Why did you rank "' + (function() { var v = VALUES_LIST.find(function(val) { return val.id === ranked[0]; }); return v ? v.name : ''; })() + '" highest?'),
+                h('textarea', { value: d.valuesReflection || '', onChange: function(e) { upd('valuesReflection', e.target.value); },
+                  placeholder: 'I ranked this highest because...',
+                  className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-rose-300',
+                  'aria-label': 'Values reflection'
+                })
+              ),
+
+              // Complete button
+              callGemini && d.valuesReflection && d.valuesReflection.length > 10 && h('button', { onClick: function() {
+                upd('aiLoading', true);
+                var rankedNames = ranked.map(function(vid) { var v = VALUES_LIST.find(function(val) { return val.id === vid; }); return v ? v.name : vid; });
+                var prompt = 'A ' + (gradeLevel || '5th grade') + ' student completed a values clarification exercise.\n' +
+                  'Their top 5 values, in order: ' + rankedNames.join(', ') + '\n' +
+                  'Why they ranked #1 highest: "' + d.valuesReflection + '"\n\n' +
+                  'Provide a warm, insightful analysis (3-4 sentences) that:\n' +
+                  '1. Identifies the PATTERN in their values (are they more people-oriented, principle-oriented, self-growth oriented, community-oriented?)\n' +
+                  '2. Notes how their top value might guide them in ethical dilemmas\n' +
+                  '3. Gently mentions one value NOT in their top 5 that could complement their choices\n' +
+                  '4. Affirms that their values are valid and will serve them well.\nBe warm, non-judgmental, and age-appropriate.';
+                callGemini(prompt).then(function(resp) {
+                  updMulti({ valuesAIResp: resp, valuesComplete: true, aiLoading: false });
+                  ctx.awardXP(10);
+                  addToast('\uD83D\uDC8E Values Explorer badge earned!');
+                }).catch(function() { upd('aiLoading', false); });
+              }, disabled: aiLoading,
+                className: 'w-full px-4 py-3 bg-rose-600 text-white rounded-xl text-sm font-bold hover:bg-rose-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2'
+              }, h(Sparkles, { size: 14 }), aiLoading ? 'Analyzing...' : '\uD83D\uDC8E See My Values Insight')
+            );
+          })(),
+
+          // Values complete — show results
+          d.valuesComplete && h('div', { className: 'space-y-4' },
+            // Ranked values display
+            h('div', { className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl border-2 border-rose-200 p-5' },
+              h('h4', { className: 'text-base font-bold text-rose-800 mb-3' }, '\uD83D\uDC8E Your Values Profile'),
+              h('div', { className: 'space-y-2' },
+                (d.valuesRanked || []).map(function(vid, idx) {
+                  var v = VALUES_LIST.find(function(val) { return val.id === vid; });
+                  if (!v) return null;
+                  return h('div', { key: vid, className: 'flex items-center gap-3 bg-white rounded-lg p-3 border border-rose-100' },
+                    h('span', { className: 'text-lg font-black text-rose-600 w-6 text-center' }, '#' + (idx + 1)),
+                    h('span', { className: 'text-lg' }, v.emoji),
+                    h('span', { className: 'font-bold text-sm text-slate-800' }, v.name)
+                  );
+                })
+              )
+            ),
+
+            // AI insight
+            d.valuesAIResp && h('div', { className: 'bg-rose-50 border border-rose-200 rounded-2xl p-5' },
+              h('div', { className: 'flex items-center gap-2 mb-2' },
+                h(Sparkles, { size: 14, className: 'text-rose-500' }),
+                h('h4', { className: 'text-sm font-bold text-rose-700' }, 'AI Values Insight')
+              ),
+              h('p', { className: 'text-sm text-slate-700 leading-relaxed whitespace-pre-line' }, d.valuesAIResp)
+            ),
+
+            h('button', { onClick: function() { updMulti({ valuesStarted: false, valuesComplete: false, valuesSelected: [], valuesRanked: [], valuesReflection: '', valuesAIResp: null }); },
+              className: 'w-full px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors'
+            }, '\uD83D\uDD04 Retake Values Exercise')
+          )
+        ),
+
+        // ═══ DECISION TREE BUILDER TAB ═══
+        tab === 'decisiontree' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDF32 Ethical Decision Tree Builder'),
+            h('p', { className: 'text-sm text-slate-500' }, 'Walk through ethical reasoning step by step and build your decision tree.')
+          ),
+
+          !d.dtStarted && h('div', { className: 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200 p-5 text-center' },
+            h('span', { className: 'text-4xl block mb-3' }, '\uD83C\uDF32'),
+            h('h4', { className: 'text-base font-bold text-green-800 mb-2' }, 'Build Your Ethical Decision Tree'),
+            h('p', { className: 'text-sm text-slate-600 leading-relaxed mb-3' }, 'Think through an ethical question step by step. At each step, you\u2019ll go deeper into the reasoning. At the end, you\u2019ll have a clear summary of your thinking process.'),
+            h('button', { onClick: function() { updMulti({ dtStarted: true, dtStep: 0, dtQuestion: '', dtAffected: '', dtActions: '', dtFrameworks: '', dtDecision: '', decisionTreeComplete: false, dtSummary: null }); },
+              className: 'px-6 py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-colors'
+            }, 'Start Building')
+          ),
+
+          d.dtStarted && !d.decisionTreeComplete && (function() {
+            var step = d.dtStep || 0;
+            var steps = [
+              { label: 'Step 1: What is the ethical question?', field: 'dtQuestion', placeholder: 'e.g., "Should I tell the teacher that my friend cheated?" or "Is it okay to use AI for homework?"', prompt: 'Describe the ethical question or dilemma you\u2019re facing.' },
+              { label: 'Step 2: Who is affected?', field: 'dtAffected', placeholder: 'e.g., "Me, my friend, the teacher, other students, my friend\u2019s parents..."', prompt: 'List all the people (stakeholders) who would be affected by your decision.' },
+              { label: 'Step 3: What are the possible actions?', field: 'dtActions', placeholder: 'e.g., "Option A: Tell the teacher. Option B: Talk to my friend first. Option C: Stay quiet."', prompt: 'List at least 2-3 possible actions you could take.' },
+              { label: 'Step 4: Apply ethical frameworks', field: 'dtFrameworks', placeholder: 'e.g., "Golden Rule: How would I want to be treated? Utilitarianism: What creates the most good? Duty ethics: What\u2019s the right principle?"', prompt: 'Think about what different ethical frameworks would say about each option. Use frameworks you\u2019ve learned.' },
+              { label: 'Step 5: What would you decide and why?', field: 'dtDecision', placeholder: 'e.g., "I would choose Option B because... The framework that resonates most with me is... because..."', prompt: 'State your decision and explain your reasoning clearly.' }
+            ];
+            var currentStep = steps[step];
+            if (!currentStep) return null;
+
+            return h('div', { className: 'space-y-4' },
+              // Progress
+              h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
+                h('div', { className: 'bg-green-500 h-full transition-all duration-300', style: { width: Math.round(((step + 1) / steps.length) * 100) + '%' } })
+              ),
+              h('p', { className: 'text-[10px] text-slate-400 text-center' }, 'Step ' + (step + 1) + ' of ' + steps.length),
+
+              // Previous steps summary (show completed steps)
+              step > 0 && h('div', { className: 'space-y-2' },
+                steps.slice(0, step).map(function(s, i) {
+                  return h('div', { key: i, className: 'bg-green-50 border border-green-200 rounded-lg p-3' },
+                    h('p', { className: 'text-[10px] font-bold text-green-700' }, s.label),
+                    h('p', { className: 'text-xs text-slate-600 mt-1' }, d[s.field] || '(not answered)')
+                  );
+                })
+              ),
+
+              // Current step
+              h('div', { className: 'bg-white rounded-2xl border-2 border-green-200 p-5' },
+                h('h4', { className: 'text-sm font-bold text-green-800 mb-2' }, currentStep.label),
+                h('p', { className: 'text-xs text-slate-500 mb-3' }, currentStep.prompt),
+                h('textarea', { value: d[currentStep.field] || '', onChange: function(e) { upd(currentStep.field, e.target.value); },
+                  placeholder: currentStep.placeholder,
+                  className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-green-300',
+                  'aria-label': currentStep.label
+                }),
+
+                // Framework helper on step 4
+                step === 3 && h('div', { className: 'mt-3 bg-green-50 rounded-lg p-3 border border-green-200' },
+                  h('p', { className: 'text-[10px] font-bold text-green-700 mb-1' }, '\uD83C\uDFDB\uFE0F Frameworks you\u2019ve learned:'),
+                  h('div', { className: 'flex flex-wrap gap-1' },
+                    (FRAMEWORKS_BY_BAND[gradeBand] || FRAMEWORKS_BY_BAND.elementary).map(function(fw) {
+                      return h('span', { key: fw.id, className: 'px-2 py-0.5 bg-white border border-green-200 rounded text-[9px] text-green-700 font-medium' }, fw.emoji + ' ' + fw.name);
+                    })
+                  )
+                )
+              ),
+
+              // Navigation
+              h('div', { className: 'flex gap-2' },
+                step > 0 && h('button', { onClick: function() { upd('dtStep', step - 1); },
+                  className: 'px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200'
+                }, '\u2190 Previous'),
+                h('div', { className: 'flex-1' }),
+                step < steps.length - 1 && h('button', { onClick: function() {
+                  if (d[currentStep.field] && d[currentStep.field].length > 5) {
+                    upd('dtStep', step + 1);
+                    ctx.awardXP(3);
+                  } else {
+                    addToast('Please write a response before moving to the next step.');
+                  }
+                },
+                  className: 'px-4 py-2 bg-green-600 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition-colors'
+                }, 'Next \u2192'),
+                step === steps.length - 1 && d[currentStep.field] && d[currentStep.field].length > 10 && h('button', { onClick: function() {
+                  // Generate summary
+                  var summaryText = '\u2550\u2550\u2550 ETHICAL DECISION TREE SUMMARY \u2550\u2550\u2550\n\n' +
+                    '\u2753 ETHICAL QUESTION:\n' + (d.dtQuestion || '') + '\n\n' +
+                    '\uD83D\uDC65 WHO IS AFFECTED:\n' + (d.dtAffected || '') + '\n\n' +
+                    '\uD83D\uDD00 POSSIBLE ACTIONS:\n' + (d.dtActions || '') + '\n\n' +
+                    '\uD83C\uDFDB\uFE0F FRAMEWORK ANALYSIS:\n' + (d.dtFrameworks || '') + '\n\n' +
+                    '\u2705 MY DECISION:\n' + (d.dtDecision || '') + '\n';
+                  updMulti({ decisionTreeComplete: true, dtSummary: summaryText });
+                  ctx.awardXP(15);
+                  addToast('\uD83C\uDF32 Decision Tree Builder badge earned!');
+                },
+                  className: 'px-6 py-2 bg-green-600 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition-colors flex items-center gap-2'
+                }, '\u2705 Complete Decision Tree')
+              )
+            );
+          })(),
+
+          // Decision tree complete
+          d.decisionTreeComplete && h('div', { className: 'space-y-4' },
+            h('div', { className: 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200 p-5' },
+              h('div', { className: 'flex items-center gap-2 mb-3' },
+                h('span', { className: 'text-3xl' }, '\uD83C\uDF32'),
+                h('h4', { className: 'text-base font-bold text-green-800' }, 'Your Ethical Decision Tree')
+              ),
+              h('pre', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-wrap font-sans bg-white rounded-xl p-4 border border-green-200' }, d.dtSummary)
+            ),
+
+            // Copy/export button
+            h('button', { onClick: function() {
+              if (navigator.clipboard && d.dtSummary) {
+                navigator.clipboard.writeText(d.dtSummary).then(function() {
+                  addToast('\u2705 Decision tree copied to clipboard!');
+                }).catch(function() {
+                  addToast('Could not copy. Try selecting and copying the text manually.');
+                });
+              }
+            },
+              className: 'w-full px-4 py-2 bg-green-100 border border-green-200 rounded-lg text-xs font-bold text-green-700 hover:bg-green-200 transition-colors'
+            }, '\uD83D\uDCCB Copy to Clipboard'),
+
+            h('button', { onClick: function() { updMulti({ dtStarted: false, decisionTreeComplete: false, dtStep: 0, dtQuestion: '', dtAffected: '', dtActions: '', dtFrameworks: '', dtDecision: '', dtSummary: null }); },
+              className: 'w-full px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors'
+            }, '\uD83C\uDF32 Build Another Decision Tree')
+          )
+        ),
+
+        // ═══ PHILOSOPHY CORNER TAB ═══
+        tab === 'philosophy' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83E\uDDD0 Philosophy Corner'),
+            h('p', { className: 'text-sm text-slate-500' }, 'Meet the thinkers who shaped how we reason about right and wrong.')
+          ),
+
+          // Grade band selector
+          h('div', { className: 'flex justify-center gap-2 mb-3' },
+            ['elementary', 'middle', 'high'].map(function(band) {
+              return h('button', { key: band, onClick: function() { upd('philBand', band); },
+                className: 'px-3 py-1 rounded-full text-[10px] font-bold transition-all ' +
+                  ((d.philBand || gradeBand) === band ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+              }, band === 'elementary' ? '\uD83C\uDF1F Elementary' : band === 'middle' ? '\uD83D\uDE80 Middle' : '\uD83C\uDF93 High');
+            })
+          ),
+
+          // Philosopher cards
+          (PHILOSOPHERS[d.philBand || gradeBand] || PHILOSOPHERS.elementary).map(function(phil) {
+            var isExpanded = d.philExpanded === phil.id;
+            var explored = (d.philosophersExplored || []).slice();
+            return h('div', { key: phil.id,
+              className: 'rounded-2xl border-2 overflow-hidden transition-all ' + (isExpanded ? 'border-purple-400 bg-purple-50 shadow-md' : 'border-slate-200 bg-white hover:border-purple-300')
+            },
+              h('button', { onClick: function() {
+                if (!isExpanded) {
+                  if (explored.indexOf(phil.id) === -1) explored.push(phil.id);
+                  updMulti({ philExpanded: phil.id, philosophersExplored: explored });
+                  ctx.awardXP(3);
+                  if (explored.length >= 4) { addToast('\uD83E\uDDD0 Philosophy Fan badge earned!'); }
+                } else {
+                  upd('philExpanded', null);
+                }
+              }, className: 'w-full p-4 text-left' },
+                h('div', { className: 'flex items-center gap-3' },
+                  h('span', { className: 'text-2xl' }, phil.emoji),
+                  h('div', { className: 'flex-1' },
+                    h('div', { className: 'font-bold text-sm text-slate-800' }, phil.name),
+                    h('div', { className: 'text-[10px] text-slate-400 font-medium' }, phil.years + ' \u2014 ' + phil.tagline)
+                  ),
+                  (d.philosophersExplored || []).indexOf(phil.id) !== -1 && h('span', { className: 'text-[9px] text-purple-500 font-bold' }, '\u2713 Explored')
+                )
+              ),
+              isExpanded && h('div', { className: 'px-4 pb-4 space-y-3' },
+                h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, phil.bio),
+
+                h('div', { className: 'bg-white rounded-xl p-3 border border-purple-200' },
+                  h('p', { className: 'text-[10px] font-bold text-purple-700 mb-1' }, '\uD83D\uDCA1 Key Idea:'),
+                  h('p', { className: 'text-xs text-slate-600' }, phil.keyIdea)
+                ),
+
+                h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
+                  h('p', { className: 'text-[10px] font-bold text-amber-700 mb-1' }, '\uD83D\uDDE3\uFE0F Famous Quote:'),
+                  h('p', { className: 'text-xs text-amber-800 italic' }, '"' + phil.famousQuote + '"')
+                ),
+
+                h('div', { className: 'bg-green-50 rounded-xl p-3 border border-green-200' },
+                  h('p', { className: 'text-[10px] font-bold text-green-700 mb-1' }, '\uD83E\uDDEA Try It Yourself:'),
+                  h('p', { className: 'text-xs text-green-800' }, phil.tryIt)
+                ),
+
+                // Reflection area
+                h('textarea', { value: d['philReflect_' + phil.id] || '', onChange: function(e) { upd('philReflect_' + phil.id, e.target.value); },
+                  placeholder: 'What do you think about ' + phil.name + '\u2019s ideas? Do you agree or disagree?',
+                  className: 'w-full text-xs p-2 border border-slate-200 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-purple-300',
+                  'aria-label': 'Reflection on ' + phil.name
+                }),
+
+                // TTS
+                callTTS && h('button', { onClick: function() { callTTS(phil.bio); }, className: 'text-[10px] text-purple-500 hover:text-purple-700 font-bold' }, '\uD83D\uDD0A Read Bio Aloud')
+              )
+            );
+          })
+        ),
+
         // ═══ BADGES TAB ═══
         tab === 'badges' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
@@ -1247,7 +2076,7 @@ window.SelHub = window.SelHub || {
           // Stats summary
           h('div', { className: 'bg-gradient-to-r from-slate-50 to-indigo-50 rounded-xl border border-slate-200 p-4 mt-2' },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDCCA Your Progress'),
-            h('div', { className: 'grid grid-cols-2 gap-3 text-center' },
+            h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-3 text-center' },
               h('div', { className: 'bg-white rounded-lg p-3 border border-slate-200' },
                 h('p', { className: 'text-xl font-black text-indigo-600' }, (d.dilemmasCompleted || []).length),
                 h('p', { className: 'text-[10px] text-slate-500' }, 'Scenarios Completed')
@@ -1263,6 +2092,14 @@ window.SelHub = window.SelHub || {
               h('div', { className: 'bg-white rounded-lg p-3 border border-slate-200' },
                 h('p', { className: 'text-xl font-black text-indigo-600' }, Math.floor((d.dialogue || []).length / 2)),
                 h('p', { className: 'text-[10px] text-slate-500' }, 'Socratic Exchanges')
+              ),
+              h('div', { className: 'bg-white rounded-lg p-3 border border-slate-200' },
+                h('p', { className: 'text-xl font-black text-indigo-600' }, (d.caseStudiesCompleted || []).length),
+                h('p', { className: 'text-[10px] text-slate-500' }, 'Case Studies')
+              ),
+              h('div', { className: 'bg-white rounded-lg p-3 border border-slate-200' },
+                h('p', { className: 'text-xl font-black text-indigo-600' }, (d.philosophersExplored || []).length),
+                h('p', { className: 'text-[10px] text-slate-500' }, 'Philosophers Explored')
               )
             )
           )

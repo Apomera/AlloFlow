@@ -1,8 +1,10 @@
 // ═══════════════════════════════════════════════════════════════
-// sel_tool_journal.js — Feelings Journal Plugin (v2.0)
+// sel_tool_journal.js — Feelings Journal Plugin (v3.0)
 // Daily mood check-ins, free-write journaling, mood analytics,
 // AI-powered insight generation, coping strategies, mood calendar,
-// weekly summaries, sub-emotions, and achievement badges.
+// weekly summaries, sub-emotions, emotion vocabulary builder,
+// mood playlist generator, letter-to-self, AI pattern analysis,
+// and achievement badges.
 // Registered tool ID: "journal"
 // Category: responsible-decision-making
 // Grade-adaptive: uses ctx.gradeBand for vocabulary & depth
@@ -127,6 +129,118 @@ window.SelHub = window.SelHub || {
   };
 
   // ══════════════════════════════════════════════════════════════
+  // ── Mood Playlist Activities (post check-in activity cards) ──
+  // ══════════════════════════════════════════════════════════════
+  var MOOD_PLAYLIST = {
+    5: {
+      header: 'Celebrate!',
+      headerIcon: '\uD83C\uDF89',
+      activities: [
+        { icon: '\uD83C\uDF1F', label: 'Share your joy with someone', desc: 'Tell a friend, teacher, or family member what made your day great.' },
+        { icon: '\uD83C\uDFAF', label: 'Set a new goal', desc: 'Channel this great energy into something you want to achieve.' },
+        { icon: '\uD83E\uDD1D', label: 'Help someone else', desc: 'Pay it forward \u2014 your positive energy can lift others too.' },
+        { icon: '\uD83D\uDCF8', label: 'Capture the moment', desc: 'Write or draw what made today amazing so you can remember it.' },
+        { icon: '\uD83C\uDFB6', label: 'Create a victory playlist', desc: 'Add a song that captures this feeling to a playlist.' },
+        { icon: '\uD83D\uDE4F', label: 'Practice gratitude', desc: 'Name 3 specific things that contributed to this great day.' }
+      ]
+    },
+    4: {
+      header: 'Ride the Wave!',
+      headerIcon: '\uD83C\uDF0A',
+      activities: [
+        { icon: '\uD83C\uDFA8', label: 'Try something creative', desc: 'Draw, write, build \u2014 good moods fuel creativity!' },
+        { icon: '\uD83D\uDE4F', label: 'Practice gratitude', desc: 'Jot down 3 things you appreciate right now.' },
+        { icon: '\uD83D\uDCF1', label: 'Reach out to a friend', desc: 'Send a kind message to someone you care about.' },
+        { icon: '\uD83D\uDCDA', label: 'Learn something new', desc: 'Watch a documentary, read an article, or explore a topic.' },
+        { icon: '\uD83C\uDF31', label: 'Plan something fun', desc: 'Give yourself something to look forward to this week.' },
+        { icon: '\uD83D\uDCDD', label: 'Journal about it', desc: 'Writing about good days helps you remember what works.' }
+      ]
+    },
+    3: {
+      header: 'Gentle Boost',
+      headerIcon: '\u2600\uFE0F',
+      activities: [
+        { icon: '\uD83D\uDEB6', label: 'Take a walk', desc: 'Even 5 minutes of movement can shift your mood.' },
+        { icon: '\uD83C\uDFB5', label: 'Listen to favorite music', desc: 'Put on songs that make you feel something.' },
+        { icon: '\u270D\uFE0F', label: 'Draw or doodle', desc: 'No rules \u2014 just let your hand move on paper.' },
+        { icon: '\uD83D\uDCA7', label: 'Drink some water', desc: 'Hydration matters more than you think for mood.' },
+        { icon: '\uD83E\uDDD8', label: 'Stretch for 2 minutes', desc: 'Release tension in your shoulders, neck, and back.' },
+        { icon: '\uD83D\uDE34', label: 'Take a rest', desc: 'Sometimes \u201Cokay\u201D just means you need a pause.' }
+      ]
+    },
+    2: {
+      header: 'Self-Care Time',
+      headerIcon: '\uD83D\uDC9C',
+      activities: [
+        { icon: '\uD83C\uDF2C\uFE0F', label: 'Deep breathing exercise', desc: 'Try 4-7-8 breathing: in for 4, hold for 7, out for 8.' },
+        { icon: '\uD83D\uDCD3', label: 'Journal about it', desc: 'Writing can help you process and release difficult feelings.' },
+        { icon: '\uD83D\uDCAC', label: 'Talk to someone you trust', desc: 'You don\u2019t have to carry this alone \u2014 reach out.' },
+        { icon: '\uD83D\uDECB\uFE0F', label: 'Do something comforting', desc: 'A warm drink, a cozy blanket, a favorite show.' },
+        { icon: '\uD83C\uDFB6', label: 'Listen to calming music', desc: 'Music can soothe your nervous system.' },
+        { icon: '\uD83D\uDC3E', label: 'Spend time with a pet', desc: 'Animals provide comfort without judgment.' }
+      ]
+    },
+    1: {
+      header: 'You Matter',
+      headerIcon: '\u2764\uFE0F',
+      activities: [
+        { icon: '\uD83D\uDCDE', label: 'Reach out to a trusted adult NOW', desc: 'A parent, teacher, counselor \u2014 someone who cares about you.' },
+        { icon: '\uD83D\uDCF1', label: 'Call 988 Suicide & Crisis Lifeline', desc: 'Free, confidential support 24/7. Call or text 988.' },
+        { icon: '\uD83D\uDCAC', label: 'Text HOME to 741741', desc: 'Crisis Text Line \u2014 free 24/7 support via text.' },
+        { icon: '\uD83E\uDDE1', label: 'Remember: this feeling is temporary', desc: 'Hard moments pass. You have survived every bad day so far.' },
+        { icon: '\uD83C\uDF2C\uFE0F', label: 'Try grounding (5-4-3-2-1)', desc: '5 things you see, 4 you touch, 3 you hear, 2 you smell, 1 you taste.' },
+        { icon: '\uD83D\uDCA7', label: 'It\u2019s okay to cry', desc: 'Tears are not weakness. They are your body processing pain.' }
+      ]
+    }
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Expanded Emotion Vocabulary (6 per mood level) ──
+  // ══════════════════════════════════════════════════════════════
+  var EXPANDED_EMOTIONS = {
+    5: [
+      { emoji: '\uD83E\uDD29', label: 'Ecstatic' },
+      { emoji: '\uD83D\uDE0E', label: 'Proud' },
+      { emoji: '\uD83D\uDE4F', label: 'Grateful' },
+      { emoji: '\u26A1',       label: 'Energized' },
+      { emoji: '\uD83E\uDD70', label: 'Loved' },
+      { emoji: '\u2728',       label: 'Inspired' }
+    ],
+    4: [
+      { emoji: '\uD83D\uDE0C', label: 'Content' },
+      { emoji: '\uD83D\uDE0C', label: 'Relieved' },
+      { emoji: '\uD83C\uDF1F', label: 'Optimistic' },
+      { emoji: '\uD83D\uDE04', label: 'Amused' },
+      { emoji: '\uD83E\uDDD8', label: 'Calm' },
+      { emoji: '\uD83D\uDCAA', label: 'Motivated' }
+    ],
+    3: [
+      { emoji: '\uD83E\uDD14', label: 'Uncertain' },
+      { emoji: '\uD83D\uDE15', label: 'Restless' },
+      { emoji: '\uD83D\uDE36', label: 'Numb' },
+      { emoji: '\uD83D\uDE14', label: 'Distracted' },
+      { emoji: '\uD83D\uDE11', label: 'Meh' },
+      { emoji: '\u2696\uFE0F', label: 'Ambivalent' }
+    ],
+    2: [
+      { emoji: '\uD83D\uDE30', label: 'Anxious' },
+      { emoji: '\uD83D\uDE14', label: 'Lonely' },
+      { emoji: '\uD83D\uDE24', label: 'Frustrated' },
+      { emoji: '\uD83D\uDE33', label: 'Embarrassed' },
+      { emoji: '\uD83D\uDE12', label: 'Jealous' },
+      { emoji: '\uD83D\uDE1E', label: 'Guilty' }
+    ],
+    1: [
+      { emoji: '\uD83D\uDE16', label: 'Hopeless' },
+      { emoji: '\uD83D\uDE28', label: 'Panicked' },
+      { emoji: '\uD83D\uDE2D', label: 'Devastated' },
+      { emoji: '\uD83D\uDE30', label: 'Trapped' },
+      { emoji: '\uD83D\uDE1E', label: 'Worthless' },
+      { emoji: '\uD83D\uDE21', label: 'Enraged' }
+    ]
+  };
+
+  // ══════════════════════════════════════════════════════════════
   // ── Writing Prompts (grade-adaptive) ──
   // ══════════════════════════════════════════════════════════════
   var PROMPTS = {
@@ -224,7 +338,12 @@ window.SelHub = window.SelHub || {
     { id: 'coping_practitioner', icon: '\uD83E\uDDD8', name: 'Coping Practitioner', desc: 'Tap 3 different coping strategy cards' },
     { id: 'weekly_reviewer',  icon: '\uD83D\uDCCB', name: 'Weekly Reviewer',    desc: 'View your first weekly mood summary' },
     { id: 'streak_30',        icon: '\uD83D\uDC8E', name: '30-Day Streak',      desc: 'Check in 30 days in a row \u2014 incredible!' },
-    { id: 'prompt_master',    icon: '\uD83C\uDFA8', name: 'Prompt Master',      desc: 'Use 10 or more different writing prompts' }
+    { id: 'prompt_master',    icon: '\uD83C\uDFA8', name: 'Prompt Master',      desc: 'Use 10 or more different writing prompts' },
+    { id: 'emotion_wordsmith', icon: '\uD83D\uDCDA', name: 'Emotion Wordsmith', desc: 'Use 10+ unique emotion vocabulary words' },
+    { id: 'letter_writer',    icon: '\u2709\uFE0F', name: 'Letter Writer',     desc: 'Write a letter to your past or future self' },
+    { id: 'mood_detective',    icon: '\uD83D\uDD0E', name: 'Mood Detective',    desc: 'View AI mood pattern analysis' },
+    { id: 'selfcare_practitioner', icon: '\uD83C\uDF3F', name: 'Self-Care Practitioner', desc: 'Complete 5 mood playlist activities' },
+    { id: 'consistent_journaler', icon: '\uD83D\uDCD6', name: 'Consistent Journaler', desc: 'Write 20 total journal entries (including letters)' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -282,6 +401,138 @@ window.SelHub = window.SelHub || {
       if (je.prompt) seen[je.prompt] = true;
     });
     return Object.keys(seen).length;
+  }
+
+  function countUniqueEmotionWords(checkIns) {
+    var seen = {};
+    (checkIns || []).forEach(function(ci) {
+      if (ci.subEmotion) seen[ci.subEmotion] = true;
+      if (ci.expandedEmotion) seen[ci.expandedEmotion] = true;
+    });
+    return Object.keys(seen).length;
+  }
+
+  function getEmotionWordsList(checkIns) {
+    var seen = {};
+    (checkIns || []).forEach(function(ci) {
+      if (ci.subEmotion) seen[ci.subEmotion] = true;
+      if (ci.expandedEmotion) seen[ci.expandedEmotion] = true;
+    });
+    return Object.keys(seen);
+  }
+
+  function countPlaylistCompleted(completedActivities) {
+    var count = 0;
+    var keys = Object.keys(completedActivities || {});
+    keys.forEach(function(k) { if (completedActivities[k]) count++; });
+    return count;
+  }
+
+  function generateMoodPatternAnalysis(checkIns) {
+    if (!checkIns || checkIns.length < 5) return null;
+    var analysis = [];
+
+    // 1. Weekday vs weekend comparison
+    var weekdayTotal = 0, weekdayCount = 0;
+    var weekendTotal = 0, weekendCount = 0;
+    checkIns.forEach(function(ci) {
+      var day = new Date(ci.timestamp).getDay();
+      if (day === 0 || day === 6) { weekendTotal += ci.mood; weekendCount++; }
+      else { weekdayTotal += ci.mood; weekdayCount++; }
+    });
+    if (weekdayCount > 0 && weekendCount > 0) {
+      var wdAvg = Math.round(weekdayTotal / weekdayCount * 10) / 10;
+      var weAvg = Math.round(weekendTotal / weekendCount * 10) / 10;
+      if (Math.abs(wdAvg - weAvg) >= 0.3) {
+        if (wdAvg > weAvg) {
+          analysis.push({ icon: '\uD83D\uDCBC', text: 'You tend to feel better on weekdays (avg ' + wdAvg.toFixed(1) + ') than weekends (avg ' + weAvg.toFixed(1) + ').' });
+        } else {
+          analysis.push({ icon: '\uD83C\uDFD6\uFE0F', text: 'You tend to feel better on weekends (avg ' + weAvg.toFixed(1) + ') than weekdays (avg ' + wdAvg.toFixed(1) + ').' });
+        }
+      }
+    }
+
+    // 2. Trigger correlation
+    var trigMoods = {};
+    checkIns.forEach(function(ci) {
+      (ci.triggers || []).forEach(function(t) {
+        if (!trigMoods[t]) trigMoods[t] = { total: 0, count: 0 };
+        trigMoods[t].total += ci.mood;
+        trigMoods[t].count++;
+      });
+    });
+    var trigKeys = Object.keys(trigMoods).filter(function(k) { return trigMoods[k].count >= 2; });
+    trigKeys.sort(function(a, b) { return (trigMoods[b].total / trigMoods[b].count) - (trigMoods[a].total / trigMoods[a].count); });
+    if (trigKeys.length >= 2) {
+      var best = trigKeys[0];
+      var worst = trigKeys[trigKeys.length - 1];
+      var bestAvg = Math.round(trigMoods[best].total / trigMoods[best].count * 10) / 10;
+      var worstAvg = Math.round(trigMoods[worst].total / trigMoods[worst].count * 10) / 10;
+      if (bestAvg !== worstAvg) {
+        analysis.push({ icon: '\uD83C\uDFF7\uFE0F', text: 'When you tag \u201C' + best + '\u201D your mood averages ' + bestAvg.toFixed(1) + '. When you tag \u201C' + worst + '\u201D it averages ' + worstAvg.toFixed(1) + '.' });
+      }
+    }
+
+    // 3. Growth recognition (last 2 weeks vs previous 2 weeks)
+    var now = Date.now();
+    var twoWeeks = 14 * 86400000;
+    var recent = checkIns.filter(function(ci) { return ci.timestamp > now - twoWeeks; });
+    var older = checkIns.filter(function(ci) { return ci.timestamp <= now - twoWeeks && ci.timestamp > now - (twoWeeks * 2); });
+    if (recent.length >= 3 && older.length >= 3) {
+      var recentAvg = 0;
+      recent.forEach(function(ci) { recentAvg += ci.mood; });
+      recentAvg = recentAvg / recent.length;
+      var olderAvg = 0;
+      older.forEach(function(ci) { olderAvg += ci.mood; });
+      olderAvg = olderAvg / older.length;
+      var changePct = Math.round((recentAvg - olderAvg) / olderAvg * 100);
+      if (changePct > 5) {
+        analysis.push({ icon: '\uD83D\uDCC8', text: 'Your mood has improved ' + changePct + '% over the last 2 weeks. Keep it up!' });
+      } else if (changePct < -5) {
+        analysis.push({ icon: '\uD83D\uDCC9', text: 'Your mood has dipped ' + Math.abs(changePct) + '% over the last 2 weeks. Be extra kind to yourself.' });
+      } else {
+        analysis.push({ icon: '\u2696\uFE0F', text: 'Your mood has been steady over the last 2 weeks \u2014 stability is a strength.' });
+      }
+    }
+
+    // 4. Time-of-day pattern
+    var morningTotal = 0, morningCount = 0;
+    var afternoonTotal = 0, afternoonCount = 0;
+    var eveningTotal = 0, eveningCount = 0;
+    checkIns.forEach(function(ci) {
+      var hr = new Date(ci.timestamp).getHours();
+      if (hr < 12) { morningTotal += ci.mood; morningCount++; }
+      else if (hr < 17) { afternoonTotal += ci.mood; afternoonCount++; }
+      else { eveningTotal += ci.mood; eveningCount++; }
+    });
+    var timeParts = [];
+    if (morningCount >= 2) timeParts.push({ name: 'mornings', avg: morningTotal / morningCount });
+    if (afternoonCount >= 2) timeParts.push({ name: 'afternoons', avg: afternoonTotal / afternoonCount });
+    if (eveningCount >= 2) timeParts.push({ name: 'evenings', avg: eveningTotal / eveningCount });
+    if (timeParts.length >= 2) {
+      timeParts.sort(function(a, b) { return b.avg - a.avg; });
+      if (timeParts[0].avg - timeParts[timeParts.length - 1].avg >= 0.4) {
+        analysis.push({ icon: '\u23F0', text: 'You tend to feel best during ' + timeParts[0].name + ' (avg ' + timeParts[0].avg.toFixed(1) + ').' });
+      }
+    }
+
+    // 5. Energy-mood correlation
+    var highEnergyMood = 0, highEnergyCount = 0;
+    var lowEnergyMood = 0, lowEnergyCount = 0;
+    checkIns.forEach(function(ci) {
+      var e = ci.energy || 3;
+      if (e >= 4) { highEnergyMood += ci.mood; highEnergyCount++; }
+      else if (e <= 2) { lowEnergyMood += ci.mood; lowEnergyCount++; }
+    });
+    if (highEnergyCount >= 2 && lowEnergyCount >= 2) {
+      var heAvg = Math.round(highEnergyMood / highEnergyCount * 10) / 10;
+      var leAvg = Math.round(lowEnergyMood / lowEnergyCount * 10) / 10;
+      if (heAvg - leAvg >= 0.5) {
+        analysis.push({ icon: '\u26A1', text: 'When your energy is high, your mood averages ' + heAvg.toFixed(1) + ' vs ' + leAvg.toFixed(1) + ' on low-energy days.' });
+      }
+    }
+
+    return analysis.length > 0 ? analysis : null;
   }
 
   function getWeekBounds(dateObj) {
@@ -423,6 +674,22 @@ window.SelHub = window.SelHub || {
 
         // Weekly summary state
         var showWeekly     = d.showWeekly || false;
+
+        // Expanded emotion vocabulary state
+        var ciExpandedEmotion = d.ciExpandedEmotion || null;
+
+        // Mood playlist state
+        var playlistCompleted = d.playlistCompleted || {};
+
+        // Letter to Self state
+        var letterMode       = d.letterMode || null; // 'future' | 'past' | null
+        var letterText       = d.letterText || '';
+        var letterTimePeriod = d.letterTimePeriod || '1month';
+        var letterEntries    = d.letterEntries || [];
+        var letterViewingPast = d.letterViewingPast || false;
+
+        // Mood pattern analysis state
+        var moodPatterns     = d.moodPatterns || null;
 
         var ACCENT = '#ec4899';
         var ACCENT_DIM = '#ec489922';
@@ -573,6 +840,52 @@ window.SelHub = window.SelHub || {
                       h('span', { style: { fontSize: 10, color: isSel ? col : '#94a3b8', fontWeight: 600 } }, sub.label)
                     );
                   })
+                ),
+
+                // ── Emotion Vocabulary Builder (expanded sub-emotions) ──
+                ciSubEmotion && EXPANDED_EMOTIONS[ciMood] && h('div', { style: { marginTop: 12, paddingTop: 12, borderTop: '1px solid #334155' } },
+                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textAlign: 'center', fontWeight: 500 } },
+                    band === 'elementary' ? '\uD83D\uDCDA Can you get even more specific? Build your feelings vocabulary!' : '\uD83D\uDCDA Expand your emotion vocabulary \u2014 pick a more precise word:'
+                  ),
+                  h('div', { style: { display: 'flex', justifyContent: 'center', gap: 6, flexWrap: 'wrap' } },
+                    EXPANDED_EMOTIONS[ciMood].map(function(exp) {
+                      var isSel = ciExpandedEmotion === exp.label;
+                      var moodColor = MOODS.find(function(m) { return m.id === ciMood; });
+                      var col = moodColor ? moodColor.color : ACCENT;
+                      return h('button', {
+                        key: exp.label,
+                        onClick: function() {
+                          upd('ciExpandedEmotion', isSel ? null : exp.label);
+                          if (soundEnabled) sfxClick();
+                        },
+                        style: {
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                          padding: '6px 10px', borderRadius: 10,
+                          border: isSel ? '2px solid ' + col : '1px solid #334155',
+                          background: isSel ? col + '22' : '#1e293b',
+                          cursor: 'pointer', transition: 'all 0.15s', minWidth: 60
+                        }
+                      },
+                        h('span', { style: { fontSize: 18 } }, exp.emoji),
+                        h('span', { style: { fontSize: 9, color: isSel ? col : '#94a3b8', fontWeight: 600 } }, exp.label)
+                      );
+                    })
+                  ),
+                  // Emotion vocabulary tracker
+                  (function() {
+                    var usedWords = getEmotionWordsList(checkIns);
+                    var currentCount = countUniqueEmotionWords(checkIns);
+                    // Include current selections in display count
+                    var pending = {};
+                    if (ciSubEmotion) pending[ciSubEmotion] = true;
+                    if (ciExpandedEmotion) pending[ciExpandedEmotion] = true;
+                    usedWords.forEach(function(w) { pending[w] = true; });
+                    var displayCount = Object.keys(pending).length;
+                    return h('div', { style: { marginTop: 10, textAlign: 'center', fontSize: 11, color: '#64748b' } },
+                      '\uD83D\uDCDA Your Emotion Vocabulary: ' + displayCount + ' word' + (displayCount !== 1 ? 's' : '') + ' used',
+                      displayCount >= 10 && h('span', { style: { color: '#22c55e', marginLeft: 6, fontWeight: 600 } }, '\u2605 Wordsmith!')
+                    );
+                  })()
                 )
               )
             ),
@@ -657,13 +970,14 @@ window.SelHub = window.SelHub || {
                   thoughts: ciThoughts,
                   triggers: ciTriggers.slice(),
                   gratitude: ciGratitude,
-                  subEmotion: ciSubEmotion || null
+                  subEmotion: ciSubEmotion || null,
+                  expandedEmotion: ciExpandedEmotion || null
                 };
                 var newCheckIns = checkIns.concat([entry]);
                 upd({
                   checkIns: newCheckIns,
                   ciMood: null, ciEnergy: 3, ciThoughts: '', ciTriggers: [], ciGratitude: '',
-                  ciSubEmotion: null, showCoping: ciMood
+                  ciSubEmotion: null, ciExpandedEmotion: null, showCoping: ciMood
                 });
                 if (soundEnabled) sfxSave();
                 awardXP(10);
@@ -680,6 +994,8 @@ window.SelHub = window.SelHub || {
                 if (newStreak >= 7) tryAwardBadge('streak_7');
                 if (newStreak >= 14) tryAwardBadge('streak_14');
                 if (newStreak >= 30) tryAwardBadge('streak_30');
+                // Emotion vocabulary badge
+                if (countUniqueEmotionWords(newCheckIns) >= 10) tryAwardBadge('emotion_wordsmith');
               },
               disabled: ciMood == null,
               style: {
@@ -732,6 +1048,71 @@ window.SelHub = window.SelHub || {
                   );
                 })
               )
+            ),
+
+            // ══════════════════════════════════════════════════
+            // ── Mood Playlist Generator (shown after save) ──
+            // ══════════════════════════════════════════════════
+            showCoping && MOOD_PLAYLIST[showCoping] && h('div', { style: { marginTop: 16, padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #334155' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 } },
+                h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9' } },
+                  MOOD_PLAYLIST[showCoping].headerIcon + ' ' + MOOD_PLAYLIST[showCoping].header
+                ),
+                h('div', { style: { fontSize: 10, color: '#64748b' } },
+                  countPlaylistCompleted(playlistCompleted) + ' activities completed'
+                )
+              ),
+              showCoping <= 1 && h('div', { style: { fontSize: 12, color: '#ef4444', marginBottom: 10, padding: '8px 12px', borderRadius: 8, background: '#ef444422', fontWeight: 600, lineHeight: 1.5 } },
+                '\u26A0\uFE0F If you are in crisis, please reach out to a trusted adult, call 988, or text HOME to 741741. This feeling is temporary.'
+              ),
+              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 12 } },
+                band === 'elementary' ? 'Try some of these activities to feel even better:' : 'Suggested activities based on your mood:'
+              ),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                MOOD_PLAYLIST[showCoping].activities.map(function(act, idx) {
+                  var actKey = showCoping + '_' + act.label;
+                  var isDone = !!playlistCompleted[actKey];
+                  return h('div', {
+                    key: idx,
+                    style: {
+                      display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px',
+                      borderRadius: 12, border: isDone ? '1px solid #22c55e44' : '1px solid #334155',
+                      background: isDone ? '#22c55e11' : '#1e293b', transition: 'all 0.2s'
+                    }
+                  },
+                    h('button', {
+                      onClick: function() {
+                        var newCompleted = Object.assign({}, playlistCompleted);
+                        if (isDone) {
+                          delete newCompleted[actKey];
+                        } else {
+                          newCompleted[actKey] = Date.now();
+                        }
+                        upd('playlistCompleted', newCompleted);
+                        if (!isDone) {
+                          if (soundEnabled) sfxCorrect();
+                          awardXP(5);
+                          addToast('Nice! Activity completed.', 'success');
+                          // Badge: selfcare_practitioner after 5 completed
+                          if (countPlaylistCompleted(newCompleted) >= 5) tryAwardBadge('selfcare_practitioner');
+                        }
+                      },
+                      style: {
+                        width: 24, height: 24, borderRadius: 6, flexShrink: 0,
+                        border: isDone ? '2px solid #22c55e' : '2px solid #475569',
+                        background: isDone ? '#22c55e' : 'transparent',
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: '#fff', fontSize: 14, fontWeight: 700, padding: 0
+                      }
+                    }, isDone ? '\u2713' : ''),
+                    h('span', { style: { fontSize: 20, flexShrink: 0 } }, act.icon),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontSize: 12, fontWeight: 600, color: isDone ? '#22c55e' : '#f1f5f9', marginBottom: 2, textDecoration: isDone ? 'line-through' : 'none' } }, act.label),
+                      h('div', { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.4 } }, act.desc)
+                    )
+                  );
+                })
+              )
             )
           );
         }
@@ -744,11 +1125,191 @@ window.SelHub = window.SelHub || {
           var prompts = PROMPTS[band] || PROMPTS.elementary;
           var currentPrompt = prompts[jPromptIdx % prompts.length];
 
-          journalContent = h('div', { style: { padding: 20, maxWidth: 520, margin: '0 auto' } },
-            !jViewingPast ? h('div', null,
-              h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } },
-                band === 'elementary' ? '\u270D\uFE0F Write About Your Feelings' : '\u270D\uFE0F Free-Write Journal'
+          // ── Journal sub-mode selector ──
+          var LETTER_TIME_OPTIONS = [
+            { id: '1week', label: '1 Week' },
+            { id: '1month', label: '1 Month' },
+            { id: '3months', label: '3 Months' }
+          ];
+
+          var journalSubTabs = h('div', { style: { display: 'flex', gap: 6, marginBottom: 16, justifyContent: 'center', flexWrap: 'wrap' } },
+            h('button', {
+              onClick: function() { upd({ letterMode: null, letterViewingPast: false }); if (soundEnabled) sfxClick(); },
+              style: {
+                padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                border: !letterMode && !letterViewingPast ? '1px solid ' + ACCENT : '1px solid #334155',
+                background: !letterMode && !letterViewingPast ? ACCENT_DIM : '#1e293b',
+                color: !letterMode && !letterViewingPast ? ACCENT : '#94a3b8'
+              }
+            }, '\u270D\uFE0F Free Write'),
+            h('button', {
+              onClick: function() { upd({ letterMode: 'future', jViewingPast: false, letterViewingPast: false }); if (soundEnabled) sfxClick(); },
+              style: {
+                padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                border: letterMode === 'future' ? '1px solid #22c55e' : '1px solid #334155',
+                background: letterMode === 'future' ? '#22c55e22' : '#1e293b',
+                color: letterMode === 'future' ? '#22c55e' : '#94a3b8'
+              }
+            }, '\uD83D\uDD2E Letter to Future Self'),
+            h('button', {
+              onClick: function() { upd({ letterMode: 'past', jViewingPast: false, letterViewingPast: false }); if (soundEnabled) sfxClick(); },
+              style: {
+                padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                border: letterMode === 'past' ? '1px solid #f59e0b' : '1px solid #334155',
+                background: letterMode === 'past' ? '#f59e0b22' : '#1e293b',
+                color: letterMode === 'past' ? '#f59e0b' : '#94a3b8'
+              }
+            }, '\uD83D\uDC8C Letter to Past Self'),
+            letterEntries.length > 0 && h('button', {
+              onClick: function() { upd({ letterViewingPast: true, letterMode: null, jViewingPast: false }); if (soundEnabled) sfxClick(); },
+              style: {
+                padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                border: letterViewingPast ? '1px solid #8b5cf6' : '1px solid #334155',
+                background: letterViewingPast ? '#8b5cf622' : '#1e293b',
+                color: letterViewingPast ? '#8b5cf6' : '#94a3b8'
+              }
+            }, '\u2709\uFE0F My Letters (' + letterEntries.length + ')')
+          );
+
+          // ── Letter to Self UI ──
+          var letterContent = null;
+          if (letterMode === 'future' || letterMode === 'past') {
+            var isFuture = letterMode === 'future';
+            var letterColor = isFuture ? '#22c55e' : '#f59e0b';
+            var letterPromptText = isFuture
+              ? (band === 'elementary'
+                ? 'Write a letter to the you of the future! What do you want to remember? What are you hoping for?'
+                : 'Write a letter to your future self. What advice would you give? What do you want to remember about how you feel right now?')
+              : (band === 'elementary'
+                ? 'Write a letter to the younger you. What would you say to help yourself feel better?'
+                : 'Write a letter to your past self. What encouragement, wisdom, or compassion would you offer?');
+
+            letterContent = h('div', null,
+              h('div', { style: { padding: 16, borderRadius: 14, background: letterColor + '11', border: '1px solid ' + letterColor + '44', marginBottom: 16, textAlign: 'center' } },
+                h('div', { style: { fontSize: 28, marginBottom: 8 } }, isFuture ? '\uD83D\uDD2E' : '\uD83D\uDC8C'),
+                h('div', { style: { fontSize: 14, fontWeight: 700, color: letterColor, marginBottom: 6 } },
+                  isFuture ? 'Letter to Your Future Self' : 'Letter to Your Past Self'
+                ),
+                h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.5 } }, letterPromptText)
               ),
+
+              // Date picker for future letters
+              isFuture && h('div', { style: { marginBottom: 16 } },
+                h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, fontWeight: 600 } }, 'When should future-you read this?'),
+                h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
+                  LETTER_TIME_OPTIONS.map(function(opt) {
+                    var isActive = letterTimePeriod === opt.id;
+                    return h('button', {
+                      key: opt.id,
+                      onClick: function() { upd('letterTimePeriod', opt.id); if (soundEnabled) sfxClick(); },
+                      style: {
+                        padding: '8px 16px', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                        border: isActive ? '2px solid ' + letterColor : '1px solid #334155',
+                        background: isActive ? letterColor + '22' : '#1e293b',
+                        color: isActive ? letterColor : '#94a3b8'
+                      }
+                    }, opt.label);
+                  })
+                )
+              ),
+
+              // Letter text area
+              h('textarea', {
+                value: letterText,
+                onChange: function(e) { upd('letterText', e.target.value); },
+                placeholder: isFuture ? 'Dear future me,...' : 'Dear younger me,...',
+                rows: 10,
+                style: { width: '100%', padding: '14px 16px', borderRadius: 12, border: '1px solid ' + letterColor + '44', background: '#0f172a', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7, resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 12 }
+              }),
+
+              h('button', {
+                onClick: function() {
+                  if (!letterText.trim()) { addToast('Write your letter first!', 'warning'); return; }
+                  var readDate = null;
+                  if (isFuture) {
+                    var now = new Date();
+                    if (letterTimePeriod === '1week') readDate = new Date(now.getTime() + 7 * 86400000).getTime();
+                    else if (letterTimePeriod === '1month') readDate = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate()).getTime();
+                    else readDate = new Date(now.getFullYear(), now.getMonth() + 3, now.getDate()).getTime();
+                  }
+                  var letterEntry = {
+                    timestamp: Date.now(),
+                    type: letterMode,
+                    text: letterText,
+                    readDate: readDate,
+                    timePeriod: isFuture ? letterTimePeriod : null
+                  };
+                  var newLetters = letterEntries.concat([letterEntry]);
+                  var totalJournalCount = journalEntries.length + newLetters.length;
+                  upd({ letterEntries: newLetters, letterText: '', letterMode: null });
+                  if (soundEnabled) sfxSave();
+                  awardXP(20);
+                  addToast(isFuture ? 'Letter sealed for future you!' : 'Letter to your past self saved!', 'success');
+                  tryAwardBadge('letter_writer');
+                  tryAwardBadge('first_journal');
+                  if (totalJournalCount >= 20) tryAwardBadge('consistent_journaler');
+                },
+                disabled: !letterText.trim(),
+                style: {
+                  width: '100%', padding: '14px 24px', borderRadius: 12, border: 'none',
+                  background: letterText.trim() ? letterColor : '#334155', color: '#fff', fontWeight: 700,
+                  fontSize: 14, cursor: letterText.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.15s'
+                }
+              }, isFuture ? '\uD83D\uDD12 Seal & Save Letter' : '\uD83D\uDCBE Save Letter')
+            );
+          }
+
+          // ── Letter Viewer ──
+          var letterViewerContent = null;
+          if (letterViewingPast && letterEntries.length > 0) {
+            letterViewerContent = h('div', null,
+              letterEntries.slice().reverse().map(function(letter, i) {
+                var isFutureLetter = letter.type === 'future';
+                var letterCol = isFutureLetter ? '#22c55e' : '#f59e0b';
+                var canRead = !isFutureLetter || !letter.readDate || Date.now() >= letter.readDate;
+                var readDateStr = letter.readDate ? new Date(letter.readDate).toLocaleDateString() : null;
+
+                return h('div', { key: i, style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid ' + letterCol + '33', marginBottom: 12 } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                      h('span', { style: { fontSize: 18 } }, isFutureLetter ? '\uD83D\uDD2E' : '\uD83D\uDC8C'),
+                      h('span', { style: { fontSize: 11, fontWeight: 700, color: letterCol } },
+                        isFutureLetter ? 'To Future Self' : 'To Past Self'
+                      )
+                    ),
+                    h('span', { style: { fontSize: 10, color: '#64748b' } }, new Date(letter.timestamp).toLocaleDateString())
+                  ),
+                  isFutureLetter && readDateStr && h('div', { style: { fontSize: 10, color: canRead ? '#22c55e' : '#f59e0b', marginBottom: 8, fontStyle: 'italic' } },
+                    canRead ? '\uD83D\uDD13 Unlocked! (scheduled for ' + readDateStr + ')' : '\uD83D\uDD12 Sealed until ' + readDateStr
+                  ),
+                  canRead
+                    ? h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: 0 } }, letter.text)
+                    : h('div', { style: { padding: 20, textAlign: 'center', borderRadius: 10, background: '#1e293b' } },
+                        h('div', { style: { fontSize: 28, marginBottom: 8 } }, '\uD83D\uDD12'),
+                        h('div', { style: { fontSize: 12, color: '#94a3b8' } }, 'This letter is sealed until ' + readDateStr + '.'),
+                        h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 4 } }, 'Be patient \u2014 future you will appreciate the wait!')
+                      )
+                );
+              })
+            );
+          }
+
+          journalContent = h('div', { style: { padding: 20, maxWidth: 520, margin: '0 auto' } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } },
+              band === 'elementary' ? '\u270D\uFE0F Write About Your Feelings' : '\u270D\uFE0F Free-Write Journal'
+            ),
+
+            // Sub-tab navigation
+            journalSubTabs,
+
+            // Letter viewing mode
+            letterViewingPast && letterEntries.length > 0 ? letterViewerContent :
+
+            // Letter writing mode
+            (letterMode === 'future' || letterMode === 'past') ? letterContent :
+
+            // Standard journal mode
+            (!jViewingPast ? h('div', null,
 
               // Prompt carousel
               h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'center' } },
@@ -785,6 +1346,7 @@ window.SelHub = window.SelHub || {
                     if (!jText.trim()) { addToast('Write something first!', 'warning'); return; }
                     var entry = { timestamp: Date.now(), prompt: currentPrompt, text: jText };
                     var newEntries = journalEntries.concat([entry]);
+                    var totalJournalCount = newEntries.length + letterEntries.length;
                     upd({ journalEntries: newEntries, jText: '', jPromptIdx: (jPromptIdx + 1) % prompts.length });
                     if (soundEnabled) sfxSave();
                     awardXP(15);
@@ -792,6 +1354,7 @@ window.SelHub = window.SelHub || {
                     tryAwardBadge('first_journal');
                     if (newEntries.length >= 3) tryAwardBadge('deep_writer');
                     if (uniquePromptsUsed(newEntries) >= 10) tryAwardBadge('prompt_master');
+                    if (totalJournalCount >= 20) tryAwardBadge('consistent_journaler');
                   },
                   disabled: !jText.trim(),
                   style: {
@@ -826,7 +1389,7 @@ window.SelHub = window.SelHub || {
                   h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, entry.text)
                 );
               })
-            )
+            ))
           );
         }
 
@@ -1125,6 +1688,68 @@ window.SelHub = window.SelHub || {
                   );
                 })
               ),
+
+              // ── Mood Patterns AI Analysis ──
+              (function() {
+                var patterns = generateMoodPatternAnalysis(checkIns);
+                if (!patterns) {
+                  var needed = 5 - checkIns.length;
+                  if (needed > 0) {
+                    return h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
+                      h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 600, marginBottom: 8 } }, '\uD83D\uDD0E Mood Pattern Analysis'),
+                      h('div', { style: { textAlign: 'center', padding: 12, fontSize: 12, color: '#64748b' } },
+                        'Need ' + needed + ' more check-in' + (needed !== 1 ? 's' : '') + ' to unlock pattern analysis!'
+                      )
+                    );
+                  }
+                  return null;
+                }
+                // Badge: mood_detective on first view of patterns
+                if (!earnedBadges['mood_detective']) tryAwardBadge('mood_detective');
+
+                return h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #8b5cf644', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 12, color: '#8b5cf6', fontWeight: 700, marginBottom: 12 } }, '\uD83D\uDD0E Mood Pattern Analysis'),
+                  h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                    patterns.map(function(p, idx) {
+                      return h('div', { key: idx, style: { display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 10, background: '#1e293b', border: '1px solid #334155' } },
+                        h('span', { style: { fontSize: 18, flexShrink: 0, marginTop: 2 } }, p.icon),
+                        h('p', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5, margin: 0 } }, p.text)
+                      );
+                    })
+                  ),
+                  h('div', { style: { marginTop: 10, fontSize: 10, color: '#64748b', textAlign: 'center', fontStyle: 'italic' } },
+                    'Based on ' + checkIns.length + ' check-ins. More data = better patterns!'
+                  )
+                );
+              })(),
+
+              // ── Emotion Vocabulary Summary ──
+              (function() {
+                var vocabWords = getEmotionWordsList(checkIns);
+                var vocabCount = vocabWords.length;
+                if (vocabCount === 0) return null;
+                return h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 600, marginBottom: 10 } },
+                    '\uD83D\uDCDA Emotion Vocabulary (' + vocabCount + ' word' + (vocabCount !== 1 ? 's' : '') + ')'
+                  ),
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                    vocabWords.map(function(word) {
+                      return h('span', { key: word, style: { padding: '4px 10px', borderRadius: 12, background: ACCENT_DIM, color: ACCENT, fontSize: 11, fontWeight: 500 } }, word);
+                    })
+                  ),
+                  vocabCount >= 10 && h('div', { style: { marginTop: 8, fontSize: 11, color: '#22c55e', fontWeight: 600, textAlign: 'center' } },
+                    '\u2605 Emotion Wordsmith! You\u2019ve used 10+ feeling words.'
+                  ),
+                  vocabCount < 10 && h('div', { style: { marginTop: 8 } },
+                    h('div', { style: { width: '100%', height: 6, borderRadius: 3, background: '#1e293b', overflow: 'hidden' } },
+                      h('div', { style: { width: Math.round(vocabCount / 10 * 100) + '%', height: '100%', borderRadius: 3, background: ACCENT, transition: 'width 0.3s' } })
+                    ),
+                    h('div', { style: { fontSize: 10, color: '#64748b', textAlign: 'center', marginTop: 4 } },
+                      vocabCount + '/10 words toward Emotion Wordsmith badge'
+                    )
+                  )
+                );
+              })(),
 
               // AI Insight
               h('div', { style: { padding: 16, borderRadius: 14, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },

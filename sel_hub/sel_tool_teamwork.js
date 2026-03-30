@@ -237,7 +237,14 @@ window.SelHub = window.SelHub || {
     { id: 'contract_creator',  icon: '\uD83D\uDCDC', name: 'Contract Creator',     desc: 'Build a team contract' },
     { id: 'challenge_champ',   icon: '\uD83E\uDD47', name: 'Challenge Champion',   desc: 'Complete 5 collaborative challenges' },
     { id: 'all_challenges',    icon: '\uD83C\uDF1F', name: 'All Challenges Done',  desc: 'Complete every challenge in your grade band' },
-    { id: 'teamwork_guru',     icon: '\uD83E\uDDD8', name: 'Teamwork Guru',        desc: 'Earn 12 or more badges' }
+    { id: 'teamwork_guru',     icon: '\uD83E\uDDD8', name: 'Teamwork Guru',        desc: 'Earn 12 or more badges' },
+    { id: 'comm_style',        icon: '\uD83D\uDDE3\uFE0F', name: 'Communication Style', desc: 'Discover your communication style' },
+    { id: 'virtual_team_pro',  icon: '\uD83D\uDCBB', name: 'Virtual Team Pro',    desc: 'Complete all virtual team scenarios' },
+    { id: 'conflict_converter', icon: '\u267B\uFE0F', name: 'Conflict Converter',  desc: 'Convert 3 conflicts into collaboration' },
+    { id: 'retro_runner',      icon: '\uD83D\uDD04', name: 'Retrospective Runner', desc: 'Complete a team retrospective' },
+    { id: 'master_collaborator', icon: '\uD83C\uDF1F', name: 'Master Collaborator', desc: 'Earn 18 or more badges' },
+    { id: 'virtual_scenario_1', icon: '\uD83D\uDCF1', name: 'Remote Ready',        desc: 'Complete your first virtual team scenario' },
+    { id: 'retro_exporter',    icon: '\uD83D\uDCE4', name: 'Retro Exporter',      desc: 'Export a retrospective as text' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -258,6 +265,141 @@ window.SelHub = window.SelHub || {
     communication: 5, listening: 5, flexibility: 4, reliability: 5,
     problemSolving: 4, encouragement: 4, organization: 4, conflictRes: 4
   };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Communication Styles Data ──
+  // ══════════════════════════════════════════════════════════════
+  var COMM_STYLES = {
+    director: { name: 'Director', icon: '\uD83C\uDFAF', color: '#ef4444',
+      desc: 'Task-focused and decisive. You like to get things done efficiently and lead by example.',
+      strengths: ['Makes quick decisions', 'Keeps the team on track', 'Results-oriented', 'Confident under pressure'],
+      blindSpots: ['May overlook others\u2019 feelings', 'Can seem impatient or controlling', 'Might skip important discussion for speed'],
+      workWith: 'Give Directors clear goals and deadlines. Let them take the lead on logistics. Don\u2019t take their directness personally \u2014 they mean well.' },
+    collaborator: { name: 'Collaborator', icon: '\uD83E\uDD1D', color: '#22c55e',
+      desc: 'Consensus-seeking and inclusive. You want everyone\u2019s voice heard before making decisions.',
+      strengths: ['Builds team unity', 'Values every perspective', 'Creates psychological safety', 'Strong relationship builder'],
+      blindSpots: ['Decisions may take too long', 'Can struggle with conflict or tough calls', 'Might avoid necessary confrontation'],
+      workWith: 'Give Collaborators time for discussion. Acknowledge their efforts to include everyone. Help them set decision deadlines so progress keeps moving.' },
+    analyzer: { name: 'Analyzer', icon: '\uD83D\uDD0D', color: '#3b82f6',
+      desc: 'Data-driven and careful. You like to research thoroughly before committing to a plan.',
+      strengths: ['Thorough and accurate', 'Catches mistakes early', 'Evidence-based thinking', 'Reduces risk'],
+      blindSpots: ['Can cause analysis paralysis', 'May seem overly cautious', 'Might frustrate action-oriented teammates'],
+      workWith: 'Give Analyzers data and time to review. Ask for their input on quality checks. Help them recognize when \u201Cgood enough\u201D is sufficient.' },
+    supporter: { name: 'Supporter', icon: '\uD83D\uDC9A', color: '#f59e0b',
+      desc: 'Harmony-focused and encouraging. You keep morale high and make sure nobody feels left out.',
+      strengths: ['Excellent listener', 'Boosts team morale', 'Mediates disagreements', 'Creates a positive environment'],
+      blindSpots: ['May avoid sharing own opinions', 'Can take on too much to keep peace', 'Might suppress important disagreements'],
+      workWith: 'Ask Supporters directly for their opinion \u2014 they may not volunteer it. Appreciate their emotional labor. Help them set boundaries.' }
+  };
+
+  var COMM_STYLE_QUESTIONS = [
+    { q: 'In a group meeting, I usually...', options: [
+      { text: 'Jump in with a plan and assign tasks', style: 'director' },
+      { text: 'Ask what everyone thinks before deciding', style: 'collaborator' },
+      { text: 'Listen carefully and ask clarifying questions', style: 'analyzer' },
+      { text: 'Encourage quieter members to share their ideas', style: 'supporter' }
+    ]},
+    { q: 'When the team disagrees, I tend to...', options: [
+      { text: 'Pick the best option and push forward', style: 'director' },
+      { text: 'Find a compromise everyone can live with', style: 'collaborator' },
+      { text: 'List pros and cons of each option objectively', style: 'analyzer' },
+      { text: 'Make sure nobody feels hurt or dismissed', style: 'supporter' }
+    ]},
+    { q: 'If a deadline is approaching and we\u2019re behind, I...', options: [
+      { text: 'Take charge and redistribute the work', style: 'director' },
+      { text: 'Call a team meeting to figure it out together', style: 'collaborator' },
+      { text: 'Analyze what went wrong and adjust the timeline', style: 'analyzer' },
+      { text: 'Check in on teammates who seem stressed', style: 'supporter' }
+    ]},
+    { q: 'My ideal role in a group project is...', options: [
+      { text: 'Project manager who keeps things moving', style: 'director' },
+      { text: 'The person who connects everyone\u2019s ideas', style: 'collaborator' },
+      { text: 'Researcher who makes sure facts are right', style: 'analyzer' },
+      { text: 'Cheerleader who keeps the team motivated', style: 'supporter' }
+    ]},
+    { q: 'When someone shares a new idea, I first think...', options: [
+      { text: 'How do we implement this quickly?', style: 'director' },
+      { text: 'Does everyone agree with this direction?', style: 'collaborator' },
+      { text: 'What evidence supports this approach?', style: 'analyzer' },
+      { text: 'How will this affect team dynamics?', style: 'supporter' }
+    ]},
+    { q: 'I get frustrated when teammates...', options: [
+      { text: 'Waste time on unnecessary discussion', style: 'director' },
+      { text: 'Make decisions without consulting the group', style: 'collaborator' },
+      { text: 'Rush without checking their work', style: 'analyzer' },
+      { text: 'Are harsh or dismissive to each other', style: 'supporter' }
+    ]},
+    { q: 'After a project, I\u2019m most proud when...', options: [
+      { text: 'We finished on time and hit our goals', style: 'director' },
+      { text: 'Everyone felt included and valued', style: 'collaborator' },
+      { text: 'Our work was thorough and accurate', style: 'analyzer' },
+      { text: 'The team grew closer through the process', style: 'supporter' }
+    ]},
+    { q: 'In a group chat, my messages tend to be...', options: [
+      { text: 'Short and action-oriented: "Let\u2019s do X by Friday"', style: 'director' },
+      { text: 'Open-ended: "What does everyone think?"', style: 'collaborator' },
+      { text: 'Detailed with links and sources attached', style: 'analyzer' },
+      { text: 'Warm and encouraging: "Great work everyone!"', style: 'supporter' }
+    ]},
+    { q: 'When I see a problem in the project, I...', options: [
+      { text: 'Fix it immediately and tell the team after', style: 'director' },
+      { text: 'Bring it to the group to solve together', style: 'collaborator' },
+      { text: 'Research the issue before raising it', style: 'analyzer' },
+      { text: 'Gently bring it up so nobody feels blamed', style: 'supporter' }
+    ]},
+    { q: 'The best team leaders are people who...', options: [
+      { text: 'Set clear goals and hold people accountable', style: 'director' },
+      { text: 'Build consensus and make everyone feel heard', style: 'collaborator' },
+      { text: 'Make informed decisions based on evidence', style: 'analyzer' },
+      { text: 'Create a safe, supportive team environment', style: 'supporter' }
+    ]}
+  ];
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Virtual Team Simulator Data ──
+  // ══════════════════════════════════════════════════════════════
+  var VIRTUAL_TEAM_SCENARIOS = [
+    { id: 'vt1', title: 'Miscommunication Over Text', icon: '\uD83D\uDCAC',
+      setup: 'You sent a message in the group chat saying "That section needs work." A teammate replies with "Fine." and goes silent. You can tell they\u2019re upset, but you meant it constructively. Tone got lost in text.',
+      choices: [
+        { text: 'Send another text: "I didn\u2019t mean it like that!"', rating: 2, feedback: 'Explaining over text can help, but text has the same tone problem. The cycle might repeat.' },
+        { text: 'Hop on a quick voice or video call to clarify what you meant and hear their perspective.', rating: 3, feedback: 'Switching to richer communication (voice/video) restores tone, empathy, and nuance. This is the remote work gold standard for resolving text misunderstandings.' },
+        { text: 'Ignore it \u2014 they\u2019ll get over it.', rating: 1, feedback: 'Silence breeds resentment in remote teams. Small misunderstandings grow when left unaddressed.' }
+      ],
+      tip: 'Remote Work Tip: When you sense tension in text, upgrade the channel. A 2-minute call prevents days of awkwardness. Use emojis and explicit tone markers ("just a suggestion!") to soften written feedback.' },
+    { id: 'vt2', title: 'Time Zone Coordination', icon: '\u23F0',
+      setup: 'Your team is spread across three time zones. One member keeps scheduling meetings during another member\u2019s dinner time. The affected person has stopped attending and just says "send me the notes."',
+      choices: [
+        { text: 'Tell the person skipping meetings they need to attend no matter what.', rating: 1, feedback: 'Demanding attendance without accommodating their constraints is disrespectful. Time zone equity matters.' },
+        { text: 'Create a rotating meeting schedule so no one is always inconvenienced, and use async updates for non-urgent decisions.', rating: 3, feedback: 'Rotating sacrifices shows respect. Async communication (shared docs, recorded updates) ensures everyone can contribute without being live at the same time.' },
+        { text: 'Just do everything over email so nobody needs to meet.', rating: 2, feedback: 'Async-only works for some things, but teams lose connection without ANY live interaction. Balance is key.' }
+      ],
+      tip: 'Remote Work Tip: Use a "time zone overlap" tool to find fair meeting slots. Record meetings for those who can\u2019t attend. Make important decisions in shared documents, not just in meetings.' },
+    { id: 'vt3', title: 'Camera On/Off Debate', icon: '\uD83D\uDCF7',
+      setup: 'Half your team keeps cameras off during video calls. One teammate says "it\u2019s disrespectful not to show your face." Another says "I shouldn\u2019t have to show my room or my appearance to participate." The team is split.',
+      choices: [
+        { text: 'Make a rule: cameras on for all meetings, no exceptions.', rating: 1, feedback: 'Mandatory cameras can cause anxiety, exclude people with different living situations, and feel controlling. One size doesn\u2019t fit all.' },
+        { text: 'Discuss it as a team: agree on "cameras on" for key meetings (presentations, brainstorms) and "cameras optional" for status updates. Respect personal boundaries.', rating: 3, feedback: 'Context-dependent norms respect both the need for connection and individual comfort. This is how strong remote teams operate.' },
+        { text: 'Don\u2019t bring it up \u2014 it\u2019s too personal.', rating: 2, feedback: 'Avoiding the conversation lets resentment build. It\u2019s better to create norms together than let frustration simmer.' }
+      ],
+      tip: 'Remote Work Tip: Camera norms should be team agreements, not mandates. Consider "cameras on" for relationship-building and "cameras optional" for routine work. Never shame someone for their camera choice.' },
+    { id: 'vt4', title: 'Talking Over Everyone', icon: '\uD83C\uDF99\uFE0F',
+      setup: 'During video calls, one person dominates the conversation. They interrupt, talk for long stretches, and don\u2019t notice the "hand raise" reactions from others. Other team members have started muting themselves and disengaging.',
+      choices: [
+        { text: 'Privately message them during the call: "Hey, other people want to talk."', rating: 2, feedback: 'Private nudges can work, but a systemic solution is better than individual corrections every call.' },
+        { text: 'Introduce structured turn-taking: a facilitator role that rotates each meeting, a hand-raise queue, and a timer for each speaker.', rating: 3, feedback: 'Structure equalizes participation automatically. The facilitator ensures everyone speaks, and the timer prevents monopolizing. This scales and doesn\u2019t single anyone out.' },
+        { text: 'Let it go \u2014 some people are just more talkative.', rating: 1, feedback: 'Accepting domination normalizes it. Quiet team members\u2019 ideas are lost, and engagement drops.' }
+      ],
+      tip: 'Remote Work Tip: Use the chat for ideas during calls, implement a "stack" (speaking queue), and give the facilitator power to say "Let\u2019s hear from someone who hasn\u2019t spoken yet." Round-robin check-ins at the start help too.' },
+    { id: 'vt5', title: 'Building Trust Remotely', icon: '\uD83E\uDD1D',
+      setup: 'Your team has been working together for two weeks but you\u2019ve never met in person. Conversations are strictly about tasks. Nobody shares anything personal, and it feels like working with strangers. One member suggests "we should do a virtual social event" but others say "that\u2019s a waste of time."',
+      choices: [
+        { text: 'Skip the social stuff \u2014 the work is all that matters.', rating: 1, feedback: 'Teams without trust underperform. People who feel like strangers are less likely to ask for help, share ideas, or resolve conflicts.' },
+        { text: 'Start meetings with a 5-minute icebreaker or personal check-in. Add an optional 30-minute virtual hangout once a week for non-work chat.', rating: 3, feedback: 'Small, consistent social moments build trust without pressuring introverts. Making it optional respects boundaries while creating opportunities to connect.' },
+        { text: 'Just wait \u2014 trust takes time and will happen naturally.', rating: 2, feedback: 'Trust doesn\u2019t build automatically in remote settings like it does in person. Without intentional effort, remote teams can stay distant for months.' }
+      ],
+      tip: 'Remote Work Tip: Trust is built in small moments: celebrating wins, starting with "How is everyone really doing?", sharing music playlists, or playing a quick 5-minute game. Make connection intentional but never forced.' }
+  ];
 
   // ══════════════════════════════════════════════════════════════
   // ── Reflection Prompts (post-activity quick reflections) ──
@@ -336,6 +478,34 @@ window.SelHub = window.SelHub || {
         var reflectionNote    = d.reflectionNote || '';
         var reflectionLog     = d.reflectionLog || [];
 
+        // Communication Styles state
+        var commStyleAnswers = d.commStyleAnswers || {};
+        var commStyleDone    = d.commStyleDone || false;
+        var commStyleResult  = d.commStyleResult || null;
+        var commStyleCoachResp = d.commStyleCoachResp || null;
+        var commStyleCoachLoad = d.commStyleCoachLoad || false;
+
+        // Virtual Team Simulator state
+        var vtScenarioIdx     = d.vtScenarioIdx || 0;
+        var vtAnswers         = d.vtAnswers || {};
+        var vtRevealed        = d.vtRevealed || {};
+
+        // Conflict-to-Collaboration state
+        var conflictInput     = d.conflictInput || '';
+        var conflictResult    = d.conflictResult || null;
+        var conflictLoading   = d.conflictLoading || false;
+        var conflictCount     = d.conflictCount || 0;
+        var conflictHistory   = d.conflictHistory || [];
+
+        // Retrospective state
+        var retroGreen        = d.retroGreen || [];
+        var retroYellow       = d.retroYellow || [];
+        var retroBlue         = d.retroBlue || [];
+        var retroGreenInput   = d.retroGreenInput || '';
+        var retroYellowInput  = d.retroYellowInput || '';
+        var retroBlueInput    = d.retroBlueInput || '';
+        var retroSaved        = d.retroSaved || false;
+
         // Practice log & badges
         var practiceLog    = d.practiceLog || [];
         var earnedBadges   = d.earnedBadges || {};
@@ -369,6 +539,9 @@ window.SelHub = window.SelHub || {
           if (totalBadges >= 12 && !newBadges.teamwork_guru) {
             setTimeout(function() { tryAwardBadge('teamwork_guru'); }, 3500);
           }
+          if (totalBadges >= 18 && !newBadges.master_collaborator) {
+            setTimeout(function() { tryAwardBadge('master_collaborator'); }, 3800);
+          }
         }
 
         function logPractice(type, id) {
@@ -391,7 +564,7 @@ window.SelHub = window.SelHub || {
           var newVisited = Object.assign({}, visitedTabs);
           newVisited[tabId] = true;
           upd('visitedTabs', newVisited);
-          if (newVisited.roles && newVisited.challenges && newVisited.scenarios && newVisited.progress && newVisited.quiz && newVisited.contract) {
+          if (newVisited.roles && newVisited.challenges && newVisited.scenarios && newVisited.progress && newVisited.quiz && newVisited.contract && newVisited.commstyle && newVisited.virtualteam && newVisited.conflicttool && newVisited.retro) {
             tryAwardBadge('full_explorer');
           }
         }
@@ -446,12 +619,16 @@ window.SelHub = window.SelHub || {
         // ── Tab Bar ──
         // ══════════════════════════════════════════════════════════
         var tabs = [
-          { id: 'roles',      label: '\uD83D\uDC51 Roles' },
-          { id: 'challenges', label: '\uD83C\uDFD7\uFE0F Challenges' },
-          { id: 'scenarios',  label: '\uD83C\uDFAD Scenarios' },
-          { id: 'quiz',       label: '\uD83D\uDCCA Quiz' },
-          { id: 'contract',   label: '\uD83D\uDCDC Contract' },
-          { id: 'progress',   label: '\uD83D\uDCC8 Progress' }
+          { id: 'roles',       label: '\uD83D\uDC51 Roles' },
+          { id: 'challenges',  label: '\uD83C\uDFD7\uFE0F Challenges' },
+          { id: 'scenarios',   label: '\uD83C\uDFAD Scenarios' },
+          { id: 'commstyle',   label: '\uD83D\uDDE3\uFE0F Comm Style' },
+          { id: 'virtualteam', label: '\uD83D\uDCBB Virtual Team' },
+          { id: 'conflicttool', label: '\u267B\uFE0F Conflict\u2192Collab' },
+          { id: 'retro',       label: '\uD83D\uDD04 Retro' },
+          { id: 'quiz',        label: '\uD83D\uDCCA Quiz' },
+          { id: 'contract',    label: '\uD83D\uDCDC Contract' },
+          { id: 'progress',    label: '\uD83D\uDCC8 Progress' }
         ];
 
         var tabBar = h('div', {
@@ -1234,6 +1411,590 @@ window.SelHub = window.SelHub || {
         }
 
         // ══════════════════════════════════════════════════════════
+        // ── TAB: Communication Styles ──
+        // ══════════════════════════════════════════════════════════
+        var commStyleContent = null;
+        if (activeTab === 'commstyle') {
+          var totalQuestions = COMM_STYLE_QUESTIONS.length;
+          var answeredQuestions = Object.keys(commStyleAnswers).length;
+
+          // Calculate results
+          function calcCommStyleResults() {
+            var tallies = { director: 0, collaborator: 0, analyzer: 0, supporter: 0 };
+            for (var k in commStyleAnswers) {
+              if (commStyleAnswers.hasOwnProperty(k)) {
+                var style = commStyleAnswers[k];
+                tallies[style] = (tallies[style] || 0) + 1;
+              }
+            }
+            var sorted = Object.keys(tallies).sort(function(a, b) { return tallies[b] - tallies[a]; });
+            return { tallies: tallies, primary: sorted[0], secondary: sorted[1], sorted: sorted };
+          }
+
+          commStyleContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDDE3\uFE0F Communication Style Discovery'),
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+              band === 'elementary' ? 'Find out how you like to talk and work with your team! Answer 10 questions.' :
+              band === 'middle' ? 'Discover your natural communication style. There are no wrong answers \u2014 every style has strengths!' :
+              'Identify your dominant communication tendencies to leverage strengths and address blind spots in team settings.'
+            ),
+            h('div', { style: { fontSize: 11, color: '#64748b', textAlign: 'center', marginBottom: 16 } }, answeredQuestions + ' / ' + totalQuestions + ' questions answered'),
+
+            // Questions (not yet submitted)
+            !commStyleDone && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 } },
+              COMM_STYLE_QUESTIONS.map(function(q, qi) {
+                var answered = commStyleAnswers[qi] != null;
+                return h('div', { key: qi, style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid ' + (answered ? ACCENT + '44' : '#334155') } },
+                  h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 10 } }, (qi + 1) + '. ' + q.q),
+                  h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+                    q.options.map(function(opt, oi) {
+                      var isSelected = commStyleAnswers[qi] === opt.style;
+                      return h('button', {
+                        key: oi,
+                        onClick: function() {
+                          var newAns = Object.assign({}, commStyleAnswers);
+                          newAns[qi] = opt.style;
+                          upd('commStyleAnswers', newAns);
+                          if (soundEnabled) sfxClick();
+                        },
+                        style: {
+                          padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (isSelected ? ACCENT : '#334155'),
+                          background: isSelected ? ACCENT_DIM : '#0f172a', color: isSelected ? ACCENT : '#cbd5e1',
+                          fontSize: 12, textAlign: 'left', cursor: 'pointer', lineHeight: 1.5, fontWeight: isSelected ? 600 : 400
+                        }
+                      }, opt.text);
+                    })
+                  )
+                );
+              })
+            ),
+
+            // Submit button
+            !commStyleDone && h('button', {
+              onClick: function() {
+                if (answeredQuestions < totalQuestions) { addToast('Answer all ' + totalQuestions + ' questions first!', 'info'); return; }
+                var results = calcCommStyleResults();
+                upd('commStyleDone', true);
+                upd('commStyleResult', results);
+                logPractice('comm_style', 'discovery');
+                tryAwardBadge('comm_style');
+                awardXP(25);
+                if (soundEnabled) sfxCorrect();
+                addToast('Communication style discovered! +25 XP', 'success');
+                celebrate && celebrate();
+              },
+              style: { display: 'block', width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: answeredQuestions === totalQuestions ? ACCENT : '#334155', color: answeredQuestions === totalQuestions ? '#0f172a' : '#64748b', fontWeight: 700, fontSize: 14, cursor: answeredQuestions === totalQuestions ? 'pointer' : 'default', marginBottom: 20 }
+            }, answeredQuestions === totalQuestions ? '\u2705 Discover My Style' : 'Answer all ' + totalQuestions + ' questions'),
+
+            // Results
+            commStyleDone && commStyleResult && (function() {
+              var res = commStyleResult;
+              var primary = COMM_STYLES[res.primary];
+              var secondary = COMM_STYLES[res.secondary];
+              var tallies = res.tallies;
+              var styleKeys = ['director', 'collaborator', 'analyzer', 'supporter'];
+
+              return h('div', null,
+                // Primary & Secondary style cards
+                h('div', { style: { padding: 18, borderRadius: 14, background: '#1e293b', border: '2px solid ' + primary.color + '66', marginBottom: 16 } },
+                  h('div', { style: { textAlign: 'center', marginBottom: 12 } },
+                    h('div', { style: { fontSize: 36 } }, primary.icon),
+                    h('div', { style: { fontSize: 18, fontWeight: 700, color: primary.color, marginTop: 4 } }, 'Primary: ' + primary.name),
+                    h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.6 } }, primary.desc)
+                  ),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 } },
+                    h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a' } },
+                      h('div', { style: { fontSize: 11, fontWeight: 700, color: '#22c55e', marginBottom: 6 } }, '\u2705 STRENGTHS'),
+                      primary.strengths.map(function(s, i) {
+                        return h('div', { key: i, style: { fontSize: 11, color: '#cbd5e1', padding: '2px 0', lineHeight: 1.5 } }, '\u2022 ' + s);
+                      })
+                    ),
+                    h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a' } },
+                      h('div', { style: { fontSize: 11, fontWeight: 700, color: '#f59e0b', marginBottom: 6 } }, '\u26A0\uFE0F BLIND SPOTS'),
+                      primary.blindSpots.map(function(s, i) {
+                        return h('div', { key: i, style: { fontSize: 11, color: '#cbd5e1', padding: '2px 0', lineHeight: 1.5 } }, '\u2022 ' + s);
+                      })
+                    )
+                  )
+                ),
+
+                // Secondary style
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid ' + secondary.color + '44', marginBottom: 16 } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+                    h('span', { style: { fontSize: 24 } }, secondary.icon),
+                    h('div', null,
+                      h('div', { style: { fontSize: 13, fontWeight: 600, color: secondary.color } }, 'Secondary: ' + secondary.name),
+                      h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, secondary.desc)
+                    )
+                  )
+                ),
+
+                // Score bars
+                h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 10 } }, '\uD83D\uDCCA Style Breakdown'),
+                  styleKeys.map(function(sk) {
+                    var s = COMM_STYLES[sk];
+                    var count = tallies[sk] || 0;
+                    var pct = Math.round((count / totalQuestions) * 100);
+                    return h('div', { key: sk, style: { marginBottom: 8 } },
+                      h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 } },
+                        h('span', { style: { fontSize: 12, color: '#cbd5e1' } }, s.icon + ' ' + s.name),
+                        h('span', { style: { fontSize: 11, color: s.color, fontWeight: 600 } }, count + '/' + totalQuestions + ' (' + pct + '%)')
+                      ),
+                      h('div', { style: { height: 8, borderRadius: 4, background: '#0f172a', overflow: 'hidden' } },
+                        h('div', { style: { height: '100%', width: pct + '%', background: s.color, borderRadius: 4, transition: 'width 0.5s' } })
+                      )
+                    );
+                  })
+                ),
+
+                // How to work with each style
+                h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 10 } }, '\uD83E\uDD1D How to Work With Each Style'),
+                  styleKeys.map(function(sk) {
+                    var s = COMM_STYLES[sk];
+                    return h('div', { key: sk, style: { padding: 10, borderRadius: 8, background: '#0f172a', marginBottom: 6, borderLeft: '3px solid ' + s.color } },
+                      h('div', { style: { fontSize: 12, fontWeight: 600, color: s.color, marginBottom: 4 } }, s.icon + ' ' + s.name),
+                      h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.6 } }, s.workWith)
+                    );
+                  })
+                ),
+
+                // AI team composition advice
+                h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid #6366f133', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\u2728 AI Team Composition Advice'),
+                  h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 10 } }, 'Get personalized advice on how your style fits into different team compositions.'),
+                  h('button', {
+                    onClick: function() {
+                      if (!callGemini) { addToast('AI not available.', 'error'); return; }
+                      upd('commStyleCoachLoad', true);
+                      upd('commStyleCoachResp', null);
+                      var prompt = 'You are a teamwork communication coach for ' + band + ' school students.\n\n' +
+                        'This student\'s communication style results:\n' +
+                        '- Primary style: ' + primary.name + ' (' + (tallies[res.primary] || 0) + '/' + totalQuestions + ' answers)\n' +
+                        '- Secondary style: ' + secondary.name + ' (' + (tallies[res.secondary] || 0) + '/' + totalQuestions + ' answers)\n\n' +
+                        'Provide:\n1. How their primary + secondary combination works together\n2. What kind of teammates complement their style best\n3. One specific tip for their biggest blind spot\n4. An ideal 4-person team composition that includes their style\n\n' +
+                        'Use ' + (band === 'elementary' ? 'simple, encouraging language for ages 5-10.' : band === 'middle' ? 'relatable language for ages 11-14.' : 'professional coaching language for ages 15-18.') +
+                        '\nKeep it under 180 words.';
+                      callGemini(prompt).then(function(result) {
+                        var resp = typeof result === 'string' ? result : (result && result.text ? result.text : String(result));
+                        upd('commStyleCoachResp', resp);
+                        upd('commStyleCoachLoad', false);
+                        tryAwardBadge('ai_coach');
+                      }).catch(function(err) {
+                        upd('commStyleCoachLoad', false);
+                        addToast('Error: ' + err.message, 'error');
+                      });
+                    },
+                    disabled: commStyleCoachLoad,
+                    style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: commStyleCoachLoad ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 12, cursor: commStyleCoachLoad ? 'default' : 'pointer' }
+                  }, commStyleCoachLoad ? 'Thinking...' : '\u2728 Get Team Advice'),
+                  commStyleCoachResp && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #6366f144' } },
+                    h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Team Coach'),
+                    h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, commStyleCoachResp)
+                  )
+                ),
+
+                // Retake
+                h('button', {
+                  onClick: function() { upd({ commStyleAnswers: {}, commStyleDone: false, commStyleResult: null, commStyleCoachResp: null }); if (soundEnabled) sfxClick(); },
+                  style: { display: 'block', margin: '0 auto', padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#64748b', fontSize: 11, cursor: 'pointer' }
+                }, 'Retake Quiz')
+              );
+            })(),
+
+            // Quick reflection
+            commStyleDone && renderQuickReflection('commstyle')
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // ── TAB: Virtual Team Simulator ──
+        // ══════════════════════════════════════════════════════════
+        var virtualTeamContent = null;
+        if (activeTab === 'virtualteam') {
+          var curVt = VIRTUAL_TEAM_SCENARIOS[vtScenarioIdx % VIRTUAL_TEAM_SCENARIOS.length];
+          var vtAnswered = vtAnswers[curVt.id] != null;
+          var vtReveal = !!vtRevealed[curVt.id];
+          var vtAnsweredCount = Object.keys(vtAnswers).length;
+
+          virtualTeamContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCBB Virtual Team Simulator'),
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+              band === 'elementary' ? 'Practice working with a team when you can\u2019t meet in person!' :
+              band === 'middle' ? 'Master the challenges of remote collaboration. 5 realistic scenarios.' :
+              'Navigate the complexities of virtual teamwork. Practice async communication, trust-building, and remote conflict resolution.'
+            ),
+            h('div', { style: { fontSize: 11, color: '#64748b', textAlign: 'center', marginBottom: 16 } },
+              'Scenario ' + ((vtScenarioIdx % VIRTUAL_TEAM_SCENARIOS.length) + 1) + ' of ' + VIRTUAL_TEAM_SCENARIOS.length + ' \u00B7 ' + vtAnsweredCount + ' completed'
+            ),
+
+            // Scenario card
+            h('div', { style: { padding: 20, borderRadius: 14, background: '#1e293b', border: '1px solid #3b82f644', marginBottom: 16 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
+                h('span', { style: { fontSize: 28 } }, curVt.icon),
+                h('h4', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9', margin: 0 } }, curVt.title)
+              ),
+              h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.7, marginBottom: 16 } }, curVt.setup),
+
+              // Choices
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                curVt.choices.map(function(ch, ci) {
+                  var isChosen = vtAnswers[curVt.id] === ci;
+                  var showFeedback = vtReveal && isChosen;
+                  return h('div', { key: ci },
+                    h('button', {
+                      onClick: function() {
+                        if (vtAnswered) return;
+                        var newAns = Object.assign({}, vtAnswers);
+                        newAns[curVt.id] = ci;
+                        var newRev = Object.assign({}, vtRevealed);
+                        newRev[curVt.id] = true;
+                        upd({ vtAnswers: newAns, vtRevealed: newRev });
+                        logPractice('virtual_team', curVt.id);
+                        awardXP(15);
+                        if (ch.rating === 3) {
+                          if (soundEnabled) sfxCorrect();
+                          addToast('\u2B50\u2B50\u2B50 Excellent remote teamwork!', 'success');
+                        } else if (ch.rating === 2) {
+                          if (soundEnabled) sfxReveal();
+                          addToast('\u2B50\u2B50 Decent approach!', 'info');
+                        } else {
+                          if (soundEnabled) sfxWrong();
+                          addToast('\u2B50 There\u2019s a better way.', 'info');
+                        }
+                        tryAwardBadge('virtual_scenario_1');
+                        // Check all done
+                        var totalVtAnswered = Object.keys(newAns).length;
+                        if (totalVtAnswered >= VIRTUAL_TEAM_SCENARIOS.length) tryAwardBadge('virtual_team_pro');
+                      },
+                      disabled: vtAnswered,
+                      style: {
+                        width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid ' + (isChosen ? (ch.rating === 3 ? '#22c55e' : ch.rating === 2 ? '#f59e0b' : '#ef4444') : '#334155'),
+                        background: isChosen ? (ch.rating === 3 ? '#22c55e11' : ch.rating === 2 ? '#f59e0b11' : '#ef444411') : '#0f172a',
+                        color: '#e2e8f0', fontSize: 13, textAlign: 'left', cursor: vtAnswered ? 'default' : 'pointer', lineHeight: 1.5
+                      }
+                    },
+                      h('span', null, ch.text),
+                      isChosen && h('span', { style: { marginLeft: 8 } }, renderStars(ch.rating))
+                    ),
+                    showFeedback && h('div', { style: { padding: '10px 14px', borderRadius: '0 0 10px 10px', background: '#0f172a', borderLeft: '3px solid ' + (ch.rating === 3 ? '#22c55e' : ch.rating === 2 ? '#f59e0b' : '#ef4444'), marginTop: -2, fontSize: 12, color: '#94a3b8', lineHeight: 1.6 } },
+                      ch.feedback
+                    )
+                  );
+                })
+              ),
+
+              // Show all ratings after answering
+              vtReveal && h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+                h('div', { style: { fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 6 } }, 'All response ratings:'),
+                curVt.choices.map(function(ch, ci) {
+                  var isChosen = vtAnswers[curVt.id] === ci;
+                  return h('div', { key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', fontSize: 11, color: isChosen ? '#f1f5f9' : '#64748b' } },
+                    renderStars(ch.rating),
+                    h('span', { style: { marginLeft: 4 } }, ch.text.substring(0, 50) + (ch.text.length > 50 ? '...' : '')),
+                    isChosen && h('span', { style: { color: ACCENT, marginLeft: 4, fontWeight: 700 } }, '\u2190 your pick')
+                  );
+                })
+              ),
+
+              // Remote work tip
+              vtReveal && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #3b82f633' } },
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, '\uD83D\uDCA1 Remote Work Tip'),
+                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } }, curVt.tip)
+              ),
+
+              // Navigation
+              h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 16 } },
+                vtScenarioIdx > 0 && h('button', {
+                  onClick: function() { upd('vtScenarioIdx', vtScenarioIdx - 1); if (soundEnabled) sfxClick(); },
+                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                }, '\u2190 Previous'),
+                vtScenarioIdx < VIRTUAL_TEAM_SCENARIOS.length - 1 && h('button', {
+                  onClick: function() { upd('vtScenarioIdx', vtScenarioIdx + 1); if (soundEnabled) sfxClick(); },
+                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                }, 'Next \u2192')
+              )
+            ),
+
+            // Quick reflection
+            renderQuickReflection('virtualteam')
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // ── TAB: Conflict-to-Collaboration Converter ──
+        // ══════════════════════════════════════════════════════════
+        var conflictToolContent = null;
+        if (activeTab === 'conflicttool') {
+          conflictToolContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\u267B\uFE0F Conflict \u2192 Collaboration Converter'),
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+              band === 'elementary' ? 'When your team has a problem, describe it here and we\u2019ll help you turn it into teamwork!' :
+              band === 'middle' ? 'Describe a team conflict and AI will reframe it as a collaboration opportunity with concrete steps.' :
+              'Transform team friction into productive collaboration. Describe any conflict and receive actionable reframing strategies.'
+            ),
+
+            // Input section
+            h('div', { style: { padding: 18, borderRadius: 14, background: '#1e293b', border: '1px solid #f59e0b44', marginBottom: 16 } },
+              h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 10 } }, '\uD83D\uDD25 Describe the Team Conflict'),
+              h('textarea', {
+                value: conflictInput,
+                onChange: function(e) { upd('conflictInput', e.target.value); },
+                placeholder: band === 'elementary' ? 'Example: Two people in my group both want to be the leader and they keep arguing...' :
+                  band === 'middle' ? 'Example: Our team is split on the project direction. Half want to do a presentation, half want a video. Nobody will compromise...' :
+                  'Describe the conflict in detail: who is involved, what happened, how people feel, and what you\'ve tried so far...',
+                rows: 4,
+                style: { width: '100%', padding: 12, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, resize: 'vertical', outline: 'none', boxSizing: 'border-box', marginBottom: 12 }
+              }),
+              h('button', {
+                onClick: function() {
+                  if (!conflictInput.trim()) { addToast('Describe the conflict first!', 'info'); return; }
+                  if (conflictInput.trim().length < 15) { addToast('Please describe the conflict in more detail.', 'info'); return; }
+                  if (!callGemini) { addToast('AI not available.', 'error'); return; }
+                  upd('conflictLoading', true);
+                  upd('conflictResult', null);
+                  var prompt = 'You are a teamwork mediator and collaboration coach for ' + band + ' school students.\n\n' +
+                    'TEAM CONFLICT: "' + conflictInput + '"\n\n' +
+                    'Respond with EXACTLY this format:\n\n' +
+                    'REFRAME: [Restate the conflict as a collaboration opportunity in 1-2 sentences. Start with "This is actually an opportunity to..."]\n\n' +
+                    'STEP 1: [First concrete action step to move from conflict to collaboration]\n\n' +
+                    'STEP 2: [Second concrete action step]\n\n' +
+                    'STEP 3: [Third concrete action step]\n\n' +
+                    'KEY INSIGHT: [One sentence about what this conflict teaches about teamwork]\n\n' +
+                    'Use ' + (band === 'elementary' ? 'simple, kind language for ages 5-10.' : band === 'middle' ? 'clear, practical language for ages 11-14.' : 'professional coaching language for ages 15-18.') +
+                    '\nKeep each section brief (1-2 sentences each). Total under 200 words.';
+                  callGemini(prompt).then(function(result) {
+                    var resp = typeof result === 'string' ? result : (result && result.text ? result.text : String(result));
+                    upd('conflictResult', resp);
+                    upd('conflictLoading', false);
+                    var newCount = conflictCount + 1;
+                    upd('conflictCount', newCount);
+                    var newHistory = conflictHistory.concat([{ input: conflictInput, result: resp, timestamp: Date.now() }]);
+                    upd('conflictHistory', newHistory);
+                    logPractice('conflict_convert', 'conflict_' + newCount);
+                    awardXP(20);
+                    if (soundEnabled) sfxCorrect();
+                    addToast('Conflict converted! +20 XP', 'success');
+                    if (newCount >= 3) tryAwardBadge('conflict_converter');
+                  }).catch(function(err) {
+                    upd('conflictLoading', false);
+                    addToast('Error: ' + err.message, 'error');
+                  });
+                },
+                disabled: conflictLoading,
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: conflictLoading ? '#334155' : '#f59e0b', color: conflictLoading ? '#94a3b8' : '#0f172a', fontWeight: 700, fontSize: 13, cursor: conflictLoading ? 'default' : 'pointer' }
+              }, conflictLoading ? '\u2728 Converting...' : '\u267B\uFE0F Convert to Collaboration')
+            ),
+
+            // Result
+            conflictResult && h('div', { style: { padding: 18, borderRadius: 14, background: '#1e293b', border: '2px solid #22c55e44', marginBottom: 16 } },
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: '#22c55e', marginBottom: 12, textAlign: 'center' } }, '\u2705 Collaboration Opportunity'),
+              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, conflictResult),
+              h('button', {
+                onClick: function() { upd({ conflictInput: '', conflictResult: null }); if (soundEnabled) sfxClick(); },
+                style: { display: 'block', margin: '14px auto 0', padding: '8px 18px', borderRadius: 8, border: 'none', background: '#f59e0b', color: '#0f172a', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+              }, '\u267B\uFE0F Convert Another Conflict')
+            ),
+
+            // Conversion counter
+            h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', marginBottom: 16, textAlign: 'center' } },
+              h('div', { style: { fontSize: 24, fontWeight: 700, color: '#f59e0b' } }, String(conflictCount)),
+              h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, 'Conflicts Converted to Collaborations'),
+              conflictCount < 3 && h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4 } }, 'Convert ' + (3 - conflictCount) + ' more to earn the Conflict Converter badge!')
+            ),
+
+            // History
+            conflictHistory.length > 0 && h('div', { style: { marginBottom: 16 } },
+              h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\uD83D\uDCDD Conversion History'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                conflictHistory.slice(-5).reverse().map(function(entry, i) {
+                  return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155' } },
+                    h('div', { style: { fontSize: 10, color: '#64748b', marginBottom: 4 } }, new Date(entry.timestamp).toLocaleString()),
+                    h('div', { style: { fontSize: 11, color: '#ef4444', marginBottom: 4, fontStyle: 'italic' } }, '\uD83D\uDD25 "' + (entry.input.length > 80 ? entry.input.substring(0, 80) + '...' : entry.input) + '"'),
+                    h('div', { style: { fontSize: 11, color: '#22c55e' } }, '\u2705 Converted successfully')
+                  );
+                })
+              )
+            ),
+
+            renderQuickReflection('conflicttool')
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // ── TAB: Team Retrospective Tool ──
+        // ══════════════════════════════════════════════════════════
+        var retroContent = null;
+        if (activeTab === 'retro') {
+          var retroCategories = [
+            { key: 'green', label: 'What Went Well', color: '#22c55e', icon: '\u2705', items: retroGreen, inputVal: retroGreenInput, inputKey: 'retroGreenInput', listKey: 'retroGreen' },
+            { key: 'yellow', label: 'What Could Improve', color: '#f59e0b', icon: '\u26A0\uFE0F', items: retroYellow, inputVal: retroYellowInput, inputKey: 'retroYellowInput', listKey: 'retroYellow' },
+            { key: 'blue', label: 'Action Items for Next Time', color: '#3b82f6', icon: '\uD83D\uDCCB', items: retroBlue, inputVal: retroBlueInput, inputKey: 'retroBlueInput', listKey: 'retroBlue' }
+          ];
+
+          retroContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDD04 Team Retrospective'),
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+              band === 'elementary' ? 'After working with your team, think about what happened! Add cards to each section.' :
+              band === 'middle' ? 'Run a team retro: reflect on what worked, what didn\u2019t, and what to do differently next time.' :
+              'Conduct a structured retrospective to extract actionable insights from your team\u2019s collaboration experience.'
+            ),
+
+            // Three category sections
+            retroCategories.map(function(cat) {
+              return h('div', { key: cat.key, style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid ' + cat.color + '44', marginBottom: 14 } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
+                  h('span', { style: { fontSize: 18 } }, cat.icon),
+                  h('span', { style: { fontSize: 14, fontWeight: 700, color: cat.color } }, cat.label),
+                  h('span', { style: { marginLeft: 'auto', fontSize: 11, color: '#64748b', padding: '2px 8px', borderRadius: 12, background: '#0f172a' } }, cat.items.length + ' cards')
+                ),
+
+                // Existing cards
+                cat.items.length > 0 && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 } },
+                  cat.items.map(function(item, idx) {
+                    return h('div', { key: idx, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: '#0f172a', border: '1px solid ' + cat.color + '22' } },
+                      h('div', { style: { width: 4, height: 20, borderRadius: 2, background: cat.color, flexShrink: 0 } }),
+                      h('span', { style: { fontSize: 12, color: '#e2e8f0', flex: 1, lineHeight: 1.5 } }, item),
+                      h('button', {
+                        onClick: function() {
+                          var newItems = cat.items.slice();
+                          newItems.splice(idx, 1);
+                          upd(cat.listKey, newItems);
+                          upd('retroSaved', false);
+                          if (soundEnabled) sfxClick();
+                        },
+                        style: { background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 14, padding: '0 4px' },
+                        title: 'Remove'
+                      }, '\u00D7')
+                    );
+                  })
+                ),
+
+                // Add new card
+                h('div', { style: { display: 'flex', gap: 8 } },
+                  h('input', {
+                    type: 'text',
+                    value: cat.inputVal,
+                    onChange: function(e) { upd(cat.inputKey, e.target.value); },
+                    onKeyDown: function(e) {
+                      if (e.key === 'Enter' && cat.inputVal.trim()) {
+                        var newItems = cat.items.concat([cat.inputVal.trim()]);
+                        upd(cat.listKey, newItems);
+                        upd(cat.inputKey, '');
+                        upd('retroSaved', false);
+                        if (soundEnabled) sfxClick();
+                      }
+                    },
+                    placeholder: cat.key === 'green' ? 'Something that went well...' : cat.key === 'yellow' ? 'Something to improve...' : 'An action item for next time...',
+                    style: { flex: 1, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 12, outline: 'none' }
+                  }),
+                  h('button', {
+                    onClick: function() {
+                      if (!cat.inputVal.trim()) return;
+                      var newItems = cat.items.concat([cat.inputVal.trim()]);
+                      upd(cat.listKey, newItems);
+                      upd(cat.inputKey, '');
+                      upd('retroSaved', false);
+                      if (soundEnabled) sfxClick();
+                    },
+                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: cat.color, color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                  }, '+ Add')
+                )
+              );
+            }),
+
+            // Save / Export buttons
+            h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 16 } },
+              h('button', {
+                onClick: function() {
+                  var totalCards = retroGreen.length + retroYellow.length + retroBlue.length;
+                  if (totalCards < 3) { addToast('Add at least 3 cards total to save!', 'info'); return; }
+                  upd('retroSaved', true);
+                  logPractice('retro', 'retrospective');
+                  tryAwardBadge('retro_runner');
+                  awardXP(20);
+                  if (soundEnabled) sfxCorrect();
+                  addToast('Retrospective saved! +20 XP', 'success');
+                  celebrate && celebrate();
+                },
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: retroSaved ? '#334155' : ACCENT, color: retroSaved ? '#94a3b8' : '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+              }, retroSaved ? '\u2713 Saved' : '\uD83D\uDCBE Save Retrospective'),
+              h('button', {
+                onClick: function() {
+                  var totalCards = retroGreen.length + retroYellow.length + retroBlue.length;
+                  if (totalCards === 0) { addToast('Add some cards before exporting!', 'info'); return; }
+                  var text = '=== TEAM RETROSPECTIVE ===\n';
+                  text += 'Date: ' + new Date().toLocaleDateString() + '\n\n';
+                  text += '--- WHAT WENT WELL ---\n';
+                  retroGreen.forEach(function(item, i) { text += (i + 1) + '. ' + item + '\n'; });
+                  if (retroGreen.length === 0) text += '(none)\n';
+                  text += '\n--- WHAT COULD IMPROVE ---\n';
+                  retroYellow.forEach(function(item, i) { text += (i + 1) + '. ' + item + '\n'; });
+                  if (retroYellow.length === 0) text += '(none)\n';
+                  text += '\n--- ACTION ITEMS FOR NEXT TIME ---\n';
+                  retroBlue.forEach(function(item, i) { text += (i + 1) + '. ' + item + '\n'; });
+                  if (retroBlue.length === 0) text += '(none)\n';
+                  text += '\n=== END RETROSPECTIVE ===\n';
+
+                  // Copy to clipboard
+                  if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(function() {
+                      addToast('Retrospective copied to clipboard!', 'success');
+                      tryAwardBadge('retro_exporter');
+                    }).catch(function() {
+                      addToast('Could not copy. Try again.', 'error');
+                    });
+                  } else {
+                    // Fallback
+                    var textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try { document.execCommand('copy'); addToast('Retrospective copied to clipboard!', 'success'); tryAwardBadge('retro_exporter'); } catch(e) { addToast('Could not copy.', 'error'); }
+                    document.body.removeChild(textarea);
+                  }
+                  if (soundEnabled) sfxTeam();
+                },
+                style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              }, '\uD83D\uDCE4 Export as Text'),
+              h('button', {
+                onClick: function() {
+                  upd({ retroGreen: [], retroYellow: [], retroBlue: [], retroGreenInput: '', retroYellowInput: '', retroBlueInput: '', retroSaved: false });
+                  if (soundEnabled) sfxClick();
+                },
+                style: { padding: '10px 14px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#64748b', fontSize: 12, cursor: 'pointer' }
+              }, 'Clear All')
+            ),
+
+            // Retro preview (when saved)
+            retroSaved && h('div', { style: { padding: 18, borderRadius: 14, background: '#0f172a', border: '2px solid ' + ACCENT + '44', marginBottom: 16 } },
+              h('div', { style: { textAlign: 'center', marginBottom: 14 } },
+                h('div', { style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9' } }, '\uD83D\uDD04 Retrospective Summary'),
+                h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 4 } }, new Date().toLocaleDateString())
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 } },
+                [
+                  { color: '#22c55e', icon: '\u2705', label: 'Well', items: retroGreen },
+                  { color: '#f59e0b', icon: '\u26A0\uFE0F', label: 'Improve', items: retroYellow },
+                  { color: '#3b82f6', icon: '\uD83D\uDCCB', label: 'Actions', items: retroBlue }
+                ].map(function(col) {
+                  return h('div', { key: col.label, style: { padding: 10, borderRadius: 10, background: '#1e293b', borderTop: '3px solid ' + col.color } },
+                    h('div', { style: { fontSize: 11, fontWeight: 700, color: col.color, marginBottom: 6, textAlign: 'center' } }, col.icon + ' ' + col.label),
+                    col.items.map(function(item, i) {
+                      return h('div', { key: i, style: { fontSize: 10, color: '#cbd5e1', padding: '3px 0', lineHeight: 1.4, borderBottom: '1px solid #334155' } }, '\u2022 ' + item);
+                    }),
+                    col.items.length === 0 && h('div', { style: { fontSize: 10, color: '#475569', fontStyle: 'italic', textAlign: 'center' } }, '(none)')
+                  );
+                })
+              )
+            ),
+
+            renderQuickReflection('retro')
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
         // ── TAB: Progress ──
         // ══════════════════════════════════════════════════════════
         var progressContent = null;
@@ -1252,11 +2013,16 @@ window.SelHub = window.SelHub || {
             if (a != null) totalStars += s.choices[a].rating;
           });
 
+          var vtAnsweredTotal = Object.keys(vtAnswers).length;
           var stats = [
             { icon: '\uD83D\uDC51', label: 'Roles Selected', value: selectedRoles.length + '/' + roles2.length, color: ACCENT },
             { icon: '\uD83C\uDFD7\uFE0F', label: 'Challenges Done', value: String(challengesCompleted), color: '#f59e0b' },
             { icon: '\uD83C\uDFAD', label: 'Scenarios Answered', value: answeredScenarios + '/' + SCENARIOS.length, color: '#8b5cf6' },
             { icon: '\u2B50', label: 'Stars Earned', value: totalStars + '/' + (SCENARIOS.length * 3), color: '#facc15' },
+            { icon: '\uD83D\uDDE3\uFE0F', label: 'Comm Style', value: commStyleDone ? 'Done' : 'Not yet', color: '#ef4444' },
+            { icon: '\uD83D\uDCBB', label: 'Virtual Team', value: vtAnsweredTotal + '/' + VIRTUAL_TEAM_SCENARIOS.length, color: '#3b82f6' },
+            { icon: '\u267B\uFE0F', label: 'Conflicts Conv.', value: String(conflictCount), color: '#f59e0b' },
+            { icon: '\uD83D\uDD04', label: 'Retrospective', value: retroSaved ? 'Done' : 'Not yet', color: '#06b6d4' },
             { icon: '\uD83D\uDCCA', label: 'Quiz', value: quizSubmitted ? 'Done' : 'Not yet', color: '#06b6d4' },
             { icon: '\uD83D\uDCDC', label: 'Contract', value: contractSaved ? 'Saved' : 'Not yet', color: '#a78bfa' },
             { icon: '\uD83C\uDFC5', label: 'Badges', value: Object.keys(earnedBadges).length + '/' + BADGES.length, color: '#ec4899' },
@@ -1336,8 +2102,8 @@ window.SelHub = window.SelHub || {
               h('h4', { style: { fontSize: 14, color: '#f1f5f9', marginBottom: 8 } }, 'Recent Practice'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 practiceLog.slice(-8).reverse().map(function(entry, i) {
-                  var icons = { role_explore: '\uD83D\uDC51', reflection: '\uD83D\uDCDD', challenge: '\uD83C\uDFD7\uFE0F', scenario: '\uD83C\uDFAD', ai_coach: '\u2728', quiz: '\uD83D\uDCCA', contract: '\uD83D\uDCDC', quick_reflection: '\uD83D\uDCDD' };
-                  var labels = { role_explore: 'Role Explored', reflection: 'Reflection', challenge: 'Challenge', scenario: 'Scenario', ai_coach: 'AI Coach', quiz: 'Skills Quiz', contract: 'Team Contract', quick_reflection: 'Quick Reflection' };
+                  var icons = { role_explore: '\uD83D\uDC51', reflection: '\uD83D\uDCDD', challenge: '\uD83C\uDFD7\uFE0F', scenario: '\uD83C\uDFAD', ai_coach: '\u2728', quiz: '\uD83D\uDCCA', contract: '\uD83D\uDCDC', quick_reflection: '\uD83D\uDCDD', comm_style: '\uD83D\uDDE3\uFE0F', virtual_team: '\uD83D\uDCBB', conflict_convert: '\u267B\uFE0F', retro: '\uD83D\uDD04' };
+                  var labels = { role_explore: 'Role Explored', reflection: 'Reflection', challenge: 'Challenge', scenario: 'Scenario', ai_coach: 'AI Coach', quiz: 'Skills Quiz', contract: 'Team Contract', quick_reflection: 'Quick Reflection', comm_style: 'Comm Style', virtual_team: 'Virtual Team', conflict_convert: 'Conflict Converted', retro: 'Retrospective' };
                   return h('div', {
                     key: i,
                     style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }
@@ -1355,7 +2121,7 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         // ── Final Render ──
         // ══════════════════════════════════════════════════════════
-        var content = rolesContent || challengesContent || scenariosContent || quizContent || contractContent || progressContent;
+        var content = rolesContent || challengesContent || scenariosContent || commStyleContent || virtualTeamContent || conflictToolContent || retroContent || quizContent || contractContent || progressContent;
 
         return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
           tabBar,

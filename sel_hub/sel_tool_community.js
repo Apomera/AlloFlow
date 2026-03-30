@@ -376,6 +376,147 @@ window.SelHub = window.SelHub || {
   };
 
   // ══════════════════════════════════════════════════════════════
+  // ── Privilege Walk Statements (middle & high) ──
+  // ══════════════════════════════════════════════════════════════
+  var PRIVILEGE_WALK = [
+    { id: 'pw1', text: 'I can see people who look like me in most TV shows and movies.', direction: 'forward', category: 'representation' },
+    { id: 'pw2', text: 'I have been followed in a store because of how I look.', direction: 'back', category: 'racial-profiling' },
+    { id: 'pw3', text: 'My parents or guardians went to college.', direction: 'forward', category: 'education' },
+    { id: 'pw4', text: 'I have been made fun of for my accent or the way I speak.', direction: 'back', category: 'language' },
+    { id: 'pw5', text: 'I can go to a grocery store and easily find foods from my culture.', direction: 'forward', category: 'access' },
+    { id: 'pw6', text: 'I have worried about whether my family could pay rent or buy food.', direction: 'back', category: 'economic' },
+    { id: 'pw7', text: 'I have never been asked "Where are you really from?"', direction: 'forward', category: 'belonging' },
+    { id: 'pw8', text: 'I have been the only person of my race or background in a classroom.', direction: 'back', category: 'isolation' },
+    { id: 'pw9', text: 'I can use public restrooms without fear of verbal or physical abuse.', direction: 'forward', category: 'safety' },
+    { id: 'pw10', text: 'My family has had to move because of rising rent or neighborhood changes.', direction: 'back', category: 'displacement' },
+    { id: 'pw11', text: 'I have never been stopped or questioned by police without reason.', direction: 'forward', category: 'justice' },
+    { id: 'pw12', text: 'My religious or cultural holidays are not recognized by my school.', direction: 'back', category: 'recognition' },
+    { id: 'pw13', text: 'I can hold hands with my partner in public without fear.', direction: 'forward', category: 'safety' },
+    { id: 'pw14', text: 'I have had a teacher mispronounce my name repeatedly and not correct themselves.', direction: 'back', category: 'respect' },
+    { id: 'pw15', text: 'Buildings, transportation, and public spaces are designed for my body to access easily.', direction: 'forward', category: 'accessibility' }
+  ];
+
+  var PRIVILEGE_REFLECTIONS = [
+    'What did you notice about where you ended up compared to where you started?',
+    'Were any of the statements surprising to you? Which ones and why?',
+    'How might someone\u2019s starting position in life affect their opportunities?',
+    'What does it feel like to recognize advantages you didn\u2019t earn?',
+    'How can understanding different starting points help us build a fairer world?'
+  ];
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Microaggression Awareness Data (middle & high) ──
+  // ══════════════════════════════════════════════════════════════
+  var MICROAGGRESSIONS = [
+    {
+      id: 'ma1',
+      said: 'Where are you really from?',
+      target: 'People of color, immigrants, multiracial individuals',
+      whyHarmful: 'Implies the person is a perpetual foreigner and doesn\u2019t truly belong here, regardless of where they were born or how long they\u2019ve lived here.',
+      sayInstead: 'I\u2019d love to learn about your background if you\u2019re comfortable sharing. What\u2019s your family\u2019s heritage?',
+      bystanderResponse: 'They already told you where they\u2019re from. If you\u2019re curious about heritage, there are more respectful ways to ask.'
+    },
+    {
+      id: 'ma2',
+      said: 'You speak English so well!',
+      target: 'People of color, immigrants, multilingual individuals',
+      whyHarmful: 'Assumes someone is foreign based on their appearance. Many people of color were born in English-speaking countries. It treats English fluency as surprising rather than normal.',
+      sayInstead: 'If genuinely impressed by multilingual skills: "That\u2019s amazing that you speak multiple languages! How did you learn?"',
+      bystanderResponse: 'They grew up speaking English. Speaking multiple languages is impressive, but let\u2019s not act surprised when someone speaks their own language well.'
+    },
+    {
+      id: 'ma3',
+      said: 'I don\u2019t see color.',
+      target: 'People of color broadly',
+      whyHarmful: 'While well-intentioned, this erases the real experiences of people of color. Race shapes how people are treated, and ignoring it means ignoring the challenges they face.',
+      sayInstead: 'I see and respect your identity. I\u2019m committed to understanding how race affects people\u2019s experiences.',
+      bystanderResponse: 'Seeing someone\u2019s full identity, including race, is actually more respectful than pretending differences don\u2019t exist.'
+    },
+    {
+      id: 'ma4',
+      said: 'You\u2019re so articulate!',
+      target: 'Black individuals and other people of color',
+      whyHarmful: 'Carries an undertone of surprise, as if eloquence is unexpected for someone of their background. It sets a lower baseline expectation based on race.',
+      sayInstead: 'That was a really compelling point you made. I appreciate your perspective.',
+      bystanderResponse: 'People from all backgrounds are articulate. Let\u2019s appreciate the idea itself rather than expressing surprise about who said it.'
+    },
+    {
+      id: 'ma5',
+      said: 'Can I touch your hair?',
+      target: 'Black individuals, people with natural or textured hair',
+      whyHarmful: 'Treats someone\u2019s body as an object of curiosity. Hair is deeply tied to cultural identity, and unsolicited touching or requests to touch are invasive and dehumanizing.',
+      sayInstead: 'Don\u2019t ask to touch people\u2019s hair. If you want to compliment it, simply say "Your hair looks great today."',
+      bystanderResponse: 'People\u2019s bodies aren\u2019t exhibits. We should appreciate without touching or treating someone as a curiosity.'
+    },
+    {
+      id: 'ma6',
+      said: 'That\u2019s so gay.',
+      target: 'LGBTQ+ individuals',
+      whyHarmful: 'Uses a person\u2019s identity as an insult. Even when not directed at someone LGBTQ+, it sends the message that being gay is negative, making LGBTQ+ people feel unsafe and unwelcome.',
+      sayInstead: 'Say what you actually mean: "That\u2019s annoying" or "I don\u2019t like that." Don\u2019t use identities as insults.',
+      bystanderResponse: 'Using "gay" as an insult hurts people. Let\u2019s find words that express what we mean without putting anyone\u2019s identity down.'
+    },
+    {
+      id: 'ma7',
+      said: 'You don\u2019t look disabled.',
+      target: 'People with disabilities, especially invisible disabilities',
+      whyHarmful: 'Implies that disability has a specific appearance. Many disabilities are invisible (chronic pain, mental health conditions, autoimmune diseases), and this comment invalidates their real experiences.',
+      sayInstead: 'If someone shares they have a disability: "Thanks for telling me. Is there anything I can do to be supportive?"',
+      bystanderResponse: 'Disabilities come in many forms, and most aren\u2019t visible. Let\u2019s trust people when they share their experiences.'
+    },
+    {
+      id: 'ma8',
+      said: 'Is that your real name?',
+      target: 'People with non-Western or unfamiliar names',
+      whyHarmful: 'Implies that names from other cultures aren\u2019t "real" or legitimate. A person\u2019s name carries their family history, culture, and identity. Questioning its authenticity is disrespectful.',
+      sayInstead: 'Could you help me pronounce your name correctly? I want to make sure I say it right.',
+      bystanderResponse: 'Every name is a real name. If it\u2019s unfamiliar, the respectful thing is to learn how to pronounce it, not question whether it\u2019s real.'
+    }
+  ];
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Cultural Heritage Project Builder Sections ──
+  // ══════════════════════════════════════════════════════════════
+  var HERITAGE_SECTIONS = [
+    { id: 'origins', icon: '\uD83C\uDF0D', label: 'Family Origins', prompt: 'Where does your family come from? What countries, regions, or communities are part of your family\u2019s story? How far back do you know?' },
+    { id: 'languages', icon: '\uD83D\uDDE3\uFE0F', label: 'Languages Spoken', prompt: 'What languages does your family speak? Are there words, phrases, or expressions that are special to your family? Do you speak differently at home than at school?' },
+    { id: 'traditions', icon: '\uD83C\uDF89', label: 'Traditions We Celebrate', prompt: 'What holidays, ceremonies, or traditions does your family observe? Are there special rituals that have been passed down? What do they mean to you?' },
+    { id: 'foods', icon: '\uD83C\uDF72', label: 'Foods That Connect Us', prompt: 'What foods are important in your family? Are there special recipes passed down through generations? What meals bring your family together?' },
+    { id: 'stories', icon: '\uD83D\uDCDC', label: 'Stories Passed Down', prompt: 'What stories has your family shared with you? Are there family legends, proverbs, or sayings that carry wisdom? What lessons do they teach?' },
+    { id: 'values', icon: '\u2764\uFE0F', label: 'Values My Family Holds', prompt: 'What values are most important in your family? How were these values taught to you? How do they guide the way you live?' }
+  ];
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Intercultural Communication Tips (grade-adaptive) ──
+  // ══════════════════════════════════════════════════════════════
+  var INTERCULTURAL_TIPS = {
+    elementary: [
+      { id: 'ic_e1', icon: '\u2753', tip: 'Ask before assuming', detail: 'If you\u2019re curious about someone\u2019s culture, ask a kind question instead of guessing. "Can you tell me about that?" is a great start.' },
+      { id: 'ic_e2', icon: '\uD83C\uDFE0', tip: 'Everyone\u2019s family is different and that\u2019s great', detail: 'Some families have two moms, some have grandparents as caregivers, some speak three languages at home. Different doesn\u2019t mean wrong \u2014 it means interesting!' },
+      { id: 'ic_e3', icon: '\uD83C\uDF5C', tip: 'Food is a way to share culture', detail: 'Trying food from another culture is one of the most fun ways to learn. Be open-minded and say "thank you" when someone shares their food traditions with you.' },
+      { id: 'ic_e4', icon: '\uD83D\uDC42', tip: 'Listen with your whole self', detail: 'When someone tells you about their culture, listen carefully. Don\u2019t interrupt or say "that\u2019s weird." Show you care by asking a follow-up question.' },
+      { id: 'ic_e5', icon: '\uD83D\uDE0A', tip: 'Saying someone\u2019s name right matters', detail: 'Everyone\u2019s name is important. If you don\u2019t know how to say it, ask! Practice it. Getting someone\u2019s name right tells them you respect who they are.' },
+      { id: 'ic_e6', icon: '\uD83E\uDD1D', tip: 'Be a bridge, not a wall', detail: 'When someone new joins your class, be the person who says hello first. You might be the reason they feel welcome.' }
+    ],
+    middle: [
+      { id: 'ic_m1', icon: '\uD83D\uDC42', tip: 'Listen more than you speak about others\u2019 experiences', detail: 'When someone shares their experience with discrimination or cultural challenges, your job is to listen and believe them \u2014 not to explain, minimize, or compare.' },
+      { id: 'ic_m2', icon: '\uD83D\uDEAB', tip: 'Don\u2019t tokenize: "You\u2019re the _____ friend"', detail: 'Reducing someone to their race, religion, or identity ("my Black friend," "my gay friend") makes them a category instead of a person. They\u2019re your friend. Period.' },
+      { id: 'ic_m3', icon: '\uD83C\uDFAF', tip: 'Intent vs. impact', detail: 'Even when you didn\u2019t mean to hurt someone, the impact still matters. "I didn\u2019t mean it that way" doesn\u2019t undo the harm. Focus on the effect your words have, not just what you intended.' },
+      { id: 'ic_m4', icon: '\uD83D\uDCAC', tip: 'Ask, don\u2019t assume someone wants to educate you', detail: 'It\u2019s not a person of color\u2019s job to teach you about racism. Do your own research first, then ask respectful questions if someone is willing to share.' },
+      { id: 'ic_m5', icon: '\uD83E\uDDE0', tip: 'Check your assumptions at the door', detail: 'Notice when you make assumptions about someone based on how they look, dress, or talk. Pause and ask yourself: "Is this based on who they actually are, or on a stereotype?"' },
+      { id: 'ic_m6', icon: '\uD83D\uDD04', tip: 'Practice the repair', detail: 'When you mess up (and you will), own it. "I\u2019m sorry, that was wrong. I\u2019m learning. Thank you for telling me." Then do better next time.' }
+    ],
+    high: [
+      { id: 'ic_h1', icon: '\uD83D\uDD0D', tip: 'Examine your own cultural lens', detail: 'Your worldview isn\u2019t neutral \u2014 it\u2019s shaped by your culture, class, race, and upbringing. Recognizing your own lens is the first step to seeing beyond it.' },
+      { id: 'ic_h2', icon: '\uD83C\uDF0D', tip: 'Decentering: your experience isn\u2019t universal', detail: 'What feels "normal" to you is cultural, not universal. Decentering means recognizing that your way of seeing the world is one perspective among many, not the default.' },
+      { id: 'ic_h3', icon: '\uD83E\uDD1D', tip: 'Solidarity vs. saviorism', detail: 'Solidarity means standing alongside communities in their fight. Saviorism means swooping in to "fix" things on your terms. The difference: who has the power and who sets the agenda.' },
+      { id: 'ic_h4', icon: '\uD83D\uDCAC', tip: 'Sit with discomfort', detail: 'Conversations about race, privilege, and oppression should make you uncomfortable. Discomfort is a sign of growth. Don\u2019t retreat from it \u2014 lean into it and learn.' },
+      { id: 'ic_h5', icon: '\uD83D\uDCDA', tip: 'Do the work before entering the conversation', detail: 'Before engaging in discussions about marginalized communities, educate yourself. Read, listen to podcasts, follow diverse voices. Come to conversations prepared, not expecting free education.' },
+      { id: 'ic_h6', icon: '\u2696\uFE0F', tip: 'Equity over equality', detail: 'Equality gives everyone the same thing. Equity gives people what they need to have fair access. Understanding this distinction is essential for meaningful cross-cultural dialogue.' }
+    ]
+  };
+
+  // ══════════════════════════════════════════════════════════════
   // ── Badges ──
   // ══════════════════════════════════════════════════════════════
   var BADGES = [
@@ -398,7 +539,12 @@ window.SelHub = window.SelHub || {
     { id: 'culture_explorer_pro', icon: '\uD83C\uDF1F', name: 'Culture Explorer Pro', desc: 'Explore 12 or more cultural topics' },
     { id: 'deep_diver',        icon: '\uD83E\uDD3F', name: 'Deep Diver',           desc: 'Read every culture item in your grade band' },
     { id: 'action_taker',      icon: '\u26A1',        name: 'Action Taker',         desc: 'Complete 5 allyship actions and a scenario with top rating' },
-    { id: 'battle_victor',     icon: '\u2694\uFE0F',  name: 'Battle Victor',        desc: 'Get 4 or more correct in Battle Questions' }
+    { id: 'battle_victor',     icon: '\u2694\uFE0F',  name: 'Battle Victor',        desc: 'Get 4 or more correct in Battle Questions' },
+    { id: 'privilege_aware',   icon: '\uD83D\uDCA1', name: 'Privilege Aware',      desc: 'Complete the Privilege Walk and write a reflection' },
+    { id: 'micro_spotter',     icon: '\uD83D\uDD0D', name: 'Microaggression Spotter', desc: 'Review all 8 microaggressions and practice responses' },
+    { id: 'heritage_builder',  icon: '\uD83C\uDFDB\uFE0F', name: 'Heritage Builder',     desc: 'Complete 4 or more sections of your Cultural Heritage Project' },
+    { id: 'cross_cultural',    icon: '\uD83C\uDF10', name: 'Cross-Cultural Communicator', desc: 'Read all intercultural communication tips' },
+    { id: 'inclusion_champion', icon: '\uD83C\uDFF3\uFE0F', name: 'Inclusion Champion',   desc: 'Earn 12 other badges \u2014 a true champion of inclusion' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -483,6 +629,27 @@ window.SelHub = window.SelHub || {
         var battleAnswered = d.battleAnswered || {};
         var battleFinished = d.battleFinished || false;
 
+        // Privilege Walk state
+        var pwIdx          = d.pwIdx || 0;
+        var pwAnswers      = d.pwAnswers || {};
+        var pwPosition     = d.pwPosition != null ? d.pwPosition : 0;
+        var pwFinished     = d.pwFinished || false;
+        var pwReflection   = d.pwReflection || '';
+        var pwReflectionSaved = d.pwReflectionSaved || false;
+
+        // Microaggression state
+        var maIdx          = d.maIdx || 0;
+        var maReviewed     = d.maReviewed || {};
+        var maResponses    = d.maResponses || {};
+        var maBystanderDone = d.maBystanderDone || {};
+
+        // Heritage Project state
+        var heritageData   = d.heritageData || {};
+        var heritageSaved  = d.heritageSaved || false;
+
+        // Intercultural Tips state
+        var icRead         = d.icRead || {};
+
         // Badges & log
         var practiceLog    = d.practiceLog || [];
         var earnedBadges   = d.earnedBadges || {};
@@ -526,7 +693,9 @@ window.SelHub = window.SelHub || {
           if (scCompleted >= 8) tryAwardBadge('scenario_master');
 
           var tabsVisited = visitedTabs;
-          if (tabsVisited.explore && tabsVisited.identity && tabsVisited.scenarios && tabsVisited.badges && tabsVisited.quiz && tabsVisited.battle) tryAwardBadge('all_tabs');
+          var allCoreVisited = tabsVisited.explore && tabsVisited.identity && tabsVisited.scenarios && tabsVisited.badges && tabsVisited.quiz && tabsVisited.battle;
+          var allNewVisited = band === 'elementary' ? (tabsVisited.heritage && tabsVisited.commtips) : (tabsVisited.heritage && tabsVisited.commtips && tabsVisited.privilege && tabsVisited.microagg);
+          if (allCoreVisited && allNewVisited) tryAwardBadge('all_tabs');
 
           if (explored >= 12) tryAwardBadge('culture_explorer_pro');
 
@@ -542,8 +711,21 @@ window.SelHub = window.SelHub || {
           if (quizBest >= 8 || quizScore >= 8) tryAwardBadge('quiz_champion');
           if (battleBest >= 4 || battleScore >= 4) tryAwardBadge('battle_victor');
 
+          // New feature badges
+          if (pwFinished && pwReflectionSaved) tryAwardBadge('privilege_aware');
+          var maReviewedCount = Object.keys(maReviewed).length;
+          if (maReviewedCount >= 8) tryAwardBadge('micro_spotter');
+          var heritageFilled = 0;
+          HERITAGE_SECTIONS.forEach(function(sec) { if (heritageData[sec.id] && heritageData[sec.id].trim().length > 0) heritageFilled++; });
+          if (heritageFilled >= 4) tryAwardBadge('heritage_builder');
+          var tipItems = INTERCULTURAL_TIPS[band] || INTERCULTURAL_TIPS.elementary;
+          var allTipsRead = true;
+          tipItems.forEach(function(tip) { if (!icRead[tip.id]) allTipsRead = false; });
+          if (allTipsRead && tipItems.length > 0) tryAwardBadge('cross_cultural');
+
           var badgeCount = Object.keys(earnedBadges).length;
           if (badgeCount >= 7) tryAwardBadge('culture_champion');
+          if (badgeCount >= 12) tryAwardBadge('inclusion_champion');
         }
 
         function logPractice(type, id) {
@@ -578,14 +760,23 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         // ── Tab Bar ──
         // ══════════════════════════════════════════════════════════
-        var tabs = [
+        var allTabs = [
           { id: 'explore',   label: '\uD83C\uDF0D Explore' },
           { id: 'identity',  label: '\uD83E\uDDE9 Identity' },
           { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' },
+          { id: 'privilege', label: '\uD83D\uDCA1 Privilege', minBand: 'middle' },
+          { id: 'microagg',  label: '\uD83D\uDD0D Micro', minBand: 'middle' },
+          { id: 'heritage',  label: '\uD83C\uDFDB\uFE0F Heritage' },
+          { id: 'commtips',  label: '\uD83C\uDF10 Tips' },
           { id: 'quiz',      label: '\uD83C\uDFC6 Quiz' },
           { id: 'battle',    label: '\u2694\uFE0F Battle' },
           { id: 'badges',    label: '\uD83C\uDFC5 Badges' }
         ];
+        var tabs = allTabs.filter(function(t) {
+          if (!t.minBand) return true;
+          if (t.minBand === 'middle' && band === 'elementary') return false;
+          return true;
+        });
 
         var tabBar = h('div', {
           style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
@@ -1031,6 +1222,427 @@ window.SelHub = window.SelHub || {
         }
 
         // ══════════════════════════════════════════════════════════
+        // ── TAB: Privilege Walk (middle & high only) ──
+        // ══════════════════════════════════════════════════════════
+        var privilegeContent = null;
+        if (activeTab === 'privilege' && band !== 'elementary') {
+          var currentPW = PRIVILEGE_WALK[pwIdx];
+          var totalPW = PRIVILEGE_WALK.length;
+          var answeredPWCount = Object.keys(pwAnswers).length;
+
+          privilegeContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 6, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCA1 Privilege Walk'),
+            h('div', { style: { textAlign: 'center', padding: '10px 16px', borderRadius: 10, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
+              h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.6, marginBottom: 0 } },
+                'Privilege isn\u2019t about blame \u2014 it\u2019s about understanding different starting points. ',
+                'Read each statement and honestly reflect on whether it applies to your life. ',
+                'This exercise builds awareness of the advantages and challenges that shape people\u2019s experiences.'
+              )
+            ),
+            !pwFinished ? h('div', null,
+              // Position indicator
+              h('div', { style: { textAlign: 'center', marginBottom: 16 } },
+                h('div', { style: { display: 'inline-flex', alignItems: 'center', gap: 10, padding: '8px 20px', borderRadius: 10, background: '#1e293b', border: '1px solid ' + ACCENT_MED } },
+                  h('span', { style: { fontSize: 12, color: '#64748b' } }, 'Your position:'),
+                  h('span', { style: { fontSize: 22, fontWeight: 700, color: pwPosition > 0 ? '#22c55e' : pwPosition < 0 ? '#f59e0b' : '#94a3b8' } },
+                    (pwPosition > 0 ? '+' : '') + pwPosition
+                  ),
+                  h('span', { style: { fontSize: 12, color: '#64748b' } }, 'steps')
+                )
+              ),
+              // Visual position bar
+              h('div', { style: { position: 'relative', height: 8, borderRadius: 4, background: '#334155', marginBottom: 20, overflow: 'visible' } },
+                h('div', { style: {
+                  position: 'absolute', top: -4, width: 16, height: 16, borderRadius: '50%', background: ACCENT, border: '2px solid #fff',
+                  left: 'calc(50% + ' + (pwPosition * 3) + '% - 8px)', transition: 'left 0.4s ease'
+                } })
+              ),
+              // Statement card
+              h('div', { style: { padding: 20, borderRadius: 16, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
+                h('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 8 } }, 'Statement ' + (pwIdx + 1) + ' of ' + totalPW),
+                h('p', { style: { fontSize: 15, color: '#f1f5f9', fontWeight: 600, lineHeight: 1.6, marginBottom: 16, textAlign: 'center', minHeight: 50 } }, currentPW ? currentPW.text : ''),
+                !pwAnswers[currentPW ? currentPW.id : ''] ? h('div', { style: { display: 'flex', gap: 12, justifyContent: 'center' } },
+                  h('button', {
+                    onClick: function() {
+                      if (!currentPW) return;
+                      var newAns = Object.assign({}, pwAnswers);
+                      newAns[currentPW.id] = 'forward';
+                      var newPos = pwPosition + 1;
+                      upd({ pwAnswers: newAns, pwPosition: newPos });
+                      if (soundEnabled) sfxClick();
+                      awardXP(3);
+                      logPractice('privilege_walk', currentPW.id);
+                      if (Object.keys(newAns).length >= totalPW) {
+                        upd({ pwFinished: true });
+                        addToast('\uD83D\uDCA1 Privilege Walk complete. Take a moment to reflect.', 'info');
+                      }
+                    },
+                    style: { padding: '10px 24px', borderRadius: 10, border: '1px solid #22c55e44', background: '#22c55e11', color: '#22c55e', fontSize: 13, fontWeight: 600, cursor: 'pointer', minWidth: 140 }
+                  }, '\u2191 Step Forward'),
+                  h('button', {
+                    onClick: function() {
+                      if (!currentPW) return;
+                      var newAns = Object.assign({}, pwAnswers);
+                      newAns[currentPW.id] = 'back';
+                      var newPos = pwPosition - 1;
+                      upd({ pwAnswers: newAns, pwPosition: newPos });
+                      if (soundEnabled) sfxClick();
+                      awardXP(3);
+                      logPractice('privilege_walk', currentPW.id);
+                      if (Object.keys(newAns).length >= totalPW) {
+                        upd({ pwFinished: true });
+                        addToast('\uD83D\uDCA1 Privilege Walk complete. Take a moment to reflect.', 'info');
+                      }
+                    },
+                    style: { padding: '10px 24px', borderRadius: 10, border: '1px solid #f59e0b44', background: '#f59e0b11', color: '#f59e0b', fontSize: 13, fontWeight: 600, cursor: 'pointer', minWidth: 140 }
+                  }, '\u2193 Step Back')
+                ) : h('div', { style: { textAlign: 'center', fontSize: 12, color: pwAnswers[currentPW ? currentPW.id : ''] === 'forward' ? '#22c55e' : '#f59e0b', fontWeight: 600 } },
+                  pwAnswers[currentPW ? currentPW.id : ''] === 'forward' ? '\u2191 Stepped Forward' : '\u2193 Stepped Back'
+                ),
+                h('div', { style: { textAlign: 'center', marginTop: 10, fontSize: 10, color: '#64748b', fontStyle: 'italic' } },
+                  'Category: ' + (currentPW ? currentPW.category : '')
+                )
+              ),
+              // Navigation
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                h('button', {
+                  onClick: function() { if (pwIdx > 0) { upd({ pwIdx: pwIdx - 1 }); if (soundEnabled) sfxClick(); } },
+                  disabled: pwIdx === 0,
+                  style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: pwIdx === 0 ? '#334155' : '#94a3b8', fontSize: 12, cursor: pwIdx === 0 ? 'default' : 'pointer' }
+                }, '\u2190 Previous'),
+                h('span', { style: { fontSize: 12, color: '#64748b' } }, answeredPWCount + '/' + totalPW + ' answered'),
+                h('button', {
+                  onClick: function() { if (pwIdx < totalPW - 1) { upd({ pwIdx: pwIdx + 1 }); if (soundEnabled) sfxClick(); } },
+                  disabled: pwIdx >= totalPW - 1,
+                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: pwIdx >= totalPW - 1 ? '#334155' : ACCENT, color: '#fff', fontSize: 12, fontWeight: 600, cursor: pwIdx >= totalPW - 1 ? 'default' : 'pointer' }
+                }, 'Next \u2192')
+              )
+            ) : h('div', null,
+              // Finished state — reflection
+              h('div', { style: { textAlign: 'center', padding: 20, borderRadius: 16, background: '#1e293b', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+                h('div', { style: { fontSize: 40, marginBottom: 8 } }, '\uD83D\uDCA1'),
+                h('div', { style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 } }, 'Walk Complete'),
+                h('div', { style: { fontSize: 14, color: ACCENT, fontWeight: 600, marginBottom: 8 } }, 'Final position: ' + (pwPosition > 0 ? '+' : '') + pwPosition + ' steps'),
+                h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.6, maxWidth: 420, margin: '0 auto 16px' } },
+                  'Everyone ends up in different places \u2014 and that\u2019s the point. This exercise isn\u2019t about guilt or pride. It\u2019s about recognizing that people start from different places through no choice of their own, and that awareness is the first step toward equity.'
+                )
+              ),
+              // Reflection prompts
+              h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
+                h('h4', { style: { fontSize: 14, color: ACCENT, marginBottom: 12 } }, 'What did you notice?'),
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 } },
+                  PRIVILEGE_REFLECTIONS.map(function(q, qi) {
+                    return h('div', { key: qi, style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', border: '1px solid #334155', fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } },
+                      '\u2022 ' + q
+                    );
+                  })
+                ),
+                h('textarea', {
+                  value: pwReflection,
+                  onChange: function(e) { upd({ pwReflection: e.target.value }); },
+                  placeholder: 'Write your reflection here. What stood out to you? What did you learn about yourself or about different experiences?',
+                  style: { width: '100%', minHeight: 100, padding: '10px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 12, outline: 'none', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 10 }
+                }),
+                h('button', {
+                  onClick: function() {
+                    if (!pwReflection.trim()) { addToast('Write a reflection before saving.', 'error'); return; }
+                    upd({ pwReflectionSaved: true });
+                    if (soundEnabled) sfxCorrect();
+                    addToast('\uD83D\uDCA1 Privilege Walk reflection saved!', 'success');
+                    awardXP(20);
+                    logPractice('privilege_reflection', 'saved');
+                    checkBadges();
+                  },
+                  disabled: pwReflectionSaved,
+                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: pwReflectionSaved ? '#334155' : ACCENT, color: pwReflectionSaved ? '#64748b' : '#fff', fontSize: 12, fontWeight: 600, cursor: pwReflectionSaved ? 'default' : 'pointer' }
+                }, pwReflectionSaved ? '\u2713 Reflection Saved' : 'Save Reflection')
+              ),
+              // Reset button
+              h('div', { style: { textAlign: 'center' } },
+                h('button', {
+                  onClick: function() {
+                    upd({ pwIdx: 0, pwAnswers: {}, pwPosition: 0, pwFinished: false, pwReflection: '', pwReflectionSaved: false });
+                    if (soundEnabled) sfxClick();
+                  },
+                  style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
+                }, '\uD83D\uDD04 Walk Again')
+              )
+            )
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // ── TAB: Microaggression Awareness (middle & high) ──
+        // ══════════════════════════════════════════════════════════
+        var microaggContent = null;
+        if (activeTab === 'microagg' && band !== 'elementary') {
+          var currentMA = MICROAGGRESSIONS[maIdx];
+          var maReviewedCount = Object.keys(maReviewed).length;
+
+          microaggContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 6, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDD0D Microaggression Awareness'),
+            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#94a3b8', marginBottom: 16, lineHeight: 1.5 } },
+              'Microaggressions are brief, everyday exchanges that send demeaning messages to people based on their identity. They\u2019re often unintentional, but their impact is real. Learning to recognize them is the first step to stopping them.'
+            ),
+            h('div', { style: { textAlign: 'center', marginBottom: 16, fontSize: 12, color: '#64748b' } },
+              maReviewedCount + ' of ' + MICROAGGRESSIONS.length + ' reviewed'
+            ),
+            // Main card
+            currentMA && h('div', { style: { borderRadius: 16, background: '#1e293b', border: '1px solid #334155', overflow: 'hidden', marginBottom: 16 } },
+              // Header — the statement
+              h('div', { style: { padding: '20px 20px 16px', borderBottom: '1px solid #33415544', background: '#0f172a' } },
+                h('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 6 } }, (maIdx + 1) + ' of ' + MICROAGGRESSIONS.length),
+                h('div', { style: { fontSize: 11, color: '#ef4444', fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'What was said:'),
+                h('div', { style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9', fontStyle: 'italic', lineHeight: 1.4 } }, '\u201C' + currentMA.said + '\u201D'),
+                h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 8 } }, 'Often directed at: ' + currentMA.target)
+              ),
+              // Body
+              h('div', { style: { padding: 20 } },
+                // Why it's harmful
+                h('div', { style: { marginBottom: 16 } },
+                  h('div', { style: { fontSize: 12, fontWeight: 700, color: '#f59e0b', marginBottom: 6 } }, '\u26A0\uFE0F Why it\u2019s harmful:'),
+                  h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } }, currentMA.whyHarmful)
+                ),
+                // What to say instead
+                h('div', { style: { marginBottom: 16 } },
+                  h('div', { style: { fontSize: 12, fontWeight: 700, color: '#22c55e', marginBottom: 6 } }, '\u2713 What to say instead:'),
+                  h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } }, currentMA.sayInstead)
+                ),
+                // Bystander response practice
+                h('div', { style: { marginBottom: 16 } },
+                  h('div', { style: { fontSize: 12, fontWeight: 700, color: ACCENT, marginBottom: 6 } }, '\uD83D\uDDE3\uFE0F Bystander response \u2014 what could you say if you witnessed this?'),
+                  !maBystanderDone[currentMA.id] ? h('div', null,
+                    h('textarea', {
+                      value: maResponses[currentMA.id] || '',
+                      onChange: function(e) {
+                        var newResp = Object.assign({}, maResponses);
+                        newResp[currentMA.id] = e.target.value;
+                        upd({ maResponses: newResp });
+                      },
+                      placeholder: 'Practice writing what you would say as a bystander...',
+                      style: { width: '100%', minHeight: 60, padding: '8px 10px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 11, outline: 'none', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 8 }
+                    }),
+                    h('button', {
+                      onClick: function() {
+                        if (!(maResponses[currentMA.id] || '').trim()) { addToast('Write a response first.', 'error'); return; }
+                        var newDone = Object.assign({}, maBystanderDone);
+                        newDone[currentMA.id] = true;
+                        upd({ maBystanderDone: newDone });
+                        if (soundEnabled) sfxCorrect();
+                        awardXP(8);
+                      },
+                      style: { padding: '6px 14px', borderRadius: 8, border: 'none', background: ACCENT, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+                    }, 'Submit My Response')
+                  ) : h('div', null,
+                    h('div', { style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', border: '1px solid #334155', fontSize: 12, color: '#cbd5e1', marginBottom: 8, lineHeight: 1.5 } },
+                      h('div', { style: { fontSize: 10, color: '#64748b', marginBottom: 4 } }, 'Your response:'),
+                      maResponses[currentMA.id] || ''
+                    ),
+                    h('div', { style: { padding: '8px 12px', borderRadius: 8, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED, fontSize: 12, color: ACCENT, lineHeight: 1.5 } },
+                      h('div', { style: { fontSize: 10, color: '#64748b', marginBottom: 4 } }, 'Example bystander response:'),
+                      currentMA.bystanderResponse
+                    )
+                  )
+                ),
+                // Mark as reviewed
+                !maReviewed[currentMA.id] && h('button', {
+                  onClick: function() {
+                    var newRev = Object.assign({}, maReviewed);
+                    newRev[currentMA.id] = true;
+                    upd({ maReviewed: newRev });
+                    if (soundEnabled) sfxDiscover();
+                    addToast('\uD83D\uDD0D Microaggression reviewed! (' + (Object.keys(newRev).length) + '/' + MICROAGGRESSIONS.length + ')', 'success');
+                    awardXP(5);
+                    logPractice('microagg', currentMA.id);
+                    checkBadges();
+                  },
+                  style: { width: '100%', padding: '10px 16px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: ACCENT_DIM, color: ACCENT, fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+                }, '\uD83D\uDCA1 I understand this \u2014 mark as reviewed'),
+                maReviewed[currentMA.id] && h('div', { style: { textAlign: 'center', fontSize: 12, color: '#22c55e', fontWeight: 600, padding: '8px 0' } }, '\u2713 Reviewed')
+              )
+            ),
+            // Navigation
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+              h('button', {
+                onClick: function() { if (maIdx > 0) { upd({ maIdx: maIdx - 1 }); if (soundEnabled) sfxClick(); } },
+                disabled: maIdx === 0,
+                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: maIdx === 0 ? '#334155' : '#94a3b8', fontSize: 12, cursor: maIdx === 0 ? 'default' : 'pointer' }
+              }, '\u2190 Previous'),
+              h('span', { style: { fontSize: 12, color: '#64748b' } }, maReviewedCount + '/' + MICROAGGRESSIONS.length + ' reviewed'),
+              h('button', {
+                onClick: function() { if (maIdx < MICROAGGRESSIONS.length - 1) { upd({ maIdx: maIdx + 1 }); if (soundEnabled) sfxClick(); } },
+                disabled: maIdx >= MICROAGGRESSIONS.length - 1,
+                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: maIdx >= MICROAGGRESSIONS.length - 1 ? '#334155' : ACCENT, color: '#fff', fontSize: 12, fontWeight: 600, cursor: maIdx >= MICROAGGRESSIONS.length - 1 ? 'default' : 'pointer' }
+              }, 'Next \u2192')
+            )
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // ── TAB: Cultural Heritage Project Builder ──
+        // ══════════════════════════════════════════════════════════
+        var heritageContent = null;
+        if (activeTab === 'heritage') {
+          var hFilled = 0;
+          HERITAGE_SECTIONS.forEach(function(sec) { if (heritageData[sec.id] && heritageData[sec.id].trim().length > 0) hFilled++; });
+
+          heritageContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 6, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFDB\uFE0F My Cultural Heritage'),
+            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#94a3b8', marginBottom: 20, lineHeight: 1.5 } },
+              band === 'elementary' ? 'Tell the story of YOUR family and culture! Fill in each section to build your Cultural Heritage project.' :
+              band === 'middle' ? 'Document the rich tapestry of your cultural heritage. Each section helps you explore and celebrate where you come from.' :
+              'Create a record of your cultural heritage. This project is an act of self-knowledge and cultural preservation.'
+            ),
+            // Heritage sections grid
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 } },
+              HERITAGE_SECTIONS.map(function(sec) {
+                var val = heritageData[sec.id] || '';
+                var filled = val.trim().length > 0;
+                return h('div', { key: sec.id, style: { padding: 16, borderRadius: 14, background: filled ? '#1e293b' : '#0f172a', border: '1px solid ' + (filled ? ACCENT_MED : '#334155'), transition: 'all 0.2s' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                    h('span', { style: { fontSize: 22 } }, sec.icon),
+                    h('span', { style: { fontSize: 14, fontWeight: 600, color: filled ? ACCENT : '#f1f5f9' } }, sec.label),
+                    filled && h('span', { style: { marginLeft: 'auto', fontSize: 12, color: ACCENT } }, '\u2713')
+                  ),
+                  h('p', { style: { fontSize: 11, color: '#64748b', marginBottom: 8, lineHeight: 1.5 } }, sec.prompt),
+                  h('textarea', {
+                    value: val,
+                    onChange: function(e) {
+                      var newH = Object.assign({}, heritageData);
+                      newH[sec.id] = e.target.value;
+                      upd({ heritageData: newH });
+                    },
+                    onBlur: function() {
+                      if (val.trim().length > 0) {
+                        logPractice('heritage', sec.id);
+                        awardXP(5);
+                        checkBadges();
+                      }
+                    },
+                    placeholder: band === 'elementary' ? 'Write about this here...' : 'Share your story...',
+                    style: { width: '100%', minHeight: 70, padding: '8px 10px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 11, outline: 'none', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }
+                  })
+                );
+              })
+            ),
+            // Progress
+            h('div', { style: { textAlign: 'center', marginBottom: 16, padding: '8px 16px', borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 4 } }, 'My Cultural Map'),
+              h('div', { style: { height: 6, borderRadius: 3, background: '#334155', overflow: 'hidden' } },
+                h('div', { style: { height: '100%', width: (hFilled / HERITAGE_SECTIONS.length * 100) + '%', background: ACCENT, borderRadius: 3, transition: 'width 0.3s' } })
+              ),
+              h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 4 } }, hFilled + ' of ' + HERITAGE_SECTIONS.length + ' sections completed')
+            ),
+            // Visual Cultural Map
+            hFilled >= 1 && h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+              h('h4', { style: { fontSize: 14, color: ACCENT, marginBottom: 12, textAlign: 'center' } }, '\uD83D\uDDFA\uFE0F My Cultural Map'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 } },
+                HERITAGE_SECTIONS.map(function(sec) {
+                  var val = heritageData[sec.id] || '';
+                  var filled = val.trim().length > 0;
+                  return h('div', { key: sec.id, style: { padding: 12, borderRadius: 10, background: filled ? '#0f172a' : '#0f172a55', border: '1px solid ' + (filled ? ACCENT_MED : '#33415555'), textAlign: 'center', opacity: filled ? 1 : 0.4 } },
+                    h('div', { style: { fontSize: 24 } }, sec.icon),
+                    h('div', { style: { fontSize: 10, fontWeight: 600, color: filled ? '#f1f5f9' : '#64748b', marginTop: 4 } }, sec.label),
+                    filled && h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, lineHeight: 1.4, maxHeight: 42, overflow: 'hidden', textOverflow: 'ellipsis' } }, val.slice(0, 80) + (val.length > 80 ? '...' : ''))
+                  );
+                })
+              )
+            ),
+            // Export button
+            hFilled >= 2 && h('div', { style: { textAlign: 'center' } },
+              h('button', {
+                onClick: function() {
+                  var lines = ['=== MY CULTURAL HERITAGE PROJECT ===', ''];
+                  HERITAGE_SECTIONS.forEach(function(sec) {
+                    var val = heritageData[sec.id] || '';
+                    if (val.trim()) {
+                      lines.push(sec.icon + ' ' + sec.label.toUpperCase());
+                      lines.push(val.trim());
+                      lines.push('');
+                    }
+                  });
+                  lines.push('---');
+                  lines.push('Created with AlloFlow Community & Culture Tool');
+                  var text = lines.join('\n');
+                  try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                      navigator.clipboard.writeText(text);
+                      addToast('\uD83D\uDCCB Heritage project copied to clipboard!', 'success');
+                    } else {
+                      var ta = document.createElement('textarea');
+                      ta.value = text;
+                      document.body.appendChild(ta);
+                      ta.select();
+                      document.execCommand('copy');
+                      document.body.removeChild(ta);
+                      addToast('\uD83D\uDCCB Heritage project copied to clipboard!', 'success');
+                    }
+                  } catch(e) { addToast('Could not copy. Try again.', 'error'); }
+                  if (soundEnabled) sfxCorrect();
+                  awardXP(10);
+                },
+                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: ACCENT, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+              }, '\uD83D\uDCCB Export as Text (Copy)')
+            )
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // ── TAB: Intercultural Communication Tips ──
+        // ══════════════════════════════════════════════════════════
+        var commtipsContent = null;
+        if (activeTab === 'commtips') {
+          var tipItems = INTERCULTURAL_TIPS[band] || INTERCULTURAL_TIPS.elementary;
+          var tipsReadCount = 0;
+          tipItems.forEach(function(t) { if (icRead[t.id]) tipsReadCount++; });
+
+          commtipsContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 6, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDF10 Intercultural Communication'),
+            h('p', { style: { textAlign: 'center', fontSize: 12, color: '#94a3b8', marginBottom: 20, lineHeight: 1.5 } },
+              band === 'elementary' ? 'Tips for being a great communicator with people from all backgrounds!' :
+              band === 'middle' ? 'Build skills for respectful, thoughtful communication across cultural differences.' :
+              'Develop advanced intercultural communication skills grounded in humility and critical self-awareness.'
+            ),
+            h('div', { style: { textAlign: 'center', marginBottom: 16, fontSize: 12, color: '#64748b' } },
+              tipsReadCount + ' of ' + tipItems.length + ' tips explored'
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+              tipItems.map(function(tip) {
+                var isRead = !!icRead[tip.id];
+                return h('div', { key: tip.id,
+                  onClick: function() {
+                    if (!isRead) {
+                      var newRead = Object.assign({}, icRead);
+                      newRead[tip.id] = true;
+                      upd({ icRead: newRead });
+                      if (soundEnabled) sfxDiscover();
+                      awardXP(5);
+                      logPractice('commtip', tip.id);
+                      checkBadges();
+                    }
+                  },
+                  style: { padding: 16, borderRadius: 14, background: isRead ? '#1e293b' : '#0f172a', border: '1px solid ' + (isRead ? ACCENT_MED : '#334155'), cursor: isRead ? 'default' : 'pointer', transition: 'all 0.2s' }
+                },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                    h('span', { style: { fontSize: 22 } }, tip.icon),
+                    h('span', { style: { fontSize: 14, fontWeight: 600, color: isRead ? ACCENT : '#f1f5f9' } }, tip.tip),
+                    isRead && h('span', { style: { marginLeft: 'auto', fontSize: 12, color: ACCENT } }, '\u2713')
+                  ),
+                  h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, margin: 0 } }, tip.detail),
+                  !isRead && h('div', { style: { marginTop: 8, fontSize: 10, color: '#64748b', fontStyle: 'italic' } }, 'Tap to mark as read')
+                );
+              })
+            ),
+            // Completion message
+            tipsReadCount >= tipItems.length && h('div', { style: { textAlign: 'center', marginTop: 20, padding: 16, borderRadius: 12, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED } },
+              h('div', { style: { fontSize: 32, marginBottom: 6 } }, '\uD83C\uDF10'),
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: ACCENT } }, 'Cross-Cultural Communicator!'),
+              h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4 } }, 'You\u2019ve explored all the intercultural communication tips for your grade level.')
+            )
+          );
+        }
+
+        // ══════════════════════════════════════════════════════════
         // ── TAB: Battle Questions ──
         // Quick true/false & multiple choice for rapid XP
         // ══════════════════════════════════════════════════════════
@@ -1132,7 +1744,13 @@ window.SelHub = window.SelHub || {
           var exploredCount = Object.keys(exploredItems).length;
           var idFilled = 0;
           IDENTITY_CATEGORIES.forEach(function(cat) { if (identityMap[cat.id] && identityMap[cat.id].trim().length > 0) idFilled++; });
-          var totalActs = exploredCount + scCompleted + idFilled + learnCount + quizBest + battleBest + Object.keys(allyActions).length;
+          var heritageDone = 0;
+          HERITAGE_SECTIONS.forEach(function(sec) { if (heritageData[sec.id] && heritageData[sec.id].trim().length > 0) heritageDone++; });
+          var tipsRead = 0;
+          var tipList = INTERCULTURAL_TIPS[band] || INTERCULTURAL_TIPS.elementary;
+          tipList.forEach(function(t) { if (icRead[t.id]) tipsRead++; });
+          var maCount = Object.keys(maReviewed).length;
+          var totalActs = exploredCount + scCompleted + idFilled + learnCount + quizBest + battleBest + Object.keys(allyActions).length + Object.keys(pwAnswers).length + maCount + heritageDone + tipsRead;
 
           var stats = [
             { label: 'Topics Explored', value: exploredCount, icon: '\uD83C\uDF0D', color: '#06b6d4' },
@@ -1142,8 +1760,14 @@ window.SelHub = window.SelHub || {
             { label: 'Top Ratings', value: scTopRatings, icon: '\u2B50', color: '#ec4899' },
             { label: 'Quiz Best', value: quizBest + '/' + (CULTURE_QUIZ[band] || CULTURE_QUIZ.elementary).length, icon: '\uD83C\uDFC6', color: '#a855f7' },
             { label: 'Battle Best', value: battleBest + '/' + (BATTLE_QUESTIONS[band] || BATTLE_QUESTIONS.elementary).length, icon: '\u2694\uFE0F', color: '#f43f5e' },
-            { label: 'Ally Actions', value: Object.keys(allyActions).length, icon: '\uD83E\uDD1D', color: '#14b8a6' }
+            { label: 'Ally Actions', value: Object.keys(allyActions).length, icon: '\uD83E\uDD1D', color: '#14b8a6' },
+            { label: 'Heritage Sections', value: heritageDone + '/6', icon: '\uD83C\uDFDB\uFE0F', color: '#d946ef' },
+            { label: 'Communication Tips', value: tipsRead + '/' + tipList.length, icon: '\uD83C\uDF10', color: '#0ea5e9' }
           ];
+          if (band !== 'elementary') {
+            stats.push({ label: 'Microaggressions', value: maCount + '/8', icon: '\uD83D\uDD0D', color: '#fb923c' });
+            stats.push({ label: 'Privilege Walk', value: Object.keys(pwAnswers).length + '/15', icon: '\uD83D\uDCA1', color: '#facc15' });
+          }
 
           badgesContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
             // Stats
@@ -1254,8 +1878,8 @@ window.SelHub = window.SelHub || {
               h('h4', { style: { fontSize: 14, color: '#f1f5f9', marginBottom: 8 } }, 'Recent Activity'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 practiceLog.slice(-8).reverse().map(function(entry, i) {
-                  var icons = { explore: '\uD83C\uDF0D', learn: '\uD83D\uDCA1', identity: '\uD83E\uDDE9', scenario: '\uD83C\uDFAD', superpower: '\u26A1', ai_coach: '\u2728', quiz: '\uD83C\uDFC6', battle: '\u2694\uFE0F', ally_action: '\uD83E\uDD1D' };
-                  var labels = { explore: 'Explored Topic', learn: 'Learned Something New', identity: 'Identity Reflection', scenario: 'Cultural Scenario', superpower: 'Superpower Reflection', ai_coach: 'AI Coach', quiz: 'Culture Quiz', battle: 'Battle Question', ally_action: 'Allyship Action' };
+                  var icons = { explore: '\uD83C\uDF0D', learn: '\uD83D\uDCA1', identity: '\uD83E\uDDE9', scenario: '\uD83C\uDFAD', superpower: '\u26A1', ai_coach: '\u2728', quiz: '\uD83C\uDFC6', battle: '\u2694\uFE0F', ally_action: '\uD83E\uDD1D', privilege_walk: '\uD83D\uDCA1', privilege_reflection: '\uD83D\uDCA1', microagg: '\uD83D\uDD0D', heritage: '\uD83C\uDFDB\uFE0F', commtip: '\uD83C\uDF10' };
+                  var labels = { explore: 'Explored Topic', learn: 'Learned Something New', identity: 'Identity Reflection', scenario: 'Cultural Scenario', superpower: 'Superpower Reflection', ai_coach: 'AI Coach', quiz: 'Culture Quiz', battle: 'Battle Question', ally_action: 'Allyship Action', privilege_walk: 'Privilege Walk', privilege_reflection: 'Privilege Reflection', microagg: 'Microaggression Review', heritage: 'Heritage Section', commtip: 'Communication Tip' };
                   return h('div', { key: i, style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 } },
                     h('span', null, icons[entry.type] || '\uD83D\uDCDD'),
                     h('span', { style: { color: '#e2e8f0', fontWeight: 500 } }, labels[entry.type] || entry.type),
@@ -1270,7 +1894,7 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         // ── Final Render ──
         // ══════════════════════════════════════════════════════════
-        var content = exploreContent || identityContent || scenariosContent || quizContent || battleContent || badgesContent;
+        var content = exploreContent || identityContent || scenariosContent || privilegeContent || microaggContent || heritageContent || commtipsContent || quizContent || battleContent || badgesContent;
 
         return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
           tabBar,

@@ -598,7 +598,296 @@ window.SelHub = window.SelHub || {
     { id: 'deep_listener', name: 'Deep Listener', emoji: '\uD83D\uDC42', desc: 'Write reflections for 5 circle rounds', threshold: 5, key: 'reflectionsWritten' },
     { id: 'roots_scholar', name: 'Roots Scholar', emoji: '\uD83C\uDF0D', desc: 'Read and reflect on Indigenous roots', threshold: 1, key: 'rootsStudied' },
     { id: 'peace_builder', name: 'Peace Builder', emoji: '\uD83E\uDD4A', desc: 'Complete all scenario types in one grade band', threshold: 1, key: 'allScenariosInBand' },
+    { id: 'question_master', name: 'Question Master', emoji: '\u2753', desc: 'Use 10 questions from the question bank', threshold: 10, key: 'questionsUsed' },
+    { id: 'role_expert', name: 'Role Expert', emoji: '\uD83C\uDFAD', desc: 'Read all 5 circle role cards', threshold: 5, key: 'rolesStudied' },
+    { id: 'empathy_mapper', name: 'Empathy Mapper', emoji: '\uD83E\uDDE0', desc: 'Complete an empathy mapping exercise', threshold: 1, key: 'empathyMapsCompleted' },
+    { id: 'restorative_scholar', name: 'Restorative Scholar', emoji: '\uD83D\uDCDA', desc: 'Rate all 6 restorative vs punitive scenarios', threshold: 6, key: 'comparisonScenariosRated' },
+    { id: 'peace_circle_leader', name: 'Peace Circle Leader', emoji: '\u262E\uFE0F', desc: 'Earn 5 other restorative circle badges', threshold: 5, key: 'totalBadgesEarned' },
   ];
+
+  // ── Restorative Questions Bank ──
+
+  var RESTORATIVE_QUESTIONS = {
+    opening: {
+      label: 'Opening / Check-In',
+      emoji: '\u2600\uFE0F',
+      color: '#f59e0b',
+      questions: [
+        'Share one word that describes how you are feeling right now.',
+        'What is something good that happened recently?',
+        'If you were weather today, what would you be and why?',
+        'What is one thing you are grateful for this morning?',
+        'On a scale of one to ten, how full is your emotional battery today?',
+        'What is one hope you have for today?',
+        'If your mood were a color, what color would it be?',
+        'What is something small that made you smile this week?',
+        'Share one word about how you are arriving in this space.',
+        'What is one thing you need from this circle today?'
+      ]
+    },
+    community: {
+      label: 'Building Community',
+      emoji: '\uD83C\uDF31',
+      color: '#22c55e',
+      questions: [
+        'What does respect look like in our space?',
+        'Tell us about someone who inspires you and why.',
+        'What is a tradition your family has that you treasure?',
+        'What is one thing that makes our community special?',
+        'How do you show someone you care about them?',
+        'What is a skill or talent you have that others might not know about?',
+        'Describe a time someone made you feel truly welcome.',
+        'What does trust look like between friends?',
+        'If you could create one new tradition for our group, what would it be?',
+        'What is the most important quality in a good friend?'
+      ]
+    },
+    harm: {
+      label: 'Addressing Harm',
+      emoji: '\uD83D\uDC9B',
+      color: '#eab308',
+      questions: [
+        'What happened from your perspective?',
+        'What were you thinking at the time?',
+        'Who was affected and how?',
+        'What do you need to move forward?',
+        'What has been the hardest part of this situation for you?',
+        'How has this affected your sense of trust or safety?',
+        'What would genuine accountability look like here?',
+        'If you could go back in time, what would you do differently?',
+        'What do you want the other person to understand about your experience?',
+        'What would need to happen for healing to begin?'
+      ]
+    },
+    closing: {
+      label: 'Closing / Commitment',
+      emoji: '\uD83C\uDF19',
+      color: '#8b5cf6',
+      questions: [
+        'What is one thing you are taking away from this circle?',
+        'What commitment will you make based on what we shared today?',
+        'Share one word of hope for the future.',
+        'What is one thing you appreciated about today\'s circle?',
+        'How do you feel now compared to when we started?',
+        'What is one act of kindness you will do this week?',
+        'Finish this sentence: after this circle, I feel...',
+        'What did you learn about someone else today?',
+        'What is one thing you want to remember from this conversation?',
+        'Share a wish you have for everyone in this circle.'
+      ]
+    }
+  };
+
+  // ── Circle Role Cards ──
+
+  var CIRCLE_ROLES = [
+    {
+      id: 'keeper',
+      title: 'Circle Keeper',
+      emoji: '\uD83D\uDD2E',
+      subtitle: 'The Facilitator',
+      description: 'The Circle Keeper holds the space for the group. They guide the process, ensure agreements are honored, and create a container where everyone feels safe to share. The keeper does not control the conversation but gently stewards it.',
+      dos: [
+        'Prepare the space and materials before the circle begins',
+        'Review agreements at the start of every circle',
+        'Model vulnerability by sharing authentically',
+        'Use a calm and steady voice',
+        'Ensure every voice is honored equally'
+      ],
+      donts: [
+        'Do not dominate the conversation or share too much',
+        'Do not judge or evaluate what participants say',
+        'Do not force anyone to speak who wants to pass',
+        'Do not take sides in a conflict',
+        'Do not rush the process to finish on time'
+      ],
+      phrases: [
+        'Thank you for sharing that with us.',
+        'Let us take a breath before we continue.',
+        'Remember, it is okay to pass if you are not ready.',
+        'I am going to pass the talking piece to the next person.',
+        'What I am hearing is... does that sound right?'
+      ]
+    },
+    {
+      id: 'holder',
+      title: 'Talking Piece Holder',
+      emoji: '\uD83E\uDEB6',
+      subtitle: 'The Active Voice',
+      description: 'When you hold the talking piece, the circle is yours. You have the right and responsibility to speak your truth. No one will interrupt you, and no one will judge you. This is your moment to be heard.',
+      dos: [
+        'Speak from the heart using "I" statements',
+        'Take your time and do not rush',
+        'Be honest and authentic',
+        'Speak just enough \u2014 say what matters',
+        'Look around the circle if it helps you feel grounded'
+      ],
+      donts: [
+        'Do not use the time to attack or blame others',
+        'Do not speak about others\' motivations or thoughts',
+        'Do not feel pressured to say the "right" thing',
+        'Do not apologize for your feelings',
+        'Do not worry about being perfect'
+      ],
+      phrases: [
+        'What I want to share is...',
+        'I feel [emotion] because...',
+        'Something I have been thinking about is...',
+        'I pass \u2014 I am still processing.',
+        'Thank you for listening.'
+      ]
+    },
+    {
+      id: 'witness',
+      title: 'Witness',
+      emoji: '\uD83D\uDC41\uFE0F',
+      subtitle: 'The Active Listener',
+      description: 'As a witness, your role is to listen deeply without planning your response. You hold space for the speaker by giving your full attention. Your presence and silence are powerful gifts to the circle.',
+      dos: [
+        'Give your full attention to the speaker',
+        'Make gentle eye contact if culturally appropriate',
+        'Notice your own reactions without acting on them',
+        'Stay present in your body and breath',
+        'Let the speaker\'s words land before responding'
+      ],
+      donts: [
+        'Do not interrupt or make faces',
+        'Do not plan what you will say next while someone speaks',
+        'Do not whisper or side-talk with neighbors',
+        'Do not look at your phone or other distractions',
+        'Do not minimize or dismiss what is shared'
+      ],
+      phrases: [
+        'I hear you.',
+        'Thank you for trusting us with that.',
+        'That resonates with me.',
+        'I want to sit with what you said for a moment.',
+        'Your words matter to this circle.'
+      ]
+    },
+    {
+      id: 'notetaker',
+      title: 'Note Taker',
+      emoji: '\uD83D\uDCDD',
+      subtitle: 'The Recorder',
+      description: 'The note taker captures key points, themes, commitments, and agreements without attributing specific quotes to individuals. Notes serve as a collective memory of the circle while honoring confidentiality.',
+      dos: [
+        'Write themes and key ideas, not word-for-word quotes',
+        'Record commitments and agreements specifically',
+        'Capture the energy and tone of the circle',
+        'Ask for clarification before writing a commitment',
+        'Share notes with the group for approval at the end'
+      ],
+      donts: [
+        'Do not write down who said what',
+        'Do not share notes with anyone outside the circle',
+        'Do not let note-taking distract from listening',
+        'Do not editorialize or add your own opinions to notes',
+        'Do not record on a phone or device without permission'
+      ],
+      phrases: [
+        'I want to make sure I captured this correctly...',
+        'A theme I am noticing is...',
+        'Can you help me word this commitment accurately?',
+        'Would the group like me to read back our agreements?',
+        'I will keep these notes confidential.'
+      ]
+    },
+    {
+      id: 'timekeeper',
+      title: 'Timekeeper',
+      emoji: '\u23F0',
+      subtitle: 'The Pacer',
+      description: 'The timekeeper gently monitors the flow and pacing of the circle. They help ensure there is enough time for every phase \u2014 opening, sharing, and closing \u2014 while never rushing someone who needs more space.',
+      dos: [
+        'Agree on timing with the keeper before the circle starts',
+        'Give gentle signals when a section is running long',
+        'Be flexible and responsive to the group\'s energy',
+        'Protect time for the closing round \u2014 it matters',
+        'Use visual cues rather than verbal interruptions'
+      ],
+      donts: [
+        'Do not interrupt someone who is sharing to announce time',
+        'Do not make time feel like pressure or urgency',
+        'Do not rigidly enforce time if the group needs more space',
+        'Do not announce time in a way that breaks the circle\'s mood',
+        'Do not skip the closing to save time'
+      ],
+      phrases: [
+        'We have about five minutes left for this section.',
+        'Let us make sure we leave time for our closing round.',
+        'Take the time you need \u2014 we are here.',
+        'We may want to continue this in our next circle.',
+        'I want to check with the keeper about our pacing.'
+      ]
+    }
+  ];
+
+  // ── Empathy Mapping data ──
+
+  var EMPATHY_QUADRANTS = [
+    { id: 'said', label: 'What they SAID', emoji: '\uD83D\uDCAC', color: '#3b82f6', placeholder: 'Words they spoke, exact phrases, tone of voice...' },
+    { id: 'did', label: 'What they DID', emoji: '\uD83C\uDFAC', color: '#22c55e', placeholder: 'Actions they took, body language, reactions...' },
+    { id: 'think', label: 'What they THINK', emoji: '\uD83D\uDCA1', color: '#f59e0b', placeholder: 'Their beliefs, assumptions, priorities, worries...' },
+    { id: 'feel', label: 'What they FEEL', emoji: '\u2764\uFE0F', color: '#ef4444', placeholder: 'Emotions they might be experiencing underneath...' }
+  ];
+
+  // ── Restorative vs Punitive Comparison ──
+
+  var RESTORATIVE_VS_PUNITIVE = {
+    principles: [
+      { punitive: 'Focuses on rules that were broken', restorative: 'Focuses on harm that was caused and relationships that were damaged' },
+      { punitive: 'Asks "Who did it? What rule was broken? What punishment is deserved?"', restorative: 'Asks "Who was harmed? What do they need? Whose obligation is it to meet those needs?"' },
+      { punitive: 'Authority figures decide consequences', restorative: 'Those affected participate in deciding how to repair the harm' },
+      { punitive: 'Accountability means receiving punishment', restorative: 'Accountability means understanding impact and taking action to repair' },
+      { punitive: 'Goal is deterrence through fear of consequences', restorative: 'Goal is healing through understanding and empathy' },
+      { punitive: 'Can increase shame, resentment, and disconnection', restorative: 'Builds empathy, responsibility, and stronger relationships' }
+    ],
+    scenarios: [
+      {
+        title: 'Student Caught Cheating on a Test',
+        emoji: '\uD83D\uDCDD',
+        punitive: 'The student receives a zero on the test, a detention, and a note sent home. They feel ashamed and resentful. They learn to be more careful about cheating, not why honesty matters.',
+        restorative: 'The student sits in a circle with the teacher and a counselor. They explore the pressure that led to cheating. They redo the test honestly and write a reflection about integrity. They feel understood and commit to asking for help next time.',
+        discussion: 'Which approach helps the student learn about integrity? Which addresses the root cause?'
+      },
+      {
+        title: 'Two Students in a Physical Fight',
+        emoji: '\uD83E\uDD4A',
+        punitive: 'Both students are suspended for three days. They return to school still angry at each other. The underlying conflict is unresolved. Friends take sides and tension spreads.',
+        restorative: 'After a cool-down period, both students participate in a restorative conversation. Each shares what led to the fight. They identify the root conflict, hear each other\'s pain, and create an agreement for moving forward. The community supports the repair.',
+        discussion: 'Which approach resolves the underlying conflict? Which prevents future incidents?'
+      },
+      {
+        title: 'Student Disrupts Class Repeatedly',
+        emoji: '\uD83D\uDCE2',
+        punitive: 'The student is sent to the office, given detentions, and eventually placed on a behavior plan with escalating consequences. The behavior may stop briefly but returns because the root cause is unaddressed.',
+        restorative: 'The teacher has a private restorative conversation with the student to understand what is driving the behavior. They discover the student is struggling at home. Together they create a plan that includes support, check-ins, and alternative ways to get needs met.',
+        discussion: 'Which approach treats the symptom versus the cause? Which builds a stronger relationship?'
+      },
+      {
+        title: 'Cyberbullying Incident',
+        emoji: '\uD83D\uDCF1',
+        punitive: 'The bully is suspended from school and banned from devices during school. The targeted student still feels unsafe because the underlying social dynamic has not changed. The bully feels angry and blamed.',
+        restorative: 'The bully hears directly from the person they harmed about the real impact. Bystanders reflect on their role. The group creates a safety plan together. The bully commits to specific actions of repair and ongoing accountability. The targeted student has voice in the process.',
+        discussion: 'Which approach centers the voice of the person harmed? Which creates lasting change?'
+      },
+      {
+        title: 'Vandalism of School Property',
+        emoji: '\uD83C\uDFEB',
+        punitive: 'The student pays for damages, serves in-school suspension, and loses privileges. They comply but feel no connection to the school or understanding of community impact.',
+        restorative: 'The student meets with the custodians, teachers, and students affected. They hear how the vandalism impacted everyone. They help repair the damage, contribute to a beautification project, and present to younger students about respecting shared spaces.',
+        discussion: 'Which approach connects the student to their community? Which teaches responsibility versus compliance?'
+      },
+      {
+        title: 'Exclusion and Social Cruelty',
+        emoji: '\uD83D\uDE14',
+        punitive: 'Adults tell the excluding students to "be nice" and include the other student. This forced inclusion feels fake. The excluded student feels more humiliated. The dynamics continue underground.',
+        restorative: 'A series of circles explore what inclusion and belonging mean. The excluded student shares their experience. The group examines their behavior patterns honestly. They create genuine agreements about how to treat each other, and follow up in future circles.',
+        discussion: 'Which approach creates authentic change in relationships? Which respects everyone\'s dignity?'
+      }
+    ]
+  };
 
   // ── Registration ──
 
@@ -647,11 +936,23 @@ window.SelHub = window.SelHub || {
         var eb = Object.assign({}, earnedBadges);
         var newBadge = null;
         BADGES.forEach(function(b) {
-          if (!eb[b.id] && (bp[b.key] || 0) >= b.threshold) {
+          if (!eb[b.id] && b.id !== 'peace_circle_leader' && (bp[b.key] || 0) >= b.threshold) {
             eb[b.id] = true;
             newBadge = b;
           }
         });
+        // Update totalBadgesEarned for the meta-badge
+        var earnedCount = 0;
+        Object.keys(eb).forEach(function(k) { if (eb[k] && k !== 'peace_circle_leader') earnedCount++; });
+        bp.totalBadgesEarned = earnedCount;
+        // Check the meta-badge
+        if (!eb.peace_circle_leader && earnedCount >= 5) {
+          eb.peace_circle_leader = true;
+          if (!newBadge) {
+            newBadge = null;
+            for (var bi = 0; bi < BADGES.length; bi++) { if (BADGES[bi].id === 'peace_circle_leader') { newBadge = BADGES[bi]; break; } }
+          }
+        }
         if (newBadge) {
           upd('earnedBadges', eb);
           addToast('Badge earned: ' + newBadge.emoji + ' ' + newBadge.name + '!', 'success');
@@ -754,7 +1055,7 @@ window.SelHub = window.SelHub || {
 
         // ── Tab Navigation ──
         h('div', { className: 'flex flex-wrap gap-1 bg-amber-50 rounded-xl p-1 border border-amber-200' },
-          ['home', 'circle', 'scripts', 'harm-repair', 'scenarios', 'agreements', 'talking-piece', 'roots', 'badges'].map(function(t) {
+          ['home', 'circle', 'scripts', 'harm-repair', 'scenarios', 'agreements', 'talking-piece', 'roots', 'questions', 'roles', 'empathy-map', 'compare', 'badges'].map(function(t) {
             var labels = {
               'home': '\uD83C\uDFE0 Types',
               'circle': '\u2B55 Circle',
@@ -764,6 +1065,10 @@ window.SelHub = window.SelHub || {
               'agreements': '\uD83E\uDD1D Agreements',
               'talking-piece': '\uD83E\uDEB6 Piece',
               'roots': '\uD83C\uDF0D Roots',
+              'questions': '\u2753 Questions',
+              'roles': '\uD83D\uDE4B Role Cards',
+              'empathy-map': '\uD83E\uDDE0 Empathy',
+              'compare': '\u2696\uFE0F Compare',
               'badges': '\uD83C\uDFC5 Badges',
             };
             return h('button', {
@@ -1395,6 +1700,539 @@ window.SelHub = window.SelHub || {
             },
             className: 'w-full px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors'
           }, '\u2705 I have read and reflected on these roots')
+        ),
+
+        // ═══ RESTORATIVE QUESTIONS BANK ═══
+        tab === 'questions' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\u2753 Restorative Questions Bank'),
+            h('p', { className: 'text-sm text-slate-500 leading-relaxed max-w-lg mx-auto' },
+              'Deep conversation starters organized by purpose. Use these in your circles or anytime you need a thoughtful question to open dialogue.'
+            )
+          ),
+
+          // Category selector
+          h('div', { className: 'flex gap-1 bg-slate-100 rounded-xl p-1' },
+            ['opening', 'community', 'harm', 'closing'].map(function(cat) {
+              var catData = RESTORATIVE_QUESTIONS[cat];
+              return h('button', {
+                key: cat,
+                onClick: function() { upd('questionCategory', cat); },
+                className: 'flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all ' +
+                  ((d.questionCategory || 'opening') === cat ? 'bg-white text-amber-700 shadow-sm' : 'text-slate-500 hover:text-amber-600')
+              }, catData.emoji + ' ' + catData.label);
+            })
+          ),
+
+          // Questions list
+          (function() {
+            var activeCat = d.questionCategory || 'opening';
+            var catData = RESTORATIVE_QUESTIONS[activeCat];
+            if (!catData) return null;
+
+            return h('div', { className: 'space-y-2' },
+              h('div', { className: 'flex items-center gap-2 mb-1' },
+                h('span', { className: 'text-xl' }, catData.emoji),
+                h('h4', { className: 'text-sm font-bold', style: { color: catData.color } }, catData.label),
+                h('span', { className: 'text-[10px] text-slate-400 ml-auto' }, catData.questions.length + ' questions')
+              ),
+              catData.questions.map(function(q, i) {
+                return h('div', { key: i, className: 'bg-white rounded-xl border border-amber-200 p-3 flex items-start gap-3 hover:border-amber-400 transition-all' },
+                  h('span', { className: 'font-bold text-sm mt-0.5 shrink-0', style: { color: catData.color } }, (i + 1) + '.'),
+                  h('p', { className: 'text-sm text-slate-700 leading-relaxed flex-1' }, q),
+                  h('div', { className: 'flex flex-col gap-1 shrink-0' },
+                    callTTS && h('button', {
+                      onClick: function() { callTTS(q); incrementBadgeStat('questionsUsed', 1); },
+                      className: 'text-[10px] text-amber-400 hover:text-amber-600',
+                      'aria-label': 'Read question aloud'
+                    }, '\uD83D\uDD0A'),
+                    h('button', {
+                      onClick: function() {
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                          navigator.clipboard.writeText(q);
+                          addToast('Question copied!', 'success');
+                          incrementBadgeStat('questionsUsed', 1);
+                        }
+                      },
+                      className: 'text-[10px] text-slate-400 hover:text-slate-600',
+                      'aria-label': 'Copy question to clipboard'
+                    }, '\uD83D\uDCCB')
+                  )
+                );
+              })
+            );
+          })(),
+
+          // Random question button
+          h('button', {
+            onClick: function() {
+              var cats = Object.keys(RESTORATIVE_QUESTIONS);
+              var randCat = cats[Math.floor(Math.random() * cats.length)];
+              var qs = RESTORATIVE_QUESTIONS[randCat].questions;
+              var randQ = qs[Math.floor(Math.random() * qs.length)];
+              updMulti({ randomQuestion: randQ, randomQuestionCat: RESTORATIVE_QUESTIONS[randCat].label });
+              incrementBadgeStat('questionsUsed', 1);
+              ctx.awardXP(3);
+            },
+            className: 'w-full px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-sm font-bold hover:from-amber-600 hover:to-orange-600 transition-all'
+          }, '\uD83C\uDFB2 Random Question'),
+
+          // Display random question
+          d.randomQuestion && h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-300 p-5 text-center' },
+            h('p', { className: 'text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2' }, d.randomQuestionCat || 'Question'),
+            h('p', { className: 'text-lg font-bold text-slate-800 leading-relaxed' }, d.randomQuestion),
+            h('div', { className: 'flex gap-2 justify-center mt-3' },
+              callTTS && h('button', {
+                onClick: function() { callTTS(d.randomQuestion); },
+                className: 'px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors'
+              }, '\uD83D\uDD0A Read Aloud'),
+              h('button', {
+                onClick: function() {
+                  if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(d.randomQuestion);
+                    addToast('Copied!', 'success');
+                  }
+                },
+                className: 'px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors'
+              }, '\uD83D\uDCCB Copy')
+            )
+          )
+        ),
+
+        // ═══ CIRCLE ROLE CARDS ═══
+        tab === 'roles' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDE4B Circle Role Cards'),
+            h('p', { className: 'text-sm text-slate-500 leading-relaxed max-w-lg mx-auto' },
+              'Every circle participant has a role. Learn what each role involves, the dos and don\'ts, and sample phrases to guide your practice.'
+            )
+          ),
+
+          // Role cards
+          CIRCLE_ROLES.map(function(role, ri) {
+            var isExpanded = d.expandedRole === role.id;
+            return h('div', {
+              key: role.id,
+              className: 'bg-white rounded-2xl border-2 transition-all ' +
+                (isExpanded ? 'border-amber-400 shadow-lg' : 'border-slate-200 hover:border-amber-300')
+            },
+              // Header (always visible)
+              h('button', {
+                onClick: function() {
+                  upd('expandedRole', isExpanded ? null : role.id);
+                  if (!isExpanded) {
+                    incrementBadgeStat('rolesStudied', 1);
+                    ctx.awardXP(3);
+                  }
+                },
+                className: 'w-full text-left p-4 flex items-center gap-3'
+              },
+                h('span', { className: 'text-2xl' }, role.emoji),
+                h('div', { className: 'flex-1' },
+                  h('div', { className: 'font-bold text-sm text-slate-800' }, role.title),
+                  h('div', { className: 'text-[10px] text-amber-600 font-medium' }, role.subtitle)
+                ),
+                h('span', { className: 'text-xs text-amber-500' }, isExpanded ? '\u25B2' : '\u25BC')
+              ),
+
+              // Expanded content
+              isExpanded && h('div', { className: 'px-4 pb-5 space-y-4' },
+                // Description
+                h('div', { className: 'bg-amber-50 rounded-lg p-4 border border-amber-100' },
+                  h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, role.description)
+                ),
+
+                // Dos and Don'ts side by side
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+                  // Dos
+                  h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3' },
+                    h('h5', { className: 'text-xs font-bold text-emerald-700 uppercase tracking-widest mb-2' }, '\u2705 Do'),
+                    h('ul', { className: 'space-y-1.5' },
+                      role.dos.map(function(item, i) {
+                        return h('li', { key: i, className: 'text-xs text-emerald-800 leading-relaxed flex items-start gap-1.5' },
+                          h('span', { className: 'text-emerald-500 shrink-0 mt-0.5' }, '\u2022'),
+                          h('span', null, item)
+                        );
+                      })
+                    )
+                  ),
+                  // Don'ts
+                  h('div', { className: 'bg-red-50 rounded-xl border border-red-200 p-3' },
+                    h('h5', { className: 'text-xs font-bold text-red-600 uppercase tracking-widest mb-2' }, '\u274C Don\'t'),
+                    h('ul', { className: 'space-y-1.5' },
+                      role.donts.map(function(item, i) {
+                        return h('li', { key: i, className: 'text-xs text-red-800 leading-relaxed flex items-start gap-1.5' },
+                          h('span', { className: 'text-red-400 shrink-0 mt-0.5' }, '\u2022'),
+                          h('span', null, item)
+                        );
+                      })
+                    )
+                  )
+                ),
+
+                // Sample phrases
+                h('div', { className: 'bg-indigo-50 rounded-xl border border-indigo-200 p-3' },
+                  h('h5', { className: 'text-xs font-bold text-indigo-600 uppercase tracking-widest mb-2' }, '\uD83D\uDCAC Sample Phrases'),
+                  h('div', { className: 'space-y-1.5' },
+                    role.phrases.map(function(phrase, i) {
+                      return h('div', { key: i, className: 'flex items-center gap-2' },
+                        h('p', { className: 'text-xs text-indigo-800 italic leading-relaxed flex-1' }, '"' + phrase + '"'),
+                        callTTS && h('button', {
+                          onClick: function() { callTTS(phrase); },
+                          className: 'text-[10px] text-indigo-400 hover:text-indigo-600 shrink-0'
+                        }, '\uD83D\uDD0A'),
+                        h('button', {
+                          onClick: function() {
+                            if (navigator.clipboard && navigator.clipboard.writeText) {
+                              navigator.clipboard.writeText(phrase);
+                              addToast('Phrase copied!', 'success');
+                            }
+                          },
+                          className: 'text-[10px] text-indigo-400 hover:text-indigo-600 shrink-0'
+                        }, '\uD83D\uDCCB')
+                      );
+                    })
+                  )
+                )
+              )
+            );
+          }),
+
+          // Quick reference card
+          h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4 text-center' },
+            h('p', { className: 'text-xs text-amber-700 font-bold' },
+              'Tip: In a small circle, one person may hold multiple roles. The keeper often serves as timekeeper too. What matters is that each function is covered.'
+            )
+          )
+        ),
+
+        // ═══ EMPATHY MAPPING EXERCISE ═══
+        tab === 'empathy-map' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83E\uDDE0 Empathy Mapping Exercise'),
+            h('p', { className: 'text-sm text-slate-500 leading-relaxed max-w-lg mx-auto' },
+              'Understand different perspectives in a conflict by mapping what each person said, did, thought, and felt. Then find areas of overlap and build bridges.'
+            )
+          ),
+
+          // Person selector
+          h('div', { className: 'flex gap-2 bg-slate-100 rounded-xl p-1' },
+            ['personA', 'personB'].map(function(person) {
+              var personLabel = person === 'personA' ? '\uD83D\uDC64 Person A' : '\uD83D\uDC65 Person B';
+              return h('button', {
+                key: person,
+                onClick: function() { upd('empathyPerson', person); },
+                className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all ' +
+                  ((d.empathyPerson || 'personA') === person ? 'bg-white text-amber-700 shadow-sm' : 'text-slate-500 hover:text-amber-600')
+              }, personLabel);
+            })
+          ),
+
+          // Name input
+          (function() {
+            var activePerson = d.empathyPerson || 'personA';
+            var nameKey = activePerson + 'Name';
+            return h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3' },
+              h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, (activePerson === 'personA' ? 'Person A' : 'Person B') + '\'s Name (optional)'),
+              h('input', {
+                type: 'text',
+                value: d[nameKey] || '',
+                onChange: function(e) { upd(nameKey, e.target.value); },
+                placeholder: 'Enter a name or label...',
+                className: 'w-full text-sm p-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
+                'aria-label': 'Person name'
+              })
+            );
+          })(),
+
+          // Four quadrants
+          (function() {
+            var activePerson = d.empathyPerson || 'personA';
+            var empathyData = d.empathyData || {};
+
+            return h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+              EMPATHY_QUADRANTS.map(function(quad) {
+                var dataKey = activePerson + '_' + quad.id;
+                return h('div', { key: quad.id, className: 'bg-white rounded-xl border-2 p-4', style: { borderColor: quad.color + '40' } },
+                  h('div', { className: 'flex items-center gap-2 mb-2' },
+                    h('span', { className: 'text-lg' }, quad.emoji),
+                    h('h5', { className: 'text-xs font-bold', style: { color: quad.color } }, quad.label)
+                  ),
+                  h('textarea', {
+                    value: (empathyData[dataKey]) || '',
+                    onChange: function(e) {
+                      var newData = Object.assign({}, empathyData);
+                      newData[dataKey] = e.target.value;
+                      upd('empathyData', newData);
+                    },
+                    placeholder: quad.placeholder,
+                    className: 'w-full text-xs p-2 border border-slate-200 rounded-lg resize-none h-24 outline-none focus:ring-2',
+                    style: { '--tw-ring-color': quad.color + '60' },
+                    'aria-label': quad.label + ' for ' + activePerson
+                  })
+                );
+              })
+            );
+          })(),
+
+          // AI Analysis button
+          h('button', {
+            onClick: function() {
+              if (!callGemini) return;
+              upd('aiLoading', true);
+              var empathyData = d.empathyData || {};
+              var nameA = d.personAName || 'Person A';
+              var nameB = d.personBName || 'Person B';
+              var summary = nameA + ':\n';
+              EMPATHY_QUADRANTS.forEach(function(quad) {
+                summary += '  ' + quad.label + ': ' + (empathyData['personA_' + quad.id] || '(not filled)') + '\n';
+              });
+              summary += nameB + ':\n';
+              EMPATHY_QUADRANTS.forEach(function(quad) {
+                summary += '  ' + quad.label + ': ' + (empathyData['personB_' + quad.id] || '(not filled)') + '\n';
+              });
+              var aiPrompt = 'You are a restorative circle facilitator helping a ' + (gradeLevel || '5th grade') + ' student understand two perspectives in a conflict.\n\n' +
+                'Here is their empathy map:\n' + summary + '\n' +
+                'In 3-4 sentences suitable for a ' + gradeBand + ' school student:\n' +
+                '1. Identify areas where the two perspectives OVERLAP (shared feelings, needs, or experiences).\n' +
+                '2. Identify areas of MISUNDERSTANDING (where one person may not see the other\'s viewpoint).\n' +
+                '3. Suggest 2-3 specific bridge-building actions they could take to repair the relationship.\n' +
+                'Be warm, empathetic, and constructive. Use simple language.';
+              callGemini(aiPrompt).then(function(resp) {
+                updMulti({ empathyAnalysis: resp, aiLoading: false });
+                incrementBadgeStat('empathyMapsCompleted', 1);
+                ctx.awardXP(15);
+                addToast('Empathy analysis complete!', 'success');
+              }).catch(function() {
+                updMulti({ empathyAnalysis: 'Both perspectives hold important truths. Look for shared feelings and needs \u2014 that is where bridges are built.', aiLoading: false });
+              });
+            },
+            disabled: aiLoading,
+            className: 'w-full px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl text-sm font-bold hover:from-indigo-600 hover:to-purple-600 transition-all disabled:opacity-40 flex items-center justify-center gap-2'
+          }, h(Sparkles, { size: 14 }), aiLoading ? 'Analyzing perspectives...' : '\u2728 Analyze Perspectives with AI'),
+
+          // Display AI analysis
+          d.empathyAnalysis && h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200 p-5' },
+            h('div', { className: 'flex items-start gap-2 mb-3' },
+              h(Sparkles, { size: 14, className: 'text-indigo-500 mt-0.5 shrink-0' }),
+              h('h5', { className: 'text-xs font-bold text-indigo-600 uppercase tracking-widest' }, 'Empathy Analysis')
+            ),
+            h('p', { className: 'text-sm text-indigo-800 leading-relaxed' }, d.empathyAnalysis),
+            h('div', { className: 'flex gap-2 mt-3' },
+              callTTS && h('button', {
+                onClick: function() { callTTS(d.empathyAnalysis); },
+                className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200 transition-colors'
+              }, '\uD83D\uDD0A Read Aloud'),
+              h('button', {
+                onClick: function() {
+                  if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(d.empathyAnalysis);
+                    addToast('Analysis copied!', 'success');
+                  }
+                },
+                className: 'px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors'
+              }, '\uD83D\uDCCB Copy')
+            )
+          ),
+
+          // Reset button
+          h('button', {
+            onClick: function() { updMulti({ empathyData: {}, empathyAnalysis: null, personAName: '', personBName: '', empathyPerson: 'personA' }); addToast('Empathy map cleared', 'info'); },
+            className: 'w-full px-4 py-2 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors'
+          }, '\uD83D\uDD04 Start New Empathy Map')
+        ),
+
+        // ═══ RESTORATIVE VS PUNITIVE COMPARISON ═══
+        tab === 'compare' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\u2696\uFE0F Restorative vs. Punitive'),
+            h('p', { className: 'text-sm text-slate-500 leading-relaxed max-w-lg mx-auto' },
+              gradeBand === 'elementary'
+                ? 'Learn the difference between punishment and making things right. Which approach helps people learn and grow?'
+                : gradeBand === 'middle'
+                  ? 'Explore how restorative practices differ from traditional punishment. Compare approaches and think critically about what works.'
+                  : 'Examine the philosophical and practical differences between punitive and restorative approaches to harm. Analyze real scenarios through both lenses.'
+            )
+          ),
+
+          // Principles comparison
+          h('div', { className: 'bg-white rounded-2xl border-2 border-amber-200 p-5' },
+            h('h4', { className: 'text-sm font-bold text-slate-800 mb-4 text-center' },
+              gradeBand === 'elementary' ? 'Two Different Ways to Handle Problems' : 'Core Differences'
+            ),
+            h('div', { className: 'space-y-3' },
+              RESTORATIVE_VS_PUNITIVE.principles.map(function(p, i) {
+                return h('div', { key: i, className: 'grid grid-cols-2 gap-2' },
+                  h('div', { className: 'bg-red-50 rounded-lg p-3 border border-red-200' },
+                    i === 0 && h('div', { className: 'text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1' },
+                      gradeBand === 'elementary' ? '\uD83D\uDEAB Punishment Way' : '\uD83D\uDEAB Punitive Approach'
+                    ),
+                    h('p', { className: 'text-xs text-red-800 leading-relaxed' }, p.punitive)
+                  ),
+                  h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200' },
+                    i === 0 && h('div', { className: 'text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1' },
+                      gradeBand === 'elementary' ? '\uD83D\uDC9A Making-It-Right Way' : '\uD83D\uDC9A Restorative Approach'
+                    ),
+                    h('p', { className: 'text-xs text-emerald-800 leading-relaxed' }, p.restorative)
+                  )
+                );
+              })
+            )
+          ),
+
+          // Scenarios
+          h('div', { className: 'space-y-4' },
+            h('h4', { className: 'text-sm font-bold text-slate-800 text-center mt-2' },
+              gradeBand === 'elementary' ? 'What Would Happen?' : 'Scenario Comparison'
+            ),
+            (function() {
+              var compareScenarioIdx = d.compareScenarioIdx || 0;
+              var scenarios = RESTORATIVE_VS_PUNITIVE.scenarios;
+              var scenario = scenarios[compareScenarioIdx];
+              if (!scenario) return null;
+              var ratings = d.compareRatings || {};
+              var ratingKey = 'scenario_' + compareScenarioIdx;
+
+              return h('div', { className: 'space-y-3' },
+                // Scenario selector
+                h('div', { className: 'flex gap-1 overflow-x-auto pb-1' },
+                  scenarios.map(function(sc, i) {
+                    var hasRating = ratings['scenario_' + i] !== undefined;
+                    return h('button', {
+                      key: i,
+                      onClick: function() { upd('compareScenarioIdx', i); },
+                      className: 'px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all ' +
+                        (compareScenarioIdx === i ? 'bg-amber-500 text-white' : hasRating ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500 hover:bg-amber-100')
+                    }, sc.emoji + ' ' + (i + 1));
+                  })
+                ),
+
+                // Scenario card
+                h('div', { className: 'bg-white rounded-2xl border-2 border-amber-200 p-5 shadow-md' },
+                  h('div', { className: 'text-center mb-4' },
+                    h('span', { className: 'text-2xl' }, scenario.emoji),
+                    h('h5', { className: 'text-sm font-bold text-slate-800 mt-1' }, scenario.title)
+                  ),
+
+                  // Side by side
+                  h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4' },
+                    h('div', { className: 'bg-red-50 rounded-xl border border-red-200 p-4' },
+                      h('h6', { className: 'text-[10px] font-bold text-red-500 uppercase tracking-widest mb-2' },
+                        gradeBand === 'elementary' ? '\uD83D\uDEAB Punishment' : '\uD83D\uDEAB Punitive Response'
+                      ),
+                      h('p', { className: 'text-xs text-red-800 leading-relaxed' }, scenario.punitive)
+                    ),
+                    h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-4' },
+                      h('h6', { className: 'text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-2' },
+                        gradeBand === 'elementary' ? '\uD83D\uDC9A Making It Right' : '\uD83D\uDC9A Restorative Response'
+                      ),
+                      h('p', { className: 'text-xs text-emerald-800 leading-relaxed' }, scenario.restorative)
+                    )
+                  ),
+
+                  // Discussion question
+                  h('div', { className: 'bg-indigo-50 rounded-lg p-3 border border-indigo-200 mb-4' },
+                    h('p', { className: 'text-xs text-indigo-700 italic leading-relaxed' }, '\uD83D\uDCAD ' + scenario.discussion)
+                  ),
+
+                  // Rating
+                  h('div', { className: 'space-y-2' },
+                    h('p', { className: 'text-xs font-bold text-slate-600' },
+                      gradeBand === 'elementary'
+                        ? 'Which way do you think works better?'
+                        : 'Which approach do you think would be more effective and why?'
+                    ),
+                    h('div', { className: 'flex gap-2' },
+                      h('button', {
+                        onClick: function() {
+                          var newRatings = Object.assign({}, ratings);
+                          newRatings[ratingKey] = 'punitive';
+                          upd('compareRatings', newRatings);
+                          incrementBadgeStat('comparisonScenariosRated', 1);
+                          ctx.awardXP(5);
+                        },
+                        className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
+                          (ratings[ratingKey] === 'punitive' ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-500 hover:border-red-300')
+                      }, gradeBand === 'elementary' ? '\uD83D\uDEAB Punishment' : '\uD83D\uDEAB Punitive'),
+                      h('button', {
+                        onClick: function() {
+                          var newRatings = Object.assign({}, ratings);
+                          newRatings[ratingKey] = 'restorative';
+                          upd('compareRatings', newRatings);
+                          incrementBadgeStat('comparisonScenariosRated', 1);
+                          ctx.awardXP(5);
+                        },
+                        className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
+                          (ratings[ratingKey] === 'restorative' ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-500 hover:border-emerald-300')
+                      }, gradeBand === 'elementary' ? '\uD83D\uDC9A Making It Right' : '\uD83D\uDC9A Restorative')
+                    ),
+
+                    // Reflection text area
+                    ratings[ratingKey] && h('div', { className: 'mt-2' },
+                      h('textarea', {
+                        value: (d.compareReflections || {})[ratingKey] || '',
+                        onChange: function(e) {
+                          var newReflections = Object.assign({}, d.compareReflections || {});
+                          newReflections[ratingKey] = e.target.value;
+                          upd('compareReflections', newReflections);
+                        },
+                        placeholder: gradeBand === 'elementary'
+                          ? 'Tell us why you picked this one...'
+                          : 'Explain your reasoning. What makes this approach more effective?',
+                        className: 'w-full text-xs p-2 border border-slate-200 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-amber-300',
+                        'aria-label': 'Comparison reflection'
+                      })
+                    )
+                  ),
+
+                  // Navigation
+                  h('div', { className: 'flex gap-2 justify-center mt-4' },
+                    compareScenarioIdx > 0 && h('button', {
+                      onClick: function() { upd('compareScenarioIdx', compareScenarioIdx - 1); },
+                      className: 'px-4 py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors'
+                    }, '\u2190 Previous'),
+                    compareScenarioIdx < scenarios.length - 1 && h('button', {
+                      onClick: function() { upd('compareScenarioIdx', compareScenarioIdx + 1); },
+                      className: 'px-4 py-2 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700 transition-colors'
+                    }, 'Next Scenario \u2192')
+                  )
+                )
+              );
+            })()
+          ),
+
+          // Progress summary
+          (function() {
+            var ratings = d.compareRatings || {};
+            var totalRated = Object.keys(ratings).length;
+            var totalScenarios = RESTORATIVE_VS_PUNITIVE.scenarios.length;
+            if (totalRated === 0) return null;
+            var restorativeCount = 0;
+            var punitiveCount = 0;
+            Object.keys(ratings).forEach(function(k) {
+              if (ratings[k] === 'restorative') restorativeCount++;
+              if (ratings[k] === 'punitive') punitiveCount++;
+            });
+            return h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4' },
+              h('p', { className: 'text-xs font-bold text-amber-700 text-center' },
+                'You have rated ' + totalRated + ' of ' + totalScenarios + ' scenarios'
+              ),
+              h('div', { className: 'flex gap-4 justify-center mt-2' },
+                h('span', { className: 'text-[10px] text-red-600 font-bold' }, '\uD83D\uDEAB Punitive: ' + punitiveCount),
+                h('span', { className: 'text-[10px] text-emerald-600 font-bold' }, '\uD83D\uDC9A Restorative: ' + restorativeCount)
+              ),
+              totalRated >= totalScenarios && h('div', { className: 'mt-2 text-center' },
+                h('button', {
+                  onClick: function() {
+                    addToast('Comparison complete! You are a Restorative Scholar! \uD83D\uDCDA', 'success');
+                    ctx.awardXP(20);
+                    if (ctx.celebrate) ctx.celebrate();
+                  },
+                  className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors'
+                }, '\u2705 Complete Comparison Study')
+              )
+            );
+          })()
         ),
 
         // ═══ BADGES ═══
