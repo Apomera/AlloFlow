@@ -1099,7 +1099,8 @@
           { id: 'explore', label: '\u2697\uFE0F Explore', color: 'amber' },
           { id: 'scenes', label: '\uD83C\uDFE0 Hunt', color: 'rose' },
           { id: 'reactions', label: '\uD83C\uDF0B Mix', color: 'red' },
-          { id: 'visualize', label: '\uD83C\uDFA8 Visualize', color: 'indigo' },
+          { id: 'states', label: '\uD83C\uDF21\uFE0F States', color: 'sky' },
+          { id: 'visualize', label: '\uD83C\uDFA8 Atoms', color: 'indigo' },
           { id: 'quiz', label: '\uD83E\uDDE0 Quiz', color: 'emerald' },
           { id: 'tutor', label: '\uD83E\uDD16 AI Tutor', color: 'purple' }
         ];
@@ -1944,6 +1945,221 @@
                 })
               )
             ) : null
+          ),
+
+
+          /* ═══════════════════════════════════════════════════
+             STATES OF MATTER TAB — Particle simulation
+             ═══════════════════════════════════════════════════ */
+          tab === 'states' && h('div', null,
+            h('div', { className: 'text-center mb-3' },
+              h('h4', { className: 'text-lg font-bold text-slate-800' }, '\uD83C\uDF21\uFE0F States of Matter'),
+              h('p', { className: 'text-xs text-slate-500 mt-1' }, 'See how ' + sel.name + ' particles behave as a solid, liquid, or gas. Drag the temperature slider!')
+            ),
+
+            // Temperature slider
+            h('div', { className: 'bg-gradient-to-r from-blue-50 via-yellow-50 to-red-50 rounded-xl border border-slate-200 p-3 mb-3' },
+              h('div', { className: 'flex items-center justify-between mb-2' },
+                h('span', { className: 'text-[10px] font-bold text-blue-600' }, '\u2744\uFE0F Cold'),
+                h('span', { className: 'text-xs font-bold text-slate-700' }, (d._simTemp != null ? d._simTemp : 25) + '\u00B0C'),
+                h('span', { className: 'text-[10px] font-bold text-red-600' }, '\uD83D\uDD25 Hot')
+              ),
+              h('input', {
+                type: 'range', min: -200, max: 500, step: 5,
+                value: d._simTemp != null ? d._simTemp : 25,
+                onChange: function(e) { upd('_simTemp', parseInt(e.target.value, 10)); },
+                style: { width: '100%', accentColor: (d._simTemp || 25) < 0 ? '#3b82f6' : (d._simTemp || 25) > 200 ? '#ef4444' : '#f59e0b' }
+              }),
+              // State label
+              (function() {
+                var temp = d._simTemp != null ? d._simTemp : 25;
+                var geo = GEOMETRY[sel.name];
+                var mp = geo ? geo.mp : 0;
+                var bp = geo ? geo.bp : 100;
+                var state = 'Solid';
+                if (bp !== null && temp >= bp) state = 'Gas';
+                else if (mp !== null && temp >= mp) state = 'Liquid';
+                var stateColors = { Solid: '#3b82f6', Liquid: '#06b6d4', Gas: '#ef4444' };
+                var stateEmoji = { Solid: '\u2744\uFE0F', Liquid: '\uD83D\uDCA7', Gas: '\uD83D\uDCA8' };
+                return h('div', { className: 'flex items-center justify-center gap-3 mt-2' },
+                  h('span', { className: 'text-2xl' }, stateEmoji[state]),
+                  h('span', { className: 'text-sm font-black', style: { color: stateColors[state] } }, sel.name + ' is a ' + state),
+                  geo && geo.shape ? h('span', { className: 'text-[10px] text-slate-500 font-bold' }, '\u00B7 ' + geo.shape) : null
+                );
+              })()
+            ),
+
+            // Particle canvas
+            h('div', { className: 'rounded-xl border-2 border-slate-200 overflow-hidden mb-3' },
+              h('canvas', {
+                ref: function(canvas) {
+                  if (!canvas) return;
+                  var c2 = canvas.getContext('2d');
+                  var dpr = window.devicePixelRatio || 1;
+                  var cw = canvas.offsetWidth || 500;
+                  var ch2 = 240;
+                  canvas.width = cw * dpr; canvas.height = ch2 * dpr;
+                  canvas.style.height = ch2 + 'px'; c2.scale(dpr, dpr);
+
+                  var temp = d._simTemp != null ? d._simTemp : 25;
+                  var geo = GEOMETRY[sel.name];
+                  var mp = geo ? geo.mp : 0;
+                  var bp = geo ? geo.bp : 100;
+                  var state = 'solid';
+                  if (bp !== null && temp >= bp) state = 'gas';
+                  else if (mp !== null && temp >= mp) state = 'liquid';
+
+                  // Kill previous animation
+                  if (canvas._stateAnimId) cancelAnimationFrame(canvas._stateAnimId);
+
+                  // Init particles if needed or state changed
+                  if (!canvas._particles || canvas._prevState !== state) {
+                    canvas._prevState = state;
+                    canvas._particles = [];
+                    var cols = 6; var rows = 5;
+                    var elColor = sel.elements[0] ? sel.elements[0].color : '#60a5fa';
+                    for (var pr = 0; pr < rows; pr++) {
+                      for (var pc = 0; pc < cols; pc++) {
+                        canvas._particles.push({
+                          x: cw * 0.25 + (pc / (cols - 1)) * cw * 0.5,
+                          y: ch2 * 0.2 + (pr / (rows - 1)) * ch2 * 0.6,
+                          vx: 0, vy: 0,
+                          homeX: cw * 0.25 + (pc / (cols - 1)) * cw * 0.5,
+                          homeY: ch2 * 0.2 + (pr / (rows - 1)) * ch2 * 0.6,
+                          color: elColor, r: 8
+                        });
+                      }
+                    }
+                  }
+                  var parts = canvas._particles;
+                  var tick = 0;
+
+                  function drawState() {
+                    tick++;
+                    c2.clearRect(0, 0, cw, ch2);
+
+                    // Background
+                    var bgColors = { solid: '#eff6ff', liquid: '#ecfeff', gas: '#fef2f2' };
+                    c2.fillStyle = bgColors[state] || '#f8fafc';
+                    c2.fillRect(0, 0, cw, ch2);
+
+                    // Container walls
+                    c2.strokeStyle = '#94a3b8'; c2.lineWidth = 2;
+                    c2.strokeRect(cw * 0.1, ch2 * 0.08, cw * 0.8, ch2 * 0.84);
+
+                    var energy = state === 'solid' ? 0.3 : state === 'liquid' ? 1.5 : 4;
+                    var wallL = cw * 0.12; var wallR = cw * 0.88;
+                    var wallT = ch2 * 0.10; var wallB = ch2 * 0.90;
+
+                    for (var i = 0; i < parts.length; i++) {
+                      var pp = parts[i];
+                      if (state === 'solid') {
+                        // Vibrate in place
+                        pp.vx = (Math.random() - 0.5) * energy;
+                        pp.vy = (Math.random() - 0.5) * energy;
+                        pp.x += pp.vx;
+                        pp.y += pp.vy;
+                        // Pull back to lattice
+                        pp.x += (pp.homeX - pp.x) * 0.15;
+                        pp.y += (pp.homeY - pp.y) * 0.15;
+                      } else if (state === 'liquid') {
+                        // Flow with some cohesion
+                        pp.vx += (Math.random() - 0.5) * 0.3;
+                        pp.vy += (Math.random() - 0.5) * 0.3 + 0.05;
+                        pp.vx *= 0.95; pp.vy *= 0.95;
+                        pp.x += pp.vx * energy;
+                        pp.y += pp.vy * energy;
+                      } else {
+                        // Gas — fast, random, fill container
+                        pp.vx += (Math.random() - 0.5) * 0.5;
+                        pp.vy += (Math.random() - 0.5) * 0.5;
+                        pp.vx *= 0.98; pp.vy *= 0.98;
+                        pp.x += pp.vx * energy;
+                        pp.y += pp.vy * energy;
+                      }
+
+                      // Wall bouncing
+                      if (pp.x < wallL + pp.r) { pp.x = wallL + pp.r; pp.vx = Math.abs(pp.vx); }
+                      if (pp.x > wallR - pp.r) { pp.x = wallR - pp.r; pp.vx = -Math.abs(pp.vx); }
+                      if (pp.y < wallT + pp.r) { pp.y = wallT + pp.r; pp.vy = Math.abs(pp.vy); }
+                      if (pp.y > wallB - pp.r) { pp.y = wallB - pp.r; pp.vy = -Math.abs(pp.vy); }
+
+                      // Draw particle
+                      c2.save();
+                      var pGrad = c2.createRadialGradient(pp.x - 2, pp.y - 2, 1, pp.x, pp.y, pp.r);
+                      pGrad.addColorStop(0, lightenColor(pp.color, 40));
+                      pGrad.addColorStop(1, pp.color);
+                      c2.fillStyle = pGrad;
+                      c2.beginPath(); c2.arc(pp.x, pp.y, pp.r, 0, Math.PI * 2); c2.fill();
+                      c2.fillStyle = 'rgba(255,255,255,0.3)';
+                      c2.beginPath(); c2.arc(pp.x - 2, pp.y - 2, pp.r * 0.35, 0, Math.PI * 2); c2.fill();
+                      c2.restore();
+                    }
+
+                    // Draw bonds between nearby particles (solid only)
+                    if (state === 'solid') {
+                      c2.strokeStyle = 'rgba(148,163,184,0.3)'; c2.lineWidth = 1;
+                      for (var si = 0; si < parts.length; si++) {
+                        for (var sj = si + 1; sj < parts.length; sj++) {
+                          var ddx = parts[si].x - parts[sj].x;
+                          var ddy = parts[si].y - parts[sj].y;
+                          if (ddx * ddx + ddy * ddy < 3000) {
+                            c2.beginPath();
+                            c2.moveTo(parts[si].x, parts[si].y);
+                            c2.lineTo(parts[sj].x, parts[sj].y);
+                            c2.stroke();
+                          }
+                        }
+                      }
+                    }
+
+                    // State label in corner
+                    var stLabels = { solid: 'SOLID \u2014 Particles vibrate in fixed lattice', liquid: 'LIQUID \u2014 Particles slide past each other', gas: 'GAS \u2014 Particles fly freely, fill container' };
+                    c2.fillStyle = '#64748b'; c2.font = 'bold 9px system-ui, sans-serif'; c2.textAlign = 'left';
+                    c2.fillText(stLabels[state] || '', cw * 0.12, ch2 * 0.97);
+
+                    canvas._stateAnimId = requestAnimationFrame(drawState);
+                  }
+                  drawState();
+                },
+                className: 'w-full block', style: { height: '240px', background: '#f8fafc' }
+              })
+            ),
+
+            // Phase transition info
+            (function() {
+              var geo = GEOMETRY[sel.name];
+              if (!geo) return null;
+              return h('div', { className: 'grid grid-cols-3 gap-2 mb-3' },
+                h('div', { className: 'bg-blue-50 rounded-xl border border-blue-200 p-2 text-center' },
+                  h('div', { className: 'text-lg' }, '\u2744\uFE0F'),
+                  h('div', { className: 'text-xs font-bold text-blue-700' }, 'Melting Point'),
+                  h('div', { className: 'text-sm font-black text-blue-900' }, geo.mp !== null ? geo.mp + '\u00B0C' : 'N/A')
+                ),
+                h('div', { className: 'bg-cyan-50 rounded-xl border border-cyan-200 p-2 text-center' },
+                  h('div', { className: 'text-lg' }, '\uD83D\uDCA7'),
+                  h('div', { className: 'text-xs font-bold text-cyan-700' }, geo.shape || 'Shape'),
+                  h('div', { className: 'text-sm font-black text-cyan-900' }, geo.angle || '-')
+                ),
+                h('div', { className: 'bg-red-50 rounded-xl border border-red-200 p-2 text-center' },
+                  h('div', { className: 'text-lg' }, '\uD83D\uDD25'),
+                  h('div', { className: 'text-xs font-bold text-red-700' }, 'Boiling Point'),
+                  h('div', { className: 'text-sm font-black text-red-900' }, geo.bp !== null ? geo.bp + '\u00B0C' : 'Decomposes')
+                )
+              );
+            })(),
+
+            // Explanation text
+            h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
+              h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1' }, '\uD83D\uDCDA How it works'),
+              h('p', { className: 'text-xs text-slate-600 leading-relaxed' },
+                'All matter is made of particles (atoms or molecules) that are always moving. In a solid, particles vibrate in a fixed arrangement held by strong bonds. As temperature increases, particles gain energy. At the melting point, they break free and flow as a liquid. At the boiling point, they escape into the air as gas.'
+              ),
+              h('button', {
+                onClick: function() { speakText('In a solid, particles vibrate in fixed positions. In a liquid, they slide past each other. In a gas, they fly freely and fill the container. Temperature controls how fast they move.'); },
+                className: 'mt-2 text-[10px] text-sky-600 hover:text-sky-800 font-bold'
+              }, '\uD83D\uDD0A Listen')
+            )
           ),
 
 
