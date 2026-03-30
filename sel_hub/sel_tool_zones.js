@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// sel_tool_zones.js — Zones of Regulation Plugin (Enhanced v2)
+// sel_tool_zones.js — Emotion Zones Plugin (Enhanced v2)
 // Interactive zone identification, strategy explorer, check-in
 // tracker, guided breathing, body map, grounding exercises,
 // achievement badges, AI scenario coach, and personal toolbox.
@@ -369,7 +369,7 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
   window.SelHub.registerTool('zones', {
     icon: '\uD83D\uDEA6',
-    label: 'Zones of Regulation',
+    label: 'Emotion Zones',
     desc: 'Identify your zone and explore strategies to self-regulate.',
     color: 'emerald',
     category: 'self-awareness',

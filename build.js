@@ -87,6 +87,26 @@ const MODULES = [
         name: 'SelHub',
         filename: 'sel_hub/sel_hub_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'QuickStartWizard',
+        filename: 'quickstart_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AlloBot',
+        filename: 'allobot_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'TeacherModule',
+        filename: 'teacher_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'StoryForge',
+        filename: 'story_forge_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 
@@ -116,9 +136,17 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_watercycle.js',
     'stem_lab/stem_tool_rocks.js',
     'stem_lab/stem_tool_dissection.js',
+    'stem_lab/stem_tool_behaviorlab.js',
+    'stem_lab/stem_tool_anatomy.js',
+    'stem_lab/stem_tool_decomposer.js',
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
     'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_mindfulness.js',
-    'sel_hub/sel_tool_social.js'
+    'sel_hub/sel_tool_social.js',
+    'sel_hub/sel_tool_perspective.js',
+    'sel_hub/sel_tool_decisions.js',
+    'sel_hub/sel_tool_conflict.js',
+    'sel_hub/sel_tool_advocacy.js',
+    'sel_hub/sel_tool_strengths.js'
 ];
 
 // ── Read source ─────────────────────────────────────────────────
@@ -186,6 +214,33 @@ if (mode === 'prod') {
         }
     } else {
         console.warn('⚠️  --force flag: skipping uncommitted file check');
+    }
+
+    // ── Stale hash guard: block when explicit hash misses newer module commits ──
+    // If you pass --hash=abc123 but modules were updated AFTER that commit,
+    // the CDN will serve stale code. This catches exactly the bug where
+    // `build.js --mode=prod --hash=OLD` skips a fix committed later.
+    if (explicitHash && !forceFlag) {
+        try {
+            const allManagedFiles = MODULES.map(m => m.filename).concat(PLUGIN_FILES);
+            const newerCommits = execSync(
+                `git log --oneline ${explicitHash}..HEAD -- ${allManagedFiles.join(' ')}`,
+                { cwd: ROOT, encoding: 'utf-8' }
+            ).trim();
+            if (newerCommits) {
+                const lines = newerCommits.split('\n');
+                console.error('');
+                console.error('⚠️  STALE HASH — module files were updated AFTER @' + explicitHash + ':');
+                lines.forEach(l => console.error('   ' + l));
+                console.error('');
+                console.error('   The CDN at @' + explicitHash + ' will serve OUTDATED module code.');
+                console.error('   Run without --hash to auto-detect HEAD, or use --force to override.');
+                console.error('');
+                process.exit(1);
+            }
+        } catch (e) {
+            console.warn('⚠️  Could not check for stale hash: ' + e.message);
+        }
     }
 }
 
@@ -275,20 +330,7 @@ if (dryRun) {
         console.log(`📄 Source:  ${path.relative(ROOT, SOURCE)} (updated with @${gitHash})`);
     }
 
-    // ── Stamp service worker with build timestamp ───────────────
-    const SW_SOURCE = path.join(ROOT, 'prismflow-deploy', 'public', 'sw.js');
-    if (fs.existsSync(SW_SOURCE)) {
-        const buildTs = Date.now();
-        let swContent = fs.readFileSync(SW_SOURCE, 'utf-8');
-        swContent = swContent.replace('__BUILD_TS__', String(buildTs));
-        // Write stamped sw.js directly — CRA copies public/ to build/ as-is,
-        // but we also write to build/ in case the build already ran
-        const SW_BUILD = path.join(ROOT, 'prismflow-deploy', 'build', 'sw.js');
-        if (fs.existsSync(path.dirname(SW_BUILD))) {
-            fs.writeFileSync(SW_BUILD, swContent, 'utf-8');
-        }
-        console.log(`🔧 SW stamped: CACHE_NAME = 'alloflow-v${buildTs}'`);
-    }
+    // NOTE: SW stamping moved to postbuild.js (runs AFTER CRA build copies public/sw.js → build/sw.js)
 
     // Show next steps
     console.log('\n── Next Steps ──');
