@@ -2189,6 +2189,12 @@
                 color: 'violet', ready: true
               },
               {
+                // @tool semiconductor
+                id: 'semiconductor', icon: '\uD83D\uDD0C', label: 'Semiconductor Lab',
+                desc: 'Explore transistors, logic gates, silicon doping, and chip design fundamentals.',
+                color: 'cyan', ready: true
+              },
+              {
                 // @tool physics
                 id: 'physics', icon: '⚡', label: t('stem.tools_menu.physics_simulator'),
                 desc: 'Projectile motion, velocity vectors, and trajectory visualization.',
