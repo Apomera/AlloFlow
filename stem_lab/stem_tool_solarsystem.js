@@ -191,13 +191,15 @@ const d = labToolData.solarSystem;
             });
           }
 
-          // --- TTS ---
+          // --- TTS (Kokoro-first, browser fallback) ---
           function speakText(text) {
             if (!text) return;
-            window.speechSynthesis.cancel();
-            var u = new SpeechSynthesisUtterance(text);
-            u.rate = 0.9;
-            window.speechSynthesis.speak(u);
+            if (callTTS) { try { callTTS(text); return; } catch(e) {} }
+            if (window._kokoroTTS && window._kokoroTTS.speak) {
+              window._kokoroTTS.speak(String(text),'af_heart',1).then(function(url){if(url){var a=new Audio(url);a.playbackRate=0.95;a.play();}}).catch(function(){});
+              return;
+            }
+            if (window.speechSynthesis) { window.speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(text); u.rate=0.9; window.speechSynthesis.speak(u); }
           }
 
           // --- Gravity calculator data ---
@@ -363,17 +365,7 @@ const d = labToolData.solarSystem;
             ]
           };
 
-          // Kepler's laws data
-          var ORBITAL_DATA = PLANETS.map(function(p) {
-            return {
-              name: p.name,
-              emoji: p.emoji,
-              semiMajor: p.dist, // relative
-              period: parseFloat(p.yearLen) || 1,
-              speed: p.speed,
-              eccentricity: p.name === 'Pluto' ? 0.25 : p.name === 'Mercury' ? 0.21 : 0.02 + Math.random() * 0.05
-            };
-          });
+          // Kepler's laws data — computed after PLANETS array (moved from above)
 
                     // Famous exoplanets for comparison
           var EXOPLANETS = [
@@ -536,6 +528,18 @@ const d = labToolData.solarSystem;
             { name: t('stem.solar_sys.pluto'), emoji: '\u2B50', color: '#a78bfa', rgb: [0.66, 0.55, 0.98], size: 0.14, dist: 60, speed: 0.004, tilt: 2.04, moons: 5, diameter: '2,377 km', dayLen: '6.4 Earth days', yearLen: '248 years', temp: '\u2212230\u00B0C', fact: 'Dwarf planet since 2006. Has a heart-shaped glacier named Tombaugh Regio.', gravity: '0.06g', atmosphere: 'Thin N\u2082 \u2014 freezes and falls as snow', surface: 'Nitrogen ice plains and water-ice mountains', notableFeatures: ['Tombaugh Regio (heart-shaped glacier)', 'Mountains of water ice', 'Charon is half its size'], skyColor: '#1a1a2a', terrainColor: '#8a7a6a', terrainType: 'iceworld', surfaceDesc: 'Pale nitrogen ice plains under a near-black sky. The Sun is just a bright star. The heart-shaped Tombaugh Regio gleams.' },
 
           ];
+
+          // Kepler's laws data
+          var ORBITAL_DATA = PLANETS.map(function(p) {
+            return {
+              name: p.name,
+              emoji: p.emoji,
+              semiMajor: p.dist,
+              period: parseFloat(p.yearLen) || 1,
+              speed: p.speed,
+              eccentricity: p.name === 'Pluto' ? 0.25 : p.name === 'Mercury' ? 0.21 : 0.02 + Math.random() * 0.05
+            };
+          });
 
           var sel = d.selectedPlanet ? PLANETS.find(p => p.name === d.selectedPlanet) : null;
 
