@@ -1318,6 +1318,231 @@ window.StemLab = window.StemLab || {
             ),
 
             // ══════════════════════════════════════
+            // Oscilloscope / Waveform Display
+            // ══════════════════════════════════════
+            components.length > 0 && !isOpen ? h('div', { className: 'mt-4 bg-slate-900 rounded-xl border border-slate-700 overflow-hidden' },
+              h('div', { className: 'px-3 py-2 flex items-center gap-2 border-b border-slate-700' },
+                h('div', { className: 'w-2 h-2 rounded-full bg-emerald-400' }),
+                h('span', { className: 'text-[10px] font-bold text-emerald-400 uppercase tracking-wider' }, 'Oscilloscope'),
+                h('span', { className: 'ml-auto text-[9px] text-slate-500 font-mono' },
+                  voltage.toFixed(1) + 'V  ' + current.toFixed(3) + 'A  ' + totalR.toFixed(1) + '\u03A9')
+              ),
+              h('canvas', {
+                ref: function(canvas) {
+                  if (!canvas) return;
+                  var oc = canvas.getContext('2d');
+                  var dpr = window.devicePixelRatio || 1;
+                  var ow = canvas.offsetWidth || 400;
+                  var oh = 120;
+                  canvas.width = ow * dpr; canvas.height = oh * dpr;
+                  canvas.style.height = oh + 'px'; oc.scale(dpr, dpr);
+
+                  // Dark CRT background
+                  oc.fillStyle = '#0a0f1a'; oc.fillRect(0, 0, ow, oh);
+
+                  // Grid lines
+                  oc.strokeStyle = 'rgba(34,197,94,0.1)'; oc.lineWidth = 0.5;
+                  for (var gx = 0; gx < ow; gx += ow / 10) {
+                    oc.beginPath(); oc.moveTo(gx, 0); oc.lineTo(gx, oh); oc.stroke();
+                  }
+                  for (var gy = 0; gy < oh; gy += oh / 6) {
+                    oc.beginPath(); oc.moveTo(0, gy); oc.lineTo(ow, gy); oc.stroke();
+                  }
+
+                  // Center line
+                  oc.strokeStyle = 'rgba(34,197,94,0.25)'; oc.lineWidth = 1;
+                  oc.beginPath(); oc.moveTo(0, oh / 2); oc.lineTo(ow, oh / 2); oc.stroke();
+
+                  // Voltage trace (green, DC flat line at voltage level)
+                  var vNorm = Math.min(voltage / 24, 1);
+                  var vY = oh * 0.5 - vNorm * oh * 0.35;
+                  oc.strokeStyle = '#22c55e'; oc.lineWidth = 2;
+                  oc.shadowColor = '#22c55e'; oc.shadowBlur = 6;
+                  oc.beginPath(); oc.moveTo(0, vY); oc.lineTo(ow, vY); oc.stroke();
+                  oc.shadowBlur = 0;
+
+                  // Current trace (cyan, with slight noise to look realistic)
+                  if (!isShort) {
+                    var iNorm = Math.min(current / 2, 1);
+                    var iY = oh * 0.5 - iNorm * oh * 0.35;
+                    oc.strokeStyle = '#06b6d4'; oc.lineWidth = 1.5;
+                    oc.shadowColor = '#06b6d4'; oc.shadowBlur = 4;
+                    oc.beginPath();
+                    for (var sx = 0; sx < ow; sx++) {
+                      var noise = (Math.random() - 0.5) * 2;
+                      var sy = iY + noise;
+                      if (sx === 0) oc.moveTo(sx, sy); else oc.lineTo(sx, sy);
+                    }
+                    oc.stroke(); oc.shadowBlur = 0;
+                  }
+
+                  // Per-component voltage drops (small ticks on voltage line)
+                  if (mode === 'series' && components.length > 0) {
+                    var dropX = ow * 0.1;
+                    var dropW = ow * 0.8;
+                    components.forEach(function(comp, ci) {
+                      var compV = current * getCompR(comp);
+                      var frac = compV / voltage;
+                      var barEnd = dropX + dropW * ((ci + 1) / components.length);
+                      oc.strokeStyle = 'rgba(251,191,36,0.5)'; oc.lineWidth = 1;
+                      oc.setLineDash([2, 2]);
+                      oc.beginPath(); oc.moveTo(barEnd, oh * 0.1); oc.lineTo(barEnd, oh * 0.9); oc.stroke();
+                      oc.setLineDash([]);
+                      // Drop label
+                      oc.fillStyle = '#fbbf24'; oc.font = '8px monospace'; oc.textAlign = 'center';
+                      oc.fillText(compV.toFixed(1) + 'V', barEnd, oh * 0.08);
+                    });
+                  }
+
+                  // Legend
+                  oc.font = '8px system-ui, sans-serif'; oc.textAlign = 'left';
+                  oc.fillStyle = '#22c55e'; oc.fillText('\u2588 Voltage', 6, oh - 6);
+                  oc.fillStyle = '#06b6d4'; oc.fillText('\u2588 Current', 60, oh - 6);
+                  if (mode === 'series') { oc.fillStyle = '#fbbf24'; oc.fillText('\u2508 V-drops', 114, oh - 6); }
+
+                  // Short circuit warning
+                  if (isShort) {
+                    oc.fillStyle = 'rgba(239,68,68,0.3)'; oc.fillRect(0, 0, ow, oh);
+                    oc.fillStyle = '#ef4444'; oc.font = 'bold 14px system-ui'; oc.textAlign = 'center';
+                    oc.fillText('\u26A0 SHORT CIRCUIT', ow / 2, oh / 2 + 5);
+                  }
+                },
+                className: 'w-full block', style: { height: '120px' }
+              })
+            ) : null,
+
+
+            // ══════════════════════════════════════
+            // Component Physics Explainer
+            // ══════════════════════════════════════
+            (function() {
+              var COMP_PHYSICS = {
+                resistor: {
+                  icon: '\u2237', name: 'Resistor', color: '#d97706',
+                  how: 'Electrons collide with atoms in the resistive material, converting electrical energy into heat. The more collisions (higher resistance), the less current flows.',
+                  equation: 'V = I \u00D7 R (Ohm\'s Law)',
+                  analogy: 'Like a narrow section of pipe \u2014 it restricts water flow and creates pressure difference.'
+                },
+                bulb: {
+                  icon: '\uD83D\uDCA1', name: 'Light Bulb', color: '#eab308',
+                  how: 'Current heats a thin wire (filament) to ~2,500\u00B0C until it glows white-hot. The filament\'s resistance increases with temperature.',
+                  equation: 'Brightness \u221D Power = I\u00B2 \u00D7 R',
+                  analogy: 'Like rubbing your hands together fast \u2014 friction (resistance) creates heat and light.'
+                },
+                switch: {
+                  icon: '\uD83D\uDD18', name: 'Switch', color: '#64748b',
+                  how: 'A physical gap in the conductor. When closed, electrons flow freely. When open, the air gap has near-infinite resistance, stopping current completely.',
+                  equation: 'R_open \u2248 \u221E, R_closed \u2248 0\u03A9',
+                  analogy: 'Like a drawbridge \u2014 when up, nothing crosses. When down, traffic flows.'
+                },
+                led: {
+                  icon: '\uD83D\uDD34', name: 'LED', color: '#ef4444',
+                  how: 'A semiconductor diode that emits photons when electrons drop from a high energy band to a low one. Different materials produce different colors.',
+                  equation: 'V_forward \u2248 1.8-3.3V (depends on color)',
+                  analogy: 'Like a one-way door with a light \u2014 electrons can only go one direction, and they release light as they pass.'
+                },
+                ammeter: {
+                  icon: '\uD83D\uDCCF', name: 'Ammeter', color: '#3b82f6',
+                  how: 'Measures current by detecting the magnetic field created by flowing electrons. Connected in series so all current passes through it. Has very low internal resistance.',
+                  equation: 'I = reading in Amperes (A)',
+                  analogy: 'Like a turnstile counting how many people pass per second.'
+                },
+                voltmeter: {
+                  icon: '\uD83D\uDCCA', name: 'Voltmeter', color: '#f59e0b',
+                  how: 'Measures potential difference (voltage) between two points. Connected in parallel with very high internal resistance so it doesn\'t affect the circuit.',
+                  equation: 'V = reading in Volts (V)',
+                  analogy: 'Like a pressure gauge on a water pipe \u2014 measures the push without blocking flow.'
+                },
+                capacitor: {
+                  icon: '\u2550', name: 'Capacitor', color: '#6366f1',
+                  how: 'Two metal plates separated by an insulator. Electrons accumulate on one plate and leave the other, storing energy in an electric field. Releases energy quickly when discharged.',
+                  equation: 'Q = C \u00D7 V, Energy = \u00BDCV\u00B2',
+                  analogy: 'Like a water tank \u2014 it fills up slowly and can release all its stored water at once.'
+                }
+              };
+
+              var selectedComp = d._selectedComp || null;
+              var physics = selectedComp ? COMP_PHYSICS[selectedComp] : null;
+
+              // Only show if there are components
+              if (components.length === 0) return null;
+
+              return h('div', { className: 'mt-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3' },
+                h('p', { className: 'text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-2' }, '\u269B How Components Work'),
+                // Component selector chips
+                h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
+                  ['resistor', 'bulb', 'switch', 'led', 'ammeter', 'voltmeter', 'capacitor'].map(function(type) {
+                    var info = COMP_PHYSICS[type];
+                    var active = selectedComp === type;
+                    return h('button', {
+                      key: type,
+                      onClick: function() { upd('_selectedComp', active ? null : type); },
+                      className: 'px-2 py-1 rounded-lg text-[10px] font-bold transition-all ' +
+                        (active ? 'text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:border-amber-300'),
+                      style: active ? { background: info.color } : {}
+                    }, info.icon + ' ' + info.name);
+                  })
+                ),
+                // Explainer card
+                physics ? h('div', { className: 'bg-white rounded-lg border border-amber-200 p-3' },
+                  h('div', { className: 'flex items-center gap-2 mb-2' },
+                    h('span', { className: 'text-2xl' }, physics.icon),
+                    h('h4', { className: 'font-bold text-slate-800 text-sm' }, physics.name),
+                    h('span', { className: 'ml-auto px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-slate-100 text-slate-600 border border-slate-200' }, physics.equation)
+                  ),
+                  h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, physics.how),
+                  h('div', { className: 'bg-sky-50 rounded-lg p-2 border border-sky-200' },
+                    h('span', { className: 'text-[10px] font-bold text-sky-600' }, '\uD83D\uDCA1 Think of it as: '),
+                    h('span', { className: 'text-[10px] text-sky-800' }, physics.analogy)
+                  ),
+                  typeof callTTS === 'function' ? h('button', {
+                    onClick: function() { callTTS(physics.name + '. ' + physics.how + ' ' + physics.analogy); },
+                    className: 'mt-2 text-[10px] text-amber-600 hover:text-amber-800 font-bold'
+                  }, '\uD83D\uDD0A Read aloud') : null
+                ) : h('p', { className: 'text-[10px] text-amber-500 italic' }, 'Tap a component above to learn how it works inside!')
+              );
+            })(),
+
+
+            // ══════════════════════════════════════
+            // Real-World Circuit Applications
+            // ══════════════════════════════════════
+            h('div', { className: 'mt-4 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl border border-cyan-200 p-3' },
+              h('p', { className: 'text-[10px] font-bold text-cyan-600 uppercase tracking-wider mb-2' }, '\uD83C\uDF0D Real-World Circuits'),
+              h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-2' },
+                [
+                  { emoji: '\uD83D\uDD26', name: 'Flashlight', circuit: 'Series', desc: 'Battery + switch + bulb in series. Switch breaks circuit to turn off.', comps: 'Switch, Bulb' },
+                  { emoji: '\uD83D\uDCF1', name: 'Phone Charger', circuit: 'Series + Parallel', desc: 'Transformer reduces 120V to 5V. Capacitors smooth the current for steady charging.', comps: 'Resistor, Capacitor' },
+                  { emoji: '\uD83D\uDE97', name: 'Car Headlights', circuit: 'Parallel', desc: 'Headlights wired in parallel so if one burns out, the other stays on.', comps: 'Bulb, Switch' },
+                  { emoji: '\uD83C\uDFB5', name: 'Guitar Pedal', circuit: 'Series + Parallel', desc: 'Resistors and capacitors filter frequencies to create distortion or reverb effects.', comps: 'Resistor, Capacitor' },
+                  { emoji: '\uD83D\uDEA6', name: 'Traffic Light', circuit: 'Parallel', desc: 'Three LED groups in parallel, controlled by a timer circuit switching between them.', comps: 'LED, Switch' },
+                  { emoji: '\u2764\uFE0F', name: 'Heart Monitor', circuit: 'Series', desc: 'Amplifies tiny electrical signals from heart muscle. Resistors set gain, capacitors filter noise.', comps: 'Resistor, Ammeter' }
+                ].map(function(app) {
+                  var expanded = d._expandedApp === app.name;
+                  return h('button', {
+                    key: app.name,
+                    onClick: function() { upd('_expandedApp', expanded ? null : app.name); },
+                    className: 'text-left rounded-lg p-2 border transition-all ' +
+                      (expanded ? 'bg-white border-cyan-400 shadow-sm' : 'bg-white/60 border-cyan-100 hover:border-cyan-300')
+                  },
+                    h('div', { className: 'flex items-center gap-2 mb-1' },
+                      h('span', { className: 'text-lg' }, app.emoji),
+                      h('div', null,
+                        h('span', { className: 'text-xs font-bold text-slate-800 block' }, app.name),
+                        h('span', { className: 'text-[9px] text-cyan-600 font-bold' }, app.circuit)
+                      )
+                    ),
+                    expanded ? h('div', null,
+                      h('p', { className: 'text-[10px] text-slate-600 leading-relaxed mb-1' }, app.desc),
+                      h('span', { className: 'text-[9px] text-slate-400 font-bold' }, '\uD83D\uDD27 Key parts: ' + app.comps)
+                    ) : null
+                  );
+                })
+              )
+            ),
+
+
+            // ══════════════════════════════════════
             // Snapshot + Footer
             // ══════════════════════════════════════
             h('div', { className: 'mt-3 flex items-center gap-2' },
