@@ -630,6 +630,125 @@ window.SelHub = window.SelHub || {
               })
             ) : null,
 
+            // ── SCENARIOS TAB ──
+            tab === 'scenarios' ? (function() {
+              var scenarios = SCENARIOS[band] || SCENARIOS.elementary;
+              var sc = scenarios[scenarioIdx % scenarios.length];
+              return h('div', null,
+                h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 12 } },
+                  band === 'elementary' ? 'Read the story and pick the choice that shows YOUR strengths!' :
+                  'Choose how you\'d respond. Each choice shows a different strength in action.'
+                ),
+                h('div', { style: { fontSize: 10, color: '#64748b', marginBottom: 12 } },
+                  'Scenario ' + ((scenarioIdx % scenarios.length) + 1) + ' of ' + scenarios.length +
+                  (scenariosDone.length > 0 ? ' \u2014 ' + scenariosDone.length + ' completed' : '')
+                ),
+                // Scenario card
+                h('div', { style: { padding: 16, borderRadius: 14, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.05))', border: '1px solid rgba(245,158,11,0.25)', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 14, fontWeight: 'bold', color: '#fbbf24', marginBottom: 8 } }, '\uD83C\uDFAD ' + sc.title),
+                  h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 12 } }, sc.setup),
+                  callTTS ? h('button', { onClick: function() { speak(sc.setup); }, style: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 6, padding: '3px 8px', color: '#fbbf24', fontSize: 10, cursor: 'pointer', marginBottom: 12 } }, '\uD83D\uDD0A Read aloud') : null,
+                  // Choices
+                  !scenarioChoice ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                    sc.choices.map(function(ch, ci) {
+                      return h('button', { key: ci, onClick: function() {
+                        sfxSelect();
+                        var newDone = scenariosDone.indexOf(sc.id) < 0 ? scenariosDone.concat([sc.id]) : scenariosDone;
+                        var newTop = ch.rating === 3 ? topScenarios + 1 : topScenarios;
+                        upd({ scenarioChoice: { idx: ci, choice: ch }, scenariosDone: newDone, topScenarios: newTop });
+                        if (awardXP) awardXP(ch.rating === 3 ? 10 : ch.rating === 2 ? 5 : 2);
+                      }, style: { textAlign: 'left', padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(99,102,241,0.15)', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, cursor: 'pointer', transition: 'all 0.15s' } },
+                        h('span', { style: { fontWeight: 'bold', color: '#a5b4fc', marginRight: 6 } }, String.fromCharCode(65 + ci) + '.'),
+                        ch.text
+                      );
+                    })
+                  ) :
+                  // Feedback after choosing
+                  h('div', { style: { padding: 14, borderRadius: 10, background: scenarioChoice.choice.rating === 3 ? 'rgba(52,211,153,0.1)' : scenarioChoice.choice.rating === 2 ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid ' + (scenarioChoice.choice.rating === 3 ? 'rgba(52,211,153,0.3)' : scenarioChoice.choice.rating === 2 ? 'rgba(245,158,11,0.3)' : 'rgba(239,68,68,0.3)') } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
+                      h('span', { style: { fontSize: 16 } }, scenarioChoice.choice.rating === 3 ? '\u2B50\u2B50\u2B50' : scenarioChoice.choice.rating === 2 ? '\u2B50\u2B50' : '\u2B50'),
+                      scenarioChoice.choice.strength ? h('span', { style: { padding: '2px 10px', borderRadius: 12, background: 'rgba(245,158,11,0.2)', color: '#fbbf24', fontSize: 10, fontWeight: 'bold' } }, 'Strength: ' + scenarioChoice.choice.strength) : null
+                    ),
+                    h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, scenarioChoice.choice.feedback),
+                    h('div', { style: { display: 'flex', gap: 8, marginTop: 12 } },
+                      h('button', { onClick: function() { upd({ scenarioChoice: null, scenarioIdx: (scenarioIdx + 1) % scenarios.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\u27A1 Next Scenario'),
+                      h('button', { onClick: function() { upd({ scenarioChoice: null }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD04 Try Again')
+                    )
+                  )
+                )
+              );
+            })() : null,
+
+            // ── QUIZ TAB ──
+            tab === 'quiz' ? (function() {
+              var quizData = MATCH_QUIZ[band] || MATCH_QUIZ.elementary;
+              if (!quizActive && !quizDone) {
+                return h('div', { style: { textAlign: 'center', padding: 30 } },
+                  h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83E\uDDE9'),
+                  h('p', { style: { fontSize: 16, fontWeight: 'bold', color: '#fbbf24', marginBottom: 8 } }, 'Strength Match Quiz'),
+                  h('p', { style: { fontSize: 12, color: '#94a3b8', maxWidth: 350, margin: '0 auto 16px', lineHeight: 1.6 } },
+                    'Read each situation and identify which strength is being used. Test how well you can spot strengths in action!'
+                  ),
+                  h('p', { style: { fontSize: 11, color: '#64748b', marginBottom: 16 } }, quizData.length + ' questions \u2022 Best score: ' + quizBest + '/' + quizData.length),
+                  h('button', { onClick: function() { upd({ quizActive: true, quizIdx: 0, quizScore: 0, quizFeedback: null, quizDone: false }); }, style: { padding: '12px 30px', borderRadius: 10, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 14, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFAE Start Quiz')
+                );
+              }
+              if (quizDone) {
+                var pct = Math.round((quizScore / quizData.length) * 100);
+                return h('div', { style: { textAlign: 'center', padding: 30 } },
+                  h('div', { style: { fontSize: 48, marginBottom: 12 } }, pct >= 80 ? '\uD83C\uDFC6' : pct >= 50 ? '\uD83C\uDF1F' : '\uD83D\uDCAA'),
+                  h('p', { style: { fontSize: 20, fontWeight: 'bold', color: '#fbbf24', marginBottom: 4 } }, quizScore + ' / ' + quizData.length),
+                  h('p', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 16 } },
+                    pct >= 80 ? 'Outstanding! You\'re a natural strength spotter!' :
+                    pct >= 50 ? 'Great work! Keep exploring to sharpen your strength sense.' :
+                    'Good start! The more you practice, the better you\'ll get.'
+                  ),
+                  h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
+                    h('button', { onClick: function() { upd({ quizActive: true, quizIdx: 0, quizScore: 0, quizFeedback: null, quizDone: false }); }, style: { padding: '10px 24px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDD04 Play Again'),
+                    h('button', { onClick: function() { upd({ quizActive: false, quizDone: false }); }, style: { padding: '10px 24px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u2190 Back')
+                  )
+                );
+              }
+              // Active quiz question
+              var q = quizData[quizIdx];
+              if (!q) { upd({ quizDone: true }); return null; }
+              var shuffled = q.options.slice().sort(function() { return 0.5 - Math.random(); });
+              // Use stable order from state
+              if (!d._quizOptions || d._quizOptions.join() !== shuffled.join()) {
+                // Only shuffle once per question
+              }
+              return h('div', null,
+                h('div', { style: { fontSize: 10, color: '#64748b', marginBottom: 8 } }, 'Question ' + (quizIdx + 1) + ' / ' + quizData.length + ' \u2022 Score: ' + quizScore),
+                h('div', { style: { padding: 16, borderRadius: 14, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', marginBottom: 16 } },
+                  h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 4 } }, '\uD83D\uDCA1 ' + q.situation),
+                  h('p', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 'bold', marginTop: 8 } }, 'Which strength is being demonstrated?')
+                ),
+                quizFeedback ? h('div', { style: { padding: 14, borderRadius: 10, marginBottom: 12, background: quizFeedback.correct ? 'rgba(52,211,153,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid ' + (quizFeedback.correct ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)') } },
+                  h('p', { style: { fontSize: 13, fontWeight: 'bold', color: quizFeedback.correct ? '#34d399' : '#f87171' } }, quizFeedback.correct ? '\u2705 Correct!' : '\u274C Not quite \u2014 the answer is ' + q.answer),
+                  h('button', { onClick: function() {
+                    var nextIdx = quizIdx + 1;
+                    if (nextIdx >= quizData.length) {
+                      var best = Math.max(quizBest, quizScore);
+                      upd({ quizDone: true, quizFeedback: null, quizBest: best });
+                    } else {
+                      upd({ quizIdx: nextIdx, quizFeedback: null });
+                    }
+                  }, style: { marginTop: 8, padding: '8px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, quizIdx + 1 >= quizData.length ? '\uD83C\uDFC1 See Results' : '\u27A1 Next')
+                ) :
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                  q.options.map(function(opt) {
+                    return h('button', { key: opt, onClick: function() {
+                      var correct = opt === q.answer;
+                      if (correct) sfxComplete(); else sfxReflect();
+                      upd({ quizFeedback: { correct: correct, picked: opt }, quizScore: correct ? quizScore + 1 : quizScore });
+                    }, style: { textAlign: 'left', padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(99,102,241,0.15)', color: '#cbd5e1', fontSize: 13, fontWeight: 'bold', cursor: 'pointer', textTransform: 'capitalize', transition: 'all 0.15s' } },
+                      '\uD83D\uDCA0 ' + opt
+                    );
+                  })
+                )
+              );
+            })() : null,
+
             // ── REFLECT TAB ──
             tab === 'reflect' ? h('div', null,
               h('div', { style: { background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 12, padding: 16, marginBottom: 16 } },
@@ -701,12 +820,64 @@ window.SelHub = window.SelHub || {
                 ) :
                 h('div', null,
                   h('div', { style: { fontSize: 14, fontWeight: 'bold', color: '#fbbf24', marginBottom: 12 } }, '\u2B50 Your Strengths Profile'),
+
+                  // ── Strength Wheel (SVG Radar) ──
+                  (function() {
+                    var catCounts = STRENGTH_CATEGORIES.map(function(cat) {
+                      return { label: cat.label.split(' ')[0], color: cat.color, emoji: cat.emoji, count: selectedStrengths.filter(function(s) { return s.category === cat.id; }).length };
+                    });
+                    var maxCount = Math.max(1, Math.max.apply(null, catCounts.map(function(c) { return c.count; })));
+                    var cx = 120, cy = 110, radius = 80;
+                    var n = catCounts.length;
+                    var points = catCounts.map(function(c, i) {
+                      var angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+                      var r = (c.count / maxCount) * radius;
+                      return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle), labelX: cx + (radius + 18) * Math.cos(angle), labelY: cy + (radius + 18) * Math.sin(angle), color: c.color, label: c.emoji + ' ' + c.label, count: c.count };
+                    });
+                    var polygonPoints = points.map(function(p) { return p.x + ',' + p.y; }).join(' ');
+                    var gridLevels = [0.25, 0.5, 0.75, 1];
+                    return h('div', { style: { textAlign: 'center', marginBottom: 20 } },
+                      h('svg', { width: 240, height: 230, viewBox: '0 0 240 230', style: { maxWidth: '100%' } },
+                        // Grid rings
+                        gridLevels.map(function(lvl, li) {
+                          var gridPts = [];
+                          for (var gi = 0; gi < n; gi++) {
+                            var a = (Math.PI * 2 * gi / n) - Math.PI / 2;
+                            gridPts.push((cx + radius * lvl * Math.cos(a)) + ',' + (cy + radius * lvl * Math.sin(a)));
+                          }
+                          return h('polygon', { key: li, points: gridPts.join(' '), fill: 'none', stroke: 'rgba(99,102,241,0.15)', strokeWidth: 1 });
+                        }),
+                        // Axis lines
+                        points.map(function(p, pi) {
+                          var a = (Math.PI * 2 * pi / n) - Math.PI / 2;
+                          return h('line', { key: 'ax' + pi, x1: cx, y1: cy, x2: cx + radius * Math.cos(a), y2: cy + radius * Math.sin(a), stroke: 'rgba(99,102,241,0.12)', strokeWidth: 1 });
+                        }),
+                        // Filled shape
+                        selectedStrengths.length > 0 ? h('polygon', { points: polygonPoints, fill: 'rgba(245,158,11,0.2)', stroke: '#f59e0b', strokeWidth: 2 }) : null,
+                        // Dots
+                        points.map(function(p, pi) {
+                          return h('circle', { key: 'dot' + pi, cx: p.x, cy: p.y, r: 4, fill: p.color, stroke: '#0f172a', strokeWidth: 2 });
+                        }),
+                        // Labels
+                        points.map(function(p, pi) {
+                          return h('text', { key: 'lbl' + pi, x: p.labelX, y: p.labelY, fill: p.color, fontSize: 9, fontWeight: 'bold', textAnchor: 'middle', dominantBaseline: 'central' }, p.label + ' (' + p.count + ')');
+                        })
+                      )
+                    );
+                  })(),
+
                   // Category breakdown
                   STRENGTH_CATEGORIES.map(function(cat) {
                     var catStrengths = selectedStrengths.filter(function(s) { return s.category === cat.id; });
+                    var total = (cat.strengths[band] || cat.strengths.elementary).length;
                     if (catStrengths.length === 0) return null;
                     return h('div', { key: cat.id, style: { marginBottom: 16 } },
-                      h('div', { style: { fontSize: 12, fontWeight: 'bold', color: cat.color, marginBottom: 6 } }, cat.emoji + ' ' + cat.label + ' (' + catStrengths.length + ')'),
+                      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 } },
+                        h('div', { style: { fontSize: 12, fontWeight: 'bold', color: cat.color } }, cat.emoji + ' ' + cat.label + ' (' + catStrengths.length + '/' + total + ')'),
+                        h('div', { style: { width: 100, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
+                          h('div', { style: { width: Math.round(catStrengths.length / total * 100) + '%', height: '100%', background: cat.color, borderRadius: 3, transition: 'width 0.3s' } })
+                        )
+                      ),
                       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                         catStrengths.map(function(s) {
                           return h('span', { key: s.id, style: { padding: '5px 12px', borderRadius: 20, background: cat.color + '22', border: '1px solid ' + cat.color + '44', color: cat.color, fontSize: 11, fontWeight: 'bold' } }, s.emoji + ' ' + s.label);
@@ -714,22 +885,22 @@ window.SelHub = window.SelHub || {
                       )
                     );
                   }),
-                  // Stats
+                  // Stats grid
                   h('div', { style: { marginTop: 20, padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.1)' } },
                     h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', marginBottom: 8 } }, '\uD83D\uDCCA Summary'),
-                    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, textAlign: 'center' } },
-                      h('div', null,
-                        h('div', { style: { fontSize: 24, fontWeight: 'bold', color: '#fbbf24' } }, String(selectedStrengths.length)),
-                        h('div', { style: { fontSize: 10, color: '#64748b' } }, 'Strengths')
-                      ),
-                      h('div', null,
-                        h('div', { style: { fontSize: 24, fontWeight: 'bold', color: '#a78bfa' } }, String(reflections.length)),
-                        h('div', { style: { fontSize: 10, color: '#64748b' } }, 'Reflections')
-                      ),
-                      h('div', null,
-                        h('div', { style: { fontSize: 24, fontWeight: 'bold', color: '#34d399' } }, String(badgeCount)),
-                        h('div', { style: { fontSize: 10, color: '#64748b' } }, 'Badges')
-                      )
+                    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, textAlign: 'center' } },
+                      [
+                        { val: selectedStrengths.length, label: 'Strengths', color: '#fbbf24' },
+                        { val: reflections.length, label: 'Reflections', color: '#a78bfa' },
+                        { val: scenariosDone.length, label: 'Scenarios', color: '#f97316' },
+                        { val: quizBest, label: 'Quiz Best', color: '#34d399' },
+                        { val: badgeCount, label: 'Badges', color: '#6366f1' }
+                      ].map(function(s, si) {
+                        return h('div', { key: si },
+                          h('div', { style: { fontSize: 20, fontWeight: 'bold', color: s.color } }, String(s.val)),
+                          h('div', { style: { fontSize: 9, color: '#64748b' } }, s.label)
+                        );
+                      })
                     )
                   )
                 )
