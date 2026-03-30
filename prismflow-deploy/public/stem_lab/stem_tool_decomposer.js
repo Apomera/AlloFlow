@@ -171,62 +171,62 @@
   var SCENES = [
     {
       id: 'kitchen', name: 'Kitchen', icon: '\uD83C\uDF73', bgColor: '#fef3c7', accent: '#b45309',
-      desc: 'A warm kitchen full of everyday chemicals!',
+      desc: 'A cozy kitchen where every meal involves chemistry.',
       objects: [
-        { id: 'k_faucet', name: 'Faucet (Water)', material: 'Water', emoji: '\uD83D\uDEB0', x: 0.15, y: 0.35, hint: 'Turn the tap \u2014 what comes out?' },
-        { id: 'k_salt', name: 'Salt Shaker', material: 'Table Salt', emoji: '\uD83E\uDDC2', x: 0.42, y: 0.55, hint: 'Shake it on your food!' },
-        { id: 'k_sugar', name: 'Sugar Bowl', material: 'Sugar (Sucrose)', emoji: '\uD83C\uDF6C', x: 0.58, y: 0.55, hint: 'Sweet crystals in a bowl.' },
-        { id: 'k_baking', name: 'Baking Soda Box', material: 'Baking Soda', emoji: '\uD83E\uDDC1', x: 0.75, y: 0.45, hint: 'Makes muffins rise!' },
-        { id: 'k_vinegar', name: 'Vinegar Bottle', material: 'Acetic Acid', emoji: '\uD83E\uDED9', x: 0.85, y: 0.45, hint: 'Sour liquid for salads and volcanoes.' },
-        { id: 'k_soda', name: 'Soda Can', material: 'Carbon Dioxide', emoji: '\uD83E\uDD64', x: 0.30, y: 0.65, hint: 'Fizzy bubbles when you open it!' },
-        { id: 'k_fruit', name: 'Fruit Bowl (Glucose)', material: 'Glucose', emoji: '\uD83C\uDF4E', x: 0.55, y: 0.72, hint: 'Natural sugar energy in fruit.' }
+        { id: 'k_faucet', name: 'Kitchen Faucet', material: 'Water', emoji: '\uD83D\uDEB0', x: 0.14, y: 0.38, label: 'Faucet' },
+        { id: 'k_salt', name: 'Salt Shaker', material: 'Table Salt', emoji: '\uD83E\uDDC2', x: 0.44, y: 0.44, label: 'Salt' },
+        { id: 'k_sugar', name: 'Sugar Jar', material: 'Sugar (Sucrose)', emoji: '\uD83C\uDF6C', x: 0.56, y: 0.44, label: 'Sugar' },
+        { id: 'k_baking', name: 'Baking Soda', material: 'Baking Soda', emoji: '\uD83E\uDDC1', x: 0.72, y: 0.20, label: 'Baking Soda' },
+        { id: 'k_vinegar', name: 'Vinegar Bottle', material: 'Acetic Acid', emoji: '\uD83E\uDED9', x: 0.82, y: 0.20, label: 'Vinegar' },
+        { id: 'k_soda', name: 'Soda Can', material: 'Carbon Dioxide', emoji: '\uD83E\uDD64', x: 0.30, y: 0.44, label: 'Soda' },
+        { id: 'k_fruit', name: 'Fruit Bowl', material: 'Glucose', emoji: '\uD83C\uDF4E', x: 0.50, y: 0.54, label: 'Fruit' }
       ]
     },
     {
       id: 'bathroom', name: 'Bathroom', icon: '\uD83D\uDEC1', bgColor: '#e0f2fe', accent: '#0369a1',
-      desc: 'Your bathroom hides surprising chemistry!',
+      desc: 'More chemistry hides in here than you\u2019d think.',
       objects: [
-        { id: 'b_tap', name: 'Bathroom Sink', material: 'Water', emoji: '\uD83D\uDEB0', x: 0.25, y: 0.40, hint: 'Running water for washing hands.' },
-        { id: 'b_peroxide', name: 'First Aid Kit', material: 'Hydrogen Peroxide', emoji: '\uD83D\uDC8A', x: 0.70, y: 0.35, hint: 'Bubbles when it touches a cut!' },
-        { id: 'b_cleaner', name: 'Cleaning Spray', material: 'Ammonia', emoji: '\uD83E\uDDEA', x: 0.50, y: 0.50, hint: 'Strong-smelling cleaner under the sink.' },
-        { id: 'b_sanitizer', name: 'Hand Sanitizer', material: 'Ethanol', emoji: '\uD83E\uDDF4', x: 0.35, y: 0.60, hint: 'Kills germs with alcohol.' },
-        { id: 'b_chalk', name: 'Chalk Toothpaste', material: 'Calcium Carbonate', emoji: '\uD83E\uDEB7', x: 0.80, y: 0.55, hint: 'Ingredient in toothpaste and antacids.' },
-        { id: 'b_exhale', name: 'Foggy Mirror', material: 'Carbon Dioxide', emoji: '\uD83E\uDE9E', x: 0.55, y: 0.28, hint: 'Your warm breath fogs the glass. What do you exhale?' }
+        { id: 'b_tap', name: 'Sink Tap', material: 'Water', emoji: '\uD83D\uDEB0', x: 0.22, y: 0.44, label: 'Tap Water' },
+        { id: 'b_peroxide', name: 'Peroxide Bottle', material: 'Hydrogen Peroxide', emoji: '\uD83D\uDC8A', x: 0.75, y: 0.30, label: 'First Aid' },
+        { id: 'b_cleaner', name: 'Cleaning Spray', material: 'Ammonia', emoji: '\uD83E\uDDEA', x: 0.18, y: 0.70, label: 'Cleaner' },
+        { id: 'b_sanitizer', name: 'Hand Sanitizer', material: 'Ethanol', emoji: '\uD83E\uDDF4', x: 0.38, y: 0.55, label: 'Sanitizer' },
+        { id: 'b_chalk', name: 'Toothpaste Tube', material: 'Calcium Carbonate', emoji: '\uD83E\uDEB7', x: 0.32, y: 0.44, label: 'Toothpaste' },
+        { id: 'b_exhale', name: 'Foggy Mirror', material: 'Carbon Dioxide', emoji: '\uD83E\uDE9E', x: 0.55, y: 0.18, label: 'Foggy Mirror' }
       ]
     },
     {
       id: 'garage', name: 'Garage', icon: '\uD83D\uDE97', bgColor: '#f1f5f9', accent: '#475569',
-      desc: 'Cars and tools \u2014 chemistry at work!',
+      desc: 'Engines, rust, and reactions \u2014 a chemistry workshop.',
       objects: [
-        { id: 'g_battery', name: 'Car Battery', material: 'Sulfuric Acid', emoji: '\uD83D\uDD0B', x: 0.30, y: 0.45, hint: 'Powerful acid that stores electricity.' },
-        { id: 'g_rust', name: 'Rusty Nail', material: 'Rust', emoji: '\uD83D\uDFE4', x: 0.55, y: 0.65, hint: 'Iron left in the rain turns orange-brown.' },
-        { id: 'g_gas', name: 'Gas Can', material: 'Methane', emoji: '\u26FD', x: 0.75, y: 0.50, hint: 'Fuel for engines and stoves.' },
-        { id: 'g_hose', name: 'Garden Hose', material: 'Water', emoji: '\uD83D\uDEB0', x: 0.18, y: 0.60, hint: 'Water for the garden.' },
-        { id: 'g_deice', name: 'Road Salt Bag', material: 'Table Salt', emoji: '\uD83E\uDDC2', x: 0.85, y: 0.55, hint: 'Spread on icy roads in winter.' }
+        { id: 'g_battery', name: 'Car Battery', material: 'Sulfuric Acid', emoji: '\uD83D\uDD0B', x: 0.22, y: 0.48, label: 'Battery' },
+        { id: 'g_rust', name: 'Rusty Toolbox', material: 'Rust', emoji: '\uD83D\uDFE4', x: 0.68, y: 0.52, label: 'Rust' },
+        { id: 'g_gas', name: 'Gas Can', material: 'Methane', emoji: '\u26FD', x: 0.82, y: 0.52, label: 'Gas Can' },
+        { id: 'g_hose', name: 'Garden Hose', material: 'Water', emoji: '\uD83D\uDEB0', x: 0.10, y: 0.68, label: 'Hose' },
+        { id: 'g_deice', name: 'De-icing Salt', material: 'Table Salt', emoji: '\uD83E\uDDC2', x: 0.68, y: 0.28, label: 'Road Salt' }
       ]
     },
     {
-      id: 'classroom', name: 'Classroom', icon: '\uD83C\uDFEB', bgColor: '#fae8ff', accent: '#a21caf',
-      desc: 'A science classroom full of materials to explore!',
+      id: 'classroom', name: 'Science Lab', icon: '\uD83C\uDFEB', bgColor: '#fae8ff', accent: '#a21caf',
+      desc: 'A real science classroom with beakers and experiments.',
       objects: [
-        { id: 'c_chalk', name: 'Chalk', material: 'Calcium Carbonate', emoji: '\uD83D\uDFE1', x: 0.20, y: 0.40, hint: 'Write on the board \u2014 it crumbles to dust.' },
-        { id: 'c_soda', name: 'Baking Soda Volcano', material: 'Baking Soda', emoji: '\uD83C\uDF0B', x: 0.50, y: 0.50, hint: 'The classic science fair project!' },
-        { id: 'c_breath', name: 'CO\u2082 Indicator', material: 'Carbon Dioxide', emoji: '\uD83E\uDDEA', x: 0.75, y: 0.40, hint: 'Blow through a straw to test for gas.' },
-        { id: 'c_water', name: 'Beaker of Water', material: 'Water', emoji: '\u2697\uFE0F', x: 0.35, y: 0.55, hint: 'The universal solvent.' },
-        { id: 'c_sugar', name: 'Sugar Cubes', material: 'Sugar (Sucrose)', emoji: '\uD83E\uDDCA', x: 0.62, y: 0.60, hint: 'Dissolve in water to test solutions.' },
-        { id: 'c_iron', name: 'Iron Filings', material: 'Rust', emoji: '\u2699\uFE0F', x: 0.85, y: 0.55, hint: 'Magnetic shavings \u2014 leave them out and they rust!' }
+        { id: 'c_chalk', name: 'Chalk Stick', material: 'Calcium Carbonate', emoji: '\uD83D\uDFE1', x: 0.15, y: 0.28, label: 'Chalk' },
+        { id: 'c_soda', name: 'Baking Soda Volcano', material: 'Baking Soda', emoji: '\uD83C\uDF0B', x: 0.50, y: 0.48, label: 'Volcano' },
+        { id: 'c_breath', name: 'CO\u2082 Test Tube', material: 'Carbon Dioxide', emoji: '\uD83E\uDDEA', x: 0.72, y: 0.48, label: 'CO\u2082 Test' },
+        { id: 'c_water', name: 'Water Beaker', material: 'Water', emoji: '\u2697\uFE0F', x: 0.35, y: 0.48, label: 'Beaker' },
+        { id: 'c_sugar', name: 'Sugar Cubes', material: 'Sugar (Sucrose)', emoji: '\uD83E\uDDCA', x: 0.60, y: 0.48, label: 'Sugar' },
+        { id: 'c_iron', name: 'Iron Filings', material: 'Rust', emoji: '\u2699\uFE0F', x: 0.85, y: 0.48, label: 'Iron' }
       ]
     },
     {
-      id: 'outdoors', name: 'Outdoors', icon: '\uD83C\uDF33', bgColor: '#dcfce7', accent: '#15803d',
-      desc: 'Nature is the biggest chemistry lab!',
+      id: 'outdoors', name: 'Backyard', icon: '\uD83C\uDF33', bgColor: '#dcfce7', accent: '#15803d',
+      desc: 'Step outside \u2014 nature is the biggest lab of all.',
       objects: [
-        { id: 'o_rain', name: 'Rain Puddle', material: 'Water', emoji: '\uD83C\uDF27\uFE0F', x: 0.40, y: 0.70, hint: 'Rain is pure water (mostly).' },
-        { id: 'o_shell', name: 'Seashell', material: 'Calcium Carbonate', emoji: '\uD83D\uDC1A', x: 0.70, y: 0.72, hint: 'Animals build shells from minerals.' },
-        { id: 'o_rust', name: 'Rusty Gate', material: 'Rust', emoji: '\uD83D\uDEA7', x: 0.15, y: 0.45, hint: 'Old iron plus rain and time.' },
-        { id: 'o_ozone', name: 'Storm Smell', material: 'Ozone', emoji: '\u26C8\uFE0F', x: 0.55, y: 0.25, hint: 'That fresh smell after lightning.' },
-        { id: 'o_compost', name: 'Compost Bin', material: 'Methane', emoji: '\u267B\uFE0F', x: 0.85, y: 0.58, hint: 'Decomposing food releases gas.' },
-        { id: 'o_fruit', name: 'Apple Tree', material: 'Glucose', emoji: '\uD83C\uDF3E', x: 0.30, y: 0.35, hint: 'Trees make sugar from sunlight!' }
+        { id: 'o_rain', name: 'Rain Puddle', material: 'Water', emoji: '\uD83C\uDF27\uFE0F', x: 0.50, y: 0.75, label: 'Puddle' },
+        { id: 'o_shell', name: 'Seashell', material: 'Calcium Carbonate', emoji: '\uD83D\uDC1A', x: 0.70, y: 0.72, label: 'Shell' },
+        { id: 'o_rust', name: 'Rusty Gate', material: 'Rust', emoji: '\uD83D\uDEA7', x: 0.12, y: 0.50, label: 'Rusty Gate' },
+        { id: 'o_ozone', name: 'Storm Clouds', material: 'Ozone', emoji: '\u26C8\uFE0F', x: 0.40, y: 0.12, label: 'Storm' },
+        { id: 'o_compost', name: 'Compost Pile', material: 'Methane', emoji: '\u267B\uFE0F', x: 0.85, y: 0.55, label: 'Compost' },
+        { id: 'o_fruit', name: 'Apple Tree', material: 'Glucose', emoji: '\uD83C\uDF3E', x: 0.28, y: 0.32, label: 'Apple Tree' }
       ]
     }
   ];
@@ -486,6 +486,10 @@
         var scenesVisited = d.scenesVisited || {};
         var selectedSceneObj = d.selectedSceneObj || null;
         var sceneHoverId = d.sceneHoverId || null;
+        var huntTarget = d.huntTarget || null;
+        var huntWrongGuess = d.huntWrongGuess || null;
+        var huntScore = d.huntScore || 0;
+        var huntStreak = d.huntStreak || 0;
 
 
         /* ═══════════════════════════════════════════════════
@@ -629,13 +633,12 @@
            ═══════════════════════════════════════════════════ */
         function speakText(text) {
           SOUNDS.tts();
-          if (callTTS) {
-            callTTS(text);
-          } else if (window.speechSynthesis) {
-            var utter = new SpeechSynthesisUtterance(text);
-            utter.rate = 0.9;
-            window.speechSynthesis.speak(utter);
+          if (callTTS) { try { callTTS(text); return; } catch(e) {} }
+          if (window._kokoroTTS && window._kokoroTTS.speak) {
+            window._kokoroTTS.speak(String(text),'af_heart',1).then(function(url){if(url){var a=new Audio(url);a.playbackRate=0.95;a.play();}}).catch(function(){});
+            return;
           }
+          if (window.speechSynthesis) { var utter=new SpeechSynthesisUtterance(text); utter.rate=0.9; window.speechSynthesis.speak(utter); }
         }
 
 
@@ -1199,22 +1202,26 @@
 
 
           /* ═══════════════════════════════════════════════════
-             SCENES TAB — Visual scavenger hunt
+             SCENES TAB — Chemistry Hunt
+             Students see all objects, get a formula challenge,
+             and must click the correct object.
              ═══════════════════════════════════════════════════ */
           tab === 'scenes' && h('div', null,
 
             // Scene selection (when no scene active)
-            !activeScene && h('div', null,
+            !activeScene ? h('div', null,
               h('div', { className: 'text-center mb-4' },
-                h('h4', { className: 'text-lg font-bold text-slate-800' }, '\uD83C\uDFE0 Material Scavenger Hunt'),
-                h('p', { className: 'text-xs text-slate-500 mt-1' }, 'Explore rooms and find everyday objects made of chemical compounds!')
+                h('h4', { className: 'text-lg font-bold text-slate-800' }, '\uD83E\uDDEA Chemistry Hunt'),
+                h('p', { className: 'text-xs text-slate-500 mt-1 leading-relaxed' }, 'Explore real-world scenes. Can you find the object that contains each chemical compound?'),
+                huntScore > 0 ? h('div', { className: 'flex items-center justify-center gap-3 mt-2' },
+                  h('span', { className: 'text-xs font-bold text-emerald-600' }, '\u2B50 Score: ' + huntScore),
+                  huntStreak >= 2 ? h('span', { className: 'text-xs font-bold text-amber-600' }, '\uD83D\uDD25 Streak: ' + huntStreak) : null
+                ) : null
               ),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
                 SCENES.map(function(scene) {
                   var sceneFound = 0;
-                  scene.objects.forEach(function(obj) {
-                    if (foundObjects[obj.id]) sceneFound++;
-                  });
+                  scene.objects.forEach(function(obj) { if (foundObjects[obj.id]) sceneFound++; });
                   var complete = sceneFound === scene.objects.length;
                   return h('button', {
                     key: scene.id,
@@ -1222,7 +1229,10 @@
                       SOUNDS.sceneSwitch();
                       var visited = Object.assign({}, scenesVisited);
                       visited[scene.id] = true;
-                      updMulti({ activeScene: scene.id, scenesVisited: visited, selectedSceneObj: null });
+                      // Pick a random un-found object as the first hunt target
+                      var unfound = scene.objects.filter(function(o) { return !foundObjects[o.id]; });
+                      var target = unfound.length > 0 ? unfound[Math.floor(Math.random() * unfound.length)] : null;
+                      updMulti({ activeScene: scene.id, scenesVisited: visited, selectedSceneObj: null, huntTarget: target ? target.id : null, huntWrongGuess: null });
                     },
                     className: 'relative rounded-xl p-4 text-left border-2 transition-all hover:shadow-md ' +
                       (complete ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 bg-white hover:border-amber-300'),
@@ -1235,14 +1245,9 @@
                         h('p', { className: 'text-[10px] text-slate-500 mt-0.5' }, scene.desc),
                         h('div', { className: 'flex items-center gap-2 mt-1.5' },
                           h('div', { className: 'flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden' },
-                            h('div', {
-                              className: 'h-full rounded-full transition-all duration-500',
-                              style: { width: Math.round(sceneFound / scene.objects.length * 100) + '%', background: scene.accent }
-                            })
+                            h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: Math.round(sceneFound / scene.objects.length * 100) + '%', background: scene.accent } })
                           ),
-                          h('span', { className: 'text-[9px] font-bold ' + (complete ? 'text-emerald-600' : 'text-slate-400') },
-                            sceneFound + '/' + scene.objects.length
-                          )
+                          h('span', { className: 'text-[9px] font-bold ' + (complete ? 'text-emerald-600' : 'text-slate-400') }, sceneFound + '/' + scene.objects.length)
                         )
                       ),
                       complete ? h('span', { className: 'text-xl' }, '\u2705') : null
@@ -1250,57 +1255,93 @@
                   );
                 })
               ),
-              // Total progress
               h('div', { className: 'mt-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3 text-center' },
                 h('span', { className: 'text-xs font-bold text-amber-700' },
-                  '\uD83D\uDD0E Total Discoveries: ' + Object.keys(foundObjects).length + '/' +
-                  SCENES.reduce(function(s, sc) { return s + sc.objects.length; }, 0)
+                  '\uD83D\uDD0E Total: ' + Object.keys(foundObjects).length + '/' + SCENES.reduce(function(s, sc) { return s + sc.objects.length; }, 0) + ' compounds identified'
                 )
               )
-            ),
+            ) : null,
 
             // Active scene view
-            activeScene && (function() {
+            activeScene ? (function() {
               var scene = null;
-              for (var si = 0; si < SCENES.length; si++) {
-                if (SCENES[si].id === activeScene) { scene = SCENES[si]; break; }
-              }
+              for (var si = 0; si < SCENES.length; si++) { if (SCENES[si].id === activeScene) { scene = SCENES[si]; break; } }
               if (!scene) return null;
               var sceneFoundCount = 0;
               scene.objects.forEach(function(obj) { if (foundObjects[obj.id]) sceneFoundCount++; });
               var allFoundInScene = sceneFoundCount === scene.objects.length;
 
-              // Find selected object details
+              // Current hunt target object & its linked material
+              var targetObj = null;
+              if (huntTarget) {
+                for (var ti = 0; ti < scene.objects.length; ti++) { if (scene.objects[ti].id === huntTarget) { targetObj = scene.objects[ti]; break; } }
+              }
+              var targetMat = targetObj ? MATERIALS.find(function(m) { return m.name === targetObj.material; }) : null;
+
+              // Wrong guess details
+              var wrongObj = null;
+              var wrongMat = null;
+              if (huntWrongGuess) {
+                for (var wi = 0; wi < scene.objects.length; wi++) { if (scene.objects[wi].id === huntWrongGuess) { wrongObj = scene.objects[wi]; break; } }
+                if (wrongObj) wrongMat = MATERIALS.find(function(m) { return m.name === wrongObj.material; });
+              }
+
+              // Selected object for detail view
               var selObj = null;
               if (selectedSceneObj) {
-                for (var oi = 0; oi < scene.objects.length; oi++) {
-                  if (scene.objects[oi].id === selectedSceneObj) { selObj = scene.objects[oi]; break; }
-                }
+                for (var oi = 0; oi < scene.objects.length; oi++) { if (scene.objects[oi].id === selectedSceneObj) { selObj = scene.objects[oi]; break; } }
               }
               var linkedMat = selObj ? MATERIALS.find(function(m) { return m.name === selObj.material; }) : null;
 
-              return h('div', null,
+              // Pick next hunt target helper
+              function pickNextTarget() {
+                var unfound = scene.objects.filter(function(o) { return !foundObjects[o.id] && o.id !== (targetObj ? targetObj.id : ''); });
+                return unfound.length > 0 ? unfound[Math.floor(Math.random() * unfound.length)].id : null;
+              }
 
+              return h('div', null,
                 // Scene header
                 h('div', { className: 'flex items-center gap-3 mb-3' },
-                  h('button', {
-                    onClick: function() { updMulti({ activeScene: null, selectedSceneObj: null }); },
-                    className: 'p-1.5 hover:bg-slate-100 rounded-lg'
-                  }, h(ArrowLeft, { size: 16, className: 'text-slate-500' })),
+                  h('button', { onClick: function() { updMulti({ activeScene: null, selectedSceneObj: null, huntTarget: null, huntWrongGuess: null }); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg' }, h(ArrowLeft, { size: 16, className: 'text-slate-500' })),
                   h('span', { className: 'text-2xl' }, scene.icon),
                   h('div', { className: 'flex-1' },
                     h('h4', { className: 'font-bold text-slate-800' }, scene.name),
-                    h('p', { className: 'text-[10px] text-slate-500' }, sceneFoundCount + '/' + scene.objects.length + ' objects found')
+                    h('p', { className: 'text-[10px] text-slate-500' }, sceneFoundCount + '/' + scene.objects.length + ' identified')
                   ),
+                  huntScore > 0 ? h('span', { className: 'px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full' }, '\u2B50 ' + huntScore) : null,
                   allFoundInScene ? h('span', { className: 'px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full' }, '\u2705 Complete!') : null
                 ),
 
-                // Canvas scene
-                h('div', {
-                  className: 'relative rounded-xl border-2 overflow-hidden mb-3',
-                  style: { borderColor: scene.accent, background: scene.bgColor, minHeight: '280px' }
-                },
-                  // Canvas for scene background drawing
+                // Challenge prompt — "Find the compound!"
+                targetObj && targetMat && !allFoundInScene ? h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-3 mb-3 text-center' },
+                  h('p', { className: 'text-[10px] font-bold text-indigo-400 uppercase tracking-wider mb-1' }, '\uD83D\uDD0E Find the compound!'),
+                  h('div', { className: 'flex items-center justify-center gap-3' },
+                    h('span', { className: 'text-2xl font-mono font-black text-indigo-800' }, targetMat.formula),
+                    h('span', { className: 'text-sm text-indigo-600' }, '\u2014'),
+                    h('span', { className: 'text-sm font-bold text-indigo-700' }, targetMat.name)
+                  ),
+                  h('p', { className: 'text-[10px] text-indigo-500 mt-1' }, 'Tap the object in the scene that contains this compound!')
+                ) : null,
+
+                // Scene complete message
+                allFoundInScene ? h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-300 p-4 mb-3 text-center' },
+                  h('p', { className: 'text-lg font-bold text-emerald-800' }, '\uD83C\uDF89 Scene Complete!'),
+                  h('p', { className: 'text-xs text-emerald-600 mt-1' }, 'You identified every compound in the ' + scene.name + '.')
+                ) : null,
+
+                // Wrong guess feedback
+                wrongObj && wrongMat && !foundObjects[huntWrongGuess] ? h('div', { className: 'bg-red-50 rounded-xl border border-red-200 p-3 mb-3' },
+                  h('div', { className: 'flex items-center gap-2 mb-1' },
+                    h('span', { className: 'text-lg' }, wrongObj.emoji),
+                    h('span', { className: 'text-xs font-bold text-red-700' }, 'Not quite! ' + wrongObj.name + ' contains ' + wrongMat.formula + ' (' + wrongMat.name + ')'),
+                    h('button', { onClick: function() { upd('huntWrongGuess', null); }, className: 'ml-auto text-red-400 hover:text-red-600 text-xs font-bold' }, '\u2715')
+                  ),
+                  h('p', { className: 'text-[10px] text-red-600' }, 'Keep looking for ' + targetMat.formula + '!')
+                ) : null,
+
+                // Scene visual — all objects always visible
+                h('div', { className: 'relative rounded-xl border-2 overflow-hidden mb-3', style: { borderColor: scene.accent, background: scene.bgColor, minHeight: '260px' } },
+                  // Canvas background
                   h('canvas', {
                     ref: function(canvas) {
                       if (!canvas) return;
@@ -1309,256 +1350,164 @@
                       var c = canvas.getContext('2d');
                       var dpr = window.devicePixelRatio || 1;
                       var cw = canvas.offsetWidth || 500;
-                      var ch = 280;
-                      canvas.width = cw * dpr;
-                      canvas.height = ch * dpr;
-                      canvas.style.height = ch + 'px';
-                      c.scale(dpr, dpr);
-
-                      // Background gradient
+                      var ch = 260;
+                      canvas.width = cw * dpr; canvas.height = ch * dpr; canvas.style.height = ch + 'px'; c.scale(dpr, dpr);
                       var bgGrad = c.createLinearGradient(0, 0, 0, ch);
-                      bgGrad.addColorStop(0, scene.bgColor);
-                      bgGrad.addColorStop(1, scene.accent + '15');
-                      c.fillStyle = bgGrad;
-                      c.fillRect(0, 0, cw, ch);
-
-                      // Scene-specific background elements
+                      bgGrad.addColorStop(0, scene.bgColor); bgGrad.addColorStop(1, scene.accent + '18');
+                      c.fillStyle = bgGrad; c.fillRect(0, 0, cw, ch);
                       if (scene.id === 'kitchen') {
-                        // Counter
-                        c.fillStyle = '#d4a574';
-                        c.fillRect(0, ch * 0.5, cw, ch * 0.04);
-                        c.fillStyle = '#8b6f47';
-                        c.fillRect(0, ch * 0.54, cw, ch * 0.46);
-                        // Cabinets
-                        c.fillStyle = '#c8a882';
-                        c.fillRect(cw * 0.05, ch * 0.08, cw * 0.25, ch * 0.38);
-                        c.strokeStyle = '#a0845c'; c.lineWidth = 2;
-                        c.strokeRect(cw * 0.05, ch * 0.08, cw * 0.25, ch * 0.38);
-                        c.fillRect(cw * 0.65, ch * 0.08, cw * 0.30, ch * 0.38);
-                        c.strokeRect(cw * 0.65, ch * 0.08, cw * 0.30, ch * 0.38);
-                        // Window
-                        c.fillStyle = '#87ceeb';
-                        c.fillRect(cw * 0.38, ch * 0.05, cw * 0.24, ch * 0.28);
-                        c.strokeStyle = '#fff'; c.lineWidth = 3;
-                        c.strokeRect(cw * 0.38, ch * 0.05, cw * 0.24, ch * 0.28);
+                        c.fillStyle = '#d4a574'; c.fillRect(0, ch * 0.5, cw, ch * 0.04);
+                        c.fillStyle = '#8b6f47'; c.fillRect(0, ch * 0.54, cw, ch * 0.46);
+                        c.fillStyle = '#c8a882'; c.fillRect(cw * 0.05, ch * 0.08, cw * 0.25, ch * 0.38);
+                        c.strokeStyle = '#a0845c'; c.lineWidth = 2; c.strokeRect(cw * 0.05, ch * 0.08, cw * 0.25, ch * 0.38);
+                        c.fillRect(cw * 0.65, ch * 0.08, cw * 0.30, ch * 0.38); c.strokeRect(cw * 0.65, ch * 0.08, cw * 0.30, ch * 0.38);
+                        c.fillStyle = '#87ceeb'; c.fillRect(cw * 0.38, ch * 0.05, cw * 0.24, ch * 0.28);
+                        c.strokeStyle = '#fff'; c.lineWidth = 3; c.strokeRect(cw * 0.38, ch * 0.05, cw * 0.24, ch * 0.28);
                         c.beginPath(); c.moveTo(cw * 0.50, ch * 0.05); c.lineTo(cw * 0.50, ch * 0.33); c.stroke();
-                        c.beginPath(); c.moveTo(cw * 0.38, ch * 0.19); c.lineTo(cw * 0.62, ch * 0.19); c.stroke();
                       } else if (scene.id === 'bathroom') {
-                        // Tile wall
-                        c.fillStyle = '#e0f2fe';
-                        c.fillRect(0, 0, cw, ch * 0.65);
+                        c.fillStyle = '#e0f2fe'; c.fillRect(0, 0, cw, ch * 0.65);
                         c.strokeStyle = '#bae6fd'; c.lineWidth = 0.5;
                         for (var tx = 0; tx < cw; tx += 30) { c.beginPath(); c.moveTo(tx, 0); c.lineTo(tx, ch * 0.65); c.stroke(); }
                         for (var ty = 0; ty < ch * 0.65; ty += 30) { c.beginPath(); c.moveTo(0, ty); c.lineTo(cw, ty); c.stroke(); }
-                        // Floor
-                        c.fillStyle = '#cbd5e1';
-                        c.fillRect(0, ch * 0.65, cw, ch * 0.35);
-                        // Mirror
-                        c.fillStyle = '#c7d2fe'; c.beginPath(); c.ellipse(cw * 0.55, ch * 0.22, cw * 0.12, ch * 0.15, 0, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = '#cbd5e1'; c.fillRect(0, ch * 0.65, cw, ch * 0.35);
+                        c.fillStyle = '#c7d2fe'; c.beginPath(); c.ellipse(cw * 0.55, ch * 0.18, cw * 0.12, ch * 0.14, 0, 0, Math.PI * 2); c.fill();
                         c.strokeStyle = '#a5b4fc'; c.lineWidth = 3; c.stroke();
-                        // Sink
-                        c.fillStyle = '#f8fafc';
-                        c.fillRect(cw * 0.15, ch * 0.48, cw * 0.25, ch * 0.12);
-                        c.strokeStyle = '#94a3b8'; c.lineWidth = 2; c.strokeRect(cw * 0.15, ch * 0.48, cw * 0.25, ch * 0.12);
+                        c.fillStyle = '#f8fafc'; c.fillRect(cw * 0.12, ch * 0.40, cw * 0.30, ch * 0.14);
+                        c.strokeStyle = '#94a3b8'; c.lineWidth = 2; c.strokeRect(cw * 0.12, ch * 0.40, cw * 0.30, ch * 0.14);
                       } else if (scene.id === 'garage') {
-                        // Concrete floor
-                        c.fillStyle = '#9ca3af';
-                        c.fillRect(0, ch * 0.6, cw, ch * 0.4);
-                        // Back wall
-                        c.fillStyle = '#d1d5db';
-                        c.fillRect(0, 0, cw, ch * 0.6);
-                        // Shelf
-                        c.fillStyle = '#78716c'; c.lineWidth = 2;
-                        c.fillRect(cw * 0.6, ch * 0.15, cw * 0.35, ch * 0.04);
+                        c.fillStyle = '#9ca3af'; c.fillRect(0, ch * 0.6, cw, ch * 0.4);
+                        c.fillStyle = '#d1d5db'; c.fillRect(0, 0, cw, ch * 0.6);
+                        c.fillStyle = '#78716c'; c.fillRect(cw * 0.6, ch * 0.15, cw * 0.35, ch * 0.04);
                         c.fillRect(cw * 0.6, ch * 0.35, cw * 0.35, ch * 0.04);
-                        // Garage door outline
-                        c.strokeStyle = '#6b7280'; c.lineWidth = 3;
-                        c.strokeRect(cw * 0.05, ch * 0.05, cw * 0.45, ch * 0.52);
-                        for (var gd = 0; gd < 4; gd++) {
-                          c.beginPath(); c.moveTo(cw * 0.05, ch * (0.05 + gd * 0.13)); c.lineTo(cw * 0.50, ch * (0.05 + gd * 0.13)); c.stroke();
-                        }
+                        c.strokeStyle = '#6b7280'; c.lineWidth = 3; c.strokeRect(cw * 0.05, ch * 0.05, cw * 0.45, ch * 0.52);
                       } else if (scene.id === 'classroom') {
-                        // Chalkboard
-                        c.fillStyle = '#166534';
-                        c.fillRect(cw * 0.1, ch * 0.05, cw * 0.8, ch * 0.35);
-                        c.strokeStyle = '#a16207'; c.lineWidth = 4;
-                        c.strokeRect(cw * 0.1, ch * 0.05, cw * 0.8, ch * 0.35);
-                        // Chalk text
-                        c.fillStyle = 'rgba(255,255,255,0.6)'; c.font = '14px serif';
-                        c.textAlign = 'center';
-                        c.fillText('H\u2082O  NaCl  CO\u2082', cw * 0.5, ch * 0.25);
-                        // Desk
-                        c.fillStyle = '#c8a882';
-                        c.fillRect(cw * 0.05, ch * 0.55, cw * 0.9, ch * 0.06);
-                        c.fillStyle = '#a0845c';
-                        c.fillRect(cw * 0.10, ch * 0.61, cw * 0.04, ch * 0.25);
-                        c.fillRect(cw * 0.86, ch * 0.61, cw * 0.04, ch * 0.25);
+                        c.fillStyle = '#166534'; c.fillRect(cw * 0.1, ch * 0.05, cw * 0.8, ch * 0.30);
+                        c.strokeStyle = '#a16207'; c.lineWidth = 4; c.strokeRect(cw * 0.1, ch * 0.05, cw * 0.8, ch * 0.30);
+                        c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '12px serif'; c.textAlign = 'center';
+                        c.fillText('H\u2082O    NaCl    CO\u2082    CaCO\u2083', cw * 0.5, ch * 0.22);
+                        c.fillStyle = '#c8a882'; c.fillRect(cw * 0.05, ch * 0.42, cw * 0.9, ch * 0.06);
                       } else if (scene.id === 'outdoors') {
-                        // Sky
                         var skyGrad = c.createLinearGradient(0, 0, 0, ch * 0.55);
-                        skyGrad.addColorStop(0, '#7dd3fc');
-                        skyGrad.addColorStop(1, '#bae6fd');
-                        c.fillStyle = skyGrad;
-                        c.fillRect(0, 0, cw, ch * 0.55);
-                        // Sun
-                        c.fillStyle = '#fbbf24';
-                        c.beginPath(); c.arc(cw * 0.85, ch * 0.12, 22, 0, Math.PI * 2); c.fill();
-                        // Cloud
+                        skyGrad.addColorStop(0, '#7dd3fc'); skyGrad.addColorStop(1, '#bae6fd');
+                        c.fillStyle = skyGrad; c.fillRect(0, 0, cw, ch * 0.55);
+                        c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(cw * 0.85, ch * 0.12, 20, 0, Math.PI * 2); c.fill();
                         c.fillStyle = 'rgba(255,255,255,0.8)';
-                        c.beginPath(); c.arc(cw * 0.3, ch * 0.15, 18, 0, Math.PI * 2); c.fill();
-                        c.beginPath(); c.arc(cw * 0.35, ch * 0.12, 22, 0, Math.PI * 2); c.fill();
-                        c.beginPath(); c.arc(cw * 0.42, ch * 0.15, 16, 0, Math.PI * 2); c.fill();
-                        // Grass
-                        c.fillStyle = '#22c55e';
-                        c.fillRect(0, ch * 0.55, cw, ch * 0.45);
-                        // Tree trunk
-                        c.fillStyle = '#78350f';
-                        c.fillRect(cw * 0.27, ch * 0.25, cw * 0.04, ch * 0.32);
-                        // Tree foliage
-                        c.fillStyle = '#16a34a';
-                        c.beginPath(); c.arc(cw * 0.29, ch * 0.22, 35, 0, Math.PI * 2); c.fill();
-                        // Path
-                        c.fillStyle = '#d6d3d1';
-                        c.fillRect(cw * 0.45, ch * 0.55, cw * 0.1, ch * 0.45);
+                        c.beginPath(); c.arc(cw * 0.55, ch * 0.10, 16, 0, Math.PI * 2); c.fill();
+                        c.beginPath(); c.arc(cw * 0.60, ch * 0.08, 20, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = '#22c55e'; c.fillRect(0, ch * 0.55, cw, ch * 0.45);
+                        c.fillStyle = '#78350f'; c.fillRect(cw * 0.25, ch * 0.22, cw * 0.04, ch * 0.34);
+                        c.fillStyle = '#16a34a'; c.beginPath(); c.arc(cw * 0.27, ch * 0.20, 30, 0, Math.PI * 2); c.fill();
                       }
-
-                      // Label
-                      c.fillStyle = scene.accent; c.globalAlpha = 0.3;
+                      c.fillStyle = scene.accent; c.globalAlpha = 0.25;
                       c.font = 'bold 10px system-ui, sans-serif'; c.textAlign = 'left';
-                      c.fillText(scene.name.toUpperCase(), 8, 16);
-                      c.globalAlpha = 1;
+                      c.fillText(scene.name.toUpperCase(), 8, 16); c.globalAlpha = 1;
                     },
-                    className: 'w-full block',
-                    style: { height: '280px' }
+                    className: 'w-full block', style: { height: '260px' }
                   }),
 
-                  // Clickable object overlays (positioned absolutely on canvas)
+                  // All objects ALWAYS visible as labeled emoji buttons
                   scene.objects.map(function(obj) {
                     var isFound = !!foundObjects[obj.id];
+                    var isTarget = huntTarget === obj.id;
+                    var isWrong = huntWrongGuess === obj.id;
                     var isSelected = selectedSceneObj === obj.id;
-                    var isHovered = sceneHoverId === obj.id;
                     return h('button', {
                       key: obj.id,
                       onClick: function() {
-                        if (!isFound) {
+                        if (isFound) {
+                          // Already found — show details
+                          SOUNDS.elementClick();
+                          upd('selectedSceneObj', isSelected ? null : obj.id);
+                          return;
+                        }
+                        // Hunt mode: check if this is the target
+                        if (huntTarget && obj.id === huntTarget) {
+                          // CORRECT!
                           SOUNDS.objectFind();
                           var newFound = Object.assign({}, foundObjects);
                           newFound[obj.id] = true;
-                          var updates = { foundObjects: newFound, selectedSceneObj: obj.id };
-                          // Check kitchen complete
-                          if (scene.id === 'kitchen') {
-                            var kitchenObjs = SCENES[0].objects;
-                            var kitchenAll = true;
-                            kitchenObjs.forEach(function(ko) {
-                              if (ko.id !== obj.id && !foundObjects[ko.id]) kitchenAll = false;
+                          var newScore = huntScore + 1;
+                          var newStreak = huntStreak + 1;
+                          var updates = { foundObjects: newFound, selectedSceneObj: obj.id, huntScore: newScore, huntStreak: newStreak, huntWrongGuess: null };
+                          // Check scene complete
+                          var sceneComplete = true;
+                          scene.objects.forEach(function(o) { if (o.id !== obj.id && !foundObjects[o.id]) sceneComplete = false; });
+                          if (scene.id === 'kitchen' && sceneComplete) updates._kitchenComplete = true;
+                          var globalComplete = sceneComplete;
+                          if (globalComplete) {
+                            SCENES.forEach(function(sc) {
+                              if (sc.id === scene.id) return;
+                              sc.objects.forEach(function(o) { if (!foundObjects[o.id]) globalComplete = false; });
                             });
-                            if (kitchenAll) updates._kitchenComplete = true;
                           }
-                          // Check all scenes complete
-                          var totalAll = true;
-                          SCENES.forEach(function(sc) {
-                            sc.objects.forEach(function(o) {
-                              if (o.id !== obj.id && !foundObjects[o.id]) totalAll = false;
-                            });
-                          });
-                          if (totalAll) {
-                            updates._allScenesComplete = true;
-                            setTimeout(function() { SOUNDS.allFound(); }, 300);
+                          if (globalComplete) { updates._allScenesComplete = true; setTimeout(function() { SOUNDS.allFound(); }, 300); }
+                          // Pick next target
+                          if (!sceneComplete) {
+                            var unfound = scene.objects.filter(function(o) { return !foundObjects[o.id] && o.id !== obj.id; });
+                            updates.huntTarget = unfound.length > 0 ? unfound[Math.floor(Math.random() * unfound.length)].id : null;
+                          } else {
+                            updates.huntTarget = null;
                           }
                           updMulti(updates);
-                          if (addToast) addToast(obj.emoji + ' Found: ' + obj.name + ' \u2014 contains ' + obj.material + '!', 'success');
+                          if (addToast) addToast('\u2705 Correct! ' + obj.name + ' = ' + MATERIALS.find(function(m) { return m.name === obj.material; }).formula, 'success');
+                          if (awardStemXP) awardStemXP(5);
                         } else {
-                          SOUNDS.elementClick();
-                          upd('selectedSceneObj', isSelected ? null : obj.id);
+                          // WRONG — teach them what this object contains
+                          SOUNDS.quizWrong();
+                          updMulti({ huntWrongGuess: obj.id, huntStreak: 0 });
                         }
                       },
-                      onMouseEnter: function() { upd('sceneHoverId', obj.id); },
-                      onMouseLeave: function() { upd('sceneHoverId', null); },
-                      className: 'absolute flex items-center justify-center transition-all duration-300 ' +
-                        (isFound
-                          ? 'opacity-100'
-                          : 'opacity-0 hover:opacity-100'),
+                      className: 'absolute flex flex-col items-center transition-all duration-200',
                       style: {
-                        left: (obj.x * 100) + '%',
-                        top: (obj.y * 100) + '%',
-                        transform: 'translate(-50%, -50%)' + (isSelected ? ' scale(1.3)' : (isHovered && !isFound) ? ' scale(1.15)' : ''),
-                        width: '48px', height: '48px',
-                        borderRadius: '50%',
-                        background: isFound
-                          ? (isSelected ? scene.accent + 'dd' : 'rgba(255,255,255,0.9)')
-                          : 'rgba(255,255,255,0.5)',
-                        border: isFound
-                          ? (isSelected ? '3px solid ' + scene.accent : '2px solid ' + scene.accent + '88')
-                          : '2px dashed ' + scene.accent + '60',
-                        boxShadow: isSelected ? '0 0 12px ' + scene.accent + '44' : (isHovered ? '0 0 8px rgba(0,0,0,0.15)' : 'none'),
-                        cursor: 'pointer',
-                        zIndex: isSelected ? 10 : 1
+                        left: (obj.x * 100) + '%', top: (obj.y * 100) + '%',
+                        transform: 'translate(-50%, -50%)' + (isSelected ? ' scale(1.15)' : ''),
+                        cursor: 'pointer', zIndex: isSelected ? 10 : 2,
+                        filter: isWrong ? 'saturate(0.3)' : 'none'
                       },
-                      title: isFound ? obj.name : obj.hint,
-                      'aria-label': isFound ? obj.name + ' - ' + obj.material : 'Hidden object: ' + obj.hint
+                      'aria-label': isFound ? obj.name + ' - identified' : obj.label
                     },
-                      h('span', { className: 'text-xl', style: { filter: isFound ? 'none' : 'blur(2px) grayscale(0.5)' } }, obj.emoji)
+                      h('div', {
+                        className: 'flex items-center justify-center transition-all duration-200',
+                        style: {
+                          width: '44px', height: '44px', borderRadius: '12px',
+                          background: isFound ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.8)',
+                          border: isFound ? '2px solid #22c55e' : (isTarget && !isFound ? '2px solid ' + scene.accent : '2px solid rgba(0,0,0,0.1)'),
+                          boxShadow: isFound ? '0 0 8px rgba(34,197,94,0.3)' : '0 2px 8px rgba(0,0,0,0.12)'
+                        }
+                      }, h('span', { style: { fontSize: '22px' } }, obj.emoji)),
+                      h('span', {
+                        className: 'text-[8px] font-bold mt-0.5 px-1 py-0.5 rounded',
+                        style: { background: isFound ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.85)', color: isFound ? '#15803d' : '#475569', maxWidth: '70px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+                      }, isFound ? '\u2705 ' + (obj.label || obj.name) : (obj.label || obj.name))
                     );
-                  }),
-
-                  // Hint pulsing dots for undiscovered objects
-                  scene.objects.map(function(obj) {
-                    if (foundObjects[obj.id]) return null;
-                    return h('div', {
-                      key: obj.id + '_hint',
-                      className: 'absolute pointer-events-none',
-                      style: {
-                        left: (obj.x * 100) + '%',
-                        top: (obj.y * 100) + '%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '14px', height: '14px',
-                        borderRadius: '50%',
-                        background: scene.accent,
-                        opacity: 0.4,
-                        animation: 'pulse 2s ease-in-out infinite'
-                      }
-                    });
                   })
                 ),
 
-                // Discovery progress bar
+                // Progress bar
                 h('div', { className: 'mb-3' },
                   h('div', { className: 'flex justify-between mb-1' },
-                    h('span', { className: 'text-[10px] font-bold text-slate-500' }, 'Objects Found'),
-                    h('span', { className: 'text-[10px] font-bold', style: { color: scene.accent } },
-                      sceneFoundCount + '/' + scene.objects.length
-                    )
+                    h('span', { className: 'text-[10px] font-bold text-slate-500' }, 'Compounds Identified'),
+                    h('span', { className: 'text-[10px] font-bold', style: { color: scene.accent } }, sceneFoundCount + '/' + scene.objects.length)
                   ),
                   h('div', { className: 'w-full h-2 bg-slate-200 rounded-full overflow-hidden' },
-                    h('div', {
-                      className: 'h-full rounded-full transition-all duration-500',
-                      style: { width: Math.round(sceneFoundCount / scene.objects.length * 100) + '%', background: scene.accent }
-                    })
+                    h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: Math.round(sceneFoundCount / scene.objects.length * 100) + '%', background: scene.accent } })
                   )
                 ),
 
-                // Selected object detail card
-                selObj && linkedMat ? h('div', {
-                  className: 'bg-white rounded-xl border-2 p-4 mb-3 animate-in fade-in duration-200',
-                  style: { borderColor: scene.accent }
-                },
+                // Detail card for selected found object
+                selObj && linkedMat && foundObjects[selObj.id] ? h('div', { className: 'bg-white rounded-xl border-2 p-4 mb-3', style: { borderColor: scene.accent } },
                   h('div', { className: 'flex items-start gap-3 mb-3' },
                     h('span', { className: 'text-3xl' }, selObj.emoji),
                     h('div', { className: 'flex-1' },
                       h('h4', { className: 'font-bold text-slate-800' }, selObj.name),
-                      h('p', { className: 'text-[10px] text-slate-500 mt-0.5' }, selObj.hint)
+                      h('span', { className: 'px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full' }, '\u2705 Identified')
                     ),
-                    h('button', {
-                      onClick: function() { upd('selectedSceneObj', null); },
-                      className: 'p-1 hover:bg-slate-100 rounded'
-                    }, h(X, { size: 14, className: 'text-slate-400' }))
+                    h('button', { onClick: function() { upd('selectedSceneObj', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-400' }))
                   ),
-
-                  // Linked material info
                   h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-3 border border-amber-200' },
                     h('div', { className: 'flex items-center gap-2 mb-2' },
                       h('span', { className: 'text-xl' }, linkedMat.emoji),
-                      h('span', { className: 'font-bold text-slate-800 text-sm' }, 'Contains: ' + linkedMat.name),
+                      h('span', { className: 'font-bold text-slate-800 text-sm' }, linkedMat.name),
                       h('span', { className: 'px-2 py-0.5 bg-white rounded-full text-xs font-mono font-bold text-slate-700 border border-slate-200' }, linkedMat.formula)
                     ),
                     h('p', { className: 'text-xs text-slate-600 leading-relaxed mb-2' }, linkedMat.desc),
@@ -1567,69 +1516,40 @@
                       h('span', { className: 'text-indigo-600' }, '\uD83D\uDCCA ' + linkedMat.state),
                       h('span', { className: 'text-emerald-600' }, '\u2696 ' + linkedMat.molarMass)
                     ),
-
-                    // Element chips
                     h('div', { className: 'flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-amber-200' },
                       linkedMat.elements.map(function(el) {
-                        return h('div', {
-                          key: el.sym,
-                          className: 'flex items-center gap-1 px-2 py-1 bg-white rounded-lg border border-slate-200'
-                        },
-                          h('div', {
-                            className: 'w-5 h-5 rounded flex items-center justify-center text-white text-[10px] font-bold',
-                            style: { background: el.color }
-                          }, el.sym),
+                        return h('div', { key: el.sym, className: 'flex items-center gap-1 px-2 py-1 bg-white rounded-lg border border-slate-200' },
+                          h('div', { className: 'w-5 h-5 rounded flex items-center justify-center text-white text-[10px] font-bold', style: { background: el.color } }, el.sym),
                           h('span', { className: 'text-[10px] font-bold text-slate-700' }, el.name),
                           el.count > 1 ? h('span', { className: 'text-[9px] text-amber-600 font-bold' }, '\u00D7' + el.count) : null
                         );
                       })
                     ),
-
-                    // Action buttons
                     h('div', { className: 'flex gap-2 mt-3' },
-                      h('button', {
-                        onClick: function() {
-                          updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' });
-                        },
-                        className: 'flex-1 py-2 bg-amber-500 text-white font-bold text-xs rounded-lg hover:bg-amber-600 transition-all'
-                      }, '\u2697\uFE0F Explore this Material'),
-                      h('button', {
-                        onClick: function() {
-                          updMulti({ selected: linkedMat.name, decomposed: false, tab: 'visualize' });
-                        },
-                        className: 'flex-1 py-2 bg-indigo-500 text-white font-bold text-xs rounded-lg hover:bg-indigo-600 transition-all'
-                      }, '\uD83C\uDFA8 Visualize'),
-                      h('button', {
-                        onClick: function() { speakText(selObj.name + ' contains ' + linkedMat.name + '. ' + linkedMat.desc); },
-                        className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 transition-all'
-                      }, '\uD83D\uDD0A')
+                      h('button', { onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' }); }, className: 'flex-1 py-2 bg-amber-500 text-white font-bold text-xs rounded-lg hover:bg-amber-600 transition-all' }, '\u2697\uFE0F Explore'),
+                      h('button', { onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'visualize' }); }, className: 'flex-1 py-2 bg-indigo-500 text-white font-bold text-xs rounded-lg hover:bg-indigo-600 transition-all' }, '\uD83C\uDFA8 Visualize'),
+                      h('button', { onClick: function() { speakText(selObj.name + ' contains ' + linkedMat.name + '. ' + linkedMat.desc); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 transition-all' }, '\uD83D\uDD0A')
                     )
                   )
                 ) : null,
 
-                // Objects list (found items)
+                // Found objects summary
                 sceneFoundCount > 0 ? h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
-                  h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2' },
-                    '\u2705 Discovered in ' + scene.name
-                  ),
+                  h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2' }, '\u2705 Identified in ' + scene.name),
                   h('div', { className: 'flex flex-wrap gap-1.5' },
                     scene.objects.filter(function(obj) { return foundObjects[obj.id]; }).map(function(obj) {
+                      var mat = MATERIALS.find(function(m) { return m.name === obj.material; });
                       return h('button', {
                         key: obj.id,
-                        onClick: function() {
-                          SOUNDS.elementClick();
-                          upd('selectedSceneObj', selectedSceneObj === obj.id ? null : obj.id);
-                        },
+                        onClick: function() { SOUNDS.elementClick(); upd('selectedSceneObj', selectedSceneObj === obj.id ? null : obj.id); },
                         className: 'px-2 py-1 rounded-lg text-[10px] font-bold border transition-all ' +
-                          (selectedSceneObj === obj.id
-                            ? 'bg-amber-100 border-amber-400 text-amber-800'
-                            : 'bg-white border-slate-200 text-slate-600 hover:border-amber-300')
-                      }, obj.emoji + ' ' + obj.name);
+                          (selectedSceneObj === obj.id ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-white border-slate-200 text-slate-600 hover:border-amber-300')
+                      }, obj.emoji + ' ' + (mat ? mat.formula : obj.name));
                     })
                   )
                 ) : null
               );
-            })()
+            })() : null
           ),
 
 
