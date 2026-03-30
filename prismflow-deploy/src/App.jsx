@@ -25088,6 +25088,15 @@ Return only the corrected version of this exact text:`;
           const extra = match1[4] || "";
           return `[${title}](resource:${id})${extra}`;
       }
+      // Match: Title (context) [resource:ID]  or  Title [resource:ID]
+      const bracketResourceRegex = /^(.*?)\s*\[resource:([a-zA-Z0-9-]+)\](.*)/i;
+      const matchBracket = itemText.match(bracketResourceRegex);
+      if (matchBracket) {
+          const title = matchBracket[1].trim();
+          const id = matchBracket[2];
+          const extra = matchBracket[3] || "";
+          return `[${title}](resource:${id})${extra}`;
+      }
       const looseResourceRegex = /^(.*?)\s*\((?:resource:|ID:)\s*([a-zA-Z0-9-]+)\)(.*)/i;
       const match2 = itemText.match(looseResourceRegex);
       if (match2) {

@@ -20,6 +20,15 @@
           this._registry[id] = config;
           if (this._order.indexOf(id) === -1) this._order.push(id);
           console.log('[StemLab] Registered tool: ' + id);
+          // Populate STEM_TOOL_REGISTRY for lesson plan integration
+          if (!window.STEM_TOOL_REGISTRY) window.STEM_TOOL_REGISTRY = [];
+          var catMap = { science: ['Science'], math: ['Math'], engineering: ['Engineering'], art: ['Art'], coding: ['CS'] };
+          var entry = { id: id, name: config.label || id, subjects: catMap[config.category] || ['STEM'], tags: [config.category || 'stem', id] };
+          var exists = false;
+          for (var ri = 0; ri < window.STEM_TOOL_REGISTRY.length; ri++) {
+            if (window.STEM_TOOL_REGISTRY[ri].id === id) { exists = true; break; }
+          }
+          if (!exists) window.STEM_TOOL_REGISTRY.push(entry);
         },
         getRegisteredTools: function() {
           var self = this;
