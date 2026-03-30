@@ -656,7 +656,7 @@
            Quiz Generator
            ═══════════════════════════════════════════════════ */
         function makeQuiz() {
-          var types = ['formula', 'elements', 'count', 'bond'];
+          var types = ['formula', 'elements', 'count', 'bond', 'state', 'realUse', 'nameFromFormula', 'truefalse'];
           var type = types[Math.floor(Math.random() * types.length)];
           var mat = MATERIALS[Math.floor(Math.random() * MATERIALS.length)];
           var q = {};
@@ -686,11 +686,40 @@
               var rv = String(tc + Math.floor(Math.random() * 10) - 4);
               if (rv !== String(tc) && parseInt(rv, 10) > 0 && opts.indexOf(rv) < 0) opts.push(rv);
             }
-          } else {
+          } else if (type === 'bond') {
             q = { text: 'What type of bonding does ' + mat.name + ' have?', answer: mat.bondType };
             opts = [mat.bondType];
             var allBonds = ['Ionic', 'Covalent', 'Ionic + Covalent', 'Metallic'];
             allBonds.forEach(function(b) { if (opts.indexOf(b) < 0 && opts.length < 4) opts.push(b); });
+          } else if (type === 'state') {
+            q = { text: 'At room temperature, ' + mat.name + ' (' + mat.formula + ') is a...', answer: mat.state };
+            opts = [mat.state];
+            ['Solid', 'Liquid', 'Gas', 'Plasma'].forEach(function(s) { if (opts.indexOf(s) < 0 && opts.length < 4) opts.push(s); });
+          } else if (type === 'realUse') {
+            q = { text: 'Which compound: ' + mat.realUse.substring(0, 80) + '...', answer: mat.name };
+            opts = [mat.name];
+            while (opts.length < 4) {
+              var ru = MATERIALS[Math.floor(Math.random() * MATERIALS.length)].name;
+              if (opts.indexOf(ru) < 0) opts.push(ru);
+            }
+          } else if (type === 'nameFromFormula') {
+            q = { text: 'What is ' + mat.formula + ' commonly known as?', answer: mat.name };
+            opts = [mat.name];
+            while (opts.length < 4) {
+              var nf = MATERIALS[Math.floor(Math.random() * MATERIALS.length)].name;
+              if (opts.indexOf(nf) < 0) opts.push(nf);
+            }
+          } else {
+            // True/false
+            var isTruth = Math.random() > 0.5;
+            if (isTruth) {
+              q = { text: 'True or False: ' + mat.name + ' has the formula ' + mat.formula + '.', answer: 'True' };
+            } else {
+              var fakeMat = MATERIALS[Math.floor(Math.random() * MATERIALS.length)];
+              while (fakeMat.name === mat.name) fakeMat = MATERIALS[Math.floor(Math.random() * MATERIALS.length)];
+              q = { text: 'True or False: ' + mat.name + ' has the formula ' + fakeMat.formula + '.', answer: 'False' };
+            }
+            opts = ['True', 'False'];
           }
 
           q.opts = opts.sort(function() { return Math.random() - 0.5; });
@@ -825,10 +854,15 @@
 
           rebuildPositions();
 
+          // Particle burst state
+          var particles = [];
+          var wasDecomposed = false;
+
           function draw() {
             // Check for material change
             if (canvas.dataset.formula !== curFormula) {
               rebuildPositions();
+              particles = [];
             }
 
             var isDecomposed = canvas.dataset.decomposed === 'true';
@@ -842,57 +876,75 @@
             var targetR = isDecomposed ? decomposedR : assembledR;
             var targets = calcPositions(n, cx, cy, targetR);
 
+            // Spawn particles on decompose transition
+            if (isDecomposed && !wasDecomposed) {
+              for (var pi = 0; pi < 40; pi++) {
+                var angle = Math.random() * Math.PI * 2;
+                var speed = 1 + Math.random() * 3;
+                particles.push({ x: cx, y: cy, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 1, color: els.length > 0 ? els[Math.floor(Math.random() * els.length)].color : '#f59e0b', size: 2 + Math.random() * 4 });
+              }
+            }
+            wasDecomposed = isDecomposed;
+
             // Clear
             c.clearRect(0, 0, w, ht);
 
-            // Background gradient
-            var bgGrad = c.createLinearGradient(0, 0, 0, ht);
-            bgGrad.addColorStop(0, '#f8fafc');
-            bgGrad.addColorStop(1, '#f1f5f9');
+            // Background — dark science theme
+            var bgGrad = c.createRadialGradient(cx, cy, 20, cx, cy, Math.max(w, ht) * 0.7);
+            bgGrad.addColorStop(0, '#1e293b');
+            bgGrad.addColorStop(1, '#0f172a');
             c.fillStyle = bgGrad;
             c.fillRect(0, 0, w, ht);
 
-            // Subtle grid
-            c.strokeStyle = '#e2e8f0';
-            c.lineWidth = 0.5;
-            var gridSpacing = 25;
-            for (var gx = 0; gx < w; gx += gridSpacing) {
-              c.beginPath(); c.moveTo(gx, 0); c.lineTo(gx, ht); c.stroke();
-            }
-            for (var gy = 0; gy < ht; gy += gridSpacing) {
-              c.beginPath(); c.moveTo(0, gy); c.lineTo(w, gy); c.stroke();
+            // Subtle dot grid
+            c.fillStyle = 'rgba(99,102,241,0.08)';
+            for (var gx = 20; gx < w; gx += 20) {
+              for (var gy = 20; gy < ht; gy += 20) {
+                c.beginPath(); c.arc(gx, gy, 0.5, 0, Math.PI * 2); c.fill();
+              }
             }
 
             // Lerp positions toward targets
             for (var i = 0; i < n; i++) {
               if (curPositions[i]) {
-                curPositions[i].x += (targets[i].x - curPositions[i].x) * 0.05;
-                curPositions[i].y += (targets[i].y - curPositions[i].y) * 0.05;
+                curPositions[i].x += (targets[i].x - curPositions[i].x) * 0.06;
+                curPositions[i].y += (targets[i].y - curPositions[i].y) * 0.06;
               }
             }
 
-            // Draw bond lines (when assembled)
+            // Draw bond lines (when assembled) — glowing
             if (!isDecomposed && n > 1) {
-              c.strokeStyle = '#94a3b8';
-              c.lineWidth = 3;
-              c.setLineDash([]);
               for (var bi = 0; bi < n; bi++) {
                 for (var bj = bi + 1; bj < n; bj++) {
                   if (curPositions[bi] && curPositions[bj]) {
+                    // Glow
+                    c.save();
+                    c.shadowColor = 'rgba(148,163,184,0.4)';
+                    c.shadowBlur = 8;
+                    c.strokeStyle = 'rgba(148,163,184,0.6)';
+                    c.lineWidth = 3;
+                    c.setLineDash([]);
                     c.beginPath();
                     c.moveTo(curPositions[bi].x, curPositions[bi].y);
                     c.lineTo(curPositions[bj].x, curPositions[bj].y);
                     c.stroke();
+                    c.restore();
+                    // Electron dots moving along bonds
+                    var bondT = (frame * 0.02 + bi * 0.3 + bj * 0.7) % 1;
+                    var edx = curPositions[bi].x + (curPositions[bj].x - curPositions[bi].x) * bondT;
+                    var edy = curPositions[bi].y + (curPositions[bj].y - curPositions[bi].y) * bondT;
+                    c.fillStyle = '#a5b4fc';
+                    c.beginPath(); c.arc(edx, edy, 2.5, 0, Math.PI * 2); c.fill();
                   }
                 }
               }
             }
 
-            // Draw dashed lines when decomposed (ghost bonds)
+            // Draw ghost bonds when decomposed
             if (isDecomposed && n > 1) {
-              c.strokeStyle = '#cbd5e1';
+              c.strokeStyle = 'rgba(100,116,139,0.2)';
               c.lineWidth = 1;
-              c.setLineDash([4, 4]);
+              c.setLineDash([4, 6]);
               for (var di = 0; di < n; di++) {
                 for (var dj = di + 1; dj < n; dj++) {
                   if (curPositions[di] && curPositions[dj]) {
@@ -906,74 +958,115 @@
               c.setLineDash([]);
             }
 
-            // Draw element circles
+            // Draw particles
+            for (var pk = particles.length - 1; pk >= 0; pk--) {
+              var p = particles[pk];
+              p.x += p.vx; p.y += p.vy;
+              p.vx *= 0.97; p.vy *= 0.97;
+              p.life -= 0.015;
+              if (p.life <= 0) { particles.splice(pk, 1); continue; }
+              c.globalAlpha = p.life * 0.8;
+              c.fillStyle = p.color;
+              c.beginPath(); c.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2); c.fill();
+            }
+            c.globalAlpha = 1;
+
+            // Draw element spheres
             for (var ei = 0; ei < n; ei++) {
               var el = els[ei];
               if (!curPositions[ei]) continue;
-              var px = curPositions[ei].x;
-              var py = curPositions[ei].y + Math.sin(frame * 0.025 + ei * 1.8) * 3;
+              var wobbleX = Math.sin(frame * 0.03 + ei * 2.1) * (isDecomposed ? 4 : 1.5);
+              var wobbleY = Math.cos(frame * 0.025 + ei * 1.8) * (isDecomposed ? 4 : 1.5);
+              var px = curPositions[ei].x + wobbleX;
+              var py = curPositions[ei].y + wobbleY;
               var atomR = 22 + Math.min(el.count, 15) * 1.5;
+              var pulse = 1 + Math.sin(frame * 0.04 + ei) * 0.03;
+              atomR *= pulse;
+
+              // Electron cloud glow
+              c.save();
+              var cloudGrad = c.createRadialGradient(px, py, atomR * 0.5, px, py, atomR * 2);
+              cloudGrad.addColorStop(0, el.color + '20');
+              cloudGrad.addColorStop(1, 'rgba(0,0,0,0)');
+              c.fillStyle = cloudGrad;
+              c.beginPath(); c.arc(px, py, atomR * 2, 0, Math.PI * 2); c.fill();
+              c.restore();
+
+              // Orbiting electron ring
+              c.save();
+              c.strokeStyle = el.color + '30';
+              c.lineWidth = 1;
+              c.beginPath();
+              c.ellipse(px, py, atomR * 1.5, atomR * 0.6, frame * 0.01 + ei * 0.5, 0, Math.PI * 2);
+              c.stroke();
+              // Orbiting electron dot
+              var orbitA = frame * 0.05 + ei * 1.2;
+              var orbX = px + Math.cos(orbitA) * atomR * 1.5;
+              var orbY = py + Math.sin(orbitA) * atomR * 0.6;
+              c.fillStyle = '#e2e8f0';
+              c.beginPath(); c.arc(orbX, orbY, 2, 0, Math.PI * 2); c.fill();
+              c.restore();
 
               // Shadow
-              c.fillStyle = 'rgba(0,0,0,0.12)';
-              c.beginPath();
-              c.arc(px + 2, py + 2, atomR, 0, Math.PI * 2);
-              c.fill();
+              c.fillStyle = 'rgba(0,0,0,0.3)';
+              c.beginPath(); c.arc(px + 2, py + 3, atomR, 0, Math.PI * 2); c.fill();
 
-              // Main circle with gradient
-              var grad = c.createRadialGradient(px - atomR * 0.25, py - atomR * 0.25, atomR * 0.1, px, py, atomR);
-              grad.addColorStop(0, lightenColor(el.color, 40));
-              grad.addColorStop(1, el.color);
+              // Main sphere gradient
+              var grad = c.createRadialGradient(px - atomR * 0.3, py - atomR * 0.3, atomR * 0.1, px, py, atomR);
+              grad.addColorStop(0, lightenColor(el.color, 60));
+              grad.addColorStop(0.7, el.color);
+              grad.addColorStop(1, lightenColor(el.color, -30));
               c.fillStyle = grad;
-              c.beginPath();
-              c.arc(px, py, atomR, 0, Math.PI * 2);
-              c.fill();
+              c.beginPath(); c.arc(px, py, atomR, 0, Math.PI * 2); c.fill();
 
-              // Border highlight
-              c.strokeStyle = 'rgba(255,255,255,0.4)';
-              c.lineWidth = 2;
-              c.stroke();
+              // Specular highlight
+              c.fillStyle = 'rgba(255,255,255,0.25)';
+              c.beginPath(); c.arc(px - atomR * 0.25, py - atomR * 0.25, atomR * 0.35, 0, Math.PI * 2); c.fill();
 
               // Element symbol
               c.fillStyle = '#ffffff';
               c.font = 'bold ' + Math.round(atomR * 0.65) + 'px system-ui, sans-serif';
-              c.textAlign = 'center';
-              c.textBaseline = 'middle';
+              c.textAlign = 'center'; c.textBaseline = 'middle';
+              c.shadowColor = 'rgba(0,0,0,0.4)'; c.shadowBlur = 3;
               c.fillText(el.sym, px, py);
+              c.shadowBlur = 0;
 
               // Count badge
               if (el.count > 1) {
                 var bx = px + atomR * 0.65;
                 var by = py - atomR * 0.65;
-                var badgeR = 11;
                 c.fillStyle = '#f59e0b';
-                c.beginPath();
-                c.arc(bx, by, badgeR, 0, Math.PI * 2);
-                c.fill();
-                c.strokeStyle = '#ffffff';
-                c.lineWidth = 1.5;
-                c.stroke();
-                c.fillStyle = '#ffffff';
-                c.font = 'bold 10px system-ui, sans-serif';
+                c.beginPath(); c.arc(bx, by, 11, 0, Math.PI * 2); c.fill();
+                c.strokeStyle = '#fff'; c.lineWidth = 1.5; c.stroke();
+                c.fillStyle = '#fff'; c.font = 'bold 10px system-ui, sans-serif';
                 c.fillText('\u00D7' + el.count, bx, by);
               }
 
               // Element name below
-              c.fillStyle = '#64748b';
+              c.fillStyle = '#94a3b8';
               c.font = '10px system-ui, sans-serif';
-              c.fillText(el.name, px, py + atomR + 13);
+              c.fillText(el.name, px, py + atomR + 14);
             }
 
             // Title
-            c.fillStyle = '#1e293b';
+            c.fillStyle = '#e2e8f0';
             c.font = 'bold 14px system-ui, sans-serif';
-            c.textAlign = 'center';
-            c.fillText((canvas.dataset.materialName || '') + '  (' + (canvas.dataset.formula || '') + ')', w / 2, 20);
+            c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+            c.fillText((canvas.dataset.materialName || '') + '  (' + (canvas.dataset.formula || '') + ')', w / 2, 22);
 
-            // Status
-            c.fillStyle = isDecomposed ? '#ef4444' : '#22c55e';
-            c.font = 'bold 11px system-ui, sans-serif';
-            c.fillText(isDecomposed ? '\u26A1 DECOMPOSED' : '\uD83E\uDDEC ASSEMBLED', w / 2, ht - 12);
+            // Status badge
+            c.save();
+            var stLabel = isDecomposed ? '\u26A1 DECOMPOSED' : '\u269B ASSEMBLED';
+            var stColor = isDecomposed ? '#ef4444' : '#22c55e';
+            c.font = 'bold 10px system-ui, sans-serif';
+            var stW = c.measureText(stLabel).width + 16;
+            c.fillStyle = stColor + '25';
+            c.beginPath();
+            c.roundRect(w / 2 - stW / 2, ht - 24, stW, 18, 9);
+            c.fill();
+            c.fillStyle = stColor;
+            c.fillText(stLabel, w / 2, ht - 12);
+            c.restore();
 
             frame++;
             animId = requestAnimationFrame(draw);
