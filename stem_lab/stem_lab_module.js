@@ -11073,7 +11073,16 @@
           };
 
           try {
-            return window.StemLab.renderTool(stemLabTool, _ctx);
+            // Wrap plugin render in a stable React component so hooks work correctly.
+            // We cache the component function per tool ID so React sees the same type
+            // across re-renders (preventing unmount/remount loops).
+            if (!window.__stemPluginComponents) window.__stemPluginComponents = {};
+            if (!window.__stemPluginComponents[stemLabTool]) {
+              window.__stemPluginComponents[stemLabTool] = function StemPluginBridge(props) {
+                return window.StemLab.renderTool(props._toolId, props._ctx);
+              };
+            }
+            return React.createElement(window.__stemPluginComponents[stemLabTool], { key: 'plugin-' + stemLabTool, _toolId: stemLabTool, _ctx: _ctx });
           } catch(e) {
             console.error('[StemLab] Plugin fallback error for ' + stemLabTool, e);
             return React.createElement('div', { style: { padding: 40, textAlign: 'center', color: '#ef4444' } },
