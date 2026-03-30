@@ -27,7 +27,7 @@
   var useContext = React.useContext;
 
   // ── App dependencies from window ──
-  var LanguageContext = window.AlloLanguageContext;
+  var LanguageContext = window.AlloLanguageContext || React.createContext({ t: function(k) { return k; } });
   var fisherYatesShuffle = window.fisherYatesShuffle;
   var getGlobalAudioContext = window.getGlobalAudioContext || function() { return null; };
   var warnLog = (typeof window.__alloWarnLog === 'function') ? window.__alloWarnLog : function() { console.warn.apply(console, arguments); };
@@ -1886,12 +1886,15 @@ var CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGam
       setIsWon(true);
       currentScore += 100;
       if (playSound) playSound("correct");
-      if (onScoreUpdate) onScoreUpdate(currentScore, "Crossword Challenge Complete");
+      var hintMultiplier = Math.max(0.25, 1 - (hintsUsed * 0.1));
+      var adjustedScore = Math.round(currentScore * hintMultiplier);
+      if (onScoreUpdate) onScoreUpdate(adjustedScore, "Crossword Challenge Complete");
       if (onGameComplete) {
         onGameComplete("crossword", {
-          score: currentScore,
+          score: adjustedScore,
           wordsSolved: clues.across.length + clues.down.length,
-          totalWords: data?.length || 0
+          totalWords: data?.length || 0,
+          hintsUsed: hintsUsed
         });
       }
     } else {
@@ -2807,6 +2810,7 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
   const [score, setScore] = useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
   const [hintLevel, setHintLevel] = useState(0);
+  const [totalHintsUsed, setTotalHintsUsed] = useState(0);
   const [results, setResults] = useState([]);
   useEffect(() => {
     if (!data) return;
@@ -2836,7 +2840,9 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
       setHintLevel(0);
     } else {
       setIsGameOver(true);
-      if (onScoreUpdate) onScoreUpdate(currentScore, "Word Scramble Complete");
+      var hintMult = Math.max(0.25, 1 - (totalHintsUsed * 0.15));
+      var adjustedScore = Math.round(currentScore * hintMult);
+      if (onScoreUpdate) onScoreUpdate(adjustedScore, "Word Scramble Complete");
       if (playSound) playSound("correct");
     }
   };
@@ -2871,6 +2877,7 @@ var WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) 
     const maxHints = Math.max(1, currentItem.term.length - 1);
     if (hintLevel >= maxHints) return;
     setHintLevel((h) => h + 1);
+    setTotalHintsUsed((h) => h + 1);
     setScore((s) => Math.max(0, s - 3));
     if (playSound) playSound("click");
   };
