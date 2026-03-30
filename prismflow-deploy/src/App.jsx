@@ -62666,7 +62666,7 @@ Return only the corrected version of this exact text:`;
                 </div>
               </button>
               <button onClick={() => { setShowLearningHub(false); setShowSelHub(true); setSelHubTab('explore'); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
-                <span className="text-4xl">{'\u2764\uFE0F\u200D\uD83E\uDE79'}</span>
+                <span className="text-4xl">{'\u2764\uFE0F\u200D\uD83D\uDD25'}</span>
                 <div>
                   <h3 className="font-bold text-emerald-800">{t('learning_hub.sel_title') || 'SEL Hub'}</h3>
                   <p className="text-xs text-emerald-600 mt-1">{t('learning_hub.sel_desc') || 'Social-emotional learning for self-awareness & growth'}</p>
@@ -62829,7 +62829,7 @@ Return only the corrected version of this exact text:`;
             return (
             <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowSelHub(false)}>
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-4xl mb-3">{'\u2764\uFE0F\u200D\uD83E\uDE79'}</div>
+                    <div className="text-4xl mb-3">{'\u2764\uFE0F\u200D\uD83D\uDD25'}</div>
                     <p className="text-lg font-bold text-slate-700">Loading SEL Hub...</p>
                     <p className="text-sm text-slate-400 mt-2">Module loading from CDN. If this persists, check your connection.</p>
                     <button onClick={() => setShowSelHub(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>

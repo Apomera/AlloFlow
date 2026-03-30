@@ -242,7 +242,7 @@
             style: { background: 'none', border: 'none', color: _t.headerText, cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }
           }, ArrowLeft ? h(ArrowLeft, { size: 20 }) : '\u2190'),
           h('h2', { style: { margin: 0, fontSize: 20, fontWeight: 800, color: _t.headerText } },
-            '\u2764\uFE0F\u200D\uD83E\uDE79 SEL Hub'
+            '\u2764\uFE0F\u200D\uD83D\uDD25 SEL Hub'
           ),
           h('span', {
             style: { fontSize: 11, color: 'rgba(255,255,255,0.6)', marginLeft: 8 }
@@ -509,7 +509,7 @@
               fontSize: 40, marginBottom: 16,
               animation: _reduceMotion ? 'none' : 'pulse 2s ease-in-out infinite'
             }
-          }, '\u2764\uFE0F\u200D\uD83E\uDE79'),
+          }, '\u2764\uFE0F\u200D\uD83D\uDD25'),
           h('p', { style: { fontWeight: 700, fontSize: 16, marginBottom: 4, color: _t.text } }, 'Loading tool...'),
           h('p', { style: { fontSize: 12 } }, 'The plugin file is still being fetched.'),
           h('button', {
