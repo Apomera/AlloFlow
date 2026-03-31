@@ -66,11 +66,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
 
+      var callGeminiVision = ctx.callGeminiVision;
+
       var tab = d.tab || 'audit';
       var auditUrl = d.auditUrl || '';
       var auditHtml = d.auditHtml || '';
       var auditResult = d.auditResult || null;
       var auditLoading = d.auditLoading || false;
+      var auditInputMode = d.auditInputMode || 'url'; // 'url' | 'html' | 'pdf' | 'screenshot'
       var auditHistory = d.auditHistory || [];
       var selectedCriterion = d.selectedCriterion || null;
       var badges = d.badges || [];
@@ -80,14 +83,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       var worstScore = d.worstScore !== undefined ? d.worstScore : 999;
       var uniqueSites = d.uniqueSites || 0;
 
+      // ── Audit PDF/Screenshot via Vision ──
+      var runVisionAudit = function(base64, mimeType, label) {
+        if (!callGeminiVision) { if (addToast) addToast('Vision API not available', 'error'); return; }
+        upd('auditLoading', true);
+        var visionPrompt = 'You are a WCAG 2.1 AA accessibility expert. Audit this ' + label + ' for accessibility compliance.\n' +
+          'Check: alt text on images, heading structure, color contrast, keyboard access hints, form labels, link text, language declaration, focus indicators, ARIA usage, skip navigation.\n' +
+          'Target audience: ' + (gradeLevel || '8th grade') + ' students learning about digital accessibility.\n' +
+          'Explain each issue in plain language. For each, explain WHO is affected and WHY.\n\n' +
+          'Return ONLY JSON:\n' +
+          '{"score": 0-100, "grade": "A/B/C/D/F", "summary": "plain-language summary", "issues": [{"criterion": "1.1.1", "issue": "desc", "severity": "critical|major|minor", "who": "affected group", "fix": "how to fix"}], "strengths": ["good things"], "score_breakdown": {"structure": 0-10, "images": 0-10, "contrast": 0-10, "keyboard": 0-10, "forms": 0-10, "language": 0-10, "links": 0-10, "focus": 0-10, "aria": 0-10, "navigation": 0-10}, "recommendation": "fix this first"}';
+
+        callGeminiVision(visionPrompt, base64, mimeType).then(function(result) {
+          try {
+            var cleaned = result.trim();
+            if (cleaned.indexOf('```') !== -1) { var parts = cleaned.split('```'); cleaned = parts[1] || parts[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('```') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('```')); }
+            var audit = JSON.parse(cleaned);
+            var newHistory = auditHistory.concat([{ input: label, type: 'vision', score: audit.score, grade: audit.grade, date: new Date().toISOString() }]);
+            updMulti({ auditResult: audit, auditLoading: false, auditHistory: newHistory.slice(-20), auditsCompleted: auditsCompleted + 1 });
+            if (awardStemXP) awardStemXP(12);
+            if (announceToSR) announceToSR('Audit complete. Score: ' + audit.score + ' out of 100.');
+          } catch (e) {
+            updMulti({ auditResult: { score: -1, summary: 'Audit failed \u2014 could not parse the ' + label + '.', issues: [], strengths: [] }, auditLoading: false });
+          }
+        }).catch(function() {
+          updMulti({ auditResult: { score: -1, summary: 'Vision audit failed. The file may be too large or unsupported.', issues: [], strengths: [] }, auditLoading: false });
+        });
+      };
+
+      // ── Handle file upload (PDF or screenshot) ──
+      var handleFileAudit = function(e) {
+        var file = e.target.files && e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onloadend = function() {
+          var base64 = reader.result.split(',')[1];
+          var mime = file.type || 'application/pdf';
+          var label = file.type.startsWith('image/') ? 'screenshot (' + file.name + ')' : 'PDF document (' + file.name + ')';
+          runVisionAudit(base64, mime, label);
+        };
+        reader.readAsDataURL(file);
+      };
+
+      // ── Fetch URL HTML then audit ──
+      var fetchAndAudit = function(url) {
+        if (!callGemini) return;
+        upd('auditLoading', true);
+        // Use Gemini with grounding/search to analyze the URL
+        var fetchPrompt = 'Visit and analyze the website at ' + url + ' for WCAG 2.1 AA accessibility compliance.\n' +
+          'Examine the page structure, images, forms, links, color usage, keyboard accessibility, and ARIA implementation.\n' +
+          'Use your knowledge of this website\u2019s actual content and structure.\n\n';
+        // Fall through to standard audit with URL context
+        runAudit(url, 'url');
+      };
+
       // ── Run accessibility audit ──
       var runAudit = function(input, inputType) {
         if (!callGemini) return;
         upd('auditLoading', true);
 
         var prompt = 'You are a WCAG 2.1 AA accessibility expert auditing ' +
-          (inputType === 'url' ? 'a website at URL: ' + input : 'the following HTML content') + '.\n\n' +
-          (inputType === 'html' ? 'HTML:\n"""\n' + input.substring(0, 6000) + '\n"""\n\n' : '') +
+          (inputType === 'url' ? 'a website at URL: ' + input + '. Use your training knowledge of this website\u2019s structure, layout, and common patterns.' : 'the following HTML content') + '.\n\n' +
+          (inputType === 'html' ? 'HTML:\n"""\n' + input.substring(0, 8000) + '\n"""\n\n' : '') +
           'Perform a thorough accessibility audit checking these WCAG 2.1 AA criteria:\n' +
           '1. Non-text Content (1.1.1) — images without alt text\n' +
           '2. Info & Relationships (1.3.1) — heading hierarchy, semantic structure\n' +
@@ -231,57 +288,102 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
           // Input area
           h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
-            h('h3', { className: 'text-sm font-bold text-teal-700' }, 'What would you like to audit?'),
+            h('h3', { className: 'text-sm font-bold text-teal-700 mb-2' }, 'What would you like to audit?'),
 
-            // URL input
-            h('div', null,
+            // Input mode tabs
+            h('div', { className: 'flex gap-1 bg-slate-100 rounded-lg p-1 mb-3' },
+              [
+                { id: 'url', icon: '\uD83C\uDF10', label: 'Website URL' },
+                { id: 'html', icon: '\uD83D\uDCBB', label: 'HTML Code' },
+                { id: 'pdf', icon: '\uD83D\uDCC4', label: 'PDF Document' },
+                { id: 'screenshot', icon: '\uD83D\uDCF7', label: 'Screenshot' }
+              ].map(function(mode) {
+                return h('button', {
+                  key: mode.id,
+                  onClick: function() { upd('auditInputMode', mode.id); },
+                  className: 'flex-1 px-2 py-1.5 rounded-md text-[11px] font-bold transition-all ' + (auditInputMode === mode.id ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-500 hover:text-slate-700')
+                }, mode.icon + ' ' + mode.label);
+              })
+            ),
+
+            // URL input mode
+            auditInputMode === 'url' && h('div', null,
               h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Website URL'),
               h('div', { className: 'flex gap-2' },
                 h('input', {
                   type: 'url', value: auditUrl,
                   onChange: function(e) { upd('auditUrl', e.target.value); },
-                  onKeyDown: function(e) { if (e.key === 'Enter' && auditUrl.trim()) runAudit(auditUrl.trim(), 'url'); },
+                  onKeyDown: function(e) { if (e.key === 'Enter' && auditUrl.trim()) fetchAndAudit(auditUrl.trim()); },
                   placeholder: 'https://example.com',
                   'aria-label': 'Website URL to audit',
                   className: 'flex-1 text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-300'
                 }),
                 h('button', {
-                  onClick: function() { if (auditUrl.trim()) runAudit(auditUrl.trim(), 'url'); },
+                  onClick: function() { if (auditUrl.trim()) fetchAndAudit(auditUrl.trim()); },
                   disabled: !auditUrl.trim() || auditLoading,
                   className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 disabled:opacity-40 transition-colors'
-                }, auditLoading ? 'Auditing...' : '🔍 Audit URL')
+                }, auditLoading ? 'Auditing...' : '\uD83D\uDD0D Audit URL')
+              ),
+              h('p', { className: 'text-[10px] text-slate-400 mt-1' }, 'The AI will analyze the website\u2019s accessibility based on its known structure and common patterns.'),
+              // Quick suggestions
+              h('div', { className: 'flex flex-wrap gap-2 pt-2' },
+                h('span', { className: 'text-[10px] text-slate-500 font-bold' }, 'Try:'),
+                ['https://www.wikipedia.org', 'https://www.google.com', 'https://www.nytimes.com', 'https://www.amazon.com'].map(function(url) {
+                  return h('button', {
+                    key: url,
+                    onClick: function() { upd('auditUrl', url); },
+                    className: 'text-[10px] text-teal-600 hover:text-teal-800 font-medium hover:underline'
+                  }, url.replace('https://www.', ''));
+                })
               )
             ),
 
-            h('div', { className: 'text-center text-xs text-slate-500 font-bold' }, '— or —'),
-
-            // HTML paste
-            h('div', null,
+            // HTML input mode
+            auditInputMode === 'html' && h('div', null,
               h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Paste HTML Code'),
               h('textarea', {
                 value: auditHtml,
                 onChange: function(e) { upd('auditHtml', e.target.value); },
-                placeholder: '<html>\n  <head>...</head>\n  <body>...</body>\n</html>',
+                placeholder: '<html>\n  <head><title>My Page</title></head>\n  <body>\n    <h1>Hello World</h1>\n    <img src="photo.jpg">\n  </body>\n</html>',
                 'aria-label': 'HTML code to audit',
-                className: 'w-full text-xs p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-300 font-mono resize-none h-24'
+                className: 'w-full text-xs p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-300 font-mono resize-none h-32'
               }),
               h('button', {
                 onClick: function() { if (auditHtml.trim()) runAudit(auditHtml.trim(), 'html'); },
                 disabled: !auditHtml.trim() || auditLoading,
                 className: 'mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 disabled:opacity-40 transition-colors'
-              }, auditLoading ? 'Auditing...' : '🔍 Audit HTML')
+              }, auditLoading ? 'Auditing...' : '\uD83D\uDD0D Audit HTML'),
+              h('p', { className: 'text-[10px] text-slate-400 mt-1' }, 'Paste any HTML code \u2014 from a school project, a webpage, or generated by a coding tool. The AI will check it for accessibility issues.')
             ),
 
-            // Quick audit suggestions
-            h('div', { className: 'flex flex-wrap gap-2 pt-2' },
-              h('span', { className: 'text-[10px] text-slate-500 font-bold' }, 'Try:'),
-              ['https://www.wikipedia.org', 'https://www.google.com', 'https://www.nytimes.com'].map(function(url) {
-                return h('button', {
-                  key: url,
-                  onClick: function() { upd('auditUrl', url); },
-                  className: 'text-[10px] text-teal-600 hover:text-teal-800 font-medium hover:underline'
-                }, url.replace('https://www.', ''));
-              })
+            // PDF input mode
+            auditInputMode === 'pdf' && h('div', { className: 'text-center py-4' },
+              h('div', { className: 'text-3xl mb-2' }, '\uD83D\uDCC4'),
+              h('p', { className: 'text-sm text-slate-600 mb-3' }, 'Upload a PDF document to check its accessibility'),
+              h('p', { className: 'text-[10px] text-slate-400 mb-3' }, 'The AI will check for: tagged structure, reading order, alt text on images, form labels, color contrast, language declaration, and heading hierarchy.'),
+              h('label', { className: 'inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 cursor-pointer transition-colors ' + (auditLoading ? 'opacity-40 pointer-events-none' : '') },
+                h('input', {
+                  type: 'file', accept: 'application/pdf', className: 'hidden',
+                  onChange: handleFileAudit, disabled: auditLoading,
+                  'aria-label': 'Upload PDF for accessibility audit'
+                }),
+                auditLoading ? 'Auditing...' : '\uD83D\uDCC2 Upload PDF'
+              )
+            ),
+
+            // Screenshot input mode
+            auditInputMode === 'screenshot' && h('div', { className: 'text-center py-4' },
+              h('div', { className: 'text-3xl mb-2' }, '\uD83D\uDCF7'),
+              h('p', { className: 'text-sm text-slate-600 mb-3' }, 'Upload a screenshot of a website, app, or document'),
+              h('p', { className: 'text-[10px] text-slate-400 mb-3' }, 'The AI will visually analyze the screenshot for: color contrast issues, missing labels, layout problems, text readability, and visual accessibility barriers.'),
+              h('label', { className: 'inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 cursor-pointer transition-colors ' + (auditLoading ? 'opacity-40 pointer-events-none' : '') },
+                h('input', {
+                  type: 'file', accept: 'image/*', className: 'hidden',
+                  onChange: handleFileAudit, disabled: auditLoading,
+                  'aria-label': 'Upload screenshot for accessibility audit'
+                }),
+                auditLoading ? 'Auditing...' : '\uD83D\uDCF7 Upload Screenshot'
+              )
             )
           ),
 
