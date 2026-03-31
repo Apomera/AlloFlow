@@ -2280,6 +2280,11 @@
                 desc: 'Spot phishing emails, forge strong passwords, and crack ciphers. Gamified cybersecurity training aligned with Digital Citizenship standards.',
                 color: 'rose', ready: true
               },
+              {
+                id: 'a11yAuditor', icon: '\u267F', label: 'Digital Accessibility Lab',
+                desc: 'Audit websites for WCAG 2.1 AA compliance. Learn how accessibility barriers affect people with disabilities and how to fix them.',
+                color: 'teal', ready: true
+              },
 
               { id: '_cat_Arts&Music', icon: '', label: t('stem.tools_menu.arts_music'), desc: '', color: 'slate', category: true },
 
@@ -2317,11 +2322,6 @@
                 id: 'economicsLab', icon: '💰', label: 'Economics Lab',
                 desc: 'Supply & demand curves, personal finance life sim, stock market trading, macro economics dashboard, and lemonade stand entrepreneur sim.',
                 color: 'emerald', ready: true
-              },
-              {
-                id: 'a11yAuditor', icon: '♿', label: 'Digital Accessibility Lab',
-                desc: 'Audit websites and documents for WCAG 2.1 AA accessibility. Learn about digital rights, inclusive design, and who is left out when the web isn\'t accessible.',
-                color: 'teal', ready: true
               },
               {
                 id: 'worldBuilder', icon: '✍️', label: 'WriteCraft',
@@ -11324,8 +11324,7 @@
             numberline: true, volume: true, areamodel: true, fractionViz: true, fractions: true,
             codingPlayground: true, wave: true, semiconductor: true, titrationLab: true,
             plateTectonics: true, gameStudio: true, geoQuiz: true, geometryProver: true,
-            epidemicSim: true, lifeSkills: true, graphCalc: true,
-            a11yAuditor: true,
+            epidemicSim: true, lifeSkills: true, graphCalc: true, a11yAuditor: true,
             worldBuilder: true
           };
           console.log('[StemLab Fallback] Attempting to render plugin: ' + stemLabTool + ' (registered: ' + window.StemLab.isRegistered(stemLabTool) + ')');
