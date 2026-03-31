@@ -2711,6 +2711,14 @@ const d = labToolData.solarSystem;
 
                             case 'f': moveState.sample = pressed; break;
 
+                            case 'tab':
+                              if (pressed && isGas) {
+                                e.preventDefault();
+                                var inv = document.getElementById('gas-sample-inventory');
+                                if (inv) { inv.style.display = inv.style.display === 'none' ? 'block' : 'none'; }
+                              }
+                              break;
+
                           }
 
                           e.preventDefault();
@@ -2933,15 +2941,37 @@ const d = labToolData.solarSystem;
 
                           '</div>' +
 
+                          (isGas ? '<div id="hud-atmo-panel" style="border-top:1px solid rgba(251,191,36,0.2);padding-top:4px;margin-bottom:4px">' +
+                          '<div style="font-weight:bold;font-size:9px;color:#fbbf24;margin-bottom:3px">\uD83E\uDDEA ATMOSPHERE</div>' +
+                          '<div style="display:grid;grid-template-columns:auto 1fr;gap:2px 8px;font-size:10px">' +
+                          '<span style="color:#64748b">Zone</span><span id="hud-zone" style="color:#fbbf24;font-weight:bold">Upper Atmosphere</span>' +
+                          '<span style="color:#64748b">Pressure</span><span id="hud-pressure" style="color:#f59e0b">0.1 bar</span>' +
+                          '<span style="color:#64748b">Temp</span><span id="hud-zonetemp" style="color:#ef4444">' + sel.temp + '</span>' +
+                          '<span style="color:#64748b">Wind</span><span id="hud-wind" style="color:#94a3b8">100 km/h</span>' +
+                          '<span style="color:#64748b">Gases</span><span id="hud-gases" style="color:#67e8f9;font-size:9px">H\u2082, He</span>' +
+                          '<span style="color:#64748b">\uD83D\uDEE1\uFE0F Shield</span><span id="hud-shield" style="color:#22c55e;font-weight:bold">100%</span>' +
+                          '<span style="color:#64748b">\uD83E\uDDEA Samples</span><span id="hud-samples" style="color:#a78bfa;font-weight:bold">0</span>' +
+                          '</div></div>' : '') +
+
                           (featList ? '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;margin-bottom:3px"><span style="color:#7dd3fc;font-weight:bold;font-size:9px">\uD83D\uDD2D NOTABLE</span>' + featList + '</div>' : '') +
 
-                          '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">' + (isGas ? 'WASD move \u2022 Q/E altitude \u2022 Mouse look \u2022 V view \u2022 M mission' : 'WASD drive rover \u2022 Mouse look \u2022 V view \u2022 M mission') + ' \u2022 <span style="color:#38bdf8">H</span> hud \u2022 <span style="color:#a78bfa">N</span> nav \u2022 <span style="color:#8b5cf6">P</span> plot</div>';
+                          '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">' + (isGas ? 'WASD move \u2022 Q/E altitude \u2022 <span style="color:#fbbf24">F</span> sample \u2022 Mouse look \u2022 V view \u2022 M mission' : 'WASD drive rover \u2022 Mouse look \u2022 V view \u2022 M mission') + ' \u2022 <span style="color:#38bdf8">H</span> hud \u2022 <span style="color:#a78bfa">N</span> nav \u2022 <span style="color:#8b5cf6">P</span> plot</div>';
 
                         hud.innerHTML = hudStaticHTML;
 
                         canvasEl.parentElement.appendChild(hud);
 
-
+                        // ── Gas Sample Inventory Panel (Tab to toggle) ──
+                        if (isGas) {
+                          var invPanel = document.createElement('div');
+                          invPanel.id = 'gas-sample-inventory';
+                          invPanel.style.cssText = 'display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:420px;max-width:90%;max-height:80%;overflow-y:auto;background:rgba(15,23,42,0.95);backdrop-filter:blur(12px);border:2px solid rgba(251,191,36,0.3);border-radius:16px;padding:20px;z-index:30;color:#e2e8f0;font-family:system-ui';
+                          invPanel.innerHTML = '<div style=”display:flex;justify-content:space-between;align-items:center;margin-bottom:12px”><div style=”font-weight:bold;font-size:16px;color:#fbbf24”>\uD83E\uDDEA Gas Sample Collection</div><div style=”font-size:11px;color:#94a3b8”>Press TAB to close</div></div>' +
+                            '<div style=”font-size:11px;color:#94a3b8;margin-bottom:12px”>Fly through the atmosphere and press <span style=”color:#fbbf24;font-weight:bold”>F</span> near glowing orbs to collect gas samples. Descend deeper for rarer specimens!</div>' +
+                            '<div id=”gas-sample-list” style=”space-y:8px”></div>' +
+                            '<div id=”gas-sample-empty” style=”text-align:center;padding:20px;color:#64748b;font-style:italic”>No samples collected yet. Look for glowing orbs in the atmosphere!</div>';
+                          canvasEl.parentElement.appendChild(invPanel);
+                        }
 
                         // â”€â”€ Hazard Warning Strip â”€â”€
 
@@ -4035,6 +4065,18 @@ const d = labToolData.solarSystem;
                                   if (addToast) addToast(sd.icon + ' Collected: ' + sd.name + ' (' + sd.gas + ') \u2014 ' + sd.fact, 'success');
                                   awardXP(sd.xp, 'Gas sample: ' + sd.name);
                                   playBeep();
+
+                                  // Update inventory panel
+                                  var sampleListEl = document.getElementById('gas-sample-list');
+                                  var sampleEmptyEl = document.getElementById('gas-sample-empty');
+                                  if (sampleEmptyEl) sampleEmptyEl.style.display = 'none';
+                                  if (sampleListEl) {
+                                    var card = document.createElement('div');
+                                    card.style.cssText = 'background:rgba(30,41,59,0.8);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:10px 12px;margin-bottom:8px';
+                                    card.innerHTML = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:18px">' + sd.icon + '</span><div><div style="font-weight:bold;font-size:13px;color:#fbbf24">' + sd.name + '</div><div style="font-size:10px;color:#94a3b8">' + sd.gas + ' \u2022 Depth: ' + playerPos.y.toFixed(1) + ' \u2022 ' + zone.name + '</div></div></div>' +
+                                      '<div style="font-size:11px;color:#cbd5e1;line-height:1.4">' + sd.fact + '</div>';
+                                    sampleListEl.appendChild(card);
+                                  }
                                 }
                               }
                             });
@@ -4113,6 +4155,59 @@ const d = labToolData.solarSystem;
                             if (odoEl) odoEl.textContent = odometer > 1000 ? (odometer / 1000).toFixed(1) + ' km' : Math.round(odometer) + ' m';
 
                             if (dscEl) dscEl.textContent = Object.keys(discoveredPOIs).length + ' / ' + totalPOIs;
+
+                            // Atmospheric science HUD (gas giants only)
+                            if (isGas && gasAtmo) {
+                              var curZone = gasAtmo.getZone(playerPos.y);
+                              var zoneEl = document.getElementById('hud-zone');
+                              var pressEl = document.getElementById('hud-pressure');
+                              var ztempEl = document.getElementById('hud-zonetemp');
+                              var windEl = document.getElementById('hud-wind');
+                              var gasesEl = document.getElementById('hud-gases');
+                              var shieldEl = document.getElementById('hud-shield');
+                              var samplesEl = document.getElementById('hud-samples');
+                              if (zoneEl) zoneEl.textContent = curZone.name;
+                              if (pressEl) pressEl.textContent = curZone.pressure;
+                              if (ztempEl) ztempEl.textContent = curZone.temp;
+                              if (windEl) windEl.textContent = curZone.windSpeed + ' km/h';
+                              if (gasesEl) gasesEl.textContent = curZone.gases.join(', ');
+                              if (shieldEl) {
+                                shieldEl.textContent = Math.round(gasShieldHP) + '%';
+                                shieldEl.style.color = gasShieldHP > 60 ? '#22c55e' : gasShieldHP > 30 ? '#f59e0b' : '#ef4444';
+                              }
+                              if (samplesEl) samplesEl.textContent = gasSamples.length + ' / ' + gasAtmo.sampleOrbs.length;
+
+                              // Dynamic warning overlay
+                              if (gasWarningTimer > 0 && hazardEl) {
+                                hazardEl.textContent = gasWarningText;
+                                hazardEl.style.opacity = '1';
+                                hazardEl.style.background = gasShieldHP < 30 ? 'rgba(220,38,38,0.9)' : 'rgba(245,158,11,0.85)';
+                              }
+
+                              // Show proximity hint when near a sample orb
+                              var nearestOrb = null; var nearestDist = 999;
+                              gasAtmo.sampleOrbs.forEach(function(orb) {
+                                if (orb._collected) return;
+                                var d2 = playerPos.distanceTo(orb.position);
+                                if (d2 < nearestDist) { nearestDist = d2; nearestOrb = orb; }
+                              });
+                              var proxEl = document.getElementById('hud-sample-prox');
+                              if (!proxEl && nearestDist < 4) {
+                                proxEl = document.createElement('div');
+                                proxEl.id = 'hud-sample-prox';
+                                proxEl.style.cssText = 'position:absolute;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(251,191,36,0.9);backdrop-filter:blur(4px);color:#000;font-weight:bold;font-size:13px;padding:8px 18px;border-radius:10px;z-index:20;text-align:center;pointer-events:none;transition:opacity 0.3s';
+                                canvasEl.parentElement.appendChild(proxEl);
+                              }
+                              if (proxEl) {
+                                if (nearestDist < 4 && nearestOrb) {
+                                  var sd = nearestOrb._sampleData;
+                                  proxEl.textContent = sd.icon + ' ' + sd.name + ' detected! ' + (nearestDist < 2 ? 'Press F to collect' : 'Get closer... (' + nearestDist.toFixed(1) + 'm)');
+                                  proxEl.style.opacity = '1';
+                                } else {
+                                  proxEl.style.opacity = '0';
+                                }
+                              }
+                            }
 
                           }
 
