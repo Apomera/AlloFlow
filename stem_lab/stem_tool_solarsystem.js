@@ -2515,9 +2515,80 @@ const d = labToolData.solarSystem;
 
                         }
 
-                        roverGroup.position.set(0, isGas ? 5 : 0, 0); // initial position; animation loop tracks playerPos
+                        roverGroup.position.set(0, isGas ? 5 : 0, 0);
 
                         scene.add(roverGroup);
+
+                        // ═══ GAS GIANT ATMOSPHERE SIMULATION ═══
+                        var gasAtmo = null;
+                        var gasSamples = [];
+                        var gasSampleCooldown = 0;
+                        var gasShieldHP = 100;
+                        var gasWarningText = '';
+                        var gasWarningTimer = 0;
+                        if (isGas) {
+                          // Atmosphere depth zones (Y coordinate maps to depth: higher Y = upper atmosphere)
+                          var zones = [
+                            { name: 'Upper Atmosphere', minY: 3, maxY: 999, pressure: '0.1 bar', temp: sel.name === 'Jupiter' ? '-110\u00B0C' : sel.name === 'Saturn' ? '-140\u00B0C' : sel.name === 'Uranus' ? '-195\u00B0C' : '-200\u00B0C', color: '#88bbff', gases: ['H\u2082', 'He', 'NH\u2083 ice'], windSpeed: 100, fogDensity: 0, hazard: null, science: 'Ammonia ice crystals form here. Visible cloud tops.' },
+                            { name: 'Cloud Deck', minY: 0, maxY: 3, pressure: '1-5 bar', temp: sel.name === 'Jupiter' ? '-50\u00B0C' : sel.name === 'Saturn' ? '-80\u00B0C' : '-150\u00B0C', color: '#cc9955', gases: ['H\u2082', 'He', 'NH\u2084SH', 'H\u2082O'], windSpeed: 300, fogDensity: 0.15, hazard: 'wind_shear', science: 'Ammonium hydrosulfide clouds. Extreme wind shear between bands.' },
+                            { name: 'Deep Troposphere', minY: -8, maxY: 0, pressure: '10-100 bar', temp: sel.name === 'Jupiter' ? '100\u00B0C' : '50\u00B0C', color: '#885522', gases: ['H\u2082', 'He', 'H\u2082O vapor', 'CH\u2084'], windSpeed: 500, fogDensity: 0.35, hazard: 'pressure', science: 'Water clouds form here. Temperature rises from compression. Lightning storms rage.' },
+                            { name: 'Metallic Hydrogen Layer', minY: -20, maxY: -8, pressure: '200+ bar', temp: '2,000\u00B0C+', color: '#442211', gases: ['Metallic H', 'He rain', sel.terrainType === 'icegiant' ? 'Diamond rain' : 'Liquid H\u2082'], windSpeed: 50, fogDensity: 0.6, hazard: 'crush', science: sel.terrainType === 'icegiant' ? 'Carbon compressed into diamonds that rain downward. Extreme pressure.' : 'Hydrogen becomes a liquid metal conductor. Source of the magnetic field.' },
+                            { name: 'Inner Core Region', minY: -999, maxY: -20, pressure: '1000+ bar', temp: '20,000\u00B0C+', color: '#ff4400', gases: ['Rock/ice core', 'Metallic H', 'Exotic matter'], windSpeed: 0, fogDensity: 0.85, hazard: 'lethal', science: 'Rocky/icy core 10-20x Earth mass. No probe has ever reached this depth.' }
+                          ];
+                          gasAtmo = {
+                            zones: zones,
+                            getZone: function(y) {
+                              for (var zi = 0; zi < zones.length; zi++) {
+                                if (y >= zones[zi].minY && y < zones[zi].maxY) return zones[zi];
+                              }
+                              return zones[zones.length - 1];
+                            },
+                            // Gas sample orbs scattered in 3D space
+                            sampleOrbs: []
+                          };
+
+                          // Create collectible gas sample orbs at various depths
+                          var sampleTypes = [
+                            { name: 'Ammonia Ice Crystal', icon: '\u2744\uFE0F', gas: 'NH\u2083', depth: 4, color: 0x88ccff, xp: 8, fact: 'Ammonia freezes into ice crystals in the upper atmosphere, forming the visible cloud tops.' },
+                            { name: 'Hydrogen Sample', icon: '\uD83D\uDCA8', gas: 'H\u2082', depth: 2, color: 0xaaddff, xp: 5, fact: 'Molecular hydrogen makes up ~90% of the atmosphere. At depth, it becomes metallic.' },
+                            { name: 'Helium Droplet', icon: '\uD83D\uDCA7', gas: 'He', depth: -2, color: 0xffdd88, xp: 8, fact: 'Helium "rains" out of the hydrogen at extreme pressures, sinking toward the core.' },
+                            { name: 'Water Vapor Sample', icon: '\uD83C\uDF2B\uFE0F', gas: 'H\u2082O', depth: -3, color: 0x4488ff, xp: 10, fact: 'Water clouds exist deep below the visible surface. Jupiter may have more water than Earth.' },
+                            { name: 'Methane Crystal', icon: '\uD83D\uDC8E', gas: 'CH\u2084', depth: -1, color: 0x44ffaa, xp: 8, fact: 'Methane gives Uranus and Neptune their blue-green color. Under pressure, it breaks into carbon and hydrogen.' },
+                            { name: 'Ammonium Hydrosulfide', icon: '\uD83E\uDDEA', gas: 'NH\u2084SH', depth: 1, color: 0xcc8844, xp: 10, fact: 'This compound creates the brown-orange bands visible on Jupiter and Saturn.' },
+                            { name: sel.terrainType === 'icegiant' ? 'Diamond Fragment' : 'Metallic Hydrogen', icon: sel.terrainType === 'icegiant' ? '\uD83D\uDC8E' : '\u26A1', gas: sel.terrainType === 'icegiant' ? 'C (diamond)' : 'Metallic H', depth: -12, color: sel.terrainType === 'icegiant' ? 0xffffff : 0xff8800, xp: 20, fact: sel.terrainType === 'icegiant' ? 'Carbon atoms crystallize into actual diamonds under extreme pressure!' : 'Hydrogen becomes a liquid metal that conducts electricity \u2014 creating the magnetic field.' },
+                            { name: 'Phosphine Trace', icon: '\u2623\uFE0F', gas: 'PH\u2083', depth: -5, color: 0x88ff44, xp: 12, fact: 'Phosphine is dredged up from deep atmosphere by convection. It\u2019s a biosignature on rocky planets.' }
+                          ];
+
+                          // Spawn orbs at random XZ positions at their designated depths
+                          var sampleMat = new THREE.MeshStandardMaterial({ emissive: 0x44aaff, emissiveIntensity: 0.8, transparent: true, opacity: 0.7 });
+                          sampleTypes.forEach(function(st, si) {
+                            var orbGeo = new THREE.SphereGeometry(0.35, 12, 8);
+                            // Give each a unique color
+                            var orbMat = new THREE.MeshStandardMaterial({ color: st.color, emissive: st.color, emissiveIntensity: 0.6, transparent: true, opacity: 0.75, wireframe: false });
+                            // Inner glow core
+                            var coreGeo = new THREE.SphereGeometry(0.15, 8, 6);
+                            var coreMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 });
+
+                            // Place 2 of each type at random XZ
+                            for (var dup = 0; dup < 2; dup++) {
+                              var ox = (Math.random() - 0.5) * 140;
+                              var oz = (Math.random() - 0.5) * 140;
+                              var oy = st.depth + (Math.random() - 0.5) * 3;
+                              var orbGroup = new THREE.Group();
+                              orbGroup.add(new THREE.Mesh(orbGeo.clone(), orbMat.clone()));
+                              orbGroup.add(new THREE.Mesh(coreGeo.clone(), coreMat.clone()));
+                              orbGroup.position.set(ox, oy, oz);
+                              orbGroup._sampleData = st;
+                              orbGroup._collected = false;
+                              orbGroup._pulsePhase = Math.random() * Math.PI * 2;
+                              scene.add(orbGroup);
+                              gasAtmo.sampleOrbs.push(orbGroup);
+                            }
+                          });
+
+                          // Add atmospheric fog that intensifies with depth
+                          scene.fog = new THREE.FogExp2(new THREE.Color(sel.terrainColor || '#886644').getHex(), 0.005);
+                        }
 
 
 
@@ -2637,6 +2708,8 @@ const d = labToolData.solarSystem;
                             case 'q': case ' ': moveState.up = pressed; break;
 
                             case 'e': case 'shift': moveState.down = pressed; break;
+
+                            case 'f': moveState.sample = pressed; break;
 
                           }
 
@@ -3869,6 +3942,103 @@ const d = labToolData.solarSystem;
                           });
 
 
+
+                          // ═══ Gas Giant Atmosphere Simulation ═══
+                          if (isGas && gasAtmo) {
+                            var zone = gasAtmo.getZone(playerPos.y);
+
+                            // Wind turbulence — push probe sideways based on zone wind speed
+                            if (zone.windSpeed > 0) {
+                              var windForce = zone.windSpeed / 8000;
+                              var windAngle = tick3d * 0.002 + playerPos.x * 0.01;
+                              playerPos.x += Math.sin(windAngle) * windForce;
+                              playerPos.z += Math.cos(windAngle * 0.7) * windForce * 0.6;
+                              // Micro-turbulence jolts
+                              if (Math.random() < zone.windSpeed / 3000) {
+                                playerPos.x += (Math.random() - 0.5) * windForce * 3;
+                                playerPos.z += (Math.random() - 0.5) * windForce * 3;
+                              }
+                            }
+
+                            // Dynamic fog density based on depth
+                            if (scene.fog) {
+                              scene.fog.density = 0.003 + zone.fogDensity * 0.02;
+                              scene.fog.color.set(new THREE.Color(zone.color));
+                            }
+
+                            // Skybox color shift based on depth
+                            if (scene.background) {
+                              var depthColor = new THREE.Color(zone.color);
+                              scene.background.lerp && scene.background.lerp(depthColor, 0.01);
+                            }
+
+                            // Shield damage from pressure/hazards
+                            if (zone.hazard === 'crush' && tick3d % 30 === 0) {
+                              gasShieldHP = Math.max(0, gasShieldHP - 0.5);
+                            }
+                            if (zone.hazard === 'lethal' && tick3d % 10 === 0) {
+                              gasShieldHP = Math.max(0, gasShieldHP - 2);
+                            }
+                            // Shield regenerates in upper atmosphere
+                            if (zone.hazard === null && gasShieldHP < 100 && tick3d % 20 === 0) {
+                              gasShieldHP = Math.min(100, gasShieldHP + 1);
+                            }
+
+                            // Warning system
+                            if (gasWarningTimer > 0) gasWarningTimer--;
+                            if (zone.hazard === 'lethal' && gasWarningTimer <= 0) {
+                              gasWarningText = '\u26A0\uFE0F CRITICAL: Core proximity! Shield failing! Ascend immediately!';
+                              gasWarningTimer = 120;
+                            } else if (zone.hazard === 'crush' && gasWarningTimer <= 0) {
+                              gasWarningText = '\u26A0\uFE0F WARNING: Extreme pressure zone. Shield integrity: ' + Math.round(gasShieldHP) + '%';
+                              gasWarningTimer = 90;
+                            } else if (zone.hazard === 'pressure' && gasWarningTimer <= 0) {
+                              gasWarningText = '\u26A0\uFE0F Entering deep troposphere. Pressure increasing rapidly.';
+                              gasWarningTimer = 150;
+                            } else if (zone.hazard === 'wind_shear' && Math.random() < 0.003) {
+                              gasWarningText = '\uD83C\uDF2C\uFE0F Wind shear alert! ' + zone.windSpeed + ' km/h cross-winds detected.';
+                              gasWarningTimer = 80;
+                            }
+
+                            // Lightning flashes in Deep Troposphere
+                            if (zone.name === 'Deep Troposphere' && Math.random() < 0.008) {
+                              var flash = new THREE.PointLight(0xffffff, 3, 80);
+                              flash.position.set(playerPos.x + (Math.random() - 0.5) * 40, playerPos.y - Math.random() * 5, playerPos.z + (Math.random() - 0.5) * 40);
+                              scene.add(flash);
+                              setTimeout(function() { scene.remove(flash); flash.dispose(); }, 150);
+                            }
+
+                            // Sample orb pulse animation + collection detection
+                            if (gasSampleCooldown > 0) gasSampleCooldown--;
+                            gasAtmo.sampleOrbs.forEach(function(orb) {
+                              if (orb._collected) return;
+                              // Pulse glow
+                              var pulse = 0.5 + Math.sin(tick3d * 0.05 + orb._pulsePhase) * 0.3;
+                              orb.children.forEach(function(child) {
+                                if (child.material && child.material.opacity !== undefined) {
+                                  child.material.opacity = pulse;
+                                }
+                              });
+                              // Bobbing motion
+                              orb.position.y += Math.sin(tick3d * 0.02 + orb._pulsePhase) * 0.003;
+
+                              // Collection detection (proximity + press F or click)
+                              var sampleDist = playerPos.distanceTo(orb.position);
+                              if (sampleDist < 3 && gasSampleCooldown <= 0) {
+                                // Show proximity indicator
+                                if (sampleDist < 2 && moveState.sample) {
+                                  orb._collected = true;
+                                  orb.visible = false;
+                                  gasSampleCooldown = 60;
+                                  var sd = orb._sampleData;
+                                  gasSamples.push({ name: sd.name, gas: sd.gas, icon: sd.icon, fact: sd.fact, depth: playerPos.y.toFixed(1), zone: zone.name });
+                                  if (addToast) addToast(sd.icon + ' Collected: ' + sd.name + ' (' + sd.gas + ') \u2014 ' + sd.fact, 'success');
+                                  awardXP(sd.xp, 'Gas sample: ' + sd.name);
+                                  playBeep();
+                                }
+                              }
+                            });
+                          }
 
                           // Diamond rain
 
