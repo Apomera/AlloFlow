@@ -1042,7 +1042,7 @@ window.StemLab = window.StemLab || {
                         .then(function(imgUrl) {
                           var img = new Image(); img.crossOrigin = 'anonymous';
                           img.onload = function() {
-                            var c = document.createElement('canvas'); c.width = 16; c.height = 16;
+                            var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = 16; c.height = 16;
                             var cx = c.getContext('2d'); cx.drawImage(img, 0, 0, 16, 16);
                             var data = cx.getImageData(0, 0, 16, 16).data;
                             var np = {};

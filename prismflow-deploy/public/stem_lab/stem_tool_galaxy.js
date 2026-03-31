@@ -1441,7 +1441,8 @@ if (!window._galaxyHasLoadedOnce) {
 
                     else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); orb.theta = Math.PI * 0.1; orb.phi = Math.PI * 0.35; orb.r = 1.2; upCam(); }
 
-                  }, style: { width: '100%', height: '100%', cursor: 'grab', outline: 'none' }
+                  }, style: { width: '100%', height: '100%', cursor: 'grab', outline: 'none' },
+                  onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #a78bfa'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
                 }),
 

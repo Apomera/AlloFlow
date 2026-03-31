@@ -13,7 +13,7 @@ window.StemLab = window.StemLab || {
   renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
 };
 
-if (!window.StemLab.isRegistered('anatomy')) {
+if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 (function() {
   'use strict';
 
@@ -2201,7 +2201,7 @@ if (!window.StemLab.isRegistered('anatomy')) {
         // UI RENDER
         // ══════════════════════════════════════
 
-        return h('div', { className: 'max-w-4xl mx-auto animate-in fade-in duration-200', tabIndex: 0, onKeyDown: handleKeyNav, style: { outline: 'none' } },
+        return h('div', { className: 'max-w-4xl mx-auto animate-in fade-in duration-200 outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1', tabIndex: 0, onKeyDown: handleKeyNav },
 
           // Header
           h('div', { className: 'flex items-center gap-3 mb-3' },
@@ -2220,33 +2220,40 @@ if (!window.StemLab.isRegistered('anatomy')) {
           // Grade-band intro
           h('div', { className: 'mb-3 px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800' }, gradeIntro),
 
-          // Tab bar (4 tabs)
-          h('div', { className: 'flex gap-1 mb-3' },
+          // Tab bar (7 tabs)
+          h('div', { className: 'flex gap-1 mb-3', role: 'tablist', 'aria-label': 'Anatomy tool sections' },
             h('button', {
+              role: 'tab', 'aria-selected': activeTab === 'explore', tabIndex: activeTab === 'explore' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'explore'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'explore' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
             }, '\uD83E\uDEC0 Explore'),
             h('button', {
+              role: 'tab', 'aria-selected': activeTab === 'tour', tabIndex: activeTab === 'tour' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'tour'); if (!tourActive) { upd('_tourActive', true); upd('_tourStepIdx', 0); } },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'tour' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200')
             }, '\uD83E\uDDED Tour'),
             h('button', {
+              role: 'tab', 'aria-selected': activeTab === 'connections', tabIndex: activeTab === 'connections' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'connections'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'connections' ? 'bg-sky-600 text-white' : 'bg-sky-50 text-sky-600 hover:bg-sky-100 border border-sky-200')
             }, '\uD83D\uDD17 Connect'),
             h('button', {
+              role: 'tab', 'aria-selected': activeTab === 'aiTutor', tabIndex: activeTab === 'aiTutor' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'aiTutor'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'aiTutor' ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-200')
             }, '\uD83E\uDD16 AI Tutor'),
             h('button', {
+              role: 'tab', 'aria-selected': activeTab === 'spotter', tabIndex: activeTab === 'spotter' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'spotter'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'spotter' ? 'bg-amber-600 text-white' : 'bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200')
             }, '\uD83C\uDFAF Spotter'),
             h('button', {
+              role: 'tab', 'aria-selected': activeTab === 'pathways', tabIndex: activeTab === 'pathways' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'pathways'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'pathways' ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200')
             }, '\uD83D\uDEE4 Pathways'),
             h('button', {
+              role: 'tab', 'aria-selected': activeTab === 'flashcards', tabIndex: activeTab === 'flashcards' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'flashcards'); },
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'flashcards' ? 'bg-teal-600 text-white' : 'bg-teal-50 text-teal-600 hover:bg-teal-100 border border-teal-200')
             }, '\uD83C\uDCCF Cards'),

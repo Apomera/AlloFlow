@@ -639,7 +639,7 @@ const d = labToolData.solarSystem;
 
               // Sun glow sprite
 
-              const glowCanvas = document.createElement('canvas'); glowCanvas.width = 128; glowCanvas.height = 128;
+              const glowCanvas = document.createElement('canvas'); glowCanvas.setAttribute('aria-hidden', 'true'); glowCanvas.width = 128; glowCanvas.height = 128;
 
               const gctx = glowCanvas.getContext('2d');
 
@@ -663,7 +663,7 @@ const d = labToolData.solarSystem;
 
               function makePlanetTex(rgb, variation) {
 
-                const c = document.createElement('canvas'); c.width = 128; c.height = 64;
+                const c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = 128; c.height = 64;
 
                 const ctx = c.getContext('2d');
 
@@ -785,7 +785,7 @@ const d = labToolData.solarSystem;
 
                   const ringGeo = new THREE.RingGeometry(p.size * 1.4, p.size * 2.2, 64);
 
-                  const ringCanvas = document.createElement('canvas'); ringCanvas.width = 256; ringCanvas.height = 1;
+                  const ringCanvas = document.createElement('canvas'); ringCanvas.setAttribute('aria-hidden', 'true'); ringCanvas.width = 256; ringCanvas.height = 1;
 
                   const rctx = ringCanvas.getContext('2d');
 
@@ -2097,7 +2097,7 @@ const d = labToolData.solarSystem;
 
                         var skyGeo = new THREE.SphereGeometry(200, 32, 16);
 
-                        var skyCv = document.createElement('canvas'); skyCv.width = 512; skyCv.height = 256;
+                        var skyCv = document.createElement('canvas'); skyCv.setAttribute('aria-hidden', 'true'); skyCv.width = 512; skyCv.height = 256;
 
                         var sCtx = skyCv.getContext('2d');
 
@@ -2161,7 +2161,7 @@ const d = labToolData.solarSystem;
 
                           terrainGeo.computeVertexNormals();
 
-                          var tCv = document.createElement('canvas'); tCv.width = 256; tCv.height = 256;
+                          var tCv = document.createElement('canvas'); tCv.setAttribute('aria-hidden', 'true'); tCv.width = 256; tCv.height = 256;
 
                           var tCx = tCv.getContext('2d');
 
@@ -2205,7 +2205,7 @@ const d = labToolData.solarSystem;
 
                             var clGeo = new THREE.PlaneGeometry(300, 300, 1, 1);
 
-                            var clCv = document.createElement('canvas'); clCv.width = 256; clCv.height = 64;
+                            var clCv = document.createElement('canvas'); clCv.setAttribute('aria-hidden', 'true'); clCv.width = 256; clCv.height = 64;
 
                             var clCx = clCv.getContext('2d');
 

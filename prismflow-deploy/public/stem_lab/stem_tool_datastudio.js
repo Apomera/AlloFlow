@@ -415,7 +415,8 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               className: "w-full px-3 py-2 rounded-xl text-sm font-bold text-center",
 
-              style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' }
+              style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' },
+              onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
             }),
 
@@ -853,7 +854,8 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 className: "w-14 px-1.5 py-1 rounded-lg text-[10px] font-mono",
 
-                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' }
+                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' },
+                onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
               }),
 
@@ -867,7 +869,8 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 className: "w-14 px-1.5 py-1 rounded-lg text-[10px] font-mono",
 
-                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' }
+                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' },
+                onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
               }),
 
@@ -1013,7 +1016,8 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   className: "flex-1 px-2 py-1.5 rounded-lg text-xs",
 
-                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' }
+                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' },
+                  onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
                 }),
 
@@ -1039,7 +1043,8 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   className: "w-20 px-2 py-1.5 rounded-lg text-xs font-mono",
 
-                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' }
+                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' },
+                  onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
                 }),
 

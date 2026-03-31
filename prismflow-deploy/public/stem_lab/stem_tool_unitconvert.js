@@ -317,7 +317,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           '@keyframes spin{to{transform:rotate(360deg)}}';
 
         // ── RENDER ──
-        return h('div', { className: 'max-w-2xl mx-auto animate-in fade-in duration-200', onKeyDown: handleKey, tabIndex: -1, style: { outline: 'none' } },
+        return h('div', { className: 'max-w-2xl mx-auto animate-in fade-in duration-200 outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1', onKeyDown: handleKey, tabIndex: -1 },
 
           h('style', null, css),
 

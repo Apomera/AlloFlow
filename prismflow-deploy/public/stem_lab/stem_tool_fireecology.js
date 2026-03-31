@@ -2029,7 +2029,8 @@ if (!window.StemLab.isRegistered('fireEcology')) {
                 style: {
                   flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid #334155',
                   background: '#1e293b', color: '#e2e8f0', fontSize: 14, outline: 'none'
-                }
+                },
+                onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #f97316'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
               }),
               h('button', {
                 onClick: askAI,

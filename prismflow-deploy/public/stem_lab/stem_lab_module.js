@@ -1491,7 +1491,7 @@
         }, /*#__PURE__*/React.createElement("select", {
           value: mathSubject,
           onChange: e => setMathSubject(e.target.value),
-          className: "px-3 py-1.5 text-xs font-medium bg-white/15 border border-white/25 rounded-lg text-white outline-none",
+          className: "px-3 py-1.5 text-xs font-medium bg-white/15 border border-white/25 rounded-lg text-white outline-none focus:ring-2 focus:ring-indigo-400",
           "aria-label": "Subject"
         }, /*#__PURE__*/React.createElement("option", {
           value: "General Math",
