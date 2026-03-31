@@ -4260,7 +4260,7 @@
         className: "grid grid-cols-10 gap-1 mb-6"
       }, lnfProbeLetters.map((item, idx) => /*#__PURE__*/React.createElement("div", {
         key: idx,
-        className: `flex items-center justify-center w-9 h-9 rounded-lg text-lg font-bold transition-all cursor-default ${idx === lnfProbeIndex ? 'bg-blue-500 text-white ring-2 ring-blue-300 ring-offset-1 scale-110 shadow-lg' : idx < lnfProbeIndex && item.scored ? item.correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700 line-through' : idx < lnfProbeIndex ? 'bg-slate-100 text-slate-300' : 'bg-slate-50 text-slate-600'}`
+        className: `flex items-center justify-center w-9 h-9 rounded-lg text-lg font-bold transition-all cursor-default ${idx === lnfProbeIndex ? 'bg-blue-500 text-white ring-2 ring-blue-300 ring-offset-1 scale-110 shadow-lg' : idx < lnfProbeIndex && item.scored ? item.correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700 line-through' : idx < lnfProbeIndex ? 'bg-slate-100 text-slate-500' : 'bg-slate-50 text-slate-600'}`
       }, item.letter))), /*#__PURE__*/React.createElement("div", {
         className: "flex items-center justify-center gap-4"
       }, /*#__PURE__*/React.createElement("button", {
@@ -6831,7 +6831,7 @@
               className: 'flex items-center justify-center w-8 h-8 rounded text-sm font-bold transition-all ' +
                 (idx === lnfProbeIndex ? 'bg-blue-500 text-white ring-2 ring-blue-300 scale-110 shadow-lg' :
                  idx < lnfProbeIndex && item.scored ? (item.correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700 line-through') :
-                 idx < lnfProbeIndex ? 'bg-slate-100 text-slate-300' : 'bg-slate-50 text-slate-500')
+                 idx < lnfProbeIndex ? 'bg-slate-100 text-slate-500' : 'bg-slate-50 text-slate-500')
             }, item.letter);
           })
         )

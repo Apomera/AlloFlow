@@ -453,7 +453,7 @@ window.StemLab = window.StemLab || {
               ),
               // Quick range presets
               h('div', { className: 'flex flex-wrap gap-1.5' },
-                h('span', { className: 'text-[10px] font-bold text-slate-400 self-center' }, 'Presets:'),
+                h('span', { className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Presets:'),
                 [[0, 10], [0, 20], [0, 100], [-10, 10], [-20, 20], [0, 1000]].map(function(pr) {
                   return h('button', {
                     key: pr.join('-'),
@@ -519,13 +519,13 @@ window.StemLab = window.StemLab || {
                       ['easy', 'medium', 'hard'].map(function(d) {
                         return h('button', {
                           key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
-                          className: 'text-[9px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
+                          className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
                             (difficulty === d ? (d === 'easy' ? 'bg-green-500 text-white' : d === 'hard' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white') : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
                         }, d);
                       })
                     )
                   ),
-                  h('span', { className: 'text-[9px] text-slate-400' }, Object.keys(challengeTypesUsed).length + '/6 types')
+                  h('span', { className: 'text-[11px] text-slate-500' }, Object.keys(challengeTypesUsed).length + '/6 types')
                 ),
 
                 !challenge
@@ -535,8 +535,8 @@ window.StemLab = window.StemLab || {
                     }, '\uD83C\uDFB2 Generate Challenge')
                   : h('div', { className: 'space-y-2' },
                       h('div', { className: 'flex items-center gap-2' },
-                        h('span', { className: 'text-[9px] font-bold uppercase text-blue-400 bg-blue-100 px-2 py-0.5 rounded-full' }, challenge.type),
-                        streak > 0 && h('span', { className: 'text-[9px] font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak)
+                        h('span', { className: 'text-[11px] font-bold uppercase text-blue-400 bg-blue-100 px-2 py-0.5 rounded-full' }, challenge.type),
+                        streak > 0 && h('span', { className: 'text-[11px] font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak)
                       ),
                       h('p', { className: 'text-sm font-bold text-blue-800' }, challenge.question),
                       h('div', { className: 'flex gap-2 items-center' },
@@ -605,7 +605,7 @@ window.StemLab = window.StemLab || {
               ),
               // Quick skip presets
               h('div', { className: 'flex flex-wrap gap-1.5' },
-                h('span', { className: 'text-[10px] font-bold text-slate-400 self-center' }, 'Count by:'),
+                h('span', { className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Count by:'),
                 [2, 3, 5, 10, 25, 100].map(function(s) {
                   return h('button', {
                     key: s,
@@ -640,7 +640,7 @@ window.StemLab = window.StemLab || {
               // Toggle
               h('button', {
                 onClick: function() { sfxClick(); upd({ showSkipMarkers: !showSkipMarkers }); },
-                className: 'text-xs font-bold ' + (showSkipMarkers ? 'text-violet-600' : 'text-slate-400') + ' hover:text-violet-800 transition-colors'
+                className: 'text-xs font-bold ' + (showSkipMarkers ? 'text-violet-600' : 'text-slate-500') + ' hover:text-violet-800 transition-colors'
               }, showSkipMarkers ? '\uD83D\uDC41 Hide markers on line' : '\uD83D\uDC41 Show markers on line')
             );
           };
@@ -721,7 +721,7 @@ window.StemLab = window.StemLab || {
               h('h3', { className: 'text-lg font-bold text-blue-800' }, '\uD83D\uDCCF Number Line'),
               h('div', { className: 'ml-auto flex items-center gap-3' },
                 streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-                bestStreak > 0 && h('span', { className: 'text-[10px] text-slate-400' }, 'Best: ' + bestStreak),
+                bestStreak > 0 && h('span', { className: 'text-[10px] text-slate-500' }, 'Best: ' + bestStreak),
                 h('span', { className: 'text-xs font-bold text-blue-600' }, score.correct + '/' + score.total)
               )
             ),
@@ -757,7 +757,7 @@ window.StemLab = window.StemLab || {
             renderAITutor(),
 
             // Keyboard hints
-            h('div', { className: 'text-center text-[9px] text-slate-300 mt-2' },
+            h('div', { className: 'text-center text-[11px] text-slate-500 mt-2' },
               '\u2328\uFE0F 1-3: tabs | N: new challenge | ?: AI tutor'
             )
           );

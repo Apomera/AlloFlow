@@ -2055,7 +2055,7 @@
                             onUpdateOption &&
                               onUpdateOption(idx, opt, "set_correct");
                           },
-                          className: `p-1 rounded-full transition-colors flex-shrink-0 ${opt?.toLowerCase() === data.correctSound?.toLowerCase() ? "text-green-500" : "text-slate-300 hover:text-green-400"}`,
+                          className: `p-1 rounded-full transition-colors flex-shrink-0 ${opt?.toLowerCase() === data.correctSound?.toLowerCase() ? "text-green-500" : "text-slate-500 hover:text-green-400"}`,
                           title:
                             opt?.toLowerCase() ===
                               data.correctSound?.toLowerCase()
@@ -2190,7 +2190,7 @@
                           onUpdateOption &&
                             onUpdateOption(i, opt, "set_correct");
                         },
-                        className: `p-1 rounded-full transition-colors flex-shrink-0 ${opt?.toLowerCase() === data.rhymeWord?.toLowerCase() ? "text-green-500" : "text-slate-300 hover:text-green-400"}`,
+                        className: `p-1 rounded-full transition-colors flex-shrink-0 ${opt?.toLowerCase() === data.rhymeWord?.toLowerCase() ? "text-green-500" : "text-slate-500 hover:text-green-400"}`,
                         title:
                           opt?.toLowerCase() === data.rhymeWord?.toLowerCase()
                             ? "✓ Correct answer"
@@ -2421,7 +2421,7 @@
                             onUpdateOption &&
                               onUpdateOption(i, opt, "set_correct");
                           },
-                          className: `p-1 rounded-full transition-colors flex-shrink-0 ${opt?.toLowerCase() === data.answer?.toLowerCase() ? "text-green-500" : "text-slate-300 hover:text-green-400"}`,
+                          className: `p-1 rounded-full transition-colors flex-shrink-0 ${opt?.toLowerCase() === data.answer?.toLowerCase() ? "text-green-500" : "text-slate-500 hover:text-green-400"}`,
                           title:
                             opt?.toLowerCase() === data.answer?.toLowerCase()
                               ? "\u2713 Correct answer"
@@ -2954,7 +2954,7 @@
                   value: userSpelling,
                   onChange: (e) => setUserSpelling(e.target.value),
                   placeholder: t("common.placeholder_drag_letters_here"),
-                  className: `w-full px-6 py-5 text-center text-4xl font-bold rounded-2xl border-4 outline-none focus:ring-2 focus:ring-indigo-400 transition-all shadow-sm placeholder:text-slate-300 tracking-widest uppercase
+                  className: `w-full px-6 py-5 text-center text-4xl font-bold rounded-2xl border-4 outline-none focus:ring-2 focus:ring-indigo-400 transition-all shadow-sm placeholder:text-slate-500 tracking-widest uppercase
                                 ${feedback === "correct" ? "border-green-400 bg-green-50 text-green-700" : feedback === "incorrect" ? "border-red-300 bg-red-50 text-red-700 animate-shake" : "border-slate-200 bg-white text-slate-800 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"}
                             `,
                   autoComplete: "off",
@@ -2967,7 +2967,7 @@
                     type: "button",
                     onClick: () => setUserSpelling(""),
                     className:
-                      "absolute right-4 top-1/2 -translate-y-1/2 p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-100 rounded-full transition-colors",
+                      "absolute right-4 top-1/2 -translate-y-1/2 p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors",
                   },
                     /*#__PURE__*/ React.createElement(X, { size: 24 }),
                 ),
@@ -11258,7 +11258,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "div",
                     {
                       key: idx,
-                      className: `w-12 h-14 border-2 rounded-lg flex items-center justify-center text-2xl font-bold uppercase shadow-md transition-all ${isUsed ? "border-slate-200 bg-slate-100 text-slate-300 cursor-not-allowed opacity-50" : "border-violet-300 bg-violet-50 text-violet-700 hover:scale-105 cursor-pointer"}`,
+                      className: `w-12 h-14 border-2 rounded-lg flex items-center justify-center text-2xl font-bold uppercase shadow-md transition-all ${isUsed ? "border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed opacity-50" : "border-violet-300 bg-violet-50 text-violet-700 hover:scale-105 cursor-pointer"}`,
                       onClick: () => {
                         if (isUsed) return;
                         setUserAnswer((prev) => (prev || "") + letter);
@@ -21190,7 +21190,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             )
                             : /*#__PURE__*/ React.createElement(
                               "span",
-                              { className: "text-slate-300" },
+                              { className: "text-slate-500" },
                               "\u2014",
                             ),
                         ),
@@ -23362,7 +23362,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                       /*#__PURE__*/ React.createElement(
                                 "div",
                                 {
-                                  className: `text-xs font-bold ${s.best > s.initial ? "text-emerald-600" : "text-slate-400"}`,
+                                  className: `text-xs font-bold ${s.best > s.initial ? "text-emerald-600" : "text-slate-500"}`,
                                 },
                                 s.best > s.initial
                                   ? `+${Math.round(s.best - s.initial)}%`

@@ -462,7 +462,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                       return React.createElement("g", { key: 'yl' + i },
 
-                        React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '9px', fill: _muted } }, yVal),
+                        React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '11px', fill: _muted } }, yVal),
 
                         React.createElement("line", { x1: pad, y1: yPos, x2: W - 10, y2: yPos, stroke: _muted, strokeWidth: 0.2, strokeDasharray: "3 3" })
 
@@ -484,7 +484,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                         React.createElement("rect", { x: x, y: y, width: barW, height: barH, rx: 3, fill: COLORS[i % COLORS.length], opacity: 0.85 }),
 
-                        React.createElement("text", { x: x + barW / 2, y: y - 4, textAnchor: "middle", style: { fontSize: '9px', fontWeight: 'bold', fill: _text } }, row.value),
+                        React.createElement("text", { x: x + barW / 2, y: y - 4, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: _text } }, row.value),
 
                         React.createElement("text", { x: x + barW / 2, y: H - pad + 12, textAnchor: "middle", style: { fontSize: '8px', fill: _muted } }, row.label.length > 6 ? row.label.substring(0, 5) + '..' : row.label)
 
@@ -628,7 +628,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                       var yPos = (H - pad) - frac * (H - pad - chartTop);
 
-                      return React.createElement("text", { key: 'lyl' + i, x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '9px', fill: _muted } }, yVal);
+                      return React.createElement("text", { key: 'lyl' + i, x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '11px', fill: _muted } }, yVal);
 
                     }),
 
@@ -722,7 +722,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                       return React.createElement("g", { key: 'syl' + i },
 
-                        React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '9px', fill: _muted } }, yVal),
+                        React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '11px', fill: _muted } }, yVal),
 
                         React.createElement("line", { x1: pad, y1: yPos, x2: W - 10, y2: yPos, stroke: _muted, strokeWidth: 0.2, strokeDasharray: "3 3" })
 
@@ -798,7 +798,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                         React.createElement("rect", { x: x, y: y, width: bw, height: bh, fill: COLORS[i % COLORS.length], opacity: 0.85, rx: 2 }),
 
-                        bin.count > 0 && React.createElement("text", { x: x + bw / 2, y: y - 3, textAnchor: "middle", style: { fontSize: '9px', fontWeight: 'bold', fill: _text } }, bin.count),
+                        bin.count > 0 && React.createElement("text", { x: x + bw / 2, y: y - 3, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: _text } }, bin.count),
 
                         React.createElement("text", { x: x + bw / 2, y: H - pad + 11, textAnchor: "middle", style: { fontSize: '7px', fill: _muted } }, bin.lo.toFixed(0) + '-' + bin.hi.toFixed(0))
 
@@ -1132,7 +1132,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 return React.createElement("div", { key: i, className: "p-2 rounded-xl text-center", style: { background: _card, border: '1px solid ' + _border } },
 
-                  React.createElement("div", { className: "text-[9px] font-bold uppercase", style: { color: _muted } }, stat.label),
+                  React.createElement("div", { className: "text-[11px] font-bold uppercase", style: { color: _muted } }, stat.label),
 
                   React.createElement("div", { className: "text-sm font-bold font-mono", style: { color: _accent } }, stat.val)
 

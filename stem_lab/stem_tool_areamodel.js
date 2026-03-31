@@ -591,7 +591,7 @@ window.StemLab = window.StemLab || {
         viewMode === 'basic' && h('div', { className: 'flex items-center gap-3' },
           h('button', {
             onClick: function() { upd({ highlight: { rows: 0, cols: 0 } }); },
-            className: 'text-xs text-slate-400 hover:text-amber-600'
+            className: 'text-xs text-slate-500 hover:text-amber-600'
           }, 'Clear highlight'),
           h('button', {
             onClick: function() {
@@ -681,7 +681,7 @@ window.StemLab = window.StemLab || {
         renderAITutor(),
 
         // Keyboard hints
-        h('div', { className: 'text-center text-[11px] text-slate-300 mt-2' },
+        h('div', { className: 'text-center text-[11px] text-slate-500 mt-2' },
           '\u2328\uFE0F B/D/P: switch mode | N: new challenge | C: commutative | ?: AI tutor'
         )
       );

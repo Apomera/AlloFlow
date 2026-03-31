@@ -498,7 +498,7 @@ window.StemLab = window.StemLab || {
         showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200 mb-3' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
-            h('button', { onClick: function() { upd('showBadges', false); }, className: 'text-xs text-slate-400 hover:text-slate-600' }, '\u2715')
+            h('button', { onClick: function() { upd('showBadges', false); }, className: 'text-xs text-slate-500 hover:text-slate-600' }, '\u2715')
           ),
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-5 gap-2' },
             BADGES.map(function(badge) {
@@ -510,7 +510,7 @@ window.StemLab = window.StemLab || {
                 title: badge.desc
               },
                 h('div', { className: 'text-xl' }, earned ? badge.icon : '\uD83D\uDD12'),
-                h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-400') }, badge.label)
+                h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.label)
               );
             })
           )
@@ -520,7 +520,7 @@ window.StemLab = window.StemLab || {
         showAI && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200 mb-3' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Inequality Tutor'),
-            h('button', { onClick: function() { upd('showAI', false); }, className: 'text-xs text-slate-400 hover:text-slate-600' }, '\u2715')
+            h('button', { onClick: function() { upd('showAI', false); }, className: 'text-xs text-slate-500 hover:text-slate-600' }, '\u2715')
           ),
           aiLoading
             ? h('div', { className: 'flex items-center gap-2' },
@@ -684,7 +684,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex items-center justify-center gap-2 mt-2' },
           h('button', { onClick: function() { shiftRange(-5); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-500 rounded hover:bg-slate-200 transition-all', title: 'Shift range left' }, '\u25C0 -5'),
           h('button', { onClick: function() { zoomRange(1.5); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-500 rounded hover:bg-slate-200 transition-all', title: 'Zoom out' }, '\u2212 Zoom'),
-          h('span', { className: 'text-[10px] text-slate-400 font-mono' }, '[' + range.min + ', ' + range.max + ']'),
+          h('span', { className: 'text-[10px] text-slate-500 font-mono' }, '[' + range.min + ', ' + range.max + ']'),
           h('button', { onClick: function() { zoomRange(0.67); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-500 rounded hover:bg-slate-200 transition-all', title: 'Zoom in' }, '+ Zoom'),
           h('button', { onClick: function() { shiftRange(5); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-500 rounded hover:bg-slate-200 transition-all', title: 'Shift range right' }, '+5 \u25B6'),
           h('button', { onClick: function() { upd('range', { min: -10, max: 10 }); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-fuchsia-50 text-fuchsia-500 rounded hover:bg-fuchsia-100 transition-all', title: 'Reset range' }, '\u21BA')
@@ -721,7 +721,7 @@ window.StemLab = window.StemLab || {
               testResult
                 ? '\u2705 ' + testVal + ' IS in the solution set'
                 : '\u274C ' + testVal + ' is NOT in the solution set'),
-            testResult === null && ineq && testVal !== '' && h('span', { className: 'text-xs text-slate-400 italic' }, 'Enter a valid number')
+            testResult === null && ineq && testVal !== '' && h('span', { className: 'text-xs text-slate-500 italic' }, 'Enter a valid number')
           )
         ),
 
@@ -888,7 +888,7 @@ window.StemLab = window.StemLab || {
         exprHistory.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-lg p-3 border border-slate-200' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider' }, '\uD83D\uDD53 Recent Expressions'),
-            h('button', { onClick: function() { upd('exprHistory', []); }, className: 'text-[10px] text-slate-400 hover:text-slate-600' }, 'Clear')
+            h('button', { onClick: function() { upd('exprHistory', []); }, className: 'text-[10px] text-slate-500 hover:text-slate-600' }, 'Clear')
           ),
           h('div', { className: 'flex flex-wrap gap-1.5' },
             exprHistory.map(function(ex, i) {
@@ -902,7 +902,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Keyboard shortcuts legend ──
-        h('div', { className: 'text-[10px] text-slate-400 text-center mt-3 space-x-3' },
+        h('div', { className: 'text-[10px] text-slate-500 text-center mt-3 space-x-3' },
           h('span', null, '1 Number Line'),
           h('span', null, '2 2D Graph'),
           h('span', null, 'Q Quiz'),

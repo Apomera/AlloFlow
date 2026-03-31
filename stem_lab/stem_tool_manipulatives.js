@@ -494,7 +494,7 @@ window.StemLab = window.StemLab || {
         return h('button', {
           onClick: function() { if (label.indexOf('\u2192') > 0 && label.indexOf('10') === 0) doRegroup(from, to); else doUngroup(from, to); },
           disabled: !enabled,
-          className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (enabled ? 'text-white shadow hover:shadow-md hover:scale-105' : 'bg-slate-100 text-slate-300 cursor-not-allowed'),
+          className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (enabled ? 'text-white shadow hover:shadow-md hover:scale-105' : 'bg-slate-100 text-slate-500 cursor-not-allowed'),
           style: enabled ? { background: 'linear-gradient(90deg, ' + colorFrom + ', ' + colorTo + ')' } : {}
         }, label);
       };
@@ -549,8 +549,8 @@ window.StemLab = window.StemLab || {
               return h('div', { key: badge.id, className: 'flex items-center gap-2 p-1.5 rounded-lg ' + (earned ? 'bg-amber-100 border border-amber-300' : 'bg-white border border-slate-200 opacity-40') },
                 h('span', { className: 'text-base', style: earned ? {} : { filter: 'grayscale(1)' } }, badge.icon),
                 h('div', null,
-                  h('div', { className: 'text-[10px] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-400') }, badge.name),
-                  h('div', { className: 'text-[8px] ' + (earned ? 'text-amber-600' : 'text-slate-300') }, badge.desc)
+                  h('div', { className: 'text-[10px] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.name),
+                  h('div', { className: 'text-[8px] ' + (earned ? 'text-amber-600' : 'text-slate-500') }, badge.desc)
                 )
               );
             })
@@ -602,10 +602,10 @@ window.StemLab = window.StemLab || {
                 renderBlock3D('#059669', '#34d399', 10, 48, b10.tens, 1, 10),
                 (b10.thousands > 0 || b10.hundreds > 0 || b10.tens > 0) && b10.ones > 0 && h('span', { className: 'w-px h-8 bg-slate-200 mx-0.5' }),
                 renderBlock3D('#ea580c', '#fb923c', 10, 10, b10.ones, 1, 1),
-                totalValue === 0 && h('span', { className: 'text-sm text-slate-300 italic' }, 'no blocks')
+                totalValue === 0 && h('span', { className: 'text-sm text-slate-500 italic' }, 'no blocks')
               )
             ),
-            h('div', { className: 'flex items-center justify-center gap-4 mb-3 text-[10px] font-bold text-slate-400' },
+            h('div', { className: 'flex items-center justify-center gap-4 mb-3 text-[10px] font-bold text-slate-500' },
               h('span', null, '\u25A0 Cube = 1000'), h('span', null, '\u25AC Flat = 100'), h('span', null, '\u2503 Rod = 10'), h('span', null, '\u25AA Unit = 1')
             ),
             // Place value columns
@@ -634,7 +634,7 @@ window.StemLab = window.StemLab || {
 
           // Difficulty selector
           h('div', { className: 'flex gap-1.5 items-center flex-wrap' },
-            h('span', { className: 'text-[10px] font-bold text-slate-400' }, 'Difficulty:'),
+            h('span', { className: 'text-[10px] font-bold text-slate-500' }, 'Difficulty:'),
             [{ id: 'ones', label: '1\u20139', color: '#ea580c' }, { id: 'tens', label: '10\u201399', color: '#059669' }, { id: 'hundreds', label: '100\u2013999', color: '#2563eb' }, { id: 'thousands', label: '1K\u20139K', color: '#db2777' }, { id: 'any', label: 'Any', color: '#64748b' }].map(function(dl) {
               return h('button', { key: dl.id, onClick: function() { upd({ diffLevel: dl.id }); },
                 className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ' + (diffLevel === dl.id ? 'text-white shadow' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'),

@@ -811,7 +811,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 React.createElement("span", { className: "text-lg font-bold text-slate-800" }, d.formula || '\u2014'),
 
-              d.formula && d.atoms && React.createElement("span", { className: "ml-2 text-xs text-slate-400" },
+              d.formula && d.atoms && React.createElement("span", { className: "ml-2 text-xs text-slate-500" },
                 calcMolarMass((() => { const c = {}; (d.atoms || []).forEach(a => { c[a.el] = (c[a.el] || 0) + 1; }); return c; })()) + " g/mol"
               )
               )
@@ -850,7 +850,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 Object.keys(selectedEls).length === 0
 
-                  ? React.createElement("p", { className: "text-slate-400 text-sm italic" }, "Tap elements above to add them...")
+                  ? React.createElement("p", { className: "text-slate-500 text-sm italic" }, "Tap elements above to add them...")
 
                   : Object.entries(selectedEls).map(([sym, count]) => {
 
@@ -910,7 +910,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                  COMPOUNDS.map(c => React.createElement("span", { key: c.formula, className: "px-2 py-0.5 rounded text-xs font-bold " + (discovered.includes(c.formula) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-400') }, discovered.includes(c.formula) ? c.emoji + ' ' + c.name : '\uD83D\uDD12 ???'))
+                  COMPOUNDS.map(c => React.createElement("span", { key: c.formula, className: "px-2 py-0.5 rounded text-xs font-bold " + (discovered.includes(c.formula) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500') }, discovered.includes(c.formula) ? c.emoji + ' ' + c.name : '\uD83D\uDD12 ???'))
 
                 )
 
@@ -1278,13 +1278,13 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   React.createElement("div", null,
 
-                    React.createElement("span", { className: "text-[10px] font-bold text-slate-400 uppercase tracking-wider" }, "Formula: "),
+                    React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, "Formula: "),
 
                     React.createElement("span", { className: "text-lg font-black text-slate-800 font-mono" }, formulaStr)
 
                   ),
 
-                  React.createElement("div", { className: "flex items-center gap-1 text-[10px] text-slate-400" },
+                  React.createElement("div", { className: "flex items-center gap-1 text-[10px] text-slate-500" },
 
                     React.createElement("span", null, (d.buildAtoms || []).length + " atoms"),
 
@@ -1483,7 +1483,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     ),
 
-                    React.createElement("button", { onClick: () => upd('selectedElement', null), className: "p-1 text-slate-400 hover:text-slate-600 flex-shrink-0", "aria-label": "Close" }, "\u2715")
+                    React.createElement("button", { onClick: () => upd('selectedElement', null), className: "p-1 text-slate-500 hover:text-slate-600 flex-shrink-0", "aria-label": "Close" }, "\u2715")
 
                   ),
 
@@ -1535,7 +1535,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2" }, "\u269B\uFE0F Bohr Model"),
 
-                      React.createElement("span", { className: "ml-2 text-[11px] text-slate-400 font-normal" },
+                      React.createElement("span", { className: "ml-2 text-[11px] text-slate-500 font-normal" },
                         "Config: " + getElectronConfig(d.selectedElement.n) +
                         " | Valence: " + getValenceElectrons(d.selectedElement.n) + "e⁻" +
                         (ELECTRONEGATIVITY[d.selectedElement.s] ? " | EN: " + ELECTRONEGATIVITY[d.selectedElement.s] : "")
@@ -1821,7 +1821,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                           })()),
 
-                          React.createElement("p", { className: "text-[11px] text-slate-400 italic mt-1" }, "\u26A1 Electrons orbit the nucleus in energy levels called \"shells.\" Inner shells fill first before outer ones begin.")
+                          React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-1" }, "\u26A1 Electrons orbit the nucleus in energy levels called \"shells.\" Inner shells fill first before outer ones begin.")
 
                         )
 
@@ -2005,7 +2005,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       // Left side (reactants)
                       r.left.map((term, i) => React.createElement("div", { key: 'l' + i, className: "flex items-center gap-1" },
-                        i > 0 && React.createElement("span", { className: "text-lg font-bold text-slate-400 mx-1" }, "+"),
+                        i > 0 && React.createElement("span", { className: "text-lg font-bold text-slate-500 mx-1" }, "+"),
                         React.createElement("div", { className: "flex flex-col items-center" },
                           React.createElement("div", { className: "flex items-center gap-0.5" },
                             React.createElement("button", {
@@ -2023,11 +2023,11 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                       )),
 
                       // Arrow
-                      React.createElement("span", { className: "text-2xl font-bold text-slate-400 mx-2" }, "→"),
+                      React.createElement("span", { className: "text-2xl font-bold text-slate-500 mx-2" }, "→"),
 
                       // Right side (products)
                       r.right.map((term, i) => React.createElement("div", { key: 'r' + i, className: "flex items-center gap-1" },
-                        i > 0 && React.createElement("span", { className: "text-lg font-bold text-slate-400 mx-1" }, "+"),
+                        i > 0 && React.createElement("span", { className: "text-lg font-bold text-slate-500 mx-1" }, "+"),
                         React.createElement("div", { className: "flex flex-col items-center" },
                           React.createElement("div", { className: "flex items-center gap-0.5" },
                             React.createElement("button", {
@@ -2084,7 +2084,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                   ),
 
                   // Progress
-                  React.createElement("div", { className: "mt-3 flex items-center justify-between text-[10px] text-slate-400" },
+                  React.createElement("div", { className: "mt-3 flex items-center justify-between text-[10px] text-slate-500" },
                     React.createElement("span", null, "⚖️ " + reactionsBalanced + " balanced"),
                     React.createElement("span", null, "Reaction " + (currentReactionIdx + 1) + "/" + REACTIONS.length)
                   )
@@ -2108,9 +2108,9 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                       React.createElement("span", { className: "text-lg" }, done ? '✅' : ch.emoji),
                       React.createElement("div", { className: "flex-1 min-w-0" },
                         React.createElement("p", { className: "text-xs font-bold " + (done ? 'text-emerald-700 line-through' : 'text-slate-700') }, ch.name),
-                        React.createElement("p", { className: "text-[10px] " + (done ? 'text-emerald-500' : 'text-slate-400') }, ch.desc)
+                        React.createElement("p", { className: "text-[10px] " + (done ? 'text-emerald-500' : 'text-slate-500') }, ch.desc)
                       ),
-                      React.createElement("span", { className: "text-[10px] font-bold " + (done ? 'text-emerald-600' : 'text-slate-400') }, "+" + ch.reward + " RP")
+                      React.createElement("span", { className: "text-[10px] font-bold " + (done ? 'text-emerald-600' : 'text-slate-500') }, "+" + ch.reward + " RP")
                     );
                   })
                 )

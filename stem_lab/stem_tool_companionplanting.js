@@ -2587,7 +2587,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 }, "▶ Grow!"),
 
-                !allPlanted && React.createElement("span", { className: "text-[10px] text-slate-400 italic" }, "Plant all three seeds to begin")
+                !allPlanted && React.createElement("span", { className: "text-[10px] text-slate-500 italic" }, "Plant all three seeds to begin")
 
               ),
 
@@ -2709,7 +2709,7 @@ var d = (labToolData.companionPlanting) || {};
 
                         onCooldown
 
-                          ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                          ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed'
 
                           : 'bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-400 shadow-sm hover:shadow-md'
 
@@ -3470,7 +3470,7 @@ var d = (labToolData.companionPlanting) || {};
                         className: "w-full text-left p-2.5 rounded-xl border-2 text-xs transition-all " + cls,
                         disabled: answered
                       },
-                        React.createElement("span", { className: "font-bold mr-1 " + (answered && isRight ? 'text-green-600' : answered && isSelected ? 'text-red-500' : 'text-slate-400') }, String.fromCharCode(65 + oi) + '.'),
+                        React.createElement("span", { className: "font-bold mr-1 " + (answered && isRight ? 'text-green-600' : answered && isSelected ? 'text-red-500' : 'text-slate-500') }, String.fromCharCode(65 + oi) + '.'),
                         React.createElement("span", { className: answered && isRight ? 'text-green-700' : answered && isSelected && !isRight ? 'text-red-600' : 'text-slate-700' }, ' ' + opt)
                       );
                     })
@@ -3564,7 +3564,7 @@ var d = (labToolData.companionPlanting) || {};
                         React.createElement("span", { className: "text-lg" }, step.icon),
                         React.createElement("span", { className: "text-[7px] font-bold", style: { color: step.color } }, step.name)
                       ),
-                      si < 5 && React.createElement("span", { className: "text-slate-300 mx-0.5" }, '\u2192')
+                      si < 5 && React.createElement("span", { className: "text-slate-500 mx-0.5" }, '\u2192')
                     );
                   })
                 ),

@@ -773,7 +773,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex items-center gap-3 flex-wrap' },
           h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' }, h(ArrowLeft, { size: 18, className: 'text-slate-500' })),
           h('h3', { className: 'text-lg font-bold text-slate-800' }, '\uD83D\uDCCA Data Plotter'),
-          h('span', { className: 'text-xs text-slate-400' }, n + ' pts' + (stepMode ? ' (' + stepIdx + '/' + points.length + ')' : '')),
+          h('span', { className: 'text-xs text-slate-500' }, n + ' pts' + (stepMode ? ' (' + stepIdx + '/' + points.length + ')' : '')),
           n >= 2 && h('span', { className: 'text-xs font-bold ' + (Math.abs(regR2) > 0.8 ? 'text-emerald-600' : Math.abs(regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2=' + regR2.toFixed(3)),
           h('div', { className: 'ml-auto flex gap-1.5' },
             h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-500') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
@@ -810,8 +810,8 @@ window.StemLab = window.StemLab || {
               return h('div', { key: badge.id, className: 'flex items-center gap-2 p-1.5 rounded-lg ' + (earned ? 'bg-amber-100 border border-amber-300' : 'bg-white border border-slate-200 opacity-40') },
                 h('span', { className: 'text-base', style: earned ? {} : { filter: 'grayscale(1)' } }, badge.icon),
                 h('div', null,
-                  h('div', { className: 'text-[10px] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-400') }, badge.name),
-                  h('div', { className: 'text-[8px] ' + (earned ? 'text-amber-600' : 'text-slate-300') }, badge.desc)
+                  h('div', { className: 'text-[10px] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.name),
+                  h('div', { className: 'text-[8px] ' + (earned ? 'text-amber-600' : 'text-slate-500') }, badge.desc)
                 )
               );
             })
@@ -862,7 +862,7 @@ window.StemLab = window.StemLab || {
 
           // Datasets
           h('div', { className: 'flex gap-1.5 flex-wrap' },
-            h('span', { className: 'text-[10px] font-bold text-slate-400 self-center' }, 'Datasets:'),
+            h('span', { className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Datasets:'),
             datasetLibrary.map(function(ds) {
               return h('button', { key: ds.label, onClick: function() { loadDataset(ds); }, className: 'px-2 py-1 rounded-lg text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 transition-all' }, ds.label);
             })
@@ -887,8 +887,8 @@ window.StemLab = window.StemLab || {
                 var gy = yMin + gi * (yMax - yMin) / nt;
                 elems.push(h('line', { key: 'gv'+gi, x1: toSX(gx), y1: pad, x2: toSX(gx), y2: H-pad, stroke: '#e2e8f0', strokeWidth: 0.5, strokeDasharray: '3 3' }));
                 elems.push(h('line', { key: 'gh'+gi, x1: pad, y1: toSY(gy), x2: W-pad, y2: toSY(gy), stroke: '#e2e8f0', strokeWidth: 0.5, strokeDasharray: '3 3' }));
-                elems.push(h('text', { key: 'xt'+gi, x: toSX(gx), y: H-pad+14, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '9px' } }, (Math.round(gx*10)/10).toString()));
-                elems.push(h('text', { key: 'yt'+gi, x: pad-5, y: toSY(gy)+3, textAnchor: 'end', fill: '#94a3b8', style: { fontSize: '9px' } }, (Math.round(gy*10)/10).toString()));
+                elems.push(h('text', { key: 'xt'+gi, x: toSX(gx), y: H-pad+14, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '11px' } }, (Math.round(gx*10)/10).toString()));
+                elems.push(h('text', { key: 'yt'+gi, x: pad-5, y: toSY(gy)+3, textAnchor: 'end', fill: '#94a3b8', style: { fontSize: '11px' } }, (Math.round(gy*10)/10).toString()));
               }
               return elems;
             })(),
@@ -991,7 +991,7 @@ window.StemLab = window.StemLab || {
               return h('g', { key: 'hb'+i },
                 h('rect', { x: barX, y: H-pad-barH, width: barW, height: Math.max(1, barH), fill: pal.fill, fillOpacity: 0.8, rx: 2 }),
                 h('text', { x: barX+barW/2, y: H-pad+12, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '8px' } }, bin.low.toFixed(0) + '-' + bin.high.toFixed(0)),
-                h('text', { x: barX+barW/2, y: H-pad-barH-4, textAnchor: 'middle', fill: pal.fill, style: { fontSize: '9px', fontWeight: 'bold' } }, bin.count)
+                h('text', { x: barX+barW/2, y: H-pad-barH-4, textAnchor: 'middle', fill: pal.fill, style: { fontSize: '11px', fontWeight: 'bold' } }, bin.count)
               );
             }),
             // Normal distribution overlay
@@ -1034,13 +1034,13 @@ window.StemLab = window.StemLab || {
                 h('line', { x1: bx(yMax_), y1: 60, x2: bx(yMax_), y2: 100, stroke: '#64748b', strokeWidth: 1.5 }),
                 h('rect', { x: bx(q1), y: 55, width: Math.max(2, bx(q3) - bx(q1)), height: 50, fill: pal.fill, fillOpacity: 0.3, stroke: pal.fill, strokeWidth: 2, rx: 4 }),
                 h('line', { x1: bx(yMedian), y1: 55, x2: bx(yMedian), y2: 105, stroke: '#ef4444', strokeWidth: 2.5 }),
-                h('text', { x: bx(yMin_), y: 50, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '9px' } }, 'Min: ' + yMin_.toFixed(1)),
-                h('text', { x: bx(q1), y: 50, textAnchor: 'middle', fill: pal.fill, style: { fontSize: '9px', fontWeight: 'bold' } }, 'Q1: ' + q1.toFixed(1)),
-                h('text', { x: bx(yMedian), y: 120, textAnchor: 'middle', fill: '#ef4444', style: { fontSize: '9px', fontWeight: 'bold' } }, 'Med: ' + yMedian.toFixed(1)),
-                h('text', { x: bx(q3), y: 50, textAnchor: 'middle', fill: pal.fill, style: { fontSize: '9px', fontWeight: 'bold' } }, 'Q3: ' + q3.toFixed(1)),
-                h('text', { x: bx(yMax_), y: 50, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '9px' } }, 'Max: ' + yMax_.toFixed(1)),
+                h('text', { x: bx(yMin_), y: 50, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '11px' } }, 'Min: ' + yMin_.toFixed(1)),
+                h('text', { x: bx(q1), y: 50, textAnchor: 'middle', fill: pal.fill, style: { fontSize: '11px', fontWeight: 'bold' } }, 'Q1: ' + q1.toFixed(1)),
+                h('text', { x: bx(yMedian), y: 120, textAnchor: 'middle', fill: '#ef4444', style: { fontSize: '11px', fontWeight: 'bold' } }, 'Med: ' + yMedian.toFixed(1)),
+                h('text', { x: bx(q3), y: 50, textAnchor: 'middle', fill: pal.fill, style: { fontSize: '11px', fontWeight: 'bold' } }, 'Q3: ' + q3.toFixed(1)),
+                h('text', { x: bx(yMax_), y: 50, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '11px' } }, 'Max: ' + yMax_.toFixed(1)),
                 outliers.map(function(o, i) { return h('circle', { key: 'out'+i, cx: bx(o.y), cy: 80, r: 5, fill: '#ef4444', stroke: '#fff', strokeWidth: 1 }); }),
-                h('text', { x: bx((q1+q3)/2), y: 145, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '9px' } }, 'IQR: ' + iqr.toFixed(1))
+                h('text', { x: bx((q1+q3)/2), y: 145, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '11px' } }, 'IQR: ' + iqr.toFixed(1))
               );
             })()
           ),
@@ -1059,7 +1059,7 @@ window.StemLab = window.StemLab || {
                 var gy = oToY(n * pct / 100);
                 return h('g', { key: 'og'+pct },
                   h('line', { x1: pad, y1: gy, x2: W-pad, y2: gy, stroke: '#e2e8f0', strokeWidth: 0.5, strokeDasharray: '3 3' }),
-                  h('text', { x: pad-5, y: gy+3, textAnchor: 'end', fill: '#94a3b8', style: { fontSize: '9px' } }, pct + '%')
+                  h('text', { x: pad-5, y: gy+3, textAnchor: 'end', fill: '#94a3b8', style: { fontSize: '11px' } }, pct + '%')
                 );
               }),
               h('line', { x1: pad, y1: oH-pad, x2: W-pad, y2: oH-pad, stroke: '#64748b', strokeWidth: 1.5 }),
@@ -1109,8 +1109,8 @@ window.StemLab = window.StemLab || {
           // ── Table input ──
           tableMode && h('div', { className: 'bg-slate-50 rounded-lg p-3' },
             h('div', { className: 'flex gap-2 items-end mb-2' },
-              h('div', null, h('label', { className: 'text-[10px] font-bold text-slate-400 block' }, 'X'), h('input', { type: 'number', step: '0.1', id: 'dp-x-input', className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
-              h('div', null, h('label', { className: 'text-[10px] font-bold text-slate-400 block' }, 'Y'), h('input', { type: 'number', step: '0.1', id: 'dp-y-input', className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
+              h('div', null, h('label', { className: 'text-[10px] font-bold text-slate-500 block' }, 'X'), h('input', { type: 'number', step: '0.1', id: 'dp-x-input', className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
+              h('div', null, h('label', { className: 'text-[10px] font-bold text-slate-500 block' }, 'Y'), h('input', { type: 'number', step: '0.1', id: 'dp-y-input', className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
               h('button', { onClick: function() { var xi = document.getElementById('dp-x-input'), yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { addPoint(parseFloat(xi.value), parseFloat(yi.value)); xi.value = ''; yi.value = ''; } }, className: 'px-3 py-1 bg-teal-600 text-white font-bold rounded text-sm hover:bg-teal-700' }, '+ Add')
             ),
             n > 0 && h('div', { className: 'max-h-24 overflow-y-auto text-xs font-mono text-slate-500' },
@@ -1131,7 +1131,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-center gap-3 flex-wrap' },
               h('span', { className: 'text-xs font-mono text-slate-700' }, regEq),
               h('span', { className: 'text-xs font-bold ' + (Math.abs(regR2) > 0.8 ? 'text-emerald-600' : Math.abs(regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2 = ' + regR2.toFixed(4)),
-              h('span', { className: 'text-[10px] text-slate-400' }, slope > 0 ? '\u2197 Positive' : slope < 0 ? '\u2198 Negative' : '\u2794 None'),
+              h('span', { className: 'text-[10px] text-slate-500' }, slope > 0 ? '\u2197 Positive' : slope < 0 ? '\u2198 Negative' : '\u2794 None'),
               n >= 3 && h('span', { className: 'text-[10px] font-bold text-indigo-500', title: 'Pearson r / Spearman \u03C1', onClick: function() { checkBadges({ spearmanViewed: true }); } }, 'r=' + pearsonR.toFixed(3) + ' | \u03C1=' + spearmanR.toFixed(3))
             ),
             // Correlation strength bar
@@ -1149,12 +1149,12 @@ window.StemLab = window.StemLab || {
           showGallery && h('div', { className: 'bg-slate-50 rounded-xl p-3 border border-slate-200' },
             h('div', { className: 'text-xs font-bold text-slate-600 uppercase mb-2' }, '\uD83D\uDCBE Saved Charts'),
             galleryItems.length === 0
-              ? h('div', { className: 'text-xs text-slate-400 text-center py-2' }, 'No saved charts yet')
+              ? h('div', { className: 'text-xs text-slate-500 text-center py-2' }, 'No saved charts yet')
               : h('div', { className: 'space-y-1.5' }, galleryItems.map(function(item) {
                   return h('div', { key: item.id, className: 'flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200' },
                     h('span', { className: 'text-xs font-bold text-slate-700' }, item.n + ' pts'),
-                    h('span', { className: 'text-[10px] text-slate-400' }, 'R\u00B2=' + (item.r2||0).toFixed(3)),
-                    h('span', { className: 'text-[10px] text-slate-400 ml-auto' }, new Date(item.timestamp).toLocaleDateString()),
+                    h('span', { className: 'text-[10px] text-slate-500' }, 'R\u00B2=' + (item.r2||0).toFixed(3)),
+                    h('span', { className: 'text-[10px] text-slate-500 ml-auto' }, new Date(item.timestamp).toLocaleDateString()),
                     h('button', { onClick: function() { loadChart(item); }, className: 'px-2 py-0.5 text-[10px] font-bold bg-teal-50 text-teal-600 rounded hover:bg-teal-100' }, 'Load'),
                     h('button', { onClick: function() { deleteChart(item.id); }, className: 'px-2 py-0.5 text-[10px] font-bold text-red-400 hover:text-red-600' }, '\u2715')
                   );
@@ -1192,7 +1192,7 @@ window.StemLab = window.StemLab || {
                   { label: 'Spearman \u03C1', value: spearmanR.toFixed(4), icon: '\uD83C\uDFC5' }
                 ].map(function(stat) {
                   return h('div', { key: stat.label, className: 'p-2 bg-white rounded-lg border border-teal-100 text-center', onClick: stat.label === 'Spearman \u03C1' ? function() { checkBadges({ spearmanViewed: true }); } : undefined },
-                    h('div', { className: 'text-[9px] font-bold text-teal-600 uppercase' }, stat.icon + ' ' + stat.label),
+                    h('div', { className: 'text-[11px] font-bold text-teal-600 uppercase' }, stat.icon + ' ' + stat.label),
                     h('div', { className: 'text-sm font-bold text-teal-900' }, stat.value)
                   );
                 })
@@ -1251,7 +1251,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'bg-white rounded-xl p-3 border border-cyan-200' },
                 h('div', { className: 'text-xs font-bold text-cyan-700 uppercase mb-2' }, '\uD83D\uDCD0 Z-Score Calculator'),
                 stdDev === 0
-                  ? h('div', { className: 'text-xs text-slate-400' }, 'Need variation in Y values')
+                  ? h('div', { className: 'text-xs text-slate-500' }, 'Need variation in Y values')
                   : h('div', { className: 'space-y-2' },
                     h('div', { className: 'flex gap-2 items-center' },
                       h('span', { className: 'text-xs font-bold text-cyan-600' }, 'Y value:'),
@@ -1269,7 +1269,7 @@ window.StemLab = window.StemLab || {
                     h('div', { className: 'text-[10px] text-cyan-500' }, 'z = (value \u2212 mean) / std dev = (value \u2212 ' + meanY.toFixed(2) + ') / ' + stdDev.toFixed(2)),
                     // Mini visual
                     h('div', { className: 'flex items-center gap-1 mt-1' },
-                      h('span', { className: 'text-[9px] text-slate-400' }, '-3\u03C3'),
+                      h('span', { className: 'text-[11px] text-slate-500' }, '-3\u03C3'),
                       h('div', { className: 'flex-1 h-4 bg-slate-100 rounded-full relative overflow-hidden' },
                         h('div', { style: { position: 'absolute', left: '2.3%', width: '13.5%', height: '100%', backgroundColor: '#fee2e2' } }),
                         h('div', { style: { position: 'absolute', left: '15.8%', width: '34.2%', height: '100%', backgroundColor: '#dcfce7' } }),
@@ -1282,7 +1282,7 @@ window.StemLab = window.StemLab || {
                           return h('div', { style: { position: 'absolute', left: pct2 + '%', top: 0, width: '3px', height: '100%', backgroundColor: '#0d9488', borderRadius: '2px' } });
                         })()
                       ),
-                      h('span', { className: 'text-[9px] text-slate-400' }, '+3\u03C3')
+                      h('span', { className: 'text-[11px] text-slate-500' }, '+3\u03C3')
                     )
                   )
               ),
@@ -1293,7 +1293,7 @@ window.StemLab = window.StemLab || {
                 showStemLeaf && stemLeafData.length > 0 && h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200 mt-1.5 font-mono text-sm' },
                   h('div', { className: 'flex gap-1 mb-2' },
                     h('span', { className: 'text-[10px] font-bold text-teal-600 font-sans' }, 'Stem'),
-                    h('span', { className: 'text-[10px] text-slate-400 font-sans' }, '|'),
+                    h('span', { className: 'text-[10px] text-slate-500 font-sans' }, '|'),
                     h('span', { className: 'text-[10px] font-bold text-teal-600 font-sans' }, 'Leaf')
                   ),
                   stemLeafData.map(function(row) {
@@ -1303,7 +1303,7 @@ window.StemLab = window.StemLab || {
                       h('span', { className: 'text-slate-600 tracking-wider' }, row.leaves.join(' '))
                     );
                   }),
-                  h('div', { className: 'text-[9px] text-slate-400 font-sans mt-2' }, 'Key: stem|leaf = stem\u00D710 + leaf (e.g. 7|3 = 73)')
+                  h('div', { className: 'text-[11px] text-slate-500 font-sans mt-2' }, 'Key: stem|leaf = stem\u00D710 + leaf (e.g. 7|3 = 73)')
                 )
               )
             )
@@ -1315,7 +1315,7 @@ window.StemLab = window.StemLab || {
         activeTab === 'quiz' && h('div', { className: 'space-y-3' },
           // Quiz type selector
           h('div', { className: 'flex gap-2 flex-wrap items-center' },
-            h('span', { className: 'text-[10px] font-bold text-slate-400' }, 'Type:'),
+            h('span', { className: 'text-[10px] font-bold text-slate-500' }, 'Type:'),
             [
               { id: 'correlation', icon: '\uD83D\uDCC8', label: 'Correlation' },
               { id: 'guessR2', icon: '\uD83C\uDFAF', label: 'Guess R\u00B2' },
@@ -1384,7 +1384,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-white rounded-xl p-4 border border-indigo-200' },
             h('div', { className: 'text-xs font-bold text-indigo-700 uppercase mb-2' }, '\uD83D\uDD2E Prediction Tool'),
             n < 2
-              ? h('div', { className: 'text-xs text-slate-400' }, 'Need 2+ points to predict')
+              ? h('div', { className: 'text-xs text-slate-500' }, 'Need 2+ points to predict')
               : h('div', null,
                   h('div', { className: 'text-[10px] text-slate-500 mb-2' }, 'Using ' + regressionType + ': ' + regEq),
                   h('div', { className: 'flex gap-2 items-center flex-wrap' },
@@ -1414,7 +1414,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-white rounded-xl p-4 border border-amber-200' },
             h('div', { className: 'text-xs font-bold text-amber-700 uppercase mb-2' }, '\uD83D\uDD04 Data Transformations'),
             points.length === 0
-              ? h('div', { className: 'text-xs text-slate-400' }, 'Add data points first')
+              ? h('div', { className: 'text-xs text-slate-500' }, 'Add data points first')
               : h('div', { className: 'space-y-2' },
                 h('div', { className: 'flex gap-1.5 flex-wrap' },
                   [
@@ -1430,7 +1430,7 @@ window.StemLab = window.StemLab || {
                     }, tr.icon + ' ' + tr.label);
                   })
                 ),
-                h('div', { className: 'text-[9px] text-amber-500' }, '\uD83D\uDCA1 Transformations modify data in-place. Use Undo (\u21A9) to revert.')
+                h('div', { className: 'text-[11px] text-amber-500' }, '\uD83D\uDCA1 Transformations modify data in-place. Use Undo (\u21A9) to revert.')
               )
           ),
 

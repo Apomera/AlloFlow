@@ -698,6 +698,7 @@ window.StemLab = window.StemLab || {
       // ── Loading state ──
       if (!labToolData._threeLoaded) {
         return h('div', { className: 'flex flex-col items-center justify-center gap-4 p-12 animate-pulse' },
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
           h('div', { className: 'text-5xl' }, '\uD83D\uDD37'),
           h('div', { className: 'text-slate-400 text-lg' }, 'Loading 3D engine...')
         );
@@ -755,7 +756,7 @@ window.StemLab = window.StemLab || {
               return h('div', { key: id, className: 'flex flex-col items-center text-center p-2 rounded-lg transition-all ' + (earned ? 'bg-purple-500/20 border border-purple-400/40' : 'bg-slate-800/40 border border-slate-700/30 opacity-50') },
                 h('span', { className: 'text-xl mb-1' }, earned ? b.icon : '\uD83D\uDD12'),
                 h('span', { className: 'text-[10px] font-bold ' + (earned ? 'text-purple-200' : 'text-slate-500') }, b.name),
-                h('span', { className: 'text-[9px] ' + (earned ? 'text-purple-300/70' : 'text-slate-600') }, b.desc)
+                h('span', { className: 'text-[11px] ' + (earned ? 'text-purple-300/70' : 'text-slate-600') }, b.desc)
               );
             })
           )
@@ -931,7 +932,7 @@ window.StemLab = window.StemLab || {
               m.name
             ),
             // Keyboard shortcuts overlay
-            h('div', { className: 'absolute top-2 right-2 text-[9px] text-slate-500 bg-slate-900/80 px-2 py-1 rounded-md leading-relaxed' },
+            h('div', { className: 'absolute top-2 right-2 text-[11px] text-slate-500 bg-slate-900/80 px-2 py-1 rounded-md leading-relaxed' },
               '1-7: shapes \u2022 C: challenge \u2022 W: wireframe \u2022 E: export \u2022 B: badges \u2022 /: AI'
             )
           )

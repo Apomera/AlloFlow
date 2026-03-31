@@ -454,7 +454,7 @@
         } },
           el('span', { style: { fontSize: 20 } }, emoji),
           el('span', { style: { fontSize: 11, fontWeight: 700, color: isActive ? '#4ade80' : '#94a3b8' } }, label),
-          sub && el('span', { style: { fontSize: 9, color: '#64748b' } }, sub)
+          sub && el('span', { style: { fontSize: 11, color: '#64748b' } }, sub)
         );
       }
 
@@ -495,7 +495,7 @@
           el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
             el('span', { style: { fontSize: hopePct >= 80 ? 16 : 13, filter: hopePct >= 80 ? 'drop-shadow(0 0 4px #fbbf24)' : 'none', transition: 'all 0.3s' } }, hopePct >= 100 ? '\uD83C\uDF1F' : hopePct >= 60 ? '\u2600\uFE0F' : '\uD83C\uDF31'),
             el('span', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700 } }, 'Hope Meter'),
-            el('span', { style: { color: '#64748b', fontSize: 9, marginLeft: 'auto' } }, hopePts + '/' + HOPE_MILESTONES.length)
+            el('span', { style: { color: '#64748b', fontSize: 11, marginLeft: 'auto' } }, hopePts + '/' + HOPE_MILESTONES.length)
           ),
           el('div', { style: { width: '100%', height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
             el('div', { style: { width: hopePct + '%', height: '100%', borderRadius: 2, background: 'linear-gradient(90deg, #22c55e, #3b82f6, #a855f7)', transition: 'width 0.8s ease-out', boxShadow: hopePct >= 50 ? '0 0 8px rgba(34,197,94,0.4)' : 'none' } })
@@ -511,7 +511,7 @@
                 el('span', { style: { fontSize: 18, filter: earned ? 'none' : 'grayscale(1)' } }, b.icon),
                 el('div', null,
                   el('div', { style: { fontSize: 10, fontWeight: 800, color: earned ? '#fbbf24' : '#475569' } }, b.label),
-                  el('div', { style: { fontSize: 9, color: '#64748b' } }, b.desc)
+                  el('div', { style: { fontSize: 11, color: '#64748b' } }, b.desc)
                 )
               );
             })
@@ -789,12 +789,12 @@
                       el('div', { style: { color: '#e2e8f0', fontSize: 13, fontWeight: 800 } }, r.name),
                       el('div', { style: { fontSize: 10, color: '#64748b' } }, 'Pop: ' + r.pop)
                     ),
-                    el('span', { style: { padding: '2px 8px', borderRadius: 12, background: riskColors[r.risk] + '20', color: riskColors[r.risk], fontSize: 9, fontWeight: 800, textTransform: 'uppercase' } }, r.risk + ' risk')
+                    el('span', { style: { padding: '2px 8px', borderRadius: 12, background: riskColors[r.risk] + '20', color: riskColors[r.risk], fontSize: 11, fontWeight: 800, textTransform: 'uppercase' } }, r.risk + ' risk')
                   ),
 
                   // Risk vs emissions bar
                   cjView === 'emissions' && el('div', { style: { marginTop: 6 } },
-                    el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#64748b', marginBottom: 2 } },
+                    el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#64748b', marginBottom: 2 } },
                       el('span', null, 'Share of global emissions'), el('span', null, r.emPct + '%')),
                     el('div', { style: { height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
                       el('div', { style: { width: Math.min(100, r.emPct * 5) + '%', height: '100%', borderRadius: 3, background: '#ef4444' } })
@@ -893,7 +893,7 @@
                       el('div', { style: { color: '#e2e8f0', fontSize: 12, fontWeight: 700 } }, a.text),
                       el('div', { style: { color: '#64748b', fontSize: 10, marginTop: 2 } }, a.impact)
                     ),
-                    el('span', { style: { padding: '2px 8px', borderRadius: 10, background: diffColors[a.diff] + '20', color: diffColors[a.diff], fontSize: 9, fontWeight: 700 } }, a.diff)
+                    el('span', { style: { padding: '2px 8px', borderRadius: 10, background: diffColors[a.diff] + '20', color: diffColors[a.diff], fontSize: 11, fontWeight: 700 } }, a.diff)
                   );
                 }),
                 el('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', textAlign: 'center' } },

@@ -591,7 +591,7 @@ window.StemLab = window.StemLab || {
         viewMode === 'basic' && h('div', { className: 'flex items-center gap-3' },
           h('button', {
             onClick: function() { upd({ highlight: { rows: 0, cols: 0 } }); },
-            className: 'text-xs text-slate-400 hover:text-amber-600'
+            className: 'text-xs text-slate-500 hover:text-amber-600'
           }, 'Clear highlight'),
           h('button', {
             onClick: function() {
@@ -616,13 +616,13 @@ window.StemLab = window.StemLab || {
                 ['easy', 'medium', 'hard'].map(function(d) {
                   return h('button', {
                     key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
-                    className: 'text-[9px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
+                    className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
                       (difficulty === d ? (d === 'easy' ? 'bg-green-500 text-white' : d === 'hard' ? 'bg-red-500 text-white' : 'bg-amber-500 text-white') : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
                   }, d);
                 })
               )
             ),
-            h('span', { className: 'text-[9px] text-slate-500' }, Object.keys(challengeTypesUsed).length + '/3 modes')
+            h('span', { className: 'text-[11px] text-slate-500' }, Object.keys(challengeTypesUsed).length + '/3 modes')
           ),
 
           !challenge
@@ -642,8 +642,8 @@ window.StemLab = window.StemLab || {
               )
             : h('div', { className: 'space-y-2' },
                 h('div', { className: 'flex items-center gap-2' },
-                  h('span', { className: 'text-[9px] font-bold uppercase text-amber-400 bg-amber-100 px-2 py-0.5 rounded-full' }, challenge.mode || viewMode),
-                  streak > 0 && h('span', { className: 'text-[9px] font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak)
+                  h('span', { className: 'text-[11px] font-bold uppercase text-amber-400 bg-amber-100 px-2 py-0.5 rounded-full' }, challenge.mode || viewMode),
+                  streak > 0 && h('span', { className: 'text-[11px] font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak)
                 ),
                 h('p', { className: 'text-sm font-bold text-amber-800' }, challenge.question),
                 h('div', { className: 'flex gap-2' },
@@ -681,7 +681,7 @@ window.StemLab = window.StemLab || {
         renderAITutor(),
 
         // Keyboard hints
-        h('div', { className: 'text-center text-[9px] text-slate-300 mt-2' },
+        h('div', { className: 'text-center text-[11px] text-slate-500 mt-2' },
           '\u2328\uFE0F B/D/P: switch mode | N: new challenge | C: commutative | ?: AI tutor'
         )
       );

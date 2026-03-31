@@ -12,7 +12,7 @@ window.StemLab = window.StemLab || {
   renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
 };
 
-if (!window.StemLab.isRegistered('worldBuilder')) {
+if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder'))) {
 
 (function() {
   'use strict';
@@ -1057,7 +1057,7 @@ if (!window.StemLab.isRegistered('worldBuilder')) {
                   h('span', { className: 'text-lg' }, npc.emoji),
                   h('div', { className: 'text-left flex-1' },
                     h('div', { className: 'font-bold text-slate-800' }, npc.name),
-                    h('div', { className: 'text-[9px] text-slate-500' }, npc.role),
+                    h('div', { className: 'text-[11px] text-slate-500' }, npc.role),
                     npc.conflictType && npc.conflictType !== 'none' && h('span', { className: 'text-[8px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold' }, npc.conflictType),
                     // Mini rapport bar
                     npcRapport[npc.name] !== undefined && h('div', { className: 'mt-1 w-full' },
@@ -1110,7 +1110,7 @@ if (!window.StemLab.isRegistered('worldBuilder')) {
                 ),
                 // Quest tracker
                 (npcQuests[npcKey] || []).length > 0 && h('div', { className: 'mt-2 space-y-1' },
-                  h('div', { className: 'text-[9px] font-bold text-cyan-600 uppercase tracking-wider' }, '📋 Quests'),
+                  h('div', { className: 'text-[11px] font-bold text-cyan-600 uppercase tracking-wider' }, '📋 Quests'),
                   (npcQuests[npcKey] || []).map(function(q) {
                     var isLocked = rapport < q.difficulty;
                     return h('div', { key: q.id, className: 'flex items-center gap-1.5 text-[10px] ' + (q.isCompleted ? 'text-green-600' : isLocked ? 'text-slate-400' : 'text-slate-700') },
@@ -1136,7 +1136,7 @@ if (!window.StemLab.isRegistered('worldBuilder')) {
               actionResult.selBreakdown && h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
                 Object.entries(actionResult.selBreakdown).map(function(entry) {
                   var max = entry[0] === 'empathy' ? 15 : entry[0] === 'accountability' ? 5 : 10;
-                  return h('span', { key: entry[0], className: 'text-[9px] font-bold px-2 py-0.5 rounded-full ' + (entry[1] >= max * 0.7 ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600') }, entry[0] + ': ' + entry[1] + '/' + max);
+                  return h('span', { key: entry[0], className: 'text-[11px] font-bold px-2 py-0.5 rounded-full ' + (entry[1] >= max * 0.7 ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600') }, entry[0] + ': ' + entry[1] + '/' + max);
                 })
               ),
               actionResult.progressToward && h('div', { className: 'mt-2 text-[10px] font-bold ' + (actionResult.progressToward === 'resolved' ? 'text-green-600' : actionResult.progressToward === 'near-resolution' ? 'text-amber-600' : 'text-slate-500') },
@@ -1172,7 +1172,7 @@ if (!window.StemLab.isRegistered('worldBuilder')) {
           inventory.length > 0 && h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('div', { className: 'text-[10px] font-bold text-amber-600 uppercase tracking-widest' }, '🎒 Inventory (' + inventory.length + ')'),
-              activeItem && h('span', { className: 'text-[9px] font-bold bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full' }, '⚔️ Equipped: ' + activeItem.emoji + ' ' + activeItem.name)
+              activeItem && h('span', { className: 'text-[11px] font-bold bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full' }, '⚔️ Equipped: ' + activeItem.emoji + ' ' + activeItem.name)
             ),
             h('div', { className: 'flex flex-wrap gap-1.5' },
               inventory.map(function(item, i) {
@@ -1206,7 +1206,7 @@ if (!window.StemLab.isRegistered('worldBuilder')) {
                     )
                   ),
                   // Tooltip on hover
-                  h('div', { className: 'hidden group-hover:block absolute z-10 bottom-full left-0 mb-1 w-48 bg-white border border-amber-200 rounded-lg p-2 shadow-lg text-[9px]' },
+                  h('div', { className: 'hidden group-hover:block absolute z-10 bottom-full left-0 mb-1 w-48 bg-white border border-amber-200 rounded-lg p-2 shadow-lg text-[11px]' },
                     h('div', { className: 'font-bold text-amber-800' }, item.emoji + ' ' + item.name),
                     h('div', { className: 'text-slate-600 mt-0.5' }, item.desc),
                     item.specialAbility && h('div', { className: 'text-violet-600 font-medium mt-0.5' }, '✨ ' + item.specialAbility),
@@ -1240,7 +1240,7 @@ if (!window.StemLab.isRegistered('worldBuilder')) {
                         h('span', { className: 'text-[8px] font-bold px-1.5 py-0.5 rounded-full', style: { background: tier.color + '22', color: tier.color } }, tier.emoji + ' ' + tier.label)
                       ),
                       h('p', { className: 'text-[10px] text-emerald-600 italic leading-relaxed' }, s.desc),
-                      s.bonus && h('div', { className: 'text-[9px] text-violet-600 font-medium mt-0.5' }, '✨ ' + s.bonus),
+                      s.bonus && h('div', { className: 'text-[11px] text-violet-600 font-medium mt-0.5' }, '✨ ' + s.bonus),
                       h('div', { className: 'text-[8px] text-slate-400 mt-0.5' }, 'Built by ' + s.builtBy)
                     )
                   );
@@ -1278,7 +1278,7 @@ if (!window.StemLab.isRegistered('worldBuilder')) {
                   (craftSubMode === 'structure' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-300') +
                   (structureCooldown > 0 ? ' opacity-40' : '')
               }, '🏗️ Build Structure' + (structureCooldown > 0 ? ' (' + structureCooldown + ' turns)' : '')),
-              structureCooldown > 0 && h('span', { className: 'text-[9px] text-slate-400 self-center' }, '⏳ Structure cooldown: ' + structureCooldown + ' turn' + (structureCooldown > 1 ? 's' : '') + ' left')
+              structureCooldown > 0 && h('span', { className: 'text-[11px] text-slate-400 self-center' }, '⏳ Structure cooldown: ' + structureCooldown + ' turn' + (structureCooldown > 1 ? 's' : '') + ' left')
             ),
             // Active battle encounter card
             activeBattle && h('div', { className: 'bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-300 rounded-xl p-3 mb-2' },
@@ -1346,7 +1346,7 @@ if (!window.StemLab.isRegistered('worldBuilder')) {
                   ),
                   actionResult.strategyScore > 0 && h('div', { className: 'text-center' },
                     h('div', { className: 'text-2xl font-black text-indigo-600' }, '+', actionResult.strategyScore),
-                    h('div', { className: 'text-[9px] text-indigo-500 font-bold' }, '🧠 Strategy')
+                    h('div', { className: 'text-[11px] text-indigo-500 font-bold' }, '🧠 Strategy')
                   )
                 ),
                 actionResult.weaknessExploited && h('div', { className: 'mt-2 inline-block bg-amber-200 text-amber-800 px-3 py-1 rounded-full text-[10px] font-bold' }, '🎯 Weakness exploited!'),
@@ -1373,7 +1373,7 @@ if (!window.StemLab.isRegistered('worldBuilder')) {
               actionResult.enemyWriting && h('div', { className: 'p-4 bg-gradient-to-r from-red-50 to-orange-50' },
                 h('div', { className: 'text-[10px] font-bold text-red-600 uppercase tracking-widest mb-1 flex items-center gap-1' }, activeBattle ? activeBattle.emoji + ' ' : '', activeBattle ? activeBattle.name + ' Responds' : 'Enemy Responds'),
                 h('p', { className: 'text-sm text-red-900 leading-relaxed font-medium' }, actionResult.enemyWriting),
-                h('p', { className: 'text-[9px] text-red-400 italic mt-2' }, '📖 Notice the vivid language, sensory details, and figurative writing in the enemy\'s response — learn from how it describes its actions!')
+                h('p', { className: 'text-[11px] text-red-400 italic mt-2' }, '📖 Notice the vivid language, sensory details, and figurative writing in the enemy\'s response — learn from how it describes its actions!')
               ),
 
               // Feedback
@@ -1517,10 +1517,10 @@ if (!window.StemLab.isRegistered('worldBuilder')) {
                     h('span', { className: 'text-lg' }, npc.emoji),
                     h('div', { className: 'flex-1 min-w-0' },
                       h('span', { className: 'font-bold text-slate-800' }, npc.name),
-                      h('span', { className: 'text-slate-400 ml-1' }, '(' + npc.role + ')'),
+                      h('span', { className: 'text-slate-500 ml-1' }, '(' + npc.role + ')'),
                       npc.selTheme && h('span', { className: 'ml-1 text-[8px] bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded-full font-bold' }, npc.selTheme)
                     ),
-                    h('button', { onClick: function() { updMulti({ gmCharacters: gmCharacters.filter(function(_, j) { return j !== i; }) }); }, className: 'text-slate-400 hover:text-red-500 text-[10px]', 'aria-label': 'Remove ' + npc.name }, '✕')
+                    h('button', { onClick: function() { updMulti({ gmCharacters: gmCharacters.filter(function(_, j) { return j !== i; }) }); }, className: 'text-slate-500 hover:text-red-500 text-[10px]', 'aria-label': 'Remove ' + npc.name }, '✕')
                   );
                 })
               )

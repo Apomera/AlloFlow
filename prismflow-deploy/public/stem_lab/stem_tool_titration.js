@@ -658,7 +658,7 @@ if (!safetyChecked) {
             },
               React.createElement("div", { className: "text-xs font-black mb-1", style: { color: h.color } }, h.name),
               React.createElement("div", { className: "text-[10px] font-bold text-red-300 mb-1" }, h.ghs.join('  ')),
-              React.createElement("div", { className: "text-[9px] text-amber-200/60" }, "Signal: " + h.signal)
+              React.createElement("div", { className: "text-[11px] text-amber-200/60" }, "Signal: " + h.signal)
             );
           })
         )
@@ -738,13 +738,13 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
         ),
         React.createElement("div", { className: "text-[10px] font-bold text-red-300/80 mb-1" }, h.ghs.join('  \u2022  ')),
         React.createElement("div", { className: "space-y-0.5" },
-          h.hazards.map(function (hz) { return React.createElement("div", { key: hz, className: "text-[9px] text-slate-400" }, hz); })
+          h.hazards.map(function (hz) { return React.createElement("div", { key: hz, className: "text-[11px] text-slate-400" }, hz); })
         ),
-        React.createElement("div", { className: "mt-2 text-[9px]" },
+        React.createElement("div", { className: "mt-2 text-[11px]" },
           React.createElement("span", { className: "font-bold text-emerald-400" }, "First Aid: "),
           React.createElement("span", { className: "text-slate-400" }, h.firstAid)
         ),
-        React.createElement("div", { className: "mt-1 text-[9px]" },
+        React.createElement("div", { className: "mt-1 text-[11px]" },
           React.createElement("span", { className: "font-bold text-cyan-400" }, "Disposal: "),
           React.createElement("span", { className: "text-slate-400" }, h.disposal)
         )
@@ -1322,7 +1322,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
     },
 
-      React.createElement("div", { className: "text-[9px] font-bold text-slate-400 mb-1" }, "CURRENT pH"),
+      React.createElement("div", { className: "text-[11px] font-bold text-slate-400 mb-1" }, "CURRENT pH"),
 
       React.createElement("div", { className: "text-xl font-black tabular-nums", style: { color: currentColor } }, currentPH.toFixed(2)),
 
@@ -1358,7 +1358,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
     },
 
-      React.createElement("div", { className: "text-[9px] font-bold text-slate-400 mb-1" }, "VOLUME ADDED"),
+      React.createElement("div", { className: "text-[11px] font-bold text-slate-400 mb-1" }, "VOLUME ADDED"),
 
       React.createElement("div", { className: "text-xl font-black tabular-nums text-cyan-400" }, volumeAdded.toFixed(1) + " mL"),
 
@@ -1376,7 +1376,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
     },
 
-      React.createElement("div", { className: "text-[9px] font-bold text-slate-400 mb-1" }, "EQUIVALENCE POINT"),
+      React.createElement("div", { className: "text-[11px] font-bold text-slate-400 mb-1" }, "EQUIVALENCE POINT"),
 
       React.createElement("div", { className: "text-lg font-black tabular-nums " + (pastEquivalence ? 'text-red-400' : 'text-slate-300') },
 
@@ -1402,7 +1402,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
     },
 
-      React.createElement("div", { className: "text-[9px] font-bold text-slate-400 mb-1" }, "INDICATOR"),
+      React.createElement("div", { className: "text-[11px] font-bold text-slate-400 mb-1" }, "INDICATOR"),
 
       React.createElement("div", {
 
@@ -1414,7 +1414,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
 
       React.createElement("div", { className: "text-[10px] font-bold text-slate-300" }, indicator.label),
 
-      React.createElement("div", { className: "text-[9px] text-slate-500" }, indicatorStatus)
+      React.createElement("div", { className: "text-[11px] text-slate-500" }, indicatorStatus)
 
     )
 
@@ -1562,7 +1562,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
       return React.createElement("div", null,
         React.createElement("div", { className: "flex items-center gap-2 mb-2" },
           React.createElement("span", {
-            className: "text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider " +
+            className: "text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider " +
               (cq.category === 'safety' ? 'bg-red-900/30 text-red-400' : cq.category === 'technique' ? 'bg-cyan-900/30 text-cyan-400' : 'bg-indigo-900/30 text-indigo-400')
           }, cq.category),
           React.createElement("span", { className: "text-[10px] text-slate-500" }, "Q" + (challengeIdx + 1) + " of " + challengeQuestions.length)
@@ -1656,7 +1656,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
           React.createElement("div", null,
             React.createElement("h4", { className: "text-sm font-black text-white" }, scenario.title),
             React.createElement("span", {
-              className: "text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider " +
+              className: "text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider " +
                 (scenario.urgency === 'critical' ? 'bg-red-600 text-white' : scenario.urgency === 'high' ? 'bg-amber-600 text-white' : 'bg-slate-600 text-slate-200')
             }, scenario.urgency + " urgency")
           )
@@ -1794,7 +1794,7 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
     React.createElement("div", { className: "grid grid-cols-2 gap-4" },
       // Stock solution (C1)
       React.createElement("div", { className: "rounded-xl p-3 border border-violet-800/30 bg-violet-950/20" },
-        React.createElement("div", { className: "text-[9px] font-bold text-violet-400 mb-2 uppercase tracking-wider" }, "Stock Solution"),
+        React.createElement("div", { className: "text-[11px] font-bold text-violet-400 mb-2 uppercase tracking-wider" }, "Stock Solution"),
         React.createElement("label", { className: "block mb-2" },
           React.createElement("span", { className: "text-[10px] text-slate-400" }, "C\u2081 (Concentration)"),
           React.createElement("div", { className: "flex items-center gap-1 mt-1" },
@@ -1812,12 +1812,12 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
           React.createElement("div", { className: "text-lg font-black text-violet-300 mt-1" },
             (molarityCalcC2 * molarityCalcV1 / molarityCalcC1).toFixed(2) + " mL"
           ),
-          React.createElement("span", { className: "text-[9px] text-slate-500" }, "Calculated from C\u2082V\u2082/C\u2081")
+          React.createElement("span", { className: "text-[11px] text-slate-500" }, "Calculated from C\u2082V\u2082/C\u2081")
         )
       ),
       // Desired solution (C2, V2)
       React.createElement("div", { className: "rounded-xl p-3 border border-cyan-800/30 bg-cyan-950/20" },
-        React.createElement("div", { className: "text-[9px] font-bold text-cyan-400 mb-2 uppercase tracking-wider" }, "Desired Solution"),
+        React.createElement("div", { className: "text-[11px] font-bold text-cyan-400 mb-2 uppercase tracking-wider" }, "Desired Solution"),
         React.createElement("label", { className: "block mb-2" },
           React.createElement("span", { className: "text-[10px] text-slate-400" }, "C\u2082 (Target concentration)"),
           React.createElement("div", { className: "flex items-center gap-1 mt-1" },
@@ -1870,15 +1870,15 @@ return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto anim
     // Dilution factor
     React.createElement("div", { className: "flex gap-3 justify-center" },
       React.createElement("div", { className: "rounded-lg px-4 py-2 text-center border border-violet-800/30 bg-violet-950/20" },
-        React.createElement("div", { className: "text-[9px] text-slate-400 font-bold" }, "Dilution Factor"),
+        React.createElement("div", { className: "text-[11px] text-slate-400 font-bold" }, "Dilution Factor"),
         React.createElement("div", { className: "text-sm font-black text-violet-400" }, "1:" + (molarityCalcC1 / molarityCalcC2).toFixed(1))
       ),
       React.createElement("div", { className: "rounded-lg px-4 py-2 text-center border border-cyan-800/30 bg-cyan-950/20" },
-        React.createElement("div", { className: "text-[9px] text-slate-400 font-bold" }, "Water to Add"),
+        React.createElement("div", { className: "text-[11px] text-slate-400 font-bold" }, "Water to Add"),
         React.createElement("div", { className: "text-sm font-black text-cyan-400" }, (molarityCalcV1 - molarityCalcC2 * molarityCalcV1 / molarityCalcC1).toFixed(1) + " mL")
       ),
       React.createElement("div", { className: "rounded-lg px-4 py-2 text-center border border-emerald-800/30 bg-emerald-950/20" },
-        React.createElement("div", { className: "text-[9px] text-slate-400 font-bold" }, "Moles Solute"),
+        React.createElement("div", { className: "text-[11px] text-slate-400 font-bold" }, "Moles Solute"),
         React.createElement("div", { className: "text-sm font-black text-emerald-400" }, (molarityCalcC2 * molarityCalcV1 / 1000).toExponential(2) + " mol")
       )
     )

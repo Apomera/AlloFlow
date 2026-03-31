@@ -509,7 +509,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
             h('button', {
               onClick: function() { extUpd({ showBadges: false }); },
-              className: 'text-xs text-slate-400 hover:text-slate-600'
+              className: 'text-xs text-slate-500 hover:text-slate-600'
             }, '\u2715')
           ),
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
@@ -522,7 +522,7 @@ window.StemLab = window.StemLab || {
                 title: badge.desc
               },
                 h('div', { className: 'text-xl' }, earned ? badge.icon : '\uD83D\uDD12'),
-                h('div', { className: 'text-[9px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-400') }, badge.label)
+                h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.label)
               );
             })
           )
@@ -534,7 +534,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Math Tutor'),
             h('button', {
               onClick: function() { extUpd({ showAI: false }); },
-              className: 'text-xs text-slate-400 hover:text-slate-600'
+              className: 'text-xs text-slate-500 hover:text-slate-600'
             }, '\u2715')
           ),
           _ext.aiLoading
@@ -732,7 +732,7 @@ window.StemLab = window.StemLab || {
               onKeyDown: function(e) { if (e.key === 'Enter' && multTableAnswer && !inputDisabled) checkMult(); },
               className: 'w-20 px-3 py-2 text-center text-lg font-bold border-2 rounded-lg outline-none transition-all ' +
                 (inputDisabled
-                  ? 'border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed'
+                  ? 'border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed'
                   : 'border-pink-300 focus:border-pink-500'),
               placeholder: '?',
               autoFocus: true,
@@ -757,7 +757,7 @@ window.StemLab = window.StemLab || {
           }, multTableFeedback.msg),
           // Auto-advance indicator + Skip button
           multTableFeedback && inputDisabled && h('div', { className: 'flex items-center justify-center gap-2 mt-1' },
-            h('p', { className: 'text-[10px] text-slate-400 animate-pulse' }, 'Next question coming...'),
+            h('p', { className: 'text-[10px] text-slate-500 animate-pulse' }, 'Next question coming...'),
             h('button', {
               onClick: function() {
                 if (labToolData._multAdvanceTimer) clearTimeout(labToolData._multAdvanceTimer);
@@ -770,7 +770,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Keyboard shortcuts legend ──
-        h('div', { className: 'text-[10px] text-slate-400 text-center space-x-3' },
+        h('div', { className: 'text-[10px] text-slate-500 text-center space-x-3' },
           h('span', null, 'Q Quiz'),
           h('span', null, 'S Speed'),
           h('span', null, 'H Hidden'),
@@ -779,7 +779,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Legend ──
-        h('div', { className: 'text-[10px] text-slate-400 text-center' },
+        h('div', { className: 'text-[10px] text-slate-500 text-center' },
           h('span', { className: 'inline-block w-3 h-3 bg-indigo-50 border border-indigo-200 rounded mr-1' }), ' Perfect squares',
           h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-50 border border-pink-200 rounded mr-1' }), ' Hover cross',
           h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-500 rounded mr-1' }), ' Selected',

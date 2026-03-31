@@ -1320,7 +1320,7 @@ window.SelHub = window.SelHub || {
               return h('div', { key: i, className: 'flex items-center' },
                 h('div', {
                   className: 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ' +
-                    (isComplete ? 'bg-emerald-500 text-white' : isCurrent ? 'bg-amber-500 text-white ring-2 ring-amber-300' : 'bg-slate-200 text-slate-400')
+                    (isComplete ? 'bg-emerald-500 text-white' : isCurrent ? 'bg-amber-500 text-white ring-2 ring-amber-300' : 'bg-slate-200 text-slate-500')
                 }, isComplete ? '\u2713' : (i + 1)),
                 i < HARM_REPAIR_STEPS.length - 1 && h('div', { className: 'w-4 h-0.5 ' + (isComplete ? 'bg-emerald-400' : 'bg-slate-200') })
               );
@@ -1392,7 +1392,7 @@ window.SelHub = window.SelHub || {
                 var response = harmResponses[step.id];
                 return h('div', { key: i, className: 'bg-white rounded-lg p-3 border border-slate-100' },
                   h('div', { className: 'text-[10px] font-bold text-amber-600' }, step.icon + ' Step ' + (i + 1) + ': ' + step.title),
-                  response ? h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, response) : h('p', { className: 'text-xs text-slate-400 italic mt-1' }, '(No response recorded)')
+                  response ? h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, response) : h('p', { className: 'text-xs text-slate-500 italic mt-1' }, '(No response recorded)')
                 );
               })
             )
@@ -1757,7 +1757,7 @@ window.SelHub = window.SelHub || {
                           incrementBadgeStat('questionsUsed', 1);
                         }
                       },
-                      className: 'text-[10px] text-slate-400 hover:text-slate-600',
+                      className: 'text-[10px] text-slate-500 hover:text-slate-600',
                       'aria-label': 'Copy question to clipboard'
                     }, '\uD83D\uDCCB')
                   )

@@ -224,7 +224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               )
             ),
 
-            h('div', { className: 'text-center text-xs text-slate-400 font-bold' }, '— or —'),
+            h('div', { className: 'text-center text-xs text-slate-500 font-bold' }, '— or —'),
 
             // HTML paste
             h('div', null,
@@ -245,7 +245,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
             // Quick audit suggestions
             h('div', { className: 'flex flex-wrap gap-2 pt-2' },
-              h('span', { className: 'text-[10px] text-slate-400 font-bold' }, 'Try:'),
+              h('span', { className: 'text-[10px] text-slate-500 font-bold' }, 'Try:'),
               ['https://www.wikipedia.org', 'https://www.google.com', 'https://www.nytimes.com'].map(function(url) {
                 return h('button', {
                   key: url,
@@ -297,7 +297,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   return h('div', { key: i, className: 'p-3 rounded-xl border ' + sevColor },
                     h('div', { className: 'flex items-start gap-2' },
                       h('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded ' + (issue.severity === 'critical' ? 'bg-red-200 text-red-800' : issue.severity === 'major' ? 'bg-amber-200 text-amber-800' : 'bg-blue-200 text-blue-800') }, issue.severity),
-                      h('span', { className: 'text-[10px] font-bold text-slate-400' }, 'WCAG ', issue.criterion)
+                      h('span', { className: 'text-[10px] font-bold text-slate-500' }, 'WCAG ', issue.criterion)
                     ),
                     h('p', { className: 'text-sm text-slate-800 font-medium mt-1' }, issue.issue),
                     issue.who && h('p', { className: 'text-xs text-slate-500 mt-1' }, '👤 Who it affects: ', issue.who),
@@ -351,7 +351,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 h('span', { className: 'bg-teal-100 text-teal-700 px-2 py-1 rounded-lg text-xs font-bold shrink-0' }, criterion.id),
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'font-bold text-sm text-slate-800' }, criterion.name),
-                  h('span', { className: 'text-[10px] text-slate-400 font-bold' }, 'Level ', criterion.level)
+                  h('span', { className: 'text-[10px] text-slate-500 font-bold' }, 'Level ', criterion.level)
                 )
               ),
               isExpanded && h('div', { className: 'px-4 pb-4 space-y-2' },
@@ -378,7 +378,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               h('div', { className: 'text-2xl font-black ' + (entry.score >= 80 ? 'text-green-600' : entry.score >= 60 ? 'text-amber-600' : 'text-red-600') }, entry.score),
               h('div', { className: 'flex-1 min-w-0' },
                 h('div', { className: 'text-xs font-bold text-slate-700 truncate' }, entry.input),
-                h('div', { className: 'text-[10px] text-slate-400' }, new Date(entry.date).toLocaleDateString(), ' · Grade: ', entry.grade)
+                h('div', { className: 'text-[10px] text-slate-500' }, new Date(entry.date).toLocaleDateString(), ' · Grade: ', entry.grade)
               )
             );
           })

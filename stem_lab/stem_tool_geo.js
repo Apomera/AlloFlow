@@ -1495,7 +1495,7 @@ var d = labToolData || {};
 
                     React.createElement('p', { className: 'text-xs text-slate-500' }, c.continent),
 
-                    React.createElement('p', { className: 'text-[10px] text-slate-300 mt-1' }, 'Click if bigger')
+                    React.createElement('p', { className: 'text-[10px] text-slate-500 mt-1' }, 'Click if bigger')
 
                   );
 
@@ -1714,7 +1714,7 @@ var d = labToolData || {};
                     React.createElement('div', { className: 'font-bold text-sm text-teal-800' }, geoDistA.name),
                     React.createElement('div', { className: 'text-[10px] text-teal-600' }, geoDistA.capital)
                   ),
-                  React.createElement('div', { className: 'text-2xl text-slate-300' }, '\u2194\uFE0F'),
+                  React.createElement('div', { className: 'text-2xl text-slate-500' }, '\u2194\uFE0F'),
                   React.createElement('div', { className: 'bg-cyan-50 border-2 border-cyan-300 rounded-xl px-4 py-3 text-center min-w-[120px]' },
                     React.createElement('div', { className: 'text-2xl' }, '\uD83C\uDFD9\uFE0F'),
                     React.createElement('div', { className: 'font-bold text-sm text-cyan-800' }, geoDistB.name),

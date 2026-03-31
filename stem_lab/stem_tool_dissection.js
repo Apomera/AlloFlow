@@ -6611,7 +6611,7 @@ var d = labToolData.dissection || {};
 
                         },
 
-                        className: "px-2 py-1.5 rounded-lg text-[11px] font-bold border transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-400' : 'border-amber-200 bg-white text-slate-700 hover:border-amber-400')
+                        className: "px-2 py-1.5 rounded-lg text-[11px] font-bold border transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-500' : 'border-amber-200 bg-white text-slate-700 hover:border-amber-400')
 
                       }, opt.name);
 
@@ -6648,7 +6648,7 @@ var d = labToolData.dissection || {};
 
                     return React.createElement("div", { key: layer.id, className: "flex items-center gap-2 py-0.5" },
 
-                      React.createElement("span", { className: "text-[10px] " + (done ? 'line-through text-slate-400' : 'text-slate-600') }, layer.icon + ' ' + layer.name),
+                      React.createElement("span", { className: "text-[10px] " + (done ? 'line-through text-slate-500' : 'text-slate-600') }, layer.icon + ' ' + layer.name),
 
                       done && React.createElement("span", { className: "text-[11px] text-green-500 ml-auto" }, '\u2713')
 
@@ -6895,7 +6895,7 @@ var d = labToolData.dissection || {};
 
                       },
 
-                        React.createElement("span", { className: isComplete ? 'text-emerald-600' : 'text-slate-300' }, isComplete ? '\u2705' : '\u2B1C'),
+                        React.createElement("span", { className: isComplete ? 'text-emerald-600' : 'text-slate-500' }, isComplete ? '\u2705' : '\u2B1C'),
 
                         React.createElement("span", { className: isComplete ? 'text-emerald-600 line-through' : 'text-slate-600' }, obj)
 

@@ -1530,7 +1530,7 @@
                           h('div', { className: 'flex-1 h-2 rounded-full overflow-hidden', style: { background: complete ? '#d1fae5' : '#f1f5f9' } },
                             h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: pct + '%', background: complete ? '#10b981' : scene.accent } })
                           ),
-                          h('span', { className: 'text-[11px] font-bold min-w-[28px] text-right ' + (complete ? 'text-emerald-600' : 'text-slate-400') }, pct + '%')
+                          h('span', { className: 'text-[11px] font-bold min-w-[28px] text-right ' + (complete ? 'text-emerald-600' : 'text-slate-500') }, pct + '%')
                         )
                       )
                     )
@@ -2027,7 +2027,7 @@
                       h('h4', { className: 'font-bold text-slate-800' }, selObj.name),
                       h('span', { className: 'px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full' }, '\u2705 Identified')
                     ),
-                    h('button', { onClick: function() { upd('selectedSceneObj', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-400' }))
+                    h('button', { onClick: function() { upd('selectedSceneObj', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-500' }))
                   ),
                   h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-3 border border-amber-200' },
                     h('div', { className: 'flex items-center gap-2 mb-2' },
@@ -2202,7 +2202,7 @@
                   return h('span', {
                     key: r.name,
                     className: 'px-2 py-1 rounded-lg text-[10px] font-bold ' +
-                      (disc ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-400 border border-slate-200')
+                      (disc ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-500 border border-slate-200')
                   }, disc ? r.emoji + ' ' + r.name : '\uD83D\uDD12 ???');
                 })
               )
@@ -2556,7 +2556,7 @@
                       ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                       : wasChosen && !isCorrect
                         ? 'bg-red-100 text-red-800 border-red-300'
-                        : 'bg-slate-50 text-slate-400 border-slate-200';
+                        : 'bg-slate-50 text-slate-500 border-slate-200';
 
                   return h('button', {
                     key: opt,
@@ -2613,7 +2613,7 @@
               onClick: function() {
                 updMulti({ quizScore: 0, quizStreak: 0, quizQ: null, quizMode: false });
               },
-              className: 'text-xs text-slate-400 hover:text-slate-600 font-bold'
+              className: 'text-xs text-slate-500 hover:text-slate-600 font-bold'
             }, '\uD83D\uDD04 Reset Quiz')
           ),
 
@@ -2655,7 +2655,7 @@
                 );
               }),
               aiLoading && h('div', { className: 'flex justify-start' },
-                h('div', { className: 'bg-white border border-slate-200 px-3 py-2 rounded-xl text-xs text-slate-400 animate-pulse' },
+                h('div', { className: 'bg-white border border-slate-200 px-3 py-2 rounded-xl text-xs text-slate-500 animate-pulse' },
                   'Thinking...'
                 )
               )
@@ -2724,7 +2724,7 @@
                   title: b.desc
                 },
                   h('div', { className: 'text-xl' }, earned ? b.icon : '\uD83D\uDD12'),
-                  h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-700' : 'text-slate-400') },
+                  h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-700' : 'text-slate-500') },
                     b.label
                   ),
                   earned && h('div', { className: 'text-[8px] text-amber-500 font-bold' }, '+' + b.xp + ' XP')

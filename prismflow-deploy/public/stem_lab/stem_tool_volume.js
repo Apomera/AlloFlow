@@ -565,7 +565,7 @@ window.StemLab = window.StemLab || {
         showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
-            h('button', { onClick: function() { upd({ showBadges: false }); }, className: 'text-xs text-slate-400 hover:text-slate-600' }, '\u2715')
+            h('button', { onClick: function() { upd({ showBadges: false }); }, className: 'text-xs text-slate-500 hover:text-slate-600' }, '\u2715')
           ),
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-5 gap-2' },
             BADGES.map(function(badge) {
@@ -577,7 +577,7 @@ window.StemLab = window.StemLab || {
                 title: badge.desc
               },
                 h('div', { className: 'text-xl' }, earned ? badge.icon : '\uD83D\uDD12'),
-                h('div', { className: 'text-[9px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-400') }, badge.label)
+                h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.label)
               );
             })
           )
@@ -587,7 +587,7 @@ window.StemLab = window.StemLab || {
         showAI && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Volume Tutor'),
-            h('button', { onClick: function() { upd({ showAI: false }); }, className: 'text-xs text-slate-400 hover:text-slate-600' }, '\u2715')
+            h('button', { onClick: function() { upd({ showAI: false }); }, className: 'text-xs text-slate-500 hover:text-slate-600' }, '\u2715')
           ),
           aiLoading
             ? h('div', { className: 'flex items-center gap-2' },
@@ -684,7 +684,7 @@ window.StemLab = window.StemLab || {
             ),
             (isSlider && challenge && !feedback) ? null :
             (!isSlider && builderChallenge && builderChallenge.type === 'volume') ? null :
-            h('div', { className: 'text-xs text-slate-400' }, volume + ' unit cube' + (volume !== 1 ? 's' : ''))
+            h('div', { className: 'text-xs text-slate-500' }, volume + ' unit cube' + (volume !== 1 ? 's' : ''))
           ),
           h('div', { className: 'bg-white rounded-xl p-3 border border-teal-100 text-center' },
             h('div', { className: 'text-xs font-bold text-teal-600 uppercase mb-1' }, 'Surface Area'),
@@ -692,7 +692,7 @@ window.StemLab = window.StemLab || {
               'SA = ', h('span', { className: 'text-2xl text-teal-600' },
                 (isSlider && challenge && !feedback) ? '?' :
                 (!isSlider && builderChallenge && builderChallenge.type === 'volume') ? '?' : surfaceArea)),
-            isSlider && !challenge && h('div', { className: 'text-xs text-slate-400' },
+            isSlider && !challenge && h('div', { className: 'text-xs text-slate-500' },
               '2('+dims.l+'\u00d7'+dims.w+' + '+dims.l+'\u00d7'+dims.h+' + '+dims.w+'\u00d7'+dims.h+')')
           )
         ),
@@ -782,7 +782,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Keyboard shortcuts legend ──
-        h('div', { className: 'text-[10px] text-slate-400 text-center space-x-3' },
+        h('div', { className: 'text-[10px] text-slate-500 text-center space-x-3' },
           h('span', null, 'S Slider'),
           h('span', null, 'F Freeform'),
           h('span', null, 'N Challenge'),

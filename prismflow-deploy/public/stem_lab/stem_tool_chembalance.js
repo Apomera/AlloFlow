@@ -642,7 +642,7 @@
                 var earned = ext.badges.indexOf(bid) !== -1;
                 return h('div', { key: bid, className: 'text-center p-1.5 rounded-lg border ' + (earned ? 'bg-white border-amber-300' : 'bg-slate-50 border-slate-200 opacity-50'), title: b.desc },
                   h('span', { className: 'text-lg block' }, earned ? b.icon : '\uD83D\uDD12'),
-                  h('span', { className: 'text-[7px] font-bold block ' + (earned ? 'text-amber-700' : 'text-slate-400') }, b.label)
+                  h('span', { className: 'text-[7px] font-bold block ' + (earned ? 'text-amber-700' : 'text-slate-500') }, b.label)
                 );
               })
             )
@@ -690,8 +690,8 @@
                 for (var b = 0; b < Math.min(count, 8); b++) balls.push(h('circle', { key: atom + b, cx: 270 + idx * 18 + (b % 3) * 10, cy: 60 - tilt * 8 - Math.floor(b / 3) * 10, r: 5, fill: atomColors[atom] || '#64748b', stroke: 'white', strokeWidth: 0.5 }));
                 return h('g', { key: 'r' + atom }, balls, h('text', { x: 270 + idx * 18, y: 42 - tilt * 8, textAnchor: 'middle', style: { fontSize: '7px', fontWeight: 'bold' }, fill: atomColors[atom] || '#64748b' }, atom + '\u00D7' + count));
               }),
-              h('text', { x: 100, y: 15, textAnchor: 'middle', style: { fontSize: '9px', fontWeight: 'bold' }, fill: '#475569' }, 'Reactants'),
-              h('text', { x: 300, y: 15, textAnchor: 'middle', style: { fontSize: '9px', fontWeight: 'bold' }, fill: '#475569' }, 'Products'),
+              h('text', { x: 100, y: 15, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: '#475569' }, 'Reactants'),
+              h('text', { x: 300, y: 15, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: '#475569' }, 'Products'),
               isBalanced && h('text', { x: 200, y: 15, textAnchor: 'middle', style: { fontSize: '10px', fontWeight: 'bold' }, fill: '#22c55e' }, '\u2705 Balanced!')
             ),
             // Equation card
@@ -706,7 +706,7 @@
               h('div', { className: 'flex justify-center gap-4 mb-4' },
                 coeffs.map(function(c, i) {
                   return h('div', { key: i, className: 'flex flex-col items-center gap-1' },
-                    h('span', { className: 'text-[9px] font-bold text-slate-500 mb-0.5' }, i < leftCompounds.length ? leftCompounds[i] : rightCompounds[i - leftCompounds.length]),
+                    h('span', { className: 'text-[11px] font-bold text-slate-500 mb-0.5' }, i < leftCompounds.length ? leftCompounds[i] : rightCompounds[i - leftCompounds.length]),
                     h('button', { onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.min(12, nc[i] + 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-lime-100 rounded-lg font-bold text-lime-700 hover:bg-lime-200 transition-colors text-lg' }, '+'),
                     h('span', { className: 'text-2xl font-black text-slate-700 w-9 text-center' }, c),
                     h('button', { onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.max(1, nc[i] - 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-red-50 rounded-lg font-bold text-red-500 hover:bg-red-100 transition-colors text-lg' }, '\u2212')
@@ -723,7 +723,7 @@
                     h('div', { className: 'w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-black', style: { backgroundColor: atomColors[atom] || '#64748b' } }, atom),
                     h('div', { className: 'flex items-center gap-1 text-xs font-bold' },
                       h('span', { className: match ? 'text-emerald-600' : 'text-red-600' }, left),
-                      h('span', { className: 'text-slate-300' }, match ? '=' : '\u2260'),
+                      h('span', { className: 'text-slate-500' }, match ? '=' : '\u2260'),
                       h('span', { className: match ? 'text-emerald-600' : 'text-red-600' }, right)
                     )
                   );
@@ -771,7 +771,7 @@
                       h('p', { className: 'text-sm font-bold text-slate-700' }, rt.label),
                       h('p', { className: 'text-[10px] font-mono text-slate-500' }, rt.pattern)
                     ),
-                    h('span', { className: 'text-xs text-slate-400' }, isOpen ? '\u25B2' : '\u25BC')
+                    h('span', { className: 'text-xs text-slate-500' }, isOpen ? '\u25B2' : '\u25BC')
                   ),
                   isOpen && h('div', { className: 'px-3 pb-3' },
                     h('p', { className: 'text-xs text-slate-600 mb-2' }, rt.desc),
@@ -779,7 +779,7 @@
                       rt.examples.map(function(ex, ei) {
                         return h('div', { key: ei, className: 'flex items-center gap-2 bg-' + rt.color + '-50 rounded-lg p-2 border border-' + rt.color + '-100' },
                           h('span', { className: 'text-xs font-mono font-bold text-' + rt.color + '-700 flex-1' }, ex.eq),
-                          h('span', { className: 'text-[9px] text-' + rt.color + '-500' }, ex.name)
+                          h('span', { className: 'text-[11px] text-' + rt.color + '-500' }, ex.name)
                         );
                       })
                     )
@@ -812,7 +812,7 @@
                         if (d._classifyFb) return;
                         upd('_classifyFb', rt.id);
                         if (rt.id === classifyQ.type) { chemSound('correct'); addToast('\u2705 ' + rt.label + '!', 'success'); } else { chemSound('wrong'); }
-                      }, className: 'px-3 py-1.5 text-[10px] font-bold rounded-lg border transition-all ' + (isCorrect ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : isWrong ? 'bg-red-100 text-red-700 border-red-300' : fb ? 'bg-slate-50 text-slate-400 border-slate-200' : 'bg-white text-slate-600 border-slate-200 hover:border-purple-300') }, rt.icon + ' ' + rt.label);
+                      }, className: 'px-3 py-1.5 text-[10px] font-bold rounded-lg border transition-all ' + (isCorrect ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : isWrong ? 'bg-red-100 text-red-700 border-red-300' : fb ? 'bg-slate-50 text-slate-500 border-slate-200' : 'bg-white text-slate-600 border-slate-200 hover:border-purple-300') }, rt.icon + ' ' + rt.label);
                     })
                   ),
                   d._classifyFb && h('button', { onClick: function() {
@@ -845,7 +845,7 @@
               // Presets
               h('div', { className: 'flex flex-wrap gap-1' },
                 MOLAR_PRESETS.map(function(mp) {
-                  return h('button', { key: mp.formula, onClick: function() { upd('_stoichFormula', mp.formula); chemSound('click'); }, className: 'px-2 py-0.5 text-[9px] font-bold rounded bg-white text-teal-600 border border-teal-200 hover:bg-teal-50' }, mp.name);
+                  return h('button', { key: mp.formula, onClick: function() { upd('_stoichFormula', mp.formula); chemSound('click'); }, className: 'px-2 py-0.5 text-[11px] font-bold rounded bg-white text-teal-600 border border-teal-200 hover:bg-teal-50' }, mp.name);
                 })
               )
             ),
@@ -854,7 +854,7 @@
               var result = parseFormula(stoichFormula);
               var mass = result.mass;
               var elems = result.elems;
-              if (mass <= 0) return h('p', { className: 'text-xs text-slate-400 italic' }, 'Enter a valid formula above');
+              if (mass <= 0) return h('p', { className: 'text-xs text-slate-500 italic' }, 'Enter a valid formula above');
               return h('div', { className: 'bg-white rounded-xl border p-3 mb-3' },
                 h('div', { className: 'flex items-center gap-3 mb-3' },
                   h('p', { className: 'text-lg font-bold text-teal-700' }, 'Molar Mass: ' + mass.toFixed(3) + ' g/mol'),
@@ -868,19 +868,19 @@
                     return h('div', { key: el, className: 'flex items-center gap-1.5 bg-slate-50 rounded-lg px-2 py-1 border' },
                       h('div', { className: 'w-5 h-5 rounded-full flex items-center justify-center text-white text-[8px] font-black', style: { backgroundColor: ATOM_COLORS[el] || '#64748b' } }, el),
                       h('span', { className: 'text-[10px] font-bold text-slate-600' }, el + ' \u00D7' + elems[el]),
-                      h('span', { className: 'text-[9px] text-slate-500' }, pct + '%')
+                      h('span', { className: 'text-[11px] text-slate-500' }, pct + '%')
                     );
                   })
                 ),
                 // Gram-mole converter
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                   h('div', null,
-                    h('label', { className: 'text-[9px] font-bold text-slate-500 block mb-1' }, 'Grams \u2192 Moles'),
+                    h('label', { className: 'text-[11px] font-bold text-slate-500 block mb-1' }, 'Grams \u2192 Moles'),
                     h('input', { type: 'number', value: stoichGrams, onChange: function(e) { var g = parseFloat(e.target.value); upd('_stoichGrams', e.target.value); if (!isNaN(g) && mass > 0) upd('_stoichMoles', (g / mass).toFixed(4)); }, placeholder: 'grams', 'aria-label': 'Grams to convert to moles', className: 'w-full px-2 py-1 text-sm border rounded-lg' }),
                     stoichGrams && h('p', { className: 'text-[10px] font-bold text-teal-600 mt-1' }, stoichGrams + 'g = ' + (parseFloat(stoichGrams) / mass).toFixed(4) + ' mol')
                   ),
                   h('div', null,
-                    h('label', { className: 'text-[9px] font-bold text-slate-500 block mb-1' }, 'Moles \u2192 Grams'),
+                    h('label', { className: 'text-[11px] font-bold text-slate-500 block mb-1' }, 'Moles \u2192 Grams'),
                     h('input', { type: 'number', value: stoichMoles, onChange: function(e) { var m = parseFloat(e.target.value); upd('_stoichMoles', e.target.value); if (!isNaN(m) && mass > 0) upd('_stoichGrams', (m * mass).toFixed(4)); }, placeholder: 'moles', 'aria-label': 'Moles to convert to grams', className: 'w-full px-2 py-1 text-sm border rounded-lg' }),
                     stoichMoles && h('p', { className: 'text-[10px] font-bold text-teal-600 mt-1' }, stoichMoles + ' mol = ' + (parseFloat(stoichMoles) * mass).toFixed(4) + 'g')
                   )
@@ -911,7 +911,7 @@
             h('div', { className: 'bg-white rounded-xl border border-indigo-200 p-3' },
               h('div', { className: 'flex items-center gap-2 mb-2' },
                 h('p', { className: 'text-sm font-bold text-indigo-700' }, currentMol.name + ' (' + currentMol.formula + ')'),
-                h('span', { className: 'px-2 py-0.5 bg-indigo-100 text-indigo-600 text-[9px] font-bold rounded-full' }, currentMol.shape)
+                h('span', { className: 'px-2 py-0.5 bg-indigo-100 text-indigo-600 text-[11px] font-bold rounded-full' }, currentMol.shape)
               ),
               h('svg', { viewBox: '0 0 300 200', className: 'w-full max-w-sm mx-auto', style: { background: '#fafafa', borderRadius: '8px' } },
                 // Bonds
@@ -1005,14 +1005,14 @@
             safetyTab === 'emergencies' && h('div', null,
               h('div', { className: 'flex gap-1.5 mb-3' },
                 EMERGENCIES.map(function(em, idx) {
-                  return h('button', { key: idx, onClick: function() { updMulti({ _emergIdx: idx, _emergAnswer: null, _emergFeedback: null }); }, className: 'px-2 py-1 text-[9px] font-bold rounded-lg border ' + (emergIdx === idx ? 'bg-red-500 text-white border-red-500' : 'bg-white text-slate-600 border-slate-200') }, (idx + 1) + '. ' + em.title);
+                  return h('button', { key: idx, onClick: function() { updMulti({ _emergIdx: idx, _emergAnswer: null, _emergFeedback: null }); }, className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (emergIdx === idx ? 'bg-red-500 text-white border-red-500' : 'bg-white text-slate-600 border-slate-200') }, (idx + 1) + '. ' + em.title);
                 })
               ),
               (function() {
                 var em = EMERGENCIES[emergIdx];
                 return h('div', { className: 'bg-white rounded-xl border p-3' },
                   h('div', { className: 'flex items-center gap-2 mb-2' },
-                    h('span', { className: 'px-2 py-0.5 text-[9px] font-bold rounded-full ' + (em.urgency === 'HIGH' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') }, em.urgency),
+                    h('span', { className: 'px-2 py-0.5 text-[11px] font-bold rounded-full ' + (em.urgency === 'HIGH' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') }, em.urgency),
                     h('p', { className: 'text-sm font-bold text-slate-700' }, em.title)
                   ),
                   h('p', { className: 'text-xs text-slate-600 mb-3' }, em.q),
@@ -1034,7 +1034,7 @@
                           chemSound('wrong');
                           upd('_emergFeedback', '\u274C ' + em.explain);
                         }
-                      }, className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' + (showResult ? (opt.correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : isChosen ? 'bg-red-100 text-red-700 border-red-300' : 'bg-slate-50 text-slate-400 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-300') }, opt.text);
+                      }, className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' + (showResult ? (opt.correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : isChosen ? 'bg-red-100 text-red-700 border-red-300' : 'bg-slate-50 text-slate-500 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-300') }, opt.text);
                     })
                   ),
                   emergFeedback && h('p', { className: 'mt-2 text-xs font-bold ' + (emergFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, emergFeedback)
@@ -1096,7 +1096,7 @@
                       if (chalIdx + 1 < chalQuestions.length) { updMulti({ _chalIdx: chalIdx + 1, _chalFeedback: null }); }
                       else { updMulti({ _chalFeedback: '\uD83C\uDFC6 Complete! ' + ns + '/' + chalQuestions.length }); }
                     }, 2000);
-                  }, className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' + (chalFeedback ? (i === chalQuestions[chalIdx].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-400 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-lime-300 hover:bg-lime-50') }, opt);
+                  }, className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' + (chalFeedback ? (i === chalQuestions[chalIdx].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-500 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-lime-300 hover:bg-lime-50') }, opt);
                 })
               ),
               chalFeedback && h('p', { className: 'mt-2 text-[10px] font-bold ' + (chalFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, chalFeedback)
@@ -1121,14 +1121,14 @@
             battleActive && battleRound < BATTLE_QS.length && h('div', null,
               h('div', { className: 'grid grid-cols-2 gap-3 mb-3' },
                 h('div', { className: 'bg-emerald-50 rounded-xl p-2 border border-emerald-200' },
-                  h('p', { className: 'text-[9px] font-bold text-emerald-600 mb-1' }, '\u2697\uFE0F Your Compound'),
+                  h('p', { className: 'text-[11px] font-bold text-emerald-600 mb-1' }, '\u2697\uFE0F Your Compound'),
                   h('div', { className: 'w-full bg-slate-200 rounded-full h-3 overflow-hidden' },
                     h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: Math.max(0, battleHP) + '%', background: battleHP > 50 ? '#22c55e' : battleHP > 25 ? '#f59e0b' : '#ef4444' } })
                   ),
                   h('p', { className: 'text-[10px] font-bold text-emerald-700 mt-0.5' }, battleHP + ' HP')
                 ),
                 h('div', { className: 'bg-red-50 rounded-xl p-2 border border-red-200' },
-                  h('p', { className: 'text-[9px] font-bold text-red-600 mb-1' }, '\uD83D\uDCA5 Rogue Element'),
+                  h('p', { className: 'text-[11px] font-bold text-red-600 mb-1' }, '\uD83D\uDCA5 Rogue Element'),
                   h('div', { className: 'w-full bg-slate-200 rounded-full h-3 overflow-hidden' },
                     h('div', { className: 'bg-red-500 h-full rounded-full transition-all duration-500', style: { width: Math.max(0, battleEnemyHP) + '%' } })
                   ),
@@ -1153,7 +1153,7 @@
                         else if (nHP <= 0) { chemSound('damage'); updMulti({ _battleActive: false, _battleResult: 'lost', _battleFeedback: null }); }
                         else { updMulti({ _battleRound: battleRound + 1, _battleFeedback: null }); }
                       }, 1500);
-                    }, className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' + (battleFeedback ? (i === BATTLE_QS[battleRound].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-400 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-300 hover:bg-red-50') }, opt);
+                    }, className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' + (battleFeedback ? (i === BATTLE_QS[battleRound].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-500 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-300 hover:bg-red-50') }, opt);
                   })
                 ),
                 battleFeedback && h('p', { className: 'mt-2 text-xs font-bold text-center ' + (battleFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, battleFeedback)
@@ -1184,7 +1184,7 @@
                   h('button', { onClick: function() { upd('_learnTopic', isOpen ? -1 : idx); }, className: 'w-full flex items-center gap-2 p-3 text-left' },
                     h('span', { className: 'text-xl' }, topic.icon),
                     h('span', { className: 'text-sm font-bold text-slate-700 flex-1' }, topic.title),
-                    h('span', { className: 'text-xs text-slate-400' }, isOpen ? '\u25B2' : '\u25BC')
+                    h('span', { className: 'text-xs text-slate-500' }, isOpen ? '\u25B2' : '\u25BC')
                   ),
                   isOpen && h('div', { className: 'px-3 pb-3' },
                     h('div', { className: 'bg-lime-50 rounded-lg p-3 border border-lime-100' },

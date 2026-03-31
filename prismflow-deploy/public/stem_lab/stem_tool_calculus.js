@@ -437,15 +437,15 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               return h('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-xl p-4', style:{animation:'calcFade 0.3s ease'} },
                 h('div', { className: 'grid grid-cols-3 gap-2 text-center mb-3' },
                   h('div', { className: 'p-2 bg-white rounded-lg border border-violet-200' },
-                    h('p', { className: 'text-[9px] font-bold text-violet-400 uppercase' }, 'Your Estimate'),
+                    h('p', { className: 'text-[11px] font-bold text-violet-400 uppercase' }, 'Your Estimate'),
                     h('p', { className: 'text-lg font-black text-violet-700' }, pred.toFixed(3))
                   ),
                   h('div', { className: 'p-2 bg-white rounded-lg border border-emerald-200' },
-                    h('p', { className: 'text-[9px] font-bold text-emerald-400 uppercase' }, 'Exact Value'),
+                    h('p', { className: 'text-[11px] font-bold text-emerald-400 uppercase' }, 'Exact Value'),
                     h('p', { className: 'text-lg font-black text-emerald-700', style:{animation:'calcPop 0.4s ease'} }, exact.toFixed(4))
                   ),
                   h('div', { className: 'p-2 bg-white rounded-lg border border-slate-200' },
-                    h('p', { className: 'text-[9px] font-bold text-slate-500 uppercase' }, '% Off'),
+                    h('p', { className: 'text-[11px] font-bold text-slate-500 uppercase' }, '% Off'),
                     h('p', { className: 'text-sm font-black text-slate-600' }, pctOff.toFixed(1) + '%')
                   )
                 ),
@@ -464,15 +464,15 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('p', { className: 'text-[10px] font-bold text-red-700 uppercase tracking-wider mb-2' }, '\uD83D\uDCCA Analysis'),
                 h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
                   h('div', { className: 'p-1.5 bg-white rounded-lg border', style:{animation:'calcPop 0.3s ease'} },
-                    h('p', { className: 'text-[9px] font-bold text-red-400' }, mode==='trapezoid'?'Trapezoidal':mode==='simpson'?"Simpson's":'Riemann ('+mode+')'),
+                    h('p', { className: 'text-[11px] font-bold text-red-400' }, mode==='trapezoid'?'Trapezoidal':mode==='simpson'?"Simpson's":'Riemann ('+mode+')'),
                     h('p', { className: 'text-sm font-bold text-red-800' }, area.toFixed(4))
                   ),
                   h('div', { className: 'p-1.5 bg-white rounded-lg border' },
-                    h('p', { className: 'text-[9px] font-bold text-red-400' }, 'Exact (\u222B)'),
+                    h('p', { className: 'text-[11px] font-bold text-red-400' }, 'Exact (\u222B)'),
                     h('p', { className: 'text-sm font-bold text-red-800' }, exact.toFixed(4))
                   ),
                   h('div', { className: 'p-1.5 bg-white rounded-lg border' },
-                    h('p', { className: 'text-[9px] font-bold text-red-400' }, 'Error'),
+                    h('p', { className: 'text-[11px] font-bold text-red-400' }, 'Error'),
                     h('p', { className: 'text-sm font-bold '+(err<0.01?'text-emerald-600':err<0.1?'text-yellow-600':'text-red-600') }, err.toFixed(6))
                   )
                 ),
@@ -484,7 +484,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 )
               ),
               h('div', { className: 'col-span-2 bg-slate-50 rounded-xl border p-2' },
-                h('p', { className: 'text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1' }, '\uD83D\uDCC9 Error vs n'),
+                h('p', { className: 'text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1' }, '\uD83D\uDCC9 Error vs n'),
                 h('svg', { viewBox: '0 0 '+CW+' 60', className: 'w-full' },
                   h('line',{x1:Cpad,y1:55,x2:CW-Cpad,y2:55,stroke:'#e2e8f0',strokeWidth:0.5}),
                   h('polyline',{points:convData.map(function(cd){return convToX(cd.n)+','+convToY(cd.err);}).join(' '),fill:'none',stroke:'#ef4444',strokeWidth:1.5}),
@@ -691,9 +691,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
             cHint && h('div',{className:'bg-amber-50 rounded-xl p-3 border border-amber-200 mt-2 text-xs text-amber-800',style:{animation:'calcFade 0.3s ease'}},h('span',{className:'font-bold'},'\uD83D\uDCA1 Explanation: '),cHint),
             cq&&cq.answered&&cMode==='method'&&cq.errors&&h('div',{className:'mt-2 bg-slate-50 rounded-lg p-2 border'},
-              h('p',{className:'text-[9px] font-bold text-slate-500 uppercase mb-1'},'Error comparison (n='+cq.n+')'),
+              h('p',{className:'text-[11px] font-bold text-slate-500 uppercase mb-1'},'Error comparison (n='+cq.n+')'),
               h('div',{className:'grid grid-cols-5 gap-1 text-center'},['left','right','midpoint','trapezoid','simpson'].map(function(m){
-                return h('div',{key:m,className:'px-1 py-1 rounded text-[9px] font-bold '+(m===cq.answer?'bg-emerald-100 text-emerald-700 border border-emerald-300':'bg-white text-slate-500 border')},
+                return h('div',{key:m,className:'px-1 py-1 rounded text-[11px] font-bold '+(m===cq.answer?'bg-emerald-100 text-emerald-700 border border-emerald-300':'bg-white text-slate-500 border')},
                   h('div',null,m==='simpson'?'Simp':m.charAt(0).toUpperCase()+m.slice(1,4)),h('div',{className:'text-[8px]'},cq.errors[m].toFixed(4)));
               }))
             )

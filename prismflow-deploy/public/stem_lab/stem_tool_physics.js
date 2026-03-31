@@ -1813,7 +1813,7 @@ const d = labToolData.physics;
                   React.createElement("p", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1" }, "\u{1F4DD} Calculation Helper"),
                   (function() {
                     var ans = getTargetAnswer();
-                    if (!ans) return React.createElement("p", { className: "text-xs text-slate-400" }, "No active target");
+                    if (!ans) return React.createElement("p", { className: "text-xs text-slate-500" }, "No active target");
                     return React.createElement("div", { className: "space-y-1" },
                       React.createElement("p", { className: "text-xs text-slate-600" }, "Equation: ", React.createElement("b", { className: "font-mono text-blue-700" }, ans.equation)),
                       React.createElement("p", { className: "text-xs text-slate-600" }, "Substitution: ", React.createElement("span", { className: "font-mono text-emerald-700" }, ans.steps)),
@@ -1852,7 +1852,7 @@ const d = labToolData.physics;
                   },
                     React.createElement("p", { className: "text-xs font-bold " + (completed ? 'text-emerald-700' : 'text-violet-700') }, completed ? '\u2705 ' + ch.label : ch.label),
                     React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, ch.desc),
-                    React.createElement("p", { className: "text-[9px] font-bold text-amber-500 mt-1" }, '+' + ch.reward + ' XP')
+                    React.createElement("p", { className: "text-[11px] font-bold text-amber-500 mt-1" }, '+' + ch.reward + ' XP')
                   );
                 })
               )
@@ -1908,7 +1908,7 @@ const d = labToolData.physics;
 
               React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
 
-                React.createElement("p", { className: "text-[9px] font-bold text-sky-600 uppercase" }, "Range"),
+                React.createElement("p", { className: "text-[11px] font-bold text-sky-600 uppercase" }, "Range"),
 
                 React.createElement("p", { className: "text-sm font-bold text-sky-800" }, (function () { var r = d.angle * Math.PI / 180; return ((d.velocity * d.velocity * Math.sin(2 * r)) / d.gravity).toFixed(1); })() + " m")
 
@@ -1916,7 +1916,7 @@ const d = labToolData.physics;
 
               React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
 
-                React.createElement("p", { className: "text-[9px] font-bold text-sky-600 uppercase" }, "Max Height"),
+                React.createElement("p", { className: "text-[11px] font-bold text-sky-600 uppercase" }, "Max Height"),
 
                 React.createElement("p", { className: "text-sm font-bold text-sky-800" }, (function () { var vy = d.velocity * Math.sin(d.angle * Math.PI / 180); return (vy * vy / (2 * d.gravity)).toFixed(1); })() + " m")
 
@@ -1924,7 +1924,7 @@ const d = labToolData.physics;
 
               React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
 
-                React.createElement("p", { className: "text-[9px] font-bold text-sky-600 uppercase" }, "Flight Time"),
+                React.createElement("p", { className: "text-[11px] font-bold text-sky-600 uppercase" }, "Flight Time"),
 
                 React.createElement("p", { className: "text-sm font-bold text-sky-800" }, (function () { var vy = d.velocity * Math.sin(d.angle * Math.PI / 180); return (2 * vy / d.gravity).toFixed(2); })() + " s")
 
@@ -2016,7 +2016,7 @@ const d = labToolData.physics;
 
                       className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all " +
 
-                        (correct ? 'bg-emerald-100 border-emerald-400 text-emerald-700' : wrong ? 'bg-red-100 border-red-400 text-red-600' : d.quizPicked !== null ? 'bg-slate-50 border-slate-200 text-slate-400' : 'bg-white border-amber-200 text-slate-700 hover:border-amber-400')
+                        (correct ? 'bg-emerald-100 border-emerald-400 text-emerald-700' : wrong ? 'bg-red-100 border-red-400 text-red-600' : d.quizPicked !== null ? 'bg-slate-50 border-slate-200 text-slate-500' : 'bg-white border-amber-200 text-slate-700 hover:border-amber-400')
 
                     }, opt.toFixed(1) + " m");
 

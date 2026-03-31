@@ -1974,7 +1974,7 @@ window.StemLab = window.StemLab || {
                         },
                           h('span', { className: 'text-xs font-bold block', style: { color: AMINO_COLORS[cat] || '#94a3b8' } }, aa),
                           h('span', { className: 'text-[7px] text-slate-500 block' }, codons[i]),
-                          i < aminos.length - 1 && aa !== 'Stop' ? h('span', { className: 'text-[8px] text-slate-300' }, '\u2192') : null
+                          i < aminos.length - 1 && aa !== 'Stop' ? h('span', { className: 'text-[8px] text-slate-500' }, '\u2192') : null
                         );
                       })
                     ),

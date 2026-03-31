@@ -1938,7 +1938,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm font-bold text-slate-700' }, 'AI Outbreak Scenario Generator'),
             h('p', { className: 'text-xs text-slate-500' }, 'Gemini will create a unique fictional outbreak for you to respond to.'),
             callGemini ? h('button', { onClick: generateScenario, className: 'px-6 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all' }, '\uD83E\uDDE0 Generate Scenario') :
-            h('p', { className: 'text-xs text-slate-400 italic' }, 'AI not available \u2014 requires Gemini integration.')
+            h('p', { className: 'text-xs text-slate-500 italic' }, 'AI not available \u2014 requires Gemini integration.')
           ) : d.scenarioLoading ? h('div', { className: glassCard + ' text-center py-6' },
             h('div', { className: 'text-3xl animate-pulse mb-2' }, '\uD83E\uDDE0'),
             h('p', { className: 'text-sm font-bold text-purple-600' }, 'Generating outbreak scenario...')

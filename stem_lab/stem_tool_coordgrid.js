@@ -719,7 +719,7 @@ window.StemLab = window.StemLab || {
         renderAITutor(),
 
         // Keyboard hints
-        h('div', { className: 'text-center text-[11px] text-slate-300 mt-2' },
+        h('div', { className: 'text-center text-[11px] text-slate-500 mt-2' },
           '\u2328\uFE0F C: connect mode | R: clear | ?: AI tutor'
         )
       );

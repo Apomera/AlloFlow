@@ -949,7 +949,7 @@ window.StemLab = window.StemLab || {
                 onChange: function(e) { upd({ convNum: Math.max(0, parseInt(e.target.value) || 0) }); },
                 className: 'w-16 text-center text-2xl font-bold border-b-3 border-teal-500 outline-none focus:ring-2 focus:ring-teal-400'
               }),
-              h('span', { className: 'text-3xl font-bold text-slate-300 mx-2' }, '/'),
+              h('span', { className: 'text-3xl font-bold text-slate-500 mx-2' }, '/'),
               h('input', {
                 type: 'number', min: 1, max: 99, value: convDen,
                 'aria-label': 'Converter denominator',
@@ -1385,7 +1385,7 @@ window.StemLab = window.StemLab || {
       ),
 
       // Keyboard shortcuts hint
-      h('div', { className: 'text-center text-[11px] text-slate-300 mt-2' },
+      h('div', { className: 'text-center text-[11px] text-slate-500 mt-2' },
         '\u2328\uFE0F 1-6: tabs | N: new challenge | B: benchmarks | P: pie/bar | ?: AI tutor'
       )
     );

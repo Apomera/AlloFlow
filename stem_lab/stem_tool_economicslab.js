@@ -1558,7 +1558,7 @@ var d = labToolData || {};
 
                           isAnswered && isSelected && !isCorrect ? 'border-red-400 bg-red-50 text-red-800' :
 
-                            isAnswered ? 'border-slate-200 bg-white text-slate-400' :
+                            isAnswered ? 'border-slate-200 bg-white text-slate-500' :
 
                               'border-rose-100 bg-white hover:border-rose-400 text-slate-700')
 
@@ -1786,7 +1786,7 @@ var d = labToolData || {};
                         className: 'w-full text-left p-2.5 rounded-xl border-2 text-xs transition-all ' + cls,
                         disabled: answered
                       },
-                        React.createElement('span', { className: 'font-bold mr-1 ' + (answered && isRight ? 'text-green-600' : answered && isSelected ? 'text-red-500' : 'text-slate-400') }, String.fromCharCode(65 + oi) + '.'),
+                        React.createElement('span', { className: 'font-bold mr-1 ' + (answered && isRight ? 'text-green-600' : answered && isSelected ? 'text-red-500' : 'text-slate-500') }, String.fromCharCode(65 + oi) + '.'),
                         React.createElement('span', { className: answered && isRight ? 'text-green-700' : answered && isSelected && !isRight ? 'text-red-600' : 'text-slate-700' }, ' ' + opt)
                       );
                     })

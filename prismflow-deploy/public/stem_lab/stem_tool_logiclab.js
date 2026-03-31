@@ -833,7 +833,7 @@ window.StemLab = window.StemLab || {
                   onDrop: function(e) { e.preventDefault(); if (_drag.sym) { upd({ expression: expr+_drag.sym, _dragOver: false }); _drag.sym=null; } }
                 },
                   expr.length === 0
-                    ? React.createElement("span", { className: "text-slate-300 text-sm font-bold" }, "Drop symbols here or click above…")
+                    ? React.createElement("span", { className: "text-slate-500 text-sm font-bold" }, "Drop symbols here or click above…")
                     : (function() {
                         var toks = tokenize(expr);
                         return toks.length === 0

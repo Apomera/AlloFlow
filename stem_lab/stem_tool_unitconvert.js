@@ -346,7 +346,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200 mb-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
-              h('button', { onClick: function() { upd('showBadges', false); }, className: 'text-xs text-slate-400 hover:text-slate-600' }, '\u2715')
+              h('button', { onClick: function() { upd('showBadges', false); }, className: 'text-xs text-slate-500 hover:text-slate-600' }, '\u2715')
             ),
             h('div', { className: 'grid grid-cols-3 sm:grid-cols-5 gap-2' },
               BADGES.map(function(badge) {
@@ -358,7 +358,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   title: badge.desc
                 },
                   h('div', { className: 'text-xl' }, earned ? badge.icon : '\uD83D\uDD12'),
-                  h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-400') }, badge.label)
+                  h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.label)
                 );
               })
             )
@@ -368,7 +368,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           showTutor && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200 mb-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Unit Tutor'),
-              h('button', { onClick: function() { upd('showTutor', false); }, className: 'text-xs text-slate-400 hover:text-slate-600' }, '\u2715')
+              h('button', { onClick: function() { upd('showTutor', false); }, className: 'text-xs text-slate-500 hover:text-slate-600' }, '\u2715')
             ),
             tutorLoading
               ? h('div', { className: 'flex items-center gap-2' },
@@ -559,7 +559,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 };
                 return [
                   thermo(fromVal, d.fromUnit, '#06b6d4'),
-                  h('span', { key: 'arr', className: 'text-2xl text-slate-300 mt-8' }, '\u2192'),
+                  h('span', { key: 'arr', className: 'text-2xl text-slate-500 mt-8' }, '\u2192'),
                   thermo(toVal, d.toUnit, '#6366f1')
                 ];
               })()
@@ -605,7 +605,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         e.stopPropagation();
                         upd('pinnedConversions', d.pinnedConversions.filter(function(_, j) { return j !== i; }));
                       },
-                      className: 'ml-1 text-slate-300 hover:text-red-500 cursor-pointer font-bold'
+                      className: 'ml-1 text-slate-500 hover:text-red-500 cursor-pointer font-bold'
                     }, '\u00D7')
                   );
                 })
@@ -622,7 +622,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 d.history.map(function(item, i) {
                   return h('div', { key: i, className: 'flex items-center gap-2 text-xs bg-white rounded-lg px-2 py-1.5 border' },
                     h('span', { className: 'text-cyan-600 font-bold' }, item.from),
-                    h('span', { className: 'text-slate-300' }, '\u2192'),
+                    h('span', { className: 'text-slate-500' }, '\u2192'),
                     h('span', { className: 'text-indigo-600 font-bold' }, item.to)
                   );
                 })
@@ -721,11 +721,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             !d.quiz && h('div', { className: 'text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200' },
               h('p', { className: 'text-4xl mb-3' }, '\uD83E\uDDE0'),
               h('p', { className: 'text-sm font-bold text-slate-600' }, 'Test your unit conversion knowledge!'),
-              h('p', { className: 'text-xs text-slate-400 mt-1' }, '22 questions \u2022 Speed bonus \u2022 Streak rewards')
+              h('p', { className: 'text-xs text-slate-500 mt-1' }, '22 questions \u2022 Speed bonus \u2022 Streak rewards')
             ),
 
             d.quiz && h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-5 shadow-sm' },
-              h('p', { className: 'text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1' }, '\uD83E\uDDE0 Question'),
+              h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1' }, '\uD83E\uDDE0 Question'),
               h('p', { className: 'text-lg font-bold text-slate-800 mb-4' }, d.quiz.q),
 
               !d.quiz.answered
@@ -772,7 +772,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         });
                       }
                     }),
-                    h('span', { className: 'text-xs text-slate-400 shrink-0' }, d.quiz.unit + ' \u2014 Enter'),
+                    h('span', { className: 'text-xs text-slate-500 shrink-0' }, d.quiz.unit + ' \u2014 Enter'),
                     h('button', {
                       onClick: askTutor,
                       className: 'px-2 py-2 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm',
@@ -832,7 +832,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     addToast('Could not generate problem. Try again.', 'error');
                   });
                 },
-                className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (d.loadingWP ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-cyan-600 text-white hover:bg-cyan-700')
+                className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (d.loadingWP ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-cyan-600 text-white hover:bg-cyan-700')
               }, d.loadingWP ? '\u23F3 Generating...' : '\u2728 Generate')
             ),
 
@@ -844,7 +844,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             !d.wordProblem && !d.loadingWP && h('div', { className: 'text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200' },
               h('p', { className: 'text-4xl mb-3' }, '\uD83D\uDCDD'),
               h('p', { className: 'text-sm font-bold text-slate-600' }, 'Click Generate for an AI-crafted word problem'),
-              h('p', { className: 'text-xs text-slate-400 mt-1' }, 'Category: ' + cat.label)
+              h('p', { className: 'text-xs text-slate-500 mt-1' }, 'Category: ' + cat.label)
             ),
 
             d.wordProblem && h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-5 shadow-sm animate-in fade-in duration-300' },
@@ -891,7 +891,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           ),
 
           // ── Keyboard shortcuts legend ──
-          h('div', { className: 'text-[10px] text-slate-400 text-center mt-3 space-x-3' },
+          h('div', { className: 'text-[10px] text-slate-500 text-center mt-3 space-x-3' },
             h('span', null, '1-4 Tabs'),
             h('span', null, 'N Next Quiz'),
             h('span', null, 'B Badges'),

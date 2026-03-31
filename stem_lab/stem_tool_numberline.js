@@ -453,7 +453,7 @@ window.StemLab = window.StemLab || {
               ),
               // Quick range presets
               h('div', { className: 'flex flex-wrap gap-1.5' },
-                h('span', { className: 'text-[10px] font-bold text-slate-400 self-center' }, 'Presets:'),
+                h('span', { className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Presets:'),
                 [[0, 10], [0, 20], [0, 100], [-10, 10], [-20, 20], [0, 1000]].map(function(pr) {
                   return h('button', {
                     key: pr.join('-'),
@@ -525,7 +525,7 @@ window.StemLab = window.StemLab || {
                       })
                     )
                   ),
-                  h('span', { className: 'text-[11px] text-slate-400' }, Object.keys(challengeTypesUsed).length + '/6 types')
+                  h('span', { className: 'text-[11px] text-slate-500' }, Object.keys(challengeTypesUsed).length + '/6 types')
                 ),
 
                 !challenge
@@ -605,7 +605,7 @@ window.StemLab = window.StemLab || {
               ),
               // Quick skip presets
               h('div', { className: 'flex flex-wrap gap-1.5' },
-                h('span', { className: 'text-[10px] font-bold text-slate-400 self-center' }, 'Count by:'),
+                h('span', { className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Count by:'),
                 [2, 3, 5, 10, 25, 100].map(function(s) {
                   return h('button', {
                     key: s,
@@ -640,7 +640,7 @@ window.StemLab = window.StemLab || {
               // Toggle
               h('button', {
                 onClick: function() { sfxClick(); upd({ showSkipMarkers: !showSkipMarkers }); },
-                className: 'text-xs font-bold ' + (showSkipMarkers ? 'text-violet-600' : 'text-slate-400') + ' hover:text-violet-800 transition-colors'
+                className: 'text-xs font-bold ' + (showSkipMarkers ? 'text-violet-600' : 'text-slate-500') + ' hover:text-violet-800 transition-colors'
               }, showSkipMarkers ? '\uD83D\uDC41 Hide markers on line' : '\uD83D\uDC41 Show markers on line')
             );
           };
@@ -721,7 +721,7 @@ window.StemLab = window.StemLab || {
               h('h3', { className: 'text-lg font-bold text-blue-800' }, '\uD83D\uDCCF Number Line'),
               h('div', { className: 'ml-auto flex items-center gap-3' },
                 streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-                bestStreak > 0 && h('span', { className: 'text-[10px] text-slate-400' }, 'Best: ' + bestStreak),
+                bestStreak > 0 && h('span', { className: 'text-[10px] text-slate-500' }, 'Best: ' + bestStreak),
                 h('span', { className: 'text-xs font-bold text-blue-600' }, score.correct + '/' + score.total)
               )
             ),
@@ -757,7 +757,7 @@ window.StemLab = window.StemLab || {
             renderAITutor(),
 
             // Keyboard hints
-            h('div', { className: 'text-center text-[11px] text-slate-300 mt-2' },
+            h('div', { className: 'text-center text-[11px] text-slate-500 mt-2' },
               '\u2328\uFE0F 1-3: tabs | N: new challenge | ?: AI tutor'
             )
           );

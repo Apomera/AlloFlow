@@ -1223,9 +1223,9 @@ window.StemLab = window.StemLab || {
                 '\u2764\uFE0F ' + Array.from({ length: Math.max(0, Math.min(playLives, 10)) }, function() { return '\u2665'; }).join('')
               ),
               playKeys > 0 && h('span', { className: 'text-xs font-bold text-yellow-600' }, '\uD83D\uDD11 \u00D7' + playKeys),
-              h('span', { className: 'text-xs font-bold text-slate-400' }, '\uD83D\uDC63 Moves: ' + playMoves),
+              h('span', { className: 'text-xs font-bold text-slate-500' }, '\uD83D\uDC63 Moves: ' + playMoves),
               playCoinsCollected > 0 && h('span', { className: 'text-xs font-bold text-amber-500' }, '\uD83E\uDE99 ' + playCoinsCollected + ' collected'),
-              h('span', { className: 'text-xs font-bold text-slate-400 ml-auto' },
+              h('span', { className: 'text-xs font-bold text-slate-500 ml-auto' },
                 gameType === 'topdown' ? '\uD83D\uDD3D Top-Down' : gameType === 'platformer' ? '\uD83C\uDFC3 Platformer' : '\uD83E\uDDE9 Puzzle'
               )
             ),
@@ -1305,7 +1305,7 @@ window.StemLab = window.StemLab || {
                 },
                 className: 'px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-500 hover:bg-blue-600 shadow-md transition-all'
               }, '\uD83D\uDD04 Play Again'),
-              h('div', { className: 'text-[10px] text-slate-400 self-center ml-2' }, 'Arrow keys / WASD to move \u2022 Click game area first')
+              h('div', { className: 'text-[10px] text-slate-500 self-center ml-2' }, 'Arrow keys / WASD to move \u2022 Click game area first')
             ),
 
             // Mechanics guide
@@ -1557,7 +1557,7 @@ window.StemLab = window.StemLab || {
                       className: 'flex items-center gap-2 text-xs ' + (r.passed ? 'text-green-700' : 'text-slate-500')
                     },
                       h('span', { className: 'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ' +
-                        (r.passed ? 'bg-green-200 text-green-700' : 'bg-gray-200 text-gray-400')
+                        (r.passed ? 'bg-green-200 text-green-700' : 'bg-gray-200 text-gray-500')
                       }, r.passed ? '\u2713' : (ri + 1)),
                       h('span', { className: r.passed ? 'line-through' : '' }, r.text)
                     );

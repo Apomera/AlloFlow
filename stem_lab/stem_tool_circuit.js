@@ -1580,7 +1580,7 @@ window.StemLab = window.StemLab || {
             ),
 
             // Footer
-            h('p', { className: 'text-[10px] text-center text-slate-300 mt-3 mb-2' }, '\uD83D\uDD0C Circuit Builder \u2022 Ohm\'s Law: V = IR \u2022 Power: P = IV')
+            h('p', { className: 'text-[10px] text-center text-slate-500 mt-3 mb-2' }, '\uD83D\uDD0C Circuit Builder \u2022 Ohm\'s Law: V = IR \u2022 Power: P = IV')
           );
         };
       }

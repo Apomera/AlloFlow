@@ -3986,7 +3986,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("h4", { className: "text-base font-black text-purple-700" }, sel.name),
 
-                      React.createElement("button", { onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-400" }))
+                      React.createElement("button", { onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-500" }))
 
                     ),
 
@@ -4080,7 +4080,7 @@ var d = labToolData.brainAtlas || {};
 
                   React.createElement("div", { className: "space-y-1 max-h-[380px] overflow-y-auto pr-1" },
 
-                    filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-400 italic py-4 text-center" }, "No regions match your search."),
+                    filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-500 italic py-4 text-center" }, "No regions match your search."),
 
                     filtered.map(function (r) {
 

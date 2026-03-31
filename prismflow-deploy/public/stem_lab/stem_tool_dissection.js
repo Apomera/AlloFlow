@@ -6249,7 +6249,7 @@ var d = labToolData.dissection || {};
 
                     var dcKey = dev ? (dev.indexOf('Ecto') >= 0 ? 'Ectoderm' : dev.indexOf('Meso') >= 0 ? 'Mesoderm' : 'Endoderm') : null;
 
-                    return dev ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[9px] font-bold mr-1 mb-1 border " + (dColors[dcKey] || 'bg-slate-50 text-slate-600 border-slate-200') }, '\uD83E\uDDEC ' + dev) : null;
+                    return dev ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[11px] font-bold mr-1 mb-1 border " + (dColors[dcKey] || 'bg-slate-50 text-slate-600 border-slate-200') }, '\uD83E\uDDEC ' + dev) : null;
 
                   })(),
 
@@ -6289,7 +6289,7 @@ var d = labToolData.dissection || {};
 
                     };
 
-                    return tissue ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[9px] font-bold mr-1 mb-1 " + (tColors[tissue] || 'bg-slate-100 text-slate-600') }, '\uD83E\uDDA0 ' + tissue) : null;
+                    return tissue ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[11px] font-bold mr-1 mb-1 " + (tColors[tissue] || 'bg-slate-100 text-slate-600') }, '\uD83E\uDDA0 ' + tissue) : null;
 
                   })(),
 
@@ -6303,7 +6303,7 @@ var d = labToolData.dissection || {};
 
                     Object.keys(weightMap).forEach(function (k) { if (sn.indexOf(k) >= 0) w = weightMap[k]; });
 
-                    return w ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 text-slate-500 border border-slate-200 mr-1 mb-1" }, '\u2696\uFE0F ' + w + ' ' + 'Human') : null;
+                    return w ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200 mr-1 mb-1" }, '\u2696\uFE0F ' + w + ' ' + 'Human') : null;
 
                   })(),
 
@@ -6323,7 +6323,7 @@ var d = labToolData.dissection || {};
 
                     Object.keys(sysKW).forEach(function (sk) { sysKW[sk].forEach(function (kw) { if (!sysN && sn.indexOf(kw) >= 0) sysN = sk; }); });
 
-                    return sysN ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[9px] font-bold border mb-1 " + sysCols[sysN] }, sysBadges[sysN]) : null;
+                    return sysN ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[11px] font-bold border mb-1 " + sysCols[sysN] }, sysBadges[sysN]) : null;
 
                   })(),
 
@@ -6339,7 +6339,7 @@ var d = labToolData.dissection || {};
 
                   // Position info
 
-                  React.createElement("div", { className: "mt-2 flex gap-2 text-[9px] text-slate-500" },
+                  React.createElement("div", { className: "mt-2 flex gap-2 text-[11px] text-slate-500" },
 
                     React.createElement("span", null, '\uD83D\uDCCD x:' + Math.round(sel.x * 100) + '% y:' + Math.round(sel.y * 100) + '%'),
 
@@ -6383,7 +6383,7 @@ var d = labToolData.dissection || {};
 
                     Object.keys(clinMap).forEach(function (k) { if (sn.indexOf(k) >= 0) clin = clinMap[k]; });
 
-                    return clin ? React.createElement("div", { className: "text-[9px] text-amber-500 mt-1 italic border-l-2 border-amber-300 pl-2" }, clin) : null;
+                    return clin ? React.createElement("div", { className: "text-[11px] text-amber-500 mt-1 italic border-l-2 border-amber-300 pl-2" }, clin) : null;
 
                   })(),
 
@@ -6413,7 +6413,7 @@ var d = labToolData.dissection || {};
 
                     Object.keys(relMap).forEach(function (k) { if (sn.indexOf(k) >= 0) related = relMap[k]; });
 
-                    return related ? React.createElement("div", { className: "text-[9px] text-slate-500 mt-1" },
+                    return related ? React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" },
 
                       React.createElement("span", { className: "font-bold" }, '\uD83D\uDD17 ' + 'Related' + ': '),
 
@@ -6552,7 +6552,7 @@ var d = labToolData.dissection || {};
 
                         React.createElement("span", { className: "flex-1" }, org.name),
 
-                        isExplored && React.createElement("span", { className: "text-[9px] text-green-500" }, '\u2713')
+                        isExplored && React.createElement("span", { className: "text-[11px] text-green-500" }, '\u2713')
 
                       );
 
@@ -6611,7 +6611,7 @@ var d = labToolData.dissection || {};
 
                         },
 
-                        className: "px-2 py-1.5 rounded-lg text-[11px] font-bold border transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-400' : 'border-amber-200 bg-white text-slate-700 hover:border-amber-400')
+                        className: "px-2 py-1.5 rounded-lg text-[11px] font-bold border transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-500' : 'border-amber-200 bg-white text-slate-700 hover:border-amber-400')
 
                       }, opt.name);
 
@@ -6628,7 +6628,7 @@ var d = labToolData.dissection || {};
                   }, 'Next Question' + ' \u2192'),
 
                   d.quizExplanation && React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-white border border-amber-200" },
-                    React.createElement("span", { className: "text-[9px] font-bold text-amber-600" }, '\uD83D\uDCA1 '),
+                    React.createElement("span", { className: "text-[11px] font-bold text-amber-600" }, '\uD83D\uDCA1 '),
                     React.createElement("span", { className: "text-[10px] text-slate-600 leading-relaxed" }, d.quizExplanation)
                   )
 
@@ -6648,9 +6648,9 @@ var d = labToolData.dissection || {};
 
                     return React.createElement("div", { key: layer.id, className: "flex items-center gap-2 py-0.5" },
 
-                      React.createElement("span", { className: "text-[10px] " + (done ? 'line-through text-slate-400' : 'text-slate-600') }, layer.icon + ' ' + layer.name),
+                      React.createElement("span", { className: "text-[10px] " + (done ? 'line-through text-slate-500' : 'text-slate-600') }, layer.icon + ' ' + layer.name),
 
-                      done && React.createElement("span", { className: "text-[9px] text-green-500 ml-auto" }, '\u2713')
+                      done && React.createElement("span", { className: "text-[11px] text-green-500 ml-auto" }, '\u2713')
 
                     );
 
@@ -6666,7 +6666,7 @@ var d = labToolData.dissection || {};
 
                         React.createElement("span", { className: "text-[8px] font-bold text-slate-500 uppercase" }, 'Kingdom'),
 
-                        React.createElement("p", { className: "text-[9px] text-slate-500" }, spec.kingdom)
+                        React.createElement("p", { className: "text-[11px] text-slate-500" }, spec.kingdom)
 
                       ),
 
@@ -6674,7 +6674,7 @@ var d = labToolData.dissection || {};
 
                         React.createElement("span", { className: "text-[8px] font-bold text-slate-500 uppercase" }, 'Phylum'),
 
-                        React.createElement("p", { className: "text-[9px] text-slate-500" }, spec.phylum)
+                        React.createElement("p", { className: "text-[11px] text-slate-500" }, spec.phylum)
 
                       ),
 
@@ -6682,7 +6682,7 @@ var d = labToolData.dissection || {};
 
                         React.createElement("span", { className: "text-[8px] font-bold text-slate-500 uppercase" }, 'Habitat'),
 
-                        React.createElement("p", { className: "text-[9px] text-slate-500" }, spec.habitat)
+                        React.createElement("p", { className: "text-[11px] text-slate-500" }, spec.habitat)
 
                       ),
 
@@ -6690,7 +6690,7 @@ var d = labToolData.dissection || {};
 
                         React.createElement("span", { className: "text-[8px] font-bold text-slate-500 uppercase" }, 'Lifespan'),
 
-                        React.createElement("p", { className: "text-[9px] text-slate-500" }, spec.lifespan)
+                        React.createElement("p", { className: "text-[11px] text-slate-500" }, spec.lifespan)
 
                       )
 
@@ -6743,13 +6743,13 @@ var d = labToolData.dissection || {};
 
                   ),
 
-                  React.createElement("div", { className: "mt-1 text-[9px] text-blue-500" }, 'Structures Examined'.replace('{count}', exploredCount).replace('{total}', totalOrgansInSpecimen)),
+                  React.createElement("div", { className: "mt-1 text-[11px] text-blue-500" }, 'Structures Examined'.replace('{count}', exploredCount).replace('{total}', totalOrgansInSpecimen)),
 
                   progressPct >= 100 && React.createElement("div", { className: "mt-1" },
 
                     React.createElement("div", { className: "text-[10px] font-bold text-green-600" }, '\u2B50 ' + 'Specimen Complete!'),
 
-                    React.createElement("div", { className: "text-[9px] text-emerald-500 mt-0.5" },
+                    React.createElement("div", { className: "text-[11px] text-emerald-500 mt-0.5" },
 
                       '\uD83C\uDFC6 ' + 'Identified'.replace('{count}', Object.keys(d.exploredOrgans || {}).length).replace('{total}', totalOrgansInSpecimen)
 
@@ -6783,7 +6783,7 @@ var d = labToolData.dissection || {};
 
                       },
 
-                      className: "mt-1 px-2 py-1 rounded-lg text-[9px] font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+                      className: "mt-1 px-2 py-1 rounded-lg text-[11px] font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white"
 
                     }, '\uD83C\uDF93 ' + 'Copy Certificate')
 
@@ -6895,7 +6895,7 @@ var d = labToolData.dissection || {};
 
                       },
 
-                        React.createElement("span", { className: isComplete ? 'text-emerald-600' : 'text-slate-300' }, isComplete ? '\u2705' : '\u2B1C'),
+                        React.createElement("span", { className: isComplete ? 'text-emerald-600' : 'text-slate-500' }, isComplete ? '\u2705' : '\u2B1C'),
 
                         React.createElement("span", { className: isComplete ? 'text-emerald-600 line-through' : 'text-slate-600' }, obj)
 

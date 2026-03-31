@@ -652,8 +652,8 @@ window.StemLab = window.StemLab || {
               return h('div', { key: badge.id, className: 'flex items-center gap-2 p-2 rounded-lg transition-all ' + (earned ? 'bg-amber-100 border border-amber-300' : 'bg-white border border-slate-200 opacity-50') },
                 h('span', { className: 'text-lg', style: earned ? {} : { filter: 'grayscale(1)' } }, badge.icon),
                 h('div', null,
-                  h('div', { className: 'text-[10px] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-400') }, badge.name),
-                  h('div', { className: 'text-[8px] ' + (earned ? 'text-amber-600' : 'text-slate-300') }, badge.desc)
+                  h('div', { className: 'text-[10px] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.name),
+                  h('div', { className: 'text-[8px] ' + (earned ? 'text-amber-600' : 'text-slate-500') }, badge.desc)
                 )
               );
             })
@@ -1182,10 +1182,10 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('div', { className: 'text-xs font-bold text-slate-700 uppercase' }, '\uD83D\uDCDC Recent Angles'),
-              angleHistory.length > 0 && h('button', { onClick: function() { upd('angleHistory', []); }, className: 'text-[10px] text-slate-400 hover:text-red-400' }, 'Clear')
+              angleHistory.length > 0 && h('button', { onClick: function() { upd('angleHistory', []); }, className: 'text-[10px] text-slate-500 hover:text-red-400' }, 'Clear')
             ),
             angleHistory.length === 0
-              ? h('div', { className: 'text-xs text-slate-400 text-center py-2' }, 'No angles explored yet')
+              ? h('div', { className: 'text-xs text-slate-500 text-center py-2' }, 'No angles explored yet')
               : h('div', { className: 'flex gap-1.5 flex-wrap' },
                   angleHistory.slice(0, 15).map(function(entry, i) {
                     return h('button', { key: i, onClick: function() { setAngleValue(entry.deg); upd('activeTab', 'explore'); },

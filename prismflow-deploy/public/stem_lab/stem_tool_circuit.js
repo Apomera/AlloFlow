@@ -784,13 +784,13 @@ window.StemLab = window.StemLab || {
                         : comp.type === 'ammeter'
                         ? h('g', null,
                             h('circle', { cx: 220, cy: cy, r: 10, fill: '#eff6ff', stroke: '#2563eb', strokeWidth: 1.5 }),
-                            h('text', { x: 220, y: cy + 4, textAnchor: 'middle', style: { fontSize: '9px', fontWeight: 'bold' }, fill: '#2563eb' }, 'A')
+                            h('text', { x: 220, y: cy + 4, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: '#2563eb' }, 'A')
                           )
 
                         : comp.type === 'voltmeter'
                         ? h('g', null,
                             h('circle', { cx: 220, cy: cy, r: 10, fill: '#fefce8', stroke: '#ca8a04', strokeWidth: 1.5 }),
-                            h('text', { x: 220, y: cy + 4, textAnchor: 'middle', style: { fontSize: '9px', fontWeight: 'bold' }, fill: '#ca8a04' }, 'V')
+                            h('text', { x: 220, y: cy + 4, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: '#ca8a04' }, 'V')
                           )
 
                         : comp.type === 'capacitor'
@@ -1325,7 +1325,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'px-3 py-2 flex items-center gap-2 border-b border-slate-700' },
                 h('div', { className: 'w-2 h-2 rounded-full bg-emerald-400' }),
                 h('span', { className: 'text-[10px] font-bold text-emerald-400 uppercase tracking-wider' }, 'Oscilloscope'),
-                h('span', { className: 'ml-auto text-[9px] text-slate-500 font-mono' },
+                h('span', { className: 'ml-auto text-[11px] text-slate-500 font-mono' },
                   voltage.toFixed(1) + 'V  ' + current.toFixed(3) + 'A  ' + totalR.toFixed(1) + '\u03A9')
               ),
               h('canvas', {
@@ -1489,7 +1489,7 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'flex items-center gap-2 mb-2' },
                     h('span', { className: 'text-2xl' }, physics.icon),
                     h('h4', { className: 'font-bold text-slate-800 text-sm' }, physics.name),
-                    h('span', { className: 'ml-auto px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-slate-100 text-slate-600 border border-slate-200' }, physics.equation)
+                    h('span', { className: 'ml-auto px-2 py-0.5 rounded-full text-[11px] font-mono font-bold bg-slate-100 text-slate-600 border border-slate-200' }, physics.equation)
                   ),
                   h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, physics.how),
                   h('div', { className: 'bg-sky-50 rounded-lg p-2 border border-sky-200' },
@@ -1530,12 +1530,12 @@ window.StemLab = window.StemLab || {
                       h('span', { className: 'text-lg' }, app.emoji),
                       h('div', null,
                         h('span', { className: 'text-xs font-bold text-slate-800 block' }, app.name),
-                        h('span', { className: 'text-[9px] text-cyan-600 font-bold' }, app.circuit)
+                        h('span', { className: 'text-[11px] text-cyan-600 font-bold' }, app.circuit)
                       )
                     ),
                     expanded ? h('div', null,
                       h('p', { className: 'text-[10px] text-slate-600 leading-relaxed mb-1' }, app.desc),
-                      h('span', { className: 'text-[9px] text-slate-500 font-bold' }, '\uD83D\uDD27 Key parts: ' + app.comps)
+                      h('span', { className: 'text-[11px] text-slate-500 font-bold' }, '\uD83D\uDD27 Key parts: ' + app.comps)
                     ) : null
                   );
                 })
@@ -1580,7 +1580,7 @@ window.StemLab = window.StemLab || {
             ),
 
             // Footer
-            h('p', { className: 'text-[10px] text-center text-slate-300 mt-3 mb-2' }, '\uD83D\uDD0C Circuit Builder \u2022 Ohm\'s Law: V = IR \u2022 Power: P = IV')
+            h('p', { className: 'text-[10px] text-center text-slate-500 mt-3 mb-2' }, '\uD83D\uDD0C Circuit Builder \u2022 Ohm\'s Law: V = IR \u2022 Power: P = IV')
           );
         };
       }

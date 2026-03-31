@@ -5933,7 +5933,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     }),
 
-                    React.createElement("span", { className: "ml-auto text-[10px] text-slate-400 font-mono" }, "T:" + simTick)
+                    React.createElement("span", { className: "ml-auto text-[10px] text-slate-500 font-mono" }, "T:" + simTick)
 
                   )
 
@@ -5949,7 +5949,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("h4", { className: "text-xs font-bold text-cyan-700" }, "\uD83E\uDDEA Water Chemistry"),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-400 italic" }, "Tap any card for details")
+                    React.createElement("span", { className: "text-[11px] text-slate-500 italic" }, "Tap any card for details")
 
                   ),
 
@@ -6017,7 +6017,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         React.createElement("h5", { className: "text-xs font-bold text-cyan-800" }, info.icon + " " + info.name),
 
-                        React.createElement("button", { onClick: function () { upd('chemTooltip', null); }, className: "text-[10px] text-slate-400 hover:text-slate-600" }, "\u2715")
+                        React.createElement("button", { onClick: function () { upd('chemTooltip', null); }, className: "text-[10px] text-slate-500 hover:text-slate-600" }, "\u2715")
 
                       ),
 
@@ -6077,7 +6077,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("span", null, " \u2192 "),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-400" }, "Nitrosomonas"),
+                    React.createElement("span", { className: "text-[11px] text-slate-500" }, "Nitrosomonas"),
 
                     React.createElement("span", null, " \u2192 "),
 
@@ -6085,13 +6085,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("span", null, " \u2192 "),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-400" }, "Nitrobacter"),
+                    React.createElement("span", { className: "text-[11px] text-slate-500" }, "Nitrobacter"),
 
                     React.createElement("span", null, " \u2192 "),
 
                     React.createElement("span", { className: "font-bold text-green-500" }, "NO\u2083"),
 
-                    React.createElement("span", { className: "ml-1 text-slate-400" }, "(Nitrogen Cycle)")
+                    React.createElement("span", { className: "ml-1 text-slate-500" }, "(Nitrogen Cycle)")
 
                   )
 
@@ -6165,7 +6165,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                               React.createElement("span", { className: "text-[11px] font-mono " + hpTextColor }, hp.toFixed(0) + '%'),
 
-                              React.createElement("span", { className: "text-[11px] text-slate-400" }, '\uD83C\uDF3F' + bm.toFixed(1))
+                              React.createElement("span", { className: "text-[11px] text-slate-500" }, '\uD83C\uDF3F' + bm.toFixed(1))
 
                             )
 
@@ -6219,7 +6219,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                           React.createElement("span", { className: "font-bold" }, (ps.icon || '\uD83C\uDF3F') + ' ' + ps.name),
 
-                          React.createElement("div", { className: "text-[8px] text-slate-400 mt-0.5 leading-tight" },
+                          React.createElement("div", { className: "text-[8px] text-slate-500 mt-0.5 leading-tight" },
 
                             "O\u2082:" + (ps.o2 > 0 ? '+' : '') + ps.o2.toFixed(2) +
 
@@ -6369,7 +6369,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                           ),
 
-                          !isGestating && cooldownLeft > 0 && React.createElement("div", { className: "mt-1 text-[11px] text-slate-400 italic" }, "\u23F3 Cooldown: " + cooldownLeft + " ticks remaining"),
+                          !isGestating && cooldownLeft > 0 && React.createElement("div", { className: "mt-1 text-[11px] text-slate-500 italic" }, "\u23F3 Cooldown: " + cooldownLeft + " ticks remaining"),
 
                           !isGestating && cooldownLeft === 0 && React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap" },
 
@@ -7105,7 +7105,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       disabled: tankFish.length === 0,
 
-                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" : "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 hover:from-amber-100 hover:to-amber-200 border-amber-200/60")
+                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed" : "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 hover:from-amber-100 hover:to-amber-200 border-amber-200/60")
 
                     }, "\uD83C\uDF7D\uFE0F Flake"),
 
@@ -7115,7 +7115,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       disabled: tankFish.length === 0,
 
-                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" : "bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 border-red-200/60")
+                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed" : "bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 border-red-200/60")
 
                     }, "\uD83E\uDD90 Live")
 
@@ -7163,7 +7163,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "Feeding Report"),
 
-                      React.createElement("button", { onClick: function () { upd('feedingLog', null); }, className: "ml-auto text-[10px] text-slate-400" }, "\u2715")
+                      React.createElement("button", { onClick: function () { upd('feedingLog', null); }, className: "ml-auto text-[10px] text-slate-500" }, "\u2715")
 
                     ),
 
@@ -7459,7 +7459,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                           React.createElement("span", { className: "text-[10px] font-bold text-slate-600 truncate" }, entry.title),
 
-                          React.createElement("span", { className: "text-[8px] text-slate-400 flex-shrink-0" }, 'Day ' + entry.day)
+                          React.createElement("span", { className: "text-[8px] text-slate-500 flex-shrink-0" }, 'Day ' + entry.day)
 
                         ),
 
@@ -7481,7 +7481,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 eventLog.length > 0 && React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-200 max-h-32 overflow-y-auto" },
 
-                  React.createElement("h4", { className: "text-[10px] font-bold text-slate-400 mb-1" }, "\uD83D\uDCDC Event Log (Day " + simDay + ")"),
+                  React.createElement("h4", { className: "text-[10px] font-bold text-slate-500 mb-1" }, "\uD83D\uDCDC Event Log (Day " + simDay + ")"),
 
                   eventLog.slice().reverse().slice(0, 10).map(function (evt, i) {
 
@@ -7607,7 +7607,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               oceanHistory.length > 1 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
 
-                React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2 flex items-center gap-2" }, "\uD83D\uDCC8 Population History", React.createElement("span", { className: "text-[10px] text-slate-400 font-normal" }, "last " + Math.min(20, oceanHistory.length) + " years")),
+                React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2 flex items-center gap-2" }, "\uD83D\uDCC8 Population History", React.createElement("span", { className: "text-[10px] text-slate-500 font-normal" }, "last " + Math.min(20, oceanHistory.length) + " years")),
 
                 React.createElement("div", { className: "relative", style: { height: '96px' } },
 
@@ -7771,7 +7771,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   }),
 
-                  React.createElement("span", { className: "text-[10px] text-slate-400 ml-1" }, meshSize === 'small' ? '\u26A0\uFE0F High bycatch' : meshSize === 'large' ? '\u2705 Low bycatch' : '')
+                  React.createElement("span", { className: "text-[10px] text-slate-500 ml-1" }, meshSize === 'small' ? '\u26A0\uFE0F High bycatch' : meshSize === 'large' ? '\u2705 Low bycatch' : '')
 
                 ),
 
@@ -7815,7 +7815,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   return React.createElement("div", { key: s.label, className: "bg-white rounded-lg p-2 text-center border border-slate-200" },
 
-                    React.createElement("div", { className: "text-xs text-slate-400" }, s.icon + " " + s.label),
+                    React.createElement("div", { className: "text-xs text-slate-500" }, s.icon + " " + s.label),
 
                     React.createElement("div", { className: "text-sm font-bold " + (s.label === 'Status' && oceanCollapsed ? 'text-red-600' : 'text-slate-700') }, s.val)
 
@@ -8029,7 +8029,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       disabled: answered,
 
-                      className: "py-2 px-3 text-xs font-bold rounded-lg border transition-all " + (answered ? (isCorrect ? "bg-green-100 border-green-400 text-green-800" : isChosen ? "bg-red-100 border-red-400 text-red-800" : "bg-slate-50 border-slate-200 text-slate-400") : "bg-white border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400")
+                      className: "py-2 px-3 text-xs font-bold rounded-lg border transition-all " + (answered ? (isCorrect ? "bg-green-100 border-green-400 text-green-800" : isChosen ? "bg-red-100 border-red-400 text-red-800" : "bg-slate-50 border-slate-200 text-slate-500") : "bg-white border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400")
 
                     }, opt);
 

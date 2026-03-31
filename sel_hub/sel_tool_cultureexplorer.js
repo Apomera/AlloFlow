@@ -1067,7 +1067,7 @@ window.SelHub = window.SelHub || {
                   h('div', { className: 'text-[10px] text-slate-500' }, recipe.origin + ' \u2022 ' + recipe.difficulty)
                 ),
                 wantToTry && h('span', { className: 'text-amber-500 text-sm' }, '\u2764\uFE0F'),
-                h('span', { className: 'text-slate-400 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
+                h('span', { className: 'text-slate-500 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
               ),
 
               // Expanded content
@@ -1131,7 +1131,7 @@ window.SelHub = window.SelHub || {
                   h('div', { className: 'text-[10px] text-slate-500' }, trad.origin)
                 ),
                 explored && h('span', { className: 'text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713'),
-                h('span', { className: 'text-slate-400 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
+                h('span', { className: 'text-slate-500 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
               ),
 
               // Expanded content
@@ -1220,7 +1220,7 @@ window.SelHub = window.SelHub || {
                     h('div', { className: 'text-[10px] text-slate-500' }, story.origin)
                   ),
                   isRead && h('span', { className: 'text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713 Read'),
-                  h('span', { className: 'text-slate-400 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
+                  h('span', { className: 'text-slate-500 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
                 ),
 
                 // Expanded content
@@ -1335,7 +1335,7 @@ window.SelHub = window.SelHub || {
                     h('div', { className: 'text-sm font-bold text-slate-800' }, event.name),
                     h('div', { className: 'text-[10px] text-slate-500' }, event.origin)
                   ),
-                  h('span', { className: 'text-slate-400 text-xs' }, isEventExpanded ? '\u25B2' : '\u25BC')
+                  h('span', { className: 'text-slate-500 text-xs' }, isEventExpanded ? '\u25B2' : '\u25BC')
                 ),
                 isEventExpanded && h('div', { className: 'px-4 pb-4 border-t border-slate-100 pt-3' },
                   h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, event.desc),
@@ -1878,7 +1878,7 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'text-2xl' }, earned ? badge.emoji : '\uD83D\uDD12'),
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'text-sm font-bold ' + (earned ? 'text-slate-800' : 'text-slate-500') }, badge.label),
-                  h('div', { className: 'text-[10px] ' + (earned ? 'text-amber-700' : 'text-slate-400') }, badge.desc)
+                  h('div', { className: 'text-[10px] ' + (earned ? 'text-amber-700' : 'text-slate-500') }, badge.desc)
                 ),
                 earned && h('span', { className: 'text-green-500 text-lg font-bold' }, '\u2713')
               );

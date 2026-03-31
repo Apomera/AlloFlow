@@ -929,7 +929,7 @@ window.StemLab = window.StemLab || {
                     )
                   ),
                   placed.length === 0
-                    ? React.createElement("div", { className: "text-center py-8 text-slate-300" },
+                    ? React.createElement("div", { className: "text-center py-8 text-slate-500" },
                         React.createElement("div", { className: "text-4xl mb-2" }, "\uD83E\uDE99"),
                         React.createElement("p", { className: "text-xs" }, challengeMode ? 'Add coins/bills, then guess the total!' : 'Click coins or bills to add them here')
                       )
@@ -2004,7 +2004,7 @@ window.StemLab = window.StemLab || {
                     cdDropped.length > 0 && !cdFb && React.createElement("button", { onClick: function () {
                       var newDropped = cdDropped.slice(0, -1);
                       upd('cdDropped', newDropped);
-                    }, className: "w-full px-3 py-1 text-xs text-slate-400 hover:text-slate-600 font-bold text-center" }, '\u21A9 Undo last coin'),
+                    }, className: "w-full px-3 py-1 text-xs text-slate-500 hover:text-slate-600 font-bold text-center" }, '\u21A9 Undo last coin'),
                     // Feedback
                     cdFb && React.createElement("div", { className: "space-y-2" },
                       React.createElement("p", { className: "text-xs font-bold text-center " + (cdFb.ok ? 'text-green-600' : 'text-red-500') }, cdFb.msg),

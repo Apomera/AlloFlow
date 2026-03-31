@@ -392,8 +392,8 @@ window.StemLab = window.StemLab || {
         );
         if (v !== 0 && v % 2 === 0) {
           gridElements.push(
-            h('text', { key: 'xl' + gi, x: toSvg(v, 'x'), y: toSvg(0, 'y') + 14, textAnchor: 'middle', className: 'text-[9px] fill-slate-400' }, v),
-            h('text', { key: 'yl' + gi, x: toSvg(0, 'x') - 8, y: toSvg(v, 'y') + 3, textAnchor: 'end', className: 'text-[9px] fill-slate-400' }, v)
+            h('text', { key: 'xl' + gi, x: toSvg(v, 'x'), y: toSvg(0, 'y') + 14, textAnchor: 'middle', className: 'text-[11px] fill-slate-400' }, v),
+            h('text', { key: 'yl' + gi, x: toSvg(0, 'x') - 8, y: toSvg(v, 'y') + 3, textAnchor: 'end', className: 'text-[11px] fill-slate-400' }, v)
           );
         }
       }
@@ -414,7 +414,7 @@ window.StemLab = window.StemLab || {
           h('line', { x1: toSvg(ln.from.x, 'x'), y1: toSvg(ln.from.y, 'y'), x2: toSvg(ln.to.x, 'x'), y2: toSvg(ln.from.y, 'y'), stroke: '#3b82f6', strokeWidth: 1.5, strokeDasharray: '3,2', opacity: 0.6 }),
           ln.slope.run !== 0 && h('text', { x: runMidX, y: runY - 6, textAnchor: 'middle', className: 'text-[8px] fill-blue-500 font-bold' }, '\u0394x=' + ln.slope.run),
           h('rect', { x: midX - 24, y: midY - 10, width: 48, height: 18, rx: 5, fill: '#6366f1', opacity: 0.9 }),
-          h('text', { x: midX, y: midY + 3, textAnchor: 'middle', fill: '#fff', style: { fontSize: '9px', fontWeight: 'bold' } }, 'm=' + ln.slope.display),
+          h('text', { x: midX, y: midY + 3, textAnchor: 'middle', fill: '#fff', style: { fontSize: '11px', fontWeight: 'bold' } }, 'm=' + ln.slope.display),
           h('text', { x: midX, y: midY + 16, textAnchor: 'middle', className: 'text-[8px] fill-indigo-400 font-mono' }, eq)
         );
       });
@@ -428,9 +428,9 @@ window.StemLab = window.StemLab || {
             return h(React.Fragment, null,
               h('line', { x1: toSvg(p1.x, 'x'), y1: toSvg(p1.y, 'y'), x2: toSvg(p2.x, 'x'), y2: toSvg(p2.y, 'y'), stroke: '#f59e0b', strokeWidth: 2.5 }),
               h('line', { x1: toSvg(p2.x, 'x'), y1: toSvg(p1.y, 'y'), x2: toSvg(p2.x, 'x'), y2: toSvg(p2.y, 'y'), stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '4,2', opacity: 0.7 }),
-              h('text', { x: toSvg(p2.x, 'x') + 12, y: rMidY + 3, className: 'text-[9px] fill-red-500 font-bold' }, 'rise'),
+              h('text', { x: toSvg(p2.x, 'x') + 12, y: rMidY + 3, className: 'text-[11px] fill-red-500 font-bold' }, 'rise'),
               h('line', { x1: toSvg(p1.x, 'x'), y1: toSvg(p1.y, 'y'), x2: toSvg(p2.x, 'x'), y2: toSvg(p1.y, 'y'), stroke: '#3b82f6', strokeWidth: 1.5, strokeDasharray: '4,2', opacity: 0.7 }),
-              h('text', { x: rMidX, y: toSvg(p1.y, 'y') - 6, textAnchor: 'middle', className: 'text-[9px] fill-blue-500 font-bold' }, 'run'),
+              h('text', { x: rMidX, y: toSvg(p1.y, 'y') - 6, textAnchor: 'middle', className: 'text-[11px] fill-blue-500 font-bold' }, 'run'),
               h('circle', { cx: toSvg(p1.x, 'x'), cy: toSvg(p1.y, 'y'), r: 6, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }),
               h('circle', { cx: toSvg(p2.x, 'x'), cy: toSvg(p2.y, 'y'), r: 6, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 })
             );
@@ -677,7 +677,7 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'font-bold text-indigo-800' }, 'm=' + ln.slope.display),
                 h('span', { className: 'text-green-600' }, 'd=' + dist.toFixed(1)),
                 h('span', { className: 'text-purple-600' }, 'M(' + mid.x + ',' + mid.y + ')'),
-                h('span', { className: 'ml-auto text-[9px] font-mono text-indigo-400' }, eq)
+                h('span', { className: 'ml-auto text-[11px] font-mono text-indigo-400' }, eq)
               );
             })
           ),
@@ -719,7 +719,7 @@ window.StemLab = window.StemLab || {
         renderAITutor(),
 
         // Keyboard hints
-        h('div', { className: 'text-center text-[9px] text-slate-300 mt-2' },
+        h('div', { className: 'text-center text-[11px] text-slate-500 mt-2' },
           '\u2328\uFE0F C: connect mode | R: clear | ?: AI tutor'
         )
       );

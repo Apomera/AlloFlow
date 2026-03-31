@@ -1813,7 +1813,7 @@ const d = labToolData.physics;
                   React.createElement("p", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1" }, "\u{1F4DD} Calculation Helper"),
                   (function() {
                     var ans = getTargetAnswer();
-                    if (!ans) return React.createElement("p", { className: "text-xs text-slate-400" }, "No active target");
+                    if (!ans) return React.createElement("p", { className: "text-xs text-slate-500" }, "No active target");
                     return React.createElement("div", { className: "space-y-1" },
                       React.createElement("p", { className: "text-xs text-slate-600" }, "Equation: ", React.createElement("b", { className: "font-mono text-blue-700" }, ans.equation)),
                       React.createElement("p", { className: "text-xs text-slate-600" }, "Substitution: ", React.createElement("span", { className: "font-mono text-emerald-700" }, ans.steps)),
@@ -2016,7 +2016,7 @@ const d = labToolData.physics;
 
                       className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all " +
 
-                        (correct ? 'bg-emerald-100 border-emerald-400 text-emerald-700' : wrong ? 'bg-red-100 border-red-400 text-red-600' : d.quizPicked !== null ? 'bg-slate-50 border-slate-200 text-slate-400' : 'bg-white border-amber-200 text-slate-700 hover:border-amber-400')
+                        (correct ? 'bg-emerald-100 border-emerald-400 text-emerald-700' : wrong ? 'bg-red-100 border-red-400 text-red-600' : d.quizPicked !== null ? 'bg-slate-50 border-slate-200 text-slate-500' : 'bg-white border-amber-200 text-slate-700 hover:border-amber-400')
 
                     }, opt.toFixed(1) + " m");
 

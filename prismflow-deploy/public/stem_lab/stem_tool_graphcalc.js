@@ -584,6 +584,7 @@
            UI RENDER
            ═══════════════════════════════════════════════════ */
         return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', background: '#0f172a', color: '#e2e8f0', fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
 
           // Header
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', background: 'linear-gradient(135deg, #1e1b4b, #312e81)', borderBottom: '1px solid rgba(99,102,241,0.2)' } },
@@ -645,16 +646,16 @@
               ),
               // Zoom presets
               h('div', { style: { padding: '6px 12px 10px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
-                h('div', { style: { fontSize: '9px', color: '#64748b', marginBottom: '4px', fontWeight: 'bold' } }, 'ZOOM PRESETS'),
+                h('div', { style: { fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 'bold' } }, 'ZOOM PRESETS'),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px' } },
                   ZOOM_PRESETS.map(function(z) {
-                    return h('button', { key: z.name, onClick: function() { SOUNDS.zoomPreset(); upd('window', { xmin: z.xmin, xmax: z.xmax, ymin: z.ymin, ymax: z.ymax }); }, style: { padding: '3px 7px', borderRadius: '4px', background: 'rgba(99,102,241,0.1)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)', fontSize: '9px', cursor: 'pointer' } }, z.name);
+                    return h('button', { key: z.name, onClick: function() { SOUNDS.zoomPreset(); upd('window', { xmin: z.xmin, xmax: z.xmax, ymin: z.ymin, ymax: z.ymax }); }, style: { padding: '3px 7px', borderRadius: '4px', background: 'rgba(99,102,241,0.1)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)', fontSize: '11px', cursor: 'pointer' } }, z.name);
                   })
                 )
               ),
               // Sliders
               showSliders ? h('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(167,139,250,0.06)' } },
-                h('div', { style: { fontSize: '9px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '6px' } }, '\uD83C\uDFA8 SLIDERS \u2014 Use a, b, c'),
+                h('div', { style: { fontSize: '11px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '6px' } }, '\uD83C\uDFA8 SLIDERS \u2014 Use a, b, c'),
                 ['a', 'b', 'c'].map(function(p) {
                   var key = 'slider' + p.toUpperCase(); var val = d[key] != null ? d[key] : (p === 'a' ? 1 : 0);
                   return h('div', { key: p, style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
@@ -666,7 +667,7 @@
               ) : null,
               // Derivative slider
               d.showDeriv ? h('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(251,146,60,0.06)' } },
-                h('div', { style: { fontSize: '9px', color: '#fb923c', fontWeight: 'bold', marginBottom: '4px' } }, '\u2202 TANGENT to y\u2081'),
+                h('div', { style: { fontSize: '11px', color: '#fb923c', fontWeight: 'bold', marginBottom: '4px' } }, '\u2202 TANGENT to y\u2081'),
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
                   h('span', { style: { fontSize: '10px', color: '#94a3b8' } }, 'x='),
                   h('input', { type: 'range', min: win.xmin, max: win.xmax, step: (win.xmax - win.xmin) / 200, value: d.derivX != null ? d.derivX : 0, onChange: function(e) { upd('derivX', parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#fb923c' } }),
@@ -675,14 +676,14 @@
               ) : null,
               // Analysis results
               d.showAnalysis ? h('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(52,211,153,0.06)' } },
-                h('div', { style: { fontSize: '9px', color: '#34d399', fontWeight: 'bold', marginBottom: '4px' } }, '\u26A1 ANALYSIS'),
+                h('div', { style: { fontSize: '11px', color: '#34d399', fontWeight: 'bold', marginBottom: '4px' } }, '\u26A1 ANALYSIS'),
                 h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
                   h('div', { style: { flex: 1 } },
-                    h('div', { style: { fontSize: '9px', color: '#34d399', fontWeight: 'bold' } }, 'Zeros'),
+                    h('div', { style: { fontSize: '11px', color: '#34d399', fontWeight: 'bold' } }, 'Zeros'),
                     (d._zeros && d._zeros.length > 0) ? d._zeros.map(function(z, zi) { return h('div', { key: zi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#a7f3d0' } }, 'x=' + Number(z.x.toPrecision(5))); }) : h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'None')
                   ),
                   h('div', { style: { flex: 1 } },
-                    h('div', { style: { fontSize: '9px', color: '#f472b6', fontWeight: 'bold' } }, 'Intersections'),
+                    h('div', { style: { fontSize: '11px', color: '#f472b6', fontWeight: 'bold' } }, 'Intersections'),
                     (d._intersections && d._intersections.length > 0) ? d._intersections.map(function(pt, pi) { return h('div', { key: pi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#f9a8d4' } }, '(' + Number(pt.x.toPrecision(4)) + ',' + Number(pt.y.toPrecision(4)) + ')'); }) : h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Need 2+ funcs')
                   )
                 )
@@ -703,8 +704,8 @@
               showTable ? h('div', { style: { maxHeight: '150px', overflowY: 'auto', borderTop: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.95)' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)' } },
                   h('span', { style: { fontSize: '10px', fontWeight: 'bold', color: '#818cf8' } }, '\uD83D\uDCCA TABLE'),
-                  h('label', { style: { fontSize: '9px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Start:', h('input', { type: 'number', value: tableX, onChange: function(e) { upd('tableX', parseFloat(e.target.value) || 0); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '9px' } })),
-                  h('label', { style: { fontSize: '9px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Step:', h('input', { type: 'number', value: tableStep, onChange: function(e) { upd('tableStep', parseFloat(e.target.value) || 1); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '9px' } }))
+                  h('label', { style: { fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Start:', h('input', { type: 'number', value: tableX, onChange: function(e) { upd('tableX', parseFloat(e.target.value) || 0); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '11px' } })),
+                  h('label', { style: { fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Step:', h('input', { type: 'number', value: tableStep, onChange: function(e) { upd('tableStep', parseFloat(e.target.value) || 1); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '11px' } }))
                 ),
                 h('table', { style: { width: '100%', fontSize: '11px', fontFamily: 'monospace', borderCollapse: 'collapse' } },
                   h('thead', null, h('tr', null, h('th', { style: { padding: '3px 10px', textAlign: 'right', color: '#818cf8', fontWeight: 'bold', borderBottom: '1px solid rgba(99,102,241,0.15)' } }, 'x'), h('th', { style: { padding: '3px 10px', textAlign: 'right', color: funcs[0] ? funcs[0].color : '#38bdf8', fontWeight: 'bold', borderBottom: '1px solid rgba(99,102,241,0.15)' } }, 'y\u2081'))),
@@ -718,7 +719,7 @@
               h('div', { style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.1)' } },
                 [{ id: 'coach', label: '\uD83D\uDCA1 Coach' }, { id: 'challenge', label: '\uD83C\uDFAF Tasks' }, { id: 'ai', label: '\uD83E\uDD16 AI' }, { id: 'badges', label: '\uD83C\uDFC5' }].map(function(st) {
                   var active = (d._sideTab || 'coach') === st.id;
-                  return h('button', { key: st.id, onClick: function() { upd('_sideTab', st.id); }, style: { flex: 1, padding: '8px 4px', fontSize: '9px', fontWeight: 'bold', color: active ? '#a5b4fc' : '#64748b', background: active ? 'rgba(99,102,241,0.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #818cf8' : '2px solid transparent', cursor: 'pointer' } }, st.label);
+                  return h('button', { key: st.id, onClick: function() { upd('_sideTab', st.id); }, style: { flex: 1, padding: '8px 4px', fontSize: '11px', fontWeight: 'bold', color: active ? '#a5b4fc' : '#64748b', background: active ? 'rgba(99,102,241,0.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #818cf8' : '2px solid transparent', cursor: 'pointer' } }, st.label);
                 })
               ),
               // Coach
@@ -736,7 +737,7 @@
                 availableChallenges.map(function(ch, ci) {
                   var isActive = d.activeChallenge === ci;
                   return h('div', { key: ci, onClick: function() { upd('activeChallenge', isActive ? -1 : ci); }, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.15)', cursor: 'pointer' } },
-                    h('div', { style: { fontSize: '9px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '3px' } }, ch.topic),
+                    h('div', { style: { fontSize: '11px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '3px' } }, ch.topic),
                     h('div', { style: { fontSize: '11px', lineHeight: '1.5', color: '#e2e8f0', marginBottom: '4px' } }, ch.prompt),
                     isActive ? h('div', null,
                       h('div', { style: { fontSize: '10px', color: '#fbbf24', background: 'rgba(251,191,36,0.1)', padding: '6px 8px', borderRadius: '6px', marginTop: '4px' } }, '\uD83D\uDCA1 ' + ch.hint),
@@ -771,8 +772,8 @@
                   return h('div', { key: b.id, style: { padding: '8px', marginBottom: '4px', borderRadius: '8px', background: earned ? 'rgba(167,139,250,0.12)' : 'rgba(255,255,255,0.03)', border: earned ? '1px solid rgba(167,139,250,0.3)' : '1px solid rgba(99,102,241,0.08)', opacity: earned ? 1 : 0.5 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
                       h('span', { style: { fontSize: '16px' } }, earned ? b.icon : '\uD83D\uDD12'),
-                      h('div', null, h('div', { style: { fontSize: '11px', fontWeight: 'bold', color: earned ? '#c4b5fd' : '#64748b' } }, b.label), h('div', { style: { fontSize: '9px', color: '#64748b' } }, b.desc)),
-                      earned ? h('span', { style: { marginLeft: 'auto', fontSize: '9px', color: '#a78bfa', fontWeight: 'bold' } }, '+' + b.xp + ' XP') : null
+                      h('div', null, h('div', { style: { fontSize: '11px', fontWeight: 'bold', color: earned ? '#c4b5fd' : '#64748b' } }, b.label), h('div', { style: { fontSize: '11px', color: '#64748b' } }, b.desc)),
+                      earned ? h('span', { style: { marginLeft: 'auto', fontSize: '11px', color: '#a78bfa', fontWeight: 'bold' } }, '+' + b.xp + ' XP') : null
                     ));
                 })
               ) : null

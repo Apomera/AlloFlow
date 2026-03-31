@@ -408,7 +408,7 @@
           },
           disabled: stemAILoading,
           className: "flex items-center gap-1 px-2.5 py-1 mt-1 text-[10px] font-bold rounded-full transition-all " +
-            (stemAILoading ? "bg-slate-100 text-slate-400 cursor-wait" : "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200")
+            (stemAILoading ? "bg-slate-100 text-slate-500 cursor-wait" : "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200")
         }, stemAILoading ? "⏳" : "💡", " ", t('stem.ai.get_hint') || "Get a Hint");
       }
 
@@ -1547,7 +1547,7 @@
             ? { borderColor: isContrast ? '#fbbf24' : '#4f46e5', color: isContrast ? '#fbbf24' : (isDark ? '#a5b4fc' : '#4338ca'), backgroundColor: _pal.bg }
             : { borderColor: 'transparent', color: _pal.textMuted }
         }, /*#__PURE__*/React.createElement("span", null, tab.label), /*#__PURE__*/React.createElement("span", {
-          className: `text-[10px] font-normal ${stemLabTab === tab.id ? 'text-indigo-400' : 'text-slate-400'}`
+          className: `text-[10px] font-normal ${stemLabTab === tab.id ? 'text-indigo-400' : 'text-slate-500'}`
         }, tab.desc)))), /*#__PURE__*/React.createElement("div", {
           className: "flex-1 overflow-y-auto p-6",
           style: { backgroundColor: _pal.bg, color: _pal.text }
@@ -1601,7 +1601,7 @@
         }), stemLabCreateMode !== 'solve' && /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-4 mt-3"
         }, /*#__PURE__*/React.createElement("span", {
-          className: "text-xs font-bold text-slate-400"
+          className: "text-xs font-bold text-slate-500"
         }, "Quantity:"), /*#__PURE__*/React.createElement("input", {
           type: "range",
           min: "1",
@@ -1672,7 +1672,7 @@
         })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
           className: "text-lg font-bold text-slate-800"
         }, "\uD83D\uDCCB Assessment Builder"), /*#__PURE__*/React.createElement("p", {
-          className: "text-xs text-slate-400"
+          className: "text-xs text-slate-500"
         }, "Compose blocks of different problem types into a custom assessment")))), /*#__PURE__*/React.createElement("div", {
           className: "space-y-2"
         }, assessmentBlocks.map((block, idx) => /*#__PURE__*/React.createElement("div", {
@@ -1689,7 +1689,7 @@
             setAssessmentBlocks(newBlocks);
           }
         }, /*#__PURE__*/React.createElement("div", {
-          className: "text-slate-300 cursor-grab active:cursor-grabbing pt-1 group-hover:text-slate-500"
+          className: "text-slate-500 cursor-grab active:cursor-grabbing pt-1 group-hover:text-slate-600"
         }, /*#__PURE__*/React.createElement(GripVertical, {
           size: 16
         })), /*#__PURE__*/React.createElement("div", {
@@ -1725,7 +1725,7 @@
         }, "\u2728 Custom"), /*#__PURE__*/React.createElement("option", {
           value: "manipulative"
         }, "\uD83E\uDDF1 Manipulative Response")), /*#__PURE__*/React.createElement("span", {
-          className: "text-xs text-slate-400"
+          className: "text-xs text-slate-500"
         }, "\xD7"), /*#__PURE__*/React.createElement("input", {
           type: "number",
           min: "1",
@@ -1753,7 +1753,7 @@
           className: "w-full px-3 py-1.5 text-xs border border-slate-100 rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none placeholder-slate-300"
         })), /*#__PURE__*/React.createElement("button", {
           onClick: () => setAssessmentBlocks(assessmentBlocks.filter((_, i) => i !== idx)),
-          className: "p-1 text-slate-300 hover:text-red-500 transition-colors",
+          className: "p-1 text-slate-500 hover:text-red-500 transition-colors",
           "aria-label": "Remove block"
         }, /*#__PURE__*/React.createElement(X, {
           size: 14
@@ -1972,7 +1972,7 @@
             className: "text-sm font-bold text-slate-700"
           }, "\uD83D\uDCF8 Tool Snapshots (", toolSnapshots.length, ")"), /*#__PURE__*/React.createElement("button", {
             onClick: () => setToolSnapshots([]),
-            className: "text-[10px] text-slate-400 hover:text-red-500 transition-colors"
+            className: "text-[10px] text-slate-500 hover:text-red-500 transition-colors"
           }, "\u21BA Clear all")), /*#__PURE__*/React.createElement("div", {
             className: "grid grid-cols-2 gap-2"
           }, toolSnapshots.map((snap, si) => /*#__PURE__*/React.createElement("div", {
@@ -2005,11 +2005,11 @@
             className: "text-[10px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors"
           }, "\u21A9 Load"), /*#__PURE__*/React.createElement("button", {
             onClick: () => setToolSnapshots(prev => prev.filter((_, idx) => idx !== si)),
-            className: "text-slate-300 hover:text-red-500 transition-colors"
+            className: "text-slate-500 hover:text-red-500 transition-colors"
           }, /*#__PURE__*/React.createElement(X, {
             size: 12
           }))), /*#__PURE__*/React.createElement("div", {
-            className: "text-[10px] text-slate-400 mt-1"
+            className: "text-[10px] text-slate-500 mt-1"
           }, new Date(snap.timestamp).toLocaleTimeString()))))))), stemLabTab === 'explore' && !stemLabTool && (() => {
             var _allStemTools = [
               { id: '_cat_MathFundamentals', icon: '', label: t('stem.tools_menu.math_fundamentals'), desc: '', color: 'slate', category: true },
@@ -2407,7 +2407,7 @@
             /*#__PURE__*/React.createElement("span", { className: "absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" }, "\uD83D\uDD0D"),
               _stemToolSearch && /*#__PURE__*/React.createElement("button", {
                 onClick: function () { _setStemToolSearch(''); },
-                className: "absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold transition-colors",
+                className: "absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600 text-xs font-bold transition-colors",
                 'aria-label': 'Clear search'
               }, "\u2715")
             ),
@@ -2578,8 +2578,8 @@
                   },
                     React.createElement("span", { className: "font-bold text-indigo-800 flex-1" }, st.name),
                     st.grade ? React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-600 font-bold" }, "Gr " + st.grade) : null,
-                    React.createElement("span", { className: "text-[11px] text-slate-400" }, st.tools.length + " tools"),
-                    st.timeEstimate ? React.createElement("span", { className: "text-[11px] text-slate-400" }, st.timeEstimate) : null,
+                    React.createElement("span", { className: "text-[11px] text-slate-500" }, st.tools.length + " tools"),
+                    st.timeEstimate ? React.createElement("span", { className: "text-[11px] text-slate-500" }, st.timeEstimate) : null,
                     React.createElement("button", {
                       onClick: function() {
                         _setActiveStationId(st.id);
@@ -3428,7 +3428,7 @@
                     )
                   )
                 ),
-                React.createElement("p", { className: "text-[10px] text-center text-slate-400 mt-2" }, "\uD83D\uDCA1 This is a simplified estimate. Real paychecks also deduct health insurance, 401(k), etc.")
+                React.createElement("p", { className: "text-[10px] text-center text-slate-500 mt-2" }, "\uD83D\uDCA1 This is a simplified estimate. Real paychecks also deduct health insurance, 401(k), etc.")
               ),
 
               // â•â•â• TAB 2: DATA LITERACY â•â•â•
@@ -3439,7 +3439,7 @@
                 React.createElement("div", { className: "bg-white rounded-xl p-5 border border-indigo-100 mb-4" },
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
                     React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-600 rounded-lg text-[10px] font-bold" }, "Scenario " + (dlScenario + 1) + " of " + dlScenarios.length),
-                    React.createElement("span", { className: "text-[10px] text-slate-400" }, dlCurrent.title)
+                    React.createElement("span", { className: "text-[10px] text-slate-500" }, dlCurrent.title)
                   ),
                   React.createElement("p", { className: "text-sm text-slate-700 mb-4 leading-relaxed" }, dlCurrent.desc),
                   React.createElement("p", { className: "text-xs font-bold text-slate-600 mb-2" }, dlCurrent.question),
@@ -3644,8 +3644,8 @@
                       ),
                       React.createElement("hr", { className: "my-2 border-slate-100" }),
                       React.createElement("div", { className: "text-center" },
-                        React.createElement("p", { className: "text-[11px] text-slate-400" }, "Annual Premiums: $" + p.cost.annualPremium.toLocaleString()),
-                        React.createElement("p", { className: "text-[11px] text-slate-400" }, "Out-of-Pocket: $" + p.cost.outOfPocket.toLocaleString()),
+                        React.createElement("p", { className: "text-[11px] text-slate-500" }, "Annual Premiums: $" + p.cost.annualPremium.toLocaleString()),
+                        React.createElement("p", { className: "text-[11px] text-slate-500" }, "Out-of-Pocket: $" + p.cost.outOfPocket.toLocaleString()),
                         React.createElement("p", { className: "text-lg font-black " + (isBetter ? 'text-emerald-600' : 'text-slate-500') }, "Total: $" + p.cost.total.toLocaleString())
                       )
                     );
@@ -3712,7 +3712,7 @@
                       React.createElement("p", { className: "text-xs text-slate-600 font-mono mt-1" },
                         asTireP1 + " \u00D7 (" + Math.round(t2K) + "K / " + Math.round(t1K) + "K)"),
                       React.createElement("p", { className: "text-xs text-slate-600 font-mono" }, "= " + (Math.round(asTireP2 * 10) / 10) + " PSI"),
-                      React.createElement("p", { className: "text-[11px] text-slate-400 mt-1" }, "Rule of thumb: ~1 PSI per 10\u00B0F change")
+                      React.createElement("p", { className: "text-[11px] text-slate-500 mt-1" }, "Rule of thumb: ~1 PSI per 10\u00B0F change")
                     )
                   )
                 ),
@@ -3784,8 +3784,8 @@
                         React.createElement("span", { className: "text-lg" }, r.icon),
                         React.createElement("div", { className: "flex-1" },
                           React.createElement("div", { className: "flex items-center gap-2" },
-                            React.createElement("p", { className: "text-xs font-bold " + (active ? 'text-teal-700' : 'text-slate-400') }, r.name),
-                            React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded " + (active ? 'bg-teal-100 text-teal-600' : 'bg-slate-100 text-slate-400') }, r.tempF + "\u00B0F")
+                            React.createElement("p", { className: "text-xs font-bold " + (active ? 'text-teal-700' : 'text-slate-500') }, r.name),
+                            React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded " + (active ? 'bg-teal-100 text-teal-600' : 'bg-slate-100 text-slate-500') }, r.tempF + "\u00B0F")
                           ),
                           active && React.createElement("p", { className: "text-[10px] text-slate-600 mt-1" }, r.desc)
                         ),
@@ -3872,7 +3872,7 @@
                           React.createElement("span", { className: "text-sm font-black w-16 " + (ok ? 'text-orange-600' : 'text-slate-400') }, g.grade),
                           React.createElement("div", { className: "flex-1" },
                             React.createElement("p", { className: "text-[10px] text-slate-600" }, g.desc),
-                            React.createElement("p", { className: "text-[11px] text-slate-400" }, "Range: " + g.minF + "\u00B0F to " + g.maxF + "\u00B0F \u2022 " + g.use)
+                            React.createElement("p", { className: "text-[11px] text-slate-500" }, "Range: " + g.minF + "\u00B0F to " + g.maxF + "\u00B0F \u2022 " + g.use)
                           ),
                           React.createElement("span", { className: "text-xs" }, ok ? '\u2705' : '\u26AA')
                         );
@@ -3948,7 +3948,7 @@
                         className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-orange-400 outline-none mt-1" })
                     ),
                     React.createElement("div", { className: "space-y-2" },
-                      upcomingMaint.length === 0 && React.createElement("p", { className: "text-xs text-slate-400 italic" }, "No services due in the next 10,000 miles!"),
+                      upcomingMaint.length === 0 && React.createElement("p", { className: "text-xs text-slate-500 italic" }, "No services due in the next 10,000 miles!"),
                       upcomingMaint.map(function (m, i) {
                         var urgency = m.milesUntil <= 1000 ? 'border-red-200 bg-red-50' : m.milesUntil <= 5000 ? 'border-amber-200 bg-amber-50' : 'border-slate-200 bg-slate-50';
                         return React.createElement("div", { key: i, className: "flex items-center gap-3 p-2 rounded-lg border " + urgency },
@@ -3971,7 +3971,7 @@
                     React.createElement("p", { className: "text-[10px] text-slate-500 mb-3" }, "Can you identify what each warning light means?"),
                     React.createElement("div", { className: "text-center mb-3" },
                       React.createElement("span", { className: "text-5xl" }, ccCurrentDash.icon),
-                      React.createElement("p", { className: "text-xs text-slate-400 mt-1" }, "Urgency: " + ccCurrentDash.urgency.toUpperCase())
+                      React.createElement("p", { className: "text-xs text-slate-500 mt-1" }, "Urgency: " + ccCurrentDash.urgency.toUpperCase())
                     ),
                     React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-3" },
                       ccCurrentDash.choices.map(function (ch, ci) {
@@ -3979,7 +3979,7 @@
                         var rev = ccDashFb != null;
                         var isRight = ch === ccCurrentDash.name;
                         var cls = rev
-                          ? (isRight ? 'border-green-500 bg-green-50 text-green-700' : (sel ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-400'))
+                          ? (isRight ? 'border-green-500 bg-green-50 text-green-700' : (sel ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-500'))
                           : (sel ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-slate-200 bg-white text-slate-600 hover:border-orange-300');
                         return React.createElement("button", { key: ci, disabled: rev, onClick: function () { upd('ccDashAnswer', ci); upd('ccDashFb', null); },
                           className: "p-2 rounded-xl border-2 text-xs font-bold transition-all " + cls
@@ -4046,7 +4046,7 @@
                           var rev = plumbToiletFb != null;
                           var isRight = p.name === toiletCurrent.answer;
                           var cls = rev
-                            ? (isRight ? 'border-green-500 bg-green-50 text-green-700' : (sel ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-400'))
+                            ? (isRight ? 'border-green-500 bg-green-50 text-green-700' : (sel ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-500'))
                             : 'border-slate-200 bg-white text-slate-600 hover:border-sky-300 hover:bg-sky-50';
                           return React.createElement("button", { key: p.name, disabled: rev, onClick: function () {
                             var ok = p.name === toiletCurrent.answer;
@@ -4073,7 +4073,7 @@
                           var rev = plumbPipeFb != null;
                           var isRight = ch === pipeCurrent.answer;
                           var cls = rev
-                            ? (isRight ? 'border-green-500 bg-green-50 text-green-700' : (sel ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-400'))
+                            ? (isRight ? 'border-green-500 bg-green-50 text-green-700' : (sel ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-500'))
                             : (sel ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 bg-white text-slate-600 hover:border-sky-300');
                           return React.createElement("button", { key: ci, disabled: rev, onClick: function () { upd('plumbPipeAnswer', ci); upd('plumbPipeFb', null); },
                             className: "p-2 rounded-xl border-2 text-xs font-bold transition-all " + cls }, ch);
@@ -4116,14 +4116,14 @@
                         React.createElement("p", { className: "text-xl font-black text-blue-600" }, "$" + whTankMonthly + "/mo"),
                         React.createElement("p", { className: "text-[10px] text-blue-500" }, "$" + whTankAnnual + "/year energy"),
                         React.createElement("p", { className: "text-[10px] text-slate-500" }, "Upfront: ~$" + whTankCost),
-                        React.createElement("p", { className: "text-[10px] text-slate-400" }, "Lifespan: 8-12 years")
+                        React.createElement("p", { className: "text-[10px] text-slate-500" }, "Lifespan: 8-12 years")
                       ),
                       React.createElement("div", { className: "bg-orange-50 rounded-xl p-4 border border-orange-200" },
                         React.createElement("h5", { className: "text-xs font-bold text-orange-700 mb-2" }, "\u26A1 Tankless (On-Demand)"),
                         React.createElement("p", { className: "text-xl font-black text-orange-600" }, "$" + whTanklessMonthly + "/mo"),
                         React.createElement("p", { className: "text-[10px] text-orange-500" }, "$" + whTanklessAnnual + "/year energy"),
                         React.createElement("p", { className: "text-[10px] text-slate-500" }, "Upfront: ~$" + whTanklessUpfront),
-                        React.createElement("p", { className: "text-[10px] text-slate-400" }, "Lifespan: 15-20 years")
+                        React.createElement("p", { className: "text-[10px] text-slate-500" }, "Lifespan: 15-20 years")
                       )
                     ),
                     React.createElement("div", { className: "bg-emerald-50 rounded-lg p-3 border border-emerald-200" },
@@ -4245,7 +4245,7 @@
                               React.createElement("span", { className: "font-bold text-red-500" }, "\u26A0\uFE0F "), s.cons
                             )
                           ),
-                          React.createElement("p", { className: "text-[11px] text-slate-400 mt-1" }, "Annual cost: " + s.annual + " | Removes: " + s.removes)
+                          React.createElement("p", { className: "text-[11px] text-slate-500 mt-1" }, "Annual cost: " + s.annual + " | Removes: " + s.removes)
                         );
                       })
                     ),
@@ -4262,7 +4262,7 @@
                       React.createElement("button", { onClick: function () { upd('wuLowFlow', !wuLowFlow); },
                         className: "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all " + (wuLowFlow ? 'bg-emerald-500 text-white' : 'bg-white text-slate-600 border border-slate-200') },
                         wuLowFlow ? '\u2705 Low-Flow Fixtures ON' : '\uD83D\uDCA7 Standard Fixtures'),
-                      React.createElement("span", { className: "text-[11px] text-slate-400" }, wuLowFlow ? "Using WaterSense\u00AE rates (saves ~40%)" : "Using standard fixture rates")
+                      React.createElement("span", { className: "text-[11px] text-slate-500" }, wuLowFlow ? "Using WaterSense\u00AE rates (saves ~40%)" : "Using standard fixture rates")
                     ),
                     // Input grid
                     React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3" },
@@ -4270,7 +4270,7 @@
                         React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "\uD83D\uDEBF Shower (min/day)"),
                         React.createElement("input", { type: "number", min: 0, max: 60, value: wuShowerMin, onChange: function (e) { upd('wuShowerMin', Math.max(0, parseInt(e.target.value) || 0)); },
                           className: "w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-sky-400 outline-none mt-1" }),
-                        React.createElement("p", { className: "text-[11px] text-slate-400 mt-0.5" }, showerGPM + " GPM \u00D7 " + wuShowerMin + " min = " + wuShowerGal + " gal")
+                        React.createElement("p", { className: "text-[11px] text-slate-500 mt-0.5" }, showerGPM + " GPM \u00D7 " + wuShowerMin + " min = " + wuShowerGal + " gal")
                       ),
                       React.createElement("div", null,
                         React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "\uD83D\uDEBF # Showers"),
@@ -4281,7 +4281,7 @@
                         React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "\uD83D\uDEBD Flushes/day"),
                         React.createElement("input", { type: "number", min: 0, max: 20, value: wuFlushes, onChange: function (e) { upd('wuFlushes', Math.max(0, parseInt(e.target.value) || 0)); },
                           className: "w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-sky-400 outline-none mt-1" }),
-                        React.createElement("p", { className: "text-[11px] text-slate-400 mt-0.5" }, toiletGPF + " gal/flush \u00D7 " + wuFlushes + " = " + wuToiletGal + " gal")
+                        React.createElement("p", { className: "text-[11px] text-slate-500 mt-0.5" }, toiletGPF + " gal/flush \u00D7 " + wuFlushes + " = " + wuToiletGal + " gal")
                       ),
                       React.createElement("div", null,
                         React.createElement("label", { className: "text-[10px] font-bold text-slate-500" }, "\uD83E\uDD7D Dishwasher loads"),
@@ -4320,22 +4320,22 @@
                       React.createElement("div", { className: "text-center p-3 rounded-xl border-2 " + (wuTotalGal > wuNatAvg ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200') },
                         React.createElement("p", { className: "text-[10px] font-bold " + (wuTotalGal > wuNatAvg ? 'text-red-500' : 'text-emerald-500') }, "Your Daily"),
                         React.createElement("p", { className: "text-2xl font-black " + (wuTotalGal > wuNatAvg ? 'text-red-600' : 'text-emerald-600') }, wuTotalGal),
-                        React.createElement("p", { className: "text-[11px] text-slate-400" }, "gallons")
+                        React.createElement("p", { className: "text-[11px] text-slate-500" }, "gallons")
                       ),
                       React.createElement("div", { className: "text-center p-3 rounded-xl bg-sky-50 border border-sky-200" },
                         React.createElement("p", { className: "text-[10px] font-bold text-sky-500" }, "Nat'l Average"),
                         React.createElement("p", { className: "text-2xl font-black text-sky-600" }, wuNatAvg),
-                        React.createElement("p", { className: "text-[11px] text-slate-400" }, "gal/person/day")
+                        React.createElement("p", { className: "text-[11px] text-slate-500" }, "gal/person/day")
                       ),
                       React.createElement("div", { className: "text-center p-3 rounded-xl bg-slate-50 border" },
                         React.createElement("p", { className: "text-[10px] font-bold text-slate-500" }, "Monthly Use"),
                         React.createElement("p", { className: "text-lg font-black text-slate-700" }, wuMonthlyGal.toLocaleString()),
-                        React.createElement("p", { className: "text-[11px] text-slate-400" }, "gallons")
+                        React.createElement("p", { className: "text-[11px] text-slate-500" }, "gallons")
                       ),
                       React.createElement("div", { className: "text-center p-3 rounded-xl bg-emerald-50 border border-emerald-200" },
                         React.createElement("p", { className: "text-[10px] font-bold text-emerald-500" }, "Est. Monthly Cost"),
                         React.createElement("p", { className: "text-lg font-black text-emerald-600" }, "$" + wuMonthlyCost.toFixed(2)),
-                        React.createElement("p", { className: "text-[11px] text-slate-400" }, "@ $5/1000 gal")
+                        React.createElement("p", { className: "text-[11px] text-slate-500" }, "@ $5/1000 gal")
                       )
                     ),
                     // Conservation tips
@@ -4401,11 +4401,11 @@
                       mervData.map(function (m) {
                         var active = m.merv <= hsMerv;
                         return React.createElement("div", { key: m.merv, className: "flex items-center gap-2" },
-                          React.createElement("span", { className: "text-[11px] font-bold w-12 text-right " + (active ? 'text-purple-600' : 'text-slate-400') }, "MERV " + m.merv),
+                          React.createElement("span", { className: "text-[11px] font-bold w-12 text-right " + (active ? 'text-purple-600' : 'text-slate-500') }, "MERV " + m.merv),
                           React.createElement("div", { className: "flex-1 bg-slate-100 rounded-full h-3 overflow-hidden" },
                             React.createElement("div", { style: { width: m.eff + '%' }, className: "h-full rounded-full " + (active ? 'bg-purple-400' : 'bg-slate-300') })
                           ),
-                          React.createElement("span", { className: "text-[11px] font-bold w-8 " + (active ? 'text-purple-600' : 'text-slate-400') }, m.eff + "%")
+                          React.createElement("span", { className: "text-[11px] font-bold w-8 " + (active ? 'text-purple-600' : 'text-slate-500') }, m.eff + "%")
                         );
                       })
                     )
@@ -4510,7 +4510,7 @@
                           var rev = hsPanelFb != null;
                           var isRight = ch === panelCurrentQ.answer;
                           var cls = rev
-                            ? (isRight ? 'border-green-500 bg-green-50 text-green-700' : (sel ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-400'))
+                            ? (isRight ? 'border-green-500 bg-green-50 text-green-700' : (sel ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-500'))
                             : (sel ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-slate-200 bg-white text-slate-600 hover:border-purple-300');
                           return React.createElement("button", { key: ch, disabled: rev, onClick: function () { upd('hsPanelAnswer', ch); upd('hsPanelFb', null); },
                             className: "p-2 rounded-xl border-2 text-xs font-bold transition-all " + cls }, ch);
@@ -4558,7 +4558,7 @@
                               className: "flex-1 h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer" }),
                             React.createElement("span", { className: "text-[11px] font-bold text-purple-600 w-8 text-right" }, eaHours[idx] + "h")
                           ),
-                          React.createElement("p", { className: "text-[8px] text-slate-400 mt-0.5" }, ap.watts + "W \u2022 " + eaMonthlyKWh[idx] + " kWh/mo \u2022 $" + eaMonthlyCost[idx])
+                          React.createElement("p", { className: "text-[8px] text-slate-500 mt-0.5" }, ap.watts + "W \u2022 " + eaMonthlyKWh[idx] + " kWh/mo \u2022 $" + eaMonthlyCost[idx])
                         );
                       })
                     ),
@@ -4616,17 +4616,17 @@
                       React.createElement("div", { className: "text-center p-3 rounded-xl bg-purple-50 border border-purple-200" },
                         React.createElement("p", { className: "text-[10px] font-bold text-purple-500" }, "Monthly kWh"),
                         React.createElement("p", { className: "text-xl font-black text-purple-600" }, eaTotalKWh),
-                        React.createElement("p", { className: "text-[11px] text-slate-400" }, "kilowatt-hours")
+                        React.createElement("p", { className: "text-[11px] text-slate-500" }, "kilowatt-hours")
                       ),
                       React.createElement("div", { className: "text-center p-3 rounded-xl bg-emerald-50 border border-emerald-200" },
                         React.createElement("p", { className: "text-[10px] font-bold text-emerald-500" }, "Monthly Cost"),
                         React.createElement("p", { className: "text-xl font-black text-emerald-600" }, "$" + eaTotalCost),
-                        React.createElement("p", { className: "text-[11px] text-slate-400" }, "@ $0.13/kWh")
+                        React.createElement("p", { className: "text-[11px] text-slate-500" }, "@ $0.13/kWh")
                       ),
                       React.createElement("div", { className: "text-center p-3 rounded-xl bg-sky-50 border border-sky-200" },
                         React.createElement("p", { className: "text-[10px] font-bold text-sky-500" }, "Annual Cost"),
                         React.createElement("p", { className: "text-xl font-black text-sky-600" }, "$" + (parseFloat(eaTotalCost) * 12).toFixed(0)),
-                        React.createElement("p", { className: "text-[11px] text-slate-400" }, "projected")
+                        React.createElement("p", { className: "text-[11px] text-slate-500" }, "projected")
                       )
                     ),
                     React.createElement("div", { className: "bg-purple-50 rounded-lg p-2 border border-purple-200" },
@@ -4654,7 +4654,7 @@
                           var revealed = fsFeedback !== '';
                           var isCorrect = opt === fsQuizData[fsIdx].answer;
                           var cls = revealed
-                            ? (isCorrect ? 'border-green-500 bg-green-50 text-green-700' : (picked ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-400'))
+                            ? (isCorrect ? 'border-green-500 bg-green-50 text-green-700' : (picked ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-500'))
                             : (picked ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-slate-200 bg-white text-slate-600 hover:border-orange-300');
                           return React.createElement("button", { key: opt, disabled: revealed, onClick: function () { upd('fsCurrentPick', opt); upd('fsFeedback', ''); },
                             className: "w-full text-left p-2.5 rounded-xl border-2 text-xs font-bold transition-all " + cls }, opt);
@@ -4714,15 +4714,15 @@
                       React.createElement("p", { className: "text-[10px] text-purple-600" }, insCurrentZone.desc),
                       React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2" },
                         React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
-                          React.createElement("p", { className: "text-[11px] text-slate-400" }, "Attic"),
+                          React.createElement("p", { className: "text-[11px] text-slate-500" }, "Attic"),
                           React.createElement("p", { className: "text-sm font-black text-purple-600" }, "R-" + insCurrentZone.atticR)
                         ),
                         React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
-                          React.createElement("p", { className: "text-[11px] text-slate-400" }, "Walls"),
+                          React.createElement("p", { className: "text-[11px] text-slate-500" }, "Walls"),
                           React.createElement("p", { className: "text-sm font-black text-purple-600" }, "R-" + insCurrentZone.wallR)
                         ),
                         React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
-                          React.createElement("p", { className: "text-[11px] text-slate-400" }, "Floor"),
+                          React.createElement("p", { className: "text-[11px] text-slate-500" }, "Floor"),
                           React.createElement("p", { className: "text-sm font-black text-purple-600" }, "R-" + insCurrentZone.floorR)
                         )
                       )
@@ -4766,15 +4766,15 @@
                       ),
                       insSqFt > 0 && React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2" },
                         React.createElement("div", { className: "text-center p-2 rounded-lg bg-purple-50" },
-                          React.createElement("p", { className: "text-[11px] text-slate-400" }, "Material Cost"),
+                          React.createElement("p", { className: "text-[11px] text-slate-500" }, "Material Cost"),
                           React.createElement("p", { className: "text-sm font-black text-purple-600" }, "$" + insEstCost)
                         ),
                         React.createElement("div", { className: "text-center p-2 rounded-lg bg-emerald-50" },
-                          React.createElement("p", { className: "text-[11px] text-slate-400" }, "Annual Savings"),
+                          React.createElement("p", { className: "text-[11px] text-slate-500" }, "Annual Savings"),
                           React.createElement("p", { className: "text-sm font-black text-emerald-600" }, "$" + insAnnualSavings)
                         ),
                         React.createElement("div", { className: "text-center p-2 rounded-lg bg-sky-50" },
-                          React.createElement("p", { className: "text-[11px] text-slate-400" }, "Payback Period"),
+                          React.createElement("p", { className: "text-[11px] text-slate-500" }, "Payback Period"),
                           React.createElement("p", { className: "text-sm font-black text-sky-600" }, insPayback + " yrs")
                         )
                       )
@@ -4807,19 +4807,19 @@
                   ),
                   React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2" },
                     React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
-                      React.createElement("p", { className: "text-[11px] text-slate-400" }, "AFUE"),
+                      React.createElement("p", { className: "text-[11px] text-slate-500" }, "AFUE"),
                       React.createElement("p", { className: "text-lg font-black text-orange-600" }, htSrcSelected.afue + "%")
                     ),
                     React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
-                      React.createElement("p", { className: "text-[11px] text-slate-400" }, "Install Cost"),
+                      React.createElement("p", { className: "text-[11px] text-slate-500" }, "Install Cost"),
                       React.createElement("p", { className: "text-lg font-black text-green-600" }, "$" + htSrcSelected.installCost.toLocaleString())
                     ),
                     React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
-                      React.createElement("p", { className: "text-[11px] text-slate-400" }, "Annual Fuel"),
+                      React.createElement("p", { className: "text-[11px] text-slate-500" }, "Annual Fuel"),
                       React.createElement("p", { className: "text-lg font-black text-red-500" }, "$" + htSrcSelected.annualFuel.toLocaleString())
                     ),
                     React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
-                      React.createElement("p", { className: "text-[11px] text-slate-400" }, "CO\u2082/Year"),
+                      React.createElement("p", { className: "text-[11px] text-slate-500" }, "CO\u2082/Year"),
                       React.createElement("p", { className: "text-lg font-black text-slate-600" }, htSrcSelected.co2Lbs.toLocaleString() + " lbs")
                     )
                   ),
@@ -4861,7 +4861,7 @@
                           React.createElement("div", { className: "absolute bottom-0 w-full rounded-t-full", style: { height: pct + "%", background: s.co2Lbs < 6000 ? '#22c55e' : s.co2Lbs < 7000 ? '#eab308' : '#ef4444' } })
                         ),
                         React.createElement("p", { className: "text-[8px] font-bold text-slate-500 mt-1" }, s.icon),
-                        React.createElement("p", { className: "text-[8px] text-slate-400" }, (s.co2Lbs / 1000).toFixed(1) + "k")
+                        React.createElement("p", { className: "text-[8px] text-slate-500" }, (s.co2Lbs / 1000).toFixed(1) + "k")
                       );
                     })
                   )
@@ -4910,33 +4910,33 @@
                   React.createElement("p", { className: "text-xs font-bold text-teal-700 mb-2" }, "\uD83D\uDCCA Sizing Results"),
                   React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2" },
                     React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
-                      React.createElement("p", { className: "text-[11px] text-slate-400" }, "BTU/hr Needed"),
+                      React.createElement("p", { className: "text-[11px] text-slate-500" }, "BTU/hr Needed"),
                       React.createElement("p", { className: "text-lg font-black text-teal-600" }, hpBTU.toLocaleString())
                     ),
                     React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
-                      React.createElement("p", { className: "text-[11px] text-slate-400" }, "Tonnage"),
+                      React.createElement("p", { className: "text-[11px] text-slate-500" }, "Tonnage"),
                       React.createElement("p", { className: "text-lg font-black text-blue-600" }, hpTons + " ton")
                     ),
                     React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
-                      React.createElement("p", { className: "text-[11px] text-slate-400" }, "COP"),
+                      React.createElement("p", { className: "text-[11px] text-slate-500" }, "COP"),
                       React.createElement("p", { className: "text-lg font-black text-green-600" }, hpCOP)
                     ),
                     React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
-                      React.createElement("p", { className: "text-[11px] text-slate-400" }, "Est. Install"),
+                      React.createElement("p", { className: "text-[11px] text-slate-500" }, "Est. Install"),
                       React.createElement("p", { className: "text-lg font-black text-amber-600" }, "$" + hpInstall.toLocaleString())
                     )
                   ),
                   React.createElement("div", { className: "grid grid-cols-3 gap-2" },
                     React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
-                      React.createElement("p", { className: "text-[11px] text-slate-400" }, "Annual Cost"),
+                      React.createElement("p", { className: "text-[11px] text-slate-500" }, "Annual Cost"),
                       React.createElement("p", { className: "text-sm font-black text-red-500" }, "$" + hpAnnual.toLocaleString())
                     ),
                     React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
-                      React.createElement("p", { className: "text-[11px] text-slate-400" }, "vs Gas Furnace"),
+                      React.createElement("p", { className: "text-[11px] text-slate-500" }, "vs Gas Furnace"),
                       React.createElement("p", { className: "text-sm font-black " + (hpSavings > 0 ? 'text-green-600' : 'text-red-500') }, (hpSavings > 0 ? 'Save ' : 'Extra ') + "$" + Math.abs(hpSavings).toLocaleString() + "/yr")
                     ),
                     React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
-                      React.createElement("p", { className: "text-[11px] text-slate-400" }, "CO\u2082 Saved/yr"),
+                      React.createElement("p", { className: "text-[11px] text-slate-500" }, "CO\u2082 Saved/yr"),
                       React.createElement("p", { className: "text-sm font-black text-green-600" }, hpCO2Saved.toLocaleString() + " lbs")
                     )
                   )
@@ -5011,15 +5011,15 @@
                   React.createElement("p", { className: "text-xs font-bold text-green-700 mb-2" }, "\uD83C\uDFC6 Verdict"),
                   React.createElement("div", { className: "grid grid-cols-3 gap-2" },
                     React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
-                      React.createElement("p", { className: "text-[11px] text-slate-400" }, "Break-Even"),
+                      React.createElement("p", { className: "text-[11px] text-slate-500" }, "Break-Even"),
                       React.createElement("p", { className: "text-lg font-black text-green-600" }, sgBreakEven + " yrs")
                     ),
                     React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
-                      React.createElement("p", { className: "text-[11px] text-slate-400" }, "20-yr Savings"),
+                      React.createElement("p", { className: "text-[11px] text-slate-500" }, "20-yr Savings"),
                       React.createElement("p", { className: "text-lg font-black " + (sgSaving20 > 0 ? 'text-green-600' : 'text-red-500') }, (sgSaving20 > 0 ? '' : '-') + "$" + Math.abs(sgSaving20).toLocaleString())
                     ),
                     React.createElement("div", { className: "text-center p-2 bg-white rounded-lg" },
-                      React.createElement("p", { className: "text-[11px] text-slate-400" }, "CO\u2082 Saved/yr"),
+                      React.createElement("p", { className: "text-[11px] text-slate-500" }, "CO\u2082 Saved/yr"),
                       React.createElement("p", { className: "text-lg font-black text-green-600" }, (sgGasCO2 - sgSolarCO2).toLocaleString() + " lbs")
                     )
                   )
@@ -5031,7 +5031,7 @@
                     var gasCum = sgGasInstall + sgGasAnnual * yr;
                     var maxVal = Math.max(sgSolarInstall + sgSolarAnnual * 20, sgGasInstall + sgGasAnnual * 20);
                     return React.createElement("div", { key: yr, className: "flex items-center gap-2 mb-1.5" },
-                      React.createElement("span", { className: "text-[11px] font-bold text-slate-400 w-8 text-right" }, "Yr " + yr),
+                      React.createElement("span", { className: "text-[11px] font-bold text-slate-500 w-8 text-right" }, "Yr " + yr),
                       React.createElement("div", { className: "flex-1" },
                         React.createElement("div", { className: "flex items-center gap-1 mb-0.5" },
                           React.createElement("div", { className: "h-2.5 rounded-full bg-yellow-400", style: { width: Math.round(solarCum / maxVal * 100) + "%" } }),
@@ -5057,7 +5057,7 @@
               // â”€â”€ Footer â”€â”€
               React.createElement("div", { className: "bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl p-3 border border-cyan-200 text-center" },
                 React.createElement("p", { className: "text-[10px] text-cyan-600" }, "\uD83E\uDDED ", React.createElement("strong", null, "Life skills"), " aren't just \u201Cadulting\u201D \u2014 they're applied science, critical thinking, and informed decision-making!"),
-                React.createElement("p", { className: "text-[11px] text-slate-400 mt-1" }, "Tax calculations are simplified estimates for educational purposes.")
+                React.createElement("p", { className: "text-[11px] text-slate-500 mt-1" }, "Tax calculations are simplified estimates for educational purposes.")
               )
             );
           })(),
@@ -6779,8 +6779,8 @@
                       style: { minWidth: '36px' }
                     },
                       isScaleNote && React.createElement("div", { className: "w-2 h-2 rounded-full mb-1 " + (isRoot ? 'bg-purple-600' : 'bg-purple-300') }),
-                      React.createElement("span", { className: "text-[11px] font-bold " + (isActive ? 'text-purple-700' : 'text-slate-400') }, key.note),
-                      React.createElement("span", { className: "text-[7px] text-slate-300" }, KEYBOARD_MAP && Object.keys(KEYBOARD_MAP).find(function (k) { return KEYBOARD_MAP[k] === key.semitone + (key.octave - (d.octave || 4)) * 12; }) || '')
+                      React.createElement("span", { className: "text-[11px] font-bold " + (isActive ? 'text-purple-700' : 'text-slate-500') }, key.note),
+                      React.createElement("span", { className: "text-[7px] text-slate-500" }, KEYBOARD_MAP && Object.keys(KEYBOARD_MAP).find(function (k) { return KEYBOARD_MAP[k] === key.semitone + (key.octave - (d.octave || 4)) * 12; }) || '')
                     );
                   })
                 )
@@ -6881,7 +6881,7 @@
                 React.createElement("div", { className: "bg-slate-50 rounded-xl border p-3" },
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                     React.createElement("span", { className: "text-xs font-bold text-slate-700" }, "\uD83D\uDCC8 ADSR Envelope"),
-                    React.createElement("span", { className: "text-[11px] text-slate-400 cursor-help", title: EFFECT_TIPS.adsr.text }, "\u2753")
+                    React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.adsr.text }, "\u2753")
                   ),
                   // ADSR visual
                   React.createElement("svg", { viewBox: "0 0 200 60", className: "w-full mb-2", style: { maxHeight: '50px' } },
@@ -6907,7 +6907,7 @@
                     return React.createElement("div", { key: param.k, className: "flex items-center gap-2 mb-0.5" },
                       React.createElement("span", { className: "text-[11px] font-bold text-slate-500 w-12" }, param.label),
                       React.createElement("input", { type: "range", min: param.min, max: param.max, step: param.step, value: d[param.k] || param.min, onChange: function (e) { upd(param.k, parseFloat(e.target.value)); }, className: "flex-1 accent-purple-600 h-1.5" }),
-                      React.createElement("span", { className: "text-[11px] text-slate-400 w-10 text-right" }, (d[param.k] || param.min).toFixed(2) + param.unit)
+                      React.createElement("span", { className: "text-[11px] text-slate-500 w-10 text-right" }, (d[param.k] || param.min).toFixed(2) + param.unit)
                     );
                   })
                 ),
@@ -6931,14 +6931,14 @@
                   synthEngine === 'plucked' && React.createElement("div", { className: "space-y-1 mb-2" },
                     React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                       React.createElement("span", { className: "text-[10px] font-bold text-amber-700" }, "\uD83C\uDFB8 Karplus-Strong"),
-                      React.createElement("span", { className: "text-[11px] text-slate-400 cursor-help", title: EFFECT_TIPS.karplusStrong.text }, "\u2753")
+                      React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.karplusStrong.text }, "\u2753")
                     ),
                     [{ k: 'ksBrightness', label: t('stem.synth.brightness'), min: 0.1, max: 1, step: 0.01 },
                     { k: 'ksDamping', label: t('stem.synth.damping'), min: 0.99, max: 0.9999, step: 0.0001 }].map(function (p) {
                       return React.createElement("div", { key: p.k, className: "flex items-center gap-2" },
                         React.createElement("span", { className: "text-[11px] font-bold text-slate-500 w-16" }, p.label),
                         React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || (p.k === 'ksBrightness' ? 0.8 : 0.996), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-amber-500 h-1.5" }),
-                        React.createElement("span", { className: "text-[11px] text-slate-400 w-10 text-right" }, (d[p.k] || (p.k === 'ksBrightness' ? 0.8 : 0.996)).toFixed(p.k === 'ksDamping' ? 4 : 2))
+                        React.createElement("span", { className: "text-[11px] text-slate-500 w-10 text-right" }, (d[p.k] || (p.k === 'ksBrightness' ? 0.8 : 0.996)).toFixed(p.k === 'ksDamping' ? 4 : 2))
                       );
                     })
                   ),
@@ -6948,14 +6948,14 @@
                     return React.createElement("div", { key: p.k, className: "flex items-center gap-2 mb-0.5" },
                       React.createElement("span", { className: "text-[11px] font-bold text-slate-500 w-16" }, p.label),
                       React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] != null ? d[p.k] : (p.k === 'volume' ? 0.5 : 0), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-purple-600 h-1.5" }),
-                      React.createElement("span", { className: "text-[11px] text-slate-400 w-8 text-right" }, ((d[p.k] != null ? d[p.k] : (p.k === 'volume' ? 0.5 : 0)) * 100).toFixed(0) + '%')
+                      React.createElement("span", { className: "text-[11px] text-slate-500 w-8 text-right" }, ((d[p.k] != null ? d[p.k] : (p.k === 'volume' ? 0.5 : 0)) * 100).toFixed(0) + '%')
                     );
                   }),
                   // Filter
                   React.createElement("div", { className: "mt-1 pt-1 border-t border-slate-200" },
                     React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                       React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, "\uD83C\uDF0A Filter"),
-                      React.createElement("span", { className: "text-[11px] text-slate-400 cursor-help", title: EFFECT_TIPS.filter.text }, "\u2753"),
+                      React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.filter.text }, "\u2753"),
                       React.createElement("select", {
                         'aria-label': 'Filter type',
                         value: d.filterType || 'lowpass',
@@ -6968,7 +6968,7 @@
                       return React.createElement("div", { key: p.k, className: "flex items-center gap-2 mb-0.5" },
                         React.createElement("span", { className: "text-[11px] font-bold text-slate-500 w-10" }, p.label),
                         React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || (p.k === 'filterCutoff' ? 8000 : 1), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-cyan-500 h-1.5" }),
-                        React.createElement("span", { className: "text-[11px] text-slate-400 w-10 text-right" }, p.fmt(d[p.k]))
+                        React.createElement("span", { className: "text-[11px] text-slate-500 w-10 text-right" }, p.fmt(d[p.k]))
                       );
                     })
                   ),
@@ -6976,7 +6976,7 @@
                   React.createElement("div", { className: "mt-1 pt-1 border-t border-slate-200" },
                     React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                       React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, "\u2728 Modulation"),
-                      React.createElement("span", { className: "text-[11px] text-slate-400 cursor-help", title: EFFECT_TIPS.tremolo.text }, "\u2753")
+                      React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.tremolo.text }, "\u2753")
                     ),
                     [{ k: 'tremoloDepth', label: t('stem.synth.trem_dep'), min: 0, max: 1, step: 0.01 },
                     { k: 'tremoloRate', label: t('stem.synth.trem_rate'), min: 0.5, max: 20, step: 0.5 },
@@ -6985,7 +6985,7 @@
                       return React.createElement("div", { key: p.k, className: "flex items-center gap-2 mb-0.5" },
                         React.createElement("span", { className: "text-[11px] font-bold text-slate-500 w-14" }, p.label),
                         React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || 0, onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-pink-500 h-1.5" }),
-                        React.createElement("span", { className: "text-[11px] text-slate-400 w-8 text-right" }, (d[p.k] || 0).toFixed(1))
+                        React.createElement("span", { className: "text-[11px] text-slate-500 w-8 text-right" }, (d[p.k] || 0).toFixed(1))
                       );
                     })
                   )
@@ -7003,7 +7003,7 @@
                       className: "text-left px-2.5 py-2 rounded-lg bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all group"
                     },
                       React.createElement("span", { className: "text-[11px] font-bold text-slate-700 group-hover:text-purple-700 block" }, prog.name),
-                      React.createElement("span", { className: "text-[11px] text-slate-400" }, prog.desc)
+                      React.createElement("span", { className: "text-[11px] text-slate-500" }, prog.desc)
                     );
                   })
                 )
@@ -7063,7 +7063,7 @@
               React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "\uD83C\uDFB5 Scales & Modes"),
-                  React.createElement("span", { className: "text-[11px] text-slate-400 cursor-help", title: EFFECT_TIPS.scales.text }, "\u2753")
+                  React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.scales.text }, "\u2753")
                 ),
                 React.createElement("div", { className: "flex flex-wrap gap-1 mb-3" },
                   Object.keys(SCALES).map(function (name) {
@@ -7127,7 +7127,7 @@
                       ),
                       React.createElement("p", { className: "text-[10px] text-slate-600 mb-1" }, wi.desc),
                       React.createElement("p", { className: "text-[11px] text-purple-600 font-bold" }, "Harmonics: " + wi.harmonics),
-                      React.createElement("p", { className: "text-[11px] text-slate-400 leading-snug mt-1" }, wi.science)
+                      React.createElement("p", { className: "text-[11px] text-slate-500 leading-snug mt-1" }, wi.science)
                     );
                   })
                 )
@@ -7140,7 +7140,7 @@
               React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "\uD83C\uDFB6 Chord Explorer"),
-                  React.createElement("span", { className: "text-[11px] text-slate-400 cursor-help", title: EFFECT_TIPS.chords.text }, "\u2753"),
+                  React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.chords.text }, "\u2753"),
                   React.createElement("button", {
                     onClick: function () { upd('jazzMode', !jazzMode); },
                     className: "px-2 py-0.5 rounded text-[10px] font-bold ml-auto " + (jazzMode ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-500')
@@ -7205,7 +7205,7 @@
                       className: "text-left px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all group"
                     },
                       React.createElement("span", { className: "text-[11px] font-bold text-slate-700 group-hover:text-purple-700 block" }, prog.name),
-                      React.createElement("span", { className: "text-[11px] text-slate-400" }, prog.desc)
+                      React.createElement("span", { className: "text-[11px] text-slate-500" }, prog.desc)
                     );
                   })
                 )
@@ -7215,7 +7215,7 @@
               React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "\u2B55 Circle of Fifths"),
-                  React.createElement("span", { className: "text-[11px] text-slate-400 cursor-help", title: EFFECT_TIPS.circleOfFifths.text }, "\u2753")
+                  React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.circleOfFifths.text }, "\u2753")
                 ),
                 React.createElement("svg", { viewBox: "0 0 300 300", className: "w-full mx-auto", style: { maxWidth: '300px', maxHeight: '300px' } },
                   // Background
@@ -7352,8 +7352,8 @@
                 ),
                 // Undo / Redo
                 React.createElement("div", { className: "flex gap-1" },
-                  React.createElement("button", { onClick: bpUndo, disabled: !(window._bpUndoStack || []).length, className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + ((window._bpUndoStack || []).length ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed') }, "\u21A9 " + (window._bpUndoStack || []).length),
-                  React.createElement("button", { onClick: bpRedo, disabled: !(window._bpRedoStack || []).length, className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + ((window._bpRedoStack || []).length ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed') }, "\u21AA " + (window._bpRedoStack || []).length)
+                  React.createElement("button", { onClick: bpUndo, disabled: !(window._bpUndoStack || []).length, className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + ((window._bpUndoStack || []).length ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-slate-50 text-slate-500 cursor-not-allowed') }, "\u21A9 " + (window._bpUndoStack || []).length),
+                  React.createElement("button", { onClick: bpRedo, disabled: !(window._bpRedoStack || []).length, className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + ((window._bpRedoStack || []).length ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-slate-50 text-slate-500 cursor-not-allowed') }, "\u21AA " + (window._bpRedoStack || []).length)
                 ),
                 // Step Rec toggle
                 React.createElement("button", { onClick: function () { upd('bpStepRec', !d.bpStepRec); upd('bpStepRecPos', 0); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.bpStepRec ? 'bg-red-500 text-white shadow-inner animate-pulse' : 'bg-red-50 text-red-500 hover:bg-red-100 border border-red-200') }, d.bpStepRec ? '\u23FA REC' : '\u26AB REC'),
@@ -7406,8 +7406,8 @@
               React.createElement("div", { className: "bg-gradient-to-r from-slate-50 to-gray-50 rounded-xl border border-slate-200 mb-3 overflow-hidden" },
                 React.createElement("button", { onClick: function () { upd('bpMixerOpen', !d.bpMixerOpen); }, className: "w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-100 transition-all" },
                   React.createElement("span", { className: "text-xs font-bold text-slate-700" }, "\uD83C\uDFA8 Mixer"),
-                  React.createElement("span", { className: "text-[11px] text-slate-400" }, "Volume \u2022 Mute \u2022 Solo"),
-                  React.createElement("span", { className: "ml-auto text-slate-400 text-[10px] transition-transform " + (d.bpMixerOpen ? 'rotate-180' : '') }, "\u25BC")
+                  React.createElement("span", { className: "text-[11px] text-slate-500" }, "Volume \u2022 Mute \u2022 Solo"),
+                  React.createElement("span", { className: "ml-auto text-slate-500 text-[10px] transition-transform " + (d.bpMixerOpen ? 'rotate-180' : '') }, "\u25BC")
                 ),
                 d.bpMixerOpen && React.createElement("div", { className: "px-3 pb-3" },
                   BEAT_PAD_SOUNDS.slice(0, 8).map(function (sound, row) {
@@ -7420,7 +7420,7 @@
                         onChange: function (e) { var v = Object.assign({}, d.chVolumes || {}); v[row] = parseInt(e.target.value) / 100; upd('chVolumes', v); },
                         className: "flex-1 h-1.5 accent-purple-500", style: { maxWidth: '120px' }
                       }),
-                      React.createElement("span", { className: "text-[8px] text-slate-400 w-7 text-right" }, Math.round(vol * 100) + '%'),
+                      React.createElement("span", { className: "text-[8px] text-slate-500 w-7 text-right" }, Math.round(vol * 100) + '%'),
                       React.createElement("button", { onClick: function () { var m = Object.assign({}, d.chMutes || {}); m[row] = !m[row]; upd('chMutes', m); },
                         className: "w-5 h-5 rounded text-[8px] font-black " + (muted ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
                       }, "M"),
@@ -7463,7 +7463,7 @@
               React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-3 mb-3 overflow-x-auto shadow-sm" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-xs font-bold text-slate-700" }, "\uD83C\uDFBC Sequencer"),
-                  React.createElement("span", { className: "text-[11px] text-slate-400" }, "16 steps = 1 bar"),
+                  React.createElement("span", { className: "text-[11px] text-slate-500" }, "16 steps = 1 bar"),
                   // Scale selector
                   React.createElement("select", { value: d.bpScale || 'major', onChange: function (e) { upd('bpScale', e.target.value); },
                     className: "ml-auto px-2 py-0.5 rounded text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200"
@@ -7477,7 +7477,7 @@
                 React.createElement("div", { className: "flex mb-1", style: { marginLeft: '68px' } },
                   Array.from({ length: 16 }, function (_, i) {
                     var labels = ['1','e','&','a','2','e','&','a','3','e','&','a','4','e','&','a'];
-                    return React.createElement("div", { key: i, className: "flex-1 text-center text-[7px] font-bold " + (i % 4 === 0 ? 'text-purple-600' : 'text-slate-300'), style: { minWidth: '22px' } }, labels[i]);
+                    return React.createElement("div", { key: i, className: "flex-1 text-center text-[7px] font-bold " + (i % 4 === 0 ? 'text-purple-600' : 'text-slate-500'), style: { minWidth: '22px' } }, labels[i]);
                   })
                 ),
                 // Melody row (scale-locked)
@@ -7681,7 +7681,7 @@
                     saved.map(function (comp, ci) {
                       return React.createElement("div", { key: ci, className: "flex items-center gap-2 bg-white rounded-lg px-2 py-1.5 border border-emerald-100" },
                         React.createElement("span", { className: "text-[10px] font-bold text-emerald-700 flex-1 truncate" }, comp.name),
-                        React.createElement("span", { className: "text-[11px] text-slate-400" }, (comp.bpm || 120) + " BPM"),
+                        React.createElement("span", { className: "text-[11px] text-slate-500" }, (comp.bpm || 120) + " BPM"),
                         React.createElement("button", {
                           onClick: function () {
                             upd('seqGrid', comp.grid || {}); upd('beatMelody', comp.melody || null);
@@ -7964,7 +7964,7 @@
               React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "\uD83D\uDCCF Intervals"),
-                  React.createElement("span", { className: "text-[11px] text-slate-400 cursor-help", title: EFFECT_TIPS.intervals.text }, "\u2753")
+                  React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.intervals.text }, "\u2753")
                 ),
                 React.createElement("div", { className: "grid grid-cols-2 gap-1" },
                   INTERVALS.map(function (intv) {
@@ -7979,8 +7979,8 @@
                       className: "flex items-center gap-2 px-2 py-1.5 rounded-lg border text-left transition-all hover:shadow-sm " + (qColors[intv.quality] || 'bg-slate-50 border-slate-200')
                     },
                       React.createElement("span", { className: "text-[11px] font-bold" }, intv.name),
-                      React.createElement("span", { className: "text-[11px] text-slate-400 ml-auto" }, intv.ratio),
-                      React.createElement("span", { className: "text-[11px] text-slate-400 hidden sm:inline" }, intv.song)
+                      React.createElement("span", { className: "text-[11px] text-slate-500 ml-auto" }, intv.ratio),
+                      React.createElement("span", { className: "text-[11px] text-slate-500 hidden sm:inline" }, intv.song)
                     );
                   })
                 )
@@ -7990,7 +7990,7 @@
               React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "\uD83C\uDF10 Harmonic Series"),
-                  React.createElement("span", { className: "text-[11px] text-slate-400 cursor-help", title: EFFECT_TIPS.harmonicSeries.text }, "\u2753")
+                  React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.harmonicSeries.text }, "\u2753")
                 ),
                 React.createElement("div", { className: "flex gap-2" },
                   HARMONICS_INFO.map(function (h) {
@@ -8001,7 +8001,7 @@
                     },
                       React.createElement("span", { className: "text-lg font-bold text-indigo-600 block group-hover:scale-110 transition-transform" }, h.n),
                       React.createElement("span", { className: "text-[8px] text-indigo-400 block" }, h.ratio),
-                      React.createElement("span", { className: "text-[7px] text-slate-400 block" }, h.interval)
+                      React.createElement("span", { className: "text-[7px] text-slate-500 block" }, h.interval)
                     );
                   })
                 )
@@ -8047,7 +8047,7 @@
               React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "\uD83C\uDF0A Filter Lab"),
-                  React.createElement("span", { className: "text-[11px] text-slate-400 cursor-help", title: EFFECT_TIPS.filter.text }, "\u2753")
+                  React.createElement("span", { className: "text-[11px] text-slate-500 cursor-help", title: EFFECT_TIPS.filter.text }, "\u2753")
                 ),
                 React.createElement("svg", { viewBox: "0 0 300 100", className: "w-full bg-slate-50 rounded-lg mb-2", style: { maxHeight: '100px' } },
                   React.createElement("line", { x1: 20, y1: 80, x2: 280, y2: 80, stroke: "#e2e8f0", strokeWidth: 1 }),
@@ -8155,7 +8155,7 @@
                             upd('quizStreak2', correct ? (d.quizStreak2 || 0) + 1 : 0);
                             addToast(correct ? '\u2705 Correct!' : '\u274C The answer is: ' + q.a, correct ? 'success' : 'error');
                           },
-                          className: "px-3 py-2.5 rounded-lg text-xs font-bold border-2 transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-400' : 'border-purple-200 bg-white text-slate-700 hover:border-purple-400 hover:bg-purple-50')
+                          className: "px-3 py-2.5 rounded-lg text-xs font-bold border-2 transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-500' : 'border-purple-200 bg-white text-slate-700 hover:border-purple-400 hover:bg-purple-50')
                         }, opt);
                       })
                     ),
@@ -8211,7 +8211,7 @@
                           upd('chordDetectTotal', (d.chordDetectTotal || 0) + 1);
                           addToast(correct ? '\u2705 Correct! ' + d.chordDetect.root + ' ' + d.chordDetect.type : '\u274C It was ' + d.chordDetect.root + ' ' + d.chordDetect.type, correct ? 'success' : 'error');
                         },
-                        className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-400' : 'border-rose-200 bg-white text-slate-700 hover:border-rose-400 hover:bg-rose-50')
+                        className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-500' : 'border-rose-200 bg-white text-slate-700 hover:border-rose-400 hover:bg-rose-50')
                       }, opt);
                     })
                   ),

@@ -1019,7 +1019,7 @@ window.StemLab = window.StemLab || {
                 var active = asCookTemp >= r.tempF;
                 return h('div', { key: r.name, className: 'flex items-center gap-2 p-1.5 rounded-lg ' + (active ? 'bg-amber-50' : 'opacity-40') },
                   h('span', null, r.icon),
-                  h('div', null, h('p', { className: 'text-[10px] font-bold ' + (active ? 'text-amber-700' : 'text-slate-400') }, r.name + ' (' + r.tempF + '\u00B0F)'), active && h('p', { className: 'text-[11px] text-slate-600' }, r.desc))
+                  h('div', null, h('p', { className: 'text-[10px] font-bold ' + (active ? 'text-amber-700' : 'text-slate-500') }, r.name + ' (' + r.tempF + '\u00B0F)'), active && h('p', { className: 'text-[11px] text-slate-600' }, r.desc))
                 );
               })
             )
@@ -1076,7 +1076,7 @@ window.StemLab = window.StemLab || {
               OIL_GRADES.map(function(g) {
                 var inRange = ccOilTemp >= g.minF && ccOilTemp <= g.maxF;
                 return h('div', { key: g.grade, className: 'flex items-center gap-2 p-1.5 rounded-lg ' + (inRange ? 'bg-emerald-50 border border-emerald-200' : 'opacity-40') },
-                  h('span', { className: 'text-xs font-bold w-16 ' + (inRange ? 'text-emerald-700' : 'text-slate-400') }, g.grade),
+                  h('span', { className: 'text-xs font-bold w-16 ' + (inRange ? 'text-emerald-700' : 'text-slate-500') }, g.grade),
                   h('span', { className: 'text-[10px] text-slate-600 flex-1' }, g.desc),
                   inRange && h('span', { className: 'text-[8px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded' }, '\u2705 RECOMMENDED')
                 );
@@ -1344,7 +1344,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'absolute inset-y-0 left-0 bg-gradient-to-r from-red-500 via-amber-400 to-emerald-500 rounded-full', style: { width: '100%' } }),
                 h('div', { className: 'absolute top-0 w-0.5 h-full bg-white shadow-md', style: { left: ((estimatedScore - 300) / 550 * 100) + '%' } })
               ),
-              h('div', { className: 'flex justify-between text-[8px] text-slate-400 mt-1' }, h('span', null, '300'), h('span', null, '850'))
+              h('div', { className: 'flex justify-between text-[8px] text-slate-500 mt-1' }, h('span', null, '300'), h('span', null, '850'))
             )
           ),
           // Compound Interest Calculator
@@ -1406,9 +1406,9 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'flex items-center gap-3 mb-2' },
               h('span', { className: 'text-[10px] font-bold text-slate-500' }, 'Original: ' + cookRecipe.servings + ' servings'),
-              h('span', { className: 'text-slate-400' }, '\u2192'),
+              h('span', { className: 'text-slate-500' }, '\u2192'),
               h('span', { className: 'text-[10px] font-bold text-teal-600' }, 'Desired: ' + cookDesiredServings + ' servings'),
-              h('span', { className: 'text-[11px] text-slate-400 ml-auto' }, 'Scale: ' + cookScale.toFixed(2) + 'x')
+              h('span', { className: 'text-[11px] text-slate-500 ml-auto' }, 'Scale: ' + cookScale.toFixed(2) + 'x')
             ),
             slider('Servings', cookScale, 0.25, 4, 0.25, 'cookScale', function(v) { return Math.round(cookRecipe.servings * v) + ' servings (' + v + 'x)'; }),
             h('div', { className: 'mt-2' },
@@ -1619,7 +1619,7 @@ window.StemLab = window.StemLab || {
 
         // Footer
         h('div', { className: 'text-center' },
-          h('p', { className: 'text-[11px] text-slate-400' }, 'Tax calculations are simplified estimates for educational purposes.')
+          h('p', { className: 'text-[11px] text-slate-500' }, 'Tax calculations are simplified estimates for educational purposes.')
         )
       );
     }

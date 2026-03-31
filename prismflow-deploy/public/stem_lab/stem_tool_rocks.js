@@ -3065,7 +3065,7 @@ const d = labToolData.rockCycle;
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-slate-500 uppercase" }, "Hardness"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-500 uppercase" }, "Hardness"),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.hardness)
 
@@ -3073,7 +3073,7 @@ const d = labToolData.rockCycle;
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-slate-500 uppercase" }, "Crystals"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-500 uppercase" }, "Crystals"),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.crystals)
 
@@ -3081,7 +3081,7 @@ const d = labToolData.rockCycle;
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[9px] font-bold text-slate-500 uppercase" }, "Real Uses"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-500 uppercase" }, "Real Uses"),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.uses)
 

@@ -1639,7 +1639,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "mb-3 p-1.5 bg-slate-900/50 rounded-lg border border-slate-700/50 inline-block text-center" },
 
-                 React.createElement("p", { className: "text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5" }, "General Formula"),
+                 React.createElement("p", { className: "text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-0.5" }, "General Formula"),
 
                  React.createElement("p", { className: "text-sm font-mono font-bold text-slate-300" }, 
 
@@ -1677,9 +1677,9 @@ const d = labToolData.wave;
 
                     return pct > 90 
 
-                      ? React.createElement("span", {className: "text-[9px] font-bold text-emerald-400 bg-emerald-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, "\u2705 " + pct + "% match") 
+                      ? React.createElement("span", {className: "text-[11px] font-bold text-emerald-400 bg-emerald-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, "\u2705 " + pct + "% match") 
 
-                      : React.createElement("span", {className: "text-[9px] font-bold text-amber-400 bg-amber-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, pct + "% match");
+                      : React.createElement("span", {className: "text-[11px] font-bold text-amber-400 bg-amber-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, pct + "% match");
                   })()
 
               ),
@@ -1708,7 +1708,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
 
-                React.createElement("p", { className: "text-[9px] font-bold text-cyan-600 uppercase" }, "Wavelength \u03BB"),
+                React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, "Wavelength \u03BB"),
 
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, wavelength.toFixed(1) + " m")
 
@@ -1716,7 +1716,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
 
-                React.createElement("p", { className: "text-[9px] font-bold text-cyan-600 uppercase" }, "Period T"),
+                React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, "Period T"),
 
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, (1 / d.frequency).toFixed(3) + " s")
 
@@ -1724,7 +1724,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
 
-                React.createElement("p", { className: "text-[9px] font-bold text-cyan-600 uppercase" }, "Wave Speed v"),
+                React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, "Wave Speed v"),
 
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, waveSpeedCalc.toFixed(0) + " m/s")
 
@@ -1732,7 +1732,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
 
-                React.createElement("p", { className: "text-[9px] font-bold text-cyan-600 uppercase" }, "Energy"),
+                React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, "Energy"),
 
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, "\u221D A\u00B2 = " + (d.amplitude * d.amplitude).toFixed(0))
 

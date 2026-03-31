@@ -1108,7 +1108,7 @@ window.StemLab = window.StemLab || {
             h("div", { className: "flex flex-wrap gap-1 items-center", role: "list" },
               h("span", { className: "text-[10px] font-bold text-slate-500 mr-1" }, "Protein:"),
               builtProtein.map(function(p, idx) { var pr = AA_PROPS[p.aa] || { color: '#888', full: p.aa }; return h("span", { key: idx, role: "listitem", className: "px-1.5 py-0.5 rounded-md text-[10px] font-bold text-white", style: { background: pr.color }, title: pr.full }, p.aa); }),
-              builtProtein.length === 0 && h("span", { className: "text-[10px] text-slate-400 italic" }, "Press Start to begin...")
+              builtProtein.length === 0 && h("span", { className: "text-[10px] text-slate-500 italic" }, "Press Start to begin...")
             ),
             h("div", { className: "flex items-center gap-3 mt-4" },
               h("button", { onClick: function() { if (transPlaying) updMulti({ transPlaying: false }); else { updMulti({ transStep: 0, builtProtein: [], transPlaying: true }); } }, className: "px-4 py-2 text-sm font-bold rounded-xl " + (transPlaying ? "bg-amber-500 text-white" : "bg-emerald-600 text-white hover:bg-emerald-700") }, transPlaying ? "\u23F8 Pause" : "\u25B6 Translate"),
@@ -1319,7 +1319,7 @@ window.StemLab = window.StemLab || {
                     h("span", { className: "w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-sm", style: { background: pr.color } }, pr.abbr),
                     h("span", { className: "text-[8px] font-bold text-slate-600" }, p.aa),
                     h("span", { className: "text-[7px] text-slate-500 font-mono" }, p.codon),
-                    idx < fullProtein.length - 1 && p.aa !== 'Stop' ? h("span", { className: "text-[8px] text-slate-300" }, '\u2500') : null
+                    idx < fullProtein.length - 1 && p.aa !== 'Stop' ? h("span", { className: "text-[8px] text-slate-500" }, '\u2500') : null
                   );
                 })
               ),

@@ -1183,9 +1183,9 @@ window.SelHub = window.SelHub || {
                         h('p', { className: 'text-xs font-bold text-blue-700 mb-1' }, '\ud83d\udcca Outcome:'),
                         h('p', { className: 'text-xs text-blue-800 leading-relaxed' }, opt.outcome),
                         h('div', { className: 'flex gap-3 mt-2' },
-                          h('span', { className: 'text-[10px] font-bold ' + (opt.impact.happiness > 0 ? 'text-emerald-600' : opt.impact.happiness < 0 ? 'text-red-500' : 'text-slate-400') }, '\ud83d\ude0a Happiness: ' + (opt.impact.happiness > 0 ? '+' : '') + opt.impact.happiness),
-                          h('span', { className: 'text-[10px] font-bold ' + (opt.impact.learning > 0 ? 'text-emerald-600' : opt.impact.learning < 0 ? 'text-red-500' : 'text-slate-400') }, '\ud83d\udcda Learning: ' + (opt.impact.learning > 0 ? '+' : '') + opt.impact.learning),
-                          h('span', { className: 'text-[10px] font-bold ' + (opt.impact.health > 0 ? 'text-emerald-600' : opt.impact.health < 0 ? 'text-red-500' : 'text-slate-400') }, '\ud83d\udc9a Health: ' + (opt.impact.health > 0 ? '+' : '') + opt.impact.health)
+                          h('span', { className: 'text-[10px] font-bold ' + (opt.impact.happiness > 0 ? 'text-emerald-600' : opt.impact.happiness < 0 ? 'text-red-500' : 'text-slate-500') }, '\ud83d\ude0a Happiness: ' + (opt.impact.happiness > 0 ? '+' : '') + opt.impact.happiness),
+                          h('span', { className: 'text-[10px] font-bold ' + (opt.impact.learning > 0 ? 'text-emerald-600' : opt.impact.learning < 0 ? 'text-red-500' : 'text-slate-500') }, '\ud83d\udcda Learning: ' + (opt.impact.learning > 0 ? '+' : '') + opt.impact.learning),
+                          h('span', { className: 'text-[10px] font-bold ' + (opt.impact.health > 0 ? 'text-emerald-600' : opt.impact.health < 0 ? 'text-red-500' : 'text-slate-500') }, '\ud83d\udc9a Health: ' + (opt.impact.health > 0 ? '+' : '') + opt.impact.health)
                         )
                       )
                     );
@@ -1826,7 +1826,7 @@ window.SelHub = window.SelHub || {
                   return h('div', {
                     key: pi,
                     className: 'flex-1 text-center py-2 rounded-lg text-[10px] font-bold ' +
-                      (isActive ? 'bg-teal-600 text-white' : isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400')
+                      (isActive ? 'bg-teal-600 text-white' : isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500')
                   }, phase.label);
                 })
               ),

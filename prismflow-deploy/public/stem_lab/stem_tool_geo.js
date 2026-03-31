@@ -1495,7 +1495,7 @@ var d = labToolData || {};
 
                     React.createElement('p', { className: 'text-xs text-slate-500' }, c.continent),
 
-                    React.createElement('p', { className: 'text-[10px] text-slate-300 mt-1' }, 'Click if bigger')
+                    React.createElement('p', { className: 'text-[10px] text-slate-500 mt-1' }, 'Click if bigger')
 
                   );
 
@@ -1714,7 +1714,7 @@ var d = labToolData || {};
                     React.createElement('div', { className: 'font-bold text-sm text-teal-800' }, geoDistA.name),
                     React.createElement('div', { className: 'text-[10px] text-teal-600' }, geoDistA.capital)
                   ),
-                  React.createElement('div', { className: 'text-2xl text-slate-300' }, '\u2194\uFE0F'),
+                  React.createElement('div', { className: 'text-2xl text-slate-500' }, '\u2194\uFE0F'),
                   React.createElement('div', { className: 'bg-cyan-50 border-2 border-cyan-300 rounded-xl px-4 py-3 text-center min-w-[120px]' },
                     React.createElement('div', { className: 'text-2xl' }, '\uD83C\uDFD9\uFE0F'),
                     React.createElement('div', { className: 'font-bold text-sm text-cyan-800' }, geoDistB.name),
@@ -2177,7 +2177,7 @@ var d = labToolData || {};
                   onClick:()=>{ if(gp.selectedAngle!=null){sortAngle(gp.selectedAngle,ci);gpUpd('selectedAngle',null);} },
                   className:`p-2 rounded-xl border-2 min-h-[70px] transition-all text-center ${gp.sorterDragOver===ci?'border-violet-400 bg-violet-50 shadow-md':'border-slate-200 bg-slate-50 hover:border-slate-300'}`
                 },
-                  React.createElement('p',{className:'text-[9px] font-bold text-slate-500 mb-1'},cat),
+                  React.createElement('p',{className:'text-[11px] font-bold text-slate-500 mb-1'},cat),
                   inBucket.map(a=>React.createElement('div',{key:a.id,className:'text-[10px] font-bold text-emerald-600 bg-emerald-100 rounded px-1 py-0.5 mb-0.5 gp-sort-bounce'},a.deg+'° ✅'))
                 );
               })
@@ -2518,7 +2518,7 @@ var d = labToolData || {};
           // Footer
           React.createElement('div',{className:'bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-3 border border-violet-200 text-center'},
             React.createElement('p',{className:'text-[10px] text-violet-600'},React.createElement('strong',null,'📐 Euclidean Geometry'),' — drag points to explore how angles change.'),
-            React.createElement('p',{className:'text-[9px] text-slate-500 mt-0.5'},'Place points • Draw segments • Drag to explore • Discover theorems')
+            React.createElement('p',{className:'text-[11px] text-slate-500 mt-0.5'},'Place points • Draw segments • Drag to explore • Discover theorems')
           )
         );
       })();
