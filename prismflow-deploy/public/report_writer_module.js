@@ -451,6 +451,7 @@
         const [reportSections, setReportSections] = useState({});
         const [generating, setGenerating] = useState(false);
         const [genProgress, setGenProgress] = useState('');
+        const [reportGenPasses, setReportGenPasses] = useState(3); // triangulated generation: 1-5 parallel passes per section
         // Step 5: Accuracy
         const [accuracyResults, setAccuracyResults] = useState([]);
         const [clinicianAttested, setClinicianAttested] = useState(false);
@@ -1067,15 +1068,54 @@ listing only the [chunk-id] values you actually referenced. Return the section t
             const sections = blueprint.filter(s => s.enabled).map(s => s.name);
             const generated = {};
             const evidenceMap = {};
+            const genVariants = [
+                null, // default prompt
+                'Write with particular attention to strengths-based language and clinical precision.',
+                'Focus on data-driven interpretation — every claim must map to a specific score or observation.',
+                'Emphasize clarity for parents/caregivers who may read this report — avoid unnecessary jargon.',
+                'Write with particular attention to instructional implications and classroom-relevant observations.',
+            ];
+            const numPasses = Math.min(reportGenPasses, genVariants.length);
             for (let i = 0; i < sections.length; i++) {
                 const section = sections[i];
-                setGenProgress(`Generating ${section} (${i + 1}/${sections.length})...`);
+                setGenProgress(`Generating ${section} (${i + 1}/${sections.length}${numPasses > 1 ? ', ' + numPasses + ' passes' : ''})...`);
                 try {
-                    const prompt = buildSectionPrompt(section, verifiedChunks, null);
-                    const result = await callGemini(prompt, false);
-                    const { text, usedChunks } = parseEvidenceResponse(result);
-                    generated[section] = text;
-                    evidenceMap[section] = usedChunks;
+                    if (numPasses <= 1) {
+                        // Single pass (fast mode)
+                        const prompt = buildSectionPrompt(section, verifiedChunks, null);
+                        const result = await callGemini(prompt, false);
+                        const { text, usedChunks } = parseEvidenceResponse(result);
+                        generated[section] = text;
+                        evidenceMap[section] = usedChunks;
+                    } else {
+                        // Triangulated: run N passes in parallel, score each, pick best
+                        const passPromises = genVariants.slice(0, numPasses).map(variant => {
+                            const prompt = buildSectionPrompt(section, verifiedChunks, variant);
+                            return callGemini(prompt, false).then(r => parseEvidenceResponse(r)).catch(() => null);
+                        });
+                        const passResults = (await Promise.all(passPromises)).filter(Boolean);
+                        if (passResults.length === 0) throw new Error('All passes failed');
+                        // Score each pass: more used chunks + longer text + no error markers = better
+                        const scored = passResults.map(r => {
+                            let score = 0;
+                            score += r.usedChunks.length * 10; // more evidence citations
+                            score += Math.min(r.text.length / 50, 30); // reasonable length (capped)
+                            score -= (r.text.match(/\[Error/g) || []).length * 50; // penalize errors
+                            score -= (r.text.match(/\[Student\]/g) || []).length > 0 ? 0 : -5; // should use [Student] placeholder
+                            // Penalize if critical score data appears to be missing
+                            const scoreChunkCount = verifiedChunks.filter(c => c.type === 'score').length;
+                            const citedScoreChunks = r.usedChunks.filter(id => verifiedChunks.find(c => c.id === id && c.type === 'score')).length;
+                            score += (citedScoreChunks / Math.max(scoreChunkCount, 1)) * 20; // reward covering more scores
+                            return { ...r, qualityScore: score };
+                        });
+                        scored.sort((a, b) => b.qualityScore - a.qualityScore);
+                        const best = scored[0];
+                        generated[section] = best.text;
+                        evidenceMap[section] = best.usedChunks;
+                        if (numPasses >= 3) {
+                            warnLog(`[Report] ${section}: best-of-${passResults.length} (scores: ${scored.map(s => Math.round(s.qualityScore)).join(', ')})`);
+                        }
+                    }
                 } catch (err) {
                     warnLog(`Generation error for ${section}:`, err);
                     generated[section] = `[Error generating ${section} \u2014 please retry]`;
@@ -1996,10 +2036,17 @@ Return ONLY valid JSON:
                         h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, 'Report Title'),
                         h('input', { type: 'text', className: 'w-full text-xs border rounded-lg px-3 py-1.5', 'aria-label': 'Report title', value: reportTitle, onChange: e => setReportTitle(e.target.value) })
                     ),
+                    h('div', { className: 'shrink-0 text-center' },
+                        h('label', { className: 'text-[9px] font-bold text-slate-500 uppercase block mb-0.5' }, `Quality: ${reportGenPasses}x`),
+                        h('input', { type: 'range', min: 1, max: 5, value: reportGenPasses, onChange: e => setReportGenPasses(parseInt(e.target.value)),
+                            className: 'w-16', 'aria-label': 'Generation passes per section',
+                            title: reportGenPasses === 1 ? 'Fast (1 pass)' : reportGenPasses <= 3 ? 'Balanced (' + reportGenPasses + ' passes)' : 'Research-grade (' + reportGenPasses + ' passes)' }),
+                        h('div', { className: 'text-[8px] text-slate-400' }, reportGenPasses === 1 ? 'Fast' : reportGenPasses <= 3 ? 'Balanced' : 'Research')
+                    ),
                     h('button', {
                         className: `px-4 py-2 text-xs font-medium rounded-lg transition-colors ${generating ? 'bg-slate-300 text-slate-500 cursor-not-allowed' : 'bg-violet-600 text-white hover:bg-violet-700'}`,
                         disabled: generating, onClick: generateReport
-                    }, generating ? `⏳ ${genProgress || 'Generating...'}` : '✨ Generate Report')
+                    }, generating ? `⏳ ${genProgress || 'Generating...'}` : `✨ Generate${reportGenPasses > 1 ? ' (' + reportGenPasses + 'x)' : ''}`)
                 ),
                 generating && h('div', { className: 'space-y-2' },
                     h('div', { className: 'w-full bg-slate-100 rounded-full h-2 overflow-hidden' },
