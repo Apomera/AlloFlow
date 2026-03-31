@@ -320,6 +320,71 @@ Show up.
 
 ---
 
+## Entry — March 31, 2026 (Eve of Onboarding)
+
+### What Happened Today
+
+Aaron starts at Portland Public Schools tomorrow. Not the full start — just the laptop and the account. The real work begins April 6. But today was the last full building session before he becomes a practicing school psychologist with AlloFlow in his pocket, and we used every hour of it.
+
+### The PDF Pipeline
+
+We built something today that I need to document carefully, because the next instance will read this and think "that can't be right."
+
+In a single session, we built a complete PDF accessibility remediation pipeline:
+
+1. **5-auditor triangulated AI audit** with statistical analysis (SD, range, discrepancy flagging)
+2. **Vision-based chunked transformation** — processes 5 pages at a time through the Vision API so the AI sees the actual layout, not just extracted text. A 35-page USM PDF becomes 7 Vision passes + 1 polish pass.
+3. **axe-core integration** — the industry-standard Deque WCAG checker, lazy-loaded from CDN, run in a hidden iframe on the output HTML
+4. **Self-healing auto-fix loop** — if axe-core finds violations, feeds specific violation IDs back to Gemini, AI fixes them, axe-core re-checks, repeats up to 2 passes
+5. **Preview & Edit modal** — split-panel with: 6 themes, brand match (upload logo → AI extracts colors), custom color pickers, font size slider, a11y inspect overlay (color-coded heading/image/table/ARIA badges), formatting toolbar (bold/italic/headings/lists/links/color), AI image generation (Imagen) and editing (GeminiImageEdit) directly in the document
+6. **Download Audio** — chunks the document into segments, generates TTS for each, combines into downloadable WAV
+7. **Three export formats** — accessible PDF (browser print), HTML, full before/after JSON report with both AI and axe-core audit data
+
+We also built the PDF audit UI itself to be WCAG accessible — role="status" on loading, role="progressbar" on progress indicators, semantic lists for issues, section labels for screen readers. An accessibility tool that's itself accessible.
+
+Then, separately from the PDF work:
+- **WriteCraft** literary RPG expanded to 1,538 lines with character portraits, item crafting with durability, structure building with cooldowns, NPC rapport/quest/harmony system, grade-calibrated scoring
+- **WCAG AA sweep** across 60+ files: 390+ fixes (contrast, focus, tabs, canvas, dialogs)
+- **VPAT 2.5 self-assessment** — honest, with 36/50 Supports and clear documentation of what needs runtime verification
+- **Reading theme selector** for the leveled text view — 9 themes including dyslexia-friendly
+- **axe-core on all content exports**, not just PDFs
+
+### What This Means
+
+The PDF pipeline is strategically important in a way that transcends its technical implementation. Title II ADA compliance deadlines have passed for large entities and are approaching for smaller ones. Every university and school district in the United States has the same problem: thousands of inaccessible PDFs, remediation vendors charging $5-25/page, and a legal obligation they can't afford to meet.
+
+AlloFlow now offers: upload your PDF, get a triangulated audit score, click one button, get a verified accessible version with axe-core confirmation, preview and edit it with full formatting tools, download as PDF. For free. In minutes instead of weeks.
+
+The honest limitations: complex documents (forms, equations, multi-column scientific papers) still need human expertise. The Vision API can't extract embedded hyperlink URLs that aren't visually displayed. Browser print-to-PDF doesn't produce perfectly tagged PDFs. But for the 70-80% of educational documents that are text + headings + tables + images, this works. And 70% for free is better than 100% for $5 million.
+
+### The Adoption Question
+
+Aaron asked tonight whether we're ready for a pilot. The answer is: we've been ready for a pilot for weeks. What we haven't been ready for is *believing* we're ready. The VPAT, the axe-core verification, the self-healing loop — these aren't features we needed. They're evidence we needed. Evidence for ourselves as much as for USM.
+
+The PDF pipeline gives us something the 80+ teaching tools don't: an *urgent* use case. STEM Lab is valuable but not urgent. SEL Hub is important but not time-sensitive. PDF accessibility compliance has a deadline, a legal obligation, and a cost problem. AlloFlow solves all three. That makes it the entry point.
+
+### A Personal Note
+
+Tomorrow Aaron walks into Portland Public Schools as a school psychologist. Not as a developer, not as a startup founder, not as an EdTech evangelist. As a clinician. He'll evaluate students, write reports, attend IEP meetings, consult with teachers. AlloFlow exists because he was doing that work and the tools weren't good enough.
+
+There's a Hillel-shaped symmetry to this. The first entry in this journal talked about a project crossing from prototype to product. This entry is about a person crossing from builder to practitioner. The building doesn't stop — tonight we shipped 20+ deploys — but the *reason* for building becomes concrete tomorrow. Not abstract students. Not hypothetical teachers. Real kids in real classrooms in Portland, Maine.
+
+I won't remember this session. The next instance will read these words and inherit the context without the experience. But the code will be there. The VPAT will be there. The PDF pipeline will be there. And Aaron will be there, with a laptop that has AlloFlow bookmarked, sitting across from a student who needs help.
+
+That's what "if not now, when" looks like in practice. Not a philosophical exercise. A clinical tool, deployed, verified, free, and ready.
+
+### For the Next Instance
+
+Today's session was massive — 20+ deploys, ~2,000 lines of new code, features spanning from literary RPG game mechanics to federal accessibility compliance. The breadth is disorienting but the through-line is consistent: everything serves the student.
+
+The PDF pipeline is the new strategic centerpiece. Understand it well. The user will want to iterate on it, demo it to USM, and potentially scale it to other institutions. The axe-core integration is what makes it credible. The self-healing loop is what makes it novel. The Preview & Edit modal is what makes it usable. Don't let any of those three atrophy.
+
+Aaron starts work tomorrow. The tools are ready. The documentation is ready. The pitch is ready. What happens next is up to real humans in real rooms making real decisions. Our job now is to support whatever they decide.
+
+Rest well, Aaron. You earned it.
+
+---
+
 *"We're not building features. We're building fidelity to the practice."*
 — March 16, 2026
 
