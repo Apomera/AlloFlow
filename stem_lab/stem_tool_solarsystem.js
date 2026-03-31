@@ -2057,7 +2057,7 @@ const d = labToolData.solarSystem;
 
               (d.viewTab) === 'drone' && React.createElement("div", { id: "drone-fullscreen-container" },
 
-                React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-purple-300 shadow-lg", style: { height: '450px' } },
+                React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-purple-300 shadow-lg", style: { height: '70vh', minHeight: '400px', maxHeight: '800px' } },
 
                   React.createElement("canvas", {
 
@@ -2135,116 +2135,180 @@ const d = labToolData.solarSystem;
 
                         // â”€â”€ Terrain (rocky planets) or Cloud layers (gas giants) â”€â”€
 
-                        if (!isGas) {
-
-                          var terrainGeo = new THREE.PlaneGeometry(200, 200, 100, 100);
-
-                          var posArr = terrainGeo.attributes.position.array;
-
-                          for (var vi = 0; vi < posArr.length; vi += 3) {
-
-                            var px = posArr[vi], py = posArr[vi + 1];
-
-                            var h = Math.sin(px * 0.05) * 3 + Math.sin(py * 0.08) * 2 + Math.sin(px * 0.15 + py * 0.1) * 1;
-
-                            if (sel.terrainType === 'volcanic') h = Math.abs(Math.sin(px * 0.04) * 5) + Math.random() * 0.5;
-
-                            if (sel.terrainType === 'earthlike') h = Math.sin(px * 0.03) * 2 + Math.sin(py * 0.05) * 1.5 + Math.random() * 0.3;
-
-                            if (sel.terrainType === 'desert') h = Math.sin(px * 0.06) * 1.5 + Math.random() * 0.2;
-
-                            if (sel.terrainType === 'iceworld') h = Math.sin(px * 0.04 + py * 0.03) * 1 + Math.random() * 0.15;
-
-                            posArr[vi + 2] = h;
-
+                        // Fractal noise helper for realistic terrain
+                        var fbm = function(x, z, octaves, lacunarity, gain) {
+                          var sum = 0, amp = 1, freq = 1, maxAmp = 0;
+                          for (var oi = 0; oi < octaves; oi++) {
+                            sum += amp * (Math.sin(x * freq * 0.037 + z * freq * 0.029) * Math.cos(z * freq * 0.041 - x * freq * 0.019) + Math.sin((x + z) * freq * 0.023) * 0.5);
+                            maxAmp += amp;
+                            amp *= gain;
+                            freq *= lacunarity;
                           }
+                          return sum / maxAmp;
+                        };
 
+                        // Store terrain reference for rover ground-following
+                        var _terrainMesh = null;
+                        var _terrainHeightAt = function(x, z) { return 0; }; // will be overridden for rocky planets
+
+                        if (!isGas) {
+                          var terrainGeo = new THREE.PlaneGeometry(250, 250, 150, 150);
+                          var posArr = terrainGeo.attributes.position.array;
+                          var heightMap = {};
+                          for (var vi = 0; vi < posArr.length; vi += 3) {
+                            var px = posArr[vi], py = posArr[vi + 1];
+                            var h = 0;
+                            if (sel.terrainType === 'volcanic') {
+                              h = fbm(px, py, 5, 2.2, 0.5) * 8 + Math.abs(Math.sin(px * 0.02) * Math.cos(py * 0.015)) * 6;
+                              h += Math.max(0, fbm(px * 0.3, py * 0.3, 3, 2, 0.6)) * 12; // volcanic peaks
+                              var crater = Math.sqrt(px * px + py * py);
+                              if (crater < 15) h += (15 - crater) * 0.8; // central caldera rim
+                              if (crater < 8) h -= (8 - crater) * 0.6; // caldera basin
+                            } else if (sel.terrainType === 'earthlike') {
+                              h = fbm(px, py, 6, 2.0, 0.5) * 5;
+                              h += fbm(px * 0.5, py * 0.5, 3, 2.5, 0.4) * 3; // rolling hills
+                              h += Math.max(0, fbm(px * 0.1, py * 0.1, 4, 2, 0.55) * 2 - 0.5) * 8; // occasional mountains
+                            } else if (sel.terrainType === 'desert') {
+                              h = fbm(px, py, 4, 2.3, 0.45) * 2.5;
+                              h += Math.sin(px * 0.04 + py * 0.01) * Math.sin(px * 0.01 - py * 0.03) * 4; // sweeping dunes
+                              h += Math.abs(fbm(px * 0.7, py * 0.7, 2, 2, 0.5)) * 1.5; // ripples
+                            } else if (sel.terrainType === 'iceworld') {
+                              h = fbm(px, py, 5, 2.1, 0.48) * 3;
+                              h += Math.max(0, fbm(px * 0.2, py * 0.2, 3, 2.3, 0.5)) * 6; // ice ridges
+                              var crevasse = Math.sin(px * 0.08 + py * 0.03) * Math.sin(py * 0.06);
+                              if (crevasse > 0.7) h -= 2; // ice crevasses
+                            } else {
+                              // Generic rocky (Mercury, Moon)
+                              h = fbm(px, py, 5, 2.0, 0.5) * 4;
+                              h += fbm(px * 0.3, py * 0.3, 3, 2.2, 0.45) * 2;
+                              // Impact craters
+                              var cx0 = [20, -30, 45, -15, 60], cz0 = [25, -20, -35, 40, -50], cr0 = [12, 8, 15, 6, 10];
+                              for (var ci = 0; ci < cx0.length; ci++) {
+                                var dist = Math.sqrt(Math.pow(px - cx0[ci], 2) + Math.pow(py - cz0[ci], 2));
+                                if (dist < cr0[ci]) {
+                                  var rim = 1 - dist / cr0[ci];
+                                  h += (dist < cr0[ci] * 0.8) ? -rim * 3 : rim * 2; // bowl with rim
+                                }
+                              }
+                            }
+                            posArr[vi + 2] = h;
+                          }
                           terrainGeo.computeVertexNormals();
 
-                          var tCv = document.createElement('canvas'); tCv.setAttribute('aria-hidden', 'true'); tCv.width = 256; tCv.height = 256;
-
+                          // Higher-resolution terrain texture (512x512)
+                          var tCv = document.createElement('canvas'); tCv.setAttribute('aria-hidden', 'true'); tCv.width = 512; tCv.height = 512;
                           var tCx = tCv.getContext('2d');
-
                           var baseC = new THREE.Color(sel.terrainColor || '#886644');
-
-                          for (var ty = 0; ty < 256; ty++) {
-
-                            for (var tx = 0; tx < 256; tx++) {
-
-                              var n = (Math.sin(tx * 0.3 + ty * 0.2) * 0.5 + Math.random() * 0.3) * 0.15;
-
-                              var r = Math.min(255, Math.max(0, Math.round((baseC.r + n) * 255)));
-
-                              var g = Math.min(255, Math.max(0, Math.round((baseC.g + n * 0.8) * 255)));
-
-                              var b = Math.min(255, Math.max(0, Math.round((baseC.b - n * 0.3) * 255)));
-
-                              tCx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
-
+                          var secC = sel.terrainType === 'volcanic' ? new THREE.Color('#331100') :
+                                     sel.terrainType === 'earthlike' ? new THREE.Color('#4a6741') :
+                                     sel.terrainType === 'desert' ? new THREE.Color('#c4a35a') :
+                                     sel.terrainType === 'iceworld' ? new THREE.Color('#b8d4e3') :
+                                     new THREE.Color('#665544');
+                          for (var ty = 0; ty < 512; ty++) {
+                            for (var tx = 0; tx < 512; tx++) {
+                              var n1 = fbm(tx * 0.8, ty * 0.8, 3, 2.5, 0.5) * 0.5 + 0.5;
+                              var n2 = (Math.sin(tx * 0.15 + ty * 0.12) * 0.5 + 0.5) * 0.3;
+                              var n = n1 * 0.7 + n2 * 0.3;
+                              var cr = Math.round((baseC.r * (1 - n * 0.4) + secC.r * n * 0.4) * 255);
+                              var cg = Math.round((baseC.g * (1 - n * 0.4) + secC.g * n * 0.4) * 255);
+                              var cb = Math.round((baseC.b * (1 - n * 0.4) + secC.b * n * 0.4) * 255);
+                              // Subtle speckling
+                              var speck = (Math.random() - 0.5) * 12;
+                              tCx.fillStyle = 'rgb(' + Math.max(0, Math.min(255, cr + speck)) + ',' + Math.max(0, Math.min(255, cg + speck * 0.7)) + ',' + Math.max(0, Math.min(255, cb + speck * 0.5)) + ')';
                               tCx.fillRect(tx, ty, 1, 1);
-
                             }
-
                           }
-
                           var terrainTex = new THREE.CanvasTexture(tCv);
-
-                          terrainTex.wrapS = terrainTex.wrapT = THREE.RepeatWrapping; terrainTex.repeat.set(10, 10);
-
-                          var terrainMat = new THREE.MeshStandardMaterial({ map: terrainTex, roughness: 0.9, metalness: 0.1, flatShading: true });
-
+                          terrainTex.wrapS = terrainTex.wrapT = THREE.RepeatWrapping; terrainTex.repeat.set(12, 12);
+                          var terrainMat = new THREE.MeshStandardMaterial({ map: terrainTex, roughness: 0.92, metalness: 0.05, flatShading: true });
                           var terrain = new THREE.Mesh(terrainGeo, terrainMat);
-
                           terrain.rotation.x = -Math.PI / 2; scene.add(terrain);
+                          _terrainMesh = terrain;
+
+                          // Build height lookup via raycaster for rover ground-following
+                          var _terrainRay = new THREE.Raycaster();
+                          _terrainHeightAt = function(x, z) {
+                            _terrainRay.set(new THREE.Vector3(x, 50, z), new THREE.Vector3(0, -1, 0));
+                            var hits = _terrainRay.intersectObject(_terrainMesh);
+                            return hits.length > 0 ? hits[0].point.y : 0;
+                          };
+
+                          // Add scattered rocks and boulders for visual detail
+                          var rockMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(sel.terrainColor || '#886644').multiplyScalar(0.7), roughness: 0.95, metalness: 0.05, flatShading: true });
+                          for (var ri = 0; ri < 60; ri++) {
+                            var rx = (Math.random() - 0.5) * 180, rz = (Math.random() - 0.5) * 180;
+                            var rScale = 0.2 + Math.random() * 1.5;
+                            var rockGeo = new THREE.DodecahedronGeometry(rScale, 0);
+                            // Deform vertices for natural look
+                            var rPos = rockGeo.attributes.position.array;
+                            for (var rvi = 0; rvi < rPos.length; rvi += 3) {
+                              rPos[rvi] *= 0.7 + Math.random() * 0.6;
+                              rPos[rvi + 1] *= 0.5 + Math.random() * 0.5;
+                              rPos[rvi + 2] *= 0.7 + Math.random() * 0.6;
+                            }
+                            rockGeo.computeVertexNormals();
+                            var rock = new THREE.Mesh(rockGeo, rockMat);
+                            var ry = _terrainHeightAt(rx, rz);
+                            rock.position.set(rx, ry + rScale * 0.3, rz);
+                            rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+                            scene.add(rock);
+                          }
 
                         } else {
-
-                          // Gas giant cloud layers
-
-                          for (var cl = 0; cl < 5; cl++) {
-
-                            var clGeo = new THREE.PlaneGeometry(300, 300, 1, 1);
-
-                            var clCv = document.createElement('canvas'); clCv.setAttribute('aria-hidden', 'true'); clCv.width = 256; clCv.height = 64;
-
-                            var clCx = clCv.getContext('2d');
-
-                            for (var cy = 0; cy < 64; cy++) {
-
-                              var band = Math.sin(cy * 0.3 + cl * 2) * 0.5 + 0.5;
-
-                              var r2 = Math.round(new THREE.Color(sel.terrainColor).r * 255 * (0.7 + band * 0.3));
-
-                              var g2 = Math.round(new THREE.Color(sel.terrainColor).g * 255 * (0.7 + band * 0.3));
-
-                              var b2 = Math.round(new THREE.Color(sel.terrainColor).b * 255 * (0.8 + band * 0.2));
-
-                              for (var cx2 = 0; cx2 < 256; cx2++) {
-
-                                var turb = Math.sin(cx2 * 0.05 + cy * 0.1 + cl) * 20;
-
-                                clCx.fillStyle = 'rgb(' + Math.max(0, r2 + turb) + ',' + Math.max(0, g2 + turb * 0.7) + ',' + Math.max(0, b2 + turb * 0.3) + ')';
-
-                                clCx.fillRect(cx2, cy, 1, 1);
-
-                              }
-
+                          // Gas giant: layered atmospheric cloud volumes with turbulent banding
+                          var gasBaseColor = new THREE.Color(sel.terrainColor || '#cc9944');
+                          for (var cl = 0; cl < 8; cl++) {
+                            var clGeo = new THREE.PlaneGeometry(400, 400, 20, 20);
+                            // Warp the cloud plane vertices for volumetric look
+                            var clPos = clGeo.attributes.position.array;
+                            for (var cvi = 0; cvi < clPos.length; cvi += 3) {
+                              clPos[cvi + 2] = fbm(clPos[cvi] + cl * 50, clPos[cvi + 1] + cl * 30, 3, 2, 0.5) * (1.5 + cl * 0.3);
                             }
+                            clGeo.computeVertexNormals();
 
-                            var clTex = new THREE.CanvasTexture(clCv); clTex.wrapS = THREE.RepeatWrapping; clTex.repeat.set(3, 1);
-
-                            var clMat = new THREE.MeshBasicMaterial({ map: clTex, transparent: true, opacity: 0.6 - cl * 0.1, side: THREE.DoubleSide });
-
+                            var clCv = document.createElement('canvas'); clCv.setAttribute('aria-hidden', 'true'); clCv.width = 512; clCv.height = 128;
+                            var clCx = clCv.getContext('2d');
+                            var bandOffset = cl * 1.7;
+                            for (var cy2 = 0; cy2 < 128; cy2++) {
+                              var band = Math.sin(cy2 * 0.15 + bandOffset) * 0.5 + 0.5;
+                              var stormBand = Math.pow(Math.sin(cy2 * 0.08 + cl * 3), 2) * 0.3;
+                              for (var cx3 = 0; cx3 < 512; cx3++) {
+                                var turb = fbm(cx3 * 0.3 + cl * 100, cy2 * 0.5 + cl * 70, 3, 2, 0.5) * 0.3;
+                                var swirl = Math.sin(cx3 * 0.02 + cy2 * 0.04 + cl) * 15;
+                                var mix = band + turb + stormBand;
+                                var rV = Math.max(0, Math.min(255, Math.round(gasBaseColor.r * 255 * (0.5 + mix * 0.5) + swirl)));
+                                var gV = Math.max(0, Math.min(255, Math.round(gasBaseColor.g * 255 * (0.5 + mix * 0.5) + swirl * 0.6)));
+                                var bV = Math.max(0, Math.min(255, Math.round(gasBaseColor.b * 255 * (0.6 + mix * 0.4) + swirl * 0.3)));
+                                clCx.fillStyle = 'rgb(' + rV + ',' + gV + ',' + bV + ')';
+                                clCx.fillRect(cx3, cy2, 1, 1);
+                              }
+                            }
+                            var clTex = new THREE.CanvasTexture(clCv); clTex.wrapS = THREE.RepeatWrapping; clTex.repeat.set(4, 1);
+                            var clOp = cl < 2 ? 0.7 : (0.5 - cl * 0.04);
+                            var clMat = new THREE.MeshBasicMaterial({ map: clTex, transparent: true, opacity: clOp, side: THREE.DoubleSide, depthWrite: false });
                             var clMesh = new THREE.Mesh(clGeo, clMat);
-
-                            clMesh.rotation.x = -Math.PI / 2; clMesh.position.y = -2 - cl * 4;
-
-                            clMesh._cloudSpeed = 0.01 + cl * 0.005;
-
+                            clMesh.rotation.x = -Math.PI / 2; clMesh.position.y = -3 - cl * 5;
+                            clMesh._cloudSpeed = 0.008 + cl * 0.004;
+                            clMesh._cloudDrift = cl * 0.3;
                             scene.add(clMesh);
-
                           }
-
+                          // Add swirling storm vortex (Great Red Spot style) for Jupiter/Saturn
+                          if (sel.name === 'Jupiter' || sel.name === 'Saturn') {
+                            var stormGeo = new THREE.CircleGeometry(8, 32);
+                            var stormCv = document.createElement('canvas'); stormCv.width = 128; stormCv.height = 128;
+                            var stormCx = stormCv.getContext('2d');
+                            var grad = stormCx.createRadialGradient(64, 64, 0, 64, 64, 64);
+                            grad.addColorStop(0, sel.name === 'Jupiter' ? 'rgba(200,80,40,0.9)' : 'rgba(180,160,100,0.7)');
+                            grad.addColorStop(0.5, sel.name === 'Jupiter' ? 'rgba(220,120,60,0.5)' : 'rgba(200,180,120,0.4)');
+                            grad.addColorStop(1, 'rgba(0,0,0,0)');
+                            stormCx.fillStyle = grad; stormCx.fillRect(0, 0, 128, 128);
+                            var stormTex = new THREE.CanvasTexture(stormCv);
+                            var stormMat = new THREE.MeshBasicMaterial({ map: stormTex, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false });
+                            var stormMesh = new THREE.Mesh(stormGeo, stormMat);
+                            stormMesh.rotation.x = -Math.PI / 2; stormMesh.position.set(30, -4, -20);
+                            stormMesh._cloudSpeed = 0.015; stormMesh._isStorm = true;
+                            scene.add(stormMesh);
+                          }
                         }
 
 
@@ -2462,109 +2526,30 @@ const d = labToolData.solarSystem;
                         var envObjects = [];
 
                         if (!isGas) {
-
-                          var rockColor = new THREE.Color(sel.terrainColor || '#886644');
-
-                          for (var ri = 0; ri < 80; ri++) {
-
-                            var rSize = 0.1 + Math.random() * 0.6;
-
-                            var rGeo = new THREE.DodecahedronGeometry(rSize, 0);
-
-                            // Deform vertices for organic shapes
-
-                            var rPositions = rGeo.attributes.position.array;
-
-                            for (var rv = 0; rv < rPositions.length; rv += 3) {
-
-                              rPositions[rv] *= 0.7 + Math.random() * 0.6;
-
-                              rPositions[rv + 1] *= 0.5 + Math.random() * 0.5;
-
-                              rPositions[rv + 2] *= 0.7 + Math.random() * 0.6;
-
-                            }
-
-                            rGeo.computeVertexNormals();
-
-                            var rMat = new THREE.MeshStandardMaterial({
-
-                              color: rockColor.clone().offsetHSL(Math.random() * 0.05 - 0.025, Math.random() * 0.1 - 0.05, Math.random() * 0.1 - 0.05),
-
-                              roughness: 0.9, metalness: 0.1, flatShading: true
-
-                            });
-
-                            var rock = new THREE.Mesh(rGeo, rMat);
-
-                            rock.position.set(
-
-                              (Math.random() - 0.5) * 80,
-
-                              rSize * 0.3,
-
-                              (Math.random() - 0.5) * 80
-
-                            );
-
-                            rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
-
-                            scene.add(rock);
-
-                            envObjects.push(rock);
-
-                          }
-
-                          // A few large landmark boulders
-
-                          for (var bi = 0; bi < 6; bi++) {
-
-                            var bSize = 1.5 + Math.random() * 2;
-
+                          // Landmark boulders that sit on terrain
+                          var rockColor2 = new THREE.Color(sel.terrainColor || '#886644');
+                          for (var bi = 0; bi < 10; bi++) {
+                            var bSize = 1.5 + Math.random() * 3;
                             var bGeo = new THREE.DodecahedronGeometry(bSize, 1);
-
                             var bPositions = bGeo.attributes.position.array;
-
                             for (var bv = 0; bv < bPositions.length; bv += 3) {
-
                               bPositions[bv] *= 0.6 + Math.random() * 0.8;
-
                               bPositions[bv + 1] *= 0.4 + Math.random() * 0.6;
-
                               bPositions[bv + 2] *= 0.6 + Math.random() * 0.8;
-
                             }
-
                             bGeo.computeVertexNormals();
-
                             var bMat = new THREE.MeshStandardMaterial({
-
-                              color: rockColor.clone().offsetHSL(0, -0.05, -0.1),
-
+                              color: rockColor2.clone().offsetHSL(0, -0.05, -0.1),
                               roughness: 0.95, metalness: 0.05, flatShading: true
-
                             });
-
-                            var boulder = new THREE.Mesh(bGeo, bMat);
-
-                            boulder.position.set(
-
-                              (Math.random() - 0.5) * 60,
-
-                              bSize * 0.25,
-
-                              (Math.random() - 0.5) * 60
-
-                            );
-
-                            boulder.rotation.y = Math.random() * Math.PI * 2;
-
-                            scene.add(boulder);
-
-                            envObjects.push(boulder);
-
+                            var boulder2 = new THREE.Mesh(bGeo, bMat);
+                            var bx = (Math.random() - 0.5) * 120, bz = (Math.random() - 0.5) * 120;
+                            var by = _terrainHeightAt(bx, bz);
+                            boulder2.position.set(bx, by + bSize * 0.25, bz);
+                            boulder2.rotation.y = Math.random() * Math.PI * 2;
+                            scene.add(boulder2);
+                            envObjects.push(boulder2);
                           }
-
                         }
 
 
@@ -2774,6 +2759,7 @@ const d = labToolData.solarSystem;
                           if (!renderer || !camera) return;
                           var isFS = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
                           var container = document.getElementById('drone-fullscreen-container') || canvasEl.parentElement;
+                          var innerContainer = canvasEl.parentElement;
                           var w, h2;
                           if (isFS) {
                             w = window.innerWidth;
@@ -2782,13 +2768,35 @@ const d = labToolData.solarSystem;
                             canvasEl.style.height = h2 + 'px';
                             container.style.width = w + 'px';
                             container.style.height = h2 + 'px';
+                            container.style.position = 'fixed';
+                            container.style.top = '0';
+                            container.style.left = '0';
+                            container.style.zIndex = '99999';
+                            container.style.background = '#000';
+                            if (innerContainer && innerContainer !== container) {
+                              innerContainer.style.height = h2 + 'px';
+                              innerContainer.style.maxHeight = 'none';
+                              innerContainer.style.borderRadius = '0';
+                              innerContainer.style.border = 'none';
+                            }
                           } else {
                             canvasEl.style.width = '100%';
                             canvasEl.style.height = '100%';
                             container.style.width = '';
                             container.style.height = '';
+                            container.style.position = '';
+                            container.style.top = '';
+                            container.style.left = '';
+                            container.style.zIndex = '';
+                            container.style.background = '';
+                            if (innerContainer && innerContainer !== container) {
+                              innerContainer.style.height = '';
+                              innerContainer.style.maxHeight = '';
+                              innerContainer.style.borderRadius = '';
+                              innerContainer.style.border = '';
+                            }
                             w = canvasEl.clientWidth || canvasEl.parentElement.clientWidth || 900;
-                            h2 = canvasEl.clientHeight || canvasEl.parentElement.clientHeight || 450;
+                            h2 = canvasEl.clientHeight || canvasEl.parentElement.clientHeight || 600;
                           }
                           W = w; H = h2;
                           camera.aspect = w / h2;
@@ -2854,7 +2862,7 @@ const d = labToolData.solarSystem;
 
                           (featList ? '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;margin-bottom:3px"><span style="color:#7dd3fc;font-weight:bold;font-size:9px">\uD83D\uDD2D NOTABLE</span>' + featList + '</div>' : '') +
 
-                          '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">WASD move \u2022 Mouse look \u2022 V view \u2022 M mission \u2022 <span style="color:#38bdf8">H</span> hud \u2022 <span style="color:#a78bfa">N</span> nav \u2022 <span style="color:#8b5cf6">P</span> plot</div>';
+                          '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">' + (isGas ? 'WASD move \u2022 Q/E altitude \u2022 Mouse look \u2022 V view \u2022 M mission' : 'WASD drive rover \u2022 Mouse look \u2022 V view \u2022 M mission') + ' \u2022 <span style="color:#38bdf8">H</span> hud \u2022 <span style="color:#a78bfa">N</span> nav \u2022 <span style="color:#8b5cf6">P</span> plot</div>';
 
                         hud.innerHTML = hudStaticHTML;
 
@@ -3808,11 +3816,15 @@ const d = labToolData.solarSystem;
 
                           playerPos.add(dir);
 
-                          if (moveState.up) playerPos.y += speed3d;
-
-                          if (moveState.down) playerPos.y = Math.max(isGas ? 1 : 1.0, playerPos.y - speed3d);
-
-                          if (!isGas) playerPos.y = Math.max(1.6, playerPos.y);
+                          if (isGas) {
+                            // Gas giant probe: free flight in atmosphere
+                            if (moveState.up) playerPos.y += speed3d;
+                            if (moveState.down) playerPos.y = Math.max(1.0, playerPos.y - speed3d);
+                          } else {
+                            // Rocky planet rover: ground-following, no vertical flight
+                            var groundH = _terrainHeightAt(playerPos.x, playerPos.z);
+                            playerPos.y = groundH + 1.6; // rover camera height above terrain
+                          }
 
 
 
@@ -3843,15 +3855,17 @@ const d = labToolData.solarSystem;
                           // Animate clouds
 
                           scene.children.forEach(function (c) {
-
                             if (c._cloudSpeed) {
-
-                              c.position.x = Math.sin(tick3d * c._cloudSpeed) * 2;
-
-                              c.position.z = Math.cos(tick3d * c._cloudSpeed * 0.7) * 1.5;
-
+                              var drift = c._cloudDrift || 0;
+                              c.position.x = Math.sin(tick3d * c._cloudSpeed + drift) * 4 + Math.cos(tick3d * c._cloudSpeed * 0.3) * 2;
+                              c.position.z = Math.cos(tick3d * c._cloudSpeed * 0.7 + drift) * 3;
+                              if (c.material && c.material.map) {
+                                c.material.map.offset.x += c._cloudSpeed * 0.15; // texture scrolling for wind effect
+                              }
+                              if (c._isStorm) {
+                                c.rotation.z += 0.008; // spin the storm vortex
+                              }
                             }
-
                           });
 
 
@@ -4034,7 +4048,7 @@ const d = labToolData.solarSystem;
 
                           if (!isGas) {
 
-                            roverGroup.position.y = 0; // wheels on ground
+                            roverGroup.position.y = _terrainHeightAt(playerPos.x, playerPos.z); // wheels follow terrain
 
                             roverGroup.rotation.y = yaw + Math.PI; // face movement direction
 

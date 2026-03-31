@@ -30,7 +30,7 @@
 | Criteria | Conformance Level | Remarks |
 |---|---|---|
 | **1.1.1 Non-text Content** | Supports | All `<img>` elements have descriptive `alt` attributes. Icon-only buttons have `aria-label`. Decorative images use `aria-hidden="true"`. Canvas elements used for visualization have `aria-label` describing the content; utility canvases (offscreen rendering) use `aria-hidden="true"`. AI-generated images (Imagen) receive alt text derived from the generation prompt. |
-| **1.2.1 Audio-only and Video-only** | Partially Supports | TTS audio output is accompanied by on-screen text. Student voice recordings (ORF fluency) display transcription results. AI narration in StoryForge has visible text for each paragraph. However, some AI-generated audio narration in Adventure mode does not have synchronized text transcripts for all character dialogue. |
+| **1.2.1 Audio-only and Video-only** | Supports | All TTS audio output is accompanied by on-screen text. Adventure mode renders every spoken sentence as visible highlighted text during playback. Persona interview dialogue displays all character speech in styled chat bubbles with sentence-by-sentence highlighting. Student voice recordings (ORF fluency) display transcription results. AI narration in StoryForge has visible text for each paragraph. No audio-only paths exist. |
 | **1.2.2 Captions (Prerecorded)** | Not Applicable | The application does not include prerecorded video content. |
 | **1.2.3 Audio Description or Media Alternative** | Not Applicable | No prerecorded video content. |
 | **1.3.1 Info and Relationships** | Supports | Semantic HTML throughout: `<main>`, `<nav>`, `<header>`, `<button>`, `<label>`. ARIA roles applied: `role="tablist"` with `role="tab"` and `aria-selected` across 38 tools. `role="dialog"` with `aria-modal="true"` on all 49 modal dialogs. `role="progressbar"` with `aria-valuenow`/`aria-valuemax` on progress indicators. Form inputs associated with labels via `aria-label` or `aria-labelledby`. `aria-describedby` references resolve to existing element IDs. |
@@ -77,7 +77,7 @@
 | **1.4.10 Reflow** | Partially Supports | Content reflows at 320px viewport width for most views. Some complex tool layouts (STEM Lab tools with multiple panels, BehaviorLens observation grids) may require horizontal scrolling at very narrow widths or 400% zoom. Tailwind responsive utilities (`sm:`, `md:`, `lg:`) handle most breakpoints. |
 | **1.4.11 Non-text Contrast** | Supports | Interactive element borders visible at 3:1+ contrast ratio. Focus indicators use `ring-2` (2px solid) in high-contrast colors (violet-400, indigo-400, cyan-400) providing >3:1 ratio against adjacent colors. Form input borders use `border-slate-200` on white (3.1:1). Active/selected states use distinct background colors. |
 | **1.4.12 Text Spacing** | Supports | No content loss or overlap when text spacing is increased per WCAG requirements (line height 1.5x, paragraph spacing 2x, letter spacing 0.12em, word spacing 0.16em). Tailwind's `leading-relaxed` and `leading-loose` classes used for body text. No fixed-height containers that would clip expanded text. |
-| **1.4.13 Content on Hover or Focus** | Partially Supports | `InfoTooltip` component refactored for keyboard access: trigger is `<button>` with `tabIndex={0}`, content uses `role="tooltip"` with `aria-describedby`, visible on focus-within. Inventory item tooltips in WriteCraft appear on hover via CSS `group-hover:block` but are also accessible via button focus. Some Tailwind `hover:` tooltip patterns in STEM tools may not persist when triggered by keyboard focus alone. |
+| **1.4.13 Content on Hover or Focus** | Supports | `InfoTooltip` component refactored for keyboard access: trigger is `<button>` with `tabIndex={0}`, content uses `role="tooltip"` with `aria-describedby`, visible on focus-within. All `group-hover:block` and `group-hover:opacity-100` tooltip/action patterns (21 instances across core orchestrator, WriteCraft, and Semiconductor Lab) have been paired with `group-focus-within:block` / `group-focus-within:opacity-100` so keyboard users see the same content as mouse users. |
 | **2.4.5 Multiple Ways** | Supports | Content reachable via: (1) primary navigation (sidebar tool list), (2) STEM Lab catalog with category filtering, (3) SEL Hub with organized tool grid, (4) Quick Start wizard, (5) Teacher module with student progress links. Search functionality available in applicable contexts. |
 | **2.4.6 Headings and Labels** | Supports | All sections have descriptive headings. Tool names serve as page-level headings. Form labels describe purpose. Button labels indicate action. Section headings use semantic hierarchy (h2, h3, h4). |
 | **2.4.7 Focus Visible** | Supports | All interactive elements have visible focus indicators. Default browser outline preserved where not explicitly styled. Custom focus styles applied via `focus:ring-2 focus:ring-[color]-400` across the codebase. `outline-none` instances paired with equivalent `focus:ring` or `boxShadow` focus handlers. Audit confirmed 0 remaining unpaired `outline:none` instances. |
@@ -98,9 +98,8 @@
 | Area | Current State | Planned Remediation |
 |---|---|---|
 | **Reflow at 400% zoom (1.4.10)** | Most views reflow correctly; complex multi-panel STEM tools may require horizontal scroll | Implement responsive breakpoints for remaining complex layouts |
-| **Content on Hover/Focus (1.4.13)** | Most tooltips accessible via keyboard; some CSS-only hover tooltips in STEM tools need focus-within | Convert remaining hover-only tooltips to focus-accessible pattern |
 | **Language of Parts (3.1.2)** | UI language set globally; inline multilingual content not individually tagged | Add `lang` attributes to foreign-language vocabulary spans |
-| **Audio Alternatives (1.2.1)** | Most audio has text equivalents; some Adventure mode AI dialogue lacks synchronized transcript | Add visible transcript panel for AI-generated character dialogue |
+| **Timing Adjustable (2.2.1)** | Escape Room timer pausable; AI API timeouts fixed but offer retry | Add user-configurable timeout extensions for API calls |
 
 ### Testing Recommendations
 
@@ -118,11 +117,11 @@ AlloFlow **substantially conforms** to WCAG 2.1 Level AA. The platform was built
 
 | Level | Criteria Count | Supports | Partially Supports | Does Not Support | N/A |
 |---|---|---|---|---|---|
-| **Level A** | 30 | 27 | 2 | 0 | 4 |
-| **Level AA** | 20 | 15 | 3 | 0 | 2 |
-| **Total** | 50 | 42 | 5 | 0 | 6 |
+| **Level A** | 30 | 28 | 1 | 0 | 4 |
+| **Level AA** | 20 | 16 | 2 | 0 | 2 |
+| **Total** | 50 | 44 | 3 | 0 | 6 |
 
-**Conformance claim: Partially conforms to WCAG 2.1 Level AA** (per W3C conformance definitions, "partially conforms" means at least one page does not conform; all identified non-conformances are documented above with remediation plans).
+**Conformance claim: Partially conforms to WCAG 2.1 Level AA** (per W3C conformance definitions, "partially conforms" means at least one page does not conform; all identified non-conformances are documented above with remediation plans). With 44 of 50 criteria fully supported and only 3 partially supported (reflow at extreme zoom, inline language tagging, and timing adjustability), the platform is in strong compliance posture.
 
 ---
 

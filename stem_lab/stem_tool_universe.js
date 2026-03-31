@@ -1554,7 +1554,7 @@ var d = labToolData.universe || {};
 
 
 
-          return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+          return React.createElement("div", { className: "max-w-6xl mx-auto animate-in fade-in duration-200" },
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
@@ -1568,7 +1568,7 @@ var d = labToolData.universe || {};
 
             // Canvas
 
-            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-violet-300 shadow-lg", style: { height: '360px', background: '#050510' } },
+            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-violet-300 shadow-lg", style: { height: '55vh', minHeight: '360px', maxHeight: '700px', background: '#050510' } },
 
               React.createElement("canvas", { "data-universe-canvas": "true", ref: canvasRefCb, "data-time": String(cosmicTime), style: { width: '100%', height: '100%', display: 'block' } })
 
@@ -1831,12 +1831,12 @@ var d = labToolData.universe || {};
               d.showHR && React.createElement("div", null,
                 React.createElement("div", { className: "text-[10px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " italic mb-2" }, "The HR Diagram plots stars by temperature (x) and luminosity (y). Most stars fall on the Main Sequence diagonal."),
                 React.createElement("canvas", {
-                  style: { width: '100%', height: '200px', display: 'block', borderRadius: '8px' },
+                  style: { width: '100%', height: '320px', display: 'block', borderRadius: '8px' },
                   ref: function(hrEl) {
                     if (!hrEl || hrEl._hrInit) return;
                     hrEl._hrInit = true;
                     var hctx = hrEl.getContext('2d');
-                    var HW = hrEl.offsetWidth || 300, HH = 200;
+                    var HW = hrEl.offsetWidth || 300, HH = 320;
                     hrEl.width = HW * 2; hrEl.height = HH * 2; hctx.scale(2, 2);
                     // Background
                     hctx.fillStyle = '#0a0a20';
@@ -1959,16 +1959,16 @@ var d = labToolData.universe || {};
               d.showDark && React.createElement("div", { className: "space-y-2" },
                 // Pie chart canvas
                 React.createElement("canvas", {
-                  style: { width: '100%', height: '120px', display: 'block', borderRadius: '8px' },
+                  style: { width: '100%', height: '180px', display: 'block', borderRadius: '8px' },
                   ref: function(pieEl) {
                     if (!pieEl || pieEl._pieInit) return;
                     pieEl._pieInit = true;
                     var pctx = pieEl.getContext('2d');
-                    var PW = pieEl.offsetWidth || 300, PH = 120;
+                    var PW = pieEl.offsetWidth || 300, PH = 180;
                     pieEl.width = PW * 2; pieEl.height = PH * 2; pctx.scale(2, 2);
                     pctx.fillStyle = isDark ? '#1e293b' : '#faf5ff';
                     pctx.fillRect(0, 0, PW, PH);
-                    var cx2 = PW * 0.3, cy2 = PH * 0.5, r2 = 45;
+                    var cx2 = PW * 0.3, cy2 = PH * 0.5, r2 = 65;
                     var slices = [
                       { pct: 0.68, color: '#6366f1', label: 'Dark Energy 68%' },
                       { pct: 0.27, color: '#8b5cf6', label: 'Dark Matter 27%' },
@@ -2285,12 +2285,12 @@ var d = labToolData.universe || {};
               d.showBlackHole && React.createElement("div", { className: "space-y-1.5" },
                 // Visual canvas
                 React.createElement("canvas", {
-                  style: { width: '100%', height: '140px', display: 'block', borderRadius: '8px' },
+                  style: { width: '100%', height: '240px', display: 'block', borderRadius: '8px' },
                   ref: function(bhEl) {
                     if (!bhEl || bhEl._bhInit) return;
                     bhEl._bhInit = true;
                     var bctx = bhEl.getContext('2d');
-                    var BW = bhEl.offsetWidth || 300, BH = 140;
+                    var BW = bhEl.offsetWidth || 300, BH = 240;
                     bhEl.width = BW * 2; bhEl.height = BH * 2; bctx.scale(2, 2);
                     var btick = 0;
                     function drawBH() {
@@ -2640,12 +2640,12 @@ var d = labToolData.universe || {};
                 React.createElement("div", { className: "text-[10px] " + (isDark ? 'text-slate-400' : 'text-slate-500') + " italic mb-1" }, "Einstein predicted that massive objects bend light. This gravitational lensing lets us see behind galaxies, magnify distant objects, and map invisible dark matter."),
                 // Animated lensing canvas
                 React.createElement("canvas", {
-                  style: { width: '100%', height: '150px', display: 'block', borderRadius: '8px' },
+                  style: { width: '100%', height: '260px', display: 'block', borderRadius: '8px' },
                   ref: function(lensEl) {
                     if (!lensEl || lensEl._lensInit) return;
                     lensEl._lensInit = true;
                     var lctx = lensEl.getContext('2d');
-                    var LW = lensEl.offsetWidth || 300, LH = 150;
+                    var LW = lensEl.offsetWidth || 300, LH = 260;
                     lensEl.width = LW * 2; lensEl.height = LH * 2; lctx.scale(2, 2);
                     var ltick = 0;
                     function drawLens() {
@@ -2817,12 +2817,12 @@ var d = labToolData.universe || {};
               d.showRedshift && React.createElement("div", { className: "space-y-2" },
                 // Animated Doppler canvas
                 React.createElement("canvas", {
-                  style: { width: '100%', height: '160px', display: 'block', borderRadius: '8px' },
+                  style: { width: '100%', height: '260px', display: 'block', borderRadius: '8px' },
                   ref: function(rsEl) {
                     if (!rsEl || rsEl._rsInit) return;
                     rsEl._rsInit = true;
                     var rctx = rsEl.getContext('2d');
-                    var RW = rsEl.offsetWidth || 300, RH = 160;
+                    var RW = rsEl.offsetWidth || 300, RH = 260;
                     rsEl.width = RW * 2; rsEl.height = RH * 2; rctx.scale(2, 2);
                     var rtick = 0;
                     function drawRS() {

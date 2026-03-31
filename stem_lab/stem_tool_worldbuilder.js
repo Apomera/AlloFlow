@@ -1206,7 +1206,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                     )
                   ),
                   // Tooltip on hover
-                  h('div', { className: 'hidden group-hover:block absolute z-10 bottom-full left-0 mb-1 w-48 bg-white border border-amber-200 rounded-lg p-2 shadow-lg text-[11px]' },
+                  h('div', { className: 'hidden group-hover:block group-focus-within:block absolute z-10 bottom-full left-0 mb-1 w-48 bg-white border border-amber-200 rounded-lg p-2 shadow-lg text-[11px]' },
                     h('div', { className: 'font-bold text-amber-800' }, item.emoji + ' ' + item.name),
                     h('div', { className: 'text-slate-600 mt-0.5' }, item.desc),
                     item.specialAbility && h('div', { className: 'text-violet-600 font-medium mt-0.5' }, '✨ ' + item.specialAbility),

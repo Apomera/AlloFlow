@@ -1659,7 +1659,7 @@ window.StemLab = window.StemLab || {
                       h('span', { className: 'text-[10px] text-slate-500' }, comp.value),
                       h('button', {
                         onClick: function() { removeComponent(comp.id); },
-                        className: 'absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[8px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center',
+                        className: 'absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[8px] rounded-full opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center',
                         'aria-label': 'Remove ' + comp.label
                       }, '\u2715'),
                       ci < components.length - 1 ? null : null
