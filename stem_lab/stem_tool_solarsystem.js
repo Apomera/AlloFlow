@@ -2443,6 +2443,45 @@ const d = labToolData.solarSystem;
 
                           roverGroup.add(dish);
 
+                          // ── Rover headlights ──
+                          var headlightL = new THREE.SpotLight(0xffffee, 1.5, 25, Math.PI / 6, 0.5);
+                          headlightL.position.set(-0.25, 0.45, -0.65);
+                          headlightL.target.position.set(-0.25, 0.2, -5);
+                          roverGroup.add(headlightL);
+                          roverGroup.add(headlightL.target);
+
+                          var headlightR = new THREE.SpotLight(0xffffee, 1.5, 25, Math.PI / 6, 0.5);
+                          headlightR.position.set(0.25, 0.45, -0.65);
+                          headlightR.target.position.set(0.25, 0.2, -5);
+                          roverGroup.add(headlightR);
+                          roverGroup.add(headlightR.target);
+
+                          // Headlight lens glow
+                          var hlGlowGeo = new THREE.SphereGeometry(0.05, 8, 8);
+                          var hlGlowMat = new THREE.MeshBasicMaterial({ color: 0xffffcc, transparent: true, opacity: 0.9 });
+                          var hlGlowL = new THREE.Mesh(hlGlowGeo, hlGlowMat);
+                          hlGlowL.position.set(-0.25, 0.45, -0.65);
+                          roverGroup.add(hlGlowL);
+                          var hlGlowR = new THREE.Mesh(hlGlowGeo.clone(), hlGlowMat.clone());
+                          hlGlowR.position.set(0.25, 0.45, -0.65);
+                          roverGroup.add(hlGlowR);
+
+                          // ── Dust trail particle system ──
+                          var dustTrailGeo = new THREE.BufferGeometry();
+                          var dustTrailPos = new Float32Array(60 * 3);
+                          var dustTrailLife = new Float32Array(60);
+                          for (var dti = 0; dti < 60; dti++) {
+                            dustTrailPos[dti * 3] = 0;
+                            dustTrailPos[dti * 3 + 1] = -999;
+                            dustTrailPos[dti * 3 + 2] = 0;
+                            dustTrailLife[dti] = 0;
+                          }
+                          dustTrailGeo.setAttribute('position', new THREE.BufferAttribute(dustTrailPos, 3));
+                          var dustColor = sel.terrainType === 'iceworld' ? 0xccddee : sel.terrainType === 'volcanic' ? 0x664422 : sel.terrainType === 'earthlike' ? 0x886633 : 0xaa9966;
+                          var dustTrailMesh = new THREE.Points(dustTrailGeo, new THREE.PointsMaterial({ color: dustColor, size: 0.12, transparent: true, opacity: 0.35 }));
+                          scene.add(dustTrailMesh);
+                          var dustTrailIdx = 0;
+
                         } else {
 
                           // Gas giant: build a probe/drone
@@ -2588,6 +2627,61 @@ const d = labToolData.solarSystem;
 
                           // Add atmospheric fog that intensifies with depth
                           scene.fog = new THREE.FogExp2(new THREE.Color(sel.terrainColor || '#886644').getHex(), 0.005);
+
+                          // ── Depth-based particle systems ──
+                          // Ammonia crystals (upper atmosphere) — small white sparkles
+                          var ammoniaParts = new THREE.BufferGeometry();
+                          var ammoniaPos = new Float32Array(300 * 3);
+                          for (var ap = 0; ap < 300; ap++) {
+                            ammoniaPos[ap * 3] = (Math.random() - 0.5) * 100;
+                            ammoniaPos[ap * 3 + 1] = 2 + Math.random() * 10;
+                            ammoniaPos[ap * 3 + 2] = (Math.random() - 0.5) * 100;
+                          }
+                          ammoniaParts.setAttribute('position', new THREE.BufferAttribute(ammoniaPos, 3));
+                          var ammoniaMesh = new THREE.Points(ammoniaParts, new THREE.PointsMaterial({ color: 0xddeeff, size: 0.06, transparent: true, opacity: 0.5 }));
+                          scene.add(ammoniaMesh);
+
+                          // Helium rain (mid-depth) — golden droplets falling
+                          var heliumParts = new THREE.BufferGeometry();
+                          var heliumPos = new Float32Array(150 * 3);
+                          for (var hp = 0; hp < 150; hp++) {
+                            heliumPos[hp * 3] = (Math.random() - 0.5) * 80;
+                            heliumPos[hp * 3 + 1] = -3 + Math.random() * 8;
+                            heliumPos[hp * 3 + 2] = (Math.random() - 0.5) * 80;
+                          }
+                          heliumParts.setAttribute('position', new THREE.BufferAttribute(heliumPos, 3));
+                          var heliumMesh = new THREE.Points(heliumParts, new THREE.PointsMaterial({ color: 0xffcc44, size: 0.04, transparent: true, opacity: 0.4 }));
+                          scene.add(heliumMesh);
+
+                          // Deep atmosphere embers — reddish particles near core
+                          var emberParts = new THREE.BufferGeometry();
+                          var emberPos = new Float32Array(100 * 3);
+                          for (var ep = 0; ep < 100; ep++) {
+                            emberPos[ep * 3] = (Math.random() - 0.5) * 60;
+                            emberPos[ep * 3 + 1] = -15 + Math.random() * 10;
+                            emberPos[ep * 3 + 2] = (Math.random() - 0.5) * 60;
+                          }
+                          emberParts.setAttribute('position', new THREE.BufferAttribute(emberPos, 3));
+                          var emberMesh = new THREE.Points(emberParts, new THREE.PointsMaterial({ color: 0xff4400, size: 0.1, transparent: true, opacity: 0.3 }));
+                          scene.add(emberMesh);
+
+                          // ── Probe heat shield glow (visible in 3rd person at depth) ──
+                          var shieldGlow = new THREE.PointLight(0xff6600, 0, 8);
+                          shieldGlow.position.set(0, -0.3, 0);
+                          roverGroup.add(shieldGlow);
+
+                          // ── Depth record tracking ──
+                          gasAtmo.deepestY = 999;
+                          gasAtmo.depthRecord = 0;
+                          gasAtmo.zonesVisited = {};
+
+                          // ── Spectrometer mini-display (bottom-left) ──
+                          var spectroEl = document.createElement('div');
+                          spectroEl.id = 'hud-spectrometer';
+                          spectroEl.style.cssText = 'position:absolute;bottom:12px;left:12px;background:rgba(15,23,42,0.85);backdrop-filter:blur(8px);border:1px solid rgba(56,189,248,0.2);border-radius:10px;padding:10px;z-index:14;width:180px;font-family:system-ui;pointer-events:none';
+                          spectroEl.innerHTML = '<div style="font-size:9px;font-weight:bold;color:#38bdf8;margin-bottom:6px;letter-spacing:1px">\uD83D\uDD2C SPECTROMETER</div>' +
+                            '<div id="spectro-bars" style="display:flex;flex-direction:column;gap:3px"></div>';
+                          canvasEl.parentElement.appendChild(spectroEl);
                         }
 
 
@@ -2951,6 +3045,8 @@ const d = labToolData.solarSystem;
                           '<span style="color:#64748b">Gases</span><span id="hud-gases" style="color:#67e8f9;font-size:9px">H\u2082, He</span>' +
                           '<span style="color:#64748b">\uD83D\uDEE1\uFE0F Shield</span><span id="hud-shield" style="color:#22c55e;font-weight:bold">100%</span>' +
                           '<span style="color:#64748b">\uD83E\uDDEA Samples</span><span id="hud-samples" style="color:#a78bfa;font-weight:bold">0</span>' +
+                          '<span style="color:#64748b">\u2B07\uFE0F Deepest</span><span id="hud-depth-record" style="color:#f97316;font-weight:bold">0 m</span>' +
+                          '<span style="color:#64748b">\uD83C\uDF0A Zones</span><span id="hud-zones-visited" style="color:#4ade80">0 / 5</span>' +
                           '</div></div>' : '') +
 
                           (featList ? '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;margin-bottom:3px"><span style="color:#7dd3fc;font-weight:bold;font-size:9px">\uD83D\uDD2D NOTABLE</span>' + featList + '</div>' : '') +
@@ -4082,6 +4178,109 @@ const d = labToolData.solarSystem;
                             });
                           }
 
+                          // ── Gas depth particle animation ──
+                          if (isGas && typeof ammoniaMesh !== 'undefined') {
+                            // Ammonia crystals drift and sparkle
+                            var aArr = ammoniaMesh.geometry.attributes.position.array;
+                            for (var ai2 = 0; ai2 < aArr.length; ai2 += 3) {
+                              aArr[ai2] += Math.sin(tick3d * 0.003 + ai2) * 0.008;
+                              aArr[ai2 + 1] -= 0.003;
+                              if (aArr[ai2 + 1] < 1) aArr[ai2 + 1] = 12;
+                            }
+                            ammoniaMesh.geometry.attributes.position.needsUpdate = true;
+                            ammoniaMesh.material.opacity = playerPos.y > 2 ? 0.5 : Math.max(0, 0.5 - (2 - playerPos.y) * 0.15);
+
+                            // Helium rain falls faster
+                            var hArr = heliumMesh.geometry.attributes.position.array;
+                            for (var hi2 = 0; hi2 < hArr.length; hi2 += 3) {
+                              hArr[hi2 + 1] -= 0.015;
+                              hArr[hi2] += Math.sin(tick3d * 0.005 + hi2) * 0.003;
+                              if (hArr[hi2 + 1] < -12) hArr[hi2 + 1] = 6;
+                            }
+                            heliumMesh.geometry.attributes.position.needsUpdate = true;
+                            heliumMesh.material.opacity = (playerPos.y < 3 && playerPos.y > -10) ? 0.45 : 0.05;
+
+                            // Deep embers rise slowly
+                            var eArr = emberMesh.geometry.attributes.position.array;
+                            for (var ei2 = 0; ei2 < eArr.length; ei2 += 3) {
+                              eArr[ei2 + 1] += 0.008;
+                              eArr[ei2] += Math.sin(tick3d * 0.01 + ei2) * 0.01;
+                              if (eArr[ei2 + 1] > -5) eArr[ei2 + 1] = -22;
+                            }
+                            emberMesh.geometry.attributes.position.needsUpdate = true;
+                            emberMesh.material.opacity = playerPos.y < -6 ? Math.min(0.5, (-6 - playerPos.y) * 0.05) : 0;
+
+                            // Heat shield glow intensifies with depth
+                            if (shieldGlow) {
+                              var depthFactor = Math.max(0, -playerPos.y / 15);
+                              shieldGlow.intensity = depthFactor * 3;
+                              shieldGlow.color.setHSL(0.05 - depthFactor * 0.05, 1, 0.5);
+                            }
+
+                            // Depth record tracking
+                            if (playerPos.y < gasAtmo.deepestY) {
+                              gasAtmo.deepestY = playerPos.y;
+                              gasAtmo.depthRecord = Math.abs(playerPos.y * scaleFactor);
+                            }
+                            var curZoneName = gasAtmo.getZone(playerPos.y).name;
+                            if (!gasAtmo.zonesVisited[curZoneName]) {
+                              gasAtmo.zonesVisited[curZoneName] = true;
+                              var zoneCount = Object.keys(gasAtmo.zonesVisited).length;
+                              if (zoneCount >= 3) { checkChallenges(); }
+                              if (addToast && zoneCount > 1) addToast('\uD83C\uDF0A Entered: ' + curZoneName, 'info');
+                            }
+
+                            // Spectrometer bar chart update (every 15 frames)
+                            if (tick3d % 15 === 0) {
+                              var spectroBarsEl = document.getElementById('spectro-bars');
+                              if (spectroBarsEl) {
+                                var curZoneGases = gasAtmo.getZone(playerPos.y).gases || [];
+                                var gasColors = { 'H\u2082': '#88ccff', 'He': '#ffdd88', 'NH\u2083': '#aaddff', 'NH\u2083 ice': '#ddeeff', 'NH\u2084SH': '#cc8844', 'H\u2082O': '#4488ff', 'H\u2082O vapor': '#6699ff', 'CH\u2084': '#44ffaa', 'Metallic H': '#ff8800', 'He rain': '#ffcc44', 'Diamond rain': '#ffffff', 'Liquid H\u2082': '#88aaff', 'Rock/ice core': '#ff4400', 'Exotic matter': '#ff00ff', 'PH\u2083': '#88ff44' };
+                                var barsHTML = '';
+                                curZoneGases.forEach(function(gas, gi) {
+                                  var pct = Math.round(90 - gi * 20 + Math.sin(tick3d * 0.03 + gi * 2) * 8);
+                                  var col = gasColors[gas] || '#67e8f9';
+                                  barsHTML += '<div style="display:flex;align-items:center;gap:4px"><span style="font-size:8px;color:#94a3b8;width:50px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + gas + '</span><div style="flex:1;height:6px;background:#1e293b;border-radius:3px;overflow:hidden"><div style="width:' + pct + '%;height:100%;background:' + col + ';border-radius:3px;transition:width 0.3s"></div></div><span style="font-size:8px;color:' + col + ';width:24px">' + pct + '%</span></div>';
+                                });
+                                spectroBarsEl.innerHTML = barsHTML;
+                              }
+                            }
+                          }
+
+                          // ── Rover dust trail animation (rocky planets) ──
+                          if (!isGas && typeof dustTrailMesh !== 'undefined' && dustTrailMesh) {
+                            var dtArr = dustTrailMesh.geometry.attributes.position.array;
+                            // Spawn dust when moving
+                            var isMoving = moveState.forward || moveState.back || moveState.left || moveState.right;
+                            if (isMoving && tick3d % 3 === 0) {
+                              var dIdx = dustTrailIdx * 3;
+                              dtArr[dIdx] = playerPos.x + (Math.random() - 0.5) * 0.8;
+                              dtArr[dIdx + 1] = _terrainHeightAt(playerPos.x, playerPos.z) + 0.1;
+                              dtArr[dIdx + 2] = playerPos.z + (Math.random() - 0.5) * 0.8;
+                              dustTrailLife[dustTrailIdx] = 60;
+                              dustTrailIdx = (dustTrailIdx + 1) % 60;
+                            }
+                            // Age and rise dust particles
+                            for (var dti2 = 0; dti2 < 60; dti2++) {
+                              if (dustTrailLife[dti2] > 0) {
+                                dustTrailLife[dti2]--;
+                                dtArr[dti2 * 3 + 1] += 0.01; // rise
+                                dtArr[dti2 * 3] += (Math.random() - 0.5) * 0.02; // drift
+                              }
+                            }
+                            dustTrailMesh.geometry.attributes.position.needsUpdate = true;
+                            dustTrailMesh.material.opacity = 0.3;
+
+                            // Animate rover wheels (spin them when moving)
+                            if (isMoving) {
+                              roverGroup.children.forEach(function(child) {
+                                if (child.geometry && child.geometry.type === 'CylinderGeometry' && child.geometry.parameters && Math.abs(child.geometry.parameters.radiusTop - 0.15) < 0.01) {
+                                  child.rotation.x += 0.15;
+                                }
+                              });
+                            }
+                          }
+
                           // Diamond rain
 
                           if (typeof diamonds !== 'undefined' && diamonds) {
@@ -4176,6 +4375,10 @@ const d = labToolData.solarSystem;
                                 shieldEl.style.color = gasShieldHP > 60 ? '#22c55e' : gasShieldHP > 30 ? '#f59e0b' : '#ef4444';
                               }
                               if (samplesEl) samplesEl.textContent = gasSamples.length + ' / ' + gasAtmo.sampleOrbs.length;
+                              var depthRecEl = document.getElementById('hud-depth-record');
+                              var zonesVisEl = document.getElementById('hud-zones-visited');
+                              if (depthRecEl) depthRecEl.textContent = Math.round(gasAtmo.depthRecord || 0) + ' m';
+                              if (zonesVisEl) zonesVisEl.textContent = Object.keys(gasAtmo.zonesVisited || {}).length + ' / 5';
 
                               // Dynamic warning overlay
                               if (gasWarningTimer > 0 && hazardEl) {
