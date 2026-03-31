@@ -461,7 +461,46 @@ async function startDeployment(setupData, onProgress) {
       }
     }
 
-    // PHASE 4b: Check Flux GPU status if Flux was deployed
+    // PHASE 4c: Pull default Ollama model
+    if (servicesToInstall.includes('ollama')) {
+      const defaultModel = hardware.tier === 'workstation' ? 'llama3.1:8b' : 'llama3.1:8b';
+      onProgress({ phase: 'models', status: `Downloading AI model: ${defaultModel}\n(~4 GB — this may take several minutes on first run)`, progress: 88 });
+      try {
+        await nativePM.pullOllamaModel(defaultModel, (p) => {
+          onProgress({ phase: 'models', status: p.status, progress: 88 + (p.progress / 100) * 4 });
+        });
+        console.log(`[deploy:start] Model ${defaultModel} ready`);
+      } catch (err) {
+        console.warn('[deploy:start] Model pull failed (non-fatal):', err.message);
+        onProgress({ phase: 'models', status: `Model download failed — you can pull models manually via Ollama later.`, progress: 92 });
+      }
+
+      // Write ai_config.json for the web app to auto-configure itself
+      const aiConfig = {
+        backend: 'ollama',
+        apiKey: '',
+        baseUrl: 'http://localhost:11434',
+        models: {
+          default: 'llama3.1:8b',
+          flash: 'llama3.1:8b',
+          fallback: 'llama3.1:8b',
+          vision: 'llama3.1:8b',
+          image: 'flux',
+          tts: 'llama3.1:8b'
+        },
+        ttsProvider: 'browser',
+        imageProvider: servicesToInstall.includes('flux') ? 'flux' : 'auto',
+        configuredBy: 'alloflow-admin',
+        configuredAt: new Date().toISOString()
+      };
+      fs.writeFileSync(
+        path.join(ALLOFLOW_DIR, 'ai_config.json'),
+        JSON.stringify(aiConfig, null, 2)
+      );
+      console.log('[deploy:start] Wrote ai_config.json for web app auto-configuration');
+    }
+
+    // PHASE 4c: Check Flux GPU status if Flux was deployed
     let fluxGpuStatus = null;
     if (servicesToInstall.includes('flux')) {
       try {

@@ -20,6 +20,29 @@
     {"@context":"https://schema.org","@type":"SoftwareApplication","name":"AlloFlow","applicationCategory":"EducationalApplication","operatingSystem":"Web Browser","description":"Open-source, privacy-first AI tool for differentiated instruction.","url":"https://apomera.github.io/AlloFlow/","author":{"@type":"Person","name":"Aaron Pomeranz","jobTitle":"EdTech Developer"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isAccessibleForFree":true}
     </script>
     <link rel="stylesheet" href="shared.css">
+    <script>
+    // Auto-configure from local AlloFlow Admin services if no manual config is set.
+    // Fetches http://localhost:8888/local-config (written by the setup wizard).
+    // Runs synchronously before React mounts so the AI provider picks up the config.
+    (function () {
+      try {
+        if (localStorage.getItem('alloflow_ai_config')) return; // user has manual config
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'http://localhost:8888/local-config', false /* sync */);
+        xhr.timeout = 800;
+        xhr.send();
+        if (xhr.status === 200) {
+          var config = JSON.parse(xhr.responseText);
+          if (config && config.backend) {
+            localStorage.setItem('alloflow_ai_config', JSON.stringify(config));
+            console.log('[AlloFlow] Auto-configured from local services:', config.backend, config.baseUrl);
+          }
+        }
+      } catch (e) {
+        // No local admin running — normal for Canvas/cloud users
+      }
+    })();
+    </script>
     <script src="https://unpkg.com/lucide@0.405.0" crossorigin="anonymous"></script>
 </head>
 

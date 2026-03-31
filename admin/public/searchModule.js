@@ -139,6 +139,26 @@ function startSearchServer(port = 8888) {
         return;
       }
 
+      // Local AI config endpoint — serves ~/.alloflow/ai_config.json to the web app
+      if (url.pathname === '/local-config') {
+        try {
+          const configPath = require('path').join(require('os').homedir(), '.alloflow', 'ai_config.json');
+          const fs = require('fs');
+          if (fs.existsSync(configPath)) {
+            const config = fs.readFileSync(configPath, 'utf-8');
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(config);
+          } else {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'No local config — run AlloFlow setup first' }));
+          }
+        } catch (err) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: err.message }));
+        }
+        return;
+      }
+
       // Search endpoint (SearXNG-compatible)
       if (url.pathname === '/search') {
         const query = url.searchParams.get('q');

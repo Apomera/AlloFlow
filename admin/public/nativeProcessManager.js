@@ -928,6 +928,51 @@ function rmDirSafe(dirPath) {
   }
 }
 
+/**
+ * Pull an Ollama model (downloads it if not already cached).
+ * Streams progress via onProgress({ status, progress }).
+ * progress is 0-100 parsed from ollama's output.
+ */
+async function pullOllamaModel(modelId, onProgress) {
+  const ollamaPath = getServiceBinaryPath('ollama');
+  if (!ollamaPath) throw new Error('Ollama binary not found — install Ollama first.');
+
+  return new Promise((resolve, reject) => {
+    console.log(`[native-pm] Pulling Ollama model: ${modelId}`);
+    const proc = spawn(ollamaPath, ['pull', modelId], {
+      windowsHide: true,
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+
+    let lastPct = 0;
+    const handleOutput = (raw) => {
+      const text = raw.toString();
+      console.log(`[ollama:pull] ${text.trim()}`);
+      // Ollama outputs lines like: "pulling sha256...  42% ▕██████  ▏ 2.1 GB/4.9 GB"
+      const pctMatch = text.match(/(\d+)%/);
+      if (pctMatch) {
+        lastPct = parseInt(pctMatch[1]);
+        onProgress({ status: `Downloading ${modelId}... ${lastPct}%`, progress: lastPct });
+      } else if (text.trim()) {
+        onProgress({ status: text.trim(), progress: lastPct });
+      }
+    };
+
+    proc.stdout.on('data', handleOutput);
+    proc.stderr.on('data', handleOutput);
+
+    proc.on('close', (code) => {
+      if (code === 0) {
+        console.log(`[native-pm] Model ${modelId} pulled successfully`);
+        resolve();
+      } else {
+        reject(new Error(`ollama pull exited with code ${code}`));
+      }
+    });
+    proc.on('error', reject);
+  });
+}
+
 module.exports = {
   ensureDirectories,
   getDownloadInfo,
@@ -941,6 +986,7 @@ module.exports = {
   getServiceBinaryPath,
   uninstallService,
   uninstallAll,
+  pullOllamaModel,
   BINARIES_DIR,
   DATA_DIR,
   ALLOFLOW_DIR
