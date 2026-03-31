@@ -8,7 +8,7 @@
 | **Product Version** | 0.9.0 |
 | **Report Date** | March 30, 2026 |
 | **Contact** | Aaron Pomeranz, PsyD — apomeranz@alloflow.org |
-| **Evaluation Methods** | Static code analysis, automated pattern scanning, manual keyboard testing, ARIA attribute audit across 80+ tool modules (~220K lines of code) |
+| **Evaluation Methods** | Static code analysis and automated pattern scanning across 80+ tool modules (~220K lines of code). **Runtime testing (screen reader, keyboard-only, zoom reflow) has not yet been completed.** Criteria marked "Supports (pending verification)" reflect code-level compliance that requires manual confirmation. |
 | **Applicable Standards** | WCAG 2.1 Level A & AA |
 | **Platform** | Web application (React SPA, Firebase Hosting) |
 | **Supported Browsers** | Chrome 90+, Firefox 90+, Safari 15+, Edge 90+ |
@@ -40,15 +40,15 @@
 | **1.3.5 Identify Input Purpose** | Supports | Form inputs use appropriate `type` attributes (`text`, `email`, `number`, `password`) and `autocomplete` where applicable. Input purpose is identifiable from `aria-label` attributes. |
 | **1.4.1 Use of Color** | Supports | Color is never the sole means of conveying information. Examples: writing quality scores display numeric values + emoji + tier label alongside color. T-score ranges include text labels. Vocabulary tracking shows "✓" checkmarks in addition to green color. Battle HP bars include numeric readout. |
 | **1.4.2 Audio Control** | Supports | All audio playback (TTS, narration, student recordings) has pause/stop controls. No audio plays automatically for more than 3 seconds. Background sounds in tools (beep effects) are brief (<1 second) notification tones. |
-| **2.1.1 Keyboard** | Supports | All interactive elements are keyboard accessible. `a11yClick` utility applied across 57 STEM tools and 19 SEL tools ensures `onClick` handlers on non-button elements also respond to Enter/Space via `onKeyDown`. `tabIndex={0}` applied to all custom interactive elements. Tab patterns use `tabIndex={-1}` for inactive tabs with `tabIndex={0}` on the active tab. |
-| **2.1.2 No Keyboard Trap** | Supports | Modal dialogs implement focus trapping with Escape key exit. All `onKeyDown` handlers with `preventDefault()` are scoped to specific keys (Enter, Space) and do not trap other navigation keys. Tab/Shift+Tab cycles through focusable elements normally. |
+| **2.1.1 Keyboard** | Partially Supports | Code-level: `a11yClick` utility applied across 57 STEM tools and 19 SEL tools ensures `onClick` handlers on non-button elements respond to Enter/Space via `onKeyDown`. `tabIndex={0}` applied to all custom interactive elements. Tab patterns use `tabIndex={-1}` for inactive tabs. **Pending verification:** Full keyboard-only walkthrough of all tools has not been completed. Some complex interactive tools (canvas-based visualizations, drag-and-drop interfaces) may have keyboard gaps that require runtime testing to identify. |
+| **2.1.2 No Keyboard Trap** | Partially Supports | Code-level: Modal dialogs implement focus trapping with Escape key exit. `onKeyDown` handlers with `preventDefault()` are scoped to specific keys. **Pending verification:** Complete keyboard trap testing across all modal flows and tool transitions has not been performed. |
 | **2.1.4 Character Key Shortcuts** | Not Applicable | The application does not implement single-character keyboard shortcuts. |
 | **2.2.1 Timing Adjustable** | Partially Supports | The Escape Room timer can be paused. Session timeouts are configurable. However, some AI API calls have fixed timeouts that cannot be extended by the user (these result in retry options, not content loss). |
 | **2.2.2 Pause, Stop, Hide** | Supports | Galaxy timelapse animation has stop button. Auto-advancing content (adventure narration) has pause controls. Loading spinners are purely decorative. No content auto-updates without user action except `aria-live` regions for screen reader announcements. |
 | **2.3.1 Three Flashes or Below Threshold** | Supports | No content flashes more than three times per second. Animations use CSS transitions (opacity, transform) that do not produce flashing. Celebration effects (confetti) use gradual particle animations, not flashes. |
 | **2.4.1 Bypass Blocks** | Supports | Skip navigation link ("Skip to main content") present, linked to `#main-content` landmark. Main content area uses `<main>` element. Navigation uses `<nav>` with `aria-label`. |
 | **2.4.2 Page Titled** | Supports | Document title is set dynamically. Each major view/tool provides contextual identification through headings. |
-| **2.4.3 Focus Order** | Supports | Focus order follows logical DOM order. Modal dialogs trap focus within their bounds. Tab panels receive focus when activated. New content appended to the DOM does not disrupt focus position. |
+| **2.4.3 Focus Order** | Partially Supports | Code-level: Focus order follows logical DOM order. Modal dialogs trap focus within bounds. Tab panels receive focus when activated. **Pending verification:** Manual tab-through testing across all 80+ tools has not been completed to confirm focus order is logical in every context. |
 | **2.4.4 Link Purpose (In Context)** | Supports | All links have descriptive text content or `aria-label`. No "click here" or "read more" without context. |
 | **2.5.1 Pointer Gestures** | Supports | No functionality requires multi-point or path-based gestures. All interactions achievable via single-point click/tap. Canvas-based tools (art studio, coordinate grid) support both mouse and single-touch input. |
 | **2.5.2 Pointer Cancellation** | Supports | Click actions fire on `mouseup`/`click` events (default browser behavior), allowing cancellation by moving pointer off target before release. |
@@ -72,15 +72,15 @@
 | **1.2.5 Audio Description (Prerecorded)** | Not Applicable | No prerecorded video content. |
 | **1.3.6 Identify Purpose** | Supports | UI components use standard HTML elements and ARIA roles that convey purpose. Icons paired with text labels. Navigation landmarks labeled with `aria-label`. |
 | **1.4.3 Contrast (Minimum)** | Supports | Systematic contrast audit completed across all 80+ modules. `text-slate-300` on light backgrounds upgraded to `text-slate-500` (contrast ratio 5.6:1). `text-slate-400` on small text (<14px) upgraded to `text-slate-500`. Dark-on-dark and light-on-dark combinations verified as passing. Remaining `text-slate-400` instances are 14px+ text (4.5:1 ratio, passes AA). Primary text uses `text-slate-700` or `text-slate-800` (contrast >7:1). |
-| **1.4.4 Resize Text** | Supports | All text sized in relative units (Tailwind's rem-based scale). Content remains readable and functional at 200% browser zoom. No text clipping or overlap observed at standard zoom levels. |
+| **1.4.4 Resize Text** | Partially Supports | Code-level: All text sized in relative units (Tailwind's rem-based scale). No fixed-pixel font sizes used. **Pending verification:** Browser zoom testing at 200% has not been completed across all tools. Some complex layouts may clip or overlap at increased zoom. |
 | **1.4.5 Images of Text** | Supports | No images of text used. All text is rendered as HTML text, including headings, buttons, labels, and instructional content. AI-generated images (Imagen) are illustrations, not text images. |
 | **1.4.10 Reflow** | Partially Supports | Content reflows at 320px viewport width for most views. Some complex tool layouts (STEM Lab tools with multiple panels, BehaviorLens observation grids) may require horizontal scrolling at very narrow widths or 400% zoom. Tailwind responsive utilities (`sm:`, `md:`, `lg:`) handle most breakpoints. |
-| **1.4.11 Non-text Contrast** | Supports | Interactive element borders visible at 3:1+ contrast ratio. Focus indicators use `ring-2` (2px solid) in high-contrast colors (violet-400, indigo-400, cyan-400) providing >3:1 ratio against adjacent colors. Form input borders use `border-slate-200` on white (3.1:1). Active/selected states use distinct background colors. |
-| **1.4.12 Text Spacing** | Supports | No content loss or overlap when text spacing is increased per WCAG requirements (line height 1.5x, paragraph spacing 2x, letter spacing 0.12em, word spacing 0.16em). Tailwind's `leading-relaxed` and `leading-loose` classes used for body text. No fixed-height containers that would clip expanded text. |
+| **1.4.11 Non-text Contrast** | Partially Supports | Code-level: Focus indicators use `ring-2` in high-contrast colors (violet-400, indigo-400, cyan-400). Form input borders use `border-slate-200` on white. Active/selected states use distinct backgrounds. **Pending verification:** Contrast ratios calculated from code, not measured with automated contrast tools. Actual rendered contrast may vary by browser/OS. |
+| **1.4.12 Text Spacing** | Partially Supports | Code-level: Tailwind's `leading-relaxed` and `leading-loose` classes used for body text. No fixed-height containers identified that would clip text. **Pending verification:** Testing with WCAG-specified increased spacing (line height 1.5x, letter spacing 0.12em, word spacing 0.16em) has not been performed. |
 | **1.4.13 Content on Hover or Focus** | Supports | `InfoTooltip` component refactored for keyboard access: trigger is `<button>` with `tabIndex={0}`, content uses `role="tooltip"` with `aria-describedby`, visible on focus-within. All `group-hover:block` and `group-hover:opacity-100` tooltip/action patterns (21 instances across core orchestrator, WriteCraft, and Semiconductor Lab) have been paired with `group-focus-within:block` / `group-focus-within:opacity-100` so keyboard users see the same content as mouse users. |
 | **2.4.5 Multiple Ways** | Supports | Content reachable via: (1) primary navigation (sidebar tool list), (2) STEM Lab catalog with category filtering, (3) SEL Hub with organized tool grid, (4) Quick Start wizard, (5) Teacher module with student progress links. Search functionality available in applicable contexts. |
 | **2.4.6 Headings and Labels** | Supports | All sections have descriptive headings. Tool names serve as page-level headings. Form labels describe purpose. Button labels indicate action. Section headings use semantic hierarchy (h2, h3, h4). |
-| **2.4.7 Focus Visible** | Supports | All interactive elements have visible focus indicators. Default browser outline preserved where not explicitly styled. Custom focus styles applied via `focus:ring-2 focus:ring-[color]-400` across the codebase. `outline-none` instances paired with equivalent `focus:ring` or `boxShadow` focus handlers. Audit confirmed 0 remaining unpaired `outline:none` instances. |
+| **2.4.7 Focus Visible** | Partially Supports | Code-level: Custom focus styles applied via `focus:ring-2 focus:ring-[color]-400` across the codebase. All `outline-none` instances paired with equivalent `focus:ring` or `boxShadow` focus handlers (0 unpaired instances remaining). **Pending verification:** Visual confirmation that focus indicators are visible in all tools and color contexts has not been completed. |
 | **2.4.11 Focus Not Obscured (Minimum)** | Supports | No sticky headers or fixed elements obscure focused content. Modal dialogs use centered overlays that don't obscure their own focused elements. Scrollable regions allow focused elements to scroll into view. |
 | **3.1.2 Language of Parts** | Partially Supports | The `<html lang>` attribute updates dynamically for the selected UI language. However, inline content in multiple languages (e.g., vocabulary terms in the student's target language displayed alongside English UI) does not individually mark `lang` attributes on each foreign-language span. |
 | **3.2.3 Consistent Navigation** | Supports | Navigation components appear in the same relative order across views. Sidebar, header, and tool navigation maintain consistent positioning. Back buttons consistently placed in top-left position. |
@@ -95,11 +95,26 @@
 
 ### Partially Supported Areas
 
+**Genuine gaps (3 criteria):**
+
 | Area | Current State | Planned Remediation |
 |---|---|---|
 | **Reflow at 400% zoom (1.4.10)** | Most views reflow correctly; complex multi-panel STEM tools may require horizontal scroll | Implement responsive breakpoints for remaining complex layouts |
 | **Language of Parts (3.1.2)** | UI language set globally; inline multilingual content not individually tagged | Add `lang` attributes to foreign-language vocabulary spans |
 | **Timing Adjustable (2.2.1)** | Escape Room timer pausable; AI API timeouts fixed but offer retry | Add user-configurable timeout extensions for API calls |
+
+**Pending runtime verification (8 criteria — code-level work complete, awaiting manual testing):**
+
+| Area | Code Status | What Needs Testing |
+|---|---|---|
+| **Keyboard accessible (2.1.1)** | a11yClick on all 76 tools, tabIndex on custom elements | Tab through each tool without mouse |
+| **No keyboard trap (2.1.2)** | Escape handlers on modals, scoped preventDefault | Verify Escape exits all modals, no dead ends |
+| **Focus order (2.4.3)** | DOM order matches visual order | Tab through and confirm logical sequence |
+| **Focus visible (2.4.7)** | focus:ring on all elements, 0 unpaired outline:none | Visually confirm rings appear in all contexts |
+| **Resize text (1.4.4)** | All text in relative units (rem) | Test at 200% browser zoom |
+| **Non-text contrast (1.4.11)** | Contrast colors selected from code analysis | Measure with automated contrast tool |
+| **Text spacing (1.4.12)** | No fixed-height containers, relaxed line-height | Test with WCAG text spacing bookmarklet |
+| **Text contrast (1.4.3)** | Systematic slate-300/400→500 upgrade across 50+ files | Confirm with axe DevTools or WAVE scan |
 
 ### Testing Recommendations
 
@@ -117,11 +132,25 @@ AlloFlow **substantially conforms** to WCAG 2.1 Level AA. The platform was built
 
 | Level | Criteria Count | Supports | Partially Supports | Does Not Support | N/A |
 |---|---|---|---|---|---|
-| **Level A** | 30 | 28 | 1 | 0 | 4 |
-| **Level AA** | 20 | 16 | 2 | 0 | 2 |
-| **Total** | 50 | 44 | 3 | 0 | 6 |
+| **Level A** | 30 | 24 | 5 | 0 | 4 |
+| **Level AA** | 20 | 12 | 6 | 0 | 2 |
+| **Total** | 50 | 36 | 11 | 0 | 6 |
 
-**Conformance claim: Partially conforms to WCAG 2.1 Level AA** (per W3C conformance definitions, "partially conforms" means at least one page does not conform; all identified non-conformances are documented above with remediation plans). With 44 of 50 criteria fully supported and only 3 partially supported (reflow at extreme zoom, inline language tagging, and timing adjustability), the platform is in strong compliance posture.
+**Conformance claim: Partially conforms to WCAG 2.1 Level AA.** Of the 11 "Partially Supports" criteria, 8 are rated conservatively because they have been addressed at the code level but **runtime verification has not yet been completed** (keyboard-only testing, screen reader testing, zoom/reflow testing, contrast measurement). These 8 criteria are expected to upgrade to "Supports" upon manual verification. The remaining 3 are genuine partial gaps (reflow at 400% zoom, inline language tagging, API timing adjustability) with documented remediation plans.
+
+### Verification Status
+
+This assessment is based on **static code analysis only**. The following runtime tests are recommended before claiming full conformance and are well-suited for university graduate student testers:
+
+| Test | WCAG Criteria Affected | Estimated Time | Tools Needed |
+|---|---|---|---|
+| **Keyboard-only walkthrough** | 2.1.1, 2.1.2, 2.4.3, 2.4.7 | 2-3 hours | Keyboard only (no mouse) |
+| **Screen reader testing** | 4.1.2, 4.1.3, 1.3.1, 2.4.6 | 2-3 hours | NVDA (free, Windows) or VoiceOver (macOS) |
+| **Zoom/reflow testing** | 1.4.4, 1.4.10, 1.4.12 | 1-2 hours | Browser zoom (200%, 400%) + text spacing bookmarklet |
+| **Contrast measurement** | 1.4.3, 1.4.11 | 1 hour | axe DevTools or WAVE browser extension |
+| **WAVE automated scan** | Multiple | 30 min | WAVE browser extension (free) |
+
+These tests would make an excellent graduate student research project and could be conducted as part of a pilot study partnership.
 
 ---
 
